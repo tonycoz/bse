@@ -223,6 +223,8 @@ sub req_show {
   }
   $user
     or return $class->req_none($req, "Unknown user");
+  $user->{disabled}
+    and return $class->req_none($req, "User disabled");
   require BSE::TB::Subscriptions;
   my $subid = $cfg->entry('affiliate', 'subscription_required');
   if ($subid) {

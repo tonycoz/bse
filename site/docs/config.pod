@@ -1012,6 +1012,55 @@ Error message displayed if the image uses too much storage.
 
 =back
 
+=head2 [editor]
+
+Various editor settings.
+
+=over
+
+=item allow_thumb
+
+If this is non-zero the system will attempt to load the configured
+thumbnail class, and put thumbnail images on the image manager page
+rather than full-size images.  Default: off
+
+=item thumbs_class
+
+The name of a perl class that implement's BSE's thumbnail API.  At
+this point the only class that implements that is BSE::Thumb::Imager,
+supplied with BSE.  Default: None
+
+=item default_thumbnail
+
+URI to the default thumbnail image.  This is presented when the
+runtime production of a thumbnail image fails.
+
+=item default_thumbnail_width
+
+=item default_thumbnail_height
+
+Dimensions of the default thumbnail image.
+
+=item default_thumbnail_alt
+
+Alt text for the default thumbnail image.
+
+=back
+
+=head2 [thumbnails]
+
+=over
+
+=item max_width
+
+=item max_height
+
+=item max_pixels
+
+Default values for the thumbimage tag.
+
+=back
+
 =head2 [includes]
 
 Each value is used as the relative or absolute name of a file or

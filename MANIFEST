@@ -96,6 +96,7 @@ site/cgi-bin/modules/BSE/TB/Subscription.pm
 site/cgi-bin/modules/BSE/TB/Subscription/Calc.pm
 site/cgi-bin/modules/BSE/TB/Subscriptions.pm
 site/cgi-bin/modules/BSE/Template.pm
+site/cgi-bin/modules/BSE/Thumb/Imager.pm
 site/cgi-bin/modules/BSE/UI/AdminDispatch.pm
 site/cgi-bin/modules/BSE/UI/Affiliate.pm
 site/cgi-bin/modules/BSE/UI/Dispatch.pm
@@ -177,6 +178,8 @@ site/docs/standard.pod
 site/docs/shopadmin.html
 site/docs/templates.html
 site/docs/templates.pod
+site/docs/thumbnails.html
+site/docs/thumbnails.pod
 site/docs/upgrade_mysql.html
 site/htdocs/a/.htaccess
 site/htdocs/admin/advanced.html
@@ -201,6 +204,7 @@ site/htdocs/images/admin/error.gif
 site/htdocs/images/admin/help.gif
 site/htdocs/images/admin/move_down.gif
 site/htdocs/images/admin/move_up.gif
+site/htdocs/images/admin/nothumb.png
 site/htdocs/images/admin/unchecked.gif
 site/htdocs/images/filestatus/download.gif
 site/htdocs/images/filestatus/forSale.gif
@@ -341,6 +345,7 @@ site/templates/sidebar/logon.tmpl
 site/templates/test/children.tmpl
 site/templates/textemail/basic.tmpl
 site/templates/user/alreadyblacklisted_base.tmpl
+site/templates/user/base_orderdetail.tmpl
 site/templates/user/blacklistdone_base.tmpl
 site/templates/user/cantunsub_base.tmpl
 site/templates/user/confirmed_base.tmpl

@@ -40,6 +40,7 @@ my %actions =
    setcookie => 'set_cookie',
    nopassword => 'nopassword',
    a_image => 'req_image',
+   a_orderdetail => 'req_orderdetail',
   );
 
 my $cgi = CGI->new;

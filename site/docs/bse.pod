@@ -10,6 +10,40 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.14_33
+
+=over
+
+=item *
+
+user.pl now has an C<a_orderdetail> target which accepts the order
+number in C<id>.  The order must belong to the currently logged on
+user to be displayed.
+
+=item *
+
+affiliate.pl will no longer display pages for disabled users
+
+=item *
+
+the image manager will now display images as thumbnails if configured
+to do so.
+
+Currently the only imaging tool that can be used for the thumbnailing
+process is Imager.
+
+This adds the thumbimage, ifThumbs and ifCanThumbs tags to the article
+editor pages.
+
+See thumbnails.pod for more information.
+
+=item *
+
+localinst.perl (run with make testfiles) no longer deletes the content
+of your htdocs/images directory.
+
+=back
+
 =head2 0.14_32
 
 =over

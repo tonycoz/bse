@@ -130,8 +130,12 @@ sub _validate_common {
     }
   }
   if (defined $data->{subscription_period}) {
-    unless ($data->{subscription_period} =~ /^\d+$/ && $data->{subscription_period} > 0) {
+    my $sub = $data->{subscription_id};
+    if ($data->{subscription_period} !~ /^\d+$/) {
       $errors->{subscription_period} = "Invalid subscription period, it must be the number of months to subscribe";
+    }
+    elsif ($sub != -1 && $data->{subscription_period} < 1) {
+      $errors->{subscription_period} = "Subscription period must be 1 or more when a subscription is selected";
     }
   }
   if (defined $data->{subscription_usage}) {

@@ -28,6 +28,7 @@ my @targets =
    'affiliate.html',
    'BSE::UI::Affiliate.html',
    'future_plans.html',
+   'thumbnails.html',
   );
 
 my @exts = qw(.pod .pm .pl);

@@ -2,7 +2,7 @@ package BSE::UserReg;
 use strict;
 use base qw(BSE::UI::SiteuserCommon);
 use SiteUsers;
-use BSE::Util::Tags qw(tag_error_img);
+use BSE::Util::Tags qw(tag_error_img tag_hash);
 use BSE::Template;
 use Constants qw($SHOP_FROM);
 use BSE::Message;
@@ -878,6 +878,96 @@ sub userpage {
 			'subscription', 'subscriptions'),
     );
   my $base_template = 'user/userpage';
+  my $template = $base_template;
+  my $t = $cgi->param('_t');
+  if (defined $t && $t =~ /^\w+$/) {
+    $template = $template . '_' . $t;
+  }
+  BSE::Template->show_page($template, $cfg, \%acts, $base_template);
+}
+
+sub tag_detail_product {
+  my ($ritem, $products, $field) = @_;
+
+  $$ritem or return '';
+  my $product = $products->{$$ritem->{productId}}
+    or return '';
+
+  defined $product->{$field} or return '';
+
+  return escape_html($product->{$field});
+}
+
+sub iter_detail_productfiles {
+  my ($ritem, $files) = @_;
+
+  $$ritem or return;
+
+  grep $$ritem->{productId} == $_->{articleId}, @$files;
+}
+
+sub tag_detail_ifFileAvail {
+  my ($order, $rfile, $must_be_paid, $must_be_filled) = @_;
+
+  $$rfile or return 0;
+  $$rfile->{forSale} or return 1;
+
+  return 0 if $must_be_paid && !$order->{paidFor};
+  return 0 if $must_be_filled && !$order->{filled};
+
+  return 1;
+}
+
+sub req_orderdetail {
+  my ($self, $session, $cgi, $cfg, $message) = @_;
+
+  my $user = $self->_get_user($session, $cgi, $cfg, 'userpage')
+    or return;
+  my $order_id = $cgi->param('id');
+  my $order;
+  if (defined $order_id && $order_id =~ /^\d+$/) {
+    require BSE::TB::Orders;
+    $order = BSE::TB::Orders->getByPkey($order_id);
+  }
+  $order->{userId} eq $user->{userId} || $order->{siteuser_id} == $user->{id}
+    or undef $order;
+  $order
+    or return $self->userpage($session, $cgi, $cfg, "No such order");
+  $message ||= $cgi->param('message') || '';
+
+  my $must_be_paid = $cfg->entryBool('downloads', 'must_be_paid', 0);
+  my $must_be_filled = $cfg->entryBool('downloads', 'must_be_filled', 0);
+
+  my @items = $order->items;
+  my @files = $order->files;
+  my @products = $order->products;
+  my %products = map { $_->{id} => $_ } @products;
+  my $current_item;
+  my $current_file;
+
+  my $it = BSE::Util::Iterate->new;
+
+  my %acts;
+  %acts =
+    (
+     BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
+     order => [ \&tag_hash, $order ],
+     $self->user_tags(\%acts, $session, $user),
+     message => sub { CGI::escapeHTML($message) },
+     $it->make_iterator
+     (undef, 'item', 'items', \@items, undef, undef, \$current_item),
+     $it->make_iterator
+     (undef, 'orderfile', 'orderfiles', \@files, undef, undef, \$current_file),
+     product => [ \&tag_detail_product, \$current_item, \%products ],
+     $it->make_iterator
+     ([ \&iter_detail_prodfiles, \$current_item, \@files ],
+      'prodfile', 'prodfiles', undef, undef, \$current_file),
+     ifFileAvail =>
+     [ \&tag_detail_ifFileAvail, $order, \$current_file, 
+       $must_be_paid, $must_be_filled ],
+    );
+
+  my $base_template = 'user/orderdetail';
   my $template = $base_template;
   my $t = $cgi->param('_t');
   if (defined $t && $t =~ /^\w+$/) {

@@ -1,33 +1,7 @@
 <:wrap base.tmpl:> 
-<p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Hello <:ifUser 
-  name1:><:user name1:><:or:><:user userId:><:eif:>, this section contains your 
-  personal account details. From here you can <:ifCfg subscriptions enabled:> manage 
-  your newsletter subscriptions,<:or:><:eif:><:ifCfg shop enabled:> monitor the current status 
-  or purchase history of your orders from our on-line store<:or:><:eif:><:ifOr [cfg shop enabled] [cfg subscriptions enabled]:> and<:or:><:eif:> modify 
-  your personal details, for example, your password, email and mailing addresses 
-  etc.</font></p>
-<p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">To modify your 
-  account options, <:ifCfg subscriptions enabled:>like subscribing to one of our available newsletters,<:or:><:eif:> please 
-  proceed to edit your &#8220;<a href="<:script:>?show_opts=1">User Profile</a>&#8221; 
-  and make your changes <:ifCfg subscriptions enabled:>eg: select a newsletter from the available list<:or:><:eif:> then 
-  select &#8220;Save Options&#8221;.</font></p>
 <div align="center"> 
-  <table border="0" cellspacing="0" cellpadding="0">
-    <tr>
-      <td>
-        <form name="userprofile" method="post" action="<:script:>">
-          <input type="submit" name="Submit" value="Edit user profile" class="user-buttons">
-          <input type="hidden" name="show_opts" value="1">
-        </form>
-      </td>
-      <:ifCfg shop enabled:><td>
-        <form name="ff" method="post" action="/cgi-bin/shop.pl">
-          <input type="submit" name="cart" value="View shopping cart" class="user-buttons">
-        </form>
-      </td><:or:><:eif:>
-    </tr>
-  </table>
-  <br>
+<h1>Order Detail: <:order id:></h1>
+<p><a href="<:script:>?userpage=1">Back to order list</a></p>
    
   <table width="100%" cellpadding="0" cellspacing="1">
 	<:if Message:> 
@@ -36,26 +10,11 @@
     </tr>
     <:or Message:><:eif Message:> 
     <tr> 
-      <th align="center" height="20"><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Your 
-        Account</font></th>
-    </tr>
-    <tr> 
-      <td align="center"> <p><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Hello 
-          <:ifUser name1:><:user name1:> <:user name2:><:or:><:user userId:><:eif:></font></b></p>
-        <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#999999">Last 
-          logged in: <:date user previousLogon:><br>
-          Registered since: <:date user whenRegistered:></font><br>
-          <br>
-        </p></td>
-    </tr>
-	<:if Cfg shop enabled:>
-    <:if Orders:> <:iterator begin orders:> 
-    <tr> 
       <td bgcolor="#CCCCCC"> <table width="100%" cellpadding="3" cellspacing="1">
           <tr> 
-            <th align="center" nowrap width="25%" bgcolor="#666666"><a href="<:script:>?a_orderdetail=1&amp;id=<:order id:>"><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#CCCCCC">Order 
+            <th align="center" nowrap width="25%" bgcolor="#666666"><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#CCCCCC">Order 
               No:</font><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#FFFFFF"> 
-              <:order id:></font></a></th>
+              <:order id:></font></th>
             <th align="center" width="25%" nowrap bgcolor="#666666"><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#CCCCCC">Date:</font><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#FFFFFF"> 
               <:date order orderDate:></font></th>
             <th align="center" width="25%" nowrap bgcolor="<:ifOrder filled:>#CC0033<:or:>#66CC00<:eif:>"><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="<:ifOrder filled:>#CCCCCC<:or:>#000000<:eif:>">Status:</font><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#FFFFFF"> 
@@ -111,26 +70,5 @@
         </table>
         <:or Orderfiles:><:eif Orderfiles:> <:or Items:><:eif Items:> </td>
     </tr>
-    <:iterator separator orders:> 
-    <tr> 
-      <td >&nbsp; </td>
-    </tr>
-    <:iterator end orders:> <:or Orders:> 
-    <tr> 
-      <td  align="center"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">You 
-        haven't made any orders yet.</font></td>
-    </tr>
-    <:eif Orders:>
-	<:or Cfg:>
-	<:eif Cfg:>
   </table>
-  
-<:if Subscriptions:>  
-<table>
-<tr><th><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Name</font></th><th><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Expires</font></th></tr>
-<:iterator begin subscriptions:>
-<tr><td><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:subscription title:></font></td><td><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:date subscription ends_at:></font></td></tr>
-<:iterator end subscriptions:>
-</table>
-<:or Subscriptions:><:eif Subscriptions:>
 </div>

@@ -45,4 +45,17 @@ sub items {
   return BSE::TB::OrderItems->getBy(orderId => $self->{id});
 }
 
+sub files {
+  my ($self) = @_;
+
+  BSE::DB->query(orderFiles=>$self->{id});
+}
+
+sub products {
+  my ($self) = @_;
+
+  require Products;
+  Products->getSpecial(orderProducts=>$self->{id});
+}
+
 1;

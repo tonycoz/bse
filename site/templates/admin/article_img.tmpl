@@ -12,7 +12,10 @@
 <:case default:><a href="/cgi-bin/admin/add.pl?id=<:article id:>"><:ifMatch
     [article generator] "Catalog":>Edit catalog<:or:>Edit article<:eif:></a>
 <:endswitch:>
-|</p><:if UserCan edit_images_add:article:>
+|
+<:if Thumbs:><a href="<:script:>?id=<:article id:>&amp;_t=img&amp;f_showfull=1">Full size images</a> |<:or Thumbs:><:ifCanThumbs:><a href="<:script:>?id=<:article id:>&amp;_t=img">With Thumbnails</a> |<:or:><:eif:><:eif Thumbs:>
+</p>
+<:if UserCan edit_images_add:article:>
 <h2>Add new image</h2>
 
 <form method="post" action="<:script:>" enctype="multipart/form-data" name="add">
@@ -96,6 +99,38 @@
 
 	    </td>
           </tr><:eif Eq:>
+<:if Thumbs:>
+          <tr bgcolor="#FFFFFF"> 
+            <th>Image</th>
+            <th colspan="2"> &nbsp;</th>
+            <th nowrap="nowrap"> Modify</th>
+	    <th nowrap="nowrap"> Move</th>
+          </tr>
+<:iterator begin images:>
+	<tr>
+          <td rowspan="3" align="center" valign="center" bgcolor="#FFFFFF"><a href="#" onclick="window.open('/images/<:image image:>', 'fullimage', 'width=<:arithmetic [image width]+20:>,height=<:arithmetic [image height]+30:>,location=no,status=no,menubar=no,scrollbars=yes'); return 0;"><:thumbimage 150 150:></a></th>
+	    <th>Alt text:</th>
+            <td valign="top" bgcolor="#FFFFFF"> 
+              <:ifUserCan edit_images_save:article:><input type="text" name="alt" value="<: image alt :>" size="32" /><:or:><: image alt :><:eif:>
+            </td>
+            <td valign="top" nowrap="nowrap" rowspan="3" bgcolor="#FFFFFF"> 
+              <:ifUserCan edit_images_delete:article:><b><a href="<:script:>?id=<:article id:>&removeimg_<: image id :>=1&_t=img" onClick="return window.confirm('Are you sure you want to delete this Image')">Delete</a></b><:or:><:eif:></td>
+            <td nowrap="nowrap" bgcolor="#FFFFFF" rowspan="3"><:imgmove:></td>
+	  </tr>
+	  <tr>        
+            <th>URL:</th>
+            <td valign="top" width="50%"  bgcolor="#FFFFFF"colspan="1"> 
+              <:ifUserCan edit_images_save:article:><input type="text" name="url" value="<: image url :>" size="32" /><:or:><: image url :><:eif:>
+            </td>
+          </tr>
+          <tr>
+	    <th>Identifier:</th>
+            <td valign="top" nowrap="nowrap"  bgcolor="#FFFFFF"colspan="1"> 
+              <:ifUserCan edit_images_save:article:><input type="text" name="name<:image_index:>" value="<: image name :>" size="32" /> <:error_img [concatenate "name" [image_index] ]:><:or:><: image name :><:eif:>
+            </td>
+        </tr>
+<:iterator end images:>          
+<:or Thumbs:>
           <tr bgcolor="#FFFFFF"> 
             <th colspan="5">Image</th>
           </tr>
@@ -130,6 +165,7 @@
             <td colspan="5">&nbsp;</td>
           </tr>
           <: iterator end images :> 
+<:eif Thumbs:>
 <:ifUserCan edit_images_save:article:>
           <tr> 
             <td align="right" bgcolor="#FFFFFF" colspan="5"> 

@@ -21,8 +21,8 @@ system("rm -rf $instbase/cgi-bin")
   and die "Cannot remove cgi-bin";
 system "rm -rf $instbase/data"
   and die "Cannot remove data";
-system "rm -f $instbase/htdocs/{*.html,a/*.html,shop/*.html,images/*.jpg}"
-  and die "Cannot remove htdocs";
+#system "rm -f $instbase/htdocs/{*.html,a/*.html,shop/*.html,images/*.jpg}"
+#  and die "Cannot remove htdocs";
 
 system "cp -rf $dist/site/cgi-bin $instbase"
   and die "Cannot copy cgi-bin";

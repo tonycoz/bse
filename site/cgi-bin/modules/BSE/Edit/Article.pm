@@ -7,7 +7,8 @@ use BSE::Util::Valid qw/valid_date/;
 use BSE::Permissions;
 use DevHelp::HTML qw(:default popup_menu);
 use BSE::Arrows;
-use BSE::CfgInfo qw(custom_class admin_base_url);
+use BSE::CfgInfo qw(custom_class admin_base_url cfg_image_dir);
+use BSE::Util::Iterate;
 
 sub article_dispatch {
   my ($self, $req, $article, $articles) = @_;
@@ -80,6 +81,7 @@ sub article_actions {
      filesave => 'filesave',
      hide => 'hide',
      unhide => 'unhide',
+     a_thumb => 'req_thumb',
     );
 }
 
@@ -348,7 +350,7 @@ sub title_images {
   my ($self, $article) = @_;
 
   my @title_images;
-  my $imagedir = $self->{cfg}->entry('paths', 'images', $Constants::IMAGEDIR);
+  my $imagedir = cfg_image_dir($self->{cfg});
   if (opendir TITLE_IMAGES, "$imagedir/titles") {
     @title_images = sort 
       grep -f "$imagedir/titles/$_" && /\.(gif|jpeg|jpg|png)$/i,
@@ -928,10 +930,78 @@ sub tag_typename {
   return $1;
 }
 
+sub _get_thumbs_class {
+  my ($self) = @_;
+
+  $self->{cfg}->entry('editor', 'allow_thumb', 0)
+    or return;
+
+  my $class = $self->{cfg}->entry('editor', 'thumbs_class')
+    or return;
+  
+  (my $filename = "$class.pm") =~ s!::!/!g;
+  eval { require $filename; };
+  if ($@) {
+    print STDERR "** Error loading thumbs_class $class ($filename): $@\n";
+    return;
+  }
+  my $obj;
+  eval { $obj = $class->new($self->{cfg}) };
+  if ($@) {
+    print STDERR "** Error creating thumbs objects $class: $@\n";
+    return;
+  }
+
+  return $obj;
+}
+
+sub tag_thumbimage {
+  my ($cfg, $thumbs_obj, $current_image, $args) = @_;
+
+  $$current_image or return '** no current image **';
+
+  my $imagedir = cfg_image_dir($cfg);
+
+  my $filename = "$imagedir/$$current_image->{image}";
+  -e $filename or return "** image file missing **";
+
+  my ($max_width, $max_height, $max_pixels) = split ' ', $args;
+  defined $max_width && $max_width eq '-' and undef $max_width;
+  defined $max_height && $max_height eq '-' and undef $max_height;
+  defined $max_pixels && $max_pixels eq '-' and undef $max_pixels;
+
+  my ($use_orig, $width, $height) = $thumbs_obj->thumb_dimensions
+    ($filename, $$current_image, $max_width, $max_height, $max_pixels);
+
+
+  my ($uri, $alt);
+  if ($use_orig) {
+    $alt = $$current_image->{alt};
+    $uri = "/images/$$current_image->{image}";
+  }
+  elsif ($width) {
+    $alt = "thumbnail of ".$$current_image->{alt};
+    $uri = "$ENV{SCRIPT_NAME}?a_thumb=1&id=$$current_image->{articleId}&im=$$current_image->{id}&w=$width&h=$height";
+  }
+  else {
+    # link to the default thumbnail
+    $uri = $cfg->entry('editor', 'default_thumbnail', '/images/admin/nothumb.png');
+    $width = $cfg->entry('editor', 'default_thumbnail_width', 100);
+    $height = $cfg->entry('editor', 'default_thumbnail_height', 100);
+    $alt = $cfg->entry('editor', 'default_thumbnail_alt', 
+		       "no thumbnail available");
+  }
+  
+  $alt = escape_html($alt);
+  $uri = escape_html($uri);
+  return qq!<img src="$uri" width="$width" height="$height" alt="$alt" border="0" />!;
+}
+
 sub low_edit_tags {
   my ($self, $acts, $request, $article, $articles, $msg, $errors) = @_;
 
   my $cgi = $request->cgi;
+  my $show_full = $cgi->param('f_showfull');
   $msg ||= $cgi->param('message');
   $msg ||= '';
   $errors ||= {};
@@ -958,8 +1028,11 @@ sub low_edit_tags {
   my $cfg = $self->{cfg};
   my $mbcs = $cfg->entry('html', 'mbcs', 0);
   my $tag_hash = $mbcs ? \&tag_hash_mbcs : \&tag_hash;
+  my $thumbs_obj_real = $self->_get_thumbs_class();
+  my $thumbs_obj = $show_full ? undef : $thumbs_obj_real;
   my @images;
   my $image_index;
+  my $current_image;
   my @children;
   my $child_index;
   my %stepkids;
@@ -972,6 +1045,7 @@ sub low_edit_tags {
   my @stepparentpossibles;
   my @files;
   my $file_index;
+  my $it = BSE::Util::Iterate->new;
   return
     (
      BSE::Util::Tags->basic($acts, $cgi, $cfg),
@@ -987,9 +1061,12 @@ sub low_edit_tags {
      script => $ENV{SCRIPT_NAME},
      level => $article->{level},
      checked => \&tag_checked,
-     DevHelp::Tags->make_iterator2
+     $it->make_iterator
      ([ \&iter_get_images, $self, $article ], 'image', 'images', \@images, 
-      \$image_index),
+      \$image_index, undef, \$current_image),
+     thumbimage => [ \&tag_thumbimage, $cfg, $thumbs_obj, \$current_image ],
+     ifThumbs => defined($thumbs_obj),
+     ifCanThumbs => defined($thumbs_obj_real),
      imgmove => [ \&tag_imgmove, $request, $article, \$image_index, \@images ],
      message => $msg,
      DevHelp::Tags->make_iterator2
@@ -1523,7 +1600,7 @@ sub save_thumbnail {
   unless ($original) {
     @$newdata{qw/thumbImage thumbWidth thumbHeight/} = ('', 0, 0);
   }
-  my $imagedir = $self->{cfg}->entry('paths', 'images', $Constants::IMAGEDIR);
+  my $imagedir = cfg_image_dir($self->{cfg});
   if ($cgi->param('remove_thumb') && $original && $original->{thumbImage}) {
     unlink("$imagedir/$original->{thumbImage}");
     @$newdata{qw/thumbImage thumbWidth thumbHeight/} = ('', 0, 0);
@@ -1987,7 +2064,7 @@ sub add_image {
   # for the sysopen() constants
   use Fcntl;
 
-  my $imagedir = $req->cfg->entry('paths', 'images', $Constants::IMAGEDIR);
+  my $imagedir = cfg_image_dir($req->cfg);
   # loop until we have a unique filename
   my $counter="";
   $filename = time. '_' . $counter . '_' . $basename 
@@ -2054,7 +2131,7 @@ sub remove_img {
   my @images = $self->get_images($article);
   my ($image) = grep $_->{id} == $imageid, @images
     or return $self->show_images($req, $article, $articles, "No such image");
-  my $imagedir = $req->cfg->entry('paths', 'images', $Constants::IMAGEDIR);
+  my $imagedir = cfg_image_dir($req->cfg);
   unlink "$imagedir$image->{image}";
   $image->remove;
 
@@ -2112,6 +2189,67 @@ sub move_img_down {
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
   return $self->refresh($article, $req->cgi, undef, 'Image moved');
+}
+
+sub req_thumb {
+  my ($self, $req, $article) = @_;
+
+  my $cgi = $req->cgi;
+  my $cfg = $req->cfg;
+  my $im_id = $cgi->param('im');
+  my $image;
+  if (defined $im_id && $im_id =~ /^\d+$/) {
+    ($image) = grep $_->{id} == $im_id, $article->images;
+  }
+  my $thumb_obj = $self->_get_thumbs_class();
+  my ($data, $type);
+  if ($image && $thumb_obj) {
+    my $width = $cgi->param('w');
+    my $height = $cgi->param('h');
+    my $pixels = $cgi->param('p');
+    my $imagedir = $cfg->entry('paths', 'images', $Constants::IMAGEDIR);
+    
+    ($type, $data) = $thumb_obj->
+      thumb_data("$imagedir/$image->{image}", $image, $width, $height, 
+		 $pixels);
+  }
+
+  if ($type && $data) {
+    
+    return
+      {
+       type => $type,
+       content => $data,
+       headers => [ 
+		   "Content-Length: ".length($data),
+		   "Cache-Control: max-age=3600",
+		  ],
+      };
+  }
+  else {
+    # grab the nothumb image
+    my $uri = $cfg->entry('editor', 'default_thumbnail', '/images/admin/nothumb.png');
+    my $filebase = $Constants::CONTENTBASE;
+    if (open IMG, "<$filebase/$uri") {
+      binmode IMG;
+      my $data = do { local $/; <IMG> };
+      close IMG;
+      my $type = $uri =~ /\.(\w+)$/ ? $1 : 'png';
+      return
+	{
+	 type => "image/$type",
+	 content => $data,
+	 headers => [ "Content-Length: ".length($data) ],
+	};
+    }
+    else {
+      return
+	{
+	 type=>"text/html",
+	 content => "<html><body>Cannot make thumb or default image</body></html>",
+	};
+    }
+  }
 }
 
 sub get_article {

@@ -4,7 +4,7 @@ use strict;
 use vars qw(@ISA @EXPORT_OK);
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(custom_class admin_base_url);
+@EXPORT_OK = qw(custom_class admin_base_url cfg_image_dir);
 
 =head1 NAME
 
@@ -61,6 +61,12 @@ sub admin_base_url {
   }
 
   return $base;
+}
+
+sub cfg_image_dir {
+  my ($cfg) = @_;
+
+  $cfg->entry('paths', 'images', $Constants::IMAGEDIR);
 }
 
 1;

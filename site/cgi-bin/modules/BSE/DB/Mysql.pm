@@ -76,6 +76,10 @@ select ar.*, pr.* from article ar, product pr
    where ar.id = pr.articleId
      and (pr.subscription_id = ? or subscription_required = ?)
 SQL
+   'Products.orderProducts' => <<SQL,
+select ar.*, pr.* from article ar, product pr, order_item oi
+  where oi.orderId = ? and oi.productId = ar.id and ar.id = pr.articleId
+SQL
    deleteProduct => 'delete from product where articleId = ?',
    Orders => 'select * from orders',
    getOrderByPkey => 'select * from orders where id = ?',
