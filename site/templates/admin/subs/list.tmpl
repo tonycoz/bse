@@ -14,8 +14,8 @@
 
 <:ifMessage:><p><b><:message:></b></p><:or:><:eif:>
 
-<p>| <a href="/admin/">Admin menu</a> | <a href="<:script:>?add=1">Add New Subscription</a> 
-  |</p>
+<p>| <a href="/admin/">Admin menu</a> | <:ifUserCan subs_add:><a href="<:script:>?add=1">Add New Subscription</a> 
+  |<:or:><:eif:></p>
 
 <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
     <tr>
@@ -37,8 +37,8 @@
       <td><:subscription frequency:></td>
       <td align="center"><:ifSubscription visible:>Yes<:or:>No<:eif:></td>
       <td align="center"><:ifMatch [subscription lastSent] "0000-00-00":>Never<:or:><:date subscription lastSent:><:eif:></td>
-          <td nowrap> <a href="<:script:>?edit=1&id=<:subscription id:>"><b>Edit</b></a> 
-            <a href="<:script:>?start_send=1&id=<:subscription id:>"><b>Send</b></a> 
+          <td nowrap> <:ifUserCan subs_edit:><a href="<:script:>?edit=1&id=<:subscription id:>"><b>Edit</b></a> <:or:><:eif:>
+            <:ifUserCan subs_edit:><a href="<:script:>?start_send=1&id=<:subscription id:>"><b>Send</b></a>  <:or:><:eif:>
           </td>
     </tr>
 <:iterator end subscriptions:>

@@ -76,7 +76,7 @@ function BSE_validateForm {
 <table border="0" cellspacing="0" cellpadding="1" width="100%" bgcolor="#666666">
   <tr valign="middle" align="center"> 
     <td width="100%"> 
-      <table width="100%" border="0" cellspacing="0" cellpadding="2">
+      <table width="100%" border="0" cellspacing="1" cellpadding="2" bgcolor="#EEEEEE">
         <tr valign="middle" align="center" bgcolor="#666666"> 
           <td width="100%" align="left" height="18"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FFFFFF"><b>Item:</b></font>&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FFFFFF">(All 
             prices in AUD &#150; includes GST and shipping costs where applicable)</font></td>
@@ -85,8 +85,8 @@ function BSE_validateForm {
         </tr>
         <:iterator begin items:> 
         <tr valign="middle" align="center" bgcolor="#FFFFFF"> 
-          <td width="100%" align="left"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:item 
-            summary:>  <:options:></font></td>
+          <td width="100%" align="left"> &nbsp;<a href="<:item link:>"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:item 
+            summary:>  <:options:></font></a></td>
           <td nowrap align="center"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:item 
             units:></font></td>
           <td align="right"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>$<: 
@@ -97,7 +97,7 @@ function BSE_validateForm {
     </td>
   </tr>
 </table>
-<table width="100%" border="0" cellspacing="0" cellpadding="0">
+<table width="100%" border="0" cellspacing="0" cellpadding="0">   
   <tr> 
     <td>&nbsp;</td>
     <td height="20">&nbsp;</td>
@@ -107,8 +107,8 @@ function BSE_validateForm {
     <td height="20" bgcolor="#666666">&nbsp;</td>
   </tr>
   <tr> 
-    <td width="100%" valign="MIDDLE"><a href="/shop/index.html"><img src="/images/store/browse_more.gif" width="133" height="21" border="0" alt="Browse More"></a></td>
-    <td NOWRAP> 
+    <td width="50%" valign="MIDDLE"><a href="/shop/index.html"><img src="/images/store/browse_more.gif" width="133" height="21" border="0" alt="Browse More"></a></td>
+    <td NOWRAP width="50%"> 
       <table border="0" cellspacing="0" cellpadding="0">
         <tr></tr>
       </table>
@@ -119,8 +119,8 @@ function BSE_validateForm {
     <td><img src="/images/store/right_bottom_corner_line.gif" width="26" height="31"></td>
   </tr>
   <tr> 
-    <td width="100%"></td>
-    <td></td>
+    <td width="50%"></td>
+    <td width="50%"></td>
     <td></td>
     <td bgcolor="#666666"><img src="/images/trans_pixel.gif" width="1" height="1"></td>
     <td></td>
@@ -269,15 +269,11 @@ function BSE_validateForm {
     <tr> 
       <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2">We will 
         include a tax invoice / receipt with your order, clearly showing the GST 
-        and delivery components of the purchase price. These are included in the 
-        price below and are indicated on the details page for each store item.</font></td>
+        and delivery components of the purchase price.</font></td>
     </tr>
   </table>
-  <p></p>
-  <font size="3" face="Arial, Helvetica, sans-serif" color="#FFFFFF"></font> 
-  <p> 
+  <p>
     <input type="submit" value="Purchase Now" name="purchase">
     <input type="reset" value="Reset Form" name="reset">
   </p>
-  <p></p>
-</form>
+  </form>

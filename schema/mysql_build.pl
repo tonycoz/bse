@@ -7,12 +7,28 @@ my $un = 'bsebuilder';
 my $pw = 'bsebuilder';
 my $dist = "/home/tony/dev/bse/base/bse/schema/bse.sql";
 
-system "/usr/local/mysql/bin/mysql -u$un -p$pw $db <$dist"
-  and die "Error loading database";
 my $dbh = DBI->connect("dbi:mysql:$db", $un, $pw)
   or die "Cannot connect to db: ",DBI->errstr;
 
 my $tl = $dbh->prepare("show tables")
+  or die "prepare show tables ",$dbh->errstr;
+$tl->execute
+  or die "execute show tables ",$tl->errstr;
+# cleanup first
+my @drop_tables;
+while (my $row = $tl->fetchrow_arrayref) {
+  push(@drop_tables, $row->[0]);
+}
+undef $tl;
+for my $drop (@drop_tables) {
+  $dbh->do("drop table $drop")
+    or die "Could not drop old table: ", $dbh->errstr;
+}
+
+system "/usr/local/mysql/bin/mysql -u$un -p$pw $db <$dist"
+  and die "Error loading database";
+
+$tl = $dbh->prepare("show tables")
   or die "prepare show tables ",$dbh->errstr;
 $tl->execute
   or die "execute show tables ",$tl->errstr;

@@ -10,6 +10,71 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.12_12
+
+=over
+
+=item *
+
+mysql_build.pl wasn't cleaning up old tables, and since we use it for
+two different projects, the tables from another project were being
+included.
+
+=item *
+
+annoying and numerous warning from Squirrel::Template eliminated
+
+=item *
+
+change admin.pl to check the admin user is logged on
+
+=item *
+
+change generate.pl to check the admin user is logged on and has the
+access needed to regen
+
+=item *
+
+change move.pl to check the admin user is logged on and has the rights
+to perform the move requested
+
+=item *
+
+change reorder.pl to check the admin user is logged on and has the
+rights to perform the reorder requested
+
+=item *
+
+change shopadmin.pl to check the admin user is logged on and that they
+have the rights needed to perform the requested operation
+
+=item *
+
+change subs.pl to check the admin user is logged on and that they have
+the rights needed to perform the requested operation
+
+=item *
+
+BSE::Permissions::user_has_perms() now accepts an article id,
+simplifying some code
+
+=item *
+
+added orderfiles iterator to the userpage.
+
+=item *
+
+updates to BSE::Edit::Article to only allow movements when the user
+has appropriate rights
+
+=item *
+
+field change permissions
+
+
+
+=back
+
 =head2 0.12_11
 
 =over

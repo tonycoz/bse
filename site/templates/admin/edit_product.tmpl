@@ -6,7 +6,7 @@
 <:ifMessage:>
 <p><b><:message:></b></p>
 <:or:><:eif:> 
-<p>| <a href="/admin/">Admin menu</a> | <a href="<:product admin:>">See product</a> 
+<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | <a href="<:product admin:>">See product</a> 
   | <a href="/cgi-bin/admin/add.pl?id=<:product parentid:>">Edit parent</a> 
   | <a href="/cgi-bin/admin/shopadmin.pl">Manage catalogs</a><:if Product listed:> 
   | <a href="<:script:>?id=<:product id:>&delete_product=1">Hide product</a> <:or 
@@ -14,16 +14,39 @@
   <:eif Product:>| <a href="/cgi-bin/admin/add.pl?id=<:product id:>&_t=steps">Manage 
   step parents</a> | <:ifProduct listed:><:or:>Hidden<:eif:></p>
   <h2>Edit Product</h2>
-<table><tr><td nowrap><form action="/cgi-bin/admin/adminusers.pl"><font size=2>Manage access: <input type=hidden name=id value="<: article id:>">
-<select name=adminid>
+<:if Or [iadminuser_count] [iadmingroup_count]:>
+      <form action="/cgi-bin/admin/adminusers.pl">
+  <input type=hidden name=id value="<: article id:>">
+  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
+  <tr>
+    <td>
+        <table cellpadding="6" cellspacing="1" border="0" width="100%">
+          <tr>
+            <th nowrap>
+
+        <font size=2>Manage access:</font>
+        </th>
+            <td bgcolor="#FFFFFF">
+              <select name=adminid>
 <:iterator begin adminusers:>
 <option value=<:iadminuser id:>>User <:iadminuser logon:>
 <:iterator end adminusers:>
 <:iterator begin admingroups:>
 <option value=<:iadmingroup id:>>Group <:iadmingroup name:>
 <:iterator end admingroups:>
-</select><input type=submit name="a_showobjectart" value="Manage">
-</font></form></td></tr></table>
+              </select>
+              <input type=submit name="a_showobjectart" value="Manage">
+      </td>
+            <td bgcolor="#FFFFFF"><:help access manage:>
+        </td>
+          </tr>
+        </table>
+    </td>
+   </tr>
+  </table>
+      </form>
+<br>
+<:or Or:><:eif Or:>
 <form action="<:script:>" enctype="multipart/form-data" method="POST">
     <input type="hidden" name="id" value="<:product id:>">
   <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
@@ -32,102 +55,102 @@
         <table border=0 cellpadding="6" cellspacing="1" width="100%">
           <tr> 
             <th align="left" bgcolor="#FFFFFF">Title:</th>
-            <td bgcolor="#FFFFFF"><:product title:></td>
+            <td bgcolor="#FFFFFF"><:ifFieldPerm title:><input type="text" name="title" value="<:old title:>" size="60"><:or:><:product title:><:eif:></td>
             <td nowrap bgcolor="#FFFFFF"><:help product title:></td>
           </tr>
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF">Summary:</th>
-            <td nowrap bgcolor="#FFFFFF"><:product summary:></td>
+            <td nowrap bgcolor="#FFFFFF"><:ifFieldPerm summary:><input type="text" name="summary" value="<:old summary:>" size=60><:or:><:product summary:><:eif:></td>
             <td nowrap bgcolor="#FFFFFF"><:help product summary:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF">Catalog:</th>
             <td bgcolor="#FFFFFF">
-<select name="parentid"><:list:></select></td>
+<:ifFieldPerm parentid:><select name="parentid"><:list:></select><:or:><:parent title:> (<:parent id:>)<:eif:></td>
             <td nowrap bgcolor="#FFFFFF"><:help product catalog:></td>
           </tr>
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF">Template:</th>
-            <td nowrap bgcolor="#FFFFFF"><:templates:></td>
+            <td nowrap bgcolor="#FFFFFF"><:ifFieldPerm template:><:templates:><:or:><:product template:><:eif:></td>
             <td nowrap bgcolor="#FFFFFF"><:help product template:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF" valign="top"> Body:</th>
             <td bgcolor="#FFFFFF"> 
-              <textarea name=body rows=15 cols=60 wrap=virtual><:product body:></textarea>
+              <:ifFieldPerm body:><textarea name=body rows=15 cols=60 wrap=virtual><:product body:></textarea><:or:><:bodytext product body:><:eif:>
             </td>
             <td nowrap bgcolor="#FFFFFF" valign="top"><:help body body:></td>
           </tr>
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF">Lead time:</th>
             <td nowrap bgcolor="#FFFFFF"> 
-              <input type="text" name="leadTime" value="<:product leadTime:>" size=5>
+              <:ifFieldPerm leadTime:><input type="text" name="leadTime" value="<:product leadTime:>" size=5><:or:><:product leadTime:><:eif:>
               days</td>
             <td nowrap bgcolor="#FFFFFF"><:help product leadtime:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF">Retail price:</th>
             <td bgcolor="#FFFFFF">$ 
-              <input type="text" name="retailPrice" value="<:money product retailPrice:>" size=7>
-              (0.00)</td>
+              <:ifFieldPerm retailPrice:><input type="text" name="retailPrice" value="<:money product retailPrice:>" size=7>
+              (0.00)<:or:><:money product retailPrice:><:eif:></td>
             <td nowrap bgcolor="#FFFFFF"><:help product retail:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF">Wholesale price:</th>
             <td bgcolor="#FFFFFF">$ 
-              <input type="text" name="wholesalePrice" value="<:money product wholesalePrice:>" size=7>
-              (0.00)</td>
+              <:ifFieldPerm wholesalePrice:><input type="text" name="wholesalePrice" value="<:money product wholesalePrice:>" size=7>
+              (0.00)<:or:><:money product wholesalePrice:><:eif:></td>
             <td nowrap bgcolor="#FFFFFF"><:help product wholesale:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF">GST:</th>
             <td bgcolor="#FFFFFF">$ 
-              <input type="text" name="gst" value="<:money product gst:>" size=7>
-              (0.00)</td>
+              <:ifFieldPerm gst:><input type="text" name="gst" value="<:money product gst:>" size=7>
+              (0.00)<:or:><:money product gst:><:eif:></td>
             <td nowrap bgcolor="#FFFFFF"><:help product gst:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF">Release date:</th>
             <td bgcolor="#FFFFFF"> 
-              <input type="text" name="release" value="<:date "%d/%m/%Y" product release:>" size=11>
-              (dd/mm/yyyy)</td>
+              <:ifFieldPerm release:><input type="text" name="release" value="<:date "%d/%m/%Y" product release:>" size=11>
+              (dd/mm/yyyy)<:or:><:date "%d/%m/%Y" product release:><:eif:></td>
             <td nowrap bgcolor="#FFFFFF"><:help product release:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF">Expiry date:</th>
             <td bgcolor="#FFFFFF"> 
-              <input type="text" name="expire" value="<:date "%d/%m/%Y" product expire:>" size=11>
-              (dd/mm/yyyy)</td>
+              <:ifFieldPerm expire:><input type="text" name="expire" value="<:date "%d/%m/%Y" product expire:>" size=11>
+              (dd/mm/yyyy)<:or:><:date "%d/%m/%Y" product expire:><:eif:></td>
             <td nowrap bgcolor="#FFFFFF"><:help product expire:></td>
           </tr>
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF">Summary length:</th>
             <td nowrap bgcolor="#FFFFFF"> 
-              <input type="text" name="summaryLength" size="10" maxlength="10" value="<:product summaryLength:>">
+              <:ifFieldPerm summaryLength:><input type="text" name="summaryLength" size="10" maxlength="10" value="<:product summaryLength:>"><:or:><:product summaryLength:><:eif:>
             </td>
             <td nowrap bgcolor="#FFFFFF"><:help product summary:></td>
           </tr>
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF">Display threshold:</th>
             <td nowrap bgcolor="#FFFFFF"> 
-              <input type="text" name="threshold" size=10 maxlength=10 value="<:product threshold:>">
+              <:ifFieldPerm threshold:><input type="text" name="threshold" size=10 maxlength=10 value="<:product threshold:>"><:or:><:product threshold:><:eif:>
             </td>
             <td nowrap bgcolor="#FFFFFF"><:help product threshold:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF">Options:</th>
             <td bgcolor="#FFFFFF"> 
-              <input type="text" name="options" value="<:product options:>" size=30>
-              (<:alloptions:>) </td>
+              <:ifFieldPerm options:><input type="text" name="options" value="<:product options:>" size=30>
+              (<:alloptions:>)<:or:><:product options:><:eif:> </td>
             <td bgcolor="#FFFFFF"><:help product options:></td>
           </tr>
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF" valign="top">Thumbnail image:</th>
             <td nowrap bgcolor="#FFFFFF"> 
-              <input type="file" name="thumbnail">
+              <:ifFieldPerm thumbImage:><input type="file" name="thumbnail"><:or:><:eif:>
               <:ifProduct thumbImage:><img src="/images/<:product thumbImage:>"> 
-              <input type=checkbox name="remove_thumb">
-              Remove<:or:><:eif:> </td>
+              <:if FieldPerm thumbImage:><input type=checkbox name="remove_thumb">
+              Remove<:or FieldPerm:><:eif FieldPerm:><:or:><:eif:> </td>
             <td nowrap bgcolor="#FFFFFF" valign="top"><:help product thumb:></td>
           </tr>
           <tr> 
@@ -185,9 +208,9 @@
       </td>
     </tr>
   </table>
-  <p>
+  <:if UserCan edit_save article:><p>
     <input type=submit name="save" value="Save changes">
-  </p>
+  </p><:or UserCan:><:eif UserCan:>
 </form>
 
 <p><font size="-1">BSE Release <:release:></font></p>

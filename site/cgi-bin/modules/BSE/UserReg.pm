@@ -474,6 +474,13 @@ sub userpage {
 				 getBy(orderId=>$orders[$_[0]]{id});
 			     },
 			     'item', 'items', \$item_index),
+     BSE::Util::Tags->
+     make_dependent_iterator(\$order_index,
+			     sub {
+			       @files = BSE::DB->query
+				 (orderFiles=>$orders[$_[0]]{id});
+			     },
+			     'orderfile', 'orderfiles', \$file_index),
      product =>
      sub {
        require 'Products.pm';

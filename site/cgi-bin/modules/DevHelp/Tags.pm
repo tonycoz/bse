@@ -317,30 +317,52 @@ sub static {
     );  
 }
 
+# this has been an annoying piece of code
+use constant DEBUG_GET_PARMS => 0;
+
 sub get_parms {
   my ($class, $args, $acts, $templater) = @_;
 
+  my $orig = $args;
+
+  print STDERR "** Entered get_parms -$args-\n" if DEBUG_GET_PARMS;
   my @out;
   while ($args) {
     if ($args =~ s/^\s*\[\s*(\w+)(?:\s+(\S[^\]]*))?\]\s*//) {
       my ($func, $subargs) = ($1, $2);
+      $subargs = '' unless defined $subargs;
       if ($acts->{$func}) {
-	$subargs = '' unless defined $subargs;
-	push(@out, $templater->perform($acts, $func, $subargs));
+	print STDERR "  Evaluating [$func $subargs]\n" if DEBUG_GET_PARMS;
+	my $value = $templater->perform($acts, $func, $subargs);
+	print STDERR "    Result '$value'\n" if DEBUG_GET_PARMS;
+	push(@out, $value);
+      }
+      else {
+	print STDERR "  Unknown function '$func' for '$orig'\n" 
+	  if DEBUG_GET_PARMS;
+	if (DEBUG_GET_PARMS) {
+	  print STDERR "  Available functions: ", join(",", sort keys %$acts),"\n";
+	  
+	}
+	die "ENOIMPL '$func $subargs' in '$orig'\n";
       }
     }
     elsif ($args =~ s/^\s*\"((?:[^\"\\]|\\[\\\"])*)\"\s*//) {
       my $out = $1;
       $out =~ s/\\([\\\"])/$1/g;
+      print STDERR "  Adding quoted string '$out'\n" if DEBUG_GET_PARMS;
       push(@out, $out);
     }
     elsif ($args =~ s/^\s*(\S+)\s*//) {
+      print STDERR "  Adding unquoted string '$1'\n" if DEBUG_GET_PARMS;
       push(@out, $1);
     }
     else {
+      print STDERR "  Left over text '$args'\n" if DEBUG_GET_PARMS;
       last;
     }
   }
+  print STDERR "  Result (",join("|", @out),")\n" if DEBUG_GET_PARMS;
 
   @out;
 }

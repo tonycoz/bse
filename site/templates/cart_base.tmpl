@@ -23,7 +23,7 @@
 </table>
 <:ifMsg:><p><font face="Verdana, Arial, Helvetica, sans-serif"><b><:msg:></b> </font></p><:or:><:eif:>
 <p><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>Contains</b> 
-  - <:count:> items</font></p>
+  - <:count:> item<:if Eq [count] "1":><:or Eq:>s<:eif Eq:></font></p>
 <form name="form1" method="POST" action="/cgi-bin/shop.pl">
   <table width="100%" border="0" cellspacing="0" cellpadding="0">
     <tr> 
@@ -34,7 +34,7 @@
   <table border="0" cellspacing="0" cellpadding="1" width="100%" bgcolor="#666666">
     <tr valign="middle" align="center"> 
       <td width="100%"> 
-        <table width="100%" border="0" cellspacing="0" cellpadding="2">
+        <table width="100%" border="0" cellspacing="1" cellpadding="1" bgcolor="#EEEEEE">
           <tr valign="middle" align="center" bgcolor="#666666"> 
             <td width="100%" align="left" height="18"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FFFFFF"><b>Item:</b></font>&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FFFFFF">(All 
               prices in AUD &#150; includes GST and shipping costs where applicable)</font></td>

@@ -646,7 +646,10 @@ sub tag_if_children {
 }
 
 sub tag_movechild {
-  my ($self, $kids, $rindex) = @_;
+  my ($self, $req, $article, $kids, $rindex) = @_;
+
+  $req->user_can('edit_reorder_children', $article)
+    or return '';
 
   $$rindex >=0 && $$rindex < @$kids
     or return '** movechild can only be used in the children iterator **';
@@ -695,7 +698,10 @@ sub tag_edit_link {
 }
 
 sub tag_imgmove {
-  my ($article, $rindex, $images) = @_;
+  my ($req, $article, $rindex, $images) = @_;
+
+  $req->user_can(edit_images_reorder => $article)
+    or return '';
 
   $$rindex >= 0 && $$rindex < @$images 
     or return '** imgmove can only be used in image iterator **';
@@ -723,7 +729,10 @@ HTML
 }
 
 sub tag_movefiles {
-  my ($self, $article, $files, $rindex) = @_;
+  my ($self, $req, $article, $files, $rindex) = @_;
+
+  $req->user_can('edit_files_reorder', $article)
+    or return '';
 
   my $html = '';
 
@@ -797,12 +806,16 @@ sub iter_admin_groups {
 sub tag_if_field_perm {
   my ($req, $article, $field) = @_;
 
-  $field =~ /^\w+$/ or return;
+  unless ($field =~ /^\w+$/) {
+    print STDERR "Bad fieldname '$field'\n";
+    return;
+  }
   if ($article->{id}) {
-    return 1;
+    return $req->user_can("edit_field_edit_$field", $article);
   }
   else {
-    return $req->user_can("edit_field_edit_$field", $article);
+    print STDERR "adding, always successful\n";
+    return 1;
   }
 }
 
@@ -841,6 +854,18 @@ sub low_edit_tags {
 
     $msg = join "<br>", @out, values %work;
   }
+  my $parent;
+  if ($article->{id}) {
+    if ($article->{parentid} > 0) {
+      $parent = $article->parent;
+    }
+    else {
+      $parent = { title=>"No parent - this is a section", id=>-1 };
+    }
+  }
+  else {
+    $parent = { title=>"How did we get here?", id=>0 };
+  }
   my @images;
   my $image_index;
   my @children;
@@ -874,7 +899,7 @@ sub low_edit_tags {
      DevHelp::Tags->make_iterator2
      ([ \&iter_get_images, $article ], 'image', 'images', \@images, 
       \$image_index),
-     imgmove => [ \&tag_imgmove, $article, \$image_index, \@images ],
+     imgmove => [ \&tag_imgmove, $request, $article, \$image_index, \@images ],
      message => $msg,
      DevHelp::Tags->make_iterator2
      ([ \&iter_get_kids, $article, $articles ], 
@@ -882,7 +907,8 @@ sub low_edit_tags {
      ifchildren => \&tag_if_children,
      childtype => [ \&tag_art_type, $article->{level}+1, $cfg ],
      ifHaveChildType => [ \&tag_if_have_child_type, $article->{level}, $cfg ],
-     movechild => [ \&tag_movechild, $self, \@children, \$child_index],
+     movechild => [ \&tag_movechild, $self, $request, $article, \@children, 
+		    \$child_index],
      is => \&tag_is,
      templates => [ \&tag_templates, $self, $article, $cfg, $cgi ],
      titleImages => [ \&tag_title_images, $self, $article, $cfg, $cgi ],
@@ -919,7 +945,8 @@ sub low_edit_tags {
        \@stepparent_targs, \@stepparentpossibles, ],
      DevHelp::Tags->make_iterator2
      ([ \&iter_files, $article ], 'file', 'files', \@files, \$file_index ),
-     movefiles => [ \&tag_movefiles, $self, $article, \@files, \$file_index ],
+     movefiles => 
+     [ \&tag_movefiles, $self, $request, $article, \@files, \$file_index ],
      DevHelp::Tags->make_iterator2
      (\&iter_admin_users, 'iadminuser', 'adminusers'),
      DevHelp::Tags->make_iterator2
@@ -928,6 +955,7 @@ sub low_edit_tags {
      error => [ \&tag_hash, $errors ],
      error_img => [ \&tag_error_img, $self, $errors ],
      ifFieldPerm => [ \&tag_if_field_perm, $request, $article ],
+     parent => [ \&tag_hash, $parent ],
     );
 }
 
@@ -1186,12 +1214,14 @@ sub save {
   my %data;
   for my $name ($article->columns) {
     $data{$name} = $cgi->param($name) 
-      if defined($cgi->param($name)) and $name ne 'id' && $name ne 'parentid';
+      if defined($cgi->param($name)) and $name ne 'id' && $name ne 'parentid'
+	&& $req->user_can("edit_field_edit_$name", $article);
   }
   my %errors;
   $self->validate_old($article, \%data, $articles, \%errors)
     or return $self->edit_form($req, $article, $articles, undef, \%errors);
-  $self->save_thumbnail($cgi, $article, \%data);
+  $self->save_thumbnail($cgi, $article, \%data)
+    if $req->user_can('edit_field_edit_thumbImage', $article);
   $self->fill_old_data($req, $article, \%data);
   if (exists $article->{template} &&
       $article->{template} =~ m|\.\.|) {
@@ -1201,47 +1231,56 @@ sub save {
 
   # reparenting
   my $newparentid = $cgi->param('parentid');
-  if ($newparentid == $article->{parentid}) {
-    # nothing to do
-  }
-  elsif ($newparentid != -1) {
-    print STDERR "Reparenting...\n";
-    my $newparent = $articles->getByPkey($newparentid);
-    if ($newparent) {
-      if ($newparent->{level} != $article->{level}-1) {
-	# the article cannot become a child of itself or one of it's 
-	# children
-	if ($article->{id} == $newparentid 
-	    || $self->is_descendant($article->{id}, $newparentid, $articles)) {
-	  my $msg = "Cannot become a child of itself or of a descendant";
-	  return $self->edit_form($req, $article, $articles, $msg);
-	}
-	my $shopid = $self->{cfg}->entryErr('articles', 'shop');
-	if ($self->is_descendant($article->{id}, $shopid, $articles)) {
-	  my $msg = "Cannot become a descendant of the shop";
-	  return $self->edit_form($req, $article, $articles, $msg);
-	}
-	my $msg;
-	$self->reparent($article, $newparentid, $articles, \$msg)
-	  or return $self->edit_form($req, $article, $articles, $msg);
-      }
-      else {
-	# stays at the same level, nothing special
-	$article->{parentid} = $newparentid;
-      }
+  if ($newparentid && $req->user_can('edit_field_edit_parentid', $article)) {
+    if ($newparentid == $article->{parentid}) {
+      # nothing to do
     }
-    # else ignore it
-  }
-  else {
-    # becoming a section
-    my $msg;
-    $self->reparent($article, -1, $articles, \$msg)
-      or return $self->edit_form($req, $article, $articles, $msg);
+    elsif ($newparentid != -1) {
+      print STDERR "Reparenting...\n";
+      my $newparent = $articles->getByPkey($newparentid);
+      if ($newparent) {
+	if ($newparent->{level} != $article->{level}-1) {
+	  # the article cannot become a child of itself or one of it's 
+	  # children
+	  if ($article->{id} == $newparentid 
+	      || $self->is_descendant($article->{id}, $newparentid, $articles)) {
+	    my $msg = "Cannot become a child of itself or of a descendant";
+	    return $self->edit_form($req, $article, $articles, $msg);
+	  }
+	  my $shopid = $self->{cfg}->entryErr('articles', 'shop');
+	  if ($self->is_descendant($article->{id}, $shopid, $articles)) {
+	    my $msg = "Cannot become a descendant of the shop";
+	    return $self->edit_form($req, $article, $articles, $msg);
+	  }
+	  my $msg;
+	  $self->reparent($article, $newparentid, $articles, \$msg)
+	    or return $self->edit_form($req, $article, $articles, $msg);
+	}
+	else {
+	  # stays at the same level, nothing special
+	  $article->{parentid} = $newparentid;
+	}
+      }
+      # else ignore it
+    }
+    else {
+      # becoming a section
+      my $msg;
+      $self->reparent($article, -1, $articles, \$msg)
+	or return $self->edit_form($req, $article, $articles, $msg);
+    }
   }
 
-  $article->{listed} = $cgi->param('listed') if defined $cgi->param('listed');
-  $article->{release} = sql_date($cgi->param('release'));
-  $article->{expire} = sql_date($cgi->param('expire')) || $Constants::D_99;
+  $article->{listed} = $cgi->param('listed')
+    if defined $cgi->param('listed') && 
+      $req->user_can('edit_field_edit_listed', $article);
+  $article->{release} = sql_date($cgi->param('release'))
+    if defined $cgi->param('release') && 
+      $req->user_can('edit_field_edit_release', $article);
+  
+  $article->{expire} = sql_date($cgi->param('expire')) || $Constants::D_99
+    if defined $cgi->param('expire') && 
+      $req->user_can('edit_field_edit_expire', $article);
   $article->{lastModified} =  now_sqldate();
   my $link_titles = $self->{cfg}->entryBool('basic', 'link_titles', 0);
   if ($article->{id} != 1 && $article->{link} && $link_titles) {
@@ -1592,6 +1631,10 @@ sub show_images {
 sub save_image_changes {
   my ($self, $req, $article, $articles) = @_;
 
+  $req->user_can(edit_images_save => $article)
+    or return $self->show_images($req, $article, $articles,
+				 "You don't have access to save image information for this article");
+
   my $cgi = $req->cgi;
   my $image_pos = $cgi->param('imagePos');
   if ($image_pos 
@@ -1629,6 +1672,10 @@ sub save_image_changes {
 
 sub add_image {
   my ($self, $req, $article, $articles) = @_;
+
+  $req->user_can(edit_images_add => $article)
+    or return $self->show_images($req, $article, $articles,
+				 "You don't have access to add new images to this article");
 
   my $cgi = $req->cgi;
 
@@ -1706,6 +1753,10 @@ sub add_image {
 sub remove_img {
   my ($self, $req, $article, $articles, $imageid) = @_;
 
+  $req->user_can(edit_images_delete => $article)
+    or return $self->show_images($req, $article, $articles,
+				 "You don't have access to delete images from this article");
+
   $imageid or die;
 
   my @images = $article->images();
@@ -1720,6 +1771,10 @@ sub remove_img {
 
 sub move_img_up {
   my ($self, $req, $article, $articles) = @_;
+
+  $req->user_can(edit_images_reorder => $article)
+    or return $self->show_images($req, $article, $articles,
+				 "You don't have access to reorder images in this article");
 
   my $imageid = $req->cgi->param('imageid');
   my @images = $article->images;
@@ -1738,6 +1793,10 @@ sub move_img_up {
 
 sub move_img_down {
   my ($self, $req, $article, $articles) = @_;
+
+  $req->user_can(edit_images_reorder => $article)
+    or return $self->show_images($req, $article, $articles,
+				 "You don't have access to reorder images in this article");
 
   my $imageid = $req->cgi->param('imageid');
   my @images = $article->images;
@@ -1808,6 +1867,10 @@ sub filelist {
 
 sub fileadd {
   my ($self, $req, $article, $articles) = @_;
+
+  $req->user_can(edit_files_add => $article)
+    or return $self->filelist($req, $article, $articles,
+			      "You don't have access to add files to this article");
 
   my %file;
   my $cgi = $req->cgi;
@@ -1901,6 +1964,10 @@ sub fileadd {
 sub fileswap {
   my ($self, $req, $article, $articles) = @_;
 
+  $req->user_can('edit_files_reorder', $article)
+    or return $self->filelist($req, $article, $articles,
+			   "You don't have access to reorder files in this article");
+
   my $cgi = $req->cgi;
   my $id1 = $cgi->param('file1');
   my $id2 = $cgi->param('file2');
@@ -1924,6 +1991,10 @@ sub fileswap {
 
 sub filedel {
   my ($self, $req, $article, $articles) = @_;
+
+  $req->user_can('edit_files_delete', $article)
+    or return $self->filelist($req, $article, $articles,
+			   "You don't have access to delete files from this article");
 
   my $cgi = $req->cgi;
   my $fileid = $cgi->param('file');
@@ -1951,8 +2022,11 @@ sub filedel {
 }
 
 sub filesave {
-  my ($self, $req, $article) = @_;
+  my ($self, $req, $article, $articles) = @_;
 
+  $req->user_can('edit_files_save', $article)
+    or return $self->filelist($req, $article, $articles,
+			   "You don't have access to save file information for this article");
   my @files = $article->files;
 
   my $cgi = $req->cgi;
@@ -1974,6 +2048,11 @@ sub filesave {
 
 sub can_remove {
   my ($self, $req, $article, $articles, $rmsg) = @_;
+
+  unless ($req->user_can('edit_delete_article', $article, $rmsg)) {
+    $$rmsg ||= "Access denied";
+    return;
+  }
 
   if ($articles->children($article->{id})) {
     $$rmsg = "This article has children.  You must delete the children first (or change their parents)";

@@ -1,7 +1,7 @@
 package BSE::Request;
 use strict;
 use BSE::Session;
-use CGI;
+use CGI ();
 use BSE::Cfg;
 
 sub new {
@@ -54,12 +54,36 @@ sub url {
   $url;
 }
 
+sub check_admin_logon {
+  my ($self) = @_;
+
+  require BSE::Permissions;
+  return BSE::Permissions->check_logon($self);
+}
+
+
+my $site_article = { id=>-1, title=>"unknown", parentid=>0 };
+
 sub user_can {
   my ($self, $perm, $object, $rmsg) = @_;
 
-  return 1 unless $self->{user};
+  return 1 unless $self->{adminuser};
   require BSE::Permissions;
   $self->{perms} ||= BSE::Permissions->new($self->cfg);
+  $object ||= $site_article;
+  unless (ref $object) {
+    require Articles;
+    my $art = $object == -1 ? $site_article : Articles->getByPkey($object);
+    if ($art) {
+      $object = $art;
+    }
+    else {
+      print STDERR "** Cannot find article id $object\n";
+      require Carp;
+      Carp::cluck "Cannot find article id $object";
+      return 0;
+    }
+  }
   return $self->{perms}->user_has_perm($self->user, $object, $perm, $rmsg);
 }
 

@@ -24,11 +24,14 @@
       </th>
     </tr>
     <tr> 
-      <td colspan="2" align="center"> <font face="Verdana, Arial, Helvetica, sans-serif" size="2">Hello 
-        <:user userId:><br>
-        Last logged in: <:date user lastLogon:><br>
-        <br>
-        </font></td>
+      <td colspan="2" align="center"> 
+        <p><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Hello <:ifUser name1:><:user name1:> <:user name2:><:or:><:user 
+          userId:><:eif:></font></b></p>
+        <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#999999">Last logged in: <:date user previousLogon:><br>
+          Registered since: <:date user whenRegistered:></font><br>
+          <br>
+        </p>
+        </td>
     </tr>
     <:if Message:> 
     <tr> 

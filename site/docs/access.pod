@@ -168,6 +168,54 @@ For fields that the user doesn't have permission for, either the value
 from the [children of I<parentid>] section, the [level I<level>]
 section, or some default value will be used.
 
+=item *
+
+edit_images_add
+
+edit_images_reorder
+
+edit_images_save
+
+edit_images_delete
+
+=item *
+
+edit_files_reorder
+
+edit_files_add
+
+edit_files_delete
+
+edit_files_save
+
+=item *
+
+edit_reorder_children
+
+edit_reorder_stepparents
+
+=item *
+
+subs_add
+
+subs_edit
+
+=item *
+
+regen_extras
+
+regen_article
+
+regen_all
+
+=item *
+
+shop_order_list
+
+shop_order_detail
+
+shop_order_filled
+
 =back
 
 =head2 User/Group Administration

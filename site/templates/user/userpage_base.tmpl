@@ -38,9 +38,10 @@
     </tr>
     <tr>
       <td align="center"> 
-        <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Hello <:user 
-          userId:><br>
-          Last logged in: <:date user previousLogon:></font><br>
+        <p><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Hello <:ifUser name1:><:user name1:> <:user name2:><:or:><:user 
+          userId:><:eif:></font></b></p>
+        <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#999999">Last logged in: <:date user previousLogon:><br>
+          Registered since: <:date user whenRegistered:></font><br>
           <br>
         </p>
         </td>
@@ -80,7 +81,7 @@
 <:iterator end items:>
         </table>
 
-          <:if Prodfiles:> 
+          <:if Orderfiles:> 
         <table width="100%" cellpadding="3" cellspacing="1">
           <tr bgcolor="#CCCCCC"> 
             <th colspan="4"><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#666666"><:if 
@@ -94,21 +95,20 @@
             <th nowrap width="50%" align="left" colspan="2"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">File</font></th>
             <th><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Size</font></th>
           </tr>
-<:iterator begin items:>
-          <:iterator begin prodfiles:> 
+          <:iterator begin orderfiles:> 
           <tr bgcolor="#FFFFFF"> 
-            <td width="50%"><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:prodfile 
+            <td width="50%"><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:orderfile 
               description:></font></td>
             <td nowrap width="50%"><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:if 
-              FileAvail:><a href="/cgi-bin/user.pl?download=1&file=<:prodfile id:>&order=<:order id:>&item=<:item id:>"><:prodfile 
-              displayName:></a><:or FileAvail:><:prodfile displayName:><:eif FileAvail:></font></td>
-            <td><:if FileAvail:><a href="/cgi-bin/user.pl?download=1&file=<:prodfile id:>&order=<:order id:>&item=<:item id:>"><img src="/images/filestatus/download.gif" width="15" height="15" alt="Download now" title="Download now" border="0"></a><:or FileAvail:><img src="/images/filestatus/locked.gif" width="15" height="15" alt="Locked" title="Locked"><:eif FileAvail:></td>
+              FileAvail:><a href="/cgi-bin/user.pl?download=1&file=<:orderfile id:>&order=<:order id:>&item=<:orderfile item_id:>"><:orderfile 
+              displayName:></a><:or FileAvail:><:orderfile displayName:><:eif FileAvail:></font></td>
+            <td><:if FileAvail:><a href="/cgi-bin/user.pl?download=1&file=<:orderfile id:>&order=<:order id:>&item=<:orderfile item_id:>"><img src="/images/filestatus/download.gif" width="15" height="15" alt="Download now" title="Download now" border="0"></a><:or FileAvail:><img src="/images/filestatus/locked.gif" width="15" height="15" alt="Locked" title="Locked"><:eif FileAvail:></td>
             <td align="right"><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:kb 
-              prodfile sizeInBytes:></font></td>
+              orderfile sizeInBytes:></font></td>
           </tr>
-          <:iterator end prodfiles:><:iterator end items:> 
+          <:iterator end orderfiles:>
         </table>
-<:or Prodfiles:><:eif Prodfiles:>  
+        <:or Orderfiles:><:eif Orderfiles:>  
 <:or Items:><:eif Items:>
         </td>
     </tr>

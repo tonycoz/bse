@@ -13,8 +13,9 @@ BSE</title>
 <h2><a 
 name="section">Section</h2>
 
-<p>The section this article will be 
-placed under..</p>
+  <p>The section this article will be 
+placed under.</p>
+  <p>Articles can be moved to other sections by selecting a different parent section from this menu.</p>
 
 </div>
 
@@ -22,27 +23,32 @@ placed under..</p>
 <h2><a 
 name="title">Title</h2>
 
-<p>The title of the 
-article.</p>
-
+  <p>The title of the 
+article.  (The &#145;title&#146; is indexed by the built-in search engine).</p>
+  <div>
+    <h2><a 
+name="titleImage">Title image</h2>
+    <p>The title image will replace the text title &lt;:title:&gt; with an image file.</p>
+    <p>Title images need to be uploaded into the &#145;/images/titles&#146; directory, as yet there is no admin interface to do this (this feature is rarely used).</p>
+  </div>
 </div>
 
 <div>
 <h2><a 
 name="template">Template</h2>
 
-<p>The template used to present this 
+  <p>The HTML template used to layout the display of this 
 article.</p>
 
 </div>
 <div>
 <h2><a name="body">Body</h2>
 
-<p>The 
+  <p>The 
 content of your article.  There are a number of 
 <a
 href="body.html">tags</a> you can use to markup your article 
-text.</p>
+text. (The &#145;body&#146; is indexed by the built-in search engine).</p>
 
 </div>
 
@@ -65,13 +71,13 @@ the article.</p>
 
 <div>
   <h2><a 
-name="expire">Expire date</h2>
+name="expire">Expiry date</h2>
 
 <p>The date from which you don't want 
 the article to appear on your site.</p>
 
-<p><b>Note:</b> Expired 
-articles can be found through the search 
+  <p><b>Note:</b> Expired 
+articles can be found through the built-in search 
 engine.</p>
 
 </div>
@@ -109,9 +115,10 @@ articles will be displayed.</p>
 <h2><a 
 name="keywords">Keywords</h2>
 
-<p>This is a comma-separated list of 
-extra keywords used by the search
+  <p>This is a comma-separated list of 
+extra keywords used by the built-in search
 engine.</p>
+  <p>Keywords only need be explicitly indicated here if this article should be indexed under words not already used in the &#145;title&#146; or &#145;body&#146; of this article.</p>
 
 </div>
 
@@ -134,6 +141,10 @@ image</h2>
 &lt;:thumbnail:&gt; tag to display a small 
     image for the article 
 in menus.</p>
+  <p>To upload a &#145;thumbnail&#146; image, either enter the name of an image on your 
+computer, or use the Browse
+button to select an image  file (Usually 
+with a .GIF, .JPG, .PNG file extension) then remember to update the article or it wont be uploaded and saved.</p>
 
 </div>
 
@@ -145,7 +156,7 @@ name="files">Files</h2>
 isn't available until the product has 
     been created.</p>
  
-<p>You can modify the files by clicking the &quot;Manage Files&quot; 
+    <p>You can upload and modify the files by clicking the &quot;Manage Files&quot; 
 link.</p>
   </div>
   <div>
@@ -154,7 +165,7 @@ link.</p>
 <p>Images attached to the product. This isn't available until the 
 product has 
     been created.</p>
-    <p>You can modify the images 
+    <p>You can upload and modify the images 
 by clicking the &quot;Manage Images&quot; link.</p>
   </div>
  

@@ -101,6 +101,13 @@ EOS
    getArticleFileByArticleId =>
    'select * from article_files where articleId = ? order by displayOrder desc',
    getArticleFileByPkey => 'select * from article_files where id = ?',
+
+   orderFiles =><<SQL,
+select distinct af.*, oi.id as item_id
+from article_files af, order_item oi
+where af.articleId = oi.productId and oi.orderId = ?
+order by af.description
+SQL
    
    getSiteUserByUserId =>
    'select * from site_users where userId = ?',

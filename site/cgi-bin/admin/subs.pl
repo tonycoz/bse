@@ -1,54 +1,58 @@
 #!/usr/bin/perl -w
+# -d:ptkdb
+BEGIN { $ENV{DISPLAY} = '192.168.32.15:0.0' }
+
 use strict;
 use FindBin;
 use lib "$FindBin::Bin/../modules";
 use BSE::SubscriptionTypes;
-use CGI;
 use BSE::DB;
-use BSE::Cfg;
-use BSE::Session;
 use BSE::Util::Tags;
 use BSE::Template;
 use Constants qw($TMPLDIR);
 use Articles;
 use Util qw/refresh_to/;
 use BSE::Message;
+use BSE::Permissions;
+use BSE::Request;
 
-my $cfg = BSE::Cfg->new;
-my %session;
-BSE::Session->tie_it(\%session, $cfg);
-
-my %steps =
-  (
-   list => \&list,
-   add => \&add,
-   addsave => \&addsave,
-   edit => \&edit,
-   editsave => \&editsave,
-   start_send => \&start_send,
-   send_form => \&send_form,
-   html_preview => \&html_preview,
-   text_preview => \&text_preview,
-   send => \&send_message,
-  );
-
-my $q = CGI->new;
-my $action = 'list';
-for my $name (keys %steps) {
-  if ($q->param($name)) {
-    $action = $name;
-    last;
+my $req = BSE::Request->new;
+if (BSE::Permissions->check_logon($req)) {
+  my $cfg = $req->cfg;
+  
+  my %steps =
+    (
+     list => \&list,
+     add => \&add,
+     addsave => \&addsave,
+     edit => \&edit,
+     editsave => \&editsave,
+     start_send => \&start_send,
+     send_form => \&send_form,
+     html_preview => \&html_preview,
+     text_preview => \&text_preview,
+     send => \&send_message,
+    );
+  
+  my $q = $req->cgi;
+  my $action = 'list';
+  for my $name (keys %steps) {
+    if ($q->param($name)) {
+      $action = $name;
+      last;
+    }
   }
+  
+  $steps{$action}->($q, $req, $cfg);
+}
+else {
+  refresh_to($req->url('logon'));
 }
 
-$steps{$action}->($q, \%session, $cfg);
-
-untie %session;
-
 sub list {
-  my ($q, $session, $cfg) = @_;
+  my ($q, $req, $cfg, $message) = @_;
 
-  my $message = $q->param('m') || '';
+  $message ||= $q->param('m') || '';
   my @subs = sort { lc $a->{name} cmp $b->{name} } BSE::SubscriptionTypes->all;
   my $subindex;
   my %acts;
@@ -57,6 +61,7 @@ sub list {
      BSE::Util::Tags->basic(\%acts, $q, $cfg),
      BSE::Util::Tags->make_iterator(\@subs, 'subscription', 'subscriptions',
 				    \$subindex),
+     BSE::Util::Tags->secure($req),
      message => sub { CGI::escapeHTML($message) },
     );
   BSE::Template->show_page('admin/subs/list', $cfg, \%acts);
@@ -111,7 +116,7 @@ sub _parent_popup {
 }
 
 sub sub_form {
-  my ($q, $session, $cfg, $template, $sub, $old, $errors) = @_;
+  my ($q, $req, $cfg, $template, $sub, $old, $errors) = @_;
 
   my %defs = ( archive => 1, visible => 1 );
 
@@ -160,9 +165,12 @@ sub sub_form {
 }
 
 sub add {
-  my ($q, $session, $cfg) = @_;
+  my ($q, $req, $cfg) = @_;
 
-  sub_form($q, $session, $cfg, 'admin/subs/add', undef, 0);
+  $req->user_can('subs_add')
+    or return list($q, $req, $cfg, "You dont have access to add subscriptions");
+
+  sub_form($q, $req, $cfg, 'admin/subs/add', undef, 0);
 }
 
 sub validate {
@@ -208,7 +216,10 @@ sub _refresh_list {
 }
 
 sub addsave {
-  my ($q, $session, $cfg) = @_;
+  my ($q, $req, $cfg) = @_;
+
+  $req->user_can('subs_add')
+    or return list($q, $req, $cfg, "You dont have access to add subscriptions");
 
   my @errors;
   if (validate($q, $cfg, \@errors)) {
@@ -225,22 +236,31 @@ sub addsave {
     _refresh_list($cfg);  
   }
   else {
-    sub_form($q, $session, $cfg, 'admin/subs/add', undef, 1, \@errors);
+    sub_form($q, $req, $cfg, 'admin/subs/add', undef, 1, \@errors);
   }
 }
 
 sub edit {
-  my ($q, $session, $cfg) = @_;
+  my ($q, $req, $cfg) = @_;
+
+  $req->user_can('subs_edit')
+    or return list($q, $req, $cfg, "You dont have access to edit subscriptions");
 
   my $id = $q->param('id')
     or return _refresh_list($cfg, "No id supplied to be edited");
+
+
   my $sub = BSE::SubscriptionTypes->getByPkey($id)
     or return _refresh_list($cfg, "Cannot find record $id");
-  sub_form($q, $session, $cfg, 'admin/subs/edit', $sub, 0);
+
+  sub_form($q, $req, $cfg, 'admin/subs/edit', $sub, 0);
 }
 
 sub editsave {
-  my ($q, $session, $cfg) = @_;
+  my ($q, $req, $cfg) = @_;
+
+  $req->user_can('subs_edit')
+    or return list($q, $req, $cfg, "You dont have access to edit subscriptions");
 
   my $id = $q->param('id')
     or return _refresh_list($cfg, "No id supplied to be edited");
@@ -259,12 +279,15 @@ sub editsave {
     _refresh_list($cfg);
   }
   else {
-    sub_form($q, $session, $cfg, 'admin/subs/edit', $sub, 1, \@errors);
+    sub_form($q, $req, $cfg, 'admin/subs/edit', $sub, 1, \@errors);
   }
 }
 
 sub start_send {
-  my ($q, $session, $cfg) = @_;
+  my ($q, $req, $cfg) = @_;
+
+  $req->user_can('subs_send')
+    or return list($q, $req, $cfg, "You dont have access to send subscriptions");
 
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'subs');
   my $id = $q->param('id')
@@ -281,7 +304,10 @@ sub start_send {
 }
 
 sub send_form {
-  my ($q, $session, $cfg) = @_;
+  my ($q, $req, $cfg) = @_;
+
+  $req->user_can('subs_send')
+    or return list($q, $req, $cfg, "You dont have access to send subscriptions");
 
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'subs');
   my $id = $q->param('id')
@@ -304,7 +330,10 @@ sub send_form {
 }
 
 sub html_preview {
-  my ($q, $session, $cfg) = @_;
+  my ($q, $req, $cfg) = @_;
+
+  $req->user_can('subs_send')
+    or return list($q, $req, $cfg, "You dont have access to send subscriptions");
 
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'subs');
   my $id = $q->param('id')
@@ -371,7 +400,10 @@ sub _dummy_user {
 }
 
 sub text_preview {
-  my ($q, $session, $cfg) = @_;
+  my ($q, $req, $cfg) = @_;
+
+  $req->user_can('subs_send')
+    or return list($q, $req, $cfg, "You dont have access to send subscriptions");
 
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'subs');
   my $id = $q->param('id')
@@ -404,7 +436,10 @@ sub _first {
 }
 
 sub send_message {
-  my ($q, $session, $cfg) = @_;
+  my ($q, $req, $cfg) = @_;
+
+  $req->user_can('subs_send')
+    or return list($q, $req, $cfg, "You dont have access to send subscriptions");
 
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'subs');
   my $id = $q->param('id')

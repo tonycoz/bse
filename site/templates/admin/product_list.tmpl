@@ -6,9 +6,9 @@
 <h1>Shop Administration</h1>
 <:ifMessage:><p><b><:message:></b></p>
 <:or:><:eif:> 
-<p>| <a href="/admin/">Admin menu</a> | <a href="/cgi-bin/admin/admin.pl?id=<:shopid:>">See 
+<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | <a href="/cgi-bin/admin/admin.pl?id=<:shopid:>">See 
   shop</a> | <a href="/cgi-bin/admin/add.pl?id=<:shopid:>">Edit shop</a> 
-  | <a href="<:script:>?order_list=1">Manage orders</a> | <a href="/cgi-bin/admin/admin.pl?id=<:shopid:>"></a><:if 
+  | <:ifUserCan shop_order_list:><a href="<:script:>?order_list=1">Manage orders</a> | <:or:><:eif:><a href="/cgi-bin/admin/admin.pl?id=<:shopid:>"></a><:if 
   ShowStepKids:><a href="<:script:>?showstepkids=0">Hide step children</a><:or 
   ShowStepKids:><a href="<:script:>?showstepkids=1">Show step children</a><:eif 
   ShowStepKids:> | </p>
@@ -18,8 +18,8 @@
 <p>&nbsp; </p>
 <hr noshade size="1">
 <:iterator end catalogs:> 
-<form action="/cgi-bin/admin/add.pl"><input type=hidden name=type value="Catalog">
-  <input type=hidden name=parentid value=3><input type=submit value="Add Catalog"></form>
+<:ifUserCan edit_add_child [cfg articles shop]:><form action="/cgi-bin/admin/add.pl"><input type=hidden name=type value="Catalog">
+  <input type=hidden name=parentid value=3><input type=submit value="Add Catalog"></form><:or:><:eif:>
 <p><font size="-1">BSE Release <:release:></font></p>
 </body>
 </html>

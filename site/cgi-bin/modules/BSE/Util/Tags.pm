@@ -100,6 +100,22 @@ sub static {
 	 or die; # leaves if in place
        $left =~ $right;
      },
+     ifOr =>
+     sub {
+       my @args = DevHelp::Tags->get_parms(@_[0,1,3]);
+       for my $item (@args) {
+	 return 1 if $item;
+       }
+       return 0;
+     },
+     ifAnd =>
+     sub {
+       my @args = DevHelp::Tags->get_parms(@_[0,1,3]);
+       for my $item (@args) {
+	 return 0 unless $item;
+       }
+       return 1;
+     },
      cfg =>
      sub {
        my ($section, $key, $def) = split ' ', $_[0];
@@ -350,6 +366,7 @@ sub tag_if_user_can {
 	  $article = \%dummy_site_article;
 	}
 	else {
+	  require Articles;
 	  $article = Articles->getByPkey($artname);
 	  unless ($article) {
 	    print STDERR "Could not find article $artname\n";
@@ -365,6 +382,7 @@ sub tag_if_user_can {
 	      $article = \%dummy_site_article;
 	    }
 	    else {
+	      require Articles;
 	      $article = Articles->getByPkey($artid);
 	    }
 	    unless ($article) {

@@ -48,7 +48,8 @@ sub generate_low {
      ifProducts => sub { @products },
      admin => 
      sub { 
-       if ($self->{admin}) {
+       if ($self->{admin} && $self->{request}) {
+	 my $req = $self->{request};
 	 my $html = <<HTML;
 <table>
 <tr>
@@ -59,22 +60,29 @@ sub generate_low {
 <td><form action="$ADMIN_URI">
 <input type=submit value="Admin menu">
 </form></td>
+HTML
+	 if ($req->user_can('edit_add_child', $article)) {
+	   $html .= <<HTML;
 <td><form action="$CGI_URI/admin/add.pl">
 <input type=hidden name="parentid" value="$article->{id}">
 <input type=hidden name="type" value="Product">
 <input type=submit value="Add product"></form></td>
+HTML
+         }
+	 $html .= <<HTML;
 <td><form action="$CGI_URI/admin/shopadmin.pl">
 <input type=hidden name="product_list" value=1>
 <input type=submit value="Full product list"></form></td>
 HTML
-	   if (generate_button()) {
-	     $html .= <<HTML;
+	 if (generate_button()
+	     && $req->user_can(regen_article=>$article)) {
+	   $html .= <<HTML;
 <td><form action="$CGI_URI/admin/generate.pl">
 <input type=hidden name=id value="$article->{id}">
 <input type=submit value="Regenerate">
 </form></td>
 HTML
-	   }
+	 }
 	 $html .= <<HTML;
 <td><form action="$CGI_URI/admin/admin.pl" target="_blank">
 <input type=submit value="Display">
@@ -117,6 +125,9 @@ HTML
      moveallprod =>
      sub {
        return '' unless $self->{admin};
+       return '' unless $self->{request};
+       return '' 
+	 unless $self->{request}->user_can(edit_reorder_children => $article);
        my $html = '';
        my $can_move_up = $allprod_index > 0;
        my $can_move_down = $allprod_index < $#allprods;

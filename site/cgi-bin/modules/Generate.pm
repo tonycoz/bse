@@ -196,7 +196,8 @@ sub _embed_low {
 	print STDERR "Cannot load generator $embed->{generator}: $@\n";
 	return "** Cannot load generator $embed->{generator} for article $id **";
       }
-      $gen = $embed->{generator}->new(admin=>$self->{admin}, cfg=>$self->{cfg});
+      $gen = $embed->{generator}->new(admin=>$self->{admin}, cfg=>$self->{cfg},
+				      request=>$self->{request});
     }
 
     # a rare appropriate use of local

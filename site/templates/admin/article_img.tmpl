@@ -12,6 +12,7 @@
 <:ifMessage:> 
 <p><b><:message:> </b></p>
 <:or:><:eif:>
+<:if UserCan edit_images_add:>
 <h2>Add new image</h2>
 
 <form method="POST" action="<:script:>" enctype="multipart/form-data">
@@ -55,7 +56,7 @@
     </tr>
   </table>
 </form>
-
+<:or UserCan:><:eif UserCan:>
 
 <form method="post" action="<:script:>" enctype="multipart/form-data">
 <input type="hidden" name="level" value="<: level :>">
@@ -101,13 +102,13 @@
           </tr>
           <tr bgcolor="#FFFFFF"> 
             <td valign="top"> 
-              <input type="text" name="alt" value="<: image alt :>" size="32">
+              <:ifUserCan edit_images_save article:><input type="text" name="alt" value="<: image alt :>" size="32"><:or:><: image alt :><:eif:>
             </td>
             <td valign="top" width="50%"> 
-              <input type="text" name="url" value="<: image url :>" size="32">
+              <:ifUserCan edit_images_save article:><input type="text" name="url" value="<: image url :>" size="32"><:or:><: image url :><:eif:>
             </td>
             <td valign="bottom" nowrap> 
-              <b><a href="<:script:>?level=<: level :>&parentid=<: article parentid :>&id=<:article id:>&imgtype=<: articleType :>&removeimg_<: image id :>" onClick="return window.confirm('Are you sure you want to delete this Image')">Delete</a></b>
+              <:ifUserCan edit_images_delete article:><b><a href="<:script:>?level=<: level :>&parentid=<: article parentid :>&id=<:article id:>&imgtype=<: articleType :>&removeimg_<: image id :>" onClick="return window.confirm('Are you sure you want to delete this Image')">Delete</a></b><:or:><:eif:>
 <:imgmove:> </td>
           </tr>
           <: iterator separator images :> 
@@ -115,10 +116,13 @@
             <td colspan="3">&nbsp;</td>
           </tr>
           <: iterator end images :> 
+<:ifUserCan edit_images_save article:>
           <tr> 
             <td align="right" bgcolor="#FFFFFF" colspan="3"> 
               <input type="submit" name="process" value="Save changes">
             </td>
+	  </tr>
+<:or:><:eif:>
         </table>
 </td>
 </tr>

@@ -14,11 +14,11 @@ sub new {
 sub low_perform {
   my ($self, $acts, $func, $args, $orig) = @_;
 
+  $args = '' unless defined $args;
   my $fmt;
   if ($acts->{_format} && $args =~ s/\|(\S+)\s*$//) {
     $fmt = $1;
   }
-  $args = '' unless defined $args;
 
   if (exists $acts->{$func}) {
     $args =~ s/^\s+|\s+$//g;
@@ -201,7 +201,7 @@ sub replace_template {
           and $template = $wraptext
             or last;
 
-	unless (defined $params) {
+	if (defined $params) {
 	  while ($params =~ s/^\s*(\w+)\s*=>\s*\"([^\"]+)\"//
 		 || $params =~ s/^\s*(\w+)\s*=>\s*([^\s,]+)//) {
 	    $params{$1} = $2;

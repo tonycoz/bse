@@ -7,25 +7,33 @@ use CGI qw(:standard);
 use Constants;
 use Util qw(generate_button regen_and_refresh refresh_to);
 use Carp 'verbose';
-use BSE::Cfg;
+use BSE::Request;
 
-#my $articles = Articles->new;
-my $id = param('id');
-my $fromid = param('fromid') || $id;
+my $req = BSE::Request->new;
+
+my $cfg = $req->cfg;
+my $cgi = $req->cgi;
+my $siteurl = $cfg->entryErr('site', 'url');
+unless ($req->check_admin_logon()) {
+  refresh_to("$siteurl/cgi-bin/admin/logon.pl");
+  exit;
+}
+
+my $id = $cgi->param('id');
+my $fromid = $cgi->param('fromid') || $id;
 my $baseurl;
 if (defined $fromid
     and my $fromart = Articles->getByPkey($fromid)) {
   $baseurl = $fromart->{admin};
 }
 else {
-  $baseurl = "/admin/";
+  $baseurl = "/cgi-bin/admin/menu.pl";
 }
 
-my $cfg = BSE::Cfg->new;
-my $siteurl = $cfg->entryErr('site', 'url');
 if (generate_button()) {
   my $callback;
-  if (param('progress')) {
+  my $progress = $cgi->param('progress');
+  if ($progress) {
     $| = 1;
     print "Content-Type: text/html\n\n";
     print "<html><title>Regenerating your site</title></head><body>";
@@ -35,22 +43,37 @@ if (generate_button()) {
   if (defined $id) {
     use Util 'generate_article';
     my $article;
+    my $can;
     if ($id eq 'extras') {
       $article = 'extras';
+      $can = $req->user_can('regen_extras');
     }
     else {
       $article = Articles->getByPkey($id)
 	or die "No such article $id found";
+      $can = $req->user_can('regen_article', $article);
     }
-    regen_and_refresh('Articles', $article, 1, 
-		      $siteurl . $baseurl, $cfg, $callback);
+    if ($can) {
+      regen_and_refresh('Articles', $article, 1, 
+			$siteurl . $baseurl, $cfg, $callback);
+    }
+    else {
+      print "<p>You don't have permission to regenerate that</p>\n"
+	if $progress;
+    }
   }
   else {
-    regen_and_refresh('Articles', undef, 1, 
-		      $siteurl . $baseurl, $cfg, $callback);
+    if ($req->user_can('regen_all')) {
+      regen_and_refresh('Articles', undef, 1, 
+			$siteurl . $baseurl, $cfg, $callback);
+    }
+    else {
+      print "<p>You don't have permission to regen all.</p>\n"
+	if $progress;
+    }
   }
-  if (param('progress')) {
-    print qq!<p>Done <a href="/admin/">Return to admin menu</a></p>\n!;
+  if ($progress) {
+    print qq!<p>Done <a href="/cgi-bin/admin/menu.pl">Return to admin menu</a></p>\n!;
     print "</body></html>\n";
   }
 }

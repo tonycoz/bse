@@ -13,6 +13,7 @@
 <:ifMessage:>
 <p><b><:message:></b></p>
 <:or:><:eif:> 
+<:if UserCan edit_files_add article:>
 <h2>Add new file</h2>
 
 <form method="post" action="<:script:>" enctype="multipart/form-data">
@@ -75,6 +76,7 @@
   </table>
 </form>
 
+<:or UserCan:><:eif UserCan:>
   
 <h2>Manage files</h2>
 
@@ -93,24 +95,24 @@
           <tr bgcolor="#FFFFFF"> 
             <td nowrap> <:file displayName:></td>
             <td valign="top"> 
-              <input type="text" name="description_<:file id:>" value="<: file description :>" />
+              <:ifUserCan edit_files_save article:><input type="text" name="description_<:file id:>" value="<: file description :>" /><:or:><: file description :><:eif:>
             </td>
             <td valign="top"> 
-              <input type="text" name="contentType_<:file id:>" value="<: file contentType :>" />
+               <:ifUserCan edit_files_save article:><input type="text" name="contentType_<:file id:>" value="<: file contentType :>" /><:or:><: file contentType :><:eif:>
             </td>
           </tr>
           <tr bgcolor="#FFFFFF"> 
             <td colspan="3"> 
               <table width="100%" border="0" cellspacing="0" cellpadding="0">
                 <tr bgcolor="#FFFFFF"> 
-                  <td valign="top" align="center" nowrap> <input type="checkbox" name="download_<:file id:>"
-                    <:ifFile download:> checked<:or:><:eif:> />Download&nbsp;&nbsp;&nbsp;</td>
-                  <td valign="top" align="center" nowrap> <input type="checkbox" name="forSale_<:file id:>"
-                    <:ifFile forSale:> checked<:or:><:eif:> />Require payment&nbsp;&nbsp;&nbsp;</td>
-                  <td valign="top" align="center" nowrap> <input type="checkbox" name="requireUser_<:file id:>"
-                    <:ifFile requireUser:> checked<:or:><:eif:> />Require login 
+                  <td valign="top" align="center" nowrap> <:if UserCan edit_files_save article:><input type="checkbox" name="download_<:file id:>"
+                    <:ifFile download:> checked<:or:><:eif:> /><:or UserCan:><img src="/images/admin/<:ifFile download:>checked.gif<:or:>unchecked.gif<:eif:>" width="16" height="16" /><:eif UserCan:>Download&nbsp;&nbsp;&nbsp;</td>
+                  <td valign="top" align="center" nowrap> <:if UserCan edit_files_save article:><input type="checkbox" name="forSale_<:file id:>"
+                    <:ifFile forSale:> checked<:or:><:eif:> /><:or UserCan:><img src="/images/admin/<:ifFile forSale:>checked.gif<:or:>unchecked.gif<:eif:>" width="16" height="16" /><:eif UserCan:>Require payment&nbsp;&nbsp;&nbsp;</td>
+                  <td valign="top" align="center" nowrap> <:if UserCan edit_files_save article:><input type="checkbox" name="requireUser_<:file id:>"
+                    <:ifFile requireUser:> checked<:or:><:eif:> /><:or UserCan:><img src="/images/admin/<:ifFile requireUser:>checked.gif<:or:>unchecked.gif<:eif:>" width="16" height="16" /><:eif UserCan:>Require login 
                     &nbsp;&nbsp;&nbsp;</td>
-                  <td nowrap align="right" width="100%"> <b><a href="<:script:>?filedel=1&amp;id=<:article id:>&amp;file=<:file id:>" onClick="return window.confirm('Are you sure you want to delete this File')">Delete</a></b> 
+                  <td nowrap align="right" width="100%"> <:ifUserCan edit_files_delete article:><b><a href="<:script:>?filedel=1&amp;id=<:article id:>&amp;file=<:file id:>" onClick="return window.confirm('Are you sure you want to delete this File')">Delete</a></b> <:or:><:eif:>
                     <:movefiles:></td>
                 </tr>
               </table>
@@ -121,11 +123,13 @@
             <td colspan="3">&nbsp;</td>
           </tr>
           <: iterator end files :> 
+<:ifUserCan edit_files_save article:>
           <tr> 
             <td colspan="3" align="right" valign="bottom" bgcolor="#FFFFFF"> 
               <input type="submit" name="filesave" value="  Save changes  " />
             </td>
           </tr>
+<:or:><:eif:>
           <:or Files:> 
           <tr bgcolor="#FFFFFF"> 
             <td colspan="3" align="center">No files are attached to this article</td>

@@ -5,83 +5,91 @@ use strict;
 use FindBin;
 use lib "$FindBin::Bin/../modules";
 use Articles;
-use CGI qw(:standard);
-use BSE::Cfg;
+use BSE::Request;
 use vars qw($VERSION);
 $VERSION = 1.02;
 
-my $cfg = BSE::Cfg->new;
+my $req = BSE::Request->new;
+my $cfg = $req->cfg;
+my $cgi = $req->cgi;
 my $urlbase = $cfg->entryVar('site', 'url');
+unless ($req->check_admin_logon()) {
+  print "Refresh: 0; url=\"$urlbase/cgi-bin/admin/logon.pl\"\n";
+  print "Content-Type: text/html\n\n<html></html>\n";
+  exit;
+}
 
-my $refreshto = param('refreshto') || '/admin/';
+my $refreshto = $cgi->param('refreshto') || '/cgi-bin/admin/menu.pl';
 # each entry of @kids is an arrayref containing the article
 # to get sort data from, the actual object, and the field in the actual
 # object containing the display order value
 my @kids;
 my %kids;
-my $parentid = param('parentid');
-my $stepparent = param('stepparent');
-my $stepchild = param('stepchild');
-if ($parentid) {
-  $parentid += 0;
-  @kids = map [$_, $_, 'displayOrder' ], Articles->getBy(parentid=>$parentid);
-}
-elsif ($stepparent) {
-  require 'OtherParents.pm';
-
-  my $parent = Articles->getByPkey($stepparent);
-  if ($parent) {
-    my @otherlinks = OtherParents->getBy(parentId=>$stepparent);
-    my @normalkids = Articles->listedChildren($stepparent);
-    my @stepkids = $parent->stepkids;
-    my %stepkids = map { $_->{id}, $_ } @stepkids;
-    @kids = (
-	     map([ $_, $_, 'displayOrder' ], @normalkids),
-	     map([ $stepkids{$_->{childId}}, $_, 'parentDisplayOrder' ],
-		 @otherlinks),
-	    );
+my $parentid = $cgi->param('parentid');
+if ($req->user_can(edit_reorder_children => $parentid)) {
+  my $stepparent = $cgi->param('stepparent');
+  my $stepchild = $cgi->param('stepchild');
+  if ($parentid) {
+    $parentid += 0;
+    @kids = map [$_, $_, 'displayOrder' ], Articles->getBy(parentid=>$parentid);
   }
-}
-elsif ($stepchild) {
-  require 'OtherParents.pm';
-
-  my $child = Articles->getByPkey($stepchild);
-  if ($child) {
-    my @otherlinks = OtherParents->getBy(childId=>$stepchild);
-    my @stepparents = map Articles->getByPkey($_->{parentId}), @otherlinks;
-    my %stepparents = map { $_->{id}, $_ } @stepparents;
-    @kids = (
-	     map([ $stepparents{$_->{parentId}}, $_, 'childDisplayOrder' ],
-		 @otherlinks),
-	    );
+  elsif ($stepparent) {
+    require 'OtherParents.pm';
+    
+    my $parent = Articles->getByPkey($stepparent);
+    if ($parent) {
+      my @otherlinks = OtherParents->getBy(parentId=>$stepparent);
+      my @normalkids = Articles->listedChildren($stepparent);
+      my @stepkids = $parent->stepkids;
+      my %stepkids = map { $_->{id}, $_ } @stepkids;
+      @kids = (
+	       map([ $_, $_, 'displayOrder' ], @normalkids),
+	       map([ $stepkids{$_->{childId}}, $_, 'parentDisplayOrder' ],
+		   @otherlinks),
+	      );
+    }
   }
-}
-
-
-my @order = sort { $b <=> $a } map $_->[1]{$_->[2]}, @kids;
-my $sort = param('sort') || 'current';
-my $reverse = param('reverse');
-
-my $code;
-if ($sort eq 'title') {
-  $code = sub { lc($a->[0]{title}) cmp lc($b->[0]{title}) };
-}
-elsif ($sort eq 'date') {
-  $code = sub { $a->[0]{lastModified} cmp $b->[0]{lastModified} };
-}
-elsif ($sort eq 'current') {
-  $code = sub { $b->[1]{$b->[2]} <=> $a->[1]{$a->[2]} };
-}
-if ($reverse) {
-  my $temp = $code;
-  $code = sub { -$temp->() };
-}
-if ($code) {
-  @kids = sort $code @kids;
-  for my $i (0..$#kids) {
-    my $kid = $kids[$i];
-    $kid->[1]{$kid->[2]} = $order[$i];
-    $kid->[1]->save();
+  elsif ($stepchild) {
+    require 'OtherParents.pm';
+    
+    my $child = Articles->getByPkey($stepchild);
+    if ($child) {
+      my @otherlinks = OtherParents->getBy(childId=>$stepchild);
+      my @stepparents = map Articles->getByPkey($_->{parentId}), @otherlinks;
+      my %stepparents = map { $_->{id}, $_ } @stepparents;
+      @kids = (
+	       map([ $stepparents{$_->{parentId}}, $_, 'childDisplayOrder' ],
+		   @otherlinks),
+	      );
+    }
+  }
+  
+  
+  my @order = sort { $b <=> $a } map $_->[1]{$_->[2]}, @kids;
+  my $sort = $cgi->param('sort') || 'current';
+  my $reverse = $cgi->param('reverse');
+  
+  my $code;
+  if ($sort eq 'title') {
+    $code = sub { lc($a->[0]{title}) cmp lc($b->[0]{title}) };
+  }
+  elsif ($sort eq 'date') {
+    $code = sub { $a->[0]{lastModified} cmp $b->[0]{lastModified} };
+  }
+  elsif ($sort eq 'current') {
+    $code = sub { $b->[1]{$b->[2]} <=> $a->[1]{$a->[2]} };
+  }
+  if ($reverse) {
+    my $temp = $code;
+    $code = sub { -$temp->() };
+  }
+  if ($code) {
+    @kids = sort $code @kids;
+    for my $i (0..$#kids) {
+      my $kid = $kids[$i];
+      $kid->[1]{$kid->[2]} = $order[$i];
+      $kid->[1]->save();
+    }
   }
 }
 

@@ -176,13 +176,34 @@ sub _permname_match {
   return $info->{not} ? !$match : $match;
 }
 
+sub _get_article {
+  my ($self, $id) = @_;
+
+  return $self->{artcache}{$id}
+    if exists $self->{artcache}{$id};
+
+  if ($id == -1) {
+    $self->{sitearticle} ||=
+      {
+       generator=>'Generate::Article',
+       id=>-1,
+       parentid=>0,
+       title=>'The site',
+      };
+    return $self->{sitearticle};
+  }
+  else {
+    require Articles;
+    $self->{artcache}{$id} = Articles->getByPkey($id);
+  }
+}
+
 sub _art_ancestors {
   my ($self, $article) = @_;
 
   my @result;
-  while ($article->{id} > 0 && $article->{parentid} != -1) {
-    $article = $self->{artcache}{$article->{parentid}}
-      || $article->parent;
+  while ($article->{id} && $article->{id} > 0 && $article->{parentid} != -1) {
+    $article = $self->_get_article($article->{parentid});
     push @result, $article;
   }
   if ($article && $article->{parentid} == -1) {
@@ -247,6 +268,11 @@ sub user_has_perm {
   }
   $self->{cfg}->entry('basic', 'access_control', 0)
     or return 1;
+
+  unless (ref $article) {
+    $article = $self->_get_article($article)
+      or return;
+  }
 
   if ($checks{$action}) {
     my $method = "check_$action";

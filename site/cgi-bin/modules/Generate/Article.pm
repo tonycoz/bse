@@ -186,7 +186,8 @@ sub baseActs {
      # generate buttons for administration (only for admin generation)
      admin=>
      sub {
-       if ($self->{admin}) {
+       if ($self->{admin} && $self->{request}) {
+	 my $req = $self->{request};
          my $html = <<HTML;
 <table><tr>
 <td><form action="$CGI_URI/admin/add.pl">
@@ -197,7 +198,8 @@ sub baseActs {
 <input type=submit value="Admin menu">
 </form></td>
 HTML
-         if (exists $level_names{1+$article->{level}}) {
+         if (exists $level_names{1+$article->{level}}
+	     && $req->user_can(edit_add_child=>$article)) {
            $html .= <<HTML;
 <td><form action="$CGI_URI/admin/add.pl">
 <input type=submit value="Add $level_names{1+$article->{level}}">
@@ -205,7 +207,7 @@ HTML
 </form></td>
 HTML
 	 }
-	 if (generate_button()) {
+	 if (generate_button() && $req->user_can(regen_article=>$article)) {
 	   $html .= <<HTML;
 <td><form action="$CGI_URI/admin/generate.pl">
 <input type=hidden name=id value="$article->{id}">

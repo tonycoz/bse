@@ -42,8 +42,8 @@
   </tr>
 </table>
 <:or Products:><:eif Products:>
-<form action="/cgi-bin/admin/add.pl">
-  <p><input type=hidden name=parentid value="<:catalog id:>"><input type=hidden name=type value="Product"><input type=submit name="add_product" value="Add Product"></p></form>
+<:ifUserCan edit_add_child catalog:><form action="/cgi-bin/admin/add.pl">
+  <p><input type=hidden name=parentid value="<:catalog id:>"><input type=hidden name=type value="Product"><input type=submit name="add_product" value="Add Product"></p></form><:or:><:eif:>
 <h4>Sub catalogs</h4>
 <h4><:if Subcats :> <:iterator begin subcats:> </h4>
 <ul>
@@ -53,6 +53,6 @@
 </ul>
 <:iterator end subcats:>
 <:or Subcats:><:eif Subcats:>
-<form action="/cgi-bin/admin/add.pl"><input type=hidden name=type value="Catalog">
-  <input type=hidden name=parentid value="<:catalog id:>"><input type=submit value="Add Sub-catalog"></form>
+<:ifUserCan edit_add_child catalog:><form action="/cgi-bin/admin/add.pl"><input type=hidden name=type value="Catalog">
+  <input type=hidden name=parentid value="<:catalog id:>"><input type=submit value="Add Sub-catalog"></form><:or:><:eif:>
 

@@ -11,7 +11,15 @@ use BSE::Request;
 use BSE::Template;
 use Carp 'confess';
 
-$SIG{__DIE__} = sub { confess $@ };
+#  $SIG{__DIE__} = 
+#    sub { 
+#      if ($@ =~ /^ENOIMPL\b/) {
+#        die $@;
+#      }
+#      else {
+#        confess $@;
+#      }
+#    };
 
 my $req = BSE::Request->new;
 my $cgi = $req->cgi;
