@@ -173,63 +173,6 @@
 <p><input type=submit value="Add <:childtype:>"></p>
 </form>
 <:eif new:> <:or HaveChildType:> <:eif HaveChildType:>
-<:if new:><:or new:>
-<h2><a name="step"></a>Step Products</h2>
-<table border="0" cellspacing="0" cellpadding="0" bgcolor='#000000'>
-<tr><td>
-      <table border="0" cellpadding="6" cellspacing="1">
-        <tr>
-  <th>Id</th>
-  <th>Title</th>
-  <th>Release</th>
-  <th>Expire</th>
-  <th>&nbsp;</th>
-</tr>
-<:if Kids:>
-        <tr> 
-          <td colspan="5" bgcolor="#FFFFFF">Reorder stepchild articles: <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&sort=title&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>%23step">by 
-            title</a> | <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&sort=date&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>%23step">by 
-            date</a> | <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&reverse=1&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>%23step">reverse 
-            order</a></td>
-        </tr>
-<form action="<:script:>" method="POST"><input type="hidden" name="id" value="<:article id:>">
-<:iterator begin kids:>
-        <tr bgcolor="#FFFFFF"> 
-          <td><:kid id:></td>
-          <td><:kid title:></td>
-          <td><:ifStepKid:> 
-            <input type="text" name="release_<:stepkid childId:>" value="<:date stepkid release:>" size=10><:or:>&nbsp;<:eif:></td>
-          <td><:ifStepKid:> 
-            <input type="text" name="expire_<:stepkid childId:>" value="<:date stepkid expire:>" size=10><:or:>&nbsp;<:eif:></td>
-          <td><:movestepkid:> <b><:ifStepKid:><a href="<:script:>?del_stepkid=1&id=<:stepkid parentId:>&stepkid=<:stepkid childId:>">Delete</a><:or:><:eif:> 
-            <:edit kid Edit:></b></td>
-</tr>
-<:iterator end kids:>
-        <tr bgcolor="#FFFFFF"> 
-          <td colspan="5" align="center"> 
-            <input type="submit" name="save_stepkids" value="Save Changes"></td>
-</tr>
-<:or Kids:>
-        <tr bgcolor="#FFFFFF"> 
-          <td colspan="5" align="center">No children</td>
-</tr>
-<:eif Kids:>
-</form>
-<:if Possibles:>
-<form action="<:script:>"><input type="hidden" name="id" value="<:article id:>">
-          <tr bgcolor="#FFFFFF"> 
-            <td colspan="2"><:possible_stepkids:></td>
-            <td> 
-              <input type="text" name="release" value="01/01/2000" size="10"></td>
-            <td> 
-              <input type="text" name="expire" value="31/12/2999" size="10"></td>
-            <td> 
-              <input type="submit" name="add_stepkid" value="Add Stepkid"></td>
-</tr>
-</form>
-<:or Possibles:><:eif Possibles:>
-</table>
-</td></tr></table>
-<:eif new:>
+<p><font size="-1">BSE Release <:release:></font></p>
 </body
 ></html>

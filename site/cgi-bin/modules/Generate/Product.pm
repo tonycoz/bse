@@ -16,16 +16,22 @@ sub generate {
   my ($self, $article, $articles) = @_;
 
   my $product = Products->getByPkey($article->{id});
+  return $self->SUPER::generate($product, $articles);
+}
+
+sub baseActs {
+  my ($self, $articles, $acts, $product, $embedded) = @_;
+
   my @stepcats = $product->step_parents();
   my $stepcat_index;
   my @options = 
     map { +{ id=>$_, %{$SHOP_PRODUCT_OPTS{$_}} } } 
       split /,/, $product->{options};
   my $option_index;
-  my %acts;
-  %acts =
+
+  return
     (
-     $self->baseActs($articles, \%acts, $article, 0),
+     $self->SUPER::baseActs($articles, $acts, $product, 0),
      product=> sub { CGI::escapeHTML($product->{$_[0]}) },
      admin =>
      sub {
@@ -74,8 +80,6 @@ HTML
      stepcat => sub { CGI::escapeHTML($stepcats[$stepcat_index]{$_[0]}) },
      ifStepCats => sub { @stepcats },
     );
-  return Squirrel::Template->new(%TEMPLATE_OPTS)
-    ->show_page($TMPLDIR, $article->{template}, \%acts);
 }
 
 sub visible {

@@ -279,7 +279,7 @@ HTML
      # access to parent
      ifParent => sub { $parent },
      parent =>
-     sub { return CGI::escapeHTML($parent->{$_[0]}) },
+     sub { return $parent && CGI::escapeHTML($parent->{$_[0]}) },
      # for rearranging order in admin mode
      moveDown=>
      sub {

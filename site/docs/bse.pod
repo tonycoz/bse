@@ -10,6 +10,55 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.11_17
+
+=over
+
+=item *
+
+removed extraneous <:embed end:> from printable.tmpl
+
+=item *
+
+prevent access to parent fields from autovivifying $parent in
+Generate::Article::baseActs(), which caused ifParent to return true.
+
+=item *
+
+gen.pl now enables the query cache even for small batches, since it
+makes a big difference.
+
+=item *
+
+products pages now remove the <:embed start:> and <:embed end:>
+markers
+
+=item *
+
+need a space between "checked" and the closing "/>" in
+options_base.html for the checked to be recognized.
+
+=item *
+
+keepAddress stayed checked once checked
+
+=item *
+
+must_be_filled is now correctly looked up in [downloads] - it was
+looking in [download] (#128)
+
+=item *
+
+prevent a warning about using a regexp range of [\w-.] by making it
+[\w.-]
+
+=item *
+
+stop <:parent field:> from auto-instantiating $parent, making ifParent
+true even when there was no parent
+
+=back
+
 =head2 0.11_16
 
 =over

@@ -106,7 +106,7 @@ sub _got_user_refresh {
     # which host are we on?
     # first get info about the 2 possible hosts
     my ($baseprot, $basehost, $baseport) = 
-      $baseurl =~ m!^(\w+)://([\w-.]+)(?::(\d+))?!;
+      $baseurl =~ m!^(\w+)://([\w.-]+)(?::(\d+))?!;
     $baseport ||= $baseprot eq 'http' ? 80 : 443;
     print STDERR "Base: prot: $baseprot  Host: $basehost  Port: $baseport\n"
       if $debug;
@@ -304,6 +304,7 @@ sub saveopts {
     }
   }
   $user->{textOnlyMail} = 0 unless defined $cgi->param('textOnlyMail');
+  $user->{keepAddress} = 0 unless defined $cgi->param('keepAddress');
   $user->save;
 
   # subscriptions
@@ -532,7 +533,7 @@ sub download {
     or return _refresh_userpage($cfg, $msgs->(nosuchfile=>"No such file in that line item"));
   
   my $must_be_paid = $cfg->entryBool('downloads', 'must_be_paid', 0);
-  my $must_be_filled = $cfg->entryBool('download', 'must_be_filled', 0);
+  my $must_be_filled = $cfg->entryBool('downloads', 'must_be_filled', 0);
   if ($must_be_paid && !$order->{paidFor}) {
     return _refresh_userpage($cfg, $msgs->("paidfor", 
 				     "Order not marked as paid for"));

@@ -113,8 +113,11 @@ if (!$article) {
   }
 }
 my $parent;
-$parent = $articles->getByPkey($article->{parentid})
-  if $article && $article->{parentid} && $article->{parentid} > 0;
+
+if ($article && $article->{parentid} && $article->{parentid} > 0) {
+  $parent = $articles->getByPkey($article->{parentid});
+  $level = $parent->{level}+1;
+}
 
 my @images;
 my $message = param('message') || ''; # for displaying error message

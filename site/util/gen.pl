@@ -20,6 +20,7 @@ my $cfg = BSE::Cfg->new;
 my $articles = 'Articles';
 
 if (@ARGV) {
+  Squirrel::Table->caching(1);
   print "Generating @ARGV\n" if $verbose;
   for my $articleid (@ARGV) {
     my ($start, $end);

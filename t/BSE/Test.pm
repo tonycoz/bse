@@ -5,7 +5,7 @@ use vars qw(@ISA @EXPORT @EXPORT_OK);
 require 'Exporter.pm';
 @EXPORT = qw(base_url ok fetch_ok make_url skip make_ua);
 @EXPORT_OK = qw(base_url ok make_ua fetch_url fetch_ok make_url skip 
-                make_post check_form post_ok);
+                make_post check_form post_ok check_content);
 
 my %conf;
 
@@ -66,9 +66,9 @@ sub skip {
 }
 
 sub make_ua {
-  require "LWP/UserAgent.pm";
+  require "WWW/Automate.pm";
   require "HTTP/Cookies.pm";
-  my $ua = LWP::UserAgent->new;
+  my $ua = WWW::Automate->new;
   $ua->cookie_jar(HTTP::Cookies->new);
 
   $ua;
@@ -104,6 +104,17 @@ sub make_url {
     push(@pairs, "$key=".URI::uri_escape($value));
   }
   return $base."?".join("&",@pairs);
+}
+
+sub check_content {
+  my ($content, $note, $match) = @_;
+  unless (ok($content =~ /$match/s, "$note: match")) {
+    print "# wanted /$match/ got:\n";
+    my $copy = $content;
+    $copy =~ s/^/# /gm;
+    $copy .= "\n" unless $copy =~ /\n\z/;
+    print $copy;
+  }
 }
 
 sub _check_fetch {
@@ -174,9 +185,10 @@ sub post_ok {
 sub fetch_ok {
   my ($ua, $note, $url, $match, $headmatch) = @_;
 
-  my ($content, $code, $ok, $headers) = fetch_url($ua, $url);
-  return _check_fetch($content, $code, $ok, $headers,
-		      $note, $match, $headmatch)
+  my $ok = $ua->get($url);
+  return _check_fetch($ua->{content}, $ua->{status}, $ok, 
+		      $ua->{res}->headers_as_string, $note, 
+		      $match, $headmatch)
 }
 
 sub check_form {
