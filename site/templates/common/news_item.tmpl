@@ -1,0 +1,86 @@
+<:wrap base.tmpl:> <:if Embedded:><:embed start:><:ifAdmin:> 
+<table cellpadding="4" cellspacing="0" border="0">
+  <tr> 
+    <td> 
+      <form action="/cgi-bin/admin/add.pl">
+        <input type=hidden name=id value="<:article id:>">
+        <input class="mini-admin" type=submit value="Edit News Item" name="submit">
+      </form>
+    </td>
+    <td> 
+      <form action="/cgi-bin/admin/add.pl">
+        <input class="mini-admin" type=submit value="Add Child" name="submit">
+        <input type=hidden name=parentid value="<:article id:>">
+      </form>
+    </td>
+  </tr>
+</table>
+<:or:><:eif:>
+<table width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#999999">
+  <tr> 
+    <td> 
+      <table width="100%" border="0" cellspacing="1" cellpadding="0">
+        <tr> 
+          <td bgcolor="#FFFFFF" valign="top"> 
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr> 
+                <td bgcolor="#CCCCFF" nowrap height="23">&nbsp;&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b><:title:></b></font>&nbsp;&nbsp;</td>
+                <td width="100%" height="23">&nbsp;</td>
+              </tr>
+            </table>
+            <table width="100%" border="0" cellspacing="0" cellpadding="10">
+              <tr> 
+                <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font>
+<:if UnderThreshold:><:iterator begin children:><:ifAdmin:> 
+                        <br>
+                        <:or:><:eif:><:moveDown:><:moveUp:><:embed 
+child:><:iterator separator children:><:iterator end children:> <:or UnderThreshold:> 
+<:iterator begin children:> 
+                        <p><a href="<:url child:>"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:child 
+                          title:></font></b></a><:moveDown:><:moveUp:><br>
+  <:if Child summaryLength:><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:summary:></font><:or 
+  Child:><:eif Child:></p>
+<:iterator separator children:><:iterator end children:><:eif UnderThreshold:>
+</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<:embed end:><:or Embedded:><:admin:> 
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr> 
+    <td bgcolor="#CCCCFF" width="80%" height="24">&nbsp;&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="4"><b><:title:></b></font></td>
+    <td height="24">&nbsp;</td>
+  </tr>
+  <tr> 
+    <td bgcolor="#999999" colspan="2" height="1"><img src="/images/trans_pixel.gif" width="24" height="1" border="0"></td>
+  </tr>
+  <tr> 
+    <td colspan="2"> 
+      <table width="100%" border="0" cellspacing="0" cellpadding="0">
+        <tr> 
+          <td width="100"><img src="/images/trans_pixel.gif" width="100" height="10" border="0"></td>
+          <td bgcolor="#333399" width="100%">&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2">/ 
+            <a href="<:ifAdmin:>/cgi-bin/admin/admin.pl?id=1<:or:>/<:eif:>"><font color="#FFFFFF">Home</font></a> 
+            / <:iterator begin crumbs:> <a href="<:url crumbs:>"><font color="#FFFFFF"><:crumbs 
+            title:></font></a> / <:iterator end crumbs:></font></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font></p>
+<:if UnderThreshold:><:iterator begin children:><:ifAdmin:> 
+<hr noshade size="1">
+<:or:><:eif:><:moveDown:><:moveUp:><:embed child:><:iterator separator children:><br>
+<:iterator end children:> <:or UnderThreshold:> <:iterator begin children:> 
+<p><a href="<:url child:>"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><:child 
+  title:></font></b></a><:moveDown:><:moveUp:><br>
+  <:if Child summaryLength:><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:summary:></font><:or 
+  Child:><:eif Child:></p>
+<:iterator separator children:><:iterator end children:><:eif UnderThreshold:><:eif 
+Embedded:>
