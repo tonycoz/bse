@@ -42,7 +42,7 @@ clean:
 	  fi ; \
 	done
 	-rm site/htdocs/images/*.jpg
-	-rm -rf $DISTBUILD
+	-rm -rf $(DISTBUILD)
 
 docs: INSTALL.txt INSTALL.html otherdocs
 
