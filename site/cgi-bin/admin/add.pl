@@ -206,7 +206,7 @@ unless ($level_cache{$level}{edit}) {
 use OtherParents;
 my @stepkids = OtherParents->getBy(parentId=>$article->{id}) if $article->{id};
 my %stepkids = map { $_->{childId} => $_ } @stepkids;
-my @allkids = $article->allkids if $article->{id};
+my @allkids = $article->allkids if $article->{id} && $article->{id} > 0;
 my $allkids_index = -1;
 my @possibles;
 

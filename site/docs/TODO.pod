@@ -67,6 +67,11 @@ used to override image sizes.)
 move most of the shop.pl code into modules to make it more accessible
 from other scripts (especially for custom card payment.)
 
+=item *
+
+make the shopadmin product list better.  The nested catalog display
+sucks.
+
 =back
 
 =cut

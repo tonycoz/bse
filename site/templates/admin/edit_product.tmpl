@@ -102,6 +102,12 @@
 <tr>
       <td colspan="5" align="center">Note: Delete only removes the stepchild relationship.  It does not delete the catalog.</td>
 </tr>
+        <tr> 
+          <td colspan="5" bgcolor="#FFFFFF">Reorder stepparent articles: <a href="/cgi-bin/admin/reorder.pl?stepchild=<:product id:>&sort=title&refreshto=/cgi-bin/admin/shopadmin.pl?edit_product=1%26id=<:product id:>%23step">by 
+            title</a> | <a href="/cgi-bin/admin/reorder.pl?stepchild=<:product id:>&sort=date&refreshto=/cgi-bin/admin/shopadmin.pl?edit_product=1%26id=<:product id:>%23step">by 
+            date</a> | <a href="/cgi-bin/admin/reorder.pl?stepchild=<:product id:>&reverse=1&refreshto=/cgi-bin/admin/shopadmin.pl?edit_product=1%26id=<:product id:>%23step">reverse 
+            order</a></td>
+        </tr>
 <form action="<:script:>"><input type="hidden" name="id" value="<:product id:>">
   <:iterator begin stepcats:>
     <tr>
