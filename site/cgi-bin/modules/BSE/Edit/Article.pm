@@ -1048,7 +1048,7 @@ sub save_new {
 }
 
 sub fill_old_data {
-  my ($req, $article, $data) = @_;
+  my ($self, $req, $article, $data) = @_;
 
   for my $col (Article->columns) {
     $article->{$col} = $data->{$col}

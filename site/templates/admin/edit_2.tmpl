@@ -14,8 +14,10 @@
 <:ifMessage:> 
 <p><b><:message:></b></p>
 <:or:><:eif:>
-<p>| <a href="/admin/">Admin menu</a> | <:ifnew:><:or:><a href="<:article admin:>">See 
-  article</a> | <:eif:><:editParent:> <:if new:><:or new:><a href="<:script:>?id=<:article id:>&_t=steps">Manage 
+<p>| <a href="/admin/">Admin menu</a> | <:ifnew:><:or:><:if Eq [article id] 3:><a href="<:article admin:>">See 
+  shop</a><:or Eq:><a href="<:article admin:>">See article</a><:eif Eq:> | <:eif:><:editParent:> 
+  <:if Eq [article id] 3:><a href="/cgi-bin/admin/shopadmin.pl">Manage catalogs</a> 
+  |<:or Eq:><:eif Eq:><:if new:><:or new:> <a href="<:script:>?id=<:article id:>&_t=steps">Manage 
   step children/parents</a> | <:eif new:></p>
 
   <h2><:articleType:> Details</h2>
@@ -34,7 +36,7 @@
             <th nowrap bgcolor="#FFFFFF" align="left"> <:parentType:>: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <select name="parentid">
-                <option value="">Please select a <:parentType:> <: list :> 
+                <option value="">Please select a <:parentType:><: list:>
               </select>
             </td>
             <td bgcolor="#FFFFFF"><:help edit section:> </td>
@@ -84,7 +86,7 @@
             <th nowrap bgcolor="#FFFFFF" align="left"> Summary length: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <input type="text" name="summaryLength" size="10" maxlength="10" value="<: article summaryLength :>">
-              (in characters - <: ifnew :>default inherited from <:parentType:> <: or :><: eif :> 
+              (in characters - <: ifnew :>default inherited from <:parentType:>, <: or :><: eif :> 
               zero for no summary)</td>
             <td bgcolor="#FFFFFF"><:help edit summary:></td>
           </tr>
@@ -142,21 +144,22 @@
                       </tr>
                       <:iterator end files:> 
                     </table>
-              </td></tr></table>
+              </td></tr></table><br>
               <:or Files:><p>No files are attached to this article.<:eif Files:> 
                 <a href="<:script:>?filelist=1&id=<:article id:>"><b>Manage Files</b></a></p>
             </td>
             <td nowrap bgcolor="#FFFFFF" valign="top"><:help edit files:></td>
           </tr>
           <tr> 
-            <th valign="top" nowrap bgcolor="#FFFFFF" align="left"> Uploaded images: 
+            <th valign="top" nowrap bgcolor="#FFFFFF" align="left"> Images: 
             </th>
-            <td align="center" bgcolor="#FFFFFF" width="100%"> <:if Images:> <p><a href="<:script:>?id=<:article id:>&showimages=1"><b>Manage Images</b></a></p> <:iterator begin 
+            <td align="center" bgcolor="#FFFFFF" width="100%"><:if Images:> <:iterator begin 
               images:> <img src="/images/<: image image :>" alt="<:image alt :>" width= 
               <:image width:> height=<:image height:>> <:iterator separator images:> 
               <hr noshade size="1">
-              <: iterator end images :> &nbsp; <br>
-	      <:or Images:><p>No images are attached to this article.  <a href="<:script:>?id=<:article id:>&showimages=1"><b>Manage Images</b></a></p>
+              <: iterator end images :>
+              <p align="left"><a href="<:script:>?id=<:article id:>&showimages=1"><b>Manage Images</b></a></p>
+	      <:or Images:><p align="left">No images are attached to this article.  <a href="<:script:>?id=<:article id:>&showimages=1"><b>Manage Images</b></a></p>
 	      <:eif Images:>
 	    </td>
             <td bgcolor="#FFFFFF" valign="top"><:help edit images:> </td>
@@ -198,7 +201,7 @@
           <td width="70%"><: summary child body :></td>
           <td align="center"><: is child listed :></td>
           <td nowrap> <a href="/cgi-bin/admin/add.pl?id=<:child id:>">Edit</a> 
-            <a href="/cgi-bin/admin/add.pl?id=<:article id:>&deleteid=<:child id:>&remove=1" onClick="return window.confirm('Are you sure you want to delete this article')">Delete</a> 
+            <a href="/cgi-bin/admin/add.pl?id=<:article id:>&deleteid=<:child id:>&remove=1" onClick="return window.confirm('Are you sure you want to delete this <:ifEq [article id] 3:>Catalog<:or:><: childtype :><:eif:>')">Delete</a> 
             <:movechild:> </td>
         </tr>
         <:iterator separator children:> <:iterator end children:> 

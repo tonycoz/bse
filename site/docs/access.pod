@@ -1,0 +1,114 @@
+=head1 NAME
+
+access.pod - access control for administration of BSE
+
+=head1 SYNOPSIS
+
+The implementation of access control for BSE.
+
+=head1 DESCRIPTION
+
+The aim is to provide flexible access control, without requiring
+micro-management from the administrators.
+
+Since we want to be control a user's access to specific fields
+(eg. the template and parent fields), rather than having an admin have
+to setup specific access to those fields, we want some sort of "macro"
+mechansim to control several things at once.
+
+Some possible access macros could be:
+
+=over
+
+=item *
+
+allow editing body and title of an article
+
+=item *
+
+add an article, with everything fixed, except for title and body
+
+=item *
+
+allow changes to everything but the shop
+
+=item *
+
+allow changes only to the shop
+
+=back
+
+We also need to be able to separately control whole trees, rather than
+just specific articles, so it should be possible to refer to "all
+descendants of article foo".
+
+Possible article permissions:
+
+=over
+
+=item *
+
+add child
+
+=item *
+
+modify
+
+=item *
+
+modify field I<foo>
+
+=item *
+
+add image
+
+=item *
+
+reorder children
+
+=item *
+
+delete
+
+=item *
+
+delete image
+
+=item *
+
+change image details
+
+=back
+
+=head1 MACRO PERMISSIONS
+
+These would be split into two types of macro permissions, those that
+control specific articles, and those that are applied to an article.
+
+Each macro will need to be described in bse.cfg, and the name of the
+macro assigned an index so that it can be controlled.
+
+=head2 Attached macros
+
+These name one or more articles and the permissions can be different
+for each article.
+
+=head2 Unattached macros
+
+These supply a set of permissions to some article specified through
+the administration interface.
+
+=head1 GROUPS
+
+To make it simpler to control permissions, each user belongs to one of
+more groups, each of which only supplied positive permissions.
+
+Whether or not listed in the group, each user is in the "everyone"
+group.
+
+=head1 DEFAULT PERMISSIONS
+
+The everyone group, and the administrator user, both have the macro
+"Full Access" on all descendants of article -1.
+
+
