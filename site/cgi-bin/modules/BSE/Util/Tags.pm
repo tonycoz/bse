@@ -102,6 +102,21 @@ sub static {
        }
        $value;
      },
+     kb =>
+     sub {
+       my ($key, $args) = split ' ', $_[0], 2;
+       $acts->{$key} or return "<:kb $_[0]:>";
+       my $value = $acts->{$key}->($args);
+       if ($value > 100000) {
+         return sprintf("%.0fk", $value/1000.0);
+       }
+       elsif ($value > 1000) {
+         return sprintf("%.1fk", $value/1000.0);
+       }
+       else {
+         return $value;
+       }
+     },
      _format => 
      sub {
        my ($value, $fmt) = @_;

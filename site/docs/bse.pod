@@ -10,6 +10,25 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.11_13
+
+This is a test release.
+
+=over
+
+=item *
+
+added the kb tag which formats the result of it's arguments with a k
+suffix if the value is over 1000.  This can be used for making file
+size displays prettier.
+
+=item *
+
+the config variable wasn't being passed into the ImageEditor object in
+shopadmin.pl
+
+=back
+
 =head2 0.11_12
 
 This is a test release.

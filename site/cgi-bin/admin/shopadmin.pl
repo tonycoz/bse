@@ -83,7 +83,8 @@ my %acts;
 
 my $imageEditor = Squirrel::ImageEditor->new(session=>\%session,
 					     extras=>\%acts,
-					     keep => [ qw/id parentid/ ]);
+					     keep => [ qw/id parentid/ ],
+					     cfg=>$cfg);
 
 if ($imageEditor->action($CGI::Q)) {
   exit;
