@@ -77,7 +77,7 @@
             <th> Expire Date: </th>
             <td bgcolor="#FFFFFF"> 
               <input type="text" name="expire" value="<: article expire :>" size="10" maxlength="10">
-              (dd/mm/yyyy - <: ifnew :>default is two weeks from now, <: or :><: eif :>blank 
+              (dd/mm/yyyy - <: ifnew :>default is never, <: or :><: eif :>blank 
               for never expires)</td>
           </tr>
           <tr> 
@@ -173,6 +173,8 @@
 </form>
 <p><:eif new:> <:or HaveChildType:> <:eif HaveChildType:> </p>
 
+<:if new:>
+<:or new:>
 <h2><a name="step"></a>Step Products</h2>
 <table border="0" cellspacing="0" cellpadding="0" bgcolor='#000000'>
 <tr><td>
@@ -185,6 +187,12 @@
   <th>&nbsp;</th>
 </tr>
 <:if Kids:>
+        <tr> 
+          <td colspan="5" bgcolor="#FFFFFF">Reorder stepchild articles: <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&sort=title&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>%23step">by 
+            title</a> | <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&sort=date&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>%23step">by 
+            date</a> | <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&reverse=1&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>%23step">reverse 
+            order</a></td>
+        </tr>
 <form action="<:script:>" method="POST"><input type="hidden" name="id" value="<:article id:>">
 <:iterator begin kids:>
         <tr bgcolor="#FFFFFF"> 
@@ -207,6 +215,7 @@
           <td colspan="5" align="center">No children</td>
 </tr>
 <:eif Kids:>
+</form>
 <:if Possibles:>
 <form action="<:script:>"><input type="hidden" name="id" value="<:article id:>">
           <tr bgcolor="#FFFFFF"> 
@@ -220,8 +229,8 @@
 </tr>
 </form>
 <:or Possibles:><:eif Possibles:>
-</form>
 </table>
 </td></tr></table>
+<:eif new:>
 </body
 ></html>
