@@ -1,0 +1,25 @@
+=head1 NAME
+
+TODO - possible changes for BSE
+
+=head1 DESCRIPTION
+
+This is a simple list of possible changes to BSE.
+
+=over
+
+=item *
+
+move admin templates to their own directory
+
+=item *
+
+all some sort of id to be used to identify articles (rather than numbers)
+
+=item *
+
+article defaults based on parent article id
+
+=back
+
+=cut
