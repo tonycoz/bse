@@ -16,7 +16,8 @@ $SHOP_PGPE $SHOP_EMAIL_ORDER %SHOP_PRODUCT_OPTS
 $ROOT_URI $ARTICLE_URI $SHOP_URI $CGI_URI $ADMIN_URI $IMAGES_URI
 $LOCAL_FORMAT $GENERATE_BUTTON $AUTO_GENERATE
 $DATA_EMAIL $MYSQLDUMP $BODY_EMBED $EMBED_MAX_DEPTH $REPARENT_UPDOWN
-$HAVE_HTML_PARSER $UNLISTED_LEVEL1_IN_CRUMBS);
+$HAVE_HTML_PARSER $UNLISTED_LEVEL1_IN_CRUMBS
+$SMTP_SERVER $SMTP_HELO);
 
 $VERSION = 0.1;
 
@@ -35,7 +36,8 @@ $SHOP_TO_NAME $SHOP_TO_EMAIL $SHOP_EMAIL_ORDER $SHOP_SENDMAIL $SHOP_PGPE
 $ROOT_URI $ARTICLE_URI $SHOP_URI $CGI_URI $ADMIN_URI $IMAGES_URI
 $LOCAL_FORMAT $GENERATE_BUTTON $AUTO_GENERATE
 $DATA_EMAIL $MYSQLDUMP $BODY_EMBED $EMBED_MAX_DEPTH $REPARENT_UPDOWN
-$HAVE_HTML_PARSER $UNLISTED_LEVEL1_IN_CRUMBS/;
+$HAVE_HTML_PARSER $UNLISTED_LEVEL1_IN_CRUMBS
+$SMTP_SERVER $SMTP_HELO/;
 
 %EXPORT_TAGS =
   (
@@ -49,6 +51,7 @@ $HAVE_HTML_PARSER $UNLISTED_LEVEL1_IN_CRUMBS/;
    search => [ qw/$TMPLDIR @SEARCH_EXCLUDE @SEARCH_INCLUDE $SEARCH_ALL
                   $SEARCH_WILDCARD_MIN $SEARCH_AUTO_WILDCARD/ ],
    session => [ qw/$SESSION_CLASS $SESSION_REQUIRE/ ],
+   email => [ qw/$SMTP_SERVER $SMTP_HELO $SHOP_SENDMAIL/ ],
   );
 
 $DSN = 'dbi:mysql:bse';
@@ -177,7 +180,7 @@ $SEARCH_TITLE_IMAGE = "";
   (
    siteName => 'My Site',
    salesPhoneNo => '61 2 9999 8888',
-   salesEmail => 'you@yoursite.com',
+   salesEmail => 'tony@develop-help.com',
    siteUrl => $URLBASE,
   );
 
@@ -234,6 +237,14 @@ $UNLISTED_LEVEL1_IN_CRUMBS = 0;
 # indexing
 $HAVE_HTML_PARSER = 1;
 
+# Mail configuration
+
+# the hostname or IP address of an SMTP server
+$SMTP_SERVER = 'develop-help.com';
+
+# the HELO (EHLO) text passed to the SMTP server
+$SMTP_HELO = 'develop-help.com';
+
 # shop configuration
 
 # the cryto module used to encrypt your copy of the order
@@ -266,11 +277,11 @@ $SHOP_SENDMAIL = '/usr/lib/sendmail';
 $SHOP_MAIL_SUBJECT = "Your (web site) order";
 
 # name used in the From line for both the order emails
-$SHOP_FROM = 'you@yoursite.com';
+$SHOP_FROM = 'tony@develop-help.com';
 
 # the name/email your copy of emailled orders should be sent to
 $SHOP_TO_NAME = 'Your Name';
-$SHOP_TO_EMAIL = 'sales@yoursite.com';
+$SHOP_TO_EMAIL = 'sales@develop-help.com';
 
 # non-zero if we should email an encrypted order to $SHOP_TO_EMAIL
 $SHOP_EMAIL_ORDER = 0;
