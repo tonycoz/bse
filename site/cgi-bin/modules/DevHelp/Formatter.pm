@@ -3,6 +3,8 @@ use strict;
 use DevHelp::HTML;
 use Carp 'confess';
 
+use constant DEBUG => 0;
+
 sub new {
   my ($class) = @_;
 
@@ -78,7 +80,7 @@ sub _format_bullets {
   my ($text) = @_;
 
   $text =~ s/^\s+|\s+$//g;
-  my @points = split /(?:\r?\n)?\*\*\s*/, $text;
+  my @points = split /(?:\r?\n)? *\*\*\s*/, $text;
   shift @points if @points and $points[0] eq '';
   return '' unless @points;
   for my $point (@points) {
@@ -90,9 +92,12 @@ sub _format_bullets {
 # make a OL
 sub _format_ol {
   my ($text, $type, $code) = @_;
+
+  print STDERR "_format_ol(..., $type, $code)\n" if DEBUG;
+  print STDERR "text: ",unpack("H*", $text),"\n" if DEBUG;
   $text =~ s/^\s+|\s+$//g;
   $code ||= "##";
-  my @points = split /(?:\r?\n)?$code\s*/, $text;
+  my @points = split /(?:\r?\n)? *$code\s*/, $text;
   shift @points if @points and $points[0] eq '';
   return '' unless @points;
   for my $point (@points) {
@@ -153,6 +158,12 @@ sub replace_char {
 sub format {
   my ($self, $body) = @_;
 
+  print STDERR "format(...)\nbody: ",unpack("H*", $body),"\n" if DEBUG;
+
+  if ($body =~ /\n/) {
+    $body =~ tr/\r//d;
+  }
+
   $body = $self->escape($body);
   my $out = '';
   for my $part (split /((?:html\[(?:[^\[\]]*(?:(?:\[[^\[\]]*\])[^\[\]]*)*)\])
@@ -198,11 +209,11 @@ sub format {
 	  and next TRY;
 	$part =~ s#table\[([^\]\[]+)\|([^\]\[|]+)\]#_make_table($1, "|$2")#ieg
 	  and next TRY;
-	$part =~ s#\n{0,2}((?:\*\*[^\n]+(?:\n|$)\n?[^\S\n]*)+)\n?#_format_bullets($1)#eg
+	$part =~ s#(?:^|\n{1,2})((?: *\*\*[^\n]+(?:\n|$)\n?[^\S\n]*)+)\n?#_format_bullets($1)#eg
 	  and next TRY;
-	$part =~ s!\n{0,2}((?:##[^\n]+(?:\n|$)\n?[^\S\n]*)+)\n?!_format_ol($1)!eg
+	$part =~ s!(?:^|\n{1,2})((?: *##[^\n]+(?:\n|$)\n?[^\S\n]*)+)\n?!_format_ol($1)!eg
 	  and next TRY;
-	$part =~ s!\n{0,2}((?:%%[^\n]+(?:\n|$)\n?[^\S\n]*)+)\n?!_format_ol($1, 'a', '%%')!eg
+	$part =~ s!(?:^|\n{1,2})((?: *%%[^\n]+(?:\n|$)\n?[^\S\n]*)+)\n?!_format_ol($1, 'a', '%%')!eg
 	  and next TRY;
 	$part =~ s#indent\[([^\]\[]+)\]#<ul>$1</ul>#ig
 	  and next TRY;

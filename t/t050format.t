@@ -1,13 +1,13 @@
 #!perl -w
 use strict;
-use Test::More tests => 38;
+use Test::More tests => 42;
 
 sub format_test($$$;$);
 
 my $gotmodule = require_ok('DevHelp::Formatter');
 
 SKIP: {
-  skip "couldn't load module", 37 unless $gotmodule;
+  skip "couldn't load module", 41 unless $gotmodule;
 
   format_test <<IN, <<OUT, 'bold', 'both';
 b[hello]
@@ -117,6 +117,19 @@ OUT
 IN
 <ol><li>one<br /><br /></li><li>two</li></ol>
 OUT
+  format_test <<IN, <<OUT, 'ol1 alpha', 'both';
+%% one
+%% two
+IN
+<ol type="a"><li>one</li><li>two</li></ol>
+OUT
+  format_test <<IN, <<OUT, 'ol2 alpha', 'both';
+%% one
+
+%% two
+IN
+<ol type="a"><li>one<br /><br /></li><li>two</li></ol>
+OUT
   format_test <<IN, <<OUT, 'ul1', 'both';
 ** one
 ** two
@@ -129,6 +142,22 @@ OUT
 ** two
 IN
 <ul><li>one<br /><br /></li><li>two</li></ul>
+OUT
+
+  format_test <<IN, <<OUT, 'ul indented', 'both';
+  ** one
+**two
+IN
+<ul><li>one</li><li>two</li></ul>
+OUT
+
+  format_test <<IN, <<OUT, "don't ul at end of line", 'both';
+this shouldn't be a bullet ** some text
+
+** this should be a bullet
+** so should this
+IN
+this shouldn't be a bullet ** some text<ul><li>this should be a bullet</li><li>so should this</li></ul>
 OUT
 
   format_test 'indent[text]', '<ul>text</ul>', 'indent';

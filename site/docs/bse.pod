@@ -10,6 +10,22 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.14_23
+
+=over
+
+=item *
+
+differences in whether CR chars are passed in line separators could
+cause formatting problems with ##/**/%% lists in body formatted text
+
+=item *
+
+a ##, %% or ** which wasn't at the beginning of a line could be
+treated as part of a formatted list
+
+=back
+
 =head2 0.14_22
 
 =over
