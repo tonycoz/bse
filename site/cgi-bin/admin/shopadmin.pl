@@ -475,7 +475,7 @@ sub page {
   my $templ = Squirrel::Template->new;
 
   print "Content-Type: text/html\n\n";
-  print $templ->show_page($TMPLDIR, $which . ".tmpl", $acts, $iter);
+  print $templ->show_page($TMPLDIR, 'admin/' . $which . ".tmpl", $acts, $iter);
 }
 
 sub shop_redirect {
@@ -545,7 +545,7 @@ order_item tables.
 
 =head1 TEMPLATES
 
-shopadmin.pl uses a few templates from the templates directory.
+shopadmin.pl uses a few templates from the templates/admin directory.
 
 =head2 product_list.tmpl
 
