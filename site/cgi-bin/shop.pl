@@ -3,13 +3,14 @@ use strict;
 use FindBin;
 use lib "$FindBin::Bin/modules";
 use CGI ':standard';
-use CGI::Carp 'fatalsToBrowser';
 use Products;
 use Product;
 use Constants qw(:shop :session $TMPLDIR %EXTRA_TAGS $CGI_URI);
 use Squirrel::Template;
 use Squirrel::ImageEditor;
 use CGI::Cookie;
+use BSE::Custom;
+
 require $SESSION_REQUIRE;
 
 my $subject = $SHOP_MAIL_SUBJECT;
@@ -101,7 +102,7 @@ my %steps =
   );
 
 for my $key (keys %steps) {
-  if (param($key)) {
+  if (param($key) or param("$key.x")) {
     $steps{$key}->();
     exit;
   }
@@ -153,12 +154,13 @@ sub add_item {
 }
 
 sub total {
-  my ($cart) = @_;
+  my ($cart, $products, $state) = @_;
 
   my $total = 0;
   for my $item (@$cart) {
     $total += $item->{units} * $item->{price};
   }
+  $total += BSE::Custom->total_extras($cart, $products, $state);
 
   return $total;
 }
@@ -205,10 +207,16 @@ sub show_cart {
   my $item_index = -1;
   my @options;
   my $option_index;
+  
+  $session{custom} ||= {};
+  my %custom_state = %{$session{custom}};
+
+  BSE::Custom->enter_cart(\@cart, \@cart_prods, \%custom_state); 
 
   my %acts;
   %acts =
     (
+     BSE::Custom->cart_actions(\%acts, \@cart, \@cart_prods, \%custom_state),
      iterate_items_reset => sub { $item_index = -1; },
      iterate_items => 
      sub { 
@@ -228,7 +236,7 @@ sub show_cart {
        $cart[$item_index]{units} * $cart_prods[$item_index]{$what};
      },
      index => sub { $item_index },
-     total => sub { total(\@cart) },
+     total => sub { total(\@cart, \@cart_prods, \%custom_state) },
      money =>
      sub {
        my ($func, $args) = split ' ', $_[0], 2;
@@ -242,6 +250,8 @@ sub show_cart {
      ifOptions => sub { @options },
      options => sub { nice_options(@options) },
     );
+  $session{custom} = \%custom_state;
+
   page('cart.tmpl', \%acts);
 }
 
@@ -261,6 +271,10 @@ sub update_quantities {
   }
   @cart = grep { $_->{units} != 0 } @cart;
   $session{cart} = \@cart;
+  $session{custom} ||= {};
+  my %custom_state = %{$session{custom}};
+  BSE::Custom->recalc($CGI::Q, \@cart, [], \%custom_state);
+  $session{custom} = \%custom_state;
 }
 
 sub recalc {
@@ -291,6 +305,11 @@ sub checkout {
   update_quantities();
   my @cart = @{$session{cart}};
   my @cart_prods = map { Products->getByPkey($_->{productId}) } @cart;
+  $session{custom} ||= {};
+  my %custom_state = %{$session{custom}};
+
+  BSE::Custom->enter_cart(\@cart, \@cart_prods, \%custom_state); 
+
   my $item_index = -1;
   my @options;
   my $option_index;
@@ -316,7 +335,7 @@ sub checkout {
        $cart[$item_index]{units} * $cart_prods[$item_index]{$what};
      },
      index => sub { $item_index },
-     total => sub { total(\@cart) },
+     total => sub { total(\@cart, \@cart_prods, \%custom_state) },
      money =>
      sub {
        my ($func, $args) = split ' ', $_[0], 2;
@@ -331,7 +350,9 @@ sub checkout {
      option => sub { CGI::escapeHTML($options[$option_index]{$_[0]}) },
      ifOptions => sub { @options },
      options => sub { nice_options(@options) },
+     BSE::Custom->checkout_actions(\%acts, \@cart, \@cart_prods, \%custom_state),
     );
+  $session{custom} = \%custom_state;
 
   page('checkout.tmpl', \%acts);
 }
@@ -344,8 +365,7 @@ sub checkout {
 # information
 # BUG!!: this duplicates the code in purchase() a great deal
 sub prePurchase {
-  my @required = 
-    qw(name1 name2 address city postcode state country);
+  my @required = BSE::Custom->required_fields($CGI::Q, $session{custom});
   for my $field (@required) {
     defined(param($field)) && length(param($field))
       or return checkout("Field $field is required", 1);
@@ -425,6 +445,9 @@ sub prePurchase {
   }
   $order{orderDate} = $today;
 
+  $order{total} += BSE::Custom->total_extras(\@cart, \@products, 
+					     $session{custom});
+  ++$session{changed};
   # blank anything else
   for my $column (@columns) {
     defined $order{$column} or $order{$column} = '';
@@ -435,6 +458,15 @@ sub prePurchase {
   
   # this should be hard to guess
   $order{randomId} = md5_hex(time().rand().{}.$$);
+
+  # check if a customizer has anything to do
+  eval {
+    BSE::Custom->order_save($CGI::Q, \%order, \@cart, \@products, $session{custom});
+    ++$session{changed};
+  };
+  if ($@) {
+    return checkout($@, 1);
+  }
 
   # load up the database
   my @data = @order{@columns};
@@ -508,7 +540,8 @@ sub prePurchase {
 sub purchase {
   # some basic validation, in case the user switched off javascript
   my @required = 
-    qw(name1 name2 address city postcode state country cardHolder cardExpiry);
+    (BSE::Custom->required_fields($CGI::Q, $session{custom}), 
+     qw(cardHolder cardExpiry) );
   for my $field (@required) {
     defined(param($field)) && length(param($field))
       or return checkout("Field $field is required", 1);
@@ -589,6 +622,9 @@ sub purchase {
     $order{gst} += $item->{gst} * $item->{units};
   }
   $order{orderDate} = $today;
+  $order{total} += BSE::Custom->total_extras(\@cart, \@products, 
+					     $session{custom});
+  ++$session{changed};
 
   # blank anything else
   for my $column (@columns) {
@@ -600,6 +636,14 @@ sub purchase {
 
   # this should be hard to guess
   $order{randomId} = md5_hex(time().rand().{}.$$);
+
+  # check if a customizer has anything to do
+  eval {
+    BSE::Custom->order_save($CGI::Q, \%order, \@cart, \@products);
+  };
+  if ($@) {
+    return checkout($@, 1);
+  }
 
   # load up the database
   my @data = @order{@columns};
@@ -621,6 +665,8 @@ sub purchase {
   my %acts;
   %acts =
     (
+     BSE::Custom->purchase_actions(\%acts, \@items, \@products, 
+				   $session{custom}),
      iterate_items_reset => sub { $item_index = -1; },
      iterate_items => 
      sub { 
