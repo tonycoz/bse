@@ -86,12 +86,13 @@ if (defined $id && $id) {
       $level = $article->{level};
       # get the image state
       if (!$session{imagesid} || $session{imagesid} != $id) {
-        my @images = Images->getBy('articleId', $article->{id});
+        my @images = sort { $a->{id} <=> $b->{id} }
+	  Images->getBy('articleId', $article->{id});
         for my $image (@images) {
           # make a new hash rather than just using the object - we will be
           # doing non-OO things to it (like saving them in a session)
-	$image = { map { $_=>$image->{$_} } $image->columns };
-      }
+	  $image = { map { $_=>$image->{$_} } $image->columns };
+	}
         $imageEditor->set(\@images, $article->{imagePos});
         $session{imagesid} = $id;
       }

@@ -106,7 +106,8 @@ sub baseActs {
   my $parent = $articles->getByPkey($article->{parentid});
   my $section = $crumbs[0];
 
-  my @images = Images->getBy('articleId', $article->{id});
+  my @images = sort { $a->{id} <=> $b->{id} }
+    Images->getBy('articleId', $article->{id});
   my $image_index = -1;
   my $had_image_tags = 0;
 
