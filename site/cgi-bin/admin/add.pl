@@ -251,7 +251,7 @@ my $child_index = -1;
    sub {
      if ($id && $id != -1) {
        return <<HTML;
-<p><a href="$ENV{SCRIPT_NAME}?id=$article->{parentid}">Edit parent</a></p>
+<a href="$ENV{SCRIPT_NAME}?id=$article->{parentid}">Edit parent</a> |
 HTML
      }
      else {
