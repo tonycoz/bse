@@ -10,6 +10,54 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.10
+
+=over 4
+
+=item *
+
+the <:embed child:> tags meaning has been expanded to allow embedding
+of any article with an optional template
+
+=item *
+
+there's now an embed[] tag for use in body text.  Both this and 
+<:embed ... :> are protected against infinite recursion.
+
+=item *
+
+changed display values for sections etc in Constants.pm, you can still
+put your own in when you customize.
+
+=item *
+
+the default templates for each level have been set to a single
+template, for a simpler default setup
+
+=item *
+
+new admin index pages, which may display a little better in some
+browsers
+
+=item *
+
+you can move articles between levels, if enabled in Constants.pm
+
+=item *
+
+unquoted search terms will do "start of word" searches if enabled in 
+Constants.pm
+
+=item *
+
+html[] tags and <html> body text now has tags stripped when displayed
+as a summary or as a search excerpt.  The search indexing can now
+handle both of these too.
+
+=item *
+
+=back
+
 =head2 0.09
 
 =over 4
