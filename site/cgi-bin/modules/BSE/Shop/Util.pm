@@ -211,7 +211,7 @@ sub load_order_fields {
     return 0;
   }
 
-  @$cart_prods = @cart_prods;
+  @$cart_prods = @products;
   return 1;
 }
 
