@@ -10,6 +10,21 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.10_15
+
+=over
+
+=item *
+
+make the depth parameter in <:embed which template depth:> work
+
+=item *
+
+give the sitemap a lower depth since 7 levels (5 + the level1 and 2)
+is too much.
+
+=back
+
 =head2 0.10_14
 
 =over
