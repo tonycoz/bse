@@ -1,4 +1,6 @@
 #!/usr/bin/perl -w
+# -d:ptkdb
+BEGIN { $ENV{DISPLAY} = '192.168.32.15:0.0' }
 use strict;
 use FindBin;
 use lib "$FindBin::Bin/../modules";
@@ -8,6 +10,7 @@ use Constants;
 use Util qw(generate_button regen_and_refresh refresh_to);
 use Carp 'verbose';
 use BSE::Request;
+use URI::Escape;
 
 my $req = BSE::Request->new;
 
@@ -58,8 +61,15 @@ if (generate_button()) {
 			$siteurl . $baseurl, $cfg, $callback);
     }
     else {
-      print "<p>You don't have permission to regenerate that</p>\n"
-	if $progress;
+      if ($progress) {
+	print "<p>You don't have permission to regenerate that</p>\n";
+      }
+      else {
+	if ($baseurl =~ /menu\.pl$/) {
+	  $baseurl .= "?m=".uri_escape("You don't have permission to regenerate that");
+	}
+	refresh_to("$siteurl$baseurl");
+      }
     }
   }
   else {
@@ -68,8 +78,15 @@ if (generate_button()) {
 			$siteurl . $baseurl, $cfg, $callback);
     }
     else {
-      print "<p>You don't have permission to regen all.</p>\n"
-	if $progress;
+      if ($progress) {
+	print "<p>You don't have permission to regenerate all</p>\n";
+      }
+      else {
+	if ($baseurl =~ /menu\.pl$/) {
+	  $baseurl .= "?m=".uri_escape("You don't have permission to regenerate all");
+	}
+	refresh_to("$siteurl$baseurl");
+      }
     }
   }
   if ($progress) {

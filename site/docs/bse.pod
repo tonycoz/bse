@@ -10,6 +10,51 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.12_17
+
+=over
+
+=item *
+
+the logon processing code was calling the logon processing code rather
+than the logon form code on a failed logon.  This cause infinite
+recursion.
+
+=item *
+
+removed the pointless Admin menu link from the logon form
+
+=item *
+
+add.pl was producing a warning when called without an id parameter
+
+=item *
+
+generate.pl didn't refresh properly if the user didn't have permission
+to regenerate
+
+=item *
+
+the menu now only shows the regenerate options if the user has
+permission to do so
+
+=item *
+
+move.pl (used to handle the reording arrows) didn't even compile
+
+=item *
+
+the hide/show links on the product detail page pointed at the wrong
+place, and were still shown if the user didn't have the rights to do
+the job.
+
+=item *
+
+the edit_product template displayed the hide/show link even if the
+user wasn't permitted to do so
+
+=back
+
 =head2 0.12_16
 
 =over

@@ -29,6 +29,7 @@ sub dispatch {
 sub req_menu {
   my ($class, $req, $msg) = @_;
 
+  $msg ||= $req->cgi->param('m') || '';
   BSE::Permissions->check_logon($req)
     or return BSE::Template->get_refresh($req->url('logon'), $req->cfg);
 

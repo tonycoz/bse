@@ -12,15 +12,17 @@ use CGI::Carp 'fatalsToBrowser';
 use BSE::Request;
 use Constants;
 
+
 my $req = BSE::Request->new;
-unless ($req->check_admin_logon()) {
-  print "Refresh: 0; url=\"$urlbase/cgi-bin/admin/logon.pl\"\n";
-  exit;
-}
 
 my $cfg = $req->cfg;
 my $cgi = $req->cgi;
 my $urlbase = $cfg->entryVar('site', 'url');
+
+unless ($req->check_admin_logon()) {
+  print "Refresh: 0; url=\"$urlbase/cgi-bin/admin/logon.pl\"\n";
+  exit;
+}
 
 my $id = $cgi->param('id');
 my $direction = $cgi->param('d');

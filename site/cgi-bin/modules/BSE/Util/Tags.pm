@@ -371,17 +371,6 @@ sub tag_if_user_can {
 	unless ($article) {
 	  if (my $artid = $req->cfg->entry('articles', $artname)) {
 	    $article = $artid;
-#  	    if ($artid == -1) {
-#  	      $article = \%dummy_site_article;
-#  	    }
-#  	    else {
-#  	      require Articles;
-#  	      $article = Articles->getByPkey($artid);
-#  	    }
-#  	    unless ($article) {
-#  	      print STDERR "Could not find article id $artid (from $artname)\n";
-#  	      return;
-#  	    }
 	  }
 	  elsif ($acts->{$artname}) {
 	    $article = $templater->perform($acts, $artname, 'id');
@@ -394,7 +383,7 @@ sub tag_if_user_can {
       }
     }
     else {
-      $article = \%dummy_site_article;
+      $article = -1;
     }
 
     # whew, so we should have an article

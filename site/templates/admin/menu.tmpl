@@ -5,6 +5,7 @@
 <body>
 <h1>Administration Centre</h1>
 <:ifFormLogon:><p>| <a href="/cgi-bin/admin/logon.pl?a_logoff=1">Logoff <:adminuser logon:></a> |<:or:></p><:eif:>
+<:ifMessage:><p><b><:message:></b></p><:or:><:eif:>
 <p>
 <table width="50%" border="0" cellspacing="0" 
 
@@ -117,6 +118,7 @@ href="/cgi-bin/admin/adminusers.pl">User/Group administration</a></td>
     <td>&nbsp;</td>
  
 </tr>
+<:ifUserCan regen_all:>
   <tr> 
     <td colspan="2"><a 
 href="/cgi-bin/admin/generate.pl">Regenerate static &amp; 
@@ -125,6 +127,8 @@ pages</a> (<a
 href="/cgi-bin/admin/generate.pl?progress=1">verbose</a>)</td>
  
 </tr>
+<:or:><:eif:>
+<:ifUserCan regen_extras:>
   <tr> 
     <td width="15">&nbsp;</td>
     <td>&#149; <a 
@@ -134,6 +138,7 @@ and base pages</a> (<a
 href="/cgi-bin/admin/generate.pl?id=extras&progress=1">verbose</a>)</td>
  
 </tr>
+<:or:><:eif:>
   <tr> 
     <td colspan="2"><a 
 

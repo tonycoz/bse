@@ -27,7 +27,7 @@ my $cfg = $req->cfg;
 my $id = $cgi->param('id');
 my $articles = 'Articles'; # for a later switch to proper objects, I hope
 my $result;
-if ($id == -1) {
+if (defined $id && $id == -1) {
   my $obj = get_class('BSE::Edit::Article', $cfg)
     or die "Cannot get sections class";
   $result = $obj->edit_sections($req, $articles);

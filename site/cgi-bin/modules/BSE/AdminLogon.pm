@@ -50,13 +50,13 @@ sub req_logon {
   my $password = $cgi->param('password');
 
   defined $logon && length $logon
-    or return $class->req_logon($req, "Please enter your logon name");
+    or return $class->req_logon_form($req, "Please enter your logon name");
   defined $password && length $password
-    or return $class->req_logon($req, "Please enter your password");
+    or return $class->req_logon_form($req, "Please enter your password");
   require BSE::TB::AdminUsers;
   my $user = BSE::TB::AdminUsers->getBy(logon=>$logon);
   $user && $user->{password} eq $password
-    or return $class->req_logon($req, "Invalid logon or password");
+    or return $class->req_logon_form($req, "Invalid logon or password");
   $req->session->{adminuserid} = $user->{id};
 
   my $r = $cgi->param('r');
