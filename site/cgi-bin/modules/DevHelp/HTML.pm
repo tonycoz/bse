@@ -17,7 +17,11 @@ use HTML::Entities ();
 use URI::Escape ();
 
 sub escape_html {
-  HTML::Entities::encode(shift, '<>&"\x7F-\xFF');
+  my ($text, $what) = @_;
+
+  $what ||= '<>&"\x7F-\xFF';
+
+  HTML::Entities::encode($text, $what);
 }
 
 sub unescape_html {

@@ -170,6 +170,12 @@ sub make_paged_iterator {
      "${single}_pagecounter" =>
      [ _iter_page_counter=>$self, \$page_counter ],
      "${plural}_perpage" => $perpage,
+#      "${plural}_pagelist" =>
+#      [ _iter_pagelist => $self, $page_num, $page_count, $pagename ],
+#      "${plural}_firstpage" =>
+#      [ _iter_firstpage => $self, $page_num, $page_count, $pagename ],
+#      "${plural}_backonepage" =>
+#      [ _iter_backonepage => $self, $page_num, $page_count, $pagename ],
     );
 }
 

@@ -18,6 +18,11 @@ sub new {
   $self->{images} = $images;
   #$self->{level} = $level;
 
+  my $cfg = $gen->{cfg};
+  if ($cfg->entry('html', 'mbcs', 0)) {
+    $self->{conservative_escape} = 1;
+  }
+
   $self;
 }
 

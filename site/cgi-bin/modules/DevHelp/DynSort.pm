@@ -75,10 +75,10 @@ sub tag_sorthelp {
 
   if ($args eq $sortby) {
     my $rev = $reverse ? 0 : 1;
-    return "s=$args&r=$rev";
+    return "s=$args&amp;r=$rev";
   }
   else {
-    return "s=$args&r=0";
+    return "s=$args&amp;r=0";
   }
 }
 

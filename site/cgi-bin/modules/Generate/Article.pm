@@ -165,6 +165,14 @@ sub tag_article {
   return escape_html($article->{$arg});
 }
 
+sub abs_urls {
+  my ($self, $article) = @_;
+
+  my $top = $self->{top} || $article;
+
+  $article->{link} =~ /^\w+:/ || $top->{link} =~ /^\w+:/;
+}
+
 sub tag_admin {
   my ($self, $article, $default, $embedded, $arg) = @_;
 
@@ -230,7 +238,7 @@ sub baseActs {
   my $blank = qq!<img src="$IMAGES_URI/trans_pixel.gif"  width="17" height="13" border="0" align="absbottom" alt="" />!;
 
   my $top = $self->{top} || $article;
-  my $abs_urls = $article->{link} =~ /^\w+:/ || $top->{link} =~ /^\w+:/;
+  my $abs_urls = $self->abs_urls($article);
 
   my @stepkids;
   my @allkids;

@@ -39,16 +39,17 @@ sub req_logon_form {
       $msg = join("<br />", map escape_html($_), values %$errors);
     }
     else {
-      $msg = '';
+      $msg = $req->cgi->param('m');
+      defined $msg or $msg = '';
     }
   }
 
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->admin(undef, $req->cfg),
      BSE::Util::Tags->basic(undef, $req->cgi, $req->cfg),
      BSE::Util::Tags->secure($req),
+     BSE::Util::Tags->admin(undef, $req->cfg),
      message => $msg,
      error_img => [ \&tag_error_img, $req->cfg, $errors ],
     );

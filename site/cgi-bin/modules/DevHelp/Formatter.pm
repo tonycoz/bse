@@ -153,7 +153,7 @@ sub replace_char {
 sub format {
   my ($self, $body) = @_;
 
-  $body = escape_html($body);
+  $body = $self->escape($body);
   my $out = '';
   for my $part (split /((?:html\[(?:[^\[\]]*(?:(?:\[[^\[\]]*\])[^\[\]]*)*)\])
 			|embed\[(?:[^,\[\]]*)(?:,(?:[^,\[\]]*)){0,2}\]
@@ -361,6 +361,17 @@ sub _cleanup_table {
     tr/|/ /s;
   }
   return join(' ', @lines);
+}
+
+sub escape {
+  my ($self, $html) = @_;
+
+  if ($self->{conservative_escape}) {
+    return escape_html($html, '<>&"');
+  }
+  else {
+    return escape_html($html);
+  }
 }
 
 1;

@@ -33,5 +33,9 @@ sub baseActs {
     );
 }
 
+sub abs_urls {
+  1;
+}
+
 1;
 

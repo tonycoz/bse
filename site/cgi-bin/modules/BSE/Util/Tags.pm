@@ -93,6 +93,7 @@ sub static {
        --$month;
        return POSIX::strftime($fmt, $sec, $min, $hour, $day, $month, $year, 0, 0);
      },
+     today => \&tag_today,
      money =>
      sub {
        my ($arg, $acts, $name, $templater) = @_;
@@ -203,6 +204,7 @@ sub static {
        my @items = DevHelp::Tags->get_parms($arg, $acts, $templater);
        join '', @items;
      },
+     arithmetic => \&tag_arithmetic,
      match =>
      sub {
        my ($arg, $acts, $name, $templater) = @_;
@@ -254,7 +256,7 @@ sub static {
        $out;
      },
      adminbase => [ \&tag_adminbase, $cfg ],
-     help => [ \&tag_help, $cfg, 'admin' ],
+     help => [ \&tag_help, $cfg, 'user' ],
      
      _format => 
      sub {
@@ -268,6 +270,38 @@ sub static {
        return $value;
      },
     );  
+}
+
+sub tag_arithmetic {
+  my ($arg, $acts, $name, $templater) = @_;
+
+  my $prefix;
+
+  if ($arg =~ s/^\s*([^:\s]+)://) {
+    $prefix = $1;
+  }
+  else {
+    $prefix = '';
+  }
+
+  $arg =~ s/\[\s*(\w+)(\s+\S[^\[\]]*)?\s*\]/
+    $templater->perform($acts, $1, $2)/ge;
+
+  # this may be made more restrictive
+  my $result = eval $arg;
+
+  if ($@) {
+    return escape_html("** arithmetic error ".$@." **");
+  }
+
+  if ($prefix eq 'i') {
+    $result = int($result);
+  }
+  elsif ($prefix eq 'r') {
+    $result = sprintf("%.0f", $result);
+  }
+
+  return escape_html($result);
 }
 
 sub tag_old {
@@ -681,6 +715,16 @@ sub tag_hash_plain {
   defined $value or $value = '';
 
   $value;
+}
+
+sub tag_today {
+  my ($args) = @_;
+
+  $args =~ s/^"(.+)"$/$1/;
+
+  $args ||= "%d-%b-%Y";
+
+  return POSIX::strftime($args, localtime);
 }
 
 1;

@@ -42,8 +42,8 @@ sub req_form {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->admin(undef, $req->cfg),
      BSE::Util::Tags->basic(undef, $req->cgi, $req->cfg),
+     BSE::Util::Tags->admin(undef, $req->cfg),
      BSE::Util::Tags->secure($req),
      message => $msg,
      error_img => [ \&tag_error_img, $req->cfg, $errors ],

@@ -282,7 +282,7 @@ sub stmt {
     my @row = $self->{dbh}->selectrow_array($get_sql_by_name, {}, $name);
     if (@row) {
       $sql = $row[0];
-      print STDERR "Found SQL '$sql'\n";
+      #print STDERR "Found SQL '$sql'\n";
     }
     else {
       print STDERR "SQL statment $name not found in sql_statements table\n";

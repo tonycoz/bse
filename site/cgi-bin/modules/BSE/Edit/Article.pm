@@ -132,6 +132,17 @@ sub tag_hash {
   escape_html($value);
 }
 
+sub tag_hash_mbcs {
+  my ($object, $args) = @_;
+
+  my $value = $object->{$args};
+  defined $value or $value = '';
+  if ($value =~ /\cJ/ && $value =~ /\cM/) {
+    $value =~ tr/\cM//d;
+  }
+  escape_html($value, '<>&"');
+}
+
 sub tag_art_type {
   my ($level, $cfg) = @_;
 
@@ -943,12 +954,14 @@ sub low_edit_tags {
   else {
     $parent = { title=>"How did we get here?", id=>0 };
   }
+  my $cfg = $self->{cfg};
+  my $mbcs = $cfg->entry('html', 'mbcs', 0);
+  my $tag_hash = $mbcs ? \&tag_hash_mbcs : \&tag_hash;
   my @images;
   my $image_index;
   my @children;
   my $child_index;
   my %stepkids;
-  my $cfg = $self->{cfg};
   my @allkids;
   my $allkid_index;
   my @possstepkids;
@@ -963,7 +976,7 @@ sub low_edit_tags {
      BSE::Util::Tags->basic($acts, $cgi, $cfg),
      BSE::Util::Tags->admin($acts, $cfg),
      BSE::Util::Tags->secure($request),
-     article => [ \&tag_hash, $article ],
+     article => [ $tag_hash, $article ],
      old => [ \&tag_old, $article, $cgi ],
      default => [ \&tag_default, $self, $request, $article ],
      articleType => [ \&tag_art_type, $article->{level}, $cfg ],
@@ -1030,10 +1043,10 @@ sub low_edit_tags {
      DevHelp::Tags->make_iterator2
      (\&iter_admin_groups, 'iadmingroup', 'admingroups'),
      edit => [ \&tag_edit_link, $article ],
-     error => [ \&tag_hash, $errors ],
+     error => [ $tag_hash, $errors ],
      error_img => [ \&tag_error_img, $cfg, $errors ],
      ifFieldPerm => [ \&tag_if_field_perm, $request, $article ],
-     parent => [ \&tag_hash, $parent ],
+     parent => [ $tag_hash, $parent ],
      DevHelp::Tags->make_iterator2
      ([ \&iter_flags, $self ], 'flag', 'flags' ),
      ifFlagSet => [ \&tag_if_flag_set, $article ],
@@ -1434,14 +1447,9 @@ sub save {
     if defined $cgi->param('expire') && 
       $req->user_can('edit_field_edit_expire', $article);
   $article->{lastModified} =  now_sqldatetime();
-  my $link_titles = $self->{cfg}->entryBool('basic', 'link_titles', 0);
   if ($article->{link} && 
       !$self->{cfg}->entry('protect link', $article->{id})) {
     my $article_uri = $self->make_link($article);
-    if ($link_titles) {
-      (my $extra = lc $article->{title}) =~ tr/a-z0-9/_/sc;
-      $article_uri .= $extra;
-    }
     $article->setLink($article_uri);
   }
 

@@ -70,9 +70,9 @@ sub req_list {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->admin(undef, $req->cfg),
      BSE::Util::Tags->basic(undef, $req->cgi, $req->cfg),
      BSE::Util::Tags->secure($req),
+     BSE::Util::Tags->admin(undef, $req->cfg),
      message => $msg,
      $it->make_paged_iterator('siteuser', 'siteusers', \@users, undef,
 			      $cgi, undef, 'pp=20', $req->session, 
@@ -186,9 +186,9 @@ sub req_edit {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->admin(undef, $req->cfg),
      BSE::Util::Tags->basic(undef, $req->cgi, $req->cfg),
      BSE::Util::Tags->secure($req),
+     BSE::Util::Tags->admin(undef, $req->cfg),
      message => $msg,
      siteuser => [ \&tag_hash, $siteuser ],
      error_img => [ \&tag_error_img, $req->cfg, $errors ],
@@ -409,9 +409,9 @@ sub req_addform {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->admin(undef, $req->cfg),
      BSE::Util::Tags->basic(undef, $req->cgi, $req->cfg),
      BSE::Util::Tags->secure($req),
+     BSE::Util::Tags->admin(undef, $req->cfg),
      message => $msg,
      error_img => [ \&tag_error_img, $req->cfg, $errors ],
      ifRequired => [ \&tag_if_required, $req->cfg ],

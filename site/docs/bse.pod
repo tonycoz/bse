@@ -10,6 +10,84 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.14_22
+
+=over
+
+=item *
+
+the logon page used the user side help icons (#371)
+
+=item *
+
+the admin user and admin site user pages used the user side help icons
+(#373)
+
+=item *
+
+the change password page used user side help icons  (#378)
+
+=item *
+
+the admin logon page now accepts an m parameter
+
+=item *
+
+in general, moved the common admin tags call after the common basic
+tags call so that admin tags (like the admin help icon) replaces the
+basic help icon.
+
+=item *
+
+remove blank lines from the error messages produced on the admin user
+administration pages
+
+=item *
+
+a very rough attempt at changes to support UTF-8 content has been made.
+
+Don't rely on this.
+
+=item *
+
+previously, if an error occured in producing a template that wasn't a
+template not found error, while using an alternate template, a 500
+error would be produced with no message in the error_log.  Now an
+error page is produced, with the message sent to STDERR (and hence to
+the error_log).
+
+=item *
+
+BSE::DB::Mysql no longer reports that it found SQL in the database.
+
+=item *
+
+when link titles were enabled they were being produced twice.
+
+=item *
+
+added the <:today:> tag - returns the current date, by default
+formatted as "dd-mm-yyyy", but can be reformatted as per the <:date
+...:> tag, for example <:today "%d/%b/%Y":>
+
+=item *
+
+added the <:arithmetic ...:> tag.  Any text [I<word> ...] text in the
+argument is replaced with the corresponding tag value and the final
+result is then evalled.  Do not ever use [cgi ...] values or any other
+unvalidated data with this tag, to avoid security issues.
+
+=item *
+
+the <:sorthelp ...:> tag now seperates the returned URL arguments with
+&amp; instead of just & to produce correct HTML.
+
+=item *
+
+the url tag now generated absolute URLs in subscriptions
+
+=back
+
 =head2 0.14_21
 
 =over

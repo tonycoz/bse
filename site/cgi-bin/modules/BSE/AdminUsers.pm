@@ -123,7 +123,7 @@ sub common_tags {
   }
   else {
     if (values %$errors) {
-      $msg = "<p>".join("<br />", map escape_html($_),values %$errors)."</p>";
+      $msg = "<p>".join("<br />", map escape_html($_),grep $_, values %$errors)."</p>";
     }
     else {
       $msg = '';
@@ -135,9 +135,9 @@ sub common_tags {
   my $group_index;
   return
     (
-     BSE::Util::Tags->admin(undef, $req->cfg),
      BSE::Util::Tags->basic(undef, $req->cgi, $req->cfg),
      BSE::Util::Tags->secure($req),
+     BSE::Util::Tags->admin(undef, $req->cfg),
      message => $msg,
      DevHelp::Tags->make_iterator2
      ([ \&iter_get_users, $req ], 'iuser', 'users', \@users, \$user_index),

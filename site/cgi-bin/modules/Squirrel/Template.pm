@@ -96,6 +96,8 @@ sub perform {
   my ($self, $acts, $func, $args, $orig) = @_;
 
   $args = '' unless defined $args;
+  
+  print STDERR "  > perform $func $args\n" if DEBUG > 1;
 
   my $value = $self->low_perform($acts, $func, $args, $orig);
 
@@ -103,11 +105,15 @@ sub perform {
     cluck "** undefined value returned by $func $args **";
   }
 
+  print STDERR "  < perform\n" if DEBUG > 1;
+
   return $value;
 }
 
 sub iterator {
   my ($self, $name, $args, $input, $sep, $acts, $orig) = @_;
+
+  print STDERR "iterator $name $args\n" if DEBUG;
 
   $args = '' unless defined $args;
   $sep = '' unless defined $sep;
@@ -136,12 +142,15 @@ sub iterator {
 
     if ($resetf) {
       if (ref $resetf) {
+	print STDERR "  resetting (func)\n" if DEBUG > 1;
 	$resetf->(@rargs, $args, $acts, $name, $self);
       }
       else {
 	my $obj = shift @rargs;
+	print STDERR "  resetting (method) $obj->$resetf\n" if DEBUG > 1;
 	$obj->$resetf(@rargs, $args, $acts, $name, $self);
       }
+      print STDERR "  reset done\n" if DEBUG > 1;
     }
     my $eobj;
     ref $entryf or $eobj = shift @eargs;
@@ -319,6 +328,8 @@ sub tag_param {
 sub replace_template {
   my ($self, $template, $acts, $iter) = @_;
 
+  print STDERR "** >> replace_template\n" if DEBUG;
+
   defined $template
     or confess "Template must be defined";
 
@@ -455,11 +466,16 @@ sub replace_template {
   #$template =~ s/(<:\s*param\s+(\w+)\s*:>)/
   #  exists $params{$2} ? $params{$2} : $1 /eg;
 
+
+  print STDERR "** << replace_template\n" if DEBUG;
+
   return $template;
 }
 
 sub show_page {
   my ($self, $base, $page, $acts, $iter, $alt) = @_;
+
+  print STDERR "** show_page\n" if DEBUG;
 
   $acts ||= {};
 

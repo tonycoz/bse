@@ -18,11 +18,17 @@ sub get_page {
     eval {
       $out = $obj->show_page(undef, $file, $acts);
     };
-    if ($@ and $@ =~ /Cannot find template/) {
-      print STDERR "Could not find requested template $file, trying $base_template\n";
-      $file = $cfg->entry('templates', $base_template) || $base_template;
-      $file =~ /\.\w+$/ or $file .= ".tmpl";
-      $out = $obj->show_page(undef, $file, $acts);
+    if ($@) {
+      if ($@ =~ /Cannot find template/) {
+	print STDERR "Could not find requested template $file, trying $base_template\n";
+	$file = $cfg->entry('templates', $base_template) || $base_template;
+	$file =~ /\.\w+$/ or $file .= ".tmpl";
+	$out = $obj->show_page(undef, $file, $acts);
+      }
+      else {
+	print STDERR "** Eval error: $@\n";
+	$out = "<html><body>There was an error producing this page - please contect the webmaster.</body></html>\n";
+      }
     }
   }
   else {
