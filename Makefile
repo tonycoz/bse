@@ -68,4 +68,5 @@ testfiles: distdir
 	perl localinst.perl $(DISTBUILD) leavedb
 	perl -MExtUtils::Command -e rm_rf $(DISTBUILD)
 
-
+test: testinst
+	perl -MTest::Harness=runtests -It -e 'runtests glob q!t/*.t!'

@@ -120,6 +120,18 @@ more formatting options)
 
 a central image repository, so images can be shared between articles
 
+=item *
+
+table editor
+
+=item *
+
+change makeIndex.pl to avoid overflowing the fields
+
+=item *
+
+add a test suite
+
 =back
 
 =cut

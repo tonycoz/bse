@@ -10,6 +10,25 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.11_09
+
+=over
+
+=item *
+
+updated user/* templates from Adrian
+
+=item *
+
+checkout code for the shop didn't pass in the config object to the
+mail class
+
+=item *
+
+work around a bug in the search index builder
+
+=back
+
 =head2 0.11_08
 
 This is a test release.

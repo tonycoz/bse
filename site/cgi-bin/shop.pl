@@ -768,7 +768,7 @@ sub send_order {
     );
   my $templ = Squirrel::Template->new;
 
-  my $mailer = BSE::Mail->new;
+  my $mailer = BSE::Mail->new(cfg=>$cfg);
   # ok, send some email
   my $confirm = $templ->show_page($TMPLDIR, 'mailconfirm.tmpl', \%acts);
   if ($SHOP_EMAIL_ORDER) {

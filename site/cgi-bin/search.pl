@@ -213,7 +213,7 @@ sub getSearchResult {
       if ($section) {
 	# only for the section requested
 	my @sections = split ' ', $row->[2];
-	my @keep = grep { $sections[$_] == $section } 0..$#sections;
+	my @keep = grep { $sections[$_] == $section && $ids[$_] } 0..$#sections;
 	@ids = @ids[@keep];
 	@scores = @scores[@keep];
       }
