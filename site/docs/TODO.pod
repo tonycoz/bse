@@ -24,6 +24,14 @@ template
 
 <:iterator begin children parentid:>... <:iterator end children:>
 
+=item *
+
+move the distribution into my local CVS repository, RCS is annoying
+
+=item *
+
+use a proper config file
+
 =back
 
 =cut
