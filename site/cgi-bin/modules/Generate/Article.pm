@@ -21,7 +21,7 @@ sub edit_link {
 }
 
 sub summarize {
-  my ($self, $text, $length) = @_;
+  my ($self, $articles, $text, $length) = @_;
 
   # remove any block level formatting
   $self->remove_block(\$text);
@@ -42,16 +42,15 @@ sub summarize {
     $text .= '...';
   }
 
-  return $self->format_body($text, 'tr');
+  return $self->format_body({}, $articles, $text, 'tr');
 }
 
 sub make_article_body {
-
-  my ($self, $article) = @_;
+  my ($self, $acts, $articles, $article) = @_;
 
   my @images = Images->getBy('articleId', $article->{id});
 
-  return $self->format_body(@$article{qw/body imagePos/}, @images);
+  return $self->format_body($acts, $articles, @$article{qw/body imagePos/}, @images);
 }
 
 sub link_to_form {
@@ -151,7 +150,8 @@ sub baseActs {
      summary =>
      sub {
        my $child = $children[$child_index];
-       return $self->summarize($child->{body}, $child->{summaryLength})
+       return $self->summarize($articles, $child->{body}, 
+			       $child->{summaryLength})
      },
      keywords => sub { my $keywords = $article->{keyword};
                        $keywords =~ s/\S\s+/, /g;
@@ -229,7 +229,7 @@ HTML
 
      # transform the article or response body (entities, images)
      body=>sub {
-       return $self->make_article_body($article);
+       return $self->make_article_body($acts, $articles, $article);
      },
 
      # used to display a navigation path of parent sections
