@@ -81,18 +81,7 @@ sub allkids {
 sub all_visible_kids {
   my ($self) = @_;
 
-  require 'OtherParents.pm';
-
-  my @otherlinks = OtherParents->getBy(parentId=>$self->{id});
-  my @normalkids = Articles->listedChildren($self->{id});
-  my %order = (
-	       (map { $_->{id}, $_->{displayOrder} } @normalkids ),
-	       (map { $_->{childId}, $_->{parentDisplayOrder} } @otherlinks),
-	      );
-  my @stepkids = $self->visible_stepkids;
-  my %kids = map { $_->{id}, $_ } @stepkids, @normalkids;
-
-  return @kids{ sort { $order{$b} <=> $order{$a} } keys %kids };
+  Articles->all_visible_kids($self->{id});
 }
 
 sub images {

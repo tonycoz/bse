@@ -5,8 +5,8 @@ require Exporter;
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(generate_article generate_all generate_button 
                 refresh_to regen_and_refresh);
-use Constants qw($CONTENTBASE $TMPLDIR %TEMPLATE_OPTS
-		 $GENERATE_BUTTON $SHOPID $AUTO_GENERATE);
+use Constants qw($CONTENTBASE $GENERATE_BUTTON $SHOPID $AUTO_GENERATE);
+use Carp qw(confess);
 
 my %gen_cache;
 
@@ -73,10 +73,12 @@ sub generate_article {
 
 # generates search.tmpl from search_base.tmpl
 sub generate_search {
-  my ($articles) = @_;
+  my ($articles, $cfg) = @_;
+
+  $cfg or confess "Call generate search with a config object";
 
   require 'Generate/Article.pm';
-  my $gen = Generate::Article->new;
+  my $gen = Generate::Article->new(cfg=>$cfg);
 
   # build a dummy article
   use Constants qw($SEARCH_TITLE $SEARCH_TITLE_IMAGE $CGI_URI);
@@ -86,10 +88,10 @@ sub generate_search {
 
   my %acts;
   %acts = $gen->baseActs($articles, \%acts, \%article);
-  my $templ = Squirrel::Template->new(%TEMPLATE_OPTS);
-  my $content = $templ->show_page($TMPLDIR, 'search_base.tmpl', \%acts);
-  my $outname = "$TMPLDIR/search.tmpl.work";
-  my $finalname = "$TMPLDIR/search.tmpl";
+  my $content = BSE::Template->get_page('search_base', $cfg, \%acts);
+  my $tmpldir = $cfg->entryVar('paths', 'templates');
+  my $outname = "$tmpldir/search.tmpl.work";
+  my $finalname = "$tmpldir/search.tmpl";
   open OUT, "> $outname"
     or die "Cannot open $outname for write: $!";
   print OUT $content
@@ -125,10 +127,10 @@ sub generate_shop {
         }
         return $value;
       };
-    my $templ = Squirrel::Template->new(%TEMPLATE_OPTS);
-    my $content = $templ->show_page($TMPLDIR, "${name}_base.tmpl", \%acts);
-    my $outname = "$TMPLDIR/$name.tmpl.work";
-    my $finalname = "$TMPLDIR/$name.tmpl";
+    my $content = BSE::Template->get_page("${name}_base", $cfg, \%acts);
+    my $tmpldir = $cfg->entryVar('paths', 'templates');
+    my $outname = "$tmpldir/$name.tmpl.work";
+    my $finalname = "$tmpldir/$name.tmpl";
     open OUT, "> $outname"
       or die "Cannot open $outname for write: $!";
     print OUT $content
@@ -146,7 +148,7 @@ sub generate_extras {
 
   use BSE::Cfg;
   $cfg ||= BSE::Cfg->new;
-  my $template_dir = $cfg->entry('paths', 'templates') || $TMPLDIR;
+  my $template_dir = $cfg->entryVar('paths', 'templates');
 
   open EXTRAS, "$template_dir/extras.txt"
     or return;
@@ -176,9 +178,7 @@ sub generate_extras {
 	}
 	return $value;
       };
-    my $templ = Squirrel::Template->new(%TEMPLATE_OPTS, 
-					template_dir=>$template_dir);
-    my $content = $templ->show_page($template_dir, $in, \%acts);
+    my $content = BSE::Template->get_page($in, $cfg, \%acts);
     my $outname = $CONTENTBASE . $out . ".work";
     my $finalname = $CONTENTBASE . $out;
     open OUT, "> $outname"
@@ -221,9 +221,7 @@ sub generate_extras {
 	  }
 	  return $value;
 	};
-      my $templ = Squirrel::Template->new(%TEMPLATE_OPTS, 
-					  template_dir=>$template_dir);
-      my $content = $templ->show_page($template_dir, $input, \%acts);
+      my $content = BSE::Template->get_page($input, $cfg, \%acts);
       my $outname = $template_dir .'/'.$out.'.work';
       my $finalname = $template_dir . '/'. $out;
       open OUT, "> $outname"
@@ -268,7 +266,7 @@ sub generate_all {
   %gen_cache = ();
 
   $callback->("Generating search base") if $callback;
-  generate_search($articles);
+  generate_search($articles, $cfg);
 
   $callback->("Generating shop base pages") if $callback;
   generate_shop($articles);
@@ -314,7 +312,7 @@ sub regen_and_refresh {
       if ($article) {
 	if ($article eq 'extras') {
 	  $progress->("Generating search base") if $progress;
-	  generate_search($articles);
+	  generate_search($articles, $cfg);
 	  
 	  $progress->("Generating shop base pages") if $progress  ;
 	  generate_shop($articles);

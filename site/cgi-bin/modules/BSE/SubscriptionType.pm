@@ -98,10 +98,8 @@ sub _text_format_low {
      },
      sub => sub { $sub->{$_[0]} },
     );
-  my $base = $cfg->entry('paths', 'templates') 
-    || $Constants::TMPLDIR;
-  my $obj = Squirrel::Template->new(template_dir=>$base);
-  return $obj->show_page($base, $template, \%acts);
+  
+  return BSE::Template->get_page($template, $cfg, \%acts);
 }
 
 sub text_format {

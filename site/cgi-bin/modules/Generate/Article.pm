@@ -1,8 +1,8 @@
 package Generate::Article;
 use strict;
-use Squirrel::Template;
-use Constants qw($TMPLDIR %TEMPLATE_OPTS %LEVEL_DEFAULTS 
-                 $CGI_URI $ADMIN_URI $IMAGES_URI $UNLISTED_LEVEL1_IN_CRUMBS);
+use BSE::Template;
+use Constants qw(%LEVEL_DEFAULTS $CGI_URI $ADMIN_URI $IMAGES_URI 
+                 $UNLISTED_LEVEL1_IN_CRUMBS);
 use Images;
 use vars qw(@ISA);
 use Generate;
@@ -55,9 +55,7 @@ sub generate_low {
   my %acts;
   %acts = $self -> baseActs($articles, \%acts, $article, $embedded);
 
-
-  return Squirrel::Template->new(%TEMPLATE_OPTS)
-    ->replace_template($template, \%acts);
+  return BSE::Template->replace($template, $self->{cfg}, \%acts);
 }
 
 sub baseActs {
@@ -92,6 +90,8 @@ sub baseActs {
   my @files = sort { $b->{displayOrder} <=> $a->{displayOrder} }
     ArticleFiles->getBy(articleId=>$article->{id});
   
+  my $blank = qq!<img src="$IMAGES_URI/trans_pixel.gif"  width="17" height="13" border="0" align="absbottom" />!;
+
   my @stepkids;
   my @allkids;
   my @stepparents;
@@ -287,28 +287,31 @@ HTML
      # for rearranging order in admin mode
      moveDown=>
      sub {
+       @children > 1 or return '';
        if ($self->{admin} && $child_index < $#children) {
          return <<HTML;
 <a href="$CGI_URI/admin/move.pl?id=$children[$child_index]{id}&d=down"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
 HTML
        } else {
-         return '';
+         return $blank;
        }
      },
      moveUp=>
      sub {
+       @children > 1 or return '';
        if ($self->{admin} && $child_index > 0) {
          return <<HTML;
 <a href="$CGI_URI/admin/move.pl?id=$children[$child_index]{id}&d=up"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
 HTML
        } else {
-         return '';
+         return $blank;
        }
      },
      movestepkid =>
      sub {
        my $html = '';
        return '' unless $self->{admin};
+       return '' unless @allkids > 1;
        my $refreshto = CGI::escape($ENV{SCRIPT_NAME}
 				   ."?id=$article->{id}");
        if ($allkids_index < $#allkids) {
@@ -316,10 +319,16 @@ HTML
 <a href="$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids[$allkids_index]{id}&other=$allkids[$allkids_index+1]{id}&refreshto=$refreshto"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
 HTML
        }
+       else {
+	 $html .= $blank;
+       }
        if ($allkids_index > 0) {
 	 $html .= <<HTML
 <a href="$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids[$allkids_index]{id}&other=$allkids[$allkids_index-1]{id}&refreshto=$refreshto"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
 HTML
+       }
+       else {
+	 $html .= $blank;
        }
        return $html;
      },
@@ -401,11 +410,7 @@ HTML
 sub generate {
   my ($self, $article, $articles) = @_;
 
-  open SOURCE, "< $TMPLDIR$article->{template}"
-    or die "Cannot open template $article->{template}: $!";
-  my $html = do { local $/; <SOURCE> };
-  close SOURCE;
-
+  my $html = BSE::Template->get_source($article->{template}, $self->{cfg});
   $html =~ s/<:\s*embed\s+(?:start|end)\s*:>//g;
 
   return $self->generate_low($html, $article, $articles, 0);

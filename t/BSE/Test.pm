@@ -70,9 +70,9 @@ sub skip {
 }
 
 sub make_ua {
-  require "WWW/Automate.pm";
+  require WWW::Mechanize;
   require "HTTP/Cookies.pm";
-  my $ua = WWW::Automate->new;
+  my $ua = WWW::Mechanize->new;
   $ua->cookie_jar(HTTP::Cookies->new);
 
   $ua;

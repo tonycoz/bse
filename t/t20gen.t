@@ -1,12 +1,14 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>31;
+use Test::More tests=>34;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
 ok(chdir $cgidir, "switch to CGI directory");
 push @INC, 'modules';
+require BSE::Cfg;
+my $cfg = BSE::Cfg->new;
 # create some articles to test with
 require Articles;
 require BSE::Util::SQL;
@@ -23,6 +25,10 @@ for my $name ('One', 'Two', 'Three') {
   push(@kids, $kid);
 }
 
+# make parent a step child of itself
+require BSE::Admin::StepParents;
+BSE::Admin::StepParents->add($parent, $parent);
+
 my $top = Articles->getByPkey(1);
 ok($top, "grabbing Home page");
 
@@ -31,6 +37,18 @@ template_test "children_of", $top, <<TEMPLATE, <<EXPECTED;
 ofchild title:>
 <:iterator end children_of:>
 TEMPLATE
+Three
+Two
+One
+
+EXPECTED
+
+template_test "allkids_of", $top, <<TEMPLATE, <<EXPECTED;
+<:iterator begin allkids_of $parent->{id}:><:
+ofallkid title:>
+<:iterator end allkids_of:>
+TEMPLATE
+Parent
 Three
 Two
 One
@@ -84,6 +102,7 @@ One
 
 EXPECTED
 
+BSE::Admin::StepParents->del($parent, $parent);
 for my $kid (reverse @kids) {
   my $name = $kid->{title};
   $kid->remove();
@@ -133,7 +152,7 @@ sub template_test($$$$) {
       (my $filename = $article->{generator}) =~ s!::!/!g;
       $filename .= ".pm";
       require $filename;
-      $article->{generator}->new();
+      $article->{generator}->new(cfg => $cfg);
     };
   ok($gen, "$tag: created generator $article->{generator}");
   diag $@ unless $gen;

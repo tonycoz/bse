@@ -2,7 +2,7 @@ package Generate;
 use strict;
 use Articles;
 use CGI ();
-use Constants qw($IMAGEDIR $LOCAL_FORMAT $TMPLDIR $BODY_EMBED 
+use Constants qw($IMAGEDIR $LOCAL_FORMAT $BODY_EMBED 
                  $EMBED_MAX_DEPTH $HAVE_HTML_PARSER);
 use BSE::Custom;
 use DevHelp::Tags;
@@ -254,8 +254,10 @@ sub _make_img {
     $text = qq!<img src="/images/$im->{image}" width="$im->{width}"!
       . qq! height="$im->{height}" alt="! . CGI::escapeHTML($im->{alt}).'"'
 	. qq! border="0"!;
-    $text .= qq! align="$align"! if $align;
+    $text .= qq! align="$align"! if $align && $align ne 'center';
     $text .= qq! />!;
+    $text = qq!<div align="center">$text</div>!
+      if $align && $align eq 'center';
     if (!$url && $im->{url}) {
       $url = $im->{url};
     }
@@ -317,6 +319,14 @@ sub format_body {
 	  and next TRY;
 	$part =~ s#i\[([^\]\[]+)\]#<i>$1</i>#ig
 	  and next TRY;
+	$part =~ s#tt\[([^\]\[]+)\]#<tt>$1</tt>#ig
+	  and next TRY;
+	$part =~ s#pre\[([^\]\[]+)\]#<pre>$1</pre>#ig
+	  and next TRY;
+	$part =~ s#h([1-6])\[\|([^\[\]]+)\](?:\r?\n)?#<h$1>$2</h$1>#ig
+          and next TRY;
+	$part =~ s#h([1-6])\[([^\[\]\|]+)\|([^\[\]]+)\](?:\r?\n)?#<h$1 class="$2">$3</h$1>#ig
+          and next TRY;
 	$part =~ s#align\[([^|\]\[]+)\|([^\]\[]+)\]#<div align="$1">$2</div>#ig
 	  and next TRY;
 	$part =~ s#font\[([^|\]\[]+)\|([^\]\[]+)\]#<font size="$1">$2</font>#ig
@@ -345,9 +355,12 @@ sub format_body {
 	  and next TRY;
 	$part =~ s#image\[([^\]\[]+)\]#($auto_images = 0), _make_img($1, \$imagePos, \@images)#ige
 	  and next TRY;
+	$part =~ s#class\[([^\]\[\|]+)\|([^\]\[]+)\]#<span class="$1">$2</span>#ig
+	  and next TRY;
+	
 	last;
       }
-      $part =~ s/\n([ \r]*\n)+/<p>/g;
+      $part =~ s!\n([ \r]*\n)+!</p><p>!g;
       $part =~ s/\n/<br \/>/g;
       $out .= $part;
     }
@@ -426,10 +439,7 @@ sub embed {
       unless defined($template) && $template =~ /\S/;
   }
 
-  open SOURCE, "< $TMPLDIR$template"
-    or die "Cannot open template $template: $!";
-  my $html = do { local $/; <SOURCE> };
-  close SOURCE;
+  my $html = BSE::Template->get_source($template, $self->{cfg});
 
   # the template will hopefully contain <:embed start:> and <:embed end:>
   # tags
@@ -452,6 +462,19 @@ sub iter_kids_of {
   }
   @ids = grep /^\d+$|^-1$/, @ids;
   map Articles->listedChildren($_), @ids;
+}
+
+sub iter_all_kids_of {
+  my ($args, $acts, $name, $templater) = @_;
+
+  my @ids = split ' ', $args;
+  for my $id (@ids) {
+    unless ($id =~ /^\d+$|^-1$/) {
+      $id = $templater->perform($acts, $id, "id");
+    }
+  }
+  @ids = grep /^\d+$|^-1$/, @ids;
+  map Articles->all_visible_kids($_), @ids;
 }
 
 sub iter_inlines {
@@ -588,6 +611,8 @@ sub baseActs {
      },
      DevHelp::Tags->make_iterator2
      ( \&iter_kids_of, 'ofchild', 'children_of' ), 
+     DevHelp::Tags->make_iterator2
+     ( \&iter_all_kids_of, 'ofallkid', 'allkids_of' ), 
      DevHelp::Tags->make_iterator2
      ( \&iter_inlines, 'inline', 'inlines' ),
     );

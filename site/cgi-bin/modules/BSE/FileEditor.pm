@@ -62,6 +62,8 @@ sub filelist {
 
   my @files = $self->_getfiles($article);
 
+  my $blank = qq!<img src="$IMAGES_URI/trans_pixel.gif" width="17" height="13" border="0" align="absbottom" />!;
+
   my $message = $self->{cgi}->param('message') || '';
   my $file_index;
   my %acts;
@@ -75,15 +77,22 @@ sub filelist {
      move =>
      sub {
        my $html = '';
+       @files > 1 or return '';
        if ($file_index > 0) {
 	 $html .= <<HTML;
 <a href="$ENV{SCRIPT_NAME}?fileswap=1&id=$article->{id}&file1=$files[$file_index]{id}&file2=$files[$file_index-1]{id}"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
 HTML
        }
+       else {
+	 $html .= $blank;
+       }
        if ($file_index < $#files) {
 	 $html .= <<HTML;
 <a href="$ENV{SCRIPT_NAME}?fileswap=1&id=$article->{id}&file1=$files[$file_index]{id}&file2=$files[$file_index+1]{id}"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
 HTML
+       }
+       else {
+	 $html .= $blank;
        }
        $html;
      },

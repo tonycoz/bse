@@ -64,6 +64,8 @@ sub static {
        my $value = $templater->perform($acts, $func, $args);
        defined $value
 	 or return '';
+       $value =~ /\d/
+	 or print STDERR "Result '$value' from [$func $args] not a number\n";
        sprintf("%.02f", $value/100.0);
      },
      bodytext =>

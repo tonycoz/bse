@@ -10,13 +10,76 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.12_22
+
+=over
+
+=item *
+
+added iterator allkids_of to iterate over the children and
+stepchildren of a given article.
+
+=over
+
+ <:iterator begin allkids_of I<parent_id1> ...:>
+ <:ofallkid I<field>:>
+ <:iterator end allkids_of:>
+
+=back
+
+=item *
+
+when you clicked send from the subscriptions list the archive parent
+field wasn't being set from the value set when adding/editing the
+subscription
+
+=item *
+
+generate_search() wasn't supplying a config object when creating the
+article generator.  This caused problems when some article types were
+embedded within the search page.
+
+=item *
+
+added mailing list info
+
+=item *
+
+$TMPLDIR is no longer present or used in Constants.pm.  Use templates
+in the [paths] section of the config file.
+
+=item *
+
+The path specified by the local_templates entry in [paths] is now
+searched for templates before the path specified by the templates
+entry in [paths].  This can be used to keep locally modified versions
+of templates separate from the distributed templates.
+
+=item *
+
+reordering arrows now display a filler image where there's a single
+missing arrow image (at the top and bottom of the list).  No spacer is
+displayed if there's a single item.
+
+=item *
+
+added tt[text], pre[text], h1[class|text] through h6[class|text],
+class[class|text] tags to the body text formatter.  Paragraphs are now
+closed by the body text formatter.
+
+=item *
+
+added a few more tests
+
+=back
+
 =head2 0.12_21
 
 =over
 
 =item *
 
-template change from adriam (edit_steps.tmpl):
+template change from adrian (edit_steps.tmpl):
 
 Finally fixed something that has bugged me for a while... I simply 
 moved the "if Kids" conditional to include the note about "Delete 

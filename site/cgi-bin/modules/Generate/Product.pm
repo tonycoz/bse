@@ -4,8 +4,7 @@ use Generate::Article;
 use Products;
 use Images;
 use base qw(Generate::Article);
-use Squirrel::Template;
-use Constants qw(:shop $TMPLDIR %TEMPLATE_OPTS $CGI_URI $ADMIN_URI);
+use Constants qw(:shop $CGI_URI $ADMIN_URI);
 use Carp qw(confess);
 
 sub edit_link {
@@ -36,7 +35,7 @@ sub baseActs {
 
   return
     (
-     $self->SUPER::baseActs($articles, $acts, $product, 0),
+     $self->SUPER::baseActs($articles, $acts, $product, $embedded),
      product=> sub { CGI::escapeHTML($product->{$_[0]}) },
      admin =>
      sub {

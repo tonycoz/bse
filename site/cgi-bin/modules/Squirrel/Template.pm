@@ -2,6 +2,7 @@ package Squirrel::Template;
 use vars qw($VERSION);
 use strict;
 use Carp qw/cluck confess/;
+use constant DEBUG => 0;
 
 $VERSION="0.05";
 
@@ -138,17 +139,22 @@ sub iterate {
 sub cond {
   my ($self, $name, $args, $true, $false, $acts, $orig) = @_;
 
+  print STDERR "cond $name $args\n" if DEBUG;
+
   my $result =
     eval {
       if (exists $acts->{"if$name"}) {
+	print STDERR " found cond if$name\n" if DEBUG > 1;
 	my $cond = $self->low_perform($acts, "if$name", $args, '');
 	return $cond ? $true : $false;
       }
       elsif (exists $acts->{lcfirst $name}) {
+	print STDERR " found cond $name\n" if DEBUG > 1;
 	my $cond = $self->low_perform($acts, lcfirst $name, $args, '');
 	return $cond ? $true : $false;
       }
       else {
+	print STDERR " not found\n" if DEBUG > 1;
 	return $orig;
       }
     };
@@ -162,6 +168,39 @@ sub cond {
   }
 
   return $result;
+}
+
+sub find_template {
+  my ($self, $name) = @_;
+
+  return unless $self->{template_dir};
+
+  my @dirs = ref $self->{template_dir} ? @{$self->{template_dir}} : $self->{template_dir};
+  for my $dir (@dirs) {
+    if (-e "$dir/$name") {
+      return "$dir/$name";
+    }
+  }
+
+  return;
+}
+
+sub include {
+  my ($self, $name) = @_;
+
+  print STDERR "Including $name\n";
+
+  my $filename = $self->find_template($name)
+    or return "** cannot find include $name in path **";
+
+  print STDERR "Found $filename\n";
+
+  open INCLUDE, "< $filename"
+    or return "** cannot open $filename : $! **";
+  my $data = do { local $/; <INCLUDE> };
+  close INCLUDE;
+
+  return $data;
 }
 
 sub tag_param {
@@ -183,9 +222,10 @@ sub replace_template {
   if ($self->{template_dir}) {
     my $wrap_count = 0;
     while ($template =~ /^(\s*<:\s*wrap\s+(\S+?)(?:\s+(\S.*?))?:>)/i) {
-      my $wrapper = "$self->{template_dir}/$2";
-      unless (-e $wrapper) {
-	print STDERR "WARNING: Unknown wrap name: $wrapper\n";
+      my $name = $2;
+      my $wrapper = $self->find_template($name);
+      unless ($wrapper) {
+	print STDERR "WARNING: Unknown wrap name: $name\n";
 	last;
       }
       unless (++$wrap_count < 10) {
@@ -217,7 +257,23 @@ sub replace_template {
     }
   }
 
-  $acts->{param} = [ \&tag_param, \%params ];
+  $acts->{param} ||= [ \&tag_param, \%params ];
+
+  if ($self->{template_dir} && !$acts->{include}) {
+    my $loops = 0;
+    1 while $template =~
+            s!<:
+                \s*
+                include
+                \s+
+                ((?:\w+/)*\w+(?:\.\w+)?)
+                \s*
+               :>
+             ! 
+               $self->include($1) 
+             !gex
+	       && ++$loops < 10;
+  }
 
   # the basic iterator
   if ($iter && 
@@ -254,7 +310,7 @@ sub replace_template {
                          <:\s*eif\s+\2\s*:>)/
                         $self->cond($2, $3, $4, $5, $acts, $1) /sgex
 			  && ++$nesting < 5;
-  $template =~ s/(<:\s*if(\w+)(?:\s+(.*?))?\s*:>
+  $template =~ s/(<:\s*if([A-Z]\w*)(?:\s+(.*?))?\s*:>
                   (.*?)
                  <:\s*or\s*:>
                   (.*?)
@@ -277,7 +333,14 @@ sub show_page {
 
   $acts ||= {};
 
-  my $file = $page ? "$base/$page" : $base;
+  my $file;
+  if ($base) {
+    $file = $page ? "$base/$page" : $base;
+  }
+  else {
+    $file = $self->find_template($page)
+      or die "Cannot find template $page";
+  }
   open TMPLT, "< $file"
     or die "Cannot open template $file: $!";
   my $template = do { local $/; <TMPLT> };
@@ -318,7 +381,9 @@ message rather than being left in place.
 =item template_dir
 
 Used by the wrapper mechanism to find wrapper templates.  See
-L<WRAPPING> below.
+L<WRAPPING> below.  This can be either a scalar, or a reference to an
+array of locations to search for the wrapper.  This is also used for
+the <:include filename:> mechanism.
 
 =back
 

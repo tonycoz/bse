@@ -4,9 +4,8 @@ use strict;
 use Generate;
 use Products;
 use base 'Generate::Article';
-use Squirrel::Template;
-use Constants qw($TMPLDIR %TEMPLATE_OPTS $CGI_URI $IMAGES_URI
-                 $ADMIN_URI);
+use BSE::Template;
+use Constants qw($CGI_URI $IMAGES_URI $ADMIN_URI);
 use Util qw(generate_button);
 use OtherParents;
 
@@ -38,7 +37,7 @@ sub generate_low {
   my %acts;
   %acts =
     (
-     $self->baseActs($articles, \%acts, $article, 0),
+     $self->baseActs($articles, \%acts, $article, $embedded),
      article => sub { CGI::escapeHTML($article->{$_[0]}) },
      iterate_products =>
      sub {
@@ -132,6 +131,7 @@ HTML
        return '' unless $self->{request};
        return '' 
 	 unless $self->{request}->user_can(edit_reorder_children => $article);
+       return '' unless @allprods > 1;
        my $html = '';
        my $can_move_up = $allprod_index > 0;
        my $can_move_down = $allprod_index < $#allprods;
@@ -182,43 +182,17 @@ HTML
       return $value;
     };
 
-  return Squirrel::Template->new(%TEMPLATE_OPTS)
-    ->replace_template($template, \%acts);
+  return BSE::Template->replace($template, $self->{cfg}, \%acts);
 }
 
 sub generate {
   my ($self, $article, $articles) = @_;
 
-  open SOURCE, "< $TMPLDIR$article->{template}"
-    or die "Cannot open template $article->{template}: $!";
-  my $html = do { local $/; <SOURCE> };
-  close SOURCE;
+  my $html = BSE::Template->get_source($article->{template}, $self->{cfg});
 
   $html =~ s/<:\s*embed\s+(?:start|end)\s*:>//g;
   
   return $self->generate_low($html, $article, $articles, 0);
-}
-
-sub embed {
-  my ($self, $article, $articles, $template) = @_;
-
-  $template = $article->{template}
-    unless defined($template) && $template =~ /\S/;
-
-  open SOURCE, "< $TMPLDIR$template"
-    or die "Cannot open template $template: $!";
-  my $html = do { local $/; <SOURCE> };
-  close SOURCE;
-
-  # the template will hopefully contain <:embed start:> and <:embed end:>
-  # tags
-  # otherwise pull out the body content
-  if ($html =~ /<:\s*embed\s*start\s*:>(.*)<:\s*embed\s*end\s*:>/s
-     || $html =~ m"<\s*body[^>]*>(.*)<\s*/\s*body>"s) {
-    $html = $1;
-  }
-
-  return $self->generate_low($html, $article, $articles);
 }
 
 1;

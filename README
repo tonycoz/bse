@@ -19,7 +19,29 @@ For version information please see site/docs/bse.pod
 Installation documentation can be found in INSTALL.* and plenty of
 other documentation can be found in site/docs/
 
+LICENSE
+=======
+
 BSE is distributed under your choice of either the Artistic or GNU
 Public License, just as Perl is.
+
+HELP
+====
+
+Try the bse-users mailing list for volunteer help:
+
+  http://lists.develop-help.com/mailman/listinfo/bse-users
+
+Please keep discussion on the mailing list, private emails are likely
+to result in quotes of hourly rates.
+
+If you want to be notifed about each release of BSE, subscribe to the
+bse-announce mailing list:
+
+  http://lists.develop-help.com/mailman/listinfo/bse-announce
+
+Only announcements are sent to this list, though it's possible
+spammers will figure out how to bypass its protection, in which case
+I'll make it tougher to do so.
 
 Tony Cook <tony@develop-help.com>

@@ -2,7 +2,7 @@
 use strict;
 use BSE::Test qw(base_url make_ua fetch_ok skip check_form post_ok ok 
                  check_content);
-use WWW::Automate;
+#use WWW::Mechanize;
 ++$|;
 print "1..24\n";
 my $baseurl = base_url;

@@ -34,8 +34,12 @@ directory under $TMPLDIR.
 
 =item templates
 
-Directory base for most templates.  Note: this is not completely
-implemented for now, so assume the default.  Default: $TMPLDIR.
+Directory base for most templates.
+
+=item local_templates
+
+Local Directory base for templates.  This is searched before the
+templates directory.
 
 =item images
 

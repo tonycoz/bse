@@ -5,10 +5,10 @@ use FindBin;
 use lib "$FindBin::Bin/modules";
 use Articles;
 use BSE::DB;
-use Squirrel::Template;
 use Constants qw(:search);
 use Carp;
 use BSE::Cfg;
+use BSE::Template;
 
 my $cfg = BSE::Cfg->new;
 
@@ -151,9 +151,7 @@ my %acts;
    },
   );
 
-print "Content-Type: text/html\n\n";
-my $templ = Squirrel::Template->new();
-print $templ->show_page($TMPLDIR, "search.tmpl", \%acts);
+BSE::Template->show_page('search', $cfg, \%acts);
 
 sub getSearchResult {
   my ($words, $section, $date, $terms) = @_;

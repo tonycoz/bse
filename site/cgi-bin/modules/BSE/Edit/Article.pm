@@ -412,7 +412,7 @@ sub templates {
 
   my @dirs = $self->template_dirs($article);
   my @templates;
-  my $basedir = $self->{cfg}->entry('paths', 'templates', $Constants::TMPLDIR);
+  my $basedir = $self->{cfg}->entryVar('paths', 'templates');
   for my $dir (@dirs) {
     my $path = File::Spec->catdir($basedir, $dir);
     if (-d $path) {
@@ -429,7 +429,7 @@ sub templates {
 sub extra_templates {
   my ($self, $article) = @_;
 
-  my $basedir = $self->{cfg}->entry('paths', 'templates', $Constants::TMPLDIR);
+  my $basedir = $self->{cfg}->entryVar('paths', 'templates');
   my @templates;
   if (my $id = $article->{id}) {
     push @templates, 'index.tmpl'
@@ -501,6 +501,8 @@ sub tag_move_stepkid {
   $req->user_can(edit_reorder_children => $article)
     or return '';
 
+  @$allkids > 1 or return '';
+
   my $cgi_uri = $self->{cfg}->entry('uri', 'cgi', '/cgi-bin');
   my $images_uri = $self->{cfg}->entry('uri', 'images', '/images');
   my $html = '';
@@ -510,15 +512,22 @@ sub tag_move_stepkid {
   }
   $url .= "#step";
   my $refreshto = CGI::escape($url);
+  my $blank = qq!<img src="$images_uri/trans_pixel.gif" width="17" height="13" border="0" align="absbottom" />!;
   if ($$rallkids_index < $#$allkids) {
     $html .= <<HTML;
 <a href="$cgi_uri/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids->[$$rallkids_index]{id}&other=$allkids->[$$rallkids_index+1]{id}&refreshto=$refreshto"><img src="$images_uri/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
 HTML
   }
+  else {
+    $html .= $blank;
+  }
   if ($$rallkids_index > 0) {
     $html .= <<HTML;
 <a href="$cgi_uri/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids->[$$rallkids_index]{id}&other=$allkids->[$$rallkids_index-1]{id}&refreshto=$refreshto"><img src="$images_uri/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
 HTML
+  }
+  else {
+    $html .= $blank;
   }
   return $html;
 }
@@ -591,6 +600,8 @@ sub tag_move_stepparent {
   $req->user_can(edit_reorder_stepparents => $article)
     or return '';
 
+  @$stepparents > 1 or return '';
+
   my $cgi_uri = $self->{cfg}->entry('uri', 'cgi', '/cgi-bin');
   my $images_uri = $self->{cfg}->entry('uri', 'images', '/images');
   my $html = '';
@@ -599,16 +610,23 @@ sub tag_move_stepparent {
     $url .= "&_t=".$cgi->param('_t');
   }
   $url .= "#stepparents";
+  my $blank = qq!<img src="$images_uri/trans_pixel.gif" width="17" height="13" border="0" align="absbottom" />!;
   my $refreshto = CGI::escape($url);
   if ($$rindex < $#$stepparents) {
     $html .= <<HTML;
 <a href="$cgi_uri/admin/move.pl?stepchild=$article->{id}&id=$stepparents->[$$rindex]{parentId}&d=swap&other=$stepparents->[$$rindex+1]{parentId}&refreshto=$refreshto&all=1"><img src="$images_uri/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
 HTML
   }
+  else {
+    $html .= $blank;
+  }
   if ($$rindex > 0) {
     $html .= <<HTML;
 <a href="$cgi_uri/admin/move.pl?stepchild=$article->{id}&id=$stepparents->[$$rindex]{parentId}&d=swap&other=$stepparents->[$$rindex-1]{parentId}&refreshto=$refreshto&all=1"><img src="$images_uri/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
 HTML
+  }
+  else {
+    $html .= $blank;
   }
   return $html;
 }
@@ -681,6 +699,8 @@ sub tag_movechild {
   $req->user_can('edit_reorder_children', $article)
     or return '';
 
+  @$kids > 1 or return '';
+
   $$rindex >=0 && $$rindex < @$kids
     or return '** movechild can only be used in the children iterator **';
 
@@ -733,6 +753,8 @@ sub tag_imgmove {
   $req->user_can(edit_images_reorder => $article)
     or return '';
 
+  @$images > 1 or return '';
+
   $$rindex >= 0 && $$rindex < @$images 
     or return '** imgmove can only be used in image iterator **';
 
@@ -763,6 +785,8 @@ sub tag_movefiles {
 
   $req->user_can('edit_files_reorder', $article)
     or return '';
+
+  @$files > 1 or return '';
 
   my $html = '';
 

@@ -66,6 +66,8 @@ $conf{site}{url} = BSE::Test::base_url();
 $conf{site}{secureurl} = BSE::Test::base_securl();
 my $uploads = "$instbase/uploads";
 $conf{paths}{downloads} = $uploads;
+my $templates = "$instbase/templates";
+$conf{paths}{templates} = $templates;
 open TESTCONF, "< $conffile"
   or die "Could not open config file $conffile: $!";
 while (<TESTCONF>) {

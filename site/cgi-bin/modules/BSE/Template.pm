@@ -1,18 +1,27 @@
 package BSE::Template;
 use strict;
-use Constants qw/$TMPLDIR/;
 use Squirrel::Template;
+use Carp 'confess';
 
 sub get_page {
   my ($class, $template, $cfg, $acts) = @_;
 
-  my $base = $cfg->entry('paths', 'templates') 
-    || $TMPLDIR;
-  my $file = $cfg->entry('templates', $template) || "$template.tmpl";
+  my @dirs = $class->template_dirs($cfg);
+  my $file = $cfg->entry('templates', $template) || $template;
+  $file =~ /\.\w+$/ or $file .= ".tmpl";
 
-  my $obj = Squirrel::Template->new(template_dir => $base);
+  my $obj = Squirrel::Template->new(template_dir => \@dirs);
 
-  $obj->show_page($base, $file, $acts);
+  $obj->show_page(undef, $file, $acts);
+}
+
+sub replace {
+  my ($class, $source, $cfg, $acts) = @_;
+
+  my @dirs = $class->template_dirs($cfg);
+  my $obj = Squirrel::Template->new(template_dir => \@dirs);
+
+  $obj->replace_template($source, $acts);
 }
 
 sub html_type {
@@ -27,10 +36,22 @@ sub html_type {
 sub show_page {
   my ($class, $template, $cfg, $acts) = @_;
 
+  $class->show_literal($class->get_page($template, $cfg, $acts), $cfg);
+}
+
+sub show_replaced {
+  my ($class, $source, $cfg, $acts) = @_;
+
+  $class->show_literal($class->replace($source, $cfg, $acts), $cfg);
+}
+
+sub show_literal {
+  my ($class, $text, $cfg) = @_;
+
   my $type = $class->html_type($cfg);
 
   print "Content-Type: $type\n\n";
-  print $class->get_page($template, $cfg, $acts);
+  print $text;
 }
 
 sub get_response {
@@ -55,6 +76,49 @@ sub get_refresh {
      content=>"<html></html>",
      headers=>[ qq/Refresh: 0; url="$url"/ ],
     };
+}
+
+sub template_dirs {
+  my ($class, $cfg) = @_;
+
+  ref($cfg) eq 'BSE::Cfg'
+    or confess "Invalid cfg supplied\n";
+
+  my $base = $cfg->entryVar('paths', 'templates');
+  my $local = $cfg->entry('paths', 'local_templates');
+  my @dirs = ( $base );
+  unshift @dirs, $local if $local;
+
+  @dirs;
+}
+
+sub find_source {
+  my ($class, $template, $cfg) = @_;
+
+  my @dirs = $class->template_dirs($cfg);
+
+  my $file = $cfg->entry('templates', $template) || $template;
+  $file =~ /\.\w+$/ or $file .= ".tmpl";
+
+  for my $dir (@dirs) {
+    return "$dir/$file" if -f "$dir/$file";
+  }
+
+  return;
+}
+
+sub get_source {
+  my ($class, $template, $cfg) = @_;
+
+  my $path = $class->find_source($template, $cfg)
+    or confess "Cannot find template $template";
+  open SOURCE, "< $path"
+    or confess "Cannot open template $path: $!";
+  binmode SOURCE;
+  my $html = do { local $/; <SOURCE> };
+  close SOURCE;
+
+  $html;
 }
 
 1;

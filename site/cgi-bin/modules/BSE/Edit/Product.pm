@@ -3,6 +3,7 @@ use strict;
 use base 'BSE::Edit::Article';
 use Products;
 use HTML::Entities;
+use BSE::Template;
 
 my %money_fields =
   (
@@ -21,8 +22,9 @@ sub extra_templates {
   my ($self, $article) = @_;
 
   my @extras = $self->SUPER::extra_templates($article);
-  my $basedir = $self->{cfg}->entry('paths', 'templates', $Constants::TMPLDIR);
-  push @extras, 'shopitem.tmpl' if -f "$basedir/shopitem.tmpl";
+  push @extras, 'shopitem.tmpl' 
+    if grep -f "$_/shopitem.tmpl", 
+      BSE::Template->template_dirs($self->{cfg});
 
   return @extras;
 }

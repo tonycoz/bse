@@ -56,4 +56,31 @@ sub allids {
   }
 }
 
+sub visible_stepkids {
+  my ($self, $id) = @_;
+
+  use BSE::Util::SQL qw/now_sqldate/;
+  my $today = now_sqldate();
+
+  return Articles->getSpecial('visibleStepKids', $id, $today);
+}
+
+sub all_visible_kids {
+  my ($self, $id) = @_;
+
+  require 'OtherParents.pm';
+
+  my @otherlinks = OtherParents->getBy(parentId=>$id);
+  my @normalkids = Articles->listedChildren($id);
+  my %order = (
+	       (map { $_->{id}, $_->{displayOrder} } @normalkids ),
+	       (map { $_->{childId}, $_->{parentDisplayOrder} } @otherlinks),
+	      );
+  my @stepkids = $self->visible_stepkids($id);
+  my %kids = map { $_->{id}, $_ } @stepkids, @normalkids;
+
+  return @kids{ sort { $order{$b} <=> $order{$a} } keys %kids };
+}
+
+
 1;

@@ -13,8 +13,7 @@ use Orders;
 use Order;
 use OrderItems;
 use OrderItem;
-use Constants qw($TMPLDIR);
-use Squirrel::Template;
+use BSE::Template;
 #use Squirrel::ImageEditor;
 use Constants qw(:shop $SHOPID $PRODUCTPARENT 
                  $SHOP_URI $CGI_URI $IMAGES_URI $AUTO_GENERATE);
@@ -142,6 +141,8 @@ sub embedded_catalog {
     grep $_->{generator} eq 'Generate::Catalog', 
     Articles->children($catalog->{id});
 
+  my $blank = qq!<img src="$IMAGES_URI/trans_pixel.gif" width="17" height="13" border="0" align="absbottom" />!;
+
   my %acts;
   %acts =
     (
@@ -171,6 +172,7 @@ sub embedded_catalog {
      sub {
        $req->user_can(edit_reorder_children => $catalog)
 	 or return '';
+       @list > 1 or return '';
        # links to move products up/down
        my $html = '';
        my $refreshto = CGI::escape($ENV{SCRIPT_NAME}."#cat".$catalog->{id});
@@ -186,6 +188,9 @@ HTML
 HTML
 	 }
        }
+       else {
+	 $html .= $blank;
+       }
        if ($list_index > 0) {
 	 if ($session->{showstepkids}) {
 	   $html .= <<HTML;
@@ -197,6 +202,9 @@ HTML
 <a href="$CGI_URI/admin/move.pl?id=$list[$list_index]{id}&d=swap&other=$list[$list_index-1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
 HTML
 	 }
+       }
+       else {
+	 $html .= $blank;
        }
        return $html;
      },
@@ -211,6 +219,7 @@ HTML
      sub {
        $req->user_can(edit_reorder_children => $catalog)
 	 or return '';
+       @subcats > 1 or return '';
        # links to move catalogs up/down
        my $html = '';
        my $refreshto = CGI::escape($ENV{SCRIPT_NAME});
@@ -219,17 +228,22 @@ HTML
 <a href="$CGI_URI/admin/move.pl?id=$subcats[$subcat_index]{id}&d=swap&other=$subcats[$subcat_index+1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
 HTML
        }
+       else {
+	 $html .= $blank;
+       }
        if ($subcat_index > 0) {
 	 $html .= <<HTML;
 <a href="$CGI_URI/admin/move.pl?id=$subcats[$subcat_index]{id}&d=swap&other=$subcats[$subcat_index-1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
 HTML
        }
+       else {
+	 $html .= $blank;
+       }
        return $html;
      },
     );
 
-  my $tmplt = Squirrel::Template->new;
-  return $tmplt->show_page($TMPLDIR, 'admin/'.$template, \%acts);
+  return BSE::Template->get_page('admin/'.$template, $cfg, \%acts);
 }
 
 sub product_list {
@@ -246,6 +260,9 @@ sub product_list {
     $session->{showstepkids} = $cgi->param('showstepkids');
   }
   exists $session->{showstepkids} or $session->{showstepkids} = 1;
+
+  my $blank = qq!<img src="$IMAGES_URI/trans_pixel.gif" width="17" height="13" border="0" align="absbottom" />!;
+
   my %acts;
   %acts =
     (
@@ -267,6 +284,7 @@ sub product_list {
      sub {
        $req->user_can(edit_reorder_children => $shopid)
 	 or return '';
+       @catalogs > 1 or return '';
        # links to move catalogs up/down
        my $html = '';
        my $refreshto = CGI::escape($ENV{SCRIPT_NAME});
@@ -275,10 +293,16 @@ sub product_list {
 <a href="$CGI_URI/admin/move.pl?id=$catalogs[$catalog_index]{id}&d=swap&other=$catalogs[$catalog_index+1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
 HTML
        }
+       else {
+	 $html .= $blank;
+       }
        if ($catalog_index > 0) {
 	 $html .= <<HTML;
 <a href="$CGI_URI/admin/move.pl?id=$catalogs[$catalog_index]{id}&d=swap&other=$catalogs[$catalog_index-1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
 HTML
+       }
+       else {
+	 $html .= $blank;
        }
        return $html;
      },
@@ -546,12 +570,18 @@ sub product_form {
 
   my @templates;
   push(@templates, "shopitem.tmpl")
-    if -e "$TMPLDIR/shopitem.tmpl";
-  if (opendir PROD_TEMPL, "$TMPLDIR/products") {
-    push @templates, map "products/$_",
-      grep -f "$TMPLDIR/products/$_" && /\.tmpl$/i, readdir PROD_TEMPL;
-    closedir PROD_TEMPL;
+    if grep -e "$_/shopitem.tmpl", BSE::Template->template_dirs($cfg);
+  for my $dir (BSE::Template->template_dirs($cfg)) {
+    if (opendir PROD_TEMPL, "$dir/products") {
+      push @templates, map "products/$_",
+	grep -f "$dir/products/$_" && /\.tmpl$/i, readdir PROD_TEMPL;
+      closedir PROD_TEMPL;
+    }
   }
+  my %seen_templates;
+  @templates = sort { lc($a) cmp lc($b) } 
+    grep !$seen_templates{$_}++, @templates;
+
   my $stepcat_index;
   use OtherParents;
   # ugh
@@ -569,6 +599,8 @@ sub product_form {
 #    @images = $imageEditor->images()
 #      if $product->{id};
   my $image_index;
+
+  my $blank = qq!<img src="$IMAGES_URI/trans_pixel.gif" width="17" height="13" border="0" align="absbottom" />!;
 
   my %acts;
   %acts =
@@ -613,15 +645,22 @@ sub product_form {
        my $html = '';
        my $refreshto = CGI::escape($ENV{SCRIPT_NAME}
 				   ."?id=$product->{id}&$template=1#step");
+       @stepcats > 1 or return '';
        if ($stepcat_index < $#stepcats) {
 	 $html .= <<HTML;
 <a href="$CGI_URI/admin/move.pl?stepchild=$product->{id}&id=$stepcats[$stepcat_index]{parentId}&d=swap&other=$stepcats[$stepcat_index+1]{parentId}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
 HTML
        }
+       else {
+         $html .= $blank;
+       }
        if ($stepcat_index > 0) {
 	 $html .= <<HTML;
 <a href="$CGI_URI/admin/move.pl?stepchild=$product->{id}&id=$stepcats[$stepcat_index]{parentId}&d=swap&other=$stepcats[$stepcat_index-1]{parentId}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
 HTML
+       }
+       else {
+         $html .= $blank;
        }
        return $html;
      },
@@ -1037,10 +1076,7 @@ sub product_edit_refresh {
 sub page {
   my ($which, $acts, $iter) = @_;
 
-  my $templ = Squirrel::Template->new;
-
-  print "Content-Type: text/html\n\n";
-  print $templ->show_page($TMPLDIR, 'admin/' . $which . ".tmpl", $acts, $iter);
+  BSE::Template->show_page('admin/'.$which, $cfg, $acts);
 }
 
 sub shop_url {

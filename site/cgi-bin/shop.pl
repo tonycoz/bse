@@ -7,8 +7,8 @@ use lib "$FindBin::Bin/modules";
 use CGI ':standard';
 use Products;
 use Product;
-use Constants qw(:shop $TMPLDIR $CGI_URI);
-use Squirrel::Template;
+use Constants qw(:shop $CGI_URI);
+use BSE::Template;
 use CGI::Cookie;
 use BSE::Custom;
 use BSE::Mail;
@@ -803,15 +803,14 @@ sub send_order {
      ifOptions => sub { @options },
      options => sub { nice_options(@options) },
     );
-  my $templ = Squirrel::Template->new;
 
   my $mailer = BSE::Mail->new(cfg=>$cfg);
   # ok, send some email
-  my $confirm = $templ->show_page($TMPLDIR, 'mailconfirm.tmpl', \%acts);
+  my $confirm = BSE::Template->get_page('mailconfirm', $cfg, \%acts);
   if ($SHOP_EMAIL_ORDER) {
     $acts{cardNumber} = sub { param('cardNumber') };
     $acts{cardExpiry} = sub { param('cardExpiry') };
-    my $ordertext = $templ->show_page($TMPLDIR, 'mailorder.tmpl', \%acts);
+    my $ordertext = BSE::Template->get_page('mailorder', $cfg, \%acts);
 
     eval "use $crypto_class";
     !$@ or die $@;
@@ -850,8 +849,8 @@ sub send_order {
 
 sub page {
   my ($template, $acts) = @_;
-  print "Content-Type: text/html\n\n";
-  print Squirrel::Template->new->show_page($TMPLDIR, $template, $acts);
+
+  BSE::Template->show_page($template, $cfg, $acts);
 }
 
 # convert an epoch time to sql format

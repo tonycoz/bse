@@ -5,8 +5,6 @@ use lib "$FindBin::Bin/modules";
 use CGI qw(:standard);
 use Carp; # 'verbose'; # remove the 'verbose' in production
 use Articles;
-use Constants qw($TMPLDIR);
-use Squirrel::Template;
 use BSE::Cfg;
 use BSE::Template;
 
@@ -25,7 +23,7 @@ my $article = Articles->getByPkey($id)
 
 eval "use $article->{generator}";
 die $@ if $@;
-my $generator = $article->{generator}->new(articles=>'Articles');
+my $generator = $article->{generator}->new(articles=>'Articles', cfg => $cfg);
 
 my $template = param('template');
 
@@ -65,6 +63,7 @@ $text =~ s/<:\s*embed\s+(?:start|end)\s*:>//g;
 print "Content-Type: $type\n\n";
 print $generator->generate_low($text, $article, 'Articles');
 
+
 sub error_page {
   my ($error) = @_;
   $error ||= "Unknown error";
@@ -77,19 +76,13 @@ sub error_page {
      $gen->baseActs('Articles', \%acts),
      error => sub { CGI::escapeHTML($error) },
     );
-  print "Content-Type: text/html\n\n";
-  print Squirrel::Template->new(template_dir=>$TMPLDIR)
-    ->show_page($TMPLDIR, 'error.tmpl', \%acts);
+  
+  BSE::Template->show_page('error', $cfg, \%acts);
   exit;
 }
 
 sub file_from_template {
   my ($template) = @_;
 
-  my $file = $TMPLDIR;
-  $file .= "/" unless $file =~ m![\\/]$!;
-  $file .= "printable/";
-  $file .= $template;
-
-  return $file;
+  return BSE::Template->find_source($template, $cfg);
 }

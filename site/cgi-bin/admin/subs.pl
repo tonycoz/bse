@@ -9,7 +9,6 @@ use BSE::SubscriptionTypes;
 use BSE::DB;
 use BSE::Util::Tags;
 use BSE::Template;
-use Constants qw($TMPLDIR);
 use Articles;
 use Util qw/refresh_to/;
 use BSE::Message;
@@ -78,15 +77,16 @@ sub _template_popup {
     $base = $cfg->entry('subscriptions', "${type}_templates")
       || $type;
   }
-  if (opendir TEMPL, "$TMPLDIR/$base") {
-    push(@templates, sort map "$base/$_",
-	 grep -f "$TMPLDIR/$base/$_" && /\.tmpl$/i, readdir TEMPL);
-    closedir TEMPL;
-    @templates or push(@templates, "Could not find templates in $base");
+  for my $dir (BSE::Template->template_dirs($cfg)) {
+    if (opendir TEMPL, "$dir/$base") {
+      push(@templates, sort map "$base/$_",
+	   grep -f "$dir/$base/$_" && /\.tmpl$/i, readdir TEMPL);
+      closedir TEMPL;
+    }
   }
-  else {
-    push(@templates, "Cannot open dir $TMPLDIR/$base");
-  }
+  my %seen_templates;
+  @templates = sort grep !$seen_templates{$_}, @templates;
+  @templates or push(@templates, "Could not find templates in $base");
   my $def = $old ? $q->param($name) :
     $sub ? $sub->{$name} : $templates[0];
   my %labels;
@@ -189,7 +189,7 @@ sub validate {
       if ($value =~ /\.\./) {
 	push(@$errors, [ $field, "Template $value is invalid, contains .." ]);
       }
-      elsif (!-f "$TMPLDIR/$value") {
+      elsif (!BSE::Template->find_source($value, $cfg)) {
 	push(@$errors, [ $field, "Template $value does not exist" ]);
       }
     }
@@ -324,7 +324,7 @@ sub send_form {
      ifError => sub { 0 },
      old => sub { CGI::escapeHTML(defined $sub->{$_[0]} ? $sub->{$_[0]} : '') },
      template => sub { return _template_popup($cfg, $q, $sub, 0, $_[0]) },
-     parent=> sub { _parent_popup($sub, {})  },
+     parent=> sub { _parent_popup($sub)  },
     );
   BSE::Template->show_page('admin/subs/send_form', $cfg, \%acts);
 }
@@ -361,31 +361,6 @@ You have no HTML template selected.
 EOS
   }
 }
-
-#  sub _text_format {
-#    my ($cfg, $article, $user, $template) = @_;
-
-#    my %acts;
-#    %acts =
-#      (
-#       article=>sub { $article->{$_[0]} },
-#       ifUser => sub { $user },
-#       user =>
-#       sub {
-#         $user or return '';
-#         defined $user->{$_[0]} or return '';
-#         $user->{$_[0]}
-#       },
-#       body =>
-#       sub {
-#         _format_body($cfg, $article->{body});
-#       },
-#      );
-#    my $base = $cfg->entry('paths', 'templates') 
-#      || $TMPLDIR;
-#    my $obj = Squirrel::Template->new(template_dir=>$base);
-#    return $obj->show_page($base, $template, \%acts);
-#  }
 
 sub _dummy_user {
   my %user;
