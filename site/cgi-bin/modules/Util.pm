@@ -3,10 +3,30 @@ use strict;
 use vars qw(@ISA @EXPORT_OK);
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(generate_article generate_all);
-use Constants qw($CONTENTBASE $TMPLDIR $URLBASE %TEMPLATE_OPTS);
+@EXPORT_OK = qw(generate_article generate_all generate_button);
+use Constants qw($CONTENTBASE $TMPLDIR $URLBASE %TEMPLATE_OPTS
+		 $GENERATE_BUTTON);
 
 my %gen_cache;
+
+# returns non-zero if the Regenerate button should work
+sub generate_button {
+  if ($GENERATE_BUTTON) {
+    if (my $ref = ref $GENERATE_BUTTON) {
+      if ($ref eq 'CODE') {
+	return $GENERATE_BUTTON->();
+      }
+      else {
+	# assumed to be an object
+	return $GENERATE_BUTTON->want_button();
+      }
+    }
+    else {
+      return 1;
+    }
+  }
+  return 0;
+}
 
 # regenerate an individual article
 sub generate_low {
