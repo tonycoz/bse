@@ -1,0 +1,22 @@
+BSE
+===
+
+BSE is an engine for presenting a simple portal site with an attached
+store.
+
+The current feature set includes:
+
+- all articles are kept in a mysql database
+- data/actions are kept separate from presentation
+- a simple store with encrypted email to the administrator on order 
+  processing
+
+No, BSE doesn't stand for bovine spongiform encephalopathy.  Not here,
+anyway.
+
+For version information please see site/docs/bse.pod
+
+Installation documentation can be found in INSTALL.* and plenty of
+other documentation can be found in site/docs/
+
+Tony Cook <tony@develop-help.com>

@@ -1,0 +1,72 @@
+#!perl -w
+# Build HTML files from .pod and .pm files
+# I'd love to do this as a makefile, but the targets have colons, which
+# make hates (GNU make, anyway)
+use strict;
+
+my @targets =
+  (
+   'bse.html',
+   'bugs.html',
+   'templates.html',
+   'Generate.html',
+   'Generate::Article.html',
+   'Generate::Product.html',
+   'Generate::Catalog.html',
+   'search.html',
+   'shop.html',
+   'add.html',
+   'shopadmin.html',
+  );
+
+my @exts = qw(.pod .pm .pl);
+
+my @search =
+  (
+   '',
+   '../cgi-bin/',
+   '../cgi-bin/modules/',
+   '../cgi-bin/admin/',
+  );
+
+use Getopt::Std;
+my %opts;
+getopts("hn", \%opts);
+$opts{h} and usage();
+++$|;
+for my $target (@targets) {
+  # try to find the source
+  my $base = $target;
+  $base =~ s!::!/!g;
+  my $source;
+ SEARCH: for my $ext (@exts) {
+    (my $file = $base) =~ s/\.html$/$ext/;
+    for my $dir (@search) {
+      if (-e $dir.$file) {
+	$source = $dir.$file;
+	last SEARCH;
+      }
+    }
+  }
+  $source or die "Cannot find source for $target\n";
+  if (!-e $target || -M $target > -M $source) {
+    my $cmd = "pod2html --infile=$source --outfile=$target --htmlroot=.";
+    
+    print $cmd,"\n";
+    if (!$opts{n} and system $cmd) {
+	die "** makedocs failed\n";
+    }
+  }
+}
+
+# remove the pod2html caches - I don't care much if this fails
+unlink 'pod2html-dircache', 'pod2html-itemcache';
+
+sub usage {
+  print <<EOS;
+Usage: $0      - make the documentation files
+       $0 -n   - report what would be done to make the documentation files
+       $0 -h   - produce this message
+EOS
+  exit;
+}

@@ -1,0 +1,58 @@
+=head1 NAME
+
+bugs.pod - known problems in BSE
+
+=head1 DESCRIPTION
+
+=over 4
+
+=item *
+
+we don't have any regression tests.  This needs to be done.
+
+=item *
+
+Squirrel::Template needs to be a real parser.  Nested ifs can confuse
+the parsing a great deal.
+
+=item *
+
+Only the Squirrel::GPG module has seen use. The other two encryption
+modules probably don't work at all.
+
+=item *
+
+Bad namespace usage.  It would be better to have everything under
+Web::BSE (for example.)
+
+=item *
+
+The DatabaseHandle class is basically a global variable.  Ick.  This
+will cause us problems if we ever put this onto a mod_perl system.
+This is an issue for Constants.pm too.  Of course, since we generate
+most of the content to static files, mod_perl is probably a waste of
+time :).
+
+=item *
+
+Upgrading is hard.  Currently you need to manually copy a bunch of
+files, and modify Constants.pm.  If you re-extract then the files will
+potentially overwrite your templates, and your modified Constants.pm.
+Possibly this can be fixed by writing an installation tool, but this
+is moderately complex.
+
+=item *
+
+The directory in the tar file produced by the dist target always puts
+the files into the 'bse' directory.  This need to be changed to use
+the release number in the directory.  The dist file also contains some
+junk, a MANIFEST file will help here.
+
+=item *
+
+Too many url paths are global, which makes it very difficult to put
+two copies of BSE on the one site.
+
+=back
+
+=cut

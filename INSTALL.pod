@@ -1,0 +1,372 @@
+=head1 NAME
+
+   BSE installation guide.
+
+
+=head1 SYSTEM REQUIREMENTS
+
+=over 4
+
+=item *
+
+perl 5.005_03 or later
+
+=item *
+
+mysql 3.22. or later
+
+=item *
+
+GnuPG or PGP 5 or 6
+
+=item *
+
+a web host:
+
+=over 4
+
+=item *
+
+with telnet or ssh access
+
+=item *
+
+that runs your CGI scripts as your user
+
+=item *
+
+that runs your CGI scripts with the current working directory
+set to the directory that contains the CGI script.
+
+=back
+
+=back
+
+You will need at least the following Perl modules installed:
+
+=over 4
+
+=item *
+
+DBI
+
+=item *
+
+DBD::mysql
+
+=item *
+
+Digest::MD5
+
+=item *
+
+Apache::Session
+
+=back
+
+and their dependants.  If you use the CPAN shell to install these then
+the dependants will be installed automatically.
+
+All other modules are either supplied or standard with perl.
+
+I assume you know how to use a text editor, and have a basic knowledge
+of how directories work, and know enough perl to be able to edit
+constants.
+
+=head1 PLANNING
+
+You need to know:
+
+=over 4
+
+=item *
+
+the layout of directories on your web host: where CGI programs go
+(cgi-bin), where's the root of the document tree (htdocs), and where
+can you safely keep static data (datapath).  The names in parentheses
+() will be used in this documentation.
+
+=item *
+
+how you want your site to look, presumably as one or more HTML files
+and associated style sheets.
+
+=item *
+
+order processing information: the email address and public key of
+the user who will be receiving the order emails.  The email address
+and private key of the sender of the order emails (though this can be
+generated during installation.
+
+=back
+
+=head1 EXTRACT FILES
+
+Telnet or ssh to the web host.
+
+Extract the archive into a working directory:
+
+  mkdir work
+  cd work
+  tar xzf workpath/bse-0.04.tar.gz
+
+The directories in the archive are:
+
+  bse/                     Base directory
+  bse/schema               Database schema definitions (and some test data)
+  bse/site                 Laid out site
+  bse/site/htdocs          Document root
+  bse/site/cgi-bin         CGI programs
+  bse/site/templates       Sample page templates
+  bse/site/data            Static site data (currently just the stopwords list)
+  bse/site/docs            Documentation
+  bse/site/util            Utilities (currently just initial.pl)
+
+If you are running your own host, or have sufficient control over
+Apache, you may want to extract the archive in it's final directory
+and simply create a new <VirtualHost..> that uses the extracted
+directories.  If so, skip Copy Files.
+
+
+=head1 COPY FILES
+
+Replacing the names as decribed in L<PLANNING>
+
+  # the base documents
+  mkdir htdocs/admin
+  cp -R workpath/site/htdocs htdocs/
+  # page templates (you will need to modify these) and static data
+  mkdir datadir/templates
+  cp -R workpath/site/templates datadir/templates/
+  cp -R workpath/site/data datadir/
+  # cgi
+  cp -R workpath/site/cgi-bin cgi-bin/
+
+
+=head1 CONFIGURATION
+
+Most configuration information is kept in Constants.pm, which is in
+the cgi-bin/modules directory:
+
+  vi cgi-bin/modules/Constants.pm
+
+=head2 Database
+
+$DB should be the name of your mysql database.
+
+$UN and $PW should be your mysql login name and password.
+
+=head2 Directory structure
+
+If your directory structure matches that of the archive, this is
+simple, set $BASEDIR to point to the site directory.  The other
+variables are set based on that layout.
+
+Otherwise, set:
+
+=over 4
+
+=item $TMPLDIR
+
+to the directory you are keeping document templates in,
+'datapath/templates/' if you followed L<COPY FILES>
+
+=item $CONTENTBASE
+
+to the directory you are keeping the site document files in, 'htdocs/'
+if you followed L<COPY FILES>.
+
+=item $IMAGEDIR
+
+to the directory that image files are kept in.  This should be left as
+$CONTENTBASE . 'images/'
+
+=item $DATADIR
+
+to the directory containing F<stopwords.txt>
+
+=back
+
+B<Warning:> these paths I<must> be kept as absolute directories.  They
+must the directories as seen by the running CGI scripts.
+
+
+=head2 Site name
+
+You should set $URLBASE and $SECURLBASE to the URLs used to access
+your site in normal and SSL (https).  If you currently don't have secure access setup, you can use the same non-secure URL for both.
+
+B<Warning:> You I<must> set the $SECURLBASE to a secure URL and
+regenerate the site before accepting orders on the site.
+
+=head2 Level defaults
+
+This is probably the most complex item to configure.
+
+The %LEVEL_DEFAULTS hash describes how your site will look from the
+administration interface.  It has little effect on how the site looks
+from a user's perspective, except of course, that it sets defaults for
+some items.
+
+Each level of your site needs an entry in the hash, with the top level
+being 0 to indicate the whole site.  This top-level should only have
+the C<display> keyword defined.
+
+Each level except for level 0 should have the following keywords defined:
+
+=over 4
+
+=item *
+
+C<display> defines how the articles at this level is described when
+adding new articles.
+
+=item *
+
+C<template> is the default template name used for that level.  It
+should exist in the levels directory under your template directory.
+
+=item *
+
+C<threshold> is the default threshold used when a new article is
+created at that level.  Thresholds are used to control whether child
+article are rendered inline, or as summaries.
+
+=back
+
+=head2 Link Titles
+
+If you set $LINK_TITLES to non-zero, then the links created for the
+C<article link> and C<url article> tags will include the title as a
+translated suffix.  This allows some search engines to index on the
+URL as well as the content of the document. Without this suffix the
+url contains no useful indexable information.
+
+For this to work under Apache you will need the following in a
+.htaccess file in the htdocs/a directory:
+
+   RewriteEngine On
+   RewriteRule ^([0-9]+\.html)/[0-9a-zA-Z_]*$ ./$1 [T=text/html]
+
+=head2 Search options
+
+In geneal the search engine will generate a search index for all
+listed articles, and exclude unlisted articles.
+
+You have some control over the indexing.  Set @SEARCH_INCLUDE to the
+ids of sections that should be indexed, even if not listed.  Set
+@SEARCH_EXCLUDE to the ids of sections that should not be indexed.
+
+@SEARCH_EXCLUDE overrides @SEARCH_INCLUDE.
+
+Set $SEARCH_LEVEL to the lowest-level (highest number) of the articles
+to be indexed.  Lower level articles will still be indexed, but
+searches for them will find their parent article (or I<their> parent
+article, if it still isn't a low enough level.)
+
+$SEARCH_ALL is used as the name of the entry in the drop-down list of
+sections generated by the <:list:> tag on the search template.
+
+=head2 Deletion control
+
+Some articles are critical to the operation of your site.  If the
+article's id is in @NO_DELETE it cannot be deleted.
+
+=head2 The Shop
+
+This is probably the second hardest item to configure.
+
+It isn't necessary to configure this section until you need to use the
+shop.
+
+$SHOP_CRYPTO should be set to the supplied class that uses your
+installed encryption software.  Note that currently only Squirrel::GPG
+has been tested in production.  (Patches welcome on the other modules.)
+
+$SHOP_SIGNING_ID should be the user id of the key to use for signing
+orders.
+
+$SHOP_GPG, $SHOP_PGPE and $SHOP_PGP are the locations of the specified
+executables, for GunPG, PGP5 and PGP6 respectively.  They only need to
+be set if the executable isn't in the PATH when the shop.pl runs.
+
+$SHOP_SENDMAIL needs to be set to the name of sendmail or a compatible
+program.
+
+$SHOP_FROM will be used as the sender of the order emails.
+
+Processed, encrypted orders will be $SHOP_TO_NAME and $SHOP_TO_EMAIL.
+There must be a public key in the keyring, which has been signed by
+the private key $SHOP_SIGNING_ID (or whatever your default private
+signing key is.)
+
+You can set $SHOP_EMAIL_ORDER to 0 to prevent the order being emailed
+as above.  A confirmation email is still sent to the person who made
+the order.  This is only really for testing, since only the encrypted
+email contains the credit card number and expiry date.
+
+=head2 Maintenance Tools
+
+$DATA_EMAIL is the email address of a person that the 
+I<Dump database to email> page will send the MySQL database dump to.
+
+$MYSQLDUMP is the location of the MySQL C<mysqldump> tool.  If this
+isn't in the PATH you will need to add this here.
+
+=head1 DATABASE SETUP
+
+=head2 Schema load
+
+You need to install the database schema.  Presumably you have already
+created a user and database for the new site (or your host has.)
+
+To install the schema and the base data:
+
+  mysql -u youruserl -p yourdatabase <bse.sql
+
+You will be asked for your password.
+
+=head2 Base data load
+
+Change directory to the util directory in your workpath.
+
+If you moved the files you will need to edit initial.pl to change the line:
+
+  use lib '../cgi-bin/modules';
+
+so that it will specify the correct modules directory.
+
+You may want to simply set PERL5LIB to your new modules director instead:
+
+  PERL5LIB=cgi-bin/modules
+  export PERL5LIB
+
+Once you've done that, you can run initial.pl:
+
+  perl initial.pl
+
+B<Warning:> Do not run this after your site is up and has articles you
+want to keep.  This will delete all existing articles from your site.
+
+
+=head1 TEMPLATE SETUP
+
+See the site/docs/templates.pod (or .html).
+
+
+=head1 SECURITY
+
+Since your web host runs your CGI programs as you, you can make
+Constants.pm readble only by you.
+
+You will need to protect the htdocs/admin and cgi-bin/admin
+directories with .htaccess files.  For example:
+
+  AuthType Basic
+  AuthName "Administrator Only"
+  AuthUserFile "somepath/users.dat"
+  require valid-user
+
+The AuthUserFile needs to point to a file accessible by the user that
+the web server runs as.  So it won't work if you use your home
+directory.
