@@ -430,8 +430,9 @@ sub baseActs {
      # for embedding the content from children and other sources
      ifEmbedded=> sub { $embedded },
      embed => sub {
-       my ($what, $template) = split ' ', $_[0];
-       return $self->_embed_low($acts, $articles, $what, $template);
+       my ($what, $template, $maxdepth) = split ' ', $_[0];
+       undef $maxdepth if defined $maxdepth && $maxdepth !~ /^\d+/;
+       return $self->_embed_low($acts, $articles, $what, $template, $maxdepth);
      },
      ifCanEmbed=> sub { $self->{depth} <= $self->{maxdepth} },
 
