@@ -3,7 +3,7 @@ use strict;
 use Articles;
 use CGI ();
 use Constants qw(%EXTRA_TAGS $IMAGEDIR $LOCAL_FORMAT $TMPLDIR $BODY_EMBED 
-                 $EMBED_MAX_DEPTH);
+                 $EMBED_MAX_DEPTH $HAVE_HTML_PARSER);
 
 my $excerptSize = 300;
 
@@ -523,42 +523,8 @@ sub excerpt {
 
   # we remove any formatting tags here, otherwise we get wierd table
   # rubbish or other formatting in the excerpt.
-  my $match;
-  do {
-    $match = 0;
-    $LOCAL_FORMAT and $LOCAL_FORMAT->clean(\$body)
-      and ++$match;
-    $body =~ s#a\[([^,\]\[]+),([^\]\[]+)\]#$2#ig
-      and ++$match;
-    $body =~ s#link\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
-      and ++$match;
-    $body =~ s#[bi]\[([^\]\[]+)\]#$1#ig
-      and ++$match;
-    $body =~ s#align\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
-      and ++$match;
-    $body =~ s#font\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
-      and ++$match;
-    $body =~ s#hr\[([^|\]\[]*)\|([^\]\[]*)\]##ieg
-      and ++$match;
-    $body =~ s#hr\[([^|\]\[]*)\]##ieg
-      and ++$match;
-    $body =~ s#anchor\[([^|\]\[]*)\]##ig
-      and ++$match;
-    $body =~ s#table\[([^\n\[\]]*)\n([^\[\]]+)\n\s*\]#_cleanup_table($1, $2)#ieg
-      and ++$match;
-    $body =~ s#table\[([^\]\[]+)\|([^\]\[|]+)\]#_cleanup_table($1, "|$2")#ieg
-      and ++$match;
-    $body =~ s#\*\*([^\n]+)#$1#eg
-      and ++$match;
-    $body =~ s!##([^\n]+)!$1!eg
-      and ++$match;
-    $body =~ s#fontcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#$3#ig
-      and ++$match;
-    $body =~ s#(?:indent|center)\[([^\]\[]+)\]#$1#ig
-      and ++$match;
-    $body =~ s#hrcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]##ig
-      and ++$match;
-  } while ($match);
+  $self->remove_block(\$body);
+  1 while $body =~ s/[bi]\[([^\]\[]+)\]/$1/g;
 
   my @found = find_terms(\$body, $case_sensitive, @terms);
 
@@ -631,49 +597,114 @@ sub visible {
   return 1;
 }
 
+# removes any html tags from the supplied text
+sub _strip_html {
+  my ($text) = @_;
+
+  if ($HAVE_HTML_PARSER) {
+    my $out = '';
+    # don't forget that require is smart
+    require "HTML/Parser.pm";
+
+    # this may need to detect and skip <script></script> and stylesheets
+    my $ignore_text = 0; # non-zero in a <script></script> or <style></style>
+    my $start_h = 
+      sub {
+	++$ignore_text if $_[0] eq 'script' or $_[0] eq 'style';
+	if ($_[0] eq 'img' && $_[1]{alt} && !$ignore_text) {
+	  $out .= $_[1]{alt};
+	}
+      };
+    my $end_h = 
+      sub {
+	--$ignore_text if $_[0] eq 'script' or $_[0] eq 'style';
+      };
+    my $text_h = 
+      sub { 
+	$out .= $_[0] unless $ignore_text
+      };
+    my $p = HTML::Parser->new( text_h  => [ $text_h,  "dtext" ],
+                               start_h => [ $start_h, "tagname, attr" ],
+                               end_h   => [ $end_h,   "tagname" ]);
+    $p->parse($text);
+    $p->eof();
+
+    $text = $out;
+  }
+  else {
+    # this won't work for some HTML, but it's a fallback
+    $text =~ s/<[^>]*>//g;
+  }
+
+  return $text;
+}
+
 # make whatever text $body points at safe for summarizing by removing most
 # block level formatting
 sub remove_block {
   my ($self, $body) = @_;
 
-  my $match;
-  do {{
-    $match = 0;
-    $LOCAL_FORMAT and $LOCAL_FORMAT->clean($body)
-      and ++$match;
-    $$body =~ s#a\[([^,\]\[]+),([^\]\[]+)\]#$2#ig
-      and ++$match;
-    $$body =~ s#link\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
-      and ++$match;
-    $$body =~ s#([bi])\[([^\]\[]+)\]#$1\001$2\002#ig
-      and ++$match;
-    $$body =~ s#align\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
-      and ++$match;
-    $$body =~ s#font\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
-      and ++$match;
-    $$body =~ s#hr\[([^|\]\[]*)\|([^\]\[]*)\]##ig
-      and ++$match;
-    $$body =~ s#hr\[([^|\]\[]*)\]##ig
-      and ++$match;
-    $$body =~ s#anchor\[([^|\]\[]*)\]##ig
-      and ++$match;
-    $$body =~ s#table\[([^\n\[\]]*)\n([^\[\]]+)\n\s*\]#_cleanup_table($1, $2)#ieg
-      and ++$match;
-    $$body =~ s#table\[([^\]\[]+)\|([^\]\[|]+)\]#_cleanup_table($1, "|$2")#ieg
-      and ++$match;
-    $$body =~ s#\*\*([^\n]+)#$1#g
-      and ++$match;
-    $$body =~ s!##([^\n]+)!$1!g
-      and ++$match;
-    $$body =~ s#fontcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#$3#ig
-      and ++$match;
-    $$body =~ s#(?:indent|center)\[([^\]\[]+)\]#$1#ig
-      and ++$match;
-    $$body =~ s#hrcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]##ig
-      and ++$match;
-  }} while ($match);
-  1 while $$body =~ s#([bi])\001([^\001\002]*)\002#$1\[$2\]#ig;
-  
+  if ($$body =~ /^<html>/i) {
+    $$body =_strip_html(substr($$body, 6));
+    return;
+  }
+
+  my $out = '';
+  for my $part (split /((?:html\[(?:[^\[\]]*(?:(?:\[[^\[\]]*\])[^\[\]]*)*)\])
+			|embed\[(?:[^,\[\]]*)(?:,(?:[^,\[\]]*))?\])/ix, $$body) {
+    #print STDERR "Part is $part\n";
+    if ($part =~ /^html\[([^\[\]]*(?:(?:\[[^\[\]]*\])[^\[\]]*)*)\]$/i) {
+      $out .= _strip_html($1);
+    }
+    elsif ($part =~ /^embed\[([^,\[\]]*),([^,\[\]]*)\]$/i) {
+      $out .= ""; # what would you do here?
+    }
+    elsif ($part =~ /^embed\[([^,\[\]]*)\]$/i) {
+      $out .= ""; # $self->_body_embed($acts, $articles, $1, "")
+    }
+    else {
+    TRY: while (1) {
+	$LOCAL_FORMAT and $LOCAL_FORMAT->clean(\$part)
+	  and next TRY;
+	$part =~ s#a\[([^,\]\[]+),([^\]\[]+)\]#$2#ig
+	  and next TRY;
+	$part =~ s#link\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
+	  and next TRY;
+	$part =~ s#([bi])\[([^\]\[]+)\]#$1\001$2\002#ig
+	  and next TRY;
+	$part =~ s#align\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
+	  and next TRY;
+	$part =~ s#font\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
+	  and next TRY;
+	$part =~ s#hr\[([^|\]\[]*)\|([^\]\[]*)\]##ig
+	  and next TRY;
+	$part =~ s#hr\[([^|\]\[]*)\]##ig
+	  and next TRY;
+	$part =~ s#anchor\[([^|\]\[]*)\]##ig
+	  and next TRY;
+	$part =~ s#table\[([^\n\[\]]*)\n([^\[\]]+)\n\s*\]#_cleanup_table($1, $2)#ieg
+	  and next TRY;
+	$part =~ s#table\[([^\]\[]+)\|([^\]\[|]+)\]#_cleanup_table($1, "|$2")#ieg
+	  and next TRY;
+	$part =~ s#\*\*([^\n]+)#$1#g
+	  and next TRY;
+	$part =~ s!##([^\n]+)!$1!g
+	  and next TRY;
+	$part =~ s#fontcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#$3#ig
+	  and next TRY;
+	$part =~ s#(?:indent|center)\[([^\]\[]+)\]#$1#ig
+	  and next TRY;
+	$part =~ s#hrcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]##ig
+	  and next TRY;
+	
+	last TRY;
+      }
+      1 while $part =~ s#([bi])\001([^\001\002]*)\002#$1\[$2\]#ig;
+      $out .= $part;
+    }
+  } 
+
+  $$body = $out;
 }
 
 1;
