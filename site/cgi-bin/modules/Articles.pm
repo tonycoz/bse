@@ -33,7 +33,7 @@ sub children {
 sub listedChildren {
   my ($self, $id) = @_;
   my ($year, $month, $day) = (localtime)[5,4,3];
-  my $today = sprintf("%04d-%02d-%02d 00:00:00", $year+1900, $month+1, $day);
+  my $today = sprintf("%04d-%02d-%02d 00:00:00ZZZ", $year+1900, $month+1, $day);
   return sort { $b->{displayOrder} <=> $a->{displayOrder} }
     grep { $_->{listed} && $today ge $_->{release} 
 	     && $today le $_->{expire}} $self->children($id);
