@@ -191,8 +191,10 @@ site/htdocs/js/validate.js
 site/templates/1/shop_multicat.tmpl
 site/templates/1/sitemap.tmpl
 # site/templates/admin/add_product.tmpl
+site/templates/admin/article_custom.tmpl
 site/templates/admin/article_img.tmpl
 site/templates/admin/catalog.tmpl  # embedded in the shopadmin catalog/product display
+site/templates/admin/catalog_custom.tmpl
 site/templates/admin/edit_0.tmpl
 site/templates/admin/edit_1.tmpl
 site/templates/admin/edit_2.tmpl
@@ -212,6 +214,7 @@ site/templates/admin/order_detail.tmpl
 site/templates/admin/order_list.tmpl
 site/templates/admin/order_list_filled.tmpl
 site/templates/admin/order_list_unfilled.tmpl
+site/templates/admin/product_custom.tmpl
 site/templates/admin/product_detail.tmpl
 site/templates/admin/product_list.tmpl
 site/templates/admin/regenerror.tmpl

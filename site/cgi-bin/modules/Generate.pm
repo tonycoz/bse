@@ -3,9 +3,9 @@ use strict;
 use Articles;
 use Constants qw($IMAGEDIR $LOCAL_FORMAT $BODY_EMBED 
                  $EMBED_MAX_DEPTH $HAVE_HTML_PARSER);
-use BSE::Custom;
 use DevHelp::Tags;
 use DevHelp::HTML;
+use Util;
 
 my $excerptSize = 300;
 
@@ -514,7 +514,7 @@ sub baseActs {
     (
      %extras,
 
-     BSE::Custom->base_tags($articles, $acts, $article, $embedded, $cfg),
+     Util::custom_class($cfg)->base_tags($articles, $acts, $article, $embedded, $cfg),
      BSE::Util::Tags->static($acts, $self->{cfg}),
      # for embedding the content from children and other sources
      ifEmbedded=> sub { $embedded },

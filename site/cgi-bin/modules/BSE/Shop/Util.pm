@@ -6,8 +6,8 @@ use vars qw(@ISA @EXPORT_OK);
                 total shop_total load_order_fields basic_tags need_logon/;
 use Constants qw/:shop/;
 use BSE::Util::SQL qw(now_sqldate);
-use BSE::Custom;
 use BSE::Util::Tags;
+use Util;
 use Carp 'confess';
 
 # returns a list of tags which display the cart details
@@ -58,8 +58,8 @@ sub shop_cart_tags {
      option => sub { CGI::escapeHTML($options[$option_index]{$_[0]}) },
      ifOptions => sub { @options },
      options => sub { nice_options(@options) },
-     BSE::Custom->checkout_actions($acts, $cart, $cart_prods, 
-				   $session->{custom}, $q),
+     Util::custom_class($cfg)
+     ->checkout_actions($acts, $cart, $cart_prods, $session->{custom}, $q),
     );  
 }
 
@@ -108,7 +108,8 @@ sub total {
   for my $item (@$cart) {
     $total += $item->{units} * $item->{price};
   }
-  $total += BSE::Custom->total_extras($cart, $products, $state, $cfg, $stage);
+  $total += Util::custom_class($cfg)
+    ->total_extras($cart, $products, $state, $cfg, $stage);
 
   return $total;
 }
@@ -139,7 +140,12 @@ my %nostore =
 sub load_order_fields {
   my ($wantcard, $q, $order, $session, $cart_prods, $error) = @_;
 
-  my @required = BSE::Custom->required_fields($CGI::Q, $session->{custom});
+  require 'BSE/Cfg.pm';
+  my $cfg = BSE::Cfg->new;
+
+  my $cust_class = Util::custom_class($cfg);
+
+  my @required = $cust_class->required_fields($CGI::Q, $session->{custom});
   push(@required, qw(cardHolder cardExpiry)) if $wantcard;
   for my $field (@required) {
     defined($q->param($field)) && length($q->param($field))
@@ -209,11 +215,9 @@ sub load_order_fields {
     $order->{gst} += $item->{gst} * $item->{units};
   }
   $order->{orderDate} = $today;
-  $order->{total} += BSE::Custom->total_extras(\@cart, \@products, 
+  $order->{total} += $cust_class->total_extras(\@cart, \@products, 
 					     $session->{custom});
 
-  require 'BSE/Cfg.pm';
-  my $cfg = BSE::Cfg->new;
   if (need_logon($cfg, \@cart, \@products, $session)) {
     $$error = "Your cart contains some file-based products.  Please register or logon";
     return 0;
@@ -233,7 +237,7 @@ sub load_order_fields {
 
   # check if a customizer has anything to do
   eval {
-    BSE::Custom->order_save($q, $order, \@cart, \@products, $session->{custom});
+    $cust_class->order_save($q, $order, \@cart, \@products, $session->{custom});
   };
   if ($@) {
     $$error = $@;

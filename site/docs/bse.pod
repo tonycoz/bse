@@ -10,6 +10,50 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.12_25
+
+=over
+
+=item *
+
+admin/edit_product.tmpl had two <:error_img title:> tags
+
+=item *
+
+C<$SHOP_FROM>, C<$SHOP_TO_NAME> and C<$SHOP_TO_EMAIL> from
+Constants.pm can now be overridden in the config
+file. (C<[shop].from>, C<to_name> and C<to_email>)
+
+=item *
+
+the name of the custom class can now be specified in the config file
+(defaulting to C<BSE::Custom>) (C<[basic].custom_class>)
+
+=item *
+
+you can specify an alternate library path to search for your custom
+class (C<[paths].libraries>)
+
+=item *
+
+the custom class can now handle validate and store extra fields for
+articles (and relates types, like products)
+
+=item *
+
+two custom date fields (C<customDate1> and C<customDate2>) and two
+custom string fields (C<customStr1> and C<customStr2>) have been added
+to the article table to allow simplfied customization.
+
+=item *
+
+the default article, product and catalog editing template now include
+C<admin/custom_article.tmpl>, C<admin/custom_product.tmpl> and
+C<admin/custom_catalog.tmpl> includes to allow adding custom form
+fields without having to modify the main distributed editing templates
+
+=back
+
 =head2 0.12_24
 
 =over

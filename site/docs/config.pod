@@ -46,6 +46,11 @@ templates directory.
 Where uploaded images are stored.  This is not yet completely
 implemented.  Default: $IMAGEDIR.
 
+=item libraries
+
+Local search path for BSE::Custom, or the class configured by
+C<custom_class> in [basic].
+
 =back
 
 =head2 [extensions]
@@ -175,6 +180,12 @@ This should be the path to a file to be updated with the list of users
 and crypt() versions of their passwords.  If this is set then the
 security system will check for a user set by the browser before
 attempting a form based logon.  Default: None.
+
+=item custom_class
+
+The name of the custom class for your site.  This is currently only
+used for article editing customizations.  This class should derive
+from BSE::CustomBase.  Default: BSE::Custom.
 
 =back
 
@@ -433,6 +444,21 @@ The possible payment types are:
 
 These are used by various shop templates to present an address that a
 cheque payment should be sent to.
+
+=item from
+
+From email address for emails sent by the shop.  Overides $SHOP_FROM
+in Constants.pm
+
+=item to_name
+
+To name for emailed orders sent by the shop.  Overrides $SHOP_TO_NAME
+in Constants.pm
+
+=item to_email
+
+To email for emailed orders sent by the shop.  Overrides $SHOP_TO_EMAIL
+in Constants.pm
 
 =back
 

@@ -5,6 +5,7 @@ use base qw(BSE::Edit::Base);
 use BSE::Util::Tags;
 use BSE::Util::SQL qw(now_sqldate);
 use BSE::Permissions;
+use Util qw(custom_class);
 
 sub article_dispatch {
   my ($self, $req, $article, $articles) = @_;
@@ -561,8 +562,6 @@ sub possible_stepkids {
   }
   return @possible;
 }
-
-
 
 sub tag_possible_stepkids {
   my ($step_kids, $req, $article, $possstepkids, $articles, $cgi) = @_;
@@ -1192,6 +1191,14 @@ sub add_form {
 
 sub generator { 'Generate::Article' }
 
+sub typename {
+  my ($self) = @_;
+
+  my $gen = $self->generator;
+
+  ($gen =~ /(\w+)$/)[0] || 'Article';
+}
+
 sub _validate_common {
   my ($self, $data, $articles, $errors) = @_;
 
@@ -1218,6 +1225,8 @@ sub validate {
   my ($self, $data, $articles, $errors) = @_;
 
   $self->_validate_common($data, $articles, $errors);
+  custom_class($self->{cfg})
+    ->article_validate($data, undef, $self->typename, $errors);
 
   return !keys %$errors;
 }
@@ -1226,6 +1235,8 @@ sub validate_old {
   my ($self, $article, $data, $articles, $errors) = @_;
 
   $self->_validate_common($data, $articles, $errors);
+  custom_class($self->{cfg})
+    ->article_validate($data, $article, $self->typename, $errors);
 
   return !keys %$errors;
 }
@@ -1236,6 +1247,9 @@ sub validate_parent {
 
 sub fill_new_data {
   my ($self, $req, $data, $articles) = @_;
+
+  custom_class($self->{cfg})
+    ->article_fill_new($data, $self->typename);
 
   1;
 }
@@ -1367,9 +1381,12 @@ sub fill_old_data {
     $data->{body} =~ tr/\r/\n/;
   }
   for my $col (Article->columns) {
+    next if $col =~ /^custom/;
     $article->{$col} = $data->{$col}
       if exists $data->{$col} && $col ne 'id' && $col ne 'parentid';
   }
+  custom_class($self->{cfg})
+    ->article_fill_old($article, $data, $self->typename);
 
   return 1;
 }

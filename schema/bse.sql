@@ -61,6 +61,13 @@ CREATE TABLE article (
   -- used by code and templates
   flags varchar(80) not null default '',
 
+  -- custom fields for local usage
+  customDate1 datetime null,
+  customDate2 datetime null,
+
+  customStr1 varchar(255) null,
+  customStr2 varchar(255) null,
+
   PRIMARY KEY (id),
 
   -- if we keep id in the indexes MySQL will sometimes be able to

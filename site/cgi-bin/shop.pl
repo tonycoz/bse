@@ -10,7 +10,7 @@ use Product;
 use Constants qw(:shop $CGI_URI);
 use BSE::Template;
 use CGI::Cookie;
-use BSE::Custom;
+use Util;
 use BSE::Mail;
 use BSE::Shop::Util qw/shop_cart_tags cart_item_opts nice_options total 
                        basic_tags load_order_fields need_logon/;
@@ -18,7 +18,9 @@ use BSE::Session;
 use BSE::Cfg;
 use Util qw/refresh_to/;
 
-my $subject = $SHOP_MAIL_SUBJECT;
+my $cfg = BSE::Cfg->new();
+
+my $subject = $cfg->entry('shop', 'subject', $SHOP_MAIL_SUBJECT);
 
 # our PGP passphrase
 my $passphrase = $SHOP_PASSPHRASE;
@@ -36,10 +38,10 @@ my $pgpe = $SHOP_PGPE;
 my $pgp = $SHOP_PGP;
 my $gpg = $SHOP_GPG;
 
-my $from = $SHOP_FROM;
+my $from = $cfg->entry('shop', 'from', $SHOP_FROM);
 
-my $toName = $SHOP_TO_NAME;
-my $toEmail= $SHOP_TO_EMAIL;
+my $toName = $cfg->entry('shop', 'to_name', $SHOP_TO_NAME);
+my $toEmail= $cfg->entry('shop', 'to_email', $SHOP_TO_EMAIL);
 
 use constant PAYMENT_CC => 0;
 use constant PAYMENT_CHEQUE => 1;
@@ -52,7 +54,6 @@ my %valid_payment_types =
   );
 my %payment_names = qw(CC 0 Cheque 1 CallMe 2);
 
-my $cfg = BSE::Cfg->new();
 my $urlbase = $cfg->entryVar('site', 'url');
 my $securlbase = $cfg->entryVar('site', 'secureurl');
 my %session;
@@ -163,14 +164,15 @@ sub show_cart {
   $session{custom} ||= {};
   my %custom_state = %{$session{custom}};
 
-  BSE::Custom->enter_cart(\@cart, \@cart_prods, \%custom_state, $cfg); 
+  my $cust_class = Util::custom_class($cfg);
+  $cust_class->enter_cart(\@cart, \@cart_prods, \%custom_state, $cfg); 
   $msg = '' unless defined $msg;
   $msg = CGI::escapeHTML($msg);
 
   my %acts;
   %acts =
     (
-     BSE::Custom->cart_actions(\%acts, \@cart, \@cart_prods, \%custom_state, 
+     $cust_class->cart_actions(\%acts, \@cart, \@cart_prods, \%custom_state, 
 			       $cfg),
      shop_cart_tags(\%acts, \@cart, \@cart_prods, \%session, $CGI::Q, $cfg,
 		    'cart'),
@@ -199,7 +201,7 @@ sub update_quantities {
   $session{cart} = \@cart;
   $session{custom} ||= {};
   my %custom_state = %{$session{custom}};
-  BSE::Custom->recalc($CGI::Q, \@cart, [], \%custom_state, $cfg);
+  Util::custom_class($cfg)->recalc($CGI::Q, \@cart, [], \%custom_state, $cfg);
   $session{custom} = \%custom_state;
 }
 
@@ -224,8 +226,8 @@ sub checkupdate {
   my @cart = @{$session{cart}};
   my @cart_prods = map { Products->getByPkey($_->{productId}) } @cart;
   my %custom_state = %{$session{custom}};
-  BSE::Custom->checkout_update($CGI::Q, \@cart, \@cart_prods, \%custom_state, 
-			       $cfg);
+  Util::custom_class($cfg)
+      ->checkout_update($CGI::Q, \@cart, \@cart_prods, \%custom_state, $cfg);
   $session{custom} = \%custom_state;
   
   checkout("", 1);
@@ -260,7 +262,9 @@ sub checkout {
   $session{custom} ||= {};
   my %custom_state = %{$session{custom}};
 
-  BSE::Custom->enter_cart(\@cart, \@cart_prods, \%custom_state, $cfg); 
+  my $cust_class = Util::custom_class($cfg);
+  $cust_class->enter_cart(\@cart, \@cart_prods, \%custom_state, $cfg);
+
   my @payment_types = split /,/, $cfg->entry('shop', 'payment_types', '0');
   @payment_types = grep $valid_payment_types{$_}, @payment_types;
   @payment_types or @payment_types = ( 0 );
@@ -279,7 +283,7 @@ sub checkout {
      message => sub { $message },
      old => sub { CGI::escapeHTML($olddata ? param($_[0]) : 
 		    $user && defined $user->{$_[0]} ? $user->{$_[0]} : '') },
-     BSE::Custom->checkout_actions(\%acts, \@cart, \@cart_prods, 
+     $cust_class->checkout_actions(\%acts, \@cart, \@cart_prods, 
 				   \%custom_state, $CGI::Q, $cfg),
      ifMultPaymentTypes => @payment_types > 1,
     );
@@ -333,7 +337,9 @@ sub checkout_confirm {
 # information
 # BUG!!: this duplicates the code in purchase() a great deal
 sub prePurchase {
-  my @required = BSE::Custom->required_fields($CGI::Q, $session{custom}, $cfg);
+
+  my $cust_class = Util::custom_class($cfg);
+  my @required = $cust_class->required_fields($CGI::Q, $session{custom}, $cfg);
   for my $field (@required) {
     defined(param($field)) && length(param($field))
       or return checkout("Field $field is required", 1);
@@ -427,7 +433,7 @@ sub prePurchase {
     return;
   }
 
-  $order{total} += BSE::Custom->total_extras(\@cart, \@products, 
+  $order{total} += $cust_class->total_extras(\@cart, \@products, 
 					     $session{custom}, $cfg, 'final');
   ++$session{changed};
   # blank anything else
@@ -443,7 +449,7 @@ sub prePurchase {
 
   # check if a customizer has anything to do
   eval {
-    BSE::Custom->order_save($CGI::Q, \%order, \@cart, \@products, 
+    $cust_class->order_save($CGI::Q, \%order, \@cart, \@products, 
 			    $session{custom}, $cfg);
     ++$session{changed};
   };
@@ -522,8 +528,9 @@ sub prePurchase {
 # the real work
 sub purchase {
   # some basic validation, in case the user switched off javascript
+  my $cust_class = Util::custom_class($cfg);
   my @required = 
-    BSE::Custom->required_fields($CGI::Q, $session{custom}, $cfg);
+    $cust_class->required_fields($CGI::Q, $session{custom}, $cfg);
 
   my @payment_types = split /,/, $cfg->entry('shop', 'payment_types', '0');
   @payment_types = grep $valid_payment_types{$_}, @payment_types;
@@ -659,13 +666,13 @@ sub purchase {
 
   # check if a customizer has anything to do
   eval {
-    BSE::Custom->order_save($CGI::Q, \%order, \@cart, \@products, $cfg);
+    $cust_class->order_save($CGI::Q, \%order, \@cart, \@products, $cfg);
   };
   if ($@) {
     return checkout($@, 1);
   }
 
-  $order{total} += BSE::Custom->total_extras(\@cart, \@products, 
+  $order{total} += $cust_class->total_extras(\@cart, \@products, 
 					     $session{custom}, $cfg, 'final');
 
   # load up the database
@@ -688,7 +695,7 @@ sub purchase {
   my %acts;
   %acts =
     (
-     BSE::Custom->purchase_actions(\%acts, \@items, \@products, 
+     $cust_class->purchase_actions(\%acts, \@items, \@products, 
 				   $session{custom}, $cfg),
      iterate_items_reset => sub { $item_index = -1; },
      iterate_items => 
@@ -760,8 +767,9 @@ sub send_order {
   %acts =
     (
      %extras,
-     BSE::Custom->order_mail_actions(\%acts, $order, $items, $products, 
-				     $session{custom}, $cfg),
+     Util::custom_class($cfg)
+     ->order_mail_actions(\%acts, $order, $items, $products, 
+			  $session{custom}, $cfg),
      BSE::Util::Tags->static(\%acts, $cfg),
      iterate_items_reset => sub { $item_index = -1; },
      iterate_items => 

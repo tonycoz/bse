@@ -9,6 +9,7 @@ use Article;
 use BSE::DB;
 use BSE::Request;
 use BSE::Template;
+use Carp qw'verbose';
 use Carp 'confess';
 
 #  $SIG{__DIE__} = 

@@ -66,8 +66,7 @@
 		  <tr> 
             <th align="left" bgcolor="#FFFFFF">Title*:</th>
             <td bgcolor="#FFFFFF"><:ifFieldPerm title:><input type="text" name="title" value="<:old title:>" size="60"><:or:><:product title:><:eif:> </td>
-            <td nowrap bgcolor="#FFFFFF"><:help product title:> <:error_img title:> <:error_img
-            title:></td>
+            <td nowrap bgcolor="#FFFFFF"><:help product title:> <:error_img title:></td>
           </tr>
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF">Summary*:</th>
@@ -171,6 +170,7 @@
               (<:alloptions:>)<:or:><:product options:><:eif:> </td>
             <td bgcolor="#FFFFFF"><:help product options:> <:error_img options:></td>
           </tr>
+<:include admin/product_custom.tmpl:>
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF" valign="top">Thumbnail image:</th>
             <td nowrap bgcolor="#FFFFFF"> 

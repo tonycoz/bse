@@ -4,7 +4,7 @@ use vars qw(@ISA @EXPORT_OK);
 require Exporter;
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(generate_article generate_all generate_button 
-                refresh_to regen_and_refresh);
+                refresh_to regen_and_refresh custom_class);
 use Constants qw($CONTENTBASE $GENERATE_BUTTON $SHOPID $AUTO_GENERATE);
 use Carp qw(confess);
 
@@ -364,6 +364,22 @@ sub regen_and_refresh {
   }
 
   return 1;
+}
+
+sub custom_class {
+  my ($cfg) = @_;
+
+  local @INC = @INC;
+
+  my $class = $cfg->entry('basic', 'custom_class', 'BSE::Custom');
+  (my $file = $class . ".pm") =~ s!::!/!g;
+
+  my $local_inc = $cfg->entry('paths', 'libraries');
+  unshift @INC, $local_inc if $local_inc;
+
+  require $file;
+
+  return $class->new(cfg=>$cfg);
 }
 
 1;

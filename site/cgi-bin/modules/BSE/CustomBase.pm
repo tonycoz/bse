@@ -1,6 +1,14 @@
 package BSE::CustomBase;
 use strict;
 
+sub new {
+  my ($class, %params) = @_;
+
+  exists $params{cfg} or die "No cfg parameter passed to custom class constructor";
+
+  return bless \%params, $class;
+}
+
 sub enter_cart {
   my ($class, $items, $products, $state, $cfg) = @_;
 
@@ -61,6 +69,38 @@ sub base_tags {
   my ($class, $articles, $acts, $article, $embedded, $cfg) = @_;
 
   return ();
+}
+
+# called to validate fields for a custom application
+#   $cfg - a BSE::Cfg object
+#   $new - the new data to be stored
+#   $old - the existing article if any
+#   $type - the type of article (Article, Product, Catalog)
+#   $errors - hashref of fields to messages
+# Return non-zero if all fields are valid.
+# Set an error message in $errors for any invalid fields
+sub article_validate {
+  my ($self, $new, $old, $type, $errors) = @_;
+
+  1;
+}
+
+sub article_fill_new {
+  my ($self, $data, $type) = @_;
+
+  $self->article_fill($data, $data, $type);
+}
+
+sub article_fill_old {
+  my ($self, $out, $in, $type) = @_;
+
+  $self->article_fill($out, $in, $type);
+}
+
+sub article_fill {
+  my ($self, $out, $in, $type) = @_;
+
+  1;
 }
 
 1;
