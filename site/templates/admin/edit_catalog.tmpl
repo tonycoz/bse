@@ -32,7 +32,6 @@
   <p><:message:> | <a href="/admin/">Admin menu</a> | <:ifnew:><:or:><a href="<:article admin:>">See article</a> | <:eif:><:editParent:>
 <input type="hidden" name="level" value="<: level :>">
     <input type="hidden" name="id" value="<: article id :>">
-    <input type="hidden" name="parentid" value="<:article parentid:>">
   
   </p>
   <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000">
@@ -40,6 +39,15 @@
       <td>
 
         <table cellpadding="6" border="0" cellspacing="1">
+          <tr> 
+            <th> Parent: </th>
+            <td bgcolor="#FFFFFF"> 
+              <select name="parentid">
+                <option value="">Please Select a <: parentType :> 
+		<: list subsections :> 
+              </select>
+            </td>
+          </tr>
           <tr> 
             <th> Catalog Title: </th>
             <td bgcolor="#FFFFFF"> 
@@ -132,7 +140,7 @@
           <td><a href="<:child admin:>"><:child title:></a></td>
           <td><: summary child body :></td>
           <td align="center"><: is child listed :></td>
-          <td nowrap> <: edit child Edit Product :> 
+          <td nowrap> <: edit child Edit :> 
             <:if NextChild:> <a href="/cgi-bin/admin/move.pl?id=<:child id:>&d=down&edit=1&all=1"> 
             <img src="/images/admin/move_down.gif" width="17" height="13" alt="Move Down" border="0"></a> 
             <:or NextChild:> <:eif NextChild:> <:if PrevChild:> <a href="/cgi-bin/admin/move.pl?id=<:child id:>&d=up&edit=1&all=1"> 
