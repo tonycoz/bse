@@ -7,6 +7,7 @@ use Images;
 use vars qw(@ISA);
 use Generate;
 use CGI (); # for escapeHTML()
+use Util qw(generate_button);
 @ISA = qw/Generate/;
 
 my $excerptSize = 300;
@@ -21,6 +22,9 @@ sub edit_link {
 
 sub summarize {
   my ($self, $text, $length) = @_;
+
+  # remove any block level formatting
+  $self->remove_block(\$text);
 
   $text =~ tr/\n\r / /s;
 
@@ -66,7 +70,7 @@ sub embed {
     $html = $1;
   }
 
-  return $self->generate_low($html, $article, $articles);
+  return $self->generate_low($html, $article, $articles, 1);
 }
 
 sub link_to_form {
@@ -138,7 +142,7 @@ sub baseActs {
        $acts->{$which} && $acts->{$which}->('titleImage')
          ? qq!<img src="/images/titles/!.$acts->{$which}->('titleImage')
            .qq!" border=0>! 
-         : CGI::escapeHTML($acts->{$which}->('title'));
+         : $acts->{$which}->('title');
      },
      thumbnail =>
      sub {
@@ -208,11 +212,15 @@ HTML
 <input type=submit value="Add $level_names{1+$article->{level}}">
 <input type=hidden name=parentid value="$article->{id}">
 </form></td>
+HTML
+	   if (generate_button()) {
+	     $html .= <<HTML;
 <td><form action="$CGI_URI/admin/generate.pl">
 <input type=hidden name=id value="$article->{id}">
 <input type=submit value="Regenerate">
 </form></td>
 HTML
+	   }
            $html .= "<td>".$self->link_to_form($article->{admin}."&admin=0",
                                                "Display", "_blank")."</td>";
            if ($article->{link}) {
