@@ -147,6 +147,26 @@ sub getBy {
   return wantarray ? @results : $results[0];
 }
 
+sub getSpecial {
+  my ($self, $name, @args) = @_;
+
+  unless (ref $self) {
+    $self = $self->new(preload=>0);
+  }
+  my $rowClass = $self->rowClass;
+  my $sqlname = ref($self) . "." . $name;
+  my $sth = $dh->stmt($sqlname)
+    or confess "No $sqlname in database object";
+  $sth->execute(@args)
+    or confess "Cannot execute $sqlname: ", $sth->errstr;
+  my @results;
+  while (my $row = $sth->fetchrow_arrayref) {
+    push(@results, $rowClass->new(@$row));
+  }
+
+  wantarray ? @results : \@results;
+}
+
 # a list of all rows in select order
 sub all {
   my $self = shift;
