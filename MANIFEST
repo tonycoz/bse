@@ -32,6 +32,7 @@ site/cgi-bin/admin/subadmin.pl
 site/cgi-bin/admin/subs.pl
 site/cgi-bin/admin/userlist.pl
 site/cgi-bin/bse.cfg
+site/cgi-bin/fmail.pl
 site/cgi-bin/interest.pl
 site/cgi-bin/modules/AdminUtil.pm
 site/cgi-bin/modules/Apache/Session/DBIreal.pm
@@ -100,6 +101,7 @@ site/cgi-bin/modules/BSE/Thumb/Imager.pm
 site/cgi-bin/modules/BSE/UI/AdminDispatch.pm
 site/cgi-bin/modules/BSE/UI/Affiliate.pm
 site/cgi-bin/modules/BSE/UI/Dispatch.pm
+site/cgi-bin/modules/BSE/UI/Formmail.pm
 site/cgi-bin/modules/BSE/UI/SiteuserCommon.pm
 site/cgi-bin/modules/BSE/UI/SubAdmin.pm
 site/cgi-bin/modules/BSE/UserReg.pm
@@ -317,6 +319,9 @@ site/templates/custom/order_detail_payment.include
 site/templates/custom/payment_type_email.include
 site/templates/error.tmpl
 site/templates/extras.txt
+site/templates/formmail/defdone_base.tmpl
+site/templates/formmail/defemail.tmpl
+site/templates/formmail/defquery_base.tmpl
 site/templates/helpicon.tmpl	Help icon for user templates
 site/templates/htmlemail/basic.tmpl
 site/templates/include/rssitems.tmpl
@@ -383,6 +388,7 @@ t/t060parms.t
 t/t070sqldates.t	Test SQL date tools
 t/t10edit.t
 t/t20gen.t
+t/t21gencat.t	Tests catalog generation
 t/t30rules.t	Check for use strict and warnings
 t/t40images.t	Tests image management
 t/t50subscalc.t	Test subscriptions calculations

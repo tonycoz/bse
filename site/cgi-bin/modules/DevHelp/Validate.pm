@@ -2,7 +2,7 @@ package DevHelp::Validate;
 use strict;
 require Exporter;
 use vars qw(@EXPORT_OK @ISA);
-@EXPORT_OK = qw(dh_validate dh_validate_hash dh_fieldnames);
+@EXPORT_OK = qw(dh_validate dh_validate_hash dh_fieldnames dh_configure_fields);
 @ISA = qw(Exporter);
 
 sub new {
@@ -396,13 +396,53 @@ sub _get_cfg_fields {
   my @names = ( split(/,/, $fields), keys %$field_hash );
 
   for my $field (@names) {
-    for my $cfg_name (qw(required rules description required_error range_error mindatemsg maxdatemsg)) {
+    for my $cfg_name (qw(required rules description required_error range_error mindatemsg maxdatemsg htmltype type width height size)) {
       my $value = $cfg->entry($section, "${field}_$cfg_name");
       if (defined $value) {
 	$cfg_fields->{$field}{$cfg_name} = $value;
       }
     }
   }
+}
+
+sub dh_configure_fields {
+  my ($fields, $cfg, $section) = @_;
+
+  my %cfg_rules;
+  _get_cfg_fields(\%cfg_rules, $cfg, $section, $fields);
+
+  # **FIXME** duplicated code
+  my $cfg_fields = $cfg_rules{fields};
+  for my $field ( keys %$fields ) {
+    my $src = $fields->{$field};
+
+    my $dest = $cfg_fields->{$field} || {};
+
+    # the config overrides the software supplied fields
+    for my $override (qw(description required required_error range_error mindatemsg maxdatemsg htmltype type width height size)) {
+      if (defined $src->{$override} && !defined $dest->{$override}) {
+	$dest->{$override} = $src->{$override};
+      }
+    }
+
+    # but we add rules
+    if ($dest->{rules}) {
+      my $rules = $src->{rules};
+
+      # make a copy of the rules array if it's supplied that way so
+      # we don't modify someone else's data
+      $rules = ref $rules ? [ @$rules ] : [ split /;/, $rules ];
+
+      push @$rules, split /;/, $dest->{rules};
+    }
+    elsif ($src->{rules}) {
+      $dest->{rules} = $src->{rules};
+    }
+
+    $cfg_fields->{$field} = $dest if keys %$dest;
+  }
+
+  return $cfg_fields;
 }
 
 sub _get_cfg_rule {

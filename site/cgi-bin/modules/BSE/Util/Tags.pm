@@ -346,7 +346,8 @@ sub tag_nobodytext {
 sub tag_old {
   my ($cgi, $args, $acts, $name, $templater) = @_;
 
-  my ($field, $func, $funcargs) = split ' ', $args, 3;
+  my ($field, $func, $funcargs) = 
+    DevHelp::Tags->get_parms($args, $acts, $templater);
 
   my $value = $cgi->param($field);
   if (defined $value) {
@@ -401,6 +402,7 @@ sub basic {
      old => [ \&tag_old, $cgi ],
      oldi => [ \&tag_oldi, $cgi ],
      $it->make_iterator(\&DevHelp::Tags::iter_get_repeat, 'repeat', 'repeats'),
+     dynreplace => \&tag_replace,
     );
 }
 

@@ -205,8 +205,10 @@ sub possible_parents {
       grep $_->{generator} eq 'Generate::Catalog', 
       $articles->getBy(parentid=>$id);
   }
-  shift @values;
-  delete $labels{$shopid};
+  unless ($shop->{generator} eq 'Generate::Catalog') {
+    shift @values;
+    delete $labels{$shopid};
+  }
   return (\@values, \%labels);
 }
 

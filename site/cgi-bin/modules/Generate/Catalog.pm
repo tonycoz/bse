@@ -10,6 +10,7 @@ use Util qw(generate_button);
 use OtherParents;
 use DevHelp::HTML;
 use BSE::Arrows;
+use BSE::Util::Iterate;
 
 sub _default_admin {
   my ($self, $article, $embedded) = @_;
@@ -62,6 +63,39 @@ HTML
   return $html;
 }
 
+sub tag_moveallcat {
+  my ($self, $allcats, $rindex, $article, $arg, $acts, $funcname, $templater) = @_;
+
+  return '' unless $self->{admin};
+  return '' unless $self->{request};
+  return '' 
+    unless $self->{request}->user_can(edit_reorder_children => $article);
+  return '' unless @$allcats > 1;
+
+  my ($img_prefix, $urladd) = 
+    DevHelp::Tags->get_parms($arg, $acts, $templater);
+  $img_prefix = '' unless defined $img_prefix;
+  $urladd = '' unless defined $urladd;
+  
+  my $can_move_up = $$rindex > 0;
+  my $can_move_down = $$rindex < $#$allcats;
+  return '' unless $can_move_up || $can_move_down;
+  my $myid = $allcats->[$$rindex]{id};
+  my $top = $self->{top} || $article;
+  my $refreshto = "$CGI_URI/admin/admin.pl?id=$top->{id}$urladd";
+  my $down_url = "";
+  if ($can_move_down) {
+    my $nextid = $allcats->[$$rindex+1]{id};
+    $down_url = "$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$myid&other=$nextid";
+  }
+  my $up_url = "";
+  if ($can_move_up) {
+    my $previd = $allcats->[$$rindex-1]{id};
+    $up_url = "$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$myid&other=$previd";
+  }
+  return make_arrows($self->{cfg}, $down_url, $up_url, $refreshto, $img_prefix);
+}
+
 sub generate_low {
   my ($self, $template, $article, $articles, $embedded) = @_;
 
@@ -77,27 +111,28 @@ sub generate_low {
   my $today = sprintf("%04d-%02d-%02d 00:00:00ZZZ", $year+1900, $month+1, $day);
   my @stepprods = $article->visible_stepkids;
   my $stepprod_index;
-  my @allprods = $article->all_visible_kids;
+  my @allkids = $article->all_visible_kids;
   require 'Generate/Product.pm';
-  @allprods = grep UNIVERSAL::isa($_->{generator}, 'Generate::Product'), @allprods;
+  my @allprods = grep UNIVERSAL::isa($_->{generator}, 'Generate::Product'), 
+    @allkids;
   for (@allprods) {
     unless ($_->isa('Product')) {
       $_ = Products->getByPkey($_->{id});
     }
   }
+  my @allcats = grep UNIVERSAL::isa($_->{generator}, 'Generate::Catalog'), 
+    @allkids;
   my $allprod_index;
-  my $category_index = -1;
+  my $catalog_index = -1;
+  my $allcat_index;
+  my $it = BSE::Util::Iterate->new;
   my %acts;
   %acts =
     (
      $self->baseActs($articles, \%acts, $article, $embedded),
      article => sub { escape_html($article->{$_[0]}) },
-     iterate_products =>
-     sub {
-       return ++$product_index < @products;
-     },
-     product=> sub { escape_html($products[$product_index]{$_[0]}) },
-     ifProducts => sub { @products },
+     $it->make_iterator(undef, 'product', 'products', \@products, 
+			\$product_index),
      admin => [ tag_admin => $self, $article, 'catalog', $embedded ],
      # for rearranging order in admin mode
      moveDown=>
@@ -126,9 +161,8 @@ HTML
 	 return '';
        }
      },
-     iterate_allprods_reset => sub { $allprod_index = -1 },
-     iterate_allprods => sub { ++$allprod_index < @allprods },
-     allprod => sub { escape_html($allprods[$allprod_index]{$_[0]}) },
+     $it->make_iterator(undef, 'allprod', 'allprods', \@allprods, 
+			\$allprod_index),
      moveallprod =>
      sub {
        my ($arg, $acts, $funcname, $templater) = @_;
@@ -163,16 +197,16 @@ HTML
        }
        return make_arrows($self->{cfg}, $down_url, $up_url, $refreshto, $img_prefix);
      },
-     ifAnyProds => sub { escape_html(@allprods) },
-     iterate_stepprods_reset => sub { $stepprod_index = -1 },
-     iterate_stepprods => sub { ++$stepprod_index < @stepprods; },
-     stepprod => sub { escape_html($stepprods[$stepprod_index]{$_[0]}) },
+     ifAnyProds => scalar(@allprods),
+     $it->make_iterator(undef, 'stepprod', 'stepprods', \@stepprods,
+			\$stepprod_index),
      ifStepProds => sub { @stepprods },
-     iterate_catalogs_reset => sub { $category_index = -1 },
-     iterate_catalogs => sub { ++$category_index < @subcats },
-     catalog => 
-     sub { escape_html($subcats[$category_index]{$_[0]}) },
+     $it->make_iterator(undef, 'catalog', 'catalogs', \@subcats, 
+			\$catalog_index),
      ifSubcats => sub { @subcats },
+     $it->make_iterator(undef, 'allcat', 'allcats', \@allcats, \$allcat_index),
+     moveallcat => 
+     [ \&tag_moveallcat, $self, \@allcats, \$allcat_index, $article ],
     );
   my $oldurl = $acts{url};
   my $urlbase = $self->{cfg}->entryVar('site', 'url');

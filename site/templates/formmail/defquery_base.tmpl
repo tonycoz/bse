@@ -1,0 +1,27 @@
+<:wrap base.tmpl:>
+<form action="<:script:>" method="post">
+<input type="hidden" name="form" value="<:id:>" />
+<:ifMsg:><p><b><:msg:></b></p><:or:><:eif:>
+<table>
+<:iterator begin fields:>
+<tr>
+  <th><:field description:>:</th>
+  <td>
+  <:switch:>
+  <:case Eq [field htmltype] "textarea":>
+  <textarea name="<:field name:>" <:ifField width:>cols="<:field width:>"<:or:><:eif:> <:ifField height:>rows="<:field height:>"<:or:><:eif:> wrap="virtual"><:old [field name]:></textarea>
+  <:case Eq [field htmltype] "password":>
+  <input type="password" name="<:field name:>" value="<:old [field name]:>" <:ifField width:>size="<:field width:>"<:or:><:eif:> />
+  <:case default:>
+  <input type="text" name="<:field name:>" value="<:old [field name]:>" <:ifField width:>size="<:field width:>"<:or:><:eif:> />
+  <:endswitch:>
+  </td>
+  <td><:error_img [field name]:></td>
+</tr>
+<:iterator end fields:>
+<tr>
+  <td colspan="2"><input type="submit" name="a_send" value="Send" /></td>
+  <td></td>
+</tr>
+</table>
+</form>

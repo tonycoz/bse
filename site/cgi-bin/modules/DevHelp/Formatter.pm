@@ -221,6 +221,8 @@ sub format {
 	  and next TRY;
 	$part =~ s#h([1-6])\[\|([^\[\]]+)\](?:\r?\n)?#<h$1>$2</h$1>#ig
           and next TRY;
+	$part =~ s#div\[([^\[\]\|]+)\|([^\[\]]+)\]#<div class="$1">$2</div>#ig
+          and next TRY;
 	$part =~ s#h([1-6])\[([^\[\]\|]+)\|([^\[\]]+)\](?:\r?\n)?#<h$1 class="$2">$3</h$1>#ig
           and next TRY;
 	$part =~ s#align\[([^|\]\[]+)\|([^\]\[]+)\]#<div align="$1">$2</div>#ig
@@ -252,6 +254,9 @@ sub format {
 	last;
       }
       $part =~ s!(\n([ \r]*\n)*)!$1 eq "\n" ? "<br />\n" : "</p>\n<p>"!eg;
+      $part = "<p>$part</p>";
+      $part =~ s/<p><div class=\"([^\"]+)\">/<div class="$1"><p>/g;
+      $part =~ s!</div></p>!</p></div>!g;
       #$part =~ s!\n!<br />!g;
       $out .= $part;
     }
@@ -292,6 +297,8 @@ sub remove_format {
     TRY: while (1) {
 	$self->remove(\$part)
 	  and next TRY;
+	$part =~ s#div\[([^\[\]\|]+)\|([^\[\]]+)\](?:\r?\n)?#$2#ig
+          and next TRY;
 	$part =~ s#h([1-6])\[\|([^\[\]]+)\](?:\r?\n)?#$2#ig
           and next TRY;
 	$part =~ s#h([1-6])\[([^\[\]\|]+)\|([^\[\]]+)\](?:\r?\n)?#$3#ig

@@ -18,7 +18,8 @@ use Constants qw(:shop $SHOPID $PRODUCTPARENT
 use Images;
 use Articles;
 use BSE::Sort;
-use BSE::Util::Tags;
+use BSE::Util::Tags qw(tag_hash);
+use BSE::Util::Iterate;
 use BSE::Request;
 use BSE::WebUtil 'refresh_to_admin';
 use DevHelp::HTML;
@@ -189,16 +190,23 @@ sub product_list {
   my $cgi = $req->cgi;
   my $session = $req->session;
   my $shopid = $req->cfg->entryErr('articles', 'shop');
+  my $shop = Articles->getByPkey($shopid);
   my @catalogs = sort { $b->{displayOrder} <=> $a->{displayOrder} }
-    Articles->children($shopid);
+    grep $_->{generator} eq 'Generate::Catalog', Articles->children($shopid);
   my $catalog_index = -1;
   $message ||= $cgi->param('m') || $cgi->param('message') || '';
   if (defined $cgi->param('showstepkids')) {
     $session->{showstepkids} = $cgi->param('showstepkids');
   }
   exists $session->{showstepkids} or $session->{showstepkids} = 1;
+  my $products = Products->new;
+  my @products = sort { $b->{displayOrder} <=> $a->{displayOrder} }
+    $products->getBy(parentid => $shopid);
+  my $product_index;
 
   my $blank = qq!<img src="$IMAGES_URI/trans_pixel.gif" width="17" height="13" border="0" align="absbottom" />!;
+
+  my $it = BSE::Util::Iterate->new;
 
   my %acts;
   %acts =
@@ -209,6 +217,7 @@ sub product_list {
      catalog=> sub { CGI::escapeHTML($catalogs[$catalog_index]{$_[0]}) },
      iterate_catalogs => sub { ++$catalog_index < @catalogs  },
      shopid=>sub { $shopid },
+     shop => [ \&tag_hash, $shop ],
      script=>sub { $ENV{SCRIPT_NAME} },
      message => sub { $message },
      embed =>
@@ -240,6 +249,39 @@ sub product_list {
        return make_arrows($req->cfg, $down_url, $up_url, $refreshto, $img_prefix);
      },
      ifShowStepKids => sub { $session->{showstepkids} },
+     $it->make_iterator(undef, 'product', 'products', \@products, \$product_index),
+     move =>
+     sub {
+       my ($arg, $acts, $funcname, $templater) = @_;
+
+       $req->user_can(edit_reorder_children => $shop)
+	 or return '';
+       my ($img_prefix, $urladd) = DevHelp::Tags->get_parms($arg, $acts, $templater);
+       defined $img_prefix or $img_prefix = '';
+       defined $urladd or $urladd = '';
+       @products > 1 or return '';
+       # links to move products up/down
+       my $refreshto = $ENV{SCRIPT_NAME}."$urladd#cat".$shop->{id};
+       my $down_url = '';
+       if ($product_index < $#products) {
+	 if ($session->{showstepkids}) {
+	   $down_url = "$CGI_URI/admin/move.pl?stepparent=$shop->{id}&d=swap&id=$products[$product_index]{id}&other=$products[$product_index+1]{id}";
+	 }
+	 else {
+	   $down_url = "$CGI_URI/admin/move.pl?id=$products[$product_index]{id}&d=swap&other=$products[$product_index+1]{id}";
+	 }
+       }
+       my $up_url = '';
+       if ($product_index > 0) {
+	 if ($session->{showstepkids}) {
+	   $up_url = "$CGI_URI/admin/move.pl?stepparent=$shop->{id}&d=swap&id=$products[$product_index]{id}&other=$products[$product_index-1]{id}";
+	 }
+	 else {
+	   $up_url = "$CGI_URI/admin/move.pl?id=$products[$product_index]{id}&d=swap&other=$products[$product_index-1]{id}";
+	 }
+       }
+       return make_arrows($req->cfg, $down_url, $up_url, $refreshto, $img_prefix);
+     },
     );
 
   page('product_list', \%acts);

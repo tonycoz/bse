@@ -65,12 +65,14 @@ sub possible_parents {
   my @work = [ $shopid, $shop->{title} ];
   while (@work) {
     my ($id, $title) = @{pop @work};
-    push(@values, $id);
-    $labels{$id} = $title;
-    push @work, map [ $_->{id}, $title.' / '.$_->{title} ],
-    sort { $b->{displayOrder} <=> $a->{displayOrder} }
-      grep $_->{generator} eq 'Generate::Catalog', 
-      $articles->getBy(parentid=>$id);
+    if (!$article->{id} || $article->{id} != $id) {
+      push(@values, $id);
+      $labels{$id} = $title;
+      push @work, map [ $_->{id}, $title.' / '.$_->{title} ],
+	sort { $b->{displayOrder} <=> $a->{displayOrder} }
+	  grep $_->{generator} eq 'Generate::Catalog', 
+	    $articles->getBy(parentid=>$id);
+    }
   }
 
   return (\@values, \%labels);

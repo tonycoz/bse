@@ -1,0 +1,282 @@
+=head1 NAME
+
+formmail.pod - using and configuring fmail.pl
+
+=head1 SYNOPSIS
+
+  # Link
+  .../cgi-bin/fmail.pl?form=formid
+
+  # Configuration
+  [formid form]
+  fields=field1,field2,...
+  email=where.to@send.to
+  query=querytemplate
+  done=finaltemplate
+  mail=mailtemplate
+
+  [formid formmail validation]
+  field1_description=description of field1
+  field1_rules=rules...
+  field1_required=1
+  field2_description=description of field2
+  field2_rules=rules...
+
+  # and templates, not shown here
+
+=head1 DESCRIPTION
+
+fmail.pl provides the basic facilities of the original formmail.pl,
+with the following extras:
+
+=over
+
+=item *
+
+security - since the email to be sent to is stored in BSE's
+configuration, it cannot be hijacked to send email to others.
+
+=item *
+
+user information - since it's part of BSE it has access to BSE's user
+system, and can include information about the logged in member in the
+email if there is one.
+
+=item *
+
+validation - you can use the DevHelp validation engine to validate the
+fields the user enters
+
+=item *
+
+templates - the system uses BSE's templating system, allowing complete
+customization of the entry form, the final display form and the email
+sent
+
+=back
+
+=head1 INVOKING
+
+In general you want to link for fmail.pl and supply a form id:
+
+  <a href="/cgi-bin/fmail.pl?form=someform">Send us feedback</a>
+
+You can also link without a form id:
+
+  <a href="/cgi-bin/fmail.pl">Send us feedback</a>
+
+which is exactly the same as:
+
+  <a href="/cgi-bin/fmail.pl?form=default">Send us feedback</a>
+
+If you make a modified query template, make sure you supply the form
+id as a hidden field:
+
+  <input type="hidden" name="form" value="<:id:>" />
+
+During form processing, fmail.pl accepts 2 different action values:
+
+=over
+
+=item *
+
+a_send - send the email, assuming all fields pass validation.  This
+will save the form data in the session object and refresh to a_done.
+
+=item *
+
+a_done - displays the completion page, using the values stored in the
+session.  Note that this will only work for 10 minutes after
+submission to protect the users privacy.
+
+=back
+
+=head1 CONFIGURATION
+
+Each form id refers to a form configuration section and a form
+validation section of the configuration file.
+
+The configuration entries available in [I<form> form] are:
+
+=over
+
+=item *
+
+query - the name of the query template, the form used to ask the user
+for their information. Default: formmail/defquery
+
+=item *
+
+done - the name of the final display template, used to thank them for
+entering their data or say it will be responded to, or whatever this
+form is being used for. Default: formmail/defdone
+
+=item *
+
+mail - the name of the email template, used to build the content sent
+to the configured email address. Default: formmail/defemail
+
+=item *
+
+fields - a comma separated list of fields to be entered.  Default:
+from,subject,text
+
+=item *
+
+subject - the subject of the email sent. Default: User form emailed
+
+=item *
+
+email - the email address the form data is sent to.  Defaults to the
+value configured as [shop].from or $SHOP_FROM from Constants.pm
+
+=back
+
+You can also configure information used for validation and available
+to the <:field ...:> tag in the templates.  This is from the
+[I<formid> formmail validation] section.
+
+In general each entry is the name of a field (from fields above),
+followed by underscore, followed by a validation configuration name,
+for example C<from_required> is used to configure whether the C<from>
+field is required.
+
+=over
+
+=item *
+
+I<fieldname>_required - if this is non-zero the I<fieldname> is a
+required field.
+
+=item *
+
+I<fieldname>_required_error - message displayed for the field if it's
+marked required but isn't set.
+
+=item *
+
+I<fieldname>_description - a display name for the field.
+
+=item *
+
+I<fieldname>_rules - a semi-colon separated list of validation rules
+for the field.  See L<DevHelp::Validate> for a list of built-in rules,
+some common ones are C<email>, I<phone>, I<weburl>, I<date>.  You can
+also configure extra rules, with some limits.
+
+=item *
+
+I<fieldname>_htmltype - used by the default query form to choose how
+to display the field.  Values accepted are "textarea", "password", or
+"text".
+
+=item *
+
+I<fieldtype>_width - used by the default query form to set the width
+attribute for text, password and textarea fields.
+
+=item *
+
+I<fieldtype>_height - used by the default query form to set the height
+attribute for textarea fields.
+
+=back
+
+=head1 TEMPLATES
+
+fmail.pl uses three templates:
+
+=over
+
+=item *
+
+query - asks the user for their information
+
+=item *
+
+mail - sents the information to you
+
+=item 
+
+done - displayed after the information is submitted.
+
+=back
+
+Standard BSE dynamic tags are available on the query and done
+templates.  Standard BSE static tags are available on the mail
+template.
+
+These tags are available on all three templates:
+
+=over
+
+=item *
+
+id - the form id of the form
+
+=item *
+
+iterator begin fields ... iterator end fields - Iterates over the
+fields in the order specified in the fields configuration value.  Use
+the C<field> tag to get the field information.  Other standard
+iterator tags are also available, eg. field_count.
+
+=item *
+
+field I<fieldinfo> - accesses information about the field, possible
+values for I<fieldinfo> include C<required>, C<htmltype>,
+C<description> and so.
+
+On the mail and done templates I<fieldinfo> can also be C<value> to
+present the value captured from the user.
+
+=back
+
+The following tags are available on the done and mail templates:
+
+=over
+
+=item *
+
+value I<fieldname> - retrieves the value of a given field.
+
+=back
+
+The following tags are only available on the query template:
+
+=over
+
+=item *
+
+error_img I<fieldname> - displays an error icon if there was a
+validation error for that field.
+
+=item *
+
+msg - displays an error message
+
+=back
+
+The following tags are only available on the mail template:
+
+=over
+
+=item *
+
+ifUser - check if a user was logged on when the form was submitted.
+
+=item *
+
+user I<userfield> - access to the user's SiteUser record.
+
+=back
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=head1 REVISION
+
+$Revision$
+
+=cut

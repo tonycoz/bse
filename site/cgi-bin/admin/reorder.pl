@@ -63,6 +63,10 @@ if ($req->user_can(edit_reorder_children => $parentid)) {
     }
   }
   
+  my $type = $cgi->param('type');
+  if ($type) {
+    @kids = grep { $_->[0]{generator} =~ /::\Q$type\E$/, @kids;
+  }
   
   my @order = sort { $b <=> $a } map $_->[1]{$_->[2]}, @kids;
   my $sort = join(",", $cgi->param('sort')) || 'current';

@@ -1,0 +1,19 @@
+<:wrap base.tmpl:>
+<table>
+<:iterator begin fields:>
+<tr>
+  <th><:field description:>:</th>
+  <td>
+  <:switch:>
+  <:case Eq [field htmltype] "textarea":>
+  <:dynreplace [field value] "
+" "<br/>" g :>
+  <:case Eq [field htmltype] "password":>
+  ****************
+  <:case default:>
+  <:field value:>
+  <:endswitch:>
+  </td>
+</tr>
+<:iterator end fields:>
+</table>

@@ -1,0 +1,12 @@
+Your online form has been submitted.
+
+<:if User:>A registered user submitted the form:
+Logon: <:user userId:>
+Email: <:user email:>
+<:or User:>The user wasn't registered/logged on when they submitted the form.
+<:eif User
+:>
+<:iterator begin fields:>
+** <:field description:> **
+  <:field value:>
+<:iterator end fields:>

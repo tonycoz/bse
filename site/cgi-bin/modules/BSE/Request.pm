@@ -174,6 +174,36 @@ sub dyn_response {
 				    $base_template);
 }
 
+sub response {
+  my ($req, $template, $acts) = @_;
+
+  return BSE::Template->get_response($template, $req->cfg, $acts);
+}
+
+# get the current site user if one is logged on
+sub siteuser {
+  my ($req) = @_;
+
+  my $cfg = $req->cfg;
+  my $session = $req->session;
+  require SiteUsers;
+  if ($cfg->entryBool('custom', 'user_auth')) {
+    require BSE::CfgInfo;
+    my $custom = BSE::CfgInfo::custom_class($cfg);
+    
+    return $custom->siteuser_auth($session, $req->cgi, $cfg);
+  }
+  else {
+    my $userid = $session->{userid}
+      or return;
+    my $user = SiteUsers->getBy(userId=>$userid)
+      or return;
+    $user->{disabled}
+      and return;
+    return $user;
+  }
+}
+
 sub DESTROY {
   my ($self) = @_;
   if ($self->{session}) {

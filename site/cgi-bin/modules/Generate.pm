@@ -437,11 +437,11 @@ sub baseActs {
 
      summary =>
      sub {
-       my $which = shift;
+       my ($which, $acts, $name, $templater) = @_;
        $which or $which = "child";
        $acts->{$which}
 	 or return "<:summary $which Cannot find $which:>";
-       my $id = $acts->{$which}->("id")
+       my $id = $templater->perform($acts, $which, "id")
 	 or return "<:summary $which No id returned :>";
        my $article = $articles->getByPkey($id)
 	 or return "<:summary $which Cannot find article $id:>";

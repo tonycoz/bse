@@ -262,12 +262,16 @@ sub baseActs {
      title => [ \&tag_title, $article, \@images ],
      thumbnail =>
      sub {
-       my ($which, $class) = split ' ', $_[0];
+       my ($args, $acts, $name, $templater) = @_;
+       my ($which, $class) = split ' ', $args;
        $which ||= 'article';
-       if ($acts->{$which} && $acts->{$which}->('thumbImage')) {
-         my $result = '<img src="/images/'.$acts->{$which}->('thumbImage')
-           .'" width="'.$acts->{$which}->('thumbWidth')
-             .'" height="'.$acts->{$which}->('thumbHeight').'"';
+       if ($acts->{$which} && 
+	   (my $image = $templater->perform($acts, $which, 'thumbImage'))) {
+	 my $width = $templater->perform($acts, $which, 'thumbWidth');
+	 my $height = $templater->perform($acts, $which, 'thumbHeight');
+         my $result = '<img src="/images/'.$image
+           .'" width="'.$width
+             .'" height="'.$height.'"';
          $result .= qq! class="$class"! if $class;
          $result .= ' border="0" alt="" />';
          return $result;
@@ -278,8 +282,10 @@ sub baseActs {
      },
      ifThumbnail =>
      sub {
-       my $which = shift || 'article';
-       return $acts->{$which} && $acts->{$which}->('thumbImage');
+       my ($which, $acts, $name, $templater) = @_;
+       $which ||= 'article';
+       return $acts->{$which} && 
+	 $templater->perform($acts, $which, 'thumbImage');
      },
      ifUnderThreshold => 
      sub { 

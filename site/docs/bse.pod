@@ -10,6 +10,58 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_02
+
+=over
+
+=item *
+
+added the fmail.pl script, see formmail.pod for information on using
+this.
+
+=item *
+
+reorder.pl now accepts a type parameter to sort only those children
+that have the appropriate generator.
+
+=item *
+
+catalogs now use the standard iterator tags for products, allprods,
+stepprods, and adds an allcats iterator.
+
+=item *
+
+shopadmin.pl now supports the shop article being a catalog, adding the
+shop tag and products iterator for the base product_list template.
+
+=item *
+
+the summary and thumbnail tags didn't work with newer style article
+tags
+
+=item *
+
+the drop-down parent list for catalogs no longer includes the current
+catalog or its children.
+
+=item *
+
+you can now parent products to the shop article if it's a catalog.
+
+=item *
+
+the dynamic C<old> tag can now accept the field name as a [] parameter.
+
+=item *
+
+body text is now generated with surrounding <p> and </p> tags.
+
+=item *
+
+added the div[class|text...] formatting tag
+
+=back
+
 =head2 0.15_01
 
 =over
