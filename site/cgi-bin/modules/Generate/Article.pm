@@ -54,25 +54,6 @@ sub make_article_body {
   return $self->format_body(@$article{qw/body imagePos/}, @images);
 }
 
-sub embed {
-  my ($self, $article, $articles) = @_;
-
-  open SOURCE, "< $TMPLDIR$article->{template}"
-    or die "Cannot open template $article->{template}: $!";
-  my $html = do { local $/; <SOURCE> };
-  close SOURCE;
-
-  # the template will hopefully contain <:embed start:> and <:embed end:>
-  # tags
-  # otherwise pull out the body content
-  if ($html =~ /<:\s*embed\s*start\s*:>(.*)<:\s*embed\s*end\s*:>/s
-     || $html =~ m"<\s*body[^>]*>(.*)<\s*/\s*body>"s) {
-    $html = $1;
-  }
-
-  return $self->generate_low($html, $article, $articles, 1);
-}
-
 sub link_to_form {
   my ($self, $link, $text, $target) = @_;
 
@@ -269,27 +250,6 @@ HTML
      ifParent => sub { $parent },
      parent =>
      sub { return CGI::escapeHTML($parent->{$_[0]}) },
-
-     # for embedding the content from children
-     ifEmbedded=> sub { $embedded },
-     embed => sub {
-       my ($what) = @_;
-       if ($what eq 'child') {
-         my $child = $children[$child_index];
-         if ($child->{generator} eq __PACKAGE__) {
-           return $self->embed($children[$child_index], $articles);
-         } else {
-           # use the correct generator
-           eval "use $child->{generator}";
-           $@ and die "Cannot load $child->{generator}: $@";
-           my $gen = $child->{generator}->new(admin=>$self->{admin});
-           return $gen->embed($child, $articles);
-         }
-       } else {
-         return "** don't know how to embed $what **";
-       }
-     },
-
      # for rearranging order in admin mode
      moveDown=>
      sub {
@@ -478,17 +438,7 @@ now.
 
 =item embed child
 
-Embeds the current child at that point.  Should be used with C<embed
-start> and C<embed end> in the child's template.
-
-=item embed start ... embed end
-
-Marks the range of text that would be embedded in a parent that used
-C<embed child>.
-
-=item ifEmbedded
-
-Conditional tag, true if the current article is being embedded.
+This has been made more general and been moved, see L<Generate/embed child>.
 
 =back
 
