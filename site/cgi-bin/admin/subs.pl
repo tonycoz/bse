@@ -85,7 +85,7 @@ sub _template_popup {
     }
   }
   my %seen_templates;
-  @templates = sort grep !$seen_templates{$_}, @templates;
+  @templates = sort grep !$seen_templates{$_}++, @templates;
   @templates or push(@templates, "Could not find templates in $base");
   my $def = $old ? $q->param($name) :
     $sub ? $sub->{$name} : $templates[0];

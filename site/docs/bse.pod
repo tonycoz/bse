@@ -10,6 +10,83 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.12_24
+
+=over
+
+=item *
+
+DevHelp::HTML, used to provide HTML and URI escaping wasn't including
+a required module.  D'oh.
+
+=item *
+
+the keywords tag in the search page was being overridden by a tag of
+the same name in the global article tags.  The old global C<keywords>
+tag wasn't very useful and has been removed.
+
+=item *
+
+the templates drop-down in the subscriptions system included
+duplicates
+
+=item *
+
+the crumbs iterator is now available on the article edit pages, and we
+now present a path on the main edit page
+
+=item *
+
+you can now use <:crumb I<fieldname>:> to get to crumb article
+information.  The current <:crumbs I<fieldname>:> will be obsoleted at
+some point in the future.
+
+=item *
+
+the content of the help files no longer render as links in Mozilla
+
+=item *
+
+C<< <:typename I<which>:> >> tag added to the article editor pages
+
+=item *
+
+the list of articles available to page generation was in the wrong
+order
+
+=item *
+
+when access control was switched off, links were displayed to permit
+deletion of articles with children, when they shouldn't have. (#221)
+
+=item *
+
+Most article editor actions now accept an r parameter which can be
+used to decide what happens after the action.  (#225, #226)
+
+The save_new action adds an id parameter onto the end of the supplied
+url if the r parameter is supplied.
+
+=item *
+
+more messages are included when the article editor successfully
+performs an action (#225)
+
+=item *
+
+article editor and generator tags that generate arrows now take an
+image prefix parameter which can be used to select alternate arrow
+images.  A second parameter can also be used to add onto the refresh
+URL to supply extra information to the refreshed to page. (#224, #225,
+#226)
+
+=item *
+
+some code in BSE::Util::Tags was calling CGI::escapeHTML() at regen
+time (#223)
+
+=back
+
 =head2 0.12_23
 
 =over

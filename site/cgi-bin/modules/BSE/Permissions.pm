@@ -271,24 +271,22 @@ sub user_has_perm {
     my $msg;
     $rmsg = \$msg;
   }
-  unless ($self->{cfg}->entry('basic', 'access_control', 0))  {
-    if ($checks{$action}) {
-      unless (ref $article) {
-	$article = $self->_get_article($article)
-	  or return;
-      }
-      my $method = "check_$action";
-      $self->$method($user, $article, $action, $rmsg)
-	or return;
-    }
-    return 1;
-  }
-  
+
   unless (ref $article) {
     $article = $self->_get_article($article)
       or return;
   }
 
+  if ($checks{$action}) {
+    my $method = "check_$action";
+    $self->$method($user, $article, $action, $rmsg)
+      or return;
+  }
+
+  unless ($self->{cfg}->entry('basic', 'access_control', 0))  {
+    return 1;
+  }
+  
   $self->{userid} && $self->{userid} == $user->{id}
     or $self->_load_user_perms($user);
 

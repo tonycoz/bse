@@ -83,8 +83,7 @@ sub baseActs {
   my $parent = $articles->getByPkey($article->{parentid});
   my $section = $crumbs[0];
 
-  my @images = sort { $a->{id} <=> $b->{id} }
-    Images->getBy('articleId', $article->{id});
+  my @images = Images->getBy('articleId', $article->{id});
   my $image_index = -1;
   my $had_image_tags = 0;
   my @files = sort { $b->{displayOrder} <=> $a->{displayOrder} }
@@ -163,9 +162,6 @@ sub baseActs {
        $count <= $article->{threshold};
      },
      ifChildren => sub { scalar @children },
-     keywords => sub { my $keywords = $article->{keyword};
-                       $keywords =~ s/\S\s+/, /g;
-                       return ",$keywords"; },
      iterate_children_reset => sub { $child_index = -1; },
      iterate_children =>
      sub {
@@ -264,6 +260,11 @@ HTML
      },
      crumbs =>
      sub {
+       # obsolete me
+       return escape_html($work_crumbs[$crumb_index]{$_[0]});
+     },
+     crumb =>
+     sub {
        return escape_html($work_crumbs[$crumb_index]{$_[0]});
      },
      ifCrumbs =>
@@ -313,13 +314,18 @@ HTML
      },
      movestepkid =>
      sub {
+       my ($arg, $acts, $funcname, $templater) = @_;
        my $html = '';
        return '' unless $self->{admin};
        return '' unless @allkids > 1;
-       my $refreshto = escape_uri($ENV{SCRIPT_NAME} . "?id=$article->{id}");
+       my ($img_prefix, $urladd) = 
+	 DevHelp::Tags->get_parms($arg, $acts, $templater);
+       $img_prefix = '' unless defined $img_prefix;
+       $urladd = '' unless defined $urladd;
+       my $refreshto = escape_uri($ENV{SCRIPT_NAME} . "?id=$article->{id}$urladd");
        if ($allkids_index < $#allkids) {
 	 $html .= <<HTML
-<a href="$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids[$allkids_index]{id}&other=$allkids[$allkids_index+1]{id}&refreshto=$refreshto"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+<a href="$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids[$allkids_index]{id}&other=$allkids[$allkids_index+1]{id}&refreshto=$refreshto"><img src="$IMAGES_URI/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
 HTML
        }
        else {
@@ -327,7 +333,7 @@ HTML
        }
        if ($allkids_index > 0) {
 	 $html .= <<HTML
-<a href="$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids[$allkids_index]{id}&other=$allkids[$allkids_index-1]{id}&refreshto=$refreshto"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+<a href="$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids[$allkids_index]{id}&other=$allkids[$allkids_index-1]{id}&refreshto=$refreshto"><img src="$IMAGES_URI/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
 HTML
        }
        else {

@@ -505,12 +505,17 @@ sub tag_step_kid {
 }
 
 sub tag_move_stepkid {
-  my ($self, $cgi, $req, $article, $allkids, $rallkids_index) = @_;
+  my ($self, $cgi, $req, $article, $allkids, $rallkids_index, $arg,
+      $acts, $funcname, $templater) = @_;
 
   $req->user_can(edit_reorder_children => $article)
     or return '';
 
   @$allkids > 1 or return '';
+
+  my ($img_prefix, $urladd) = DevHelp::Tags->get_parms($arg, $acts, $templater);
+  $img_prefix = '' unless defined $img_prefix;
+  $urladd = '' unless defined $urladd;
 
   my $cgi_uri = $self->{cfg}->entry('uri', 'cgi', '/cgi-bin');
   my $images_uri = $self->{cfg}->entry('uri', 'images', '/images');
@@ -519,12 +524,13 @@ sub tag_move_stepkid {
   if ($cgi->param('_t')) {
     $url .= "&_t=".$cgi->param('_t');
   }
+  $url .= $urladd;
   $url .= "#step";
   my $refreshto = CGI::escape($url);
   my $blank = qq!<img src="$images_uri/trans_pixel.gif" width="17" height="13" border="0" align="absbottom" />!;
   if ($$rallkids_index < $#$allkids) {
     $html .= <<HTML;
-<a href="$cgi_uri/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids->[$$rallkids_index]{id}&other=$allkids->[$$rallkids_index+1]{id}&refreshto=$refreshto"><img src="$images_uri/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+<a href="$cgi_uri/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids->[$$rallkids_index]{id}&other=$allkids->[$$rallkids_index+1]{id}&refreshto=$refreshto"><img src="$images_uri/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
 HTML
   }
   else {
@@ -532,7 +538,7 @@ HTML
   }
   if ($$rallkids_index > 0) {
     $html .= <<HTML;
-<a href="$cgi_uri/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids->[$$rallkids_index]{id}&other=$allkids->[$$rallkids_index-1]{id}&refreshto=$refreshto"><img src="$images_uri/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+<a href="$cgi_uri/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids->[$$rallkids_index]{id}&other=$allkids->[$$rallkids_index-1]{id}&refreshto=$refreshto"><img src="$images_uri/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
 HTML
   }
   else {
@@ -605,12 +611,17 @@ sub tag_stepparent_targ {
 }
 
 sub tag_move_stepparent {
-  my ($self, $cgi, $req, $article, $stepparents, $rindex) = @_;
+  my ($self, $cgi, $req, $article, $stepparents, $rindex, $arg,
+      $acts, $funcname, $templater) = @_;
 
   $req->user_can(edit_reorder_stepparents => $article)
     or return '';
 
   @$stepparents > 1 or return '';
+
+  my ($img_prefix, $urladd) = DevHelp::Tags->get_parms($arg, $acts, $templater);
+  $img_prefix = '' unless defined $img_prefix;
+  $urladd = '' unless defined $urladd;
 
   my $cgi_uri = $self->{cfg}->entry('uri', 'cgi', '/cgi-bin');
   my $images_uri = $self->{cfg}->entry('uri', 'images', '/images');
@@ -619,12 +630,13 @@ sub tag_move_stepparent {
   if ($cgi->param('_t')) {
     $url .= "&_t=".$cgi->param('_t');
   }
+  $url .= $urladd;
   $url .= "#stepparents";
   my $blank = qq!<img src="$images_uri/trans_pixel.gif" width="17" height="13" border="0" align="absbottom" />!;
   my $refreshto = CGI::escape($url);
   if ($$rindex < $#$stepparents) {
     $html .= <<HTML;
-<a href="$cgi_uri/admin/move.pl?stepchild=$article->{id}&id=$stepparents->[$$rindex]{parentId}&d=swap&other=$stepparents->[$$rindex+1]{parentId}&refreshto=$refreshto&all=1"><img src="$images_uri/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+<a href="$cgi_uri/admin/move.pl?stepchild=$article->{id}&id=$stepparents->[$$rindex]{parentId}&d=swap&other=$stepparents->[$$rindex+1]{parentId}&refreshto=$refreshto&all=1"><img src="$images_uri/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
 HTML
   }
   else {
@@ -632,7 +644,7 @@ HTML
   }
   if ($$rindex > 0) {
     $html .= <<HTML;
-<a href="$cgi_uri/admin/move.pl?stepchild=$article->{id}&id=$stepparents->[$$rindex]{parentId}&d=swap&other=$stepparents->[$$rindex-1]{parentId}&refreshto=$refreshto&all=1"><img src="$images_uri/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+<a href="$cgi_uri/admin/move.pl?stepchild=$article->{id}&id=$stepparents->[$$rindex]{parentId}&d=swap&other=$stepparents->[$$rindex-1]{parentId}&refreshto=$refreshto&all=1"><img src="$images_uri/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
 HTML
   }
   else {
@@ -705,7 +717,8 @@ sub tag_if_children {
 }
 
 sub tag_movechild {
-  my ($self, $req, $article, $kids, $rindex) = @_;
+  my ($self, $req, $article, $kids, $rindex, $arg,
+      $acts, $funcname, $templater) = @_;
 
   $req->user_can('edit_reorder_children', $article)
     or return '';
@@ -715,6 +728,10 @@ sub tag_movechild {
   $$rindex >=0 && $$rindex < @$kids
     or return '** movechild can only be used in the children iterator **';
 
+  my ($img_prefix, $urladd) = DevHelp::Tags->get_parms($arg, $acts, $templater);
+  $img_prefix = '' unless defined $img_prefix;
+  $urladd = '' unless defined $urladd;
+
   my $cgi_uri = $self->{cfg}->entry('uri', 'cgi', '/cgi-bin');
   my $images_uri = $self->{cfg}->entry('uri', 'images', '/images');
   my $html = '';
@@ -722,7 +739,7 @@ sub tag_movechild {
   my $id = $kids->[$$rindex]{id};
   if ($$rindex < $#$kids) {
     $html .= <<HTML;
-<a href="$cgi_uri/admin/move.pl?id=$id&d=down&edit=1&all=1"><img src="$images_uri/admin/move_down.gif" width="17" height="13" alt="Move Down" border="0" align="absbottom"></a>
+<a href="$cgi_uri/admin/move.pl?id=$id&d=down&edit=1&all=1"><img src="$images_uri/admin/${img_prefix}move_down.gif" width="17" height="13" alt="Move Down" border="0" align="absbottom"></a>
 HTML
   }
   else {
@@ -730,7 +747,7 @@ HTML
   }
   if ($$rindex > 0) {
     $html .= <<HTML;
-<a href="$cgi_uri/admin/move.pl?id=$id&d=up&edit=1&all=1"><img src="$images_uri/admin/move_up.gif" width="17" height="13" alt="Move Up" border="0" align="absbottom"></a>
+<a href="$cgi_uri/admin/move.pl?id=$id&d=up&edit=1&all=1"><img src="$images_uri/admin/${img_prefix}move_up.gif" width="17" height="13" alt="Move Up" border="0" align="absbottom"></a>
 HTML
   }
   else {
@@ -759,7 +776,8 @@ sub tag_edit_link {
 }
 
 sub tag_imgmove {
-  my ($req, $article, $rindex, $images) = @_;
+  my ($req, $article, $rindex, $images, $arg,
+      $acts, $funcname, $templater) = @_;
 
   $req->user_can(edit_images_reorder => $article)
     or return '';
@@ -769,12 +787,20 @@ sub tag_imgmove {
   $$rindex >= 0 && $$rindex < @$images 
     or return '** imgmove can only be used in image iterator **';
 
+  my ($img_prefix, $urladd) = DevHelp::Tags->get_parms($arg, $acts, $templater);
+  $img_prefix = '' unless defined $img_prefix;
+  $urladd = '' unless defined $urladd;
+
+  my $urlbase = $req->cfg->entryVar('site', 'url');
+  my $url = "$urlbase$ENV{SCRIPT_NAME}?id=$article->{id}&showimages=1$urladd";
+  $url = CGI::escape($url);
+
   my $html = '';
   my $nomove = '<img src="/images/trans_pixel.gif" width="17" height="13" border="0" alt="" align="absbottom">';
   my $image = $images->[$$rindex];
   if ($$rindex > 0) {
     $html .= <<HTML
-<a href="$ENV{SCRIPT_NAME}?id=$article->{id}&moveimgup=1&imageid=$image->{id}"><img src="/images/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+<a href="$ENV{SCRIPT_NAME}?id=$article->{id}&moveimgup=1&imageid=$image->{id}&r=$url"><img src="/images/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
 HTML
   }
   else {
@@ -782,7 +808,7 @@ HTML
   }
   if ($$rindex < $#$images) {
     $html .= <<HTML
-<a href="$ENV{SCRIPT_NAME}?id=$article->{id}&moveimgdown=1&imageid=$image->{id}"><img src="/images/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+<a href="$ENV{SCRIPT_NAME}?id=$article->{id}&moveimgdown=1&imageid=$image->{id}&r=$url"><img src="/images/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
 HTML
   }
   else {
@@ -793,12 +819,17 @@ HTML
 }
 
 sub tag_movefiles {
-  my ($self, $req, $article, $files, $rindex) = @_;
+  my ($self, $req, $article, $files, $rindex, $arg,
+      $acts, $funcname, $templater) = @_;
 
   $req->user_can('edit_files_reorder', $article)
     or return '';
 
   @$files > 1 or return '';
+
+  my ($img_prefix, $urladd) = DevHelp::Tags->get_parms($arg, $acts, $templater);
+  $img_prefix = '' unless defined $img_prefix;
+  $urladd = '' unless defined $urladd;
 
   my $html = '';
 
@@ -807,10 +838,14 @@ sub tag_movefiles {
 
   my $nomove = '<img src="/images/trans_pixel.gif" width="17" height="13" border="0" alt="" align="absbottom">';
   my $images_uri = $self->{cfg}->entry('uri', 'images', '/images');
+
+  my $urlbase = $self->{cfg}->entryVar('site', 'url');
+  my $url = "$urlbase$ENV{SCRIPT_NAME}?id=$article->{id}&filelist=1$urladd";
+  $url = CGI::escape($url);
   
   if ($$rindex < $#$files) {
     $html .= <<HTML;
-<a href="$ENV{SCRIPT_NAME}?fileswap=1&id=$article->{id}&file1=$files->[$$rindex]{id}&file2=$files->[$$rindex+1]{id}"><img src="$images_uri/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+<a href="$ENV{SCRIPT_NAME}?fileswap=1&id=$article->{id}&file1=$files->[$$rindex]{id}&file2=$files->[$$rindex+1]{id}&r=$url"><img src="$images_uri/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
 HTML
   }
   else {
@@ -818,7 +853,7 @@ HTML
   }
   if ($$rindex > 0) {
     $html .= <<HTML;
-<a href="$ENV{SCRIPT_NAME}?fileswap=1&id=$article->{id}&file1=$files->[$$rindex]{id}&file2=$files->[$$rindex-1]{id}"><img src="$images_uri/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+<a href="$ENV{SCRIPT_NAME}?fileswap=1&id=$article->{id}&file1=$files->[$$rindex]{id}&file2=$files->[$$rindex-1]{id}&r=$url"><img src="$images_uri/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
 HTML
   }
   else {
@@ -918,6 +953,33 @@ sub tag_if_flag_set {
   @args or return;
 
   return index($article->{flags}, $args[0]) >= 0;
+}
+
+sub iter_crumbs {
+  my ($article, $articles) = @_;
+
+  my @crumbs;
+  my $temp = $article;
+  defined($temp->{parentid}) or return;
+  while ($temp->{parentid} > 0
+	 and my $crumb = $articles->getByPkey($temp->{parentid})) {
+    unshift @crumbs, $crumb;
+    $temp = $crumb;
+  }
+
+  @crumbs;
+}
+
+sub tag_typename {
+  my ($args, $acts, $funcname, $templater) = @_;
+
+  exists $acts->{$args} or return "** need an article name **";
+  my $generator = $templater->perform($acts, $args, 'generator');
+
+  $generator =~ /^(?:BSE::)?Generate::(\w+)$/
+    or return "** invalid generator $generator **";
+
+  return $1;
 }
 
 sub low_edit_tags {
@@ -1041,6 +1103,9 @@ sub low_edit_tags {
      DevHelp::Tags->make_iterator2
      ([ \&iter_flags, $self ], 'flag', 'flags' ),
      ifFlagSet => [ \&tag_if_flag_set, $article ],
+     DevHelp::Tags->make_iterator2
+     ([ \&iter_crumbs, $article, $articles ], 'crumb', 'crumbs' ),
+     typename => \&tag_typename,
     );
 }
 
@@ -1281,9 +1346,17 @@ sub save_new {
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
-  my $urlbase = $self->{cfg}->entryVar('site', 'url');
-  return BSE::Template->get_refresh($urlbase . $article->{admin}, 
-				    $self->{cfg});
+  my $r = $cgi->param('r');
+  if ($r) {
+    $r .= ($r =~ /\?/) ? '&' : '?';
+    $r .= "id=$article->{id}";
+  }
+  else {
+    my $urlbase = $self->{cfg}->entryVar('site', 'url');
+    $r = $urlbase . $article->{admin};
+  }
+  return BSE::Template->get_refresh($r, $self->{cfg});
+
 }
 
 sub fill_old_data {
@@ -1395,9 +1468,7 @@ sub save {
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
-  my $urlbase = $self->{cfg}->entryVar('site', 'url');
-  return BSE::Template->get_refresh($urlbase . $article->{admin}, 
-				    $self->{cfg});
+  return $self->refresh($article, $cgi, undef, 'Article saved');
 }
 
 sub sql_date {
@@ -1563,7 +1634,7 @@ sub add_stepkid {
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
-  return $self->refresh($article, $cgi, 'step');
+  return $self->refresh($article, $cgi, 'step', 'Stepchild added');
 }
 
 sub del_stepkid {
@@ -1596,7 +1667,7 @@ sub del_stepkid {
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
-  return $self->refresh($article, $cgi, 'step');
+  return $self->refresh($article, $cgi, 'step', 'Stepchild deleted');
 }
 
 sub save_stepkids {
@@ -1638,7 +1709,7 @@ sub save_stepkids {
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
-  return $self->refresh($article, $cgi, 'step');
+  return $self->refresh($article, $cgi, 'step', 'Stepchild information saved');
 }
 
 sub add_stepparent {
@@ -1682,7 +1753,7 @@ sub add_stepparent {
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
-  return $self->refresh($article, $cgi, 'stepparents');
+  return $self->refresh($article, $cgi, 'stepparents', 'Stepparent added');
 }
 
 sub del_stepparent {
@@ -1716,7 +1787,7 @@ sub del_stepparent {
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
-  return $self->refresh($article, $cgi, 'stepparents');
+  return $self->refresh($article, $cgi, 'stepparents', 'Stepparent deleted');
 }
 
 sub save_stepparents {
@@ -1760,20 +1831,25 @@ sub save_stepparents {
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
-  return $self->refresh($article, $cgi, 'stepparents');
+  return $self->refresh($article, $cgi, 'stepparents', 
+			'Stepparent information saved');
 }
 
 sub refresh {
   my ($self, $article, $cgi, $name, $message, $extras) = @_;
 
-  my $urlbase = $self->{cfg}->entryVar('site', 'url');
-  my $url = "$urlbase$ENV{SCRIPT_NAME}?id=$article->{id}";
-  $url .= "&message=" . CGI::escape($message) if $message;
-  if ($cgi->param('_t')) {
-    $url .= "&_t=".CGI::escape($cgi->param('_t'));
+  my $url = $cgi->param('r');
+  unless ($url) {
+    my $urlbase = $self->{cfg}->entryVar('site', 'url');
+    $url = "$urlbase$ENV{SCRIPT_NAME}?id=$article->{id}";
+    $url .= "&message=" . CGI::escape($message) if $message;
+    if ($cgi->param('_t')) {
+      $url .= "&_t=".CGI::escape($cgi->param('_t'));
+    }
+    $url .= $extras if defined $extras;
+    my $cgiextras = $cgi->param('e');
+    $url .= "#$name" if $name;
   }
-  $url .= $extras if defined $extras;
-  $url .= "#$name" if $name;
 
   return BSE::Template->get_refresh($url, $self->{cfg});
 }
@@ -1832,7 +1908,8 @@ sub save_image_changes {
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
 
-  return $self->refresh($article, $cgi, undef, undef, '&showimages=1');
+  return $self->refresh($article, $cgi, undef, 'Image information saved', 
+			'&showimages=1');
 }
 
 sub add_image {
@@ -1916,7 +1993,8 @@ sub add_image {
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
-  return $self->refresh($article, $cgi, undef, undef, '&showimages=1');
+  return $self->refresh($article, $cgi, undef, 'New image added',
+			'&showimages=1');
 }
 
 # remove an image
@@ -1939,7 +2017,8 @@ sub remove_img {
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
-  return $self->refresh($article, $req->cgi, undef, undef, '&showimages=1');
+  return $self->refresh($article, $req->cgi, undef, 'Image removed',
+			'&showimages=1');
 }
 
 sub move_img_up {
@@ -1964,7 +2043,8 @@ sub move_img_up {
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
-  return $self->refresh($article, $req->cgi, undef, undef, '&showimages=1');
+  return $self->refresh($article, $req->cgi, undef, 'Image moved',
+			'&showimages=1');
 }
 
 sub move_img_down {
@@ -1989,7 +2069,8 @@ sub move_img_down {
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
-  return $self->refresh($article, $req->cgi, undef, undef, '&showimages=1');
+  return $self->refresh($article, $req->cgi, undef, 'Image moved', 
+			'&showimages=1');
 }
 
 sub get_article {
@@ -2029,9 +2110,9 @@ my %types =
   );
 
 sub _refresh_filelist {
-  my ($self, $req, $article) = @_;
+  my ($self, $req, $article, $msg) = @_;
 
-  return $self->refresh($article, $req->cgi, undef, undef, '&filelist=1');
+  return $self->refresh($article, $req->cgi, undef, $msg, '&filelist=1');
 }
 
 sub filelist {
@@ -2142,7 +2223,7 @@ sub fileadd {
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
-  $self->_refresh_filelist($req, $article);
+  $self->_refresh_filelist($req, $article, 'New file added');
 }
 
 sub fileswap {
@@ -2173,7 +2254,7 @@ sub fileswap {
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
-  $self->_refresh_filelist($req, $article);
+  $self->_refresh_filelist($req, $article, 'File moved');
 }
 
 sub filedel {
@@ -2208,7 +2289,7 @@ sub filedel {
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
-  $self->_refresh_filelist($req, $article);
+  $self->_refresh_filelist($req, $article, 'File deleted');
 }
 
 sub filesave {
@@ -2236,7 +2317,7 @@ sub filesave {
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
-  $self->_refresh_filelist($req, $article);
+  $self->_refresh_filelist($req, $article, 'File information saved');
 }
 
 sub can_remove {
@@ -2288,9 +2369,12 @@ sub remove {
   
   my $parentid = $article->{parentid};
   $article->remove;
-  my $urlbase = $self->{cfg}->entryVar('site', 'url');
-  my $url = "$urlbase$ENV{SCRIPT_NAME}?id=$parentid";
-  $url .= "&message=Article+deleted";
+  my $url = $req->cgi->param('r');
+  unless ($url) {
+    my $urlbase = $self->{cfg}->entryVar('site', 'url');
+    $url = "$urlbase$ENV{SCRIPT_NAME}?id=$parentid";
+    $url .= "&message=Article+deleted";
+  }
   return BSE::Template->get_refresh($url, $self->{cfg});
 }
 
@@ -2305,11 +2389,7 @@ sub unhide {
     use Util 'generate_article';
     generate_article($articles, $article) if $Constants::AUTO_GENERATE;
   }
-  my $r = $req->cgi->param('r');
-  unless ($r) {
-    $r = $req->cfg->entryVar('site', 'url') . "/cgi-bin/admin/add.pl?id=" . $article->{parentid};
-  }
-  return BSE::Template->get_refresh($r, $req->cfg);
+  return $self->refresh($article, $req->cgi, undef, 'Article unhidden');
 }
 
 sub hide {
@@ -2327,7 +2407,7 @@ sub hide {
   unless ($r) {
     $r = $req->cfg->entryVar('site', 'url') . "/cgi-bin/admin/add.pl?id=" . $article->{parentid};
   }
-  return BSE::Template->get_refresh($r, $req->cfg);
+  return $self->refresh($article, $req->cgi, undef, 'Article hidden');
 }
 
 sub default_value {

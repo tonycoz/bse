@@ -178,7 +178,7 @@ sub basic {
      sub {
        $cgi or return '';
        my @value = $cgi->param($_[0]);
-       CGI::escapeHTML("@value");
+       escape_html("@value");
      },
     );
 }
@@ -190,7 +190,7 @@ sub make_iterator {
   my @result =
       (
        "iterate_${plural}_reset" => sub { $index = -1 },
-       $single => sub { CGI::escapeHTML($array->[$index]{$_[0]}) },
+       $single => sub { escape_html($array->[$index]{$_[0]}) },
        "if\u$plural" => sub { @$array },
        "${single}_index" => sub { $index },
       );
@@ -234,7 +234,7 @@ sub make_dependent_iterator {
 	 }
 	 $index = -1
        },
-       $single => sub { CGI::escapeHTML($data[$index]{$_[0]}) },
+       $single => sub { escape_html($data[$index]{$_[0]}) },
        "if\u$plural" =>
        sub { 
 	 if ($$base_index != $last_base) {
@@ -286,7 +286,7 @@ sub make_multidependent_iterator {
 	 }
 	 $index = -1
        },
-       $single => sub { CGI::escapeHTML($data[$index]{$_[0]}) },
+       $single => sub { escape_html($data[$index]{$_[0]}) },
        "if\u$plural" =>
        sub { 
 	 if (join(",", map $$_, @$base_indices) ne join(",", @last_bases)) {

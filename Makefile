@@ -6,7 +6,8 @@ DISTTGZ=$(DISTTAR).gz
 WEBBASE=/home/httpd/html/bse
 
 help:
-	@echo make dist - build the tar.gz file
+	@echo make dist - build the tar.gz file and copy to distribution directory
+	@echo make archive - build the tar.gz (in the parent directory)
 	@echo make clean - delete generated files
 	@echo make distdir - build distribution directory
 	@echo make docs - build documentation
@@ -25,6 +26,8 @@ cleantree:
           then echo '***' The tree has modified or unadded files ; \
           exit 1 ; \
         fi
+
+archive: $(DISTTGZ)
 
 $(DISTTGZ): distdir
 	if [ -e $(DISTTGZ) ] ; \

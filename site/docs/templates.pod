@@ -894,10 +894,6 @@ loops).  This is handled with an error message in the page.
 
 =back
 
-=item keywords
-
-This tag was never used.  Consider it deprecated.
-
 =item iterator ... crumbs [option]
 
 Iterates over the ancestors of the article.  See the L</item crumbs>.
@@ -910,8 +906,11 @@ I<option>.  This can be used in <: ifCrumbs :> too.
 
 =item crumbs I<name>
 
+=item crumb I<name>
+
 Access to the fields of the specific ancestor.  I<name> can be any of
-the L<Article attributes>.
+the L<Article attributes>.  C<crumbs> is now deprecated, use C<crumb>
+where possible.
 
 =item ifCrumbs
 

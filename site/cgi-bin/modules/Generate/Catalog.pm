@@ -132,22 +132,30 @@ HTML
      allprod => sub { escape_html($allprods[$allprod_index]{$_[0]}) },
      moveallprod =>
      sub {
+       my ($arg, $acts, $funcname, $templater) = @_;
+
        return '' unless $self->{admin};
        return '' unless $self->{request};
        return '' 
 	 unless $self->{request}->user_can(edit_reorder_children => $article);
        return '' unless @allprods > 1;
+
+       my ($img_prefix, $urladd) = 
+	 DevHelp::Tags->get_parms($arg, $acts, $templater);
+       $img_prefix = '' unless defined $img_prefix;
+       $urladd = '' unless defined $urladd;
+
        my $html = '';
        my $can_move_up = $allprod_index > 0;
        my $can_move_down = $allprod_index < $#allprods;
        return '' unless $can_move_up || $can_move_down;
        my $blank = '<img src="/images/trans_pixel.gif" width="17" height="13" border="0" alt="" align="absbotton">';
        my $myid = $allprods[$allprod_index]{id};
-       my $refreshto = "$CGI_URI/admin/admin.pl?id=$article->{id}";
+       my $refreshto = "$CGI_URI/admin/admin.pl?id=$article->{id}$urladd";
        if ($can_move_down) {
 	 my $nextid = $allprods[$allprod_index+1]{id};
 	 $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$myid&other=$nextid&refreshto=$refreshto"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+<a href="$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$myid&other=$nextid&refreshto=$refreshto"><img src="$IMAGES_URI/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
 HTML
        }
        else {
@@ -156,7 +164,7 @@ HTML
        if ($can_move_up) {
 	 my $previd = $allprods[$allprod_index-1]{id};
 	 $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$myid&other=$previd&refreshto=$refreshto"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+<a href="$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$myid&other=$previd&refreshto=$refreshto"><img src="$IMAGES_URI/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
 HTML
        }
        else {

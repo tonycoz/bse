@@ -68,9 +68,9 @@ sub user_can {
   my ($self, $perm, $object, $rmsg) = @_;
 
   require BSE::Permissions;
+  $object ||= $site_article;
   $self->{perms} ||= BSE::Permissions->new($self->cfg);
   if ($self->cfg->entry('basic', 'access_control', 0)) {
-    $object ||= $site_article;
     unless (ref $object) {
       require Articles;
       my $art = $object == -1 ? $site_article : Articles->getByPkey($object);

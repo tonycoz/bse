@@ -1,4 +1,6 @@
 #!/usr/bin/perl -w
+# -d:ptkdb
+BEGIN { $ENV{DISPLAY} = '192.168.32.15:0.0' }
 use strict;
 use CGI qw(:standard);
 use FindBin;
@@ -114,7 +116,10 @@ my %acts;
      --$month;
      return strftime('%d-%b-%Y', 0, 0, 0, $day, $month, $year, 0, 0);
    },
-   keywords => sub { $keywords },
+   keywords => 
+   sub { 
+     $keywords
+   },
    ifResults => sub { scalar @results; },
    ifSearch => sub { defined $words and length $words },
    dateSelected => sub { $_[0] eq $date ? 'selected' : '' },
