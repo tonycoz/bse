@@ -6,6 +6,7 @@ use strict;
 
 my @targets =
   (
+   'access.html',
    'bse.html',
    'bugs.html',
    'templates.html',

@@ -610,16 +610,28 @@ HTML
   return $html;
 }
 
+sub _stepparent_possibles {
+  my ($req, $article, $articles, $targs) = @_;
+
+  $req->user_can(edit_stepparent_add => $article)
+    or return;
+
+  @$targs = $article->step_parents unless @$targs;
+  my %targs = map { $_->{id}, 1 } @$targs;
+  my @possibles = grep !$targs{$_->{id}}, $articles->all;
+  if ($req->access_control) {
+    @possibles = grep $req->user_can(edit_stepkid_add => $_), @possibles;
+  }
+  @possibles = sort { lc $a->{title} cmp lc $b->{title} } @possibles;
+
+  return @possibles;
+}
+
 sub tag_if_stepparent_possibles {
   my ($req, $article, $articles, $targs, $possibles) = @_;
 
-  if ($article->{id} && $article->{id} > 0) {
-    @$targs = $article->step_parents unless @$targs;
-    my %targs = map { $_->{id}, 1 } @$targs;
-    @$possibles = grep !$targs{$_->{id}}, $articles->all;
-    if ($req->access_control) {
-      @$possibles = grep $req->user_can(edit_stepkid_add => $_), @$possibles;
-    }
+  if ($article->{id} && $article->{id} > 0 && !@$possibles) {
+    @$possibles = _stepparent_possibles($req, $article, $articles, $targs);
   }
   scalar @$possibles;
 }
@@ -627,14 +639,8 @@ sub tag_if_stepparent_possibles {
 sub tag_stepparent_possibles {
   my ($cgi, $req, $article, $articles, $targs, $possibles) = @_;
 
-  if ($article->{id} && $article->{id} > 0) {
-    @$targs = $article->step_parents unless @$targs;
-    my %targs = map { $_->{id}, 1 } @$targs;
-    @$possibles = sort { lc $a->{title} cmp lc $b->{title} }
-      grep !$targs{$_->{id}}, $articles->all;
-    if ($req->access_control) {
-      @$possibles = grep $req->user_can(edit_stepkid_add => $_), @$possibles;
-    }
+  if ($article->{id} && $article->{id} > 0 && !@$possibles) {
+    @$possibles = _stepparent_possibles($req, $article, $articles, $targs);
   }
   $cgi->popup_menu(-name=>'stepparent',
 		   -values => [ map $_->{id}, @$possibles ],

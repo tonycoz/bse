@@ -384,11 +384,68 @@ The user can change the details for files from the article(s).
 
 =item *
 
-regen_extras
-
 regen_article
 
-regen_all
+The user can manually regenerate the article.  This has no effect on
+auto-regeneration.
+
+=back
+
+=head2 Step children/parents
+
+These are unusual in that you will need permission to modify both the
+parent and child in the given relationship.  ie. if article A is a
+stepparent of article B, then you need both edit_stepkid_delete
+permission on A and edit_stepparent_delete permission on B.
+
+=over
+
+=item *
+
+edit_stepkid_add
+
+The user can add stepchildren to this article.
+
+=item *
+
+edit_stepparent_add
+
+The user can add stepparents to this article.
+
+=item *
+
+edit_stepkid_delete
+
+The user can remove stepchildren from the article.
+
+=item *
+
+edit_stepparent_delete
+
+The user can remove stepparents from the article.
+
+=item *
+
+edit_stepkid_save
+
+The user can save the release and expiry date information for the
+stepchild links.  The user must also have edit_stepparent_save rights
+on each stepparent.
+
+=item *
+
+edit_stepparent_save
+
+The user can save the release and expire date information for the
+stepparent links.  The user must also have edit_stepkid_save rights on
+each stepchild.
+
+=item *
+
+edit_reorder_stepparents
+
+The user can reorder the stepparents of the article.  Reordering of
+stepchildren is controlled by the edit_reorder_children permission.
 
 =back
 
@@ -535,6 +592,24 @@ The user can save article rights for groups.
 admin_group_del
 
 The user can delete groups.
+
+=back
+
+=head2 Regeneration
+
+=over
+
+=item *
+
+regen_extras
+
+The user can regenerate the extras and base pages.
+
+=item *
+
+regen_all
+
+The user can regenerate the whole site.
 
 =back
 

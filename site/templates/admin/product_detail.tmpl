@@ -3,12 +3,12 @@
 </head>
 <body>
 <h1>Shop Administration</h1>
-<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | <a href="<:product admin:>">See product</a> 
-  | <a href="<:script:>">Manage catalogs</a> | <a href="/cgi-bin/admin/add.pl?id=<:product id:>">Edit 
-  product </a>
-<:if UserCan edit_save:product,edit_field_edit_listed:product :><:if Product listed:> | <a href="/cgi-bin/admin/add.pl?id=<:product id:>&hide=1&r=<:script:>?product_detail=1%26id=<:product id:>">Hide</a> 
-  |<:or Product:> | <a href="/cgi-bin/admin/add.pl?id=<:product id:>&unhide=1&r=<:script:>?product_detail=1%26id=<:product id:>">Show</a> 
-  |<:eif Product:><:or UserCan:><:eif UserCan:> <:hiddenNote:></p>
+<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | <a href="<:product admin:>">See 
+  product</a> | <a href="<:script:>">Manage catalogs</a> | <a href="/cgi-bin/admin/add.pl?id=<:product id:>">Edit 
+  product </a> <:if UserCan edit_save:product,edit_field_edit_listed:product :><:if 
+  Product listed:> | <a href="/cgi-bin/admin/add.pl?id=<:product id:>&hide=1&r=<:script:>?product_detail=1%26id=<:product id:>">Hide 
+  product</a> |<:or Product:> | <a href="/cgi-bin/admin/add.pl?id=<:product id:>&unhide=1&r=<:script:>?product_detail=1%26id=<:product id:>">Show 
+  product</a> |<:eif Product:><:or UserCan:><:eif UserCan:> <:hiddenNote:></p>
 <h2>Product details</h2>
 <table bgcolor="#000000" cellpadding="0" cellspacing="0" border="0" width="100%" class="table">
   <tr>

@@ -233,22 +233,22 @@ sub _garticle_match {
     push @articles, $self->_art_ancestors($article);
   }
 
-  for my $test (@{$perm->{arts}}) {
+  for my $test (@{$perm->{artinfo}{arts}}) {
     if ($test->{type} eq 'exact') {
-      return !$perm->{not}
+      return !$perm->{artinfo}{not}
 	if grep $_->{id} == $test->{article}, @articles;
     }
     elsif ($test->{type} eq 'childof') {
-      return !$perm->{not}
+      return !$perm->{artinfo}{not}
 	if grep $_->{parentid} == $test->{article}, @articles;
     }
     elsif ($test->{type} eq 'typeof') {
-      return !$perm->{not}
+      return !$perm->{artinfo}{not}
 	if grep $_->{generator} eq "Generate::$test->{name}", @articles;
     }
   }
 
-  return $perm->{not};
+  return $perm->{artinfo}{not};
 }
 
 sub _aarticle_match {
@@ -300,7 +300,7 @@ sub user_has_perm {
 	  and substr($permmap, $globperm->{id}, 1);
       _permname_match($action, $globperm->{perminfo})
 	or next;
-      $self->_garticle_match($article, $globperm->{artinfo})
+      $self->_garticle_match($article, $globperm)
 	and return 1;
     }
   }

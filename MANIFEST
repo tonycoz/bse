@@ -124,6 +124,8 @@ site/docs/Makefile
 site/docs/TODO.html
 site/docs/TODO.pod
 site/docs/add.html
+site/docs/access.html
+site/docs/access.pod
 site/docs/bse.html
 site/docs/bse.pod
 site/docs/bugs.html
