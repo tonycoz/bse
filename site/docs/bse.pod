@@ -20,6 +20,8 @@ to:
 
   result I<field>
 
+There is a new module required: HTML::Parser
+
 =over 4
 
 =item *
@@ -87,6 +89,25 @@ a formatting guide article in initial.pl (from adrian)
 
 renamed INSTALL to INSTALL.txt to prevent wierdness if someone tries
 "make install" on a case-insensitive file system.
+
+=item *
+
+administration templates are now kept in the admin directory in the
+templates directory
+
+=item *
+
+added simple test installer.  WARNING: this destroys the existing content
+of your site.
+
+=item *
+
+distribution now includes site/htdocs/shop as a directory rather than
+as a file
+
+=item *
+
+schema/bse.sql now drops the tables if they already exist
 
 =back
 
