@@ -76,10 +76,16 @@ sub possible_parents {
   return (\@values, \%labels);
 }
 
+sub default_link_path {
+  my ($self, $article) = @_;
+
+  $self->{cfg}->entry('uri', 'shop', '/shop');
+}
+
 sub make_link {
   my ($self, $article) = @_;
 
-  my $shop_uri = $self->{cfg}->entry('uri', 'shop', '/shop');
+  my $shop_uri = $self->link_path($article);
   my $urlbase = $self->{cfg}->entryVar('site', 'secureurl');
   return $urlbase.$shop_uri."/shop$article->{id}.html";
 }

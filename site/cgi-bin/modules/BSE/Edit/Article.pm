@@ -1263,10 +1263,32 @@ sub fill_new_data {
   1;
 }
 
+sub link_path {
+  my ($self, $article) = @_;
+
+  # check the config for the article and any of its ancestors
+  my $work_article = $article;
+  my $path = $self->{cfg}->entry('article uris', $work_article->{id});
+  while (!$path) {
+    last if $work_article->{parentid} == -1;
+    $work_article = $work_article->parent;
+    $path = $self->{cfg}->entry('article uris', $work_article->{id});
+  }
+  return $path if $path;
+
+  $self->default_link_path($article);
+}
+
+sub default_link_path {
+  my ($self, $article) = @_;
+
+  $self->{cfg}->entry('uri', 'articles', '/a');
+}
+
 sub make_link {
   my ($self, $article) = @_;
 
-  my $article_uri = $self->{cfg}->entry('uri', 'articles', '/a');
+  my $article_uri = $self->link_path($article);
   my $link = "$article_uri/$article->{id}.html";
   my $link_titles = $self->{cfg}->entryBool('basic', 'link_titles', 0);
   if ($link_titles) {
@@ -1483,10 +1505,14 @@ sub save {
       $req->user_can('edit_field_edit_expire', $article);
   $article->{lastModified} =  now_sqldate();
   my $link_titles = $self->{cfg}->entryBool('basic', 'link_titles', 0);
-  if ($article->{id} != 1 && $article->{link} && $link_titles) {
-    (my $extra = lc $article->{title}) =~ tr/a-z0-9/_/sc;
-    my $article_uri = $self->{cfg}->entry('uri', 'articles', '/a');
-    $article->{link} = "$article_uri/$article->{id}.html/$extra";
+  if ($article->{link} && 
+      !$self->{cfg}->entry('protect link', $article->{id})) {
+    my $article_uri = $self->make_link($article);
+    if ($link_titles) {
+      (my $extra = lc $article->{title}) =~ tr/a-z0-9/_/sc;
+      $article_uri .= $extra;
+    }
+    $article->setLink($article_uri);
   }
 
   $article->save();

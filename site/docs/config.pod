@@ -588,6 +588,17 @@ digits for your own use.
 Use the id of the flag as the key, and a description of the flag as
 it's value.
 
+=head2 [article uris]
+
+Each key is an article id, the values are base URIs to store the HTML
+form of those articles and their children under.
+
+=head2 [protect link]
+
+The keys are ids of articles that shouldn't have their link field
+overwritten.  The value should be a true value, but is otherwise
+ignored.
+
 =head1 AUTHOR
 
 Tony Cook <tony@develop-help.com>

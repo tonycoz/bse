@@ -3,6 +3,7 @@ use strict;
 use BSE::Session;
 use CGI ();
 use BSE::Cfg;
+use DevHelp::HTML;
 
 sub new {
   my ($class) = @_;
@@ -47,7 +48,7 @@ sub url {
   my $url = $self->cfg->entryErr('site', 'url');
   $url .= "/cgi-bin/admin/$action.pl";
   if ($params && keys %$params) {
-    $url .= "?" . join("&", map { "$_=".encode_entities($params->{$_}) } keys %$params);
+    $url .= "?" . join("&", map { "$_=".escape_uri($params->{$_}) } keys %$params);
   }
   $url .= "#$name" if $name;
 

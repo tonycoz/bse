@@ -10,6 +10,35 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+Make sure you update your config file.
+
+=head2 0.13_03
+
+=over
+
+=item *
+
+custom templates may choose not to set the keywords field, this could
+cause makeIndex.pl to complain about undefined values.  makeIndex.pl
+now skips indexing NULLs.
+
+=item *
+
+BSE::Request's url() method was HTML encoding when it should have been
+URI encoding.
+
+=item *
+
+the distributed menu.tmpl now includes menu_custom.tmpl for local
+customization.
+
+=item *
+
+you can specify where under the site tree an article and it's children
+will be stored using the [article uris] section of bse.cfg
+
+=back
+
 =head2 0.13_02
 
 Another development release.

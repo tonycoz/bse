@@ -131,6 +131,8 @@ sub makeIndex {
 	$text =~ s/[abi]\[([^\]]+)\]/$1/g;
       }
 
+      next unless defined $text;
+
       # for each paragraph
       for my $para (split /\n/, $text) {
 	my @words = split /\W+/, $para;

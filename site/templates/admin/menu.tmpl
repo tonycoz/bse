@@ -151,9 +151,7 @@ href="/cgi-bin/admin/makeIndex.pl">Regenerate search index</a></td>
  
 </tr>
   <tr> 
-    <td colspan="2"><a 
-
-href="/cgi-bin/admin/userlist.pl">Download member list</a></td>
+    <td colspan="2"><a href="/cgi-bin/admin/userlist.pl">Download member list</a></td>
  
 </tr>
   <tr> 
@@ -161,6 +159,7 @@ href="/cgi-bin/admin/userlist.pl">Download member list</a></td>
     <td>&nbsp;</td>
  
 </tr>
+<:include admin/menu_custom.tmpl :>
   <tr> 
     <td colspan="2"><a href="/cgi-bin/admin/menu.pl?_t=adv">Advanced 
 tools</a></td>
@@ -172,20 +171,13 @@ tools</a></td>
   </tr>
   <tr> 
     <td colspan="2"> 
-      <form 
-
-action="/cgi-bin/admin/admin.pl">
+      <form action="/cgi-bin/admin/admin.pl">
         Jump to: 
-        <input 
-
-type=text name=id size=4>
-        <input type="submit" 
-
-value="Jump!">
+        <input type=text name=id size=4>
+        <input type="submit" value="Jump!">
         (Article ID eg: 1 = Home) 
       </form>
- 
-</td>
+    </td>
   </tr>
 </table>
 <p><font size="-1">BSE Release <:release:></font></p>

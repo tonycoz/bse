@@ -218,6 +218,7 @@ site/templates/admin/grouplist.tmpl
 site/templates/admin/logon.tmpl
 site/templates/admin/menu.tmpl
 site/templates/admin/menu_adv.tmpl
+site/templates/admin/menu_custom.tmpl
 site/templates/admin/interestemail.tmpl
 site/templates/admin/order_detail.tmpl
 site/templates/admin/order_list.tmpl
