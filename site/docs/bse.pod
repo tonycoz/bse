@@ -71,6 +71,13 @@ parameter.
 the tt[...] tag is now removed from body text in those cases where
 we're removing other tags
 
+=item *
+
+added the delivMobile and billMobile columns to the site_user and
+orders tables.  These are saved and transferred in the appropriate
+places.  The core templates have been changed to display or edit them
+where appropriate.
+
 =back
 
 =head2 0.15
