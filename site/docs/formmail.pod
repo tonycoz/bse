@@ -130,6 +130,44 @@ subject - the subject of the email sent. Default: User form emailed
 email - the email address the form data is sent to.  Defaults to the
 value configured as [shop].from or $SHOP_FROM from Constants.pm
 
+=item *
+
+encrypt - if this is non-zero then the emailed form data is encrypted
+using PGP or GPG as configured (see the crypt options below).
+
+See L<ENCRYPTION> for more information.
+
+=item *
+
+crypt_class - the encryption class to use.  Default: value of
+$SHOP_CRYPTO from Constants.pm.  eg. Squirrel::GPG
+
+Note that the only encryption module that undergoes any testing is
+Squirrel::GPG.
+
+=item *
+
+crypt_gpg - the name of the gpg binary to use.  Default: value of
+$SHOP_GPG from Constants.pm.  Only used with the Squirrel::GPG module.
+eq. gpg
+
+=item *
+
+crypt_pgp - the name of the pgpe binary to use.  Default: value of
+$SHOP_PGP from Constants.pm.  Only used with the Squirrel::PGP5 and
+Squirrel::PGP6 modules.  eg. pgp
+
+=item *
+
+crypt_passphrase - the passphrase to the private key specified by
+crypt_signing_id.  Only required if the encrypted email is to be
+signed.  Default: $SHOP_PASSPHRASE from Constants.pm
+
+=item *
+
+crypt_signing_id - the key id to sign the encrypted message with.
+Default: $SHOP_SIGNING_ID from Constants.pm.  eg. 564EB128
+
 =back
 
 You can also configure information used for validation and available
@@ -167,18 +205,41 @@ also configure extra rules, with some limits.
 =item *
 
 I<fieldname>_htmltype - used by the default query form to choose how
-to display the field.  Values accepted are "textarea", "password", or
-"text".
+to display the field.  Values accepted are "textarea", "password",
+"text", "select", "multiselect", "radio", "check".
 
 =item *
 
-I<fieldtype>_width - used by the default query form to set the width
+I<fieldname>_width - used by the default query form to set the width
 attribute for text, password and textarea fields.
 
 =item *
 
-I<fieldtype>_height - used by the default query form to set the height
+I<fieldname>_height - used by the default query form to set the height
 attribute for textarea fields.
+
+=item *
+
+I<fieldname>_values - either the name of another configuration file
+section containing possible field values as keys and descriptions as
+values, or a semi-colon separated list of possible values.  For example:
+
+  [someform form]
+  ; shows as alpha, beta, gamma, selecting alpha returns a value of alpha
+  ; beta as beta, gamma as gamma
+  foo_values=alpha;beta;gamma
+  ; shows as alpha, beta, gamma, selecting alpha returns a, beta b, gamma c
+  bar_values=a=alpha;b=beta;c=gamma
+  ; shows as One,Two,Three, selecting One return 1, Two 2, Three 3
+  quux_values=Quux Values
+
+  [Quux values]
+  1=One
+  2=Two
+  3=Three
+
+This is used by the "select", "multiselect", "check" and "radio"
+htmltype values.
 
 =back
 
@@ -270,6 +331,110 @@ ifUser - check if a user was logged on when the form was submitted.
 user I<userfield> - access to the user's SiteUser record.
 
 =back
+
+=head1 ENCRYPTION
+
+From release 0.15_08 of BSE the emails sent to the configured form
+address can be encrypted and optionally signed.
+
+IT IS VERY IMPORTANT TO TEST A FORM IF ENCRYPTION IS ENABLED.  TEST
+ALL CHANGES TO THE ENCRYPTION CONFIGURATION.
+
+This is enabled by setting encrypt=1 in the [I<form> form]
+configuration file section.
+
+By default the same encryption settings as used for email will be
+used, but you can override these on a form basis.
+
+=head2 Setting up GnuPG
+
+To enable encryption of the email you must create a private key for
+the recipient of the email:
+
+  someuser$ gpg --gen-key
+
+and follow the prompts.
+
+Find the id of the key:
+
+  someuser$ gpg --list-keys
+  /home/someuser/.gnupg/pubring.gpg
+  -----------------------------
+  pub  1024D/FB26DB74 2005-04-06 Joseph Bloe <someuser@example.com>
+  sub  1024g/5CC8431C 2005-04-06 [expires: 2006-04-06]
+
+and then export it:
+
+  someuser$ gpg -a --export FB26DB74 >someuser.pubkey
+
+You then need to take that file to the web server and import it into
+the public key-ring of the user that the web server software runs as:
+
+  webuser$ gpg --import someuser.pubkey
+
+The simplest way to enable the key for use is to sign the key, since
+you may not want to make the signed key usable for others, you should
+lsign it:
+
+  webuser$ gpg --lsign-key FB26DB74
+
+If you want the emails to be signed you will need to reverse this
+process, ie. create a private key for webuser, export it, import it to
+someuser.
+
+=head2 Signing the email
+
+If you don't want the email signed, set crypt_signing_id to empty:
+
+  crypt_signing_id=
+
+If you do want the encrypted email signed you will need to set the
+signing id and the passphrase:
+
+  crypt_signing_id=5CC8431C
+  crypt_passphrase=passphrase for private key
+
+=head2 Troubleshooting
+
+Problems with the encryption setup can be difficult to debug.  Your
+first step should be to enable mail_encryption debugging:
+
+  [debug]
+  mail_encryption=1
+
+This will dump the HOME variable used, the gpg command used, and any
+output from GPG to stderr, which should then show in your web server
+error log.
+
+If you see problems, first try disabling signing.
+
+If you still have problems, try running the encryption command, but
+without the --no-tty command, providing some input.  For example, if
+you see:
+
+  GPG command: gpg -aqe -r 'tony@develop-help.com' --no-tty
+
+in the error log, try running:
+
+  echo something | gpg -aqe -r 'someuser@example.com'
+
+This should give you some idea of what's needed.  If you see:
+
+  Could not find a valid trust path to the key.  Let's see whether we
+  can assign some missing owner trust values.
+
+  No path leading to one of our keys found.
+
+  1024g/5CC8431C 2005-04-06 "Joseph Bloe <someuser@example.com>"
+             Fingerprint: 3F01 3589 BB4E 5D5B 9512  XXXX 063F DF74 5CC8 431C
+
+  It is NOT certain that the key belongs to its owner.
+  If you *really* know what you are doing, you may answer
+  the next question with yes
+
+  Use this key anyway?
+
+Then you need to lsign this key, as above in L<Setting up GnuPG>.
 
 =head1 AUTHOR
 

@@ -12,6 +12,26 @@
   <textarea name="<:field name:>" <:ifField width:>cols="<:field width:>"<:or:><:eif:> <:ifField height:>rows="<:field height:>"<:or:><:eif:> wrap="virtual"><:old [field name]:></textarea>
   <:case Eq [field htmltype] "password":>
   <input type="password" name="<:field name:>" value="<:old [field name]:>" <:ifField width:>size="<:field width:>"<:or:><:eif:> />
+  <:case Eq [field htmltype] "select":>
+  <:values_select:>
+  <:case Eq [field htmltype] "multiselect":>
+  <select name="<:field name:>" multiple="multiple">
+  <:iterator begin values:>
+  <option value="<:value id:>"<:ifValueSet:> selected="selected"<:or:><:eif:>><:value name:></option>
+  <:iterator end values:>
+  </select>
+  <:case Eq [field htmltype] "radio":>
+  <:iterator begin values:>
+  <input type="radio" name="<:field name:>" value="<:value id:>"<:ifValueSet:> checked="checked"<:or:><:eif:> />&nbsp;<:value name:>
+  <:iterator separator values:>
+  <br />
+  <:iterator end values:>
+  <:case Eq [field htmltype] "check":>
+  <:iterator begin values:>
+  <input type="checkbox" name="<:field name:>" value="<:value id:>"<:ifValueSet:> checked="checked"<:or:><:eif:> />&nbsp;<:value name:>
+  <:iterator separator values:>
+  <br />
+  <:iterator end values:>
   <:case default:>
   <input type="text" name="<:field name:>" value="<:old [field name]:>" <:ifField width:>size="<:field width:>"<:or:><:eif:> />
   <:endswitch:>

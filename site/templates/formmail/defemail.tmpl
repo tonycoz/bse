@@ -8,5 +8,8 @@ Email: <:user email:>
 :>
 <:iterator begin fields:>
 ** <:field description:> **
-  <:field value:>
-<:iterator end fields:>
+<:ifField values:><:iterator begin values
+:>  <:value id:>: <:value name:>
+<:iterator end values
+:><:or:>  <:field value:>
+<:eif:><:iterator end fields:>

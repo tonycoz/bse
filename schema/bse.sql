@@ -23,7 +23,7 @@ CREATE TABLE article (
   imagePos char(2) not null,
   release datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
   expire datetime DEFAULT '9999-12-31 23:59:59' NOT NULL,
-  keyword varchar(255),
+  keyword varchar(255) not null default '',
 
   -- the template in $TMPLDIR used to generate this as HTML
   template varchar(127) DEFAULT '' NOT NULL,

@@ -1104,11 +1104,18 @@ sub show_lost_password {
 
   $message ||= $cgi->param('message') || '';
   $message = escape_html($message);
+  my $userid = $session->{userid};
+  my $user;
+  if ($userid) {
+    $user = SiteUsers->getBy(userId=>$userid);
+  }
+
   my %acts;
   %acts =
     (
      BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
      message => $message,
+     $self->user_tags(\%acts, $session, $user),
     );
   BSE::Template->show_page('user/lostpassword', $cfg, \%acts);
 }

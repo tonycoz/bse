@@ -10,6 +10,41 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_08
+
+=over
+
+=item *
+
+subscription calculations no longer include incomplete orders.
+
+=item *
+
+the user and ifUser tags are now available on the user/lostpassword
+template.
+
+=item *
+
+localinst.perl (used by make test, make testinst, make testfiles) no
+longer ignores empty config values.
+
+=item *
+
+the article keyword field now defaults to empty rather than NULL.
+
+=item *
+
+fmail.pl forms can now be select, multiselect, radio or check button
+fields.  The values can be specified in the config file.  See
+docs/formmail.pod for details.
+
+=item *
+
+the emails sent by fmail.pl can be sent encrypted or encrypted and
+signed.  See docs/formmail.pod for details.
+
+=back
+
 =head2 0.15_07
 
 This release adds a new column to the orders table.  You will need to

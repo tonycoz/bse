@@ -2688,7 +2688,7 @@ sub default_value {
   $col eq 'release' and return now_sqldate();
 
   if ($col eq 'threshold') {
-    my $parent = $article->{parentid} != -1 
+    my $parent = defined $article->{parentid} && $article->{parentid} != -1 
       && Articles->getByPkey($article->{parentid}); 
 
     $parent and return $parent->{threshold};

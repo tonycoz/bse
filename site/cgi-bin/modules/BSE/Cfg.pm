@@ -110,6 +110,45 @@ sub entriesCS {
   return;
 }
 
+=item order($section)
+
+Returns a list of keys for the given section.
+
+This can contain duplicates, since included config files may also set
+a given key.
+
+=cut
+
+sub order {
+  my ($self, $section) = @_;
+
+  if ($self->{config}{lc $section}) {
+    return @{$self->{config}{lc $section}{order}};
+  }
+
+  return;
+}
+
+=item orderCS($section)
+
+Returns a list of keys for the given section.  The keys are returned
+in their original case.
+
+This can contain duplicates, since included config files may also set
+a given key.
+
+=cut
+
+sub orderCS {
+  my ($self, $section) = @_;
+
+  if ($self->{config}{lc $section}) {
+    return @{$self->{config}{lc $section}{order_nc}};
+  }
+
+  return;
+}
+
 =item entryErr($section, $key)
 
 Same as the entry() method, except that it dies if the key or section
@@ -262,7 +301,9 @@ sub _load_cfg {
     }
     elsif (/^\s*([^=\s]+)\s*=\s*(.*)$/) {
       $section or next;
+      push @{$sections{$section}{order}}, lc $1;
       $sections{$section}{values}{lc $1} = $2;
+      push @{$sections{$section}{order_nc}}, $1;
       $sections{$section}{case}{$1} = $2;
     }
   }
@@ -309,7 +350,9 @@ sub _load_cfg {
 	}
 	elsif (/^\s*([^=\s]+)\s*=\s*(.*)$/) {
 	  $section or next;
+	  push @{$sections{$section}{order}}, lc $1;
 	  $sections{$section}{values}{lc $1} = $2;
+	  push @{$sections{$section}{order_nc}}, $1;
 	  $sections{$section}{case}{$1} = $2;
 	}
       }

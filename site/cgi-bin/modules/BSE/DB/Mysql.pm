@@ -311,7 +311,7 @@ SQL
 select od.id, od.userId, od.orderDate, od.siteuser_id, 
     sum(oi.subscription_period * oi.units) as "subscription_period"
   from orders od, order_item oi
-  where oi.subscription_id = ? and od.id = oi.orderId
+  where oi.subscription_id = ? and od.id = oi.orderId and od.complete <> 0
   group by od.id, od.userId, od.orderDate, od.siteuser_id
   order by od.orderDate desc
 SQL
@@ -337,6 +337,7 @@ select od.orderDate,
   od.id as "order_id", oi.id as "item_id", oi.productId as "product_id"
   from orders od, order_item oi
   where oi.subscription_id = ? and od.id = oi.orderId and od.siteuser_id = ?
+        and od.complete <> 0
 SQL
    userSubscribedEntry => <<SQL,
 select * from bse_user_subscribed 

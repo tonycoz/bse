@@ -433,6 +433,31 @@ sub _get_cfg_fields {
 	$cfg_fields->{$field}{$cfg_name} = $value;
       }
     }
+
+    my $values = $cfg->entry($section, "${field}_values");
+    if (defined $values) {
+      my @values;
+      if ($values =~ /;/) {
+	for my $entry (split /;/, $values) {
+	  if ($entry =~ /^([^=]+)=(.*)$/) {
+	    push @values, [ $1, $2 ];
+	  }
+	  else {
+	    push @values, [ $entry, $entry ];
+	  }
+	}
+      }
+      else {
+	my %entries = $cfg->entriesCS($values);
+	my @order = $cfg->orderCS($values);
+
+	my %seen;
+	# we only want the last value in the order
+	@order = reverse grep !$seen{$_}++, reverse @order;
+	@values = map [ $_, $entries{$_} ], @order;
+      }
+      $cfg_fields->{$field}{values} = \@values;
+    }
   }
 }
 
