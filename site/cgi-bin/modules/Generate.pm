@@ -55,6 +55,7 @@ sub _make_hr {
   return $tag;
 }
 
+# produces a table, possibly with options for the <table> and <tr> tags
 sub _make_table {
   my ($options, $text) = @_;
   my $tag = "<table";
@@ -155,7 +156,7 @@ sub format_body {
       and ++$match;
     $body =~ s#table\[([^\n\[\]]*)\n([^\[\]]+)\n\s*\]#_make_table($1, $2)#ieg
       and ++$match;
-    $body =~ s#table\[([^\]\[]+)\|([^\]\[|]+)\]#_make_table($1, $2)#ieg
+    $body =~ s#table\[([^\]\[]+)\|([^\]\[|]+)\]#_make_table($1, "|$2")#ieg
       and ++$match;
     $body =~ s#((?:\*\*[^\n]+\n[^\S\n]*)+)#_format_bullets($1)#eg
       and ++$match;
@@ -167,7 +168,7 @@ sub format_body {
       and ++$match;
     $body =~ s#center\[([^\]\[]+)\]#<center>$1</center>#ig
       and ++$match;
-    $body =~ s#hrcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#<table width="$1" height="$2" border="0" bgcolor="$3" cellpadding="0" cellspacing="0"><tr><td><img src="/images/interface/pixel.gif" width="1" height="1"></td></tr></table>#ig
+    $body =~ s#hrcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#<table width="$1" height="$2" border="0" bgcolor="$3" cellpadding="0" cellspacing="0"><tr><td><img src="/images/trans_pixel.gif" width="1" height="1"></td></tr></table>#ig
       and ++$match;
       
   } while ($match);
@@ -414,7 +415,7 @@ sub excerpt {
       and ++$match;
     $body =~ s#table\[([^\n\[\]]*)\n([^\[\]]+)\n\s*\]#_cleanup_table($1, $2)#ieg
       and ++$match;
-    $body =~ s#table\[([^\]\[]+)\|([^\]\[|]+)\]#_cleanup_table($1, $2)#ieg
+    $body =~ s#table\[([^\]\[]+)\|([^\]\[|]+)\]#_cleanup_table($1, "|$2")#ieg
       and ++$match;
     $body =~ s#\*\*([^\n]+)#$1#eg
       and ++$match;
