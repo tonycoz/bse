@@ -10,6 +10,40 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.12_05
+
+=over
+
+=item *
+
+test script to check that all modules and scripts have use strict and
+all scripts have -w in the #! line
+
+=item *
+
+the width and height values were swapped for display of an articles
+images in the image manager template
+
+=item *
+
+children weren't sorted on article editing pages
+
+=item *
+
+updated templates from Adrian.
+
+=item *
+
+added a previousLogon field to accept the last value of lastLogon at
+logon, so the previous value could be displayed.
+
+=item *
+
+editing an article would give a server error on save (due to some late
+changes)
+
+=back
+
 =head2 0.12_04
 
 =over

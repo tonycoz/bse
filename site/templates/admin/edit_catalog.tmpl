@@ -143,14 +143,15 @@
             <td nowrap bgcolor="#FFFFFF" valign="top"><:help edit files:></td>
           </tr>
           <tr> 
-            <th valign="top" bgcolor="#FFFFFF" nowrap align="left"> Uploaded images: 
+            <th valign="top" bgcolor="#FFFFFF" nowrap align="left"> Images: 
             </th>
-            <td align="center" bgcolor="#FFFFFF" width="100%"> <:if Images:> <p><a href="<:script:>?id=<:article id:>&showimages=1"><b>Manage Images</b></a></p> <:iterator begin 
+            <td align="center" bgcolor="#FFFFFF" width="100%"> <:if Images:> <:iterator begin 
               images:> <img src="/images/<: image image :>" alt="<:image alt :>" width= 
               <:image width:> height=<:image height:>> <:iterator separator images:> 
               <hr noshade size="1">
-              <: iterator end images :> &nbsp; <br>
-	      <:or Images:><p>No images are attached to this article.  <a href="<:script:>?id=<:article id:>&showimages=1"><b>Manage Images</b></a></p>
+              <: iterator end images :>
+              <p align="left"><a href="<:script:>?id=<:article id:>&showimages=1"><b>Manage Images</b></a></p>
+	      <:or Images:><p align="left">No images are attached to this article.  <a href="<:script:>?id=<:article id:>&showimages=1"><b>Manage Images</b></a></p>
 	      <:eif Images:>
 	    </td>
             <td bgcolor="#FFFFFF" valign="top"><:help catalog images:></td>
@@ -202,21 +203,18 @@
 <:if HaveChildType:>
 <:if new:>
 <:or new:>
-<table><tr>
-<td><form action="/cgi-bin/admin/add.pl" method="POST">
+<p>
+<form action="/cgi-bin/admin/add.pl" method="POST">
 <input type=hidden name="parentid" value="<:article id:>">
 <input type=hidden name="type" value="Catalog">
-<p>
+
     <input type=submit value="Add Sub-catalog">
-  </p>
-</form></td>
-<td><form action="/cgi-bin/admin/add.pl" method="POST">
+</form>
+<form action="/cgi-bin/admin/add.pl" method="POST">
 <input type=hidden name="parentid" value="<:article id:>">
 <input type=hidden name="parentid" value="Product">
-<p>
     <input type=submit value="Add Product">
-  </p>
-</form></td></tr></table>
+</form></p>
 <:eif new:> <:or HaveChildType:> <:eif HaveChildType:> 
 <p><font size="-1">BSE Release <:release:></font></p>
 </body

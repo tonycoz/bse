@@ -1,5 +1,5 @@
 package Order;
-
+use strict;
 # represents an order from the database
 use Squirrel::Row;
 use vars qw/@ISA/;

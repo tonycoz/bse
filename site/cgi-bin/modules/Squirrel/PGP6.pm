@@ -1,4 +1,5 @@
 package Squirrel::PGP6;
+use strict;
 
 sub new {
   return bless {}, $_[0];

@@ -147,7 +147,7 @@
                     </table>
                   </td>
                 </tr>
-              </table>
+              </table><br>
               <:or Files:><p>No files are attached to this article.<:eif Files:> 
                 <a href="<:script:>?filelist=1&id=<:product id:>"><b>Manage Files</b></a></p>
             </td>
@@ -155,14 +155,15 @@
               files:></td>
           </tr>
           <tr> 
-            <th valign="top" nowrap bgcolor="#FFFFFF" align="left"> Uploaded images: 
+            <th valign="top" nowrap bgcolor="#FFFFFF" align="left"> Images: 
             </th>
-            <td align="center" bgcolor="#FFFFFF" width="100%"> <:if Images:> <p><a href="<:script:>?id=<:article id:>&showimages=1"><b>Manage Images</b></a></p> <:iterator begin 
+            <td align="center" bgcolor="#FFFFFF" width="100%"> <:if Images:> <:iterator begin 
               images:> <img src="/images/<: image image :>" alt="<:image alt :>" width= 
               <:image width:> height=<:image height:>> <:iterator separator images:> 
               <hr noshade size="1">
-              <: iterator end images :> &nbsp; <br>
-	      <:or Images:><p>No images are attached to this article.  <a href="<:script:>?id=<:article id:>&showimages=1"><b>Manage Images</b></a></p>
+              <: iterator end images :>
+              <p align="left"><a href="<:script:>?id=<:article id:>&showimages=1"><b>Manage Images</b></a></p>
+	      <:or Images:><p align="left">No images are attached to this article.  <a href="<:script:>?id=<:article id:>&showimages=1"><b>Manage Images</b></a></p>
 	      <:eif Images:>
             </td>
             <td valign="top" bgcolor="#FFFFFF" width="100%"><:help product images:></td>

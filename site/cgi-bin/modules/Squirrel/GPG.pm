@@ -1,4 +1,5 @@
 package Squirrel::GPG;
+use strict;
 
 sub new {
   return bless {}, $_[0];

@@ -266,16 +266,16 @@ sub iter_get_images {
 sub iter_get_kids {
   my ($article, $articles) = @_;
 
+  my @children;
   $article->{id} or return;
   if (UNIVERSAL::isa($article, 'Article')) {
-    $article->children;
+    @children = $article->children;
   }
   elsif ($article->{id}) {
-    return $articles->children($article->{id});
+    @children = $articles->children($article->{id});
   }
-  else {
-    return;
-  }
+
+  return sort { $b->{displayOrder} <=> $a->{displayOrder} } @children;
 }
 
 sub tag_if_have_child_type {
@@ -944,7 +944,7 @@ sub validate {
 }
 
 sub validate_old {
-  my ($self, $data, $articles, $rmsg, $errors) = @_;
+  my ($self, $article, $data, $articles, $rmsg, $errors) = @_;
 
   $self->_validate_common($data, $articles, $errors);
 

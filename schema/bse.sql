@@ -399,6 +399,8 @@ create table site_users (
   profession integer not null,
   otherProfession varchar(127) not null,
 
+  previousLogon datetime not null,
+
   primary key (id),
   unique (userId)
 );

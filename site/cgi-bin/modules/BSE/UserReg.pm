@@ -9,6 +9,7 @@ use BSE::SubscriptionTypes;
 use BSE::SubscribedUsers;
 use BSE::Mail;
 use BSE::EmailRequests;
+use BSE::Util::SQL qw/now_datetime/;
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -84,6 +85,9 @@ sub logon {
 			     $msgs->(baduserpass=>"Invalid user or password"));
   }
   $session->{userid} = $user->{userId};
+  $user->{previousLogon} = $user->{lastLogon};
+  $user->{lastLogon} = now_datetime;
+  $user->save;
   use CGI::Cookie;
   print "Set-Cookie: ",CGI::Cookie->new(-name=>"userid", 
 					-value=>$user->{userId},
@@ -397,8 +401,8 @@ sub register {
   $user{userId} = $userid;
   $user{password} = $pass;
   $user{email} = $email;
-  use BSE::Util::SQL qw/now_datetime/;
-  $user{lastLogon} = $user{whenRegistered} = now_datetime;
+  $user{lastLogon} = $user{whenRegistered} = 
+    $user{previousLogon} = now_datetime;
   $user{keepAddress} = 0;
   $user{wantLetter} = 0;
   

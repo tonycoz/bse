@@ -10,7 +10,7 @@ sub columns {
             name1 name2 address city state postcode telephone facsimile 
             country wantLetter confirmed confirmSecret waitingForConfirmation
             textOnlyMail title organization referral otherReferral
-            prompt otherPrompt profession otherProfession/;
+            prompt otherPrompt profession otherProfession previousLogon/;
 }
 
 sub removeSubscriptions {

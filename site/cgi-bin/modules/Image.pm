@@ -1,5 +1,5 @@
 package Image;
-
+use strict;
 # represents an image from the database
 use Squirrel::Row;
 use vars qw/@ISA/;
