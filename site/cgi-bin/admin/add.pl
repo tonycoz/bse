@@ -301,6 +301,13 @@ sub save_new_article {
     exit;
   }
   
+  if (exists $data{template} &&
+      $data{template} =~ m#\.\.#) {
+    $message = "Please only select templates from the list provided";
+    start();
+    exit;
+  }
+ 
   my $parent = $articles->getByPkey($data{parentid});
   $data{displayOrder} ||= time;
   $data{titleImage} ||= '';
@@ -362,6 +369,13 @@ sub save_old_article {
     $article->{$name} = param($name) 
       if defined(param($name)) and $name ne 'id';
   }
+  if (exists $article->{template} &&
+      $article->{template} =~ m#\.\.#) {
+    $message = "Please only select templates from the list provided";
+    start();
+    exit;
+  }
+  
   $article->{imagePos} = $imageEditor->imagePos();
   $article->{listed} = param('listed');
   $article->{release} = sql_date(param('release')) || $D_00;
