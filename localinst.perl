@@ -1,8 +1,8 @@
 #!/usr/bin/perl -w
 use strict;
 
-my $dist = shift or die "Usage: $0 distdir";
-
+my $dist = shift or die "Usage: $0 distdir [leavedb]";
+my $leavedb = shift or 0;
 my $instbase = shift || "/home/httpd/bsetest";
 
 my $mysql = "/usr/local/mysql/bin/mysql";
@@ -56,8 +56,10 @@ if ($gotconf) {
   close CON;
 
   # build the database
-  system "$mysql -u$Constants::UN -p$Constants::PW $Constants::DB <$dist/schema/bse.sql"
-    and die "Cannot initialize database";
-  system "cd $instbase/util ; perl initial.pl"
-    and die "Cannot load database";
+  unless ($leavedb) {
+    system "$mysql -u$Constants::UN -p$Constants::PW $Constants::DB <$dist/schema/bse.sql"
+      and die "Cannot initialize database";
+    system "cd $instbase/util ; perl initial.pl"
+      and die "Cannot load database";
+  }
 }
