@@ -221,7 +221,7 @@ my $child_index = -1;
    },
    child =>
    sub {
-     return $children[$child_index]{$_[0]};
+     return CGI::escapeHTML($children[$child_index]{$_[0]});
    },
    ifchildren=>sub { scalar @children },
    ifNextChild => sub { $child_index < $#children },
