@@ -885,11 +885,11 @@ sub download {
   
   my $must_be_paid = $cfg->entryBool('downloads', 'must_be_paid', 0);
   my $must_be_filled = $cfg->entryBool('downloads', 'must_be_filled', 0);
-  if ($must_be_paid && !$order->{paidFor}) {
+  if ($must_be_paid && !$order->{paidFor} && $file->{forSale}) {
     return _refresh_userpage($cfg, $msgs->("paidfor", 
 				     "Order not marked as paid for"));
   }
-  if ($must_be_filled && !$order->{filled}) {
+  if ($must_be_filled && !$order->{filled} && $file->{forSale}) {
     return _refresh_userpage($cfg, $msgs->("filled", 
 				     "Order not marked as filled"));
   }
