@@ -161,9 +161,13 @@ $SEARCH_TITLE_IMAGE = "advanced_search.gif";
 # defines extra tags added to the tags defined by Generate.pm
 # constants are converted to subs automatically
 # you cannot override existing tags
+# the initial set of tags are used in various places in the default
+# templates
 %EXTRA_TAGS =
   (
    siteName => 'My Site',
+   salesPhoneNo => '61 2 9999 8888',
+   salesEmail => 'you@yoursite.com',
   );
 
 # articles that cannot be deleted
