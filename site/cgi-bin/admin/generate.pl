@@ -12,12 +12,13 @@ use BSE::WebUtil qw(refresh_to_admin);
 use Carp 'verbose';
 use BSE::Request;
 use URI::Escape;
+use BSE::CfgInfo 'admin_base_url';
 
 my $req = BSE::Request->new;
 
 my $cfg = $req->cfg;
 my $cgi = $req->cgi;
-my $siteurl = $cfg->entryErr('site', 'url');
+my $siteurl = admin_base_url($cfg);
 unless ($req->check_admin_logon()) {
   refresh_to_admin($cfg, "/cgi-bin/admin/logon.pl");
   exit;

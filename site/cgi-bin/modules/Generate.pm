@@ -53,7 +53,12 @@ sub summarize {
     $text .= '...';
   }
 
-  return $self->format_body({}, $articles, $text, 'tr', 1, 0);
+  # the formatter now adds <p></p> around the text, but we don't
+  # want that here
+  my $result = $self->format_body({}, $articles, $text, 'tr', 1, 0);
+  $result =~ s!<p>|</p>!!g;
+
+  return $result;
 }
 
 # attempts to move the given position forward if it's within a HTML tag,
@@ -482,7 +487,7 @@ sub baseActs {
        return 0;
      },
      level2 => sub {
-       return $subsections[$subsect_index]{$_[0]};
+       return escape_html($subsections[$subsect_index]{$_[0]});
      },
      ifLevel2 => 
      sub {

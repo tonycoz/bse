@@ -1,4 +1,4 @@
-VERSION=0.15_02
+VERSION=0.15_03
 DISTNAME=bse-$(VERSION)
 DISTBUILD=$(DISTNAME)
 DISTTAR=../$(DISTNAME).tar
@@ -22,6 +22,10 @@ dist: cleantree $(DISTTGZ)
 
 # make sure everything is committed
 cleantree:
+	if grep -q 'perl.*-d:ptkdb' site/cgi-bin/*.pl site/cgi-bin/admin/*.pl ; \
+	  then echo '***' The debugger is still enabled ; \
+	  exit 1; \
+	fi
 	if cvs status 2>/dev/null | grep -q '^\?\|Locally Modified' ; \
           then echo '***' The tree has modified or unadded files ; \
           exit 1 ; \

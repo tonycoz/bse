@@ -55,7 +55,9 @@ sub popup_menu {
   exists $opts{'-name'}
     or confess "No -name parameter";
 
-  my $html = '<select name="' . escape_html($opts{"-name"}) . '">';
+  my $html = '<select name="' . escape_html($opts{"-name"}) . '"';
+  $html .= ' id="'.escape_html($opts{'-id'}).'"' if $opts{'-id'};
+  $html .= '>';
   my $labels = $opts{"-labels"} || {};
   my $values = $opts{"-values"};
   my $default = $opts{"-default"};

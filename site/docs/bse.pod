@@ -10,6 +10,60 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_03
+
+=over
+
+=item *
+
+generate.pl would refresh to the wrong place when secure admin was
+configured, causing the logon page to be displayed.
+
+=item *
+
+reorder.pl had a syntax error which didn't show in the test suite.
+The test suite has been updated to catch similar errors in reorder.pl
+
+=item *
+
+the low level body text formatter now includes <p></p> around its
+results.  Many other minor changes were made to hopefully improve the
+output from the formatter.
+
+=item *
+
+the level2 tag now HTML escapes its results
+
+=item *
+
+the old tag is now more backward compatible.
+
+=item *
+
+changed the search index primary key from "varchar(200) binary" to
+"varbinary(200)".  Unfortunately mysql 3 reports this type as
+"varchar(200) binary" so the tool we use to build mysql.str has been
+mangled to convert that type to varbinary.
+
+=item *
+
+the article table included a default value declaration in the column
+spec for the primary key.  This conflicts with the auto_increment on
+mysql 4 and has been removed.
+
+=item *
+
+the makefile now checks for .pl files that still include the option to
+start the debugger in their #! lines before building a dist.  This
+will prevent releasing a dist that tries to start the debugger when
+you call a script.
+
+=item *
+
+the search results page now has access to the basic dynamic tags
+
+=back
+
 =head2 0.15_02
 
 =over

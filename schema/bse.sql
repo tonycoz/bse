@@ -1,7 +1,7 @@
 -- represents sections, articles
 DROP TABLE IF EXISTS article;
 CREATE TABLE article (
-  id integer DEFAULT '0' NOT NULL auto_increment,
+  id integer NOT NULL auto_increment,
 
   -- 0 for the entry page
   -- -1 for top-level sections (shown in side menu)
@@ -93,7 +93,7 @@ CREATE TABLE article (
 
 DROP TABLE IF EXISTS searchindex;
 CREATE TABLE searchindex (
-  id varchar(200) binary DEFAULT '' NOT NULL,
+  id varbinary(200) DEFAULT '' NOT NULL,
   -- a comma-separated lists of article and section ids
   articleIds varchar(255) default '' not null,
   sectionIds varchar(255) default '' not null,

@@ -346,8 +346,17 @@ sub tag_nobodytext {
 sub tag_old {
   my ($cgi, $args, $acts, $name, $templater) = @_;
 
-  my ($field, $func, $funcargs) = 
-    DevHelp::Tags->get_parms($args, $acts, $templater);
+  my ($field, $func, $funcargs);
+  
+  if ($args =~ /^(\[[^\[\]]*(?:\[[^\[\]]*\][^\[\]]*)*\])(.*)/) {
+    my ($fieldargs, $rest) = ($1, $2);
+    ($field) = DevHelp::Tags->get_parms($fieldargs, $acts, $templater);
+    defined $rest or $rest = '';
+    ($func, $funcargs) = split ' ', $rest, 2;
+  }
+  else {
+    ($field, $func, $funcargs) = split ' ', $args, 3;
+  }
 
   my $value = $cgi->param($field);
   if (defined $value) {
@@ -403,6 +412,7 @@ sub basic {
      oldi => [ \&tag_oldi, $cgi ],
      $it->make_iterator(\&DevHelp::Tags::iter_get_repeat, 'repeat', 'repeats'),
      dynreplace => \&tag_replace,
+     dyntoday => \&tag_today,
     );
 }
 

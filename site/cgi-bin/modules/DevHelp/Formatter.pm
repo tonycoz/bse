@@ -84,7 +84,8 @@ sub _format_bullets {
   shift @points if @points and $points[0] eq '';
   return '' unless @points;
   for my $point (@points) {
-    $point =~ s!\n$!<br /><br />!;
+    $point =~ s!\n$!!
+      and $point = "<p>$point</p>";
   }
   return "<ul><li>".join("</li><li>", @points)."</li></ul>";
 }
@@ -101,7 +102,8 @@ sub _format_ol {
   shift @points if @points and $points[0] eq '';
   return '' unless @points;
   for my $point (@points) {
-    $point =~ s!\n$!<br /><br />!;
+    $point =~ s!\n$!!
+      and $point = "<p>$point</p>";
   }
   my $ol = "<ol";
   $ol .= qq! type="$type"! if $type;
@@ -150,29 +152,48 @@ sub _fix_spanned {
 
 sub replace_char {
   my ($self, $rpart) = @_;
-
-  $$rpart =~ s#poplink\[([^|\]\[]+)\|([^\]\[]+)\]#<a href="$1" target="_blank">$2</a>#ig
+  $$rpart =~ s#(acronym|abbr|dfn)\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#
+    _fix_spanned(qq/<$1 class="$3" title="$2">/, "</$1>", $4)#egi
+    and return 1;
+  $$rpart =~ s#(acronym|abbr|dfn)\[([^|\]\[]+)\|([^\]\[]+)\]#
+    _fix_spanned(qq/<$1 title="$2">/, "</$1>", $3)#egi
+    and return 1;
+  $$rpart =~ s#(acronym|abbr|dfn)\[\|([^\]\[]+)\]#
+    _fix_spanned("<$1>", "</$1>", $2)#egi
+    and return 1;
+  $$rpart =~ s#(acronym|abbr|dfn)\[([^\]\[]+)\]#
+    _fix_spanned("<$1>", "</$1>", $2)#egi
+    and return 1;
+  $$rpart =~ s#bdo\[([^|\]\[]+)\|([^\]\[]+)\]#
+    _fix_spanned(qq/<bdo dir="$1">/, "</bdo>", $2)#egi
+    and return 1;
+  $$rpart =~ s#(strong|em|samp|code|var|sub|sup|kbd|q|b|i|tt)\[([^|\]\[]+)\|([^\]\[]+)\]#
+    _fix_spanned(qq/<$1 class="$2">/, "</$1>", $3)#egi
+    and return 1;
+  $$rpart =~ s#(strong|em|samp|code|var|sub|sup|kbd|q|b|i|tt)\[\|([^\]\[]+)\]#
+    _fix_spanned("<$1>", "</$1>", $2)#egi
+    and return 1;
+  $$rpart =~ s#(strong|em|samp|code|var|sub|sup|kbd|q|b|i|tt)\[([^\]\[]+)\]#
+    _fix_spanned("<$1>", "</$1>", $2)#egi
+    and return 1;
+  $$rpart =~ s#poplink\[([^|\]\[]+)\|([^\]\[]+)\]#
+    _fix_spanned(qq/<a href="$1" target="_blank">/, "</a>", $2)#eig
     and return 1;
   $$rpart =~ s#poplink\[([^|\]\[]+)\]#<a href="$1" target="_blank">$1</a>#ig
     and return 1;
-  $$rpart =~ s#link\[([^|\]\[]+)\|([^\]\[]+)\]#<a href="$1">$2</a>#ig
+  $$rpart =~ s#link\[([^|\]\[]+)\|([^\]\[]+)\]#
+    _fix_spanned(qq/<a href="$1">/, "</a>", $2)#eig
     and return 1;
   $$rpart =~ s#link\[([^|\]\[]+)\]#<a href="$1">$1</a>#ig
     and return 1;
-  $$rpart =~ s#b\[([^\]\[]+)\]#_fix_spanned("<b>", "</b>", $1)#egi
-    and return 1;
-  $$rpart =~ s#i\[([^\]\[]+)\]#_fix_spanned("<i>", "</i>", $1)#egi
-    and return 1;
-  $$rpart =~ s#tt\[([^\]\[]+)\]#_fix_spanned("<tt>", "</tt>", $1)#egi
-    and return 1;
   $$rpart =~ s#font\[([^|\]\[]+)\|([^\]\[]+)\]#
     _fix_spanned(qq/<font size="$1">/, "</font>", $2)#egi
-      and return 1;
+    and return 1;
   $$rpart =~ s#anchor\[([^|\]\[]*)\]#<a name="$1"></a>#ig
     and return 1;
   $$rpart =~ s#fontcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#
     _fix_spanned(qq/<font size="$1" color="$2">/, "</font>", $3)#egi
-      and return 1;
+    and return 1;
   $$rpart =~ s!(?<=\W)\[([^\]\[]+)\]!&#91;$1&#93;!g
     and return 1;
   
@@ -212,6 +233,7 @@ sub format {
       $out .= "<pre>$work</pre>";
     }
     else {
+      next unless $part =~ /\S/;
     TRY: while (1) {
 	$self->replace(\$part)
 	  and next TRY;
@@ -219,12 +241,15 @@ sub format {
 	  and next TRY;
 	$part =~ s#pre\[([^\]\[]+)\]#<pre>$1</pre>#ig
 	  and next TRY;
-	$part =~ s#h([1-6])\[\|([^\[\]]+)\](?:\r?\n)?#<h$1>$2</h$1>#ig
-          and next TRY;
-	$part =~ s#div\[([^\[\]\|]+)\|([^\[\]]+)\]#<div class="$1">$2</div>#ig
-          and next TRY;
-	$part =~ s#h([1-6])\[([^\[\]\|]+)\|([^\[\]]+)\](?:\r?\n)?#<h$1 class="$2">$3</h$1>#ig
-          and next TRY;
+	$part =~ s#h([1-6])\[([^\[\]\|]+)\|([^\[\]]+)\](?:\r?\n)?#
+	  _fix_spanned(qq/\n\n<h$1 class="$2">/, "</h$1>\n\n", $3)#ieg
+	  and next TRY;
+	$part =~ s#\n*h([1-6])\[\|([^\[\]]+)\]\n*#
+	  _fix_spanned("\n\n<h$1>", "</h$1>\n\n", $2)#ieg
+	  and next TRY;
+	$part =~ s#\n*h([1-6])\[([^\[\]]+)\]\n*#
+	  _fix_spanned("\n\n<h$1>", "</h$1>\n\n", $2)#ieg
+	  and next TRY;
 	$part =~ s#align\[([^|\]\[]+)\|([^\]\[]+)\]#<div align="$1">$2</div>#ig
 	  and next TRY;
 	$part =~ s#hr\[([^|\]\[]*)\|([^\]\[]*)\]#_make_hr($1, $2)#ieg
@@ -235,7 +260,8 @@ sub format {
 	  and next TRY;
 	$part =~ s#table\[([^\]\[]+)\|([^\]\[|]+)\]#_make_table($1, "|$2")#ieg
 	  and next TRY;
-	$part =~ s#(?:^|\n{1,2})((?: *(?:\*\*|\#\#|\%\%)[^\n]+(?:\n|$)\n?[^\S\n]*)+)\n?#_format_lists($1)#eg
+	#print STDERR "step: ",unpack("H*", $part),"\n$part\n";
+	$part =~ s#(?:^|\n+|\G)((?: *(?:\*\*|\#\#|\%\%)[^\n]+(?:\n|$)\n?[^\S\n]*)+)\n?#"\n\n"._format_lists($1)."\n\n"#eg
 	  and next TRY;
 	$part =~ s#indent\[([^\]\[]+)\]#<ul>$1</ul>#ig
 	  and next TRY;
@@ -247,16 +273,40 @@ sub format {
 	    and next TRY;
 	$part =~ s#class\[([^\]\[\|]+)\|([^\]\[]+)\]#
 	  _fix_spanned(qq/<span class="$1">/, "</span>", $2)#eig
-          and next TRY;
+	  and next TRY;
 	$part =~ s#style\[([^\]\[\|]+)\|([^\]\[]+)\]#
 	  _fix_spanned(qq/<span style="$1">/, "</span>", $2)#eig
-          and next TRY;
+	  and next TRY;
+	$part =~ s#(div|address|blockquote)\[\n*([^\[\]\|]+)\|\n*([^\[\]]+?)\n*\]#<$1 class="$2">$3</$1>#ig
+	  and next TRY;
+	$part =~ s#(div|address|blockquote)\[\n*\|([^\[\]]+?)\n*]#<$1>$2</$1>#ig
+	  and next TRY;
+	$part =~ s#(div|address|blockquote)\[\n*([^\[\]]+?)\n*]#<$1>$2</$1>#ig
+	  and next TRY;
 	last;
       }
+      $part =~ s/^\s+|\s+\z//g; # avoid spurious leading/trailing <p>
       $part =~ s!(\n([ \r]*\n)*)!$1 eq "\n" ? "<br />\n" : "</p>\n<p>"!eg;
       $part = "<p>$part</p>";
-      $part =~ s/<p><div class=\"([^\"]+)\">/<div class="$1"><p>/g;
+      $part =~ s/<p>(<div [^>]*>)/$1<p>/g;
       $part =~ s!</div></p>!</p></div>!g;
+      $part =~ s/<p>(<blockquote>)/$1<p>/g;
+      $part =~ s/<p>(<blockquote [^>]*>)/$1<p>/g;
+      $part =~ s!</blockquote></p>!</p></blockquote>!g;
+      $part =~ s/<p>(<address>)/$1<p>/g;
+      $part =~ s/<p>(<address [^>]*>)/$1<p>/g;
+      $part =~ s!</address></p>!</p></address>!g;
+      $part =~ s!<p>(<hr[^>]*>)</p>!$1!g;
+      $part =~ s!<p>(<(?:table|ol|ul|center|h[1-6])[^>]*>)!$1!g;
+      $part =~ s!(</(?:table|ol|ul|center|h[1-6])>)</p>!$1!g;
+      # attempts to convert class[name|paragraph] into <p class="name">...
+      # tried to use a negative lookahead but it wouldn't work
+      $part =~ s#(<p><span class="([^"<>]+)">(.*?)</span></p>)#
+        my ($one, $two, $three)= ($1, $2, $3); 
+        $3 =~ /<span/ ? $one : qq!<p class="$two">$three</p>!#ge;
+      $part =~ s#(<p><span style="([^"<>]+)">(.*?)</span></p>)#
+        my ($one, $two, $three)= ($1, $2, $3); 
+        $3 =~ /<span/ ? $one : qq!<p style="$two">$three</p>!#ge;
       #$part =~ s!\n!<br />!g;
       $out .= $part;
     }
@@ -297,12 +347,28 @@ sub remove_format {
     TRY: while (1) {
 	$self->remove(\$part)
 	  and next TRY;
+	$part =~ s#(?:acronym|abbr|dfn)\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#$3#ig
+	  and next TRY;
+	$part =~ s#(?:acronym|abbr|dfn|bdo)\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
+	  and next TRY;
+	$part =~ s#(?:acronym|abbr|dfn|bdo)\[(\|[^|\]\[]+)\]#$1#ig
+	  and next TRY;
+	$part =~ s#(?:acronym|abbr|dfn)\[([^|\]\[]+)\]#$1#ig
+	  and next TRY;
+	$part =~ s#(?:strong|em|samp|code|var|sub|sup|kbd|q|address|blockquote|b|i|tt)\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
+	  and next TRY;
+	$part =~ s#(?:strong|em|samp|code|var|sub|sup|kbd|q|address|blockquote|b|i|tt)\[\|([^\]\[]+)\]#$1#ig
+	  and next TRY;
+	$part =~ s#(?:strong|em|samp|code|var|sub|sup|kbd|q|address|blockquote|b|i|tt)\[([^\]\[]+)\]#$1#ig
+	  and next TRY;
 	$part =~ s#div\[([^\[\]\|]+)\|([^\[\]]+)\](?:\r?\n)?#$2#ig
-          and next TRY;
-	$part =~ s#h([1-6])\[\|([^\[\]]+)\](?:\r?\n)?#$2#ig
-          and next TRY;
+	  and next TRY;
 	$part =~ s#h([1-6])\[([^\[\]\|]+)\|([^\[\]]+)\](?:\r?\n)?#$3#ig
-          and next TRY;
+	  and next TRY;
+	$part =~ s#h([1-6])\[\|([^\[\]]+)\](?:\r?\n)?#$2#ig
+	  and next TRY;
+	$part =~ s#h([1-6])\[([^\[\]]+)\](?:\r?\n)?#$2#ig
+	  and next TRY;
 	$part =~ s#poplink\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
 	  and next TRY;
 	$part =~ s#poplink\[([^|\]\[]+)\]#$1#ig
@@ -310,10 +376,6 @@ sub remove_format {
 	$part =~ s#link\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
 	  and next TRY;
 	$part =~ s#link\[([^|\]\[]+)\]#$1#ig
-	  and next TRY;
-	$part =~ s#[bi]\[([^\]\[]+)\]#$1#ig
-	  and next TRY;
-	$part =~ s#tt\[([^\]\[]+)\]#$1#ig
 	  and next TRY;
 	$part =~ s#align\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
 	  and next TRY;
@@ -344,9 +406,9 @@ sub remove_format {
 	$part =~ s#image\[([^\]\[]+)\]##ig
 	  and next TRY;
 	$part =~ s#class\[([^\]\[\|]+)\|([^\]\[]+)\]#$2#ig
-          and next TRY;
+	  and next TRY;
 	$part =~ s#style\[([^\]\[\|]+)\|([^\]\[]+)\]#$2#ig
-          and next TRY;
+	  and next TRY;
 	
 	last TRY;
       }

@@ -39,7 +39,7 @@ while (my $row = $tl->fetchrow_arrayref) {
 undef $tl;
 
 my @expected = qw(field type null key default extra);
-my @want = qw(field type null default extra);
+my @want =     qw(field type null default extra);
 for my $table (@tables) {
   print "Table $table\n";
   my $ti = $dbh->prepare("describe $table")
@@ -56,6 +56,10 @@ for my $table (@tables) {
   while (my $row = $ti->fetchrow_arrayref) {
     for my $name (@want) {
       defined $row->[$names{$name}] or $row->[$names{$name}] = "NULL";
+      if ($name eq 'type' && 
+	  $row->[$names{$name}] =~ /^varchar\((\d+)\) binary$/i) {
+	$row->[$names{$name}] = "varbinary($1)";
+      }
     }
     print "Column ",join(";",@$row[@names{@want}]),
     "\n";

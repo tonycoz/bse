@@ -12,6 +12,7 @@ use Carp;
 use BSE::Cfg;
 use BSE::Template;
 use DevHelp::HTML qw':default popup_menu';
+use BSE::Util::Tags;
 
 my $cfg = BSE::Cfg->new;
 
@@ -83,6 +84,7 @@ my $words_re = qr/$words_re_str/i;
 my %acts;
 %acts =
   (
+   BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
    iterate_results => 
    sub { 
      ++$result_seq;
@@ -138,7 +140,7 @@ my %acts;
    multiple => sub { @results != 1 },
    terms => sub { escape_html($words) },
    resultSeq => sub { $result_seq },
-   list => sub { popup_menu(-name=>'s',
+   list => sub { popup_menu(-name=>'s', -id => 's',
 			    -values=>\@sections,
 			    -labels=>\%sections) },
    

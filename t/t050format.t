@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 46;
+use Test::More tests => 62;
 
 sub format_test($$$;$);
 
@@ -8,7 +8,71 @@ my $gotmodule = require_ok('DevHelp::Formatter');
 
 SKIP: {
   skip "couldn't load module", 41 unless $gotmodule;
+  format_test 'acronym[hello]', '<p><acronym>hello</acronym></p>', 'acronym';
+  format_test 'acronym[|hello]', '<p><acronym>hello</acronym></p>', 'acronym with empty title';
+  format_test 'acronym[foo|hello]', '<p><acronym title="foo">hello</acronym></p>', 'acronym with title';
+  format_test 'acronym[foo|bar|hello]', '<p><acronym class="bar" title="foo">hello</acronym></p>', 'acronym with class and title';
+  format_test 'bdo[ltr|hello]', '<p><bdo dir="ltr">hello</bdo></p>', 'bdo with dir';
+  format_test 'code[hello]', '<p><code>hello</code></p>', 'code';
+  format_test 'code[|hello]', '<p><code>hello</code></p>', 'code empty class';
+  format_test 'code[foo|hello]', '<p><code class="foo">hello</code></p>', 'code with class';
+  format_test 'code[var[x]="1"]', '<p><code><var>x</var>=&quot;1&quot;</code></p>', 'code with var';
+  format_test 'blockquote[hello]', '<blockquote><p>hello</p></blockquote>', 'blockquote';
+  format_test 'blockquote[|hello]', '<blockquote><p>hello</p></blockquote>', 'blockquote with empty class';
+  format_test 'blockquote[foo|hello]', '<blockquote class="foo"><p>hello</p></blockquote>', 'blockquote with class';
+  format_test <<IN, <<OUT, 'strong over paras', 'both';
+strong[foo|hello
 
+foo]
+IN
+<p><strong class="foo">hello</strong></p>
+<p><strong class="foo">foo</strong></p>
+OUT
+  format_test <<IN, <<OUT, 'blockquote list h1 var', 'both';
+blockquote[
+** one
+** two
+h1[quux]var[hello
+there]
+
+foo]
+IN
+<blockquote><ul><li>one</li><li>two</li></ul>
+<h1>quux</h1>
+<p><var>hello<br />
+there</var></p>
+<p>foo</p></blockquote>
+OUT
+  format_test <<IN, <<OUT, 'address class h1 abbr over paras', 'both';
+address[foo|h1[bar
+
+quux]abbr[my abbr|hello]
+
+class[foo|b[bold|E=MCsup[2]]]
+
+foo]
+IN
+<address class="foo"><h1>bar</h1>
+<h1>quux</h1>
+<p><abbr title="my abbr">hello</abbr></p>
+<p class="foo"><b class="bold">E=MC<sup>2</sup></b></p>
+<p>foo</p></address>
+OUT
+  format_test <<IN, <<OUT, 'div blockquote h1 class over paras', 'both';
+div[quux|blockquote[foo|h1[bar]
+b[hello]
+class[foo|b[bold|E=MCsup[2
+
+kbd[xxx|super]]]]
+
+foo]]
+IN
+<div class="quux"><blockquote class="foo"><h1>bar</h1>
+<p><b>hello</b><br />
+<span class="foo"><b class="bold">E=MC<sup>2</sup></b></span></p>
+<p class="foo"><b class="bold"><sup><kbd class="xxx">super</kbd></sup></b></p>
+<p>foo</p></blockquote></div>
+OUT
   format_test <<IN, <<OUT, 'bold', 'both';
 b[hello]
 IN
@@ -43,9 +107,12 @@ IN
 <p><i><b>bar</b></i></p>
 OUT
   format_test <<IN, <<OUT, 'link', 'both';
-link[http://foo/|bar]
+link[http://foo/|bar
+
+quux]
 IN
 <p><a href="http://foo/">bar</a></p>
+<p><a href="http://foo/">quux</a></p>
 OUT
   format_test 'tt[hello]', '<p><tt>hello</tt></p>', 'tt';
   format_test 'font[-1|text]', '<p><font size="-1">text</font></p>', 'fontsize';
