@@ -122,7 +122,13 @@ sub _fix_spanned {
 sub replace_char {
   my ($self, $rpart) = @_;
 
+  $$rpart =~ s#poplink\[([^|\]\[]+)\|([^\]\[]+)\]#<a href="$1" target="_blank">$2</a>#ig
+    and return 1;
+  $$rpart =~ s#poplink\[([^|\]\[]+)\]#<a href="$1" target="_blank">$1</a>#ig
+    and return 1;
   $$rpart =~ s#link\[([^|\]\[]+)\|([^\]\[]+)\]#<a href="$1">$2</a>#ig
+    and return 1;
+  $$rpart =~ s#link\[([^|\]\[]+)\]#<a href="$1">$1</a>#ig
     and return 1;
   $$rpart =~ s#b\[([^\]\[]+)\]#_fix_spanned("<b>", "</b>", $1)#egi
     and return 1;
@@ -254,7 +260,13 @@ sub remove_format {
           and next TRY;
 	$part =~ s#h([1-6])\[([^\[\]\|]+)\|([^\[\]]+)\](?:\r?\n)?#$3#ig
           and next TRY;
+	$part =~ s#poplink\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
+	  and next TRY;
+	$part =~ s#poplink\[([^|\]\[]+)\]#$1#ig
+	  and next TRY;
 	$part =~ s#link\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
+	  and next TRY;
+	$part =~ s#link\[([^|\]\[]+)\]#$1#ig
 	  and next TRY;
 	$part =~ s#([bi])\[([^\]\[]+)\]#$2#ig
 	  and next TRY;

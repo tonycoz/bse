@@ -106,7 +106,7 @@ sub makeIndex {
     my $sectionid = $section->{id};
     eval "use $article->{generator}";
     $@ and die $@;
-    my $gen = $article->{generator}->new(top=>$article);
+    my $gen = $article->{generator}->new(top=>$article, cfg=>$cfg);
     next unless $gen->visible($article) or $do_search{$sectionid};
     
     next if $dont_search{$sectionid};
@@ -127,7 +127,7 @@ sub makeIndex {
       }
       #next if $text =~ m!^\<html\>!i; # I don't know how to do this (yet)
       if ($field eq 'body') {
-	$gen->remove_block($article, [], \$text);
+	$gen->remove_block($articles, [], \$text);
 	$text =~ s/[abi]\[([^\]]+)\]/$1/g;
       }
 

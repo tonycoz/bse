@@ -304,7 +304,13 @@ sub show_register {
      error_img => [ \&tag_error_img, $cfg, $errors ],
     );
 
-  BSE::Template->show_page('user/register', $cfg, \%acts);
+  my $template = 'user/register';
+  my $t = $cgi->param('_t');
+  if ($t && $t =~ /^\w+$/ && $t ne 'base') {
+    $template .= "_$t";
+  }
+
+  BSE::Template->show_page($template, $cfg, \%acts);
 }
 
 sub _get_user {

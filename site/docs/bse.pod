@@ -10,6 +10,31 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.14_17
+
+=over
+
+=item *
+
+makeIndex.pl was passing in incorrect parameters in a few places to do
+with article formatting
+
+=item *
+
+added the poplink[] and popdoclink[] a body text tags
+
+=item *
+
+the link[] tag now uses the URL as the link title if no title is
+provided
+
+=item *
+
+the show_register target of user.pl now accepts a C<_t> argument as a
+template selector.
+
+=back
+
 =head2 0.14_16
 
 =over

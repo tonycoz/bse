@@ -131,7 +131,7 @@ sub _get_article {
 }
 
 sub doclink {
-  my ($self, $id, $title) = @_;
+  my ($self, $id, $title, $target) = @_;
 
   my $error;
   my $art = $self->_get_article($id, \$error)
@@ -152,14 +152,20 @@ sub doclink {
   unless ($title) {
     $title = escape_html($art->{title});
   }
+
+  $target = $target ? qq! target="$target"! : '';
   
-  return qq!<a href="$url">$title</a>!;
+  return qq!<a href="$url"$target>$title</a>!;
 }
 
 sub replace {
   my ($self, $rpart) = @_;
 
   $$rpart =~ s#gimage\[([^\]\[]+)\]# $self->gimage($1) #ige
+    and return 1;
+  $$rpart =~ s#popdoclink\[(\w+)\|([^\]\[]+)\]# $self->doclink($1, $2, "_blank") #ige
+    and return 1;
+  $$rpart =~ s#popdoclink\[(\w+)\]# $self->doclink($1, undef, "_blank") #ige
     and return 1;
   $$rpart =~ s#doclink\[(\w+)\|([^\]\[]+)\]# $self->doclink($1, $2) #ige
     and return 1;
@@ -183,6 +189,10 @@ sub remove {
   my ($self, $rpart) = @_;
 
   $$rpart =~ s#gimage\[([^\]\[]+)\]##ig
+    and return 1;
+  $$rpart =~ s#popdoclink\[(\w+)\|([^\]\[]+)\]#$2#ig
+    and return 1;
+  $$rpart =~ s#popdoclink\[(\w+)\]# $self->remove_doclink($1) #ige
     and return 1;
   $$rpart =~ s#doclink\[(\w+)\|([^\]\[]+)\]#$2#ig
     and return 1;
