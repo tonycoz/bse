@@ -1,319 +1,251 @@
-<html>
-<head>
-<title><:siteName:> - Checkout</title>
-<meta name="ROBOTS" content="ALL">
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<meta http-equiv="Expires" content="Thu, 01 Jan 1970 00:00:00 GMT">
-<link rel="stylesheet" href="/css/style-main.css">
-
-
+<:wrap base.tmpl:> 
 <script language="JavaScript">
 <!--
-function MM_findObj(n, d) { //v3.0
+function MM_findObj(n, d) { //v4.01
   var p,i,x;  if(!d) d=document; if((p=n.indexOf("?"))>0&&parent.frames.length) {
     d=parent.frames[n.substring(p+1)].document; n=n.substring(0,p);}
   if(!(x=d[n])&&d.all) x=d.all[n]; for (i=0;!x&&i<d.forms.length;i++) x=d.forms[i][n];
-  for(i=0;!x&&d.layers&&i<d.layers.length;i++) x=MM_findObj(n,d.layers[i].document); return x;
+  for(i=0;!x&&d.layers&&i<d.layers.length;i++) x=MM_findObj(n,d.layers[i].document);
+  if(!x && d.getElementById) x=d.getElementById(n); return x;
 }
 
-function MM_validateForm() { //v3.0
+function MM_validateForm() { //v4.0
   var i,p,q,nm,test,num,min,max,errors='',args=MM_validateForm.arguments;
   for (i=0; i<(args.length-2); i+=3) { test=args[i+2]; val=MM_findObj(args[i]);
     if (val) { nm=val.name; if ((val=val.value)!="") {
       if (test.indexOf('isEmail')!=-1) { p=val.indexOf('@');
         if (p<1 || p==(val.length-1)) errors+='- '+nm+' must contain an e-mail address.\n';
-      } else if (test!='R') { num = parseFloat(val);
-        if (val!=''+num) errors+='- '+nm+' must contain a number.\n';
+      } else if (test!='R') {
+        if (isNaN(val)) errors+='- '+nm+' must contain a number.\n';
         if (test.indexOf('inRange') != -1) { p=test.indexOf(':');
           min=test.substring(8,p); max=test.substring(p+1);
-          if (num<min || max<num) errors+='- '+nm+' must contain a number between '+min+' and '+max+'.\n';
+          if (val<min || max<val) errors+='- '+nm+' must contain a number between '+min+' and '+max+'.\n';
     } } } else if (test.charAt(0) == 'R') errors += '- '+nm+' is required.\n'; }
   } if (errors) alert('The following error(s) occurred:\n'+errors);
   document.MM_returnValue = (errors == '');
 }
 //-->
 </script>
-</head>
-
-<body bgcolor="#FFFFFF" text="#000000" link="#333399" vlink="#333399" alink="#CC0033" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
-  <tr valign="top"> 
-    <td width="150"><!-- #BeginLibraryItem "/Library/search.lbi" --><table width="100%" border="0" cellspacing="0" cellpadding="5" name="search">
-              <tr align="center"> 
-                <td> 
-                  <form name="search" method="GET" action="/cgi-bin/search.pl">
-                    <input type="hidden" name="s" value="">
-                    <input type="hidden" name="d" value="ar">
-                    <input type="hidden" name="m" value="0">
-                    <br>
-                    <nobr> 
-                    <input type="text" name="q" size="14">
-                    <input type="submit" value="Go" name="submit">
-                    <br>
-                    <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"> 
-                    Try our <a href="/cgi-bin/search.pl">advanced search</a></font></nobr> 
-                  </form></td></tr>
-            </table><!-- #EndLibraryItem --> <!-- #BeginLibraryItem "/Library/nav.lbi" --><table width="150" border="0" cellspacing="0" cellpadding="0" name="nav">
-        <tr> 
-          <td> <:iterator begin level1:> <:if Level2:> 
-            <table width="100%" border="0" cellspacing="0" cellpadding="0">
-              <tr> 
-                <td> 
-                  <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                    <tr bgcolor="#CCCCFF"> 
-                      <td height="20" width="100%" nowrap><font class="nav_head" face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>&nbsp;<a href="<:url level1:>"><:level1 
-                        title:></a></b></font></td></tr>
-                  </table></td></tr>
-              <tr> 
-                <td> 
-                  <table width="100%" border="0" cellspacing="0" cellpadding="5">
-                    <tr> 
-                      <td> <font class="nav_link" face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:iterator 
-                        begin level2:><a href="<:url level2:>"><:level2 title:></a> 
-                        <:iterator separator level2:><br>
-                        <img src="/images/trans_pixel.gif" width="2" height="4" border="0"><br>
-                        <:iterator end level2:> </font></td></tr>
-                  </table></td></tr>
-            </table><:or Level2:> 
-            <table width="100%" border="0" cellspacing="0" cellpadding="0">
-              <tr> 
-                <td> 
-                  <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                    <tr bgcolor="#CCCCFF"> 
-                      <td height="20" width="100%" nowrap><font class="nav_head" face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>&nbsp;<a href="<:url level1:>"><:level1 
-                        title:></a></b></font></td></tr>
-                  </table></td></tr>
-            </table><br>
-            <:eif Level2:><:iterator separator level1:><:iterator end level1:> 
-          </td></tr>
-      </table><!-- #EndLibraryItem --></td>
-    <td width="100%"><font class="section_Heading" face="Verdana, Arial, Helvetica, sans-serif" size="5" color="#6600FF"><b><img src="/images/titles/the_shop.gif"></b></font>
-      <hr noshade width="100%" size="1">
-      <p> <b><font class="subSection_Heading" face="Arial, Helvetica, sans-serif" size="5" color="#333399"> 
-        </font><font class="subSection_Heading" face="Arial, Helvetica, sans-serif" size="5" color="#333399">Your 
-        Purchase Details</font></b></p>
-      <p> <b><font class="article_body_heads" face="Arial, Verdana, Helvetica, sans-serif" size="3" color="#660033"> 
-        Thank you for shopping at <:siteName:></font></b></p>
-      <font class="article_body_text" face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-      <p> The <:siteName:> store is run on a secure encrypted server, your 
-        details are safe with us.<br>
-      </p>
-      </font> 
+  <tr> 
+    <td bgcolor="#CCCCFF" width="80%" height="24">&nbsp;&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="4"><b><:title:></b></font></td>
+    <td height="24">&nbsp;</td>
+  </tr>
+  <tr> 
+    <td bgcolor="#999999" colspan="2" height="1"><img src="/images/trans_pixel.gif" width="24" height="1" border="0"></td>
+  </tr>
+  <tr> 
+    <td colspan="2"> 
       <table width="100%" border="0" cellspacing="0" cellpadding="0">
         <tr> 
-          
-          <td align="center" bgcolor="#6666CC" width="100%"> <font size="2" face="Verdana, Arial, Helvetica, sans-serif" color="#FFFFFF"> 
-            <b>Shopping Cart Items</b></font></td>
-         
+          <td width="100"><img src="/images/trans_pixel.gif" width="100" height="10" border="0"></td>
+          <td bgcolor="#333399" width="100%">&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2">/ 
+            <a href="<:ifAdmin:>/cgi-bin/admin/admin.pl?id=1<:or:>/<:eif:>"><font color="#FFFFFF">Home</font></a> 
+            / <a href="/shop/index.html"><font color="#FFFFFF"><:article title:></font></a> 
+            /</font></td>
         </tr>
       </table>
-      <table border="0" cellspacing="0" cellpadding="1" width="100%" bgcolor="#6666CC">
-        <tr valign="middle" align="center"> 
-          <td width="100%"> 
-            <table width="100%" border="0" cellspacing="0" cellpadding="2">
-              <tr valign="middle" align="center" bgcolor="#FFCC33"> 
-                <td width="100%" align="left" height="18"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>Item:</b></font>&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2">(All 
-                  prices in AUD &#150; includes GST and shipping costs where applicable)</font></td>
-                <td nowrap height="18"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>Qty:</b></font>&nbsp;</td>
-                <td height="18"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>Price:</b></font>&nbsp;</td>
-                <td height="18">&nbsp; </td>
-              </tr>
-              <:iterator begin items:> 
-              <tr valign="middle" align="center" bgcolor="#FFFFFF">
-                <td width="100%" align="left"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:item 
-                  summary:></font></td>
-                <td nowrap bgcolor="#FFFFFF" align="center"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:item 
-                  units:></font></td>
-                <td bgcolor="#FFFFFF" align="right"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>$<: 
-                  money item retailPrice :></b></font></td>
-                <td height="18">&nbsp; </td>
-              </tr>
-              <:iterator end items:> 
-            </table>
-          </td>
-        </tr>
-      </table>
-      <table width="100%" border="0" cellspacing="0" cellpadding="0">
-        <tr>
-          <td>&nbsp;</td>
-          <td height="20">&nbsp;</td>
-          <td height="20" bgcolor="#6666CC">&nbsp;</td>
-          <td align="CENTER" height="20" bgcolor="#6666CC" NOWRAP><font size="2" face="Verdana, Arial, Helvetica, sans-serif" color="#FFFFFF"> 
-            <b>GRAND TOTAL</b></font></td>
-          <td height="20" bgcolor="#6666CC">&nbsp;</td>
-        </tr>
-        <tr>
-          <td width="100%" valign="MIDDLE"><a href="/shop/shop.html"><img src="/images/store/browse_more.gif" width="133" height="21" border="0" alt="Browse More"></a></td>
-          <td NOWRAP>
-            <table border="0" cellspacing="0" cellpadding="0">
-              <tr></tr>
-            </table>
-          </td>
-          <td><img src="/images/store/left_bottom_corner_line.gif" width="26" height="31"></td>
-          <td align="center" bgcolor="#FFFFFF" height="100%" NOWRAP> <font size="3" face="Verdana, Arial, Helvetica, sans-serif"> 
-            <b>$<: money total :></b></font></td>
-          <td><img src="/images/store/right_bottom_corner_line.gif" width="26" height="31"></td>
-        </tr>
-        <tr>
-          <td width="100%"></td>
-          <td></td>
-          <td></td>
-          <td bgcolor="#6666CC"><img src="/images/trans_pixel.gif" width="1" height="1"></td>
-          <td></td>
-        </tr>
-      </table>
-      <p>&nbsp;</p>
-      <form action="/cgi-bin/shop.pl" method="POST" onSubmit="MM_validateForm('name1','','R','name2','','R','address','','R','city','','R','postcode','','R','state','','R','country','','R','email','','RisEmail','cardHolder','','R','cardNumber','','R','cardExpiry','','R');return document.MM_returnValue">
-        <font face="Verdana, Arial, Helvetica, sans-serif" size="3"> <b>Shipping 
-        Details:</b></font> 
-        <hr noshade size="1">
-        <table border="0" cellspacing="0" cellpadding="0">
-          <:if Message:>
-          <tr>
-            <td colspan=2>
-              <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:message:></font></p>
-              <br>
-            </td>
-          </tr>
-          <:or Message:><:eif Message:> 
-          <tr> 
-            <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-              First Name:</font></td>
-            <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-              <input type="Text" name="name1" size=34 value="<:old name1:>">
-              *</font></td>
-          </tr>
-          <tr> 
-            <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-              Last Name:</font></td>
-            <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-              <input type="Text" name="name2" size=34 value="<:old name2:>">
-              *</font></td>
-          </tr>
-          <tr> 
-            <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-              Address:</font></td>
-            <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-              <input type="Text" name="address" size=34 value="<:old address:>">
-              *</font></td>
-          </tr>
-          <tr> 
-            <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-              City:</font></td>
-            <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-              <input type="Text" name="city" size=34 value="<:old city:>">
-              *</font></td>
-          </tr>
-          <tr> 
-            <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-              Postcode:</font></td>
-            <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-              <input type="Text" name="postcode" size=10 value="<:old postcode:>">
-              *</font></td>
-          </tr>
-          <tr> 
-            <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-              State:</font></td>
-            <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-              <input type="Text" name="state" size=10 value="<:old state:>">
-              *</font></td>
-          </tr>
-          <tr> 
-            <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-              Country:</font></td>
-            <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-              <input type="Text" name="country" size=20 value="<:old country:>">
-              *</font></td>
-          </tr>
-          <tr> 
-            <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-              Telephone:</font></td>
-            <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-              <input type="Text" name="telephone" size=20 value="<:old telephone:>">
-              *</font></td>
-          </tr>
-          <tr> 
-            <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-              Facsimile:</font></td>
-            <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-              <input type="Text" name="facsimile" size=20 value="<:old facsimile:>">
-              </font></td>
-          </tr>
-          <tr> 
-            <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-              E-mail:</font></td>
-            <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-              <input type="Text" name="email" size=34 value="<:old email:>">
-              *</font></td>
-          </tr>
-          <tr> 
-            <td colspan="2"> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-              * Required information for order to be shipped</font></td>
-          </tr>
-        </table>
-        <p>&nbsp; </p>
-        <font face="Verdana, Arial, Helvetica, sans-serif" size="3"> <b>Payment 
-        Details:</b></font> 
-        <hr noshade size="1">
-        <table border="0" cellspacing="0" cellpadding="0">
-          <tr> 
-            <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-              Name on Card: </font></td>
-            <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-              <input type="Text" name="cardHolder" size=30 value="<:old cardHolder:>">
-              (As per card) *</font></td>
-          </tr>
-          <tr> 
-            <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-              Card Number:</font></td>
-            <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-              <input type="Text" name="cardNumber" size=16 maxlength="16" value="<:old cardNumber:>">
-              (no spaces) *</font></td>
-          </tr>
-          <tr> 
-            <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-              Expiry Date:</font></td>
-            <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-              <input type="Text" name="cardExpiry" size=5 maxlength="5" value="<:old cardExpiry:>">
-              (eg: 09/01) *</font></td>
-          </tr>
-          <tr> 
-            <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-              Card Type:</font></td>
-            <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-              <select name="cardType">
-                <option SELECTED>Choose type</option>
-                <option value="Visa">Visa</option>
-                <option value="Mastercard">Mastercard</option>
-                <option value="Bankcard">Bankcard</option>
-              </select>
-              &nbsp;*</font></td>
-          </tr>
-        </table>
-        <p>&nbsp; </p>
-        <font face="Verdana, Arial, Helvetica, sans-serif" size="3"> <b>Tax Invoice 
-        / Receipt &amp; Delivery Costs:</b></font> 
-        <hr size="1">
-        <table border="0" cellspacing="0" cellpadding="0" width="375">
-          <tr> 
-            <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2">We 
-              will include a tax invoice / receipt with your order, clearly showing 
-              the GST and delivery components of the purchase price. These are 
-              included in the price below and are indicated on the details page 
-              for each store item.</font></td>
-          </tr>
-        </table>
-        <p></p>
-        <font size="3" face="Arial, Helvetica, sans-serif" color="#FFFFFF"></font>
-        <p> 
-          <input type="submit" value="Purchase Now" name="purchase">
-          <input type="reset" value="Reset Form" name="reset">
-        </p>
-        <p></p>
-      </form>
     </td>
   </tr>
 </table>
-</body>
-</html>
-
+<p> <b><font face="Verdana, Arial, Helvetica, sans-serif" size="3"> Thank you 
+  for shopping at <:siteName:></font></b></p>
+<font class="article_body_text" face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+<p> The <:siteName:> store is run on a secure encrypted server, your details are 
+  safe with us.<br>
+</p>
+</font> 
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr> 
+    <td align="center" bgcolor="#CCCCFF" width="100%" height="18"> <font size="2" face="Verdana, Arial, Helvetica, sans-serif"> 
+      <b>Shopping Cart Items</b></font></td>
+  </tr>
+</table>
+<table border="0" cellspacing="0" cellpadding="1" width="100%" bgcolor="#6767CC">
+  <tr valign="middle" align="center"> 
+    <td width="100%"> 
+      <table width="100%" border="0" cellspacing="0" cellpadding="2">
+        <tr valign="middle" align="center" bgcolor="#6767CC"> 
+          <td width="100%" align="left" height="18"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FFFFFF"><b>Item:</b></font>&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FFFFFF">(All 
+            prices in AUD &#150; includes GST and shipping costs where applicable)</font></td>
+          <td nowrap height="18"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FFFFFF"><b>Qty:</b></font>&nbsp;</td>
+          <td height="18"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FFFFFF"><b>Price:</b></font>&nbsp;</td>
+        </tr>
+        <:iterator begin items:> 
+        <tr valign="middle" align="center" bgcolor="#FFFFFF"> 
+          <td width="100%" align="left"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:item 
+            summary:></font></td>
+          <td nowrap align="center"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:item 
+            units:></font></td>
+          <td align="right"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>$<: 
+            money item retailPrice :></b></font></td>
+        </tr>
+        <:iterator end items:> 
+      </table>
+    </td>
+  </tr>
+</table>
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr> 
+    <td>&nbsp;</td>
+    <td height="20">&nbsp;</td>
+    <td height="20" bgcolor="#6767CC">&nbsp;</td>
+    <td align="CENTER" height="20" bgcolor="#6767CC" NOWRAP><font size="2" face="Verdana, Arial, Helvetica, sans-serif" color="#FFFFFF"> 
+      <b>GRAND TOTAL</b></font></td>
+    <td height="20" bgcolor="#6767CC">&nbsp;</td>
+  </tr>
+  <tr> 
+    <td width="100%" valign="MIDDLE"><a href="/shop/index.html"><img src="/images/store/browse_more.gif" width="133" height="21" border="0" alt="Browse More"></a></td>
+    <td NOWRAP> 
+      <table border="0" cellspacing="0" cellpadding="0">
+        <tr></tr>
+      </table>
+    </td>
+    <td><img src="/images/store/left_bottom_corner_line.gif" width="26" height="31"></td>
+    <td align="center" bgcolor="#FFFFFF" height="100%" NOWRAP> <font size="3" face="Verdana, Arial, Helvetica, sans-serif"> 
+      <b>$<:money total:></b></font></td>
+    <td><img src="/images/store/right_bottom_corner_line.gif" width="26" height="31"></td>
+  </tr>
+  <tr> 
+    <td width="100%"></td>
+    <td></td>
+    <td></td>
+    <td bgcolor="#6666CC"><img src="/images/trans_pixel.gif" width="1" height="1"></td>
+    <td></td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<form action="/cgi-bin/shop.pl" method="POST" onSubmit="MM_validateForm('name1','','R','name2','','R','address','','R','city','','R','postcode','','R','state','','R','country','','R','email','','RisEmail','cardHolder','','R','cardNumber','','R','cardExpiry','','R');return document.MM_returnValue">
+  <font face="Verdana, Arial, Helvetica, sans-serif" size="3"> <b>Shipping Details:</b></font> 
+  <hr noshade size="1">
+  <table border="0" cellspacing="0" cellpadding="0">
+    <:if Message:> 
+    <tr> 
+      <td colspan=2> 
+        <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:message:></font></p>
+        <br>
+      </td>
+    </tr>
+    <:or Message:><:eif Message:> 
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> First 
+        Name:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <input type="Text" name="name1" size=34 value="<:old name1:>">
+        *</font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Last Name:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <input type="Text" name="name2" size=34 value="<:old name2:>">
+        *</font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Address:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <input type="Text" name="address" size=34 value="<:old address:>">
+        *</font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> City:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <input type="Text" name="city" size=34 value="<:old city:>">
+        *</font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Postcode:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <input type="Text" name="postcode" size=10 value="<:old postcode:>">
+        *</font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> State:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <input type="Text" name="state" size=10 value="<:old state:>">
+        *</font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Country:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <input type="Text" name="country" size=20 value="<:old country:>">
+        *</font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Telephone:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <input type="Text" name="telephone" size=20 value="<:old telephone:>">
+        *</font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Facsimile:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <input type="Text" name="facsimile" size=20 value="<:old facsimile:>">
+        </font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> E-mail:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <input type="Text" name="email" size=34 value="<:old email:>">
+        *</font></td>
+    </tr>
+    <tr> 
+      <td colspan="2"> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        * Required information for order to be shipped</font></td>
+    </tr>
+  </table>
+  <p>&nbsp; </p>
+  <font face="Verdana, Arial, Helvetica, sans-serif" size="3"> <b>Payment Details:</b></font> 
+  <hr size="1" noshade>
+  <table border="0" cellspacing="0" cellpadding="0">
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Name on 
+        Card: </font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <input type="Text" name="cardHolder" size=30 value="<:old cardHolder:>">
+        (As per card) *</font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Card Number:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <input type="Text" name="cardNumber" size=16 maxlength="16" value="<:old cardNumber:>">
+        (no spaces) *</font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Expiry 
+        Date:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <input type="Text" name="cardExpiry" size=5 maxlength="5" value="<:old cardExpiry:>">
+        (eg: 09/01) *</font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Card Type:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <select name="cardType">
+          <option SELECTED>Choose type</option>
+          <option value="Visa">Visa</option>
+          <option value="Mastercard">Mastercard</option>
+          <option value="Bankcard">Bankcard</option>
+        </select>
+        &nbsp;*</font></td>
+    </tr>
+  </table>
+  <p>&nbsp; </p>
+  <font face="Verdana, Arial, Helvetica, sans-serif" size="3"> <b>Tax Invoice 
+  / Receipt &amp; Delivery Costs:</b></font> 
+  <hr size="1" noshade>
+  <table border="0" cellspacing="0" cellpadding="0" width="375">
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2">We will 
+        include a tax invoice / receipt with your order, clearly showing the GST 
+        and delivery components of the purchase price. These are included in the 
+        price below and are indicated on the details page for each store item.</font></td>
+    </tr>
+  </table>
+  <p></p>
+  <font size="3" face="Arial, Helvetica, sans-serif" color="#FFFFFF"></font> 
+  <p> 
+    <input type="submit" value="Purchase Now" name="purchase">
+    <input type="reset" value="Reset Form" name="reset">
+  </p>
+  <p></p>
+</form>
