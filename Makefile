@@ -1,4 +1,4 @@
-VERSION=0.10_01
+VERSION=0.10_03
 DISTNAME=bse-$(VERSION)
 DISTBUILD=$(DISTNAME)
 DISTTAR=../$(DISTNAME).tar
@@ -59,3 +59,9 @@ otherdocs:
 # this is very rough
 testinst: distdir
 	perl localinst.perl $(DISTBUILD)
+	-rm -rf $(DISTBUILD)
+
+testfiles: distdir
+	perl localinst.perl $(DISTBUILD) leavedb
+	-rm -rf $(DISTBUILD)
+
