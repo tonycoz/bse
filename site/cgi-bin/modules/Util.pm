@@ -166,6 +166,16 @@ sub generate_extras {
     $callback->("$in to $out") if $callback;
     my %acts;
     %acts = $gen->baseActs($articles, \%acts);
+    my $oldurl = $acts{url};
+    $acts{url} =
+      sub {
+	my $value = $oldurl->(@_);
+	unless ($value =~ /^\w+:/) {
+	  # put in the base site url
+	  $value = $cfg->entryErr('site', 'url').$value;
+	}
+	return $value;
+      };
     my $templ = Squirrel::Template->new(%TEMPLATE_OPTS, 
 					template_dir=>$template_dir);
     my $content = $templ->show_page($template_dir, $in, \%acts);
@@ -201,6 +211,16 @@ sub generate_extras {
       }
       my %acts;
       %acts = $gen->baseActs($articles, \%acts, \%article);
+      my $oldurl = $acts{url};
+      $acts{url} =
+	sub {
+	  my $value = $oldurl->(@_);
+	  unless ($value =~ /^\w+:/) {
+	    # put in the base site url
+	    $value = $cfg->entryErr('site', 'url').$value;
+	  }
+	  return $value;
+	};
       my $templ = Squirrel::Template->new(%TEMPLATE_OPTS, 
 					  template_dir=>$template_dir);
       my $content = $templ->show_page($template_dir, $input, \%acts);

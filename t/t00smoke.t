@@ -26,7 +26,7 @@ fetch_ok($ua, "advanced search form", "$baseurl/cgi-bin/search.pl",
 fetch_ok($ua, "failed search", "$baseurl/cgi-bin/search.pl?q=blargle",
 	 "No\\s+documents\\s+were\\s+found");
 fetch_ok($ua, "good search", "$baseurl/cgi-bin/search.pl?q=title",
-	 qr!My\s+site's\s+title.*\[formatting\s+guide!s);
+	 qr!My\s+site(?:'|&\#39;)s\s+title.*\[formatting\s+guide!s);
 fetch_ok($ua, "user logon page", "$baseurl/cgi-bin/user.pl",
 	 qr!User\s+Logon!s);
 
