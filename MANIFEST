@@ -39,15 +39,20 @@ site/cgi-bin/modules/BSE/CustomBase.pm
 site/cgi-bin/modules/BSE/DB.pm
 site/cgi-bin/modules/BSE/DB/MSSQL.pm
 site/cgi-bin/modules/BSE/DB/Mysql.pm
+site/cgi-bin/modules/BSE/Edit/Article.pm
+site/cgi-bin/modules/BSE/Edit/Base.pm
+site/cgi-bin/modules/BSE/Edit/Catalog.pm
+site/cgi-bin/modules/BSE/Edit/Product.pm
 site/cgi-bin/modules/BSE/EmailBlackEntry.pm
 site/cgi-bin/modules/BSE/EmailBlacklist.pm
 site/cgi-bin/modules/BSE/EmailRequest.pm
 site/cgi-bin/modules/BSE/EmailRequests.pm
-site/cgi-bin/modules/BSE/FileEditor.pm
+# site/cgi-bin/modules/BSE/FileEditor.pm
 site/cgi-bin/modules/BSE/Mail.pm
 site/cgi-bin/modules/BSE/Mail/SMTP.pm
 site/cgi-bin/modules/BSE/Mail/Sendmail.pm
 site/cgi-bin/modules/BSE/Message.pm
+site/cgi-bin/modules/BSE/Request.pm
 site/cgi-bin/modules/BSE/Session.pm
 site/cgi-bin/modules/BSE/Shop/Util.pm
 site/cgi-bin/modules/BSE/Sort.pm
@@ -82,7 +87,7 @@ site/cgi-bin/modules/Products.pm
 site/cgi-bin/modules/SiteUser.pm
 site/cgi-bin/modules/SiteUsers.pm
 site/cgi-bin/modules/Squirrel/GPG.pm
-site/cgi-bin/modules/Squirrel/ImageEditor.pm
+#site/cgi-bin/modules/Squirrel/ImageEditor.pm
 site/cgi-bin/modules/Squirrel/PGP5.pm
 site/cgi-bin/modules/Squirrel/PGP6.pm
 site/cgi-bin/modules/Squirrel/Row.pm
@@ -220,6 +225,7 @@ site/templates/shop_help.tmpl
 site/templates/shop_sect.tmpl
 site/templates/shopitem.tmpl
 site/templates/sidebar/logon.tmpl
+site/templates/test/children.tmpl
 site/templates/textemail/basic.tmpl
 site/templates/user/alreadyblacklisted_base.tmpl
 site/templates/user/blacklistdone_base.tmpl

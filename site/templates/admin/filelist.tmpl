@@ -111,7 +111,7 @@
                     <:ifFile requireUser:> checked<:or:><:eif:> />Require login 
                     &nbsp;&nbsp;&nbsp;</td>
                   <td nowrap align="right" width="100%"> <b><a href="<:script:>?filedel=1&amp;id=<:article id:>&amp;file=<:file id:>">Remove</a></b> 
-                    <:move:></td>
+                    <:movefiles:></td>
                 </tr>
               </table>
             </td>
@@ -135,10 +135,11 @@
 </td>
 </tr>
 </table>
+</form>
 
-  <p>
-    <input type="submit" name="back" value=" &lt;&lt;  Back  " /></p>
-
+<form action="<:script:>">
+<input type=hidden name=id value="<:article id:>">
+  <p><input type="submit" name="back" value=" &lt;&lt;  Back  " /></p>
 </form>
 
 <p><font size="-1">BSE Release <:release:></font></p>

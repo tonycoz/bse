@@ -1,0 +1,1863 @@
+package BSE::Edit::Article;
+use strict;
+use HTML::Entities;
+use base qw(BSE::Edit::Base);
+use BSE::Util::Tags;
+use BSE::Util::SQL qw(now_sqldate);
+
+sub article_dispatch {
+  my ($self, $request, $article, $articles) = @_;
+  
+  my $cgi = $request->cgi;
+  my $action;
+  my %actions = $self->article_actions;
+  for my $check (keys %actions) {
+    if ($cgi->param($check) || $cgi->param("$check.x")) {
+      $action = $check;
+      last;
+    }
+  }
+  my @extraargs;
+  unless ($action) {
+    ($action, @extraargs) = $self->other_article_actions($cgi);
+  }
+  $action ||= 'edit';
+  my $method = $actions{$action};
+  return $self->$method($request, $article, $articles, @extraargs);
+}
+
+sub noarticle_dispatch {
+  my ($self, $request, $articles) = @_;
+
+  my $cgi = $request->cgi;
+  my $action = 'add';
+  my %actions = $self->noarticle_actions;
+  for my $check (keys %actions) {
+    if ($cgi->param($check) || $cgi->param("$check.x")) {
+      $action = $check;
+      last;
+    }
+  }
+  my $method = $actions{$action};
+  return $self->$method($request, $articles);
+}
+
+sub edit_sections {
+  my ($self, $req, $articles) = @_;
+
+  my %article;
+  my @cols = Article->columns;
+  @article{@cols} = ('') x @cols;
+  $article{id} = '-1';
+  $article{parentid} = -1;
+  $article{level} = 0;
+  $article{body} = '';
+  $article{listed} = 0;
+  $article{generator} = $self->generator;
+
+  return $self->low_edit_form($req, \%article, $articles);
+}
+
+sub article_actions {
+  my ($self) = @_;
+
+  return
+    (
+     edit => 'edit_form',
+     save => 'save',
+     add_stepkid => 'add_stepkid',
+     del_stepkid => 'del_stepkid',
+     save_stepkids => 'save_stepkids',
+     add_stepparent => 'add_stepparent',
+     del_stepparent => 'del_stepparent',
+     save_stepparents => 'save_stepparents',
+     artimg => 'save_image_changes',
+     addimg => 'add_image',
+     showimages => 'show_images',
+     process => 'save_image_changes',
+     removeimg => 'remove_img',
+     moveimgup => 'move_img_up',
+     moveimgdown => 'move_img_down',
+     filelist => 'filelist',
+     fileadd => 'fileadd',
+     fileswap => 'fileswap',
+     filedel => 'filedel',
+     filesave => 'filesave',
+    );
+}
+
+sub other_article_actions {
+  my ($self, $cgi) = @_;
+
+  for my $param ($cgi->param) {
+    if ($param =~ /^removeimg_(\d+)(\.x)?$/) {
+      return ('removeimg', $1 );
+    }
+  }
+
+  return;
+}
+
+sub noarticle_actions {
+  return
+    (
+     add => 'add_form',
+     save => 'save_new',
+    );
+}
+
+sub get_parent {
+  my ($self, $parentid, $articles) = @_;
+
+  if ($parentid == -1) {
+    return 
+      {
+       id => -1,
+       title=>'All Sections',
+       level => 0,
+       listed => 0,
+       parentid => undef,
+      };
+  }
+  else {
+    return $articles->getByPkey($parentid);
+  }
+}
+
+sub tag_hash {
+  my ($object, $args) = @_;
+
+  my $value = $object->{$args};
+  defined $value or $value = '';
+  encode_entities($value);
+}
+
+sub tag_art_type {
+  my ($level, $cfg) = @_;
+
+  encode_entities($cfg->entry('level names', $level, 'Article'));
+}
+
+sub tag_if_new {
+  my ($article) = @_;
+
+  !$article->{id};
+}
+
+sub reparent_updown {
+  return 1;
+}
+
+sub should_be_catalog {
+  my ($self, $article, $parent, $articles) = @_;
+
+  if ($article->{parentid} && (!$parent || $parent->{id} != $article->{parentid})) {
+    $parent = $articles->getByPkey($article->{id});
+  }
+
+  my $shopid = $self->{cfg}->entryErr('articles', 'shop');
+
+  return $article->{parentid} && $parent &&
+    ($article->{parentid} == $shopid || 
+     $parent->{generator} eq 'Generate::Catalog');
+}
+
+sub possible_parents {
+  my ($self, $article, $articles) = @_;
+
+  my %labels;
+  my @values;
+
+  my $shopid = $self->{cfg}->entryErr('articles', 'shop');
+  my @parents = $articles->getBy('level', $article->{level}-1);
+  @parents = grep { $_->{generator} eq 'Generate::Article' 
+		      && $_->{id} != $shopid } @parents;
+  
+  @values = ( map {$_->{id}} @parents );
+  %labels = ( map { $_->{id} => "$_->{title} ($_->{id})" } @parents );
+  
+  if ($article->{level} == 1) {
+    push @values, -1;
+    $labels{-1} = "No parent - this is a section";
+  }
+  
+  if ($article->{id} && $self->reparent_updown($article)) {
+    # we also list the siblings and grandparent (if any)
+    my @siblings = grep $_->{id} != $article->{id} && $_->{id} != $shopid,
+    $articles->getBy(parentid => $article->{parentid});
+    push @values, map $_->{id}, @siblings;
+    @labels{map $_->{id}, @siblings} =
+      map { "-- move down a level -- $_->{title} ($_->{id})" } @siblings;
+    
+    if ($article->{parentid} != -1) {
+      my $parent = $articles->getByPkey($article->{parentid});
+      if ($parent->{parentid} != -1) {
+	my $gparent = $articles->getByPkey($parent->{parentid});
+	push @values, $gparent->{id};
+	$labels{$gparent->{id}} =
+	  "-- move up a level -- $gparent->{title} ($gparent->{id})";
+      }
+      else {
+	push @values, -1;
+	$labels{-1} = "-- move up a level -- become a section";
+      }
+    }
+  }
+
+  return (\@values, \%labels);
+}
+
+sub tag_list {
+  my ($self, $article, $articles, $cgi, $what) = @_;
+
+  if ($what eq 'listed') {
+    my @values = qw(0 1);
+    my %labels = ( 0=>"No", 1=>"Yes");
+    if ($article->{level} <= 2) {
+      $labels{2} = "In Sections, but not menu";
+      push(@values, 2);
+    }
+    else {
+      $labels{2} = "In content, but not menus";
+      push(@values, 2);
+    }
+    return $cgi->popup_menu(-name=>'listed',
+			    -values=>\@values,
+			    -labels=>\%labels,
+			    -default=>$article->{listed});
+  }
+  else {
+    my ($values, $labels) = $self->possible_parents($article, $articles);
+    my $html;
+    if (defined $article->{parentid}) {
+      $html = $cgi->popup_menu(-name=>'parentid',
+			       -values=> $values,
+			       -labels => $labels,
+			       -default => $article->{parentid},
+			       -override=>1);
+    }
+    else {
+      $html = $cgi->popup_menu(-name=>'parentid',
+			       -values=> $values,
+			       -labels => $labels,
+			       -override=>1);
+    }
+
+    # munge the html - we display a default value, so we need to wrap the 
+    # default <select /> around this one
+    $html =~ s!^<select[^>]+>|</select>!!gi;
+    return $html;
+  }
+}
+
+sub tag_checked {
+  my ($arg, $acts, $funcname, $templater) = @_;
+  my ($func, $args) = split ' ', $arg, 2;
+  return $templater->perform($acts, $func, $args) ? 'checked' : '';
+}
+
+sub iter_get_images {
+  my ($article) = @_;
+
+  $article->{id} or return;
+  $article->images;
+}
+
+sub iter_get_kids {
+  my ($article, $articles) = @_;
+
+  $article->{id} or return;
+  if (UNIVERSAL::isa($article, 'Article')) {
+    $article->children;
+  }
+  elsif ($article->{id}) {
+    return $articles->children($article->{id});
+  }
+  else {
+    return;
+  }
+}
+
+sub tag_if_have_child_type {
+  my ($level, $cfg) = @_;
+
+  defined $cfg->entry("level names", $level+1);
+}
+
+sub tag_is {
+  my ($args, $acts, $isname, $templater) = @_;
+
+  my ($func, $funcargs) = split ' ', $args, 2;
+  return $templater->perform($acts, $func, $funcargs) ? 'Yes' : 'No';
+}
+
+sub tag_templates {
+  my ($self, $article, $cfg, $cgi) = @_;
+
+  my @templates = sort $self->templates($article);
+  my $default;
+  if ($article->{template} && grep $_ eq $article->{template}, @templates) {
+    $default = $article->{template};
+  }
+  else {
+    $default = $templates[0];
+  }
+  return $cgi->popup_menu(-name=>'template',
+			  -values=>\@templates,
+			  -default=>$default,
+			  -override=>1);
+}
+
+sub title_images {
+  my ($self, $article) = @_;
+
+  my @title_images;
+  my $imagedir = $self->{cfg}->entry('paths', 'images', $Constants::IMAGEDIR);
+  if (opendir TITLE_IMAGES, "$imagedir/titles") {
+    @title_images = sort 
+      grep -f "$imagedir/titles/$_" && /\.(gif|jpeg|jpg|png)$/i,
+      readdir TITLE_IMAGES;
+    closedir TITLE_IMAGES;
+  }
+
+  @title_images;
+}
+
+sub tag_title_images  {
+  my ($self, $article, $cfg, $cgi) = @_;
+
+  my @images = $self->title_images($article);
+  my @values = ( '', @images );
+  my %labels = ( '' => 'None', map { $_ => $_ } @images );
+  return $cgi->
+    popup_menu(-name=>'titleImage',
+	       -values=>\@values,
+	       -labels=>\%labels,
+	       -default=>$article->{id} ? $article->{titleImage} : '',
+	       -override=>1);
+}
+
+sub base_template_dirs {
+  return ( "common" );
+}
+
+sub template_dirs {
+  my ($self, $article) = @_;
+
+  my @dirs = $self->base_template_dirs;
+  if (my $parentid = $article->{parentid}) {
+    my $section = "children of $parentid";
+    if (my $dirs = $self->{cfg}->entry($section, 'template_dirs')) {
+      push @dirs, split /,/, $dirs;
+    }
+  }
+  if (my $id = $article->{id}) {
+    my $section = "article $id";
+    if (my $dirs = $self->{cfg}->entry($section, 'template_dirs')) {
+      push @dirs, split /,/, $dirs;
+    }
+  }
+
+  @dirs;
+}
+
+sub templates {
+  my ($self, $article) = @_;
+
+  my @dirs = $self->template_dirs($article);
+  my @templates;
+  my $basedir = $self->{cfg}->entry('paths', 'templates', $Constants::TMPLDIR);
+  for my $dir (@dirs) {
+    my $path = File::Spec->catdir($basedir, $dir);
+    if (-d $path) {
+      if (opendir TEMPLATE_DIR, $path) {
+	push(@templates, sort map "$dir/$_",
+	     grep -f "$path/$_" && /\.(tmpl|html)$/i, readdir TEMPLATE_DIR);
+	closedir TEMPLATE_DIR;
+      }
+    }
+  }
+  return (@templates, $self->extra_templates($article));
+}
+
+sub extra_templates {
+  my ($self, $article) = @_;
+
+  my $basedir = $self->{cfg}->entry('paths', 'templates', $Constants::TMPLDIR);
+  my @templates;
+  if (my $id = $article->{id}) {
+    push @templates, 'index.tmpl'
+      if $id == 1 && -f "$basedir/index.html";
+    push @templates, 'index2.tmpl'
+      if $id == 2 && -f "$basedir/index2.html";
+    my $shopid = $self->{cfg}->entryErr('articles', 'shop');
+    push @templates, "shop_sect.tmpl"
+      if $id == $shopid && -f "$basedir/shop_sect.tmpl";
+    my $section = "article $id";
+    my $extras = $self->{cfg}->entry($section, 'extra_templates');
+    push @templates, grep /\.(tmpl|html)$/i, split /,/, $extras
+      if $extras;
+  }
+
+  @templates;
+}
+
+sub edit_parent {
+  my ($article) = @_;
+
+  return '' unless $article->{id} && $article->{id} != -1;
+  return <<HTML;
+<a href="$ENV{SCRIPT_NAME}?id=$article->{parentid}">Edit parent</a> |
+HTML
+}
+
+sub iter_allkids {
+  my ($article) = @_;
+
+  return unless $article->{id} && $article->{id} > 0;
+  $article->allkids;
+}
+
+sub _load_step_kids {
+  my ($article, $step_kids) = @_;
+
+  my @stepkids = OtherParents->getBy(parentId=>$article->{id}) if $article->{id};
+  %$step_kids = map { $_->{childId} => $_ } @stepkids;
+  use Data::Dumper;
+  print STDERR "stepkids:\n", Dumper($step_kids);
+  $step_kids->{loaded} = 1;
+}
+
+sub tag_if_step_kid {
+  my ($article, $allkids, $rallkid_index, $step_kids) = @_;
+
+  _load_step_kids($article, $step_kids) unless $step_kids->{loaded};
+
+  my $kid = $allkids->[$$rallkid_index]
+    or return;
+  exists $step_kids->{$kid->{id}};
+}
+
+sub tag_step_kid {
+  my ($article, $allkids, $rallkid_index, $step_kids, $arg) = @_;
+
+  _load_step_kids($article, $step_kids) unless $step_kids->{loaded};
+
+  my $kid = $allkids->[$$rallkid_index]
+    or return '';
+  print STDERR "found kid (want $arg): ", Dumper $kid;
+  encode_entities($step_kids->{$kid->{id}}{$arg});
+}
+
+sub tag_move_stepkid {
+  my ($self, $cgi, $article, $allkids, $rallkids_index) = @_;
+
+  my $cgi_uri = $self->{cfg}->entry('uri', 'cgi', '/cgi-bin');
+  my $images_uri = $self->{cfg}->entry('uri', 'images', '/images');
+  my $html = '';
+  my $url = $ENV{SCRIPT_NAME} . "?id=$article->{id}";
+  if ($cgi->param('_t')) {
+    $url .= "&_t=".$cgi->param('_t');
+  }
+  $url .= "#step";
+  my $refreshto = CGI::escape($url);
+  if ($$rallkids_index < $#$allkids) {
+    $html .= <<HTML;
+<a href="$cgi_uri/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids->[$$rallkids_index]{id}&other=$allkids->[$$rallkids_index+1]{id}&refreshto=$refreshto"><img src="$images_uri/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+HTML
+  }
+  if ($$rallkids_index > 0) {
+    $html .= <<HTML;
+<a href="$cgi_uri/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids->[$$rallkids_index]{id}&other=$allkids->[$$rallkids_index-1]{id}&refreshto=$refreshto"><img src="$images_uri/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+HTML
+  }
+  return $html;
+}
+
+sub possible_stepkids {
+  my ($articles, $stepkids) = @_;
+
+  return sort { lc $a->{title} cmp lc $b->{title} }
+    grep !$stepkids->{$_->{id}}, $articles->all;
+}
+
+
+
+sub tag_possible_stepkids {
+  my ($step_kids, $article, $possstepkids, $articles, $cgi) = @_;
+
+  _load_step_kids($article, $step_kids) unless $step_kids->{loaded};
+  @$possstepkids = possible_stepkids($articles, $step_kids)
+    unless @$possstepkids;
+  my %labels = map { $_->{id} => "$_->{title} ($_->{id})" } @$possstepkids;
+  return
+    $cgi->popup_menu(-name=>'stepkid',
+		     -values=> [ map $_->{id}, @$possstepkids ],
+		     -labels => \%labels);
+}
+
+sub tag_if_possible_stepkids {
+  my ($step_kids, $article, $possstepkids, $articles, $cgi) = @_;
+
+  _load_step_kids($article, $step_kids) unless $step_kids->{loaded};
+  @$possstepkids = possible_stepkids($articles, $step_kids)
+    unless @$possstepkids;
+  
+  @$possstepkids;
+}
+
+sub iter_get_stepparents {
+  my ($article) = @_;
+
+  return unless $article->{id} && $article->{id} > 0;
+
+  OtherParents->getBy(childId=>$article->{id});
+}
+
+sub tag_ifStepParents {
+  my ($args, $acts, $funcname, $templater) = @_;
+
+  return $templater->perform($acts, 'ifStepparents', '');
+}
+
+sub tag_stepparent_targ {
+  my ($article, $targs, $rindex, $arg) = @_;
+
+  if ($article->{id} && $article->{id} > 0 && !@$targs) {
+    @$targs = $article->step_parents;
+  }
+  encode_entities($targs->[$$rindex]{$arg});
+}
+
+sub tag_move_stepparent {
+  my ($self, $cgi, $article, $stepparents, $rindex) = @_;
+
+  my $cgi_uri = $self->{cfg}->entry('uri', 'cgi', '/cgi-bin');
+  my $images_uri = $self->{cfg}->entry('uri', 'images', '/images');
+  my $html = '';
+  my $url = $ENV{SCRIPT_NAME} . "?id=$article->{id}";
+  if ($cgi->param('_t')) {
+    $url .= "&_t=".$cgi->param('_t');
+  }
+  $url .= "#stepparents";
+  my $refreshto = CGI::escape($url);
+  if ($$rindex < $#$stepparents) {
+    $html .= <<HTML;
+<a href="$cgi_uri/admin/move.pl?stepchild=$article->{id}&id=$stepparents->[$$rindex]{parentId}&d=swap&other=$stepparents->[$$rindex+1]{parentId}&refreshto=$refreshto&all=1"><img src="$images_uri/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+HTML
+  }
+  if ($$rindex > 0) {
+    $html .= <<HTML;
+<a href="$cgi_uri/admin/move.pl?stepchild=$article->{id}&id=$stepparents->[$$rindex]{parentId}&d=swap&other=$stepparents->[$$rindex-1]{parentId}&refreshto=$refreshto&all=1"><img src="$images_uri/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+HTML
+  }
+  return $html;
+}
+
+sub tag_if_stepparent_possibles {
+  my ($article, $articles, $targs, $possibles) = @_;
+
+  if ($article->{id} && $article->{id} > 0) {
+    @$targs = $article->step_parents unless @$targs;
+    my %targs = map { $_->{id}, 1 } @$targs;
+    @$possibles = grep !$targs{$_->{id}}, $articles->all;
+  }
+  scalar @$possibles;
+}
+
+sub tag_stepparent_possibles {
+  my ($cgi, $article, $articles, $targs, $possibles) = @_;
+
+  if ($article->{id} && $article->{id} > 0) {
+    @$targs = $article->step_parents unless @$targs;
+    my %targs = map { $_->{id}, 1 } @$targs;
+    @$possibles = sort { lc $a->{title} cmp lc $b->{title} }
+      grep !$targs{$_->{id}}, $articles->all;
+  }
+  $cgi->popup_menu(-name=>'stepparent',
+		   -values => [ map $_->{id}, @$possibles ],
+		   -labels => { map { $_->{id}, "$_->{title} ($_->{id})" }
+				@$possibles });
+}
+
+sub iter_files {
+  my ($article) = @_;
+
+  return unless $article->{id} && $article->{id} > 0;
+
+  return $article->files;
+}
+
+sub tag_edit_parent {
+  my ($article) = @_;
+
+  return '' unless $article->{id} && $article->{id} != -1;
+
+  return <<HTML;
+<a href="$ENV{SCRIPT_NAME}?id=$article->{parentid}">Edit parent</a> |
+HTML
+}
+
+sub tag_if_children {
+  my ($args, $acts, $funcname, $templater) = @_;
+
+  return $templater->perform($acts, 'ifChildren', '');
+}
+
+sub tag_movechild {
+  my ($self, $kids, $rindex) = @_;
+
+  $$rindex >=0 && $$rindex < @$kids
+    or return '** movechild can only be used in the children iterator **';
+
+  my $cgi_uri = $self->{cfg}->entry('uri', 'cgi', '/cgi-bin');
+  my $images_uri = $self->{cfg}->entry('uri', 'images', '/images');
+  my $html = '';
+  my $nomove = '<img src="/images/trans_pixel.gif" width="17" height="13" border="0" alt="" align="absbottom">';
+  my $id = $kids->[$$rindex]{id};
+  if ($$rindex < $#$kids) {
+    $html .= <<HTML;
+<a href="$cgi_uri/admin/move.pl?id=$id&d=down&edit=1&all=1"><img src="$images_uri/admin/move_down.gif" width="17" height="13" alt="Move Down" border="0" align="absbottom"></a>
+HTML
+  }
+  else {
+    $html .= $nomove;
+  }
+  if ($$rindex > 0) {
+    $html .= <<HTML;
+<a href="$cgi_uri/admin/move.pl?id=$id&d=up&edit=1&all=1"><img src="$images_uri/admin/move_up.gif" width="17" height="13" alt="Move Up" border="0" align="absbottom"></a>
+HTML
+  }
+  else {
+    $html .= $nomove;
+  }
+  $html =~ tr/\n//d;
+
+  $html;
+}
+
+sub tag_edit_link {
+  my ($args, $acts, $funcname, $templater) = @_;
+  my ($which, $name) = split / /, $args, 2;
+  $name ||= 'Edit';
+  my $gen_class;
+  if ($acts->{$which} 
+      && ($gen_class = $templater->perform($acts, $which, 'generator'))) {
+    eval "use $gen_class";
+    unless ($@) {
+      my $gen = $gen_class->new;
+      my $link = $gen->edit_link($templater->perform($acts, $which, 'id'));
+      return qq!<a href="$link">$name</a>!;
+    }
+  }
+  return '';
+}
+
+sub tag_imgmove {
+  my ($article, $rindex, $images) = @_;
+
+  $$rindex >= 0 && $$rindex < @$images 
+    or return '** imgmove can only be used in image iterator **';
+
+  my $html = '';
+  my $nomove = '<img src="/images/trans_pixel.gif" width="17" height="13" border="0" alt="" align="absbottom">';
+  my $image = $images->[$$rindex];
+  if ($$rindex > 0) {
+    $html .= <<HTML
+<a href="$ENV{SCRIPT_NAME}?id=$article->{id}&moveimgup=1&imageid=$image->{id}"><img src="/images/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+HTML
+  }
+  else {
+    $html .= $nomove;
+  }
+  if ($$rindex < $#$images) {
+    $html .= <<HTML
+<a href="$ENV{SCRIPT_NAME}?id=$article->{id}&moveimgdown=1&imageid=$image->{id}"><img src="/images/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+HTML
+  }
+  else {
+    $html .= $nomove;
+  }
+  return $html;
+}
+
+sub tag_movefiles {
+  my ($self, $article, $files, $rindex) = @_;
+
+  my $html = '';
+
+  $$rindex >= 0 && $$rindex < @$files
+    or return '** movefiles can only be used in the files iterator **';
+
+  my $nomove = '<img src="/images/trans_pixel.gif" width="17" height="13" border="0" alt="" align="absbottom">';
+  my $images_uri = $self->{cfg}->entry('uri', 'images', '/images');
+  
+  if ($$rindex < $#$files) {
+    $html .= <<HTML;
+<a href="$ENV{SCRIPT_NAME}?fileswap=1&id=$article->{id}&file1=$files->[$$rindex]{id}&file2=$files->[$$rindex+1]{id}"><img src="$images_uri/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+HTML
+  }
+  else {
+    $html .= $nomove;
+  }
+  if ($$rindex > 0) {
+    $html .= <<HTML;
+<a href="$ENV{SCRIPT_NAME}?fileswap=1&id=$article->{id}&file1=$files->[$$rindex]{id}&file2=$files->[$$rindex-1]{id}"><img src="$images_uri/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+HTML
+  }
+  else {
+    $html .= $nomove;
+  }
+  $html =~ tr/\n//d;
+  $html;
+}
+
+sub tag_old {
+  my ($article, $cgi, $args, $acts, $funcname, $templater) = @_;
+
+  my ($col, $func, $funcargs) = split ' ', $args, 3;
+  my $value = $cgi->param($col);
+  if (defined $value) {
+    return encode_entities($value);
+  }
+  else {
+    if ($func) {
+      return $templater->perform($acts, $func, $funcargs);
+    }
+    else {
+      $value = $article->{$args};
+      defined $value or $value = '';
+      return encode_entities($value);
+    }
+  }
+}
+
+sub tag_error_img {
+  my ($self, $errors, $args) = @_;
+
+  return '' unless $errors->{$args};
+  my $images_uri = $self->{cfg}->entry('uri', 'images', '/images');
+  my $encoded = encode_entities($errors->{$args});
+  return qq!<img src="$images_uri/admin/error.gif" alt="$encoded" title="$encoded" border="0" align="top">!; 
+}
+
+sub low_edit_tags {
+  my ($self, $acts, $request, $article, $articles, $msg, $errors) = @_;
+
+  my $cgi = $request->cgi;
+  $msg ||= '';
+  $errors ||= {};
+  if (keys %$errors && !$msg) {
+    # try to get the errors in the same order as the table
+    my @cols = $self->table_object($articles)->rowClass->columns;
+    my %work = %$errors;
+    my @out = grep defined, delete @work{@cols};
+
+    $msg = join "<br>", @out, values %work;
+  }
+  my @images;
+  my $image_index;
+  my @children;
+  my $child_index;
+  my %stepkids;
+  my $cfg = $self->{cfg};
+  my @allkids;
+  my $allkid_index;
+  my @possstepkids;
+  my @stepparents;
+  my $stepparent_index;
+  my @stepparent_targs;
+  my @stepparentpossibles;
+  my @files;
+  my $file_index;
+  return
+    (
+     BSE::Util::Tags->basic($acts, $cgi, $cfg),
+     BSE::Util::Tags->admin($acts, $cfg),
+     article => [ \&tag_hash, $article ],
+     old => [ \&tag_old, $article, $cgi ],
+     articleType => [ \&tag_art_type, $article->{level}, $cfg ],
+     parentType => [ \&tag_art_type, $article->{level}-1, $cfg ],
+     ifnew => [ \&tag_if_new, $article ],
+     list => [ \&tag_list, $self, $article, $articles, $cgi ],
+     script => $ENV{SCRIPT_NAME},
+     level => $article->{level},
+     checked => \&tag_checked,
+     DevHelp::Tags->make_iterator2
+     ([ \&iter_get_images, $article ], 'image', 'images', \@images, 
+      \$image_index),
+     imgmove => [ \&tag_imgmove, $article, \$image_index, \@images ],
+     message => $msg,
+     DevHelp::Tags->make_iterator2
+     ([ \&iter_get_kids, $article, $articles ], 
+      'child', 'children', \@children, \$child_index),
+     ifchildren => \&tag_if_children,
+     childtype => [ \&tag_art_type, $article->{level}+1, $cfg ],
+     ifHaveChildType => [ \&tag_if_have_child_type, $article->{level}, $cfg ],
+     movechild => [ \&tag_movechild, $self, \@children, \$child_index],
+     is => \&tag_is,
+     templates => [ \&tag_templates, $self, $article, $cfg, $cgi ],
+     titleImages => [ \&tag_title_images, $self, $article, $cfg, $cgi ],
+     editParent => [ \&tag_edit_parent, $article ],
+     DevHelp::Tags->make_iterator2
+     ([ \&iter_allkids, $article ], 'kid', 'kids', \@allkids, \$allkid_index),
+     ifStepKid => 
+     [ \&tag_if_step_kid, $article, \@allkids, \$allkid_index, \%stepkids ],
+     stepkid => [ \&tag_step_kid, $article, \@allkids, \$allkid_index, 
+		  \%stepkids ],
+     movestepkid => 
+     [ \&tag_move_stepkid, $self, $cgi, $article, \@allkids, \$allkid_index ],
+     possible_stepkids =>
+     [ \&tag_possible_stepkids, \%stepkids, $article, \@possstepkids, 
+       $articles, $cgi ],
+     ifPossibles => 
+     [ \&tag_if_possible_stepkids, \%stepkids, $article, \@possstepkids, 
+       $articles, $cgi ],
+     DevHelp::Tags->make_iterator2
+     ( [ \&iter_get_stepparents, $article ], 'stepparent', 'stepparents', 
+       \@stepparents, \$stepparent_index),
+     ifStepParents => \&tag_ifStepParents,
+     stepparent_targ => 
+     [ \&tag_stepparent_targ, $article, \@stepparent_targs, 
+       \$stepparent_index ],
+     movestepparent => 
+     [ \&tag_move_stepparent, $self, $cgi, $article, \@stepparents, 
+       \$stepparent_index ],
+     ifStepparentPossibles =>
+     [ \&tag_if_stepparent_possibles, $article, $articles, \@stepparent_targs, 
+       \@stepparentpossibles, ],
+     stepparent_possibles =>
+     [ \&tag_stepparent_possibles, $cgi, $article, $articles, 
+       \@stepparent_targs, \@stepparentpossibles, ],
+     DevHelp::Tags->make_iterator2
+     ([ \&iter_files, $article ], 'file', 'files', \@files, \$file_index ),
+     movefiles => [ \&tag_movefiles, $self, $article, \@files, \$file_index ],
+     edit => \&tag_edit_link,
+     error => [ \&tag_hash, $errors ],
+     error_img => [ \&tag_error_img, $self, $errors ],
+    );
+}
+
+sub edit_template {
+  my ($self, $article, $cgi) = @_;
+
+  my $base = $article->{level};
+  my $t = $cgi->param('_t');
+  if ($t && $t =~ /^\w+$/) {
+    $base = $t;
+  }
+  return $self->{cfg}->entry('admin templates', $base, 
+			     "admin/edit_$base");
+}
+
+sub add_template {
+  my ($self, $article, $cgi) = @_;
+
+  $self->edit_template($article, $cgi);
+}
+
+sub low_edit_form {
+  my ($self, $request, $article, $articles, $msg, $errors) = @_;
+
+  my $cgi = $request->cgi;
+  my %acts;
+  %acts = $self->low_edit_tags(\%acts, $request, $article, $articles, $msg,
+			      $errors);
+  my $template = $article->{id} ? 
+    $self->edit_template($article, $cgi) : $self->add_template($article, $cgi);
+
+  return BSE::Template->get_response($template, $request->cfg, \%acts);
+}
+
+sub edit_form {
+  my ($self, $request, $article, $articles, $msg, $errors) = @_;
+
+  return $self->low_edit_form($request, $article, $articles, $msg, $errors);
+}
+
+sub add_form {
+  my ($self, $request, $articles, $msg, $errors) = @_;
+
+  my $level;
+  my $cgi = $request->cgi;
+  my $parentid = $cgi->param('parentid');
+  if ($parentid) {
+    if ($parentid =~ /^\d+$/) {
+      if (my $parent = $self->get_parent($parentid, $articles)) {
+	$level = $parent->{level}+1;
+      }
+      else {
+	$parentid = undef;
+      }
+    }
+    elsif ($parentid eq "-1") {
+      $level = 1;
+    }
+  }
+  unless (defined $level) {
+    $level = $cgi->param('level');
+    undef $level unless defined $level && $level =~ /^\d+$/
+      && $level > 0 && $level < 100;
+    defined $level or $level = 3;
+  }
+  
+  my %article;
+  my @cols = Article->columns;
+  @article{@cols} = ('') x @cols;
+  $article{id} = '';
+  $article{parentid} = $parentid;
+  $article{level} = $level;
+  $article{body} = '<maximum of 64Kb>';
+  $article{listed} = 1;
+  $article{generator} = $self->generator;
+
+  return $self->low_edit_form($request, \%article, $articles, $msg, $errors);
+}
+
+sub generator { 'Generate::Article' }
+
+sub _validate_common {
+  my ($self, $data, $articles, $errors) = @_;
+
+  if (defined $data->{parentid} && $data->{parentid} =~ /^(?:-1|\d+)$/) {
+    unless ($data->{parentid} == -1 or 
+	    $articles->getByPkey($data->{parentid})) {
+      $errors->{parentid} = "Selected parent article doesn't exist";
+    }
+  }
+  else {
+    $errors->{parentid} = "You need to select a valid parent";
+  }
+
+  if (exists $data->{template} && $data->{template} =~ /\.\./) {
+    $errors->{template} = "Please only select templates from the list provided";
+  }
+  
+}
+
+sub validate {
+  my ($self, $data, $articles, $rmsg, $errors) = @_;
+
+  $self->_validate_common($data, $articles, $errors);
+
+  return !keys %$errors;
+}
+
+sub validate_old {
+  my ($self, $data, $articles, $rmsg, $errors) = @_;
+
+  $self->_validate_common($data, $articles, $errors);
+
+  return !keys %$errors;
+}
+
+sub validate_parent {
+  1;
+}
+
+sub fill_new_data {
+  my ($self, $req, $data, $articles) = @_;
+
+  1;
+}
+
+sub make_link {
+  my ($self, $article) = @_;
+
+  my $article_uri = $self->{cfg}->entry('uri', 'articles', '/a');
+  my $link = "$article_uri/$article->{id}.html";
+  my $link_titles = $self->{cfg}->entryBool('basic', 'link_titles', 0);
+  if ($link_titles) {
+    (my $extra = lc $article->{title}) =~ tr/a-z0-9/_/sc;
+    $link .= "/".$extra;
+  }
+
+  $link;
+}
+
+sub save_new {
+  my ($self, $req, $articles) = @_;
+  
+  my $cgi = $req->cgi;
+  my %data;
+  my $table_object = $self->table_object($articles);
+  my @columns = $table_object->rowClass->columns;
+  $self->save_thumbnail($cgi, undef, \%data);
+  for my $name (@columns) {
+    $data{$name} = $cgi->param($name) if defined $cgi->param($name);
+  }
+
+  my $msg;
+  my %errors;
+  $self->validate(\%data, $articles, \$msg, \%errors)
+    or return $self->add_form($req, $articles, $msg, \%errors);
+
+  my $parent;
+  if ($data{parentid} > 0) {
+    $parent = $articles->getByPkey($data{parentid}) or die;
+  }
+
+  $self->validate_parent(\%data, $articles, $parent, \$msg)
+    or return $self->add_form($req, $articles, $msg);
+
+  $self->fill_new_data($req, \%data, $articles);
+  my $level = $parent ? $parent->{level}+1 : 1;
+  $data{displayOrder} ||= time;
+  $data{titleImage} ||= '';
+  $data{imagePos} = 'tr';
+  $data{release} = sql_date($data{release}) || now_sqldate();
+  $data{expire} = sql_date($data{expire}) || $Constants::D_99;
+  unless ($data{template}) {
+    $data{template} ||= 
+      $self->{cfg}->entry("children of $data{parentid}", 'template');
+    $data{template} ||=
+      $self->{cfg}->entry("level $level", 'template');
+  }
+  $data{link} ||= '';
+  $data{admin} ||= '';
+  if ($parent) {
+    $data{threshold} = $parent->{threshold}
+      if !defined $data{threshold} || $data{threshold} =~ /^\s*$/;
+    $data{summaryLength} = $parent->{summaryLength}
+      if !defined $data{summaryLength} || $data{summaryLength} =~ /^\s*$/;
+  }
+  else {
+    $data{threshold} = $self->{cfg}->entry("level $level", 'threshold', 5)
+      if !defined $data{threshold} || $data{threshold} =~ /^\s*$/;
+    $data{summaryLength} = 200
+      if !defined $data{summaryLength} || $data{summaryLength} =~ /^\s*$/;
+  }
+  $data{generator} = $self->generator;
+  $data{lastModified} = now_sqldate();
+  $data{level} = $level;
+  $data{listed} = 1 unless defined $data{listed};
+
+  shift @columns;
+  my $article = $table_object->add(@data{@columns});
+
+  # we now have an id - generate the links
+
+  my $cgi_uri = $self->{cfg}->entry('uri', 'cgi', '/cgi-bin');
+  $article->setAdmin("$cgi_uri/admin/admin.pl?id=$article->{id}");
+  $article->setLink($self->make_link($article));
+  $article->save();
+
+  my $urlbase = $self->{cfg}->entryVar('site', 'url');
+  return BSE::Template->get_refresh($urlbase . $article->{admin}, 
+				    $self->{cfg});
+}
+
+sub fill_old_data {
+  my ($req, $article, $data) = @_;
+
+  for my $col (Article->columns) {
+    $article->{$col} = $data->{$col}
+      if exists $data->{$col} && $col ne 'id' && $col ne 'parentid';
+  }
+
+  return 1;
+}
+
+sub save {
+  my ($self, $req, $article, $articles) = @_;
+  
+  my $cgi = $req->cgi;
+  my %data;
+  for my $name ($article->columns) {
+    $data{$name} = $cgi->param($name) 
+      if defined($cgi->param($name)) and $name ne 'id' && $name ne 'parentid';
+  }
+  my %errors;
+  $self->validate_old($article, \%data, $articles, \%errors)
+    or return $self->edit_form($req, $article, $articles, undef, \%errors);
+  $self->fill_old_data($req, $article, \%data);
+  if (exists $article->{template} &&
+      $article->{template} =~ m|\.\.|) {
+    my $msg = "Please only select templates from the list provided";
+    return $self->edit_form($req, $article, $articles, $msg);
+  }
+
+  # reparenting
+  my $newparentid = $cgi->param('parentid');
+  if ($newparentid == $article->{parentid}) {
+    # nothing to do
+  }
+  elsif ($newparentid != -1) {
+    print STDERR "Reparenting...\n";
+    my $newparent = $articles->getByPkey($newparentid);
+    if ($newparent) {
+      if ($newparent->{level} != $article->{level}-1) {
+	# the article cannot become a child of itself or one of it's 
+	# children
+	if ($article->{id} == $newparentid 
+	    || $self->is_descendant($article->{id}, $newparentid, $articles)) {
+	  my $msg = "Cannot become a child of itself or of a descendant";
+	  return $self->edit_form($req, $article, $articles, $msg);
+	}
+	my $shopid = $self->{cfg}->entryErr('articles', 'shop');
+	if ($self->is_descendant($article->{id}, $shopid, $articles)) {
+	  my $msg = "Cannot become a descendant of the shop";
+	  return $self->edit_form($req, $article, $articles, $msg);
+	}
+	my $msg;
+	$self->reparent($article, $newparentid, $articles, \$msg)
+	  or return $self->edit_form($req, $article, $articles, $msg);
+      }
+      else {
+	# stays at the same level, nothing special
+	$article->{parentid} = $newparentid;
+      }
+    }
+    # else ignore it
+  }
+  else {
+    # becoming a section
+    my $msg;
+    $self->reparent($article, -1, $articles, \$msg)
+      or return $self->edit_form($req, $article, $articles, $msg);
+  }
+
+  $article->{listed} = $cgi->param('listed') if defined $cgi->param('listed');
+  $article->{release} = sql_date($cgi->param('release'));
+  $article->{expire} = sql_date($cgi->param('expire')) || $Constants::D_99;
+  $article->{lastModified} =  now_sqldate();
+  my $link_titles = $self->{cfg}->entryBool('basic', 'link_titles', 0);
+  if ($article->{id} != 1 && $article->{link} && $link_titles) {
+    (my $extra = lc $article->{title}) =~ tr/a-z0-9/_/sc;
+    my $article_uri = $self->{cfg}->entry('uri', 'articles', '/a');
+    $article->{link} = "$article_uri/$article->{id}.html/$extra";
+  }
+
+  $article->save();
+  my $urlbase = $self->{cfg}->entryVar('site', 'url');
+  return BSE::Template->get_refresh($urlbase . $article->{admin}, 
+				    $self->{cfg});
+}
+
+sub sql_date {
+  my $str = shift;
+  my ($year, $month, $day);
+
+  # look for a date
+  if (($day, $month, $year) = ($str =~ m!(\d+)/(\d+)/(\d+)!)) {
+    $year += 2000 if $year < 100;
+
+    return sprintf("%04d-%02d-%02d", $year, $month, $day);
+  }
+  return undef;
+}
+
+sub reparent {
+  my ($self, $article, $newparentid, $articles, $rmsg) = @_;
+
+  my $newlevel;
+  if ($newparentid == -1) {
+    $newlevel = 1;
+  }
+  else {
+    my $parent = $articles->getByPkey($newparentid);
+    unless ($parent) {
+      $$rmsg = "Cannot get new parent article";
+      return;
+    }
+    $newlevel = $parent->{level} + 1;
+  }
+  # the caller will save this one
+  $article->{parentid} = $newparentid;
+  $article->{level} = $newlevel;
+  $article->{displayOrder} = time;
+
+  my @change = ( [ $article->{id}, $newlevel ] );
+  while (@change) {
+    my $this = shift @change;
+    my ($art, $level) = @$this;
+
+    my @kids = $articles->getBy(parentid=>$art);
+    push @change, map { [ $_->{id}, $level+1 ] } @kids;
+
+    for my $kid (@kids) {
+      $kid->{level} = $level+1;
+      $kid->save;
+    }
+  }
+
+  return 1;
+}
+
+# tests if $desc is a descendant of $art
+# where both are article ids
+sub is_descendant {
+  my ($self, $art, $desc, $articles) = @_;
+  
+  my @check = ($art);
+  while (@check) {
+    my $parent = shift @check;
+    $parent == $desc and return 1;
+    my @kids = $articles->getBy(parentid=>$parent);
+    push @check, map $_->{id}, @kids;
+  }
+
+  return 0;
+}
+
+sub save_thumbnail {
+  my ($self, $cgi, $original, $newdata) = @_;
+
+  unless ($original) {
+    @$newdata{qw/thumbImage thumbWidth thumbHeight/} = ('', 0, 0);
+  }
+  my $imagedir = $self->{cfg}->entry('paths', 'images', $Constants::IMAGEDIR);
+  if ($cgi->param('remove_thumb') && $original && $original->{thumbImage}) {
+    unlink("$imagedir/$original->{thumbImage}");
+    @$newdata{qw/thumbImage thumbWidth thumbHeight/} = ('', 0, 0);
+  }
+  my $image = $cgi->param('thumbnail');
+  if ($image && -s $image) {
+    # where to put it...
+    my $name = '';
+    $image =~ /([\w.-]+)$/ and $name = $1;
+    my $filename = time . "_" . $name;
+
+    use Fcntl;
+    my $counter = "";
+    $filename = time . '_' . $counter . '_' . $name
+      until sysopen( OUTPUT, "$imagedir/$filename", 
+                     O_WRONLY| O_CREAT| O_EXCL)
+        || ++$counter > 100;
+
+    fileno(OUTPUT) or die "Could not open image file: $!";
+    binmode OUTPUT;
+    my $buffer;
+
+    #no strict 'refs';
+
+    # read the image in from the browser and output it to our 
+    # output filehandle
+    print STDERR "\$image ",ref $image,"\n";
+    seek $image, 0, 0;
+    print OUTPUT $buffer while sysread $image, $buffer, 1024;
+
+    close OUTPUT
+      or die "Could not close image output file: $!";
+
+    use Image::Size;
+
+    if ($original && $original->{thumbImage}) {
+      #unlink("$imagedir/$original->{thumbImage}");
+    }
+    @$newdata{qw/thumbWidth thumbHeight/} = imgsize("$imagedir/$filename");
+    $newdata->{thumbImage} = $filename;
+  }
+}
+
+sub child_types {
+  my ($self, $article) = @_;
+
+  my $shopid = $self->{cfg}->entryErr('articles', 'shop');
+  if ($article && $article->{id} && $article->{id} == $shopid) {
+    return ( 'BSE::Edit::Catalog' );
+  }
+  return ( 'BSE::Edit::Article' );
+}
+
+sub add_stepkid {
+  my ($self, $req, $article, $articles) = @_;
+
+  my $cgi = $req->cgi;
+  require 'BSE/Admin/StepParents.pm';
+  eval {
+    my $childId = $cgi->param('stepkid');
+    defined $childId
+      or die "No stepkid supplied to add_stepkid";
+    $childId =~ /^\d+$/
+      or die "Invalid stepkid supplied to add_stepkid";
+    my $child = $articles->getByPkey($childId)
+      or die "Article $childId not found";
+    
+    use BSE::Util::Valid qw/valid_date/;
+    my $release = $cgi->param('release');
+    valid_date($release) or $release = undef;
+    my $expire = $cgi->param('expire');
+    valid_date($expire) or $expire = undef;
+  
+    my $newentry = 
+      BSE::Admin::StepParents->add($article, $child, $release, $expire);
+  };
+  if ($@) {
+    return $self->edit_form($req, $article, $articles, $@);
+  }
+  return $self->refresh($article, $cgi, 'step');
+}
+
+sub del_stepkid {
+  my ($self, $req, $article, $articles) = @_;
+
+  my $cgi = $req->cgi;
+  require 'BSE/Admin/StepParents.pm';
+  eval {
+    my $childId = $cgi->param('stepkid');
+    defined $childId
+      or die "No stepkid supplied to add_stepkid";
+    $childId =~ /^\d+$/
+      or die "Invalid stepkid supplied to add_stepkid";
+    my $child = $articles->getByPkey($childId)
+      or die "Article $childId not found";
+    
+    BSE::Admin::StepParents->del($article, $child);
+  };
+  
+  if ($@) {
+    return $self->edit_form($req, $article, $articles, $@);
+  }
+  return $self->refresh($article, $cgi, 'step');
+}
+
+sub save_stepkids {
+  my ($self, $req, $article, $articles) = @_;
+
+  my $cgi = $req->cgi;
+  require 'BSE/Admin/StepParents.pm';
+  my @stepcats = OtherParents->getBy(parentId=>$article->{id});
+  my %stepcats = map { $_->{parentId}, $_ } @stepcats;
+  my %datedefs = ( release => '2000-01-01', expire=>'2999-12-31' );
+  for my $stepcat (@stepcats) {
+    for my $name (qw/release expire/) {
+      my $date = $cgi->param($name.'_'.$stepcat->{childId});
+      if (defined $date) {
+	if ($date eq '') {
+	  $date = $datedefs{$name};
+	}
+	elsif (valid_date($date)) {
+	  use BSE::Util::SQL qw/date_to_sql/;
+	  $date = date_to_sql($date);
+	}
+	else {
+	  return $self->refresh($article, $cgi, '', "Invalid date '$date'");
+	}
+	$stepcat->{$name} = $date;
+      }
+    }
+    eval {
+      $stepcat->save();
+    };
+    $@ and return $self->refresh($article, $cgi, '', $@);
+  }
+  return $self->refresh($article, $cgi, 'step');
+}
+
+sub add_stepparent {
+  my ($self, $req, $article, $articles) = @_;
+
+  my $cgi = $req->cgi;
+  require 'BSE/Admin/StepParents.pm';
+  eval {
+    my $step_parent_id = $cgi->param('stepparent');
+    defined($step_parent_id)
+      or die "No stepparent supplied to add_stepparent";
+    int($step_parent_id) eq $step_parent_id
+      or die "Invalid stepcat supplied to add_stepcat";
+    my $step_parent = $articles->getByPkey($step_parent_id)
+      or die "Parnet $step_parent_id not found\n";
+
+    my $release = $cgi->param('release');
+    defined $release
+      or $release = "01/01/2000";
+    use BSE::Util::Valid qw/valid_date/;
+    $release eq '' or valid_date($release)
+      or die "Invalid release date";
+    my $expire = $cgi->param('expire');
+    defined $expire
+      or $expire = '31/12/2999';
+    $expire eq '' or valid_date($expire)
+      or die "Invalid expire data";
+  
+    my $newentry = 
+      BSE::Admin::StepParents->add($step_parent, $article, $release, $expire);
+  };
+  $@ and return $self->refresh($article, $cgi, 'step', $@);
+
+  return $self->refresh($article, $cgi, 'stepparents');
+}
+
+sub del_stepparent {
+  my ($self, $req, $article, $articles) = @_;
+
+  my $cgi = $req->cgi;
+  require 'BSE/Admin/StepParents.pm';
+  my $step_parent_id = $cgi->param('stepparent');
+  defined($step_parent_id)
+    or return $self->refresh($article, $cgi, 'stepparents', 
+			     "No stepparent supplied to add_stepcat");
+  int($step_parent_id) eq $step_parent_id
+    or return $self->refresh($article, $cgi, 'stepparents', 
+			     "Invalid stepparent supplied to add_stepparent");
+  my $step_parent = $articles->getByPkey($step_parent_id)
+    or return $self->refresh($article, $cgi, 'stepparent', 
+			     "Stepparent $step_parent_id not found");
+
+  eval {
+    BSE::Admin::StepParents->del($step_parent, $article);
+  };
+  $@ and return $self->refresh($article, $cgi, 'stepparents', $@);
+
+  return $self->refresh($article, $cgi, 'stepparents');
+}
+
+sub save_stepparents {
+  my ($self, $req, $article, $articles) = @_;
+
+  my $cgi = $req->cgi;
+
+  require 'BSE/Admin/StepParents.pm';
+  my @stepparents = OtherParents->getBy(childId=>$article->{id});
+  my %stepparents = map { $_->{parentId}, $_ } @stepparents;
+  my %datedefs = ( release => '2000-01-01', expire=>'2999-12-31' );
+  for my $stepparent (@stepparents) {
+    for my $name (qw/release expire/) {
+      my $date = $cgi->param($name.'_'.$stepparent->{parentId});
+      if (defined $date) {
+	if ($date eq '') {
+	  $date = $datedefs{$name};
+	}
+	elsif (valid_date($date)) {
+	  use BSE::Util::SQL qw/date_to_sql/;
+	  $date = date_to_sql($date);
+	}
+	else {
+	  return $self->refresh($article, $cgi, "Invalid date '$date'");
+	}
+	$stepparent->{$name} = $date;
+      }
+    }
+    eval {
+      $stepparent->save();
+    };
+    $@ and return $self->refresh($article, $cgi, '', $@);
+  }
+
+  return $self->refresh($article, $cgi, 'stepparents');
+}
+
+sub refresh {
+  my ($self, $article, $cgi, $name, $message, $extras) = @_;
+
+  my $urlbase = $self->{cfg}->entryVar('site', 'url');
+  my $url = "$urlbase$ENV{SCRIPT_NAME}?id=$article->{id}";
+  $url .= "&message=" . CGI::escape($message) if $message;
+  if ($cgi->param('_t')) {
+    $url .= "&_t=".CGI::escape($cgi->param('_t'));
+  }
+  $url .= $extras if defined $extras;
+  $url .= "#$name" if $name;
+
+  return BSE::Template->get_refresh($url, $self->{cfg});
+}
+
+sub show_images {
+  my ($self, $req, $article, $articles, $msg) = @_;
+
+  my %acts;
+  %acts = $self->low_edit_tags(\%acts, $req, $article, $articles, $msg);
+  my $template = 'admin/article_img';
+
+  return BSE::Template->get_response($template, $req->cfg, \%acts);
+}
+
+sub save_image_changes {
+  my ($self, $req, $article, $articles) = @_;
+
+  my $cgi = $req->cgi;
+  my $image_pos = $cgi->param('imagePos');
+  if ($image_pos 
+      && $image_pos =~ /^(?:tl|tr|bl|br)$/
+      && $image_pos ne $article->{imagePos}) {
+    $article->{imagePos} = $image_pos;
+    $article->save;
+  }
+  my @images = $article->images;
+
+  my $changed;
+  my @alt = $cgi->param('alt');
+  if (@alt) {
+    ++$changed;
+    for my $index (0..$#images) {
+      $index < @alt or last;
+      $images[$index]{alt} = $alt[$index];
+    }
+  }
+  my @urls = $cgi->param('url');
+  if (@urls) {
+    ++$changed;
+    for my $index (0..$#images) {
+      $index < @urls or next;
+      $images[$index]{url} = $urls[$index];
+    }
+  }
+  if ($changed) {
+    for my $image (@images) {
+      $image->save;
+    }
+  }
+  return $self->refresh($article, $cgi, undef, undef, '&showimage=1');
+}
+
+sub add_image {
+  my ($self, $req, $article, $articles) = @_;
+
+  my $cgi = $req->cgi;
+
+  my $image = $cgi->param('image');
+  unless ($image) {
+    return $self->show_images($req, $article, $articles,
+			      'Enter or select the name of an image file on your machine');
+  }
+  if (-z $image) {
+    return $self->show_images($req, $article, $articles,
+			      'Image file is empty');
+  }
+  my $imagename = $image;
+  $imagename .= ''; # force it into a string
+  my $basename = '';
+  $imagename =~ /([\w.-]+)$/ and $basename = $1;
+
+  # create a filename that we hope is unique
+  my $filename = time. '_'. $basename;
+
+  # for the sysopen() constants
+  use Fcntl;
+
+  my $imagedir = $req->cfg->entry('paths', 'images', $Constants::IMAGEDIR);
+  # loop until we have a unique filename
+  my $counter="";
+  $filename = time. '_' . $counter . '_' . $basename 
+    until sysopen( OUTPUT, "$imagedir/$filename", O_WRONLY| O_CREAT| O_EXCL)
+      || ++$counter > 100;
+
+  fileno(OUTPUT) or die "Could not open image file: $!";
+
+  # for OSs with special text line endings
+  binmode OUTPUT;
+
+  my $buffer;
+
+  no strict 'refs';
+
+  # read the image in from the browser and output it to our output filehandle
+  print OUTPUT $buffer while read $image, $buffer, 1024;
+
+  # close and flush
+  close OUTPUT
+    or die "Could not close image file $filename: $!";
+
+  use Image::Size;
+
+
+  my($width,$height) = imgsize("$imagedir/$filename");
+
+  my $alt = $cgi->param('altIn');
+  defined $alt or $alt = '';
+  my $url = $cgi->param('url');
+  defined $url or $url = '';
+  my %image =
+    (
+     articleId => $article->{id},
+     image => $filename,
+     alt=>$alt,
+     width=>$width,
+     height => $height,
+     url => $url,
+     displayOrder=>time,
+    );
+  require Images;
+  my @cols = Image->columns;
+  shift @cols;
+  my $imageobj = Images->add(@image{@cols});
+  
+  return $self->refresh($article, $cgi, undef, undef, '&showimage=1');
+}
+
+# remove an image
+sub remove_img {
+  my ($self, $req, $article, $articles, $imageid) = @_;
+
+  $imageid or die;
+
+  my @images = $article->images();
+  my ($image) = grep $_->{id} == $imageid, @images
+    or return $self->show_images($req, $article, $articles, "No such image");
+  my $imagedir = $req->cfg->entry('paths', 'images', $Constants::IMAGEDIR);
+  unlink "$imagedir$image->{image}" if !$image->{id};
+  $image->remove;
+
+  return $self->refresh($article, $req->cgi, undef, undef, '&showimage=1');
+}
+
+sub move_img_up {
+  my ($self, $req, $article, $articles) = @_;
+
+  my $imageid = $req->cgi->param('imageid');
+  my @images = $article->images;
+  my ($imgindex) = grep $images[$_]{id} == $imageid, 0..$#images
+    or return $self->show_images($req, $article, $articles, "No such image");
+  $imgindex > 0
+    or return $self->show_images($req, $article, $articles, "Image is already at the top");
+  my ($to, $from) = @images[$imgindex-1, $imgindex];
+  ($to->{displayOrder}, $from->{displayOrder}) =
+    ($from->{displayOrder}, $to->{displayOrder});
+  $to->save;
+  $from->save;
+
+  return $self->refresh($article, $req->cgi, undef, undef, '&showimage=1');
+}
+
+sub move_img_down {
+  my ($self, $req, $article, $articles) = @_;
+
+  my $imageid = $req->cgi->param('imageid');
+  my @images = $article->images;
+  my ($imgindex) = grep $images[$_]{id} == $imageid, 0..$#images
+    or return $self->show_images($req, $article, $articles, "No such image");
+  $imgindex < $#images
+    or return $self->show_images($req, $article, $articles, "Image is already at the end");
+  my ($to, $from) = @images[$imgindex+1, $imgindex];
+  ($to->{displayOrder}, $from->{displayOrder}) =
+    ($from->{displayOrder}, $to->{displayOrder});
+  $to->save;
+  $from->save;
+
+  return $self->refresh($article, $req->cgi, undef, undef, '&showimage=1');
+}
+
+sub get_article {
+  my ($self, $articles, $article) = @_;
+
+  return $article;
+}
+
+sub table_object {
+  my ($self, $articles) = @_;
+
+  $articles;
+}
+
+my %types =
+  (
+   qw(
+   pdf  application/pdf
+   txt  text/plain
+   htm  text/html
+   html text/html
+   gif  image/gif
+   jpg  image/jpeg
+   jpeg image/jpeg
+   doc  application/msword
+   rtf  application/rtf
+   zip  application/zip
+   png  image/png
+   bmp  image/bmp
+   tif  image/tiff
+   tiff image/tiff
+   sgm  text/sgml
+   sgml text/sgml
+   xml  text/xml
+   mov  video/quicktime
+   )
+  );
+
+sub _refresh_filelist {
+  my ($self, $req, $article) = @_;
+
+  return $self->refresh($article, $req->cgi, undef, undef, '&filelist=1');
+}
+
+sub filelist {
+  my ($self, $req, $article, $articles, $msg) = @_;
+
+  my %acts;
+  %acts = $self->low_edit_tags(\%acts, $req, $article, $articles, $msg);
+  my $template = 'admin/filelist';
+
+  return BSE::Template->get_response($template, $req->cfg, \%acts);
+}
+
+sub fileadd {
+  my ($self, $req, $article, $articles) = @_;
+
+  my %file;
+  my $cgi = $req->cgi;
+  require ArticleFile;
+  my @cols = ArticleFile->columns;
+  shift @cols;
+  for my $col (@cols) {
+    if (defined $cgi->param($col)) {
+      $file{$col} = $cgi->param($col);
+    }
+  }
+  
+  $file{forSale} = 0 + exists $file{forSale};
+  $file{articleId} = $article->{id};
+  $file{download} = 0 + exists $file{download};
+  $file{requireUser} = 0 + exists $file{requireUser};
+
+  my $downloadPath = $self->{cfg}->entryVar('paths', 'downloads');
+
+  # build a filename
+  my $file = $cgi->param('file');
+  unless ($file) {
+    return $self->filelist($req, $article, $articles,
+			   "Enter or select the name of a file on your machine");
+  }
+  if (-z $file) {
+    return $self->filelist($req, $article, $articles,
+			   message=>"File is empty");
+  }
+
+  unless ($file{contentType}) {
+    unless ($file =~ /\.([^.]+)$/) {
+      $file{contentType} = "application/octet-stream";
+    }
+    unless ($file{contentType}) {
+      my $ext = lc $1;
+      my $type = $types{$ext};
+      unless ($type) {
+	$type = $self->{cfg}->entry('extensions', $ext)
+	  || $self->{cfg}->entry('extensions', ".$ext")
+	    || "application/octet-stream";
+      }
+      $file{contentType} = $type;
+    }
+  }
+  
+  my $basename = '';
+  $file =~ /([\w.-]+)$/ and $basename = $1;
+
+  my $filename = time. '_'. $basename;
+
+  # for the sysopen() constants
+  use Fcntl;
+
+  # loop until we have a unique filename
+  my $counter="";
+  $filename = time. '_' . $counter . '_' . $basename 
+    until sysopen( OUTPUT, "$downloadPath/$filename", 
+		   O_WRONLY| O_CREAT| O_EXCL)
+      || ++$counter > 100;
+
+  fileno(OUTPUT) or die "Could not open file: $!";
+
+  # for OSs with special text line endings
+  binmode OUTPUT;
+
+  my $buffer;
+
+  no strict 'refs';
+
+  # read the image in from the browser and output it to our output filehandle
+  print OUTPUT $buffer while read $file, $buffer, 8192;
+
+  # close and flush
+  close OUTPUT
+    or die "Could not close file $filename: $!";
+
+  use BSE::Util::SQL qw/now_datetime/;
+  $file{filename} = $filename;
+  $file{displayName} = $basename;
+  $file{sizeInBytes} = -s $file;
+  $file{displayOrder} = time;
+  $file{whenUploaded} = now_datetime();
+
+  require ArticleFiles;
+  my $fileobj = ArticleFiles->add(@file{@cols});
+
+  $self->_refresh_filelist($req, $article);
+}
+
+sub fileswap {
+  my ($self, $req, $article, $articles) = @_;
+
+  my $cgi = $req->cgi;
+  my $id1 = $cgi->param('file1');
+  my $id2 = $cgi->param('file2');
+
+  if ($id1 && $id2) {
+    my @files = $article->files;
+    
+    my ($file1) = grep $_->{id} == $id1, @files;
+    my ($file2) = grep $_->{id} == $id2, @files;
+    
+    if ($file1 && $file2) {
+      ($file1->{displayOrder}, $file2->{displayOrder})
+	= ($file2->{displayOrder}, $file1->{displayOrder});
+      $file1->save;
+      $file2->save;
+    }
+  }
+
+  $self->_refresh_filelist($req, $article);
+}
+
+sub filedel {
+  my ($self, $req, $article, $articles) = @_;
+
+  my $cgi = $req->cgi;
+  my $fileid = $cgi->param('file');
+  if ($fileid) {
+    my @files = $article->files;
+
+    my ($file) = grep $_->{id} == $fileid, @files;
+
+    if ($file) {
+      my $downloadPath = $req->cfg->entryErr('paths', 'downloads');
+      my $filename = $downloadPath . "/" . $file->{filename};
+      my $debug_del = $req->cfg->entryBool('debug', 'file_unlink', 0);
+      if ($debug_del) {
+	unlink $filename
+	  or print STDERR "Error deleting $filename: $!\n";
+      }
+      else {
+	unlink $filename;
+      }
+      $file->remove();
+    }
+  }
+
+  $self->_refresh_filelist($req, $article);
+}
+
+sub filesave {
+  my ($self, $req, $article) = @_;
+
+  my @files = $article->files;
+
+  my $cgi = $req->cgi;
+  for my $file (@files) {
+    if (defined $cgi->param("description_$file->{id}")) {
+      $file->{description} = $cgi->param("description_$file->{id}");
+      if (my $type = $cgi->param("contentType_$file->{id}")) {
+	$file->{contentType} = $type;
+      }
+      $file->{download} = 0 + defined $cgi->param("download_$file->{id}");
+      $file->{forSale} = 0 + defined $cgi->param("forSale_$file->{id}");
+      $file->{requireUser} = 0 + defined $cgi->param("requireUser_$file->{id}");
+      $file->save;
+    }
+  }
+
+  $self->_refresh_filelist($req, $article);
+}
+
+1;
+
+=head1 NAME
+
+  BSE::Edit::Article - editing functionality for BSE articles
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=head1 REVISION 
+
+$Revision$
+
+=cut

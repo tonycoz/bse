@@ -217,6 +217,7 @@ sub addsave {
     for my $field (@fields) {
       $subs{$field} = $q->param($field) if defined $q->param($field);
     }
+    $subs{archive} = () = $q->param('archive');
     $subs{visible} = 0 + defined $q->param('visible');
     $subs{lastSent} = '0000-00-00 00:00';
     my $sub = BSE::SubscriptionTypes->add(@subs{@fields});
@@ -252,6 +253,7 @@ sub editsave {
     for my $field (@fields) {
       $sub->{$field} = $q->param($field) if defined $q->param($field);
     }
+    $sub->{archive} = () = $q->param('archive');
     $sub->{visible} = 0 + defined $q->param('visible');
     $sub->save();
     _refresh_list($cfg);

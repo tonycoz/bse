@@ -16,7 +16,7 @@ use OrderItems;
 use OrderItem;
 use Constants qw($TMPLDIR);
 use Squirrel::Template;
-use Squirrel::ImageEditor;
+#use Squirrel::ImageEditor;
 use Constants qw(:shop $SHOPID $PRODUCTPARENT 
                  $SHOP_URI $CGI_URI $IMAGES_URI $AUTO_GENERATE);
 use Images;
@@ -41,16 +41,16 @@ my %what_to_do =
    order_list_unpaid => \&order_list_unpaid,
    order_detail=>\&order_detail,
    order_filled=>\&order_filled,
-   edit_product=>\&edit_product,
-   add_product=>\&add_product,
-   save_product=>\&save_product,
+#     edit_product=>\&edit_product,
+#     add_product=>\&add_product,
+#     save_product=>\&save_product,
    delete_product=>\&delete_product,
    undelete_product=>\&undelete_product,
    product_detail=>\&product_detail,
-   add_stepcat=>\&add_stepcat,
-   del_stepcat=>\&del_stepcat,
-   save_stepcats => \&save_stepcats,
-   back=>\&img_return,
+#     add_stepcat=>\&add_stepcat,
+#     del_stepcat=>\&del_stepcat,
+#     save_stepcats => \&save_stepcats,
+#     back=>\&img_return,
   );
 
 my @modifiable = qw(body retailPrice wholesalePrice gst release expire 
@@ -84,22 +84,22 @@ my %acts;
    level => sub { 3; }, # doesn't really matter here
   );
 
-my $imageEditor = Squirrel::ImageEditor->new(session=>\%session,
-					     extras=>\%acts,
-					     keep => [ qw/id parentid/ ],
-					     cfg=>$cfg);
+#  my $imageEditor = Squirrel::ImageEditor->new(session=>\%session,
+#  					     extras=>\%acts,
+#  					     keep => [ qw/id parentid/ ],
+#  					     cfg=>$cfg);
 
-if ($imageEditor->action($CGI::Q)) {
-  exit;
-}
+#  if ($imageEditor->action($CGI::Q)) {
+#    exit;
+#  }
 
-use BSE::FileEditor;
-my $file_editor = 
-  BSE::FileEditor->new(session=>\%session, cgi=>$CGI::Q, cfg=>$cfg,
-		       backopts=>{ edit_product=> 1});
-if ($file_editor->process_files()) {
-  exit;
-}
+#  use BSE::FileEditor;
+#  my $file_editor = 
+#    BSE::FileEditor->new(session=>\%session, cgi=>$CGI::Q, cfg=>$cfg,
+#  		       backopts=>{ edit_product=> 1});
+#  if ($file_editor->process_files()) {
+#    exit;
+#  }
 
 while (my ($key, $func) = each %what_to_do) {
   if (param($key)) {

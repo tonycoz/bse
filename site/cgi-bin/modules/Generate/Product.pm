@@ -10,7 +10,7 @@ use Carp qw(confess);
 
 sub edit_link {
   my ($self, $id) = @_;
-  return "/cgi-bin/admin/shopadmin.pl?id=$id&edit_product=1";
+  return "/cgi-bin/admin/add.pl?id=$id";
 }
 
 sub generate {
@@ -44,8 +44,8 @@ sub baseActs {
        my $html = <<HTML;
 <table>
 <tr>
-<td><form action="$CGI_URI/admin/shopadmin.pl">
-<input type=hidden name="edit_product" value=1>
+<td><form action="$CGI_URI/admin/add.pl">
+<input type=hidden name="edit" value=1>
 <input type=hidden name=id value=$product->{id}>
 <input type=submit value="Edit Product"></form></td>
 <td><form action="$ADMIN_URI">

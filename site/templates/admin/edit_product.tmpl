@@ -12,13 +12,13 @@
   | <a href="<:script:>?id=<:product id:>&delete_product=1">Hide product</a> <:or 
   Product:> | <a href="<:script:>?id=<:product id:>&undelete_product=1">Show product</a> 
   <:eif Product:>| <a href="/cgi-bin/admin/add.pl?id=<:product id:>&_t=steps">Manage 
-  step parents</a> | <:hiddenNote:></p>
+  step parents</a> | <:ifProduct listed:><:or:>Hidden<:eif:></p>
 <h2>Manage Images</h2>
 <form action="<:script:>" enctype="multipart/form-data" method="POST">
   <p>
     <input type=submit name=showimages value="Image Wizard">
   </p>
-  <h2><:action:> Product</h2>
+  <h2>Edit Product</h2>
   <p>
     <input type="hidden" name="id" value="<:product id:>">
   </p>
@@ -38,8 +38,13 @@
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF">Catalog:</th>
-            <td bgcolor="#FFFFFF"><:catalogs:></td>
+            <td bgcolor="#FFFFFF"><select name="parentid"><:list:></select></td>
             <td nowrap bgcolor="#FFFFFF"><:help product catalog:></td>
+          </tr>
+          <tr> 
+            <th nowrap align="left" bgcolor="#FFFFFF">Template:</th>
+            <td nowrap bgcolor="#FFFFFF"><:templates:></td>
+            <td nowrap bgcolor="#FFFFFF"><:help product template:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF" valign="top"> Body:</th>
@@ -58,35 +63,35 @@
           <tr> 
             <th align="left" bgcolor="#FFFFFF">Retail price:</th>
             <td bgcolor="#FFFFFF">$ 
-              <input type="text" name="retailPrice" value="<:money retailPrice:>" size=7>
+              <input type="text" name="retailPrice" value="<:money product retailPrice:>" size=7>
               (0.00)</td>
             <td nowrap bgcolor="#FFFFFF"><:help product retail:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF">Wholesale price:</th>
             <td bgcolor="#FFFFFF">$ 
-              <input type="text" name="wholesalePrice" value="<:money wholesalePrice:>" size=7>
+              <input type="text" name="wholesalePrice" value="<:money product wholesalePrice:>" size=7>
               (0.00)</td>
             <td nowrap bgcolor="#FFFFFF"><:help product wholesale:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF">GST:</th>
             <td bgcolor="#FFFFFF">$ 
-              <input type="text" name="gst" value="<:money gst:>" size=7>
+              <input type="text" name="gst" value="<:money product gst:>" size=7>
               (0.00)</td>
             <td nowrap bgcolor="#FFFFFF"><:help product gst:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF">Release date:</th>
             <td bgcolor="#FFFFFF"> 
-              <input type="text" name="release" value="<:date product release:>" size=11>
+              <input type="text" name="release" value="<:date "%d/%m/%Y" product release:>" size=11>
               (dd/mm/yyyy)</td>
             <td nowrap bgcolor="#FFFFFF"><:help product release:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF">Expiry date:</th>
             <td bgcolor="#FFFFFF"> 
-              <input type="text" name="expire" value="<:date product expire:>" size=11>
+              <input type="text" name="expire" value="<:date "%d/%m/%Y" product expire:>" size=11>
               (dd/mm/yyyy)</td>
             <td nowrap bgcolor="#FFFFFF"><:help product expire:></td>
           </tr>
@@ -171,7 +176,7 @@
     </tr>
   </table>
   <p>
-    <input type=submit name="save_product" value="Save changes">
+    <input type=submit name="save" value="Save changes">
   </p>
 </form>
 

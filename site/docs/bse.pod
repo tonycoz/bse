@@ -10,6 +10,115 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.12_02
+
+When installing this release over earlier releases:
+
+=over
+
+=item 1.
+
+run mysql_upgrade.pl to upgrade the database schema
+
+=item 2.
+
+start the mysql shell and run the following query in your database:
+
+  update image set displayOrder = id;
+
+to preserve image ordering.
+
+=item *
+
+the <:if art:> conditional tag is no longer available
+
+=back
+
+This is a development release, intended to test the new code in BSE,
+in preparation for adding security mechanisms.  This is not intended
+for production use yet.
+
+Please see the known problems list.
+
+=over
+
+=item *
+
+was parsing wrap parameters when there weren't any, which caused
+warnings in the error log
+
+=item *
+
+you couldn't create a new subscription with the archiving switched off
+
+=item *
+
+if you edited a subscription, and unset the archive check, the save
+left it as archived.
+
+=item *
+
+article editing is being almost completely rewritten to allow more
+code re-use.
+
+=item *
+
+article image management has been completely rewritten so that the
+changes you make are immediate, rather than relying on the user to
+save the article after making changes.  This prevents the problem that
+sometimes crops up where the images you're editing are for the wrong
+article, or left over from an aberted attempt to create a new article.
+
+This change also means you can't add images to an article until the
+article has been created.
+
+=item *
+
+previously the order of images would change at the whim of the
+database, which happened pretty rarely but still happened.  Added a
+displayOrder field to images, and we base the ordering (and
+re-ordering) on that instead of whatever the database chooses to give
+us today.
+
+=item *
+
+products and catalogs use the new editing code
+
+=item *
+
+new tags on edit pages to give access to validation errors (most
+noticable on the add product page for now),
+
+=item *
+
+added an "old" tag to take a value from either the cgi parameters or a
+given other tag.  This makes error reporting more natural
+
+=back
+
+Known issues:
+
+=over
+
+=item *
+
+the code allows the product title and summary to be changed.  The new
+security code will correct this (and allow them to be changed, or the
+product to be deleted, for unused products)
+
+=item *
+
+only add_product.tmpl has the new error reporting and old value access
+tags
+
+=item *
+
+the delete/undelete links for products don't work.  Currently the same
+functionality is available through the Listed drop-down, but it might
+be desirable to keep the links, comments welcome.
+
+=back
+
 =head2 0.12_01
 
 Some derived tags may not work with the new fields, since I've

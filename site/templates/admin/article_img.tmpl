@@ -69,19 +69,20 @@
             <th valign="top" bgcolor="#FFFFFF" colspan="3">First Image Position</th>
           </tr>
           <tr> 
-            <td align="center" bgcolor="#FFFFFF" colspan="3"> <input type="radio" name="imagePos" value="tl" <: 
-              checked tl :>>Top Left &nbsp;<input type="radio" name="imagePos" value="tr" <: 
-              checked tr :>>Top Right &nbsp; <input type="radio" name="imagePos" value="bl" <: 
-              checked bl :>>Bottom Left &nbsp; <input type="radio" name="imagePos" value="br" <: 
-              checked br :>>Bottom Right </td>
+            <td align="center" bgcolor="#FFFFFF" colspan="3"> <input type="radio" name="imagePos" value="tl" <: ifEq [article imagePos] "tl":>checked<:or:><:eif:>
+	      >Top Left &nbsp;<input type="radio" name="imagePos" value="tr"  <: ifEq [article imagePos] "tr":>checked<:or:><:eif:>
+	      >Top Right &nbsp; <input type="radio" name="imagePos" value="bl"  <: ifEq [article imagePos] "bl":>checked<:or:><:eif:>
+	      >Bottom Left &nbsp; <input type="radio" name="imagePos" value="br"  <: ifEq [article imagePos] "br":>checked<:or:><:eif:>
+	      >Bottom Right
+	    </td>
           </tr>
           <tr bgcolor="#FFFFFF"> 
             <th colspan="3">Image</th>
           </tr>
-          <: iterator begin image :> 
+          <: iterator begin images :> 
           <tr bgcolor="#FFFFFF"> 
-            <td align="center" colspan="3"> <img src="/images/<: image image :>" alt="<: image alt :>"<: 
-              image height :><: image width :>></td>
+            <td align="center" colspan="3"> <img src="/images/<: image image :>" alt="<: image alt :>" width="<: 
+              image height :>" height="<: image width :>"></td>
           </tr>
           <tr bgcolor="#FFFFFF"> 
             <th width="50%"> Alt Text</th>
@@ -96,14 +97,14 @@
               <input type="text" name="url" value="<: image url :>" size="32">
             </td>
             <td valign="bottom" nowrap> 
-              <input type="submit" name="removeimg_<: image order :>" value="Delete" onClick="return window.alert('Remember to update the article after deletion is complete')" >
+              <input type="submit" name="removeimg_<: image id :>" value="Delete" onClick="return window.alert('Remember to update the article after deletion is complete')" >
               <:imgmove:> </td>
           </tr>
-          <: iterator separator image :> 
+          <: iterator separator images :> 
           <tr bgcolor="#FFFFFF"> 
             <td colspan="3">&nbsp;</td>
           </tr>
-          <: iterator end image :> 
+          <: iterator end images :> 
           <tr> 
             <td align="right" bgcolor="#FFFFFF" colspan="3"> 
               <input type="submit" name="process" value="Save changes">

@@ -13,7 +13,7 @@
 <h1>Manage step <:ifMatch [article generator] "Product":><:or:> children/<:eif:>parents</h1>
 
 <p>| <a href="/admin/">Admin menu</a> | <:ifMatch [article generator] "Product":><a href="/cgi-bin/admin/shopadmin.pl">Manage 
-  catalogs</a> | <a href="/cgi-bin/admin/shopadmin.pl?id=<:article id:>&edit_product=1">Edit 
+  catalogs</a> | <a href="/cgi-bin/admin/add.pl?id=<:article id:>">Edit 
   product</a><:or:><a href="/cgi-bin/admin/add.pl?id=<:article id:>"><:if Eq [article 
   parentid] 3:>Edit catalog<:or Eq:>Edit article<:eif Eq:></a><:eif:> |</p>
 <:if new:><:or new:> <:if Match [article generator] "Product":><:or Match:> 
@@ -47,10 +47,10 @@
             <td align="center" nowrap><:kid id:></td>
             <td width="100%"><:kid title:></td>
             <td><:ifStepKid:> 
-              <input type="text" name="release_<:stepkid childId:>" value="<:date stepkid release:>" size=10>
+              <input type="text" name="release_<:stepkid childId:>" value="<:date "%d/%m/%Y" stepkid release:>" size=10>
               <:or:>&nbsp;<:eif:></td>
             <td><:ifStepKid:> 
-              <input type="text" name="expire_<:stepkid childId:>" value="<:date stepkid expire:>" size=10>
+              <input type="text" name="expire_<:stepkid childId:>" value="<:date "%d/%m/%Y" stepkid expire:>" size=10>
               <:or:>&nbsp;<:eif:></td>
             <td nowrap><:edit kid Edit:> <:ifStepKid:><a href="<:script:>?del_stepkid=1&id=<:stepkid parentId:>&stepkid=<:stepkid childId:>&_t=steps">Delete</a><:or:><:eif:> 
               <:movestepkid:></td>
@@ -119,10 +119,10 @@
               parentId:></a></td>
             <td width="100%"><:stepparent_targ title:></td>
             <td> 
-              <input type="text" name="release_<:stepparent parentId:>" value="<:date stepparent release:>" size="10">
+              <input type="text" name="release_<:stepparent parentId:>" value="<:date "%d/%m/%Y" stepparent release:>" size="10">
             </td>
             <td> 
-              <input type="text" name="expire_<:stepparent parentId:>" value="<:date stepparent expire:>" size="10">
+              <input type="text" name="expire_<:stepparent parentId:>" value="<:date "%d/%m/%Y" stepparent expire:>" size="10">
             </td>
             <td nowrap><a href="/cgi-bin/admin/add.pl?id=<:stepparent parentId:>">Edit</a> 
               <a href="<:script:>?del_stepparent=1&id=<:stepparent childId:>&stepparent=<:stepparent parentId:>&_t=steps">Delete</a> 

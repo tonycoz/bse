@@ -44,10 +44,10 @@ EOS
 
    Images => 'select * from image',
    replaceImage =>
-     'replace image values (?,?,?,?,?,?,?)',
-   addImage => 'insert image values(null, ?, ?, ?, ?, ?, ?)',
+     'replace image values (?,?,?,?,?,?,?,?)',
+   addImage => 'insert image values(null, ?, ?, ?, ?, ?, ?, ?)',
    deleteImage => 'delete from image where id = ?',
-   getImageByArticleId => 'select * from image where articleId = ? order by id',
+   getImageByArticleId => 'select * from image where articleId = ? order by displayOrder',
    
    dropIndex => 'delete from searchindex',
    insertIndex => 'insert searchindex values(?, ?, ?, ?)',

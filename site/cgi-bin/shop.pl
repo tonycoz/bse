@@ -7,7 +7,6 @@ use Products;
 use Product;
 use Constants qw(:shop $TMPLDIR $CGI_URI);
 use Squirrel::Template;
-use Squirrel::ImageEditor;
 use CGI::Cookie;
 use BSE::Custom;
 use BSE::Mail;

@@ -95,4 +95,24 @@ sub all_visible_kids {
   return @kids{ sort { $order{$b} <=> $order{$a} } keys %kids };
 }
 
+sub images {
+  my ($self) = @_;
+  require Images;
+  Images->getBy(articleId=>$self->{id});
+}
+
+sub children {
+  my ($self) = @_;
+
+  return sort { $b->{displayOrder} <=> $b->{displayOrder} } 
+    Articles->children($self->{id});
+}
+
+sub files {
+  my ($self) = @_;
+
+  require ArticleFiles;
+  return ArticleFiles->getBy(articleId=>$self->{id});
+}
+
 1;

@@ -43,6 +43,10 @@ sub perform {
     else {
       $value = $action;
     }
+    unless (defined $value) {
+      use Carp 'cluck';
+      cluck "** undefined value returned by $func $args tag";
+    }
     return $fmt ? $acts->{_format}->($value, $fmt) : $value;
   }
   for my $match (keys %$acts) {
@@ -65,7 +69,7 @@ sub perform {
     my ($newfunc, $newargs) = split /\s+/, $temp, 2;
     $newargs = '' if !defined $newargs;
     if (exists $acts->{$newfunc}
-       and defined(my $value = $acts->{$newfunc}->($newargs))) {
+       and defined(my $value = $self->perform($acts, $newfunc, $newargs))) {
       # work out a summary
       return $value if length($value) < $size;
       $value = substr($value, 0, $size);
@@ -139,11 +143,20 @@ sub cond {
     my $msg = $@;
     $msg =~ /^ENOIMPL\b/
       and return $orig;
+    print STDERR "Eval error in cond: $msg\n";
     $msg =~ s/([<>&])/"&#".ord($1).";"/ge;
     return "<!-- ** $msg ** -->";
   }
 
   return $result;
+}
+
+sub tag_param {
+  my ($params, $arg) = @_;
+
+  exists $params->{$arg} or return '';
+
+  $params->{$arg};
 }
 
 sub replace_template {
@@ -174,20 +187,24 @@ sub replace_template {
         $wraptext =~ s/<:\s*wrap\s+here\s*:>/$template/i
           and $template = $wraptext
             or last;
-	
-	while ($params =~ s/^\s*(\w+)\s*=>\s*\"([^\"]+)\"//
-	       || $params =~ s/^\s*(\w+)\s*=>\s*([^\s,]+)//) {
-	  $params{$1} = $2;
-	  $params =~ s/\s*,\s*//;
+
+	unless (defined $params) {
+	  while ($params =~ s/^\s*(\w+)\s*=>\s*\"([^\"]+)\"//
+		 || $params =~ s/^\s*(\w+)\s*=>\s*([^\s,]+)//) {
+	    $params{$1} = $2;
+	    $params =~ s/\s*,\s*//;
+	  }
+	  $params =~ /^\s*$/
+	    or print STDERR "WARNING: Extra data after parameters '$params'\n";
 	}
-	$params =~ /^\s*$/
-	  or print STDERR "WARNING: Extra data after parameters '$params'\n";
       }
       else {
 	print "ERROR: Unable to load wrapper $wrapper: $!\n";
       }
     }
   }
+
+  $acts->{param} = [ \&tag_param, \%params ];
 
   # the basic iterator
   if ($iter && 
@@ -235,8 +252,9 @@ sub replace_template {
     $self->perform($acts, $2, $3, $1) /segx;
 
   # replace any wrap parameters
-  $template =~ s/(<:\s*param\s+(\w+)\s*:>)/
-    exists $params{$2} ? $params{$2} : $1 /eg;
+  # now done elsewhere
+  #$template =~ s/(<:\s*param\s+(\w+)\s*:>)/
+  #  exists $params{$2} ? $params{$2} : $1 /eg;
 
   return $template;
 }

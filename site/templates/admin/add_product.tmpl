@@ -10,10 +10,11 @@
   | </p>
 <h2>Manage Images</h2>
 <form action="<:script:>" enctype="multipart/form-data" method=POST>
+<input type=hidden name=type value="Product">
   <p>
     <input type=submit name=showimages value="Image Wizard">
   </p>
-  <h2><:action:> Product</h2>
+  <h2>Add New Product</h2>
   <input type="hidden" name="id" value="<:product id:>">
   <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
     <tr>
@@ -22,54 +23,59 @@
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF">Title*:</th>
             <td nowrap bgcolor="#FFFFFF"> 
-              <input type="text" name="title" value="<:product title:>" size=60>
+              <input type="text" name="title" value="<:old title:>" size=60><:error_img title:>
             </td>
             <td nowrap bgcolor="#FFFFFF"><:help product title:></td>
           </tr>
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF">Summary*:</th>
             <td nowrap bgcolor="#FFFFFF"> 
-              <input type="text" name="summary" value="<:product summary:>" size=60>
+              <input type="text" name="summary" value="<:old summary:>" size=60><:error_img summary:>
             </td>
             <td nowrap bgcolor="#FFFFFF"><:help product summary:></td>
           </tr>
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF">Catalog:</th>
-            <td nowrap bgcolor="#FFFFFF"> <:catalogs:> </td>
+            <td nowrap bgcolor="#FFFFFF"> <select name="parentid"><:list:></select><:error_img parentid:> </td>
             <td nowrap bgcolor="#FFFFFF"><:help product catalog:></td>
           </tr>
           <tr> 
+            <th nowrap align="left" bgcolor="#FFFFFF">Template:</th>
+            <td nowrap bgcolor="#FFFFFF"><:templates:><:error_img template:></td>
+            <td nowrap bgcolor="#FFFFFF"><:help product template:></td>
+          </tr>
+          <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF" valign="top"> Body:</th>
-            <td nowrap bgcolor="#FFFFFF"> 
-              <textarea name="body" rows=15 cols=60 wrap=virtual><:product body:></textarea>
+            <td nowrap bgcolor="#FFFFFF" valign="top"> 
+              <textarea name="body" rows=15 cols=60 wrap=virtual><:old body:></textarea> <:error_img body:>
             </td>
             <td nowrap bgcolor="#FFFFFF" valign="top"><:help body body:></td>
           </tr>
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF">Lead time:</th>
             <td nowrap bgcolor="#FFFFFF"> 
-              <input type="text" name="leadTime" value="<:product leadTime:>" size=5>
-              days</td>
+              <input type="text" name="leadTime" value="<:old leadTime:>" size=5>
+              days <:error_img leadTime:></td>
             <td nowrap bgcolor="#FFFFFF"><:help product leadtime:></td>
           </tr>
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF">Retail price:</th>
             <td nowrap bgcolor="#FFFFFF">$ 
-              <input type="text" name="retailPrice" value="<:money retailPrice:>" size=7>
-              (0.00)</td>
+              <input type="text" name="retailPrice" value="<:old retailPrice money product retailPrice:>" size=7>
+              (0.00) <:error_img retailPrice:></td>
             <td nowrap bgcolor="#FFFFFF"><:help product retail:></td>
           </tr>
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF">Wholesale price:</th>
             <td nowrap bgcolor="#FFFFFF">$ 
-              <input type="text" name="wholesalePrice" value="<:money wholesalePrice:>" size=7>
-              (0.00)</td>
+              <input type="text" name="wholesalePrice" value="<:old wholesalePrice money product wholesalePrice:>" size=7>
+              (0.00) <:error_img wholesalePrice:></td>
             <td nowrap bgcolor="#FFFFFF"><:help product wholesale:></td>
           </tr>
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF">GST:</th>
             <td nowrap bgcolor="#FFFFFF">$ 
-              <input type="text" name="gst" value="<:money gst:>" size=7>
+              <input type="text" name="gst" value="<:old gst money product gst:>" size=7> <:error_img gst:>
               (0.00)</td>
             <td nowrap bgcolor="#FFFFFF"><:help product gst:></td>
           </tr>
@@ -120,7 +126,7 @@
     </tr>
   </table>
   <p><font size="-1">*These fields cannot be modified once you save this form.</font></p>
-  <input type=submit name="save_product" value="Save product">
+  <input type=submit name="save" value="Save product">
 </form>
 <p><font size="-1">BSE Release <:release:></font></p>
 </body>

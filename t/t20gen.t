@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>25;
+use Test::More tests=>31;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
@@ -61,6 +61,27 @@ template_test "ifancestor negative", $kids[0], <<TEMPLATE, <<EXPECTED;
 <:ifAncestor $kids[1]{id}:>Yes<:or:>No<:eif:>
 TEMPLATE
 No
+EXPECTED
+
+template_test "children", $parent, <<TEMPLATE, <<EXPECTED;
+<:iterator begin children:><:
+child title:>
+<:iterator end children:>
+TEMPLATE
+Three
+Two
+One
+
+EXPECTED
+
+template_test "embed children", $top, <<TEMPLATE, <<EXPECTED;
+<:embed $parent->{id} test/children.tmpl:>
+TEMPLATE
+Three
+Two
+One
+
+
 EXPECTED
 
 for my $kid (reverse @kids) {

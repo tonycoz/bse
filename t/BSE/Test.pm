@@ -299,7 +299,7 @@ sub check_form {
 	  ok(1, "$note - $textname - field exists");
 	  if (defined $todo{$textname}[0]) {
 	    my $tvalue = $todo{$textname}[0];
-	    ok($tvalue eq $fvalue, "$note - $textname - checking value");
+	    ok($tvalue eq $fvalue, "$note - $textname - checking value($tvalue vs $fvalue)");
 	  }
 	  if (defined $todo{$textname}[1]) {
 	    ok ($todo{$textname}[1] eq 'textarea',

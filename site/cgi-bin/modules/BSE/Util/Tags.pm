@@ -89,6 +89,7 @@ sub static {
        my ($arg, $acts, $name, $templater) = @_;
        (my ($left, $right) = DevHelp::Tags->get_parms($arg, $acts, $templater)) == 2
 	 or die; # leaves if in place
+       #print STDERR "ifEq >$left< >$right<\n";
        $left eq $right;
      },
      ifMatch =>

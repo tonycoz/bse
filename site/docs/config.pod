@@ -37,6 +37,11 @@ directory under $TMPLDIR.
 Directory base for most templates.  Note: this is not completely
 implemented for now, so assume the default.  Default: $TMPLDIR.
 
+=item images
+
+Where uploaded images are stored.  This is not yet completely
+implemented.  Default: $IMAGEDIR.
+
 =back
 
 =head2 [extensions]
@@ -148,6 +153,13 @@ false (0).  This has the effect that anyone could send you an unsigned
 message encrypted with your public key, though this may not be a
 security threat.  Default: True.
 
+=item link_titles
+
+If this is true then the links to your articles within BSE will be
+followed by a / and then by a simplified version of the article title.
+The aim is to include at least some title information in the URL
+without modifying the name of the HTML file.  Default: False.
+
 =back
 
 =head2 [mail]
@@ -180,7 +192,7 @@ rather than sent immediately.
 
 =back
 
-=head2 [children of id]
+=head2 [children of I<id>]
 
 Where I<id> is the identifier for an article.
 
@@ -194,6 +206,25 @@ the name of the default template for children of the given parent
 
 a comma-separated list of extra directories under $TMPLDIR to search
 for templates that can be used for children of the given parent article.
+
+=back
+
+=head2 [article I<id>]
+
+Where I<id> is the identifier of an article.
+
+=over
+
+=item template_dirs
+
+A comma-separated list of extra directories under $TMPLDIR to search
+for templates that can be used for children of the given parent
+article.
+
+=item extra_templates
+
+A comma-separated list of extra templates under $TMPLDIR that can be
+used for the given article.
 
 =back
 
@@ -338,7 +369,7 @@ Controls the interest.pl script.
 
 Email address that is notified of the interest.  Defaults to $SHOP_FROM.
 
-=bacl
+=back
 
 =head2 [debug]
 
@@ -371,6 +402,30 @@ removed.
 
 Reports debugging information to standard error while encrypting your
 mail.
+
+=back
+
+=head2 [uri]
+
+Contains various URIs.
+
+This is underused, so don't rely on it yet.
+
+=over
+
+=item cgi
+
+The URI to the CGI directory.  Default: /cgi-bin
+
+=item images
+
+The URI where images are kept.  Default: /images
+
+=item shop
+
+=item articles
+
+
 
 =back
 
