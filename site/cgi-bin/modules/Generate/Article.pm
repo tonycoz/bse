@@ -57,7 +57,7 @@ sub make_article_body {
 sub embed {
   my ($self, $article, $articles) = @_;
 
-  open SOURCE, "<$TMPLDIR$article->{template}"
+  open SOURCE, "< $TMPLDIR$article->{template}"
     or die "Cannot open template $article->{template}: $!";
   my $html = do { local $/; <SOURCE> };
   close SOURCE;
@@ -331,7 +331,7 @@ HTML
 sub generate {
   my ($self, $article, $articles) = @_;
 
-  open SOURCE, "<$TMPLDIR$article->{template}"
+  open SOURCE, "< $TMPLDIR$article->{template}"
     or die "Cannot open template $article->{template}: $!";
   my $html = do { local $/; <SOURCE> };
   close SOURCE;
