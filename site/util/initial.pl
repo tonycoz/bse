@@ -374,16 +374,44 @@ EOS
     expire=>'9999-12-31 23:59:59',
     lastModified=>'2000-11-27 14:00:00',
     keyword=>'',
-    template=>'sidebar_section.tmpl',
-    link=>'',
-    admin=>$CGI_URI.'/admin/add.pl?id=5',
+    template=>'common/sidebar_section.tmpl',
+    link=>'/a/format_guide.html',
+    admin=>$CGI_URI.'/admin/add.pl?id=6',
     threshold=>1000, # ignored
     summaryLength=>1000, #ignored
     generator=>'Generate::Article',
     thumbImage=>'',
     thumbWidth=>0,
     thumbHeight=>0,
-    level=>2,
+    level=>3,
+    listed=>0,
+   },
+   {
+    id=>7,
+    parentid=>2,
+    displayOrder=>10000,
+    title=>'[rss generation]',
+    titleImage=>'',
+    body=><<'EOS',
+This body text is not used.
+
+This article generates RSS as used by some sites.
+EOS
+    imagePos=>'tr',
+    release=>'0000-00-00 00:00:00',
+    expire=>'9999-12-31 23:59:59',
+    lastModified=>'2000-11-27 14:00:00',
+    keyword=>'',
+    template=>'common/rssbase.tmpl',
+    link=>'/a/site.rdf',
+    admin=>$CGI_URI.'/admin/add.pl?id=7',
+    threshold=>1000, # ignored
+    summaryLength=>1000, #ignored
+    generator=>'Generate::Article',
+    thumbImage=>'',
+    thumbWidth=>0,
+    thumbHeight=>0,
+    level=>3,
     listed=>0,
    },
   );
