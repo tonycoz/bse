@@ -607,7 +607,14 @@ sub excerpt {
   # do a reverse sort so that the longer terms (and composite
   # terms) are replaced first
   my $re_str = join("|", reverse sort @reterms);
-  my $re = $case_sensitive ? qr/\b($re_str)\b/ : qr/\b($re_str)\b/i;
+  my $re;
+  my $cfg = $self->{cfg};
+  if ($cfg->entryBool('basic', 'highlight_partial', 1)) {
+    $re = $case_sensitive ? qr/\b($re_str)/ : qr/\b($re_str)/i;
+  }
+  else {
+    $re = $case_sensitive ? qr/\b($re_str)\b/ : qr/\b($re_str)\b/i;
+  }
 
   # this used to try searching children as well, but it broke more
   # than it fixed

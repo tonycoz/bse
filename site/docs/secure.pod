@@ -1,0 +1,47 @@
+=head1 NAME
+
+secure.pod - security implications of BSE
+
+=head1 SYNOPSIS
+
+=head1 DESCRIPTION
+
+=head2 CGI Environment
+
+=over
+
+=item *
+
+your document tree needs to be writable by the user that the CGI
+scripts run as to allow regeneration from the web.  If there are any
+security issues in the code (none are known) it may be possible to
+write other data to these directories.
+
+Possible solution: always regenerate from the command-line using
+F<gen.pl>.
+
+=back
+
+=head2 Shop email
+
+=over
+
+=item *
+
+it's possible to disable the signing of the emails containing orders
+sent to the shop owner.  This makes it impossible to tell the
+difference between an order from the site and a forgery.
+
+Possible solution: check the site for each order.
+
+=back
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=head1 REVISION
+
+$Revision$
+
+=cut

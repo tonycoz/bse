@@ -119,6 +119,15 @@ Minimum password length in characters.  Default: 4.
 Device to read random data from.  This device should not block when it
 runs out of entropy.
 
+=item sign
+
+If this is true then the encrypted messages containing the customer's
+credit card number are sent to the shop owner signed.  To avoid
+keeping a passphrase and signing key on the server you can set this to
+false (0).  This has the effect that anyone could send you an unsigned
+message encrypted with your public key, though this may not be a
+security threat.  Default: True.
+
 =back
 
 =head2 [mail]
@@ -252,6 +261,66 @@ Control over subscription messages.
 =item from
 
 The from field for the email.  Default: $SHOP_FROM.
+
+=back
+
+=head2 [search]
+
+=over
+
+=item highlight_partial
+
+If this is true then partial matches will be highlight in search
+result excerpts.  Default: True
+
+=back
+
+=head2 [shop]
+
+=over
+
+=item register_if_files
+
+If true the customer is required to register before checkout if there
+are any for sale files attached to products in the cart.  Default: True
+
+=item require_logon
+
+If true the customer is required to be logged on before checkout,
+whether or not for sale files are attached to products in the cart.
+Default: False.
+
+=back
+
+=head2 [fields]
+
+=over
+
+=item title_size
+
+The maximum length of the article title field.  Default: 255.  Should
+not be set higher than this unless you change the database schema.
+
+=back
+
+=head2 [debug]
+
+Used for debugging.
+
+=over
+
+=item logon_cookies
+
+When a user logs on, and the site url is different to the secure url
+BSE attempts to refresh to the other "side" of the site to set the
+same cookie.
+
+BSE does some simple comparisons to attempt to determine whether the
+logon form was triggered on the secure side of the site (possibly from
+the shop) or on the insecure side.  Since CGI doesn't necessarily give
+us all the information required, it's possible it will guess wrong.
+
+Setting this option to 1 will enable debugging information sent to standard error, which will be sent to the error log on Apache.  This probably isn't useful on IIS.
 
 =back
 

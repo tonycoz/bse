@@ -19,9 +19,14 @@ my @targets =
    'shopadmin.html',
    'TODO.html',
    'config.html',
+   'secure.html',
+   'gen.html',
+   'upgrade_mysql.html',
+   'makedocs.html',
   );
 
 my @exts = qw(.pod .pm .pl);
+push(@exts, ''); # I should have put a .pl on makedocs
 
 my @search =
   (
@@ -29,6 +34,7 @@ my @search =
    '../cgi-bin/',
    '../cgi-bin/modules/',
    '../cgi-bin/admin/',
+   '../util/',
   );
 
 use Getopt::Std;
@@ -72,3 +78,58 @@ Usage: $0      - make the documentation files
 EOS
   exit;
 }
+
+__END__
+
+=head1 NAME
+
+makedocs - produces HTML documentation from POD for BSE
+
+=head1 SYNOPSIS
+
+  perl makedocs [-nh]
+
+=head1 DESCRIPTION
+
+Used during the BSE distribution build process to product HTML
+versions of the POD documentation included with various parts of BSE.
+
+Searches in various standard places for source pod/pl/pm files and
+converts them into HTML.
+
+=head1 OPTIONS
+
+C<makedocs> is typically run without options.
+
+=over
+
+=item -n
+
+Report the actions that would be taken without actually performing the
+conversions.
+
+=item -h
+
+Produces a brief usage message.
+
+=back
+
+=head1 BUGS
+
+We're keeping a dependency list in this file, it should be elsewhere,
+maybe we could parse MANIFEST.
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=head1 REVISION
+
+$Revision$
+
+=head1 SEE ALSO
+
+bse
+
+=cut
+

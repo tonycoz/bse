@@ -139,38 +139,8 @@ sub show_cart {
   %acts =
     (
      BSE::Custom->cart_actions(\%acts, \@cart, \@cart_prods, \%custom_state),
-     iterate_items_reset => sub { $item_index = -1; },
-     iterate_items => 
-     sub { 
-       if (++$item_index < @cart) {
-	 $option_index = -1;
-	 @options = cart_item_opts($cart[$item_index], 
-				   $cart_prods[$item_index]);
-	 return 1;
-       }
-       return 0;
-     },
-     item => 
-     sub { $cart[$item_index]{$_[0]} || $cart_prods[$item_index]{$_[0]} },
-     extended =>
-     sub { 
-       my $what = $_[0] || 'retailPrice';
-       $cart[$item_index]{units} * $cart_prods[$item_index]{$what};
-     },
-     index => sub { $item_index },
-     total => sub { total(\@cart, \@cart_prods, \%custom_state) },
-     money =>
-     sub {
-       my ($func, $args) = split ' ', $_[0], 2;
-       $acts{$func} || return "<: money $_[0] :>";
-       return sprintf("%.02f", $acts{$func}->($args)/100);
-     },
-     count => sub { scalar @cart },
-     iterate_options_reset => sub { $option_index = -1 },
-     iterate_options => sub { ++$option_index < @options },
-     option => sub { CGI::escapeHTML($options[$option_index]{$_[0]}) },
-     ifOptions => sub { @options },
-     options => sub { nice_options(@options) },
+     shop_cart_tags(\%acts, \@cart, \@cart_prods, \%session, $CGI::Q),
+     basic_tags(\%acts),
     );
   $session{custom} = \%custom_state;
 
@@ -230,8 +200,8 @@ sub checkout {
 
   my @cart_prods = map { Products->getByPkey($_->{productId}) } @cart;
 
-  if (need_logon($cfg, \@cart, \@cart_prods, \%session)) {
-    refresh_logon("register before checkout.", 'shop/fileitems');
+  if (my ($msg, $id) = need_logon($cfg, \@cart, \@cart_prods, \%session)) {
+    refresh_logon($msg, $id);
     return;
   }
 
@@ -252,41 +222,11 @@ sub checkout {
   my %acts;
   %acts =
     (
-     iterate_items_reset => sub { $item_index = -1 },
-     iterate_items => 
-     sub { 
-       if (++$item_index < @cart) {
-	 $option_index = -1;
-	 @options = cart_item_opts($cart[$item_index], 
-				   $cart_prods[$item_index]);
-	 return 1;
-       }
-       return 0;
-     },
-     item => 
-     sub { $cart[$item_index]{$_[0]} || $cart_prods[$item_index]{$_[0]} },
-     extended =>
-     sub { 
-       my $what = $_[0] || 'retailPrice';
-       $cart[$item_index]{units} * $cart_prods[$item_index]{$what};
-     },
-     index => sub { $item_index },
-     total => sub { total(\@cart, \@cart_prods, \%custom_state) },
-     money =>
-     sub {
-       my ($func, $args) = split ' ', $_[0], 2;
-       $acts{$func} || return "<: money $_[0] :>";
-       return sprintf("%.02f", $acts{$func}->($args)/100);
-     },
-     count => sub { scalar @cart },
+     shop_cart_tags(\%acts, \@cart, \@cart_prods, \%session, $CGI::Q),
+     basic_tags(\%acts),
      message => sub { $message },
      old => sub { CGI::escapeHTML($olddata ? param($_[0]) : 
 		    $user && defined $user->{$_[0]} ? $user->{$_[0]} : '') },
-     iterate_options_reset => sub { $option_index = -1 },
-     iterate_options => sub { ++$option_index < @options },
-     option => sub { CGI::escapeHTML($options[$option_index]{$_[0]}) },
-     ifOptions => sub { @options },
-     options => sub { nice_options(@options) },
      BSE::Custom->checkout_actions(\%acts, \@cart, \@cart_prods, \%custom_state, $CGI::Q),
     );
   $session{custom} = \%custom_state;
@@ -414,8 +354,8 @@ sub prePurchase {
   }
   $order{orderDate} = $today;
 
-  if (need_logon($cfg, \@cart, \@products, \%session)) {
-    refresh_logon("Some of the products in your cart include downloadable files.  Please logon or register before checkout.");
+  if (my ($msg, $id) = need_logon($cfg, \@cart, \@products, \%session)) {
+    refresh_logon($msg, $id);
     return;
   }
 
@@ -596,8 +536,8 @@ sub purchase {
     $order{gst} += $item->{gst} * $item->{units};
   }
 
-  if (need_logon($cfg, \@cart, \@products, \%session)) {
-    refresh_logon("Some of the products in your cart include downloadable files.  Please logon or register before checkout.");
+  if (my ($msg, $id) = need_logon($cfg, \@cart, \@products, \%session)) {
+    refresh_logon($msg, $id);
     return;
   }
 
@@ -783,7 +723,7 @@ sub send_order {
     # encrypt and sign
     my %opts = 
       (
-       sign=> 1,
+       sign=> $cfg->entryBool('basic', 'sign', 1),
        passphrase=> $passphrase,
        stripwarn=>1,
        #debug=>1,
@@ -824,7 +764,7 @@ sub epoch_to_sql {
 
 sub refresh_logon {
   my ($msg, $msgid) = @_;
-  my $url = $urlbase."/cgi-bin/user.pl";
+  my $url = $securlbase."/cgi-bin/user.pl";
   my %parms;
   $parms{r} = $securlbase."/cgi-bin/shop.pl?checkout=1";
   $parms{message} = $msg if $msg;
@@ -877,6 +817,14 @@ Formats the given field as a money value (without a currency symbol.)
 =item count
 
 The number of items in the cart.
+
+=item ifUser
+
+Conditional tag, true if a registered user is logged in.
+
+=item user I<field>
+
+Retrieved the given field from the currently logged in user, if any.
 
 =back
 

@@ -20,6 +20,10 @@ close TESTCFG;
 
 sub base_url { $conf{base_url} or die "No base_url in test config" }
 
+sub base_securl { 
+  $conf{securl} or $conf{base_url} or die "No securl or base_url in test.cfg"
+}
+
 sub base_dir { $conf{base_dir} or die "No base_dir in test config" }
 
 sub mysql_name { $conf{mysql} or die "No mysql in test config" }

@@ -8,6 +8,9 @@ use BSE::DB;
 use Squirrel::Template;
 use Constants qw(:search);
 use Carp;
+use BSE::Cfg;
+
+my $cfg = BSE::Cfg->new;
 
 my $results_per_page = 10;
 
@@ -289,7 +292,7 @@ sub excerpt {
   eval "use $generator";
   confess "Cannot use $generator: $@" if $@;
 
-  $gens{$generator} ||= $generator->new(admin=>$admin);
+  $gens{$generator} ||= $generator->new(admin=>$admin, cfg=>$cfg);
 
   return $gens{$generator}->excerpt($article, $found, $case_sensitive, @terms);
 }

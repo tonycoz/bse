@@ -15,8 +15,16 @@ sub shop_cart_tags {
   my $item_index;
   my $option_index;
   my @options;
+  my $user;
+  if ($session->{userid}) {
+    require 'SiteUsers.pm';
+    $user = SiteUsers->getBy(userId=>$session->{userid});
+  }
+
   return
     (
+     ifUser => sub { $user },
+     user => sub { CGI::escapeHTML($user ? $user->{$_[0]} : '') },
      iterate_items_reset => sub { $item_index = -1 },
      iterate_items => 
      sub { 
@@ -37,6 +45,7 @@ sub shop_cart_tags {
      },
      index => sub { $item_index },
      total => sub { total($cart, $cart_prods, $session->{custom}) },
+     count => sub { scalar @$cart },
      iterate_options_reset => sub { $option_index = -1 },
      iterate_options => sub { ++$option_index < @options },
      option => sub { CGI::escapeHTML($options[$option_index]{$_[0]}) },
@@ -253,12 +262,17 @@ sub need_logon {
     for my $prod (@$cart_prods) {
       my @files = ArticleFiles->getBy(articleId=>$prod->{id});
       if (grep $_->{forSale}, @files) {
-	return 1;
+	return ("register before checkout", "shop/fileitems");
       }
     }
   }
+
+  my $require_logon = $cfg->entryBool('shop', 'require_logon', 0);
+  if (!$session->{userid} && $require_logon) {
+    return ("register before checkout", "shop/logonrequired");
+  }
   
-  return 0;
+  return;
 }
 
 1;

@@ -225,3 +225,62 @@ sub create_clauses {
     return $results[0];
   }
 }
+
+__END__
+
+=head1 NAME
+
+upgrade_mysql.pl - upgrades the sites mysql database to the description in mysql.str
+
+=head1 SYNOPSIS
+
+  perl upgrade_mysql.pl [-bn] [-v [verbosity]]
+
+=head1 DESCRIPTION
+
+Upgrades your BSE database, as described in your Constants.pm to the
+schema described in mysql.str.
+
+BACKUP YOUR DATABASE BEFORE USING THIS TOOL.
+
+=head1 OPTIONS
+
+=over
+
+=item -b
+
+Asserts that the user has done a backup.  Avoids the interactive query
+about having done a backup.
+
+=item -n
+
+Only check for the changes needed, rather than actually performing the
+upgrade.  Since it's possible that tables might not exist when
+checking for indices, this may give you some errors.
+
+=item -v [verbosity]
+
+Controls verbosity of output.  The default level (1), will produce
+basic descriptions of what is happening, including which table is
+being checked, and any changes being made.
+
+Level 2 will print debug messages containing any SQL that's being
+executed.
+
+Level 3 prints information useful only to developers.
+
+=back
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=head1 REVISION
+
+$Revision$
+
+=head1 SEE ALSO
+
+bse
+
+=cut

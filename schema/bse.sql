@@ -10,7 +10,7 @@ CREATE TABLE article (
   -- the order to display articles in
   -- used for ordering sibling articles
   displayOrder integer not NULL default 0,
-  title varchar(64) DEFAULT '' NOT NULL,
+  title varchar(255) DEFAULT '' NOT NULL,
   titleImage varchar(64) not null,
   body text NOT NULL,
 

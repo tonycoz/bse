@@ -17,6 +17,7 @@ use Carp 'verbose';
 use Squirrel::ImageEditor;
 use BSE::Cfg;
 use BSE::Session;
+use BSE::Util::Tags;
 
 my $cfg = BSE::Cfg->new;
 my %session;
@@ -209,6 +210,7 @@ my $stepparent_index;
 my $child_index = -1;
 %acts =
   (
+   BSE::Util::Tags->basic(\%acts, $CGI::Q, $cfg),
    #iterate_image=>\&iterate_image,
    image=>\&image,
    article=>\&article,

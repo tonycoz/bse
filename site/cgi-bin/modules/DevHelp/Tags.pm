@@ -8,7 +8,16 @@ sub make_iterator {
   my @result =
       (
        "iterate_${plural}_reset" => sub { $index = -1 },
-       $single => sub { CGI::escapeHTML($array->[$index]{$_[0]}) },
+       $single => 
+       sub { 
+	 $index >= 0 && $index < @$array 
+	   or return "** $single used outside of iterator **";
+	 defined($_[0])
+	   or return "** no parameter supplied to $single **";
+	 my $value = $array->[$index]{$_[0]};
+	 defined($value) or return '';
+	 return CGI::escapeHTML($value);
+       },
        "if\u$plural" => sub { @$array },
        "${single}_index" => sub { $index },
       );
@@ -183,14 +192,6 @@ sub static {
        (my ($left, $right) = _get_parms($acts, $_[0])) == 2
 	 or die; # leaves if in place
        $left =~ $right;
-     },
-     cfg =>
-     sub {
-       my ($section, $key) = split ' ', $_[0];
-       $cfg or return '';
-       my $value = $cfg->entry($section, $key);
-       defined $value or $value = '';
-       $value;
      },
      _format => 
      sub {

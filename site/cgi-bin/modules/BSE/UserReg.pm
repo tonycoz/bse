@@ -88,14 +88,85 @@ sub logon {
   print "Set-Cookie: ",CGI::Cookie->new(-name=>"userid", 
 					-value=>$user->{userId},
 					-path=>"/"),"\n";
-  
+
+  _got_user_refresh($session, $cgi, $cfg);
+}
+
+sub _got_user_refresh {
+  my ($session, $cgi, $cfg) = @_;
+
+  my $baseurl = $cfg->entryVar('site', 'url');
+  my $securl = $cfg->entryVar('site', 'secureurl');
+  my $need_magic = $baseurl ne $securl;
+  my $onbase = 1;
+  if ($need_magic) {
+    my $debug = $cfg->entryBool('debug', 'logon_cookies', 0);
+    print STDERR "Logon Cookies Debug\n" if $debug;
+
+    # which host are we on?
+    # first get info about the 2 possible hosts
+    my ($baseprot, $basehost, $baseport) = 
+      $baseurl =~ m!^(\w+)://([\w-.]+)(?::(\d+))?!;
+    $baseport ||= $baseprot eq 'http' ? 80 : 443;
+    print STDERR "Base: prot: $baseprot  Host: $basehost  Port: $baseport\n"
+      if $debug;
+
+    #my ($secprot, $sechost, $secport) = 
+    #  $securl =~ m!^(\w+)://([\w-.]+)(?::(\d+))?!;
+
+    # get info about the current host
+    my $port = $ENV{SERVER_PORT} || 80;
+    my $ishttps = exists $ENV{HTTPS} || exists $ENV{SSL_CIPHER};
+    print STDERR "\$ishttps: $ishttps\n" if $debug;
+    my $protocol = $ishttps ? 'https' : 'http';
+
+    if (lc $ENV{SERVER_NAME} ne lc $basehost
+       || lc $protocol ne $baseprot
+       || $baseport != $port) {
+      $onbase = 0;
+    }
+  }
   my $refresh = $cgi->param('r');
-  if ($refresh) {
-    refresh_to($refresh);
+  if ($need_magic) {
+    my $url = $onbase ? $securl : $baseurl;
+    my $finalbase = $onbase ? $baseurl : $securl;
+    $refresh ||= "$ENV{SCRIPT_NAME}?userpage=1";
+    $refresh = $finalbase . $refresh unless $refresh =~ /^\w+:/;
+    $url .= "$ENV{SCRIPT_NAME}?setcookie=".$session->{_session_id};
+    $url .= "&r=".CGI::escape($refresh);
+    refresh_to($url);
   }
   else {
-    refresh_to($cfg->entryErr('site', 'url') . "$ENV{SCRIPT_NAME}?userpage=1");
+    if ($refresh) {
+      refresh_to($refresh);
+    }
+    else {
+      refresh_to($cfg->entryErr('site', 'url') . "$ENV{SCRIPT_NAME}?userpage=1");
+    }
   }
+}
+
+sub set_cookie {
+  my ($self, $session, $cgi, $cfg) = @_;
+
+  my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
+  my $cookie = $cgi->param('setcookie')
+    or return $self->show_logon($session, $cgi, $cfg, 
+				$msgs->(nocookie=>"No cookie provided"));
+  my %newsession;
+  BSE::Session->change_cookie($session, $cfg, $cookie, \%newsession);
+  my $refresh = $cgi->param('r') 
+    or return $self->show_logon($session, $cgi, $cfg, 
+				$msgs->(norefresh=>"No refresh provided"));
+  my $userid = $newsession{userid};
+  if ($userid) {
+    my $user = SiteUsers->getBy(userId => $userid);
+    use CGI::Cookie;
+    print "Set-Cookie: ",CGI::Cookie->new(-name=>"userid", 
+					  -value=>$userid,
+					  -path=>"/"),"\n";
+  }
+  refresh_to($refresh);
 }
 
 sub logoff {
@@ -341,14 +412,15 @@ sub register {
 					  -path=>"/"),"\n";
     use Util qw/refresh_to/;
     
+    _got_user_refresh($session, $cgi, $cfg);
     
-    my $refresh = $cgi->param('r');
-    if ($refresh) {
-      refresh_to($refresh);
-    }
-    else {
-      return refresh_to($cfg->entryErr('site', 'url') . "/cgi-bin/user.pl?show_opts=1");
-    }
+#      my $refresh = $cgi->param('r');
+#      if ($refresh) {
+#        refresh_to($refresh);
+#      }
+#      else {
+#        return refresh_to($cfg->entryErr('site', 'url') . "/cgi-bin/user.pl?show_opts=1");
+#      }
   }
   else {
     $self->show_register($session, $cgi, $cfg,

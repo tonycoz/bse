@@ -136,6 +136,10 @@ add a test suite
 
 level parameter to add.pl isn't checked for validity
 
+=item *
+
+Java applet WYSIWYG body text editor (adrian)
+
 =back
 
 =cut

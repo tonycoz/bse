@@ -64,7 +64,7 @@ my $cfg = do { local $/; <CFG> };
 close CFG;
 $cfg =~ s/^name\s*=.*/name=Test Server/m;
 $cfg =~ s/^url\s*=.*/"url=" . BSE::Test::base_url()/me;
-$cfg =~ s/^secureurl\s*=.*/"secureurl=" . BSE::Test::base_url()/me;
+$cfg =~ s/^secureurl\s*=.*/"secureurl=" . BSE::Test::base_securl()/me;
 my $uploads = "$instbase/uploads";
 $cfg =~ s!^downloads\s*=.*!downloads=$uploads!m;
 -d $uploads 

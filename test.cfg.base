@@ -1,5 +1,6 @@
 # the url of your test sie
 base_url = http://blah.blah.blah
+securl = https://blah.blah.blah
 # where to install the site
 base_dir = /foo/bar/quux
 # the database user/password/dsn

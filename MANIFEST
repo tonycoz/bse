@@ -102,12 +102,16 @@ site/docs/bugs.html
 site/docs/bugs.pod
 site/docs/config.html
 site/docs/config.pod
+site/docs/gen.html
 site/docs/makedocs
 site/docs/search.html
+site/docs/secure.html
+site/docs/secure.pod
 site/docs/shop.html
 site/docs/shopadmin.html
 site/docs/templates.html
 site/docs/templates.pod
+site/docs/upgrade_mysql.html
 site/htdocs/a/.htaccess
 site/htdocs/admin/advanced.html
 site/htdocs/admin/help/file.html

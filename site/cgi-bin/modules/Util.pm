@@ -41,7 +41,7 @@ sub generate_low {
 
   my $outname = $article->{link};
   $outname =~ s!/\w*$!!;
-  $outname =~ s{^\w+://[\w.-]+}{};
+  $outname =~ s{^\w+://[\w.-]+(?::\d+)?}{};
   $outname = $CONTENTBASE . $outname;
   $outname =~ s!//+!/!;
   my $content = $gen_cache{$genname}->generate($article, $articles);

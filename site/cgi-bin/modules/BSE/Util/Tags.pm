@@ -94,10 +94,12 @@ sub static {
      },
      cfg =>
      sub {
-       my ($section, $key) = split ' ', $_[0];
+       my ($section, $key, $def) = split ' ', $_[0];
        $cfg or return '';
        my $value = $cfg->entry($section, $key);
-       defined $value or $value = '';
+       unless (defined $value) {
+	 $value = defined($def) ? $def : '';
+       }
        $value;
      },
      _format => 

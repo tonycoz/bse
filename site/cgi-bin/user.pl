@@ -36,6 +36,7 @@ my %actions =
    blacklist => 'blacklist',
    confirm => 'confirm',
    unsub => 'unsub',
+   setcookie => 'set_cookie',
   );
 
 my $cgi = CGI->new;

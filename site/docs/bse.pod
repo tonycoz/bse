@@ -10,6 +10,71 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.11_10
+
+=over
+
+=item *
+
+test.cfg now has a C<securl> option to control the configured secure url
+
+=item *
+
+added site/doc/secure.pod, describing security considerations
+
+=item *
+
+article title field has been extended to 255 characters.  The title
+edit field maximum length can be controlled with the C<title_size>
+item in [field] in F<bse.cfg>.
+
+=item *
+
+you can get access to the currently logged in user on the checkout and
+cart pages using the C<ifUser> conditional tag and the C<user> value
+tag.
+
+=item *
+
+stripped some more common code out of shop.pl
+
+=item *
+
+extended the common cfg tag to take a third default value parameter
+
+=item *
+
+search result excerpts can now bold partial matches 
+
+=item *
+
+the page regenerator didn't handle the case where a port name was
+present in the secure url.
+
+=item *
+
+now generate gen.html from gen.pl
+
+=item *
+
+added POD to site/docs/makedocs and generate the HTML
+
+=item *
+
+added POD to site/util/upgrade_mysql.pod and generate a HTML version
+
+=item *
+
+when a user logs on and the secure url is different from the base url,
+BSE now refreshes to the other side of the site to set the same
+session cookie there.  This allows session information to be shared
+with the two sides of the site.
+
+There is a known issue with this: any session information (like the
+shopping cart) stored on the other side of the site is not retained.
+
+=back
+
 =head2 0.11_09
 
 =over

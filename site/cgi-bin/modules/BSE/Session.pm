@@ -42,6 +42,23 @@ sub tie_it {
   $saved = $session;
 }
 
+sub change_cookie {
+  my ($self, $session, $cfg, $sessionid, $newsession) = @_;
+
+  my $lifetime = $cfg->entry('basic', 'cookie_lifetime') || '+3h';
+  print "Set-Cookie: ",
+  CGI::Cookie->new(-name=>'sessionid', -value=>$sessionid, 
+		   -expires=>$lifetime),"\n";
+  my $dh = BSE::DB->single;
+  eval {
+    tie %$newsession, $SESSION_CLASS, $sessionid,
+    {
+     Handle=>$dh->{dbh},
+     LockHandle=>$dh->{dbh}
+    };
+  };
+}
+
 # this shouldn't be necessary, but it stopped working elsewhere and this
 # fixed it
 END {
