@@ -341,4 +341,13 @@ sub default_value {
   return;
 }
 
+sub type_default_value {
+  my ($self, $req, $col) = @_;
+
+  my $value = $req->cfg->entry('product defaults', $col);
+  defined $value and return $value;
+
+  return $self->SUPER::type_default_value($req, $col);
+}
+
 1;

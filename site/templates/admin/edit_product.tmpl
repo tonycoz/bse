@@ -65,19 +65,19 @@
           </tr>
 		  <tr> 
             <th align="left" bgcolor="#FFFFFF">Title*:</th>
-            <td bgcolor="#FFFFFF"><:ifFieldPerm title:><input type="text" name="title" value="<:old title:>" size="60"><:or:><:product title:><:eif:> </td>
+            <td bgcolor="#FFFFFF"><:ifFieldPerm title:><input type="text" name="title" value="<:old title default title:>" size="60"><:or:><:product title:><:eif:> </td>
             <td nowrap bgcolor="#FFFFFF"><:help product title:> <:error_img title:></td>
           </tr>
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF">Summary*:</th>
-            <td nowrap bgcolor="#FFFFFF"><:ifFieldPerm summary:><input type="text" name="summary" value="<:old summary:>" size=60><:or:><:product summary:><:eif:> </td>
+            <td nowrap bgcolor="#FFFFFF"><:ifFieldPerm summary:><input type="text" name="summary" value="<:old summary default summary:>" size=60><:or:><:product summary:><:eif:> </td>
             <td nowrap bgcolor="#FFFFFF"><:help product summary:> <:error_img
             summary:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF" valign="top"> Body:</th>
             <td bgcolor="#FFFFFF"> 
-              <:ifFieldPerm body:><textarea name=body rows=15 cols=60 wrap=virtual><:old body product body:></textarea><:or:><:bodytext product body:><:eif:>
+              <:ifFieldPerm body:><textarea name=body rows=15 cols=60 wrap=virtual><:old body default body:></textarea><:or:><:bodytext product body:><:eif:>
             </td>
             <td nowrap bgcolor="#FFFFFF" valign="top"><:help body body:> <:error_img
             body:></td>
@@ -105,7 +105,7 @@
             <th nowrap align="left" bgcolor="#FFFFFF">Lead time:</th>
             <td nowrap bgcolor="#FFFFFF"> 
               <:ifFieldPerm leadTime:>
-              <input type="text" name="leadTime" value="<:old leadTime:>" size=5><:or:><:product leadTime:><:eif:>
+              <input type="text" name="leadTime" value="<:old leadTime default leadTime:>" size=5><:or:><:product leadTime:><:eif:>
               days</td>
             <td nowrap bgcolor="#FFFFFF"><:help product leadtime:> <:error_img
             leadTime:></td>
@@ -113,28 +113,28 @@
           <tr> 
             <th align="left" bgcolor="#FFFFFF"><:cfg "product fields" retailPrice "Retail price":>:</th>
             <td bgcolor="#FFFFFF">$ 
-              <:ifFieldPerm retailPrice:><input type="text" name="retailPrice" value="<:old retailPrice money product retailPrice:>" size=7>
+              <:ifFieldPerm retailPrice:><input type="text" name="retailPrice" value="<:old retailPrice money default retailPrice:>" size=7>
               (0.00)<:or:><:money product retailPrice:><:eif:> </td>
             <td nowrap bgcolor="#FFFFFF"><:help product retail:> <:error_img retailPrice:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF">Wholesale price:</th>
             <td bgcolor="#FFFFFF">$ 
-              <:ifFieldPerm wholesalePrice:><input type="text" name="wholesalePrice" value="<:old wholesalePrice money product wholesalePrice:>" size=7>
+              <:ifFieldPerm wholesalePrice:><input type="text" name="wholesalePrice" value="<:old wholesalePrice money default wholesalePrice:>" size=7>
               (0.00)<:or:><:money product wholesalePrice:><:eif:></td>
             <td nowrap bgcolor="#FFFFFF"><:help product wholesale:> <:error_img wholesalePrice:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF">GST:</th>
             <td bgcolor="#FFFFFF">$ 
-              <:ifFieldPerm gst:><input type="text" name="gst" value="<:old gst money product gst:>" size=7>
+              <:ifFieldPerm gst:><input type="text" name="gst" value="<:old gst money default gst:>" size=7>
               (0.00)<:or:><:money product gst:><:eif:></td>
             <td nowrap bgcolor="#FFFFFF"><:help product gst:> <:error_img gst:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF">Release date:</th>
             <td bgcolor="#FFFFFF"> 
-              <:ifFieldPerm release:><input type="text" name="release" value="<:old release date "%d/%m/%Y" product release:>" size=11>
+              <:ifFieldPerm release:><input type="text" name="release" value="<:old release date "%d/%m/%Y" default release:>" size=11>
               (dd/mm/yyyy)<:or:><:date "%d/%m/%Y" product release:><:eif:></td>
             <td nowrap bgcolor="#FFFFFF"><:help product release:> <:error_img
             release:></td>
@@ -142,7 +142,7 @@
           <tr> 
             <th align="left" bgcolor="#FFFFFF">Expiry date:</th>
             <td bgcolor="#FFFFFF"> 
-              <:ifFieldPerm expire:><input type="text" name="expire" value="<:old expire date "%d/%m/%Y" product expire:>" size=11>
+              <:ifFieldPerm expire:><input type="text" name="expire" value="<:old expire date "%d/%m/%Y" default expire:>" size=11>
               (dd/mm/yyyy)<:or:><:date "%d/%m/%Y" product expire:><:eif:></td>
             <td nowrap bgcolor="#FFFFFF"><:help product expire:> <:error_img
             expire:></td>
@@ -150,7 +150,7 @@
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF">Summary length:</th>
             <td nowrap bgcolor="#FFFFFF"> 
-              <:ifFieldPerm summaryLength:><input type="text" name="summaryLength" size="10" maxlength="10" value="<:old summaryLength product summaryLength:>"><:or:><:product summaryLength:><:eif:>
+              <:ifFieldPerm summaryLength:><input type="text" name="summaryLength" size="10" maxlength="10" value="<:old summaryLength default summaryLength:>"><:or:><:product summaryLength:><:eif:>
             </td>
             <td nowrap bgcolor="#FFFFFF"><:help product summary:> <:error_img
             summaryLength:></td>
@@ -158,7 +158,7 @@
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF">Display threshold:</th>
             <td nowrap bgcolor="#FFFFFF"> 
-              <:ifFieldPerm threshold:><input type="text" name="threshold" size=10 maxlength=10 value="<:old threshold product threshold:>"><:or:><:product threshold:><:eif:>
+              <:ifFieldPerm threshold:><input type="text" name="threshold" size=10 maxlength=10 value="<:old threshold default threshold:>"><:or:><:product threshold:><:eif:>
             </td>
             <td nowrap bgcolor="#FFFFFF"><:help product threshold:> <:error_img
             threshold:></td>
@@ -166,7 +166,7 @@
           <tr> 
             <th align="left" bgcolor="#FFFFFF">Options:</th>
             <td bgcolor="#FFFFFF"> 
-              <:ifFieldPerm options:><input type="text" name="options" value="<:old options product options:>" size=30>
+              <:ifFieldPerm options:><input type="text" name="options" value="<:old options default options:>" size=30>
               (<:alloptions:>)<:or:><:product options:><:eif:> </td>
             <td bgcolor="#FFFFFF"><:help product options:> <:error_img options:></td>
           </tr>

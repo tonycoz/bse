@@ -42,7 +42,7 @@ EOS
 select ar.* from article ar, other_parents op
    where op.childId = ar.id 
      and op.parentId = ? 
-     and date_format(?, '%Y%m%d') between date_format(op.release, '%Y%m%d') and date_format(op.expire, '%Y%m%d')
+     and date_format(?, '%Y%m%d') between date_format(op.release, '%Y%m%d') and date_format(op.expire, '%Y%m%d') and listed <> 0
 EOS
    'Articles.ids'=>'select id from article',
 

@@ -77,14 +77,14 @@
           <tr> 
             <th bgcolor="#FFFFFF" nowrap align="left"> Catalog title: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
-              <:ifFieldPerm title:><input type="text" name="title" maxlength="64" size="64" value="<: old title article title :>"><:or:><:default title:><:eif:>
+              <:ifFieldPerm title:><input type="text" name="title" maxlength="64" size="64" value="<: old title default title :>"><:or:><:default title:><:eif:>
             </td>
             <td nowrap bgcolor="#FFFFFF"><:help catalog title:> <:error_img title:></td>
           </tr>
           <tr> 
             <th valign="top" bgcolor="#FFFFFF" nowrap align="left"> Body:</th>
             <td bgcolor="#FFFFFF" width="100%"> 
-              <:ifFieldPerm body:><textarea name="body" rows="10" cols="60" wrap="virtual"><: old body article body :></textarea><:or:><:bodytext article body:><:eif:>
+              <:ifFieldPerm body:><textarea name="body" rows="10" cols="60" wrap="virtual"><: old body default body :></textarea><:or:><:bodytext article body:><:eif:>
             </td>
             <td valign="top" nowrap bgcolor="#FFFFFF"><:help body body:> <:error_img
             body:></td>
@@ -110,14 +110,14 @@
           <tr> 
             <th bgcolor="#FFFFFF" nowrap align="left"> Release date: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
-              <:if FieldPerm release:><input type="text" name="release" value="<: old release date "%d/%m/%Y" article release :>" size="10" maxlength="10">
+              <:if FieldPerm release:><input type="text" name="release" value="<: old release date "%d/%m/%Y" default release :>" size="10" maxlength="10">
               (dd/mm/yyyy<: ifNew :> - default is today<: or :><: eif :>)<:or FieldPerm:><: date "%d/%m/%Y" article release :><:eif FieldPerm:></td>
             <td nowrap bgcolor="#FFFFFF"><:help catalog release:> <:error_img release:></td>
           </tr>
           <tr> 
             <th bgcolor="#FFFFFF" nowrap align="left"> Expiry date: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
-              <:if FieldPerm expire:><input type="text" name="expire" value="<: old expire date "%d/%m/%Y" article expire :>" size="10" maxlength="10">
+              <:if FieldPerm expire:><input type="text" name="expire" value="<: old expire date "%d/%m/%Y" default expire :>" size="10" maxlength="10">
               (dd/mm/yyyy - <: ifNew :>default is never, <: or :><: eif :>blank 
               for never expires)<:or FieldPerm:><: date "%d/%m/%Y" article expire :><:eif FieldPerm:></td>
             <td nowrap bgcolor="#FFFFFF"><:help catalog expire:> <:error_img expire:></td>
@@ -125,7 +125,7 @@
           <tr> 
             <th bgcolor="#FFFFFF" nowrap align="left"> Summary length: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
-              <:if FieldPerm summaryLength:><input type="text" name="summaryLength" size="10" maxlength="10" value="<: old summaryLength article summaryLength :>">
+              <:if FieldPerm summaryLength:><input type="text" name="summaryLength" size="10" maxlength="10" value="<: old summaryLength default summaryLength :>">
               (in characters - default inherited from parent catalog or shop, zero 
               for no summary)<:or FieldPerm:><: article summaryLength :><:eif FieldPerm:></td>
             <td nowrap bgcolor="#FFFFFF"><:help catalog summary:> <:error_img summaryLength:></td>
@@ -133,14 +133,14 @@
           <tr> 
             <th bgcolor="#FFFFFF" nowrap align="left"> Display threshold: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
-              <:ifFieldPerm threshold:><input type="text" name="threshold" size="10" maxlength="10" value="<: old threshold article threshold :>"><:or:><: article threshold :><:eif:>
+              <:ifFieldPerm threshold:><input type="text" name="threshold" size="10" maxlength="10" value="<: old threshold default threshold :>"><:or:><: article threshold :><:eif:>
             </td>
             <td nowrap bgcolor="#FFFFFF"><:help catalog threshold:> <:error_img threshold:></td>
           </tr>
           <tr> 
             <th bgcolor="#FFFFFF" nowrap align="left"> Keywords: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
-              <:ifFieldPerm keyword:><input type="text" name="keyword" maxlength="255" size="60" value="<: old keyword article keyword :>"><:or:><: article threshold :><:eif:>
+              <:ifFieldPerm keyword:><input type="text" name="keyword" maxlength="255" size="60" value="<: old keyword default keyword :>"><:or:><: article threshold :><:eif:>
               (comma separated) </td>
             <td nowrap bgcolor="#FFFFFF"><:help catalog keywords:> <:error_img keyword:></td>
           </tr>

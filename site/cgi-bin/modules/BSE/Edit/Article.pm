@@ -2679,6 +2679,9 @@ sub default_value {
   my $value = $req->cfg->entry($section, $col);
   defined($value) and return $value;
 
+  $value = $self->type_default_value($req, $col);
+  defined $value and return $value;
+
   exists $defaults{$col} and return $defaults{$col};
 
   $col eq 'release' and return now_sqldate();
@@ -2702,6 +2705,12 @@ sub default_value {
   }
   
   return;
+}
+
+sub type_default_value {
+  my ($self, $req, $col) = @_;
+
+  return $req->cfg->entry('article defaults', $col);
 }
 
 sub flag_sections {

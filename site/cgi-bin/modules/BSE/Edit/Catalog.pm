@@ -112,5 +112,14 @@ sub flag_sections {
   return ( 'catalog flags', $self->SUPER::flag_sections );
 }
 
+sub type_default_value {
+  my ($self, $req, $col) = @_;
+
+  my $value = $req->cfg->entry('catalog defaults', $col);
+  defined $value and return $value;
+
+  return $self->SUPER::type_default_value($req, $col);
+}
+
 1;
 

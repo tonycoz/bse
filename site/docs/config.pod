@@ -1136,6 +1136,29 @@ digits for your own use.
 Use the id of the flag as the key, and a description of the flag as
 it's value.
 
+=head2 [article defaults]
+
+=head2 [catalog defaults]
+
+=head2 [product defaults]
+
+These sections contain defaults values for the corresponding article
+types.
+
+Each key is the name of a column for the article type.
+
+If an entry is not found in [catalog defaults] then [article defaults]
+is also checked.
+
+If an entry is not found in [product defaults] then [article defaults]
+is also checked.
+
+These sections are checked B<after> the C<[children of >I<id>C<]> and
+C<[level >I<level>C<]> sections.
+
+These defaults are used when creating an article where no value is
+supplied, they can also be accessed via the <:default I<name>:> tag.
+
 =head1 AUTHOR
 
 Tony Cook <tony@develop-help.com>
