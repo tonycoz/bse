@@ -10,6 +10,35 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.10_01
+
+=over
+
+=item *
+
+added <:siteUrl:> tag in %EXTRA_TAGS (used by the RSS templates)
+
+=item *
+
+fixed broken template value for the formatting guide (initial.pl)
+
+=item *
+
+fixed broken admin links for the formatting guide (initial.pl)
+
+=item *
+
+the formatting guide now generates to
+http://your.site/a/format_guide.html (initial.pl)
+
+=item *
+
+RDF/RSS is now generated to /a/site.rdf.  This includes links and
+titles for the articles on the home page, and a search field (if the
+tool displaying the RSS supports that.)
+
+=back
+
 =head2 0.10
 
 WARNING: the tag for articles found for a search has changed from:
