@@ -204,7 +204,7 @@ sub load_order_fields {
 
   # check if a customizer has anything to do
   eval {
-    BSE::Custom->order_save($q, $order, \@cart, \@products);
+    BSE::Custom->order_save($q, $order, \@cart, \@products, $session->{custom});
   };
   if ($@) {
     $$error = $@;
