@@ -27,7 +27,7 @@ site/cgi-bin/modules/Apache/Session/Store/DBIreal.pm
 site/cgi-bin/modules/Article.pm
 site/cgi-bin/modules/Articles.pm
 site/cgi-bin/modules/Constants.pm
-site/cgi-bin/modules/Constants.tmpl
+#site/cgi-bin/modules/Constants.tmpl
 site/cgi-bin/modules/BSE/Custom.pm
 site/cgi-bin/modules/BSE/CustomBase.pm
 site/cgi-bin/modules/BSE/DB.pm
@@ -48,6 +48,8 @@ site/cgi-bin/modules/Order.pm
 site/cgi-bin/modules/OrderItem.pm
 site/cgi-bin/modules/OrderItems.pm
 site/cgi-bin/modules/Orders.pm
+site/cgi-bin/modules/OtherParent.pm
+site/cgi-bin/modules/OtherParents.pm
 site/cgi-bin/modules/Product.pm
 site/cgi-bin/modules/Products.pm
 site/cgi-bin/modules/Squirrel/GPG.pm
@@ -110,7 +112,7 @@ site/templates/base.tmpl
 site/templates/cart_base.tmpl
 site/templates/catalog.tmpl
 site/templates/catalog/multi.tmpl
-site/templates/catalog/nested.tmpl
+#site/templates/catalog/nested.tmpl
 site/templates/checkout_base.tmpl
 site/templates/checkoutcard_base.tmpl
 site/templates/checkoutfinal_base.tmpl
@@ -119,6 +121,7 @@ site/templates/common/embedded_subsect.tmpl
 site/templates/common/news_item.tmpl
 site/templates/common/sidebar.tmpl
 site/templates/common/sidebar_section.tmpl
+site/templates/admin/catalog.tmpl  # embedded in the shopadmin catalog/product display
 site/templates/admin/edit_0.tmpl
 site/templates/admin/edit_1.tmpl
 site/templates/admin/edit_2.tmpl
@@ -127,6 +130,12 @@ site/templates/admin/edit_4.tmpl
 site/templates/admin/edit_5.tmpl
 site/templates/admin/edit_catalog.tmpl
 site/templates/admin/edit_product.tmpl
+site/templates/admin/order_detail.tmpl
+site/templates/admin/order_list.tmpl
+site/templates/admin/order_list_filled.tmpl
+site/templates/admin/order_list_unfilled.tmpl
+site/templates/admin/product_detail.tmpl
+site/templates/admin/product_list.tmpl
 site/templates/admin/regenerror.tmpl
 site/templates/error.tmpl
 site/templates/extras.txt
@@ -135,13 +144,6 @@ site/templates/index2.tmpl
 site/templates/lowmap.tmpl
 site/templates/mailconfirm.tmpl
 site/templates/mailorder.tmpl
-site/templates/admin/catalog.tmpl
-site/templates/admin/order_detail.tmpl
-site/templates/admin/order_list.tmpl
-site/templates/admin/order_list_filled.tmpl
-site/templates/admin/order_list_unfilled.tmpl
-site/templates/admin/product_detail.tmpl
-site/templates/admin/product_list.tmpl
 site/templates/search_base.tmpl
 site/templates/shop_help.tmpl
 site/templates/shop_sect.tmpl
