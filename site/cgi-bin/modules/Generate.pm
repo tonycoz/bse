@@ -168,7 +168,7 @@ sub _make_html {
 }
 
 sub _embed_low {
-  my ($self, $acts, $articles, $what, $template, $maxdepth) = @_;
+  my ($self, $acts, $articles, $what, $template, $maxdepth, $templater) = @_;
 
   $maxdepth = $self->{maxdepth} 
     if !$maxdepth || $maxdepth > $self->{maxdepth};
@@ -187,7 +187,7 @@ sub _embed_low {
   my $id;
   if ($what !~ /^\d+$/) {
     # not an article id, assume there's an article here we can use
-    $id = $acts->{$what} && $acts->{$what}->('id');
+    $id = $acts->{$what} && $templater->perform($acts, $what, 'id');
     unless ($id && $id =~ /^\d+$/) {
       # save it for later
       defined $template or $template = "-";
@@ -279,7 +279,7 @@ sub _make_img {
 # replace markup, insert img tags
 sub format_body {
   my ($self, $acts, $articles, $body, $imagePos, $abs_urls, 
-      $auto_images, @images)  = @_;
+      $auto_images, $templater, @images)  = @_;
 
   return substr($body, 6) if $body =~ /^<html>/i;
 
@@ -287,7 +287,7 @@ sub format_body {
 
   my $formatter = BSE::Formatter->new($self, $acts, $articles,
 				      $abs_urls, \$auto_images,
-				      \@images);
+				      \@images, $templater);
 
   $body = $formatter->format($body);
 
@@ -434,9 +434,10 @@ sub baseActs {
      # for embedding the content from children and other sources
      ifEmbedded=> sub { $embedded },
      embed => sub {
-       my ($what, $template, $maxdepth) = split ' ', $_[0];
+       my ($args, $acts, $name, $templater) = @_;
+       my ($what, $template, $maxdepth) = split ' ', $args;
        undef $maxdepth if defined $maxdepth && $maxdepth !~ /^\d+/;
-       return $self->_embed_low($acts, $articles, $what, $template, $maxdepth);
+       return $self->_embed_low($acts, $articles, $what, $template, $maxdepth, $templater);
      },
      ifCanEmbed=> sub { $self->{depth} <= $self->{maxdepth} },
 

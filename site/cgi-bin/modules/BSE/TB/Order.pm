@@ -4,6 +4,7 @@ use strict;
 use Squirrel::Row;
 use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
+use Carp 'confess';
 
 sub columns {
   return qw/id
@@ -22,7 +23,7 @@ sub columns {
            siteuser_id affiliate_code shipping_cost
            delivMobile billMobile
            ccOnline ccSuccess ccReceipt ccStatus ccStatusText
-           ccStatus2 ccTranId/;
+           ccStatus2 ccTranId complete/;
 }
 
 =item siteuser
@@ -148,6 +149,15 @@ sub valid_payment_fields {
 
 sub valid_payment_rules {
   return;
+}
+
+sub clear_items {
+  my ($self) = @_;
+
+  confess "Attempt to clear items on completed order $self->{id}"
+    if $self->{complete};
+  
+  BSE::DB->run(deleteOrdersItems => $self->{id});
 }
 
 1;

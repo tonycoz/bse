@@ -264,6 +264,7 @@ site/templates/admin/interestemail.tmpl
 site/templates/admin/order_detail.tmpl
 site/templates/admin/order_list.tmpl
 site/templates/admin/order_list_filled.tmpl
+site/templates/admin/order_list_incomplete.tmpl
 site/templates/admin/order_list_unfilled.tmpl
 # site/templates/admin/product_custom.tmpl
 site/templates/admin/product_detail.tmpl

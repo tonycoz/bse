@@ -10,6 +10,50 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_07
+
+This release adds a new column to the orders table.  You will need to
+run the upgrade_mysql.pl script on existing installations.
+
+=over
+
+=item *
+
+product information is now available from the item tag on the final
+checkout page
+
+=item *
+
+another field has been added to the orders table to track the
+difference between an order that's been created for payment
+processing, and an order where it's been completed.
+
+The existing order lists filter out the incomplete orders.
+
+=item *
+
+if a user attempts and fails online credit card processing on an
+order, that order record (and hence number) is now re-used for the
+next attempt.  Note: if a user abandons an order after a failed
+attempt at online credit card processing then an incomplete order is
+left in the database.
+
+=item *
+
+added an order_list_incomplete target which lists only incomplete
+orders (for completeness...)
+
+=item *
+
+the order_detail template now flags incomplete orders and attempts to
+display credit card processing information.
+
+=item *
+
+the embed tag and embed[] markup didn't support newer style tags
+
+=back
+
 =head2 0.15_06
 
 Interim release with some minor fixes while I fiddle with trying to

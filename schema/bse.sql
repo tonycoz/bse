@@ -261,6 +261,9 @@ create table orders (
   -- the ORDER_NUMBER for Inpho
   ccTranId varchar(40) not null default '',
 
+  -- order was completed by the customer
+  complete integer not null default 1,
+
   primary key (id),
   index order_cchash(ccNumberHash),
   index order_userId(userId, orderDate)

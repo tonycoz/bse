@@ -44,6 +44,7 @@ my %what_to_do =
    order_list_filled=>\&order_list_filled,
    order_list_unfilled=>\&order_list_unfilled,
    order_list_unpaid => \&order_list_unpaid,
+   order_list_incomplete => \&order_list_incomplete,
    order_detail=>\&order_detail,
    order_filled=>\&order_filled,
    product_detail=>\&product_detail,
@@ -526,7 +527,8 @@ sub order_list {
     or return product_list($req, "You don't have access to the order list");
     
   my $orders = BSE::TB::Orders->new;
-  my @orders = sort { $b->{orderDate} cmp $a->{orderDate} } $orders->all;
+  my @orders = sort { $b->{orderDate} cmp $a->{orderDate} } 
+    grep $_->{complete}, $orders->all;
   my $template = $req->cgi->param('template');
   unless (defined $template && $template =~ /^\w+$/) {
     $template = 'order_list';
@@ -543,7 +545,7 @@ sub order_list_filled {
 
   my $orders = BSE::TB::Orders->new;
   my @orders = sort { $b->{orderDate} cmp $a->{orderDate} } 
-    grep $_->{filled} && $_->{paidFor}, $orders->all;
+    grep $_->{complete} && $_->{filled} && $_->{paidFor}, $orders->all;
 
   order_list_low($req, 'order_list_filled', 'Order list - Filled orders', @orders);
 }
@@ -556,7 +558,7 @@ sub order_list_unfilled {
 
   my $orders = BSE::TB::Orders->new;
   my @orders = sort { $b->{orderDate} cmp $a->{orderDate} } 
-    grep !$_->{filled} && $_->{paidFor}, $orders->all;
+    grep $_->{complete} && !$_->{filled} && $_->{paidFor}, $orders->all;
 
   order_list_low($req, 'order_list_unfilled', 'Order list - Unfilled orders', 
 		 @orders);
@@ -570,9 +572,23 @@ sub order_list_unpaid {
 
   my $orders = BSE::TB::Orders->new;
   my @orders = sort { $b->{orderDate} cmp $a->{orderDate} } 
-    grep !$_->{paidFor}, $orders->all;
+    grep $_->{complete} && !$_->{paidFor}, $orders->all;
 
   order_list_low($req, 'order_list_unpaid', 'Order list - Incomplete orders', 
+		 @orders);
+}
+
+sub order_list_incomplete {
+  my ($req) = @_;
+
+  $req->user_can('shop_order_list')
+    or return product_list($req, "You don't have access to the order list");
+
+  my $orders = BSE::TB::Orders->new;
+  my @orders = sort { $b->{orderDate} cmp $a->{orderDate} } 
+    grep !$_->{complete}, $orders->all;
+
+  order_list_low($req, 'order_list_incomplete', 'Order list - Incomplete orders', 
 		 @orders);
 }
 

@@ -11,6 +11,7 @@
 <a href="/cgi-bin/admin/siteusers.pl?a_edit=1&amp;id=<:siteuser id:>&amp;_t=orders">Other member orders</a> |<:or:><:eif:>
 </p>
 <h2>Order details - No: #<:order id:></h2>
+<:ifOrder complete:><:or:><p><b><font size="+1">This order is incomplete and should not be filled.</font></b></p><:eif:>
 <table cellpadding="6" cellspacing="1" border="0">
   <tr> 
     <td align="left"><b>E-mail:</b></td>
@@ -91,13 +92,36 @@
 </td>
 </tr>
 </table>
-<:ifEq [order paymentType] "0":><p>Payment made by credit card.</p><:or:><:eif:>
-<:ifEq [order paymentType] "1":><p>Payment will be made by cheque.</p><:or:><:eif:>
-<:ifEq [order paymentType] "2":><p>Contact the customer to arrange for payment.</p><:or:><:eif:>
+<:switch:>
+<:case order ccOnline:>
+<p>This was processed as an online credit card transaction.</p>
+<:if Order ccSuccess:>
+<p>This transaction was <b>SUCCESSFUL</b>.</p>
+<table>
+<tr><th>Receipt Number:</th><td><:order ccReceipt:></td></tr>
+<:ifOrder ccTranId:>
+<tr><th>Transaction Id:</th><td><:order ccTranId:></td></tr>
+<:or:><:eif:>
+</table>
+<:or Order:>
+<p>This transaction <b>FAILED</b>.</p>
+<table>
+<tr><th>Status:</th><td><:order ccStatus:></td>
+<tr><th>Error:</th><td><:order ccStatusText:></td>
+<:ifOrder ccStatus2:>
+<tr><th>More status</th><td><:order ccStatus2:></td>
+<:or:><:eif:>
+</table>
+<:eif Order:>
+<:case Eq [order paymentType] "0":><p>Payment made by credit card.  Credit card details can be found in the encrypted email you received when the customer made the order.</p>
+<:case Eq [order paymentType] "1":><p>Payment will be made by cheque.</p>
+<:case Eq [order paymentType] "2":><p>Contact the customer to arrange for payment.</p>
+<:endswitch:>
 <:include custom/order_detail_payment.include optional:>
 <:if Order filled:>
 <p>This order was filled on <:date order whenFilled:> by <:order whoFilled:>.</p>
 <:or Order:>
-<p>This order hasn't been filled yet.  <a href="/cgi-bin/admin/shopadmin.pl?id=<:order id:>&order_filled=Yep&filled=1&detail=1">Mark order filled</a>.</p>
+<:ifOrder complete:>
+<p>This order hasn't been filled yet.  <a href="/cgi-bin/admin/shopadmin.pl?id=<:order id:>&order_filled=Yep&filled=1&detail=1">Mark order filled</a>.</p><:or:><:eif:>
 <:eif Order:>
 </body></html>

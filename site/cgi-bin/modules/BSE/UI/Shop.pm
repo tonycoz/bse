@@ -3,7 +3,8 @@ use strict;
 use base 'BSE::UI::Dispatch';
 use DevHelp::HTML;
 use BSE::Util::SQL qw(now_sqldate now_sqldatetime);
-use BSE::Shop::Util qw(need_logon shop_cart_tags payment_types nice_options cart_item_opts basic_tags);
+use BSE::Shop::Util qw(need_logon shop_cart_tags payment_types nice_options 
+                       cart_item_opts basic_tags);
 use BSE::CfgInfo qw(custom_class credit_card_class);
 use BSE::TB::Orders;
 use BSE::TB::OrderItems;
@@ -529,8 +530,24 @@ sub req_payment {
 
   my @data = @{$order_values}{@columns};
   shift @data;
-  my $order = BSE::TB::Orders->add(@data)
-    or die "Cannot add order";
+
+  my $order;
+  if ($session->{order_work}) {
+    $order = BSE::TB::Orders->getByPkey($session->{order_work});
+  }
+  if ($order) {
+    print STDERR "Recycling order $order->{id}\n";
+
+    my @allbutid = @columns;
+    shift @allbutid;
+    @{$order}{@allbutid} = @data;
+
+    $order->clear_items;
+  }
+  else {
+    $order = BSE::TB::Orders->add(@data)
+      or die "Cannot add order";
+  }
 
   my @dbitems;
   my %subscribing_to;
@@ -554,6 +571,8 @@ sub req_payment {
       $subscribing_to{$sub->{text_id}} = $sub;
     }
   }
+
+  $order->{ccOnline} = 0;
   
   my $ccprocessor = $cfg->entry('shop', 'cardprocessor');
   if ($paymentType == PAYMENT_CC && $ccprocessor) {
@@ -597,8 +616,11 @@ sub req_payment {
     $order->{ccStatusText}  = '';
     $order->{ccTranId}	    = $result->{transactionid};
     $order->{paidFor}	    = 1;
-    $order->save;
   }
+
+  # order complete
+  $order->{complete} = 1;
+  $order->save;
 
   # set the order displayed by orderdone
   $session->{order_completed} = $order->{id};

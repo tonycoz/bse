@@ -65,7 +65,7 @@ sub shop_cart_tags {
      ifOptions => sub { @options },
      options => sub { nice_options(@options) },
      custom_class($cfg)
-     ->checkout_actions($acts, $cart, $cart_prods, $session->{custom}, $q),
+     ->checkout_actions($acts, $cart, $cart_prods, $session->{custom}, $q, $cfg),
     );  
 }
 

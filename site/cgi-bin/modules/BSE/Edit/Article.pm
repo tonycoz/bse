@@ -2663,6 +2663,7 @@ my %defaults =
    expire => $Constants::D_99,
    listed => 1,
    keyword => '',
+   body => '<maximum of 64Kb>',
   );
 
 sub default_value {
@@ -2696,7 +2697,7 @@ sub default_value {
   }
   
   if ($col eq 'summaryLength') {
-    my $parent = $article->{parentid} != -1 
+    my $parent = defined $article->{parentid} && $article->{parentid} != -1 
       && Articles->getByPkey($article->{parentid}); 
 
     $parent and return $parent->{summaryLength};

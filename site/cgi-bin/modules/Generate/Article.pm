@@ -32,13 +32,6 @@ sub edit_link {
   return "$CGI_URI/admin/add.pl?id=$id";
 }
 
-# sub make_article_body {
-#   my ($self, $acts, $articles, $article, $auto_images, @images) = @_;
-
-#   return $self->format_body($acts, $articles, $abs_urls, 
-# 			    $auto_images, @images);
-# }
-
 sub link_to_form {
   my ($self, $link, $text, $target) = @_;
 
@@ -332,9 +325,10 @@ sub baseActs {
 
      # transform the article or response body (entities, images)
      body=>sub {
+       my ($args, $acts, $funcname, $templater) = @_;
        return $self->format_body($acts, $articles, $article->{body},
 				 $article->{imagePos}, $abs_urls,
-				 !$had_image_tags, @images);
+				 !$had_image_tags, $templater, @images);
      },
 
      # used to display a navigation path of parent sections

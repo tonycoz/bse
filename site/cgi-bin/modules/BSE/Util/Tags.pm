@@ -125,7 +125,7 @@ sub static {
        require Generate;
        my $gen = Generate->new(cfg=>$cfg);
        return $gen->format_body($acts, 'Articles', $value, 'tr',
-				1, 0);
+				1, 0, $templater);
      },
      nobodytext => [\&tag_nobodytext, $cfg ],
      ifEq =>

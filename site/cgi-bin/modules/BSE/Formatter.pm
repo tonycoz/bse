@@ -6,7 +6,7 @@ use Carp 'confess';
 use base 'DevHelp::Formatter';
 
 sub new {
-  my ($class, $gen, $acts, $articles, $abs_urls, $rauto_images, $images) = @_;
+  my ($class, $gen, $acts, $articles, $abs_urls, $rauto_images, $images, $templater) = @_;
 
   my $self = $class->SUPER::new;
 
@@ -16,6 +16,7 @@ sub new {
   $self->{abs_urls} = $abs_urls;
   $self->{auto_images} = $rauto_images;
   $self->{images} = $images;
+  $self->{templater} = $templater;
   #$self->{level} = $level;
 
   my $cfg = $gen->{cfg};
@@ -106,7 +107,7 @@ sub embed {
   my ($self, $name, $templateid, $maxdepth) = @_;
 
   $self->{gen}->_embed_low($self->{acts}, $self->{articles}, $name,
-			   $templateid, $maxdepth);
+			   $templateid, $maxdepth, $self->{templater});
 }
 
 sub _get_article {
