@@ -83,7 +83,8 @@ layout into base.tmpl where possible, support for "sidebars".
 
 =item *
 
-a formatting guide article in initial.pl (from adrian)
+a formatting guide article in initial.pl (from adrian) (and then an
+updated version of it)
 
 =item *
 
