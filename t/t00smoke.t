@@ -34,7 +34,7 @@ fetch_ok($ua, "shop admin page", "$baseurl/cgi-bin/admin/shopadmin.pl",
 fetch_ok($ua, "add article form", "$baseurl/cgi-bin/admin/add.pl",
 	 qr!New\s+Page\sLev3!s);
 fetch_ok($ua, "add catalog form", "$baseurl/cgi-bin/admin/add.pl?type=Catalog",
-	 qr!New\s+Catalog!s);
+	 qr!Add\s+Catalog!s);
 fetch_ok($ua, "add product form", "$baseurl/cgi-bin/admin/add.pl?type=Product",
 	 qr!Add\s+product!s);
 fetch_ok($ua, "edit article form", "$baseurl/cgi-bin/admin/add.pl?id=1",

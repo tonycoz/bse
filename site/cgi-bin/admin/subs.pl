@@ -237,7 +237,7 @@ sub addsave {
     _refresh_list($cfg);  
   }
   else {
-    sub_form($q, $req, $cfg, 'admin/subs/add', undef, 1, \@errors);
+    sub_form($q, $req, $cfg, 'admin/subs/edit', undef, 1, \@errors);
   }
 }
 

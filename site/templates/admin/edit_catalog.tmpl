@@ -2,7 +2,7 @@
 <head>
 
 <title>
-    <: ifNew :>New<: or :>Edit<: eif :> Catalog - Shop Administration
+    <: ifNew :>Add<: or :>Edit<: eif :> Catalog - Shop Administration
 </title>
 
   <link rel="stylesheet" type="text/css" href="/css/admin.css">
@@ -69,89 +69,91 @@
             <th bgcolor="#FFFFFF" nowrap align="left"> Parent: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <:if FieldPerm parentid:><select name="parentid">
-                <option value="">Please Select a <: parentType :> <: list subsections 
-                :> 
+                <option value="">Please Select a <: parentType :> <: list subsections :> 
               </select><:or FieldPerm:><:parent title:> (<:parent id:>)<:eif FieldPerm:>
             </td>
-            <td bgcolor="#FFFFFF"><:help catalog parent:></td>
+            <td nowrap bgcolor="#FFFFFF"><:help catalog parent:> <:error_img parentid:></td>
           </tr>
           <tr> 
             <th bgcolor="#FFFFFF" nowrap align="left"> Catalog title: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
-              <:ifFieldPerm title:><input type="text" name="title" maxlength="64" size="64" value="<: article title :>"><:or:><:default title:><:eif:>
+              <:ifFieldPerm title:><input type="text" name="title" maxlength="64" size="64" value="<: old title article title :>"><:or:><:default title:><:eif:>
             </td>
-            <td bgcolor="#FFFFFF"><:help catalog title:></td>
+            <td nowrap bgcolor="#FFFFFF"><:help catalog title:> <:error_img title:></td>
           </tr>
           <tr> 
             <th valign="top" bgcolor="#FFFFFF" nowrap align="left"> Body:</th>
             <td bgcolor="#FFFFFF" width="100%"> 
-              <:ifFieldPerm body:><textarea name="body" rows="10" cols="60" wrap="virtual"><: article body :></textarea><:or:><:bodytext article body:><:eif:>
+              <:ifFieldPerm body:><textarea name="body" rows="10" cols="60" wrap="virtual"><: old body article body :></textarea><:or:><:bodytext article body:><:eif:>
             </td>
-            <td bgcolor="#FFFFFF" valign="top"><:help body body:></td>
+            <td valign="top" nowrap bgcolor="#FFFFFF"><:help body body:> <:error_img
+            body:></td>
           </tr>
 		  <tr> 
             <th bgcolor="#FFFFFF" nowrap align="left"> Template: </th>
             <td bgcolor="#FFFFFF" width="100%"> <:ifFieldPerm titleImage:><:templates:><:or:><:article titleImage:><:eif:> </td>
-            <td bgcolor="#FFFFFF"><:help catalog template:></td>
+            <td nowrap bgcolor="#FFFFFF"><:help catalog template:> <:error_img template:></td>
           </tr>
 		  <tr> 
             <th bgcolor="#FFFFFF" nowrap align="left">List article:</th>
             <td bgcolor="#FFFFFF" width="100%"> <:if FieldPerm listed:><:list listed:><:or FieldPerm:><:if Article listed:><:ifEq [article listed] "1":>Yes<:or:>In Sections, but not menu<:eif:><:or Article:>No<:eif Article:><:eif FieldPerm:> </td>
-            <td bgcolor="#FFFFFF"><:help catalog list:></td>
+            <td nowrap bgcolor="#FFFFFF"><:help catalog list:> <:error_img listed:></td>
           </tr>
-	  <tr>
+		  <tr>
             <th nowrap bgcolor="#FFFFFF" align="left">Flags:</th>
             <td bgcolor="#FFFFFF" width="100%"><:iterator begin flags:><:if FieldPerm flags:>
               <input type=checkbox name=flags value="<:flag id:>" <:ifFlagSet [flag id]:>checked<:or:>
               <:eif:>><:or FieldPerm:><:ifFlagSet [flag id]:>Yes<:or:>No<:eif:>
               <:eif FieldPerm:><:flag desc:><:iterator end flags:></td>
-            <td bgcolor="#FFFFFF"><:help edit listed:></td>
+            <td nowrap bgcolor="#FFFFFF"><:help edit flags:> <:error_img flags:></td>
           </tr>
           <tr> 
             <th bgcolor="#FFFFFF" nowrap align="left"> Release date: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
-              <:if FieldPerm release:><input type="text" name="release" value="<: date "%d/%m/%Y" article release :>" size="10" maxlength="10">
-              (dd/mm/yyyy<: ifNew :> - default is today<: or :><: eif :>)<:or FieldPerm:><: date "%d/%m/%Y" article release :><:eif FieldPerm:></td></td>
-            <td bgcolor="#FFFFFF"><:help catalog release:></td>
+              <:if FieldPerm release:><input type="text" name="release" value="<: old release date "%d/%m/%Y" article release :>" size="10" maxlength="10">
+              (dd/mm/yyyy<: ifNew :> - default is today<: or :><: eif :>)<:or FieldPerm:><: date "%d/%m/%Y" article release :><:eif FieldPerm:></td>
+            <td nowrap bgcolor="#FFFFFF"><:help catalog release:> <:error_img release:></td>
           </tr>
           <tr> 
             <th bgcolor="#FFFFFF" nowrap align="left"> Expiry date: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
-              <:if FieldPerm expire:><input type="text" name="expire" value="<: date "%d/%m/%Y" article expire :>" size="10" maxlength="10">
+              <:if FieldPerm expire:><input type="text" name="expire" value="<: old expire date "%d/%m/%Y" article expire :>" size="10" maxlength="10">
               (dd/mm/yyyy - <: ifNew :>default is never, <: or :><: eif :>blank 
               for never expires)<:or FieldPerm:><: date "%d/%m/%Y" article expire :><:eif FieldPerm:></td>
-            <td bgcolor="#FFFFFF"><:help catalog expire:></td>
+            <td nowrap bgcolor="#FFFFFF"><:help catalog expire:> <:error_img expire:></td>
           </tr>
           <tr> 
             <th bgcolor="#FFFFFF" nowrap align="left"> Summary length: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
-              <:if FieldPerm summaryLength:><input type="text" name="summaryLength" size="10" maxlength="10" value="<: article summaryLength :>">
+              <:if FieldPerm summaryLength:><input type="text" name="summaryLength" size="10" maxlength="10" value="<: old summaryLength article summaryLength :>">
               (in characters - default inherited from parent catalog or shop, zero 
               for no summary)<:or FieldPerm:><: article summaryLength :><:eif FieldPerm:></td>
-            <td bgcolor="#FFFFFF"><:help catalog summary:></td>
+            <td nowrap bgcolor="#FFFFFF"><:help catalog summary:> <:error_img summaryLength:></td>
           </tr>
           <tr> 
             <th bgcolor="#FFFFFF" nowrap align="left"> Display threshold: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
-              <:ifFieldPerm threshold:><input type="text" name="threshold" size="10" maxlength="10" value="<: article threshold :>"><:or:><: article threshold :><:eif:>
+              <:ifFieldPerm threshold:><input type="text" name="threshold" size="10" maxlength="10" value="<: old threshold article threshold :>"><:or:><: article threshold :><:eif:>
             </td>
-            <td bgcolor="#FFFFFF"><:help catalog threshold:></td>
+            <td nowrap bgcolor="#FFFFFF"><:help catalog threshold:> <:error_img threshold:></td>
           </tr>
           <tr> 
             <th bgcolor="#FFFFFF" nowrap align="left"> Keywords: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
-              <:ifFieldPerm keyword:><input type="text" name="keyword" maxlength="255" size="60" value="<: article keyword :>"><:or:><: article threshold :><:eif:>
+              <:ifFieldPerm keyword:><input type="text" name="keyword" maxlength="255" size="60" value="<: old keyword article keyword :>"><:or:><: article threshold :><:eif:>
               (comma separated) </td>
-            <td bgcolor="#FFFFFF"><:help catalog keywords:></td>
+            <td nowrap bgcolor="#FFFFFF"><:help catalog keywords:> <:error_img keyword:></td>
           </tr>
           <tr> 
             <th bgcolor="#FFFFFF" nowrap align="left" valign="top">Thumbnail image:</th>
-            <td bgcolor="#FFFFFF" width="100%"> 
-              <:ifFieldPerm thumbImage:><input type=file name=thumbnail><:or:><:eif:>
+            <td width="100%" valign="top" bgcolor="#FFFFFF"> 
+              <:ifFieldPerm thumbImage:>
+              <input type=file name=thumbnail><:or:><:eif:>
               <:ifArticle thumbImage:><img src="/images/<:article thumbImage:>"> 
               <:if FieldPerm thumbImage:><input type=checkbox name="remove_thumb">
-              Remove<:or FieldPerm:><:eif FieldPerm:><:or:><:eif:></td>
-            <td bgcolor="#FFFFFF" valign="top"><:help catalog thumb:></td>
+            Remove<:or FieldPerm:><:eif FieldPerm:><:or:><:eif:></td>
+            <td valign="top" nowrap bgcolor="#FFFFFF"><:help catalog thumb:> <:error_img
+            thumbImage:></td>
           </tr>
           <:if Article id:> 
           <tr> 
@@ -185,7 +187,8 @@
               <:or Files:>
               <p>No files are attached to this article. <a href="<:script:>?filelist=1&id=<:article id:>"><b>Manage Files</b></a></p><:eif Files:>
             </td>
-            <td nowrap bgcolor="#FFFFFF" valign="top"><:help edit files:></td>
+            <td nowrap bgcolor="#FFFFFF" valign="top"><:help edit files:> <:error_img
+            files:></td>
           </tr>
           <tr> 
             <th valign="top" bgcolor="#FFFFFF" nowrap align="left"> Images: 
@@ -199,7 +202,8 @@
 	      <:or Images:><p align="left">No images are attached to this article.  <a href="<:script:>?id=<:article id:>&showimages=1"><b>Manage Images</b></a></p>
 	      <:eif Images:>
 	    </td>
-            <td bgcolor="#FFFFFF" valign="top"><:help catalog images:></td>
+            <td valign="top" nowrap bgcolor="#FFFFFF"><:help catalog images:> <:error_img
+            images:></td>
           <:or Article:><:eif Article:> 
         </table>
       </td>
@@ -208,7 +212,7 @@
 
   <p><: ifNew :>
     <input type="submit" name="save"
-           value="  Add New Catalog  ">
+           value="  Add Catalog  ">
      <: or :>
     <:if UserCan edit_save:article:><input type="submit" name="save"
            value="  Update Catalog  "><:or UserCan:><:eif UserCan:><:eif:></p>

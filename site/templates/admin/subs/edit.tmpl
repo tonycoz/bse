@@ -2,7 +2,7 @@
 <html>
 <head>
 
-  <title>Administration - Edit Subscription</title>
+  <title>Administration - <:ifNew:>add<:or:>Edit<:eif:> Subscription</title>
 
   <link rel="stylesheet" type="text/css" href="/css/admin.css" />
 
@@ -27,78 +27,78 @@
             <td> 
               <input type="text" name="name" value="<:old name:>" size="40" />
             </td>
-            <td><:help subs name:> <:ifError name:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error name:>" /><:or:><:eif:></td>
+            <td nowrap><:help subs name:> <:ifError name:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error name:>" /><:or:><:eif:></td>
           </tr>
           <tr bgcolor="#FFFFFF"> 
             <th align="left" nowrap>Title:</th>
             <td> 
               <input type="text" name="title" value="<:old title:>" size="40" />
             </td>
-            <td><:help subs title:> <:ifError title:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error title:>" /><:or:><:eif:></td>
+            <td nowrap><:help subs title:> <:ifError title:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error title:>" /><:or:><:eif:></td>
           </tr>
           <tr bgcolor="#FFFFFF"> 
             <th align="left" valign="top" nowrap>Description:</th>
             <td valign="top"> 
               <textarea name="description" cols="60" rows="10" wrap="virtual"><:old description:></textarea>
             </td>
-            <td valign="top"><:help subs description:> <:ifError description:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error description:>" /><:or:><:eif:></td>
+            <td valign="top" nowrap><:help subs description:> <:ifError description:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error description:>" /><:or:><:eif:></td>
           </tr>
           <tr bgcolor="#FFFFFF"> 
             <th align="left" nowrap>Frequency:</th>
             <td> 
               <input type="text" name="frequency" value="<:old frequency:>" size="40" />
             </td>
-            <td><:help subs frequency:> <:ifError frequency:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error frequency:>" /><:or:><:eif:></td>
+            <td nowrap><:help subs frequency:> <:ifError frequency:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error frequency:>" /><:or:><:eif:></td>
           </tr>
           <tr bgcolor="#FFFFFF"> 
             <th align="left" nowrap>HTML template:</th>
             <td><:template html_template htmlemail 1:> </td>
-            <td><:help subs html_template:> <:ifError html_template:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error html_template:>" /><:or:><:eif:></td>
+            <td nowrap><:help subs html_template:> <:ifError html_template:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error html_template:>" /><:or:><:eif:></td>
           </tr>
           <tr bgcolor="#FFFFFF"> 
             <th align="left" nowrap>Text template:</th>
             <td><:template text_template textemail:> </td>
-            <td><:help subs text_template:> <:ifError text_template:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error text_template:>" /><:or:><:eif:></td>
+            <td nowrap><:help subs text_template:> <:ifError text_template:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error text_template:>" /><:or:><:eif:></td>
           </tr>
           <tr bgcolor="#FFFFFF"> 
             <th align="left" nowrap>Visible:</th>
             <td><input type="checkbox" name="visible" value="1"<:ifOld visible:> 
               checked<:or:><:eif:> /> Make this subscription available</td>
-            <td><:help subs visible:></td>
+            <td nowrap><:help subs visible:></td>
           </tr>
           <tr bgcolor="#FFFFFF"> 
             <th colspan="2">Archiving </th>
-            <td><:help subs archiving:></td>
+            <td nowrap><:help subs archiving:></td>
           </tr>
           <tr bgcolor="#FFFFFF"> 
             <th align="left" nowrap>Archive:</th>
             <td><input type="checkbox" name="archive" value="1"<:ifOld archive:> 
               checked<:or:><:eif:> /> Archive this subscription</td>
-            <td><:help subs archive:> </td>
+            <td nowrap><:help subs archive:> </td>
           </tr>
           <tr bgcolor="#FFFFFF"> 
             <th align="left" nowrap>Keywords:</th>
             <td> 
               <input type="text" name="keyword" value="<:old keyword:>" size="40" />
             </td>
-            <td><:help subs keyword:></td>
+            <td nowrap><:help subs keyword:></td>
           </tr>
           <tr bgcolor="#FFFFFF"> 
             <th align="left" nowrap>Article template:</th>
             <td><:template article_template:> </td>
-            <td><:help subs template:> <:ifError article_template:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error article_template:>" /><:or:><:eif:></td>
+            <td nowrap><:help subs template:> <:ifError article_template:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error article_template:>" /><:or:><:eif:></td>
           </tr>
           <tr bgcolor="#FFFFFF"> 
             <th align="left" nowrap>Archive parent:</th>
             <td><:parent:> </td>
-            <td><:help subs parent:> <:ifError parentId:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error parentId:>" /><:or:><:eif:></td>
+            <td nowrap><:help subs parent:> <:ifError parentId:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error parentId:>" /><:or:><:eif:></td>
           </tr>
         </table>
 </td>
 </tr>
 </table>
 <p>
-    <:ifNew:><input type="submit" name="addsave" value="Add Subscription"><:or:><input type="submit" name="editsave" value="Save Subscription"><:eif:>
+    <:ifNew:><input type="submit" name="addsave" value="Add Subscription"><:or:><input type="submit" name="editsave" value="Update Subscription"><:eif:>
   </p>
 </form>
 
