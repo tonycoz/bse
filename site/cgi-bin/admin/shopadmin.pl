@@ -319,6 +319,13 @@ sub save_product {
       $original = Products->getByPkey($product{id})
 	or shop_redirect("?message=Product+$product{id}+not+found");
     }
+    money_to_cents(\$product{retailPrice})
+      or die "Invalid price\n";
+    money_to_cents(\$product{wholesalePrice})
+      or $product{wholesalePrice} = undef;
+    money_to_cents(\$product{gst})
+      or die "Invalid gst\n";
+    
     if ($original) {
       # remove unmodifiable fields
       for my $key (keys %product) {
@@ -327,7 +334,7 @@ sub save_product {
     }
     else {
       $product{title} !~ /^\s*$/
-	or die "No title entered";
+	or die "No title entered\n";
       $product{summary} !~ /^\s*$/
 	or die "No summary entered\n";
       $product{body} !~ /^\s*$/
@@ -342,13 +349,6 @@ sub save_product {
       or die "Invalid release date\n";
     sql_date(\$product{expire})
       or die "Invalid expiry date\n";
-    money_to_cents(\$product{retailPrice})
-      or die "Invalid price\n";
-    money_to_cents(\$product{wholesalePrice})
-      or $product{wholesalePrice} = undef;
-    money_to_cents(\$product{gst})
-      or die "Invalid gst\n";
-    
     # options should only contain valid options
     my @bad_opts = grep !$SHOP_PRODUCT_OPTS{$_}, 
     split /,/, $product{options};
@@ -513,9 +513,12 @@ sub product_form {
   }
   my $stepcat_index;
   use OtherParents;
+  # ugh
+  my $realproduct;
+  $realproduct = UNIVERSAL::isa($product, 'Product') ? $product : Products->getByPkey($product->{id});
   my @stepcats = OtherParents->getBy(childId=>$product->{id}) 
     if $product->{id};
-  my @stepcat_targets = $product->step_parents if $product->{id};
+  my @stepcat_targets = $realproduct->step_parents if $realproduct;
   my %stepcat_targets = map { $_->{id}, $_ } @stepcat_targets;
   my @stepcat_possibles = grep !$stepcat_targets{$_->{id}}, @catalogs;
 

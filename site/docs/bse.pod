@@ -10,6 +10,33 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.10_14
+
+=over
+
+=item *
+
+try to avoid dividing entered prices by 100 when there's an error on
+the product edit/add form.  There's still some potential problems
+here, but they're much less likely to cause a problem.
+
+=item *
+
+remove the border from image[] generated images
+
+=item *
+
+move the error message on the product add form so it isn't mixed up
+with the menu
+
+=item *
+
+the dummy product used to generate the product edit form after an
+error wasn't useful for getting step catalogs, get the real product
+object just for that.
+
+=back
+
 =head2 0.10_13
 
 =over

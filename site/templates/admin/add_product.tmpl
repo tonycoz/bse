@@ -4,8 +4,8 @@
 <body>
 <h1>Shop Administration</h1>
 <h2><:action:> Product</h2>
-
-<p><:message:> | <a href="/admin/">Admin menu</a> | <a href="<:script:>">Product list</a> | 
+<:ifMessage:><p><:message:> </p><:or:><:eif:>
+<p>| <a href="/admin/">Admin menu</a> | <a href="<:script:>">Product list</a> | 
 </p>
 
 <form action="<:script:>" enctype="multipart/form-data" method=POST><p><input type=submit name=showimages value="Image Wizard"></p>
