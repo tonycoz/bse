@@ -73,7 +73,7 @@
         <input type="text" name="alt" value="<: image alt :>"></td>
       <td valign="top"><:imgmove:> </td>
       <td valign="bottom"> 
-        <input type="submit" name="removeimg_<: image order :>" value="Remove"></td></tr>
+        <input type="submit" name="removeimg_<: image order :>" value="Remove" onClick="return window.alert('Remember to update the article after deletion is complete')" ></td></tr>
 <: iterator separator image :>
     <tr bgcolor="#FFFFFF"> 
       <td colspan="4">&nbsp;</td>
@@ -82,7 +82,7 @@
 
   <tr>
     <th align="right" valign="top">
-      First Image Position: </td>
+      First Image Position: </th>
       <td bgcolor="#FFFFFF"> <input type="radio" name="imagePos" value="tl"<: checked 
         tl :>> &nbsp; Top Left <br>
       <input type="radio" name="imagePos" value="tr"<: checked tr :>> &nbsp; Top Right
