@@ -229,11 +229,9 @@ sub generate_all {
     if $callback;
   my $index;
   my $total = 0;
-  use Time::HiRes;
   Squirrel::Table->caching(1);
-  my $allstart = Time::HiRes::time;
+  my $allstart = time;
   for my $articleid (@articleids) {
-    my $start = Time::HiRes::time;
     my $article = $articles->getByPkey($articleid);
     ++$index;
     if ($article->{link} && $article->{template}) {
@@ -241,11 +239,9 @@ sub generate_all {
       generate_low($articles, $article, $cfg);
     }
     my $newpc = $index / @articleids * 100;
+    my $now = time;
     if ($callback && $newpc >= $pc + 1 || abs($newpc-100) < 0.01) {
-      my $now = Time::HiRes::time;
-      my $len = $now - $start;
-      $total += $len;
-      $callback->(sprintf("%5d:  %.1f%% done - dur: %.2f  cumulative: %.1f  elapsed: %.1f", $articleid, $newpc, $len, $total, $now - $allstart)) if $callback;
+      $callback->(sprintf("%5d:  %.1f%% done - elapsed: %.1f", $articleid, $newpc, $now - $allstart)) if $callback;
       $pc = int $newpc;
     }
   }
@@ -259,6 +255,8 @@ sub generate_all {
 
   $callback->("Generating extra pages") if $callback;
   generate_extras($articles, $cfg, $callback);
+
+  $callback->("Total of ".(time()-$allstart)." seconds") if $callback;
 }
 
 sub refresh_to {
@@ -268,7 +266,7 @@ sub refresh_to {
   print qq!Refresh: 0; url="$where"\n\n<html></html>\n!;
 }
 
-=item regen_and_refresh($articles, $article, $generate, $refreshto, $progress)
+=item regen_and_refresh($articles, $article, $generate, $refreshto, $cfg, $progress)
 
 An error checking wrapper around the page regeneration code.
 
@@ -277,6 +275,10 @@ various problems.  Here we catch the error and let the user know what
 is going on.
 
 If $article is set to undef then everything is regenerated.
+
+$cfg should be an initialized BSE::Cfg object
+
+$progress should be either missing, undef or a code reference.
 
 $generate is typically 1 or $AUTO_GENERATE
 

@@ -143,7 +143,6 @@ sub getAll {
 sub caching {
   my ($self, $value) = @_;
 
-  print STDERR "Setting caching to $value\n";
   $cache_queries = $value;
   unless ($value) {
     %query_cache = ();
