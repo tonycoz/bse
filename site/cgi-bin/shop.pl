@@ -135,7 +135,7 @@ sub add_item {
   # used to refresh if a logon is needed
   my $r = $securlbase . $ENV{SCRIPT_NAME} . "?add=1&id=$addid";
   for my $opt_index (0..$#opt_names) {
-    $r .= "&$opt_names[$opt_index]=".ecape_uri($options[$opt_index]);
+    $r .= "&$opt_names[$opt_index]=".escape_uri($options[$opt_index]);
   }
   
   my $user = get_siteuser(\%session, $cfg, $CGI::Q);

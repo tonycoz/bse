@@ -1101,6 +1101,25 @@ read alphabetically as above.
 
 =back
 
+=head2 [error_img]
+
+This is used to configure the error icon displayed next to fields that
+fail validation.
+
+=over
+
+=item image
+
+URI to the image file.
+
+=item width
+
+=item height
+
+The width and height of the error icon image.
+
+=back
+
 =head1 AUTHOR
 
 Tony Cook <tony@develop-help.com>

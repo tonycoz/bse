@@ -23,17 +23,24 @@ if ($req->check_admin_logon()) {
   #my $articles = Articles->new;
   my $articles = 'Articles';
   
-  my $article = $articles->getByPkey($id)
-    or die "Cannot find article ",$id;
-  
-  eval "use $article->{generator}";
-  die $@ if $@;
-  my $generator = $article->{generator}
-    ->new(admin=>$admin, articles=>$articles, cfg=>$cfg, request=>$req, 
-	  top=>$article);
-  
-  print "Content-Type: text/html\n\n";
-  print $generator->generate($article, $articles);
+  my $article;
+  $article = $articles->getByPkey($id) if $id =~ /^\d+$/;
+
+  if ($article) {
+    eval "use $article->{generator}";
+    die $@ if $@;
+    my $generator = $article->{generator}
+      ->new(admin=>$admin, articles=>$articles, cfg=>$cfg, request=>$req, 
+	    top=>$article);
+    
+    print "Content-Type: text/html\n\n";
+    print $generator->generate($article, $articles);
+  }
+  else {
+    # display a message on the admin menu
+    refresh_to_admin($req->cfg,
+		     $req->url(menu =>{ 'm' => "No such article '${id}'"} ));
+  }
 }
 else {
   refresh_to_admin($cfg, "/cgi-bin/admin/logon.pl");

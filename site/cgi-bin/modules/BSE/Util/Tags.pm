@@ -277,15 +277,26 @@ sub tag_arithmetic {
 
   my $prefix;
 
-  if ($arg =~ s/^\s*([^:\s]+)://) {
+  if ($arg =~ s/^\s*([^:\s]*)://) {
     $prefix = $1;
   }
   else {
     $prefix = '';
   }
+  
+  my $not_found;
+  $arg =~ s/(\[\s*(\w+)(\s+\S[^\[\]]*)?\s*\])/
+    exists $acts->{$2} ? $templater->perform($acts, $2, $3) 
+      : (++$not_found, $1)/ge;
 
-  $arg =~ s/\[\s*(\w+)(\s+\S[^\[\]]*)?\s*\]/
-    $templater->perform($acts, $1, $2)/ge;
+  if ($not_found) {
+    if ($prefix eq '') {
+      return "<:arithmetic $arg:>";
+    }
+    else {
+      return "<:arithmetic $prefix: $arg:>";
+    }
+  }
 
   # this may be made more restrictive
   my $result = eval $arg;
@@ -657,8 +668,11 @@ sub tag_error_img {
     $msg = $msg->[$num];
   }
   my $images_uri = $cfg->entry('uri', 'images', '/images');
+  my $image = $cfg->entry('error_img', 'image', "$images_uri/admin/error.gif");
+  my $width = $cfg->entry('error_img', 'width', 16);
+  my $height = $cfg->entry('error_img', 'height', 16);
   my $encoded = escape_html($msg);
-  return qq!<img src="$images_uri/admin/error.gif" alt="$encoded" title="$encoded" border="0" align="top" />!; 
+  return qq!<img src="$image" alt="$encoded" title="$encoded" width="$width" height="$height" border="0" align="top" />!; 
 }
 
 sub tag_replace {

@@ -255,6 +255,11 @@ sub getSearchResult {
                    ." and expire <= $now";
 	last SWITCH;
       };
+    /^m(\d+)$/ # modified in last N days
+      && do {
+	$sql .= " and lastModified > " . _sql_date(time - $oneday * $1);
+	last SWITCH;
+      };
     $_ eq 'ae'
       && do {
 	$sql .= " and expire < $now";

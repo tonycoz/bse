@@ -958,6 +958,8 @@ sub _get_thumbs_class {
 sub tag_thumbimage {
   my ($cfg, $thumbs_obj, $current_image, $args) = @_;
 
+  $thumbs_obj or return '';
+
   $$current_image or return '** no current image **';
 
   my $imagedir = cfg_image_dir($cfg);
@@ -2199,7 +2201,7 @@ sub req_thumb {
   my $im_id = $cgi->param('im');
   my $image;
   if (defined $im_id && $im_id =~ /^\d+$/) {
-    ($image) = grep $_->{id} == $im_id, $article->images;
+    ($image) = grep $_->{id} == $im_id, $self->get_images($article);
   }
   my $thumb_obj = $self->_get_thumbs_class();
   my ($data, $type);
@@ -2267,70 +2269,84 @@ sub table_object {
 my %types =
   (
    qw(
-   pdf  application/pdf
-   txt  text/plain
+   bash text/plain
+   css  text/css
+   csv  text/plain
+   diff text/plain
    htm  text/html
    html text/html
+   ics  text/calendar
+   patch text/plain
+   pl   text/plain
+   pm   text/plain
+   pod  text/plain
+   py   text/plain
    sgm  text/sgml
    sgml text/sgml
-   xml  text/xml
+   sh   text/plain
+   tcsh text/plain
+   text text/plain
    tsv  text/tab-separated-values
-   csv  text/plain
+   txt  text/plain
+   vcf  text/x-vcard
+   vcs  text/x-vcalendar
+   xml  text/xml
+   zsh  text/x-script.zsh
+   bmp  image/bmp 
    gif  image/gif
-   jpg  image/jpeg
-   jpeg image/jpeg
    jp2  image/jpeg2000
+   jpeg image/jpeg
+   jpg  image/jpeg   
+   pct  image/pict 
+   pict image/pict
    png  image/png
-   bmp  image/bmp
    tif  image/tiff
    tiff image/tiff
-   pct  image/pict
-   pict image/pict
-   eps  application/postscript
-   ps   application/postscript
-   doc  application/msword
-   rtf  application/rtf
-   zip  application/zip
-   gz   application/gzip
-   tar  application/x-tar
-   tgz  application/gzip
-   hqx  application/mac-binhex40
-   bin  application/macbinary
-   sit  application/x-stuffit
    Z    application/x-compress
-   xls  application/ms-excel
-   ppt  application/ms-powerpoint
-   swf  application/x-shockwave-flash
-   fla  application/x-shockwave-flash
-   dxr  application/x-director
    dcr  application/x-director
    dir  application/x-director
-   mov  video/quicktime
-   moov video/quicktime
-   mpg  video/mpeg
-   mp4  video/mp4
-   mpeg video/mpeg
+   doc  application/msword
+   dxr  application/x-director
+   eps  application/postscript
+   fla  application/x-shockwave-flash
+   gz   application/gzip
+   hqx  application/mac-binhex40
+   js   application/x-javascript
+   lzh  application/x-lzh
+   pdf  application/pdf
+   pps  application/ms-powerpoint
+   ppt  application/ms-powerpoint
+   ps   application/postscript
+   rtf  application/rtf
+   sit  application/x-stuffit
+   swf  application/x-shockwave-flash
+   tar  application/x-tar
+   tgz  application/gzip
+   xls  application/ms-excel
+   zip  application/zip
+   asf  video/x-ms-asf
    avi  video/avi
    flc  video/flc
+   moov video/quicktime
+   mov  video/quicktime
+   mp4  video/mp4
+   mpeg video/mpeg
+   mpg  video/mpeg
    wmv  video/x-ms-wmv
-   asf  video/x-ms-asf
-   mp2  audio/x-mpeg
-   mp3  audio/x-mpeg
-   m4a  audio/m4a
-   3gp  audio/3gpp
+   aa   audio/audible
    aif  audio/aiff
    aiff audio/aiff
-   aa   audio/audible
+   m4a  audio/m4a
+   mid  audio/midi
+   mp2  audio/x-mpeg
+   mp3  audio/x-mpeg
    ra   audio/x-realaudio
    ram  audio/x-pn-realaudio
    rm   audio/vnd.rm-realmedia
+   swa  audio/mp3
    wav  audio/wav
    wma  audio/x-ms-wma
-   mid  audio/midi
-   swa  audio/mp3
-   diff text/plain
-   patch text/plain
-   css  text/css
+   3gp  audio/3gpp
    )
   );
 

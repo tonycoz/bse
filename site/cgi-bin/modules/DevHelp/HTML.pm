@@ -32,7 +32,7 @@ sub escape_uri {
   # older versions of uri_escape() acted differently without the
   # second argument, so supply one to make sure we escape what
   # needs escaping
-  URI::Escape::uri_escape(shift, "^A-Za-z0-9\-_.!~*'()");
+  URI::Escape::uri_escape(shift, "^A-Za-z0-9\-_.!~*()");
 }
 
 sub unescape_uri {

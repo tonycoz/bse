@@ -142,6 +142,11 @@ sub subscriptions {
 
 sub send_conf_request {
   my ($user, $cgi, $cfg, $rcode, $rmsg) = @_;
+
+  if ($user->is_disabled) {
+    $$rmsg = "User is disabled";
+    return;
+  }
       
   my $nopassword = $cfg->entryBool('site users', 'nopassword', 0);
   
@@ -371,6 +376,12 @@ sub subscribed_services {
   my ($self) = @_;
 
   BSE::DB->query(siteuserSubscriptions => $self->{id});
+}
+
+sub is_disabled {
+  my ($self) = @_;
+
+  return $self->{disabled};
 }
 
 1;

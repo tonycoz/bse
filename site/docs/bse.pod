@@ -10,6 +10,71 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.14_34
+
+=over
+
+=item *
+
+thumbnails weren't implemented for the site view/global image manager,
+they are now available there
+
+=item *
+
+you can now supply a new date selection code to the search engine,
+'mI<number>' will now only list articles that have been modified
+within the last I<number> days.  The supplied search_base.tmpl has
+been modified to include this. (#136)
+
+=item *
+
+updated internal file extension to MIME types based on a list from
+Adrian, types which are basicly text files (like
+C<text/x-script.bash>) have been changed to C<text/plain> so browsers
+don't need to know about obscure aliases for text file types.
+
+=item *
+
+doing a refresh due to failure in adding a product to the cart (due to
+subscription restrictions for example) when the product had options
+would cause a 500 error (#438)
+
+=item *
+
+the arithmetic tag should handle double generated pages where tags
+needed on the second generation are used in the expression.
+
+=item *
+
+we now URI escape apostrophe C<'> when we're URI escaping in general,
+since a trailing unescaped C<'> could confuse some browsers in a
+Refresh header.
+
+=item *
+
+cgi-bin/admin/admin.pl now refreshes to the menu with an error message
+rather than causing a 500 error if it cannot find the article
+specified by C<id>. (#424)
+
+=item *
+
+saving a disabled user from the member admin page will no longer send
+the user a confirmation message if they are unconfirmed and have
+subscriptions selected. (#393)
+
+=item *
+
+a change not listed for 0.14_05 - the delivery instructions entered
+during checkout are now included on the encrypted order emailed to the
+site admin. (#354)
+
+=item *
+
+the validation error icon image can now be configured, see [error_img]
+in config.pod. (#230)
+
+=back
+
 =head2 0.14_33
 
 =over
@@ -22,7 +87,7 @@ user to be displayed.
 
 =item *
 
-affiliate.pl will no longer display pages for disabled users
+affiliate.pl will no longer display pages for disabled users (#437)
 
 =item *
 

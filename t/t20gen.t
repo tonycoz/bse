@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>49;
+use Test::More tests=>52;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
@@ -165,6 +165,16 @@ ABC123 XYZ
 abC123 XYZ
 ABc123 xyz
 Alpha Beta Gamma
+EXPECTED
+
+template_test "arithmetic", $top, <<'TEMPLATE', <<EXPECTED;
+<:arithmetic 2+2:>
+<:arithmetic 2+[add 1 1]:>
+<:arithmetic 2+[add 1 2]+[undefinedtag x]+[add 1 1]+[undefinedtag2]:>
+TEMPLATE
+4
+4
+<:arithmetic 2+3+[undefinedtag x]+2+[undefinedtag2]:>
 EXPECTED
 
 BSE::Admin::StepParents->del($parent, $parent);
