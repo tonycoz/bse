@@ -114,6 +114,36 @@ HTML
      iterate_allprods_reset => sub { $allprod_index = -1 },
      iterate_allprods => sub { ++$allprod_index < @allprods },
      allprod => sub { CGI::escapeHTML($allprods[$allprod_index]{$_[0]}) },
+     moveallprod =>
+     sub {
+       return '' unless $self->{admin};
+       my $html = '';
+       my $can_move_up = $allprod_index > 0;
+       my $can_move_down = $allprod_index < $#allprods;
+       return '' unless $can_move_up || $can_move_down;
+       my $blank = '<img src="/images/trans_pixel.gif" width="17" height="13" border="0" alt="" align="absbotton">';
+       my $myid = $allprods[$allprod_index]{id};
+       my $refreshto = "$CGI_URI/admin/admin.pl?id=$article->{id}";
+       if ($can_move_down) {
+	 my $nextid = $allprods[$allprod_index+1]{id};
+	 $html .= <<HTML;
+<a href="$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$myid&other=$nextid&refreshto=$refreshto"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+HTML
+       }
+       else {
+	 $html .= $blank;
+       }
+       if ($can_move_up) {
+	 my $previd = $allprods[$allprod_index-1]{id};
+	 $html .= <<HTML;
+<a href="$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$myid&other=$previd&refreshto=$refreshto"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+HTML
+       }
+       else {
+	 $html .= $blank;
+       }
+       return $html;
+     },
      ifAnyProds => sub { CGI::escapeHTML(@allprods) },
      iterate_stepprods_reset => sub { $stepprod_index = -1 },
      iterate_stepprods => sub { ++$stepprod_index < @stepprods; },

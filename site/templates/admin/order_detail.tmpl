@@ -4,8 +4,10 @@
 <body>
 <h1>Shop Administration</h1>
 <h2>Order details</h2>
-<p>| <a href="/admin/">Admin menu</a> | <a href="<:script:>"></a><a href="<:script:>">Product 
-  list</a> | <a href="<:script:>?order_list=1">Order list</a> | <a href="<:script:>?order_list=1&template=order_list_unfilled">Unfilled Orders</a> | <a href="<:script:>?order_list=1&template=order_list_filled">Filled Orders</a> |</p>
+<p>| <a href="/admin/">Admin menu</a> | <a href="<:script:>"></a><a href="<:script:>">Manage 
+  store</a> | <a href="<:script:>?order_list=1">Order list</a> | <a href="<:script:>?order_list=1&template=order_list_unfilled">Unfilled 
+  Orders</a> | <a href="<:script:>?order_list=1&template=order_list_filled">Filled 
+  Orders</a> |</p>
 <table cellpadding="6" cellspacing="1" border="0">
  <tr><td>E-mail:</td><td><a href="mailto:<:order emailAddress:>"><:order emailAddress:></a></td></tr>
  <tr><td>Date:</td><td><:date order orderDate:></td></tr>
@@ -38,36 +40,36 @@
 <td>
 
       <table border=0 cellpadding="6" cellspacing="1">
-        <tr>
- <th>Description</th>
- <th>Units</th>
- <th>Unit Price</th>
- <th>Extension</th>
- <th>Unit Wholesale</th>
- <th>Ext Wholesale</th>
- <th>Unit GST</th>
- <th>Ext GST</th>
+        <tr bgcolor="#FFFFFF"> 
+          <th width="100%">Description</th>
+          <th nowrap>Units</th>
+          <th nowrap>Unit Price</th>
+          <th nowrap>Extension</th>
+          <th nowrap>Unit Wsale</th>
+          <th nowrap>Ext Wsale</th>
+          <th nowrap>Unit GST</th>
+          <th nowrap>Ext GST</th>
 </tr>
 <:iterator begin items:>
         <tr bgcolor="#FFFFFF"> 
-          <td><a href="<:script:>?product_detail=1&id=<:product id:>"><:product 
+          <td width="100%"><a href="<:script:>?product_detail=1&id=<:product id:>"><:product 
             title:></a> <:options:></td>
-          <td align=center><:item units:></td>
-          <td align=right><:money item price:></td>
-          <td align=right><:extension price:></td>
-          <td align=right><:money item wholesalePrice:></td>
-          <td align=right><:extension wholesalePrice:></td>
-          <td align=right><:money item gst:></td>
-          <td align=right><:extension gst:></td>
+          <td align=center nowrap><:item units:></td>
+          <td align=right nowrap><:money item price:></td>
+          <td align=right nowrap><:extension price:></td>
+          <td align=right nowrap><:money item wholesalePrice:></td>
+          <td align=right nowrap><:extension wholesalePrice:></td>
+          <td align=right nowrap><:money item gst:></td>
+          <td align=right nowrap><:extension gst:></td>
 </tr>
 <:iterator end items:>
         <tr bgcolor="#FFFFFF"> 
           <td colspan=3 align=right>Total:</td>
-          <td align=right><:money order total:></td>
+          <td align=right nowrap><:money order total:></td>
           <td>&nbsp;</td>
-          <td align=right><:money order wholesaleTotal:></td>
+          <td align=right nowrap><:money order wholesaleTotal:></td>
           <td>&nbsp;</td>
-          <td align=right><:money order gst:></td>
+          <td align=right nowrap><:money order gst:></td>
 </tr>
 </table>
 </td>
@@ -78,5 +80,4 @@
 <:or Order:>
 <p>This order hasn't been filled yet.  <a href="/cgi-bin/admin/shopadmin.pl?id=<:order id:>&order_filled=Yep&filled=1&detail=1">Mark order filled</a>.</p>
 <:eif Order:>
-<p><font size="-1">BSE Release <:release:></font></p>
 </body></html>

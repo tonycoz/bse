@@ -112,7 +112,7 @@ sub _got_user_refresh {
       if $debug;
 
     #my ($secprot, $sechost, $secport) = 
-    #  $securl =~ m!^(\w+)://([\w-.]+)(?::(\d+))?!;
+    #  $securl =~ m!^(\w+)://([\w.-]+)(?::(\d+))?!;
 
     # get info about the current host
     my $port = $ENV{SERVER_PORT} || 80;
@@ -446,7 +446,7 @@ sub userpage {
   $message ||= $cgi->param('message') || '';
 
   my $must_be_paid = $cfg->entryBool('downloads', 'must_be_paid', 0);
-  my $must_be_filled = $cfg->entryBool('download', 'must_be_filled', 0);
+  my $must_be_filled = $cfg->entryBool('downloads', 'must_be_filled', 0);
 
   my $order_index;
   my $item_index;

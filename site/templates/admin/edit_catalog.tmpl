@@ -33,7 +33,7 @@
   <p><b><:message:></b></p>
   <:or:><:eif:> 
   <p>| <a href="/admin/">Admin menu</a> | <:ifnew:><:or:><a href="<:article admin:>">See 
-    article</a> | <:eif:><:editParent:> <a href="/cgi-bin/admin/shopadmin.pl">Manage 
+    catalog</a> | <:eif:><:editParent:> <a href="/cgi-bin/admin/shopadmin.pl">Manage 
     store</a> | <:if new:><:or new:><a href="<:script:>?id=<:article id:>&_t=steps">Manage 
     stepchildren/stepparents</a> | <:eif new:> 
     <input type="hidden" name="level" value="<: level :>">
@@ -45,7 +45,7 @@
 
         <table cellpadding="6" border="0" cellspacing="1" width="100%">
           <tr> 
-            <th bgcolor="#FFFFFF" nowrap> Parent: </th>
+            <th bgcolor="#FFFFFF" nowrap align="left"> Parent: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <select name="parentid">
                 <option value="">Please Select a <: parentType :> 
@@ -54,37 +54,37 @@
             </td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" nowrap> Catalog Title: </th>
+            <th bgcolor="#FFFFFF" nowrap align="left"> Catalog Title: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <input type="text" name="title" maxlength="64" size="64" value="<: article title :>">
             </td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" nowrap> Template: </th>
+            <th bgcolor="#FFFFFF" nowrap align="left"> Template: </th>
             <td bgcolor="#FFFFFF" width="100%"> <:templates:> </td>
           </tr>
           <tr> 
-            <th valign="top" bgcolor="#FFFFFF" nowrap> Body: </th>
+            <th valign="top" bgcolor="#FFFFFF" nowrap align="left"> Body: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <textarea name="body" rows="10" cols="60" wrap="virtual"><: article body :></textarea>
             </td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" nowrap> Release Date: </th>
+            <th bgcolor="#FFFFFF" nowrap align="left"> Release Date: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <input type="text" name="release" value="<: article release :>" size="10" maxlength="10">
               (dd/mm/yyyy<: ifnew :> - default is today<: or :><: eif :>)</td>
           </tr>
           
           <tr> 
-            <th bgcolor="#FFFFFF" nowrap> Expire Date: </th>
+            <th bgcolor="#FFFFFF" nowrap align="left"> Expire Date: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <input type="text" name="expire" value="<: article expire :>" size="10" maxlength="10">
               (dd/mm/yyyy - <: ifnew :>default is never, <: or :><: eif :>blank 
               for never expires)</td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" nowrap> Summary Length: </th>
+            <th bgcolor="#FFFFFF" nowrap align="left"> Summary Length: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <input type="text" name="summaryLength" size="10" maxlength="10" value="<: article summaryLength :>">
               (in characters - <: ifnew :>default inherited from section<: if art :> or sub-section<: 
@@ -92,24 +92,24 @@
               summary)</td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" nowrap> Display threshold: </th>
+            <th bgcolor="#FFFFFF" nowrap align="left"> Display threshold: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <input type="text" name="threshold" size="10" maxlength="10" value="<: article threshold :>">
             </td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" nowrap> Keywords: </th>
+            <th bgcolor="#FFFFFF" nowrap align="left"> Keywords: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <input type="text" name="keyword" maxlength="255" size="60" value="<: article keyword :>">
                (comma separated)
             </td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" nowrap>List article:</th>
+            <th bgcolor="#FFFFFF" nowrap align="left">List article:</th>
             <td bgcolor="#FFFFFF" width="100%"> <:list listed:> </td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" nowrap>Thumbnails:</th>
+            <th bgcolor="#FFFFFF" nowrap align="left">Thumbnails:</th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <input type=file name=thumbnail>
               <:ifArticle thumbImage:><img src="/images/<:article thumbImage:>"> 
@@ -117,7 +117,8 @@
                Remove<:or:><:eif:></td>
           </tr>
           <tr> 
-            <th valign="top" bgcolor="#FFFFFF" nowrap> Uploaded files: </th>
+            <th valign="top" bgcolor="#FFFFFF" nowrap align="left"> Uploaded files: 
+            </th>
             <td align="center" bgcolor="#FFFFFF" width="100%"> <: iterator begin 
               images :> <img src="/images/<: image image :>" alt="<:image alt :>" width=              <:image 
               width:> height=<:image height:>> <: iterator separator images :> 
@@ -138,10 +139,10 @@
       <td>
       <table border=0 cellpadding="6" cellspacing="1" width="100%">
         <tr bgcolor="#FFFFFF"> 
-          <th>Title</th>
-          <th>Summary</th>
+          <th width="30%">Title</th>
+          <th width="70%">Summary</th>
           <th>Listed</th>
-          <th>Modify</th>
+          <th nowrap>Modify</th>
         </tr>
         <tr> 
           <td colspan="4" bgcolor="#FFFFFF">Reorder child articles: <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=title&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">by 
@@ -151,14 +152,12 @@
         </tr>
         <:iterator begin children:> 
         <tr bgcolor="#FFFFFF"> 
-          <td><a href="<:child admin:>"><:child title:></a></td>
-          <td><: summary child body :></td>
+          <td width="30%"><a href="<:child admin:>"><:child title:></a></td>
+          <td width="70%"><: summary child body :></td>
           <td align="center"><: is child listed :></td>
-          <td nowrap> <: edit child Edit :> <:if NextChild:> <a href="/cgi-bin/admin/move.pl?id=<:child id:>&d=down&edit=1&all=1"> 
-            <img src="/images/admin/move_down.gif" width="17" height="13" alt="Move Down" border="0"></a> 
-            <:or NextChild:> <:eif NextChild:> <:if PrevChild:> <a href="/cgi-bin/admin/move.pl?id=<:child id:>&d=up&edit=1&all=1"> 
-            <img src="/images/admin/move_up.gif" width="17" height="13" alt="Move Up" border="0"></a> 
-            <:or PrevChild:> <:eif PrevChild:> </td>
+          <td nowrap> <: edit child Edit :> <:if NextChild:><a href="/cgi-bin/admin/move.pl?id=<:child id:>&d=down&edit=1&all=1"><img src="/images/admin/move_down.gif" width="17" height="13" alt="Move Down" border="0"></a><:or 
+            NextChild:><:eif NextChild:><:if PrevChild:><a href="/cgi-bin/admin/move.pl?id=<:child id:>&d=up&edit=1&all=1"><img src="/images/admin/move_up.gif" width="17" height="13" alt="Move Up" border="0"></a><:or 
+            PrevChild:><:eif PrevChild:> </td>
         </tr>
         <:iterator separator children:> <:iterator end children:> 
       </table>
@@ -172,7 +171,9 @@
 <:or new:>
 <form action="/cgi-bin/admin/add.pl" method="POST">
 <input type=hidden name="parentid" value="<:article id:>">
-<p><input type=submit value="Add <:childtype:>"></p>
+<p>
+    <input type=submit value="Add Sub-catalog">
+  </p>
 </form>
 <:eif new:> <:or HaveChildType:> <:eif HaveChildType:> 
 <p><font size="-1">BSE Release <:release:></font></p>

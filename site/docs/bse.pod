@@ -10,6 +10,33 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.11_18
+
+=over
+
+=item *
+
+must_be_filled really fixed now (#128)
+
+=item *
+
+was calling function (now_sqldatetime()) that didn't exist
+
+=item *
+
+integrated new templates from Adrian, hopefully I got the right
+revisions.
+
+=item *
+
+<:moveallprod:> for the catalogs page (#122)
+
+=item *
+
+admin link for new catalogs now points at admin.pl (#120)
+
+=back
+
 =head2 0.11_17
 
 =over

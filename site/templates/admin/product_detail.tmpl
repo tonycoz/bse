@@ -4,10 +4,11 @@
 <body>
 <h1>Shop Administration</h1>
 <h2>Product details</h2>
-<p>| <a href="/admin/">Admin menu</a> | <a href="<:script:>">Product list</a> | 
-  <a href="<:script:>?id=<:product id:>&edit_product=1">Edit</a> <:if Product 
-  listed:> | <a href="<:script:>?id=<:product id:>&delete_product=1">Hide</a> 
-  |<:or Product:> | <a href="<:script:>?id=<:product id:>&undelete_product=1">Show</a> |<:eif Product:> <:hiddenNote:></p>
+<p>| <a href="/admin/">Admin menu</a> | <a href="<:product admin:>">See product</a> 
+  | <a href="<:script:>">Manage store</a> | <a href="<:script:>?id=<:product id:>&edit_product=1">Edit</a> 
+  <:if Product listed:> | <a href="<:script:>?id=<:product id:>&delete_product=1">Hide</a> 
+  |<:or Product:> | <a href="<:script:>?id=<:product id:>&undelete_product=1">Show</a> 
+  |<:eif Product:> <:hiddenNote:></p>
 <table bgcolor="#000000" cellpadding="0" cellspacing="0" border="0" width="100%">
   <tr>
 <td>
@@ -15,54 +16,44 @@
         <tr> 
           <th align="left" nowrap bgcolor="#FFFFFF">Name:</th>
           <td bgcolor="#FFFFFF" width="100%"><:product title:></td>
-  </tr>
-  <tr> 
+        </tr>
+        <tr> 
           <th align="left" nowrap bgcolor="#FFFFFF">Summary:</th>
           <td bgcolor="#FFFFFF" width="100%"><:product summary:></td>
-  </tr>
-  <tr> 
-          <th align="left" nowrap bgcolor="#FFFFFF">Description:</th>
-          <td bgcolor="#FFFFFF" width="100%"><:product body:></td>
-  </tr>
-  <tr> 
+        </tr>
+        <tr> 
+          <th align="left" nowrap bgcolor="#FFFFFF" valign="top">Description:</th>
+          <td bgcolor="#FFFFFF" width="100%"><:bodytext product body:></td>
+        </tr>
+        <tr> 
           <th align="left" nowrap bgcolor="#FFFFFF">Lead time:</th>
           <td bgcolor="#FFFFFF" width="100%"><:product leadTime:> days</td>
-  </tr>
-  <tr> 
+        </tr>
+        <tr> 
           <th align="left" nowrap bgcolor="#FFFFFF">Retail price:</th>
           <td bgcolor="#FFFFFF" width="100%">$<:money retailPrice:></td>
-  </tr>
-  <tr> 
+        </tr>
+        <tr> 
           <th align="left" nowrap bgcolor="#FFFFFF">Wholesale price:</th>
           <td bgcolor="#FFFFFF" width="100%">$<:money wholesalePrice:></td>
-  </tr>
-  <tr> 
+        </tr>
+        <tr> 
           <th align="left" nowrap bgcolor="#FFFFFF">GST:</th>
           <td bgcolor="#FFFFFF" width="100%">$<:money gst:></td>
-  </tr>
-  <tr> 
+        </tr>
+        <tr> 
           <th align="left" nowrap bgcolor="#FFFFFF">Release date:</th>
           <td bgcolor="#FFFFFF" width="100%"><:date product release:></td>
-  </tr>
-  <tr> 
+        </tr>
+        <tr> 
           <th align="left" nowrap bgcolor="#FFFFFF">Expiry date:</th>
           <td bgcolor="#FFFFFF" width="100%"><:date product expire:></td>
-  </tr>
-  <tr> 
+        </tr>
+        <tr> 
           <th align="left" nowrap bgcolor="#FFFFFF">Options:</th>
           <td bgcolor="#FFFFFF" width="100%"><:product options:></td>
-  </tr>
-  <tr> 
-          <th align="left" nowrap bgcolor="#FFFFFF">Picture:</th>
-          <td bgcolor="#FFFFFF" width="100%"><:ifImage:><img src="/images/<:product imageName:>" width="<:product imageWidth:>" height="<:product imageHeight:>"><:or:>&nbsp;<:eif:> 
-            <input type="file" name="imageName">
-    </td>
-  </tr>
-  <tr>
-          <th align="left" nowrap bgcolor="#FFFFFF">Thumbnail:</th>
-          <td width="100%" bgcolor="#FFFFFF"><:ifProduct thumbImage:><img src="/images/<:product thumbImage:>"><:or:><:eif:></td>
-  </tr>
-</table>
+        </tr>
+      </table>
 </td>
 </tr>
 </table>

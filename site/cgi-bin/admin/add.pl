@@ -489,12 +489,11 @@ sub save_new_article {
       (my $extra = lc $article->{title}) =~ tr/a-z0-9/_/sc;
       $link .= "/".$extra;
     }
-    $article->setAdmin("$CGI_URI/admin/admin.pl?id=$article->{id}");
   }
   else {
     $link = $urlbase.$SHOP_URI."/shop$article->{id}.html";
-    $article->setAdmin($CGI_URI."/admin/shopadmin.pl");
   }
+  $article->setAdmin("$CGI_URI/admin/admin.pl?id=$article->{id}");
   $article->setLink($link);
   $article->save();
 

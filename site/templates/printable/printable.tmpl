@@ -27,7 +27,8 @@
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <tr> 
     <td width="80%" height="24">&nbsp;&nbsp;<font face="Arial, Helvetica, sans-serif" size="4"><b><:title:></b></font></td>
-    <td height="24">&nbsp;</td>
+    <td height="24" align="right" nowrap><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Last 
+      modified: <:date article lastModified:></font></td>
   </tr>
   <tr> 
     <td colspan="2" height="1" bgcolor="#999999"><img src="/images/trans_pixel.gif" width="24" height="1" border="0"></td>
@@ -47,14 +48,14 @@
   </tr>
 </table>
 <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font></p>
-<:embed end:><:if UnderThreshold:><:iterator begin children:><:embed child:><:iterator 
-separator children:><br>
-<:iterator end children:> <:or UnderThreshold:> <:iterator begin children:> 
-<p><a href="<:url child:>"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><:child 
+<:if UnderThreshold allkids:><:iterator begin allkids:><:embed allkid:><:iterator 
+separator allkids:><br>
+<:iterator end allkids:> <:or UnderThreshold:><:iterator begin allkids:> 
+<p><a href="<:url allkid:>"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><:allkid 
   title:></font></b></a><br>
-  <:if Child summaryLength:><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:summary:></font><:or 
-  Child:><:eif Child:></p>
-<:iterator separator children:><:iterator end children:><:eif UnderThreshold:> 
+  <:if Allkid summaryLength:><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:summary 
+  allkid:></font><:or Allkid:><:eif Allkid:></p>
+<:iterator separator allkids:><:iterator end allkids:><:eif UnderThreshold:> 
 <hr noshade size="1">
 <div align="right"><font face="Verdana, Arial, Helvetica, sans-serif" size="1"><:siteName:> - <a href="http://www.visualthought.com.au/">vtc&copy;2002</a></font></div>
 </body>

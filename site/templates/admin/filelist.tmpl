@@ -26,42 +26,42 @@
       <td> 
         <table cellpadding="6" border="0" cellspacing="1">
           <tr> 
-            <th bgcolor="#FFFFFF">File to add: </th>
+            <th bgcolor="#FFFFFF" align="left">File to add: </th>
             <td bgcolor="#FFFFFF"> 
               <input type="file" name="file" />
             </td>
             <td bgcolor="#FFFFFF"><:help file file:> </td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF">Description: </th>
+            <th bgcolor="#FFFFFF" align="left">Description: </th>
             <td bgcolor="#FFFFFF"> 
               <input type="text" name="description" />
             </td>
             <td bgcolor="#FFFFFF"><:help file description:> </td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF"> Content-Type: </th>
+            <th bgcolor="#FFFFFF" align="left"> Content-Type: </th>
             <td bgcolor="#FFFFFF"> 
               <input type="text" name="contentType" />
               (blank for guess) </td>
             <td bgcolor="#FFFFFF"> <:help file content_type:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF"> Treat as download: </th>
+            <th bgcolor="#FFFFFF" align="left"> Treat as download: </th>
             <td bgcolor="#FFFFFF"> 
               <input type="checkbox" name="download" value="1" />
             </td>
             <td bgcolor="#FFFFFF"><:help file download:> </td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF"> Require payment: </th>
+            <th bgcolor="#FFFFFF" align="left"> Require payment: </th>
             <td bgcolor="#FFFFFF"> 
-              <input type="checkbox" name="forSale" value="1" checked />
+              <input type="checkbox" name="forSale" value="1" />
             </td>
             <td bgcolor="#FFFFFF"><:help file forSale:> </td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF"> Require user: </th>
+            <th bgcolor="#FFFFFF" align="left"> Require user: </th>
             <td bgcolor="#FFFFFF"> 
               <input type="checkbox" name="requireUser" value="1" />
             </td>
@@ -108,8 +108,9 @@
       <td valign="top" align="center"><input type="checkbox" name="download_<:file id:>"<:ifFile download:> checked<:or:><:eif:> /> </td>
       <td valign="top" align="center"><input type="checkbox" name="forSale_<:file id:>"<:ifFile forSale:> checked<:or:><:eif:> /> </td>
       <td valign="top" align="center"><input type="checkbox" name="requireUser_<:file id:>"<:ifFile requireUser:> checked<:or:><:eif:> /> </td>
-      <td> 
-        <b><a href="<:script:>?filedel=1&amp;id=<:article id:>&amp;file=<:file id:>">Remove</a></b> <:move:></td></tr>
+            <td nowrap> <b><a href="<:script:>?filedel=1&amp;id=<:article id:>&amp;file=<:file id:>">Remove</a></b> 
+              <:move:></td>
+          </tr>
 <: iterator separator files :>
     <tr bgcolor="#FFFFFF"> 
       <td colspan="7">&nbsp;</td>

@@ -3,7 +3,7 @@ use strict;
 use vars qw(@EXPORT_OK @ISA);
 require 'Exporter.pm';
 @EXPORT_OK = qw/now_datetime sql_datetime date_to_sql sql_to_date sql_date 
-                now_sqldate sql_datetime_to_epoch/;
+                now_sqldate now_sqldatetime sql_datetime_to_epoch/;
 @ISA = qw/Exporter/;
 
 =head1 NAME
@@ -35,7 +35,12 @@ sub sql_datetime {
   return strftime('%Y-%m-%d %H:%M:%S', localtime shift);
 }
 
+# obsolete
 sub now_datetime {
+  return sql_datetime(time);
+}
+
+sub now_sqldatetime {
   return sql_datetime(time);
 }
 

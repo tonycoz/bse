@@ -7,11 +7,11 @@
 <p><:ifMessage:></p>
 <p><b><:message:></b></p>
 <:or:><:eif:> 
-<p>| <a href="/admin/">Admin menu</a> | <a href="<:script:>">Product list</a> 
-  | <a href="<:script:>?id=<:product id:>&product_detail=1">Product details</a> 
-  <:if Product listed:> | <a href="<:script:>?id=<:product id:>&delete_product=1">Hide</a> 
-  |<:or Product:> | <a href="<:script:>?id=<:product id:>&undelete_product=1">Show</a> 
-  |<:eif Product:> <a href="/cgi-bin/admin/add.pl?id=<:product id:>&_t=steps">Manage 
+<p>| <a href="/admin/">Admin menu</a> | <a href="<:product admin:>">See 
+  product</a> | <a href="<:script:>">Manage store</a> <:if Product listed:> | 
+  <a href="<:script:>?id=<:product id:>&delete_product=1">Hide</a> |<:or Product:> 
+  | <a href="<:script:>?id=<:product id:>&undelete_product=1">Show</a> |<:eif 
+  Product:> <a href="/cgi-bin/admin/add.pl?id=<:product id:>&_t=steps">Manage 
   stepparents</a> |<:hiddenNote:></p>
 
 <form action="<:script:>" enctype="multipart/form-data" method="POST"><p><input type=submit name=showimages value="Image Wizard"></p>
@@ -30,7 +30,7 @@
             <td bgcolor="#FFFFFF"><:catalogs:></td>
           </tr>
           <tr> 
-            <th align="left" bgcolor="#FFFFFF">Description:</th>
+            <th align="left" bgcolor="#FFFFFF" valign="top">Description:</th>
             <td bgcolor="#FFFFFF"> 
               <textarea name=body rows=15 cols=60 wrap=virtual><:product body:></textarea>
             </td>
@@ -123,7 +123,8 @@
                 </tr>
               </table>
               <p><:or Files:> No files are attached to this article. <:eif Files:> 
-                <a href="<:script:>?filelist=1&id=<:article id:>"><b>Manage Files</b></a></p>
+                <a href="<:script:>?filelist=1&id=<:product id:>"><b>Manage 
+                Files</b></a></p>
             </td>
           </tr>
           <tr> 

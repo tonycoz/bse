@@ -1,16 +1,21 @@
 <html><head><title>Administration Centre</title>
 <link 
+
 rel="stylesheet" 
+
 href="/css/admin.css">
 </head>
 <body>
 <h1>Administration 
+
 Centre</h1>
 <p>
 <table width="50%" border="0" cellspacing="0" 
+
 cellpadding="5">
   <tr> 
     <td colspan="2"><a 
+
 href="/cgi-bin/admin/admin.pl?id=1">Browse in edit mode</a></td>
  
 </tr>
@@ -20,6 +25,7 @@ mode</a></td>
   </tr>
   <tr> 
     <td colspan="2"><a 
+
 href="/cgi-bin/admin/add.pl?parentid=2">Add to home page</a></td>
  
 </tr>
@@ -30,67 +36,97 @@ href="/cgi-bin/admin/add.pl?parentid=2">Add to home page</a></td>
 </tr>
   <tr> 
     <td colspan="2"><a 
+
 href="/cgi-bin/admin/add.pl?id=-1">Administer sections</a></td>
  
 </tr>
   <tr> 
     <td width="15">&nbsp;</td>
     <td>&#149; <a 
-href="/cgi-bin/admin/add.pl?level=1&parentid=-1">Add a new section</a></td>
- 
-</tr>
+
+href="/cgi-bin/admin/add.pl?level=1&parentid=-1">Add a new 
+section</a></td>
+  </tr>
   <tr> 
     <td width="15">&nbsp;</td>
-    <td>&#149; <a 
-href="/cgi-bin/admin/add.pl?level=2">Add a new subsection</a></td>
  
-</tr>
+<td>&#149; <a 
+href="/cgi-bin/admin/add.pl?level=2">Add a new 
+subsection</a></td>
+  </tr>
   <tr> 
     <td width="15">&nbsp;</td>
-    <td>&#149; <a 
-href="/cgi-bin/admin/add.pl">Add a new article</a></td>
-  </tr>
  
-<tr> 
+<td>&#149; <a 
+href="/cgi-bin/admin/add.pl">Add a new 
+article</a></td>
+  </tr>
+  <tr> 
     <td width="15">&nbsp;</td>
-    <td>&nbsp;</td>
-  </tr>
  
-<tr> 
-    <td colspan="2"><a href="/cgi-bin/admin/shopadmin.pl">Shop 
-administration</a></td>
+<td>&nbsp;</td>
   </tr>
+  <tr> 
+    <td colspan="2"><a 
+href="/cgi-bin/admin/shopadmin.pl">Shop administration</a></td>
+ 
+</tr>
   <tr> 
     <td 
 width="15">&nbsp;</td>
     <td>&#149; <a 
+
+href="/cgi-bin/admin/shopadmin.pl?order_list=1&template=order_list_unfilled">View 
+
+      current orders</a> (<a 
+href="/cgi-bin/admin/shopadmin.pl?order_list=1">all</a> 
+      or <a 
+href="/cgi-bin/admin/shopadmin.pl?order_list=1&template=order_list_filled">filled</a>)</td>
+ 
+</tr>
+  <tr> 
+    <td 
+width="15">&nbsp;</td>
+    <td>&#149; <a 
+
 href="/cgi-bin/admin/add.pl?parentid=3">Add catalog</a></td>
-  </tr>
  
-<tr> 
-    <td width="15">&nbsp;</td>
-    <td>&nbsp;</td>
-  </tr>
-
-<tr> 
-    <td colspan="2"><a href="/cgi-bin/admin/subs.pl">Subscriptions
-administration</a></td>
-  </tr>
- 
-<tr> 
-    <td width="15">&nbsp;</td>
-    <td>&nbsp;</td>
-  </tr>
-
-<tr> 
-    <td colspan="2"><a href="/cgi-bin/admin/generate.pl">Regenerate static &amp; base pages</a> (<a href="/cgi-bin/admin/generate.pl?progress=1">verbose</a>)</td>
-  </tr>
+</tr>
   <tr> 
     <td width="15">&nbsp;</td>
-    <td>&#149; <a href="/cgi-bin/admin/generate.pl?id=extras">Regenerate extras and base pages</a>  (<a href="/cgi-bin/admin/generate.pl?id=extras&progress=1">verbose</a>)</td>
-  </tr>
+    <td>&nbsp;</td>
+ 
+</tr>
   <tr> 
     <td colspan="2"><a 
+href="/cgi-bin/admin/subs.pl">Subscriptions administration</a></td>
+ 
+</tr>
+  <tr> 
+    <td width="15">&nbsp;</td>
+    <td>&nbsp;</td>
+ 
+</tr>
+  <tr> 
+    <td colspan="2"><a 
+href="/cgi-bin/admin/generate.pl">Regenerate static &amp; 
+      base 
+pages</a> (<a 
+href="/cgi-bin/admin/generate.pl?progress=1">verbose</a>)</td>
+ 
+</tr>
+  <tr> 
+    <td width="15">&nbsp;</td>
+    <td>&#149; <a 
+href="/cgi-bin/admin/generate.pl?id=extras">Regenerate extras 
+ 
+and base pages</a> (<a 
+href="/cgi-bin/admin/generate.pl?id=extras&progress=1">verbose</a>)</td>
+ 
+</tr>
+  <tr> 
+    <td colspan="2"><a 
+
 href="/cgi-bin/admin/makeIndex.pl">Regenerate search index</a></td>
  
 </tr>
@@ -101,6 +137,7 @@ href="/cgi-bin/admin/makeIndex.pl">Regenerate search index</a></td>
 </tr>
   <tr> 
     <td colspan="2"><a 
+
 href="/cgi-bin/admin/userlist.pl">Download member list</a></td>
  
 </tr>
@@ -119,15 +156,18 @@ tools</a></td>
 <td>&nbsp;</td>
   </tr>
   <tr> 
-    <td colspan="2">
+    <td colspan="2"> 
       <form 
+
 action="/cgi-bin/admin/admin.pl">
         Jump to: 
         <input 
+
 type=text name=id size=4>
         <input type="submit" 
+
 value="Jump!">
-        (Article ID eg: 1 = Home)
+        (Article ID eg: 1 = Home) 
       </form>
  
 </td>

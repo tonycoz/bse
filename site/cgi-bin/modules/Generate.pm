@@ -191,7 +191,10 @@ sub _embed_low {
       eval {
 	require $genname;
       };
-      $@ and return "** Cannot load generator $embed->{generator} for article $id **";
+      if ($@) {
+	print STDERR "Cannot load generator $embed->{generator}: $@\n";
+	return "** Cannot load generator $embed->{generator} for article $id **";
+      }
       $gen = $embed->{generator}->new(admin=>$self->{admin}, cfg=>$self->{cfg});
     }
 

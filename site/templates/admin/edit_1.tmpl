@@ -41,7 +41,7 @@
 
         <table cellpadding="6" border="0" cellspacing="1" width="100%">
           <tr> 
-            <th nowrap bgcolor="#FFFFFF"> <:parentType:>: </th>
+            <th nowrap bgcolor="#FFFFFF" align="left"> <:parentType:>: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <select name="parentid">
                 <option value="">Please select a Section <: ifart :><: list subsections 
@@ -51,39 +51,40 @@
             <td bgcolor="#FFFFFF"><:help edit section:> </td>
           </tr>
           <tr> 
-            <th nowrap bgcolor="#FFFFFF"> <:articleType:> Title: </th>
+            <th nowrap bgcolor="#FFFFFF" align="left"> <:articleType:> Title: 
+            </th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <input type="text" name="title" maxlength="<:cfg fields title_size 255:>" size="64" value="<: article title :>">
             </td>
             <td bgcolor="#FFFFFF"><:help edit title:> </td>
           </tr>
           <tr> 
-            <th nowrap bgcolor="#FFFFFF"> Title Image: </th>
+            <th nowrap bgcolor="#FFFFFF" align="left"> Title Image: </th>
             <td bgcolor="#FFFFFF" width="100%"> <:titleImages:> (upload this to 
               the /images/titles directory)</td>
             <td bgcolor="#FFFFFF">&nbsp;</td>
           </tr>
           <tr> 
-            <th nowrap bgcolor="#FFFFFF"> Template: </th>
+            <th nowrap bgcolor="#FFFFFF" align="left"> Template: </th>
             <td bgcolor="#FFFFFF" width="100%"> <:templates:> </td>
             <td bgcolor="#FFFFFF"><:help edit template:> </td>
           </tr>
           <tr> 
-            <th valign="top" nowrap bgcolor="#FFFFFF"> Body: </th>
+            <th valign="top" nowrap bgcolor="#FFFFFF" align="left"> Body: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <textarea name="body" rows="10" cols="60" wrap="virtual"><: article body :></textarea>
             </td>
             <td bgcolor="#FFFFFF"><:help body body:> </td>
           </tr>
           <tr> 
-            <th nowrap bgcolor="#FFFFFF"> Release Date: </th>
+            <th nowrap bgcolor="#FFFFFF" align="left"> Release Date: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <input type="text" name="release" value="<: article release :>" size="10" maxlength="10">
               (dd/mm/yyyy<: ifnew :> - default is today<: or :><: eif :>)</td>
             <td bgcolor="#FFFFFF"><:help edit release:></td>
           </tr>
           <tr> 
-            <th nowrap bgcolor="#FFFFFF"> Expire Date: </th>
+            <th nowrap bgcolor="#FFFFFF" align="left"> Expire Date: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <input type="text" name="expire" value="<: article expire :>" size="10" maxlength="10">
               (dd/mm/yyyy - <: ifnew :>default is never, <: or :><: eif :>blank 
@@ -91,7 +92,7 @@
             <td bgcolor="#FFFFFF"><:help edit expire:></td>
           </tr>
           <tr> 
-            <th nowrap bgcolor="#FFFFFF"> Summary Length: </th>
+            <th nowrap bgcolor="#FFFFFF" align="left"> Summary Length: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <input type="text" name="summaryLength" size="10" maxlength="10" value="<: article summaryLength :>">
               (in characters - <: ifnew :>default inherited from section<: if 
@@ -100,26 +101,26 @@
             <td bgcolor="#FFFFFF"><:help edit summaryLength:></td>
           </tr>
           <tr> 
-            <th nowrap bgcolor="#FFFFFF"> Display threshold: </th>
+            <th nowrap bgcolor="#FFFFFF" align="left"> Display threshold: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <input type="text" name="threshold" size="10" maxlength="10" value="<: article threshold :>">
             </td>
             <td bgcolor="#FFFFFF"><:help edit threshold:> </td>
           </tr>
           <tr> 
-            <th nowrap bgcolor="#FFFFFF"> Keywords: </th>
+            <th nowrap bgcolor="#FFFFFF" align="left"> Keywords: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <input type="text" name="keyword" maxlength="255" size="60" value="<: article keyword :>">
               (comma separated)</td>
             <td bgcolor="#FFFFFF"><:help edit keywords:> </td>
           </tr>
           <tr> 
-            <th nowrap bgcolor="#FFFFFF">List article:</th>
+            <th nowrap bgcolor="#FFFFFF" align="left">List article:</th>
             <td bgcolor="#FFFFFF" width="100%"> <:list listed:> </td>
             <td bgcolor="#FFFFFF"><:help edit listed:></td>
           </tr>
           <tr> 
-            <th nowrap bgcolor="#FFFFFF">Thumbnails:</th>
+            <th nowrap bgcolor="#FFFFFF" align="left">Thumbnails:</th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <input type=file name=thumbnail>
               <:ifArticle thumbImage:><img src="/images/<:article thumbImage:>"> 
@@ -129,7 +130,7 @@
           </tr>
           <:if Article id:> 
           <tr> 
-            <th nowrap bgcolor="#FFFFFF"><a name="files"></a>Files:</th>
+            <th nowrap bgcolor="#FFFFFF" align="left"><a name="files"></a>Files:</th>
             <td nowrap bgcolor="#FFFFFF" width="100%"> <:if Files:> 
               <table cellpadding="0" cellspacing="0" border="0" bgcolor="#333333">
                 <tr><td> 
@@ -159,14 +160,15 @@
           </tr>
           <:or Article:><:eif Article:> 
           <tr> 
-            <th valign="top" nowrap bgcolor="#FFFFFF"> Uploaded images: </th>
+            <th valign="top" nowrap bgcolor="#FFFFFF" align="left"> Uploaded images: 
+            </th>
             <td align="center" bgcolor="#FFFFFF" width="100%"> <:iterator begin 
               images:> <img src="/images/<: image image :>" alt="<:image alt :>" width= 
               <:image width:> height=<:image height:>> <:iterator separator images:> 
               <hr noshade size="1">
-              <: iterator end images :> &nbsp; <br>
+              <: iterator end images :> &nbsp; <br></td>
             <td align="center" bgcolor="#FFFFFF"><:help edit images:>
-          
+          </td></tr>
         </table>
 </td>
 </tr>
@@ -182,10 +184,10 @@
       <td>
       <table border=0 cellpadding="6" cellspacing="1" width="100%">
         <tr bgcolor="#FFFFFF"> 
-          <th width="50%">Title</th>
-          <th width="50%">Summary</th>
+          <th width="30%">Title</th>
+          <th width="70%">Summary</th>
           <th>Listed</th>
-          <th>Modify</th>
+          <th nowrap>Modify</th>
         </tr>
         <tr> 
           <td colspan="4" bgcolor="#FFFFFF">Reorder child articles: <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=title&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">by 
@@ -195,24 +197,14 @@
         </tr>
         <:iterator begin children:> 
         <tr bgcolor="#FFFFFF"> 
-          <td width="50%"><a href="<:child admin:>"><:child title:></a></td>
-          <td width="50%"><: summary child body :></td>
+          <td width="30%"><a href="<:child admin:>"><:child title:></a></td>
+          <td width="70%"><: summary child body :></td>
           <td align="center"><: is child listed :></td>
-          <td nowrap> 
-            <form name="edit child" method="post" action="/cgi-bin/admin/add.pl">
-              <input type="submit" name="edit child" value="Edit">
-              <input type="hidden" name="id" value="<:child id:>">
-            </form>
-            <form action="<:script:>" onSubmit="return window.confirm('Are you sure you want to delete this article')" method=POST>
-              <input type=hidden name=id2 value="<:article id:>">
-              <input type=hidden name="deleteid" value="<:child id:>">
-              <input type=submit name=remove value="Delete">
-            </form>
-            <:if NextChild:> <a href="/cgi-bin/admin/move.pl?id=<:child id:>&d=down&edit=1&all=1"> 
-            <img src="/images/admin/move_down.gif" width="17" height="13" alt="Move Down" border="0"></a> 
-            <:or NextChild:> <:eif NextChild:> <:if PrevChild:> <a href="/cgi-bin/admin/move.pl?id=<:child id:>&d=up&edit=1&all=1"> 
-            <img src="/images/admin/move_up.gif" width="17" height="13" alt="Move Up" border="0"></a> 
-            <:or PrevChild:> <:eif PrevChild:> </td>
+          <td nowrap> <a href="/cgi-bin/admin/add.pl?id=<:child id:>">Edit</a> 
+            <a href="/cgi-bin/admin/add.pl?id=<:article id:>&deleteid=<:child id:>&remove=1" onClick="return window.confirm('Are you sure you want to delete this article')">Delete</a> 
+            <:if NextChild:><a href="/cgi-bin/admin/move.pl?id=<:child id:>&d=down&edit=1&all=1"><img src="/images/admin/move_down.gif" width="17" height="13" alt="Move Down" border="0"></a><:or 
+            NextChild:><:eif NextChild:><:if PrevChild:><a href="/cgi-bin/admin/move.pl?id=<:child id:>&d=up&edit=1&all=1"><img src="/images/admin/move_up.gif" width="17" height="13" alt="Move Up" border="0"></a><:or 
+            PrevChild:><:eif PrevChild:> </td>
         </tr>
         <:iterator separator children:> <:iterator end children:> 
       </table>

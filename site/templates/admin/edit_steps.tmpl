@@ -15,7 +15,10 @@
 
   <h1>Manage step<:ifMatch [article generator] "Product":><:or:> children/<:eif:>parents</h1>
 
-<p>| <a href="/admin/">Admin menu</a> | <:ifMatch [article generator] "Product":><a href="/cgi-bin/admin/shopadmin.pl">Products list</a> | <a href="/cgi-bin/admin/shopadmin.pl?id=<:article id:>&edit_product=1">Edit Product</a><:or:><a href="/cgi-bin/admin/add.pl?id=<:article id:>">Edit Article</a><:eif:> |</p>
+<p>| <a href="/admin/">Admin menu</a> | <:ifMatch [article generator] "Product":><a href="/cgi-bin/admin/shopadmin.pl">Manage 
+  store</a> | <a href="/cgi-bin/admin/shopadmin.pl?id=<:article id:>&edit_product=1">Edit 
+  Product</a><:or:><a href="/cgi-bin/admin/add.pl?id=<:article id:>">Edit Article</a><:eif:> 
+  |</p>
 <:if new:><:or new:>
 <:if Match [article generator] "Product":><:or Match:>
 <h2><a name="step"></a>Step Children</h2>
@@ -165,7 +168,6 @@
       </table>
 </td></tr>
 </table>
-<p>&nbsp;</p>
 <p><font size="-1">BSE Release <:release:></font></p>
 </body
 ></html>

@@ -1,4 +1,9 @@
-<p><a href="/cgi-bin/admin/add.pl?id=<:catalog id:>">Edit catalog</a></p>
+ 
+<form name="" action="/cgi-bin/admin/add.pl" method="post">
+  <p><input type=hidden name=id value="<:catalog id:>">
+    <input type="submit" name="edit_catalog" value="Edit Catalog">
+  </p>
+</form>
 <:if Products:> 
 <h4>Products list</h4>
 <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" width="100%">
@@ -6,26 +11,25 @@
     <td>
       <table border=0 cellpadding="6" cellspacing="1" width="100%">
         <tr> 
-          <th bgcolor="#FFFFFF">Id</th>
+          <th bgcolor="#FFFFFF" nowrap>Id</th>
           <th bgcolor="#FFFFFF" width="100%">Name</th>
-          <th bgcolor="#FFFFFF">Release</th>
-          <th bgcolor="#FFFFFF">Expire</th>
-          <th bgcolor="#FFFFFF">Retail</th>
-          <th bgcolor="#FFFFFF">Wholesale</th>
-          <th bgcolor="#FFFFFF">GST</th>
-          <th bgcolor="#FFFFFF">Modify</th>
-          <th bgcolor="#FFFFFF">&nbsp;</th>
+          <th bgcolor="#FFFFFF" nowrap>Release</th>
+          <th bgcolor="#FFFFFF" nowrap>Expire</th>
+          <th bgcolor="#FFFFFF" nowrap>Retail</th>
+          <th bgcolor="#FFFFFF" nowrap>Wsale</th>
+          <th bgcolor="#FFFFFF" nowrap>GST</th>
+          <th bgcolor="#FFFFFF" nowrap>Modify</th>
+          <th bgcolor="#FFFFFF">Note</th>
         </tr>
         <:iterator begin products:> 
         <tr bgcolor="#FFFFFF"> 
-          <td align="center"><a href="<:script:>?id=<:product id:>&product_detail=1"><:product 
-            id:></a></td>
-          <td width="100%"><:product title:></td>
-          <td><:date release:></td>
-          <td><:date expire:></td>
-          <td align=right>$<:money retailPrice:></td>
-          <td align=right>$<:money wholesalePrice:></td>
-          <td align=right>$<:money gst:></td>
+          <td align="center" nowrap><:product id:></td>
+          <td width="100%"><a href="<:product admin:>"><:product title:></a></td>
+          <td nowrap><:date release:></td>
+          <td nowrap><:ifMatch [date expire] "31/12/9999":>Never<:or:><:date expire:><:eif:></td>
+          <td align=right nowrap>$<:money retailPrice:></td>
+          <td align=right nowrap>$<:money wholesalePrice:></td>
+          <td align=right nowrap>$<:money gst:></td>
           <td nowrap><a href="<:script:>?id=<:product id:>&edit_product=1">Edit</a> 
             <:if Product listed:> <a href="<:script:>?id=<:product id:>&delete_product=1">Hide</a> 
             <:or Product:> <a href="<:script:>?id=<:product id:>&undelete_product=1">Show</a> 
@@ -38,7 +42,8 @@
   </tr>
 </table>
 <:or Products:><:eif Products:>
-<form action="<:script:>"><input type=hidden name=parentid value="<:catalog id:>"><p><input type=submit name="add_product" value="Add Product"></p></form>
+<form action="<:script:>" method="post">
+  <p><input type=hidden name=parentid value="<:catalog id:>"><input type=submit name="add_product" value="Add Product"></p></form>
 <h4>Sub catalogs</h4>
 <h4><:if Subcats :> <:iterator begin subcats:> </h4>
 <ul>
@@ -48,5 +53,6 @@
 </ul>
 <:iterator end subcats:>
 <:or Subcats:><:eif Subcats:>
-<form action="/cgi-bin/admin/add.pl"><input type=hidden name=parentid value="<:catalog id:>"><input type=submit value="Add Sub-catalog"></form>
+<form action="/cgi-bin/admin/add.pl" method="post">
+  <input type=hidden name=parentid value="<:catalog id:>"><input type=submit value="Add Sub-catalog"></form>
 

@@ -7,8 +7,8 @@
 <:ifMessage:>
 <p><b><:message:> </b></p>
 <:or:><:eif:> 
-<p>| <a href="/admin/">Admin menu</a> | <a href="<:script:>">Product list</a> | 
-</p>
+<p>| <a href="/admin/">Admin menu</a> | <a href="<:script:>">Manage store</a> 
+  | </p>
 
 <form action="<:script:>" enctype="multipart/form-data" method=POST><p><input type=submit name=showimages value="Image Wizard"></p>
 
@@ -36,7 +36,8 @@
             </td>
           </tr>
           <tr> 
-            <th nowrap align="left" bgcolor="#FFFFFF">Body:<:help body body:></th>
+            <th nowrap align="left" bgcolor="#FFFFFF" valign="top">Body:<:help 
+              body body:></th>
             <td nowrap bgcolor="#FFFFFF"> 
               <textarea name="body" rows=15 cols=60 wrap=virtual><:product body:></textarea>
             </td>
