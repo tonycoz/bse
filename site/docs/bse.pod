@@ -10,6 +10,32 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.11_08
+
+This is a test release.
+
+I still need to integrate some of the customization hooks from the
+realware branch.
+
+=over
+
+=item *
+
+remove dependency on Time::HiRes (this was used for benchmarking while
+speeding up the site regen.)
+
+=item *
+
+the global date tag didn't handle a date where the time was missing
+(like article.lastModified).  And it ignored the time when it did
+manage to extract it.
+
+=item *
+
+remove query caching change reports (Table.pm)
+
+=back
+
 =head2 0.11_07
 
 This is a test release.

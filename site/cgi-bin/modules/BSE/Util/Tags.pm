@@ -46,11 +46,11 @@ sub static {
        my $date = $acts->{$func}->($args)
 	 or return '';
        my ($year, $month, $day, $hour, $min, $sec) = 
-	 $date =~ /(\d+)\D+(\d+)\D+(\d+)(?:\D+(\d+)\D+(\d+)\D+(\d+))/;
+	 $date =~ /(\d+)\D+(\d+)\D+(\d+)(?:\D+(\d+)\D+(\d+)\D+(\d+))?/;
        $hour = $min = $sec = 0 unless defined $sec;
        $year -= 1900;
        --$month;
-       return POSIX::strftime($fmt, 0, 0, 0, $day, $month, $year, 0, 0);
+       return POSIX::strftime($fmt, $sec, $min, $hour, $day, $month, $year, 0, 0);
      },
      money =>
      sub {
