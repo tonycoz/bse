@@ -21,6 +21,7 @@ sub make_entities {
   $text =~ s/\226/-/g; # "--" looks ugly
   $text =~ s/\222/'/g;
   $text =~ s/\221/`/g;
+  $text =~ s/\&#8217;/'/g;
 
   return $text;
 }
@@ -136,15 +137,15 @@ sub format_body {
       and ++$match;
     $body =~ s#i\[([^\]\[]+)\]#<i>$1</i>#ig
       and ++$match;
-    $body =~ s#align\[([^|\]\[]+)\|([^\]\[]+)\]#<p align="$1">$2</p>#ig
+    $body =~ s#align\[([^|\]]+)\|([^\]]+)\]#<div align="$1">$2</div>#ig
       and ++$match;
-    $body =~ s#font\[([^|\]\[]+)\|([^\]\[]+)\]#<font size="$1">$2</p>#ig
+    $body =~ s#font\[([^|\]\[]+)\|([^\]\[]+)\]#<font size="$1">$2</font>#ig
       and ++$match;
     $body =~ s#hr\[([^|\]\[]*)\|([^\]\[]*)\]#_make_hr($1, $2)#ieg
       and ++$match;
     $body =~ s#hr\[([^|\]\[]*)\]#_make_hr($1, '')#ieg
       and ++$match;
-    $body =~ s#anchor\[([^|\]\[]*)\]#<a name="$1">#ig
+    $body =~ s#anchor\[([^|\]\[]*)\]#<a name="$1"></a>#ig
       and ++$match;
     $body =~ s#table\[([^\n\[\]]*)\n([^\[\]]+)\n\s*\]#_make_table($1, $2)#ieg
       and ++$match;
@@ -152,10 +153,25 @@ sub format_body {
       and ++$match;
     $body =~ s!((?:##[^\n]+\n[^\S\n]*)+)!_format_ol($1)!eg
       and ++$match;
+    $body =~ s#fontcolor\[([^|\]]+)\|([^\]]+)\|([^\]]+)\]#<font size="$1" color="$2">$3</font>#ig
+      and ++$match;
+    $body =~ s#indent\[([^\]]+)\]#<ul>$1</ul>#ig
+      and ++$match;
+    $body =~ s#center\[([^\]]+)\]#<center>$1</center>#ig
+      and ++$match;
+    $body =~ s#hrcolor\[([^|\]]+)\|([^\]]+)\|([^\]]+)\]#<table width="$1" height="$2" border="0" bgcolor="$3" cellpadding="0" cellspacing="0"><tr><td><img src="/images/interface/pixel.gif" width="1" height="1"></td></tr></table>#ig
+      and ++$match;
+      
   } while ($match);
 
   $body =~ s/\n([ \r]*\n)+/<p>/g;
   $body =~ s/\n/<br>/g;
+  
+# Formatting tags introduced by Adrian      
+  
+  $body =~ s#table\[([^|\]]+)\|([^\]]+)\|([^\]]+)\|([^\]]+)\|([^\]]+)\]#<table width="$1" border="0" bgcolor="$2" cellpadding="$3"><tr><td><font face="Verdana, Arial, Helvetica, sans-serif" size="$4">$5</font></td></tr></table>#ig;
+  $body =~ s#tablec\[([^|\]]+)\|([^\]]+)\|([^\]]+)\|([^\]]+)\|([^\]]+)\]#<center><table width="$1" border="0" bgcolor="$2" cellpadding="$3"><tr><td><font size="$4">$5</font></td></tr></table></center>#ig;
+
 
   if (@images) {
     # the first image simply goes where we're told to put it
