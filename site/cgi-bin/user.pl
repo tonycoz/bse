@@ -30,6 +30,7 @@ my %actions =
    logoff => 'logoff',
    userpage=>'userpage',
    download=>'download',
+   download_file=>'download_file',
    show_lost_password => 'show_lost_password',
    lost_password => 'lost_password',
    subinfo => 'subinfo',

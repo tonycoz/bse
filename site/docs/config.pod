@@ -233,6 +233,11 @@ be downloaded.
 if non-zero the order must be marked as filled before the files can be
 downloaded.
 
+=item require_logon
+
+if non-zero the user must be registered/logged on to download I<any>
+file.
+
 =back
 
 =head2 [confirmations]

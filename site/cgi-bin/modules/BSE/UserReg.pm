@@ -567,6 +567,61 @@ sub download {
   close FILE;
 }
 
+sub download_file {
+  my ($self, $session, $cgi, $cfg) = @_;
+
+  my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
+  my $userid = $session->{userid};
+  my $user;
+  if ($userid) {
+    $user = SiteUsers->getBy(userId=>$userid);
+  }
+  my $fileid = $cgi->param('file')
+    or return $self->show_logon($session, $cgi, $cfg, 
+			 $msgs->('nofileid', "No file id supplied"));
+  require 'ArticleFiles.pm';
+  my $file = ArticleFiles->getByPkey($fileid)
+    or return $self->show_logon($session, $cgi, $cfg,
+			 $msgs->('nosuchfile', "No such download"));
+  $cfg->entryBool('downloads', 'require_logon', 0) && !$user
+    and return $self->show_logon($session, $cgi, $cfg,
+			  $msgs->('downloadlogonall', 
+				  "You must be logged on to download files"));
+    
+  $file->{requireUser} && !$user
+    and return $self->show_logon($session, $cgi, $cfg,
+			  $msgs->('downloadlogon',
+				  "You must be logged on to download this file"));
+  $file->{forSale}
+    and return $self->show_logon($session, $cgi, $cfg,
+			  $msgs->('downloadforsale',
+				  "This file can only be downloaded as part of an order"));
+  
+  my $filebase = $cfg->entryVar('paths', 'downloads');
+  open FILE, "< $filebase/$file->{filename}"
+    or return $self->show_logon($session, $cgi, $cfg, 
+	       $msgs->(openfile =>
+		       "Sorry, cannot open that file.  Contact the webmaster.",
+		       $!));
+  binmode FILE;
+  binmode STDOUT;
+  print "Content-Length: $file->{sizeInBytes}\r\n";
+  if ($file->{download}) {
+    print qq/Content-Disposition: attachment; filename=$file->{displayName}\r\n/;
+    print "Content-Type: application/octet-stream\r\n";
+  }
+  else {
+    print "Content-Type: $file->{contentType}\r\n";
+  }
+  print "\r\n";
+  $|=1;
+  my $data;
+  while (read(FILE, $data, 8192)) {
+    print $data;
+  }
+  close FILE;
+}
+
 sub show_lost_password {
   my ($self, $session, $cgi, $cfg, $message) = @_;
 

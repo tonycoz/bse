@@ -141,9 +141,10 @@ sub fileadd {
     }
   }
   
-  $file{forSale} = 1;
+  $file{forSale} = 0 + exists $file{forSale};
   $file{articleId} = $article->{id};
   $file{download} = 0 + exists $file{download};
+  $file{requireUser} = 0 + exists $file{requireUser};
 
   my $downloadPath = $self->{cfg}->entryVar('paths', 'downloads');
 
@@ -271,6 +272,8 @@ sub filesave {
 	$file->{contentType} = $type;
       }
       $file->{download} = 0 + defined $self->{cgi}->param("download_$file->{id}");
+      $file->{forSale} = 0 + defined $self->{cgi}->param("forSale_$file->{id}");
+      $file->{requireUser} = 0 + defined $self->{cgi}->param("requireUser_$file->{id}");
       $file->save;
     }
   }

@@ -10,6 +10,22 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.11_12
+
+This is a test release.
+
+=over
+
+=item *
+
+make the downloadable files feature available on other pages
+
+=item *
+
+add code to support downloads of non-paid for files
+
+=back
+
 =head2 0.11_11
 
 =over

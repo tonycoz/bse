@@ -91,12 +91,13 @@ EOS
    'select * from other_parents where childId = ? or parentId = ?',
 
    addArticleFile =>
-   'insert into article_files values (null,?,?,?,?,?,?,?,?,?,?)',
+   'insert into article_files values (null,?,?,?,?,?,?,?,?,?,?,?)',
    replaceArticleFile =>
-   'replace article_files values (?,?,?,?,?,?,?,?,?,?,?)',
+   'replace article_files values (?,?,?,?,?,?,?,?,?,?,?,?)',
    deleteArticleFile => 'delete from article_files where id = ?',
    getArticleFileByArticleId =>
    'select * from article_files where articleId = ? order by displayOrder desc',
+   getArticleFileByPkey => 'select * from article_files where id = ?',
    
    getSiteUserByUserId =>
    'select * from site_users where userId = ?',

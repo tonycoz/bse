@@ -193,6 +193,13 @@ unless ($level_cache{$level}{edit}) {
     $levels{$level}{edit};
 }
 
+my @files;
+if ($article->{id} && $article->{id} > 0) {
+  require 'ArticleFiles.pm';
+  @files = ArticleFiles->getBy(articleId=>$article->{id});
+}
+my $file_index;
+
 use OtherParents;
 my @stepkids = OtherParents->getBy(parentId=>$article->{id}) if $article->{id};
 my %stepkids = map { $_->{childId} => $_ } @stepkids;
@@ -376,9 +383,19 @@ HTML
 		  -labels=>{ map { $_->{id}, "$_->{title} ($_->{id})" } 
 			     @stepparent_possibles });
      },
+     BSE::Util::Tags->
+     make_iterator(\@files, 'file', 'files', \$file_index),
   );
 
 if ($imageEditor->action($CGI::Q)) {
+  exit;
+}
+
+use BSE::FileEditor;
+my $file_editor = 
+  BSE::FileEditor->new(session=>\%session, cgi=>$CGI::Q, cfg=>$cfg,
+		       backopts=>{ });
+if ($file_editor->process_files()) {
   exit;
 }
 

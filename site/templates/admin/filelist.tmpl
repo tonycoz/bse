@@ -50,6 +50,18 @@
             </td>
           </tr>
           <tr> 
+            <th> Require payment: </th>
+            <td bgcolor="#FFFFFF"> 
+              <input type="checkbox" name="forSale" value="1" checked /> <:help file forSale:>
+            </td>
+          </tr>
+          <tr> 
+            <th> Require user: </th>
+            <td bgcolor="#FFFFFF"> 
+              <input type="checkbox" name="requireUser" value="1" /> <:help file requireUser:>
+            </td>
+          </tr>
+          <tr> 
             <th>&nbsp; </th>
             <td align="right" bgcolor="#FFFFFF"> 
               <input type="submit" name="fileadd" value="  Add File  " />
@@ -79,6 +91,10 @@
     <th>
       Download</th>
     <th>
+      Require<br>Payment</th>
+    <th>
+      Require<br>User</th>
+    <th>
       &nbsp;</th></tr>
 <:if Files:>
 <: iterator begin files :>
@@ -89,23 +105,25 @@
       <td valign="top"> 
         <input type="text" name="contentType_<:file id:>" value="<: file contentType :>" /></td>
       <td valign="top" align="center"><input type="checkbox" name="download_<:file id:>"<:ifFile download:> checked<:or:><:eif:> /> </td>
+      <td valign="top" align="center"><input type="checkbox" name="forSale_<:file id:>"<:ifFile forSale:> checked<:or:><:eif:> /> </td>
+      <td valign="top" align="center"><input type="checkbox" name="requireUser_<:file id:>"<:ifFile requireUser:> checked<:or:><:eif:> /> </td>
       <td> 
         <b><a href="<:script:>?filedel=1&amp;id=<:article id:>&amp;file=<:file id:>">Remove</a></b> <:move:></td></tr>
 <: iterator separator files :>
     <tr bgcolor="#FFFFFF"> 
-      <td colspan="5">&nbsp;</td>
+      <td colspan="7">&nbsp;</td>
     </tr>
 <: iterator end files :>
 
   <tr>
-      <td colspan="5" align="right" valign="bottom" bgcolor="#FFFFFF"> 
+      <td colspan="7" align="right" valign="bottom" bgcolor="#FFFFFF"> 
         <input type="submit" name="filesave" value="  Save changes  " /></td>
   </tr>
 
 <:or Files:>
 
     <tr bgcolor="#FFFFFF"> 
-      <td colspan="5" align="center">No files are attached to this article</td>
+      <td colspan="7" align="center">No files are attached to this article</td>
     </tr>
 
 <:eif Files:>

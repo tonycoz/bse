@@ -278,6 +278,9 @@ create table article_files (
   -- when it was uploaded
   whenUploaded datetime not null,
 
+  -- user must be logged in to download this file
+  requireUser integer not null default 0,
+
   primary key (id)
 );
 

@@ -115,6 +115,36 @@
               <input type=file name=thumbnail>
               <:ifArticle thumbImage:><img src="/images/<:article thumbImage:>"> <input type=checkbox name="remove_thumb"> Remove<:or:><:eif:></td>
           </tr>
+          <:if Article id:>
+          <tr>
+            <th nowrap align="left"><a name="files"></a>Files:</th>
+            <td nowrap bgcolor="#FFFFFF">
+<:if Files:>
+              <table>
+	        <tr>
+		  <th>Filename</th>
+		  <th>Size</th>
+		  <th>Type</th>
+		  <th>Download?</th>
+		  <th>Requires Payment</th>
+		</tr>
+<:iterator begin files:>
+                <tr>
+		  <td><:file displayName:></td>
+		  <td align="center"><:file sizeInBytes:></td>
+		  <td><:file contentType:></td>
+		  <td align=center><:ifFile download:>Yes<:or:>No<:eif:></td>
+		  <td align=center><:ifFile forSale:>Yes<:or:>No<:eif:></td>
+		</tr>
+<:iterator end files:>
+	      </table>
+<:or Files:>
+              No files are attached to this article.
+<:eif Files:>
+	      <a href="<:script:>?filelist=1&id=<:article id:>"><b>Manage Files</b></a>
+            </td>
+          </tr>
+          <:or Article:><:eif Article:>
           <tr> 
             <th valign="top"> Uploaded files: </th>
             <td align="center" bgcolor="#FFFFFF"> <: iterator begin images :> <img src="/images/<: image image :>" alt="<:image alt :>" width=<:image width:> height=<:image height:>> <: iterator separator images 

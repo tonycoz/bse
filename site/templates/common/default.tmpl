@@ -39,3 +39,27 @@ children:><:ifAdmin:>
   <:if Child summaryLength:><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:summary:></font><:or 
   Child:><:eif Child:></p>
 <:iterator separator children:><:iterator end children:><:eif UnderThreshold:> 
+<:if Files:>
+<table>
+<tr>
+  <th>Filename</th>
+  <th>Size</th>
+  <th>Description</th>
+  <th>Download</th>
+</tr>
+<:iterator begin files:>
+  <tr>
+    <td><:file displayName:></td>
+    <td><:file sizeInBytes:></td>
+    <td><:file description:></td>
+    <td>
+      <:if File forSale:>
+        Sorry, this document cannot be downloaded
+      <:or File:>
+        <a href="/cgi-bin/user.pl?download_file=1&file=<:file id:>">Download</a>
+      <:eif File:>
+    </td>
+  </tr>
+<:iterator end files:>
+</table>
+<:or Files:><:eif Files:>
