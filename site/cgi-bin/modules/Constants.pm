@@ -10,7 +10,9 @@ $MAXPHRASE $CONTENTBASE $SHOPID $PRODUCTPARENT $DATADIR $LINK_TITLES
 $SHOP_MAIL_SUBJECT $SHOP_PASSPHRASE $SHOP_CRYPTO $SHOP_SIGNING_ID
 $SHOP_GPG $SHOP_PGP $SHOP_FROM $SHOP_TO_NAME $SHOP_TO_EMAIL $SHOP_SENDMAIL
 $SHOP_PGPE $SHOP_EMAIL_ORDER
-$ROOT_URI $ARTICLE_URI $SHOP_URI $CGI_URI $ADMIN_URI $IMAGES_URI);
+$ROOT_URI $ARTICLE_URI $SHOP_URI $CGI_URI $ADMIN_URI $IMAGES_URI
+$LOCAL_FORMAT $GENERATE_BUTTON $AUTO_GENERATE
+$DATA_EMAIL $MYSQLDUMP);
 
 $VERSION = 0.1;
 
@@ -24,7 +26,9 @@ $CONTENTBASE $SHOPID $PRODUCTPARENT $DATADIR $LINK_TITLES
 $SHOP_MAIL_SUBJECT $SHOP_PASSPHRASE $SHOP_CRYPTO 
 $SHOP_SIGNING_ID $SHOP_GPG $SHOP_PGP $SHOP_FROM 
 $SHOP_TO_NAME $SHOP_TO_EMAIL $SHOP_EMAIL_ORDER $SHOP_SENDMAIL $SHOP_PGPE
-$ROOT_URI $ARTICLE_URI $SHOP_URI $CGI_URI $ADMIN_URI $IMAGES_URI/;
+$ROOT_URI $ARTICLE_URI $SHOP_URI $CGI_URI $ADMIN_URI $IMAGES_URI
+$LOCAL_FORMAT $GENERATE_BUTTON $AUTO_GENERATE
+$DATA_EMAIL $MYSQLDUMP/;
 
 %EXPORT_TAGS =
   (
@@ -143,6 +147,28 @@ $SEARCH_ALL = "All Sections";
 # protected
 @NO_DELETE = ( 1, 2 );
 
+# you can use the following to add local body formatting tags without
+# having to modify Generate.pm and give yourself upgrade hassles
+# the following should be a reference blessed into class with two methods:
+#   body(\$body) - substitute your tags, return true if any tags replaced
+#   clean(\$body) - remove any tags, return true if any tags replaced
+$LOCAL_FORMAT = undef;
+
+# controls whether or not the Regenerate button is displayed
+# also whether generate.pl actually does something
+# For normal scalars, non-zero means the button is displayed
+# for a coderef, if a call to the coderef returns non-zero the button is 
+# display
+# for any other ref, if $GENERATE_BUTTON->want_button() is non-zero then
+# the button is displayed
+# you could assign a coderef that checks if the current user is
+# in an admin group
+$GENERATE_BUTTON = 1;
+
+# if this is non-zero an articles and its ancestors are regenerated
+# when the article is modified
+$AUTO_GENERATE = 1;
+
 # shop configuration
 
 # the cryto module used to encrypt your copy of the order
@@ -183,6 +209,15 @@ $SHOP_TO_EMAIL = 'sales@yoursite.com';
 
 # non-zero if we should email an encrypted order to $SHOP_TO_EMAIL
 $SHOP_EMAIL_ORDER = 0;
+
+# Maintenance tools
+
+# datadump.pl emails the dump to this address
+$DATA_EMAIL = 'you@yoursite.com';
+
+# the name of your copy of mysqldump (used by datadump.pl)
+# if it's not in the PATH then give the absolute path here
+$MYSQLDUMP = 'mysqldump';
 
 ###########################################################
 ### *** You should not need to modify the following *** ###
