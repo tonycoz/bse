@@ -16,6 +16,7 @@ site/cgi-bin/admin/generate.pl
 site/cgi-bin/admin/imageclean.pl
 site/cgi-bin/admin/makeIndex.pl
 site/cgi-bin/admin/move.pl
+site/cgi-bin/admin/reorder.pl
 site/cgi-bin/admin/shopadmin.pl
 site/cgi-bin/modules/AdminUtil.pm
 site/cgi-bin/modules/Article.pm
