@@ -3,15 +3,31 @@ use strict;
 use Constants qw/:email/;
 
 sub new {
+  my ($class, @args) = @_;
   if ($SMTP_SERVER) {
     require 'BSE/Mail/SMTP.pm';
-    return BSE::Mail::SMTP->new;
+    return BSE::Mail::SMTP->new(@args);
   }
   else {
     require 'BSE/Mail/Sendmail.pm';
-    return BSE::Mail::Sendmail->new;
+    return BSE::Mail::Sendmail->new(@args);
   }
 }
+
+sub _error {
+  my ($self, @msg) = @_;
+
+  $self->{errstr} = "@msg";
+
+  return;
+}
+
+sub errstr {
+  my ($self) = @_;
+
+  $self->{errstr};
+ }
+
 
 1;
 

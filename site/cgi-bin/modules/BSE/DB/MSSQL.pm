@@ -1,5 +1,5 @@
 package BSE::DB::MSSQL;
-
+use strict;
 use DBI;
 
 use vars qw($VERSION);
@@ -49,6 +49,21 @@ my %statements =
    addOrder => 'exec bse_add_order ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?',
    replaceOrder => 'exec bse_update_order ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?',
    addOrderItem => 'exec bse_add_order_item ?,?,?,?,?,?,?',
+
+   OtherParents => 'select * from other_parents',
+   getOtherParentByChildId => <<EOS,
+select * from other_parents where childId = ? order by childDisplayOrder desc
+EOS
+   getOtherParentByParentId => <<EOS,
+select * from other_parents where parentId = ? order by parentDisplayOrder desc
+EOS
+   getOtherParentByParentIdAndChildId =>
+   'select * from other_parents where parentId = ? and childId = ?',
+   addOtherParent=>'insert other_parents values(null,?,?,?,?,?,?)',
+   deleteOtherParent => 'delete from other_parents where id = ?',
+   replaceOtherParent=>'replace other_parents values(?,?,?,?,?,?,?)',
+   'OtherParents.anylinks' => 
+   'select * from other_parents where childId = ? or parentId = ?',
    
    identity => 'select @@identity',
   );

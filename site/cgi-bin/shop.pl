@@ -322,6 +322,7 @@ sub checkout_confirm {
                             \$error)) {
     return checkout($error, 1);
   }
+  ++$session{changed};
   my @cart = @{$session{cart}};
   # display the confirmation page
   my %acts;
@@ -330,7 +331,12 @@ sub checkout_confirm {
      order => sub { CGI::escapeHTML($order{$_[0]}) },
      shop_cart_tags(\%acts, \@cart, \@cart_prods, \%session, $CGI::Q),
      basic_tags(\%acts),
-     old => sub { CGI::escapeHTML(param($_[0])) },
+     old => 
+     sub { 
+       my $value = param($_[0]);
+       defined $value or $value = '';
+       CGI::escapeHTML($value);
+     },
     );
   page('checkoutconfirm.tmpl', \%acts);
 }
@@ -348,9 +354,11 @@ sub prePurchase {
     defined(param($field)) && length(param($field))
       or return checkout("Field $field is required", 1);
   }
-  defined(param('email')) && param('email') =~ /.\@./
-    or return checkout("Please enter a valid email address", 1);
-
+  if (grep /email/, @required) {
+    defined(param('email')) && param('email') =~ /.\@./
+      or return checkout("Please enter a valid email address", 1);
+  }
+  
   use Orders;
   use Order;
   use OrderItems;
@@ -790,7 +798,7 @@ sub send_order {
     my $crypted = $encrypter->encrypt($recip, $ordertext, %opts )
       or die "Cannot encrypt ", $encrypter->error;
 
-    $mailer->send(to=>$toEmail, from=>$from, subject=>'New Order',
+    $mailer->send(to=>$toEmail, from=>$from, subject=>'New Order '.$order->{id},
 		  body=>$crypted)
       or do { print "Content-Type: text/plain\n\nError: ",$mailer->errstr,"\n"; exit };
   }

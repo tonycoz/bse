@@ -1,5 +1,5 @@
 package BSE::DB::Mysql;
-
+use strict;
 use DBI;
 
 use vars qw($VERSION);

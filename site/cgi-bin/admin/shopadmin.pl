@@ -607,7 +607,8 @@ sub order_list_low {
 
   my $from = param('from');
   my $to = param('to');
-  use BSE::Util::SQL qw/now_sqldate sql_to_date/;
+  use BSE::Util::SQL qw/now_sqldate sql_to_date date_to_sql/;
+  use BSE::Util::Valid qw/valid_date/
   my $today = now_sqldate();
   for my $what ($from, $to) {
     if (defined $what) {

@@ -129,8 +129,10 @@ sub load_order_fields {
     defined($q->param($field)) && length($q->param($field))
       or do { $$error = "Field $field is required"; return 0 };
   }
-  defined($q->param('email')) && $q->param('email') =~ /.\@./
-    or do { $$error = "Please enter a valid email address"; return 0 };
+  if (grep /email/, @required) {
+    defined($q->param('email')) && $q->param('email') =~ /.\@./
+      or do { $$error = "Please enter a valid email address"; return 0 };
+  }
 
   if ($wantcard) {
     defined($q->param('cardNumber')) && $q->param('cardNumber') =~ /^\d+$/
