@@ -1,0 +1,50 @@
+<html>
+<head>
+
+  <title>Administration - Edit <:articleType:></title>
+
+  <link rel="stylesheet" type="text/css" href="/css/admin.css">
+
+</head>
+
+<body>
+<p><input type="button" onclick="history.go(0);" value="  Refresh  "></p>
+
+  <h1>Administration Page</h1>
+
+<:if children:>
+<a name="children">
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000">
+    <tr>
+      <td>
+<table border=0 cellpadding="6" cellspacing="1">
+  <tr><th>Title</th><th>Summary</th><th>Listed</th><th>&nbsp;</th></tr>
+<:iterator begin children:>
+  <tr bgcolor="#FFFFFF"> 
+    <td><a href="<:child admin:>"><:child title:></a></td>
+    <td><: summary child body :></td>
+    <td bgcolor="#FFFFFF" align="center"><: is child listed :></td>
+    <td bgcolor="#FFFFFF" nowrap> <a href="/cgi-bin/admin/add.pl?id=<:child id:>">Edit</a> 
+      <:if listed child:> <:if NextChild:> <a href="/cgi-bin/admin/move.pl?id=<:child id:>&d=down&edit=1"><img src="/images/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"> 
+      </a> <:or NextChild:> <:eif NextChild:> <:if PrevChild:> <a href="/cgi-bin/admin/move.pl?id=<:child id:>&d=up&edit=1"><img src="/images/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a> 
+      <:or PrevChild:> <:eif PrevChild:> <:or listed:> <:eif listed:> </td>
+</tr>
+<:iterator separator children:>
+<:iterator end children:>
+</table>
+</td>
+</tr>
+</table>
+<:or children:>
+<:eif children:>
+<:if HaveChildType:>
+<:if new:>
+<:or new:>
+<form action="/cgi-bin/admin/add.pl" method="POST">
+<input type=hidden name="parentid" value="<:article id:>">
+<p><input type=submit value="Add <:childtype:>"></p>
+</form>
+<p><:eif new:> <:or HaveChildType:> <:eif HaveChildType:> </p>
+<p><a href="/admin/">Admin menu</a></p>
+</body
+></html>

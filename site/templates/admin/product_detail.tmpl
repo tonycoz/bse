@@ -1,0 +1,65 @@
+<html><head><title>Product details - Shop administration</title>
+<link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<h1>Shop Administration</h1>
+<h2>Product details</h2>
+<p><:hiddenNote:> </p>
+<table bgcolor="#000000" cellpadding="0" cellspacing="0" border="0">
+  <tr>
+<td>
+      <table border=0 cellpadding="6" cellspacing="1">
+        <tr> 
+    <th align="left">Name:</th>
+          <td bgcolor="#FFFFFF"><:product title:></td>
+  </tr>
+  <tr> 
+    <th align="left">Summary:</th>
+          <td bgcolor="#FFFFFF"><:product summary:></td>
+  </tr>
+  <tr> 
+    <th align="left">Description:</th>
+          <td bgcolor="#FFFFFF"><:product body:></td>
+  </tr>
+  <tr> 
+    <th align="left">Lead time:</th>
+          <td bgcolor="#FFFFFF"><:product leadTime:> days</td>
+  </tr>
+  <tr> 
+    <th align="left">Retail price:</th>
+          <td bgcolor="#FFFFFF">$<:money retailPrice:></td>
+  </tr>
+  <tr> 
+    <th align="left">Wholesale price:</th>
+          <td bgcolor="#FFFFFF">$<:money wholesalePrice:></td>
+  </tr>
+  <tr> 
+    <th align="left">GST:</th>
+          <td bgcolor="#FFFFFF">$<:money gst:></td>
+  </tr>
+  <tr> 
+    <th align="left">Release date:</th>
+          <td bgcolor="#FFFFFF"><:date release:></td>
+  </tr>
+  <tr> 
+    <th align="left">Expiry date:</th>
+          <td bgcolor="#FFFFFF"><:date expire:></td>
+  </tr>
+  <tr> 
+    <th align="left">Picture:</th>
+          <td bgcolor="#FFFFFF"><:ifImage:><img src="/images/<:product imageName:>" width="<:product imageWidth:>" height="<:product imageHeight:>"><:or:>&nbsp;<:eif:> 
+            <input type="file" name="imageName">
+    </td>
+  </tr>
+</table>
+</td>
+</tr>
+</table>
+<p><a href="/admin/">Admin menu</a> | <a href="<:script:>">Product list</a> | 
+  <a href="<:script:>?id=<:product id:>&edit_product=1">Edit</a> <:if Product 
+  listed:> | <a href="<:script:>?id=<:product id:>&delete_product=1">Hide</a> 
+  <:or Product:> | <a href="<:script:>?id=<:product id:>&undelete_product=1">Show</a> 
+  <:eif Product:></p>
+
+</body>
+</html>

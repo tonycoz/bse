@@ -1,0 +1,32 @@
+<html><head><title>Order list - Shop administration</title>
+<link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<h1>Shop Administration</h1>
+<h2>Order list</h2>
+
+<table bgcolor="#000000" cellpadding="0" cellspacing="0" border="0">
+  <tr>
+<td>
+      <table border=0 cellpadding="6" cellspacing="1">
+        <tr>
+ <th>Id</th><th>Name</th><th>Date</th><th>Total</th>
+ <th>GST</th>
+</tr>
+<:iterator begin orders:>
+        <tr bgcolor="#FFFFFF"> 
+          <td align="center"><a href="<:script:>?id=<:order id:>&order_detail=1"><:order 
+            id:></a></td>
+          <td><:order delivFirstName:><:order delivLastName:></td>
+          <td><:date orderDate:></td>
+          <td align=right>$<:money total:></td>
+          <td align=right>$<:money gst:></td>
+</tr>
+<:iterator end orders:>
+</table>
+</td>
+</tr>
+</table>
+<p><a href="/admin/">Admin menu</a> | <a href="<:script:>">Products list</a></p>
+</body>
+</html>

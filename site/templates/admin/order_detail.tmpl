@@ -1,0 +1,74 @@
+<html><head><title>Order <:order id:> details</title>
+<link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<h1>Shop Administration</h1>
+<h2>Order details</h2>
+<table cellpadding="6" cellspacing="1" border="0">
+  <tr>
+ <td>Delivery:</td>
+ <td><:order delivFirstName:> <:order delivLastName:></td>
+ <td rowspan=4>&nbsp;&nbsp;</td>
+ <td>Billing:</td>
+ <td><:order billFirstName:> <:order delivLastName:></td>
+</tr>
+<tr>
+ <td rowspan=3>&nbsp;</td>
+ <td><:order delivStreet:></td>
+ <td rowspan=3>&nbsp;</td>
+ <td><:order billStreet:></td>
+</tr>
+<tr>
+ <td><:order delivSuburb:> <:order delivState:> <:order delivPostCode:></td>
+ <td><:order billSuburb:> <:order billState:> <:order billPostCode:></td>
+</tr>
+<tr>
+ <td><:order delivCountry:></td>
+ <td><:order billCountry:></td>
+</tr>
+</table>
+
+<br>
+<table bgcolor="#000000" cellpadding="0" cellspacing="0" border="0">
+  <tr>
+<td>
+
+      <table border=0 cellpadding="6" cellspacing="1">
+        <tr>
+ <th>Description</th>
+ <th>Units</th>
+ <th>Unit Price</th>
+ <th>Extension</th>
+ <th>Unit Wholesale</th>
+ <th>Ext Wholesale</th>
+ <th>Unit GST</th>
+ <th>Ext GST</th>
+</tr>
+<:iterator begin items:>
+        <tr bgcolor="#FFFFFF"> 
+          <td><a href="<:script:>?product_detail=1&id=<:product id:>"><:product 
+            title:></a></td>
+          <td align=center><:item units:></td>
+          <td align=right><:money item price:></td>
+          <td align=right><:extension price:></td>
+          <td align=right><:money item wholesalePrice:></td>
+          <td align=right><:extension wholesalePrice:></td>
+          <td align=right><:money item gst:></td>
+          <td align=right><:extension gst:></td>
+</tr>
+<:iterator end items:>
+        <tr bgcolor="#FFFFFF"> 
+          <td colspan=3 align=right>Total:</td>
+          <td align=right><:money order total:></td>
+          <td>&nbsp;</td>
+          <td align=right><:money order wholesaleTotal:></td>
+          <td>&nbsp;</td>
+          <td align=right><:money order gst:></td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+<p><a href="/admin/">Admin menu</a> | <a href="<:script:>"></a><a href="<:script:>">Product 
+  list</a> | <a href="<:script:>?order_list=1">Order list</a></p> 
+</body></html>
