@@ -10,6 +10,39 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.14_01
+
+=over
+
+=item *
+
+you can no longer register or save in options a blacklisted email
+address
+
+=item *
+
+email address blacklisting now works
+
+=item *
+
+user options can now be set during registration
+
+=item *
+
+you can configure which user options are required (during both
+registration and in user options)
+
+=item *
+
+the subscription boxes can individually or all be set to checked
+during registration by default.
+
+=item *
+
+the error_img tag now works on the registration and user options pages
+
+=back
+
 =head2 0.14
 
 No changes in this release, just a stable release.  Enjoy.

@@ -4,15 +4,33 @@ use Squirrel::Template;
 use Carp 'confess';
 
 sub get_page {
-  my ($class, $template, $cfg, $acts) = @_;
+  my ($class, $template, $cfg, $acts, $base_template) = @_;
 
   my @dirs = $class->template_dirs($cfg);
   my $file = $cfg->entry('templates', $template) || $template;
   $file =~ /\.\w+$/ or $file .= ".tmpl";
 
+  
   my $obj = Squirrel::Template->new(template_dir => \@dirs);
 
-  $obj->show_page(undef, $file, $acts);
+  my $out;
+  if ($base_template) {
+    eval {
+      $out = $obj->show_page(undef, $file, $acts);
+    };
+    if ($@ and $@ =~ /Cannot find template/) {
+      print STDERR "Could not find requested template $file, trying $base_template\n";
+      $file = $cfg->entry('templates', $base_template) || $base_template;
+      $file =~ /\.\w+$/ or $file .= ".tmpl";
+      $out = $obj->show_page(undef, $file, $acts);
+    }
+  }
+  else {
+    $out = $obj->show_page(undef, $file, $acts);
+  }
+    
+
+  $out;
 }
 
 sub replace {
@@ -34,9 +52,9 @@ sub html_type {
 }
 
 sub show_page {
-  my ($class, $template, $cfg, $acts) = @_;
+  my ($class, $template, $cfg, $acts, $base_template) = @_;
 
-  $class->show_literal($class->get_page($template, $cfg, $acts), $cfg);
+  $class->show_literal($class->get_page($template, $cfg, $acts, $base_template), $cfg);
 }
 
 sub show_replaced {

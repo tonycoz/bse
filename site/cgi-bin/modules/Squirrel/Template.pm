@@ -393,7 +393,7 @@ sub replace_template {
 }
 
 sub show_page {
-  my ($self, $base, $page, $acts, $iter) = @_;
+  my ($self, $base, $page, $acts, $iter, $alt) = @_;
 
   $acts ||= {};
 
@@ -402,7 +402,11 @@ sub show_page {
     $file = $page ? "$base/$page" : $base;
   }
   else {
-    $file = $self->find_template($page)
+    $file = $self->find_template($page);
+    if (!$file and $alt) {
+      $file = $self->find_template($alt);
+    }
+    $file
       or die "Cannot find template $page";
   }
   open TMPLT, "< $file"

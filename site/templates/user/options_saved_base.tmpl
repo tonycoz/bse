@@ -1,0 +1,19 @@
+<:wrap base.tmpl:>
+<div align=center>
+  <table width="350">
+    <tr> 
+      <th colspan="2" align="center"> 
+        <p><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Options Saved</b></font></p>
+      </th>
+    </tr>
+    <tr> 
+      <td colspan="2"> 
+        <p><font face="Verdana, Arial, Helvetica, sans-serif" 
+	size="2">Your options have been saved.</font></p>
+	<p><font face="Verdana, Arial, Helvetica, sans-serif" 
+	size="2">You may <a href="<:script:>?show_opts=<:ifCfg 'site users' nopassword:><:user password:>&u=<:user id:><:or:>1<:eif:>">return</a> to the options page to make 
+	further changes.</font></p>
+      </td>
+    </tr>
+  </table>
+</div>

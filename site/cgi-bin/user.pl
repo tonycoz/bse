@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # -d:ptkdb
-#BEGIN { $ENV{DISPLAY} = '192.168.32.97:0.0'; }
+BEGIN { $ENV{DISPLAY} = '192.168.32.15:0.0'; }
 use strict;
 use FindBin;
 use lib "$FindBin::Bin/modules";
@@ -38,6 +38,7 @@ my %actions =
    confirm => 'confirm',
    unsub => 'unsub',
    setcookie => 'set_cookie',
+   nopassword => 'nopassword',
   );
 
 my $cgi = CGI->new;

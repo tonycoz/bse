@@ -1,4 +1,9 @@
-<:wrap base.tmpl:> <:embed start:><:ifAdmin:>
+<:wrap base.tmpl:> <:embed start:><:if Cfg "site users" nopassword:>
+<!-- This form is not used when you have the nopassword option enabled -->
+<p><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Please use the URL from your confirmation email to access your
+details and subscription information.</font></p>
+<div align="center"><form action="/cgi-bin/user.pl" method="post"><input type="submit" name="show_register" value="Register" class="user-buttons" /></form></div>
+<:or Cfg:><:ifAdmin:>
 <table cellpadding="4" cellspacing="0" border="0">
   <tr> 
     <td> 
@@ -43,4 +48,4 @@ else {
 //-->
 </script>
 </div>
-<:embed end:>
+<:eif Cfg:><:embed end:>

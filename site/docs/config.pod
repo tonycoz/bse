@@ -650,6 +650,94 @@ $SHOP_FROM.
 
 =back
 
+=head2 [site users]
+
+Configuration for site users.
+
+=over
+
+=item nopassword
+
+If this is set to true then no passwords are required during
+registration, a confirmation email is sent immediately upon
+registration and that confirmation email contains a link the user can
+use to manage their details.
+
+This option has some security concerns since it can leave links to the
+user's information in the browser history.  This option is not
+recommended.
+
+You cannot use this to control access to the shop.
+
+=item require_name1
+
+=item require_name2
+
+=item require_address
+
+=item require_city
+
+=item require_state
+
+=item require_postcode
+
+=item require_telephone
+
+=item require_facsimile
+
+=item require_country
+
+=item require_title
+
+=item require_organization
+
+Set these to true to require the corresponding field during
+registration, and to keep it required after modification.  Default:
+false.
+
+If you enable any of these, you should enable C<info_on_register> as
+well, or modify the registration template to include the given fields.
+
+=item display_I<field name>
+
+Controls how the given field is displayed in error messages.  If you
+change the field names on the registration and/or options forms you
+should probably change them here too.  Default: internal field name
+with the first character converted to upper-case.
+
+=item info_on_register
+
+If this is set then the user info is prompted for during user
+registration.  The information still isn't required unless the
+appropriate require_I<field> option is set.  Default: false.
+
+=item register_refresh
+
+The default URL to refresh to on completing registration if no r
+parameter is supplied.
+
+=item subscribe_all
+
+If this is set then the subcription checkboxes are all checked on
+registration by default.  Default: false.
+
+The user will only receive the subscriptions if they leave them checked
+and follow the link in the confirmation email.
+
+=item subscribe_I<id>
+
+Where I<id> is the number identifying a subscription.  If this is set
+then the subscription checkbox for that subscription will be checked
+by default on the registration form.  Default: false.
+
+The user will only receive the subscriptions if they leave it checked
+and follow the link in the confirmation email.
+
+You can get the I<id> of a subcription by looking at the Edit link on the
+subscriptions management page, the number after "id=" is the id.
+
+=back
+
 =head1 AUTHOR
 
 Tony Cook <tony@develop-help.com>

@@ -1,21 +1,23 @@
 <:wrap base.tmpl:>
 <div align=center> 
+<:if Cfg "site users" nopassword:><:or Cfg:>
   <table border="0" cellspacing="0" cellpadding="0">
     <tr> 
       <td> 
         <form name="yourorders" method="post" action="<:script:>">
-          <input type="submit" name="Submit" value="View your account" class="user-buttons">
-          <input type="hidden" name="userpage" value="1">
+          <input type="submit" name="Submit" value="View your account" class="user-buttons" />
+          <input type="hidden" name="userpage" value="1" />
         </form>
       </td>
       <:ifCfg shop enabled:><td> 
         <form name="ff" method="post" action="/cgi-bin/shop.pl">
-          <input type="submit" name="cart" value="View shopping cart" class="user-buttons">
+          <input type="submit" name="cart" value="View shopping cart" class="user-buttons" />
         </form>
       </td><:or:><:eif:>
     </tr>
   </table>
-  <br>
+  <br />
+<:eif Cfg:>
   <table width="250">
     <tr> 
       <th colspan="2" align="center" height="20"> 
@@ -42,30 +44,45 @@
     </tr>
     <:or Message:><:eif Message:> 
     <form action="/cgi-bin/user.pl" method="post">
+    <:if Cfg "site users" nopassword:>
+    <input type="hidden" name="u" value="<:user id:>" />
+    <input type="hidden" name="p" value="<:user password:>" />
+    <input type="hidden" name="r" value="<:script:>?show_opts=<:user password:>&amp;u=<:user id:>&_t=saved" />
+    <:or Cfg:><:eif Cfg:>
+<:if Cfg "site users" nopassword:><:or Cfg:>
       <tr> 
-        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Logon 
+        <th nowrap="nowrap" align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Logon 
           Name:</font></b></th>
         <td width="100%"><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:user 
           userId:></font></td>
       </tr>
+<:eif Cfg:>
       <tr> 
-        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Email 
+        <th nowrap="nowrap" align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Email 
           Address:</font></b></th>
-        <td width="100%"> 
-          <input type="text" name="email" value="<:last email:>" size="40" maxlength="127" />
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="email" value="<:last email:>" size="40" maxlength="127" /><:error_img email:>
         </td>
       </tr>
+<:if Cfg "site users" nopassword:>
+      <tr> 
+        <th nowrap="nowrap" align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Confirm Email:</font></b></th>
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="confirmemail" value="<:last confirmemail:>" size="40" maxlength="127" /><:error_img confirmemail:>
+        </td>
+      </tr>
+<:or Cfg:><:eif Cfg:>      
       <!--//<tr> 
-        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Keep 
+        <th nowrap="nowrap" align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Keep 
           Details:</font></b></th>
         <td width="100%"><input type="checkbox" name="keepAddress" value="1"<:ifLast keepAddress:> checked<:or:><:eif:> /></td>
       </tr> //-->
       <:if Subscriptions:> 
       <tr> 
-        <td nowrap valign="top"> 
+        <td nowrap="nowrap" valign="top"> 
           <table width="100%" border="0" cellspacing="0" cellpadding="0" height="20">
             <tr> 
-              <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Subscription:</font></b></th>
+              <th nowrap="nowrap" align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Subscription:</font></b></th>
             </tr>
           </table>
         </td>
@@ -101,74 +118,75 @@
       </tr>
       <:or Subscriptions:><:eif Subscriptions:> 
       <tr> 
-        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">First 
+        <th nowrap="nowrap" align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">First 
           Name:</font></b></th>
-        <td width="100%"> 
-          <input type="text" name="name1" value="<:last name1:>" size="40" maxlength="127" />
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="name1" value="<:last name1:>" size="40" maxlength="127" /><:error_img name1:>
         </td>
       </tr>
       <tr> 
-        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Last 
+        <th nowrap="nowrap" align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Last 
           Name:</font></b></th>
-        <td width="100%"> 
-          <input type="text" name="name2" value="<:last name2:>" size="40" maxlength="127" />
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="name2" value="<:last name2:>" size="40" maxlength="127" /><:error_img name2:>
         </td>
       </tr>
       <tr> 
-        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Title:</font></b></th>
-        <td width="100%"> 
-          <input type="text" name="title" value="<:last title:>" size="40" maxlength="127" />
+        <th nowrap="nowrap" align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Title:</font></b></th>
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="title" value="<:last title:>" size="40" maxlength="127" /><:error_img title:>
         </td>
       </tr>
       <tr> 
-        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Organisation:</font></b></th>
-        <td width="100%"> 
-          <input type="text" name="organization" value="<:last organization:>" size="40" maxlength="127" />
+        <th nowrap="nowrap" align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Organisation:</font></b></th>
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="organization" value="<:last organization:>" size="40" maxlength="127" /><:error_img organization:>
         </td>
       </tr>
       <tr> 
-        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Street:</font></b></th>
-        <td width="100%"> 
-          <input type="text" name="address" value="<:last address:>" size="40" maxlength="127" />
+        <th nowrap="nowrap" align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Street:</font></b></th>
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="address" value="<:last address:>" size="40" maxlength="127" /><:error_img address:>
         </td>
       </tr>
       <tr> 
-        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Suburb:</font></b></th>
-        <td width="100%"> 
-          <input type="text" name="city" value="<:last city:>" size="40" maxlength="127" />
+        <th nowrap="nowrap" align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Suburb:</font></b></th>
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="city" value="<:last city:>" size="40" maxlength="127" /><:error_img city:>
         </td>
       </tr>
       <tr> 
-        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">State:</font></b></th>
-        <td width="100%"> 
-          <input type="text" name="state" value="<:last state:>" size="8" maxlength="40" />
+        <th nowrap="nowrap" align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">State:</font></b></th>
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="state" value="<:last state:>" size="8" maxlength="40" /><:error_img state:>
         </td>
       </tr>
       <tr> 
-        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Post 
+        <th nowrap="nowrap" align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Post 
           Code:</font></b></th>
-        <td width="100%"> 
-          <input type="text" name="postcode" value="<:last postcode:>" size="8" maxlength="40" />
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="postcode" value="<:last postcode:>" size="8" maxlength="40" /><:error_img postcode:>
         </td>
       </tr>
       <tr> 
-        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Country:</font></b></th>
-        <td width="100%"> 
-          <input type="text" name="country" value="<:last country:>" size="32" maxlength="127" />
+        <th nowrap="nowrap" align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Country:</font></b></th>
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="country" value="<:last country:>" size="32" maxlength="127" /><:error_img country:>
         </td>
       </tr>
       <tr> 
-        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Phone:</font></b></th>
-        <td width="100%"> 
-          <input type="text" name="telephone" value="<:last telephone:>" size="32" maxlength="80" />
+        <th nowrap="nowrap" align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Phone:</font></b></th>
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="telephone" value="<:last telephone:>" size="32" maxlength="80" /><:error_img telephone:>
         </td>
       </tr>
       <tr> 
-        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Facsimile:</font></b></th>
-        <td width="100%"> 
-          <input type="text" name="facsimile" value="<:last facsimile:>" size="32" maxlength="80" />
+        <th nowrap="nowrap" align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Facsimile:</font></b></th>
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="facsimile" value="<:last facsimile:>" size="32" maxlength="80" /><:error_img facsimile:>
         </td>
       </tr>
+<:if Cfg "site users" nopassword:><:or Cfg:>
       <tr> 
         <td colspan="2" align="left" height="20"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><br>
           <br>
@@ -176,29 +194,30 @@
           password</font></td>
       </tr>
       <tr> 
-        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Old 
+        <th nowrap="nowrap" align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Old 
           Password:</font></b></th>
         <td width="100%"> 
           <input type="password" name="old_password" size="40" maxlength="40" />
         </td>
       </tr>
       <tr> 
-        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">New 
+        <th nowrap="nowrap" align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">New 
           Password:</font></b></th>
         <td width="100%"> 
           <input type="password" name="password" value="" size="40" maxlength="40" />
         </td>
       </tr>
       <tr> 
-        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Confirm 
+        <th nowrap="nowrap" align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Confirm 
           Password:</font></b></th>
         <td width="100%"> 
           <input type="password" name="confirm_password" value="" size="40" maxlength="40" />
         </td>
       </tr>
+<:eif Cfg:>
       <tr> 
         <td colspan="2" align="right"> 
-          <input type="submit" name="saveopts" value="Save Options" class="user-buttons"/>
+          <input type="submit" name="saveopts" value="Save Options" class="user-buttons" />
         </td>
       </tr>
     </form>

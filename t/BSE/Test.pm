@@ -6,7 +6,7 @@ require 'Exporter.pm';
 @EXPORT = qw(base_url ok fetch_ok make_url skip make_ua);
 @EXPORT_OK = qw(base_url ok make_ua fetch_url fetch_ok make_url skip 
                 make_post check_form post_ok check_content follow_ok
-                follow_refresh_ok click_ok);
+                follow_refresh_ok click_ok config);
 
 my %conf;
 
@@ -16,7 +16,8 @@ open TESTCFG, "< $conffile" or die "Cannot open $conffile: $!";
 while (<TESTCFG>) {
   next if /^\s*[\#;]/;
   chomp;
-  next unless /^\s*(\w+)\s*=\s*(.*)/;
+  next unless /^\s*(\w+)\s*=\s*(.*)/ 
+    or  /^\s*(\w[^=]*\w\.\w+)\s*=\s*(.*\S)\s*$/;
   $conf{$1} = $2;
 }
 close TESTCFG;
@@ -43,6 +44,12 @@ sub test_sessionclass { $conf{sessionclass} or die "No sessionclass in config" }
 
 sub test_conffile {
   return $conffile;
+}
+
+sub config {
+  my ($name) = @_;
+
+  $conf{$name};
 }
 
 my $test_num = 1;

@@ -481,7 +481,7 @@ create table email_blacklist (
   email varchar(127) not null,
 
   -- a short description of why the address was blacklisted
-  why varchar(20) not null,
+  why varchar(80) not null,
 
   primary key (id),
   unique (email)

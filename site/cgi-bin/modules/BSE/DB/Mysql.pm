@@ -150,6 +150,8 @@ EOS
 
    getEmailBlackEntryByEmail =>
    'select * from email_blacklist where email = ?',
+   addEmailBlackEntry =>
+   'insert email_blacklist values(null,?,?)',
 
    addEmailRequest =>
    'insert email_requests values(null,?,?,?,?)',

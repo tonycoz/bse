@@ -304,13 +304,17 @@ site/templates/user/blacklistdone_base.tmpl
 site/templates/user/cantunsub_base.tmpl
 site/templates/user/confirmed_base.tmpl
 site/templates/user/confsent_base.tmpl
+site/templates/user/confsent_nop_base.tmpl
 site/templates/user/email_conferror_base.tmpl
 site/templates/user/email_confirm.tmpl
+site/templates/user/email_confirm_nop.tmpl
 site/templates/user/logon_base.tmpl
 site/templates/user/lostemailsent_base.tmpl
 site/templates/user/lostpassword_base.tmpl
 site/templates/user/lostpwdemail_base.tmpl
+site/templates/user/nopassword_base.tmpl
 site/templates/user/options_base.tmpl
+site/templates/user/options_saved_base.tmpl
 site/templates/user/register_base.tmpl
 site/templates/user/subdetail.tmpl
 site/templates/user/toosoon_base.tmpl

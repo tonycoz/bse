@@ -1,6 +1,19 @@
 Hello <:user userId:>,
 
-We have received a request from <:host:> asking 
+<:if Cfg "site users" nopassword
+:>We have received a request from <:host:> asking 
+<:site:> to send you a reminder of the link used to access your
+subscriptions.
+
+If you did not make this request, please be reassured that your link is 
+only forwarded to your registered email address for security reasons.  
+No-one else can access it.
+
+The link to access your options is:
+
+  <:cfg site url:>/cgi-bin/user.pl?show_opts=<:user password:>&u=<:user id:>
+
+<:or Cfg:>We have received a request from <:host:> asking 
 <:site:> to send you a reminder of your password.
 
 If you did not make this request, please be reassured that your password is 
@@ -11,7 +24,7 @@ Your password is:
 
   <:user password:>
 
-Any questions should be directed to: <:adminEmail:>
+<:eif Cfg:>Any questions should be directed to: <:adminEmail:>
 
 Regards
 The happy crew at <:site:>

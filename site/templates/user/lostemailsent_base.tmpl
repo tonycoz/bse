@@ -2,19 +2,26 @@
 <div align=center>
   <table width="350">
     <tr> 
-      <th colspan="2" align="center"> 
-        <p><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Lost 
-          Password</b></font></p>
+      <th align="center"> 
+        <p><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b><:ifCfg "site users" nopassword:>Lost Options Link<:or:>Lost 
+          Password<:eif:></b></font></p>
       </th>
     </tr>
+<:if Cfg "site users" nopassword:>
     <tr> 
-      <td colspan="2" align="center"><font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+      <td align="center"><font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        Your options link has been emailed to <b><:user email:></b>. </font></td>
+    </tr>
+<:or Cfg:>
+    <tr> 
+      <td align="center"><font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
         Your password has been emailed to <b><:user email:></b>. </font></td>
     </tr>
     <tr> 
-      <td colspan="2" align="center"> <br>
+      <td align="center"> <br>
         <font face="Verdana, Arial, Helvetica, sans-serif" size="2"><a href="<:script:>">Return 
         to Logon page</a> </font></td>
     </tr>
+<:eif Cfg:>
   </table>
 </div>

@@ -24,36 +24,153 @@
       <input type="hidden" name="r" value="<:cgi r:>">
       <:or:><:eif:> 
       <tr> 
-        <th align="left" nowrap><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Logon 
+        <th align="left" nowrap="nowrap">&nbsp;</th>
+        <td> 
+          <font face="Verdana, Arial, Helvetica, sans-serif" size="-2">* indicates required fields
+        </font></td>
+      </tr>
+<:if Cfg "site users" nopassword 0:>
+<:or Cfg:>
+      <tr> 
+        <th align="left" nowrap="nowrap"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Logon 
           Name:</font></b></th>
         <td> 
-          <input type="text" name="userid" value="<:old userid:>" size="40" />
+          <input type="text" name="userid" value="<:old userid:>" size="40" /> <:error_img userid:> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2">*</font>
         </td>
       </tr>
       <tr> 
-        <th align="left" nowrap><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Password:</font></b></th>
+        <th align="left" nowrap="nowrap"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Password:</font></b></th>
         <td> 
-          <input type="password" name="password" value="" size="40" />
+          <input type="password" name="password" value="" size="40" /> <:error_img password:><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">*</font>
         </td>
       </tr>
       <tr> 
-        <th align="left" nowrap><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Confirm 
+        <th align="left" nowrap="nowrap"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Confirm 
           Password:</font></b></th>
-        <td> 
-          <input type="password" name="confirm_password" value="" size="40" />
+        <td nowrap="nowrap"> 
+          <input type="password" name="confirm_password" value="" size="40" /> <:error_img confirm_password:><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">*</font>
         </td>
       </tr>
+<:eif Cfg:>
       <tr> 
-        <th align="left" nowrap><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Email 
+        <th align="left" nowrap="nowrap"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Email 
           Address:</font></b></th>
-        <td> 
-          <input type="text" name="email" value="<:old email:>" size="40" />
+        <td nowrap="nowrap"> 
+          <input type="text" name="email" value="<:old email:>" size="40" /> <:error_img email:><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">*</font>
         </td>
       </tr>
+<:if Cfg "site users" nopassword 0:>
+      <tr> 
+        <th align="left" nowrap="nowrap"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Confirm Email:</font></b></th>
+        <td nowrap="nowrap"> 
+          <input type="text" name="confirmemail" value="<:old confirmemail:>" size="40" /> <:error_img confirmemail :><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">*</font>
+        </td>
+      </tr>
+<:or Cfg:>
       <tr> 
         <td colspan="2" align="left"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">If 
           you lose your password, you can have it emailed to your registered address.</font></td>
       </tr>
+<:eif Cfg:>
+<:if Cfg "site users" info_on_register:>
+      <:if Subscriptions:> 
+      <tr> 
+        <td nowrap valign="top"> 
+          <table width="100%" border="0" cellspacing="0" cellpadding="0" height="20">
+            <tr> 
+              <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Subscription:</font></b></th>
+            </tr>
+          </table>
+        </td>
+        <td width="100%"> 
+          <table border="0" cellspacing="0" cellpadding="0">
+            <input type="hidden" name="checkedsubs" value="1" />
+            <:iterator begin subscriptions:> 
+            <tr height="20"> 
+              <td> <input type="checkbox" name="subscription" value="<:subscription id:>"<:ifSubscribed:> 
+                checked<:or:><:eif:> /></td>
+              <td><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:subscription 
+                name:></font></td>
+              <td>&nbsp;&nbsp;<a href="#" onClick="javascript:window.open('<:siteUrl:><:script:>?subinfo=1&id=<:subscription id:>', 'subscription_info','width=350,height=200,location=no,status=no,menubar=no,scrollbars=yes'); return 0"><img src="/images/info.gif" width="16" height="16" border="0" /></a></td>
+            </tr>
+            <:iterator end subscriptions:> 
+          </table>
+          <p> <input type="checkbox" name="textOnlyMail" value="1"<:ifOld textOnlyMail:> 
+            checked<:or:><:eif:> /> <font face="Verdana, Arial, Helvetica, sans-serif" size="2">Text 
+            only E-mail messages</font></p>
+        </td>
+      </tr>
+      <:or Subscriptions:><:eif Subscriptions:> 
+      <tr> 
+        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">First 
+          Name:</font></b></th>
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="name1" value="<:old name1:>" size="40" maxlength="127" /> <:error_img name1:><:ifRequired name1:><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">*</font><:or:><:eif:>
+        </td>
+      </tr>
+      <tr> 
+        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Last 
+          Name:</font></b></th>
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="name2" value="<:old name2:>" size="40" maxlength="127" /> <:error_img name2:><:ifRequired name2:><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">*</font><:or:><:eif:>
+        </td>
+      </tr>
+      <tr> 
+        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Title:</font></b></th>
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="title" value="<:old title:>" size="40" maxlength="127" /> <:error_img title:><:ifRequired title:><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">*</font><:or:><:eif:>
+        </td>
+      </tr>
+      <tr> 
+        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Organisation:</font></b></th>
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="organization" value="<:old organization:>" size="40" maxlength="127" /> <:error_img organization:><:ifRequired organization:><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">*</font><:or:><:eif:>
+        </td>
+      </tr>
+      <tr> 
+        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Street:</font></b></th>
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="address" value="<:old address:>" size="40" maxlength="127" /> <:error_img address:><:ifRequired address:><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">*</font><:or:><:eif:>
+        </td>
+      </tr>
+      <tr> 
+        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Suburb:</font></b></th>
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="city" value="<:old city:>" size="40" maxlength="127" /> <:error_img city:><:ifRequired city:><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">*</font><:or:><:eif:>
+        </td>
+      </tr>
+      <tr> 
+        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">State:</font></b></th>
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="state" value="<:old state:>" size="8" maxlength="40" /> <:error_img state:><:ifRequired state:><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">*</font><:or:><:eif:>
+        </td>
+      </tr>
+      <tr> 
+        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Post 
+          Code:</font></b></th>
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="postcode" value="<:old postcode:>" size="8" maxlength="40" /> <:error_img postcode:><:ifRequired postcode:><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">*</font><:or:><:eif:>
+        </td>
+      </tr>
+      <tr> 
+        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Country:</font></b></th>
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="country" value="<:old country:>" size="32" maxlength="127" /> <:error_img country:><:ifRequired country:><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">*</font><:or:><:eif:>
+        </td>
+      </tr>
+      <tr> 
+        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Phone:</font></b></th>
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="telephone" value="<:old telephone:>" size="32" maxlength="80" /> <:error_img telephone:><:ifRequired telephone:><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">*</font><:or:><:eif:>
+        </td>
+      </tr>
+      <tr> 
+        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Facsimile:</font></b></th>
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="facsimile" value="<:old facsimile:>" size="32" maxlength="80" /> <:error_img facsimile:><:ifRequired facsimile:><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">*</font><:or:><:eif:>
+        </td>
+      </tr>
+<:or Cfg:><:eif Cfg:>
       <tr> 
         <td colspan="2" align="right"> 
           <input type="submit" name="register" value="Register" />
@@ -63,12 +180,12 @@
         <td align="left" colspan="2">
           <table width="100%" border="0" cellspacing="0" cellpadding="0">
             <tr> 
-              <td align="left" nowrap> <br>
-                <a href="/cgi-bin/user.pl?show_lost_password=1"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Lost 
-                your password?</font></a></td>
-              <td align="right" nowrap><br>
-                <a href="/cgi-bin/user.pl?show_logon=1<:ifCgi r:>&r=<:cgi r:><:or:><:eif:>"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Already 
-                registered?</font></a></td>
+              <td align="left" nowrap="nowrap"> <br>
+                <a href="/cgi-bin/user.pl?show_lost_password=1"><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:if Cfg "site users" nopassword:>Send your options link<:or Cfg:>Lost 
+                your password?<:eif Cfg:></font></a></td>
+              <:if Cfg "site users" nopassword:><:or Cfg:><td align="right" nowrap="nowrap"><br>
+                <a href="/cgi-bin/user.pl?show_logon=1<:ifCgi r:>&amp;r=<:cgi r:><:or:><:eif:>"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Already 
+                registered?</font></a></td><:eif Cfg:>
             </tr>
           </table>
         </td>
