@@ -12,7 +12,7 @@ $SHOP_GPG $SHOP_PGP $SHOP_FROM $SHOP_TO_NAME $SHOP_TO_EMAIL $SHOP_SENDMAIL
 $SHOP_PGPE $SHOP_EMAIL_ORDER
 $ROOT_URI $ARTICLE_URI $SHOP_URI $CGI_URI $ADMIN_URI $IMAGES_URI
 $LOCAL_FORMAT $GENERATE_BUTTON $AUTO_GENERATE
-$DATA_EMAIL $MYSQLDUMP);
+$DATA_EMAIL $MYSQLDUMP $BODY_EMBED $EMBED_MAX_DEPTH);
 
 $VERSION = 0.1;
 
@@ -28,7 +28,7 @@ $SHOP_SIGNING_ID $SHOP_GPG $SHOP_PGP $SHOP_FROM
 $SHOP_TO_NAME $SHOP_TO_EMAIL $SHOP_EMAIL_ORDER $SHOP_SENDMAIL $SHOP_PGPE
 $ROOT_URI $ARTICLE_URI $SHOP_URI $CGI_URI $ADMIN_URI $IMAGES_URI
 $LOCAL_FORMAT $GENERATE_BUTTON $AUTO_GENERATE
-$DATA_EMAIL $MYSQLDUMP/;
+$DATA_EMAIL $MYSQLDUMP $BODY_EMBED $EMBED_MAX_DEPTH/;
 
 %EXPORT_TAGS =
   (
@@ -85,28 +85,28 @@ $CGI_URI = "/cgi-bin";
     
    1=>{
        threshold=>1,
-       template=>'1/default.tmpl',
+       template=>'common/default.tmpl',
        display=>'Section',
       },
    2=>{
        threshold=>3,
-       template=>'2/default.tmpl',
-       display=>'Subsection',
+       template=>'common/default.tmpl',
+       display=>'Subsect Lev1',
       },
    3=>{
        threshold=>100000,
-       template=>'3/default.tmpl',
-       display=>'Article',
+       template=>'common/default.tmpl',
+       display=>'Subsect Lev2',
       },
    4=>{
        threshold=>10,
-       template=>'4/default.tmpl',
-       display=>'Response',
+       template=>'common/default.tmpl',
+       display=>'Subsect Lev3',
       },
    5=>{
        threshold=>10,
-       template=>'5/default.tmpl',
-       display=>"Sub-response",
+       template=>'common/default.tmpl',
+       display=>"Subsect Lev4",
       },
   );
 
@@ -153,6 +153,12 @@ $SEARCH_ALL = "All Sections";
 #   body(\$body) - substitute your tags, return true if any tags replaced
 #   clean(\$body) - remove any tags, return true if any tags replaced
 $LOCAL_FORMAT = undef;
+
+# controls whether or not the embed[] tags works in article bodies
+$BODY_EMBED = 0;
+
+# the maximum number of embedding levels
+$EMBED_MAX_DEPTH = 20;
 
 # controls whether or not the Regenerate button is displayed
 # also whether generate.pl actually does something
