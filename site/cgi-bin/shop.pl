@@ -614,15 +614,27 @@ sub purchase {
     # store product data too
     @$row{@prod_xfer} = @{$product}{@prod_xfer};
 
+    # store the lapsed value, this prevents future changes causing
+    # variation of the expiry date
+    $row->{max_lapsed} = 0;
+    if ($product->{subscription_id} != -1) {
+      my $sub = $product->subscription;
+      $row->{max_lapsed} = $sub->{max_lapsed} if $sub;
+    }
+
     my @data = @$row{@item_cols};
     
     shift @data;
     push(@items, BSE::TB::OrderItems->add(@data));
 
-#     my $sub = $product->subscription;
-#     if ($sub) {
-#       $subscribing_to{$sub->{text_id}} = $sub;
-#     }
+    my $sub = $product->subscription;
+    if ($sub) {
+      $subscribing_to{$sub->{text_id}} = $sub;
+    }
+  }
+
+  if ($user) {
+    $user->recalculate_subscriptions($cfg);
   }
 
   my $item_index = -1;
@@ -686,11 +698,11 @@ sub purchase {
   page('checkoutfinal.tmpl', \%acts);
 }
 
-# sub tag_ifSubscribingTo {
-#   my ($subscribing_to, $args) = @_;
+sub tag_ifSubscribingTo {
+  my ($subscribing_to, $args) = @_;
 
-#   exists $subscribing_to->{$args};
-# }
+  exists $subscribing_to->{$args};
+}
 
 sub tag_with_wrap {
   my ($args, $text) = @_;
@@ -946,6 +958,11 @@ This is split out for these forms.
 =item order I<field>
 
 Order fields.
+
+=item ifSubscribingTo I<subid>
+
+Can be used to check if this order is intended to be subscribing to a
+subscription.
 
 =back
 

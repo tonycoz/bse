@@ -36,7 +36,12 @@ sub _iter_item {
 
   $$rindex >= 0 && $$rindex < @$rdata
     or return "** $single should only be used inside iterator $plural **";
-  return $self->escape($rdata->[$$rindex]{$args});
+
+  my $value = $rdata->[$$rindex]{$args};
+
+  defined $value or return '';
+
+  return $self->escape($value);
 }
 
 sub _iter_number_paged {
@@ -240,7 +245,7 @@ sub make_iterator {
      "iterate_${plural}_reset" => 
      [ _iter_reset=>$self, $rdata, $rindex, $code, \$loaded, $nocache, $rstore ],
      "iterate_${plural}" =>
-     [ _iter_iterate=>$self, $rdata, $rindex, $nocache, $rstore ],
+     [ _iter_iterate=>$self, $rdata, $rindex, $rstore ],
      $single => 
      [ _iter_item=>$self, $rdata, $rindex, $single, $plural ],
      "${single}_index" => [ _iter_index=>$self, $rindex ],

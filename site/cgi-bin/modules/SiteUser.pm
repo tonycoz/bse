@@ -5,7 +5,7 @@ use Squirrel::Row;
 use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 use Constants qw($SHOP_FROM);
-use BSE::Util::SQL qw/now_datetime/;
+use BSE::Util::SQL qw/now_datetime now_sqldate sql_normal_date/;
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -163,11 +163,26 @@ sub orders {
   return BSE::TB::Orders->getBy(userId => $self->{userId});
 }
 
+sub _user_sub_entry {
+  my ($self, $sub) = @_;
+
+  my ($entry) = BSE::DB->query(userSubscribedEntry => $self->{id}, 
+			       $sub->{subscription_id})
+    or return;
+
+  return $entry;
+}
+
 # check if the user is subscribed to the given subscription
 sub subscribed_to {
   my ($self, $sub) = @_;
 
-  return; # PH for now, not subscribed
+  my $entry = $self->_user_sub_entry($sub)
+    or return;
+
+  my $today = now_sqldate;
+  my $end_date = sql_normal_date($entry->{end});
+  return $today le $end_date;
 }
 
 # check if the user is subscribed to the given subscription, and allow
@@ -175,7 +190,12 @@ sub subscribed_to {
 sub subscribed_to_grace {
   my ($self, $sub) = @_;
 
-  return; # PH for now, not subscribed
+  my $entry = $self->_user_sub_entry($sub)
+    or return;
+
+  my $today = now_sqldate;
+  my $end_date = sql_add_date_days($entry->{end}, $entry->{max_lapsed});
+  return $today le $end_date;
 }
 
 my @image_cols = 
@@ -256,5 +276,14 @@ sub remove_image {
   }
 }
 
+sub recalculate_subscriptions {
+  my ($self, $cfg) = @_;
+
+  require BSE::TB::Subscriptions;
+  my @subs = BSE::TB::Subscriptions->all;
+  for my $sub (@subs) {
+    $sub->update_user_expiry($self, $cfg);
+  }
+}
 
 1;

@@ -662,6 +662,11 @@ STDERR (hence to the error log on Apache.)
 If nonzero the session hash is dumped to STDERR after it is retrived
 from the database.
 
+=item subscription_expiry
+
+If non-zero then subscription expiry date calculations are dumped to
+STDERR.
+
 =back
 
 =head2 [uri]

@@ -18,6 +18,7 @@ my %rights =
    save => 'bse_subs_edit',
    detail => 'bse_subs_detail',
    remove => 'bse_subs_delete',
+   update => 'bse_subs_update',
   );
 
 sub actions { \%rights }
@@ -207,6 +208,16 @@ sub req_detail {
   return $req->dyn_response('admin/subscr/detail', \%acts);
 }
 
+sub req_update {
+  my ($class, $req) = @_;
+
+  BSE::TB::Subscriptions->calculate_all_expiries($req->cfg);
+
+  my $r = $class->_list_refresh($req, "User subscription expiry dates updated");
+
+  return BSE::Template->get_refresh($r, $req->cfg);
+}
+
 sub iter_products {
   my ($sub) = @_;
 
@@ -220,7 +231,9 @@ sub iter_orders {
 }
 
 sub iter_users {
-  return;
+  my ($sub) = @_;
+
+  $sub->subscribed_user_summary;
 }
 
 sub req_remove {
@@ -266,7 +279,7 @@ sub _list_refresh {
   if ($msg) {
     my $sep = $r =~ /\?/ ? '&' : '?';
 
-    $r .= $sep . escape_uri($msg);
+    $r .= $sep . "m=" . escape_uri($msg);
   }
 
   return $r;

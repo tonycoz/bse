@@ -5,6 +5,11 @@ use Article;
 use vars qw/@ISA/;
 @ISA = qw/Article/;
 
+# subscription_usage values
+use constant SUBUSAGE_START_ONLY => 1;
+use constant SUBUSAGE_RENEW_ONLY => 2;
+use constant SUBUSAGE_EITHER => 3;
+
 sub columns {
   return ($_[0]->SUPER::columns(), 
 	  qw/articleId summary leadTime retailPrice wholesalePrice gst options
@@ -34,6 +39,18 @@ sub subscription {
 
   require BSE::TB::Subscriptions;
   return BSE::TB::Subscriptions->getByPkey($id);
+}
+
+sub is_renew_sub_only {
+  my ($self) = @_;
+
+  $self->{subscription_usage} == SUBUSAGE_RENEW_ONLY;
+}
+
+sub is_start_sub_only {
+  my ($self) = @_;
+
+  $self->{subscription_usage} == SUBUSAGE_START_ONLY;
 }
 
 1;

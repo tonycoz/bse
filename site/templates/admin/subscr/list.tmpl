@@ -4,6 +4,8 @@
 | <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |
 <:if UserCan bse_subs_add :>
 <a href="<:script:>?a_addform=1">Add Subscription</a> |<:or UserCan:><:eif UserCan:>
+<:if UserCan bse_subs_update :>
+<a href="<:script:>?a_update=1">Recalculate Expiry Dates</a> |<:or UserCan:><:eif UserCan:>
 <:ifMessage:>
 <p><b><:message:></b></p>
 <:or:><:eif:> 

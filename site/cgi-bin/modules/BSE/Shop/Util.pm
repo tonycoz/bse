@@ -309,13 +309,13 @@ sub need_logon {
       }
 
       $sub = $prod->subscription;
-      if ($sub && $sub->renew_only) {
-	unless ($user->is_subscribed_grace) {
+      if ($sub && $prod->is_renew_sub_only) {
+	unless ($user->is_subscribed_grace($sub)) {
 	  return ("you must be subscribed to $sub->{title} to use this renew only product", "sub/renewsubonly");
 	}
       }
-      if ($sub && $sub->new_only) {
-	if ($user->is_subscribed_grace) {
+      if ($sub && $prod->is_start_sub_only) {
+	if ($user->is_subscribed_grace($sub)) {
 	  return ("you must not be subscribed to $sub->{title} already to use this new subscription only product", "sub/newsubonly");
 	}
       }

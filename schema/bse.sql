@@ -281,6 +281,9 @@ create table order_item (
   subscription_id integer not null default -1,
   subscription_period integer not null default 0,
 
+  -- transferred from the subscription
+  max_lapsed integer not null default 0,
+
   primary key (id),
   index order_item_order(orderId, id)
 );
@@ -596,29 +599,30 @@ create table admin_perms (
 );
 
 -- -- these are "product" subscriptions
--- drop table if exists bse_subscriptions;
--- create table bse_subscriptions (
---   subscription_id integer not null auto_increment primary key,
+drop table if exists bse_subscriptions;
+create table bse_subscriptions (
+  subscription_id integer not null auto_increment primary key,
 
---   text_id varchar(20) not null,
+  text_id varchar(20) not null,
 
---   title varchar(255) not null,
+  title varchar(255) not null,
 
---   description text not null,
+  description text not null,
 
---   max_lapsed integer not null,
+  max_lapsed integer not null,
 
---   unique (text_id)
--- );
+  unique (text_id)
+);
 
--- drop table if exists bse_user_subscribed;
--- create table bse_user_subscribed (
---   subscription_id integer not null,
---   siteuser_id integer not null,
---   started_at date not null,
---   ends_at date not null,
---   primary key (subscription_id, siteuser_id)
--- );
+drop table if exists bse_user_subscribed;
+create table bse_user_subscribed (
+  subscription_id integer not null,
+  siteuser_id integer not null,
+  started_at date not null,
+  ends_at date not null,
+  max_lapsed integer not null,
+  primary key (subscription_id, siteuser_id)
+);
 
 drop table if exists bse_siteuser_images;
 create table bse_siteuser_images (

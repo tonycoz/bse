@@ -93,6 +93,7 @@ site/cgi-bin/modules/BSE/TB/Orders.pm
 site/cgi-bin/modules/BSE/TB/OrderItem.pm
 site/cgi-bin/modules/BSE/TB/OrderItems.pm
 site/cgi-bin/modules/BSE/TB/Subscription.pm
+site/cgi-bin/modules/BSE/TB/Subscription/Calc.pm
 site/cgi-bin/modules/BSE/TB/Subscriptions.pm
 site/cgi-bin/modules/BSE/Template.pm
 site/cgi-bin/modules/BSE/UI/AdminDispatch.pm
@@ -373,10 +374,12 @@ t/t00smoke.t	makes a request to most of the scripts
 t/t010template.t	Tests Squirrel::Template
 t/t050format.t	DevHelp::Formatter tests
 t/t060parms.t
+t/t070sqldates.t	Test SQL date tools
 t/t10edit.t
 t/t20gen.t
 t/t30rules.t	Check for use strict and warnings
 t/t40images.t	Tests image management
+t/t50subscalc.t	Test subscriptions calculations
 t/templates/included.include	Used by t010template.t
 t/templates/wraptest.tmpl	Used by t010template.t
 test.cfg.base

@@ -93,4 +93,46 @@ sub order_summary {
   BSE::DB->query(subscriptionOrderSummary=>$self->{subscription_id});
 }
 
+sub subscribed_user_summary {
+  my ($self) = @_;
+
+  BSE::DB->query(subscriptionUserSummary => $self->{subscription_id});
+}
+
+my @expiry_cols = qw(subscription_id siteuser_id started_at ends_at);
+
+sub update_user_expiry {
+  my ($self, $user, $cfg) = @_;
+
+  my $debug = $cfg->entry('debug', 'subscription_expiry', 0);
+
+  # gather the orders/items this user has bought for this sub
+  my @sub_info = sort { $a->{orderDate} cmp $b->{orderDate} }
+    BSE::DB->query(subscriptionUserBought => 
+		   $self->{subscription_id}, $user->{id});
+
+  if (@sub_info) {
+    require BSE::TB::Subscription::Calc;
+
+    my @periods = BSE::TB::Subscription::Calc->calculate_period
+      ($debug, @sub_info);
+
+    my $period = $periods[-1];
+
+    # remove the old one
+    BSE::DB->run(removeUserSubscribed => $self->{subscription_id}, 
+		 $user->{id});
+
+    # put it back
+    BSE::DB->run(addUserSubscribed =>  $self->{subscription_id}, 
+		 $user->{id}, $period->{start}, $period->{end},
+		 $period->{max_lapsed});
+  }
+  else {
+    # user not subscribed in any way
+    BSE::DB->run(removeUserSubscribed => $self->{subscription_id}, 
+		 $user->{id});
+  }
+}
+
 1;

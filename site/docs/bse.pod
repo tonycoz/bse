@@ -10,6 +10,59 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.14_30
+
+The basic processing for subscriptions is now done.
+
+=over
+
+=item *
+
+added max_lapsed to the order_item table, to make sure subscription
+expiries remain consistent.
+
+=item *
+
+the bse_subscriptions table was commented out for the last release (it
+worked here because the table was created before I commented it out
+<sigh>)
+
+=item *
+
+ordering items with a subscription now results in the
+bse_user_subscribed table being updated, and hence most of the code
+which checks if a user has subscribed now has something to check
+
+=item *
+
+the users iterator on the subscription details page now works
+
+=item *
+
+subadmin.pl now has a target to update all users subscription expiry
+dates from their orders.
+
+=item *
+
+messages usually weren't displayed from a refresh by subadmin.pl, when
+they should have been
+
+=item *
+
+modern iterators could cause 500 errors (bad parameter list
+internally)
+
+=item *
+
+modern iterators could generated undefined value warning in the logs
+
+=item *
+
+switched off debugging for Squirrel::Template, which should reduce log
+pollution considerably.
+
+=back
+
 =head2 0.14_29
 
 =over

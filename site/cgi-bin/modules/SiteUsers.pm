@@ -9,4 +9,10 @@ sub rowClass {
   return 'SiteUser';
 }
 
+sub all_subscribers {
+  my ($class) = @_;
+
+  $class->getSpecial('allSubscribers');
+}
+
 1;

@@ -1,10 +1,18 @@
 package BSE::Util::SQL;
 use strict;
-use vars qw(@EXPORT_OK @ISA);
+use vars qw(@EXPORT_OK @ISA %EXPORT_TAGS);
 require 'Exporter.pm';
 @EXPORT_OK = qw/now_datetime sql_datetime date_to_sql sql_to_date sql_date 
-                now_sqldate now_sqldatetime sql_datetime_to_epoch/;
+                now_sqldate now_sqldatetime sql_datetime_to_epoch
+                sql_normal_date sql_add_date_days sql_add_date_months/;
+%EXPORT_TAGS = 
+  (
+   datemath => [ qw/sql_normal_date sql_add_date_days sql_add_date_months/ ],
+   all => \@EXPORT_OK,
+  );
 @ISA = qw/Exporter/;
+
+use constant SECONDS_PER_DAY => 86400;
 
 =head1 NAME
 
@@ -76,6 +84,63 @@ sub sql_datetime_to_epoch {
     $sqldate =~ /^(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)/;
   use POSIX qw(mktime);
   return mktime($sec, $min, $hour, $day, $month-1, $year-1900);
+}
+
+sub sql_normal_date {
+  my ($sqldate) = @_;
+
+  return unless $sqldate =~ /^(\d+)\D+(\d+)\D+(\d+)/;
+
+  return sprintf("%04d-%02d-%02d", $1, $2, $3);
+}
+
+sub sql_add_date_days {
+  my ($sqldate, $days) = @_;
+
+  $sqldate = sql_normal_date($sqldate)
+    or return;
+
+  my $epoch = sql_datetime_to_epoch("$sqldate 12:00:00");
+  $epoch += $days * SECONDS_PER_DAY;
+  return strftime("%Y-%m-%d", localtime $epoch);
+}
+
+my @leap_days_per_month =
+  qw(31 29 31
+     30 31 30
+     31 31 30
+     31 30 31);
+
+my @noleap_days_per_month =
+  qw(31 28 31
+     30 31 30
+     31 31 30
+     31 30 31);
+
+sub sql_add_date_months {
+  my ($sqldate, $months) = @_;
+
+  my ($year, $month, $day) = $sqldate =~ /^(\d+)\D+(\d+)\D+(\d+)/
+    or return;
+
+  my $years = int($months / 12);
+  $months -= 12 * $years;
+
+  $year += $years;
+  $month += $months;
+  if ($month > 12) {
+    ++$year;
+    $month -= 12;
+  }
+
+  # make sure the dom is still within the month
+  my $leap = $year % 4 == 0 && $year % 100 != 0;
+  my $days_per_month = $leap ? \@leap_days_per_month : \@noleap_days_per_month;
+
+  my $days_in_month = $days_per_month->[$month-1];
+  $day > $days_in_month and $day = $days_in_month;
+
+  return sprintf("%04d-%02d-%02d", $year, $month, $day);
 }
 
 1;

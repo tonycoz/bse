@@ -82,7 +82,7 @@ SQL
    getOrderItemByOrderId => 'select * from order_item where orderId = ?',
    addOrder => 'insert orders values(null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
    replaceOrder => 'replace orders values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
-   addOrderItem => 'insert order_item values(null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+   addOrderItem => 'insert order_item values(null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
    getOrderByUserId => 'select * from orders where userId = ?',
 
    getOrderItemByProductId => 'select * from order_item where productId = ?',
@@ -135,6 +135,12 @@ select si.* from site_users si, subscribed_users su
   where confirmed <> 0 and disabled = 0 and si.id = su.userId and su.subId = ?
 EOS
    SiteUsers => 'select * from site_users',
+   'SiteUsers.allSubscribers' => <<SQL,
+select distinct su.* 
+  from site_users su, orders od, order_item oi
+  where su.id = od.siteuser_id and od.id = oi.orderId 
+        and oi.subscription_id <> -1
+SQL
    getBSESiteuserImage => <<SQL,
 select * from bse_siteuser_images
   where siteuser_id = ? and image_id = ?
@@ -301,9 +307,30 @@ select od.id, od.userId, od.orderDate, od.siteuser_id,
   group by od.id, od.userId, od.orderDate, od.siteuser_id
   order by od.orderDate desc
 SQL
+   subscriptionUserSummary => <<SQL,
+select su.*, us.*
+  from site_users su, bse_user_subscribed us
+where su.id = us.siteuser_id and us.subscription_id = ?
+SQL
    subscriptionProductCount => <<SQL,
 select count(*) as "count" from product 
   where subscription_id = ? or subscription_required = ?
+SQL
+   removeUserSubscribed => <<SQL,
+delete from bse_user_subscribed where subscription_id = ? and siteuser_id = ?
+SQL
+   addUserSubscribed => <<SQL,
+insert bse_user_subscribed values (?,?,?,?,?)
+SQL
+   subscriptionUserBought => <<SQL,
+select od.orderDate, oi.subscription_period, oi.max_lapsed, 
+  od.id as "order_id", oi.id as "item_id", oi.productId as "product_id"
+  from orders od, order_item oi
+  where oi.subscription_id = ? and od.id = oi.orderId and od.siteuser_id = ?
+SQL
+   userSubscribedEntry => <<SQL,
+select * from bse_user_subscribed 
+  where siteuser_id = ? and subscription_id = ?
 SQL
   );
 
