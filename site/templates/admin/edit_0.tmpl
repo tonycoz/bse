@@ -58,10 +58,11 @@
           <th width="70%">Summary</th>
           <th>Listed</th>
           <th nowrap>Modify</th>
+		  <th nowrap>Move</th>
         </tr>
 <:if UserCan edit_reorder_children:>
         <tr> 
-          <td colspan="4" bgcolor="#FFFFFF">Reorder child articles: <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=title&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">by 
+          <td colspan="5" bgcolor="#FFFFFF">Reorder child articles: <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=title&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">by 
             title</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=date&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">by 
             date</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&reverse=1&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">reverse 
             order</a></td>
@@ -73,8 +74,8 @@
           <td width="70%"><: summary child body :></td>
           <td bgcolor="#FFFFFF" align="center"><: is child listed :></td>
           <td nowrap> <a href="/cgi-bin/admin/add.pl?id=<:child id:>">Edit</a> 
-            <:if UserCan edit_delete_article:child:><a href="/cgi-bin/admin/add.pl?id=<:child id:>&remove=1" onClick="return window.confirm('Are you sure you want to delete this Section')">Delete</a> <:or UserCan:><:eif UserCan:>
-            <:movechild:> </td>
+            <:if UserCan edit_delete_article:child:><a href="/cgi-bin/admin/add.pl?id=<:child id:>&remove=1" onClick="return window.confirm('Are you sure you want to delete this Section')">Delete</a> <:or UserCan:><:eif UserCan:></td>
+		   <td nowrap><:movechild:></td>
         </tr>
         <:iterator separator children:> <:iterator end children:> 
       </table>
@@ -84,13 +85,12 @@
 <:or children:>
 <:eif children:>
 <:if HaveChildType:>
-<:if new:>
-<:or new:>
+<:if New:>
+<:or New:>
 <form action="/cgi-bin/admin/add.pl" method="POST">
 <input type=hidden name="parentid" value="<:article id:>">
 <p><input type=submit value="Add <:childtype:>"></p>
 </form>
-<p><:eif new:> <:or HaveChildType:> <:eif HaveChildType:></p>
+<p><:eif New:> <:or HaveChildType:> <:eif HaveChildType:></p>
 <p><font size="-1">BSE Release <:release:></font></p>
-</body
-></html>
+</body></html>

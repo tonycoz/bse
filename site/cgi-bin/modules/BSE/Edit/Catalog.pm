@@ -10,7 +10,7 @@ sub extra_templates {
   my ($self, $article) = @_;
 
   my @extras = $self->SUPER::extra_templates($article);
-  my $basedir = $self->{cfg}->entry('paths', 'templates', $Constants::TMPLDIR);
+  my $basedir = $self->{cfg}->entryVar('paths', 'templates');
   push @extras, 'catalog.tmpl' if -f "$basedir/catalog.tmpl";
 
   return @extras;
@@ -96,6 +96,12 @@ sub default_template {
     if $template && grep $_ eq $template, @$templates;
 
   return $self->SUPER::default_template($article, $cfg, $templates);
+}
+
+sub flag_sections {
+  my ($self) = @_;
+
+  return ( 'catalog flags', $self->SUPER::flag_sections );
 }
 
 1;

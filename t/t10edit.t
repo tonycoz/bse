@@ -14,7 +14,7 @@ ok($ua->get("$baseurl/cgi-bin/admin/add.pl?parentid=-1"), "edit page");
   	      .*
   	      common/default.tmpl
   	      .*
-  	      Add\s+New\s+Section
+  	      Add\s+New\s+Page\s+Lev1
 	      !xs);
 check_form($ua->{content},
 	   "edit form",

@@ -153,6 +153,7 @@ sub sub_form {
 	 return '';
        }
      },
+     ifNew => !defined($sub),
     );
   if ($sub) {
     $acts{subscription} =
@@ -170,7 +171,7 @@ sub add {
   $req->user_can('subs_add')
     or return list($q, $req, $cfg, "You dont have access to add subscriptions");
 
-  sub_form($q, $req, $cfg, 'admin/subs/add', undef, 0);
+  sub_form($q, $req, $cfg, 'admin/subs/edit', undef, 0);
 }
 
 sub validate {

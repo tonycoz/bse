@@ -40,6 +40,7 @@ my @prebuilt =
     thumbHeight=>0,
     level=>1,
     listed=>0,
+    flags=>'',
    },
    {
     # the invisible subsection for what's hot
@@ -65,6 +66,7 @@ my @prebuilt =
     thumbHeight=>0,
     level=>2,
     listed=>2,
+    flags=>'',
    },
    {
     id=>3,
@@ -89,6 +91,7 @@ my @prebuilt =
     thumbHeight=>0,
     level=>1,
     listed=>1,
+    flags=>'',
    },
    {
     id=>4,
@@ -113,6 +116,7 @@ my @prebuilt =
     thumbHeight=>0,
     level=>2,
     listed=>2,
+    flags=>'',
    },
    {
     id=>5,
@@ -137,6 +141,7 @@ my @prebuilt =
     thumbHeight=>0,
     level=>2,
     listed=>0,
+    flags=>'',
    },
    {
     id=>6,
@@ -391,6 +396,7 @@ EOS
     thumbHeight=>0,
     level=>3,
     listed=>0,
+    flags=>'',
    },
    {
     id=>7,
@@ -419,6 +425,7 @@ EOS
     thumbHeight=>0,
     level=>3,
     listed=>0,
+    flags=>'',
    },
    {
     id=>8,
@@ -447,6 +454,7 @@ EOS
     thumbHeight=>0,
     level=>3,
     listed=>1,
+    flags=>'',
    },
   );
 

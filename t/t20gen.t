@@ -123,7 +123,7 @@ sub add_article {
      imagePos => 'tr', release=>sql_datetime(time-86400), expire=>'2999-12-31',
      keyword=>'', template=>'common/default.tmpl', link=>'', admin=>'',
      threshold => 5, summaryLength => 100, generator=>'Generate::Article',
-     level => 1, listed=>1, lastModified => sql_datetime(time),
+     level => 1, listed=>1, lastModified => sql_datetime(time), flags=>'',
     );
   for my $key (%defaults) {
     unless (exists $parms{$key}) {

@@ -9,7 +9,7 @@ sub columns {
   return qw/id parentid displayOrder title titleImage body
     thumbImage thumbWidth thumbHeight imagePos
     release expire keyword template link admin threshold
-    summaryLength generator level listed lastModified/;
+    summaryLength generator level listed lastModified flags/;
 }
 
 sub step_parents {

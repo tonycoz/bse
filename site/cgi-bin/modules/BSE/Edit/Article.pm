@@ -64,6 +64,7 @@ sub edit_sections {
   $article{body} = '';
   $article{listed} = 0;
   $article{generator} = $self->generator;
+  $article{flags} = '';
 
   return $self->low_edit_form($req, \%article, $articles, $msg);
 }
@@ -412,17 +413,25 @@ sub templates {
 
   my @dirs = $self->template_dirs($article);
   my @templates;
-  my $basedir = $self->{cfg}->entryVar('paths', 'templates');
-  for my $dir (@dirs) {
-    my $path = File::Spec->catdir($basedir, $dir);
-    if (-d $path) {
-      if (opendir TEMPLATE_DIR, $path) {
-	push(@templates, sort map "$dir/$_",
-	     grep -f "$path/$_" && /\.(tmpl|html)$/i, readdir TEMPLATE_DIR);
-	closedir TEMPLATE_DIR;
+  my @basedirs = BSE::Template->template_dirs($self->{cfg});
+  for my $basedir (@basedirs) {
+    for my $dir (@dirs) {
+      my $path = File::Spec->catdir($basedir, $dir);
+      if (-d $path) {
+	if (opendir TEMPLATE_DIR, $path) {
+	  push(@templates, sort map "$dir/$_",
+	       grep -f "$path/$_" && /\.(tmpl|html)$/i, readdir TEMPLATE_DIR);
+	  closedir TEMPLATE_DIR;
+	}
       }
     }
   }
+
+  # eliminate any dups, and order it nicely
+  my %seen;
+  @templates = sort { lc($a) cmp lc($b) }
+    grep !$seen{$_}++, @templates;
+  
   return (@templates, $self->extra_templates($article));
 }
 
@@ -529,6 +538,7 @@ HTML
   else {
     $html .= $blank;
   }
+  $html =~ tr/\n//d;
   return $html;
 }
 
@@ -628,6 +638,7 @@ HTML
   else {
     $html .= $blank;
   }
+  $html =~ tr/\n//d;
   return $html;
 }
 
@@ -777,6 +788,7 @@ HTML
   else {
     $html .= $nomove;
   }
+  $html =~ tr/\n//d;
   return $html;
 }
 
@@ -893,6 +905,21 @@ sub tag_default {
   }
 }
 
+sub iter_flags {
+  my ($self) = @_;
+
+  $self->flags;
+}
+
+sub tag_if_flag_set {
+  my ($article, $arg, $acts, $funcname, $templater) = @_;
+
+  my @args = DevHelp::Tags->get_parms($arg, $acts, $templater);
+  @args or return;
+
+  return index($article->{flags}, $args[0]) >= 0;
+}
+
 sub low_edit_tags {
   my ($self, $acts, $request, $article, $articles, $msg, $errors) = @_;
 
@@ -945,7 +972,7 @@ sub low_edit_tags {
      default => [ \&tag_default, $self, $request, $article ],
      articleType => [ \&tag_art_type, $article->{level}, $cfg ],
      parentType => [ \&tag_art_type, $article->{level}-1, $cfg ],
-     ifnew => [ \&tag_if_new, $article ],
+     ifNew => [ \&tag_if_new, $article ],
      list => [ \&tag_list, $self, $article, $articles, $cgi, $request ],
      script => $ENV{SCRIPT_NAME},
      level => $article->{level},
@@ -1011,6 +1038,9 @@ sub low_edit_tags {
      error_img => [ \&tag_error_img, $self, $errors ],
      ifFieldPerm => [ \&tag_if_field_perm, $request, $article ],
      parent => [ \&tag_hash, $parent ],
+     DevHelp::Tags->make_iterator2
+     ([ \&iter_flags, $self ], 'flag', 'flags' ),
+     ifFlagSet => [ \&tag_if_flag_set, $article ],
     );
 }
 
@@ -1100,14 +1130,17 @@ sub generator { 'Generate::Article' }
 sub _validate_common {
   my ($self, $data, $articles, $errors) = @_;
 
-  if (defined $data->{parentid} && $data->{parentid} =~ /^(?:-1|\d+)$/) {
-    unless ($data->{parentid} == -1 or 
-	    $articles->getByPkey($data->{parentid})) {
-      $errors->{parentid} = "Selected parent article doesn't exist";
-    }
-  }
-  else {
-    $errors->{parentid} = "You need to select a valid parent";
+#   if (defined $data->{parentid} && $data->{parentid} =~ /^(?:-1|\d+)$/) {
+#     unless ($data->{parentid} == -1 or 
+# 	    $articles->getByPkey($data->{parentid})) {
+#       $errors->{parentid} = "Selected parent article doesn't exist";
+#     }
+#   }
+#   else {
+#     $errors->{parentid} = "You need to select a valid parent";
+#   }
+  if (exists $data->{title} && $data->{title} !~ /\S/) {
+    $errors->{title} = "Please enter a title";
   }
 
   if (exists $data->{template} && $data->{template} =~ /\.\./) {
@@ -1117,7 +1150,7 @@ sub _validate_common {
 }
 
 sub validate {
-  my ($self, $data, $articles, $rmsg, $errors) = @_;
+  my ($self, $data, $articles, $errors) = @_;
 
   $self->_validate_common($data, $articles, $errors);
 
@@ -1125,7 +1158,7 @@ sub validate {
 }
 
 sub validate_old {
-  my ($self, $article, $data, $articles, $rmsg, $errors) = @_;
+  my ($self, $article, $data, $articles, $errors) = @_;
 
   $self->_validate_common($data, $articles, $errors);
 
@@ -1168,10 +1201,11 @@ sub save_new {
     $data{$name} = $cgi->param($name) 
       if defined $cgi->param($name);
   }
+  $data{flags} = join '', sort $cgi->param('flags');
 
   my $msg;
   my %errors;
-  $self->validate(\%data, $articles, \$msg, \%errors)
+  $self->validate(\%data, $articles, \%errors)
     or return $self->add_form($req, $articles, $msg, \%errors);
 
   my $parent;
@@ -1281,6 +1315,9 @@ sub save {
       if defined($cgi->param($name)) and $name ne 'id' && $name ne 'parentid'
 	&& $req->user_can("edit_field_edit_$name", $article);
   }
+  # possibly this needs tighter error checking
+  $data{flags} = join '', sort $cgi->param('flags')
+    if $req->user_can("edit_field_edit_flags", $article);
   my %errors;
   $self->validate_old($article, \%data, $articles, \%errors)
     or return $self->edit_form($req, $article, $articles, undef, \%errors);
@@ -1742,10 +1779,10 @@ sub refresh {
 }
 
 sub show_images {
-  my ($self, $req, $article, $articles, $msg) = @_;
+  my ($self, $req, $article, $articles, $msg, $errors) = @_;
 
   my %acts;
-  %acts = $self->low_edit_tags(\%acts, $req, $article, $articles, $msg);
+  %acts = $self->low_edit_tags(\%acts, $req, $article, $articles, $msg, $errors);
   my $template = 'admin/article_img';
 
   return BSE::Template->get_response($template, $req->cfg, \%acts);
@@ -1810,11 +1847,13 @@ sub add_image {
   my $image = $cgi->param('image');
   unless ($image) {
     return $self->show_images($req, $article, $articles,
-			      'Enter or select the name of an image file on your machine');
+			      'Enter or select the name of an image file on your machine', 
+			      { image => 'Please enter an image filename' });
   }
   if (-z $image) {
     return $self->show_images($req, $article, $articles,
-			      'Image file is empty');
+			      'Image file is empty',
+			     { image => 'Image file is empty' });
   }
   my $imagename = $image;
   $imagename .= ''; # force it into a string
@@ -1925,7 +1964,7 @@ sub move_img_up {
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
-  return $self->refresh($article, $req->cgi, undef, undef, '&showimage=1');
+  return $self->refresh($article, $req->cgi, undef, undef, '&showimages=1');
 }
 
 sub move_img_down {
@@ -1950,7 +1989,7 @@ sub move_img_down {
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
-  return $self->refresh($article, $req->cgi, undef, undef, '&showimage=1');
+  return $self->refresh($article, $req->cgi, undef, undef, '&showimages=1');
 }
 
 sub get_article {
@@ -1996,10 +2035,10 @@ sub _refresh_filelist {
 }
 
 sub filelist {
-  my ($self, $req, $article, $articles, $msg) = @_;
+  my ($self, $req, $article, $articles, $msg, $errors) = @_;
 
   my %acts;
-  %acts = $self->low_edit_tags(\%acts, $req, $article, $articles, $msg);
+  %acts = $self->low_edit_tags(\%acts, $req, $article, $articles, $msg, $errors);
   my $template = 'admin/filelist';
 
   return BSE::Template->get_response($template, $req->cfg, \%acts);
@@ -2034,11 +2073,13 @@ sub fileadd {
   my $file = $cgi->param('file');
   unless ($file) {
     return $self->filelist($req, $article, $articles,
-			   "Enter or select the name of a file on your machine");
+			   "Enter or select the name of a file on your machine",
+			  { file => 'Please enter a filename' });
   }
   if (-z $file) {
     return $self->filelist($req, $article, $articles,
-			   message=>"File is empty");
+			   "File is empty",
+			   { file => 'File is empty' });
   }
 
   unless ($file{contentType}) {
@@ -2303,6 +2344,24 @@ sub default_value {
   defined($value) and return encode_entities($value);
   
   return '';
+}
+
+sub flag_sections {
+  return ( 'article flags' );
+}
+
+sub flags {
+  my ($self) = @_;
+
+  my $cfg = $self->{cfg};
+
+  my @sections = $self->flag_sections;
+
+  my %flags = map $cfg->entriesCS($_), reverse @sections;
+  my @valid = grep /^\w$/, keys %flags;
+  
+  return map +{ id => $_, desc => $flags{$_} },
+    sort { lc($flags{$a}) cmp lc($flags{$b}) }@valid;
 }
 
 1;

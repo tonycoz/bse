@@ -150,6 +150,11 @@
             <td bgcolor="#FFFFFF"><:help edit listed:></td>
           </tr>
           <tr> 
+            <th nowrap bgcolor="#FFFFFF" align="left">Flags:</th>
+            <td bgcolor="#FFFFFF" width="100%"><:iterator begin flags:><:if FieldPerm flags:><input type=checkbox name=flags value="<:flag id:>" <:ifFlagSet [flag id]:>checked<:or:><:eif:>><:or FieldPerm:><:ifFlagSet [flag id]:>Yes<:or:>No<:eif:><:eif FieldPerm:><:flag desc:><:iterator end flags:></td>
+            <td bgcolor="#FFFFFF"><:help edit listed:></td>
+          </tr>
+          <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF" valign="top">Thumbnail image:</th>
             <td nowrap bgcolor="#FFFFFF"> 
               <:ifFieldPerm thumbImage:><input type="file" name="thumbnail"><:or:><:eif:>

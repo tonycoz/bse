@@ -85,7 +85,10 @@ sub get_class {
   eval {
     require $file;
   };
-  return if $@;
+  if ($@) {
+    print STDERR "Loading $class: $@\n";
+    return;
+  }
   return $class->new(cfg=>$cfg, db=>BSE::DB->single);
 }
 

@@ -2,6 +2,7 @@ package BSE::Util::Tags;
 use strict;
 use HTML::Entities;
 use DevHelp::Tags;
+use DevHelp::HTML;
 
 sub _get_parms {
   my ($acts, $args) = @_;
@@ -153,10 +154,10 @@ sub static {
      sub {
        my ($value, $fmt) = @_;
        if ($fmt eq 'u') {
-	 return CGI::escape($value);
+	 return escape_uri($value);
        }
        elsif ($fmt eq 'h') {
-	 return CGI::escapeHTML($value);
+	 return escape_html($value);
        }
        return $value;
      },

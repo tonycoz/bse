@@ -6,11 +6,11 @@ use Constants qw(%LEVEL_DEFAULTS $CGI_URI $ADMIN_URI $IMAGES_URI
 use Images;
 use vars qw(@ISA);
 use Generate;
-use CGI (); # for escapeHTML()
 use Util qw(generate_button);
 use BSE::Util::Tags;
 use ArticleFiles;
 @ISA = qw/Generate/;
+use DevHelp::HTML;
 
 my $excerptSize = 300;
 
@@ -40,11 +40,11 @@ sub link_to_form {
     for my $attr (split /&/, $query) {
       my ($name, $value) = split /=/, $attr, 2;
       # I'm assuming none of the values are uri escaped
-      $value = CGI::escapeHTML($value);
+      $value = escape_html($value);
       $form .= qq!<input type=hidden name="$name" value="$value">!
     }
   }
-  $form .= qq!<input type=submit value="!.CGI::escapeHTML($text).'">';
+  $form .= qq!<input type=submit value="!.escape_html($text).'">';
   $form .= "</form>";
 
   return $form;
@@ -105,7 +105,7 @@ sub baseActs {
   my %acts =
     (
      $self->SUPER::baseActs($articles, $acts, $article, $embedded),
-     article=>sub { CGI::escapeHTML($article->{$_[0]}) },
+     article=>sub { escape_html($article->{$_[0]}) },
      ifTitleImage => 
      sub { 
        my $which = shift || 'article';
@@ -173,10 +173,10 @@ sub baseActs {
      },
      child =>
      sub {
-       return CGI::escapeHTML($children[$child_index]{$_[0]});
+       return escape_html($children[$child_index]{$_[0]});
      },
 
-     section=>sub { CGI::escapeHTML($section->{$_[0]}) },
+     section=>sub { escape_html($section->{$_[0]}) },
 
      # these are mostly obsolete, use moveUp and moveDown instead
      # where possible
@@ -264,7 +264,7 @@ HTML
      },
      crumbs =>
      sub {
-       return CGI::escapeHTML($work_crumbs[$crumb_index]{$_[0]});
+       return escape_html($work_crumbs[$crumb_index]{$_[0]});
      },
      ifCrumbs =>
      sub {
@@ -283,15 +283,17 @@ HTML
      # access to parent
      ifParent => sub { $parent },
      parent =>
-     sub { return $parent && CGI::escapeHTML($parent->{$_[0]}) },
+     sub { return $parent && escape_html($parent->{$_[0]}) },
      # for rearranging order in admin mode
      moveDown=>
      sub {
        @children > 1 or return '';
        if ($self->{admin} && $child_index < $#children) {
-         return <<HTML;
+         my $html = <<HTML;
 <a href="$CGI_URI/admin/move.pl?id=$children[$child_index]{id}&d=down"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
 HTML
+	 chop $html;
+	 return $html;
        } else {
          return $blank;
        }
@@ -300,9 +302,11 @@ HTML
      sub {
        @children > 1 or return '';
        if ($self->{admin} && $child_index > 0) {
-         return <<HTML;
+         my $html = <<HTML;
 <a href="$CGI_URI/admin/move.pl?id=$children[$child_index]{id}&d=up"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
 HTML
+	 chop $html;
+	 return $html;
        } else {
          return $blank;
        }
@@ -312,8 +316,7 @@ HTML
        my $html = '';
        return '' unless $self->{admin};
        return '' unless @allkids > 1;
-       my $refreshto = CGI::escape($ENV{SCRIPT_NAME}
-				   ."?id=$article->{id}");
+       my $refreshto = escape_uri($ENV{SCRIPT_NAME} . "?id=$article->{id}");
        if ($allkids_index < $#allkids) {
 	 $html .= <<HTML
 <a href="$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids[$allkids_index]{id}&other=$allkids[$allkids_index+1]{id}&refreshto=$refreshto"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
@@ -330,6 +333,7 @@ HTML
        else {
 	 $html .= $blank;
        }
+       $html =~ tr/\n//d;
        return $html;
      },
      ifCurrentPage=>
@@ -365,17 +369,18 @@ HTML
        }
        my $html;
        if ($align && exists $im->{$align}) {
-	 $html = CGI::escapeHTML($im->{$align});
+	 $html = escape_html($im->{$align});
        }
        else {
 	 $html = qq!<img src="/images/$im->{image}" width="$im->{width}"!
-	   . qq! height="$im->{height}" alt="! . CGI::escapeHTML($im->{alt});
+	   . qq! height="$im->{height}" alt="! . escape_html($im->{alt})
+	     . qq!"!;
 	 $html .= qq! align="$align"! if $align && $align ne '-';
          unless (defined($rest) && $rest =~ /\bborder=/i) {
            $html .= ' border="0"';
          }
          $html .= " $rest" if defined $rest;
-	 $html .= qq!" />!;
+	 $html .= qq! />!;
 	 if ($im->{url}) {
 	   $html = qq!<a href="$im->{url}">$html</a>!;
 	 }

@@ -25,7 +25,7 @@ for my $drop (@drop_tables) {
     or die "Could not drop old table: ", $dbh->errstr;
 }
 
-system "/usr/local/mysql/bin/mysql -u$un -p$pw $db <$dist"
+system "mysql -u$un -p$pw $db <$dist"
   and die "Error loading database";
 
 $tl = $dbh->prepare("show tables")

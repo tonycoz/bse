@@ -528,6 +528,40 @@ If the user supplies a template name to printable.pl then you can use
 a different content type by adding an entry to this section.  The key
 is the template name, and the value is the full content type.
 
+=head2 [search index scores]
+
+This section is used when generating the search index to override the
+default scores for each field in the articles.
+
+The default scores are:
+
+  Field   Score
+  -----   -----
+  title     5
+  body      3
+  keyword   4
+
+A special key C<file_description> can be used here to set the score
+for indexing downloadable file descriptions, which aren't indexed by
+default.  A good value is probably 2 or 1.
+
+=head2 [article flags]
+
+=head2 [product flags]
+
+=head2 [catalog flags]
+
+Flags that can be set for articles, products and catalogs
+respectively.  Note that flags for articles are also visible in
+products and catalogs.
+
+All flag Ids are single letters or digits.  Uppercase letters are
+reserved for use by BSE internally, leaving lower-case letters and
+digits for your own use.
+
+Use the id of the flag as the key, and a description of the flag as
+it's value.
+
 =head1 AUTHOR
 
 Tony Cook <tony@develop-help.com>

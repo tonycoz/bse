@@ -69,7 +69,7 @@ sub add_template {
   my ($self, $article, $cgi) = @_;
 
   return $self->{cfg}->entry('admin templates', 'add_product', 
-			     'admin/add_product');
+			     'admin/edit_product');
 }
 
 sub validate_parent {
@@ -105,9 +105,9 @@ sub _validate_common {
 }
 
 sub validate {
-  my ($self, $data, $articles, $rmsg, $errors) = @_;
+  my ($self, $data, $articles, $errors) = @_;
 
-  my $ok = $self->SUPER::validate($data, $articles, $rmsg, $errors);
+  my $ok = $self->SUPER::validate($data, $articles, $errors);
   $self->_validate_common($data, $articles, $errors);
 
   for my $field (qw(title summary body)) {
@@ -120,9 +120,9 @@ sub validate {
 }
 
 sub validate_old {
-  my ($self, $article, $data, $articles, $rmsg, $errors) = @_;
+  my ($self, $article, $data, $articles, $errors) = @_;
 
-  $self->SUPER::validate($data, $articles, $rmsg, $errors)
+  $self->SUPER::validate($data, $articles, $errors)
     or return;
   
   return !keys %$errors;
@@ -197,6 +197,9 @@ sub _fill_product_data {
       }
     }
   }
+  if (exists $src->{options}) {
+    $data->{options} = $src->{options};
+  }
 }
 
 sub fill_new_data {
@@ -236,6 +239,12 @@ sub can_remove {
   }
 
   return $self->SUPER::can_remove($req, $article, $articles, $rmsg);
+}
+
+sub flag_sections {
+  my ($self) = @_;
+
+  return ( 'product flags', $self->SUPER::flag_sections );
 }
 
 1;

@@ -56,6 +56,11 @@ CREATE TABLE article (
   listed smallint not null default 1,
   -- date last modified
   lastModified date not null,
+
+  -- flags specified via the config file
+  -- used by code and templates
+  flags varchar(80) not null default '',
+
   PRIMARY KEY (id),
 
   -- if we keep id in the indexes MySQL will sometimes be able to

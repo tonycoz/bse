@@ -206,6 +206,7 @@ HTML
        else {
 	 $html .= $blank;
        }
+       $html =~ tr/\n//d;
        return $html;
      },
      script=>sub { $ENV{SCRIPT_NAME} },
@@ -239,6 +240,7 @@ HTML
        else {
 	 $html .= $blank;
        }
+       $html =~ tr/\n//d;
        return $html;
      },
     );
@@ -304,6 +306,7 @@ HTML
        else {
 	 $html .= $blank;
        }
+       $html =~ tr/\n//d;
        return $html;
      },
      ifShowStepKids => sub { $session->{showstepkids} },
@@ -662,6 +665,7 @@ HTML
        else {
          $html .= $blank;
        }
+       $html =~ tr/\n//d;
        return $html;
      },
      ifStepcatPossibles => sub { @stepcat_possibles },

@@ -25,20 +25,20 @@ fetch_ok($ua, "advanced search form", "$baseurl/cgi-bin/search.pl",
 	 "All\\s+lower\\s+case");
 fetch_ok($ua, "failed search", "$baseurl/cgi-bin/search.pl?q=blargle",
 	 "No\\s+documents\\s+were\\s+found");
-fetch_ok($ua, "good search", "$baseurl/cgi-bin/search.pl?q=title",
-	 qr!My\s+site(?:'|&\#39;)s\s+title.*\[formatting\s+guide!s);
+fetch_ok($ua, "good search", "$baseurl/cgi-bin/search.pl?q=shop",
+	 qr!You\s+can\s+buy!s);
 fetch_ok($ua, "user logon page", "$baseurl/cgi-bin/user.pl",
 	 qr!User\s+Logon!s);
 fetch_ok($ua, "shop admin page", "$baseurl/cgi-bin/admin/shopadmin.pl",
 	 qr!Shop\s+administration!s);
 fetch_ok($ua, "add article form", "$baseurl/cgi-bin/admin/add.pl",
-	 qr!New\s+Subsect\sLev2!s);
+	 qr!New\s+Page\sLev3!s);
 fetch_ok($ua, "add catalog form", "$baseurl/cgi-bin/admin/add.pl?type=Catalog",
 	 qr!New\s+Catalog!s);
 fetch_ok($ua, "add product form", "$baseurl/cgi-bin/admin/add.pl?type=Product",
 	 qr!Add\s+product!s);
 fetch_ok($ua, "edit article form", "$baseurl/cgi-bin/admin/add.pl?id=1",
-	 qr!Section\sDetails!s);
+	 qr!Edit\s+Page\s+Lev1!s);
 fetch_ok($ua, "edit catalog form", "$baseurl/cgi-bin/admin/add.pl?id=4",
 	 qr!Catalog\sDetails!s);
 fetch_ok($ua, "user list", "$baseurl/cgi-bin/admin/adminusers.pl",

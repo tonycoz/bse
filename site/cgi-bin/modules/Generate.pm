@@ -1,11 +1,11 @@
 package Generate;
 use strict;
 use Articles;
-use CGI ();
 use Constants qw($IMAGEDIR $LOCAL_FORMAT $BODY_EMBED 
                  $EMBED_MAX_DEPTH $HAVE_HTML_PARSER);
 use BSE::Custom;
 use DevHelp::Tags;
+use DevHelp::HTML;
 
 my $excerptSize = 300;
 
@@ -158,7 +158,7 @@ sub _format_ol {
 # the input text has already been escaped, so we need to unescape it
 # too bad if you want [] in your html (but you can use entities)
 sub _make_html {
-  return CGI::unescapeHTML($_[0]);
+  return unescape_html($_[0]);
 }
 
 sub _embed_low {
@@ -252,7 +252,7 @@ sub _make_img {
 #      }
     my $im = $images->[$index-1];
     $text = qq!<img src="/images/$im->{image}" width="$im->{width}"!
-      . qq! height="$im->{height}" alt="! . CGI::escapeHTML($im->{alt}).'"'
+      . qq! height="$im->{height}" alt="! . escape_html($im->{alt}).'"'
 	. qq! border="0"!;
     $text .= qq! align="$align"! if $align && $align ne 'center';
     $text .= qq! />!;
@@ -262,7 +262,7 @@ sub _make_img {
       $url = $im->{url};
     }
     if ($url) {
-      $text = qq!<a href="! . CGI::escapeHTML($url) . qq!">$text</a>!;
+      $text = qq!<a href="! . escape_html($url) . qq!">$text</a>!;
     }
   }
   return $text;
@@ -275,7 +275,7 @@ sub format_body {
   return substr($body, 6) if $body =~ /^<html>/i;
 
   # clean up any possible existing markup
-  $body = CGI::escapeHTML($body);
+  $body = escape_html($body);
   
   # I considered replacing these with single character codes and replacing
   # them later with the tags, to avoid having to check for the middle of 
@@ -557,7 +557,7 @@ sub baseActs {
        }
      },
      level1 => sub {
-       return CGI::escapeHTML($sections[$section_index]{$_[0]});
+       return escape_html($sections[$section_index]{$_[0]});
      },
 
      # used to generate a list of subsections for the side-menu
@@ -583,7 +583,7 @@ sub baseActs {
      iterate_level3 => sub {
        return ++$level3_index < @level3;
      },
-     level3 => sub { CGI::escapeHTML($level3[$level3_index]{$_[0]}) },
+     level3 => sub { escape_html($level3[$level3_index]{$_[0]}) },
      ifLevel3 => sub { scalar @level3 },
 
      # generate an admin or link url, depending on admin state
@@ -606,7 +606,7 @@ sub baseActs {
          return qq!<img src="/images/titles/!.$image .qq!" border=0>!
        }
        else {
-         return CGI::escapeHTML($text);
+         return escape_html($text);
        }
      },
      DevHelp::Tags->make_iterator2

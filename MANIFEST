@@ -85,6 +85,7 @@ site/cgi-bin/modules/BSE/Util/Tags.pm
 site/cgi-bin/modules/BSE/Util/Valid.pm
 site/cgi-bin/modules/BSE/Version.pm
 site/cgi-bin/modules/Constants.pm
+site/cgi-bin/modules/DevHelp/HTML.pm
 site/cgi-bin/modules/DevHelp/Tags.pm
 site/cgi-bin/modules/Generate.pm
 site/cgi-bin/modules/Generate/Article.pm
@@ -189,7 +190,7 @@ site/htdocs/js/validate.js
 #  site/htdocs/shop created by the Makefile
 site/templates/1/shop_multicat.tmpl
 site/templates/1/sitemap.tmpl
-site/templates/admin/add_product.tmpl
+# site/templates/admin/add_product.tmpl
 site/templates/admin/article_img.tmpl
 site/templates/admin/catalog.tmpl  # embedded in the shopadmin catalog/product display
 site/templates/admin/edit_0.tmpl
@@ -222,7 +223,7 @@ site/templates/admin/showuser.tmpl
 site/templates/admin/showuserart.tmpl
 site/templates/admin/showuser_del.tmpl
 site/templates/admin/showuser_glob.tmpl
-site/templates/admin/subs/add.tmpl
+# site/templates/admin/subs/add.tmpl
 site/templates/admin/subs/edit.tmpl
 site/templates/admin/subs/list.tmpl
 site/templates/admin/subs/send_form.tmpl

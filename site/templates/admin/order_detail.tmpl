@@ -7,31 +7,41 @@
   catalogs</a> | <a href="<:script:>?order_list=1">Manage orders</a> | <a href="<:script:>?order_list=1&template=order_list_unfilled">Unfilled 
   orders</a> | <a href="<:script:>?order_list=1&template=order_list_filled">Filled 
   orders</a> |</p>
-<h2>Order details</h2>
+<h2>Order details - No: #<:order id:></h2>
 <table cellpadding="6" cellspacing="1" border="0">
- <tr><td>E-mail:</td><td><a href="mailto:<:order emailAddress:>"><:order emailAddress:></a></td></tr>
- <tr><td>Date:</td><td><:date order orderDate:></td></tr>
-<tr>
- <td>Delivery:</td>
- <td><:order delivFirstName:> <:order delivLastName:></td>
- <td rowspan=4>&nbsp;&nbsp;</td>
- <td>Billing:</td>
- <td><:order billFirstName:> <:order billLastName:></td>
-</tr>
-<tr>
- <td rowspan=3>&nbsp;</td>
- <td><:order delivStreet:></td>
- <td rowspan=3>&nbsp;</td>
- <td><:order billStreet:></td>
-</tr>
-<tr>
- <td><:order delivSuburb:> <:order delivState:> <:order delivPostCode:></td>
- <td><:order billSuburb:> <:order billState:> <:order billPostCode:></td>
-</tr>
-<tr>
- <td><:order delivCountry:></td>
- <td><:order billCountry:></td>
-</tr>
+  <tr> 
+    <td align="left"><b>E-mail:</b></td>
+    <td><a href="mailto:<:order emailAddress:>"><:order emailAddress:></a></td>
+    <td>&nbsp;</td>
+    <td align="left"><b>Phone:</b></td>
+    <td><:order telephone:></td>
+    <!--<td rowspan=3>&nbsp;&nbsp;</td>-->
+  </tr>
+  <tr> 
+    <td align="left"><b>Date:</b></td>
+    <td><:date order orderDate:></td>
+  </tr>
+  <tr> 
+    <td align="left"><b>Delivery:</b></td>
+    <td><:order delivFirstName:> <:order delivLastName:></td>
+    <td rowspan=4>&nbsp;&nbsp;</td>
+    <td align="left"><b>Billing:</b></td>
+    <td><:order billFirstName:> <:order billLastName:></td>
+  </tr>
+  <tr> 
+    <td rowspan=3>&nbsp;</td>
+    <td><:order delivStreet:></td>
+    <td rowspan=3>&nbsp;</td>
+    <td><:order billStreet:></td>
+  </tr>
+  <tr> 
+    <td><:order delivSuburb:> <:order delivState:> <:order delivPostCode:></td>
+    <td><:order billSuburb:> <:order billState:> <:order billPostCode:></td>
+  </tr>
+  <tr> 
+    <td><:order delivCountry:></td>
+    <td><:order billCountry:></td>
+  </tr>
 </table>
 
 <br>

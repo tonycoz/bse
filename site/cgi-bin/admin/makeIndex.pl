@@ -36,7 +36,15 @@ my %scores =
    title=>5,
    body=>3,
    keyword=>4,
+   file_description => 0,
   );
+
+for my $name (keys %scores) {
+  my $score = $cfg->entry('search index scores', $name);
+  if (defined($score) && $score =~ /^\d+$/) {
+    $scores{$name} = $score;
+  }
+}
 
 # if the level of the article is higher than this, store it's parentid 
 # instead
@@ -86,6 +94,7 @@ sub makeIndex {
   until ($articles->EOF) {
     # find the section
     my $article = $articles->getNext;
+    next unless ($article->{listed} || $article->{flags} =~ /I/);
     my $section = $article;
     while ($section->{parentid} >= 1) {
       $section = $articles->getByPkey($section->{parentid});
@@ -101,8 +110,19 @@ sub makeIndex {
     next if $dont_search{$sectionid};
 
     for my $field (sort { $scores{$b} <=> $scores{$a} } keys %scores) {
+
+      next unless $scores{$field};
       # strip out markup
-      my $text = $article->{$field};
+      my $text;
+      if (exists $article->{$field}) {
+	$text = $article->{$field};
+      }
+      else {
+	if ($field eq 'file_description') {
+	  my @files = $article->files;
+	  $text = join "\n", map { @$_{qw/displayName description/} } @files;
+	}
+      }
       #next if $text =~ m!^\<html\>!i; # I don't know how to do this (yet)
       if ($field eq 'body') {
 	Generate->remove_block(\$text);

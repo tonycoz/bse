@@ -99,36 +99,36 @@ $IMAGES_URI = $ROOT_URI."images";
 $CGI_URI = "/cgi-bin";
 
 # level defaults
-%LEVEL_DEFAULTS = 
+%LEVEL_DEFAULTS =
   (
    0=>{
        display=>"Your Site",
       },
-    
+
    1=>{
        threshold=>1,
        template=>'common/default.tmpl',
-       display=>'Section',
+       display=>'Page Lev1',
       },
    2=>{
        threshold=>1,
        template=>'common/default.tmpl',
-       display=>'Subsect Lev1',
+       display=>'Page Lev2',
       },
    3=>{
        threshold=>1,
        template=>'common/default.tmpl',
-       display=>'Subsect Lev2',
+       display=>'Page Lev3',
       },
    4=>{
        threshold=>1,
        template=>'common/default.tmpl',
-       display=>'Subsect Lev3',
+       display=>'Page Lev4',
       },
    5=>{
        threshold=>1,
        template=>'common/default.tmpl',
-       display=>"Subsect Lev4",
+       display=>"Page Lev5",
       },
   );
 

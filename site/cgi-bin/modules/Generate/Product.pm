@@ -6,6 +6,7 @@ use Images;
 use base qw(Generate::Article);
 use Constants qw(:shop $CGI_URI $ADMIN_URI);
 use Carp qw(confess);
+use DevHelp::HTML;
 
 sub edit_link {
   my ($self, $id) = @_;
@@ -30,13 +31,14 @@ sub baseActs {
   my $stepcat_index;
   my @options = 
     map { +{ id=>$_, %{$SHOP_PRODUCT_OPTS{$_}} } } 
+      grep $SHOP_PRODUCT_OPTS{$_},
       split /,/, $product->{options};
   my $option_index;
 
   return
     (
      $self->SUPER::baseActs($articles, $acts, $product, $embedded),
-     product=> sub { CGI::escapeHTML($product->{$_[0]}) },
+     product=> sub { escape_html($product->{$_[0]}) },
      admin =>
      sub {
        return '' unless $self->{admin};
@@ -72,16 +74,16 @@ HTML
 	   );
 	 push(@args, -labels=>$option->{labels}) if $option->{labels};
 	 push(@args, -default=>$option->{default}) if $option->{default};
-	 return CGI::popup_menu(@args);
+	 return DevHelp::HTML::popup_menu(@args);
        }
        else {
-	 return CGI::escapeHTML($options[$option_index]{$_[0]})
+	 return escape_html($options[$option_index]{$_[0]})
        }
      },
      ifOptions => sub { @options },
      iterate_stepcats_reset => sub { $stepcat_index = -1 },
      iterate_stepcats => sub { ++$stepcat_index < @stepcats },
-     stepcat => sub { CGI::escapeHTML($stepcats[$stepcat_index]{$_[0]}) },
+     stepcat => sub { escape_html($stepcats[$stepcat_index]{$_[0]}) },
      ifStepCats => sub { @stepcats },
     );
 }

@@ -10,6 +10,82 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.12_23
+
+=over
+
+=item *
+
+the list of templates in the drop down on the article edit page didn't
+reflect the local_templates config option correctlt.
+
+=item *
+
+validation errors weren't always reported (or acted upon) correctly
+
+=item *
+
+when an invalid product options string was stored a 500 error was
+produced when generating the page
+
+=item *
+
+the image tag wasn't including a closing " at the end of the alt
+attribute
+
+=item *
+
+the article generation code no longer relies upon CGI.pm functions for
+escaping HTML, URIs or producing product option popups, this should
+make it possible to use gen.pl from cron jobs without getting prompts
+for CGI parameters
+
+=item *
+
+catalogs had two buttons labelled "Add product", but one added
+catalogs.  Relabelled the one that adds catalogs to "Add Sub-catalog".
+
+=item *
+
+the ifnew tag on edit templates is no longer available, use ifNew
+instead (this was true as of 0.12_22)
+
+=item *
+
+added a flags field to articles, this is used for both BSE internal
+flags and for site specific flags.
+
+=item *
+
+the search index builder will now only index articles that are listed,
+or have the "Index even if hidden" (I) flag set.  Changed the simple
+search test to search for a non-hidden article.
+
+=item *
+
+the title field of all articles are now validated to include at least
+one non-space character
+
+=item *
+
+validation failures on images and files are now available via the
+error_img tag
+
+=item *
+
+the move image up/down action on the images manager were refreshing to
+the wrong page after reordering the images
+
+=item *
+
+changed default level names in Constants.pm and bse.cfg
+
+=item *
+
+changed tests to use the new level names
+
+=back
+
 =head2 0.12_22
 
 =over

@@ -8,6 +8,7 @@ use BSE::Template;
 use Constants qw($CGI_URI $IMAGES_URI $ADMIN_URI);
 use Util qw(generate_button);
 use OtherParents;
+use DevHelp::HTML;
 
 sub generate_low {
   my ($self, $template, $article, $articles, $embedded) = @_;
@@ -38,12 +39,12 @@ sub generate_low {
   %acts =
     (
      $self->baseActs($articles, \%acts, $article, $embedded),
-     article => sub { CGI::escapeHTML($article->{$_[0]}) },
+     article => sub { escape_html($article->{$_[0]}) },
      iterate_products =>
      sub {
        return ++$product_index < @products;
      },
-     product=> sub { CGI::escapeHTML($products[$product_index]{$_[0]}) },
+     product=> sub { escape_html($products[$product_index]{$_[0]}) },
      ifProducts => sub { @products },
      admin => 
      sub { 
@@ -69,7 +70,7 @@ HTML
 <td><form action="$CGI_URI/admin/add.pl">
 <input type=hidden name="parentid" value="$article->{id}">
 <input type=hidden name="type" value="Catalog">
-<input type=submit value="Add product"></form></td>
+<input type=submit value="Add Sub-catalog"></form></td>
 HTML
          }
 	 $html .= <<HTML;
@@ -103,9 +104,11 @@ HTML
      moveDown=>
      sub {
        if ($self->{admin} && $product_index < $#products) {
-	 return <<HTML;
+	 my $html = <<HTML;
  <a href="$CGI_URI/admin/move.pl?id=$products[$product_index]{id}&d=down"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
 HTML
+	 chop $html;
+	 return $html;
        }
        else {
 	 return '';
@@ -114,9 +117,11 @@ HTML
      moveUp=>
      sub {
        if ($self->{admin} && $product_index > 0) {
-	 return <<HTML;
+	 my $html = <<HTML;
  <a href="$CGI_URI/admin/move.pl?id=$products[$product_index]{id}&d=up"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
 HTML
+	 chop $html;
+	 return $html;
        }
        else {
 	 return '';
@@ -124,7 +129,7 @@ HTML
      },
      iterate_allprods_reset => sub { $allprod_index = -1 },
      iterate_allprods => sub { ++$allprod_index < @allprods },
-     allprod => sub { CGI::escapeHTML($allprods[$allprod_index]{$_[0]}) },
+     allprod => sub { escape_html($allprods[$allprod_index]{$_[0]}) },
      moveallprod =>
      sub {
        return '' unless $self->{admin};
@@ -157,17 +162,18 @@ HTML
        else {
 	 $html .= $blank;
        }
+       $html =~ tr/\n//d;
        return $html;
      },
-     ifAnyProds => sub { CGI::escapeHTML(@allprods) },
+     ifAnyProds => sub { escape_html(@allprods) },
      iterate_stepprods_reset => sub { $stepprod_index = -1 },
      iterate_stepprods => sub { ++$stepprod_index < @stepprods; },
-     stepprod => sub { CGI::escapeHTML($stepprods[$stepprod_index]{$_[0]}) },
+     stepprod => sub { escape_html($stepprods[$stepprod_index]{$_[0]}) },
      ifStepProds => sub { @stepprods },
      iterate_catalogs_reset => sub { $category_index = -1 },
      iterate_catalogs => sub { ++$category_index < @subcats },
      catalog => 
-     sub { CGI::escapeHTML($subcats[$category_index]{$_[0]}) },
+     sub { escape_html($subcats[$category_index]{$_[0]}) },
      ifSubcats => sub { @subcats },
     );
   my $oldurl = $acts{url};
