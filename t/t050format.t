@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 43;
+use Test::More tests => 46;
 
 sub format_test($$$;$);
 
@@ -12,24 +12,24 @@ SKIP: {
   format_test <<IN, <<OUT, 'bold', 'both';
 b[hello]
 IN
-<b>hello</b>
+<p><b>hello</b></p>
 OUT
-  format_test 'i[hello]', '<i>hello</i>', 'italic';
-  format_test 'b[i[hello]]', '<b><i>hello</i></b>', 'bold/italic';
+  format_test 'i[hello]', '<p><i>hello</i></p>', 'italic';
+  format_test 'b[i[hello]]', '<p><b><i>hello</i></b></p>', 'bold/italic';
   format_test <<IN, <<OUT, 'bold over lines', 'both';
 b[hello
 foo]
 IN
-<b>hello<br />
-foo</b>
+<p><b>hello<br />
+foo</b></p>
 OUT
   format_test <<IN, <<OUT, 'bold over paras', 'both';
 b[hello
 
 foo]
 IN
-<b>hello</b></p>
-<p><b>foo</b>
+<p><b>hello</b></p>
+<p><b>foo</b></p>
 OUT
   format_test <<IN, <<OUT, 'combo over paras', 'both';
 i[b[hello
@@ -38,20 +38,22 @@ foo
 
 bar]]
 IN
-<i><b>hello</b></i></p>
+<p><i><b>hello</b></i></p>
 <p><i><b>foo</b></i></p>
-<p><i><b>bar</b></i>
+<p><i><b>bar</b></i></p>
 OUT
   format_test <<IN, <<OUT, 'link', 'both';
 link[http://foo/|bar]
 IN
-<a href="http://foo/">bar</a>
+<p><a href="http://foo/">bar</a></p>
 OUT
-  format_test 'tt[hello]', '<tt>hello</tt>', 'tt';
-  format_test 'font[-1|text]', '<font size="-1">text</font>', 'fontsize';
-  format_test 'fontcolor[-1|black|text]', '<font size="-1" color="black">text</font>', 'fontsizecolor';
-  format_test 'anchor[somename]', '<a name="somename"></a>', 'anchor';
+  format_test 'tt[hello]', '<p><tt>hello</tt></p>', 'tt';
+  format_test 'font[-1|text]', '<p><font size="-1">text</font></p>', 'fontsize';
+  format_test 'fontcolor[-1|black|text]', '<p><font size="-1" color="black">text</font></p>', 'fontsizecolor';
+  format_test 'anchor[somename]', '<p><a name="somename"></a></p>', 'anchor';
   format_test <<IN, <<OUT, 'pre', 'both';
+
+
 pre[hello there
 Joe]
 IN
@@ -79,7 +81,10 @@ OUT
   format_test 'h1[|text]', '<h1>text</h1>', 'h1';
   format_test 'h1[someclass|text]', '<h1 class="someclass">text</h1>', 'h1class';
   format_test 'h6[|te>xt]', '<h6>te&gt;xt</h6>', 'h6';
-  format_test 'align[left|some text]', '<div align="left">some text</div>', 'align';
+  format_test 'h1[|foo]h2[|bar]', "<h1>foo</h1>\n<h2>bar</h2>", 'h1h2';
+  format_test 'h1[|foo]texth2[|bar]', 
+    "<h1>foo</h1>\n<p>text</p>\n<h2>bar</h2>", 'h1texth2';
+  format_test 'align[left|some text]', '<div align="left"><p>some text</p></div>', 'align';
   format_test 'hr[]', '<hr />', 'hr0';
   format_test 'hr[80%]', '<hr width="80%" />', 'hr1';
   format_test 'hr[80%|10]', '<hr width="80%" size="10" />', 'hr2';
@@ -115,7 +120,7 @@ OUT
 
 ## two
 IN
-<ol><li>one<br /><br /></li><li>two</li></ol>
+<ol><li><p>one</p></li><li>two</li></ol>
 OUT
   format_test <<IN, <<OUT, 'ol1 alpha', 'both';
 %% one
@@ -128,7 +133,7 @@ OUT
 
 %% two
 IN
-<ol type="a"><li>one<br /><br /></li><li>two</li></ol>
+<ol type="a"><li><p>one</p></li><li>two</li></ol>
 OUT
   format_test <<IN, <<OUT, 'ul1', 'both';
 ** one
@@ -141,7 +146,7 @@ OUT
 
 ** two
 IN
-<ul><li>one<br /><br /></li><li>two</li></ul>
+<ul><li><p>one</p></li><li>two</li></ul>
 OUT
 
   format_test <<IN, <<OUT, 'ul indented', 'both';
@@ -157,7 +162,8 @@ this shouldn't be a bullet ** some text
 ** this should be a bullet
 ** so should this
 IN
-this shouldn't be a bullet ** some text<ul><li>this should be a bullet</li><li>so should this</li></ul>
+<p>this shouldn't be a bullet ** some text</p>
+<ul><li>this should be a bullet</li><li>so should this</li></ul>
 OUT
 
   format_test <<IN, <<OUT, 'mixed', 'both';
@@ -174,12 +180,17 @@ OUT
   format_test 'hrcolor[80|10|#FF0000]', <<OUT, 'hrcolor', 'out';
 <table width="80" height="10" border="0" bgcolor="#FF0000" cellpadding="0" cellspacing="0"><tr><td><img src="/images/trans_pixel.gif" width="1" height="1" alt="" /></td></tr></table>
 OUT
-  format_test 'image[foo]', '', 'image';
+  format_test 'image[foo]', '<p></p>', 'image';
 
-  format_test 'class[xxx|yyy]', '<span class="xxx">yyy</span>', 'class';
+  format_test 'class[xxx|yyy]', '<p class="xxx">yyy</p>', 'class';
   format_test "class[xxx|yy\n\nzz]", <<EOS, 'class2', 'out';
-<span class="xxx">yy</span></p>
-<p><span class="xxx">zz</span>
+<p class="xxx">yy</p>
+<p class="xxx">zz</p>
+EOS
+  format_test 'div[someclass|h1[|foo]barh2[|quux]]', <<EOS, 'divblock', 'out';
+<div class="someclass"><h1>foo</h1>
+<p>bar</p>
+<h2>quux</h2></div>
 EOS
 }
 
