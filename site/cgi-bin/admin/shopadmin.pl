@@ -13,7 +13,7 @@ use OrderItem;
 use Constants qw($TMPLDIR);
 use Squirrel::Template;
 use Squirrel::ImageEditor;
-use Constants qw($SHOPID $PRODUCTPARENT $SECURLBASE 
+use Constants qw(:shop $SHOPID $PRODUCTPARENT $SECURLBASE 
                  $SHOP_URI $CGI_URI $IMAGES_URI $AUTO_GENERATE);
 use CGI::Cookie;
 use Apache::Session::MySQL;
@@ -25,7 +25,7 @@ my $sessionid;
 $sessionid = $cookies{sessionid}->value if exists $cookies{sessionid};
 my %session;
 
-my $dh = single DatabaseHandle;
+my $dh = BSE::DB->single;
 eval {
   tie %session, 'Apache::Session::MySQL', $sessionid,
     {
@@ -65,7 +65,6 @@ my $imageEditor = Squirrel::ImageEditor->new(session=>\%session,
 					     extras=>\%acts,
 					     keep => [ 'id' ]);
 
-
 my %what_to_do =
   (
    order_list=>\&order_list,
@@ -79,7 +78,7 @@ my %what_to_do =
    back=>\&img_return,
   );
 
-my @modifiable = qw(body retailPrice wholesalePrice gst release expire parentid leadTime);
+my @modifiable = qw(body retailPrice wholesalePrice gst release expire parentid leadTime options);
 my %modifiable = map { $_=>1 } @modifiable;
 
 if ($imageEditor->action($CGI::Q)) {
@@ -98,52 +97,119 @@ product_list();
 #####################
 # product management
 
-sub product_list {
-  my @catalogs = Articles->children($SHOPID);
-  my $catalog_index = -1;
-  my $products = Products->new;
-  my @list = sort { $b->{displayOrder} cmp $a->{displayOrder} } $products->all;
-  my $list_index = -1;
-  my $message = param('message') || '';
+sub embedded_catalog {
+  my ($catalog, $template) = @_;
+
   use POSIX 'strftime';
-  my $today = strftime('%Y-%m-%d', localtime);
-  my %acts =
+  my $products = Products->new;
+  my @list = sort { $b->{displayOrder} <=> $a->{displayOrder} } 
+    $products->getBy(parentid=>$catalog->{id});
+  my $list_index = -1;
+  my $subcat_index = -1;
+  my @subcats = sort { $b->{displayOrder} <=> $a->{displayOrder} } 
+    grep $_->{generator} eq 'Generate::Catalog', 
+    Articles->children($catalog->{id});
+
+  my %acts;
+  %acts =
     (
-     catalog=> sub { CGI::escapeHTML($catalogs[$catalog_index]{$_[0]}) },
-     iterate_catalogs =>
-     sub {
-       if (++$catalog_index < @catalogs) {
-         $list_index = -1;
-         @list = $products->getBy(parentid=>$catalogs[$catalog_index]{id});
-         return 1;
-       }
-       return 0;
-     },
-     product => sub { CGI::escapeHTML($list[$list_index]{$_[0]}) },
+     catalog => sub { CGI::escapeHTML($catalog->{$_[0]}) },
      date => sub { display_date($list[$list_index]{$_[0]}) },
      money => sub { sprintf("%.2f", $list[$list_index]{$_[0]}/100.0) },
+     iterate_products_reset => sub { $list_index = -1; },
      iterate_products =>
      sub {
        return ++$list_index < @list;
      },
-     script=>sub { $ENV{SCRIPT_NAME} },
-     message => sub { $message },
+     product => sub { CGI::escapeHTML($list[$list_index]{$_[0]}) },
+     ifProducts => sub { @list },
+     iterate_subcats_reset =>
+     sub {
+       $subcat_index = -1;
+     },
+     iterate_subcats => sub { ++$subcat_index < @subcats },
+     subcat => sub { CGI::escapeHTML($subcats[$subcat_index]{$_[0]}) },
+     ifSubcats => sub { @subcats },
      hiddenNote => 
      sub { $list[$list_index]{listed} == 0 ? "Hidden" : "&nbsp;" },
-     shopid=>sub { $SHOPID },
      move =>
      sub {
-       # links to move up/down
+       # links to move products up/down
        my $html = '';
        my $refreshto = CGI::escape($ENV{SCRIPT_NAME});
        if ($list_index < $#list) {
 	 $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?id=$list[$list_index]{id}&d=down&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+<a href="$CGI_URI/admin/move.pl?id=$list[$list_index]{id}&d=swap&other=$list[$list_index+1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
 HTML
        }
        if ($list_index > 0) {
 	 $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?id=$list[$list_index]{id}&d=up&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+<a href="$CGI_URI/admin/move.pl?id=$list[$list_index]{id}&d=swap&other=$list[$list_index-1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+HTML
+       }
+       return $html;
+     },
+     script=>sub { $ENV{SCRIPT_NAME} },
+     embed =>
+     sub {
+       my ($which, $template) = split ' ', $_[0];
+       $which eq 'subcat' or return "Unknown object $which embedded";
+       return embedded_catalog($subcats[$subcat_index], $template);
+     },
+     movecat =>
+     sub {
+       # links to move catalogs up/down
+       my $html = '';
+       my $refreshto = CGI::escape($ENV{SCRIPT_NAME});
+       if ($subcat_index < $#subcats) {
+	 $html .= <<HTML;
+<a href="$CGI_URI/admin/move.pl?id=$subcats[$subcat_index]{id}&d=swap&other=$subcats[$subcat_index+1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+HTML
+       }
+       if ($subcat_index > 0) {
+	 $html .= <<HTML;
+<a href="$CGI_URI/admin/move.pl?id=$subcats[$subcat_index]{id}&d=swap&other=$subcats[$subcat_index-1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+HTML
+       }
+       return $html;
+     },
+    );
+
+  my $tmplt = Squirrel::Template->new;
+  return $tmplt->show_page($TMPLDIR, 'admin/'.$template, \%acts);
+}
+
+sub product_list {
+  my @catalogs = sort { $b->{displayOrder} <=> $a->{displayOrder} }
+    Articles->children($SHOPID);
+  my $catalog_index = -1;
+  my $message = param('message') || '';
+  my %acts =
+    (
+     catalog=> sub { CGI::escapeHTML($catalogs[$catalog_index]{$_[0]}) },
+     iterate_catalogs => sub { ++$catalog_index < @catalogs  },
+     shopid=>sub { $SHOPID },
+     script=>sub { $ENV{SCRIPT_NAME} },
+     message => sub { $message },
+     embed =>
+     sub {
+       my ($which, $template) = split ' ', $_[0];
+       $which eq 'catalog' or return "Unknown object $which embedded";
+       return embedded_catalog($catalogs[$catalog_index], $template);
+     },
+     movecat =>
+     sub {
+       # links to move catalogs up/down
+       my $html = '';
+       my $refreshto = CGI::escape($ENV{SCRIPT_NAME});
+       if ($catalog_index < $#catalogs) {
+	 $html .= <<HTML;
+<a href="$CGI_URI/admin/move.pl?id=$catalogs[$catalog_index]{id}&d=swap&other=$catalogs[$catalog_index+1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+HTML
+       }
+       if ($catalog_index > 0) {
+	 $html .= <<HTML;
+<a href="$CGI_URI/admin/move.pl?id=$catalogs[$catalog_index]{id}&d=swap&other=$catalogs[$catalog_index-1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
 HTML
        }
        return $html;
@@ -227,13 +293,19 @@ sub save_product {
       or $product{wholesalePrice} = undef;
     money_to_cents(\$product{gst})
       or die "Invalid gst\n";
+    
+    # options should only contain valid options
+    my @bad_opts = grep !$SHOP_PRODUCT_OPTS{$_}, 
+    split /,/, $product{options};
+    @bad_opts
+      and die "Bad product options '",join(',',@bad_opts),"' entered\n";
   };
   if ($@) {
     # CGI::Carp messes with the die message <sigh>
     $@ =~ s/\[[^\]]*\][^:]+://; 
     if ($original) {
       for my $key (keys %$original) {
-	$product{$key} = $original->{key};
+	$product{$key} = $original->{$key};
       }
     }
     product_form(\%product, $original ? "Edit" : "Add New", $@);
@@ -358,8 +430,18 @@ sub product_form {
 
   defined($message) or $message = '';
   $template ||= 'add_product';
-  my @catalogs = sort { $b->{displayOrder} <=> $a->{displayOrder} } 
-                          Articles->children($SHOPID);
+  my @catalogs;
+  my @work = [ $SHOPID, '' ];
+  while (@work) {
+    my ($parent, $title) = @{shift @work};
+
+    push(@catalogs, { id=>$parent, display=>$title }) if $title;
+    my @kids = sort { $b->{displayOrder} <=> $a->{displayOrder} } 
+      grep $_->{generator} eq 'Generate::Catalog',
+      Articles->children($parent);
+    $title .= ' / ' if $title;
+    unshift(@work, map [ $_->{id}, $title.$_->{title} ], @kids);
+  }
 
   my %acts;
   %acts =
@@ -368,7 +450,7 @@ sub product_form {
      sub {
        return popup_menu(-name=>'parentid',
                          -values=>[ map $_->{id}, @catalogs ],
-                         -labels=>{ map { @$_{qw/id title/} } @catalogs },
+                         -labels=>{ map { @$_{qw/id display/} } @catalogs },
                          -default=>($product->{parentid} || $PRODUCTPARENT),
                          -override=>1);
      },
@@ -380,6 +462,8 @@ sub product_form {
      script=>sub { $ENV{SCRIPT_NAME} },
      ifImage => sub { $product->{imageName} },
      hiddenNote => sub { $product->{listed} ? "&nbsp;" : "Hidden" },
+     alloptions => 
+     sub { CGI::escapeHTML(join(',', sort keys %SHOP_PRODUCT_OPTS)) },
     );
 
   page($template, \%acts);
@@ -420,25 +504,66 @@ sub order_list {
   page('order_list', \%acts);
 }
 
+sub cart_item_opts {
+  my ($cart_item, $product) = @_;
+
+  my @options = ();
+  my @values = split /,/, $cart_item->{options};
+  my @ids = split /,/, $product->{options};
+  for my $opt_index (0 .. $#ids) {
+    my $entry = $SHOP_PRODUCT_OPTS{$ids[$opt_index]};
+    my $option = {
+		  id=>$ids[$opt_index],
+		  value=>$values[$opt_index],
+		  desc => $entry->{desc} || $ids[$opt_index],
+		 };
+    if ($entry->{labels}) {
+      $option->{label} = $entry->{labels}{$values[$opt_index]};
+    }
+    else {
+      $option->{label} = $option->{value};
+    }
+    push(@options, $option);
+  }
+
+  return @options;
+}
+
+sub nice_options {
+  my (@options) = @_;
+
+  if (@options) {
+    return '('.join(", ", map("$_->{desc} $_->{label}", @options)).')';
+  }
+  else {
+    return '';
+  }
+}
+
 sub order_detail {
   my $id = param('id');
   if ($id and
       my $order = Orders->getByPkey($id)) {
     my @lines = OrderItems->getBy('orderId', $id);
+    my @products = map { Products->getByPkey($_->{productId}) } @lines;
     my $line_index = -1;
     my $product;
+    my @options;
+    my $option_index = -1;
     my %acts;
     %acts =
       (
        item => sub { CGI::escapeHTML($lines[$line_index]{$_[0]}) },
+       iterate_items_reset => sub { $line_index = -1 },
        iterate_items => 
        sub { 
 	 if (++$line_index < @lines ) {
-	   $product = Products->getByPkey($lines[$line_index]{productId});
+	   $option_index = -1;
+	   @options = cart_item_opts($lines[$line_index],
+				     $products[$line_index]);
+	   return 1;
 	 }
-	 else {
-	   return 0;
-	 }
+	 return 0;
        },
        order => sub { CGI::escapeHTML($order->{$_[0]}) },
        money => 
@@ -455,8 +580,13 @@ sub order_detail {
        sub {
 	 sprintf("%.2f", $lines[$line_index]{units} * $lines[$line_index]{$_[0]}/100.0)
        },
-       product => sub { CGI::escapeHTML($product->{$_[0]}) },
+       product => sub { CGI::escapeHTML($products[$line_index]{$_[0]}) },
        script => sub { $ENV{SCRIPT_NAME} },
+       iterate_options_reset => sub { $option_index = -1 },
+       iterate_options => sub { ++$option_index < @options },
+       option => sub { CGI::escapeHTML($options[$option_index]{$_[0]}) },
+       ifOptions => sub { @options },
+       options => sub { nice_options(@options) },
       );
     page('order_detail', \%acts);
   }
