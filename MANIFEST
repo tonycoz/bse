@@ -6,7 +6,6 @@ MANIFEST
 MANIFEST.SKIP
 README
 # install.perl - not ready yet
-schema/article.txt
 schema/bse.sql
 schema/demoload.pl
 site/cgi-bin/admin/add.pl
