@@ -53,7 +53,7 @@ sub summarize {
     $text .= '...';
   }
 
-  return $self->format_body({}, $articles, $text, 'tr', 0);
+  return $self->format_body({}, $articles, $text, 'tr', 1, 0);
 }
 
 # attempts to move the given position forward if it's within a HTML tag,
@@ -273,17 +273,15 @@ sub _make_img {
 
 # replace markup, insert img tags
 sub format_body {
-  my ($self, $acts, $articles, $article, $top, $auto_images, @images)  = @_;
-
-  my $body = $article->{body};
-  my $imagePos = $article->{imagePos};
+  my ($self, $acts, $articles, $body, $imagePos, $abs_urls, 
+      $auto_images, @images)  = @_;
 
   return substr($body, 6) if $body =~ /^<html>/i;
 
   require BSE::Formatter;
 
   my $formatter = BSE::Formatter->new($self, $acts, $articles,
-				      $article, $top, \$auto_images,
+				      $abs_urls, \$auto_images,
 				      \@images);
 
   $body = $formatter->format($body);
@@ -764,10 +762,13 @@ sub remove_block {
 	  and next TRY;
 	$part =~ s#image\[([^\]\[]+)\]##ig
 	  and next TRY;
+	$part =~ s#(?<=\W)\[([^\]\[]+)\]#\003$1\004#g
+	  and next TRY;
 	
 	last TRY;
       }
       1 while $part =~ s#([bi])\001([^\001\002]*)\002#$1\[$2\]#ig;
+      $part =~ tr/\003\004/[]/;
       $out .= $part;
     }
   } 

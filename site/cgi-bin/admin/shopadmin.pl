@@ -260,6 +260,7 @@ sub product_detail {
     product_list($req);
   }
 }
+
 sub product_form {
   my ($req, $product, $action, $message, $template) = @_;
   

@@ -10,6 +10,36 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.14_13
+
+=over
+
+=item *
+
+reworked the doclink[] changes so an article didn't need to be
+supplied to the formatted.  This fixed the <:bodytext ...:> tag.
+
+=item *
+
+word-wrapping in the text version of body text for subscriptions would
+move the last word of a multi-line paragraph onto its own line,
+whether it needed to be or not.
+
+=item *
+
+the way links appear in the text version of body text, and the link
+list at the end can now be customized through the configuration file,
+see the documentation on I<text_link_inline>, I<text_link_list> and
+I<text_link_list_prefix> in config.pod for more information.
+
+=item *
+
+handle [] inside body text tags a little more intelligently.  We
+assume they are balanced, so b[foo [1]] will do the right thing, but
+b[foo [] won't.
+
+=back
+
 =head2 0.14_12
 
 =over

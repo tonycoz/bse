@@ -56,17 +56,45 @@ sub _build_article {
 sub _word_wrap {
   my ($text) = @_;
 
-  $text =~ s/(.{1,72}\s+)(?=\S)/$1\n/g;
+  my $out = '';
+  while (length $text > 72) {
+    $text =~ s/^(.{1,72}\s+)(?=\S)//
+      or $text =~ s/^(\S+\s+)(?=\S)//
+	or last;
+    $out .= "$1\n";
+  }
+  $out .= $text;
 
-  $text;
+  return $out;
+  #$text =~ s/(.{1,72}\s+)(?=\S)/$1\n/g;
+
+  #$text;
+}
+
+sub _format_link {
+  my ($cfg, $url, $title, $index) = @_;
+
+  my $fmt = $cfg->entry('subscriptions', 'text_link_inline',
+			'$1 [$3]');
+  my %replace = 
+    (
+     1 => $title,
+     2 => $url,
+     3 => $index,
+     '$' => '$',
+    );
+
+  $fmt =~ s/\$([123\$])/$replace{$1}/g;
+  
+  $fmt;
 }
 
 sub _body_link {
-  my ($urls, $url, $title, $rindex) = @_;
+  my ($cfg, $urls, $url, $title, $rindex) = @_;
 
-  push @$urls, $url;
+  push @$urls, [ $url, $title ];
 
-  return "$title [" . $$rindex++ . "]";
+  return _format_link($cfg, $url, $title, $$rindex++);
 }
 
 sub _doclink {
@@ -100,9 +128,9 @@ sub _doclink {
     $title = $art->{title};
   }
 
-  push @$urls, $url;
+  push @$urls, [ $url, $title ];
 
-  return "$title [". $$rindex++ . "]";
+  return _format_link($cfg, $url, $title, $$rindex++);
 }
 
 sub _any_link {
@@ -110,7 +138,7 @@ sub _any_link {
 
   if ($type eq 'link') {
     if ($content =~ /^([^|]+)\|(.*)$/) {
-      return _body_link($urls, $1, $2, $rindex);
+      return _body_link($cfg, $urls, $1, $2, $rindex);
     }
     else {
       return $content;
@@ -126,6 +154,36 @@ sub _any_link {
   }
 }
 
+sub _url_list {
+  my ($cfg, $urls) = @_;
+  
+  my $url_fmt = $cfg->entry('subscriptions', 'text_link_list',
+			    '[$3] $2');
+  my $body = '';
+  length $url_fmt
+    or return $body;
+  my $sep = $cfg->entry('subscriptions', 'text_link_list_prefix',
+			'-----');
+  $sep =~ s/\$n/\n/g;
+  $body .= $sep . "\n" if length $sep;
+  my $url_index = 1;
+  for my $url (@$urls) {
+    my %replace =
+      (
+       1 => $url->[1],
+       2 => $url->[0],
+       3 => $url_index,
+       '$' => '$',
+       'n' => "\n",
+      );
+    (my $work = $url_fmt) =~ s/\$([123\$n])/$replace{$1}/g;
+    $body .= "$work\n";
+    ++$url_index;
+  }
+  
+  return $body;
+}
+
 sub _format_body {
   my ($cfg, $article) = @_;
   require 'Generate.pm';
@@ -137,19 +195,22 @@ sub _format_body {
   }
 
   $gen->remove_block(\$body);
-  1 while $body =~ s/[bi]\[([^\[\]]+)\]/$1/g;
+  while (1) {
+    $body =~ s/[bi]\[([^\[\]]+)\]/$1/g
+       and next;
+    $body =~ s#(?<=\W)\[([^\]\[]+)\]#\003$1\004#g
+      and next;
+
+    last;
+  }
+  $body =~ tr/\003\004/[]/;
   $body =~ tr/\r//d; # in case
   $body =~ s/(^(?:[ \t]*\n)?|\n[ \t]*\n)([^\n]{73,})(?=\n[ \t]*\n|\n?\z)/
     $1 . _word_wrap($2)/ge;
 
   if (@urls) {
     $body .= "\n" unless $body =~ /\n$/;
-    $body .= "-----\n";
-    $url_index = 1;
-    for my $url (@urls) {
-      $body .= "[$url_index] $url\n";
-      ++$url_index;
-    }
+    $body .= _url_list($cfg, \@urls);
   }
 
   $body;

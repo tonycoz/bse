@@ -6,15 +6,14 @@ use Carp 'confess';
 use base 'DevHelp::Formatter';
 
 sub new {
-  my ($class, $gen, $acts, $articles, $article, $top, $rauto_images, $images) = @_;
+  my ($class, $gen, $acts, $articles, $abs_urls, $rauto_images, $images) = @_;
 
   my $self = $class->SUPER::new;
 
   $self->{gen} = $gen;
   $self->{acts} = $acts;
   $self->{articles} = $articles;
-  $self->{article} = $article;
-  $self->{top} = $top;
+  $self->{abs_urls} = $abs_urls;
   $self->{auto_images} = $rauto_images;
   $self->{images} = $images;
   #$self->{level} = $level;
@@ -119,8 +118,7 @@ sub doclink {
   # make the URL absolute if necessary
   my $link = $admin ? 'admin' : 'link';
   my $url = $art->{$link};
-  if ($self->{top}->{$link} =~ /^\w+:/
-      || $self->{article}->{$link} =~ /^\w+:/) {
+  if ($self->{abs_urls}) {
     $url = $cfg->entryErr('site', 'url') . $url
       unless $url =~ /^\w+:/;
   }

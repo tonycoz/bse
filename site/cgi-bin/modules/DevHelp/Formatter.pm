@@ -133,6 +133,8 @@ sub replace_char {
   $$rpart =~ s#fontcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#
     _fix_spanned(qq/<font size="$1" color="$2">/, "</font>", $3)#egi
       and return 1;
+  $$rpart =~ s!(?<=\W)\[([^\]\[]+)\]!&#91;$1&#93;!g
+    and return 1;
   
   return 0;
 }

@@ -114,10 +114,10 @@ sub static {
 	 or return '';
        
        $value = decode_entities($value);
-       require 'Generate.pm';
-       my $gen = Generate->new;
-       
-       return $gen->format_body($acts, 'Articles', $value, 'tr', 0);
+       require Generate;
+       my $gen = Generate->new(cfg=>$cfg);
+       return $gen->format_body($acts, 'Articles', $value, 'tr',
+				1, 0);
      },
      ifEq =>
      sub {

@@ -32,13 +32,12 @@ sub edit_link {
   return "$CGI_URI/admin/add.pl?id=$id";
 }
 
-sub make_article_body {
-  my ($self, $acts, $articles, $article, $auto_images, @images) = @_;
+# sub make_article_body {
+#   my ($self, $acts, $articles, $article, $auto_images, @images) = @_;
 
-  my $top = $self->{top} || $article;
-  return $self->format_body($acts, $articles, $article, $top, 
-			    $auto_images, @images);
-}
+#   return $self->format_body($acts, $articles, $abs_urls, 
+# 			    $auto_images, @images);
+# }
 
 sub link_to_form {
   my ($self, $link, $text, $target) = @_;
@@ -136,6 +135,9 @@ sub baseActs {
     ArticleFiles->getBy(articleId=>$article->{id});
   
   my $blank = qq!<img src="$IMAGES_URI/trans_pixel.gif"  width="17" height="13" border="0" align="absbottom" alt="" />!;
+
+  my $top = $self->{top} || $article;
+  my $abs_urls = $article->{link} =~ /^\w+:/ || $top->{link} =~ /^\w+:/;
 
   my @stepkids;
   my @allkids;
@@ -276,8 +278,9 @@ HTML
 
      # transform the article or response body (entities, images)
      body=>sub {
-       return $self->make_article_body($acts, $articles, $article,
-				       !$had_image_tags, @images);
+       return $self->format_body($acts, $articles, $article->{body},
+				 $article->{imagePos}, $abs_urls,
+				 !$had_image_tags, @images);
      },
 
      # used to display a navigation path of parent sections
@@ -427,9 +430,7 @@ HTML
      top => [ \&tag_top, $self, $article ],
     );
 
-  my $top = $self->{top} || $article;
-  if ($article->{link} =~ /^\w+:/
-     || $top->{link} =~ /^\w+:/) {
+  if ($abs_urls) {
     my $oldurl = $acts{url};
     my $cfg = $self->{cfg} || BSE::Cfg->new;
     my $urlbase = $cfg->entryErr('site', 'url');
