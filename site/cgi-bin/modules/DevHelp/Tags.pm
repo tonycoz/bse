@@ -347,7 +347,7 @@ sub get_parms {
 	die "ENOIMPL '$func $subargs' in '$orig'\n";
       }
     }
-    elsif ($args =~ s/^\s*\"((?:[^\"\\]|\\[\\\"])*)\"\s*//) {
+    elsif ($args =~ s/^\s*\"((?:[^\"\\]|\\[\\\"]|\\)*)\"\s*//) {
       my $out = $1;
       $out =~ s/\\([\\\"])/$1/g;
       print STDERR "  Adding quoted string '$out'\n" if DEBUG_GET_PARMS;

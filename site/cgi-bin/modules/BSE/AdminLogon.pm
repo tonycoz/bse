@@ -1,8 +1,7 @@
 package BSE::AdminLogon;
 use strict;
-use BSE::Util::Tags;
-use HTML::Entities;
-use URI::Escape;
+use BSE::Util::Tags qw(tag_error_img);
+use DevHelp::HTML;
 
 my %actions =
   (
@@ -28,7 +27,20 @@ sub dispatch {
 }
 
 sub req_logon_form {
-  my ($class, $req, $msg) = @_;
+  my ($class, $req, $msg, $errors) = @_;
+
+  $errors ||= {};
+  if ($msg) {
+    $msg = escape_html($msg);
+  }
+  else {
+    if (keys %$errors) {
+      $msg = join("<br />", map escape_html($_), values %$errors);
+    }
+    else {
+      $msg = '';
+    }
+  }
 
   my %acts;
   %acts =
@@ -37,6 +49,7 @@ sub req_logon_form {
      BSE::Util::Tags->basic(undef, $req->cgi, $req->cfg),
      BSE::Util::Tags->secure($req),
      message => $msg,
+     error_img => [ \&tag_error_img, $req->cfg, $errors ],
     );
 
   return BSE::Template->get_response('admin/logon', $req->cfg, \%acts);
@@ -49,10 +62,13 @@ sub req_logon {
   my $logon = $cgi->param('logon');
   my $password = $cgi->param('password');
 
+  my %errors;
   defined $logon && length $logon
-    or return $class->req_logon_form($req, "Please enter your logon name");
+    or $errors{logon} = "Please enter your logon name";
   defined $password && length $password
-    or return $class->req_logon_form($req, "Please enter your password");
+    or $errors{password} = "Please enter your password";
+  %errors
+    and return $class->req_logon_form($req, undef, \%errors);
   require BSE::TB::AdminUsers;
   my $user = BSE::TB::AdminUsers->getBy(logon=>$logon);
   $user && $user->{password} eq $password

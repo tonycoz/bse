@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>34;
+use Test::More tests=>49;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
@@ -100,6 +100,65 @@ Two
 One
 
 
+EXPECTED
+
+# test some of the newer basic tags
+template_test "add", $top, <<TEMPLATE, <<EXPECTED;
+<:add 3 4:>
+<:add 3 4 5:>
+<:add 3 [add 4 5]:>
+TEMPLATE
+7
+12
+12
+EXPECTED
+
+template_test "concatenate", $top, <<TEMPLATE, <<EXPECTED;
+<:concatenate one two:>
+<:concatenate one "two " three:>
+<:concatenate one [concatenate "two " three]:>
+TEMPLATE
+onetwo
+onetwo three
+onetwo three
+EXPECTED
+
+template_test "match", $top, <<'TEMPLATE', <<EXPECTED;
+<:match "abc123" "(\d+)":>
+<:match "abc 123" "(\w+)\s+(\w+)" "$2$1":>
+<:match "abc 123" "(\w+)X(\w+)" "$2$1":>
+<:match "abc 123" "(\w+)X(\w+)" "$2$1" "default":>
+TEMPLATE
+123
+123abc
+
+default
+EXPECTED
+
+template_test "replace", $top, <<'TEMPLATE', <<EXPECTED;
+<:replace "abc123" "(\d+)" "XXX" :>
+<:replace "!!abc 123!!" "(\w+)\s+(\w+)" "$2$1":>
+<:replace "abc 123" "(\w+)" "XXX" g:>
+<:replace "abc 123" "X" "$1" :>
+TEMPLATE
+abcXXX
+!!123abc!!
+XXX XXX
+abc 123
+EXPECTED
+
+template_test "cases", $top, <<'TEMPLATE', <<EXPECTED;
+<:lc "AbC123 XYZ":>
+<:uc "aBc123 xyz":>
+<:lcfirst "AbC123 XYZ":>
+<:ucfirst "aBc123 xyz":>
+<:capitalize "alpha beta gamma":>
+TEMPLATE
+abc123 xyz
+ABC123 XYZ
+abC123 XYZ
+ABc123 xyz
+Alpha Beta Gamma
 EXPECTED
 
 BSE::Admin::StepParents->del($parent, $parent);

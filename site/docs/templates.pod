@@ -640,6 +640,63 @@ If you don't supply a default then a default will be the empty string.
 
 The release number of BSE.
 
+=item add I<number> I<number> ...
+
+Returns the sum of all of the numbers provided.  You can use the [tag
+...] construct to insert the values of other tags.
+
+=item concatenate I<string> I<string> ...
+
+Returns the concatenation of all of the strings provided.  You can use
+the [tag ...] construct to insert the values of other tags.
+
+=item match I<string> I<regexp> I<output> I<default>
+
+=item match I<string> I<regexp> I<output>
+
+=item match I<string> I<regexp>
+
+Matches I<regexp> against the given string, if the match does not
+succeed then I<default> is returned.
+
+On match $I<digit> in I<output> is replaced with the text matched by
+the I<digit>th set of parentheses in the pattern.  Only $1 through $9
+is replaced, there is no support for $10 and so on.  $$ is replaced
+with $.
+
+I<regexp> and I<output> should not be user supplied strings.
+
+=item replace I<string> I<regexp> I<with> I<global>
+
+=item replace I<string> I<regexp> I<with> 
+
+=item replace I<string> I<regexp>
+
+Replaces the first instance of I<regexp> in I<string> with I<with>
+where $I<digit> in I<with> is replaced as for the C<match> tag.
+I<with> defaults to C<$1>.
+
+If I<global> is present and non-zero then every instance of I<regexp>
+is replaced.
+
+I<regexp> and I<with> should not be set to user supplied strings.
+
+=item lc I<string>
+
+=item uc I<string>
+
+=item lcfirst I<string>
+
+=item ucfirst I<string>
+
+Does the same thing as the corresponding perl function, lowercasing
+I<string>, uppercasing I<string>, lowercasing the first letter of
+I<string> and upper-casing the first letter of I<string> respectively.
+
+=item capitalize I<string>
+
+Converts the first letter of every word in I<string> to uppercase.
+
 =back
 
 =head2 Base tags

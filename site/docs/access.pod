@@ -453,7 +453,7 @@ stepchildren is controlled by the edit_reorder_children permission.
 
 These permissions don't apply to specific articles and control
 operations outside of the article tree.  For the permissions to be
-appliedn they should be applied to article "-1" (the site)
+applied they should be applied to article "-1" (the site)
 
 =head2 Subscriptions
 
@@ -470,6 +470,12 @@ The user can create new subscriptions.
 subs_edit
 
 The user can edit existing subscriptions.
+
+=item *
+
+subs_delete
+
+The user can delete existing subscriptions.
 
 =item *
 

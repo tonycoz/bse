@@ -442,6 +442,8 @@ sub article_tags {
      typename => \&tag_typename,
      articleType => escape_html
      (scalar($req->cfg->entry('level names', $article->{level}, "Site"))),
+     childtype => escape_html
+     (scalar($req->cfg->entry('level names', $article->{level}+1, ""))),
      DevHelp::Tags->make_iterator2
      ([ \&iter_crumbs, $req, $article ], 'crumb', 'crumbs'),
     );
@@ -455,6 +457,8 @@ sub get_article {
       {
        id=>-1,
        title=>'Your site',
+       level => 0,
+       parentid => 0,
       };
   }
   else {

@@ -10,6 +10,36 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.12_27
+
+=over
+
+=item *
+
+added <:error_img:> support to the logon form (IRC request)
+
+=item *
+
+the <:childtype:> tag is now available on user/group permissions pages
+which control access to articles (IRC request)
+
+=item *
+
+new tags <:add I<number> I<number>...:>, <:concatenate I<string>
+I<string> ...:>, <:match I<string> I<regexp> I<output> I<default> :>,
+<:lc I<string>:>, <:uc I<string>:>, <:lcfirst I<string>:>, <:ucfirst
+I<string>:>, <:capitalize I<string>:> and <:replace I<string>
+I<regexp> I<with> I<global>:> now available everywhere.
+
+=item *
+
+the code to parse [...] and "..." parameters for tags now passes
+
+through backslashes (\) not followed by " or another \ inside "...".
+This makes it easier to enter a regular expression in "...".
+
+=back
+
 =head2 0.12_26
 
 =over

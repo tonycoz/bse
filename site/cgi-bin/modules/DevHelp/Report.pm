@@ -198,11 +198,40 @@ sub _get_type_html_sql {
   my $dbh = $db->dbh;
   my $rows = $dbh->selectall_arrayref($sql);
 
-  @$rows 
-    or return qq!** no values found for type '$type' **!;
+  unless (@$rows) {
+    return $self->{cfg}->
+      entry($sect, 'novalues', qq!** no values found for type '$type' **!);
+  }
   my @values = map $_->[0], @$rows;
   my %labels = map { $_->[0] => $_->[1] } @$rows;
 
+  my $default = $cgi ? $cgi->param($name) : undef;
+  defined $default or $default = $values[0];
+  
+  return (popup_menu(-name => $name,
+		     -values => \@values,
+		     -labels => \%labels,
+		     -default => $default),
+	  \@values );
+}
+
+sub _get_type_html_sql {
+  my ($self, $type, $name, $cgi, $db) = @_;
+
+  my $sect = "report datatype $type";
+  
+  my @values = split ',', $self->{cfg}->entry($sect, 'values', '');
+
+  @values
+    or return '** no values found for type '$type' **';
+  my @labels = split ',', $self->{cfg}->entry($sect, 'labels', '');
+  if (@labels < @values) {
+    push @labels, @values[@labels .. $#values];
+  }
+
+  my %labels;
+  @labels{@values} = @labels;
+  
   my $default = $cgi ? $cgi->param($name) : undef;
   defined $default or $default = $values[0];
   
@@ -388,8 +417,9 @@ sub show_tags {
     my $name = "level" . ($level + 1);
     my %work_tags =
       DevHelp::Tags->make_iterator2
-	  ([ \&iter_levelN, \@results, $level ], $name, $name, $work[$level],
-	   \$index[$level], 'NoCache');
+	  ([ \&iter_levelN, $report, \@results, \@work, $level, 
+	     \$index[$level-1] ], 
+	   $name, $name, $work[$level], \$index[$level], 'NoCache');
     @tags{keys %work_tags} = values %work_tags;
   }
 
@@ -439,6 +469,25 @@ sub iter_levelN_links {
   }
 
   @links;
+}
+
+sub iter_levelN {
+  my ($report, $results, $work, $level, $rparent, $args) = @_;
+
+  # which columns are we checking?
+  my $match = $report->{sql}[$level]{match};
+  
+  my @parnames = @{$results->[$level-1]{names_lc};
+  my $parent = $work->[$level-1];
+
+  my @pardata = @$parent{map $parnames[$match->[$_][1]-1], 0.. $#$match};
+
+  my $source = $results[$level]{rows};
+
+  my @out = grep 
+    {
+      
+    } @$source;
 }
 
 1;

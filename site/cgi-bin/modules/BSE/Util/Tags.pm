@@ -154,6 +154,70 @@ sub static {
        require BSE::Version;
        BSE::Version->version;
      },
+     add =>
+     sub {
+       my ($arg, $acts, $name, $templater) = @_;
+       my @items = DevHelp::Tags->get_parms($arg, $acts, $templater);
+       my $sum = 0;
+       $sum += $_ for @items;
+       $sum;
+     },
+     concatenate =>
+     sub {
+       my ($arg, $acts, $name, $templater) = @_;
+       my @items = DevHelp::Tags->get_parms($arg, $acts, $templater);
+       join '', @items;
+     },
+     match =>
+     sub {
+       my ($arg, $acts, $name, $templater) = @_;
+       my ($str, $re, $out, $def)
+	 = DevHelp::Tags->get_parms($arg, $acts, $templater);
+       $re or return '** no regexp supplied to match **';
+       $out or $out = '$1';
+       defined $def or $def = '';
+       my @matches = $str =~ /$re/
+	 or return $def;
+       defined or $_ = '' for @matches;
+
+       $out =~ s/\$([1-9\$])/
+	 $1 eq '$' ? '$' : $1 <= @matches ? $matches[$1-1] : '' /ge;
+
+       $out;
+     },
+     replace => \&tag_replace,
+     lc =>
+     sub {
+       my ($arg, $acts, $name, $templater) = @_;
+       my @items = DevHelp::Tags->get_parms($arg, $acts, $templater);
+       lc join '', @items;
+     },
+     uc =>
+     sub {
+       my ($arg, $acts, $name, $templater) = @_;
+       my @items = DevHelp::Tags->get_parms($arg, $acts, $templater);
+       uc join '', @items;
+     },
+     lcfirst =>
+     sub {
+       my ($arg, $acts, $name, $templater) = @_;
+       my @items = DevHelp::Tags->get_parms($arg, $acts, $templater);
+       lcfirst join '', @items;
+     },
+     ucfirst =>
+     sub {
+       my ($arg, $acts, $name, $templater) = @_;
+       my @items = DevHelp::Tags->get_parms($arg, $acts, $templater);
+       ucfirst join '', @items;
+     },
+     capitalize =>
+     sub {
+       my ($arg, $acts, $name, $templater) = @_;
+       my @items = DevHelp::Tags->get_parms($arg, $acts, $templater);
+       my $out = join '', @items;
+       $out =~ s/\b(\w)/\U$1/g;
+       $out;
+     },
      _format => 
      sub {
        my ($value, $fmt) = @_;
@@ -449,6 +513,44 @@ sub tag_error_img {
   my $images_uri = $cfg->entry('uri', 'images', '/images');
   my $encoded = escape_html($errors->{$args});
   return qq!<img src="$images_uri/admin/error.gif" alt="$encoded" title="$encoded" border="0" align="top">!; 
+}
+
+sub tag_replace {
+  my ($arg, $acts, $name, $templater) = @_;
+  my ($str, $re, $with, $global)
+    = DevHelp::Tags->get_parms($arg, $acts, $templater);
+  $re or return '** no regexp supplied to match **';
+  defined $with or $with = '$1';
+  if ($global) {
+    $str =~ s{$re}
+      {
+	# yes, this sucks
+	my @out = ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+	defined or $_ = '' for @out;
+	my $tmp = $with;
+	{
+	  $tmp =~ s/\$([1-9\$])/$1 eq '$' ? '$' :
+	    $1 eq '$' ? '$' : $out[$1-1] /ge;
+	}
+	$tmp;
+      }ge;
+  }
+  else {
+    $str =~ s{$re}
+      {
+	# yes, this sucks
+	my @out = ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+	defined or $_ = '' for @out;
+	my $tmp = $with;
+	{
+	  $tmp =~ s/\$([1-9\$])/$1 eq '$' ? '$' :
+	    $1 eq '$' ? '$' : $out[$1-1] /ge;
+	}
+	$tmp;
+      }e;
+  }
+    
+  $str;
 }
 
 1;
