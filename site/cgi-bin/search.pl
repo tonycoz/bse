@@ -2,7 +2,7 @@
 # -d:ptkdb
 BEGIN { $ENV{DISPLAY} = '192.168.32.15:0.0' }
 use strict;
-use CGI qw(:standard);
+use CGI;
 use FindBin;
 use lib "$FindBin::Bin/modules";
 use Articles;
@@ -11,6 +11,7 @@ use Constants qw(:search);
 use Carp;
 use BSE::Cfg;
 use BSE::Template;
+use DevHelp::HTML qw':default popup_menu';
 
 my $cfg = BSE::Cfg->new;
 
@@ -18,9 +19,10 @@ my $results_per_page = 10;
 
 my $dh = BSE::DB->single;
 
-my $words = param('q');
-my $section = param('s');
-my $date = param('d');
+my $cgi = CGI->new;
+my $words = $cgi->param('q');
+my $section = $cgi->param('s');
+my $date = $cgi->param('d');
 $section = '' if !defined $section;
 $date = 'ar' if ! defined $date;
 my @results;
@@ -36,10 +38,10 @@ else {
 
 my $page_count = int((@results + $results_per_page - 1)/$results_per_page);
 
-my $page_number = param('page') || 1;
+my $page_number = $cgi->param('page') || 1;
 $page_number = $page_count if $page_number > $page_count;
 
-my $admin = param('admin');
+my $admin = $cgi->param('admin');
 $admin = 0 if !defined $admin;
 
 my @articles;
@@ -101,7 +103,7 @@ my %acts;
    },
    result => 
    sub { 
-     return CGI::escapeHTML($articles[$article_index]{$_[0]});
+     return escape_html($articles[$article_index]{$_[0]});
    },
    date =>
    sub {
@@ -122,7 +124,7 @@ my %acts;
    },
    ifResults => sub { scalar @results; },
    ifSearch => sub { defined $words and length $words },
-   dateSelected => sub { $_[0] eq $date ? 'selected' : '' },
+   dateSelected => sub { $_[0] eq $date ? 'selected="selected"' : '' },
    excerpt => 
    sub { 
      return $excerpt;
@@ -134,7 +136,7 @@ my %acts;
    },
    count => sub { scalar @results },
    multiple => sub { @results != 1 },
-   terms => sub { CGI::escapeHTML($words) },
+   terms => sub { escape_html($words) },
    resultSeq => sub { $result_seq },
    list => sub { popup_menu(-name=>'s',
 			    -values=>\@sections,
@@ -149,10 +151,10 @@ my %acts;
    ifCurrentPage => sub { $page_num_iter == $page_number },
    pageurl => 
    sub {
-     $ENV{SCRIPT_NAME} . "?q=" . CGI::escape($words) . 
-       "&s=" . CGI::escape($section) .
-	 "&d=" . CGI::escape($date) .
-	   "&page=".$page_num_iter;
+     $ENV{SCRIPT_NAME} . "?q=" . escape_uri($words) . 
+       "&amp;s=" . escape_uri($section) .
+	 "&amp;d=" . escape_uri($date) .
+	   "&amp;page=".$page_num_iter;
    },
   );
 

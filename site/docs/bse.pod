@@ -10,6 +10,29 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.14_11
+
+=over
+
+=item *
+
+logon.pl still required mod_perl.
+
+=item *
+
+subscription messages were being sent to subscribed but disabled
+users.
+
+=item *
+
+the search results page tags are now XHTML compatible.
+
+=item *
+
+you can now set pp=-1 on the member list page to list every user.
+
+=back
+
 =head2 0.14_10
 
 =over

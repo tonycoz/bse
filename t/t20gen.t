@@ -142,11 +142,15 @@ template_test "replace", $top, <<'TEMPLATE', <<EXPECTED;
 <:replace "!!abc 123!!" "(\w+)\s+(\w+)" "$2$1":>
 <:replace "abc 123" "(\w+)" "XXX" g:>
 <:replace "abc 123" "X" "$1" :>
+<:replace "abc
+123
+xyz" "\n" "\\n" g:>
 TEMPLATE
 abcXXX
 !!123abc!!
 XXX XXX
 abc 123
+abc\\n123\\nxyz
 EXPECTED
 
 template_test "cases", $top, <<'TEMPLATE', <<EXPECTED;

@@ -99,7 +99,8 @@ sub make_paged_iterator {
     $name ||= 'pp';
     $count ||= 10;
     my $work = $cgi->param($name);
-    if (defined $work && $work =~ /^\d+$/ && $work >= 1 && $work <= 1000) {
+    if (defined $work && $work =~ /^-?\d+$/ && 
+	(($work >= 1 && $work <= 1000) || $work == -1)) {
       $perpage = $work;
     }
     else {
@@ -107,7 +108,7 @@ sub make_paged_iterator {
     }
     $$perpage_parm =~ s/\d+/$perpage/ if ref $perpage_parm;
   }
-  my $page_count = int((@$rdata + $perpage - 1) / $perpage);
+  my $page_count = $perpage == -1 ? 1 : int((@$rdata + $perpage - 1) / $perpage);
   $page_count = 1 unless $page_count;
   $pagename ||= 'p';
   my $page_num = $cgi->param($pagename);
@@ -116,9 +117,16 @@ sub make_paged_iterator {
 	  && $page_num >= 1 && $page_num <= $page_count) {
     $page_num = 1;
   }
-  my $base_index = $perpage * ($page_num - 1);
-  my $end_index = $base_index + $perpage - 1;
-  $end_index <= $#$rdata or $end_index = $#$rdata;
+  my ($base_index, $end_index);
+  if ($perpage != -1) {
+    $base_index = $perpage * ($page_num - 1);
+    $end_index = $base_index + $perpage - 1;
+    $end_index <= $#$rdata or $end_index = $#$rdata;
+  }
+  else {
+    $base_index = 0;
+    $end_index = $#$rdata;
+  }
   my @data;
   @data = @$rdata[$base_index .. $end_index] if @$rdata;
 

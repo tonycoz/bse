@@ -121,7 +121,7 @@ SQL
    'delete from subscribed_users where userId = ? and subId = ?',
    'SiteUsers.subRecipients' => <<EOS,
 select si.* from site_users si, subscribed_users su
-  where confirmed <> 0 and si.id = su.userId and su.subId = ?
+  where confirmed <> 0 and disabled = 0 and si.id = su.userId and su.subId = ?
 EOS
    SiteUsers => 'select * from site_users',
 
@@ -137,7 +137,7 @@ EOS
    'delete from subscription_types where id = ?',
    subRecipientCount => <<EOS,
 select count(*) as "count" from site_users si, subscribed_users su
-  where confirmed <> 0 and si.id = su.userId and su.subId = ?
+  where confirmed <> 0 and disabled = 0 and si.id = su.userId and su.subId = ?
 EOS
    'SubscriptionTypes.userSubscribedTo' => <<'EOS',
 select su.* from subscription_types su, subscribed_users us
