@@ -60,6 +60,11 @@ sub tie_it {
     print STDERR "Sent cookie: $cookie\n" if $debug;
   }
   $saved = $session;
+
+  if ($cfg->entry('debug', 'dump_session')) {
+    require Data::Dumper;
+    print STDERR Data::Dumper->Dump([ $session ], [ 'session' ]);
+  }
 }
 
 sub change_cookie {

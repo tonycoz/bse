@@ -10,6 +10,44 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.14_25
+
+=over
+
+=item *
+
+a few modules were still using Orders/OrderItems instead of
+BSE::TB::...
+
+=item *
+
+work around a discrepancy in the way mysql handles dates, step child
+records marked to be released on a given date should now be released
+on that date rather than the next day
+
+=item *
+
+added affiliate.pl, which can display an affiliate page or set the
+saved affiliate code.
+
+=item *
+
+extra fields have been added to the site users table to allow for
+custom data on the affiliate page.
+
+=item *
+
+a new debug flag dump_session has been added. if this is true then a
+data dump of the session hash is performed after it is retrieved from
+the database.
+
+=item *
+
+some of the order processing code checked incorrectly for
+subscriptions (which don't exist yet anyway).
+
+=back
+
 =head2 0.14_24
 
 This release includes some structural changes to article editing,

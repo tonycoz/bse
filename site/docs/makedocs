@@ -25,6 +25,8 @@ my @targets =
    'upgrade_mysql.html',
    'makedocs.html',
    'standard.html',
+   'affiliate.html',
+   'BSE::UI::Affiliate.html',
   );
 
 my @exts = qw(.pod .pm .pl);

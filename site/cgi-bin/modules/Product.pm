@@ -26,4 +26,14 @@ sub subscription_required {
   return BSE::TB::Subscriptions->getByPkey($id);
 }
 
+sub subscription {
+  my ($self) = @_;
+
+  my $id = $self->{subscription_id};
+  return if $id == -1;
+
+  require BSE::TB::Subscriptions;
+  return BSE::TB::Subscriptions->getByPkey($id);
+}
+
 1;

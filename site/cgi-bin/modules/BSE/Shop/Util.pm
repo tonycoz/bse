@@ -171,14 +171,12 @@ sub load_order_fields {
   @cart or 
     do { $$error = 'You have no items in your shopping cart'; return 0 };
 
-  require 'Orders.pm';
-  require 'Order.pm';
-  require 'OrderItems.pm';
-  require 'OrderItem.pm';
+  require BSE::TB::Orders;
+  require BSE::TB::OrderItems;
 
   my %order;
   # so we can quickly check for columns
-  my @columns = Order->columns;
+  my @columns = BSE::TB::Order->columns;
   my %columns; 
   @columns{@columns} = @columns;
 
@@ -306,17 +304,17 @@ sub need_logon {
   if ($user) {
     for my $prod (@$cart_prods) {
       my $sub = $prod->subscription_required;
-      unless ($user->is_subscribed($sub)) {
+      if ($sub && !$user->subscribed_to($sub)) {
 	return ("you must be subscribed to $sub->{title} to purchase one of these products", "shop/subrequired");
       }
 
       $sub = $prod->subscription;
-      if ($sub->renew_only) {
+      if ($sub && $sub->renew_only) {
 	unless ($user->is_subscribed_grace) {
 	  return ("you must be subscribed to $sub->{title} to use this renew only product", "sub/renewsubonly");
 	}
       }
-      if ($sub->new_only) {
+      if ($sub && $sub->new_only) {
 	if ($user->is_subscribed_grace) {
 	  return ("you must not be subscribed to $sub->{title} already to use this new subscription only product", "sub/newsubonly");
 	}

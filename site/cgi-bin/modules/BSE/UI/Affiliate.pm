@@ -1,24 +1,76 @@
 package BSE::UI::Affiliate;
 use strict;
-
 use base qw(BSE::UI::Dispatch);
+use BSE::Util::Tags qw(tag_hash);
+use DevHelp::HTML;
 
 my %actions =
   (
-   setaff => 1,
+   set => 1,
+   set2 => 1,
    show => 1,
    none => 1,
   );
 
 sub actions { \%actions }
 
-sub default_action { 'none' }
+sub default_action { 'show' }
 
-sub req_setaff {
+=head1 NAME
+
+BSE::UI::Affiliate - set the affiliate code for new orders or display a user info page
+
+=head1 SYNOPSIS
+
+# display a user's information or affiliate page
+
+http://your.site.com/cgi-bin/affiliate.pl?id=I<number>
+
+# set the stored affiliate code and refresh to the top of the site
+
+http://your.site.com/cgi-bin/affiliate.pl?a_set=1&id=I<code>
+
+# set the stored affiliate code and refresh to I<url>
+
+http://your.site.com/cgi-bin/affiliate.pl?a_set=1&id=I<code>&r=I<url>
+
+=head1 DESCRIPTION
+
+This is the implementation of L<affiliate.pl>.
+
+=head1 TARGETS
+
+=over
+
+=item a_set
+
+This is called to set the affiliate code.
+
+Requires that an C<id> parameter be supplied with the affiliate code
+which is stored in the user session.  This is then stored in the order
+record if the user creates an order before the cookie expires.  This
+id can be any string, it need not be a user on the current site.
+
+Optionally, you can supply a C<r> parameter which will be refreshed to
+after the affiliate code is set.  If this is not supplied there will
+be a refresh to either C<default_refresh> in C<[affiliate]> in
+C<bse.cfg> or to the top of the site.
+
+If your site url and site secureurl are different then there will be
+an intermediate refresh to C<a_set2> to set the affiliate code on the
+other side of the site.  C<a_set2> will then refresh to your supplied
+C<r> parameter or its default.
+
+You can also configure which referer header values are permitted in
+bse.cfg.  See L<config/[affiliate]> for more information.
+
+=cut
+
+sub req_set {
   my ($class, $req) = @_;
 
   my $cgi = $req->cgi;
-  my $cgi = $req->cfg;
+  my $cfg = $req->cfg;
   my $id = $cgi->param('id');
 
   defined($id) && $id =~ /^\w+$/
@@ -36,14 +88,14 @@ sub req_setaff {
       for my $entry (@allowed) {
 	$entry = lc $entry;
 
-	if ($length($entry) < $domain &&
+	if (length($entry) <= length($domain) &&
 	    $entry eq substr($domain, -length($entry))) {
 	  ++$found;
 	  last;
 	}
       }
       $found
-	or return $class->req_none($req, "$domain not in the permitted list of referers");
+	or return $class->req_none($req, "$referer not in the permitted list of referers");
     }
     else {
       $require_referer
@@ -52,16 +104,94 @@ sub req_setaff {
   }
 
   my $url = $cgi->param('r');
-  $url ||= $cgi->entry('affiliate', 'default_refresh');
-  $url ||= $cgi->entryVar('site', 'url');
+  $url ||= $cfg->entry('affiliate', 'default_refresh');
+  $url ||= $cfg->entryVar('site', 'url');
 
   $req->session->{affiliate_code} = $id;
+
+  # set it on the other side too, if needed
+  my $baseurl = $cfg->entryVar('site', 'url');
+  my $securl = $cfg->entryVar('site', 'secureurl');
+  
+  if ($baseurl eq $securl) {
+    return BSE::Template->get_refresh($url, $cfg);
+  }
+  else {
+    # which host are we on?
+    # first get info about the 2 possible hosts
+    my ($baseprot, $basehost, $baseport) = 
+      $baseurl =~ m!^(\w+)://([\w.-]+)(?::(\d+))?!;
+    $baseport ||= $baseprot eq 'http' ? 80 : 443;
+
+    # get info about the current host
+    my $port = $ENV{SERVER_PORT} || 80;
+    my $ishttps = exists $ENV{HTTPS} || exists $ENV{SSL_CIPHER};
+    my $protocol = $ishttps ? 'https' : 'http';
+
+    my $onbase = 1;
+    if (lc $ENV{SERVER_NAME} ne lc $basehost
+       || lc $protocol ne $baseprot
+       || $baseport != $port) {
+      print STDERR "not on base host ('$ENV{SERVER_NAME}' cmp '$basehost' '$protocol cmp '$baseprot'  $baseport cmp $port\n";
+      $onbase = 0;
+    }
+
+    my $setter = $onbase ? $securl : $baseurl;
+    $setter .= "$ENV{SCRIPT_NAME}?a_set2=1&id=".escape_uri($id);
+    $setter .= "&r=".escape_uri($url);
+    return BSE::Template->get_refresh($setter, $cfg);
+  }
+}
+
+=item a_set2
+
+Sets the affiliate code for the "other" side of the site.
+
+This should only be linked to by the C<a_set> target.
+
+This does no referer checks.
+
+=cut
+
+# yes, this completely removes any point of the referer checks, but
+# since referer checks aren't a security issue anyway, it doesn't
+# matter 
+
+sub req_set2 {
+  my ($class, $req) = @_;
+
+  my $cgi = $req->cgi;
+  my $cfg = $req->cfg;
+  my $id = $cgi->param('id');
+
+  defined($id) && $id =~ /^\w+$/
+    or return $class->req_none($req, "Missing or invalid id");
+
+  $req->session->{affiliate_code} = $id;
+
+  my $url = $cgi->param('r');
+  $url ||= $cfg->entry('affiliate', 'default_refresh');
+  $url ||= $cfg->entryVar('site', 'url');
 
   return BSE::Template->get_refresh($url, $cfg);
 }
 
-# display the affiliate page for a given user
-# this doesn't set the affiliate code (should it?)
+=item a_show
+
+Display the affiliate page based on a user id number.
+
+This is the default target, so you do not need to supply a target
+parameter.
+
+The page is displayed based on the C<affiliate.tmpl> template.
+
+The basic user side tags are available, as well as the C<siteuser> tag
+which gives access to the site user's record.
+
+Be careful about which information you display.
+
+=cut
+
 sub req_show {
   my ($class, $req) = @_;
 
@@ -72,18 +202,44 @@ sub req_show {
   defined $id
     or return $class->req_none($req, "No identifier supplied");
   require SiteUsers;
-  require BSE::TB::Subscriptions;
-  my $user = SiteUsers->getBy(userId => $id);
+  my $user = SiteUsers->getByPkey($id);
   $user
     or return $class->req_none($req, "Unknown user");
-  my $subid = $cfg->entry('affiliate', 'subscription_required');
-  if ($subid) {
-    my $sub = BSE::TB::Subscriptions->getByPkey($subid)
-      || BSE::TB::Subscriptions->getBy(text_id => $subid)
-	or return $class->req_none($req, "Configuration error: Unknown subscription id");
+#  require BSE::TB::Subscriptions;
+#   my $subid = $cfg->entry('affiliate', 'subscription_required');
+#   if ($subid) {
+#     my $sub = BSE::TB::Subscriptions->getByPkey($subid)
+#       || BSE::TB::Subscriptions->getBy(text_id => $subid)
+# 	or return $class->req_none($req, "Configuration error: Unknown subscription id");
+#   }
 
-    
-  }
+  my %acts;
+  %acts =
+    (
+     BSE::Util::Tags->basic(undef, $req->cgi, $req->cfg),
+     siteuser => [ \&tag_hash, $user ],
+    );
+
+  return $req->dyn_response('affiliate', \%acts);
 }
+
+sub req_none {
+  my ($class, $req, $msg) = @_;
+
+  print STDERR "Something went wrong: $msg\n" if $msg;
+
+  # just refresh to the home page
+  my $url = $req->cfg->entry('site', 'url');
+  return BSE::Template->get_refresh($url, $req->cfg);
+}
+
+=back
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=cut
+
 
 1;

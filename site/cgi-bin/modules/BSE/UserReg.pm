@@ -776,10 +776,10 @@ sub userpage {
 
   my $user = $self->_get_user($session, $cgi, $cfg, 'userpage')
     or return;
-  require 'Orders.pm';
+  require BSE::TB::Orders;
   my @orders = sort { $b->{orderDate} cmp $a->{orderDate}
 			|| $b->{id} <=> $a->{id} }
-    Orders->getBy(userId=>$user->{userId});
+    BSE::TB::Orders->getBy(userId=>$user->{userId});
   $message ||= $cgi->param('message') || '';
 
   my $must_be_paid = $cfg->entryBool('downloads', 'must_be_paid', 0);
@@ -802,8 +802,8 @@ sub userpage {
      BSE::Util::Tags->
      make_dependent_iterator(\$order_index,
 			     sub {
-			       require 'OrderItems.pm';
-			       @items = OrderItems->
+			       require BSE::TB::OrderItems;
+			       @items = BSE::TB::OrderItems->
 				 getBy(orderId=>$orders[$_[0]]{id});
 			     },
 			     'item', 'items', \$item_index),
@@ -858,8 +858,8 @@ sub download {
 
   my $orderid = $cgi->param('order')
     or return _refresh_userpage($cfg, $msgs->('noorderid', "No order id supplied"));
-  require 'Orders.pm';
-  my $order = Orders->getByPkey($orderid)
+  require BSE::TB::Orders;
+  my $order = BSE::TB::Orders->getByPkey($orderid)
     or return _refresh_userpage($cfg, $msgs->('nosuchorder',
 					"No such orderd $orderid", $orderid));
   unless (length $order->{userId}
@@ -869,9 +869,9 @@ sub download {
   }
   my $itemid = $cgi->param('item')
     or return _refresh_userpage($cfg, $msgs->('noitemid', "No item id supplied"));
-  require 'OrderItems.pm';
+  require BSE::TB::OrderItems;
   my ($item) = grep $_->{id} == $itemid,
-  OrderItems->getBy(orderId=>$order->{id})
+  BSE::TB::OrderItems->getBy(orderId=>$order->{id})
     or return _refresh_userpage($cfg, $msgs->(notinorder=>"Not part of that order"));
   require 'ArticleFiles.pm';
   my @files = ArticleFiles->getBy(articleId=>$item->{productId})

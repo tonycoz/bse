@@ -651,6 +651,11 @@ mail.
 Reports cookies received from the browser and sent to the browser to
 STDERR (hence to the error log on Apache.)
 
+=item dump_session
+
+If nonzero the session hash is dumped to STDERR after it is retrived
+from the database.
+
 =back
 
 =head2 [uri]
@@ -908,6 +913,32 @@ might do:
 
   [help style user]
   icon=/images/help.gif
+
+=head2 [affiliate]
+
+=over
+
+=item allowed_referer
+
+A semi-colon (;) separated list of referer domains that are allowed to
+link to the C<a_set> target of L<affiliate.pl>.
+
+If the user's browser supplies a referer header then it will be
+checked against this list.
+
+=item require_referer
+
+If this is set then the C<a_set> target of L<affiliate.pl> will
+require that the user's browser supply a Referer header.
+
+=item default_refresh
+
+If no C<r> parameter is supplied to the C<a_set> target of
+L<affiliate.pl> then this is used as the default refresh.
+
+Default: the site base url.
+
+=back
 
 =head1 AUTHOR
 

@@ -15,6 +15,7 @@ schema/mysql_build.pl   # builds site/util/mysql.str
 site/cgi-bin/admin/add.pl
 site/cgi-bin/admin/admin.pl
 site/cgi-bin/admin/adminusers.pl
+site/cgi-bin/affiliate.pl
 site/cgi-bin/admin/changepw.pl
 site/cgi-bin/admin/datadump.pl
 site/cgi-bin/admin/generate.pl
@@ -94,9 +95,10 @@ site/cgi-bin/modules/BSE/TB/OrderItems.pm
 #site/cgi-bin/modules/BSE/TB/Subscription.pm
 #site/cgi-bin/modules/BSE/TB/Subscriptions.pm
 site/cgi-bin/modules/BSE/Template.pm
-#site/cgi-bin/modules/BSE/UI/AdminDispatch.pm
-#site/cgi-bin/modules/BSE/UI/Dispatch.pm
-#site/cgi-bin/modules/BSE/UI/SubAdmin.pm
+site/cgi-bin/modules/BSE/UI/AdminDispatch.pm
+site/cgi-bin/modules/BSE/UI/Affiliate.pm
+site/cgi-bin/modules/BSE/UI/Dispatch.pm
+site/cgi-bin/modules/BSE/UI/SubAdmin.pm
 site/cgi-bin/modules/BSE/UserReg.pm
 site/cgi-bin/modules/BSE/Util/DynSort.pm
 site/cgi-bin/modules/BSE/Util/Iterate.pm
@@ -140,6 +142,7 @@ site/cgi-bin/search.pl
 site/cgi-bin/shop.pl
 site/cgi-bin/user.pl
 site/data/stopwords.txt
+site/docs/BSE::UI::Affiliate.html
 site/docs/Generate.html
 site/docs/Generate::Article.html
 site/docs/Generate::Catalog.html
@@ -150,6 +153,7 @@ site/docs/TODO.pod
 site/docs/add.html
 site/docs/access.html
 site/docs/access.pod
+site/docs/affiliate.html
 site/docs/bse.html
 site/docs/bse.pod
 site/docs/bugs.html
@@ -277,6 +281,7 @@ site/templates/admin/users/edit.tmpl
 site/templates/admin/users/edit_orders.tmpl
 site/templates/admin/users/list.tmpl
 site/templates/admin/xbase.tmpl
+site/templates/affiliate.tmpl
 site/templates/base.tmpl
 site/templates/cart_base.tmpl
 site/templates/catalog.tmpl
@@ -352,6 +357,7 @@ site/templates/user/toomany_base.tmpl
 site/templates/user/unsuball_base.tmpl
 site/templates/user/unsubone_base.tmpl
 site/templates/user/userpage_base.tmpl
+site/templates/xbase.tmpl
 site/util/gen.pl
 site/util/initial.pl
 site/util/mysql.str

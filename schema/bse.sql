@@ -484,6 +484,13 @@ create table site_users (
 
   flags varchar(80) not null default '',
 
+  customText1 text,
+  customText2 text,
+  customText3 text,
+  customStr1 varchar(255),
+  customStr2 varchar(255),
+  customStr3 varchar(255),
+
   primary key (id),
   unique (userId)
 );

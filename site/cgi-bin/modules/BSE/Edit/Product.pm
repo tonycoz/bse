@@ -283,8 +283,8 @@ sub default_template {
 sub can_remove {
   my ($self, $req, $article, $articles, $rmsg) = @_;
 
-  require OrderItems;
-  my @items = OrderItems->getBy(productId=>$article->{id});
+  require BSE::TB::OrderItems;
+  my @items = BSE::TB::OrderItems->getBy(productId=>$article->{id});
   if (@items) {
     $$rmsg = "There are orders for this product.  It cannot be deleted.";
     return;
