@@ -323,8 +323,11 @@ sub _get_user {
     my $uid = $cgi->param('u');
     defined $uid && $uid =~ /^\d+$/ && defined $password
       or do { refresh_to($ENV{SCRIPT}."?nopassword=1"); return };
-      
+
     my $user = SiteUsers->getByPkey($uid)
+      or do { refresh_to($ENV{SCRIPT}."?nopassword=1"); return };
+
+    $user->{password} eq $password
       or do { refresh_to($ENV{SCRIPT}."?nopassword=1"); return };
     
     return $user;

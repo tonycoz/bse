@@ -103,7 +103,7 @@ sub req_edit {
   else {
     if (keys %$errors) {
       my %work = %$errors;
-      my @msgs = delete @work{$cgi->param()};
+      my @msgs = grep defined, delete @work{$cgi->param()};
       push @msgs, values %work;
       $msg = join "<br />", map escape_html($_), @msgs;
     }
@@ -305,7 +305,7 @@ sub req_addform {
   else {
     if (keys %$errors) {
       my %work = %$errors;
-      my @msgs = delete @work{$cgi->param()};
+      my @msgs = grep defined, delete @work{$cgi->param()};
       push @msgs, values %work;
       $msg = join "<br />", map escape_html($_), grep $_, @msgs;
     }

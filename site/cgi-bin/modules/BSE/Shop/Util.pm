@@ -3,7 +3,8 @@ use strict;
 use vars qw(@ISA @EXPORT_OK);
 @ISA = qw/Exporter/;
 @EXPORT_OK = qw/shop_cart_tags cart_item_opts nice_options shop_nice_options
-                total shop_total load_order_fields basic_tags need_logon/;
+                total shop_total load_order_fields basic_tags need_logon
+                get_siteuser payment_types/;
 use Constants qw/:shop/;
 use BSE::Util::SQL qw(now_sqldate);
 use BSE::Util::Tags;
@@ -223,7 +224,7 @@ sub load_order_fields {
   $order->{total} += $cust_class->total_extras(\@cart, \@products, 
 					     $session->{custom});
 
-  if (need_logon($cfg, \@cart, \@products, $session)) {
+  if (need_logon($cfg, \@cart, \@products, $session, $q)) {
     $$error = "Your cart contains some file-based products.  Please register or logon";
     return 0;
   }
@@ -269,10 +270,15 @@ sub basic_tags {
 }
 
 sub need_logon {
-  my ($cfg, $cart, $cart_prods, $session) = @_;
+  my ($cfg, $cart, $cart_prods, $session, $cgi) = @_;
 
+  defined $cgi or confess "No cgi parameter supplied";
+  
   my $reg_if_files = $cfg->entryBool('shop', 'register_if_files', 1);
-  if (!$session->{userid} && $reg_if_files) {
+
+  my $user = get_siteuser($session, $cfg, $cgi);
+
+  if (!$user && $reg_if_files) {
     require 'ArticleFiles.pm';
     # scan to see if any of the products have files
     for my $prod (@$cart_prods) {
@@ -284,11 +290,102 @@ sub need_logon {
   }
 
   my $require_logon = $cfg->entryBool('shop', 'require_logon', 0);
-  if (!$session->{userid} && $require_logon) {
+  if (!$user && $require_logon) {
     return ("register before checkout", "shop/logonrequired");
   }
   
   return;
 }
+
+sub get_siteuser {
+  my ($session, $cfg, $cgi) = @_;
+
+  require SiteUsers;
+  if ($cfg->entryBool('custom', 'user_auth')) {
+    my $custom = Util::custom_class($cfg);
+    
+    return $custom->siteuser_auth($session, $cgi, $cfg);
+  }
+  else {
+    my $userid = $session->{userid}
+      or return;
+    my $user = SiteUsers->getBy(userId=>$userid)
+      or return;
+    
+    return $user;
+  }
+}
+
+=item payment_types($cfg)
+
+Returns payment type ids, and hashes describing each of the configured
+payment types.
+
+These are used to generate the tags used for testing whether payment
+types are available.  Also used for validating payment type
+information.
+
+=cut
+
+sub payment_types {
+  my ($cfg) = @_;
+
+  my %types =
+    (
+     0 => { 
+	   id => 0, 
+	   name => 'CC', 
+	   desc => 'Credit Card',
+	   require => [ qw/cardNumber cardExpiry/ ],
+	  },
+     1 => { 
+	   id => 1, 
+	   name => 'Cheque', 
+	   desc => 'Cheque',
+	   require => [],
+	  },
+     2 => {
+	   id => 2,
+	   name => 'CallMe',
+	   desc => 'Call customer for payment',
+	   require => [],
+	  },
+    );
+
+  my @payment_types = split /,/, $cfg->entry('shop', 'payment_types', '0');
+  
+  for my $type (@payment_types) {
+    my $hash = $types{$type}; # avoid autovivification
+    my $name = $cfg->entry('payment type names', $type, $hash->{name});
+    my $desc = $cfg->entry('payment type descs', $type, 
+			   $hash->{desc} || $name);
+    my @require = $hash->{require} ? @{$hash->{require}} : ();
+    @require = split /,/, $cfg->entry('payment type required', $type,
+				      join ",", @require);
+    if ($name && $desc) {
+      $types{$type} = 
+	{
+	 id => $type,
+	 name => $name, 
+	 desc => $desc,
+	 require => \@require,
+	};
+    }
+  }
+
+  for my $type (@payment_types) {
+    unless ($types{$type}) {
+      print STDERR "** payment type $type doesn't have a name defined\n";
+      next;
+    }
+    $types{$type}{enabled} = 1;
+  }
+
+  use Data::Dumper;
+  print STDERR Dumper \%types;
+
+  return values %types;
+}
+
 
 1;

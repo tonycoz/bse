@@ -23,4 +23,8 @@ Product                                   Units  Price   Extended
 <:ifEq [order paymentType] "0" :>Paid by credit card.<:or:><:eif
 :><:ifEq [order paymentType] "1" :>Will be paid by cheque<:or
 :><:eif:><:ifEq [order paymentType] "2"
-:>We will call you to arrange for payment<:or:><:eif:>
+:>We will call you to arrange for payment<:or:><:eif:><:
+include custom/payment_type_email.include:>
+<:if Order instructions:>
+<:with begin wrap:>Special Instructions: <:order instructions:><:with end wrap:>
+<:or Order:><:eif Order:>

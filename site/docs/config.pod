@@ -456,6 +456,9 @@ The possible payment types are:
 
 =back
 
+Other types can be added by adding entries to the [payment type names]
+and [payment type descs] sections.
+
 =item address1
 
 =item address2
@@ -752,6 +755,29 @@ If set to zero then users cannot register themselves.  Default: true,
 allowing users to register themselves.
 
 =back
+
+=head2 [payment type names]
+
+This section and [payment type descs] are used to configure new
+paymeny type ids.
+
+The key is the integer representing the payment type.  The value is
+the name used in tags for checking the payment type.
+
+You can also add a description (currently unused) to [payment type
+descs].
+
+You should use numbers starting from 10 to avoid conflicts with future
+BSE payment types.
+
+=head2 [payment type descs]
+
+See [payment type names].
+
+=head2 [payment type required]
+
+Set the key given by the payment type id to a value of a
+comma-separated list of fields required for that payment type.
 
 =head1 AUTHOR
 

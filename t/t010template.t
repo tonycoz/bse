@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 12;
+use Test::More tests => 13;
 
 sub template_test($$$$;$);
 
@@ -24,6 +24,7 @@ SKIP: {
      repeat => \$repeat_value,
      strref => \$str,
      str => $str,
+     with_upper => \&tag_with_upper,
     );
   template_test("<:str:>", "ABC", "simple", \%acts);
   template_test("<:strref:>", "ABC", "scalar ref", \%acts);
@@ -55,7 +56,8 @@ IN
   template_test($switch, "TWO", "switch2", \%acts, "both");
   $str = "DEF";
   template_test($switch, "DEF", "switch def", \%acts, "both");
-  
+
+  template_test("<:with begin upper:>Alpha<:with end upper:>", "ALPHA", "with", \%acts);
 }
 
 sub template_test ($$$$;$) {
@@ -122,4 +124,10 @@ sub get_expr {
   }
   
   @values;
+}
+
+sub tag_with_upper {
+  my ($args, $text) = @_;
+
+  return uc($text);
 }

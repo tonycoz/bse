@@ -280,6 +280,11 @@ site/templates/common/news_item.tmpl
 site/templates/common/rssbase.tmpl
 site/templates/common/sidebar.tmpl
 site/templates/common/sidebar_section.tmpl
+site/templates/custom/checkout.include
+site/templates/custom/order_detail.include
+site/templates/custom/order_detail_payment.include
+site/templates/custom/payment_type.include
+site/templates/custom/payment_type_email.include
 site/templates/error.tmpl
 site/templates/extras.txt
 site/templates/htmlemail/basic.tmpl

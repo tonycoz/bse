@@ -42,6 +42,7 @@ sub tie_it {
   unless ($sessionid) {
   # save the new sessionid
     my $domain = $ENV{HTTP_HOST};
+    $domain =~ s/:\d+$//;
     my $cookie = CGI::Cookie->new(-name=>'sessionid', -value=>$session->{_session_id}, 
 				  -expires=>$lifetime, -path=>"/",
 				  -domain=>$domain);

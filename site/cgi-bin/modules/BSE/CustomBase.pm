@@ -32,7 +32,7 @@ sub checkout_update {
 }
 
 sub order_save {
-  my ($class, $cgi, $order, $items, $cfg) = @_;
+  my ($class, $cgi, $order, $items, $products, $custom, $cfg) = @_;
 
   return 1;
 }
@@ -151,7 +151,7 @@ extra tags for the checkout page.
 This is called by the checkupdate target of shop.pl, which does
 nothing else.
 
-=item order_save($cgi, $order, $items)
+=item order_save($cgi, $order, $items, $products, $custom, $cfg)
 
 Called immediately before the order is saved.  You can perform extra
 validation and die() with an error message describing the problem, or

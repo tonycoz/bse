@@ -27,4 +27,8 @@ Name on Card : <:order ccName:>
 Card Type    : <:order ccType :><:or:><:eif
 :><:ifEq [order paymentType] "1" :>Will be paid by cheque<:or
 :><:eif:><:ifEq [order paymentType] "2"
-:>Please call the customer to arrange for payment<:or:><:eif:>
+:>Please call the customer to arrange for payment<:or:><:eif:><:
+include custom/payment_type_email.include:>
+<:if Order instructions:>
+<:with begin wrap:>Special Instruction: <:order instructions:><:with end wrap:>
+<:or Order:><:eif Order:>

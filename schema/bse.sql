@@ -257,6 +257,14 @@ create table order_item (
   -- options (if any) specified on this item in the order
   options varchar(255) not null,
 
+  customInt1 integer null,
+  customInt2 integer null,
+  customInt3 integer null,
+
+  customStr1 varchar(255) null,
+  customStr2 varchar(255) null,
+  customStr3 varchar(255) null,
+
   primary key (id),
   index order_item_order(orderId, id)
 );

@@ -10,6 +10,83 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.14_05
+
+This is still a development release.
+
+There have been database changes in this release.  You will need to
+run upgrade_mysql.pl.
+
+=over
+
+=item *
+
+CRITICAL: nopassword wasn't checking the password at all.  If you
+don't want to upgrade completely you can include just the three line
+change that checks the password.
+
+=item *
+
+blank lines are no longer included in the error messages on add/edit
+site user validation errors
+
+=item *
+
+the shop now uses the site user authentication hook
+
+=item *
+
+the domain value sent to the browser in cookies now has the port
+number stripped.
+
+=item *
+
+you can now configure new payment types through the [payment type
+names], [payment type descs] and [payment type required] sections of
+the configuration file.
+
+=item *
+
+various templates include custom sub-templates which can be used to
+add custom payment types.
+
+=item *
+
+new <:checkedPaymentI<payment-type-name> :> tag on the checkout form
+to make retaining the selected payment type easier.
+
+=item *
+
+new basic template facility, C<with> allows sections of text to be
+processed by a tag:
+
+  <:with begin I<tagname> :>
+    I<some text>
+  <:with end I<tagname :>
+
+=item *
+
+<:with ... wrap:> tag added to order email tag sets:
+
+  <:with begin wrap:>Special Instructions: <:order instructions:><:with end wrap:>
+
+=item *
+
+the site user editor would include empty lines for valid fields in
+error messages
+
+=item *
+
+cookies were being generated with the port numbers included in the
+domain value.
+
+=item *
+
+billing address fields are now included in the default checkout form,
+optionally
+
+=back
+
 =head2 0.14_04
 
 This is a development release and is not suitable for production use.

@@ -186,7 +186,7 @@ sub with {
       $result = $self->replace_template($result, $acts);
     }
 
-    return $code->(@args, $result, $sep, $acts, $name, $self);
+    return $code->(@args, $args, $result, $sep, $acts, $name, $self);
   }
   else {
     return $orig;

@@ -13,10 +13,13 @@ use CGI::Cookie;
 use Util qw(refresh_to);
 use BSE::Mail;
 use BSE::Shop::Util qw/shop_cart_tags cart_item_opts nice_options total 
-                       basic_tags load_order_fields need_logon/;
+                       basic_tags load_order_fields need_logon get_siteuser
+                       payment_types/;
 use BSE::Session;
 use BSE::Cfg;
 use Util qw/refresh_to/;
+use BSE::Util::Tags qw(tag_hash);
+
 
 my $cfg = BSE::Cfg->new();
 
@@ -46,13 +49,13 @@ my $toEmail= $cfg->entry('shop', 'to_email', $SHOP_TO_EMAIL);
 use constant PAYMENT_CC => 0;
 use constant PAYMENT_CHEQUE => 1;
 use constant PAYMENT_CALLME => 2;
-my %valid_payment_types = 
-  ( 
-   PAYMENT_CC()     =>1, 
-   PAYMENT_CHEQUE() =>1, 
-   PAYMENT_CALLME() =>1
-  );
-my %payment_names = qw(CC 0 Cheque 1 CallMe 2);
+# my %valid_payment_types = 
+#   ( 
+#    PAYMENT_CC()     =>1, 
+#    PAYMENT_CHEQUE() =>1, 
+#    PAYMENT_CALLME() =>1
+#   );
+# my %payment_names = ;
 
 my $urlbase = $cfg->entryVar('site', 'url');
 my $securlbase = $cfg->entryVar('site', 'secureurl');
@@ -247,16 +250,12 @@ sub checkout {
 
   my @cart_prods = map { Products->getByPkey($_->{productId}) } @cart;
 
-  if (my ($msg, $id) = need_logon($cfg, \@cart, \@cart_prods, \%session)) {
+  if (my ($msg, $id) = need_logon($cfg, \@cart, \@cart_prods, \%session, $CGI::Q)) {
     refresh_logon($msg, $id);
     return;
   }
 
-  my $user;
-  if ($session{userid}) {
-    require 'SiteUsers.pm';
-    $user = SiteUsers->getBy(userId=>$session{userid});
-  }
+  my $user = get_siteuser(\%session, $cfg, $CGI::Q);
 
   $session{custom} ||= {};
   my %custom_state = %{$session{custom}};
@@ -266,8 +265,8 @@ sub checkout {
 
   my $noencrypt = $cfg->entryBool('shop', 'noencrypt', 0);
 
-  my @payment_types = split /,/, $cfg->entry('shop', 'payment_types', '0');
-  @payment_types = grep $valid_payment_types{$_}, @payment_types;
+  my @pay_types = payment_types($cfg);
+  my @payment_types = map $_->{id}, grep $_->{enabled}, @pay_types;
   if ($noencrypt) {
     @payment_types = grep $_ ne PAYMENT_CC, @payment_types;
     @payment_types or @payment_types = ( PAYMENT_CALLME );
@@ -305,12 +304,19 @@ sub checkout {
      $cust_class->checkout_actions(\%acts, \@cart, \@cart_prods, 
 				   \%custom_state, $CGI::Q, $cfg),
      ifMultPaymentTypes => @payment_types > 1,
+     ifUser => defined $user,
+     user => $user ? [ \&tag_hash, $user ] : '',
     );
-  for my $name (keys %payment_names) {
-    my $id = $payment_names{$name};
+  my $payment;
+  $olddata and $payment = param('paymentType');
+  defined $payment or $payment = $payment_types[0];
+  for my $type (@pay_types) {
+    my $id = $type->{id};
+    my $name = $type->{name};
     $acts{"if${name}Payments"} = exists $payment_types{$id};
     $acts{"if${name}FirstPayment"} = $payment_types[0] == $id;
     $acts{"checkedIfFirst$name"} = $payment_types[0] == $id ? "checked " : "";
+    $acts{"checkedPayment$name"} = $payment == $id ? 'checked="checked" ' : "";
   }
   $session{custom} = \%custom_state;
 
@@ -447,7 +453,7 @@ sub prePurchase {
   use BSE::Util::SQL qw(now_sqldatetime);
   $order{orderDate} = now_sqldatetime();
 
-  if (my ($msg, $id) = need_logon($cfg, \@cart, \@products, \%session)) {
+  if (my ($msg, $id) = need_logon($cfg, \@cart, \@products, \%session, $CGI::Q)) {
     refresh_logon($msg, $id);
     return;
   }
@@ -563,8 +569,11 @@ sub purchase {
 
   my $noencrypt = $cfg->entryBool('shop', 'noencrypt', 0);
 
-  my @payment_types = split /,/, $cfg->entry('shop', 'payment_types', '0');
-  @payment_types = grep $valid_payment_types{$_}, @payment_types;
+  my @pay_types = payment_types($cfg);
+  my %pay_types = map { $_->{id} => $_ } @pay_types;
+  use Data::Dumper;
+  print STDERR Dumper \%pay_types;
+  my @payment_types = map $_->{id}, grep $_->{enabled}, @pay_types;
   if ($noencrypt) {
     @payment_types = grep $_ ne PAYMENT_CC, @payment_types;
     @payment_types or @payment_types = ( PAYMENT_CALLME );
@@ -580,8 +589,7 @@ sub purchase {
   $payment_types{$paymentType}
     or return checkout("Invalid payment type");
 
-  push @required, qw(cardHolder cardExpiry)
-    if $paymentType == PAYMENT_CC;
+  push @required, @{$pay_types{$paymentType}{require}};
 
   for my $field (@required) {
     defined(param($field)) && length(param($field))
@@ -673,7 +681,7 @@ sub purchase {
     $order{gst} += $item->{gst} * $item->{units};
   }
 
-  if (my ($msg, $id) = need_logon($cfg, \@cart, \@products, \%session)) {
+  if (my ($msg, $id) = need_logon($cfg, \@cart, \@products, \%session, $CGI::Q)) {
     refresh_logon($msg, $id);
     return;
   }
@@ -691,8 +699,9 @@ sub purchase {
   $order{filled} = 0;
   $order{paidFor} = 0;
 
-  if ($session{userid}) {
-    $order{userId} = $session{userid};
+  my $user = get_siteuser(\%session, $cfg, $CGI::Q);
+  if ($user) {
+    $order{userId} = $user->{userId};
   }
   else {
     $order{userId} = '';
@@ -778,8 +787,9 @@ sub purchase {
      ifOptions => sub { @options },
      options => sub { nice_options(@options) },
     );
-  for my $name (keys %payment_names) {
-    my $id = $payment_names{$name};
+  for my $type (@pay_types) {
+    my $id = $type->{id};
+    my $name = $type->{name};
     $acts{"if${name}Payment"} = $order->{paymentType} == $id;
   }
   send_order($order, \@items, \@products, $noencrypt);
@@ -788,7 +798,14 @@ sub purchase {
 }
 
 sub tag_with_wrap {
-  
+  my ($args, $text) = @_;
+
+  my $margin = $args =~ /^\d+$/ && $args > 30 ? $args : 70;
+
+  require Text::Wrap;
+  $Text::Wrap::columns = $margin;
+
+  return Text::Wrap::fill('', '', split /\n/, $text);
 }
 
 # sends the email order confirmation and the PGP encrypted
@@ -806,7 +823,6 @@ sub send_order {
   my $item_index = -1;
   my @options;
   my $option_index;
-  require BSE::Util::Tags;
   my %acts;
   %acts =
     (

@@ -1,0 +1,3 @@
+<:if Eq 0 1:>
+<!-- use this file to add extra custom payment types -->
+<:or Eq:><:eif Eq:>
