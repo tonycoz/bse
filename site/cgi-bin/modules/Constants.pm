@@ -99,22 +99,22 @@ $CGI_URI = "/cgi-bin";
        display=>'Section',
       },
    2=>{
-       threshold=>3,
+       threshold=>1,
        template=>'common/default.tmpl',
        display=>'Subsect Lev1',
       },
    3=>{
-       threshold=>100000,
+       threshold=>1,
        template=>'common/default.tmpl',
        display=>'Subsect Lev2',
       },
    4=>{
-       threshold=>10,
+       threshold=>1,
        template=>'common/default.tmpl',
        display=>'Subsect Lev3',
       },
    5=>{
-       threshold=>10,
+       threshold=>1,
        template=>'common/default.tmpl',
        display=>"Subsect Lev4",
       },
@@ -132,14 +132,14 @@ $CGI_URI = "/cgi-bin";
 $LINK_TITLES = 0;
 
 # sections to exclude from the search
-@SEARCH_EXCLUDE = ( 1 );
+@SEARCH_EXCLUDE = ();
 
 # sections to include in the search section drop-down, even if unlisted
 @SEARCH_INCLUDE = ();
 
 # any articles with a higher level than this are indexed as their ancestor 
 # at this level
-$SEARCH_LEVEL = 3;
+$SEARCH_LEVEL = 5;
 
 # used to mean "all of site" in the search section drop-down
 $SEARCH_ALL = "All Sections";
@@ -156,7 +156,7 @@ $SEARCH_TITLE = "Search";
 
 # the title image used for the artificial article used to generate
 # the search base page
-$SEARCH_TITLE_IMAGE = "advanced_search.gif";
+$SEARCH_TITLE_IMAGE = "";
 
 # defines extra tags added to the tags defined by Generate.pm
 # constants are converted to subs automatically
@@ -173,7 +173,7 @@ $SEARCH_TITLE_IMAGE = "advanced_search.gif";
 # articles that cannot be deleted
 # you don't need to include the shop ids here, they are always 
 # protected
-@NO_DELETE = ( 1, 2 );
+@NO_DELETE = ( 1, 2, 5 );
 
 # you can use the following to add local body formatting tags without
 # having to modify Generate.pm and give yourself upgrade hassles
@@ -207,7 +207,7 @@ $AUTO_GENERATE = 1;
 # different level
 # this can be a coderef if you want, which returns non-zero if the
 # user can reparent up/down
-$REPARENT_UPDOWN = 0;
+$REPARENT_UPDOWN = 1;
 
 # if this is non-zero then by default the level 1 ancestor of an article
 # will be listed in it's crumbs
