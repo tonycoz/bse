@@ -5,7 +5,7 @@ require Exporter;
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(generate_article generate_all generate_button);
 use Constants qw($CONTENTBASE $TMPLDIR $URLBASE %TEMPLATE_OPTS
-		 $GENERATE_BUTTON);
+		 $GENERATE_BUTTON $SHOPID);
 
 my %gen_cache;
 
@@ -96,11 +96,12 @@ sub generate_shop {
     (
      'cart', 'checkout', 'checkoutfinal',
     );
-  use Generate;
-  my $gen = Generate->new;
+  require 'Generate/Article.pm';
+  my $shop = $articles->getByPkey($SHOPID);
+  my $gen = Generate::Article->new;
   for my $name (@pages) {
     my %acts;
-    %acts = $gen->baseActs($articles, \%acts);
+    %acts = $gen->baseActs($articles, \%acts, $shop);
     # different url behaviour - point the user at the http version
     # of the site if the url contains no scheme
     my $oldurl = $acts{url};
