@@ -325,6 +325,9 @@ create table subscription_types (
 
   -- the last time this was sent out
   lastSent datetime not null default '0000-00-00 00:00',
+
+  -- if this is non-zero then the subscription is visible to users
+  visible integer not null default 1,  
   
   primary key (id)
 );

@@ -26,7 +26,15 @@ sub user_tags {
 
   return
     (
-     ifUser=> sub { $user },
+     ifUser=> 
+     sub { 
+       if ($_[0]) {
+	 return $user->{$_[0]};
+       }
+       else {
+	 return $user;
+       }
+     },
      user => sub { $user && CGI::escapeHTML($user->{$_[0]}) },
     );
 }
@@ -133,12 +141,14 @@ sub show_opts {
     or return $self->show_logon($session, $cgi, $cfg);
   my $user = SiteUsers->getBy(userId=>$userid)
     or return $self->show_logon($session, $cgi, $cfg);
-  my @subs = BSE::SubscriptionTypes->all;
+  my @subs = grep $_->{visible}, BSE::SubscriptionTypes->all;
   my @usersubs = BSE::SubscribedUsers->getBy(userId=>$user->{id});
   my %usersubs = map { $_->{subId}, $_ } @usersubs;
   
   my $sub_index;
   $message ||= $cgi->param('message') || '';
+  #use Data::Dumper;
+  #print STDERR Dumper($user);
   my %acts;
   %acts =
     (
@@ -666,6 +676,13 @@ sub send_conf_request {
     return;
   }
   
+  unless ($user->{confirmSecret}) {
+    use BSE::Util::Secure qw/make_secret/;
+    # print STDERR "Generating secret\n";
+    $user->{confirmSecret} = make_secret($cfg);
+    $user->save;
+  }
+
   # check for existing confirmations
   my $confirm = BSE::EmailRequests->getBy(genEmail=>$checkemail);
   if ($confirm) {
@@ -699,13 +716,6 @@ sub send_conf_request {
     $confirm = BSE::EmailRequests->add(@confirm{@cols});
   }
 
-  #print STDERR "Checking for secret $user->{confirmSecret}\n";
-  unless ($user->{confirmSecret}) {
-    use BSE::Util::Secure qw/make_secret/;
-    # print STDERR "Generating secret\n";
-    $user->{confirmSecret} = make_secret($cfg);
-    $user->save;
-  }
   # ok, now we can send the confirmation request
   my %confacts;
   %confacts =
@@ -724,7 +734,7 @@ sub send_conf_request {
   unless ($mail->send(from=>$from, to=>$user->{email}, subject=>$subject,
 		      body=>$body)) {
     # a problem sending the mail
-    $acts{mailerror} = sub { $mail->errstr };
+    $acts{mailerror} = sub { CGI::escapeHTML($mail->errstr) };
     BSE::Template->show_page('user/email_conferror', $cfg, \%acts);
     return;
   }

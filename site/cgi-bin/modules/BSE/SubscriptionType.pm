@@ -7,7 +7,8 @@ use vars qw/@ISA/;
 
 sub columns {
   return qw/id name title description frequency keyword archive 
-            article_template html_template text_template parentId lastSent/;
+            article_template html_template text_template parentId lastSent
+            visible/;
 }
 
 sub _build_article {

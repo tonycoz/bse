@@ -10,6 +10,55 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.11_07
+
+This is a test release.
+
+=over
+
+=item *
+
+initial.pl now looks at the config file for the secure base url
+
+=item *
+
+BSE::Util::Secure wasn't importing md5_hex
+
+=item *
+
+added missing user/email_conferror_base.tmpl
+
+=item *
+
+the user/confirmed.tmpl entry was missing from [pregenerate] in the
+supplied bse.cfg.  Also user/email_conferror.tmpl
+
+=item *
+
+the randomdata key was missing from the [basic] section in the
+supplied bse.cfg
+
+=item *
+
+changed message in site/templates/user/toosoon_base.tmpl to prevent
+panic when the user goes back and selects another group
+
+=item *
+
+changed meaning of ifUser in user templates to accept a parameter if
+present
+
+=item *
+
+updated user/options_base.tmpl to display email confirmed information
+a bit more correctly
+
+=item *
+
+the admin can choose to hide some subscriptions
+
+=back
+
 =head2 0.11_06
 
 This is a test release.

@@ -6,7 +6,13 @@ use strict;
 use lib '../cgi-bin/modules';
 use DBI;
 use Article;
-use Constants qw($DSN $UN $PW $SECURLBASE $CGI_URI $SHOP_URI $ROOT_URI);
+use Constants qw($DSN $UN $PW $CGI_URI $SHOP_URI $ROOT_URI);
+use BSE::Cfg;
+
+chdir "../cgi-bin"
+  or warn "Could not change to cgi-bin directory - may not be able to get config file";
+my $cfg = BSE::Cfg->new;
+my $securlbase = $cfg->entryVar('site', 'secureurl');
 
 my @prebuilt =
   (
@@ -73,7 +79,7 @@ my @prebuilt =
     lastModified=>'2000-11-27 14:00:00',
     keyword=>'shop',
     template=>'shop_sect.tmpl',
-    link=>$SECURLBASE.$SHOP_URI.'/index.html',
+    link=>$securlbase.$SHOP_URI.'/index.html',
     admin=>$CGI_URI.'/admin/admin.pl?id=3',
     threshold=>1000, # ignored
     summaryLength=>1000, # ignored

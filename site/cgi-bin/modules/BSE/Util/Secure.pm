@@ -46,6 +46,7 @@ sub make_secret {
   }
 
   # oh well, try it the other way
+  use Digest::MD5 'md5_hex';
   my $result = md5_hex($sequence.time().rand().{}.$$);
   $sequence .= rand;
 

@@ -24,6 +24,7 @@
       <th>Name</th>
       <th>Title</th>
       <th>Frequency</th>
+      <th>Visible</th>
       <th>Last published</th>
       <th>&nbsp;</th>
     </tr>
@@ -33,6 +34,7 @@
       <td><:subscription name:></td>
       <td><:subscription title:></td>
       <td><:subscription frequency:></td>
+      <td align="center"><:ifSubscription visible:>Yes<:or:>No<:eif:></td>
       <td align="center"><:ifMatch [subscription lastSent] "0000-00-00":>Never<:or:><:date subscription lastSent:><:eif:></td>
       <td>
         <a href="<:script:>?edit=1&id=<:subscription id:>"><b>Edit</b></a>

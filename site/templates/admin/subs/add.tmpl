@@ -46,6 +46,10 @@
       <td><:template text_template textemail:> <:help subs text_template:> <:ifError text_template:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error text_template:>" /><:or:><:eif:></td>
     </tr>
     <tr bgcolor="#FFFFFF">
+      <th>Visible:</th>
+      <td><input type="checkbox" name="visible" value="1"<:ifOld visible:> checked<:or:><:eif:> /> <:help subs visible:></td>
+    </tr>
+    <tr bgcolor="#FFFFFF">
       <th colspan="2">Archiving <:help subs archiving:></th>
     </tr>
     <tr bgcolor="#FFFFFF">

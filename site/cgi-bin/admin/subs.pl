@@ -113,7 +113,7 @@ sub _parent_popup {
 sub sub_form {
   my ($q, $session, $cfg, $template, $sub, $old, $errors) = @_;
 
-  my %defs = ( archive => 1 );
+  my %defs = ( archive => 1, visible => 1 );
 
   my $message = '';
   $errors ||= [];
@@ -217,6 +217,7 @@ sub addsave {
     for my $field (@fields) {
       $subs{$field} = $q->param($field) if defined $q->param($field);
     }
+    $subs{visible} = 0 + defined $q->param('visible');
     $subs{lastSent} = '0000-00-00 00:00';
     my $sub = BSE::SubscriptionTypes->add(@subs{@fields});
     
@@ -251,6 +252,7 @@ sub editsave {
     for my $field (@fields) {
       $sub->{$field} = $q->param($field) if defined $q->param($field);
     }
+    $sub->{visible} = 0 + defined $q->param('visible');
     $sub->save();
     _refresh_list($cfg);
   }

@@ -116,9 +116,9 @@ EOS
    SubscriptionTypes =>
    'select * from subscription_types',
    addSubscriptionType=>
-   'insert subscription_types values(null,?,?,?,?,?,?,?,?,?,?,?)',
+   'insert subscription_types values(null,?,?,?,?,?,?,?,?,?,?,?,?)',
    replaceSubscriptionType=>
-   'replace subscription_types values(?,?,?,?,?,?,?,?,?,?,?,?)',
+   'replace subscription_types values(?,?,?,?,?,?,?,?,?,?,?,?,?)',
    getSubscriptionTypeByPkey =>
    'select * from subscription_types where id = ? order by name',
 

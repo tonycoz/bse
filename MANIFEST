@@ -205,6 +205,7 @@ site/templates/user/blacklistdone_base.tmpl
 site/templates/user/cantunsub_base.tmpl
 site/templates/user/confirmed_base.tmpl
 site/templates/user/confsent_base.tmpl
+site/templates/user/email_conferror_base.tmpl
 site/templates/user/email_confirm.tmpl
 site/templates/user/logon_base.tmpl
 site/templates/user/lostemailsent_base.tmpl

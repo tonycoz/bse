@@ -66,15 +66,15 @@
       <:iterator end subscriptions:>
     </table>
     <:if AnySubs:>
-      <:if Subscription confirmed:><:or Subscription:>
+      <:if User confirmed:><:or User:>
         <div>Note: you haven't confirmed your subscriptions.  You will not receive any subscriptions until you go to the URL provided in the confirmation email sent to your email address.</div>
-      <:eif Subscription:>
+      <:eif User:>
     <:or AnySubs:>
-      <:if Subscription confirmed:>
+      <:if User confirmed:>
         <!-- possible note that subscriptions will be enabled immediately -->
-      <:or Subscription:>
+      <:or User:>
         <div>If you select any newsletters, they will not be sent until you confirm your subscription.  If you change your email address you will need to reconfirm your subscription.</div>
-      <:eif Subscription:>
+      <:eif User:>
     <:eif AnySubs:>
     <p><input type="checkbox" name="textOnlyMail" value="1"<:ifLast textOnlyMail:> checked<:or:><:eif:> /> Text only E-mail messages</p>
   </td>
