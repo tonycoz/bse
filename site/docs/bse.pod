@@ -12,6 +12,14 @@ Maybe I'll add some other bits here.
 
 =head2 0.10
 
+WARNING: the tag for articles found for a search has changed from:
+
+  article I<field>
+
+to:
+
+  result I<field>
+
 =over 4
 
 =item *
@@ -55,6 +63,11 @@ as a summary or as a search excerpt.  The search indexing can now
 handle both of these too.
 
 =item *
+
+the search template now uses 'result' rather than 'article' for the
+search result entries.  This is needed since the search base page is
+generated as an article, using a dummy article.  The title and
+titleImage for this dummy article can be specified in Constants.pm.
 
 =back
 
