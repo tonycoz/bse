@@ -293,6 +293,11 @@ HTML
          return '';
        }
      },
+     ifCurrentPage=>
+     sub {
+       my $arg = shift;
+       $arg && $acts->{$arg} && $acts->{$arg}->('id') == $article->{id};
+     },
     );
 
   if ($article->{link} =~ /^\w+:/) {
@@ -465,6 +470,11 @@ that now.
 Conditional tag, true if there is a next child.  Originally used to
 generating a move down link, but you can use the moveDown tag for that
 now.
+
+=item ifCurrentPage I<which>
+
+Conditional tag, true if the given I<which> is the page currently
+being generated.
 
 =item embed child
 
