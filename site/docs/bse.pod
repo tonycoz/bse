@@ -10,6 +10,92 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.13_01
+
+Time to get a little adventurous.
+
+=over
+
+=item *
+
+images can now have an identifier associated with them.  This can be
+used by the body text image[] tag to reference an image by name.
+
+=item *
+
+the C<< <:imagen >> I<imagename> I<alignment> I<rest> C<< :> >> tag
+can be used to insert images by name.
+
+=item *
+
+body text formatting is now based on the DevHelp::Formatter module.
+
+=item *
+
+b[], i[], tt[], font[], fontcolor[] over paragraph breaks are now
+closed properly at the paragraph breaks.
+
+=item *
+
+newlines within pre[] are no-longer converted to paragraph or line
+breaks.  As a consequence of this you can't nest character formatting
+within each other within pre[text], ie pre[b[foo]] is ok, but
+pre[b[i[foo]]] won't work.
+
+=item *
+
+the width and height parameters to the hr[] markup weren't handled
+correctly.
+
+=item *
+
+the row options to the table[] tag were inserted HTML escaped, so:
+
+  tr[...
+  bgcolor="black"|col|...
+  ]
+
+produced a tr tag like:
+
+  <tr bgcolor=&quot;black&quot>...
+
+=item *
+
+list items in ** or ## lists are now closed with </li>
+
+=item *
+
+we now put newlines between lines and paragraphs in the output of
+formatted text, hopefully this will make it easier to read the source.
+
+=item *
+
+<:error_img:> now accepts a [...] format expression to get the field
+name
+
+=item *
+
+the <:recipient_count:> tag is now available on the subscription
+listing page.  This is used for display, and to hide the Send option
+if the subscription has no recipients.
+
+=item *
+
+it's now possible to format the output of the subscription send
+process by changing the C<admin/subs/sending.tmpl> template
+
+=item *
+
+if an article has an image with an identifier of C<bse_title> then it
+will be used as the title image for the article.
+
+=item *
+
+you should be able to use one level of nested [] inside [] expressions
+in tags now
+
+=back
+
 =head2 0.13
 
 No changes since 0.12_31.

@@ -123,12 +123,25 @@ sub html_format {
   return $gen->generate(\%article, 'Articles');
 }
 
+sub recipients {
+  my ($sub) = @_;
+
+  require 'SiteUsers.pm';
+  SiteUsers->getSpecial('subRecipients', $sub->{id});
+}
+
+sub recipient_count {
+  my ($sub) = @_;
+
+  my @rows = BSE::DB->query(subRecipientCount => $sub->{id});
+  $rows[0]{count};
+}
+
 sub send {
   my ($sub, $cfg, $opts, $callback) = @_;
 
-  require 'SiteUsers.pm';
-  my @recipients = SiteUsers->getSpecial('subRecipients', $sub->{id});
-  $callback->(scalar(@recipients)." recipients to process");
+  my @recipients = $sub->recipients;
+  $callback->('general', undef, scalar(@recipients)." recipients to process");
   require 'BSE/Mail.pm';
   my $mailer = BSE::Mail->new(cfg=>$cfg);
   my %article;
@@ -147,7 +160,7 @@ sub send {
   my $charset = $cfg->entry('basic', 'charset') || 'iso-8859-1';
   my $index = 0;
   for my $user (@recipients) {
-    $callback->($user->{email}) if $callback;
+    $callback->('user', $user) if $callback;
     my $text = $sub->_text_format_low($cfg, $user, $opts, \%article);
     my $html;
     if ($gen && !$user->{textOnlyMail}) {
@@ -181,13 +194,13 @@ sub send {
 			  subject =>$article{title}, 
 			  headers =>join("\n", @headers, ""),
 			  body	  =>$content)) {
-      $callback->("Error: ".$mailer->errstr);
+      $callback->('error', $user, scalar($mailer->errstr));
     }
     ++$index;
   }
   if (exists $opts->{archive} && $opts->{archive}
       || $sub->{archive}) {
-    $callback->("Archiving article");
+    $callback->('general', undef, "Archiving article");
     require 'Articles.pm';
     $article{template} = $opts->{article_template} || $sub->{article_template};
     $article{generator} = 'Generate::Article';
@@ -206,7 +219,7 @@ sub send {
     $article->save;
     require 'Util.pm';
     
-    $callback->("Generating article");
+    $callback->('general', undef, "Generating article");
     Util::generate_article('Articles', $article, $cfg);
   }
   use BSE::Util::SQL qw/now_datetime/;

@@ -44,8 +44,8 @@ EOS
 
    Images => 'select * from image',
    replaceImage =>
-     'replace image values (?,?,?,?,?,?,?,?)',
-   addImage => 'insert image values(null, ?, ?, ?, ?, ?, ?, ?)',
+     'replace image values (?,?,?,?,?,?,?,?,?)',
+   addImage => 'insert image values(null, ?, ?, ?, ?, ?, ?, ?, ?)',
    deleteImage => 'delete from image where id = ?',
    getImageByArticleId => 'select * from image where articleId = ? order by displayOrder',
    
@@ -134,6 +134,10 @@ EOS
    'select * from subscription_types where id = ? order by name',
    deleteSubscriptionType =>
    'delete from subscription_types where id = ?',
+   subRecipientCount => <<EOS,
+select count(*) as "count" from site_users si, subscribed_users su
+  where confirmed <> 0 and si.id = su.userId and su.subId = ?
+EOS
 
    addSubscribedUser=>
    'insert subscribed_users values(null,?,?)',

@@ -58,6 +58,63 @@ sub generate_low {
   return BSE::Template->replace($template, $self->{cfg}, \%acts);
 }
 
+sub _format_image {
+  my ($im, $align, $rest) = @_;
+
+  if ($align && exists $im->{$align}) {
+    return escape_html($im->{$align});
+  }
+  else {
+    my $html = qq!<img src="/images/$im->{image}" width="$im->{width}"!
+      . qq! height="$im->{height}" alt="! . escape_html($im->{alt})
+	     . qq!"!;
+    $html .= qq! align="$align"! if $align && $align ne '-';
+    unless (defined($rest) && $rest =~ /\bborder=/i) {
+      $html .= ' border="0"';
+    }
+    $html .= " $rest" if defined $rest;
+    $html .= qq! />!;
+    if ($im->{url}) {
+      $html = qq!<a href="$im->{url}">$html</a>!;
+    }
+    return $html;
+  }
+}
+
+sub tag_title {
+  my ($article, $images, $args, $acts, $funcname, $templater) = @_;
+
+  my $which = $args || 'article';
+
+  exists $acts->{$which} 
+    or return "** no such object $which **";
+
+  my $title = $acts->{$which}->('title');
+  my $imagename = $which eq 'article' ? $article->{titleImage} : 
+    $acts->{$which}->('titleImage');
+  $imagename and
+    return qq!<img src="/images/titles/$imagename"!
+      .qq! border="0" alt="$title" />! ;
+  my $im;
+  if ($which eq 'article') {
+    ($im) = grep lc $_->{name} eq 'bse_title', @$images;
+  }
+  else {
+    my $id = $acts->{$which}->('id');
+    require Images;
+    my @images = Images->getBy(articleId=>$id);
+    ($im) = grep lc $_->{name} eq 'bse_title', @$images;
+  }
+
+  if ($im) {
+    return qq!<img src="/images/$im->{image}" width="$im->{width}"!
+      . qq! height="$im->{height}" alt="$title" />!;
+  }
+  else {
+    return $title;
+  }
+}
+
 sub baseActs {
   my ($self, $articles, $acts, $article, $embedded) = @_;
 
@@ -67,7 +124,7 @@ sub baseActs {
 
   # used to generate a navigation list for the article
   # generate a list of ancester articles/sections
-  # jason calls these breadcrumbs
+  # Jason calls these breadcrumbs
   my @crumbs;
   my @ancestors;
   my $temp = $article;
@@ -110,14 +167,7 @@ sub baseActs {
        my $which = shift || 'article';
        return $acts->{$which} && $acts->{$which}->('titleImage')
      },
-     title =>
-     sub {
-       my $which = shift || 'article';
-       $acts->{$which} && $acts->{$which}->('titleImage')
-         ? qq!<img src="/images/titles/!.$acts->{$which}->('titleImage')
-           .qq!" border="0" />! 
-         : $acts->{$which}->('title');
-     },
+     title => [ \&tag_title, $article, \@images ],
      thumbnail =>
      sub {
        my ($which, $class) = split ' ', $_[0];
@@ -373,25 +423,18 @@ HTML
        else {
 	 $im = $images[$image_index];
        }
-       my $html;
-       if ($align && exists $im->{$align}) {
-	 $html = escape_html($im->{$align});
-       }
-       else {
-	 $html = qq!<img src="/images/$im->{image}" width="$im->{width}"!
-	   . qq! height="$im->{height}" alt="! . escape_html($im->{alt})
-	     . qq!"!;
-	 $html .= qq! align="$align"! if $align && $align ne '-';
-         unless (defined($rest) && $rest =~ /\bborder=/i) {
-           $html .= ' border="0"';
-         }
-         $html .= " $rest" if defined $rest;
-	 $html .= qq! />!;
-	 if ($im->{url}) {
-	   $html = qq!<a href="$im->{url}">$html</a>!;
-	 }
-       }
-       return $html;
+
+       return _format_image($im, $align, $rest);
+     },
+     imagen => 
+     sub {
+       my ($name, $align, $rest) = split ' ', $_[0], 3;
+
+       $had_image_tags = 1;
+       my ($im) = grep lc $name eq lc $_->{name}, @images
+	 or return '';
+
+       _format_image($im, $align, $rest);
      },
      ifImage => sub { $_[0] >= 1 && $_[0] <= @images },
      ifImages => sub { @images },

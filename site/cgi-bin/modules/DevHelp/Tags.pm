@@ -328,7 +328,17 @@ sub get_parms {
   print STDERR "** Entered get_parms -$args-\n" if DEBUG_GET_PARMS;
   my @out;
   while ($args) {
-    if ($args =~ s/^\s*\[\s*(\w+)(?:\s+(\S[^\]]*))?\]\s*//) {
+    if ($args =~ s/^\s*\[\s*(\w+)
+	                (
+	                 (?:\s+
+			  (?:
+			   [^\s\[\]]\S*
+			   |
+			   \[[^\]\[]+?\]
+			  )
+			 )*
+                        )
+	            \s*\]\s*//x) {
       my ($func, $subargs) = ($1, $2);
       $subargs = '' unless defined $subargs;
       if ($acts->{$func}) {

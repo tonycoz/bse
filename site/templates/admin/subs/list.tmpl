@@ -14,7 +14,7 @@
 
 <:ifMessage:><p><b><:message:></b></p><:or:><:eif:>
 
-<p>| <a href="/admin/">Admin menu</a> |</p>
+<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |</p>
 
 <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
     <tr>
@@ -26,6 +26,7 @@
       <th>Frequency</th>
       <th>Visible</th>
       <th>Last published</th>
+      <th># Recipients</th>
           <th>Modify</th>
     </tr>
 <:if Subscriptions:>
@@ -36,15 +37,16 @@
       <td><:subscription frequency:></td>
       <td align="center"><:ifSubscription visible:>Yes<:or:>No<:eif:></td>
       <td align="center"><:ifMatch [subscription lastSent] "0000-00-00":>Never<:or:><:date subscription lastSent:><:eif:></td>
+      <td align="center"><:recipient_count:></td>
           <td nowrap> <:ifUserCan subs_edit:><a href="<:script:>?edit=1&id=<:subscription id:>"><b>Edit</b></a> <:or:><:eif:>
             <:ifUserCan subs_delete:><a href="<:script:>?delconfirm=1&id=<:subscription id:>"><b>Delete</b></a>  <:or:><:eif:>
-            <:ifUserCan subs_send:><a href="<:script:>?start_send=1&id=<:subscription id:>"><b>Send</b></a>  <:or:><:eif:>
+            <:ifAnd [ifUserCan subs_send] [recipient_count]:><a href="<:script:>?start_send=1&id=<:subscription id:>"><b>Send</b></a>  <:or:><:eif:>
           </td>
     </tr>
 <:iterator end subscriptions:>
 <:or Subscriptions:>
     <tr bgcolor="#FFFFFF">
-      <td colspan="6" align="center">You don't have any subscriptions defined</td>
+      <td colspan="7" align="center">You don't have any subscriptions defined</td>
     </tr>
 <:eif Subscriptions:>
   </table>

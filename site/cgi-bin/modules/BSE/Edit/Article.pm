@@ -1906,6 +1906,9 @@ sub save_image_changes {
     $article->save;
   }
   my @images = $article->images;
+  
+  @images or
+    return $self->refresh($article, $cgi, undef, 'No images to save information for');
 
   my $changed;
   my @alt = $cgi->param('alt');
@@ -1924,6 +1927,33 @@ sub save_image_changes {
       $images[$index]{url} = $urls[$index];
     }
   }
+  my %errors;
+  my @names = map scalar($cgi->param('name'.$_)), 0..$#images;
+  if (@names) {
+    # make sure there aren't any dups
+    my %used;
+    my $index = 0;
+    for my $name (@names) {
+      defined $name or $name = '';
+      if ($name ne '') {
+	if ($name =~ /^[a-z_]\w*$/i) {
+	  if ($used{lc $name}++) {
+	    $errors{"name$index"} = 'Names must be empty, or alphanumeric and unique to the article';
+	  }
+	}
+	else {
+	  $errors{"name$index"} = 'Image identifiers must be unique to the article';
+	}
+      }
+      ++$index;
+    }
+  }
+  keys %errors
+    and return $self->edit_form($req, $article, $articles, undef,
+				\%errors);
+  for my $index (0..$#images) {
+    $images[$index]{name} = $names[$index];
+  }
   if ($changed) {
     for my $image (@images) {
       $image->save;
@@ -1932,7 +1962,6 @@ sub save_image_changes {
 
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
-
 
   return $self->refresh($article, $cgi, undef, 'Image information saved');
 }
@@ -1946,17 +1975,42 @@ sub add_image {
 
   my $cgi = $req->cgi;
 
+  my %errors;
+  my $msg;
+  my $imageref = $cgi->param('name');
+  if (defined $imageref) {
+    if ($imageref =~ /^[a-z_]\w+$/i) {
+      # make sure it's unique
+      my @images = $article->images;
+      for my $img (@images) {
+	if (defined $img->{name} && lc $img->{name} eq lc $imageref) {
+	  $errors{name} = 'Duplicate image name';
+	  last;
+	}
+      }
+    }
+    else {
+      $errors{name} = 'Name must be empty or alphanumeric';
+    }
+  }
+  else {
+    $imageref = '';
+  }
+
   my $image = $cgi->param('image');
-  unless ($image) {
-    return $self->edit_form($req, $article, $articles,
-			      'Enter or select the name of an image file on your machine', 
-			      { image => 'Please enter an image filename' });
+  if ($image) {
+    if (-z $image) {
+      $errors{image} = 'Image file is empty';
+    }
   }
-  if (-z $image) {
-    return $self->edit_form($req, $article, $articles,
-			      'Image file is empty',
-			     { image => 'Image file is empty' });
+  else {
+    $msg = 'Enter or select the name of an image file on your machine';
+    $errors{image} = 'Please enter an image filename';
   }
+  if ($msg || keys %errors) {
+    return $self->edit_form($req, $article, $articles, $msg, \%errors);
+  }
+
   my $imagename = $image;
   $imagename .= ''; # force it into a string
   my $basename = '';
@@ -2009,6 +2063,7 @@ sub add_image {
      height => $height,
      url => $url,
      displayOrder=>time,
+     name => $imageref,
     );
   require Images;
   my @cols = Image->columns;

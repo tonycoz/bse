@@ -1,4 +1,4 @@
-VERSION=0.13
+VERSION=0.13_01
 DISTNAME=bse-$(VERSION)
 DISTBUILD=$(DISTNAME)
 DISTTAR=../$(DISTNAME).tar
@@ -96,7 +96,7 @@ testfiles: distdir
 	perl -MExtUtils::Command -e rm_rf $(DISTBUILD)
 
 test: testinst
-	perl -MTest::Harness=runtests -It -e 'runtests glob q!t/*.t!'
+	perl -MTest::Harness=runtests -Isite/cgi-bin/modules -It -e 'runtests glob q!t/*.t!'
 
 manicheck:
 	perl -MExtUtils::Manifest=manicheck -e 'manicheck()'

@@ -195,6 +195,7 @@ sub _get_article {
        id=>-1,
        parentid=>0,
        title=>'The site',
+       level => 0,
       };
     return $self->{sitearticle};
   }

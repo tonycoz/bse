@@ -274,98 +274,12 @@ sub format_body {
 
   return substr($body, 6) if $body =~ /^<html>/i;
 
-  # clean up any possible existing markup
-  $body = escape_html($body);
-  
-  # I considered replacing these with single character codes and replacing
-  # them later with the tags, to avoid having to check for the middle of 
-  # tag in the image tag insertion code
-  #
-  # This wouldn't work because we still need to do the entity substitution
-  # before
+  require BSE::Formatter;
 
+  my $formatter = BSE::Formatter->new($self, $acts, $articles, \$auto_images,
+				      \@images);
 
-  # originally the following was just one big loop of replacements, but
-  # some tags are a little more complex
-  # This needs a real parser
-
-  my $out = '';
-  for my $part (split /((?:html\[(?:[^\[\]]*(?:(?:\[[^\[\]]*\])[^\[\]]*)*)\])
-			|embed\[(?:[^,\[\]]*)(?:,(?:[^,\[\]]*)){0,2}\])/ix, $body) {
-    #print STDERR "Part is $part\n";
-    if ($part =~ /^html\[([^\[\]]*(?:(?:\[[^\[\]]*\])[^\[\]]*)*)\]$/i) {
-      $out .= _make_html($1);
-    }
-    elsif ($part =~ /^embed\[([^,\[\]]*),([^,\[\]]*),([^,\[\]]*)\]$/i) {
-      $out .= $self->_body_embed($acts, $articles, $1, $2, $3);
-    }
-    elsif ($part =~ /^embed\[([^,\[\]]*),([^,\[\]]*)\]$/i) {
-      $out .= $self->_body_embed($acts, $articles, $1, $2);
-    }
-    elsif ($part =~ /^embed\[([^,\[\]]*)\]$/i) {
-      $out .= $self->_body_embed($acts, $articles, $1, "")
-    }
-    else {
-      my $match;
-    TRY: while (1) {
-	$match = 0;
-	$LOCAL_FORMAT and $LOCAL_FORMAT->body(\$part)
-	  and next TRY;
-	$part =~ s#a\[([^,\]\[]+),([^\]\[]+)\]#<a href="$1">$2</a>#ig
-	  and next TRY;
-	$part =~ s#link\[([^|\]\[]+)\|([^\]\[]+)\]#<a href="$1">$2</a>#ig
-	  and next TRY;
-	$part =~ s#b\[([^\]\[]+)\]#<b>$1</b>#ig
-	  and next TRY;
-	$part =~ s#i\[([^\]\[]+)\]#<i>$1</i>#ig
-	  and next TRY;
-	$part =~ s#tt\[([^\]\[]+)\]#<tt>$1</tt>#ig
-	  and next TRY;
-	$part =~ s#pre\[([^\]\[]+)\]#<pre>$1</pre>#ig
-	  and next TRY;
-	$part =~ s#h([1-6])\[\|([^\[\]]+)\](?:\r?\n)?#<h$1>$2</h$1>#ig
-          and next TRY;
-	$part =~ s#h([1-6])\[([^\[\]\|]+)\|([^\[\]]+)\](?:\r?\n)?#<h$1 class="$2">$3</h$1>#ig
-          and next TRY;
-	$part =~ s#align\[([^|\]\[]+)\|([^\]\[]+)\]#<div align="$1">$2</div>#ig
-	  and next TRY;
-	$part =~ s#font\[([^|\]\[]+)\|([^\]\[]+)\]#<font size="$1">$2</font>#ig
-	  and next TRY;
-	$part =~ s#hr\[([^|\]\[]*)\|([^\]\[]*)\]#_make_hr($1, $2)#ieg
-	  and next TRY;
-	$part =~ s#hr\[([^|\]\[]*)\]#_make_hr($1, '')#ieg
-	  and next TRY;
-	$part =~ s#anchor\[([^|\]\[]*)\]#<a name="$1"></a>#ig
-	  and next TRY;
-	$part =~ s#table\[([^\n\[\]]*)\n([^\[\]]+)\n\s*\]#_make_table($1, $2)#ieg
-	  and next TRY;
-	$part =~ s#table\[([^\]\[]+)\|([^\]\[|]+)\]#_make_table($1, "|$2")#ieg
-	  and next TRY;
-	$part =~ s#\n{0,2}((?:\*\*[^\n]+(?:\n|$)\n?[^\S\n]*)+)\n?#_format_bullets($1)#eg
-	  and next TRY;
-	$part =~ s!\n{0,2}((?:##[^\n]+(?:\n|$)\n?[^\S\n]*)+)\n?!_format_ol($1)!eg
-	  and next TRY;
-	$part =~ s#fontcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#<font size="$1" color="$2">$3</font>#ig
-	  and next TRY;
-	$part =~ s#indent\[([^\]\[]+)\]#<ul>$1</ul>#ig
-	  and next TRY;
-	$part =~ s#center\[([^\]\[]+)\]#<center>$1</center>#ig
-	  and next TRY;
-	$part =~ s#hrcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#<table width="$1" height="$2" border="0" bgcolor="$3" cellpadding="0" cellspacing="0"><tr><td><img src="/images/trans_pixel.gif" width="1" height="1" /></td></tr></table>#ig
-	  and next TRY;
-	$part =~ s#image\[([^\]\[]+)\]#($auto_images = 0), _make_img($1, \$imagePos, \@images)#ige
-	  and next TRY;
-	$part =~ s#class\[([^\]\[\|]+)\|([^\]\[]+)\]#<span class="$1">$2</span>#ig
-	  and next TRY;
-	
-	last;
-      }
-      $part =~ s!\n([ \r]*\n)+!</p><p>!g;
-      $part =~ s/\n/<br \/>/g;
-      $out .= $part;
-    }
-  }
-  $body = $out;
+  $body = $formatter->format($body);
 
   if ($auto_images && @images) {
     # the first image simply goes where we're told to put it
@@ -415,7 +329,7 @@ sub format_body {
 
 	substr($body, $workpos, 0) = <<IMG;
 <img src="/images/$image->{image}" width="$image->{width}" height="$image->{height}"
-border="0" alt="$image->{alt}" align="$align" hspace="10" vspace="10">
+border="0" alt="$image->{alt}" align="$align" hspace="10" vspace="10" />
 IMG
 	$pos -= $incr;
 	$align = $align eq 'right' ? 'left' : 'right';

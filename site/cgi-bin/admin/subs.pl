@@ -51,6 +51,15 @@ else {
   refresh_to($req->url('logon'));
 }
 
+sub tag_recipient_count {
+  my ($subs, $subindex) = @_;
+
+  $$subindex >= 0 && $$subindex < @$subs
+    or return '** subscriber_count only valid inside subscriptions iterator **';
+
+  $subs->[$$subindex]->recipient_count;
+}
+
 sub list {
   my ($q, $req, $cfg, $message) = @_;
 
@@ -65,6 +74,7 @@ sub list {
 				    \$subindex),
      BSE::Util::Tags->secure($req),
      message => sub { CGI::escapeHTML($message) },
+     recipient_count => [ \&tag_recipient_count, \@subs, \$subindex ],
     );
   BSE::Template->show_page('admin/subs/list', $cfg, \%acts);
 }
@@ -466,7 +476,7 @@ sub send_message {
 
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'subs');
   my $id = $q->param('id')
-    or return _refresh_list($q, $cfg, $msgs->(startnoid=>"No id supplied to be edited"));
+    or return _refresh_list($q, $cfg, $msgs->(startnoid=>"No id supplied to be sent"));
   my $sub = BSE::SubscriptionTypes->getByPkey($id)
     or return _refresh_list($q, $cfg, $msgs->(startnosub=>"Cannot find record $id"));
 
@@ -483,15 +493,34 @@ sub send_message {
       or delete $opts{parentId};
   }
 
-  print "Content-Type: text/html\n\n";
-  print "<html><head><title>Send Subscription - BSE</title></head>";
-  print "<body><h2>Send Subscription</h2>\n";
+  my $template = BSE::Template->get_source('admin/subs/sending', $cfg);
+
+  my ($prefix, $permessage, $suffix) = 
+    split /<:\s*iterator\s+(?:begin|end)\s+messages\s*:>/, $template;
+  my $acts_message;
+  my $acts_user;
+  my $is_error;
+  my %acts;
+  %acts =
+    (
+     BSE::Util::Tags->basic(\%acts, $q, $cfg),
+     BSE::Util::Tags->admin(\%acts, $cfg),
+     subscription => sub { escape_html($sub->{$_[0]}) },
+     message => sub { $acts_message },
+     user => sub { $acts_user ? escape_html($acts_user->{$_[0]}) : '' },
+     ifUser => sub { $acts_user },
+     ifError => sub { $is_error },
+    );
+  BSE::Template->show_replaced($prefix, $cfg, \%acts);
   $sub->send($cfg, \%opts,
 	     sub {
-	       print "<div>",CGI::escapeHTML($_[0]),"</div>\n";
+	       my ($type, $user, $msg) = @_;
+	       $acts_message = defined($msg) ? $msg : '';
+	       $acts_user = $user;
+	       $is_error = $type eq 'error';
+	       print BSE::Template->replace($permessage, $cfg, \%acts);
 	     });
-  print qq!<p><a target="_top" href="/cgi-bin/admin/menu.pl">Back to Admin Menu</a></p>\n!;
-  print "</body></html>\n";
+  print BSE::Template->replace($suffix, $cfg, \%acts);
 }
 
 sub req_delconfirm {

@@ -109,6 +109,7 @@ CREATE TABLE image (
   height smallint(5) unsigned,
   url varchar(255),
   displayOrder integer not null default 0,
+  name varchar(255) default '' not null,
 
   PRIMARY KEY (id)
 );

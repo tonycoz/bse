@@ -117,10 +117,12 @@ template_test "concatenate", $top, <<TEMPLATE, <<EXPECTED;
 <:concatenate one two:>
 <:concatenate one "two " three:>
 <:concatenate one [concatenate "two " three]:>
+<:concatenate [concatenate "one" [concatenate "two" "three"]]:>
 TEMPLATE
 onetwo
 onetwo three
 onetwo three
+onetwothree
 EXPECTED
 
 template_test "match", $top, <<'TEMPLATE', <<EXPECTED;

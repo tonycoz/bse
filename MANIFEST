@@ -54,6 +54,7 @@ site/cgi-bin/modules/BSE/EmailBlackEntry.pm
 site/cgi-bin/modules/BSE/EmailBlacklist.pm
 site/cgi-bin/modules/BSE/EmailRequest.pm
 site/cgi-bin/modules/BSE/EmailRequests.pm
+site/cgi-bin/modules/BSE/Formatter.pm
 # site/cgi-bin/modules/BSE/FileEditor.pm
 site/cgi-bin/modules/BSE/Mail.pm
 site/cgi-bin/modules/BSE/Mail/SMTP.pm
@@ -86,6 +87,7 @@ site/cgi-bin/modules/BSE/Util/Tags.pm
 site/cgi-bin/modules/BSE/Util/Valid.pm
 site/cgi-bin/modules/BSE/Version.pm
 site/cgi-bin/modules/Constants.pm
+site/cgi-bin/modules/DevHelp/Formatter.pm
 site/cgi-bin/modules/DevHelp/HTML.pm
 site/cgi-bin/modules/DevHelp/Report.pm
 site/cgi-bin/modules/DevHelp/Tags.pm
@@ -240,6 +242,7 @@ site/templates/admin/showuser_glob.tmpl
 site/templates/admin/subs/delete.tmpl
 site/templates/admin/subs/edit.tmpl
 site/templates/admin/subs/list.tmpl
+site/templates/admin/subs/sending.tmpl
 site/templates/admin/subs/send_form.tmpl
 site/templates/admin/subs/start_send.tmpl
 site/templates/admin/userlist.tmpl
@@ -313,6 +316,7 @@ site/util/mysql.str
 site/util/upgrade_mysql.pl
 t/BSE/Test.pm
 t/t00smoke.t
+t/t050format.t
 t/t10edit.t
 t/t20gen.t
 t/t30rules.t	Check for use strict and warnings

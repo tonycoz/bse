@@ -508,11 +508,13 @@ sub secure {
 }
 
 sub tag_error_img {
-  my ($cfg, $errors, $args) = @_;
+  my ($cfg, $errors, $args, $acts, $func, $templater) = @_;
 
-  return '' unless $errors->{$args};
+  my ($arg) = DevHelp::Tags->get_parms($args, $acts, $templater);
+  #print STDERR "name $arg\n";
+  return '' unless $errors->{$arg};
   my $images_uri = $cfg->entry('uri', 'images', '/images');
-  my $encoded = escape_html($errors->{$args});
+  my $encoded = escape_html($errors->{$arg});
   return qq!<img src="$images_uri/admin/error.gif" alt="$encoded" title="$encoded" border="0" align="top" />!; 
 }
 
