@@ -16,7 +16,7 @@ my @prebuilt =
     parentid=>-1,
     displayOrder=>100, # doesn't matter
     title=>"My site's title",
-    titleImage=>'your_site.gif',
+    titleImage=>'',
     body=>'',
     imagePos=>'tr',
     release=>'0000-00-00 00:00:00',
@@ -33,7 +33,7 @@ my @prebuilt =
     thumbWidth=>0,
     thumbHeight=>0,
     level=>1,
-    listed=>1,
+    listed=>0,
    },
    {
     # the invisible subsection for what's hot
@@ -65,7 +65,7 @@ my @prebuilt =
     parentid=>-1,
     displayOrder=>10000,
     title=>'The Shop',
-    titleImage=>'the_shop.gif',
+    titleImage=>'',
     body=>'You can buy things here',
     imagePos=>'tr',
     release=>'0000-00-00 00:00:00',
@@ -120,7 +120,7 @@ my @prebuilt =
     expire=>'9999-12-31 23:59:59',
     lastModified=>'2000-11-27 14:00:00',
     keyword=>'',
-    template=>'sidebar_section.tmpl',
+    template=>'common/sidebar_section.tmpl',
     link=>'',
     admin=>$CGI_URI.'/admin/add.pl?id=5',
     threshold=>1000, # ignored
@@ -138,7 +138,7 @@ my @prebuilt =
     displayOrder=>10000,
     title=>'[formatting guide]',
     titleImage=>'',
-    body=><<EOS,
+    body=><<'EOS',
 anchor[basic] b[Sample basic formatting:]
 indent[link[/a/8.html|regular link text]
 
