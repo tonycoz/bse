@@ -14,6 +14,7 @@ sub new {
 sub perform {
   my ($self, $acts, $func, $args, $orig) = @_;
 
+  $args = '' unless defined $args;
   my $fmt;
   if ($acts->{_format} && $args =~ s/\|([\w%]+)\s*$//) {
     $fmt = $1;

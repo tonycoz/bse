@@ -1,5 +1,4 @@
-#!/usr/bin/perl -w -d:ptkdb
-BEGIN { $ENV{DISPLAY} = '192.168.32.97:0.0'; }
+#!/usr/bin/perl -w
 
 use strict;
 use FindBin;
@@ -88,6 +87,12 @@ my $id = param('id');
 if ($id) {
   $product = Products->getByPkey($id);
 }
+else {
+  my $parentid = param('parentid');
+  if ($parentid) {
+    $product = { parentid=>$parentid };
+  }
+}
 my %acts;
 %acts = 
   (
@@ -103,7 +108,7 @@ my %acts;
 
 my $imageEditor = Squirrel::ImageEditor->new(session=>\%session,
 					     extras=>\%acts,
-					     keep => [ 'id' ]);
+					     keep => [ qw/id parentid/ ]);
 
 if ($imageEditor->action($CGI::Q)) {
   exit;
@@ -608,7 +613,7 @@ sub order_list_low {
   my $from = param('from');
   my $to = param('to');
   use BSE::Util::SQL qw/now_sqldate sql_to_date date_to_sql/;
-  use BSE::Util::Valid qw/valid_date/
+  use BSE::Util::Valid qw/valid_date/;
   my $today = now_sqldate();
   for my $what ($from, $to) {
     if (defined $what) {

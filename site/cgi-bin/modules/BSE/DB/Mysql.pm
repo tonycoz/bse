@@ -8,6 +8,8 @@ use Constants 0.1 qw/$DSN $UN $PW/;
 
 use Carp;
 
+my $self;
+
 $VERSION = 1.01;
 
 my %statements =
@@ -115,12 +117,13 @@ sub insert_id {
 # gotta love this
 sub DESTROY
 {
+  my ($self) = @_;
   # this is wierd - we only need to reset this on 5.6.x (for x == 0 so
   # far)
   # Works fine without the reset for 5.005_03
-  if ($dbh) {
-    $dbh->disconnect;
-    undef $dbh;
+  if ($self->{dbh}) {
+    $self->{dbh}->disconnect;
+    delete $self->{dbh};
   }
 }
 

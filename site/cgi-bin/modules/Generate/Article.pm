@@ -149,7 +149,17 @@ sub baseActs {
        my $which = shift || 'article';
        return $acts->{$which} && $acts->{$which}->('thumbImage');
      },
-     ifUnderThreshold => sub { @children <= $article->{threshold} },
+     ifUnderThreshold => 
+     sub { 
+       if ($article->{threshold} !~ /\d/) {
+	 use Data::Dumper;
+	 use Carp qw/cluck/;
+	 print STDERR Dumper($article);
+	 cluck 'Why is a template name in \$article->{threshold}?';
+       }
+
+       @children <= $article->{threshold};
+     },
      ifChildren => sub { scalar @children },
      summary =>
      sub {

@@ -800,12 +800,12 @@ sub send_order {
 
     $mailer->send(to=>$toEmail, from=>$from, subject=>'New Order '.$order->{id},
 		  body=>$crypted)
-      or do { print "Content-Type: text/plain\n\nError: ",$mailer->errstr,"\n"; exit };
+      or print STDERR "Error sending order to admin: ",$mailer->errstr,"\n";
   }
   $mailer->send(to=>$order->{emailAddress}, from=>$from,
 		subject=>$subject . " " . localtime,
 		body=>$confirm)
-    or do { print "Content-Type: text/plain\n\nError: ",$mailer->errstr,"\n"; exit };
+    or print STDERR "Error sending order to customer: ",$mailer->errstr,"\n";
 }
 
 sub page {

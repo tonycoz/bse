@@ -1,6 +1,4 @@
-#!/usr/bin/perl -w 
-#-d:ptkdb
-#BEGIN { $ENV{DISPLAY} = '192.168.32.97:0.0'; }
+#!/usr/bin/perl -w
 
 use strict;
 use FindBin;
@@ -81,7 +79,7 @@ my %acts;
 
 my $imageEditor = Squirrel::ImageEditor->new(session=>\%session, 
 					     extras=>\%acts,
-					     keep=>[ 'id', 'level' ]);
+					     keep=>[ qw/id level parentid/ ]);
 
 if (defined $id && $id) {
   if ($id != -1) {

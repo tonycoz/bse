@@ -21,6 +21,7 @@ new order_list templates from adrian (moved the filter forms into the table)
 =item *
 
 fixed the image wizard for products.  I'm suprised this ever worked.
+Wasn't preserving parentid when creating a new product.
 
 =item *
 
@@ -57,6 +58,12 @@ old tag on the confirm tag now never gives the undef value message
 if you specify a embedding depth less than the current maximum, you
 won't get an error message embedded when passing that depth.  This
 lets you do more interesting effects.
+
+=item *
+
+shop.pl now writes mail sending errors to STDERR (to the error log on
+apache) rather than aborting the order display (since the order
+actually exists at this point.)
 
 =back
 
@@ -650,13 +657,14 @@ article objects available in the template.
 Tony Cook <tony@develop-help.com>
 
 I originally wrote BSE while an employee at SquirrelWeb
-http://www.squirrelweb.com.au/ for http://www.bodyscoop.com.au/
+(http://www.squirrelgroup.com/) for one of VisualThought's clients,
+bodyScoop.com (http://www.bodyScoop.com.au/).
 
 Most of the BSE templates were created by Adrian Oldham of Visual
-Thought Communications <bse@visualthought.com.au>.  He also funded
-and suggested many improvements.
+Thought Communications (http://www.visualthought.com.au) He also
+funded and suggested many improvements.
 
-Realware Systems http://www.realware.com.au/ funded the nested
+Realware Systems (http://www.realware.com.au/) funded the nested
 catalogs, IIS support, the image access tags, and many other shop
 improvements, including most of the BSE::Custom hooks.
 

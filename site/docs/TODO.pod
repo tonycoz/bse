@@ -65,18 +65,47 @@ used to override image sizes.)
 =item *
 
 move most of the shop.pl code into modules to make it more accessible
-from other scripts (especially for custom card payment.)
+from other scripts (especially for custom card payment.)  The first
+steps towards this have been made, see BSE::Util::Shop.  The shop.pl
+code will be modified to use these functions.
 
 =item *
 
 make the shopadmin product list better.  The nested catalog display
-sucks.
+sucks, especially in Netscape.  Some possible options:
+
+=over
+
+=item *
+
+make it act like some tree controls - with expanding and unexpanding
+subtrees
+
+=item *
+
+we have a mix of buttons and links, maybe they should all be links
+
+=item *
+
+sometimes the tree structure isn't clear - either some way of
+presenting lines making the tree, or some other method, like nested
+boxes (using tables?) to show the tree structure.
+
+=back
+
+=item *
+
+better handling of title images?  the ability to call a generator function
+or script? (cool use for Imager. :)
 
 =item *
 
 some form of error handling that deals well with IIS' broken handling
 of STDERR.  Sometimes it seems to drop it, sometimes it seems to write
 it to the web page.
+
+This is especially a problem for errors in the mail sending code,
+since these can fail when an invalid address is supplied.
 
 =item *
 
