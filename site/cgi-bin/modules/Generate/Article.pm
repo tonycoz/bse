@@ -109,7 +109,7 @@ sub baseActs {
   # separate these so the closures can see %acts
   my %acts =
     (
-     $self->SUPER::baseActs($articles, $acts, $article),
+     $self->SUPER::baseActs($articles, $acts, $article, $embedded),
      article=>sub { CGI::escapeHTML($article->{$_[0]}) },
      ifTitleImage => 
      sub { 
