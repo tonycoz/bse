@@ -1,0 +1,140 @@
+<html>
+<head>
+<title>Advanced Search</title>
+<meta name="ROBOTS" content="ALL">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Expires" content="Thu, 01 Jan 1970 00:00:00 GMT">
+<link rel="stylesheet" href="/css/style-main.css">
+
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#333399" vlink="#333399" alink="#CC0033" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr valign="top"> 
+    <td width="150"><!-- #BeginLibraryItem "/Library/search.lbi" --><table width="100%" border="0" cellspacing="0" cellpadding="5" name="search">
+              <tr align="center"> 
+                <td> 
+                  <form name="search" method="GET" action="/cgi-bin/search.pl">
+                    <input type="hidden" name="s" value="">
+                    <input type="hidden" name="d" value="ar">
+                    <input type="hidden" name="m" value="0">
+                    <br>
+                    <nobr> 
+                    <input type="text" name="q" size="14">
+                    <input type="submit" value="Go" name="submit">
+                    <br>
+                    <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"> 
+                    Try our <a href="/cgi-bin/search.pl">advanced search</a></font></nobr> 
+                  </form></td></tr>
+            </table><!-- #EndLibraryItem --> <!-- #BeginLibraryItem "/Library/nav.lbi" --><table width="150" border="0" cellspacing="0" cellpadding="0" name="nav">
+        <tr> 
+          <td> <:iterator begin level1:> <:if Level2:> 
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr> 
+                <td> 
+                  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                    <tr bgcolor="#CCCCFF"> 
+                      <td height="20" width="100%" nowrap><font class="nav_head" face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>&nbsp;<a href="<:url level1:>"><:level1 
+                        title:></a></b></font></td></tr>
+                  </table></td></tr>
+              <tr> 
+                <td> 
+                  <table width="100%" border="0" cellspacing="0" cellpadding="5">
+                    <tr> 
+                      <td> <font class="nav_link" face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:iterator 
+                        begin level2:><a href="<:url level2:>"><:level2 title:></a> 
+                        <:iterator separator level2:><br>
+                        <img src="/images/trans_pixel.gif" width="2" height="4" border="0"><br>
+                        <:iterator end level2:> </font></td></tr>
+                  </table></td></tr>
+            </table><:or Level2:> 
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr> 
+                <td> 
+                  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                    <tr bgcolor="#CCCCFF"> 
+                      <td height="20" width="100%" nowrap><font class="nav_head" face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>&nbsp;<a href="<:url level1:>"><:level1 
+                        title:></a></b></font></td></tr>
+                  </table></td></tr>
+            </table><br>
+            <:eif Level2:><:iterator separator level1:><:iterator end level1:> 
+          </td></tr>
+      </table><!-- #EndLibraryItem --></td>
+    <td width="100%"><font class="section_Heading" face="Verdana, Arial, Helvetica, sans-serif" size="5" color="#6600FF"><b><:titleImage advanced_search.gif Advanced Search:></b></font>
+      <hr noshade width="100%" size="1">
+      <form name="search" method="GET" action="/cgi-bin/search.pl">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+          <tr> 
+            <td width="70"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"> 
+              <b>Keywords:</b>&nbsp;</font></td>
+            <td width="10">&nbsp;</td>
+            <td width="100%"> 
+              <input type="text" name="q" size="45" value="<:terms:>">
+              &nbsp; 
+              <input type="submit" accesskey="s" value="Search" name="submit">
+            </td>
+          </tr>
+          <tr> 
+            <td width="70" height="5"><img src="/images/trans_pixel.gif" width="1" height="5"></td>
+            <td width="10" height="5"><img src="/images/trans_pixel.gif" width="1" height="5"></td>
+            <td width="100%" height="5"><img src="/images/trans_pixel.gif" width="1" height="5"></td>
+          </tr>
+          <tr> 
+            <td width="70"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"> 
+              <b>Search: </b></font></td>
+            <td width="10">&nbsp; </td>
+            <td width="100%"> <:list:> &nbsp; <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"> 
+              <b>Date:&nbsp;</b></font> 
+              <select name="d">
+                <option value="ar" <:dateSelected ar:>>All Current</option>
+                <option value="r1" <:dateSelected r1:>>Released Today</option>
+                <option value="r7" <:dateSelected r7:>>Released within last 7 
+                days</option>
+                <option value="e7" <:dateSelected e7:>>Archived within last 7 
+                days</option>
+                <option value="e30" <:dateSelected e30:>>Archived within last 
+                30 days</option>
+                <option value="ae" <:dateSelected ae:>>Archives</option>
+              </select>
+            </td>
+          </tr>
+        </table>
+      </form>
+      <:if Search:> <: if Results:> 
+      <p> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> <:count:> 
+        <:if Multiple:>documents<:or Multiple:>document<:eif Multiple:> matched 
+        your search requirements:</font></p>
+      <: iterator begin results:> 
+      <dl> 
+        <dt> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> <b> 
+          <:resultSeq:> . </b></font> <font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#660033"> 
+          <b><a href="<:articleurl:>"><:article title:></a></b></font> 
+        <dd> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> <:excerpt:></font> 
+          <br>
+          <font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#808080"> 
+          Last modified on: <:date article lastModified:></font> <:if Keywords:> 
+          <br>
+          <font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#808080"> 
+          Keywords: <:keywords:></font><:or Keywords:><:eif Keywords:> 
+      </dl>
+      <: iterator separator results:> <: iterator end results:> 
+      <hr noshade size="1" width="100%">
+      <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Result Pages: 
+      | <: iterator begin pages:> <: if CurrentPage:> <b><:page:></b> | <: or CurrentPage:> 
+      <a href="<:pageurl:>"><:page:></a> | <: eif CurrentPage:> <: iterator separator 
+      pages:> <: iterator end pages:> </font> <: or Results:> 
+      <p> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> No documents 
+        were found that matched your search results.</font></p>
+      <: eif Results:> <:or Search:> 
+      <p> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> All lower 
+        case will search case insensitively, if an upper case character is present 
+        in a word then that word will be searched case sensitively. Results are 
+        returned if any one of the words is found in the document. You can group 
+        words using single or double quotes to find things like "health food". 
+        </font></p>
+      <:eif Search:> </td>
+  </tr>
+</table>
+</body>
+</html>
+

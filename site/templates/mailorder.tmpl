@@ -1,0 +1,25 @@
+A new order has arrived:
+
+Order: <:order id |%06d:>
+
+Delivery: <:order delivFirstName :> <:order delivLastName :>
+          <:order delivStreet:>
+          <:order delivSuburb:> <:order delivPostCode:> <:order delivState:>
+          <:order delivCountry:>
+
+Phone   : <:order telephone:>
+Fax     : <:order facsimile:>
+Email   : <:order emailAddress:>
+
+Product                                   Units  Price   Extended
+-----------------------------------------------------------------
+<:iterator begin items:><:product title |42:><:item units|%2d:><:item price |m10:><:extended price|m11:>
+<:iterator separator items:><:iterator end items 
+:>-----------------------------------------------------------------
+                                                Total: <:order total |m10:>
+						  GST: <:order gst   |m10:>
+
+Card No.     : <:cardNumber:>
+Expires      : <:cardExpiry:>
+Name on Card : <:order ccName:>
+Card Type    : <:order ccType :>

@@ -1,0 +1,6 @@
+# other templates not within the system
+# used to generate side menus
+# format:
+# input output
+# input - the name of the template, no directory
+# output - name of the output file, based on the CONTENTBASE
