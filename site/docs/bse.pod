@@ -87,7 +87,7 @@ trying to call "site users" "site members" now.
 
 you can now select subscriptions for a site member with the admin
 tool.  This still results in a confirmation email if the user hasn't
-been confirmed at their email address.
+been confirmed at their email address. (#293)
 
 =back
 
