@@ -129,7 +129,7 @@ if (!$article) {
       }
     }
     else {
-      $level ||= 1;
+      $level = 1;
       $article->{parentid} = -1;
     }
   }
@@ -953,7 +953,7 @@ sub should_be_catalog {
     $parent = $articles->getByPkey($article->{id});
   }
 
-  return $article->{parentid} &&
+  return $article->{parentid} && $parent &&
     ($article->{parentid} == $SHOPID || 
      $parent->{generator} eq 'Generate::Catalog');
 }

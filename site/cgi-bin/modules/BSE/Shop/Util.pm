@@ -42,6 +42,8 @@ sub shop_cart_tags {
      option => sub { CGI::escapeHTML($options[$option_index]{$_[0]}) },
      ifOptions => sub { @options },
      options => sub { nice_options(@options) },
+     BSE::Custom->checkout_actions($acts, $cart, $cart_prods, 
+				   $session{custom}, $q),
     );  
 }
 

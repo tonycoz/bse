@@ -50,7 +50,7 @@ sub date_to_sql {
 
   my ($day, $month, $year) = $date =~ /(\d+)\D+(\d+)\D+(\d+)/;
 
-  return "$year-$month-$day";
+  return sprintf("%04d-%02d-%02d", $year, $month, $day);
 }
 
 sub sql_to_date {

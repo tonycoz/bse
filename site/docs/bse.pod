@@ -10,6 +10,29 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.10_11
+
+=over
+
+=item *
+
+support for filtering the order lists by dates entered by the user
+
+=item *
+
+make the add section link work, and make the link itself a little more 
+usable
+
+=item *
+
+removed some old debug code
+
+=item *
+
+make BSE::Custom->checkout_actions() work on the confirmation page
+
+=back
+
 =head2 0.10_10
 
 =over

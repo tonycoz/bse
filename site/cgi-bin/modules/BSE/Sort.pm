@@ -46,10 +46,7 @@ sub bse_sort {
 	  elsif ($op ne '=~' && $opts =~ s/\s*(\d+)//) {
 	    my $value = $1;
 	    if ($op eq '==') {
-	      push(@filters, sub { 
-		     use Data::Dumper;
-		     print STDERR Dumper($_), "value $value\n";
-		     $_->{$field} == $value });
+	      push(@filters, sub { $_->{$field} == $value });
 	    }
 	    elsif ($op eq '!=') {
 	      push(@filters, sub { $_->{$field} != $value });
@@ -147,3 +144,5 @@ __END__
 
 A function intended to be used from iterator reset functions.  Can be used
 to filter and the objects to be iterated over.
+
+=cut

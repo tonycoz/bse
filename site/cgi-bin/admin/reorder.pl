@@ -75,9 +75,6 @@ if ($reverse) {
 }
 if ($code) {
   @kids = sort $code @kids;
-  use Data::Dumper;
-  print STDERR Dumper(\@kids);
-  print STDERR Dumper(\@order);
   for my $i (0..$#kids) {
     my $kid = $kids[$i];
     $kid->[1]{$kid->[2]} = $order[$i];

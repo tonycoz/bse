@@ -15,9 +15,6 @@ my @actions = qw(artimg addimg showimages process);
 sub action {
   my ($self, $query) = @_;
 
-  use Data::Dumper;
-  #print STDERR "Images ",Dumper($self->{session}{images});
-
   for my $action (@actions) {
     if (defined $query->param($action)) {
       $self->$action($query);
@@ -44,9 +41,6 @@ sub action {
 
 sub set {
   my ($self, $images, $image_pos) = @_;
-
-  #use Data::Dumper;
-  #print STDERR "set ",Dumper($images);
 
   $self->{session}{images} = [ @$images ];
   $self->{session}{imagePos} = $image_pos;
@@ -194,7 +188,6 @@ sub addimg {
 sub remove_img {
   my ($self, $query, $index) = @_;
   my @images = $self->images();
-  use Data::Dumper;
   my ($image) = splice(@images, $index, 1);
   unlink "$IMAGEDIR$image->{image}" if !$image->{id};
   $self->{session}{images} = \@images;
