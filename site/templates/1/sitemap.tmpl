@@ -62,18 +62,19 @@
       </table><!-- #EndLibraryItem --></td>
     <td width="100%"><font class="section_Heading" face="Verdana, Arial, Helvetica, sans-serif" size="5" color="#6600FF"><b><:title:></b></font>
       <hr noshade width="100%" size="1">
-      <:admin:> 
-<:iterator begin level1:>
-<p><a href="<:url level1:>"><:level1 title:></p>
-<:if Level2:>
-<ul>
-<:iterator begin level2:>
-<:embed level2 lowmap.tmpl 3:>
-<:iterator end level2:>
-</ul>
-<:or Level2:><:eif Level2:>
-<:iterator end level1:>
-
+      <:admin:>
+      <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font></p>
+      <:iterator begin level1:> 
+      <p><a href="<:url level1:>"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b><:level1 
+        title:></b></font></a></p>
+      <:if Level2:> 
+      <ul>
+        <:iterator begin level2:><:embed level2 lowmap.tmpl 5:><:iterator end 
+        level2:> 
+      </ul>
+      <:or Level2:><:eif Level2:> <:iterator end level1:> 
+      <p><a href="/cgi-bin/search.pl"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>Search</b></font></a></p>
+           
     </td>
   </tr>
 </table>
