@@ -10,6 +10,21 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.10_02
+
+=over
+
+=item *
+
+added the image[] tag  (image[index|align|url])
+
+=item *
+
+added printable.pl, site/templates/printable/printable.tmpl to allow
+printable versions of pages (among other things)
+
+=back
+
 =head2 0.10_01
 
 =over
