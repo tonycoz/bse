@@ -6,22 +6,38 @@
 <meta http-equiv="Expires" content="Thu, 01 Jan 1970 00:00:00 GMT">
 <link rel="stylesheet" href="/css/style-main.css">
 </head>
-<body bgcolor="#FFFFCC" text="#000000" link="#333399" vlink="#333399" alink="#CC0033">
-
+<body bgcolor="#FFFFFF" text="#000000" link="#333333" vlink="#333333" alink="#FF7F00">
+<table width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#666666">
+  <tr> 
+    <td width="100%" height="34">&nbsp;&nbsp;&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#FFFFFF"><b>Welcome 
+      to <:siteName:></b></font></td>
+  </tr>
+</table>
+<table border="0" cellspacing="1" cellpadding="5" width="100%">
+  <tr> 
+    <td align="center" bgcolor="#CCCCCC" nowrap><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><a href="<:ifAdmin:>/cgi-bin/admin/admin.pl?id=1<:or:>/<:eif:>">Home</a></font></b></td>
+    <:iterator begin level1:> 
+    <td align="center" bgcolor="#CCCCCC" nowrap><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><a href="<:url level1:>"><:level1 
+      title:></a></font></b></td>
+    <:iterator end level1:> 
+    <td align="center" bgcolor="#EEEEEE" width="100%">&nbsp;</td>
+  </tr>
+</table>
+<br>
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <tr> 
-    <td bgcolor="#CCCCFF" width="80%" height="24">&nbsp;&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="4"><b><:title:></b></font></td>
+    <td width="80%" height="24">&nbsp;&nbsp;<font face="Arial, Helvetica, sans-serif" size="4"><b><:title:></b></font></td>
     <td height="24">&nbsp;</td>
   </tr>
   <tr> 
-    <td bgcolor="#999999" colspan="2" height="1"><img src="/images/trans_pixel.gif" width="24" height="1" border="0"></td>
+    <td colspan="2" height="1" bgcolor="#999999"><img src="/images/trans_pixel.gif" width="24" height="1" border="0"></td>
   </tr>
   <tr> 
     <td colspan="2"> 
       <table width="100%" border="0" cellspacing="0" cellpadding="0">
         <tr> 
           <td width="100"><img src="/images/trans_pixel.gif" width="100" height="10" border="0"></td>
-          <td bgcolor="#333399" width="100%">&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2">/ 
+          <td bgcolor="#999999" width="100%">&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2">/ 
             <a href="<:ifAdmin:>/cgi-bin/admin/admin.pl?id=1<:or:>/<:eif:>"><font color="#FFFFFF">Home</font></a> 
             / <:iterator begin crumbs:> <a href="<:url crumbs:>"><font color="#FFFFFF"><:crumbs 
             title:></font></a> / <:iterator end crumbs:></font></td>
@@ -30,15 +46,8 @@
     </td>
   </tr>
 </table>
-<br>
-<table width="100%" border="0" cellspacing="0" cellpadding="5" bgcolor="#FFFF99">
-  <tr> <:iterator begin level1:> 
-    <td align="center"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><a href="<:url level1:>"><:level1 
-      title:></a></font></b></td>
-    <:iterator end level1:> </tr>
-</table>
 <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font></p>
-<:if UnderThreshold:><:iterator begin children:><:embed child:><:iterator 
+<:embed end:><:if UnderThreshold:><:iterator begin children:><:embed child:><:iterator 
 separator children:><br>
 <:iterator end children:> <:or UnderThreshold:> <:iterator begin children:> 
 <p><a href="<:url child:>"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><:child 
@@ -47,7 +56,6 @@ separator children:><br>
   Child:><:eif Child:></p>
 <:iterator separator children:><:iterator end children:><:eif UnderThreshold:> 
 <hr noshade size="1">
-<div align="right"><font face="Verdana, Arial, Helvetica, sans-serif" size="1">bse 
-  content engine 2001</font></div>
+<div align="right"><font face="Verdana, Arial, Helvetica, sans-serif" size="1"><:siteName:> - <a href="http://www.visualthought.com.au/">vtc&copy;2002</a></font></div>
 </body>
 </html>

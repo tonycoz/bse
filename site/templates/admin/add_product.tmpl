@@ -4,7 +4,9 @@
 <body>
 <h1>Shop Administration</h1>
 <h2><:action:> Product</h2>
-<:ifMessage:><p><:message:> </p><:or:><:eif:>
+<:ifMessage:>
+<p><b><:message:> </b></p>
+<:or:><:eif:> 
 <p>| <a href="/admin/">Admin menu</a> | <a href="<:script:>">Product list</a> | 
 </p>
 
@@ -16,73 +18,73 @@
       <td>
         <table border=0 cellspacing="1" cellpadding="6">
           <tr> 
-            <th nowrap align="left">Title*:</th>
+            <th nowrap align="left" bgcolor="#FFFFFF">Title*:</th>
             <td nowrap bgcolor="#FFFFFF"> 
               <input type="text" name="title" value="<:product title:>" size=60>
             </td>
           </tr>
           <tr> 
-            <th nowrap align="left">Summary*:</th>
+            <th nowrap align="left" bgcolor="#FFFFFF">Summary*:</th>
             <td nowrap bgcolor="#FFFFFF"> 
               <input type="text" name="summary" value="<:product summary:>" size=60>
             </td>
           </tr>
           <tr> 
-            <th nowrap align="left">Catalog:</th>
+            <th nowrap align="left" bgcolor="#FFFFFF">Catalog:</th>
             <td nowrap bgcolor="#FFFFFF"> 
               <:catalogs:>
             </td>
           </tr>
           <tr> 
-            <th nowrap align="left">Body:<:help body body:></th>
+            <th nowrap align="left" bgcolor="#FFFFFF">Body:<:help body body:></th>
             <td nowrap bgcolor="#FFFFFF"> 
               <textarea name="body" rows=15 cols=60 wrap=virtual><:product body:></textarea>
             </td>
           </tr>
           <tr> 
-            <th nowrap align="left">Lead time:</th>
+            <th nowrap align="left" bgcolor="#FFFFFF">Lead time:</th>
             <td nowrap bgcolor="#FFFFFF"> 
               <input type="text" name="leadTime" value="<:product leadTime:>" size=5>
               days</td>
           </tr>
           <tr> 
-            <th nowrap align="left">Retail price:</th>
+            <th nowrap align="left" bgcolor="#FFFFFF">Retail price:</th>
             <td nowrap bgcolor="#FFFFFF">$ 
               <input type="text" name="retailPrice" value="<:money retailPrice:>" size=7>
               (0.00)</td>
           </tr>
           <tr> 
-            <th nowrap align="left">Wholesale price:</th>
+            <th nowrap align="left" bgcolor="#FFFFFF">Wholesale price:</th>
             <td nowrap bgcolor="#FFFFFF">$ 
               <input type="text" name="wholesalePrice" value="<:money wholesalePrice:>" size=7>
               (0.00)</td>
           </tr>
           <tr> 
-            <th nowrap align="left">GST:</th>
+            <th nowrap align="left" bgcolor="#FFFFFF">GST:</th>
             <td nowrap bgcolor="#FFFFFF">$ 
               <input type="text" name="gst" value="<:money gst:>" size=7>
               (0.00)</td>
           </tr>
           <tr> 
-            <th nowrap align="left">Release date:</th>
+            <th nowrap align="left" bgcolor="#FFFFFF">Release date:</th>
             <td nowrap bgcolor="#FFFFFF"> 
               <input type="text" name="release" value="<:date product release:>" size=11>
               (dd/mm/yyyy)</td>
           </tr>
           <tr> 
-            <th nowrap align="left">Expiry date:</th>
+            <th nowrap align="left" bgcolor="#FFFFFF">Expiry date:</th>
             <td nowrap bgcolor="#FFFFFF"> 
               <input type="text" name="expire" value="<:date product expire:>" size=11>
               (dd/mm/yyyy)</td>
           </tr>
           <tr> 
-            <th align="left">Options:</th>
+            <th align="left" bgcolor="#FFFFFF">Options:</th>
             <td bgcolor="#FFFFFF"> 
               <input type="text" name="options" value="<:product options:>" size=30> (<:alloptions:>)
               </td>
           </tr>
           <tr>
-            <th nowrap align="left">Thumbnail image:</th>
+            <th nowrap align="left" bgcolor="#FFFFFF">Thumbnail image:</th>
             <td nowrap bgcolor="#FFFFFF">
               <input type="file" name="thumbnail">
             </td>
@@ -92,7 +94,7 @@
     </tr>
   </table>
   <p><font size="-1">*These fields cannot be modified once you save this form.</font></p>
-<input type=submit name="save_product" value="Save">
+  <input type=submit name="save_product" value="Save product">
 </form>
 <p><font size="-1">BSE Release <:release:></font></p>
 </body>

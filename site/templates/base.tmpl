@@ -8,11 +8,17 @@
 
 </head>
 
-<body bgcolor="#FFFFCC" text="#000000" link="#333399" vlink="#333399" alink="#CC0033" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
+<body bgcolor="#FFFFFF" text="#000000" link="#666666" vlink="#666666" alink="#FF7F00" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
+<table width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#FF7F00">
+  <tr> 
+    <td width="100%" height="34">&nbsp;&nbsp;&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b>Welcome 
+      to <:siteName:></b></font></td>
+  </tr>
+</table>
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <tr valign="top"> 
     <td width="150"> 
-      <table width="100%" border="0" cellspacing="0" cellpadding="5" name="search" bgcolor="#FFFF99">
+      <table width="100%" border="0" cellspacing="0" cellpadding="5" name="search" bgcolor="#EEEEEE">
         <tr align="center"> 
           <td> 
             <form name="search" method="GET" action="/cgi-bin/search.pl">
@@ -22,14 +28,18 @@
               <br>
               <nobr> 
               <input type="text" name="q" size="14">
-              <input type="submit" value="Go" name="submit">
+              <input type="submit" value="Go" name="submit" class="user-buttons">
               <br>
               <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"> Try 
               our <a href="/cgi-bin/search.pl">advanced search</a></font></nobr> 
             </form>
           </td>
         </tr>
-      </table>
+      </table><table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr>
+                <td><img src="/images/trans_pixel.gif" width="1" height="1" alt="spacer"></td>
+              </tr>
+            </table>
       <table width="150" border="0" cellspacing="0" cellpadding="0" name="nav">
         <tr> 
           <td> 
@@ -38,20 +48,22 @@
                 <td> 
                   <table width="100%" border="0" cellspacing="0" cellpadding="0">
                     <tr bgcolor="#CCCCFF"> 
-                      <td height="20" width="100%" nowrap bgcolor="#FFFF99">&nbsp;<a href="<:ifAdmin:>/cgi-bin/admin/admin.pl?id=1<:or:>/<:eif:>"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Home</font></b></a></td>
+                      <td height="20" width="100%" nowrap bgcolor="#CCCCCC">&nbsp;<a href="<:ifAdmin:>/cgi-bin/admin/admin.pl?id=1<:or:>/<:eif:>"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Home</font></b></a></td>
                     </tr>
                   </table>
                 </td>
               </tr>
+              <tr>
+                <td><img src="/images/trans_pixel.gif" width="1" height="1" alt="spacer"></td>
+              </tr>
             </table>
-            <br>
             <:iterator begin level1:> <:if Level2:> 
             <table width="100%" border="0" cellspacing="0" cellpadding="0">
               <tr> 
                 <td> 
                   <table width="100%" border="0" cellspacing="0" cellpadding="0">
                     <tr bgcolor="#CCCCFF"> 
-                      <td height="20" width="100%" nowrap bgcolor="#FFFF99">&nbsp;<a href="<:url level1:>"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:level1 
+                      <td height="19" width="100%" nowrap bgcolor="#CCCCCC">&nbsp;<a href="<:url level1:>"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:level1 
                         title:></font></b></a> </td>
                     </tr>
                   </table>
@@ -61,7 +73,7 @@
                 <td> 
                   <table width="100%" border="0" cellspacing="0" cellpadding="5">
                     <tr> 
-                      <td bgcolor="#FFFFCC"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:iterator 
+                      <td bgcolor="#EEEEEE"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:iterator 
                         begin level2:><a href="<:url level2:>"><:level2 title:></a> 
                         <:iterator separator level2:><br>
                         <img src="/images/trans_pixel.gif" width="2" height="4" border="0"><br>
@@ -70,6 +82,9 @@
                   </table>
                 </td>
               </tr>
+              <tr> 
+                <td><img src="/images/trans_pixel.gif" width="1" height="1" alt="spacer"></td>
+              </tr>
             </table>
             <:or Level2:> 
             <table width="100%" border="0" cellspacing="0" cellpadding="0">
@@ -77,32 +92,36 @@
                 <td> 
                   <table width="100%" border="0" cellspacing="0" cellpadding="0">
                     <tr bgcolor="#CCCCFF"> 
-                      <td height="20" width="100%" nowrap bgcolor="#FFFF99">&nbsp;<a href="<:url level1:>"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:level1 
+                      <td height="20" width="100%" nowrap bgcolor="#CCCCCC">&nbsp;<a href="<:url level1:>"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:level1 
                         title:></font></b></a></td>
+                    </tr>
+                    <tr> 
+                      <td><img src="/images/trans_pixel.gif" width="1" height="1" alt="spacer"></td>
                     </tr>
                   </table>
                 </td>
               </tr>
             </table>
-            <br>
             <:eif Level2:><:iterator separator level1:><:iterator end level1:> 
             <:embed 5:> </td>
         </tr>
       </table>
     </td>
-    <td width="20"><img src="/images/trans_pixel.gif" width="20" height="5"></td>
-    <td width="100%"> 
-      <p><:wrap here:></p>
-      <div align="right"></div>
+    <td width="20"><img src="/images/trans_pixel.gif" width="20" height="5" alt="#"></td>
+    <td width="100%"> <br>
+      <:wrap here:>
+<div align="right">
+        <p>&nbsp;</p>
+        <p>&nbsp;</p>
+      </div>
     </td>
-    <td width="20"><img src="/images/trans_pixel.gif" width="20" height="5"></td>
+    <td width="20"><img src="/images/trans_pixel.gif" width="20" height="5" alt="#"></td>
   </tr>
   <tr valign="top"> 
     <td width="150">&nbsp;</td>
     <td colspan="2">
       <hr noshade size="1">
-      <div align="right"><font face="Verdana, Arial, Helvetica, sans-serif" size="1">bse 
-        content engine 2001</font></div>
+      <div align="right"><font face="Verdana, Arial, Helvetica, sans-serif" size="1"><:siteName:> - <a href="http://www.visualthought.com.au/">vtc&copy;2002</a></font></div>
     </td>
     <td width="20">&nbsp;</td>
   </tr>

@@ -1,6 +1,21 @@
 <:wrap base.tmpl:>
-<div align=center><p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><a href="<:script:>?userpage=1">View 
-          Your Orders</a></font></p>
+<div align=center> 
+  <table border="0" cellspacing="0" cellpadding="0">
+    <tr> 
+      <td> 
+        <form name="yourorders" method="post" action="<:script:>">
+          <input type="submit" name="Submit" value="View your orders" class="user-buttons">
+          <input type="hidden" name="userpage" value="1">
+        </form>
+      </td>
+      <td> 
+        <form name="ff" method="post" action="/cgi-bin/shop.pl">
+          <input type="submit" name="cart" value="View shopping cart" class="user-buttons">
+        </form>
+      </td>
+    </tr>
+  </table>
+  <br>
   <table width="250">
     <tr> 
       <th colspan="2" align="center" height="20"> 
@@ -36,11 +51,11 @@
           <input type="text" name="email" value="<:last email:>" size="40" />
         </td>
       </tr>
-      <tr> 
+      <!--//<tr> 
         <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Keep 
           Details:</font></b></th>
         <td width="100%"><input type="checkbox" name="keepAddress" value="1"<:ifLast keepAddress:> checked<:or:><:eif:> /></td>
-      </tr>
+      </tr> //-->
       <:if Subscriptions:> 
       <tr> 
         <td nowrap valign="top"> 
@@ -165,7 +180,7 @@
       </tr>
       <tr> 
         <td colspan="2" align="right"> 
-          <input type="submit" name="saveopts" value="Save Options" />
+          <input type="submit" name="saveopts" value="Save Options" class="user-buttons"/>
         </td>
       </tr>
     </form>

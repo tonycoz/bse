@@ -28,26 +28,25 @@
       <td> 
         <table cellpadding="6" border="0" cellspacing="1">
           <tr> 
-            <th> Image file to add: </th>
+            <th bgcolor="#FFFFFF"> Image file to add: </th>
             <td bgcolor="#FFFFFF"> 
               <input type="file" name="image">
             </td>
           </tr>
           <tr> 
-            <th> Alt text for image: </th>
+            <th bgcolor="#FFFFFF"> Alt text for image: </th>
             <td bgcolor="#FFFFFF"> 
               <input type="text" name="altIn">
             </td>
           </tr>
           <tr> 
-            <th> URL for image: </th>
+            <th bgcolor="#FFFFFF"> URL for image: </th>
             <td bgcolor="#FFFFFF"> 
               <input type="text" name="url" width="40">
             </td>
           </tr>
           <tr> 
-            <th>&nbsp; </th>
-            <td align="right" bgcolor="#FFFFFF"> 
+            <td bgcolor="#FFFFFF" colspan="2" align="right"> 
               <input type="submit" name="addimg" value="  Add Image  ">
             </td>
           </tr>
@@ -68,50 +67,45 @@
 <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000">
     <tr>
       <td>
-  <table cellpadding="6" border="0" cellspacing="1">
-    <tr>
-    <th>
-      Image</th>
-    <th>
-      Alt Text</th>
-    <th>
-      URL</th>
-    <th>
-      Display Order</th>
-    <th>
-      Remove ?</th></tr>
+        <table cellpadding="6" border="0" cellspacing="1">
+          <tr bgcolor="#FFFFFF"> 
+            <th> Image</th>
+            <th> Alt Text</th>
+            <th> URL</th>
 
-<: iterator begin image :>
-    <tr bgcolor="#FFFFFF"> 
-      <td align="center"> <img src="/images/<: image image :>" alt="<: image alt :>"<: 
-        image height :><: image width :>></td>
-      <td valign="top"> 
-        <input type="text" name="alt" value="<: image alt :>"></td>
-      <td valign="top"> 
-        <input type="text" name="url" value="<: image url :>"></td>
-      <td valign="top"><:imgmove:> </td>
-      <td valign="bottom"> 
-        <input type="submit" name="removeimg_<: image order :>" value="Remove" onClick="return window.alert('Remember to update the article after deletion is complete')" ></td></tr>
-<: iterator separator image :>
-    <tr bgcolor="#FFFFFF"> 
-      <td colspan="4">&nbsp;</td>
-    </tr>
-<: iterator end image :>
+            <th> Modify</th>
+          </tr>
+          <: iterator begin image :> 
+          <tr bgcolor="#FFFFFF"> 
+            <td align="center"> <img src="/images/<: image image :>" alt="<: image alt :>"<: 
+              image height :><: image width :>></td>
+            <td valign="top"> 
+              <input type="text" name="alt" value="<: image alt :>">
+            </td>
+            <td valign="top"> 
+              <input type="text" name="url" value="<: image url :>">
+            </td>
 
-  <tr>
-    <th align="right" valign="top">
-      First Image Position: </th>
-      <td bgcolor="#FFFFFF"> <input type="radio" name="imagePos" value="tl"<: checked 
-        tl :>> &nbsp; Top Left <br>
-      <input type="radio" name="imagePos" value="tr"<: checked tr :>> &nbsp; Top Right
-      <br>
-      <input type="radio" name="imagePos" value="bl"<: checked bl :>> &nbsp; Bottom Left
-      <br>
-      <input type="radio" name="imagePos" value="br"<: checked br :>> &nbsp; Bottom Right</td>
-      <td colspan="2" align="right" valign="bottom" bgcolor="#FFFFFF"> 
-        <input type="submit" name="process" value="  Process Images  "></td>
-
-  </table>
+            <td valign="bottom" nowrap> 
+              <input type="submit" name="removeimg_<: image order :>" value="Delete" onClick="return window.alert('Remember to update the article after deletion is complete')" >
+              <:imgmove:> </td>
+          </tr>
+          <: iterator separator image :> 
+          <tr bgcolor="#FFFFFF"> 
+            <td colspan="4">&nbsp;</td>
+          </tr>
+          <: iterator end image :> 
+          <tr> 
+            <th valign="top" bgcolor="#FFFFFF"> First Image Position: </th>
+            <td bgcolor="#FFFFFF"> <input type="radio" name="imagePos" value="tl"<: 
+              checked tl :>> &nbsp; Top Left <br><input type="radio" name="imagePos" value="tr"
+              <: checked tr :>> &nbsp; Top Right <br><input type="radio" name="imagePos" value="bl"
+              <: checked bl :>> &nbsp; Bottom Left <br><input type="radio" name="imagePos" value="br"
+              <: checked br :>> &nbsp; Bottom Right</td>
+            <td colspan="2" align="right" valign="bottom" bgcolor="#FFFFFF"> 
+              <input type="submit" name="process" value="Save changes">
+            </td>
+        </table>
 </td>
 </tr>
 </table>

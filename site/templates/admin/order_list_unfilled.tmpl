@@ -7,38 +7,46 @@
 
 <p>| <a href="/admin/">Admin menu</a> | <a href="<:script:>">Products list</a> | <a href="<:script:>?order_list=1&template=order_list_filled">Filled orders</a> | <a href="<:script:>?order_list=1">All orders</a> |</p>
 
-<table bgcolor="#000000" cellpadding="0" cellspacing="0" border="0">
+<table bgcolor="#000000" cellpadding="0" cellspacing="0" border="0" width="100%">
   <tr>
 <td>
-      <table border=0 cellpadding="6" cellspacing="1">
-        <tr> 
+      <table border=0 cellpadding="6" cellspacing="1" width="100%">
+        <tr bgcolor="#FFFFFF"> 
           <th>Id</th>
           <th>Name</th>
           <th>Date</th>
           <th>Total</th>
           <th>GST</th>
+          <th>View</th>
         </tr>
         <tr bgcolor="#FFFFFF"> 
-          <td colspan="5"> 
+          <td colspan="6"> 
             <form action="<:script:>" method="POST">
-              <input type="hidden" name="order_list" value="1">
-              <input type="hidden" name="template" value="order_list_unfilled">
-              From: 
-              <input type="text" size="10" name="from" value="<:cgi from:>">
-              To: 
-              <input type="text" size="10" name="to" value="<:cgi to:>">
-              <input type=submit value="Filter" name="submit">
+              <input type="hidden" name="order_list2" value="1">
+              <input type="hidden" name="template2" value="order_list_unfilled">
+              From date: 
+              <input type="text" size="10" name="from2" value="<:cgi from:>">
+              To date: 
+              <input type="text" size="10" name="to2" value="<:cgi to:>">
+              <input type=submit value="Filter orders" name="submit2">
             </form>
           </td>
         </tr>
         <:iterator begin orders filter= filled==0 :> 
         <tr bgcolor="#FFFFFF"> 
-          <td align="center"><a href="<:script:>?id=<:order id:>&order_detail=1"><:order 
+          <td align="center" nowrap><a href="<:script:>?id=<:order id:>&order_detail=1"><:order 
             id:></a></td>
           <td><:order delivFirstName:><:order delivLastName:></td>
-          <td><:date orderDate:></td>
-          <td align=right>$<:money total:></td>
-          <td align=right>$<:money gst:></td>
+          <td nowrap><:date orderDate:></td>
+          <td align=right nowrap>$<:money total:></td>
+          <td align=right nowrap>$<:money gst:></td>
+          <td align=right> 
+            <form name="view order" method="post" action="<:script:>">
+              <input type="hidden" name="order_detail" value="1">
+              <input type="hidden" name="id" value="<:order id:>">
+              <input type="submit" name="view order" value="View order">
+            </form>
+          </td>
         </tr>
         <:iterator end orders:> 
       </table>

@@ -8,59 +8,59 @@
   <a href="<:script:>?id=<:product id:>&edit_product=1">Edit</a> <:if Product 
   listed:> | <a href="<:script:>?id=<:product id:>&delete_product=1">Hide</a> 
   |<:or Product:> | <a href="<:script:>?id=<:product id:>&undelete_product=1">Show</a> |<:eif Product:> <:hiddenNote:></p>
-<table bgcolor="#000000" cellpadding="0" cellspacing="0" border="0">
+<table bgcolor="#000000" cellpadding="0" cellspacing="0" border="0" width="100%">
   <tr>
 <td>
-      <table border=0 cellpadding="6" cellspacing="1">
+      <table border=0 cellpadding="6" cellspacing="1" width="100%">
         <tr> 
-    <th align="left">Name:</th>
-          <td bgcolor="#FFFFFF"><:product title:></td>
+          <th align="left" nowrap bgcolor="#FFFFFF">Name:</th>
+          <td bgcolor="#FFFFFF" width="100%"><:product title:></td>
   </tr>
   <tr> 
-    <th align="left">Summary:</th>
-          <td bgcolor="#FFFFFF"><:product summary:></td>
+          <th align="left" nowrap bgcolor="#FFFFFF">Summary:</th>
+          <td bgcolor="#FFFFFF" width="100%"><:product summary:></td>
   </tr>
   <tr> 
-    <th align="left">Description:</th>
-          <td bgcolor="#FFFFFF"><:product body:></td>
+          <th align="left" nowrap bgcolor="#FFFFFF">Description:</th>
+          <td bgcolor="#FFFFFF" width="100%"><:product body:></td>
   </tr>
   <tr> 
-    <th align="left">Lead time:</th>
-          <td bgcolor="#FFFFFF"><:product leadTime:> days</td>
+          <th align="left" nowrap bgcolor="#FFFFFF">Lead time:</th>
+          <td bgcolor="#FFFFFF" width="100%"><:product leadTime:> days</td>
   </tr>
   <tr> 
-    <th align="left">Retail price:</th>
-          <td bgcolor="#FFFFFF">$<:money retailPrice:></td>
+          <th align="left" nowrap bgcolor="#FFFFFF">Retail price:</th>
+          <td bgcolor="#FFFFFF" width="100%">$<:money retailPrice:></td>
   </tr>
   <tr> 
-    <th align="left">Wholesale price:</th>
-          <td bgcolor="#FFFFFF">$<:money wholesalePrice:></td>
+          <th align="left" nowrap bgcolor="#FFFFFF">Wholesale price:</th>
+          <td bgcolor="#FFFFFF" width="100%">$<:money wholesalePrice:></td>
   </tr>
   <tr> 
-    <th align="left">GST:</th>
-          <td bgcolor="#FFFFFF">$<:money gst:></td>
+          <th align="left" nowrap bgcolor="#FFFFFF">GST:</th>
+          <td bgcolor="#FFFFFF" width="100%">$<:money gst:></td>
   </tr>
   <tr> 
-    <th align="left">Release date:</th>
-          <td bgcolor="#FFFFFF"><:date product release:></td>
+          <th align="left" nowrap bgcolor="#FFFFFF">Release date:</th>
+          <td bgcolor="#FFFFFF" width="100%"><:date product release:></td>
   </tr>
   <tr> 
-    <th align="left">Expiry date:</th>
-          <td bgcolor="#FFFFFF"><:date product expire:></td>
+          <th align="left" nowrap bgcolor="#FFFFFF">Expiry date:</th>
+          <td bgcolor="#FFFFFF" width="100%"><:date product expire:></td>
   </tr>
   <tr> 
-    <th align="left">Options:</th>
-          <td bgcolor="#FFFFFF"><:product options:></td>
+          <th align="left" nowrap bgcolor="#FFFFFF">Options:</th>
+          <td bgcolor="#FFFFFF" width="100%"><:product options:></td>
   </tr>
   <tr> 
-    <th align="left">Picture:</th>
-          <td bgcolor="#FFFFFF"><:ifImage:><img src="/images/<:product imageName:>" width="<:product imageWidth:>" height="<:product imageHeight:>"><:or:>&nbsp;<:eif:> 
+          <th align="left" nowrap bgcolor="#FFFFFF">Picture:</th>
+          <td bgcolor="#FFFFFF" width="100%"><:ifImage:><img src="/images/<:product imageName:>" width="<:product imageWidth:>" height="<:product imageHeight:>"><:or:>&nbsp;<:eif:> 
             <input type="file" name="imageName">
     </td>
   </tr>
   <tr>
-    <th align="left">Thumbnail:</th>
-    <td><:ifProduct thumbImage:><img src="/images/<:product thumbImage:>"><:or:><:eif:></td>
+          <th align="left" nowrap bgcolor="#FFFFFF">Thumbnail:</th>
+          <td width="100%" bgcolor="#FFFFFF"><:ifProduct thumbImage:><img src="/images/<:product thumbImage:>"><:or:><:eif:></td>
   </tr>
 </table>
 </td>

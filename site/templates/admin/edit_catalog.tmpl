@@ -29,20 +29,24 @@
 
   <h2>Catalog Details</h2>
 
-  <p><:message:> | <a href="/admin/">Admin menu</a> | <:ifnew:><:or:><a href="<:article admin:>">See article</a> | <:eif:><:editParent:> |
-  <:if new:><:or new:><a href="<:script:>?id=<:article id:>&_t=steps">Manage stepchildren/stepparents</a> | <:eif new:>
-<input type="hidden" name="level" value="<: level :>">
+  <p><:ifMessage:></p>
+  <p><b><:message:></b></p>
+  <:or:><:eif:> 
+  <p>| <a href="/admin/">Admin menu</a> | <:ifnew:><:or:><a href="<:article admin:>">See 
+    article</a> | <:eif:><:editParent:> <a href="/cgi-bin/admin/shopadmin.pl">Manage 
+    store</a> | <:if new:><:or new:><a href="<:script:>?id=<:article id:>&_t=steps">Manage 
+    stepchildren/stepparents</a> | <:eif new:> 
+    <input type="hidden" name="level" value="<: level :>">
     <input type="hidden" name="id" value="<: article id :>">
-  
   </p>
-  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000">
+  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" width="100%">
     <tr>
       <td>
 
-        <table cellpadding="6" border="0" cellspacing="1">
+        <table cellpadding="6" border="0" cellspacing="1" width="100%">
           <tr> 
-            <th> Parent: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th bgcolor="#FFFFFF" nowrap> Parent: </th>
+            <td bgcolor="#FFFFFF" width="100%"> 
               <select name="parentid">
                 <option value="">Please Select a <: parentType :> 
 		<: list subsections :> 
@@ -50,75 +54,73 @@
             </td>
           </tr>
           <tr> 
-            <th> Catalog Title: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th bgcolor="#FFFFFF" nowrap> Catalog Title: </th>
+            <td bgcolor="#FFFFFF" width="100%"> 
               <input type="text" name="title" maxlength="64" size="64" value="<: article title :>">
             </td>
           </tr>
           <tr> 
-            <th> Template: </th>
-            <td bgcolor="#FFFFFF"> 
-              <:templates:>
-            </td>
+            <th bgcolor="#FFFFFF" nowrap> Template: </th>
+            <td bgcolor="#FFFFFF" width="100%"> <:templates:> </td>
           </tr>
           <tr> 
-            <th valign="top"> Body: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th valign="top" bgcolor="#FFFFFF" nowrap> Body: </th>
+            <td bgcolor="#FFFFFF" width="100%"> 
               <textarea name="body" rows="10" cols="60" wrap="virtual"><: article body :></textarea>
             </td>
           </tr>
           <tr> 
-            <th> Release Date: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th bgcolor="#FFFFFF" nowrap> Release Date: </th>
+            <td bgcolor="#FFFFFF" width="100%"> 
               <input type="text" name="release" value="<: article release :>" size="10" maxlength="10">
               (dd/mm/yyyy<: ifnew :> - default is today<: or :><: eif :>)</td>
           </tr>
           
           <tr> 
-            <th> Expire Date: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th bgcolor="#FFFFFF" nowrap> Expire Date: </th>
+            <td bgcolor="#FFFFFF" width="100%"> 
               <input type="text" name="expire" value="<: article expire :>" size="10" maxlength="10">
               (dd/mm/yyyy - <: ifnew :>default is never, <: or :><: eif :>blank 
               for never expires)</td>
           </tr>
           <tr> 
-            <th> Summary Length: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th bgcolor="#FFFFFF" nowrap> Summary Length: </th>
+            <td bgcolor="#FFFFFF" width="100%"> 
               <input type="text" name="summaryLength" size="10" maxlength="10" value="<: article summaryLength :>">
               (in characters - <: ifnew :>default inherited from section<: if art :> or sub-section<: 
               or art :><: eif art :>, <: or :><: eif :>zero for no 
               summary)</td>
           </tr>
           <tr> 
-            <th> Display threshold: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th bgcolor="#FFFFFF" nowrap> Display threshold: </th>
+            <td bgcolor="#FFFFFF" width="100%"> 
               <input type="text" name="threshold" size="10" maxlength="10" value="<: article threshold :>">
             </td>
           </tr>
           <tr> 
-            <th> Keywords: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th bgcolor="#FFFFFF" nowrap> Keywords: </th>
+            <td bgcolor="#FFFFFF" width="100%"> 
               <input type="text" name="keyword" maxlength="255" size="60" value="<: article keyword :>">
                (comma separated)
             </td>
           </tr>
           <tr> 
-            <th>List article:</th>
-            <td bgcolor="#FFFFFF">  
-              <:list listed:> </td>
+            <th bgcolor="#FFFFFF" nowrap>List article:</th>
+            <td bgcolor="#FFFFFF" width="100%"> <:list listed:> </td>
           </tr>
           <tr> 
-            <th>Thumbnails:</th>
-            <td bgcolor="#FFFFFF"> 
+            <th bgcolor="#FFFFFF" nowrap>Thumbnails:</th>
+            <td bgcolor="#FFFFFF" width="100%"> 
               <input type=file name=thumbnail>
               <:ifArticle thumbImage:><img src="/images/<:article thumbImage:>"> 
               <input type=checkbox name="remove_thumb">
                Remove<:or:><:eif:></td>
           </tr>
           <tr> 
-            <th valign="top"> Uploaded files: </th>
-            <td align="center" bgcolor="#FFFFFF"> <: iterator begin images :> <img src="/images/<: image image :>" alt="<:image alt :>" width=              <:image width:> height=<:image height:>> <: iterator separator images 
-              :> 
+            <th valign="top" bgcolor="#FFFFFF" nowrap> Uploaded files: </th>
+            <td align="center" bgcolor="#FFFFFF" width="100%"> <: iterator begin 
+              images :> <img src="/images/<: image image :>" alt="<:image alt :>" width=              <:image 
+              width:> height=<:image height:>> <: iterator separator images :> 
               <hr noshade size="1">
               <: iterator end images :> &nbsp; <br>
         </table>
@@ -131,15 +133,15 @@
            value="  <: ifnew :>Add New<: or :>Update<: eif :> Catalog  "></p>
   </form>
 <:if children:> <a name="children"></a> 
-<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000">
-    <tr>
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" width="100%">
+  <tr>
       <td>
-      <table border=0 cellpadding="6" cellspacing="1">
-        <tr>
+      <table border=0 cellpadding="6" cellspacing="1" width="100%">
+        <tr bgcolor="#FFFFFF"> 
           <th>Title</th>
           <th>Summary</th>
           <th>Listed</th>
-          <th>&nbsp;</th>
+          <th>Modify</th>
         </tr>
         <tr> 
           <td colspan="4" bgcolor="#FFFFFF">Reorder child articles: <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=title&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">by 
@@ -172,7 +174,7 @@
 <input type=hidden name="parentid" value="<:article id:>">
 <p><input type=submit value="Add <:childtype:>"></p>
 </form>
-<:eif new:> <:or HaveChildType:> <:eif HaveChildType:>
+<:eif new:> <:or HaveChildType:> <:eif HaveChildType:> 
 <p><font size="-1">BSE Release <:release:></font></p>
 </body
 ></html>

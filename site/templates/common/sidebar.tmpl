@@ -17,40 +17,38 @@
 </table>
 <:or:><:eif:> 
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
-  <tr>
-    <td width="5"><img src="/images/trans_pixel.gif" width="10" height="5"></td>
+  <tr> 
+    <td width="5"><img src="/images/trans_pixel.gif" width="5" height="5"></td>
     <td width="100%"> 
       <table width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#999999">
         <tr> 
           <td> 
             <table width="100%" border="0" cellspacing="1" cellpadding="0">
               <tr> 
-                <td bgcolor="#FFFFFF" valign="top"> 
+                <td bgcolor="#EEEEEE" valign="top"> 
                   <table width="100%" border="0" cellspacing="0" cellpadding="0">
                     <tr> 
-                      <td bgcolor="#FFCC33" nowrap height="23">&nbsp;&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b><:title:></b></font>&nbsp;&nbsp;</td>
+                      <td bgcolor="#999999" nowrap height="23"><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#FFFFFF">&nbsp;&nbsp;<b><:title:></b>&nbsp;&nbsp;</font></td>
                     </tr>
                   </table>
                   <table width="100%" border="0" cellspacing="0" cellpadding="10">
                     <tr> 
                       <td><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font> 
-                        <:ifAdmin:><:if Children:> 
+                        <:ifAdmin:><:if Allkids:> 
                         <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Reorder 
-                          child articles: <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=title&refreshto=/cgi-bin/admin/admin.pl?id=<:parent id:>">by 
-                          title</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=date&refreshto=/cgi-bin/admin/admin.pl?id=<:parent id:>">by 
-                          date</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&reverse=1&refreshto=/cgi-bin/admin/admin.pl?id=<:parent id:>">reverse 
+                          child articles: <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&sort=title&refreshto=/cgi-bin/admin/admin.pl?id=1">by 
+                          title</a> | <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&sort=date&refreshto=/cgi-bin/admin/admin.pl?id=1">by 
+                          date</a> | <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&reverse=1&refreshto=/cgi-bin/admin/admin.pl?id=1">reverse 
                           order</a></font></p>
-                        <:or Children:><:eif Children:><:or:><:eif:><:if UnderThreshold:><:iterator 
-                        begin children:><:ifAdmin:> <br>
-                        <:or:><:eif:><:moveDown:><:moveUp:><:embed 
-child:><:iterator separator children:><:iterator end children:> <:or UnderThreshold:> 
-<:iterator begin children:> 
-                        <p><a href="<:url child:>"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:child 
-                          title:></font></b></a><:moveDown:><:moveUp:><br>
-  <:if Child summaryLength:><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:summary:></font><:or 
-  Child:><:eif Child:></p>
-<:iterator separator children:><:iterator end children:><:eif UnderThreshold:> 
-</td>
+                        <:or Allkids:><:eif Allkids:><:or:><:eif:><:if UnderThreshold 
+                        allkids:><:iterator begin allkids:><:ifAdmin:> <br>
+                        <:or:><:eif:><:movestepkid:><:embed allkid:><:iterator 
+                        separator allkids:><:iterator end allkids:> <:or UnderThreshold:><:iterator 
+                        begin allkids:> 
+                        <p><a href="<:url allkid:>"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:allkid 
+                          title:></font></b></a> <:movestepkid:></p>
+                        <:iterator separator allkids:><:iterator end allkids:><:eif 
+                        UnderThreshold:></td>
                     </tr>
                   </table>
                 </td>
@@ -60,24 +58,25 @@ child:><:iterator separator children:><:iterator end children:> <:or UnderThresh
         </tr>
       </table>
     </td>
+    <td width="5"><img src="/images/trans_pixel.gif" width="5" height="5"></td>
   </tr>
 </table>
-<:embed end:><:or Embedded:><:admin:> 
+<:embed end:><:or Embedded:><:eif Embedded:><:admin:> 
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <tr> 
-    <td bgcolor="#CCCCFF" width="80%" height="24">&nbsp;&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="4"><b><:title:></b></font></td>
-    <td height="24">&nbsp;<a href="/cgi-bin/printable.pl?id=<:article id:>"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#999999">printable 
+    <td width="80%" height="24">&nbsp;&nbsp;<font face="Arial, Helvetica, sans-serif" size="4" color="#FF7F00"><b><:title:></b></font></td>
+    <td height="24" align="right">&nbsp;<a href="/cgi-bin/printable.pl?id=<:article id:>"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#999999">printable 
       version</font></a></td>
   </tr>
   <tr> 
-    <td bgcolor="#999999" colspan="2" height="1"><img src="/images/trans_pixel.gif" width="24" height="1" border="0"></td>
+    <td colspan="2" height="1" bgcolor="#999999"><img src="/images/trans_pixel.gif" width="24" height="1" border="0"></td>
   </tr>
   <tr> 
     <td colspan="2"> 
       <table width="100%" border="0" cellspacing="0" cellpadding="0">
         <tr> 
           <td width="100"><img src="/images/trans_pixel.gif" width="100" height="10" border="0"></td>
-          <td bgcolor="#333399" width="100%">&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2">/ 
+          <td bgcolor="#999999" width="100%">&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2">/ 
             <a href="<:ifAdmin:>/cgi-bin/admin/admin.pl?id=1<:or:>/<:eif:>"><font color="#FFFFFF">Home</font></a> 
             / <:iterator begin crumbs:> <a href="<:url crumbs:>"><font color="#FFFFFF"><:crumbs 
             title:></font></a> / <:iterator end crumbs:></font></td>
@@ -87,20 +86,60 @@ child:><:iterator separator children:><:iterator end children:> <:or UnderThresh
   </tr>
 </table>
 <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font></p>
-<:ifAdmin:><:if Children:> 
+<:if Embedded:><:or Embedded:><:ifAdmin:><:if Allkids:> 
 <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Reorder child articles: 
-  <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=title&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
-  title</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=date&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
-  date</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&reverse=1&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">reverse 
+  <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&sort=title&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
+  title</a> | <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&sort=date&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
+  date</a> | <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&reverse=1&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">reverse 
   order</a></font></p>
-<:or Children:><:eif Children:><:or:><:eif:><:if UnderThreshold:><:iterator begin 
-children:><:ifAdmin:> 
+<:or Allkids:><:eif Allkids:><:or:><:eif:><:if UnderThreshold allkids:><:iterator 
+begin allkids:><:ifAdmin:> 
 <hr noshade size="1">
-<:or:><:eif:><:moveDown:><:moveUp:><:embed child:><:iterator separator children:><br>
-<:iterator end children:> <:or UnderThreshold:> <:iterator begin children:> 
-<p><a href="<:url child:>"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><:child 
-  title:></font></b></a><:moveDown:><:moveUp:><br>
-  <:if Child summaryLength:><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:summary:></font><:or 
-  Child:><:eif Child:></p>
-<:iterator separator children:><:iterator end children:><:eif UnderThreshold:><:eif 
-Embedded:>
+<:or:><:eif:><:movestepkid:><:embed allkid:><:iterator separator allkids:><br>
+<:iterator end allkids:> <:or UnderThreshold:><:iterator begin allkids:> 
+<p><a href="<:url allkid:>"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><:allkid 
+  title:></font></b></a> <:movestepkid:><br>
+  <:if Allkid summaryLength:><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:summary 
+  allkid:></font><:or Allkid:><:eif Allkid:></p>
+<:iterator separator allkids:><:iterator end allkids:><:eif UnderThreshold:><:eif 
+Embedded:><:if Files:> <br>
+<table border="0" cellspacing="0" cellpadding="0">
+  <tr> 
+    <td> 
+      <table border="0" cellspacing="0" cellpadding="4" bgcolor="#999999">
+        <tr> 
+          <th nowrap><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#FFFFFF">&nbsp;&nbsp;Related 
+            file downloads&nbsp;&nbsp;</font></th>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr> 
+    <td bgcolor="#999999"> 
+      <table cellspacing="1" cellpadding="4">
+        <tr bgcolor="#CCCCCC"> 
+          <th><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Description</font></th>
+          <th><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Filename</font></th>
+          <th><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Size</font></th>
+          <th><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Download</font></th>
+        </tr>
+        <:iterator begin files:> 
+        <tr bgcolor="#FFFFFF"> 
+          <td bgcolor="#FFFFFF"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:file 
+            description:></font></td>
+          <td bgcolor="#FFFFFF"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:if 
+            File forSale:><:file displayName:><:or File:><a href="/cgi-bin/user.pl?download_file=1&file=<:file id:>"> 
+            <:file displayName:></a><:eif File:></font></td>
+          <td align="right"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:kb 
+            file sizeInBytes:></font></td>
+          <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:if 
+            File forSale:> Sorry, this document cannot be downloaded <:or File:> 
+            <a href="/cgi-bin/user.pl?download_file=1&file=<:file id:>">Download</a> 
+            <:eif File:> </font></td>
+        </tr>
+        <:iterator end files:> 
+      </table>
+    </td>
+  </tr>
+</table>
+<:or Files:><:eif Files:>

@@ -1,7 +1,7 @@
 <:wrap base.tmpl:> 
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
-  <tr> 
-    <td bgcolor="#CCCCFF" width="80%" height="24">&nbsp;&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="4"><b><:title:></b></font></td>
+  <tr>
+    <td width="80%" height="24">&nbsp;&nbsp;<font face="Arial, Helvetica, sans-serif" size="4" color="#FF7F00"><b><:title:></b></font></td>
     <td height="24">&nbsp;</td>
   </tr>
   <tr> 
@@ -12,7 +12,7 @@
       <table width="100%" border="0" cellspacing="0" cellpadding="0">
         <tr> 
           <td width="100"><img src="/images/trans_pixel.gif" width="100" height="10" border="0"></td>
-          <td bgcolor="#333399" width="100%">&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2">/ 
+          <td bgcolor="#999999" width="100%">&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2">/ 
             <a href="<:ifAdmin:>/cgi-bin/admin/admin.pl?id=1<:or:>/<:eif:>"><font color="#FFFFFF">Home</font></a> 
             / <a href="/shop/index.html"><font color="#FFFFFF"><:article title:></font></a> 
             /</font></td>
@@ -26,15 +26,15 @@
 <form name="form1" method="POST" action="/cgi-bin/shop.pl">
   <table width="100%" border="0" cellspacing="0" cellpadding="0">
     <tr> 
-      <td align="center" bgcolor="#CCCCFF" width="100%" height="18"> <font size="2" face="Verdana, Arial, Helvetica, sans-serif"> 
+      <td align="center" bgcolor="#CCCCCC" width="100%" height="18"> <font size="2" face="Verdana, Arial, Helvetica, sans-serif"> 
         <b>Shopping Cart Items</b></font></td>
     </tr>
   </table>
-  <table border="0" cellspacing="0" cellpadding="1" width="100%" bgcolor="#6767CC">
+  <table border="0" cellspacing="0" cellpadding="1" width="100%" bgcolor="#666666">
     <tr valign="middle" align="center"> 
       <td width="100%"> 
         <table width="100%" border="0" cellspacing="0" cellpadding="2">
-          <tr valign="middle" align="center" bgcolor="#6767CC"> 
+          <tr valign="middle" align="center" bgcolor="#666666"> 
             <td width="100%" align="left" height="18"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FFFFFF"><b>Item:</b></font>&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FFFFFF">(All 
               prices in AUD &#150; includes GST and shipping costs where applicable)</font></td>
             <td nowrap height="18"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FFFFFF"><b>Qty:</b></font>&nbsp;</td>
@@ -44,7 +44,9 @@
           <:iterator begin items:> 
           <tr valign="middle" align="center" bgcolor="#FFFFFF"> 
             <td width="100%" align="left"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><a href="<:item link:>"><:item 
-              summary:> <:if Options:>(<:iterator begin options:><:option desc:> <:option value:><:iterator separator options:>, <:iterator end options:>)<:or Options:><:eif Options:></a></font></td>
+              summary:> <:if Options:>(<:iterator begin options:><:option desc:>: 
+              <:option label:><:iterator separator options:>, <:iterator end options:>)<:or 
+              Options:><:eif Options:></a></font></td>
             <td nowrap align="center"> 
               <input type="text" name="quantity_<:index:>" size="2" value="<:item units:>">
             </td>
@@ -63,10 +65,10 @@
     <tr> 
       <td>&nbsp;</td>
       <td height="20">&nbsp;</td>
-      <td height="20" bgcolor="#6767CC">&nbsp;</td>
-      <td align="CENTER" height="20" bgcolor="#6767CC" NOWRAP><font size="2" face="Verdana, Arial, Helvetica, sans-serif" color="#FFFFFF"> 
+      <td height="20" bgcolor="#666666">&nbsp;</td>
+      <td align="CENTER" height="20" bgcolor="#666666" NOWRAP><font size="2" face="Verdana, Arial, Helvetica, sans-serif" color="#FFFFFF"> 
         <b>GRAND TOTAL</b></font></td>
-      <td height="20" bgcolor="#6767CC">&nbsp;</td>
+      <td height="20" bgcolor="#666666">&nbsp;</td>
     </tr>
     <tr> 
       <td width="100%" valign="MIDDLE"><a href="/shop/index.html"><img src="/images/store/browse_more.gif" width="133" height="21" border="0" alt="Browse More"></a></td>
@@ -74,7 +76,7 @@
         <table border="0" cellspacing="0" cellpadding="0">
           <tr> 
             <td><img src="/images/store/left_end_cap_solid.gif" width="12" height="31"></td>
-            <td bgcolor="#FFFF99" NOWRAP valign="MIDDLE"> 
+            <td bgcolor="#EEEEEE" NOWRAP valign="MIDDLE"> 
               <input type="submit" name="recalc" value="Recalculate">
               &nbsp; 
               <input type="submit" name="checkout" value="Checkout">
@@ -92,7 +94,7 @@
       <td width="100%"></td>
       <td></td>
       <td></td>
-      <td bgcolor="#6666CC"><img src="/images/trans_pixel.gif" width="1" height="1"></td>
+      <td bgcolor="#666666"><img src="/images/trans_pixel.gif" width="1" height="1"></td>
       <td></td>
     </tr>
   </table>

@@ -1,7 +1,7 @@
- <:wrap base.tmpl:> <:admin:> 
+ <:wrap base.tmpl:> <:embed start:><:admin:> 
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <tr> 
-    <td bgcolor="#CCCCFF" width="80%" height="24">&nbsp;&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="4"><b><:product 
+    <td width="80%" height="24">&nbsp;&nbsp;<font face="Arial, Helvetica, sans-serif" size="4" color="#FF7F00"><b><:product 
       title:></b></font></td>
     <td height="24">&nbsp;</td>
   </tr>
@@ -13,7 +13,7 @@
       <table width="100%" border="0" cellspacing="0" cellpadding="0">
         <tr> 
           <td width="100"><img src="/images/trans_pixel.gif" width="100" height="10" border="0"></td>
-          <td bgcolor="#333399" width="100%">&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2">/ 
+          <td bgcolor="#999999" width="100%">&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2">/ 
             <a href="<:ifAdmin:>/cgi-bin/admin/admin.pl?id=1<:or:>/<:eif:>"><font color="#FFFFFF">Home</font></a> 
             / <:iterator begin crumbs:> <a href="<:url crumbs:>"><font color="#FFFFFF"><:crumbs 
             title:></font></a> / <:iterator end crumbs:></font></td>
@@ -23,54 +23,123 @@
   </tr>
 </table>
 <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font></p>
-<br clear="all">
-<:if StepCats:>
-<font face="Verdana, Arial, Helvetica, sans-serif" size="2"><p><b>Related categories:</b></p>
+<:if StepCats:> <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
+<p><b>Related categories:</b></p>
 <ul>
 <:iterator begin stepcats:>
-<p><a href="<:url stepcat:>"><:stepcat title:></a></p>
+<li><a href="<:url stepcat:>"><:stepcat title:></a></li>
 <:iterator end stepcats:>
 </ul></font>
 <:or StepCats:><:eif StepCats:>
-            <form name="ff" method="POST" action="/cgi-bin/shop.pl">
+<:if Product retailPrice:>
+<form name="ff" method="POST" action="/cgi-bin/shop.pl">
               
 <:if Options:>
 <table>
 <tr>
-<td>
-<:iterator begin options:>
-<:option desc:>: <:option popup:>
-<:iterator end options:>
-</td>
+      <td> <:iterator begin options:> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b><:option 
+        desc:>:</b></font> <:option popup:> <:iterator end options:> </td>
 </tr>
 </table>
-<:or Options:><:eif Options:>
-  <table border="0" cellspacing="0" cellpadding="0">
+  <:or Options:><:eif Options:>
+<:ifProduct leadTime:> 
+  <p> <b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FE7F00">Usually ships in: <:product leadTime:> <:if Eq [product leadTime] "1":>day<:or Eq:>days<:eif Eq:></font></b></p>
+<:or:><:eif:>
+
+<table border="0" cellspacing="0" cellpadding="0">
     <tr valign="middle" align="center"> 
-                  <td> <img src="/images/store/price_cap.gif" width="15" height="30"></td>
-                  
-      <td bgcolor="#333399"> 
+      <td bgcolor="#666666"> 
         <table width="100%" border="0" cellspacing="1" cellpadding="4" height="30">
           <tr valign="middle" align="center"> 
-                        
-            <td bgcolor="#333399" align="left"> <font size="2" face="Verdana, Arial, Helvetica, sans-serif" color="#FFFFFF"> 
+            <td bgcolor="#666666" align="left"> &nbsp;&nbsp;<font size="2" face="Verdana, Arial, Helvetica, sans-serif" color="#FFFFFF"> 
               <b>Price:</b></font> &nbsp;&nbsp;</td>
-                        <td bgcolor="#FFFFFF"> &nbsp; <font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#000000"> 
-                          <b>$<:money product retailPrice:> </b>(inc GST)</font> 
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                  <td nowrap> &nbsp; 
-                    <input type="hidden" name="id" value="<:product id:>">
-                    <input type="hidden" name="quantity" value="1">
-                    <input type="submit" name="add" value="Add to cart">
-                    <input type="submit" name="cart" value="View cart">
+            <td bgcolor="#FFFFFF"> &nbsp; <font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#000000"> 
+              <b>$<:money product retailPrice:> </b>(inc GST)</font> </td>
+          </tr>
+        </table>
+      </td>
+      <td nowrap> &nbsp; 
+        <input type="hidden" name="id" value="<:product id:>">
+        <input type="hidden" name="quantity" value="1">
+        <input type="submit" name="add" value="Add to cart">
+        <input type="submit" name="cart" value="View cart">
+      </td>
+    </tr>
+  </table>
+</form>
+<:or Product:>
+<table border="0" cellspacing="0" cellpadding="1" bgcolor="#CCCCCC">
+  <tr>
+    <td>
+      <table width="100%" border="0" cellspacing="0" cellpadding="10" bgcolor="#FFFFFF">
+        <tr> 
+          <td>
+            <form name="notifyme" method="post" action="">
+              <font face="Arial, Helvetica, sans-serif" size="4"><b>Coming soon!</b></font> 
+              <input type="hidden" name="product" value="<:product title:>">
+              <p><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Yes, 
+                I want this product, notify me when it becomes available</font></p>
+              <table border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+                    Email:</font></b>&nbsp;</td>
+                  <td>
+                    <input type="text" name="email" size="32">
+                    &nbsp; </td>
+                  <td> 
+                    <input type="submit" name="Submit" value="Notify me!">
                   </td>
                 </tr>
               </table>
-            </form>
-            
+              </form>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<font face="Arial, Helvetica, sans-serif"><b><font size="4"> </font></b></font><:eif 
+Product:> 
 <p><br>
-  <a href="/shop/index.html"><img src="/images/store/browse_more.gif" width="133" height="21" border="0"></a></p>
-
+  <a href="/shop/index.html"><img src="/images/store/browse_more.gif" width="133" height="21" border="0"></a>
+</p><br>
+<:if Files:> 
+<table border="0" cellspacing="0" cellpadding="0">
+  <tr> 
+    <td> 
+      <table border="0" cellspacing="0" cellpadding="4" bgcolor="#999999">
+        <tr> 
+          <th nowrap><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#FFFFFF">&nbsp;&nbsp;Related 
+            file downloads&nbsp;&nbsp;</font></th>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr> 
+    <td bgcolor="#999999"> 
+      <table cellspacing="1" cellpadding="4">
+        <tr bgcolor="#CCCCCC"> 
+          <th><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Description</font></th>
+          <th><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Filename</font></th>
+          <th><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Size</font></th>
+          <th><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Download</font></th>
+        </tr>
+        <:iterator begin files:> 
+        <tr bgcolor="#FFFFFF"> 
+          <td bgcolor="#FFFFFF"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:file 
+            description:></font></td>
+          <td bgcolor="#FFFFFF"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:if 
+            File forSale:><:file displayName:><:or File:><a href="/cgi-bin/user.pl?download_file=1&file=<:file id:>"> 
+            <:file displayName:></a><:eif File:></font></td>
+          <td align="right"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:kb 
+            file sizeInBytes:></font></td>
+          <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:if 
+            File forSale:>Downloadable on purchase<:or File:> <a href="/cgi-bin/user.pl?download_file=1&file=<:file id:>">Download</a> 
+            <:eif File:> </font></td>
+        </tr>
+        <:iterator end files:> 
+      </table>
+    </td>
+  </tr>
+</table>
+<:or Files:><:eif Files:><:embed end:>

@@ -32,13 +32,13 @@ if (start != -1) {
 }
 if (userid != '') {
   document.write('<form action="/cgi-bin/user.pl" method="post">');
-  document.write('<table><tr><td align="left"><input type="submit" name="userpage" value="User profile" /></td><td align="right"><input type="submit" name="logoff" value="Logoff" /></td></tr></table></form>');
+  document.write('<table><tr><td align="left"><input type="submit" name="userpage" value="User profile" class="user-buttons" /></td><td align="right"><input type="submit" name="logoff" value="Logoff" class="user-buttons" /></td></tr></table></form>');
 }
 else {
   document.write('<form action="/cgi-bin/user.pl" method="post">');
   document.write('<table><tr><th><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Username:</font></th><td><input type="text" name="userid" size="10" /></td></tr>');
   document.write('<tr><th><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Password:</font></th><td><input type="password" name="password" size="10" /></td></tr>');
-  document.write('<tr><td align="left"><input type="submit" name="show_register" value="Register" /></td><td align="right"><input type="submit" name="logon" value="Logon" /></td></tr></table></form>');
+  document.write('<tr><td align="left"><input type="submit" name="logon" value="Logon" class="user-buttons" /></td><td align="right"><input type="submit" name="show_register" value="Register" class="user-buttons" /></td></tr></table></form>');
 }
 //-->
 </script>

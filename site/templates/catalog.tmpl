@@ -1,19 +1,18 @@
 <:wrap base.tmpl:> 
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <tr> 
-    <td bgcolor="#CCCCFF" width="80%" height="24">&nbsp;&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="4"><b><:title 
-      section:> - <:title:></b></font></td>
+    <td width="80%" height="24">&nbsp;&nbsp;<font face="Arial, Helvetica, sans-serif" size="4" color="#FF7F00"><b><:title:></b></font></td>
     <td height="24">&nbsp;</td>
   </tr>
   <tr> 
-    <td bgcolor="#999999" colspan="2" height="1"><img src="/images/trans_pixel.gif" width="24" height="1" border="0"></td>
+    <td colspan="2" height="1" bgcolor="#999999"><img src="/images/trans_pixel.gif" width="24" height="1" border="0"></td>
   </tr>
   <tr> 
     <td colspan="2"> 
       <table width="100%" border="0" cellspacing="0" cellpadding="0">
         <tr> 
           <td width="100"><img src="/images/trans_pixel.gif" width="100" height="10" border="0"></td>
-          <td bgcolor="#333399" width="100%">&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2">/ 
+          <td bgcolor="#999999" width="100%">&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2">/ 
             <a href="<:ifAdmin:>/cgi-bin/admin/admin.pl?id=1<:or:>/<:eif:>"><font color="#FFFFFF">Home</font></a> 
             / <:iterator begin crumbs:> <a href="<:url crumbs:>"><font color="#FFFFFF"><:crumbs 
             title:></font></a> / <:iterator end crumbs:></font></td>
@@ -26,33 +25,36 @@
 <form name="ff" method="POST" action="/cgi-bin/shop.pl">
   <table width="100%" border="0" cellspacing="0" cellpadding="0">
     <tr> 
-      <td align="center" bgcolor="#CCCCFF" width="100%" height="18"> <font size="2" face="Verdana, Arial, Helvetica, sans-serif"> 
+      <td align="center" bgcolor="#CCCCCC" width="100%" height="18"> <font size="2" face="Verdana, Arial, Helvetica, sans-serif"> 
         <b><:title section:> - Catalogue Items</b></font></td>
     </tr>
   </table>
-  <table border="0" cellspacing="0" cellpadding="1" width="100%" bgcolor="#6767CC">
+  <table border="0" cellspacing="1" cellpadding="0" width="100%" bgcolor="#666666">
     <tr valign="middle" align="center"> 
       <td width="100%"> 
-        <table width="100%" border="0" cellspacing="0" cellpadding="2">
-          <tr valign="middle" align="center" bgcolor="#6767CC"> 
+        <table width="100%" border="0" cellspacing="1" cellpadding="2" bgcolor="#EEEEEE">
+          <tr valign="middle" align="center" bgcolor="#666666"> 
             <td width="100%" align="left" height="18"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FFFFFF"><b>Item:</b></font>&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FFFFFF">(All 
               prices in AUD &#150; includes GST and shipping costs where applicable)</font></td>
             <td height="18"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FFFFFF"><b>Price:</b></font>&nbsp;</td>
           </tr>
-          <:iterator begin products:> 
+          <:iterator begin allprods:> 
           <tr valign="middle" align="center" bgcolor="#FFFFFF"> 
-            <td width="100%" align="left"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><a href="<:url product:>"><:product 
+            <td width="100%" align="left"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><a href="<:url allprod:>"><:allprod 
               summary:></a></font><:moveUp:><:moveDown:></td>
-            <td align="right"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>$<:money 
-              product retailPrice:></b></font></td>
+<:ifAllprod retailPrice:>
+            <td align="right"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>$<:money allprod retailPrice:></b></font></td>
+<:or:>
+            <td align="center"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#999999"><b>TBA</b></font></td>
+<:eif:>
           </tr>
-          <:iterator end products:> 
+          <:iterator end allprods:> 
         </table>
       </td>
     </tr>
   </table>
   <table width="100%" border="0" cellspacing="0" cellpadding="0">
-    <tr>
+    <tr> 
       <td width="100%">&nbsp;</td>
       <td align="right"> 
         <table border="0" cellspacing="0" cellpadding="0">
@@ -65,7 +67,7 @@
           </tr>
           <tr> 
             <td></td>
-            <td bgcolor="#6666CC"><img src="/images/trans_pixel.gif" width="1" height="1"></td>
+            <td bgcolor="#666666"><img src="/images/trans_pixel.gif" width="1" height="1"></td>
             <td></td>
           </tr>
         </table>

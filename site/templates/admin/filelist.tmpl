@@ -26,44 +26,49 @@
       <td> 
         <table cellpadding="6" border="0" cellspacing="1">
           <tr> 
-            <th>File to add: </th>
+            <th bgcolor="#FFFFFF">File to add: </th>
             <td bgcolor="#FFFFFF"> 
-              <input type="file" name="file" /> <:help file file:>
+              <input type="file" name="file" />
             </td>
+            <td bgcolor="#FFFFFF"><:help file file:> </td>
           </tr>
           <tr> 
-            <th>Description: </th>
+            <th bgcolor="#FFFFFF">Description: </th>
             <td bgcolor="#FFFFFF"> 
-              <input type="text" name="description" /> <:help file description:>
+              <input type="text" name="description" />
             </td>
+            <td bgcolor="#FFFFFF"><:help file description:> </td>
           </tr>
           <tr> 
-            <th> Content-Type: </th>
+            <th bgcolor="#FFFFFF"> Content-Type: </th>
             <td bgcolor="#FFFFFF"> 
-              <input type="text" name="contentType" /> <:help file content_type:> (blank for guess)
-            </td>
+              <input type="text" name="contentType" />
+              (blank for guess) </td>
+            <td bgcolor="#FFFFFF"> <:help file content_type:></td>
           </tr>
           <tr> 
-            <th> Treat as download: </th>
+            <th bgcolor="#FFFFFF"> Treat as download: </th>
             <td bgcolor="#FFFFFF"> 
-              <input type="checkbox" name="download" value="1" /> <:help file download:>
+              <input type="checkbox" name="download" value="1" />
             </td>
+            <td bgcolor="#FFFFFF"><:help file download:> </td>
           </tr>
           <tr> 
-            <th> Require payment: </th>
+            <th bgcolor="#FFFFFF"> Require payment: </th>
             <td bgcolor="#FFFFFF"> 
-              <input type="checkbox" name="forSale" value="1" checked /> <:help file forSale:>
+              <input type="checkbox" name="forSale" value="1" checked />
             </td>
+            <td bgcolor="#FFFFFF"><:help file forSale:> </td>
           </tr>
           <tr> 
-            <th> Require user: </th>
+            <th bgcolor="#FFFFFF"> Require user: </th>
             <td bgcolor="#FFFFFF"> 
-              <input type="checkbox" name="requireUser" value="1" /> <:help file requireUser:>
+              <input type="checkbox" name="requireUser" value="1" />
             </td>
+            <td bgcolor="#FFFFFF"><:help file requireUser:> </td>
           </tr>
           <tr> 
-            <th>&nbsp; </th>
-            <td align="right" bgcolor="#FFFFFF"> 
+            <td bgcolor="#FFFFFF" colspan="3" align="right"> 
               <input type="submit" name="fileadd" value="  Add File  " />
             </td>
           </tr>
@@ -80,22 +85,18 @@
 <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000">
     <tr>
       <td>
-  <table cellpadding="6" border="0" cellspacing="1">
-    <tr>
-    <th>
-      File</th>
-    <th>
-      Description</th>
-    <th>
-      Content-Type</th>
-    <th>
-      Download</th>
-    <th>
-      Require<br>Payment</th>
-    <th>
-      Require<br>User</th>
-    <th>
-      &nbsp;</th></tr>
+        <table cellpadding="6" border="0" cellspacing="1">
+          <tr>
+            <th bgcolor="#FFFFFF" nowrap> File</th>
+            <th bgcolor="#FFFFFF" nowrap> Description</th>
+            <th bgcolor="#FFFFFF" nowrap> Content-Type</th>
+            <th bgcolor="#FFFFFF" nowrap> Download</th>
+            <th bgcolor="#FFFFFF" nowrap> Require<br>
+              Payment</th>
+            <th bgcolor="#FFFFFF" nowrap> Require<br>
+              User</th>
+            <th bgcolor="#FFFFFF" nowrap>Modify </th>
+          </tr>
 <:if Files:>
 <: iterator begin files :>
     <tr bgcolor="#FFFFFF"> 
@@ -137,6 +138,7 @@
     <input type="submit" name="back" value=" &lt;&lt;  Back  " /></p>
 
 </form>
+
 <p><font size="-1">BSE Release <:release:></font></p>
 </body
 ></html>

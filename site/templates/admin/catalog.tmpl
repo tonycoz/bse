@@ -1,26 +1,26 @@
 <p><a href="/cgi-bin/admin/add.pl?id=<:catalog id:>">Edit catalog</a></p>
-<:if Products:>
-<h3>Products list</h3>
-<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000">
+<:if Products:> 
+<h4>Products list</h4>
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" width="100%">
   <tr>
     <td>
-      <table border=0 cellpadding="6" cellspacing="1">
+      <table border=0 cellpadding="6" cellspacing="1" width="100%">
         <tr> 
-          <th>Id</th>
-          <th>Name</th>
-          <th>Release</th>
-          <th>Expire</th>
-          <th>Retail</th>
-          <th>Wholesale</th>
-          <th>GST</th>
-          <th>&nbsp;</th>
-          <th>&nbsp;</th>
+          <th bgcolor="#FFFFFF">Id</th>
+          <th bgcolor="#FFFFFF" width="100%">Name</th>
+          <th bgcolor="#FFFFFF">Release</th>
+          <th bgcolor="#FFFFFF">Expire</th>
+          <th bgcolor="#FFFFFF">Retail</th>
+          <th bgcolor="#FFFFFF">Wholesale</th>
+          <th bgcolor="#FFFFFF">GST</th>
+          <th bgcolor="#FFFFFF">Modify</th>
+          <th bgcolor="#FFFFFF">&nbsp;</th>
         </tr>
         <:iterator begin products:> 
         <tr bgcolor="#FFFFFF"> 
           <td align="center"><a href="<:script:>?id=<:product id:>&product_detail=1"><:product 
             id:></a></td>
-          <td><:product title:></td>
+          <td width="100%"><:product title:></td>
           <td><:date release:></td>
           <td><:date expire:></td>
           <td align=right>$<:money retailPrice:></td>
@@ -39,12 +39,12 @@
 </table>
 <:or Products:><:eif Products:>
 <form action="<:script:>"><input type=hidden name=parentid value="<:catalog id:>"><p><input type=submit name="add_product" value="Add Product"></p></form>
-<h3>Sub catalogs</h3>
-<:if Subcats :>
-<:iterator begin subcats:>
+<h4>Sub catalogs</h4>
+<h4><:if Subcats :> <:iterator begin subcats:> </h4>
 <ul>
-<a name="cat<:subcat id:>"></a><h2>Catalog: <:subcat title:> <:movecat:></h2>
-<:embed subcat catalog.tmpl:>
+  <h4><a name="cat<:subcat id:>"></a></h4>
+  <h4>Catalog: <:subcat title:> <:movecat:></h4>
+  <h4><:embed subcat catalog.tmpl:> </h4>
 </ul>
 <:iterator end subcats:>
 <:or Subcats:><:eif Subcats:>
