@@ -347,7 +347,7 @@ sub embed {
 }
 
 sub baseActs {
-  my ($self, $articles, $acts, $embedded) = @_;
+  my ($self, $articles, $acts, $article, $embedded) = @_;
 
   # used to generate the side menu
   my $section_index = -1;
