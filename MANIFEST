@@ -350,4 +350,6 @@ t/t10edit.t
 t/t20gen.t
 t/t30rules.t	Check for use strict and warnings
 t/t40images.t	Tests image management
+t/templates/included.include	Used by t010template.t
+t/templates/wraptest.tmpl	Used by t010template.t
 test.cfg.base
