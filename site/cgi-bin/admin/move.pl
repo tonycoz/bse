@@ -144,7 +144,7 @@ if ($cgi->param('refreshto')) {
   refresh_to($urlbase .$cgi->param('refreshto'));
 }
 elsif ($cgi->param('r')) {
-  refresh_to($urlbase .$cgi->param('r'));
+  refresh_to($cgi->param('r'));
 }
 elsif ($cgi->param('edit')) {
   # refresh back to editor

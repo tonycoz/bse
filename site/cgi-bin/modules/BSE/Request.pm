@@ -62,7 +62,14 @@ sub check_admin_logon {
 }
 
 
-my $site_article = { id=>-1, title=>"unknown", parentid=>0 };
+my $site_article = 
+  { 
+   id        => -1, 
+   title     => "unknown", 
+   parentid  => 0, 
+   generator => 'Generate::Article',
+   level     => 0,
+  };
 
 sub user_can {
   my ($self, $perm, $object, $rmsg) = @_;

@@ -112,7 +112,7 @@
             <td nowrap bgcolor="#FFFFFF"><:help edit listed:> <:error_img listed:></td>
           </tr>
 		  <tr>
-            <th nowrap bgcolor="#FFFFFF" align="left">Flags:</th>
+            <th valign="top" nowrap bgcolor="#FFFFFF" align="left">Flags:</th>
             <td bgcolor="#FFFFFF" width="100%"><:iterator begin flags:><:if FieldPerm flags:>
               <input type=checkbox name=flags value="<:flag id:>" <:ifFlagSet [flag id]:>checked<:or:>
               <:eif:>><:or FieldPerm:><:ifFlagSet [flag id]:>Yes<:or:>No<:eif:>

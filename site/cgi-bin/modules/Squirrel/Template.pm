@@ -188,12 +188,12 @@ sub find_template {
 sub include {
   my ($self, $name) = @_;
 
-  print STDERR "Including $name\n";
+  # print STDERR "Including $name\n";
 
   my $filename = $self->find_template($name)
     or return "** cannot find include $name in path **";
 
-  print STDERR "Found $filename\n";
+  # print STDERR "Found $filename\n";
 
   open INCLUDE, "< $filename"
     or return "** cannot open $filename : $! **";

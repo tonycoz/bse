@@ -14,6 +14,7 @@ use Util qw/refresh_to/;
 use BSE::Message;
 use BSE::Permissions;
 use BSE::Request;
+use DevHelp::HTML;
 
 my $req = BSE::Request->new;
 if (BSE::Permissions->check_logon($req)) {
@@ -102,12 +103,37 @@ sub _template_popup {
 			 -default=>$def, -override=>1);
 }
 
+sub _valid_archive_types {
+  my ($req) = @_;
+
+  my %valid;
+  my %types = $req->cfg->entriesCS('valid child types');
+  for my $type (keys %types) {
+    for my $child (split /,/, $types{$type}) {
+      if ($child eq 'Article') {
+	$valid{$type} = 1;
+	last;
+      }
+    }
+  }
+
+  return keys %valid;
+}
+
 sub _parent_popup {
   my ($req, $sub, $old) = @_;
 
+  my %valid_types = map { $_ => 1 } _valid_archive_types($req);
+  my $shopid = $req->cfg->entryErr('articles', 'shop');
   my @all = grep($req->user_can('edit_add_child', $_)
 		 || $sub->{parentId} == $_->{id},
 		 Articles->all());
+  @all = grep 
+    {
+      my $type = ($_->{generator} =~ /(\w+)$/)[0] || 'Article';
+
+      $valid_types{$type} && $_->{id} != $shopid
+    } @all;
   my %labels = map { $_->{id}, "$_->{title} ($_->{id})" } @all;
   my @extras;
   if ($sub && !$old) {
@@ -131,6 +157,11 @@ sub sub_form {
   my %errors;
   for my $error (@$errors) {
     push(@{$errors{$error->[0]}}, $error->[1]);
+  }
+  unless ($message) {
+    $message = $q->param('m');
+    defined $message or $message = '';
+    $message = escape_html($message);
   }
   my %acts;
   %acts =

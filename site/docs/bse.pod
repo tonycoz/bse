@@ -10,6 +10,40 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.12_31
+
+Hopefully this will become 0.13.
+
+=over
+
+=item *
+
+selection of archive parents for subscriptions is now even more
+strict, now you can't select the shop or catalogs as archive parents
+
+=item *
+
+eliminated debug output from the <:include ...:> meta tag
+
+=item *
+
+the move.pl C<r> parameter no longer pre-prepends the base url.
+
+=item *
+
+eliminated some undefined value and non-numeric value warnings
+
+=item *
+
+push "Flags" on the article edit page back into place
+
+=item *
+
+the top-level <:movecat:> tag in the product list now accepts the
+custom arrow prefix and the url suffix parameters
+
+=back
+
 =head2 0.12_30
 
 =over

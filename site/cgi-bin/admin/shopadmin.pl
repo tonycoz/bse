@@ -244,15 +244,20 @@ sub product_list {
      },
      movecat =>
      sub {
+       my ($arg, $acts, $funcname, $templater) = @_;
+
        $req->user_can(edit_reorder_children => $shopid)
 	 or return '';
        @catalogs > 1 or return '';
        # links to move catalogs up/down
        my $html = '';
-       my $refreshto = CGI::escape($ENV{SCRIPT_NAME});
+       my ($img_prefix, $urladd) = DevHelp::Tags->get_parms($arg, $acts, $templater);
+       defined $img_prefix or $img_prefix = '';
+       defined $urladd or $urladd = '';
+       my $refreshto = CGI::escape($ENV{SCRIPT_NAME} . $urladd);
        if ($catalog_index < $#catalogs) {
 	 $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?id=$catalogs[$catalog_index]{id}&d=swap&other=$catalogs[$catalog_index+1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom" /></a>
+<a href="$CGI_URI/admin/move.pl?id=$catalogs[$catalog_index]{id}&d=swap&other=$catalogs[$catalog_index+1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom" /></a>
 HTML
        }
        else {
@@ -260,7 +265,7 @@ HTML
        }
        if ($catalog_index > 0) {
 	 $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?id=$catalogs[$catalog_index]{id}&d=swap&other=$catalogs[$catalog_index-1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom" /></a>
+<a href="$CGI_URI/admin/move.pl?id=$catalogs[$catalog_index]{id}&d=swap&other=$catalogs[$catalog_index-1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom" /></a>
 HTML
        }
        else {

@@ -1,12 +1,12 @@
 package BSE::Edit::Article;
 use strict;
-use HTML::Entities;
 use base qw(BSE::Edit::Base);
 use BSE::Util::Tags qw(tag_error_img);
 use BSE::Util::SQL qw(now_sqldate);
 use BSE::Util::Valid qw/valid_date/;
 use BSE::Permissions;
 use Util qw(custom_class);
+use DevHelp::HTML;
 
 sub article_dispatch {
   my ($self, $req, $article, $articles) = @_;
@@ -148,13 +148,13 @@ sub tag_hash {
   if ($value =~ /\cJ/ && $value =~ /\cM/) {
     $value =~ tr/\cM//d;
   }
-  encode_entities($value);
+  escape_html($value);
 }
 
 sub tag_art_type {
   my ($level, $cfg) = @_;
 
-  encode_entities($cfg->entry('level names', $level, 'Article'));
+  escape_html($cfg->entry('level names', $level, 'Article'));
 }
 
 sub tag_if_new {
@@ -503,7 +503,7 @@ sub tag_step_kid {
   my $kid = $allkids->[$$rallkid_index]
     or return '';
   print STDERR "found kid (want $arg): ", Dumper $kid;
-  encode_entities($step_kids->{$kid->{id}}{$arg});
+  escape_html($step_kids->{$kid->{id}}{$arg});
 }
 
 sub tag_move_stepkid {
@@ -607,7 +607,7 @@ sub tag_stepparent_targ {
   if ($article->{id} && $article->{id} > 0 && !@$targs) {
     @$targs = $article->step_parents;
   }
-  encode_entities($targs->[$$rindex]{$arg});
+  escape_html($targs->[$$rindex]{$arg});
 }
 
 sub tag_move_stepparent {
@@ -741,7 +741,7 @@ sub tag_movechild {
     $url .= "&_t=$t";
   }
   $url .= $urladd;
-  $url = CGI::escape($url);
+  $url = escape_uri($url);
   my $html = '';
   my $nomove = '<img src="/images/trans_pixel.gif" width="17" height="13" border="0" alt="" align="absbottom" />';
   my $id = $kids->[$$rindex]{id};
@@ -882,7 +882,7 @@ sub tag_old {
   my ($col, $func, $funcargs) = split ' ', $args, 3;
   my $value = $cgi->param($col);
   if (defined $value) {
-    return encode_entities($value);
+    return escape_html($value);
   }
   else {
     if ($func) {
@@ -891,7 +891,7 @@ sub tag_old {
     else {
       $value = $article->{$args};
       defined $value or $value = '';
-      return encode_entities($value);
+      return escape_html($value);
     }
   }
 }
@@ -935,12 +935,12 @@ sub tag_default {
     else {
       my $value = $article->{$args};
       defined $value or $value = '';
-      return encode_entities($value);
+      return escape_html($value);
     }
   }
   else {
     my $value = $self->default_value($req, $article, $col);
-    return encode_entities($value);
+    return escape_html($value);
   }
 }
 
@@ -2438,11 +2438,12 @@ sub default_value {
     my $section = "children of $article->{parentid}";
     my $value = $req->cfg->entry($section, $col);
     if (defined $value) {
+      return $value;
     }
   }
   my $section = "level $article->{level}";
   my $value = $req->cfg->entry($section, $col);
-  defined($value) and return encode_entities($value);
+  defined($value) and return $value;
   
   return '';
 }
