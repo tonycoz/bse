@@ -168,6 +168,7 @@ $SEARCH_TITLE_IMAGE = "";
    siteName => 'My Site',
    salesPhoneNo => '61 2 9999 8888',
    salesEmail => 'you@yoursite.com',
+   siteUrl => $URLBASE,
   );
 
 # articles that cannot be deleted
