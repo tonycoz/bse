@@ -143,7 +143,11 @@ sub generate_shop {
 sub generate_extras {
   my ($articles) = @_;
 
-  open EXTRAS, "$TMPLDIR/extras.txt"
+  use BSE::Cfg;
+  my $cfg = BSE::Cfg->new;
+  my $template_dir = $cfg->entry('paths', 'templates') || $TMPLDIR;
+
+  open EXTRAS, "$template_dir/extras.txt"
     or return;
   my @extras;
   while (<EXTRAS>) {
@@ -160,8 +164,9 @@ sub generate_extras {
     my ($in, $out) = @$row;
     my %acts;
     %acts = $gen->baseActs($articles, \%acts);
-    my $templ = Squirrel::Template->new(%TEMPLATE_OPTS);
-    my $content = $templ->show_page($TMPLDIR, $in, \%acts);
+    my $templ = Squirrel::Template->new(%TEMPLATE_OPTS, 
+					template_dir=>$template_dir);
+    my $content = $templ->show_page($template_dir, $in, \%acts);
     my $outname = $CONTENTBASE . $out . ".work";
     my $finalname = $CONTENTBASE . $out;
     open OUT, "> $outname"
@@ -173,6 +178,41 @@ sub generate_extras {
     unlink $finalname;
     rename $outname, $finalname
       or die "Cannot rename $outname to $finalname: $!";
+  }
+
+  # more extras
+  my %entries = $cfg->entries('pregenerate');
+  if (keys %entries) {
+    require 'Generate/Article.pm';
+    my $gen = Generate::Article->new;
+    for my $out (keys %entries) {
+      my ($presets, $input) = split ',', $entries{$out}, 2;
+      my %article = map { $_, '' } Article->columns;
+      $article{displayOrder} = 1;
+      $article{id} = -5;
+      $article{parentid} = -1;
+      for my $field (Article->columns) {
+	if ($cfg->entry("$presets settings", $field)) {
+	  $article{$field} = $cfg->entryVar("$presets settings", $field);
+	}
+      }
+      my %acts;
+      %acts = $gen->baseActs($articles, \%acts, \%article);
+      my $templ = Squirrel::Template->new(%TEMPLATE_OPTS, 
+					  template_dir=>$template_dir);
+      my $content = $templ->show_page($template_dir, $input, \%acts);
+      my $outname = $template_dir .'/'.$out.'.work';
+      my $finalname = $template_dir . '/'. $out;
+      open OUT, "> $outname"
+	or die "Cannot open $outname for write: $!";
+      print OUT $content
+	or die "Cannot write content to $outname: $!";
+      close OUT
+	or die "Cannot close $outname: $!";
+      unlink $finalname;
+      rename $outname, $finalname
+	or die "Cannot rename $outname to $finalname: $!";
+    }
   }
 }
 

@@ -10,6 +10,58 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.11_02
+
+Another test release:
+
+=over
+
+=item *
+
+actually tested the form filling with the user's defaults
+
+=item *
+
+modify localinst.perl to remove the default bse.cfg
+
+=item *
+
+have the checkout function return if the user needs to register (shop.pl)
+
+=item *
+
+check in a few more places if the user needs to register (shop.pl)
+
+=item *
+
+changed names of fields in SiteUsers to match the checkout form
+
+=item *
+
+added telephone and facsimile fields to the user options
+
+=back
+
+=head2 0.11_01
+
+Test release:
+
+=over
+
+=item *
+
+supports files attached to products for sale
+
+=item *
+
+user registration
+
+=item *
+
+we now have a config file
+
+=back
+
 =head2 0.11
 
 Looks like all known problems are fixed.  Time to do a semi-major

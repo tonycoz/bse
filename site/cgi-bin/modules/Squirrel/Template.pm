@@ -85,15 +85,20 @@ sub iterate {
 sub cond {
   my ($self, $name, $args, $true, $false, $acts, $orig) = @_;
 
-  if (exists $acts->{"if$name"}) {
-    return $acts->{"if$name"}->($args) ? $true : $false;
-  }
-  elsif (exists $acts->{lcfirst $name}) {
-    return $acts->{lcfirst $name}->($args) ? $true : $false;
-  }
-  else {
-    return $orig;
-  }
+  my $result =
+    eval {
+      if (exists $acts->{"if$name"}) {
+	return $acts->{"if$name"}->($args) ? $true : $false;
+      }
+      elsif (exists $acts->{lcfirst $name}) {
+	return $acts->{lcfirst $name}->($args) ? $true : $false;
+      }
+      else {
+	return $orig;
+      }
+    };
+  $@ && return $orig;
+  return $result;
 }
 
 sub replace_template {

@@ -79,6 +79,32 @@
               <input type="file" name="thumbnail"> <:ifProduct thumbImage:><img src="/images/<:product thumbImage:>"><input type=checkbox name="remove_thumb"> Remove<:or:><:eif:>
             </td>
           </tr>
+          <tr>
+            <th nowrap align="left"><a name="files"></a>Files:</th>
+            <td nowrap bgcolor="#FFFFFF">
+<:if Files:>
+              <table>
+	        <tr>
+		  <th>Filename</th>
+		  <th>Size</th>
+		  <th>Type</th>
+		  <th>Download?</th>
+		</tr>
+<:iterator begin files:>
+                <tr>
+		  <td><:file displayName:></td>
+		  <td align="center"><:file sizeInBytes:></td>
+		  <td><:file contentType:></td>
+		  <td><:ifFile download:>Yes<:or:>No<:eif:></td>
+		</tr>
+<:iterator end files:>
+	      </table>
+<:or Files:>
+              No files are attached to this article.
+<:eif Files:>
+	      <a href="<:script:>?filelist=1&id=<:product id:>"><b>Manage Files</b></a>
+            </td>
+          </tr>
         </table>
       </td>
     </tr>

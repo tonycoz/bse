@@ -3,7 +3,7 @@ use strict;
 use vars qw(@ISA @EXPORT_OK);
 @ISA = qw/Exporter/;
 @EXPORT_OK = qw/shop_cart_tags cart_item_opts nice_options shop_nice_options
-                total shop_total load_order_fields basic_tags/;
+                total shop_total load_order_fields basic_tags need_logon/;
 use Constants qw/:shop/;
 use BSE::Util::SQL qw(now_sqldate);
 use BSE::Custom;
@@ -139,16 +139,16 @@ sub load_order_fields {
       or do { $$error = "Please enter a credit card number"; return 0 };
   }
 
+  my @cart = @{$session->{cart}};
+  @cart or 
+    do { $$error = 'You have no items in your shopping cart'; return 0 };
+
   require 'Orders.pm';
   require 'Order.pm';
   require 'OrderItems.pm';
   require 'OrderItem.pm';
 
   my %order;
-  my @cart = @{$session->{cart}};
-  @cart or 
-    do { $$error = 'You have no items in your shopping cart'; return 0 };
-
   # so we can quickly check for columns
   my @columns = Order->columns;
   my %columns; 
@@ -195,6 +195,15 @@ sub load_order_fields {
   $order->{orderDate} = $today;
   $order->{total} += BSE::Custom->total_extras(\@cart, \@products, 
 					     $session->{custom});
+
+  require 'BSE/Cfg.pm';
+  my $cfg = BSE::Cfg->new;
+  if (need_logon($cfg, \@cart, \@products, $session)) {
+    $$error = "Your cart contains some file-based products.  Please register or logon";
+    return 0;
+  }
+
+
   # blank anything else
   for my $column (@columns) {
     defined $order->{$column} or $order->{$column} = '';
@@ -232,6 +241,24 @@ sub basic_tags {
        return sprintf("%.02f", $acts->{$func}->($args)/100);
      },
     );
+}
+
+sub need_logon {
+  my ($cfg, $cart, $cart_prods, $session) = @_;
+
+  my $reg_if_files = $cfg->entryBool('shop', 'register_if_files', 1);
+  if (!$session->{userid} && $reg_if_files) {
+    require 'ArticleFiles.pm';
+    # scan to see if any of the products have files
+    for my $prod (@$cart_prods) {
+      my @files = ArticleFiles->getBy(articleId=>$prod->{id});
+      if (grep $_->{forSale}, @files) {
+	return 1;
+      }
+    }
+  }
+  
+  return 0;
 }
 
 1;

@@ -55,7 +55,7 @@ sub new {
       my $sth = $dh->stmt("add$class")
 	or confess "No add$class member in DatabaseHandle";
       my $ret = $sth->execute(@values[1..$#values]);
-      $ret != 0
+      $ret && $ret != 0
 	or confess "Could not add $class(undef, @values[1..$#values]) to database: ",$sth->errstr;
       $self->{$primary[0]} = $dh->insert_id($sth);
     }

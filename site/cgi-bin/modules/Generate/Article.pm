@@ -8,6 +8,8 @@ use vars qw(@ISA);
 use Generate;
 use CGI (); # for escapeHTML()
 use Util qw(generate_button);
+use BSE::Util::Tags;
+use ArticleFiles;
 @ISA = qw/Generate/;
 
 my $excerptSize = 300;
@@ -110,6 +112,8 @@ sub baseActs {
     Images->getBy('articleId', $article->{id});
   my $image_index = -1;
   my $had_image_tags = 0;
+  my @files = sort { $b->{displayOrder} <=> $a->{displayOrder} }
+    ArticleFiles->getBy(articleId=>$article->{id});
 
   # separate these so the closures can see %acts
   my %acts =
@@ -351,6 +355,7 @@ HTML
      },
      ifImage => sub { $_[0] >= 1 && $_[0] <= @images },
      ifImages => sub { @images },
+     BSE::Util::Tags->make_iterator(\@files, 'file', 'files'),
     );
 
   if ($article->{link} =~ /^\w+:/) {

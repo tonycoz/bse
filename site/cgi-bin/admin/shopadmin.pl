@@ -1,4 +1,6 @@
 #!/usr/bin/perl -w
+# -d:ptkdb
+BEGIN { $ENV{DISPLAY} = '192.168.32.97:0.0'; }
 
 use strict;
 use FindBin;
@@ -15,47 +17,18 @@ use OrderItem;
 use Constants qw($TMPLDIR);
 use Squirrel::Template;
 use Squirrel::ImageEditor;
-use Constants qw(:shop :session $SHOPID $PRODUCTPARENT $SECURLBASE 
+use Constants qw(:shop $SHOPID $PRODUCTPARENT $SECURLBASE 
                  $SHOP_URI $CGI_URI $IMAGES_URI $AUTO_GENERATE);
-use CGI::Cookie;
-require $SESSION_REQUIRE;
 use Images;
 use Articles;
 use BSE::Sort;
 use BSE::Cfg;
+use BSE::Session;
+use BSE::Util::Tags;
 
-my %cookies = fetch CGI::Cookie;
-my $sessionid;
-$sessionid = $cookies{sessionid}->value if exists $cookies{sessionid};
+my $cfg = BSE::Cfg->new();
 my %session;
-
-my $dh = BSE::DB->single;
-eval {
-  tie %session, $SESSION_CLASS, $sessionid,
-    {
-     Handle=>$dh->{dbh},
-     LockHandle=>$dh->{dbh}
-    };
-};
-if ($@ && $@ =~ /Object does not exist/) {
-  # try again
-  undef $sessionid;
-  tie %session, $SESSION_CLASS, $sessionid,
-    {
-     Handle=>$dh->{dbh},
-     LockHandle=>$dh->{dbh}
-    };
-}
-
-unless ($sessionid) {
-  # save the new sessionid
-  print "Set-Cookie: ",CGI::Cookie->new(-name=>'sessionid', -value=>$session{_session_id}),"\n";
-}
-# this shouldn't be necessary, but it stopped working and this fixed it
-# <sigh>
-END {
-  untie %session;
-}
+BSE::Session->tie_it(\%session, $cfg);
 
 param();
 
@@ -115,7 +88,6 @@ if ($imageEditor->action($CGI::Q)) {
   exit;
 }
 
-my $cfg = BSE::Cfg->new();
 use BSE::FileEditor;
 my $file_editor = 
   BSE::FileEditor->new(session=>\%session, cgi=>$CGI::Q, cfg=>$cfg,
@@ -512,6 +484,12 @@ sub product_form {
     $title .= ' / ' if $title;
     unshift(@work, map [ $_->{id}, $title.$_->{title} ], @kids);
   }
+  my @files;
+  if ($product->{id}) {
+    require 'ArticleFiles.pm';
+    @files = ArticleFiles->getBy(articleId=>$product->{id});
+  }
+  my $file_index;
 
   my @templates;
   push(@templates, "shopitem.tmpl")
@@ -597,6 +575,8 @@ HTML
        $acts{$func} or return "** unknown function '$func' $args **";
        display_date($acts{$func}->($args));
      },
+     BSE::Util::Tags->
+     make_iterator(\@files, 'file', 'files', \$file_index),
     );
 
   page($template, \%acts);
@@ -655,7 +635,7 @@ sub order_list_low {
   my %acts;
   %acts =
     (
-     order=> sub { CGI::escapeHTML($orders[$order_index]{$_[0]}) },
+     order=> sub { CGI::escapeHTML($orders_work[$order_index]{$_[0]}) },
      iterate_orders_reset =>
      sub {
        @orders_work = 
@@ -663,8 +643,8 @@ sub order_list_low {
        $order_index = -1;
      },
      iterate_orders => sub { ++$order_index < @orders_work },
-     money => sub { sprintf("%.2f", $orders[$order_index]{$_[0]}/100.0) },
-     date => sub { display_date($orders[$order_index]{$_[0]}) },
+     money => sub { sprintf("%.2f", $orders_work[$order_index]{$_[0]}/100.0) },
+     date => sub { display_date($orders_work[$order_index]{$_[0]}) },
      script => sub { $ENV{SCRIPT_NAME} },
      title => sub { $title },
      ifHaveParam => sub { defined param($_[0]) },

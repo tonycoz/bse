@@ -28,7 +28,7 @@ sub send {
   $args{headers} =~ /^\s/
     and return $self->_error("headers starts with whitespace");
 
-  open MAIL, "| $SHOP_SENDMAIL -t -odi"
+  open MAIL, "| $SHOP_SENDMAIL -t -oi -odq"
     or return $self->_error("Cannot open pipe to sendmail");
   print MAIL <<EOS;
 From: $args{from}

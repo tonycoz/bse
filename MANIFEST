@@ -20,26 +20,37 @@ site/cgi-bin/admin/makeIndex.pl
 site/cgi-bin/admin/move.pl
 site/cgi-bin/admin/reorder.pl
 site/cgi-bin/admin/shopadmin.pl
+site/cgi-bin/admin/userlist.pl
+site/cgi-bin/bse.cfg
 site/cgi-bin/modules/AdminUtil.pm
 # the 2 following will probably be renamed at some point
 site/cgi-bin/modules/Apache/Session/DBIreal.pm
 site/cgi-bin/modules/Apache/Session/Store/DBIreal.pm
 site/cgi-bin/modules/Article.pm
+site/cgi-bin/modules/ArticleFile.pm
+site/cgi-bin/modules/ArticleFiles.pm
 site/cgi-bin/modules/Articles.pm
 site/cgi-bin/modules/Constants.pm
 #site/cgi-bin/modules/Constants.tmpl
+site/cgi-bin/modules/BSE/Admin/StepParents.pm
 site/cgi-bin/modules/BSE/Custom.pm
 site/cgi-bin/modules/BSE/CustomBase.pm
-site/cgi-bin/modules/BSE/Admin/StepParents.pm
+site/cgi-bin/modules/BSE/Cfg.pm
 site/cgi-bin/modules/BSE/DB.pm
 site/cgi-bin/modules/BSE/DB/Mysql.pm
 site/cgi-bin/modules/BSE/DB/MSSQL.pm
+site/cgi-bin/modules/BSE/FileEditor.pm
 site/cgi-bin/modules/BSE/Mail.pm
 site/cgi-bin/modules/BSE/Mail/Sendmail.pm
 site/cgi-bin/modules/BSE/Mail/SMTP.pm
+site/cgi-bin/modules/BSE/Message.pm
+site/cgi-bin/modules/BSE/Session.pm
 site/cgi-bin/modules/BSE/Shop/Util.pm
 site/cgi-bin/modules/BSE/Sort.pm
+site/cgi-bin/modules/BSE/Template.pm
+site/cgi-bin/modules/BSE/UserReg.pm
 site/cgi-bin/modules/BSE/Util/SQL.pm
+site/cgi-bin/modules/BSE/Util/Tags.pm
 site/cgi-bin/modules/BSE/Util/Valid.pm
 #site/cgi-bin/modules/DatabaseHandle.pm    obsolete
 site/cgi-bin/modules/Generate.pm
@@ -56,6 +67,8 @@ site/cgi-bin/modules/OtherParent.pm
 site/cgi-bin/modules/OtherParents.pm
 site/cgi-bin/modules/Product.pm
 site/cgi-bin/modules/Products.pm
+site/cgi-bin/modules/SiteUser.pm
+site/cgi-bin/modules/SiteUsers.pm
 site/cgi-bin/modules/Squirrel/GPG.pm
 site/cgi-bin/modules/Squirrel/ImageEditor.pm
 site/cgi-bin/modules/Squirrel/PGP5.pm
@@ -67,6 +80,7 @@ site/cgi-bin/modules/Util.pm
 site/cgi-bin/printable.pl
 site/cgi-bin/search.pl
 site/cgi-bin/shop.pl
+site/cgi-bin/user.pl
 site/data/stopwords.txt
 site/docs/TODO.html
 site/docs/TODO.pod
@@ -80,6 +94,8 @@ site/docs/bse.html
 site/docs/bse.pod
 site/docs/bugs.html
 site/docs/bugs.pod
+site/docs/config.html
+site/docs/config.pod
 site/docs/makedocs
 site/docs/search.html
 site/docs/shop.html
@@ -89,8 +105,10 @@ site/docs/templates.pod
 site/htdocs/a/.htaccess
 site/htdocs/admin/advanced.html
 site/htdocs/admin/index.html
+site/htdocs/admin/help/file.html
 site/htdocs/css/admin.css
 site/htdocs/css/style-main.css
+site/htdocs/images/admin/help.gif
 site/htdocs/images/admin/move_down.gif
 site/htdocs/images/admin/move_up.gif
 site/htdocs/images/store/browse_more.gif
@@ -110,8 +128,6 @@ site/htdocs/js/validate.js
 #  site/htdocs/shop created by the Makefile
 site/templates/1/shop_multicat.tmpl
 site/templates/1/sitemap.tmpl
-site/templates/admin/add_product.tmpl
-site/templates/admin/article_img.tmpl
 site/templates/base.tmpl
 site/templates/cart_base.tmpl
 site/templates/catalog.tmpl
@@ -126,6 +142,8 @@ site/templates/common/embedded_subsect.tmpl
 site/templates/common/news_item.tmpl
 site/templates/common/sidebar.tmpl
 site/templates/common/sidebar_section.tmpl
+site/templates/admin/add_product.tmpl
+site/templates/admin/article_img.tmpl
 site/templates/admin/catalog.tmpl  # embedded in the shopadmin catalog/product display
 site/templates/admin/edit_0.tmpl
 site/templates/admin/edit_1.tmpl
@@ -135,6 +153,7 @@ site/templates/admin/edit_4.tmpl
 site/templates/admin/edit_5.tmpl
 site/templates/admin/edit_catalog.tmpl
 site/templates/admin/edit_product.tmpl
+site/templates/admin/filelist.tmpl
 site/templates/admin/order_detail.tmpl
 site/templates/admin/order_list.tmpl
 site/templates/admin/order_list_filled.tmpl
@@ -163,4 +182,11 @@ site/templates/search_base.tmpl
 site/templates/shop_help.tmpl
 site/templates/shop_sect.tmpl
 site/templates/shopitem.tmpl
+site/templates/user/logon_base.tmpl
+site/templates/user/options_base.tmpl
+site/templates/user/register_base.tmpl
+site/templates/user/userpage_base.tmpl
+site/templates/user/lostpassword_base.tmpl
+site/templates/user/lostemailsent_base.tmpl
+site/templates/user/lostpwdemail_base.tmpl
 site/util/initial.pl

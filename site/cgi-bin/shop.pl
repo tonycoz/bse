@@ -5,16 +5,17 @@ use lib "$FindBin::Bin/modules";
 use CGI ':standard';
 use Products;
 use Product;
-use Constants qw(:shop :session $TMPLDIR %EXTRA_TAGS $CGI_URI);
+use Constants qw(:shop $TMPLDIR %EXTRA_TAGS $CGI_URI $URLBASE);
 use Squirrel::Template;
 use Squirrel::ImageEditor;
 use CGI::Cookie;
 use BSE::Custom;
 use BSE::Mail;
 use BSE::Shop::Util qw/shop_cart_tags cart_item_opts nice_options total 
-                       basic_tags load_order_fields/;
-
-require $SESSION_REQUIRE;
+                       basic_tags load_order_fields need_logon/;
+use BSE::Session;
+use BSE::Cfg;
+use Util qw/refresh_to/;
 
 my $subject = $SHOP_MAIL_SUBJECT;
 
@@ -39,42 +40,9 @@ my $from = $SHOP_FROM;
 my $toName = $SHOP_TO_NAME;
 my $toEmail= $SHOP_TO_EMAIL;
 
-# Lifetime (in hours _OR_ minutes) of the shopping cart cookie.
-# Value can be in minutes (append an 'm') or hours (append an 'h').
-my $lifetime = '+3h';
-my $path = $CGI_URI . '/';
-
-# maximum age of shopping cart cookie
-my $max_cookie_age = "+3h";
-
-my %cookies = fetch CGI::Cookie;
-my $sessionid;
-$sessionid = $cookies{sessionid}->value if exists $cookies{sessionid};
+my $cfg = BSE::Cfg->new();
 my %session;
-
-my $dh = BSE::DB->single;
-eval {
-  tie %session, $SESSION_CLASS, $sessionid,
-    {
-     Handle=>$dh->{dbh},
-     LockHandle=>$dh->{dbh}
-    };
-};
-if ($@ && $@ =~ /Object does not exist/) {
-  # try again
-  undef $sessionid;
-  tie %session, $SESSION_CLASS, $sessionid,
-    {
-     Handle=>$dh->{dbh},
-     LockHandle=>$dh->{dbh}
-    };
-}
-unless ($sessionid) {
-  # save the new sessionid
-  print "Set-Cookie: ",
-    CGI::Cookie->new(-name=>'sessionid', -value=>$session{_session_id}, 
-		     -expires=>$lifetime),"\n";
-}
+BSE::Session->tie_it(\%session, $cfg);
 
 # this shouldn't be necessary, but it stopped working elsewhere and this
 # fixed it
@@ -259,6 +227,19 @@ sub checkout {
   @cart or return show_cart();
 
   my @cart_prods = map { Products->getByPkey($_->{productId}) } @cart;
+
+  if (need_logon($cfg, \@cart, \@cart_prods, \%session)) {
+    refresh_to("$URLBASE/cgi-bin/user.pl?message=".
+	       CGI::escape("Some of the products in your cart include downloadable files.  Please logon or register before checkout."));
+    return;
+  }
+
+  my $user;
+  if ($session{userid}) {
+    require 'SiteUsers.pm';
+    $user = SiteUsers->getBy(userId=>$session{userid});
+  }
+
   $session{custom} ||= {};
   my %custom_state = %{$session{custom}};
 
@@ -298,7 +279,8 @@ sub checkout {
      },
      count => sub { scalar @cart },
      message => sub { $message },
-     old => sub { $olddata ? param($_[0]) : '' },
+     old => sub { CGI::escapeHTML($olddata ? param($_[0]) : 
+		    $user && defined $user->{$_[0]} ? $user->{$_[0]} : '') },
      iterate_options_reset => sub { $option_index = -1 },
      iterate_options => sub { ++$option_index < @options },
      option => sub { CGI::escapeHTML($options[$option_index]{$_[0]}) },
@@ -430,6 +412,12 @@ sub prePurchase {
     $order{gst} += $item->{gst} * $item->{units};
   }
   $order{orderDate} = $today;
+
+  if (need_logon($cfg, \@cart, \@products, \%session)) {
+    refresh_to("$URLBASE/cgi-bin/user.pl?message=".
+	       CGI::escape("Some of the products in your cart include downloadable files.  Please logon or register before checkout."));
+    return;
+  }
 
   $order{total} += BSE::Custom->total_extras(\@cart, \@products, 
 					     $session{custom});
@@ -607,6 +595,13 @@ sub purchase {
     $order{wholesale} += $item->{wholesalePrice} * $item->{units};
     $order{gst} += $item->{gst} * $item->{units};
   }
+
+  if (need_logon($cfg, \@cart, \@products, \%session)) {
+    refresh_to("$URLBASE/cgi-bin/user.pl?message=".
+	       CGI::escape("Some of the products in your cart include downloadable files.  Please logon or register before checkout."));
+    return;
+  }
+
   $order{orderDate} = $today;
   $order{total} += BSE::Custom->total_extras(\@cart, \@products, 
 					     $session{custom});
@@ -619,6 +614,13 @@ sub purchase {
   # make sure the user can't set these behind our backs
   $order{filled} = 0;
   $order{paidFor} = 0;
+
+  if ($session{userid}) {
+    $order{userId} = $session{userid};
+  }
+  else {
+    $order{userId} = '';
+  }
 
   # this should be hard to guess
   $order{randomId} = md5_hex(time().rand().{}.$$);

@@ -29,6 +29,7 @@ system "rm -f $instbase/htdocs/{*.html,a/*.html,shop/*.html,images/*.jpg}"
 
 system "cp -rf $dist/site/cgi-bin $instbase"
   and die "Cannot copy cgi-bin";
+unlink "$instbase/cgi-bin/bse.cfg";
 
 system "cp -rf $dist/site/htdocs $instbase"
   and die "Cannot copy htdocs";

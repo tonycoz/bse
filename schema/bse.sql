@@ -189,8 +189,13 @@ create table orders (
   -- order was cancelled
   cancelled integer not null default 0,
 
+  -- user id of the person who made the order
+  -- an empty string if there's no user
+  userId varchar(40) not null,
+
   primary key (id),
-  index order_cchash(ccNumberHash)
+  index order_cchash(ccNumberHash),
+  index order_userId(userId, orderDate)
 );
 
 DROP TABLE IF EXISTS order_item;
@@ -235,4 +240,76 @@ create table other_parents (
   primary key(id),
   unique (parentId, childId),
   index (childId, childDisplayOrder)
+);
+
+-- initially we just do paid for files, later we may add unpaid for files
+-- there's some database support here to support unpaid for files
+-- but it won't be implemented yet
+drop table if exists article_files;
+create table article_files (
+  id integer not null auto_increment,
+  articleId integer not null,
+
+  -- the name of the file as displayed
+  displayName varchar(80) not null default '',
+
+  -- the filename as stored in the repository
+  filename varchar(80) not null default '',
+
+  -- how big it is
+  sizeInBytes integer not null,
+
+  -- a description of the file
+  description varchar(255) not null default '',
+
+  -- content type
+  contentType varchar(80) not null default 'application/octet-stream',
+
+  -- used to control the order the files are displayed in
+  displayOrder integer not null,
+
+  -- if non-zero this item is for sale
+  -- it has no public URL and can only be downloaded via a script
+  forSale integer not null default 0,
+
+  -- we try to make the browser download the file rather than display it
+  download integer not null default 0,
+
+  -- when it was uploaded
+  whenUploaded datetime not null,
+
+  primary key (id)
+);
+
+-- contains web site users
+-- there will be a separate admin users table at some point
+drop table if exists site_users;
+create table site_users (
+  id integer not null auto_increment,
+
+  userId varchar(40) not null,
+  password varchar(40) not null,
+  email varchar(40) not null,
+
+  keepAddress integer not null default 1,
+  whenRegistered datetime not null,
+  lastLogon datetime not null,
+
+  -- used to fill in the checkout form
+  name1 varchar(127),
+  name2 varchar(127),
+  address varchar(127),
+  city varchar(127),
+  state varchar(40),
+  postcode varchar(40),
+  telephone varchar(80),
+  facsimile varchar(80),
+  country varchar(127),
+
+  -- the user wants to receive the site newsletter if any
+  -- this should default to NO
+  wantLetter integer not null default 0,
+
+  primary key (id),
+  unique (userId)
 );
