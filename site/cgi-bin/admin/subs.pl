@@ -103,9 +103,11 @@ sub _template_popup {
 }
 
 sub _parent_popup {
-  my ($sub, $old) = @_;
+  my ($req, $sub, $old) = @_;
 
-  my @all = Articles->summary();
+  my @all = grep($req->user_can('edit_add_child', $_)
+		 || $sub->{parentId} == $_->{id},
+		 Articles->all());
   my %labels = map { $_->{id}, "$_->{title} ($_->{id})" } @all;
   my @extras;
   if ($sub && !$old) {
@@ -143,7 +145,7 @@ sub sub_form {
      },
      message => sub { $message },
      template => sub { return _template_popup($cfg, $q, $sub, $old, $_[0]) },
-     parent=> sub { _parent_popup($sub, $old)  },
+     parent=> sub { _parent_popup($req, $sub, $old)  },
      error =>
      sub {
        my ($name, $sep) = split ' ', $_[0], 2;
@@ -177,7 +179,7 @@ sub add {
 }
 
 sub validate {
-  my ($q, $cfg, $errors) = @_;
+  my ($req, $q, $cfg, $errors, $sub) = @_;
 
   my @needed = qw(name title description frequency text_template);
   push(@needed, qw/article_template parentId/) if $q->param('archive');
@@ -200,8 +202,16 @@ sub validate {
   if ($q->param('archive')) {
     my $id = $q->param('parentId');
     if ($id) {
-      my $article = Articles->getByPkey($id)
-	or push(@$errors, [ 'parentId', "Select a parent for the archive" ]);
+      my $article = Articles->getByPkey($id);
+      if ($article) {
+	unless ($req->user_can('edit_add_child', $article)
+		|| ($sub && $sub->{parentId} == $id)) {
+	  push @$errors, [ parentId => "You don't have permission to add children to that article" ];
+	}
+      }
+      else {
+	push(@$errors, [ 'parentId', "Select a parent for the archive" ]);
+      }
     }
   }
 
@@ -209,12 +219,16 @@ sub validate {
 }
 
 sub _refresh_list {
-  my ($cfg, $msg) = @_;
+  my ($q, $cfg, $msg) = @_;
 
-  my $url = $cfg->entryErr('site', 'url') . "/cgi-bin/admin/subs.pl";
-  if ($msg) {
-    $url .= "m=" . CGI::escape($msg);
+  my $url = $q->param('r');
+  unless ($url) {
+    $url = $cfg->entryErr('site', 'url') . "/cgi-bin/admin/subs.pl";
+    if ($msg) {
+      $url .= "?m=" . CGI::escape($msg);
+    }
   }
+
   refresh_to($url);
 }
 
@@ -225,7 +239,7 @@ sub addsave {
     or return list($q, $req, $cfg, "You dont have access to add subscriptions");
 
   my @errors;
-  if (validate($q, $cfg, \@errors)) {
+  if (validate($req, $q, $cfg, \@errors)) {
     my %subs;
     my @fields = grep $_ ne 'id', BSE::SubscriptionType->columns;
     for my $field (@fields) {
@@ -236,7 +250,7 @@ sub addsave {
     $subs{lastSent} = '0000-00-00 00:00';
     my $sub = BSE::SubscriptionTypes->add(@subs{@fields});
     
-    _refresh_list($cfg, "Subscription created");  
+    _refresh_list($q, $cfg, "Subscription created");  
   }
   else {
     sub_form($q, $req, $cfg, 'admin/subs/edit', undef, 1, \@errors);
@@ -250,11 +264,11 @@ sub edit {
     or return list($q, $req, $cfg, "You dont have access to edit subscriptions");
 
   my $id = $q->param('id')
-    or return _refresh_list($cfg, "No id supplied to be edited");
+    or return _refresh_list($q, $cfg, "No id supplied to be edited");
 
 
   my $sub = BSE::SubscriptionTypes->getByPkey($id)
-    or return _refresh_list($cfg, "Cannot find record $id");
+    or return _refresh_list($q, $cfg, "Cannot find record $id");
 
   sub_form($q, $req, $cfg, 'admin/subs/edit', $sub, 0);
 }
@@ -266,12 +280,12 @@ sub editsave {
     or return list($q, $req, $cfg, "You dont have access to edit subscriptions");
 
   my $id = $q->param('id')
-    or return _refresh_list($cfg, "No id supplied to be edited");
+    or return _refresh_list($q, $cfg, "No id supplied to be edited");
   my $sub = BSE::SubscriptionTypes->getByPkey($id)
-    or return _refresh_list($cfg, "Cannot find record $id");
+    or return _refresh_list($q, $cfg, "Cannot find record $id");
 
   my @errors;
-  if (validate($q, $cfg, \@errors)) {
+  if (validate($req, $q, $cfg, \@errors, $sub)) {
     my @fields = grep $_ ne 'id', BSE::SubscriptionType->columns;
     for my $field (@fields) {
       $sub->{$field} = $q->param($field) if defined $q->param($field);
@@ -279,7 +293,7 @@ sub editsave {
     $sub->{archive} = () = $q->param('archive');
     $sub->{visible} = 0 + defined $q->param('visible');
     $sub->save();
-    _refresh_list($cfg);
+    _refresh_list($q, $cfg, "Subscription saved");
   }
   else {
     sub_form($q, $req, $cfg, 'admin/subs/edit', $sub, 1, \@errors);
@@ -294,9 +308,9 @@ sub start_send {
 
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'subs');
   my $id = $q->param('id')
-    or return _refresh_list($cfg, $msgs->(startnoid=>"No id supplied to be edited"));
+    or return _refresh_list($q, $cfg, $msgs->(startnoid=>"No id supplied to be edited"));
   my $sub = BSE::SubscriptionTypes->getByPkey($id)
-    or return _refresh_list($cfg, $msgs->(startnosub=>"Cannot find record $id"));
+    or return _refresh_list($q, $cfg, $msgs->(startnosub=>"Cannot find record $id"));
   my %acts;
   %acts =
     (
@@ -314,9 +328,9 @@ sub send_form {
 
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'subs');
   my $id = $q->param('id')
-    or return _refresh_list($cfg, $msgs->(startnoid=>"No id supplied to be edited"));
+    or return _refresh_list($q, $cfg, $msgs->(startnoid=>"No id supplied to be edited"));
   my $sub = BSE::SubscriptionTypes->getByPkey($id)
-    or return _refresh_list($cfg, $msgs->(startnosub=>"Cannot find record $id"));
+    or return _refresh_list($q, $cfg, $msgs->(startnosub=>"Cannot find record $id"));
   my %acts;
   %acts =
     (
@@ -327,7 +341,7 @@ sub send_form {
      ifError => sub { 0 },
      old => sub { CGI::escapeHTML(defined $sub->{$_[0]} ? $sub->{$_[0]} : '') },
      template => sub { return _template_popup($cfg, $q, $sub, 0, $_[0]) },
-     parent=> sub { _parent_popup($sub)  },
+     parent=> sub { _parent_popup($req, $sub)  },
     );
   BSE::Template->show_page('admin/subs/send_form', $cfg, \%acts);
 }
@@ -340,9 +354,9 @@ sub html_preview {
 
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'subs');
   my $id = $q->param('id')
-    or return _refresh_list($cfg, $msgs->(startnoid=>"No id supplied to be edited"));
+    or return _refresh_list($q, $cfg, $msgs->(startnoid=>"No id supplied to be edited"));
   my $sub = BSE::SubscriptionTypes->getByPkey($id)
-    or return _refresh_list($cfg, $msgs->(startnosub=>"Cannot find record $id"));
+    or return _refresh_list($q, $cfg, $msgs->(startnosub=>"Cannot find record $id"));
   my %opts;
   for my $key ($q->param()) {
     # I'm not worried about multiple items
@@ -385,9 +399,9 @@ sub text_preview {
 
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'subs');
   my $id = $q->param('id')
-    or return _refresh_list($cfg, $msgs->(startnoid=>"No id supplied to be edited"));
+    or return _refresh_list($q, $cfg, $msgs->(startnoid=>"No id supplied to be edited"));
   my $sub = BSE::SubscriptionTypes->getByPkey($id)
-    or return _refresh_list($cfg, $msgs->(startnosub=>"Cannot find record $id"));
+    or return _refresh_list($q, $cfg, $msgs->(startnosub=>"Cannot find record $id"));
 
   my %opts;
   for my $key ($q->param()) {
@@ -421,9 +435,9 @@ sub send_message {
 
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'subs');
   my $id = $q->param('id')
-    or return _refresh_list($cfg, $msgs->(startnoid=>"No id supplied to be edited"));
+    or return _refresh_list($q, $cfg, $msgs->(startnoid=>"No id supplied to be edited"));
   my $sub = BSE::SubscriptionTypes->getByPkey($id)
-    or return _refresh_list($cfg, $msgs->(startnosub=>"Cannot find record $id"));
+    or return _refresh_list($q, $cfg, $msgs->(startnosub=>"Cannot find record $id"));
 
   my %opts;
   for my $key ($q->param()) {
@@ -432,6 +446,10 @@ sub send_message {
   }
   if ($q->param('have_archive_check')) {
     $opts{archive} = defined $q->param('archive')
+  }
+  if (($opts{archive} || $sub->{archive}) && $opts{parentId}) {
+    $req->user_can('edit_add_child', $opts{parentId})
+      or delete $opts{parentId};
   }
 
   print "Content-Type: text/html\n\n";
@@ -452,10 +470,10 @@ sub req_delconfirm {
     or return list($q, $req, $cfg, "You dont have access to delete subscriptions");
 
   my $id = $q->param('id')
-    or return _refresh_list($cfg, "No id supplied to be deleted");
+    or return _refresh_list($q, $cfg, "No id supplied to be deleted");
 
   my $sub = BSE::SubscriptionTypes->getByPkey($id)
-    or return _refresh_list($cfg, "Cannot find record $id");
+    or return _refresh_list($q, $cfg, "Cannot find record $id");
 
   sub_form($q, $req, $cfg, 'admin/subs/delete', $sub, 0);
 }
@@ -467,12 +485,12 @@ sub req_delete {
     or return list($q, $req, $cfg, "You dont have access to delete subscriptions");
 
   my $id = $q->param('id')
-    or return _refresh_list($cfg, "No id supplied to be deleted");
+    or return _refresh_list($q, $cfg, "No id supplied to be deleted");
 
   my $sub = BSE::SubscriptionTypes->getByPkey($id)
-    or return _refresh_list($cfg, "Cannot find record $id");
+    or return _refresh_list($q, $cfg, "Cannot find record $id");
 
   $sub->remove;
 
-  _refresh_list($cfg);
+  _refresh_list($q, $cfg, "Subscription deleted");
 }

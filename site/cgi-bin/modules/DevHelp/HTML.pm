@@ -43,7 +43,7 @@ sub popup_menu {
     if (defined $label) {
       $option .= ' value="' . escape_html($value) . '"';
       $option .= ' checked' if defined($default) && $default eq $value;
-      $option .= '>' . escape_html($label);
+      $option .= '>' . escape_html($label) . "</option>";
     }
     else {
       $option .= ' checked' if defined($default) && $default eq $value;

@@ -10,6 +10,74 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.12_30
+
+=over
+
+=item *
+
+the refresh function for the subscriptions list wasn't including the ?
+when adding a message parameter
+
+=item *
+
+the order_detail target now accepts an C<m> parameter to set the new
+<:message:> tag (which allows <:ifMessage:> too)
+
+=item *
+
+each of the targets in shopadmin.pl that accepted a message for
+display through the C<message> parameter will now I<also> accept that
+message through the C<m> parameter
+
+=item *
+
+the C<msg> tag is no longer available on the report system pages.  Use
+the C<message> tag instead.
+
+=item *
+
+C<move.pl> now accepts the refresh URL through the C<r> parameter as
+well as through the C<refreshto> parameter.
+
+=item *
+
+the list of possible parents for archiving a subscription now only
+includes articles the user has permission to add children to.  This is
+also validated on saving/adding the subscription.
+
+=item *
+
+check that the user has rights to add children to the selected archive
+parent on sending the subscription
+
+=item *
+
+a confirmation message is supplied when refreshing after saving
+changes to an existing subscription, or deleting a subscription
+
+=item *
+
+disabled some debugging code in the subcription send code
+
+=item *
+
+removed old code from shopadmin.pl
+
+=item *
+
+you can supply a refresh to url using the C<r> parameter to actions in
+subs.pl to override the default refresh back to the subcriptions list
+
+=item *
+
+all generated C<img> tags now use a XHTML closing " />".  The space is
+prevent problems with older browsers.  If you find a generated img tag
+I've missed, please open a ticket.  C<img> tags in template might
+still not be XHTML compatible, this isn't a bug.
+
+=back
+
 =head2 0.12_29
 
 =over

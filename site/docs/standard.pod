@@ -1,0 +1,48 @@
+=head1 NAME
+
+standard.pod - standards for BSE
+
+=head1 SYNOPSIS
+
+Standards for use in new BSE code (and for old code to be changed to
+use.)
+
+=head1 DESCRIPTION
+
+The current BSE code has grown over a long period, this means there's
+little consistency between code in both the structure of the code and
+in how it behaves.
+
+=head1 CGI PARAMETERS
+
+Current code uses a mix of C<m>, C<message> to accept displayed
+message text, and a mix of C<r>, C<refreshto> to accept refresh to URLs.
+
+=over
+
+=item *
+
+C<m> is to be used to accept displayed message text
+
+=item *
+
+C<r> is to be used to accept refresh to URLs.
+
+=back
+
+=head1 LIBRARIES
+
+=head2 CGI/URL encoding/generation
+
+Use the functions in DevHelp::HTML instead of the functions from CGI.
+
+=head2 Refreshing
+
+Use either BSE::Template->get_refresh() or Util::refresh_to() (prefer
+the first.)
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=cut

@@ -13,8 +13,8 @@ sub set_user {
 sub set_sub {
   my ($self, $sub) = @_;
 
-  use Data::Dumper;
-  print STDERR "set sub ",Dumper($sub);
+  #use Data::Dumper;
+  #print STDERR "set sub ",Dumper($sub);
   $self->{sub} = $sub;
 }
 

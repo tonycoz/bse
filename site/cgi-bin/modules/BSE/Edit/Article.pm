@@ -532,7 +532,7 @@ sub tag_move_stepkid {
   my $blank = qq!<img src="$images_uri/trans_pixel.gif" width="17" height="13" border="0" align="absbottom" />!;
   if ($$rallkids_index < $#$allkids) {
     $html .= <<HTML;
-<a href="$cgi_uri/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids->[$$rallkids_index]{id}&other=$allkids->[$$rallkids_index+1]{id}&refreshto=$refreshto"><img src="$images_uri/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+<a href="$cgi_uri/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids->[$$rallkids_index]{id}&other=$allkids->[$$rallkids_index+1]{id}&refreshto=$refreshto"><img src="$images_uri/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom" /></a>
 HTML
   }
   else {
@@ -540,7 +540,7 @@ HTML
   }
   if ($$rallkids_index > 0) {
     $html .= <<HTML;
-<a href="$cgi_uri/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids->[$$rallkids_index]{id}&other=$allkids->[$$rallkids_index-1]{id}&refreshto=$refreshto"><img src="$images_uri/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+<a href="$cgi_uri/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids->[$$rallkids_index]{id}&other=$allkids->[$$rallkids_index-1]{id}&refreshto=$refreshto"><img src="$images_uri/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom" /></a>
 HTML
   }
   else {
@@ -636,7 +636,7 @@ sub tag_move_stepparent {
   my $refreshto = CGI::escape($url);
   if ($$rindex < $#$stepparents) {
     $html .= <<HTML;
-<a href="$cgi_uri/admin/move.pl?stepchild=$article->{id}&id=$stepparents->[$$rindex]{parentId}&d=swap&other=$stepparents->[$$rindex+1]{parentId}&refreshto=$refreshto&all=1"><img src="$images_uri/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+<a href="$cgi_uri/admin/move.pl?stepchild=$article->{id}&id=$stepparents->[$$rindex]{parentId}&d=swap&other=$stepparents->[$$rindex+1]{parentId}&refreshto=$refreshto&all=1"><img src="$images_uri/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom" /></a>
 HTML
   }
   else {
@@ -644,7 +644,7 @@ HTML
   }
   if ($$rindex > 0) {
     $html .= <<HTML;
-<a href="$cgi_uri/admin/move.pl?stepchild=$article->{id}&id=$stepparents->[$$rindex]{parentId}&d=swap&other=$stepparents->[$$rindex-1]{parentId}&refreshto=$refreshto&all=1"><img src="$images_uri/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+<a href="$cgi_uri/admin/move.pl?stepchild=$article->{id}&id=$stepparents->[$$rindex]{parentId}&d=swap&other=$stepparents->[$$rindex-1]{parentId}&refreshto=$refreshto&all=1"><img src="$images_uri/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom" /></a>
 HTML
   }
   else {
@@ -743,11 +743,11 @@ sub tag_movechild {
   $url .= $urladd;
   $url = CGI::escape($url);
   my $html = '';
-  my $nomove = '<img src="/images/trans_pixel.gif" width="17" height="13" border="0" alt="" align="absbottom">';
+  my $nomove = '<img src="/images/trans_pixel.gif" width="17" height="13" border="0" alt="" align="absbottom" />';
   my $id = $kids->[$$rindex]{id};
   if ($$rindex < $#$kids) {
     $html .= <<HTML;
-<a href="$cgi_uri/admin/move.pl?id=$id&d=down&edit=1&all=1&r=$url"><img src="$images_uri/admin/${img_prefix}move_down.gif" width="17" height="13" alt="Move Down" border="0" align="absbottom"></a>
+<a href="$cgi_uri/admin/move.pl?id=$id&d=down&edit=1&all=1&r=$url"><img src="$images_uri/admin/${img_prefix}move_down.gif" width="17" height="13" alt="Move Down" border="0" align="absbottom" /></a>
 HTML
   }
   else {
@@ -755,7 +755,7 @@ HTML
   }
   if ($$rindex > 0) {
     $html .= <<HTML;
-<a href="$cgi_uri/admin/move.pl?id=$id&d=up&edit=1&all=1&r=$url"><img src="$images_uri/admin/${img_prefix}move_up.gif" width="17" height="13" alt="Move Up" border="0" align="absbottom"></a>
+<a href="$cgi_uri/admin/move.pl?id=$id&d=up&edit=1&all=1&r=$url"><img src="$images_uri/admin/${img_prefix}move_up.gif" width="17" height="13" alt="Move Up" border="0" align="absbottom" /></a>
 HTML
   }
   else {
@@ -809,11 +809,11 @@ sub tag_imgmove {
   $url = CGI::escape($url);
 
   my $html = '';
-  my $nomove = '<img src="/images/trans_pixel.gif" width="17" height="13" border="0" alt="" align="absbottom">';
+  my $nomove = '<img src="/images/trans_pixel.gif" width="17" height="13" border="0" alt="" align="absbottom" />';
   my $image = $images->[$$rindex];
   if ($$rindex > 0) {
     $html .= <<HTML
-<a href="$ENV{SCRIPT_NAME}?id=$article->{id}&moveimgup=1&imageid=$image->{id}&r=$url"><img src="/images/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+<a href="$ENV{SCRIPT_NAME}?id=$article->{id}&moveimgup=1&imageid=$image->{id}&r=$url"><img src="/images/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom" /></a>
 HTML
   }
   else {
@@ -821,7 +821,7 @@ HTML
   }
   if ($$rindex < $#$images) {
     $html .= <<HTML
-<a href="$ENV{SCRIPT_NAME}?id=$article->{id}&moveimgdown=1&imageid=$image->{id}&r=$url"><img src="/images/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+<a href="$ENV{SCRIPT_NAME}?id=$article->{id}&moveimgdown=1&imageid=$image->{id}&r=$url"><img src="/images/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom" /></a>
 HTML
   }
   else {
@@ -849,7 +849,7 @@ sub tag_movefiles {
   $$rindex >= 0 && $$rindex < @$files
     or return '** movefiles can only be used in the files iterator **';
 
-  my $nomove = '<img src="/images/trans_pixel.gif" width="17" height="13" border="0" alt="" align="absbottom">';
+  my $nomove = '<img src="/images/trans_pixel.gif" width="17" height="13" border="0" alt="" align="absbottom" />';
   my $images_uri = $self->{cfg}->entry('uri', 'images', '/images');
 
   my $urlbase = $self->{cfg}->entryVar('site', 'url');
@@ -858,7 +858,7 @@ sub tag_movefiles {
   
   if ($$rindex < $#$files) {
     $html .= <<HTML;
-<a href="$ENV{SCRIPT_NAME}?fileswap=1&id=$article->{id}&file1=$files->[$$rindex]{id}&file2=$files->[$$rindex+1]{id}&r=$url"><img src="$images_uri/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+<a href="$ENV{SCRIPT_NAME}?fileswap=1&id=$article->{id}&file1=$files->[$$rindex]{id}&file2=$files->[$$rindex+1]{id}&r=$url"><img src="$images_uri/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom" /></a>
 HTML
   }
   else {
@@ -866,7 +866,7 @@ HTML
   }
   if ($$rindex > 0) {
     $html .= <<HTML;
-<a href="$ENV{SCRIPT_NAME}?fileswap=1&id=$article->{id}&file1=$files->[$$rindex]{id}&file2=$files->[$$rindex-1]{id}&r=$url"><img src="$images_uri/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+<a href="$ENV{SCRIPT_NAME}?fileswap=1&id=$article->{id}&file1=$files->[$$rindex]{id}&file2=$files->[$$rindex-1]{id}&r=$url"><img src="$images_uri/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom" /></a>
 HTML
   }
   else {

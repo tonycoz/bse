@@ -135,7 +135,7 @@ sub send {
   $sub->_build_article(\%article, $opts);
   my $gen;
   if ($article{template}) {
-    print STDERR "Making generator\n";
+    #print STDERR "Making generator\n";
     require 'Generate/Subscription.pm';
     $gen = Generate::Subscription->new(cfg=>$cfg);
     $gen->set_sub($sub);
@@ -151,7 +151,7 @@ sub send {
     my $text = $sub->_text_format_low($cfg, $user, $opts, \%article);
     my $html;
     if ($gen && !$user->{textOnlyMail}) {
-      print STDERR "Making HTML\n";
+      #print STDERR "Making HTML\n";
       $gen->set_user($user);
       $html = $gen->generate(\%article, 'Articles');
     }

@@ -105,7 +105,7 @@ HTML
      sub {
        if ($self->{admin} && $product_index < $#products) {
 	 my $html = <<HTML;
- <a href="$CGI_URI/admin/move.pl?id=$products[$product_index]{id}&d=down"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+ <a href="$CGI_URI/admin/move.pl?id=$products[$product_index]{id}&d=down"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom" /></a>
 HTML
 	 chop $html;
 	 return $html;
@@ -118,7 +118,7 @@ HTML
      sub {
        if ($self->{admin} && $product_index > 0) {
 	 my $html = <<HTML;
- <a href="$CGI_URI/admin/move.pl?id=$products[$product_index]{id}&d=up"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+ <a href="$CGI_URI/admin/move.pl?id=$products[$product_index]{id}&d=up"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom" /></a>
 HTML
 	 chop $html;
 	 return $html;
@@ -149,13 +149,13 @@ HTML
        my $can_move_up = $allprod_index > 0;
        my $can_move_down = $allprod_index < $#allprods;
        return '' unless $can_move_up || $can_move_down;
-       my $blank = '<img src="/images/trans_pixel.gif" width="17" height="13" border="0" alt="" align="absbotton">';
+       my $blank = '<img src="/images/trans_pixel.gif" width="17" height="13" border="0" alt="" align="absbotton" />';
        my $myid = $allprods[$allprod_index]{id};
        my $refreshto = "$CGI_URI/admin/admin.pl?id=$article->{id}$urladd";
        if ($can_move_down) {
 	 my $nextid = $allprods[$allprod_index+1]{id};
 	 $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$myid&other=$nextid&refreshto=$refreshto"><img src="$IMAGES_URI/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+<a href="$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$myid&other=$nextid&refreshto=$refreshto"><img src="$IMAGES_URI/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom" /></a>
 HTML
        }
        else {
@@ -164,7 +164,7 @@ HTML
        if ($can_move_up) {
 	 my $previd = $allprods[$allprod_index-1]{id};
 	 $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$myid&other=$previd&refreshto=$refreshto"><img src="$IMAGES_URI/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+<a href="$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$myid&other=$previd&refreshto=$refreshto"><img src="$IMAGES_URI/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom" /></a>
 HTML
        }
        else {

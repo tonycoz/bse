@@ -24,6 +24,7 @@ my @targets =
    'gen.html',
    'upgrade_mysql.html',
    'makedocs.html',
+   'standard.html',
   );
 
 my @exts = qw(.pod .pm .pl);

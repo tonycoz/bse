@@ -115,7 +115,7 @@ sub baseActs {
        my $which = shift || 'article';
        $acts->{$which} && $acts->{$which}->('titleImage')
          ? qq!<img src="/images/titles/!.$acts->{$which}->('titleImage')
-           .qq!" border=0>! 
+           .qq!" border="0" />! 
          : $acts->{$which}->('title');
      },
      thumbnail =>
@@ -127,7 +127,7 @@ sub baseActs {
            .'" width="'.$acts->{$which}->('thumbWidth')
              .'" height="'.$acts->{$which}->('thumbHeight').'"';
          $result .= qq! class="$class"! if $class;
-         $result .= ' border="0">';
+         $result .= ' border="0" />';
          return $result;
        }
        else {
@@ -291,7 +291,7 @@ HTML
        @children > 1 or return '';
        if ($self->{admin} && $child_index < $#children) {
          my $html = <<HTML;
-<a href="$CGI_URI/admin/move.pl?id=$children[$child_index]{id}&d=down"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+<a href="$CGI_URI/admin/move.pl?id=$children[$child_index]{id}&d=down"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom" /></a>
 HTML
 	 chop $html;
 	 return $html;
@@ -304,7 +304,7 @@ HTML
        @children > 1 or return '';
        if ($self->{admin} && $child_index > 0) {
          my $html = <<HTML;
-<a href="$CGI_URI/admin/move.pl?id=$children[$child_index]{id}&d=up"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+<a href="$CGI_URI/admin/move.pl?id=$children[$child_index]{id}&d=up"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom" /></a>
 HTML
 	 chop $html;
 	 return $html;
@@ -325,7 +325,7 @@ HTML
        my $refreshto = escape_uri($ENV{SCRIPT_NAME} . "?id=$article->{id}$urladd");
        if ($allkids_index < $#allkids) {
 	 $html .= <<HTML
-<a href="$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids[$allkids_index]{id}&other=$allkids[$allkids_index+1]{id}&refreshto=$refreshto"><img src="$IMAGES_URI/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+<a href="$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids[$allkids_index]{id}&other=$allkids[$allkids_index+1]{id}&refreshto=$refreshto"><img src="$IMAGES_URI/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom" /></a>
 HTML
        }
        else {
@@ -333,7 +333,7 @@ HTML
        }
        if ($allkids_index > 0) {
 	 $html .= <<HTML
-<a href="$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids[$allkids_index]{id}&other=$allkids[$allkids_index-1]{id}&refreshto=$refreshto"><img src="$IMAGES_URI/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+<a href="$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids[$allkids_index]{id}&other=$allkids[$allkids_index-1]{id}&refreshto=$refreshto"><img src="$IMAGES_URI/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom" /></a>
 HTML
        }
        else {

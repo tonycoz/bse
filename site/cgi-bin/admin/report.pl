@@ -41,7 +41,7 @@ sub list_reports {
      BSE::Util::Tags->admin(\%acts, $req->cfg),
      BSE::Util::Tags->secure($req),
      $reports->list_tags(),
-     msg => escape_html($msg),
+     message => escape_html($msg),
     );
   
   return BSE::Template->show_page('admin/reports/list', $req->cfg, \%acts);
@@ -73,7 +73,7 @@ sub prompt {
      BSE::Util::Tags->admin(\%acts, $req->cfg),
      BSE::Util::Tags->secure($req),
      $reports->prompt_tags($repname, $req->cgi, BSE::DB->single),
-     msg => $msg,
+     message => $msg,
     );
 
   my $template = $reports->prompt_template($repname) || 'admin/reports/prompt';

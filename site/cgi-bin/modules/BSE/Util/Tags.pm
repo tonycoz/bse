@@ -512,7 +512,7 @@ sub tag_error_img {
   return '' unless $errors->{$args};
   my $images_uri = $cfg->entry('uri', 'images', '/images');
   my $encoded = escape_html($errors->{$args});
-  return qq!<img src="$images_uri/admin/error.gif" alt="$encoded" title="$encoded" border="0" align="top">!; 
+  return qq!<img src="$images_uri/admin/error.gif" alt="$encoded" title="$encoded" border="0" align="top" />!; 
 }
 
 sub tag_replace {

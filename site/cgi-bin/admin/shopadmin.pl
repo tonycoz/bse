@@ -23,6 +23,7 @@ use BSE::Sort;
 use BSE::Util::Tags;
 use BSE::Request;
 use Util 'refresh_to';
+use DevHelp::HTML;
 
 my $req = BSE::Request->new;
 my $cfg = $req->cfg;
@@ -45,16 +46,7 @@ my %what_to_do =
    order_list_unpaid => \&order_list_unpaid,
    order_detail=>\&order_detail,
    order_filled=>\&order_filled,
-#     edit_product=>\&edit_product,
-#     add_product=>\&add_product,
-#     save_product=>\&save_product,
-#   delete_product=>\&delete_product,
-#   undelete_product=>\&undelete_product,
    product_detail=>\&product_detail,
-#     add_stepcat=>\&add_stepcat,
-#     del_stepcat=>\&del_stepcat,
-#     save_stepcats => \&save_stepcats,
-#     back=>\&img_return,
   );
 
 my @modifiable = qw(body retailPrice wholesalePrice gst release expire 
@@ -62,48 +54,6 @@ my @modifiable = qw(body retailPrice wholesalePrice gst release expire
                     summaryLength);
 my %modifiable = map { $_=>1 } @modifiable;
 
-#  my $product;
-#  my $id = param('id');
-#  if ($id) {
-#    $product = Products->getByPkey($id);
-#  }
-#  else {
-#    my $parentid = param('parentid');
-#    if ($parentid) {
-#      $product = { parentid=>$parentid };
-#    }
-#  }
-#  my %acts;
-#  %acts = 
-#    (
-#     BSE::Util::Tags->basic(\%acts, $req->cgi, $cfg),
-#     BSE::Util::Tags->admin(\%acts, $cfg),
-#     articleType=>sub { 'Product' },
-#     article=>
-#     sub {
-#       my $value = $product->{$_[0]};
-#       defined $value or $value = '';
-#       CGI::escapeHTML($value);
-#     },
-#     level => sub { 3; }, # doesn't really matter here
-#    );
-
-#  my $imageEditor = Squirrel::ImageEditor->new(session=>\%session,
-#  					     extras=>\%acts,
-#  					     keep => [ qw/id parentid/ ],
-#  					     cfg=>$cfg);
-
-#  if ($imageEditor->action($CGI::Q)) {
-#    exit;
-#  }
-
-#  use BSE::FileEditor;
-#  my $file_editor = 
-#    BSE::FileEditor->new(session=>\%session, cgi=>$CGI::Q, cfg=>$cfg,
-#  		       backopts=>{ edit_product=> 1});
-#  if ($file_editor->process_files()) {
-#    exit;
-#  }
 
 {
   my $cgi = $req->cgi;
@@ -184,12 +134,12 @@ sub embedded_catalog {
        if ($list_index < $#list) {
 	 if ($session->{showstepkids}) {
 	   $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?stepparent=$catalog->{id}&d=swap&id=$list[$list_index]{id}&other=$list[$list_index+1]{id}&refreshto=$refreshto"><img src="$IMAGES_URI/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+<a href="$CGI_URI/admin/move.pl?stepparent=$catalog->{id}&d=swap&id=$list[$list_index]{id}&other=$list[$list_index+1]{id}&refreshto=$refreshto"><img src="$IMAGES_URI/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom" /></a>
 HTML
 	 }
 	 else {
 	   $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?id=$list[$list_index]{id}&d=swap&other=$list[$list_index+1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+<a href="$CGI_URI/admin/move.pl?id=$list[$list_index]{id}&d=swap&other=$list[$list_index+1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom" /></a>
 HTML
 	 }
        }
@@ -199,12 +149,12 @@ HTML
        if ($list_index > 0) {
 	 if ($session->{showstepkids}) {
 	   $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?stepparent=$catalog->{id}&d=swap&id=$list[$list_index]{id}&other=$list[$list_index-1]{id}&refreshto=$refreshto"><img src="$IMAGES_URI/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+<a href="$CGI_URI/admin/move.pl?stepparent=$catalog->{id}&d=swap&id=$list[$list_index]{id}&other=$list[$list_index-1]{id}&refreshto=$refreshto"><img src="$IMAGES_URI/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom" /></a>
 HTML
 	 }
 	 else {
 	   $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?id=$list[$list_index]{id}&d=swap&other=$list[$list_index-1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+<a href="$CGI_URI/admin/move.pl?id=$list[$list_index]{id}&d=swap&other=$list[$list_index-1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom" /></a>
 HTML
 	 }
        }
@@ -236,7 +186,7 @@ HTML
        my $refreshto = CGI::escape($ENV{SCRIPT_NAME}.$urladd);
        if ($subcat_index < $#subcats) {
 	 $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?id=$subcats[$subcat_index]{id}&d=swap&other=$subcats[$subcat_index+1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+<a href="$CGI_URI/admin/move.pl?id=$subcats[$subcat_index]{id}&d=swap&other=$subcats[$subcat_index+1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom" /></a>
 HTML
        }
        else {
@@ -244,7 +194,7 @@ HTML
        }
        if ($subcat_index > 0) {
 	 $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?id=$subcats[$subcat_index]{id}&d=swap&other=$subcats[$subcat_index-1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+<a href="$CGI_URI/admin/move.pl?id=$subcats[$subcat_index]{id}&d=swap&other=$subcats[$subcat_index-1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom" /></a>
 HTML
        }
        else {
@@ -267,7 +217,7 @@ sub product_list {
   my @catalogs = sort { $b->{displayOrder} <=> $a->{displayOrder} }
     Articles->children($shopid);
   my $catalog_index = -1;
-  $message ||= $cgi->param('message') || '';
+  $message ||= $cgi->param('m') || $cgi->param('message') || '';
   if (defined $cgi->param('showstepkids')) {
     $session->{showstepkids} = $cgi->param('showstepkids');
   }
@@ -302,7 +252,7 @@ sub product_list {
        my $refreshto = CGI::escape($ENV{SCRIPT_NAME});
        if ($catalog_index < $#catalogs) {
 	 $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?id=$catalogs[$catalog_index]{id}&d=swap&other=$catalogs[$catalog_index+1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+<a href="$CGI_URI/admin/move.pl?id=$catalogs[$catalog_index]{id}&d=swap&other=$catalogs[$catalog_index+1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom" /></a>
 HTML
        }
        else {
@@ -310,7 +260,7 @@ HTML
        }
        if ($catalog_index > 0) {
 	 $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?id=$catalogs[$catalog_index]{id}&d=swap&other=$catalogs[$catalog_index-1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+<a href="$CGI_URI/admin/move.pl?id=$catalogs[$catalog_index]{id}&d=swap&other=$catalogs[$catalog_index-1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom" /></a>
 HTML
        }
        else {
@@ -324,223 +274,6 @@ HTML
 
   page('product_list', \%acts);
 }
-
-#  sub add_product {
-
-#    my $product = { map { $_=>'' } Product->columns };
-
-#    $product->{leadTime} = 0;
-#    @$product{qw/retailPrice wholesalePrice gst/} = qw(0 0 0);
-#    use BSE::Util::SQL qw(now_sqldate);
-#    $product->{release} = now_sqldate;
-#    $product->{expire} = '9999-12-31';
-#    $product->{parentid} = param('parentid')
-#      if param('parentid');
-#    if ($product->{parentid}) {
-#      my $parent = Articles->getByPkey($product->{parentid});
-#      if ($parent) {
-#        $product->{threshold} = $parent->{threshold};
-#        $product->{summaryLength} = $parent->{summaryLength};
-#      }
-#    }
-#  #    if (!exists $session{imageid} || $session{imageid} ne '') {
-#  #      $session{imageid} = '';
-#  #      #$imageEditor->set([], 'tr');
-#  #    }
-
-#    product_form($product, "Add New");
-#  }
-
-#  sub edit_product {
-#    my $id = param('id');
-#    $id or shop_redirect('?product_list=1');
-#    my $product = Products->getByPkey($id)
-#      or shop_redirect("?message=Product+$id+not+found");
-#  #    if (!exists $session{imageid} || $session{imageid} != $id) {
-#  #      my @images = Images->getBy('articleId', $id);
-#  #      $session{imageid} = $id;
-#  #      $imageEditor->set(\@images, $product->{imagePos});
-#  #    }
-  
-#    product_form($product, "Edit", '', 'edit_product');
-#  }
-
-#  sub save_product {
-#    my %product;
-
-#    for my $col (Product->columns) {
-#      $product{$col} = param($col) if defined param($col);
-#    }
-
-#    my $original;
-#    # we validate in here
-#    eval {
-#      if ($product{id}) {
-#        $original = Products->getByPkey($product{id})
-#  	or shop_redirect("?message=Product+$product{id}+not+found");
-#      }
-#      money_to_cents(\$product{retailPrice})
-#        or die "Invalid price\n";
-#      money_to_cents(\$product{wholesalePrice})
-#        or $product{wholesalePrice} = undef;
-#      money_to_cents(\$product{gst})
-#        or die "Invalid gst\n";
-    
-#      if ($original) {
-#        # remove unmodifiable fields
-#        for my $key (keys %product) {
-#  	$modifiable{$key} or delete $product{$key};
-#        }
-#      }
-#      else {
-#        $product{title} !~ /^\s*$/
-#  	or die "No title entered\n";
-#        $product{summary} !~ /^\s*$/
-#  	or die "No summary entered\n";
-#        $product{body} !~ /^\s*$/
-#  	or die "No description entered\n";
-#        $product{leadTime} =~ /^\d+$/
-#  	or die "No lead time entered\n";
-
-#      }
-#      use AdminUtil 'save_thumbnail';
-#      save_thumbnail($original, \%product);
-#      sql_date(\$product{release})
-#        or die "Invalid release date\n";
-#      sql_date(\$product{expire})
-#        or die "Invalid expiry date\n";
-#      # options should only contain valid options
-#      my @bad_opts = grep !$SHOP_PRODUCT_OPTS{$_}, 
-#      split /,/, $product{options};
-#      @bad_opts
-#        and die "Bad product options '",join(',',@bad_opts),"' entered\n";
-#    };
-#    if ($@) {
-#      # CGI::Carp messes with the die message <sigh>
-#      $@ =~ s/\[[^\]]*\][^:]+://; 
-#      if ($original) {
-#        for my $key (keys %$original) {
-#  	$product{$key} = $original->{$key};
-#        }
-#      }
-#      product_form(\%product, $original ? "Edit" : "Add New", $@);
-#      return;
-#    }
-
-#    # save the product
-#    $product{parentid} ||= $PRODUCTPARENT;
-
-#    my $parent = Articles->getByPkey($product{parentid})
-#      or return product_form(\%product, $original ? "Edit" : "Add New",
-#  			   "Unknown parent id");
-
-#    $product{titleImage} = '';
-#    $product{keyword} ||= '';
-#    $product{template} ||= 'shopitem.tmpl';
-#    $product{level} = $parent->{level} + 1;
-#    $product{lastModified} = epoch_to_sql(time);
-#    $product{imagePos} = 'tr';
-#    $product{generator} = 'Generate::Product';
-  
-#    if ($original) {
-#      @$original{keys %product} = values %product;
-#      $original->save();
-
-#      # out with the old
-#  #      my @oldimages = Images->getBy('articleId', $original->{id});
-#  #      for my $image (@oldimages) {
-#  #        $image->remove();
-#  #      }
-#  #      # in with the new
-#  #      my @images = $imageEditor->images();
-#  #      my @cols = Image->columns;
-#  #      splice @cols, 0, 2;
-#  #      for my $image (@images) {
-#  #        Images->add($original->{id}, @$image{@cols});
-#  #      }
-#  #      $imageEditor->clear();
-#  #      delete $session{imageid};
-
-#      use Util 'regen_and_refresh';
-    
-#      regen_and_refresh('Articles', $original, $AUTO_GENERATE,
-#  		      shop_url("?message=Saved")); 
-
-#      exit;
-#    }
-#    else {
-#      # set these properly afterwards
-#      $product{link} = '';
-#      $product{admin} = '';
-#      $product{listed} = 2;
-#      $product{displayOrder} = time;
-
-#      for my $col (qw(threshold summaryLength)) {
-#        $product{$col} = $parent->{$col} unless exists $product{$col};
-#      }
-
-#      my @data = @product{Product->columns};
-#      shift @data;
-
-#      my $product = Products->add(@data);
-#      if (!$product) {
-#        for my $key (keys %$original) {
-#  	$product{$key} = $original->{$key} unless defined $product{$key};
-#        }
-#        product_form(\%product, "Add New", DBI->errstr);
-#      }
-#      else {
-#        # update the link info
-#        $product->{link} = $securlbase . $SHOP_URI . '/shop'.$product->{id}.'.html';
-#        $product->{admin} = "$CGI_URI/admin/admin.pl?id=$product->{id}";
-#        $product->save();
-
-#        # and save the images
-#  #        my @images = $imageEditor->images();
-#  #        for my $image (@images) {
-#  #  	Images->add($product->{id}, @$image{qw/image alt width height/});
-#  #        }
-#  #        $imageEditor->clear();
-#  #        delete $session{imageid};
-
-#        use Util 'regen_and_refresh';
-      
-#        regen_and_refresh('Articles', $original, $AUTO_GENERATE,
-#  			shop_url("?message=New+Product+Saved"));
-#        exit;
-#      }
-#    }
-#  }
-
-#  sub delete_product {
-#    my $id = param('id');
-#    if ($id and
-#       my $product = Products->getByPkey($id)) {
-#      $product->{listed} = 0;
-#      $product->save();
-#      use Util 'generate_article';
-#      generate_article('Articles', $product) if $AUTO_GENERATE;
-#      shop_redirect("?message=Product+hidden");
-#    }
-#    else {
-#      product_list();
-#    }
-#  }
-
-#  sub undelete_product {
-#    my $id = param('id');
-#    if ($id and
-#       my $product = Products->getByPkey($id)) {
-#      $product->{listed} = 1;
-#      $product->save();
-#      use Util 'generate_article';
-#      generate_article('Articles', $product) if $AUTO_GENERATE;
-#      shop_redirect("?message=Product+shown");
-#    }
-#    else {
-#      product_list();
-#    }
-#  }
 
 sub product_detail {
   my ($req) = @_;
@@ -559,7 +292,7 @@ sub product_form {
   my ($req, $product, $action, $message, $template) = @_;
   
   my $cgi = $req->cgi;
-  $message ||= $req->cgi->param('message') || '';
+  $message ||= $cgi->param('m') || $cgi->param('message') || '';
   $template ||= 'add_product';
   my @catalogs;
   my $shopid = $req->cfg->entryErr('articles', 'shop');
@@ -661,7 +394,7 @@ sub product_form {
        @stepcats > 1 or return '';
        if ($stepcat_index < $#stepcats) {
 	 $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?stepchild=$product->{id}&id=$stepcats[$stepcat_index]{parentId}&d=swap&other=$stepcats[$stepcat_index+1]{parentId}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+<a href="$CGI_URI/admin/move.pl?stepchild=$product->{id}&id=$stepcats[$stepcat_index]{parentId}&d=swap&other=$stepcats[$stepcat_index+1]{parentId}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom" /></a>
 HTML
        }
        else {
@@ -669,7 +402,7 @@ HTML
        }
        if ($stepcat_index > 0) {
 	 $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?stepchild=$product->{id}&id=$stepcats[$stepcat_index]{parentId}&d=swap&other=$stepcats[$stepcat_index-1]{parentId}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+<a href="$CGI_URI/admin/move.pl?stepchild=$product->{id}&id=$stepcats[$stepcat_index]{parentId}&d=swap&other=$stepcats[$stepcat_index-1]{parentId}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom" /></a>
 HTML
        }
        else {
@@ -734,6 +467,9 @@ sub order_list_low {
       }
     }
   }
+  my $message = $cgi->param('m');
+  defined $message or $message = '';
+  $message = escape_html($message);
   if (defined $from || defined $to) {
     $from ||= '1900-01-01';
     $to ||= '2999-12-31';
@@ -765,6 +501,7 @@ sub order_list_low {
        defined $value or $value = '';
        CGI::escapeHTML($value);
      },
+     message => $message,
     );
   page($template, \%acts);
 }
@@ -878,7 +615,7 @@ sub order_detail {
   my $id = $cgi->param('id');
   if ($id and
       my $order = Orders->getByPkey($id)) {
-    $message ||= $cgi->param('message') || '';
+    $message ||= $cgi->param('m') || '';
     my @lines = OrderItems->getBy('orderId', $id);
     my @products = map { Products->getByPkey($_->{productId}) } @lines;
     my $line_index = -1;
@@ -968,112 +705,6 @@ sub order_filled {
     order_list($req);
   }
 }
-
-#####################
-# Step parents
-
-#  sub add_stepcat {
-#    require 'BSE/Admin/StepParents.pm';
-#    my $productid = param('id');
-#    defined($productid)
-#      or return product_list("No id supplied to add_stepcat");
-#    int($productid) eq $productid+0
-#      or return product_list("Invalid product id supplied to add_stepcat");
-#    my $product = Products->getByPkey($productid)
-#      or return product_list("Cannot find product id $productid");
-  
-#    eval {
-#      my $catid = param('stepcat');
-#      defined($catid)
-#        or die "No stepcat supplied to add_stepcat";
-#      int($catid) eq $catid
-#        or die "Invalid stepcat supplied to add_stepcat";
-#      my $catalog = Articles->getByPkey($catid)
-#        or die "Catalog $catid not found";
-
-#      my $release = param('release');
-#      defined $release
-#        or $release = "01/01/2000";
-#      use BSE::Util::Valid qw/valid_date/;
-#      $release eq '' or valid_date($release)
-#        or die "Invalid release date";
-#      my $expire = param('expire');
-#      defined $expire
-#        or $expire = '31/12/2999';
-#      $expire eq '' or valid_date($expire)
-#        or die "Invalid expire data";
-  
-#      my $newentry = 
-#        BSE::Admin::StepParents->add($catalog, $product, $release, $expire);
-#    };
-#    $@ and product_edit_refresh($productid, $@, 'step');
-
-#    return product_edit_refresh($productid, '', 'step');
-#  }
-
-#  sub del_stepcat {
-#    require 'BSE/Admin/StepParents.pm';
-#    my $productid = param('id');
-#    defined $productid
-#      or return product_list("No id supplied to del_stepcat");
-#    int($productid) eq $productid+0
-#      or return product_list("Invalid product id supplied to del_stepcat");
-#    my $product = Products->getByPkey($productid)
-#      or return product_list("Cannot find product id $productid");
-
-#    my $catid = param('stepcat');
-#    defined($catid)
-#      or return shop_redirect("?id=$productid&edit_product=1&message=No+stepcat+supplied+to+add_stepcat#step");
-#    int($catid) eq $catid
-#      or return shop_redirect("?id=$productid&edit_product=1&message=Invalid+stepcat+supplied+to+add_stepcat#step");
-#    my $catalog = Articles->getByPkey($catid)
-#      or return shop_redirect("?id=$productid&edit_product=1&message=".CGI::escape("Catalog+$catid+not+found")."#step");
-
-#    eval {
-#      BSE::Admin::StepParents->del($catalog, $product);
-#    };
-#    $@ and return shop_redirect("?id=$productid&edit_product=1&message=".CGI::escape($@)."#step");
-
-#    return shop_redirect("?id=$productid&edit_product=1#step");
-#  }
-
-#  sub save_stepcats {
-#    require 'BSE/Admin/StepParents.pm';
-#    my $productid = param('id');
-#    defined $productid
-#      or return product_list("No id supplied to del_stepcat");
-#    int($productid) eq $productid+0
-#      or return product_list("Invalid product id supplied to del_stepcat");
-#    my $product = Products->getByPkey($productid)
-#      or return product_list("Cannot find product id $productid");
-
-#    my @stepcats = OtherParents->getBy(childId=>$product->{id});
-#    my %stepcats = map { $_->{parentId}, $_ } @stepcats;
-#    my %datedefs = ( release => '2000-01-01', expire=>'2999-12-31' );
-#    for my $stepcat (@stepcats) {
-#      for my $name (qw/release expire/) {
-#        my $date = param($name.'_'.$stepcat->{parentId});
-#        if (defined $date) {
-#  	if ($date eq '') {
-#  	  $date = $datedefs{$name};
-#  	}
-#  	elsif (valid_date($date)) {
-#  	  use BSE::Util::SQL qw/date_to_sql/;
-#  	  $date = date_to_sql($date);
-#  	}
-#  	else {
-#  	  product_edit_refresh($productid, "Invalid date '$date'");
-#  	}
-#  	$stepcat->{$name} = $date;
-#        }
-#      }
-#      eval {
-#        $stepcat->save();
-#      };
-#      $@ and product_edit_refresh($productid, $@);
-#    }
-#    product_edit_refresh($productid, $@);
-#  }
 
 #####################
 # utilities

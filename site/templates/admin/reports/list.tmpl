@@ -1,6 +1,7 @@
 <:wrap admin/base.tmpl title=>"Reports - BSE":>
 <h1>Reports</h1>
 <p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |</p>
+<:ifMessage:><p><b><:message:></b></p><:or:><:eif:>
 <:if Reports:>
 <:iterator begin reports:>
 <p><a href="<:script:>?<:ifReport has_params:>s_prompt<:or:>s_show<:eif:>=1&r=<:report id:>"><:report name:></a></p>

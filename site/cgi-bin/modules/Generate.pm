@@ -80,7 +80,7 @@ sub _make_hr {
   my $tag = "<hr";
   $tag .= qq!width="$width"! if length $width;
   $tag .= qq!height="$height"! if length $height;
-  $tag .= ">";
+  $tag .= " />";
   return $tag;
 }
 
@@ -351,7 +351,7 @@ sub format_body {
 	  and next TRY;
 	$part =~ s#center\[([^\]\[]+)\]#<center>$1</center>#ig
 	  and next TRY;
-	$part =~ s#hrcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#<table width="$1" height="$2" border="0" bgcolor="$3" cellpadding="0" cellspacing="0"><tr><td><img src="/images/trans_pixel.gif" width="1" height="1"></td></tr></table>#ig
+	$part =~ s#hrcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#<table width="$1" height="$2" border="0" bgcolor="$3" cellpadding="0" cellspacing="0"><tr><td><img src="/images/trans_pixel.gif" width="1" height="1" /></td></tr></table>#ig
 	  and next TRY;
 	$part =~ s#image\[([^\]\[]+)\]#($auto_images = 0), _make_img($1, \$imagePos, \@images)#ige
 	  and next TRY;
@@ -396,7 +396,7 @@ sub format_body {
 	# assuming 5.005_03 would make this simpler, but <sigh>
 	my $img = qq!<img src="/images/$image->{image}"!
 	  .qq! width="$image->{width}" height="$image->{height}" border="0"!
-	    .qq! alt="$image->{alt}" align="$align" hspace="10" vspace="10">!;
+	    .qq! alt="$image->{alt}" align="$align" hspace="10" vspace="10" />!;
 	if ($image->{url}) {
 	  $img = qq!<a href="$image->{url}">$img</a>!;
 	}
