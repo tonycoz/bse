@@ -531,8 +531,9 @@ sub saveopts {
   refresh_to($url);
 }
 
+# returns true if the caller needs to send output
 sub _save_subs {
-  my ($self, $user, $session, $cfg, $cgi, $sendconf) = @_;
+  my ($self, $user, $session, $cfg, $cgi, $sendconf, $suppress_success) = @_;
 
   my @subids = $cgi->param('subscription');
   $user->removeSubscriptions;
@@ -553,11 +554,10 @@ sub _save_subs {
       push(@subs, $sub);
     }
     if ($sendconf && !$user->{confirmed}) {
-      $self->send_conf_request($session, $cgi, $cfg, $user);
-      return 1;
+      return $self->send_conf_request($session, $cgi, $cfg, $user, $suppress_success);
     }
   }
-  0;
+  1;
 }
 
 sub register {
@@ -688,16 +688,19 @@ sub register {
     $user = SiteUsers->add(@user{@cols});
   };
   if ($user) {
-    $session->{userid} = $user->{userId} unless $nopassword;
-    $self->_save_subs($user, $session, $cfg, $cgi, 0);
-    if ($nopassword) {
-      # send the confirmation immediately
-      return $self->send_conf_request($session, $cgi, $cfg, $user);
-    }
     use CGI::Cookie;
     print "Set-Cookie: ",CGI::Cookie->new(-name=>"userid", 
 					  -value=>$user->{userId},
 					  -path=>"/"),"\n";
+    $session->{userid} = $user->{userId} unless $nopassword;
+    if ($nopassword) {
+      $self->_save_subs($user, $session, $cfg, $cgi, 0);
+      # send the confirmation immediately
+      return $self->send_conf_request($session, $cgi, $cfg, $user);
+    }
+    else {
+      return unless $self->_save_subs($user, $session, $cfg, $cgi, 1, 1);
+    }
     use Util qw/refresh_to/;
     
     _got_user_refresh($session, $cgi, $cfg);
@@ -856,8 +859,11 @@ sub download_file {
   my ($self, $session, $cgi, $cfg) = @_;
 
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
-  my $user = $self->_get_user($session, $cgi, $cfg, 'show_opts')
-    or return;
+  my $userid = $session->{userid};
+  my $user;
+  if ($userid) {
+    $user = SiteUsers->getBy(userId=>$userid);
+  }
   my $fileid = $cgi->param('file')
     or return $self->show_logon($session, $cgi, $cfg, 
 			 $msgs->('nofileid', "No file id supplied"));
@@ -1077,7 +1083,7 @@ sub _generic_email {
 }
 
 sub send_conf_request {
-  my ($self, $session, $cgi, $cfg, $user) = @_;
+  my ($self, $session, $cgi, $cfg, $user, $suppress_success) = @_;
 
   my $nopassword = $cfg->entryBool('site users', 'nopassword', 0);
 
@@ -1177,7 +1183,10 @@ sub send_conf_request {
   ++$confirm->{unackedConfMsgs};
   $confirm->{lastConfSent} = now_datetime;
   $confirm->save;
+  return 1 if $suppress_success;
   BSE::Template->show_page($nopassword ? 'user/confsent_nop' : 'user/confsent', $cfg, \%acts);
+
+  return 1;
 }
 
 sub unsub {

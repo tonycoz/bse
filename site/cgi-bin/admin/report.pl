@@ -11,12 +11,13 @@ use BSE::Permissions;
 use BSE::Util::Tags;
 use DevHelp::Report;
 use DevHelp::HTML;
+use Util 'refresh_to';
 
 my $req = BSE::Request->new;
 my $cgi = $req->cgi;
 
 BSE::Permissions->check_logon($req)
-  or return BSE::Template->get_refresh($req->url('logon'), $req->cfg);
+  or do { refresh_to($req->url('logon'), $req->cfg); exit };
 
 my $reports = DevHelp::Report->new($req->cfg, 'reports');
 

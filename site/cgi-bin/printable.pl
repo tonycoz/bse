@@ -23,7 +23,8 @@ my $article = Articles->getByPkey($id)
 
 eval "use $article->{generator}";
 die $@ if $@;
-my $generator = $article->{generator}->new(articles=>'Articles', cfg => $cfg);
+my $generator = $article->{generator}->new(articles=>'Articles', cfg => $cfg,
+					  top => $article);
 
 my $template = param('template');
 

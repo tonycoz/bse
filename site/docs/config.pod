@@ -552,6 +552,11 @@ removed.
 Reports debugging information to standard error while encrypting your
 mail.
 
+=item cookies
+
+Reports cookies received from the browser and sent to the browser to
+STDERR (hence to the error log on Apache.)
+
 =back
 
 =head2 [uri]

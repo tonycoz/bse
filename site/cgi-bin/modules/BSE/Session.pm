@@ -12,7 +12,12 @@ sub tie_it {
   my ($self, $session, $cfg) = @_;
   
   my $lifetime = $cfg->entry('basic', 'cookie_lifetime') || '+3h';
+  my $debug = $cfg->entry('debug', 'cookies');
   my %cookies = fetch CGI::Cookie;
+  if ($debug) {
+    require Data::Dumper;
+    print STDERR "Received cookies: ", Data::Dumper::Dumper(\%cookies);
+  }
   my $sessionid;
   $sessionid = $cookies{sessionid}->value if exists $cookies{sessionid};
 
@@ -35,9 +40,24 @@ sub tie_it {
   }
   unless ($sessionid) {
   # save the new sessionid
-    print "Set-Cookie: ",
-    CGI::Cookie->new(-name=>'sessionid', -value=>$session->{_session_id}, 
-		     -expires=>$lifetime, -path=>"/"),"\n";
+    my $cookie = CGI::Cookie->new(-name=>'sessionid', -value=>$session->{_session_id}, 
+		     -expires=>$lifetime, -path=>"/");
+# from trying to debug Opera cookie issues
+#     my ($value, @rest) = split ';', $cookie;
+#     my @out = $value;
+#     my %rest;
+#     for my $entry (@rest) {
+#       my ($key) = $entry =~ /^\s*(\w+)=/
+# 	or next;
+#       $rest{$key} = $entry;
+#     }
+#     for my $field (qw/expires path domain/) {
+#       push @out, $rest{$field}
+# 	if $rest{$field};
+#     }
+#     $cookie = join ';', @out;
+    print "Set-Cookie: ", $cookie,"\n";
+    print STDERR "Sent cookie: $cookie\n" if $debug;
   }
   $saved = $session;
 }

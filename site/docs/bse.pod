@@ -10,6 +10,36 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.14_02
+
+=over
+
+=item *
+
+printable.pl was producing a server error (it hadn't been updated
+after the top tag was added.)  Also added a smoke test which would
+have caught it.
+
+=item *
+
+added a few more reports to the experiemental reports system
+
+=item *
+
+report.pl now handles being called when the user isn't (or is no
+longer) logged on, correctly
+
+=item *
+
+added some cookie debugging code
+
+=item *
+
+confirmation emails weren't being sent when a user registered with
+subscriptions selected (with nopassword unset)
+
+=back
+
 =head2 0.14_01
 
 =over
