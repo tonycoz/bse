@@ -43,7 +43,12 @@ sub shop_cart_tags {
        return 0;
      },
      item => 
-     sub { $cart->[$item_index]{$_[0]} || $cart_prods->[$item_index]{$_[0]} },
+     sub { 
+       my $value = $cart->[$item_index]{$_[0]};
+       defined($value) or $value = $cart_prods->[$item_index]{$_[0]};
+       defined($value) or $value = '';
+       $value;
+     },
      extended =>
      sub { 
        my $what = $_[0] || 'retailPrice';

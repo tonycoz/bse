@@ -26,6 +26,7 @@
 <input type="hidden" name="id" value="<: article id :>">
 <input type="hidden" name="parentid" value="<: article parentid :>">
 <input type="hidden" name="imgtype" value="<: articleType :>">
+<input type="hidden" name="_t" value="img" />
   <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
     <tr> 
       <td> 
@@ -68,6 +69,7 @@
 <input type="hidden" name="id" value="<: article id :>">
 <input type="hidden" name="parentid" value="<: article parentid :>">
 <input type="hidden" name="imgtype" value="<: articleType :>">
+<input type="hidden" name="_t" value="img" />
   <h2>Manage images</h2>
 
 <table width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="#000000" class="table">
@@ -114,7 +116,7 @@
               <:ifUserCan edit_images_save:article:><input type="text" name="url" value="<: image url :>" size="32"><:or:><: image url :><:eif:>
             </td>
             <td valign="bottom" nowrap> 
-              <:ifUserCan edit_images_delete:article:><b><a href="<:script:>?level=<: level :>&parentid=<: article parentid :>&id=<:article id:>&imgtype=<: articleType :>&removeimg_<: image id :>" onClick="return window.confirm('Are you sure you want to delete this Image')">Delete</a></b><:or:><:eif:></td>
+              <:ifUserCan edit_images_delete:article:><b><a href="<:script:>?id=<:article id:>&removeimg_<: image id :>=1&_t=img" onClick="return window.confirm('Are you sure you want to delete this Image')">Delete</a></b><:or:><:eif:></td>
             <td><:imgmove:></td>
           </tr>
           <: iterator separator images :> 

@@ -734,12 +734,20 @@ sub tag_movechild {
 
   my $cgi_uri = $self->{cfg}->entry('uri', 'cgi', '/cgi-bin');
   my $images_uri = $self->{cfg}->entry('uri', 'images', '/images');
+  my $urlbase = $req->cfg->entryVar('site', 'url');
+  my $url = "$urlbase$ENV{SCRIPT_NAME}?id=$article->{id}";
+  my $t = $req->cgi->param('_t');
+  if ($t && $t =~ /^\w+$/) {
+    $url .= "&_t=$t";
+  }
+  $url .= $urladd;
+  $url = CGI::escape($url);
   my $html = '';
   my $nomove = '<img src="/images/trans_pixel.gif" width="17" height="13" border="0" alt="" align="absbottom">';
   my $id = $kids->[$$rindex]{id};
   if ($$rindex < $#$kids) {
     $html .= <<HTML;
-<a href="$cgi_uri/admin/move.pl?id=$id&d=down&edit=1&all=1"><img src="$images_uri/admin/${img_prefix}move_down.gif" width="17" height="13" alt="Move Down" border="0" align="absbottom"></a>
+<a href="$cgi_uri/admin/move.pl?id=$id&d=down&edit=1&all=1&r=$url"><img src="$images_uri/admin/${img_prefix}move_down.gif" width="17" height="13" alt="Move Down" border="0" align="absbottom"></a>
 HTML
   }
   else {
@@ -747,7 +755,7 @@ HTML
   }
   if ($$rindex > 0) {
     $html .= <<HTML;
-<a href="$cgi_uri/admin/move.pl?id=$id&d=up&edit=1&all=1"><img src="$images_uri/admin/${img_prefix}move_up.gif" width="17" height="13" alt="Move Up" border="0" align="absbottom"></a>
+<a href="$cgi_uri/admin/move.pl?id=$id&d=up&edit=1&all=1&r=$url"><img src="$images_uri/admin/${img_prefix}move_up.gif" width="17" height="13" alt="Move Up" border="0" align="absbottom"></a>
 HTML
   }
   else {
@@ -792,7 +800,12 @@ sub tag_imgmove {
   $urladd = '' unless defined $urladd;
 
   my $urlbase = $req->cfg->entryVar('site', 'url');
-  my $url = "$urlbase$ENV{SCRIPT_NAME}?id=$article->{id}&showimages=1$urladd";
+  my $url = "$urlbase$ENV{SCRIPT_NAME}?id=$article->{id}";
+  my $t = $req->cgi->param('_t');
+  if ($t && $t =~ /^\w+$/) {
+    $url .= "&_t=$t";
+  }
+  $url .= $urladd;
   $url = CGI::escape($url);
 
   my $html = '';
@@ -882,15 +895,6 @@ sub tag_old {
     }
   }
 }
-
-# sub tag_error_img {
-#   my ($self, $errors, $args) = @_;
-
-#   return '' unless $errors->{$args};
-#   my $images_uri = $self->{cfg}->entry('uri', 'images', '/images');
-#   my $encoded = encode_entities($errors->{$args});
-#   return qq!<img src="$images_uri/admin/error.gif" alt="$encoded" title="$encoded" border="0" align="top">!; 
-# }
 
 sub iter_admin_users {
   require BSE::TB::AdminUsers;
@@ -1890,7 +1894,7 @@ sub save_image_changes {
   my ($self, $req, $article, $articles) = @_;
 
   $req->user_can(edit_images_save => $article)
-    or return $self->show_images($req, $article, $articles,
+    or return $self->edit_form($req, $article, $articles,
 				 "You don't have access to save image information for this article");
 
   my $cgi = $req->cgi;
@@ -1930,27 +1934,26 @@ sub save_image_changes {
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
 
-  return $self->refresh($article, $cgi, undef, 'Image information saved', 
-			'&showimages=1');
+  return $self->refresh($article, $cgi, undef, 'Image information saved');
 }
 
 sub add_image {
   my ($self, $req, $article, $articles) = @_;
 
   $req->user_can(edit_images_add => $article)
-    or return $self->show_images($req, $article, $articles,
+    or return $self->edit_form($req, $article, $articles,
 				 "You don't have access to add new images to this article");
 
   my $cgi = $req->cgi;
 
   my $image = $cgi->param('image');
   unless ($image) {
-    return $self->show_images($req, $article, $articles,
+    return $self->edit_form($req, $article, $articles,
 			      'Enter or select the name of an image file on your machine', 
 			      { image => 'Please enter an image filename' });
   }
   if (-z $image) {
-    return $self->show_images($req, $article, $articles,
+    return $self->edit_form($req, $article, $articles,
 			      'Image file is empty',
 			     { image => 'Image file is empty' });
   }
@@ -2015,8 +2018,7 @@ sub add_image {
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
-  return $self->refresh($article, $cgi, undef, 'New image added',
-			'&showimages=1');
+  return $self->refresh($article, $cgi, undef, 'New image added');
 }
 
 # remove an image
@@ -2024,7 +2026,7 @@ sub remove_img {
   my ($self, $req, $article, $articles, $imageid) = @_;
 
   $req->user_can(edit_images_delete => $article)
-    or return $self->show_images($req, $article, $articles,
+    or return $self->edit_form($req, $article, $articles,
 				 "You don't have access to delete images from this article");
 
   $imageid or die;
@@ -2039,23 +2041,22 @@ sub remove_img {
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
-  return $self->refresh($article, $req->cgi, undef, 'Image removed',
-			'&showimages=1');
+  return $self->refresh($article, $req->cgi, undef, 'Image removed');
 }
 
 sub move_img_up {
   my ($self, $req, $article, $articles) = @_;
 
   $req->user_can(edit_images_reorder => $article)
-    or return $self->show_images($req, $article, $articles,
+    or return $self->edit_form($req, $article, $articles,
 				 "You don't have access to reorder images in this article");
 
   my $imageid = $req->cgi->param('imageid');
   my @images = $article->images;
   my ($imgindex) = grep $images[$_]{id} == $imageid, 0..$#images
-    or return $self->show_images($req, $article, $articles, "No such image");
+    or return $self->edit_form($req, $article, $articles, "No such image");
   $imgindex > 0
-    or return $self->show_images($req, $article, $articles, "Image is already at the top");
+    or return $self->edit_form($req, $article, $articles, "Image is already at the top");
   my ($to, $from) = @images[$imgindex-1, $imgindex];
   ($to->{displayOrder}, $from->{displayOrder}) =
     ($from->{displayOrder}, $to->{displayOrder});
@@ -2065,23 +2066,22 @@ sub move_img_up {
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
-  return $self->refresh($article, $req->cgi, undef, 'Image moved',
-			'&showimages=1');
+  return $self->refresh($article, $req->cgi, undef, 'Image moved');
 }
 
 sub move_img_down {
   my ($self, $req, $article, $articles) = @_;
 
   $req->user_can(edit_images_reorder => $article)
-    or return $self->show_images($req, $article, $articles,
+    or return $self->edit_form($req, $article, $articles,
 				 "You don't have access to reorder images in this article");
 
   my $imageid = $req->cgi->param('imageid');
   my @images = $article->images;
   my ($imgindex) = grep $images[$_]{id} == $imageid, 0..$#images
-    or return $self->show_images($req, $article, $articles, "No such image");
+    or return $self->edit_form($req, $article, $articles, "No such image");
   $imgindex < $#images
-    or return $self->show_images($req, $article, $articles, "Image is already at the end");
+    or return $self->edit_form($req, $article, $articles, "Image is already at the end");
   my ($to, $from) = @images[$imgindex+1, $imgindex];
   ($to->{displayOrder}, $from->{displayOrder}) =
     ($from->{displayOrder}, $to->{displayOrder});
@@ -2091,8 +2091,7 @@ sub move_img_down {
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
-  return $self->refresh($article, $req->cgi, undef, 'Image moved', 
-			'&showimages=1');
+  return $self->refresh($article, $req->cgi, undef, 'Image moved');
 }
 
 sub get_article {
@@ -2134,7 +2133,7 @@ my %types =
 sub _refresh_filelist {
   my ($self, $req, $article, $msg) = @_;
 
-  return $self->refresh($article, $req->cgi, undef, $msg, '&filelist=1');
+  return $self->refresh($article, $req->cgi, undef, $msg);
 }
 
 sub filelist {
@@ -2151,7 +2150,7 @@ sub fileadd {
   my ($self, $req, $article, $articles) = @_;
 
   $req->user_can(edit_files_add => $article)
-    or return $self->filelist($req, $article, $articles,
+    or return $self->edit_form($req, $article, $articles,
 			      "You don't have access to add files to this article");
 
   my %file;
@@ -2175,12 +2174,12 @@ sub fileadd {
   # build a filename
   my $file = $cgi->param('file');
   unless ($file) {
-    return $self->filelist($req, $article, $articles,
+    return $self->edit_form($req, $article, $articles,
 			   "Enter or select the name of a file on your machine",
 			  { file => 'Please enter a filename' });
   }
   if (-z $file) {
-    return $self->filelist($req, $article, $articles,
+    return $self->edit_form($req, $article, $articles,
 			   "File is empty",
 			   { file => 'File is empty' });
   }
@@ -2252,7 +2251,7 @@ sub fileswap {
   my ($self, $req, $article, $articles) = @_;
 
   $req->user_can('edit_files_reorder', $article)
-    or return $self->filelist($req, $article, $articles,
+    or return $self->edit_form($req, $article, $articles,
 			   "You don't have access to reorder files in this article");
 
   my $cgi = $req->cgi;
@@ -2283,8 +2282,8 @@ sub filedel {
   my ($self, $req, $article, $articles) = @_;
 
   $req->user_can('edit_files_delete', $article)
-    or return $self->filelist($req, $article, $articles,
-			   "You don't have access to delete files from this article");
+    or return $self->edit_form($req, $article, $articles,
+			       "You don't have access to delete files from this article");
 
   my $cgi = $req->cgi;
   my $fileid = $cgi->param('file');
@@ -2318,7 +2317,7 @@ sub filesave {
   my ($self, $req, $article, $articles) = @_;
 
   $req->user_can('edit_files_save', $article)
-    or return $self->filelist($req, $article, $articles,
+    or return $self->edit_form($req, $article, $articles,
 			   "You don't have access to save file information for this article");
   my @files = $article->files;
 

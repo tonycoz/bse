@@ -170,21 +170,26 @@ sub embedded_catalog {
      sub { $list[$list_index]{listed} == 0 ? "Hidden" : "&nbsp;" },
      move =>
      sub {
+       my ($arg, $acts, $funcname, $templater) = @_;
+
        $req->user_can(edit_reorder_children => $catalog)
 	 or return '';
+       my ($img_prefix, $urladd) = DevHelp::Tags->get_parms($arg, $acts, $templater);
+       defined $img_prefix or $img_prefix = '';
+       defined $urladd or $urladd = '';
        @list > 1 or return '';
        # links to move products up/down
        my $html = '';
-       my $refreshto = CGI::escape($ENV{SCRIPT_NAME}."#cat".$catalog->{id});
+       my $refreshto = CGI::escape($ENV{SCRIPT_NAME}."$urladd#cat".$catalog->{id});
        if ($list_index < $#list) {
 	 if ($session->{showstepkids}) {
 	   $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?stepparent=$catalog->{id}&d=swap&id=$list[$list_index]{id}&other=$list[$list_index+1]{id}&refreshto=$refreshto"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+<a href="$CGI_URI/admin/move.pl?stepparent=$catalog->{id}&d=swap&id=$list[$list_index]{id}&other=$list[$list_index+1]{id}&refreshto=$refreshto"><img src="$IMAGES_URI/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
 HTML
 	 }
 	 else {
 	   $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?id=$list[$list_index]{id}&d=swap&other=$list[$list_index+1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+<a href="$CGI_URI/admin/move.pl?id=$list[$list_index]{id}&d=swap&other=$list[$list_index+1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
 HTML
 	 }
        }
@@ -194,12 +199,12 @@ HTML
        if ($list_index > 0) {
 	 if ($session->{showstepkids}) {
 	   $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?stepparent=$catalog->{id}&d=swap&id=$list[$list_index]{id}&other=$list[$list_index-1]{id}&refreshto=$refreshto"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+<a href="$CGI_URI/admin/move.pl?stepparent=$catalog->{id}&d=swap&id=$list[$list_index]{id}&other=$list[$list_index-1]{id}&refreshto=$refreshto"><img src="$IMAGES_URI/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
 HTML
 	 }
 	 else {
 	   $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?id=$list[$list_index]{id}&d=swap&other=$list[$list_index-1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+<a href="$CGI_URI/admin/move.pl?id=$list[$list_index]{id}&d=swap&other=$list[$list_index-1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
 HTML
 	 }
        }
@@ -218,15 +223,20 @@ HTML
      },
      movecat =>
      sub {
+       my ($arg, $acts, $funcname, $templater) = @_;
+
        $req->user_can(edit_reorder_children => $catalog)
 	 or return '';
        @subcats > 1 or return '';
        # links to move catalogs up/down
        my $html = '';
-       my $refreshto = CGI::escape($ENV{SCRIPT_NAME});
+       my ($img_prefix, $urladd) = DevHelp::Tags->get_parms($arg, $acts, $templater);
+       defined $img_prefix or $img_prefix = '';
+       defined $urladd or $urladd = '';
+       my $refreshto = CGI::escape($ENV{SCRIPT_NAME}.$urladd);
        if ($subcat_index < $#subcats) {
 	 $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?id=$subcats[$subcat_index]{id}&d=swap&other=$subcats[$subcat_index+1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+<a href="$CGI_URI/admin/move.pl?id=$subcats[$subcat_index]{id}&d=swap&other=$subcats[$subcat_index+1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
 HTML
        }
        else {
@@ -234,7 +244,7 @@ HTML
        }
        if ($subcat_index > 0) {
 	 $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?id=$subcats[$subcat_index]{id}&d=swap&other=$subcats[$subcat_index-1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+<a href="$CGI_URI/admin/move.pl?id=$subcats[$subcat_index]{id}&d=swap&other=$subcats[$subcat_index-1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
 HTML
        }
        else {
@@ -859,7 +869,7 @@ sub nice_options {
 }
 
 sub order_detail {
-  my ($req) = @_;
+  my ($req, $message) = @_;
 
   $req->user_can('shop_order_detail')
     or return product_list($req, "You don't have access to order details");
@@ -868,6 +878,7 @@ sub order_detail {
   my $id = $cgi->param('id');
   if ($id and
       my $order = Orders->getByPkey($id)) {
+    $message ||= $cgi->param('message') || '';
     my @lines = OrderItems->getBy('orderId', $id);
     my @products = map { Products->getByPkey($_->{productId}) } @lines;
     my $line_index = -1;
@@ -914,6 +925,7 @@ sub order_detail {
        option => sub { CGI::escapeHTML($options[$option_index]{$_[0]}) },
        ifOptions => sub { @options },
        options => sub { nice_options(@options) },
+       message => sub { $message },
       );
     page('order_detail', \%acts);
   }

@@ -184,7 +184,7 @@ sub validate {
   for my $field (@needed) {
     my $value = $q->param($field);
     defined $value and length $value
-      or push(@$errors, [ $field, "$field must be entered" ]);
+      or push(@$errors, [ $field, "\u$field must be entered" ]);
   }
   for my $field (qw(html_template text_template article_template)) {
     my $value = $q->param($field);
@@ -236,7 +236,7 @@ sub addsave {
     $subs{lastSent} = '0000-00-00 00:00';
     my $sub = BSE::SubscriptionTypes->add(@subs{@fields});
     
-    _refresh_list($cfg);  
+    _refresh_list($cfg, "Subscription created");  
   }
   else {
     sub_form($q, $req, $cfg, 'admin/subs/edit', undef, 1, \@errors);

@@ -489,7 +489,12 @@ sub prePurchase {
        return 0;
      },
      item=> sub { CGI::escapeHTML($items[$item_index]{$_[0]}); },
-     product => sub { CGI::escapeHTML($products[$item_index]{$_[0]}) },
+     product => 
+     sub { 
+       my $value = $products[$item_index]{$_[0]};
+       defined($value) or $value = '';
+       CGI::escapeHTML($value);
+     },
      extended =>
      sub { 
        my $what = $_[0] || 'retailPrice';
@@ -666,7 +671,10 @@ sub purchase {
 
   # check if a customizer has anything to do
   eval {
-    $cust_class->order_save($CGI::Q, \%order, \@cart, \@products, $cfg);
+    my %custom = %{$session{custom}};
+    $cust_class->order_save($CGI::Q, \%order, \@cart, \@products, 
+			    \%custom, $cfg);
+    $session{custom} = \%custom;
   };
   if ($@) {
     return checkout($@, 1);
@@ -783,7 +791,12 @@ sub send_order {
        return 0;
      },
      item=> sub { $items->[$item_index]{$_[0]}; },
-     product => sub { $products->[$item_index]{$_[0]} },
+     product => 
+     sub { 
+       my $value = $products->[$item_index]{$_[0]};
+       defined($value) or $value = '';
+       $value;
+     },
      order => sub { $order->{$_[0]} },
      extended => 
      sub {

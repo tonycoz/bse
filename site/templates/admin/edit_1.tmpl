@@ -116,7 +116,7 @@
             <td bgcolor="#FFFFFF" width="100%"><:iterator begin flags:><:if FieldPerm flags:>
               <input type=checkbox name=flags value="<:flag id:>" <:ifFlagSet [flag id]:>checked<:or:>
               <:eif:>><:or FieldPerm:><:ifFlagSet [flag id]:>Yes<:or:>No<:eif:>
-              <:eif FieldPerm:><:flag desc:><:iterator end flags:></td>
+              <:eif FieldPerm:><:flag desc:><:iterator separator flags:><br /><:iterator end flags:></td>
             <td nowrap bgcolor="#FFFFFF"><:help edit flags:> <:error_img flags:></td>
           </tr>
 		  <tr> 
@@ -199,10 +199,10 @@
                   </td>
                 </tr>
               </table>
-              <p><a href="<:script:>?filelist=1&id=<:article id:>"><b>Manage Files</b></a>
+              <p><a href="<:script:>?id=<:article id:>&_t=file"><b>Manage Files</b></a>
               </p>
               <:or Files:>
-              <p>No files are attached to this article. <a href="<:script:>?filelist=1&id=<:article id:>"><b>Manage Files</b></a></p>
+              <p>No files are attached to this article. <a href="<:script:>?id=<:article id:>&_t=file"><b>Manage Files</b></a></p>
               <:eif Files:>
             </td>
             <td nowrap bgcolor="#FFFFFF" valign="top"><:help edit files:> <:error_img
@@ -216,9 +216,9 @@
               <:image width:> height=<:image height:>> <:iterator separator images:> 
               <hr noshade size="1">
               <: iterator end images :>
-              <p align="left"><a href="<:script:>?id=<:article id:>&showimages=1"><b>Manage Images</b></a></p>
+              <p align="left"><a href="<:script:>?id=<:article id:>&_t=img"><b>Manage Images</b></a></p>
               <:or Images:>
-              <p align="left">No images are attached to this article.  <a href="<:script:>?id=<:article id:>&showimages=1"><b>Manage Images</b></a></p>
+              <p align="left">No images are attached to this article.  <a href="<:script:>?id=<:article id:>&_t=img"><b>Manage Images</b></a></p>
               <:eif Images:>
 	    </td>
             <td valign="top" nowrap bgcolor="#FFFFFF"><:help edit images:> <:error_img

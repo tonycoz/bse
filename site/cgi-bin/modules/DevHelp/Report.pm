@@ -215,7 +215,7 @@ sub _get_type_html_sql {
 	  \@values );
 }
 
-sub _get_type_html_sql {
+sub _get_type_html_enum {
   my ($self, $type, $name, $cgi, $db) = @_;
 
   my $sect = "report datatype $type";
@@ -223,7 +223,7 @@ sub _get_type_html_sql {
   my @values = split ',', $self->{cfg}->entry($sect, 'values', '');
 
   @values
-    or return '** no values found for type '$type' **';
+    or return "** no values found for type '$type' **";
   my @labels = split ',', $self->{cfg}->entry($sect, 'labels', '');
   if (@labels < @values) {
     push @labels, @values[@labels .. $#values];
@@ -477,16 +477,16 @@ sub iter_levelN {
   # which columns are we checking?
   my $match = $report->{sql}[$level]{match};
   
-  my @parnames = @{$results->[$level-1]{names_lc};
+  my @parnames = @{$results->[$level-1]{names_lc}};
   my $parent = $work->[$level-1];
 
   my @pardata = @$parent{map $parnames[$match->[$_][1]-1], 0.. $#$match};
 
-  my $source = $results[$level]{rows};
+  my $source = $results->[$level]{rows};
 
   my @out = grep 
     {
-      
+      1;
     } @$source;
 }
 

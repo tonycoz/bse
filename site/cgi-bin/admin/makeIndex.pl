@@ -82,7 +82,7 @@ for my $key (sort keys %index) {
 }
 
 if ($in_cgi) {
-  refresh_to("$urlbase/admin/");
+  refresh_to("$urlbase/cgi-bin/admin/menu.pl");
 }
 
 sub makeIndex {
@@ -91,13 +91,15 @@ sub makeIndex {
   my %do_search;
   @dont_search{@SEARCH_EXCLUDE} = @SEARCH_EXCLUDE;
   @do_search{@SEARCH_INCLUDE} = @SEARCH_INCLUDE;
-  until ($articles->EOF) {
+  INDEX: until ($articles->EOF) {
     # find the section
     my $article = $articles->getNext;
     next unless ($article->{listed} || $article->{flags} =~ /I/);
+    next if $article->{flags} =~ /[CN]/;
     my $section = $article;
     while ($section->{parentid} >= 1) {
       $section = $articles->getByPkey($section->{parentid});
+      next INDEX if $section->{flags} =~ /C/;
     }
     my $id = $article->{id};
     my $indexas = $article->{level} > $max_level ? $article->{parentid} : $id;

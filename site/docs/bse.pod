@@ -10,6 +10,71 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.12_29
+
+=over
+
+=item *
+
+makeIndex.pl now redirects directly to menu.pl rather than to /admin/
+after rebuilding the index
+
+=item *
+
+added the "Don't index even if listed" and "Don't index this article
+or it's descendants" flags
+
+=item *
+
+the custom session hash is now supplied to the order_save() custom
+hook
+
+=item *
+
+the product tag on the cart pages now checks for undef values to
+prevent warnings
+
+=item *
+
+field names in the validation messages produced by subs.pl now have
+the first letter upper-cased.
+
+=item *
+
+creating a subscription now mentions that it's successful
+
+=item *
+
+the experimental report.pl compiles
+
+=item *
+
+added line-breaks between article flags on the edit pages
+
+=item *
+
+the image and file lists are now accessed using the default target in
+add.pl.  Use _t=img and _t=file to access the lists now.
+
+=item *
+
+admin/edit_2.tmpl through admin/edit_5.tmpl are no longer distributed,
+all normal article editing now use admin/edit_1.tmpl.  If you need
+different pages for different levels remove the mappings from the
+[templates] section in bse.cfg
+
+=item *
+
+the C<order_detail> target in shopadmin.pl now accepts a message
+parameter
+
+=item *
+
+the edit_add_child security check will now fail if the article is a
+product or if the article is too many levels deep to have a child.
+
+=back
+
 =head2 0.12_28
 
 =over

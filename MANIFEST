@@ -202,10 +202,10 @@ site/templates/admin/catalog.tmpl  # embedded in the shopadmin catalog/product d
 site/templates/admin/catalog_custom.tmpl
 site/templates/admin/edit_0.tmpl
 site/templates/admin/edit_1.tmpl
-site/templates/admin/edit_2.tmpl
-site/templates/admin/edit_3.tmpl
-site/templates/admin/edit_4.tmpl
-site/templates/admin/edit_5.tmpl
+# site/templates/admin/edit_2.tmpl
+# site/templates/admin/edit_3.tmpl
+# site/templates/admin/edit_4.tmpl
+# site/templates/admin/edit_5.tmpl
 site/templates/admin/edit_catalog.tmpl
 site/templates/admin/edit_product.tmpl
 site/templates/admin/edit_steps.tmpl

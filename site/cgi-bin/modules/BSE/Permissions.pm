@@ -7,6 +7,7 @@ my @checks =
      edit_delete_article
      edit_field_edit_title
      edit_field_edit_summary
+     edit_add_child
      );
 my %checks = map { $_=> 1 } @checks;  
 
@@ -436,6 +437,21 @@ sub check_edit_field_edit_summary {
   
   if (_is_product_and_in_use($article)) {
     $$rmsg = "There are orders for this product.  The summary cannot be changed.";
+    return;
+  }
+
+  return 1;
+}
+
+sub check_edit_add_child {
+  my ($self, $user, $article, $action, $rmsg) = @_;
+
+  if ($article->{generator} eq 'Generate::Product') {
+    $$rmsg = "Products cannot have children";
+    return;
+  }
+  unless (defined $self->{cfg}->entry('level names', $article->{level}+1)) {
+    $$rmsg = "Too many levels";
     return;
   }
 
