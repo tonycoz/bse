@@ -1,0 +1,254 @@
+=head1 NAME
+
+BSE - an engine for simple magazine style WWW sites.
+
+=head1 DESCRIPTION
+
+BSE is an engine for creating simple magazine stype web sites.
+
+Maybe I'll add some other bits here.
+
+=head1 CHANGES
+
+=head2 0.09
+
+=over 4
+
+=item *
+
+added support for controlling access to the regenerate option
+
+=item *
+
+added the ability to disable auto-regeneration
+
+this initially broke some buttons, fixed
+
+=item *
+
+properly escape child properties in add.pl
+
+=item *
+
+removing an article now removes any associated images
+
+=item *
+
+removing an image from an article now removes the image file when you
+save the article.
+
+=item *
+
+added datadump.pl (send an email containing a mysql datadump), with
+configuration in Constants.pm
+
+=item *
+
+added imageclean.pl - cleans up the image table and images directory
+
+=item *
+
+added an advanced admin page with links to datadump.pl and
+imageclean.pl (you can change these of course).
+
+=item *
+
+previously it was possible for a user with admin rights to choose a
+template that was outside the templates directory.  
+
+=back
+
+=head2 0.08
+
+=over 4
+
+=item *
+
+modified administration templates
+
+=item *
+
+formatting is now stripped from body text before an excerpt is
+produced (for the search results).
+
+=back
+
+=head2 0.07
+
+I'll add in the 0.07 change list as soon as I figure out what I changed...
+
+Once I get my old 0.08 RC that may include the 0.07 change list.
+
+=head2 0.06
+
+Some changes are being made to allow the engine to be embedded into a
+site (specifically squirrelweb.com.au).
+
+=over 4
+
+=item *
+
+Bug fix: shop.pl had a silly exporter mistake, and a sillier reference
+to an unknown variable name.
+
+=item *
+
+changed admin links to buttons for the catalog and product pages,
+added a Display button to the product page.
+
+=item *
+
+cleaned up the shopitem, cart_base, checkout_base, checkoutfinal_base,
+mailorder and mailconfirm templates, removing tags that don't work in
+them, removing references to bodyscoop, fixing broken images, removed
+thawte stamp.gif.
+
+=item *
+
+%EXTRA_TAGS now work in mailorder and mailconfirm templates
+
+=item *
+
+You can now use $SHOP_EMAIL_ORDER to disable sending the encrypted
+order.  (Useful only for testing or until you get encryption keys
+organized - there's no other way to get the credit card number and
+expiry date.)
+
+=item *
+
+Generate/Product.pm had a hard-coded link to the internal test
+site. (Doh!)
+
+=item *
+
+some base URIs can be configured, though this still needs some work.
+
+=back
+
+=head2 0.05
+
+=over 4
+
+=item *
+
+Bug fix: only add the class attribute to thumbnails if one is supplied
+(doh!)
+
+=item *
+
+Moved shop configuration from shop.pl to Constants.pm
+
+=item *
+
+Extended template field to 127 characters so directories can be used
+without chopping off names.
+
+=item *
+
+Added installation documentation.
+
+=item *
+
+Templates in the drop-down lists in add.pl now includes templates from
+$TMPLDIR/$level and $TMPLDIR/common.
+
+=item *
+
+crumbs now include the section, whether or not they are listed.
+
+=item *
+
+added templates.pod, which contains most templating documentation,
+copied from new documentation in various places (shop.pl, search.pl,
+Generate::*.pm).
+
+=item *
+
+search.pl wasn't handling single-quoted search terms correctly
+
+=item *
+
+added ifInMenu tag
+
+=item *
+
+more changes to support multiple catalogs:
+
+=over 4
+
+=item *
+
+the initial catalog can be removed.  The initial catalog isn't useful
+when you need more than one catalog.  If you want multiple catalogs
+you need to remove the initial catalog and then add new ones.  The
+templates need work too.
+
+=item *
+
+the link/admin fields for the new article are set correctly (oops)
+
+=item *
+
+added a sample section template for a multi-catalog shop
+
+=back
+
+=item *
+
+the sample templates look better, along with better title images
+
+=item *
+
+the shop was being generated with a non-secure url
+
+=item *
+
+parent articles were not being regenerated when an article was deleted
+
+=back
+
+=head2 0.04
+
+You will need to recreate the articles table, since a new column has
+been added to support article thumbnails.
+
+=over 4
+
+=item *
+
+Added article thumbnails.
+
+=item *
+
+Multiple product catalogs.
+
+=item *
+
+leadTime is now modifiable in products.
+
+=item *
+
+Bug fix: only list .tmpl files from template directories in article
+editing forms.
+
+=item *
+
+Bug fix: prevent adding non-catalog subsections to the shop section.
+
+=item *
+
+Bug fix: the crumbs iterator no longer shows crumbs that have "don't
+list in menu" set.  Such subsections often shouldn't be linked to.
+
+=item *
+
+The documentation on article templates has been improved.
+
+=item *
+
+Some tags that operate on articles have been expanded to work on all
+article objects available in the template.
+
+=back
+
+=cut
