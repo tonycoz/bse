@@ -22,6 +22,7 @@ require $SESSION_REQUIRE;
 use Images;
 use Articles;
 use BSE::Sort;
+use BSE::Cfg;
 
 my %cookies = fetch CGI::Cookie;
 my $sessionid;
@@ -111,6 +112,15 @@ my $imageEditor = Squirrel::ImageEditor->new(session=>\%session,
 					     keep => [ qw/id parentid/ ]);
 
 if ($imageEditor->action($CGI::Q)) {
+  exit;
+}
+
+my $cfg = BSE::Cfg->new();
+use BSE::FileEditor;
+my $file_editor = 
+  BSE::FileEditor->new(session=>\%session, cgi=>$CGI::Q, cfg=>$cfg,
+		       backopts=>{ edit_product=> 1});
+if ($file_editor->process_files()) {
   exit;
 }
 
