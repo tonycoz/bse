@@ -50,7 +50,7 @@ sub noarticle_dispatch {
 }
 
 sub edit_sections {
-  my ($self, $req, $articles) = @_;
+  my ($self, $req, $articles, $msg) = @_;
 
   BSE::Permissions->check_logon($req)
     or return BSE::Template->get_refresh($req->url('logon'), $req->cfg);
@@ -65,7 +65,7 @@ sub edit_sections {
   $article{listed} = 0;
   $article{generator} = $self->generator;
 
-  return $self->low_edit_form($req, \%article, $articles);
+  return $self->low_edit_form($req, \%article, $articles, $msg);
 }
 
 sub article_actions {
@@ -813,7 +813,6 @@ sub tag_if_field_perm {
     return;
   }
   if ($article->{id}) {
-    print STDERR "checking field $field\n";
     return $req->user_can("edit_field_edit_$field", $article);
   }
   else {
@@ -1037,7 +1036,8 @@ sub add_form {
 
   my ($values, $labels) = $self->possible_parents(\%article, $articles, $req);
   @$values
-    or return $req->access_error("You can't add children to any article at that level");
+    or return $self->edit_sections($req, $articles, 
+		"You can't add children to any article at that level");
 
   return $self->low_edit_form($req, \%article, $articles, $msg, $errors);
 }
@@ -1462,6 +1462,10 @@ sub add_stepkid {
   if ($@) {
     return $self->edit_form($req, $article, $articles, $@);
   }
+
+  use Util 'generate_article';
+  generate_article($articles, $article) if $Constants::AUTO_GENERATE;
+
   return $self->refresh($article, $cgi, 'step');
 }
 
@@ -1485,6 +1489,9 @@ sub del_stepkid {
   if ($@) {
     return $self->edit_form($req, $article, $articles, $@);
   }
+  use Util 'generate_article';
+  generate_article($articles, $article) if $Constants::AUTO_GENERATE;
+
   return $self->refresh($article, $cgi, 'step');
 }
 
@@ -1518,6 +1525,9 @@ sub save_stepkids {
     };
     $@ and return $self->refresh($article, $cgi, '', $@);
   }
+  use Util 'generate_article';
+  generate_article($articles, $article) if $Constants::AUTO_GENERATE;
+
   return $self->refresh($article, $cgi, 'step');
 }
 
@@ -1552,6 +1562,9 @@ sub add_stepparent {
   };
   $@ and return $self->refresh($article, $cgi, 'step', $@);
 
+  use Util 'generate_article';
+  generate_article($articles, $article) if $Constants::AUTO_GENERATE;
+
   return $self->refresh($article, $cgi, 'stepparents');
 }
 
@@ -1575,6 +1588,9 @@ sub del_stepparent {
     BSE::Admin::StepParents->del($step_parent, $article);
   };
   $@ and return $self->refresh($article, $cgi, 'stepparents', $@);
+
+  use Util 'generate_article';
+  generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
   return $self->refresh($article, $cgi, 'stepparents');
 }
@@ -1610,6 +1626,9 @@ sub save_stepparents {
     };
     $@ and return $self->refresh($article, $cgi, '', $@);
   }
+
+  use Util 'generate_article';
+  generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
   return $self->refresh($article, $cgi, 'stepparents');
 }
@@ -1678,6 +1697,11 @@ sub save_image_changes {
       $image->save;
     }
   }
+
+  use Util 'generate_article';
+  generate_article($articles, $article) if $Constants::AUTO_GENERATE;
+
+
   return $self->refresh($article, $cgi, undef, undef, '&showimages=1');
 }
 
@@ -1756,7 +1780,10 @@ sub add_image {
   my @cols = Image->columns;
   shift @cols;
   my $imageobj = Images->add(@image{@cols});
-  
+
+  use Util 'generate_article';
+  generate_article($articles, $article) if $Constants::AUTO_GENERATE;
+
   return $self->refresh($article, $cgi, undef, undef, '&showimages=1');
 }
 
@@ -1776,6 +1803,9 @@ sub remove_img {
   my $imagedir = $req->cfg->entry('paths', 'images', $Constants::IMAGEDIR);
   unlink "$imagedir$image->{image}";
   $image->remove;
+
+  use Util 'generate_article';
+  generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
   return $self->refresh($article, $req->cgi, undef, undef, '&showimages=1');
 }
@@ -1799,6 +1829,9 @@ sub move_img_up {
   $to->save;
   $from->save;
 
+  use Util 'generate_article';
+  generate_article($articles, $article) if $Constants::AUTO_GENERATE;
+
   return $self->refresh($article, $req->cgi, undef, undef, '&showimage=1');
 }
 
@@ -1820,6 +1853,9 @@ sub move_img_down {
     ($from->{displayOrder}, $to->{displayOrder});
   $to->save;
   $from->save;
+
+  use Util 'generate_article';
+  generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
   return $self->refresh($article, $req->cgi, undef, undef, '&showimage=1');
 }
@@ -1969,6 +2005,9 @@ sub fileadd {
   require ArticleFiles;
   my $fileobj = ArticleFiles->add(@file{@cols});
 
+  use Util 'generate_article';
+  generate_article($articles, $article) if $Constants::AUTO_GENERATE;
+
   $self->_refresh_filelist($req, $article);
 }
 
@@ -1996,6 +2035,9 @@ sub fileswap {
       $file2->save;
     }
   }
+
+  use Util 'generate_article';
+  generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
   $self->_refresh_filelist($req, $article);
 }
@@ -2029,6 +2071,9 @@ sub filedel {
     }
   }
 
+  use Util 'generate_article';
+  generate_article($articles, $article) if $Constants::AUTO_GENERATE;
+
   $self->_refresh_filelist($req, $article);
 }
 
@@ -2053,6 +2098,9 @@ sub filesave {
       $file->save;
     }
   }
+
+  use Util 'generate_article';
+  generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
   $self->_refresh_filelist($req, $article);
 }

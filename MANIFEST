@@ -143,6 +143,7 @@ site/docs/templates.pod
 site/docs/upgrade_mysql.html
 site/htdocs/a/.htaccess
 site/htdocs/admin/advanced.html
+site/htdocs/admin/help/access.html
 site/htdocs/admin/help/addgroup.html
 site/htdocs/admin/help/adduser.html
 site/htdocs/admin/help/body.html

@@ -39,16 +39,18 @@
           <tr> 
             <th bgcolor="#FFFFFF" align="left" width="100%"><:aperm brief:> </th>
             <td bgcolor="#FFFFFF"> 
-              <input type=checkbox name=aperms value=<:aperm id:> <:ifAperm_set aperm:>checked <:or:><:eif:>/>
+              <:if UserCan admin_group_save_artrights:><input type=checkbox name=aperms value=<:aperm id:> <:ifAperm_set aperm:>checked <:or:><:eif:>/><:or UserCan:><img src="/images/admin/<:ifAperm_set aperm:>checked<:or:>unchecked<:eif:>.gif"><:eif UserCan:>
             </td>
             <td bgcolor="#FFFFFF"><img src="/images/admin/help.gif" title="<:aperm help:>" /></td>
           </tr>
           <:iterator end aperms:>
+<:ifUserCan admin_group_save_artrights:>
           <tr> 
             <td bgcolor="#FFFFFF" colspan="3" align="right"> 
               <input type="submit" name="a_savegroupart" value="  Save Group permissions  " />
             </td>
           </tr>
+<:or:><:eif:>
         </table>
       </td>
     </tr>

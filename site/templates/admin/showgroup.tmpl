@@ -36,31 +36,33 @@
             <td bgcolor="#FFFFFF"> 
               <:group name:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editgroup name:> </td>
+            <td bgcolor="#FFFFFF"><:help addgroup name:> </td>
           </tr>
           <tr> 
             <th bgcolor="#FFFFFF" align="left">Description: </th>
             <td bgcolor="#FFFFFF"> 
-              <input type="text" name="description" value="<:group description:>" />
+              <:ifUserCan admin_group_save:><input type="text" name="description" value="<:group description:>" /><:or:><:group description:><:eif:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editgroup description:> </td>
+            <td bgcolor="#FFFFFF"><:help addgroup description:> </td>
           </tr>
           <tr> 
             <th bgcolor="#FFFFFF" align="left"> Members: </th>
             <td bgcolor="#FFFFFF"> 
 	      <:iterator begin users:>
-	        <input type=checkbox name=users value=<:iuser id:> <:ifMemberof iuser:>checked<:or:><:eif:> /> <:iuser name:>
+	        <:if UserCan admin_group_save:><input type=checkbox name=users value=<:iuser id:> <:ifMemberof iuser:>checked<:or:><:eif:> /><:or UserCan:><img src="/images/admin/<:ifMemberof iuser:>checked<:or:>unchecked<:eif:>.gif"><:eif UserCan:> <:iuser name:>
 	      <:iterator separator users:>
 	      <br>
 	      <:iterator end users:>
             </td>
-            <td bgcolor="#FFFFFF" valign="top"><:help editgroup members:> </td>
+            <td bgcolor="#FFFFFF" valign="top"><:help addgroup members:> </td>
           </tr>
+<:ifUserCan admin_group_save:>
           <tr> 
             <td bgcolor="#FFFFFF" colspan="3" align="right"> 
               <input type="submit" name="a_savegroup" value="  Save Group  " />
             </td>
           </tr>
+<:or:><:eif:>
         </table>
       </td>
     </tr>

@@ -9,8 +9,8 @@
 <p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | <a href="<:product admin:>">See product</a> 
   | <a href="/cgi-bin/admin/add.pl?id=<:product parentid:>">Edit parent</a> 
   | <a href="/cgi-bin/admin/shopadmin.pl">Manage catalogs</a><:if Product listed:> 
-  | <a href="<:script:>?id=<:product id:>&delete_product=1">Hide product</a> <:or 
-  Product:> | <a href="<:script:>?id=<:product id:>&undelete_product=1">Show product</a> 
+  | <a href="<:script:>?id=<:product id:>&hide=1&r=<:script:>?id=<:product id:>">Hide product</a> <:or 
+  Product:> | <a href="<:script:>?id=<:product id:>&unhide=1&r=<:script:>?id=<:product id:>">Show product</a> 
   <:eif Product:>| <a href="/cgi-bin/admin/add.pl?id=<:product id:>&_t=steps">Manage 
   step parents</a> | <:ifProduct listed:><:or:>Hidden<:eif:></p>
   <h2>Edit Product</h2>
@@ -143,6 +143,11 @@
               <:ifFieldPerm options:><input type="text" name="options" value="<:product options:>" size=30>
               (<:alloptions:>)<:or:><:product options:><:eif:> </td>
             <td bgcolor="#FFFFFF"><:help product options:></td>
+          </tr>
+          <tr> 
+            <th nowrap bgcolor="#FFFFFF" align="left">List article:</th>
+            <td bgcolor="#FFFFFF" width="100%"> <:if FieldPerm listed:><:list listed:><:or FieldPerm:><:if Article listed:><:ifEq [article listed] "1":>Yes<:or:>In Sections, but not menu<:eif:><:or Article:>No<:eif Article:><:eif FieldPerm:> </td>
+            <td bgcolor="#FFFFFF"><:help edit listed:></td>
           </tr>
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF" valign="top">Thumbnail image:</th>

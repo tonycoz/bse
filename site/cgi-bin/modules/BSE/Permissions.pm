@@ -233,7 +233,7 @@ sub _garticle_match {
     push @articles, $self->_art_ancestors($article);
   }
 
-  for my $test (@{$perm->{arts}}) {
+  for my $test (@{$perm->{artinfo}{arts}}) {
     if ($test->{type} eq 'exact') {
       return 1
 	if grep $_->{id} == $test->{article}, @articles;

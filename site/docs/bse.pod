@@ -10,6 +10,51 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.12_15
+
+=over
+
+=item *
+
+global permissions simply didn't work, due to a dumb bug
+
+=item *
+
+the user/group admin pages now display buttons and checkboxes more
+intelligently, depending on the user's rights
+
+=item *
+
+the user/group save processing was trying to call an undefined method
+if the user didn't have access to a function.  As was the add form in
+add.pl if there wasn't an article the user could add to at the given
+level
+
+=item *
+
+the hide/unhide links on the edit_product page pointed at the wrong
+place.
+
+=item *
+
+image, file, stepchild and stepparent changes now regenerate the
+article (depending on the auto generate flag in Constants.pm).  You
+will probably want to do a site regen when you're done still, since it
+only regenerates the article you're working with, not it's
+stepchildren and step parents.
+
+=item *
+
+link the edituser and editgroup help to the adduser and addgroup help
+files respectively and add entries for the groups and members field
+respectively.
+
+=item *
+
+added a help file for the access panel help icon to link to.
+
+=back
+
 =head2 0.12_14
 
 =over

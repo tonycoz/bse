@@ -34,45 +34,49 @@
             <td bgcolor="#FFFFFF"> 
               <:user logon:>
             </td>
-            <td bgcolor="#FFFFFF"><:help edituser logon:> </td>
+            <td bgcolor="#FFFFFF"><:help adduser logon:> </td>
           </tr>
           <tr> 
             <th bgcolor="#FFFFFF" align="left">Name: </th>
             <td bgcolor="#FFFFFF"> 
-              <input type="text" name="name" value="<:user name:>" />
+              <:ifUserCan admin_user_save:><input type="text" name="name" value="<:user name:>" /><:or:><:user name:><:eif:>
             </td>
-            <td bgcolor="#FFFFFF"><:help edituser name:> </td>
+            <td bgcolor="#FFFFFF"><:help adduser name:> </td>
           </tr>
+<:ifUserCan admin_user_save:>
           <tr> 
             <th bgcolor="#FFFFFF" align="left"> Password: </th>
             <td bgcolor="#FFFFFF"> 
               <input type="password" name="password" />
               </td>
-            <td bgcolor="#FFFFFF"> <:help edituser password:></td>
+            <td bgcolor="#FFFFFF"> <:help adduser password:></td>
           </tr>
           <tr> 
             <th bgcolor="#FFFFFF" align="left"> Confirm: </th>
             <td bgcolor="#FFFFFF"> 
               <input type="password" name="confirm" />
             </td>
-            <td bgcolor="#FFFFFF"><:help edituser confirm:> </td>
+            <td bgcolor="#FFFFFF"><:help adduser confirm:> </td>
           </tr>
+<:or:><:eif:>
           <tr> 
             <th bgcolor="#FFFFFF" align="left" valign="top"> Groups: </th>
             <td bgcolor="#FFFFFF"> 
 	      <:iterator begin groups:>
-	        <input type=checkbox name=groups value=<:igroup id:> <:ifMemberof igroup:>checked<:or:><:eif:> /> <:igroup name:>
+	        <:if UserCan admin_user_save:><input type=checkbox name=groups value=<:igroup id:> <:ifMemberof igroup:>checked<:or:><:eif:> /><:or UserCan:><img src="/images/admin/<:ifMemberof igroup:>checked<:or:>unchecked<:eif:>.gif"><:eif UserCan:> <:igroup name:>
 	      <:iterator separator groups:>
 	      <br>
 	      <:iterator end groups:>
             </td>
-            <td bgcolor="#FFFFFF" valign="top"><:help edituser groups:> </td>
+            <td bgcolor="#FFFFFF" valign="top"><:help adduser groups:> </td>
           </tr>
+<:ifUserCan admin_user_save:>
           <tr> 
             <td bgcolor="#FFFFFF" colspan="3" align="right"> 
               <input type="submit" name="a_saveuser" value="  Save User  " />
             </td>
           </tr>
+<:or:><:eif:>
         </table>
       </td>
     </tr>

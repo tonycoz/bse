@@ -180,7 +180,7 @@ sub req_adduser {
   my ($class, $req) = @_;
 
   $req->user_can('admin_user_add')
-    or return $req->access_error("You don't have admin_user_add access");
+    or return $class->req_users($req, "You don't have admin_user_add access");
 
   my $cgi = $req->cgi;
   my $logon = $cgi->param('logon');
@@ -224,7 +224,7 @@ sub req_addgroup {
   my ($class, $req) = @_;
 
   $req->user_can('admin_group_add')
-    or return $req->access_error("You don't have admin_user_add access");
+    or return $class->req_groups($req, "You don't have admin_group_add access");
 
   my $cgi = $req->cgi;
   my $name = $cgi->param('name');
@@ -541,7 +541,7 @@ sub req_saveuser {
   my ($class, $req) = @_;
 
   $req->user_can('admin_user_save')
-    or return $req->access_error("You don't have admin_user_save access");
+    or return $class->req_users($req, "You don't have admin_user_save access");
 
   my $cgi = $req->cgi;
   my $userid = $cgi->param('userid');
@@ -607,7 +607,7 @@ sub req_saveuserart {
   my ($class, $req) = @_;
 
   $req->user_can("admin_user_save_artrights")
-    or return $req->access_error("You don't have admin_user_save_artrights access");
+    or return $class->req_users($req, "You don't have admin_user_save_artrights access");
 
   my $cgi = $req->cgi;
   my $userid = $cgi->param('userid');
@@ -643,7 +643,7 @@ sub req_savegroup {
   my ($class, $req, $msg) = @_;
 
   $req->user_can("admin_group_save")
-    or return $req->access_error("You don't have admin_group_save access");
+    or return $class->req_groups($req, "You don't have admin_group_save access");
 
   my $cgi = $req->cgi;
   my $groupid = $cgi->param('groupid');
@@ -694,7 +694,7 @@ sub req_savegroupart {
   my ($class, $req) = @_;
 
   $req->user_can("admin_group_save_artrights")
-    or return $req->access_error("You don't have admin_group_save_artrights access");
+    or return $class->req_groups($req, "You don't have admin_group_save_artrights access");
 
   my $cgi = $req->cgi;
   my $userid = $cgi->param('userid');
@@ -731,7 +731,7 @@ sub req_deluser {
   my ($class, $req) = @_;
 
   $req->user_can("admin_user_del")
-    or return $req->access_error("You don't have admin_user_del access");
+    or return $class->req_users($req, "You don't have admin_user_del access");
   
   my $cgi = $req->cgi;
   my $userid = $cgi->param('userid');
@@ -756,7 +756,7 @@ sub req_delgroup {
   my ($class, $req, $msg) = @_;
 
   $req->user_can("admin_group_del")
-    or return $req->access_error("You don't have admin_group_del access");
+    or return $class->req_groups($req, "You don't have admin_group_del access");
   
   my $cgi = $req->cgi;
   my $groupid = $cgi->param('groupid');
