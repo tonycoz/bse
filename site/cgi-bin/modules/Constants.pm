@@ -3,8 +3,9 @@ use strict;
 
 # this needs to be re-organized
 use vars qw(@EXPORT_OK %EXPORT_TAGS @ISA $VERSION 
-$DBD $DB $DBCLASS $UN $PW $D_00 $D_99 $D_XX
-$L_ID $TMPLDIR $IMAGEDIR $SEP $URLBASE $SECURLBASE %LEVEL_DEFAULTS $BASEDIR
+$DSN $DBOPTS $DBCLASS $UN $PW $D_00 $D_99 $D_XX
+$SESSION_CLASS $SESSION_REQUIRE
+$TMPLDIR $IMAGEDIR $SEP $URLBASE $SECURLBASE %LEVEL_DEFAULTS $BASEDIR
 $MAXPHRASE $CONTENTBASE $SHOPID $PRODUCTPARENT $DATADIR $LINK_TITLES 
 @SEARCH_EXCLUDE @SEARCH_INCLUDE $SEARCH_LEVEL $SEARCH_ALL
 $SEARCH_WILDCARD_MIN $SEARCH_AUTO_WILDCARD $SEARCH_TITLE $SEARCH_TITLE_IMAGE
@@ -21,7 +22,8 @@ $VERSION = 0.1;
 
 require Exporter;
 @ISA = qw/Exporter/;
-@EXPORT_OK = qw/$DBD $DB $DBCLASS $UN $PW $D_00 $D_99 $D_XX $L_ID $TMPLDIR $SEP 
+@EXPORT_OK = qw/$DSN $DBOPTS $DBCLASS $UN $PW $D_00 $D_99 $D_XX $TMPLDIR $SEP
+$SESSION_CLASS $SESSION_REQUIRE
 $IMAGEDIR $URLBASE $SECURLBASE %LEVEL_DEFAULTS $BASEDIR $MAXPHRASE 
 $CONTENTBASE $SHOPID $PRODUCTPARENT $DATADIR $LINK_TITLES 
 @SEARCH_EXCLUDE @SEARCH_INCLUDE $SEARCH_LEVEL $SEARCH_ALL
@@ -46,26 +48,33 @@ $HAVE_HTML_PARSER $UNLISTED_LEVEL1_IN_CRUMBS/;
 	       $AUTO_GENERATE $REPARENT_UPDOWN/ ],
    search => [ qw/$TMPLDIR @SEARCH_EXCLUDE @SEARCH_INCLUDE $SEARCH_ALL
                   $SEARCH_WILDCARD_MIN $SEARCH_AUTO_WILDCARD/ ],
+   session => [ qw/$SESSION_CLASS $SESSION_REQUIRE/ ],
   );
 
-$DBD = 'mysql';
+$DSN = 'dbi:mysql:bse';
 $DBCLASS = 'BSE::DB::Mysql';
+$DBOPTS = {};
+#$DSN = 'dbi:ODBC:your_dsn';
+#$DBCLASS = 'BSE::DB::MSSQL';
+#$DBOPTS = { LongReadLen => 200000, LongTruncOk=>1 };
 
-$DB = 'bse';
+#$SESSION_CLASS = 'Apache::Session::DBIreal';
+$SESSION_CLASS = 'Apache::Session::MySQL';
+($SESSION_REQUIRE = $SESSION_CLASS) =~ s!::!/!g;
+$SESSION_REQUIRE .= ".pm";
 
 $UN = 'root';
 $PW = '';
 
-$L_ID = 'mysql_insertid';
-
 # base directory of the site
-$BASEDIR = '/home/httpd/html/common/work/bse/site';
+$BASEDIR = '/home/httpd/bsetest';
+#$BASEDIR = 'c:/your_site';
 
 # where we keep templates
 $TMPLDIR = $BASEDIR.'/templates/';
 
 # where the html is kept
-$CONTENTBASE = $BASEDIR . '/htdocs/';
+$CONTENTBASE = $BASEDIR.'/htdocs/';
 
 # where we keep images
 $IMAGEDIR = $CONTENTBASE.'images/';
@@ -298,6 +307,16 @@ $SHOP_EMAIL_ORDER = 0;
    {
     desc=>'Colour',
     values=>[ qw(Pink Aqua Maroon) ],
+   },
+   capsize=>
+   {
+    desc=>"Size",
+    values=>[ qw(Small Large) ]
+   },
+   capcolour=>
+   {
+    desc=>"Colour",
+    values => [ qw(Red Black White) ],
    },
   );
 ##END_PRODUCT_OPTS
