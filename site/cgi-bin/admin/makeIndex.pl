@@ -4,6 +4,7 @@ use lib '../modules';
 use Articles;
 use Constants qw($BASEDIR $MAXPHRASE $URLBASE $DATADIR @SEARCH_EXCLUDE @SEARCH_INCLUDE $SEARCH_LEVEL);
 use DatabaseHandle;
+use Generate;
 my $in_cgi = exists $ENV{REQUEST_METHOD};
 if ($in_cgi) {
   eval "use CGI::Carp qw(fatalsToBrowser)";
@@ -97,8 +98,11 @@ sub makeIndex {
     for my $field (sort { $scores{$b} <=> $scores{$a} } keys %scores) {
       # strip out markup
       my $text = $article->{$field};
-      next if $text =~ m!^\<html\>!i; # I don't know how to do this (yet)
-      $text =~ s/[abi]\[([^\]]+)\]/$1/g if $field eq 'body';
+      #next if $text =~ m!^\<html\>!i; # I don't know how to do this (yet)
+      if ($field eq 'body') {
+	Generate->remove_block(\$text);
+	$text =~ s/[abi]\[([^\]]+)\]/$1/g;
+      }
 
       # for each paragraph
       for my $para (split /\n/, $text) {
