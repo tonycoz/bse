@@ -434,18 +434,15 @@ F<cgi-bin/search.pl>)
 
 =item *
 
-F<cart_base.tmpl>, F<checkout_base.tmpl> and
-F<checkoutfinal_base.tmpl> are used to generated menus and other
-generic content into F<cart.tmpl>, F<checkout.tmpl> and
-F<checkoutfinal.tmpl> respectively.
+F<cart_base.tmpl>, F<checkout_base.tmpl>, F<checkoutcard_base.tmpl>
+and F<checkoutfinal_base.tmpl> are used to generated menus and other
+generic content into F<cart.tmpl>, F<checkout.tmpl>,
+F<checkoutcard.tmpl> and F<checkoutfinal.tmpl> respectively.
 
-These are the shopping cart, checkout page and completed order pages
-respectively, used by F<cgi-bin/shop.pl>.
-
-=item *
-
-F<shopitem.tmpl> is hard-wired as the name of the template used to
-format products.
+These are the shopping cart, checkout page, pre-purchase and completed
+order pages respectively, used by F<cgi-bin/shop.pl>.  The
+F<checkoutcard.tmpl> page only needs to be used if you use the
+I<prePurchase> target in shop.pl.
 
 =back
 
@@ -460,9 +457,12 @@ under the template root.
 Template names for shop catalog pages can be any F<.tmpl> file in the
 F<catalog> directory or F<catalog.tmpl>.
 
+Template names for products can be any F<.tmpl> file in the
+F<products> directory or F<shopitem.tmpl>.
+
 The templates used for editing articles are kept in
-F<edit_I<level>.tmpl>, you shouldn't need to modify these, unless you
-need to limit what your site administrators can do.
+F<admin/edit_I<level>.tmpl>, you shouldn't need to modify these,
+unless you need to limit what your site administrators can do.
 
 The home article is also presented with F<index.tmpl> as a choice, if
 it's present, and it's child is presented with F<index2.tmpl> as a
@@ -487,6 +487,9 @@ article or product attributes, such as C<section>, C<parent> or
 C<article> itself.
 
 =head2 Base tags
+
+These tags can be used in any article, catalog, product or
+pre-generated template, such as the checkout or search template.
 
 =over 4
 
@@ -555,6 +558,8 @@ I<text>.
 
 =item embed I<which> I<template>
 
+=item embed I<which> I<template> I<maxdepth>
+
 =item embed child
 
 Embeds the article specified by which using either the specified
@@ -562,7 +567,13 @@ template or the articles template.
 
 In this case I<which> can also be an article ID.
 
-I<template> is a filename relative to the templates directory.
+I<template> is a filename relative to the templates directory.  If
+this is "-" then the articles template is used (so you can set
+I<maxdepth> without setting the template.)  If I<template> contains a
+C<$> sign it will be replaced with the name of the original template.
+
+If I<maxdepth> is supplied and is less than the current maximum depth
+then it becomes the new maximum depth.  This can be used with ifCanEmbed.
 
 =item embed start ... embed end
 
@@ -727,9 +738,15 @@ loops).  This is handled with an error message in the page.
 
 This tag was never used.  Consider it deprecated.
 
-=item iterator ... crumbs
+=item iterator ... crumbs [option]
 
 Iterates over the ancestors of the article.  See the L</item crumbs>.
+
+I<option> can be empty, "listedonly" or "showtop".  If empty the
+display of an unlisted level1 ancestor is controlled by
+$UNLISTED_LEVEL1_IN_CRUMBS, if "listedonly" then an unlisted level1
+article isn't shown in the crumbs, and it is if "showtop" is the
+I<option>.  This can be used in <: ifCrumbs :> too.
 
 =item crumbs I<name>
 
@@ -772,6 +789,75 @@ now.
 
 This has been made more general and been moved, see L<Generate/embed>.
 
+=item ifCurrentPage I<which>
+
+Conditional tag, true if the given I<which> is the page currently
+being generated.  This can be used to apply special formatting if a
+C<level1> or C<level2> article is the current page.
+
+=item iterator ... images
+
+Iterates over the images for the given article.
+
+=item image which field
+
+Extracts the given field from the specified image.
+
+I<which> in this can be either an image index to access a specific
+image, or "-" to access the current image in the images iterator.
+
+The image fields are:
+
+=over
+
+=item articleId
+
+The identifier of the article the image belongs to.
+
+=item image
+
+A partial url of the image, relative to /images/.
+
+=item alt
+
+Alternative text of the image.
+
+=item width
+
+=item height
+
+dimensions of the image.
+
+=item url
+
+the url if any associated with the image
+
+=back
+
+=item image which align
+
+=item image which
+
+=item image
+
+Produces HTML to render the given image.
+
+I<which> can be an image index (1, 2, 3...) to select one of the
+images from the current article, or '-' or omitted to select the
+current image from the images iterator.  If align is present then the
+C<align> attribute of the image is set.
+
+If the image has a URL that <a href="...">...</a> will also be
+generated.
+
+=item ifImage imageindex
+
+Condition tag, true if an image exists at the given index.
+
+=item ifImages
+
+Conditional tag, true if the article has any images.
+
 =back
 
 The following tags produce output only in admin mode.
@@ -797,13 +883,25 @@ Generates a move down link if there is a next child for the current child.
 
 =over 4
 
-=item iterate ... products
+=item iterator ... products
 
 Iterates over the products within this catalog.
 
 =item product I<field>
 
 The give attribute of the product.
+
+=item iterator ... catalogs
+
+Iterates over any sub-catalogs.
+
+=item catalog I<field>
+
+The given field of the current catalog.
+
+=item ifSubcats
+
+Conditional tag, true if there are any subcatalogs.
 
 =item admin
 
@@ -812,6 +910,8 @@ Generates administrative tools (in admin mode).
 =back
 
 =head2 Product tags
+
+You can use any article tags as well.
 
 =over 4
 
@@ -824,6 +924,27 @@ you access to the product fields.
 =item admin
 
 Produces product specific administration links in admin mode.
+
+=item iterator ... options
+
+Iterates over the options available for the product, setting the option tag.
+
+=item option popup
+
+The popup list of values for the current option.
+
+=item option field
+
+Retrieves the given field from the option.  Most commonly you just
+want the desc field.
+
+  <:if Options:>
+  <!-- you might want to start a table here -->
+  <:iterator begin options:>
+  <:option desc:>: <:option popup:>
+  <:iterator end options:>
+  <!-- and end a table here -->
+  <:or Options:><:eif Options:>
 
 =back
 
@@ -967,6 +1088,14 @@ fields for this item.
 =item index
 
 The numeric index of the current item.
+
+=item extended
+
+=item extended I<field>
+
+Produces an extended price, ie. the given field of the curren cart
+item times the number of units.  The default I<field> is the unit
+price.  This should be formatted using the C<money> tag.
 
 =item money I<which> <field>
 
@@ -1332,6 +1461,41 @@ The wholesale price for the product.
 =item gst
 
 The gst for the product.
+
+=item filled
+
+Whether or not the order has been filled.  This can be used with the
+order_filled target in shopadmin.pl for tracking filled orders.
+
+=item whenFilled
+
+The time and date when the order was filled.
+
+=item whoFilled
+
+The user who marked the order as filled.
+
+=item paidFor
+
+Whether or not the order has been paid for.  This can be used with a
+custom purchasing handler to mark the product as paid for.  You can
+then filter the order list to only display paid for orders.
+
+=item paymentReceipt
+
+A custom payment handler can fill this with receipt information.
+
+=item randomId
+
+Generated by the prePurchase target, this can be used as a difficult
+to guess identifier for orders, when working with custom payment
+handlers.
+
+=item cancelled
+
+This can be used by a custom payment handler to mark an order as
+cancelled if the user starts processing an order without completing
+payment.
 
 =back
 
