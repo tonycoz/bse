@@ -11,16 +11,13 @@ help:
 	@echo make distdir - build distribution directory
 	@echo make docs - build documentation
 
-foo:
-	echo cvs tag r`echo $(VERSION) | tr . _`
-
-
 # this target needs to be modified so that the output directory includes
 # the release number
 dist: cleantree $(DISTTGZ)
 	cp $(DISTTGZ) $(WEBBASE)/dists/
 	cp site/docs/bse.html $(WEBBASE)/relnotes/bse-$(VERSION).html
 	cp site/docs/*.html $(WEBBASE)/docs
+	cvs tag r`echo $(VERSION) | tr . _`
 
 # make sure everything is committed
 cleantree:
