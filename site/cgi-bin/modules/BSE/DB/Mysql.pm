@@ -323,7 +323,9 @@ SQL
 insert bse_user_subscribed values (?,?,?,?,?)
 SQL
    subscriptionUserBought => <<SQL,
-select od.orderDate, oi.subscription_period, oi.max_lapsed, 
+select od.orderDate,
+  oi.subscription_period * oi.units as "subscription_period",
+  oi.max_lapsed, 
   od.id as "order_id", oi.id as "item_id", oi.productId as "product_id"
   from orders od, order_item oi
   where oi.subscription_id = ? and od.id = oi.orderId and od.siteuser_id = ?

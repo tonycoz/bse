@@ -19,7 +19,7 @@ my %actions =
    add=>1,
   );
 
-my @donttouch = qw(id userId password email confirmed confirmSecret waitingForConfirmation flags affiliate_name); # flags is saved separately
+my @donttouch = qw(id userId password email confirmed confirmSecret waitingForConfirmation flags affiliate_name previousLogon); # flags is saved separately
 my %donttouch = map { $_, $_ } @donttouch;
 
 sub dispatch {

@@ -18,7 +18,7 @@ use BSE::WebUtil qw/refresh_to/;
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
 
-my @donttouch = qw(id userId password email confirmed confirmSecret waitingForConfirmation disabled flags affiliate_name);
+my @donttouch = qw(id userId password email confirmed confirmSecret waitingForConfirmation disabled flags affiliate_name previousLogon);
 my %donttouch = map { $_, $_ } @donttouch;
 
 sub user_tags {

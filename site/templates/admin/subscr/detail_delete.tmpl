@@ -1,0 +1,37 @@
+<:wrap admin/xbase.tmpl title=>"Delete Subscription: [subscription text_id]":>
+<h1>Delete Subscription: <:subscription text_id:></h1>
+<p>
+| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |
+<:if UserCan bse_subs_list :><a href="<:script:>?a_list=1">List Subscriptions</a> |<:or UserCan:><:eif UserCan:>
+<:if UserCan bse_subs_edit :>
+<a href="<:script:>?a_edit=1&amp;subscription_id=<:subscription subscription_id:>">Edit Subscription</a> |<:or UserCan:><:eif UserCan:>
+<:if UserCan bse_subs_add :>
+<a href="<:script:>?a_addform=1">Add Subscription</a> |<:or UserCan:><:eif UserCan:>
+<:ifMessage:>
+<p><b><:message:></b></p>
+<:or:><:eif:> 
+
+<form action="<:script:>" method="POST">
+<input type="hidden" name="subscription_id" value="<:subscription subscription_id:>" />
+<table>
+<tr>
+  <th>Identifier:</th>
+  <td><:subscription text_id:></td>
+</tr>
+<tr>
+  <th>Title:</th>
+  <td><:subscription title:></td>
+</tr>
+<tr>
+  <th>Description:</th>
+  <td><:subscription description:></td>
+</tr>
+<tr>
+  <th>Max Lapsed:</th>
+  <td><:subscription max_lapsed:> Days</td>
+</tr>
+<tr>
+  <td colspan="2"><input type="submit" name="a_remove" value="Delete Subscription" /></td>
+</tr>
+</table>
+</form>

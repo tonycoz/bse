@@ -949,6 +949,11 @@ L<affiliate.pl> then this is used as the default refresh.
 
 Default: the site base url.
 
+=item subscription_required
+
+This is either the numeric or text of a subscription for which the
+affiliate must have an active subscription.
+
 =back
 
 =head2 [BSE Siteuser Images]
@@ -1004,6 +1009,46 @@ Maximum storage the image can use in bytes.  Default: 1000000.
 =item spaceerror
 
 Error message displayed if the image uses too much storage.
+
+=back
+
+=head2 [includes]
+
+Each value is used as the relative or absolute name of a file or
+directory to load more configuration data from.
+
+The keywords must remain unique.
+
+Only the [includes] section from bse.cfg itself is used to locate more
+configuration data.
+
+If the value references a directory, all files with an extension of
+C<.cfg> are read for configuration data.
+
+The order the files are read (which later files overriding older
+files) is:
+
+=over
+
+=item 1.
+
+bse.cfg is read
+
+=item 2.
+
+the entries in [includes] are sorted alphabetically (or rather
+asciily), so an entry with key "A" is read before one with key "B",
+one with key "01" is read before "02", but key "10" would be read
+I<before> key "2".
+
+=item *
+
+if an entry is a file then that is read and the values merged.
+
+=item *
+
+if an entry is a directory, then that is scanned and the files found
+read alphabetically as above.
 
 =back
 

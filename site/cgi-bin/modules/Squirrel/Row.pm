@@ -52,7 +52,6 @@ sub new {
 	or confess "Could not add $class(@data{1..$#save_cols})";
     }
     else {
-      print STDERR "add$class\n";
       my $sth = $dh->stmt("add$class")
 	or confess "No add$class member in DatabaseHandle";
       my $ret = $sth->execute(@values[1..$#values]);

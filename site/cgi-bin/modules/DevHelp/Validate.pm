@@ -115,6 +115,11 @@ my %built_ins =
    {
     integer => '1-', # 1 or higher
    },
+   dh_one_line => 
+   {
+    nomatch => qr/[\x0D\x0A]/,
+    error => '$n may only contain a single line',
+   }
   );
 
 sub dh_validate {
@@ -524,6 +529,11 @@ If this is non-zero the field is required.
 
 If present, this is used as a regular expression the field must match.
 
+=item nomatch
+
+If present, this is used as a regular expression the field must not
+match.
+
 =item error
 
 Message returned as the error if the field fails validation.
@@ -538,6 +548,104 @@ integer in that range.
 =item date
 
 If set to 1, simply validates the value as a date.
+
+=back
+
+=head1 BUILT-IN RULES
+
+=over
+
+=item email
+
+=item phone
+
+=item postcode
+
+=item url
+
+Matches any valid url, including mailto:, ftp:, etc.  No checking of
+the scheme is done.
+
+=item weburl
+
+Matches any valid http or https url.
+
+=item newbieweburl
+
+Matches web URLs with or without "http://" or "https://".
+
+=item confirm
+
+Treats the given field as a confirmation field for a password field
+"password".
+
+=item newconfirm
+
+Treats the given field as a confirmation field for an optional
+password field "password".
+
+=item required
+
+The field is required.  This should be used where the logic of the
+code requires a field, since it cannot be overridden by the config
+file.
+
+=item abn
+
+Valid Australian Business Number
+
+=item creditcardnumber
+
+Valid credit card number (no checksum checks are performed).
+
+=item creditcardexpiry
+
+Treats the field as the month part of a credit card expiry date, with
+the year field being the field with the same name, but "month"
+replaced with "year".  The date of expiry is required to be in the
+future.
+
+=item miaa
+
+Valid MIAA membership number.
+
+=item decimal
+
+Valid simple decimal number
+
+=item money
+
+Valid decimal number with 0 or 2 digits after the decimal point.
+
+=item date
+
+A valid date.  Currently dates are limited to Australian format
+dd/mm/yy or dd/mm/yyyy format dates.
+
+=item birthdate
+
+A valid date in the past.
+
+=item adultbirthdate
+
+A valid date at least 10 years in the past, at most 100 years in the
+past.
+
+=item futuredate
+
+A valid date in the future.
+
+=item natural
+
+An integer greater or equal to zero.
+
+=item positiveint
+
+A positive integer.
+
+=item dh_one_line
+
+The field may not contain line breaks
 
 =back
 

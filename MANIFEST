@@ -279,6 +279,7 @@ site/templates/admin/subs/send_form.tmpl
 site/templates/admin/subs/start_send.tmpl
 site/templates/admin/subscr/add.tmpl
 site/templates/admin/subscr/detail.tmpl
+site/templates/admin/subscr/detail_delete.tmpl
 site/templates/admin/subscr/edit.tmpl
 site/templates/admin/subscr/list.tmpl
 site/templates/admin/userlist.tmpl

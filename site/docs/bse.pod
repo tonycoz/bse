@@ -10,6 +10,83 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.14_31
+
+=over
+
+=item *
+
+you can now configure a required subscription for affiliates, see the
+documentation for C<subscription_required> in L<config>.
+
+=item *
+
+the product tag on the checkoutfinal page now accounts for database
+NULL values
+
+=item *
+
+the subscription detail template didn't display the usage field
+correctly
+
+=item *
+
+the delete subscription link was incorrect
+
+=item *
+
+the delete subscription confirmation template wasn't supplied
+
+=item *
+
+the subscription edit/add templates were missing a closing </tr>
+
+=item *
+
+removed debug code from Squirrel::Row that was sending
+C<add>I<classname> to the error log.
+
+=item *
+
+the test for whether a user was subscribed was incorrect.
+
+=item *
+
+the number of units of a product bought for a subscription product was
+ignored, now 2 units of a 2 month sub product will act as 4 months.
+
+=item *
+
+it is now possible to include other config files from bse.cfg, see
+[includes] in C<config.pod> for more information.
+
+=item *
+
+the doclink[] and popdoclink[] tags would not be removed from the
+search page excerpts if the second parameter was present but empty.
+
+=item *
+
+more recent code using the m parameter could crash if the script was
+passed two m parameters.
+
+=item *
+
+a method rename during development meant that some code was calling a
+method that didn't exist, causing a 500 error.
+
+=item *
+
+if you supply an 'r' parameter that defines an 'm' parameter to
+subadmin targets the code will no longer add it's own 'm' parameter.
+
+=item *
+
+DevHelp::Validate now includes some documentation of its built-in
+rules.
+
+=back
+
 =head2 0.14_30
 
 The basic processing for subscriptions is now done.

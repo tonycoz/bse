@@ -39,12 +39,12 @@ href="/cgi-bin/admin/subs.pl">newsletters system.</a></p>
             <td valign="top"><:isubscription title:></td>
             <td valign="top"><:isubscription description:></td>
             <td valign="top"><:isubscription max_lapsed:></td>
-	    <td><a href="<:script:>?a_detail=1&amp;subscription_id=<:isubscription subscription_id:>">Details</a> <:ifRemovable:><a href="<:script:>?a_detail=1&amp;_t=delete&amp;subscription_id=<:isubscription subscription_id:>">Delete</a><:or:><:eif:></td>
+	    <td><a href="<:script:>?a_detail=1&amp;subscription_id=<:isubscription subscription_id:>">Details</a> <:ifRemovable:><a href="<:script:>?a_detail=1&amp;t=delete&amp;subscription_id=<:isubscription subscription_id:>">Delete</a><:or:><:eif:></td>
           </tr>
           <: iterator end subscriptions :> 
           <:or Subscriptions:> 
           <tr bgcolor="#FFFFFF"> 
-            <td colspan="4" align="center">Your system has no subscriptions.</td>
+            <td colspan="5" align="center">Your system has no subscriptions.</td>
           </tr>
           <:eif Subscriptions:> 
         </table>

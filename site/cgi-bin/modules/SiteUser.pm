@@ -24,6 +24,87 @@ sub columns {
             affiliate_name/;
 }
 
+sub valid_fields {
+  my ($class, $cfg, $admin) = @_;
+
+  my %fields =
+    (
+     email => { rules=>'email;required', description=>'Email Address',
+		maxlen => 255},
+     name1 => { description=>'First Name', rules=>"dh_one_line", maxlen=>127 },
+     name2 => { description=>'Surname', rules=>"dh_one_line", maxlen=>127 },
+     address => { description => 'Address', rules=>"dh_one_line", maxlen=>127 },
+     city => { description=>'City/Suburb', rules=>"dh_one_line", maxlen=>127 },
+     state => { description => 'State', rules=>"dh_one_line", maxlen=>40 },
+     postcode => { rules=>'postcode', description=>'Post Code', maxlen=>40 },
+     telephone => { rules=>'phone', description=>'Telephone', maxlen=>80 },
+     facsimile => { rules=>'phone', description=>'Facsimile', maxlen=>80 },
+     country => { description=>'Country', rules=>"dh_one_line", maxlen=>127 },
+     title => { description=>'Title', rules=>"dh_one_line", maxlen=>127  },
+     organization => { description=>'Organization', rules=>"dh_one_line", 
+		       maxlen=>127  },
+     textOnlyEmail => { description => "Text Only Email", type=>"boolean" },
+     referral => { description=>'Referral', rules=>"natural"  },
+     otherReferral => { description=>'Other Referral', rules=>"dh_one_line",
+		      maxlen=>127},
+     prompt => { description=>'Prompt', rules=>"natural" },
+     otherPrompt => { description => 'Other Prompt', rules=>"dh_one_line",
+		    maxlen=>127 },
+     profession => { description => 'Profession', rules=>"natural" },
+     otherProfession => { description=>'Other Profession',
+			  rules=>"dh_one_line", maxlen=>127 },
+     billFirstName => { description=>"Billing First Name",
+			rules=>"dh_one_line", maxlen=>127 },
+     billLastName => { descriptin=>"Billing Last Name", rules=>"dh_one_line" },
+     billStreet => { description => "Billing Street Address",
+		     rules=>"dh_one_line", maxlen=>127 },
+     billSuburb => { description => "Billing Suburb", rules=>"dh_one_line", 
+		     maxlen=>127 },
+     billState => { description => "Billing State", rules=>"dh_one_line", 
+		    maxlen=>40 },
+     billPostCode => { description => "Billing Post Code", rules=>"postcode", 
+		       maxlen=>40 },
+     billCountry => { description => "Billing Country", rules=>"dh_one_line", 
+		      maxlen=>127 },
+     instructions => { description => "Delivery Instructions" },
+     billTelephone => { description => "Billing Phone", rules=>"phone", 
+			maxlen=>80 },
+     billFacsimile => { description => "Billing Facsimie", rules=>"phone", 
+			maxlen=>80 },
+     billEmail => { description => "Billing Email", rules=>"email", 
+		    maxlen=>255 },
+     customText1 => { description => "Custom Text 1" },
+     customText2 => { description => "Custom Text 2" },
+     customText3 => { description => "Custom Text 3" },
+     customStr1 => { description => "Custom String 1", rules=>"dh_one_line",
+		     maxlen=>255 },
+     customStr2 => { description => "Custom String 2", rules=>"dh_one_line",
+		     maxlen=>255 },
+     customStr3 => { description => "Custom String 3", rules=>"dh_one_line",
+		     maxlen=>255 },
+    );
+
+  if ($admin) {
+    $fields{adminNotes} =
+      { description => "Administrator Notes" };
+    $fields{disabled} =
+      { description => "User Disabled", type=>"boolean" };
+  }
+
+  for my $field_name (keys %fields) {
+    $fields{$field_name}{required} ||= $cfg->entry("site users", "require_$field_name", 0);
+    if (my $desc = $cfg->entry("site users", "display_$field_name")) {
+      $fields{$field_name}{description} = $desc;
+    }
+  }
+
+  return %fields;
+}
+
+sub valid_rules {
+  return;
+}
+
 sub removeSubscriptions {
   my ($self) = @_;
 
@@ -181,7 +262,7 @@ sub subscribed_to {
     or return;
 
   my $today = now_sqldate;
-  my $end_date = sql_normal_date($entry->{end});
+  my $end_date = sql_normal_date($entry->{ends_at});
   return $today le $end_date;
 }
 

@@ -197,11 +197,11 @@ sub remove {
 
   $$rpart =~ s#gimage\[([^\]\[]+)\]##ig
     and return 1;
-  $$rpart =~ s#popdoclink\[(\w+)\|([^\]\[]+)\]#$2#ig
+  $$rpart =~ s#popdoclink\[(\w+)\|([^\]\[]*)\]#$2#ig
     and return 1;
   $$rpart =~ s#popdoclink\[(\w+)\]# $self->remove_doclink($1) #ige
     and return 1;
-  $$rpart =~ s#doclink\[(\w+)\|([^\]\[]+)\]#$2#ig
+  $$rpart =~ s#doclink\[(\w+)\|([^\]\[]*)\]#$2#ig
     and return 1;
   $$rpart =~ s#doclink\[(\w+)\]# $self->remove_doclink($1) #ige
     and return 1;

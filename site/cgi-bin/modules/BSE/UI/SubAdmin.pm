@@ -276,7 +276,7 @@ sub _list_refresh {
   unless ($r) {
     $r = "/cgi-bin/admin/subadmin.pl";
   }
-  if ($msg) {
+  if ($msg && $r !~ /[&?]m=/) {
     my $sep = $r =~ /\?/ ? '&' : '?';
 
     $r .= $sep . "m=" . escape_uri($msg);

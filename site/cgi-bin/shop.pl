@@ -657,7 +657,13 @@ sub purchase {
        return 0;
      },
      item=> sub { CGI::escapeHTML($items[$item_index]{$_[0]}); },
-     product => sub { CGI::escapeHTML($products[$item_index]{$_[0]}) },
+     product => 
+     sub { 
+       my $value = $products[$item_index]{$_[0]};
+       defined $value or $value = '';
+
+       escape_html($value);
+     },
      extended =>
      sub { 
        my $what = $_[0] || 'retailPrice';

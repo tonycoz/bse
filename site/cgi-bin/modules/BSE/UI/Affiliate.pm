@@ -223,13 +223,16 @@ sub req_show {
   }
   $user
     or return $class->req_none($req, "Unknown user");
-#  require BSE::TB::Subscriptions;
-#   my $subid = $cfg->entry('affiliate', 'subscription_required');
-#   if ($subid) {
-#     my $sub = BSE::TB::Subscriptions->getByPkey($subid)
-#       || BSE::TB::Subscriptions->getBy(text_id => $subid)
-# 	or return $class->req_none($req, "Configuration error: Unknown subscription id");
-#   }
+  require BSE::TB::Subscriptions;
+  my $subid = $cfg->entry('affiliate', 'subscription_required');
+  if ($subid) {
+    my $sub = BSE::TB::Subscriptions->getByPkey($subid)
+      || BSE::TB::Subscriptions->getBy(text_id => $subid)
+ 	or return $class->req_none($req, "Configuration error: Unknown subscription id");
+    unless ($user->subscribed_to($sub)) {
+      return $class->req_none($req, "User not subscribed to the required subscription");
+    }
+  }
 
   my %acts;
   %acts =

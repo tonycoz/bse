@@ -154,7 +154,8 @@ sub message {
     $msg = join "<br />", map escape_html($_), @lines;
   }
   if (!$msg && $req->cgi->param('m')) {
-    $msg = escape_html($req->cgi->param('m'));
+    $msg = join(' ', $req->cgi->param('m'));
+    $msg = escape_html($msg);
   }
 
   return $msg;

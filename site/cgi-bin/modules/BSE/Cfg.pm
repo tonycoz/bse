@@ -268,7 +268,62 @@ sub _load_cfg {
   }
   close CFG;
 
-  my $self = bless { config=>\%sections, when=>time }, $class;
+  # go through the includes
+  my @raw_includes;
+  if ($sections{includes}) {
+    my $hash = $sections{includes}{values};
+    @raw_includes = @$hash{sort keys %$hash};
+  }
+  my @includes;
+  my $path = $file;
+  $path =~ s![^\\/:]+$!!;
+  for my $include (@raw_includes) {
+    my $full = $include =~ m!^(?:\w:)[/\\]! ? $include : "$path$include";
+    if (-e $full) {
+      if (-d $full) {
+	# scan the directory
+	if (opendir CFGDIR, $full) {
+	  push @includes, map "$full$_", sort grep /\.cfg$/, readdir CFGDIR;
+	  closedir CFGDIR;
+	}
+	else {
+	  # it's a directory but we can't read it - probably an error
+	  print STDERR "Cannot scan config directory $full: $!\n";
+	}
+      }
+      else {
+	push @includes, $full;
+      }
+    }
+  }
+
+  # scan each of the include files
+  for my $include (@includes) {
+    if (open CFG, "< $include") {
+      undef $section;
+      while (<CFG>) {
+	chomp;
+	next if /^\s*$/ || /^\s*[#;]/;
+	if (/^\[([^]]+)\]\s*$/) {
+	  $section = lc $1;
+	}
+	elsif (/^\s*([^=\s]+)\s*=\s*(.*)$/) {
+	  $section or next;
+	  $sections{$section}{values}{lc $1} = $2;
+	  $sections{$section}{case}{$1} = $2;
+	}
+      }
+      close CFG;
+    }
+    else {
+      # it wouldn't be in the list unless we know it exists
+      print STDERR "Cannot open config include $include: $!\n";
+    }
+  }
+
+  my $self = bless { config=>\%sections, 
+		     includes=>\@includes, 
+		     when=>time }, $class;
   $cache{$file} = $self;
 
   return $self;
