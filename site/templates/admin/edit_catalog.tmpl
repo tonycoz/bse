@@ -1,9 +1,9 @@
 <html>
 <head>
 
-  <title>
-    bodyScoop Administration - <: ifnew :>New<: or :>Edit<: eif :> Catalog
-  </title>
+<title>
+    <: ifnew :>New<: or :>Edit<: eif :> Catalog - Shop Administration
+</title>
 
   <link rel="stylesheet" type="text/css" href="/css/admin.css">
 
@@ -13,7 +13,8 @@
 
   <input type="button" onclick="history.go(0);" value="  Refresh  ">
 
-  <h1>Administration Page</h1>
+  
+<h1>Shop Administration</h1>
 
   <h2>Select Images First</h2>
 
@@ -28,14 +29,12 @@
 
   <h2>Catalog Details</h2>
 
-  <p><:ifnew:><:or:><a href="<:article admin:>">See article</a><:eif:></p>
-<:message:>
-<:editParent:>
-
-  <input type="hidden" name="level" value="<: level :>">
-  <input type="hidden" name="id" value="<: article id :>">
-  <input type="hidden" name="parentid" value="<: article parentid :>">
-
+  <p><:message:> | <a href="/admin/">Admin menu</a> | <:ifnew:><:or:><a href="<:article admin:>">See article</a> | <:eif:><:editParent:>
+<input type="hidden" name="level" value="<: level :>">
+    <input type="hidden" name="id" value="<: article id :>">
+    <input type="hidden" name="parentid" value="<:article parentid:>">
+  
+  </p>
   <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000">
     <tr>
       <td>
@@ -60,24 +59,25 @@
             </td>
           </tr>
           <tr> 
-            <th> Release Date (in dd/mm/yyyy format): </th>
+            <th> Release Date: </th>
             <td bgcolor="#FFFFFF"> 
               <input type="text" name="release" value="<: article release :>" size="10" maxlength="10">
-              <: ifnew :>(default is today)<: or :><: eif :></td>
+              (dd/mm/yyyy<: ifnew :> - default is today<: or :><: eif :>)</td>
           </tr>
+          
           <tr> 
-            <th> Expire Date (in dd/mm/yyyy format): </th>
+            <th> Expire Date: </th>
             <td bgcolor="#FFFFFF"> 
               <input type="text" name="expire" value="<: article expire :>" size="10" maxlength="10">
-              (<: ifnew :>default is two weeks from now, <: or :><: eif :>blank 
+              (dd/mm/yyyy - <: ifnew :>default is two weeks from now, <: or :><: eif :>blank 
               for never expires)</td>
           </tr>
           <tr> 
-            <th> Summary Length (in characters): </th>
+            <th> Summary Length: </th>
             <td bgcolor="#FFFFFF"> 
               <input type="text" name="summaryLength" size="10" maxlength="10" value="<: article summaryLength :>">
-              (<: ifnew :>default inherited from section<: if art :> or sub-section<: 
-              or art :><: eif art :>, <: or :><: eif :>zero for full listing in 
+              (in characters - <: ifnew :>default inherited from section<: if art :> or sub-section<: 
+              or art :><: eif art :>, <: or :><: eif :>zero for no 
               summary)</td>
           </tr>
           <tr> 
@@ -87,9 +87,10 @@
             </td>
           </tr>
           <tr> 
-            <th> Keywords (optional, comma separated): </th>
+            <th> Keywords: </th>
             <td bgcolor="#FFFFFF"> 
               <input type="text" name="keyword" maxlength="255" size="60" value="<: article keyword :>">
+               (comma separated)
             </td>
           </tr>
           <tr> 
@@ -101,7 +102,9 @@
             <th>Thumbnails:</th>
             <td bgcolor="#FFFFFF"> 
               <input type=file name=thumbnail>
-              <:ifArticle thumbImage:><img src="/images/<:article thumbImage:>"> <input type=checkbox name="remove_thumb"> Remove<:or:><:eif:></td>
+              <:ifArticle thumbImage:><img src="/images/<:article thumbImage:>"> 
+              <input type=checkbox name="remove_thumb">
+               Remove<:or:><:eif:></td>
           </tr>
           <tr> 
             <th valign="top"> Uploaded files: </th>
@@ -118,7 +121,7 @@
     <input type="submit" name="save"
            value="  <: ifnew :>Add New<: or :>Update<: eif :> Catalog  "></p>
   </form>
-<:if children:> <a name="children"> 
+<:if children:> <a name="children"></a> 
 <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000">
     <tr>
       <td>
@@ -153,6 +156,5 @@
 <p><input type=submit value="Add <:childtype:>"></p>
 </form>
 <p><:eif new:> <:or HaveChildType:> <:eif HaveChildType:> </p>
-<p><a href="/admin/">Admin menu</a></p>
 </body
 ></html>
