@@ -62,6 +62,10 @@ Digest::MD5
 
 Apache::Session
 
+=item *
+
+HTML::Parser
+
 =back
 
 and their dependants.  If you use the CPAN shell to install these then
