@@ -146,7 +146,17 @@ sub baseActs {
 	 cluck 'Why is a template name in \$article->{threshold}?';
        }
 
-       @children <= $article->{threshold};
+       my $count;
+       if ($_[0] eq 'stepkids') {
+	 $count = @stepkids;
+       }
+       elsif ($_[0] eq 'allkids') {
+	 $count = @allkids;
+       }
+       else {
+	 $count = @children;
+       }
+       $count <= $article->{threshold};
      },
      ifChildren => sub { scalar @children },
      keywords => sub { my $keywords = $article->{keyword};
@@ -452,8 +462,12 @@ thumbnail.
 
 =item ifUnderThreshold
 
-Conditional tag, true if the number of children is less or equal to
-the article's threshold.
+=item ifUnderThreshold stepkids
+
+=item ifUnderThreshold allkids
+
+Conditional tag, true if the number of children/stepkids/allkids is
+less or equal to the article's threshold.
 
 =item body
 

@@ -10,6 +10,28 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.11_14
+
+=over
+
+=item *
+
+imageclean.pl now keeps thumbnail images
+
+=item *
+
+new display templates from adrian
+
+=item *
+
+added the stepkids and allkids options to ifUnderThreshold.
+
+=item *
+
+documented the C<kb>, C<date>, C<ifEq>, C<ifMatch> and C<cfg> tags.
+
+=back
+
 =head2 0.11_13
 
 This is a test release.

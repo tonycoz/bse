@@ -584,6 +584,148 @@ C<embed child>.
 
 Conditional tag, true if the current article is being embedded.
 
+=item kb I<data tag>
+
+Formats the give value in kI<whatevers>.  If you have a number that
+could go over 1000 and you want it to use the 'k' metric prefix when
+it does, use this tag.  eg. <:kb file sizeInBytes:>
+
+=item date I<data tag>
+
+=item date "I<format>" I<data tag>
+
+Formats a date or date/time value from the database into something
+more human readable.  If you don't supply a format then the default
+format of "%d-%b-%Y" is used ("20-Mar-2002").
+
+The I<format> is a strftime() format specification, if that means
+anything to you.  If it doesn't, each code starts with % and are
+replaced as follows:
+
+=over
+
+=item %a
+
+abbreviated weekday name
+
+=item %A
+
+full weekday name
+
+=item %b
+
+abbreviated month name
+
+=item %B
+
+full month name
+
+=item %c
+
+"preferred" date and time representation
+
+=item %d
+
+day of the month as a 2 digit number
+
+=item %H
+
+hour (24-hour clock)
+
+=item %I
+
+hour (12-hour clock)
+
+=item %j
+
+day of year as a 3-digit number
+
+=item %m
+
+month as a 2 digit number
+
+=item %M
+
+minute as a 2 digit number
+
+=item %p
+
+AM or PM or their equivalents
+
+=item %S
+
+seconds as a 2 digit number
+
+=item %U
+
+week number as a 2 digit number (first Sunday as the first day of week 1)
+
+=item %w
+
+weekday as a decimal number (0-6)
+
+=item %W
+
+week number as a 2 digit number (first Monday as the first day of week 1)
+
+=item %x
+
+the locale's appropriate date representation
+
+=item %X
+
+the locale's appropriate time representation
+
+=item %y
+
+2-digit year without century
+
+=item %Y
+
+the full year
+
+=item %Z
+
+time zone name or abbreviation
+
+=item %%
+
+just '%'
+
+=back
+
+Your local strftime() implementation may implement some extensions to
+the above, if your server is on a Unix system try running "man
+strftime" for more information.
+
+=item bodytext I<data tag>
+
+Formats the text from the given tag in the same way that body text is.
+
+=item ifEq I<data1> I<data2>
+
+Checks if the 2 values are exactly equal.  This is a string
+comparison.
+
+The 2 data parameters can either be a tag reference in [], a literal
+string inside "" or a single word.
+
+=item ifMatch I<data1> I<data2>
+
+Treats I<data2> as a perl regular expression and attempts to match
+I<data1> against it.
+
+The 2 data parameters can either be a tag reference in [], a literal
+string inside "" or a single word.
+
+=item cfg I<section> I<key>
+
+=item cfg I<section> I<key> I<default>
+
+Retrieves a value from the BSE configuration file.
+
+If you don't supply a default then a default will be the empty string.
+
 =back
 
 =head2 Article tags
@@ -629,8 +771,12 @@ thumbnail.
 
 =item ifUnderThreshold
 
-Conditional tag, true if the number of children is less or equal to
-the article's threshold.
+=item ifUnderThreshold stepkids
+
+=item ifUnderThreshold allkids
+
+Conditional tag, true if the number of children/stepkids/allkids is
+less or equal to the article's threshold.
 
 =item body
 

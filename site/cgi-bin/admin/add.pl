@@ -218,6 +218,7 @@ my $child_index = -1;
 %acts =
   (
    BSE::Util::Tags->basic(\%acts, $CGI::Q, $cfg),
+   BSE::Util::Tags->admin(\%acts, $cfg),
    #iterate_image=>\&iterate_image,
    image=>\&image,
    article=>\&article,

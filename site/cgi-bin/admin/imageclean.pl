@@ -41,6 +41,17 @@ $images = Images->new;
 
 my %names = map { $_->{image}, $_->{id} } @images;
 
+print "\n\nScanning for thumbnails\n";
+
+my @articleids = Articles->allids;
+for my $id (@articleids) {
+  my $article = Articles->getByPkey($id)
+    or next;
+  if ($article->{thumbImage}) {
+    $names{$article->{thumbImage}} = "a$id";
+  }
+}
+
 print "\nRemoving unused images\n";
 
 opendir IMG, $IMAGEDIR

@@ -1,0 +1,160 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>Body Tags - BSE</title>
+    <link rel="stylesheet" href="/css/admin.css">
+  </head>
+<body>
+<h1><a name="body">Body Text</h1>
+<div>
+
+<p>BSE uses the same tags for the body text in articles, products and
+subscriptions.</p>
+
+<dl>
+
+<dd>a[<i>url</i>,<i>text</i>]</dd>
+
+<dd>link[<i>url</i>|<i>text</i>]</dd>
+
+<dt>Creates a link to the given <i>url</i> using <i>text</i> as the
+text of the link.
+
+<br />eg. "link[http://www.develop-help.com/bse/|BSE]" is formatted as
+&quot;<a href="http://www.develop-help.com/bse/">BSE</a>&quot;</dt>
+
+<dd>b[<i>text</i>]</dd>
+
+<dt>Formats <i>text</i> in bold. eg. "b[hello]" is formatted as
+"<b>hello</b>".</dt>
+
+<dd>i[<i>text</i>]</dd>
+
+<dt>Formats <i>text</i> in italics. eg. "i[hello]" is formatted as
+"<i>hello</i>".</dt>
+
+<dd>image[<i>index</i>]</dd>
+<dd>image[<i>index</i>|<i>alignment</i>]</dd>
+<dd>image[<i>index</i>|<i>alignment</i>|<i>url</i>]</dd>
+
+<dt>Inserts the image number <i>index</i> associated with the article.
+<i>index</i> counts from the top starting with 1.  If no alignment is
+provided then the image is shown inline.  If no <i>url</i> is provided
+then the images URL is used if there is one.  If either url is present
+the image becomes a link, though no border is shown around the
+image.</dt>
+
+<dt>If you use the image[] tag then the normal automatic image
+insertion is not done.</dt>
+
+<dd>** line1<br>** line2</dd>
+
+<dt>Formats the text with bullets.  The above would be formatted as:</dt>
+
+<ul><li>line1<li>line2</ul>
+
+<dd>## line1<br>## line2</dd>
+
+<dt>Formats the text as a numbered list.  The above would be formatted as:</dt>
+
+<ol><li>line1<li>line2</ol>
+
+<dd>fontcolor[<i>size</i>|<i>color</i>|<i>text</i>]</dd>
+
+<dt>Formats <i>text</i> with the given <i>size</i> and <i>color</i>.
+eg. "fontcolor[+1|#FF4040|hello]" is formatted as "<font size="+1"
+color="#FF0000">hello</font>".</dt>
+
+<dd>indent[<i>text</i>]</dd>
+
+<dt>Indents <i>text</i> by putting an empty unordered list around it.  eg. "indent[hello]" is formatted as:</dt>
+
+<ul>hello</ul>
+
+<dd>center[<i>text</i>]</dd>
+
+<dt>Centers <i>text</i> on the line.  eg. "center[hello]" is formatted as:</dt>
+
+<center>hello</center>
+
+<dd>align[<i>alignment</i>|<i>text</i>]</dd>
+
+<dt>Aligns the <i>text</i> based on <i>alignment</i> which can be any
+of <code>left</code>, <code>center</code> or <code>right</code>.  eg. "align[center|hello]" is formatted as: </dt>
+
+<div align="center">hello</div>
+
+<dd>font[<i>size</i>|<i>text</i>]</dd>
+
+<dt>Formats <i>text</i> at the given <i>size</i>, which can be a
+number from 1 through 7 for absolute sizes, or <code>+</code> or
+<code>-</code> followed by a number for a relative font size.
+
+<br>eg. "font[+1|hello]" is formatted at "<font
+size="+1">hello</font>".</dt>
+
+<dd>hr[<i>width</i>]</dd>
+<dd>hr[<i>width</i>|<i>height</i>]</dd>
+
+<dt>Inserts a horizontal line into the page, <i>width</i> wide and
+<i>height</i> high.
+
+<br>eg. hr[50,4] produces: <hr width="50" height="4"></dt>
+
+<dd>anchor[<i>name</i>]</dd>
+
+<dt>Produces an invisible anchor for a link with the given
+<i>name</i>.</dt>
+
+<dd>table[<i>width</i>|<i>bgcolor</i>|<i>padding</i>|<i>fontsize</i>|<i>fontface</i><br>
+<i>rowopts</i>|<i>cell</i>|<i>cell</i>...<br>
+<i>rowopts</i>|<i>cell</i>|<i>cell</i>...<br>
+...</br>
+]</dd>
+<dd>table[<i>name</i>=<i>value</i> ...<br>
+<i>rowopts</i>|<i>cell</i>|<i>cell</i>...<br>
+<i>rowopts</i>|<i>cell</i>|<i>cell</i>...<br>
+...</br>
+]</dd>
+
+<dt>Inserts a simple table into the page.  In the first form each
+value corresponds to the equivalent table option, except that the
+<i>fontsize</i> and <i>fontface</i> options are used to format the
+text in each cell.</dt>
+
+<dt>The <i>rowopts</i> are &lt;tr&gt; tag attributes, and can often be
+left empty.</dt>
+
+<dt>eg. "table[width="50%" border=1<br> |a|b<br> |c|d<br> ]" produces <table
+width="50%" border=1> <tr><td>a</td><td>b</td></tr>
+<tr><td>c</td><td>d</td></tr> </table></dt>
+
+<dd>hrcolor[<i>width</i>|<i>height</i>|<i>color</i>]</dd>
+
+<dt>Produces a box of the given <i>width</i> and <i>height</i> and of the given <i>color</i>.  eg. hrcolor[20|20|#00FF00] produces:</dt>
+
+<table width="20" height="20" border="0" bgcolor="#00FF00" cellpadding="0" cellspacing="0"><tr><td><img src="/images/trans_pixel.gif" width="1" height="1"></td></tr></table>
+
+<dd>embed[<i>article</i>]</dd>
+
+<dd>embed[<i>article</i>,<i>template</i>]</dd>
+
+<dd>embed[<i>article</i>,<i>template</i>,<i>maxdepth</i>]</dd>
+
+<dt>Inserts the text from the given <i>article</i>, which can be an
+article number or the name of a tag that refers to an article..  Uses
+the specified <i>template</i>, or the article's template if none is
+supplied.</dt>
+
+<dd>html[<i>text</i>]</dd>
+
+<dt>The <i>text</i> is used exactly as is, as HTML. eg. &quot;html[&lt;b&gt;hello&lt;/b&gt;]&quot; is formatted as &quot;<b>hello</b>&quot;</dt>
+
+<dt>This can be used for inserting much larger pieces of HTML, such as
+tables.</dt>
+
+</dl>
+
+</div>
+
+</body></html>

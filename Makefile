@@ -1,8 +1,9 @@
-VERSION=0.11_13
+VERSION=0.11_14
 DISTNAME=bse-$(VERSION)
 DISTBUILD=$(DISTNAME)
 DISTTAR=../$(DISTNAME).tar
 DISTTGZ=$(DISTTAR).gz
+WEBBASE=/home/httpd/html/bse
 
 help:
 	@echo make dist - build the tar.gz file
@@ -12,7 +13,17 @@ help:
 
 # this target needs to be modified so that the output directory includes
 # the release number
-dist: $(DISTTGZ)
+dist: cleantree $(DISTTGZ)
+	echo cp $(DISTTGZ) $(WEBBASE)/dists/
+	echo cp site/docs/bse.html $(WEBBASE)/relnotes/bse-$(VERSION).html
+	echo cp site/docs/*.html $(WEBBASE)/docs
+
+# make sure everything is committed
+cleantree:
+	if cvs status 2>&1 | grep -vq '^\?|Locally Modified' ; \
+          then echo The tree has modified or unadded files ; \
+          exit 1 ; \
+        fi
 
 $(DISTTGZ): distdir
 	if [ -e $(DISTTGZ) ] ; \

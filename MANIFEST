@@ -114,6 +114,7 @@ site/docs/templates.pod
 site/docs/upgrade_mysql.html
 site/htdocs/a/.htaccess
 site/htdocs/admin/advanced.html
+site/htdocs/admin/help/body.html
 site/htdocs/admin/help/file.html
 site/htdocs/admin/help/subs.html
 site/htdocs/admin/help/subssend.html

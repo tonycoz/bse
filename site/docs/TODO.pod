@@ -109,15 +109,6 @@ since these can fail when an invalid address is supplied.
 
 =item *
 
-document the body tags
-
-=item *
-
-more general access to the date tag from the search page (maybe with
-more formatting options)
-
-=item *
-
 a central image repository, so images can be shared between articles
 
 =item *
@@ -130,7 +121,7 @@ change makeIndex.pl to avoid overflowing the fields
 
 =item *
 
-add a test suite
+add a test suite (partly done)
 
 =item *
 
@@ -139,6 +130,10 @@ level parameter to add.pl isn't checked for validity
 =item *
 
 Java applet WYSIWYG body text editor (adrian)
+
+=item *
+
+have the image cleanup tool cleanup downloads too (adrian)
 
 =back
 

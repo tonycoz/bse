@@ -5,8 +5,8 @@
     <td height="24">&nbsp;<a href="/cgi-bin/printable.pl?id=<:article id:>"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#999999">printable 
       version</font></a></td>
   </tr>
-  <tr> 
-    <td bgcolor="#999999" colspan="2" height="1"><img src="/images/trans_pixel.gif" width="24" height="1" border="0"></td>
+  <tr bgcolor="#999999"> 
+    <td colspan="2" height="1"><img src="/images/trans_pixel.gif" width="24" height="1" border="0"></td>
   </tr>
   <tr> 
     <td colspan="2"> 
@@ -71,12 +71,16 @@ Allkids:>
   title</a> | <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&sort=date&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
   date</a> | <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&reverse=1&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">reverse 
   order</a></font></p>
-<:or Allkids:><:eif Allkids:><:or:><:eif:><:iterator begin allkids:> 
+<:or Allkids:><:eif Allkids:><:or:><:eif:><:if UnderThreshold allkids:><:iterator begin 
+allkids:><:ifAdmin:> 
+<hr noshade size="1">
+<:or:><:eif:><:moveDown:><:moveUp:><:embed allkid:><:iterator separator allkids:><br>
+<:iterator end allkids:> <:or UnderThreshold:><:iterator begin allkids:> 
 <p><a href="<:url allkid:>"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><:allkid 
   title:></font></b></a><br>
   <:if Allkid summaryLength:><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:summary allkid:></font><:or 
   Allkid:><:eif Allkid:></p>
-<:iterator separator allkids:><:iterator end allkids:> 
+<:iterator separator allkids:><:iterator end allkids:><:eif UnderThreshold:>
 <:if Stepparents:>
 <p>The following other related sections may be of interest:</p>
 <ul>
@@ -98,7 +102,7 @@ Allkids:>
       </table>
     </td>
   </tr>
-  <tr> 
+  <tr>
     <td bgcolor="#999999"> 
       <table cellspacing="1" cellpadding="4">
         <tr bgcolor="#FFFF99"> 
