@@ -10,6 +10,28 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.10_12
+
+=over
+
+=item *
+
+new order_list templates from adrian (moved the filter forms into the table)
+
+=item *
+
+fixed the image wizard for products.  I'm suprised this ever worked.
+
+=item *
+
+new edit_product template from adrian
+
+=item *
+
+stupid bug in BSE::Shop::Util
+
+=back
+
 =head2 0.10_11
 
 =over
