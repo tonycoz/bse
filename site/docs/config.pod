@@ -383,6 +383,11 @@ result excerpts.  Default: True
 
 =over
 
+=item enabled
+
+Used by some templates to check if the shop is enabled.  Set this to 1
+to enable the shop, or 0 to disable it.
+
 =item register_if_files
 
 If true the customer is required to register before checkout if there

@@ -142,6 +142,9 @@ sub tag_hash {
 
   my $value = $object->{$args};
   defined $value or $value = '';
+  if ($value =~ /\cJ/ && $value =~ /\cM/) {
+    $value =~ tr/\cM//d;
+  }
   encode_entities($value);
 }
 

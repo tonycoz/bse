@@ -10,6 +10,32 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.12_20
+
+=over
+
+=item *
+
+the change to using HTML::Entities cause CR characters to be encoded
+when written to the browser.  This causes some browsers some
+confusion.  The article and product tags in BSE::Edit::Article and
+BSE::Edit::Product now remove these before output.
+
+=item *
+
+if a ## or ** list didn't have a final newline the final item wasn't
+included in the conversion to a HTML list
+
+=item *
+
+some new templates from Adrian
+
+=item *
+
+Adrian added some more default user level permissions
+
+=back
+
 =head2 0.12_19
 
 =over

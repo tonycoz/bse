@@ -331,9 +331,9 @@ sub format_body {
 	  and next TRY;
 	$part =~ s#table\[([^\]\[]+)\|([^\]\[|]+)\]#_make_table($1, "|$2")#ieg
 	  and next TRY;
-	$part =~ s#\n{0,2}((?:\*\*[^\n]+\n\n?[^\S\n]*)+)\n?#_format_bullets($1)#eg
+	$part =~ s#\n{0,2}((?:\*\*[^\n]+(?:\n|$)\n?[^\S\n]*)+)\n?#_format_bullets($1)#eg
 	  and next TRY;
-	$part =~ s!\n{0,2}((?:##[^\n]+\n\n?[^\S\n]*)+)\n?!_format_ol($1)!eg
+	$part =~ s!\n{0,2}((?:##[^\n]+(?:\n|$)\n?[^\S\n]*)+)\n?!_format_ol($1)!eg
 	  and next TRY;
 	$part =~ s#fontcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#<font size="$1" color="$2">$3</font>#ig
 	  and next TRY;

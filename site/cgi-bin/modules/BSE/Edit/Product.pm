@@ -32,6 +32,9 @@ sub hash_tag {
 
   my $value = $article->{$arg};
   defined $value or $value = '';
+  if ($value =~ /\cJ/ && $value =~ /\cM/) {
+    $value =~ tr/\cM//d;
+  }
 
   return encode_entities($value);
 }
