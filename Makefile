@@ -14,9 +14,9 @@ help:
 # this target needs to be modified so that the output directory includes
 # the release number
 dist: cleantree $(DISTTGZ)
-	echo cp $(DISTTGZ) $(WEBBASE)/dists/
-	echo cp site/docs/bse.html $(WEBBASE)/relnotes/bse-$(VERSION).html
-	echo cp site/docs/*.html $(WEBBASE)/docs
+	cp $(DISTTGZ) $(WEBBASE)/dists/
+	cp site/docs/bse.html $(WEBBASE)/relnotes/bse-$(VERSION).html
+	cp site/docs/*.html $(WEBBASE)/docs
 
 # make sure everything is committed
 cleantree:
