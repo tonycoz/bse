@@ -213,7 +213,7 @@
       </td>
     </tr>
   </table>
-  <:if UserCan edit_save article:><p>
+  <:if UserCan edit_save:article:><p>
     <input type=submit name="save" value="Save changes">
   </p><:or UserCan:><:eif UserCan:>
 </form>

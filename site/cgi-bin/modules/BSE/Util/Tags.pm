@@ -360,32 +360,31 @@ sub tag_if_user_can {
       }
       if ($artname =~ /^(-1|\d+)$/) {
 	if ($artname == -1) {
-	  $article = \%dummy_site_article;
+	  $article = -1;
 	}
 	else {
-	  require Articles;
-	  $article = Articles->getByPkey($artname);
-	  unless ($article) {
-	    print STDERR "Could not find article $artname\n";
-	    return;
-	  }
+	  $article = $artname;
 	}
       }
       elsif ($artname =~ /^\w+$/) {
 	$article = $req->get_object($artname);
 	unless ($article) {
 	  if (my $artid = $req->cfg->entry('articles', $artname)) {
-	    if ($artid == -1) {
-	      $article = \%dummy_site_article;
-	    }
-	    else {
-	      require Articles;
-	      $article = Articles->getByPkey($artid);
-	    }
-	    unless ($article) {
-	      print STDERR "Could not find article id $artid (from $artname)\n";
-	      return;
-	    }
+	    $article = $artid;
+#  	    if ($artid == -1) {
+#  	      $article = \%dummy_site_article;
+#  	    }
+#  	    else {
+#  	      require Articles;
+#  	      $article = Articles->getByPkey($artid);
+#  	    }
+#  	    unless ($article) {
+#  	      print STDERR "Could not find article id $artid (from $artname)\n";
+#  	      return;
+#  	    }
+	  }
+	  elsif ($acts->{$artname}) {
+	    $article = $templater->perform($acts, $artname, 'id');
 	  }
 	  else {
 	    print STDERR "Unknown article name $artname\n";

@@ -10,6 +10,22 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.12_16
+
+=over
+
+=item *
+
+the ifUserCan tag wasn't converting article names into numbers
+correctly
+
+=item *
+
+a few pages didn't supply the article parameter to ifUserCan correctly
+(or at all in some cases)
+
+=back
+
 =head2 0.12_15
 
 =over
