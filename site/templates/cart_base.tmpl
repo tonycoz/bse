@@ -44,7 +44,7 @@
           <:iterator begin items:> 
           <tr valign="middle" align="center" bgcolor="#FFFFFF"> 
             <td width="100%" align="left"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><a href="<:item link:>"><:item 
-              summary:></a></font></td>
+              summary:> <:if Options:>(<:iterator begin options:><:option desc:> <:option value:><:iterator separator options:>, <:iterator end options:>)<:or Options:><:eif Options:></a></font></td>
             <td nowrap align="center"> 
               <input type="text" name="quantity_<:index:>" size="2" value="<:item units:>">
             </td>
