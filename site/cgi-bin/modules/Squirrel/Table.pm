@@ -120,24 +120,36 @@ sub getAll {
 
 # column grep
 sub getBy {
-  my ($self, $column, $value) = @_;
+  my ($self, @query) = @_;
+  my @cols;
+  my %vals;
+  
+  @query % 2 == 0
+    or confess "Odd number of arguments supplied to getBy()";
+
+  while (my ($col, $val) = splice(@query, 0, 2)) {
+    push(@cols, $col);
+    $vals{$col} = $val;
+  }
 
   my @results;
   if (ref($self) && UNIVERSAL::isa($self, __PACKAGE__)) {
     # this is an object with the rows already loaded
     for my $row (@{$self->{order}}) {
-      my $comp = ref $row->{$column} ? $row->{$column}->getPkey : $row->{$column};
-      push @results, $row if $comp eq $value;
+      my %comp;
+      @comp{@cols} = 
+	map ref $row->{$_} ? $row->{$_}->getPkey : $row->{$_}, @cols;
+      push @results, $row if @cols == grep $comp{$_} eq $vals{$_}, @cols;
     }
   }
   else {
     # ask the database directly
     my $rowClass = $self->rowClass;
     require $rowClass . ".pm";
-    my $member = "get${rowClass}By\u$column";
+    my $member = "get${rowClass}By".join("And", map "\u$_", @cols);
     my $sth = $dh->stmt($member)
       or confess "No $member in BSE::DB";
-    $sth->execute($value)
+    $sth->execute(@vals{@cols})
       or confess "Cannot execute $member from BSE::DB: ",DBI->errstr;
     while (my $row = $sth->fetchrow_arrayref) {
       push(@results, $rowClass->new(@$row));

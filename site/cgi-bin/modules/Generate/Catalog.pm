@@ -8,6 +8,7 @@ use Squirrel::Template;
 use Constants qw($TMPLDIR $URLBASE %TEMPLATE_OPTS $CGI_URI $IMAGES_URI
                  $ADMIN_URI);
 use Util qw(generate_button);
+use OtherParents;
 
 sub generate_low {
   my ($self, $template, $article, $articles, $embedded) = @_;
@@ -19,6 +20,13 @@ sub generate_low {
   my @subcats = sort { $b->{displayOrder} <=> $a->{displayOrder} }
     grep $_->{listed} && UNIVERSAL::isa($_->{generator}, 'Generate::Catalog'),
     $articles->getBy(parentid => $article->{id});
+  my $other_parents = OtherParents->new;
+  my ($year, $month, $day) = (localtime)[5,4,3];
+  my $today = sprintf("%04d-%02d-%02d 00:00:00ZZZ", $year+1900, $month+1, $day);
+  my @stepprods = $article->visible_stepkids;
+  my $stepprod_index;
+  my @allprods = $article->all_visible_kids;
+  my $allprod_index;
   my $category_index = -1;
   my %acts;
   %acts =
@@ -100,6 +108,15 @@ HTML
      catalog => 
      sub { CGI::escapeHTML($subcats[$category_index]{$_[0]}) },
      ifSubcats => sub { @subcats },
+     iterate_stepprods_reset => sub { $stepprod_index = -1 },
+     iterate_stepprods =>
+     sub {
+       ++$stepprod_index < @stepprods;
+     },
+     stepprod => sub { CGI::escapeHTML($stepprods[$stepprod_index]{$_[0]}) },
+     iterate_allprods_reset => sub { $allprod_index = -1 },
+     iterate_allprods => sub { ++$allprod_index < @allprods },
+     allprod => sub { CGI::escapeHTML($allprods[$allprod_index]{$_[0]}) },
     );
   my $oldurl = $acts{url};
   $acts{url} =

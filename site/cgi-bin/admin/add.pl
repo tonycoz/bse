@@ -1,11 +1,11 @@
-#!/usr/bin/perl -w
-# -d:ptkdb
+#!/usr/bin/perl -w 
+#-d:ptkdb
 #BEGIN { $ENV{DISPLAY} = '192.168.32.97:0.0'; }
 
 use strict;
 use FindBin;
 use lib "$FindBin::Bin/../modules";
-use Constants qw(:edit :session);
+use Constants qw(:edit :session $CGI_URI $IMAGES_URI);
 
 use Articles;
 use Article;
@@ -66,6 +66,9 @@ my %steps =
   (
    save=>\&save,
    remove=>\&remove,
+   add_stepkid=>\&add_stepkid,
+   del_stepkid=>\&del_stepkid,
+   save_stepkids => \&save_stepkids,
   );
 
 my $level = param('level') || 3;
@@ -141,7 +144,7 @@ $parent = $articles->getByPkey($article->{parentid})
   if $article && $article->{parentid} && $article->{parentid} > 0;
 
 my @images;
-my $message = ''; # for displaying error message
+my $message = param('message') || ''; # for displaying error message
 my @children;
 if (defined $id) {
   @children = sort { #$b->{listed} <=> $a->{listed} ||
@@ -199,6 +202,13 @@ unless ($level_cache{$level}{edit}) {
   $level_cache{$level}{edit} = -e "$TMPLDIR/${checkfor}.tmpl" ? $checkfor :
     $levels{$level}{edit};
 }
+
+use OtherParents;
+my @stepkids = OtherParents->getBy(parentId=>$article->{id}) if $article->{id};
+my %stepkids = map { $_->{childId} => $_ } @stepkids;
+my @allkids = $article->allkids if $article->{id};
+my $allkids_index = -1;
+my @possibles;
 
 my $child_index = -1;
 %acts =
@@ -270,6 +280,67 @@ HTML
    },
    edit => \&edit_link,
    adminMenu => sub { $ROOT_URI . "admin/"; },
+   iterate_kids_reset => sub { $allkids_index = -1 },
+   iterate_kids => sub { ++$allkids_index < @allkids },
+   ifKids => sub { @allkids },
+   kid => 
+   sub { 
+     my $value = $allkids[$allkids_index]{$_[0]};
+     defined $value or $value = '';
+     CGI::escapeHTML($value)
+   },
+   ifStepKid => sub { exists $stepkids{$allkids[$allkids_index]{id}} },
+   stepkid =>
+   sub {
+     my $value = $stepkids{$allkids[$allkids_index]{id}}{$_[0]};
+     defined $value or $value = '';
+     CGI::escapeHTML($value);
+   },
+   movestepkid =>
+   sub {
+     my $html = '';
+     my $refreshto = CGI::escape($ENV{SCRIPT_NAME}
+				 ."?id=$article->{id}#step");
+     if ($allkids_index < $#allkids) {
+       $html .= <<HTML
+<a href="$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids[$allkids_index]{id}&other=$allkids[$allkids_index+1]{id}&refreshto=$refreshto"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+HTML
+     }
+     if ($allkids_index > 0) {
+       $html .= <<HTML
+<a href="$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids[$allkids_index]{id}&other=$allkids[$allkids_index-1]{id}&refreshto=$refreshto"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+HTML
+     }
+     return $html;
+   },
+   date =>
+   sub {
+     my ($func, $args) = split ' ', $_[0], 2;
+     $acts{$func} or return "** function $func not defined **";
+     use BSE::Util::SQL qw/sql_to_date/;
+     sql_to_date($acts{$func}->($args));
+   },
+   possible_stepkids =>
+   sub {
+     @possibles =
+       sort { $a->{title} cmp $b->{title} }
+       grep $_->{generator} eq 'Generate::Product' && !$stepkids{$_->{id}},
+       $articles->all()
+	 unless @possibles;
+     my %labels = map { $_->{id}, "$_->{title} ($_->{id})" } @possibles;
+     CGI::popup_menu(-name=>'stepkid',
+		     -values => [ map $_->{id}, @possibles ],
+		     -labels => \%labels);
+   },
+   ifPossibles =>
+   sub {
+     @possibles =
+       sort { $a->{title} cmp $b->{title} }
+       grep $_->{generator} eq 'Generate::Product' && !$stepkids{$_->{id}},
+       $articles->all()
+	 unless @possibles;
+     @possibles;
+   },
   );
 
 if ($imageEditor->action($CGI::Q)) {
@@ -508,6 +579,13 @@ sub remove {
       unlink("$IMAGEDIR/$image->{image}");
       $image->remove();
     }
+
+    # remove any step(child|parent) links
+    require 'OtherParents.pm';
+    my @steprels = OtherParents->anylinks($deleteid);
+    for my $link (@steprels) {
+      $link->remove();
+    }
     
     $delart->remove();
     $articles = Articles->new(1);
@@ -516,6 +594,105 @@ sub remove {
     @children = grep { $_->{id} != $deleteid } @children;
     start();
   }
+}
+
+sub add_stepkid {
+  require 'BSE/Admin/StepParents.pm';
+  eval {
+    my $childId = param('stepkid');
+    defined $childId
+      or die "No stepkid supplied to add_stepkid";
+    int($childId) eq $childId
+      or die "Invalid stepkid supplied to add_stepkid";
+    require 'Products.pm';
+    my $child = Products->getByPkey($childId)
+      or die "Product $childId not found";
+    
+    my $release = param('release');
+    defined $release
+      or $release = "01/01/2000";
+    use BSE::Util::Valid qw/valid_date/;
+    $release eq '' or valid_date($release)
+      or die "Invalid release date";
+    my $expire = param('expire');
+    defined $expire
+      or $expire = '31/12/2999';
+    $expire eq '' or valid_date($expire)
+      or die "Invalid expire data";
+  
+    my $newentry = 
+      BSE::Admin::StepParents->add($article, $child, $release, $expire);
+  };
+  if ($@) {
+    $message = $@;
+    return start();
+  }
+  print "Refresh: 0; url=\"$URLBASE$ENV{SCRIPT_NAME}?id=$article->{id}#step\"\n";
+  print "Content-type: text/html\n\n<HTML></HTML>\n";
+}
+
+sub del_stepkid {
+  require 'BSE/Admin/StepParents.pm';
+
+  my $childId = param('stepkid');
+  defined $childId
+    or die "No stepkid supplied to add_stepkid";
+  int($childId) eq $childId
+    or die "Invalid stepkid supplied to add_stepkid";
+  require 'Products.pm';
+  my $child = Products->getByPkey($childId)
+    or die "Product $childId not found";
+    
+  eval {
+    BSE::Admin::StepParents->del($article, $child);
+  };
+  
+  if ($@) {
+    $message = $@;
+    return start();
+  }
+  refresh('step');
+}
+
+sub save_stepkids {
+  require 'BSE/Admin/StepParents.pm';
+  my @stepcats = OtherParents->getBy(parentId=>$article->{id});
+  my %stepcats = map { $_->{parentId}, $_ } @stepcats;
+  my %datedefs = ( release => '2000-01-01', expire=>'2999-12-31' );
+  for my $stepcat (@stepcats) {
+    for my $name (qw/release expire/) {
+      my $date = param($name.'_'.$stepcat->{childId});
+      if (defined $date) {
+	if ($date eq '') {
+	  $date = $datedefs{$name};
+	}
+	elsif (valid_date($date)) {
+	  use BSE::Util::SQL qw/date_to_sql/;
+	  $date = date_to_sql($date);
+	}
+	else {
+	  return refresh('', "Invalid date '$date'");
+	}
+	$stepcat->{$name} = $date;
+      }
+    }
+    eval {
+      $stepcat->save();
+    };
+    $@ and return refresh('', $@);
+  }
+  refresh('step');
+}
+
+sub refresh {
+  my ($name, $message) = @_;
+
+  my $url = "$URLBASE$ENV{SCRIPT_NAME}?id=$article->{id}";
+  $url .= "&message=" . CGI::escape($message) if $message;
+  $url .= "#$name" if $name;
+
+  print "Refresh: 0; url=\"$url\"\n";
+  print "Content-type: text/html\n\n<HTML></HTML>\n";
 }
 
 sub page {

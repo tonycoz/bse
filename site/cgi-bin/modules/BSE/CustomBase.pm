@@ -43,6 +43,8 @@ sub required_fields {
 
 sub purchase_actions {
   my ($class, $acts, $items, $products, $state) = @_;
+
+  return;
 }
 
 1;

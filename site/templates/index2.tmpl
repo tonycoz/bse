@@ -1,4 +1,10 @@
-<:embed start:><:admin:> <:iterator begin children:><:moveDown:><:moveUp:><:embed 
+<:embed start:><:admin:> <:ifAdmin:><:if Children:> 
+<p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Reorder child articles: 
+  <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=title&refreshto=/cgi-bin/admin/admin.pl?id=1">by 
+  title</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=date&refreshto=/cgi-bin/admin/admin.pl?id=1">by 
+  date</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&reverse=1&refreshto=/cgi-bin/admin/admin.pl?id=1">reverse 
+  order</a></font></p>
+<:or Children:><:eif Children:><:or:><:eif:><:iterator begin children:><:moveDown:><:moveUp:><:embed 
 child:> <:iterator separator children:> <br clear="all">
 <:iterator end children:>
 <:embed end:>

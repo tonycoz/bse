@@ -122,7 +122,7 @@ my @prebuilt =
     keyword=>'',
     template=>'common/sidebar_section.tmpl',
     link=>'',
-    admin=>$CGI_URI.'/admin/add.pl?id=5',
+    admin=>$CGI_URI.'/admin/admin.pl?id=5',
     threshold=>1000, # ignored
     summaryLength=>1000, #ignored
     generator=>'Generate::Article',
@@ -374,9 +374,9 @@ EOS
     expire=>'9999-12-31 23:59:59',
     lastModified=>'2000-11-27 14:00:00',
     keyword=>'',
-    template=>'common/sidebar_section.tmpl',
+    template=>'common/default.tmpl',
     link=>'/a/format_guide.html',
-    admin=>$CGI_URI.'/admin/add.pl?id=6',
+    admin=>$CGI_URI.'/admin/admin.pl?id=6',
     threshold=>1000, # ignored
     summaryLength=>1000, #ignored
     generator=>'Generate::Article',
@@ -389,7 +389,7 @@ EOS
    {
     id=>7,
     parentid=>2,
-    displayOrder=>10000,
+    displayOrder=>20000,
     title=>'[rss generation]',
     titleImage=>'',
     body=><<'EOS',
@@ -404,7 +404,7 @@ EOS
     keyword=>'',
     template=>'common/rssbase.tmpl',
     link=>'/a/site.rdf',
-    admin=>$CGI_URI.'/admin/add.pl?id=7',
+    admin=>$CGI_URI.'/admin/admin.pl?id=7',
     threshold=>1000, # ignored
     summaryLength=>1000, #ignored
     generator=>'Generate::Article',

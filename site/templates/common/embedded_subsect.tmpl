@@ -2,7 +2,8 @@
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <tr> 
     <td bgcolor="#CCCCFF" width="80%" height="24">&nbsp;&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="4"><b><:title:></b></font></td>
-    <td height="24">&nbsp;</td>
+    <td height="24">&nbsp;<a href="/cgi-bin/printable.pl?id=<:article id:>"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#999999">printable 
+      version</font></a></td>
   </tr>
   <tr> 
     <td bgcolor="#999999" colspan="2" height="1"><img src="/images/trans_pixel.gif" width="24" height="1" border="0"></td>
@@ -38,6 +39,11 @@
     </td>
   </tr>
 </table>
+<p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Reorder child articles: 
+  <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=title&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
+  title</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=date&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
+  date</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&reverse=1&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">reverse 
+  order</a></font></p>
 <:or Admin:><:eif Admin:> 
 <p><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:title:></font></b><:or:><:eif:></p>
 <:ifEmbedded:>

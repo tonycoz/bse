@@ -18,4 +18,74 @@ sub step_parents {
   Articles->getSpecial('stepParents', $self->{id});
 }
 
+sub visible_step_parents {
+  my ($self) = @_;
+
+  use BSE::Util::SQL qw/now_datetime/;
+  my $now = now_datetime();
+  grep $_->{release} le $now && $now le $_->{expire}, $self->step_parents;
+}
+
+sub stepkids {
+  my ($self) = @_;
+
+  if ($self->{generator} eq 'Generate::Catalog') {
+    require 'Products.pm';
+    return Products->getSpecial('stepProducts', $self->{id});
+  }
+  return ();
+}
+
+sub visible_stepkids {
+  my ($self) = @_;
+
+  if ($self->{generator} eq 'Generate::Catalog') {
+    use BSE::Util::SQL qw/now_sqldate/;
+    require 'Products.pm';
+    my $today = now_sqldate();
+
+    return Products->getSpecial('visibleStep', $self->{id}, $today);
+  }
+  
+  return ();
+}
+
+# returns a list of all children in the correct sort order
+# this is a bit messy
+sub allkids {
+  my ($self) = @_;
+
+  require 'OtherParents.pm';
+
+  my @otherlinks = OtherParents->getBy(parentId=>$self->{id});
+  my @normalkids = Articles->children;
+  my %order = (
+	       (map { $_->{id}, $_->{displayOrder} } @normalkids ),
+	       (map { $_->{childId}, $_->{parentDisplayOrder} } @otherlinks),
+	      );
+  my @stepkids = $self->stepkids;
+  my %kids = map { $_->{id}, $_ } @stepkids, @normalkids;
+
+  return @kids{ sort { $order{$b} <=> $order{$a} } keys %kids };
+}
+
+# returns a list of all visible children in the correct sort order
+# this is a bit messy
+sub all_visible_kids {
+  my ($self) = @_;
+
+  require 'OtherParents.pm';
+
+  my @otherlinks = OtherParents->getBy(parentId=>$self->{id});
+  my @normalkids = Articles->listedChildren;
+  my %order = (
+	       (map { $_->{id}, $_->{displayOrder} } @normalkids ),
+	       (map { $_->{id}, $_->{parentDisplayOrder} } @otherlinks),
+	      );
+  my @stepkids = $self->visible_stepkids;
+  my %kids = map { $_->{id}, $_ } @stepkids, @normalkids;
+
+  return @kids{ sort { $order{$b} <=> $order{$a} } keys %kids };
+}
+
 1;

@@ -10,7 +10,37 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.10_07
+
+Another test release:
+
+=over
+
+=item *
+
+initial step kids|parents for the shop
+
+=item *
+
+new popup menu templates from Adrian
+
+=item *
+
+added acknowledgements to AUTHOR section
+
+=back
+
+=head2 0.10_06
+
+Test release for Adrian, with his new templates.
+
+=head2 0.10_05
+
+Test release for Adrian.
+
 =head2 0.10_04
+
+Don't use this version.
 
 =over
 
@@ -480,5 +510,20 @@ Some tags that operate on articles have been expanded to work on all
 article objects available in the template.
 
 =back
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+I originally wrote BSE while an employee at SquirrelWeb
+http://www.squirrelweb.com.au/ for http://www.bodyscoop.com.au/
+
+Most of the BSE templates were created by Adrian Oldham
+<adriann@visualthought.com.au>.  He also funded and suggested many
+improvements.
+
+Realware Systems http://www.realware.com.au/ funded the nested
+catalogs, IIS support, the image access tags, and many other shop
+improvements, including most of the BSE::Custom hooks.
 
 =cut

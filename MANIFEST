@@ -30,6 +30,7 @@ site/cgi-bin/modules/Constants.pm
 #site/cgi-bin/modules/Constants.tmpl
 site/cgi-bin/modules/BSE/Custom.pm
 site/cgi-bin/modules/BSE/CustomBase.pm
+site/cgi-bin/modules/BSE/Admin/StepParents.pm
 site/cgi-bin/modules/BSE/DB.pm
 site/cgi-bin/modules/BSE/DB/Mysql.pm
 site/cgi-bin/modules/BSE/DB/MSSQL.pm
@@ -37,6 +38,8 @@ site/cgi-bin/modules/BSE/Mail.pm
 site/cgi-bin/modules/BSE/Mail/Sendmail.pm
 site/cgi-bin/modules/BSE/Mail/SMTP.pm
 site/cgi-bin/modules/BSE/Sort.pm
+site/cgi-bin/modules/BSE/Util/SQL.pm
+site/cgi-bin/modules/BSE/Util/Valid.pm
 #site/cgi-bin/modules/DatabaseHandle.pm    obsolete
 site/cgi-bin/modules/Generate.pm
 site/cgi-bin/modules/Generate/Article.pm
@@ -137,19 +140,25 @@ site/templates/admin/order_list_unfilled.tmpl
 site/templates/admin/product_detail.tmpl
 site/templates/admin/product_list.tmpl
 site/templates/admin/regenerror.tmpl
+site/templates/common/rssbase.tmpl
 site/templates/error.tmpl
 site/templates/extras.txt
+site/templates/include/rsslinks.tmpl
+site/templates/include/rssitems.tmpl
 site/templates/index.tmpl
 site/templates/index2.tmpl
 site/templates/lowmap.tmpl
 site/templates/mailconfirm.tmpl
 site/templates/mailorder.tmpl
+site/templates/menu/menu.tmpl
+site/templates/menu/menu1.tmpl
+site/templates/menu/menu2.tmpl
+site/templates/menu/menu3.tmpl
+site/templates/menu/menu4.tmpl
+site/templates/menu/menu5.tmpl
+site/templates/printable/printable.tmpl
 site/templates/search_base.tmpl
 site/templates/shop_help.tmpl
 site/templates/shop_sect.tmpl
 site/templates/shopitem.tmpl
-site/templates/common/rssbase.tmpl
-site/templates/include/rsslinks.tmpl
-site/templates/include/rssitems.tmpl
-site/templates/printable/printable.tmpl
 site/util/initial.pl

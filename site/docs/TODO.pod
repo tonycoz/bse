@@ -6,11 +6,25 @@ TODO - possible changes for BSE
 
 This is a simple list of possible changes to BSE.
 
+Some of these I'll do myself.
+
 =over
 
 =item *
 
-all some sort of id to be used to identify articles (rather than numbers)
+add some sort of id to be used to identify articles (rather than
+numbers) for use in templates.  Possibly they could automatically be
+added as tag names too.  So if shop were defined as article 3, then
+you could do:
+
+  <a href="<:url shop:>"><:shop title:></a>
+
+to get a shop link instead of:
+
+  <a href="/shop/">The blah blah Shop</a>
+
+since the first would be more maintainable.  This could be useful for
+other special articles.
 
 =item *
 
@@ -26,11 +40,32 @@ template
 
 =item *
 
-move the distribution into my local CVS repository, RCS is annoying
+use a proper config file - this is getting more important
 
 =item *
 
-use a proper config file
+automated way of updating the links for articles that include $SECURLBASE
+
+=item *
+
+move RSS template out of common (this has some other issues though)
+
+=item *
+
+some way of showing expired/hidden articles in browse mode
+
+=item *
+
+support for other embedable 'image' types such as flash and quicktime.
+
+Preferably this would be extendable.  We need some way to get size
+information too (entry from the user I suppose, this could also be
+used to override image sizes.)
+
+=item *
+
+move most of the shop.pl code into modules to make it more accessible
+from other scripts (especially for custom card payment.)
 
 =back
 

@@ -19,6 +19,12 @@
       <td>
 <table border=0 cellpadding="6" cellspacing="1">
   <tr><th>Title</th><th>Summary</th><th>Listed</th><th>&nbsp;</th></tr>
+  <tr> 
+      <td colspan="4" bgcolor="#FFFFFF">Reorder child articles: <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=title&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">by 
+       title</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=date&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">by 
+       date</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&reverse=1&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">reverse 
+       order</a></td>
+  </tr>
 <:iterator begin children:>
   <tr bgcolor="#FFFFFF"> 
     <td><a href="<:child admin:>"><:child title:></a></td>

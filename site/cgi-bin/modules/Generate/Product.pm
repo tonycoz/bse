@@ -16,6 +16,8 @@ sub generate {
   my ($self, $article, $articles) = @_;
 
   my $product = Products->getByPkey($article->{id});
+  my @stepcats = $product->step_parents();
+  my $stepcat_index;
   my @options = 
     map { +{ id=>$_, %{$SHOP_PRODUCT_OPTS{$_}} } } 
       split /,/, $product->{options};
@@ -67,6 +69,9 @@ HTML
        }
      },
      ifOptions => sub { @options },
+     iterate_stepcats_reset => sub { $stepcat_index = -1 },
+     iterate_stepcats => sub { ++$stepcat_index < @stepcats },
+     stepcat => sub { CGI::escapeHTML($stepcats[$stepcat_index]{$_[0]}) },
     );
   return Squirrel::Template->new(%TEMPLATE_OPTS)
     ->show_page($TMPLDIR, $article->{template}, \%acts);

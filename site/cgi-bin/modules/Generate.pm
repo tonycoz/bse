@@ -188,9 +188,9 @@ sub _embed_low {
 }
 
 sub _body_embed {
-  my ($self, $acts, $articles, $which, $template) = @_;
+  my ($self, $acts, $articles, $which, $template, $maxdepth) = @_;
 
-  my $text = $self->_embed_low($acts, $articles, $which, $template);
+  my $text = $self->_embed_low($acts, $articles, $which, $template, $maxdepth);
 
   return $text;
 }
@@ -244,10 +244,13 @@ sub format_body {
 
   my $out = '';
   for my $part (split /((?:html\[(?:[^\[\]]*(?:(?:\[[^\[\]]*\])[^\[\]]*)*)\])
-			|embed\[(?:[^,\[\]]*)(?:,(?:[^,\[\]]*))?\])/ix, $body) {
+			|embed\[(?:[^,\[\]]*)(?:,(?:[^,\[\]]*)){0,2}\])/ix, $body) {
     #print STDERR "Part is $part\n";
     if ($part =~ /^html\[([^\[\]]*(?:(?:\[[^\[\]]*\])[^\[\]]*)*)\]$/i) {
       $out .= _make_html($1);
+    }
+    elsif ($part =~ /^embed\[([^,\[\]]*),([^,\[\]]*),([^,\[\]]*)\]$/i) {
+      $out .= $self->_body_embed($acts, $articles, $1, $2, $3);
     }
     elsif ($part =~ /^embed\[([^,\[\]]*),([^,\[\]]*)\]$/i) {
       $out .= $self->_body_embed($acts, $articles, $1, $2);

@@ -240,7 +240,7 @@ $HAVE_HTML_PARSER = 1;
 # Mail configuration
 
 # the hostname or IP address of an SMTP server
-$SMTP_SERVER = 'develop-help.com';
+#$SMTP_SERVER = 'develop-help.com';
 
 # the HELO (EHLO) text passed to the SMTP server
 $SMTP_HELO = 'develop-help.com';

@@ -1,0 +1,16 @@
+<:embed start:>
+<script language="JavaScript">
+<!--
+function MM_jumpMenu(targ,selObj,restore){ //v3.0
+  eval(targ+".location='"+selObj.options[selObj.selectedIndex].value+"'");
+  if (restore) selObj.selectedIndex=0;
+}
+//-->
+</script>
+<form name="articleJump">
+  <select name="Articles" onChange="MM_jumpMenu('parent',this,0)">
+<option value="<:url article:>"><:article title:></option><:iterator begin children:>
+<:embed child menu/menu1.tmpl:><:iterator separator children:><:iterator end children:>
+  </select>
+</form>
+<:embed end:>

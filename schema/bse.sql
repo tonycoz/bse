@@ -229,7 +229,10 @@ create table other_parents (
   -- order as seen from the child
   childDisplayOrder integer not null,
 
+  release datetime default '0000-00-00 00:00:00' not null,
+  expire datetime default '9999-12-31 23:59:59' not null,
+
   primary key(id),
   unique (parentId, childId),
-  index (childId)
+  index (childId, childDisplayOrder)
 );

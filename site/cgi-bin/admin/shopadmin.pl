@@ -78,6 +78,9 @@ my %what_to_do =
    delete_product=>\&delete_product,
    undelete_product=>\&undelete_product,
    product_detail=>\&product_detail,
+   add_stepcat=>\&add_stepcat,
+   del_stepcat=>\&del_stepcat,
+   save_stepcats => \&save_stepcats,
    back=>\&img_return,
   );
 
@@ -187,7 +190,7 @@ sub product_list {
   my @catalogs = sort { $b->{displayOrder} <=> $a->{displayOrder} }
     Articles->children($SHOPID);
   my $catalog_index = -1;
-  my $message = param('message') || '';
+  my $message = param('message') || shift || '';
   my %acts =
     (
      catalog=> sub { CGI::escapeHTML($catalogs[$catalog_index]{$_[0]}) },
@@ -435,7 +438,7 @@ sub product_detail {
 sub product_form {
   my ($product, $action, $message, $template) = @_;
 
-  defined($message) or $message = '';
+  $message ||= param('message') || '';
   $template ||= 'add_product';
   my @catalogs;
   my @work = [ $SHOPID, '' ];
@@ -458,6 +461,13 @@ sub product_form {
       grep -f "$TMPLDIR/products/$_" && /\.tmpl$/i, readdir PROD_TEMPL;
     closedir PROD_TEMPL;
   }
+  my $stepcat_index;
+  use OtherParents;
+  my @stepcats = OtherParents->getBy(childId=>$product->{id}) 
+    if $product->{id};
+  my @stepcat_targets = $product->step_parents if $product->{id};
+  my %stepcat_targets = map { $_->{id}, $_ } @stepcat_targets;
+  my @stepcat_possibles = grep !$stepcat_targets{$_->{id}}, @catalogs;
 
   my %acts;
   %acts =
@@ -471,7 +481,7 @@ sub product_form {
                          -override=>1);
      },
      product => sub { CGI::escapeHTML($product->{$_[0]}) },
-     date => sub { display_date($product->{$_[0]}) },
+     #date => sub { display_date($product->{$_[0]}) },
      money => sub { sprintf("%.2f", $product->{$_[0]}/100.0) },
      action => sub { $action },
      message => sub { $message },
@@ -485,6 +495,44 @@ sub product_form {
        return CGI::popup_menu(-name=>'template', -values=>\@templates,
                               -default=>$product->{id} ? $product->{template} :
                               $templates[0]);
+     },
+     ifStepcats => sub { @stepcats },
+     iterate_stepcats_reset => sub { $stepcat_index = -1; },
+     iterate_stepcats => sub { ++$stepcat_index < @stepcats },
+     stepcat => sub { CGI::escapeHTML($stepcats[$stepcat_index]{$_[0]}) },
+     stepcat_targ =>
+     sub {
+       CGI::escapeHTML($stepcat_targets[$stepcat_index]{$_[0]});
+     },
+     movestepcat =>
+     sub {
+       my $html = '';
+       my $refreshto = CGI::escape($ENV{SCRIPT_NAME}
+				   ."?id=$product->{id}&$template=1#step");
+       if ($stepcat_index < $#stepcats) {
+	 $html .= <<HTML;
+<a href="$CGI_URI/admin/move.pl?stepchild=$product->{id}&id=$stepcats[$stepcat_index]{parentId}&d=swap&other=$stepcats[$stepcat_index+1]{parentId}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+HTML
+       }
+       if ($stepcat_index > 0) {
+	 $html .= <<HTML;
+<a href="$CGI_URI/admin/move.pl?stepchild=$product->{id}&id=$stepcats[$stepcat_index]{parentId}&d=swap&other=$stepcats[$stepcat_index-1]{parentId}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+HTML
+       }
+       return $html;
+     },
+     ifStepcatPossibles => sub { @stepcat_possibles },
+     stepcat_possibles => sub {
+       popup_menu(-name=>'stepcat',
+		  -values=>[ map $_->{id}, @stepcat_possibles ],
+		  -labels=>{ map { $_->{id}, $_->{display}} @catalogs });
+     },
+     date =>
+     sub {
+       use BSE::Util::SQL qw/sql_to_date/;
+       my ($func, $args) = split ' ', $_[0], 2;
+       $acts{$func} or return "** unknown function '$func' $args **";
+       display_date($acts{$func}->($args));
      },
     );
 
@@ -688,8 +736,124 @@ sub order_filled {
 }
 
 #####################
+# Step parents
+
+sub add_stepcat {
+  require 'BSE/Admin/StepParents.pm';
+  my $productid = param('id');
+  defined($productid)
+    or return product_list("No id supplied to add_stepcat");
+  int($productid) eq $productid+0
+    or return product_list("Invalid product id supplied to add_stepcat");
+  my $product = Products->getByPkey($productid)
+    or return product_list("Cannot find product id $productid");
+  
+  eval {
+    my $catid = param('stepcat');
+    defined($catid)
+      or die "No stepcat supplied to add_stepcat";
+    int($catid) eq $catid
+      or die "Invalid stepcat supplied to add_stepcat";
+    my $catalog = Articles->getByPkey($catid)
+      or die "Catalog $catid not found";
+
+    my $release = param('release');
+    defined $release
+      or $release = "01/01/2000";
+    use BSE::Util::Valid qw/valid_date/;
+    $release eq '' or valid_date($release)
+      or die "Invalid release date";
+    my $expire = param('expire');
+    defined $expire
+      or $expire = '31/12/2999';
+    $expire eq '' or valid_date($expire)
+      or die "Invalid expire data";
+  
+    my $newentry = 
+      BSE::Admin::StepParents->add($catalog, $product, $release, $expire);
+  };
+  $@ and product_edit_refresh($productid, $@, 'step');
+
+  return product_edit_refresh($productid, '', 'step');
+}
+
+sub del_stepcat {
+  require 'BSE/Admin/StepParents.pm';
+  my $productid = param('id');
+  defined $productid
+    or return product_list("No id supplied to del_stepcat");
+  int($productid) eq $productid+0
+    or return product_list("Invalid product id supplied to del_stepcat");
+  my $product = Products->getByPkey($productid)
+    or return product_list("Cannot find product id $productid");
+
+  my $catid = param('stepcat');
+  defined($catid)
+    or return shop_redirect("?id=$productid&edit_product=1&message=No+stepcat+supplied+to+add_stepcat#step");
+  int($catid) eq $catid
+    or return shop_redirect("?id=$productid&edit_product=1&message=Invalid+stepcat+supplied+to+add_stepcat#step");
+  my $catalog = Articles->getByPkey($catid)
+    or return shop_redirect("?id=$productid&edit_product=1&message=".CGI::escape("Catalog+$catid+not+found")."#step");
+
+  eval {
+    BSE::Admin::StepParents->del($catalog, $product);
+  };
+  $@ and return shop_redirect("?id=$productid&edit_product=1&message=".CGI::escape($@)."#step");
+
+  return shop_redirect("?id=$productid&edit_product=1#step");
+}
+
+sub save_stepcats {
+  require 'BSE/Admin/StepParents.pm';
+  my $productid = param('id');
+  defined $productid
+    or return product_list("No id supplied to del_stepcat");
+  int($productid) eq $productid+0
+    or return product_list("Invalid product id supplied to del_stepcat");
+  my $product = Products->getByPkey($productid)
+    or return product_list("Cannot find product id $productid");
+
+  my @stepcats = OtherParents->getBy(childId=>$product->{id});
+  my %stepcats = map { $_->{parentId}, $_ } @stepcats;
+  my %datedefs = ( release => '2000-01-01', expire=>'2999-12-31' );
+  for my $stepcat (@stepcats) {
+    for my $name (qw/release expire/) {
+      my $date = param($name.'_'.$stepcat->{parentId});
+      if (defined $date) {
+	if ($date eq '') {
+	  $date = $datedefs{$name};
+	}
+	elsif (valid_date($date)) {
+	  use BSE::Util::SQL qw/date_to_sql/;
+	  $date = date_to_sql($date);
+	}
+	else {
+	  product_edit_refresh($productid, "Invalid date '$date'");
+	}
+	$stepcat->{$name} = $date;
+      }
+    }
+    eval {
+      $stepcat->save();
+    };
+    $@ and product_edit_refresh($productid, $@);
+  }
+  product_edit_refresh($productid, $@);
+}
+
+#####################
 # utilities
 # perhaps some of these belong in a class...
+
+sub product_edit_refresh {
+  my ($productid, $message, $name) = @_;
+
+  my $url = '?edit_product=1&id='.$productid;
+  $url .= '&message='.CGI::escape($message) if $message;
+  $url .= "#$name" if $name;
+
+  shop_redirect($url);
+}
 
 sub page {
   my ($which, $acts, $iter) = @_;
