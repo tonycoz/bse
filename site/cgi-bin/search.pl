@@ -1,17 +1,16 @@
 #!/usr/bin/perl -w
-
 use strict;
 use CGI qw(:standard);
 use lib 'modules';
 use Articles;
-use DatabaseHandle;
+use BSE::DB;
 use Squirrel::Template;
 use Constants qw(:search);
 use Carp;
 
 my $results_per_page = 10;
 
-my $dh = DatabaseHandle->single;
+my $dh = BSE::DB->single;
 
 my $words = param('q');
 my $section = param('s');
@@ -192,13 +191,13 @@ sub getSearchResult {
   my %terms;
   for my $term (@terms) {
     if ($SEARCH_AUTO_WILDCARD && $term->[1]) {
-      $sth = $dh->{searchIndexWC};
+      $sth = $dh->stmt('searchIndexWC');
       $sth->execute($term->[0]."%")
 	or die "Could not execute search: ",$sth->errstr;
 	
     }
     else {
-      $sth = $dh->{searchIndex};
+      $sth = $dh->stmt('searchIndex');
       $sth->execute($term->[0])
 	or die "Could not execute search: ",$sth->errstr;
     }
@@ -226,36 +225,38 @@ sub getSearchResult {
   return () if !keys %scores;
 
   # make sure we match the other requirements
-  my $sql = "select id from article where find_in_set(id, ?) <> 0";
+  my $sql = "select id from article where ";
+  $sql .= "(".join(" or ", map "id = $_", keys %scores).")";
+  my $now = _sql_date(time);
+  my $oneday = 24 * 3600;
   SWITCH: for ($date) {
     $_ eq 'ar' # been released
       && do {
-	$sql .= " and NOW() between release and expire";
+	$sql .= " and $now between release and expire";
 	last SWITCH;
       };
     /^r(\d+)$/ # released in last N days
       && do {
-	$sql .= " and release > date_sub(now(), INTERVAL $1 DAY)";
+	$sql .= " and release > "._sql_date(time - $oneday * $1);
 	last SWITCH;
       };
     /^e(\d+)$/ # expired in last N days
       && do {
-	$sql .= " and expire > date_sub(now(), INTERVAL $1 DAY) 
-                    and expire <= now() ";
+	$sql .= " and expire > " . _sql_date(time - $oneday * $1) 
+                   ." and expire <= $now";
 	last SWITCH;
       };
     $_ eq 'ae'
       && do {
-	$sql .= " and expire < now()";
+	$sql .= " and expire < $now";
 	last SWITCH;
 	};
   }
-  my $set = join(',', keys %scores);
   $sth = $dh->{dbh}->prepare($sql)
     or die "Error preparing $sql: ",$dh->{dbh}->errstr;
 
-  $sth->execute($set)
-    or die "Cannot execute $sql($set): ",$sth->errstr;
+  $sth->execute()
+    or die "Cannot execute $sql: ",$sth->errstr;
 
   my @ids;
   my $row;
@@ -266,6 +267,13 @@ sub getSearchResult {
   @$terms = map $_->[0], @terms;
 
   return @ids;
+}
+
+sub _sql_date {
+  my ($time) = @_;
+  use POSIX qw(strftime);
+
+  strftime("'%Y-%m-%d %H:%M'", localtime $time);
 }
 
 my %gens;
