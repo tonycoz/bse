@@ -72,6 +72,16 @@ from other scripts (especially for custom card payment.)
 make the shopadmin product list better.  The nested catalog display
 sucks.
 
+=item *
+
+some form of error handling that deals well with IIS' broken handling
+of STDERR.  Sometimes it seems to drop it, sometimes it seems to write
+it to the web page.
+
+=item *
+
+document the body tags
+
 =back
 
 =cut

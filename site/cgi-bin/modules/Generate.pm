@@ -135,7 +135,12 @@ sub _embed_low {
   #  print STDERR "Embed depth $self->{depth}\n";
   #}
   if ($self->{depth} > $self->{maxdepth}) {
-    return "** too many embedding levels **";
+    if ($self->{maxdepth} == $EMBED_MAX_DEPTH) {
+      return "** too many embedding levels **";
+    }
+    else {
+      return '';
+    }
   }
 
   my $id;

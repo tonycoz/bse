@@ -30,6 +30,34 @@ new edit_product template from adrian
 
 stupid bug in BSE::Shop::Util
 
+=item *
+
+email is now in BSE::CustomBase->required_fields() and can be removed
+by BSE::Custom->required_fields().  If it is removed then no
+validation of the email address is performed.
+
+=item *
+
+state changes made in handling the confirm page are now saved
+
+=item *
+
+added strict to a few modules
+
+=item *
+
+added missing error handling methods to BSE::Mail.
+
+=item *
+
+old tag on the confirm tag now never gives the undef value message
+
+=item *
+
+if you specify a embedding depth less than the current maximum, you
+won't get an error message embedded when passing that depth.  This
+lets you do more interesting effects.
+
 =back
 
 =head2 0.10_11
