@@ -263,7 +263,7 @@ sub getSearchResult {
 
   @ids = sort { $scores{$b} <=> $scores{$a} } @ids;
 
-  @$terms = @terms;
+  @$terms = map $_->[0], @terms;
 
   return @ids;
 }
