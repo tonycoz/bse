@@ -39,6 +39,7 @@ my %actions =
    unsub => 'unsub',
    setcookie => 'set_cookie',
    nopassword => 'nopassword',
+   a_image => 'req_image',
   );
 
 my $cgi = CGI->new;

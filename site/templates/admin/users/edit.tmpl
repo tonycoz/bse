@@ -10,7 +10,7 @@
 <p><b><:message:></b></p>
 <:or:><:eif:> 
 
-<form method="POST" action="<:script:>">
+<form method="POST" action="<:script:>" enctype="multipart/form-data">
 <input type="hidden" name="id" value="<:siteuser id:>" />
   <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
     <tr> 
@@ -242,6 +242,17 @@
             <td bgcolor="#FFFFFF" valign="top"><:help editsiteuser subscriptions:></td>
           </tr>
 <:or Subscriptions:><:eif Subscriptions:>
+<:iterator begin imagetemplates:>
+          <tr> 
+            <th bgcolor="#FFFFFF" align="left"> <:imagetemplate description:>: </th>
+            <td bgcolor="#FFFFFF"> 
+              <input type="file" name="image_<:imagetemplate id:>_file" /><br />
+              Alt: <input type="text" name="image_<:imagetemplate id:>_alt" value="<:siteuser_image [imagetemplate id] alt:>" /><br />
+	<:ifSiteuser_image [imagetemplate id]:><input type="checkbox" name="image_<:imagetemplate id:>_delete" value="1" /> Delete<br /><img src="<:siteuser_image [imagetemplate id] url:>" /><:or:><:eif:>
+              </td>
+            <td bgcolor="#FFFFFF"> <:help editsiteuser images:>  <:error_img password:></td>
+          </tr>
+<:iterator end imagetemplates:>
 <:if UserCan siteuser_changepw:>
 <:if Cfg "site users" nopassword:><:or Cfg:>
           <tr> 

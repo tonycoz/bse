@@ -52,6 +52,7 @@ sub getuser {
   $_[0]{adminuser};
 }
 
+# this needs to become non-admin specific
 sub url {
   my ($self, $action, $params, $name) = @_;
 

@@ -43,6 +43,13 @@
       </td>
     </tr>
     <:or Message:><:eif Message:> 
+<:if Imagetemplates:>
+    <tr> 
+      <td colspan="2" height="20" align="center"> 
+        <a href="<:script:>?show_opts=1&_t=images">Manage Logos</a>
+      </td>
+    </tr>
+<:or Imagetemplates:><:eif Imagetemplates:>
     <form action="/cgi-bin/user.pl" method="post">
     <input type="hidden" name="saveSubscriptions" value="1" />
     <:if Cfg "site users" nopassword:>

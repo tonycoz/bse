@@ -1,5 +1,6 @@
 package BSE::AdminSiteUsers;
 use strict;
+use base qw(BSE::UI::SiteuserCommon);
 use BSE::Util::Tags qw(tag_error_img tag_hash);
 use DevHelp::HTML;
 use SiteUsers;
@@ -201,6 +202,7 @@ sub req_edit {
      [ \&tag_if_subscribed, $cgi, \@subs, \$sub_index, \%usersubs ],
      $it->make_iterator([ \&iter_orders, $siteuser ], 
 			'userorder', 'userorders' ),
+     $class->_edit_tags($siteuser, $req->cfg),
     );  
 
   my $template = 'admin/users/edit';
@@ -302,21 +304,9 @@ sub req_save {
   }
 
   my $aff_name = $cgi->param('affiliate_name');
-  if (defined $aff_name && length $aff_name) {
-    if ($aff_name =~ /^\s*\w+\s*$/) {
-      $aff_name =~ s/^\s+|\s+$//g;
-      my $other = SiteUsers->getBy(affiliate_name => $aff_name);
-      if ($other) {
-	$errors{affiliate_name} = "affiliate name $aff_name is already in use";
-      }
-    }
-    else {
-      $errors{affiliate_name} = "invalid affiliate name, no spaces or special characters are allowed";
-    }
-  }
-  else {
-    undef $aff_name;
-  }
+  $aff_name = _validate_affiliate_name($req, $aff_name, \%errors, $user);
+
+  $class->_save_images($req->cfg, $req->cgi, $user, \%errors);
 
   keys %errors
     and return $class->req_edit($req, undef, \%errors);
@@ -549,6 +539,11 @@ sub req_add {
       $user{$col} = $value;
     }
   }
+
+  my $aff_name = $cgi->param('affiliate_name');
+  $aff_name = _validate_affiliate_name($req, $aff_name, \%errors);
+  defined $aff_name or $aff_name = '';
+
   if (keys %errors) {
     return $class->req_addform($req, undef, \%errors);
   }
@@ -558,6 +553,7 @@ sub req_add {
     $user{previousLogon} = now_datetime;
   $user{keepAddress} = 0;
   $user{wantLetter} = 0;
+  $user{affiliate_name} = $aff_name;
   if ($nopassword) {
     use BSE::Util::Secure qw/make_secret/;
     $user{password} = make_secret($cfg);
@@ -625,5 +621,43 @@ sub save_subs {
   $found;
 }
 
+sub _validate_affiliate_name {
+  my ($req, $aff_name, $errors, $user) = @_;
+
+  my $display = $req->cfg->entry('site users', 'display_affiliate_name',
+				 "Affiliate name");
+  my $required = $req->cfg->entry('site users', 'require_affiliate_name', 0);
+
+  if (defined $aff_name) {
+    $aff_name =~ s/^\s+|\s+$//g;
+    if (length $aff_name) {
+      if ($aff_name =~ /^\w+$/) {
+	my $other = SiteUsers->getBy(affiliate_name => $aff_name);
+	if ($other && (!$user || $other->{id} != $user->{id})) {
+	  $errors->{affiliate_name} = "$display $aff_name is already in use";
+	}
+	else {
+	  return $aff_name;
+	}
+      }
+      else {
+	$errors->{affiliate_name} = "invalid $display, no spaces or special characters are allowed";
+      }
+    }
+    elsif ($required) {
+      $errors->{affiliate_name} = "$display is a required field";
+    }
+    else {
+      return '';
+    }
+  }
+
+  # always required if making a new user
+  if (!$errors->{affiliate_name} && $required && !$user) {
+    $errors->{affiliate_name} = "$display is a required field";
+  }
+
+  return;
+}
 
 1;

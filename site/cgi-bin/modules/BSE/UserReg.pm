@@ -1,5 +1,6 @@
 package BSE::UserReg;
 use strict;
+use base qw(BSE::UI::SiteuserCommon);
 use SiteUsers;
 use BSE::Util::Tags qw(tag_error_img);
 use BSE::Template;
@@ -400,6 +401,7 @@ sub show_opts {
      ifRequired =>
      [ \&tag_if_required, $cfg ],
      error_img => [ \&tag_error_img, $cfg, $errors ],
+     $self->_edit_tags($user, $cfg),
     );
 
   my $base = 'user/options';
@@ -525,23 +527,9 @@ sub saveopts {
   }
 
   my $aff_name = $cgi->param('affiliate_name');
-  if (defined $aff_name && length $aff_name) {
-    if ($aff_name =~ /^\s*\w+\s*$/) {
-      $aff_name =~ s/^\s+|\s+$//g;
-      my $other = SiteUsers->getBy(affiliate_name => $aff_name);
-      if ($other) {
-	$errors{affiliate_name} = $msgs->(dupaffiliatename =>
-					  "affiliate name $aff_name is already in use", $aff_name);
-      }
-    }
-    else {
-      $errors{affiliate_name} = $msgs->(badaffiliatename =>
-					"invalid affiliate name, no spaces or special characters are allowed");
-    }
-  }
-  else {
-    undef $aff_name;
-  }
+  $aff_name = _validate_affiliate_name($cfg, $aff_name, \%errors, $msgs, $user);
+
+  $self->_save_images($cfg, $cgi, $user, \%errors);
 
   keys %errors
     and return $self->show_opts($session, $cgi, $cfg, undef, \%errors);
@@ -751,6 +739,10 @@ sub register {
       $user{$col} = $value;
     }
   }
+  my $aff_name = $cgi->param('affiliate_name');
+  $aff_name = _validate_affiliate_name($cfg, $aff_name, \%errors, $msgs);
+  defined $aff_name or $aff_name = '';
+
   if (keys %errors) {
     return $self->show_register($session, $cgi, $cfg, undef, \%errors);
   }
@@ -760,6 +752,7 @@ sub register {
     $user{previousLogon} = now_datetime;
   $user{keepAddress} = 0;
   $user{wantLetter} = 0;
+  $user{affiliate_name} = $aff_name;
   if ($nopassword) {
     use BSE::Util::Secure qw/make_secret/;
     $user{password} = make_secret($cfg);
@@ -1318,6 +1311,85 @@ sub unsub {
   else {
     BSE::Template->show_page('user/cantunsub', $cfg, \%acts);
   }
+}
+
+sub _validate_affiliate_name {
+  my ($cfg, $aff_name, $errors, $msgs, $user) = @_;
+
+  my $display = $cfg->entry('site users', 'display_affiliate_name',
+			    "Affiliate name");
+  my $required = $cfg->entry('site users', 'require_affiliate_name', 0);
+
+  if (defined $aff_name) {
+    $aff_name =~ s/^\s+|\s+$//g;
+    if (length $aff_name) {
+      if ($aff_name =~ /^\w+$/) {
+	my $other = SiteUsers->getBy(affiliate_name => $aff_name);
+	if ($other && (!$user || $other->{id} != $user->{id})) {
+	  $errors->{affiliate_name} = $msgs->(dupaffiliatename =>
+					    "$display '$aff_name' is already in use", $aff_name);
+	}
+	else {
+	  return $aff_name;
+	}
+      }
+      else {
+	$errors->{affiliate_name} = $msgs->(badaffiliatename =>
+					  "Invalid $display, no spaces or special characters are allowed");
+      }
+    }
+    elsif ($required) {
+      $errors->{affiliate_name} = $msgs->("optsrequired" =>
+					  "$display is a required field",
+					  "affiliate_name", $display);
+    }
+    else {
+      return '';
+    }
+  }
+
+  # always required if making a new user
+  if (!$errors->{affiliate_name} && $required && !$user) {
+    $errors->{affiliate_name} = $msgs->("optsrequired" =>
+					"$display is a required field",
+					"affiliate_name", $display);
+  }
+
+  return;
+}
+
+sub req_image {
+  my ($self, $session, $cgi, $cfg) = @_;
+
+  my $u = $cgi->param('u');
+  my $i = $cgi->param('i');
+  defined $u && $u =~ /^\d+$/ && defined $i && $i =~ /^\w+$/
+    or return $self->show_logon($session, $cgi, $cfg, 
+				"Missing or bad image parameter");
+
+  my $user = SiteUsers->getByPkey($u)
+    or return $self->show_logon($session, $cgi, $cfg, 
+				"Missing or bad image parameter");
+  my $image = $user->get_image($i)
+    or return $self->show_logon($session, $cgi, $cfg, 
+				"Unknown image id");
+  my $image_dir = $cfg->entryVar('paths', 'siteuser_images');
+
+  open IMAGE, "< $image_dir/$image->{filename}"
+    or return $self->show_logon($session, $cgi, $cfg,
+				"Image file missing");
+  binmode IMAGE;
+  binmode STDOUT;
+    
+  print "Content-Length: $image->{bytes}\r\n";
+  print "Content-Type: $image->{content_type}\r\n";
+  print "\r\n";
+  $|=1;
+  my $data;
+  while (read(IMAGE, $data, 8192)) {
+    print $data;
+  }
+  close IMAGE;
 }
 
 1;

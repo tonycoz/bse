@@ -98,6 +98,7 @@ site/cgi-bin/modules/BSE/Template.pm
 site/cgi-bin/modules/BSE/UI/AdminDispatch.pm
 site/cgi-bin/modules/BSE/UI/Affiliate.pm
 site/cgi-bin/modules/BSE/UI/Dispatch.pm
+site/cgi-bin/modules/BSE/UI/SiteuserCommon.pm
 site/cgi-bin/modules/BSE/UI/SubAdmin.pm
 site/cgi-bin/modules/BSE/UserReg.pm
 site/cgi-bin/modules/BSE/Util/DynSort.pm
@@ -110,6 +111,7 @@ site/cgi-bin/modules/BSE/Version.pm
 site/cgi-bin/modules/BSE/WebUtil.pm
 site/cgi-bin/modules/Constants.pm
 site/cgi-bin/modules/DevHelp/DynSort.pm
+site/cgi-bin/modules/DevHelp/FileUpload.pm
 site/cgi-bin/modules/DevHelp/Formatter.pm
 site/cgi-bin/modules/DevHelp/HTML.pm
 site/cgi-bin/modules/DevHelp/Report.pm
@@ -349,6 +351,7 @@ site/templates/user/lostpwdemail_base.tmpl
 site/templates/user/nopassword_base.tmpl
 site/templates/user/options_base.tmpl
 site/templates/user/options_billing_base.tmpl
+site/templates/user/options_images_base.tmpl
 site/templates/user/options_saved_base.tmpl
 site/templates/user/register_base.tmpl
 site/templates/user/subdetail.tmpl

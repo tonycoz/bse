@@ -158,9 +158,9 @@ sub send_conf_request {
 sub orders {
   my ($self) = @_;
 
-  require Orders;
+  require BSE::TB::Orders;
 
-  return Orders->getBy(userId => $self->{userId});
+  return BSE::TB::Orders->getBy(userId => $self->{userId});
 }
 
 # check if the user is subscribed to the given subscription

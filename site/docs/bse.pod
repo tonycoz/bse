@@ -10,6 +10,48 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.14_27
+
+=over
+
+=item *
+
+it's now possible to associate images with a site user (member), these
+are editable both by the admin and the user themselves.
+
+They work the same as the nport member images.
+
+By default they are stored in the same location as uploaded files
+(defaulted in the config file.)
+
+Don't forget to change your custom admin edit site user template to
+use the right enctype for the form.
+
+=item *
+
+you can now use siteuser images on the affiliate page.
+
+=item *
+
+SiteUser.pm was still using Orders rather than BSE::TB::Orders <sigh>
+
+=item *
+
+affiliate_name can now be set during registration or during addition
+in the admin interface.
+
+=item *
+
+the require_affiliate_name flag in the config file is now supported
+(it wasn't necessary for the original application)
+
+=item *
+
+[site users].display_affiliate_name is now used in validation errors
+for the affiliate name field.
+
+=back
+
 =head2 0.14_26
 
 =over

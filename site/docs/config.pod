@@ -85,6 +85,12 @@ implemented.  Default: $IMAGEDIR.
 Local search path for BSE::Custom, or the class configured by
 C<custom_class> in [basic].
 
+=item siteuser_images
+
+Where uploaded siteuser images are stored.  This must be set in the
+config file.  The default bse.cfg include an entry to use the current
+values of [paths].downloads
+
 =back
 
 =head2 [extensions]
@@ -937,6 +943,62 @@ If no C<r> parameter is supplied to the C<a_set> target of
 L<affiliate.pl> then this is used as the default refresh.
 
 Default: the site base url.
+
+=back
+
+=head2 [BSE Siteuser Images]
+
+Each key is the id of a member image, with a corresponding [BSE
+Siteuser Image I<image_id>] section.  The values are ignored.
+
+=head2 [BSE Siteuser Image I<image_id>]
+
+Provides information about a single member image "template".
+
+=over
+
+=item description
+
+Short description on the image, like "Logo".  Used in error messages.
+
+=item help
+
+Longer description of the image.  Accessible with the member_image tag.
+
+=item minwidth
+
+=item minheight
+
+=item maxwidth
+
+=item maxheight
+
+The minimum and maximum dimensions of the image.
+
+=item widthsmallerror
+
+=item heightsmallerror
+
+=item widthlargeerror
+
+=item heightlargeerror
+
+Error messages displayed in the when the image is outside the
+configured dimensions.
+
+=item largeerror
+
+=item smallerror
+
+Default error messages for the above.
+
+=item maxspace
+
+Maximum storage the image can use in bytes.  Default: 1000000.
+
+=item spaceerror
+
+Error message displayed if the image uses too much storage.
 
 =back
 

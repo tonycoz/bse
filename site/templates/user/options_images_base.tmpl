@@ -1,0 +1,75 @@
+<:wrap base.tmpl:>
+<div align=center class="useroptions"> 
+<:if Cfg "site users" nopassword:><:or Cfg:>
+  <table border="0" cellspacing="0" cellpadding="0">
+    <tr> 
+      <td> 
+        <form name="yourorders" method="post" action="<:script:>">
+          <input type="submit" name="Submit" value="View your account" class="user-buttons" />
+          <input type="hidden" name="userpage" value="1" />
+        </form>
+      </td>
+      <:ifCfg shop enabled:><td> 
+        <form name="ff" method="post" action="/cgi-bin/shop.pl">
+          <input type="submit" name="cart" value="View shopping cart" class="user-buttons" />
+        </form>
+      </td><:or:><:eif:>
+    </tr>
+  </table>
+  <br />
+<:eif Cfg:>
+  <table width="250">
+    <tr> 
+      <th colspan="2" height="20" class="thead"> 
+        <p>User Options - Images</p>
+      </th>
+    </tr>
+    <tr> 
+      <td colspan="2" align="center"> 
+        <p><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Hello <:ifUser name1:><:user name1:> <:user name2:><:or:><:user 
+          userId:><:eif:></font></b></p>
+        <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#999999">Last logged in: <:date user previousLogon:><br>
+          Registered since: <:date user whenRegistered:></font><br>
+          <br>
+        </p>
+        </td>
+    </tr>
+    <:if Message:> 
+    <tr> 
+      <td colspan="2" align="center"> 
+        <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b>Error: 
+          <:message:></b></font></p>
+      </td>
+    </tr>
+    <:or Message:><:eif Message:> 
+    </tr>
+      <tr> 
+        <td colspan="2" height="20" align="center"><br>
+          <br>
+          <a href="<:script:>?show_opts=1">Return to Main Options</a></td>
+      </tr>
+    <form action="/cgi-bin/user.pl" method="post" enctype="multipart/form-data">
+    <input type="hidden" name="_t" value="billing" />
+    <:if Cfg "site users" nopassword:>
+    <input type="hidden" name="u" value="<:user id:>" />
+    <input type="hidden" name="p" value="<:user password:>" />
+    <input type="hidden" name="r" value="<:script:>?show_opts=<:user password:>&amp;u=<:user id:>&_t=saved" />
+    <:or Cfg:><:eif Cfg:>
+<:iterator begin imagetemplates:>
+      <tr>
+         <th><:imagetemplate description:>:</th>
+	 <td><input type="file" name="image_<:imagetemplate id:>_file" /><br />
+              Alt: <input type="text" name="image_<:imagetemplate id:>_alt" value="<:siteuser_image [imagetemplate id] alt:>" /><br />
+	<:ifSiteuser_image [imagetemplate id]:><input type="checkbox" name="image_<:imagetemplate id:>_delete" value="1" /> Delete<:or:><:eif:>
+         </td>
+	 <td><:ifSiteuser_image [imagetemplate id]:><img src="<:siteuser_image [imagetemplate id] url:>" /><:or:><:eif:></td>
+      </tr>
+<:iterator end imagetemplates:>
+      <tr> 
+        <td colspan="2" align="right"> 
+          <input type="submit" name="saveopts" value="Save Options" class="user-buttons" />
+        </td>
+      </tr>
+    </form>
+  </table>
+</div>

@@ -1,6 +1,6 @@
 package BSE::UI::Affiliate;
 use strict;
-use base qw(BSE::UI::Dispatch);
+use base qw(BSE::UI::Dispatch BSE::UI::SiteuserCommon);
 use BSE::Util::Tags qw(tag_hash);
 use DevHelp::HTML;
 
@@ -235,7 +235,7 @@ sub req_show {
   %acts =
     (
      BSE::Util::Tags->basic(undef, $req->cgi, $req->cfg),
-     siteuser => [ \&tag_hash, $user ],
+     $class->_display_tags($user, $req->cfg),
     );
 
   return $req->dyn_response('affiliate', \%acts);

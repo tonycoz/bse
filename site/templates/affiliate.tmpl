@@ -1,2 +1,5 @@
 <:wrap xbase.tmpl title=>"Affiliate page":>
 <p>This is a placeholder affiliate page for user <:siteuser userId:>.</p>
+<:if Siteuser_image logo:>
+<img src="<:siteuser_image logo url:>" width="<:siteuser_image logo width:>" height="<:siteuser_image logo height:>" alt="<:siteuser_image logo alt:>" />
+<:or Siteuser_image:><:eif Siteuser_image:>
