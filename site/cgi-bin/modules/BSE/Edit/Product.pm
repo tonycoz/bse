@@ -213,4 +213,17 @@ sub default_template {
   return $self->SUPER::default_template($article, $cfg, $templates);
 }
 
+sub can_remove {
+  my ($self, $req, $article, $articles, $rmsg) = @_;
+
+  require OrderItems;
+  my @items = OrderItems->getBy(productId=>$article->{id});
+  if (@items) {
+    $$rmsg = "There are orders for this product.  It cannot be deleted.";
+    return;
+  }
+
+  return $self->SUPER::can_remove($req, $article, $articles, $rmsg);
+}
+
 1;

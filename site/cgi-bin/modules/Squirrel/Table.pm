@@ -115,7 +115,7 @@ sub getByPkey {
 sub add {
   my ($self, @data) = @_;
 
-  (my $rowRequire = $self->rowClass) =~ s!::!/!;
+  (my $rowRequire = $self->rowClass) =~ s!::!/!g;
   require $rowRequire.".pm";
   my $item = $self->rowClass->new(undef, @data);
 

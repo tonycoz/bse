@@ -44,8 +44,9 @@
 <:ifEmbedded:> 
 <ul>
   <:or:><:eif:>
+  <:if Article body:> 
   <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font></p>
-  <:ifEmbedded:>
+  <:or Article:><:eif Article:><:ifEmbedded:>
 </ul>
 <:or:><:eif:> <:if Children:><:if Embedded:> 
 <ul>

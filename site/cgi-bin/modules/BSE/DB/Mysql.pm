@@ -67,6 +67,7 @@ select ar.*, pr.* from article ar, product pr, other_parents op
    where ar.id = pr.articleId and op.childId = ar.id 
      and op.parentId = ? and ? between op.release and op.expire
 EOS
+   deleteProduct => 'delete from product where articleId = ?',
    Orders => 'select * from orders',
    getOrderByPkey => 'select * from orders where id = ?',
    getOrderItemByOrderId => 'select * from order_item where orderId = ?',
@@ -74,6 +75,8 @@ EOS
    replaceOrder => 'replace orders values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
    addOrderItem => 'insert order_item values(null,?,?,?,?,?,?,?)',
    getOrderByUserId => 'select * from orders where userId = ?',
+
+   getOrderItemByProductId => 'select * from order_item where productId = ?',
 
    OtherParents => 'select * from other_parents',
    getOtherParentByChildId => <<EOS,
@@ -143,6 +146,51 @@ EOS
    'delete from email_requests where id = ?',
    getEmailRequestByGenEmail =>
    'select * from email_requests where genEmail = ?',
+
+   addAdminBase => 'insert into admin_base values(null, ?)',
+   
+   AdminUsers => <<SQL,
+select bs.*, us.* from admin_base bs, admin_users us
+  where bs.id = us.base_id
+   order by logon
+SQL
+   getAdminUserByLogon => <<SQL,
+select bs.*, us.* from admin_base bs, admin_users us
+  where bs.id = us.base_id and us.logon = ?
+SQL
+   getAdminUserByPkey => <<SQL,
+select bs.*, us.* from admin_base bs, admin_users us
+  where bs.id = us.base_id and bs.id = ?
+SQL
+   addAdminUser => 'insert into admin_users values(?,?,?,?,?)',
+   adminUsersGroups => <<SQL,
+select bs.*, gr.*
+  from admin_base bs, admin_groups gr, admin_membership am
+  where bs.id = gr.base_id && am.user_id = ? and am.group_id = bs.id
+  order by gr.name
+SQL
+
+   AdminGroups => <<SQL,
+select bs.*, gr.* 
+  from admin_base bs, admin_groups gr
+  where bs.id = gr.base_id
+  order by name
+SQL
+   adminGroupsUsers => <<SQL,
+select bs.*, us.*
+  from admin_base bs, admin_users us, admin_membership am
+  where bs.id = us.base_id && am.group_id = ? and am.user_id = bs.id
+  order by logon
+SQL
+   getAdminGroupByName => <<SQL,
+select bs.*, gr.* from admin_base bs, admin_groups gr
+  where bs.id = gr.base_id and gr.name = ?
+SQL
+   getAdminGroupByPkey => <<SQL,
+select bs.*, gr.* from admin_base bs, admin_groups gr
+  where bs.id = gr.base_id and bs.id = ?
+SQL
+   addAdminGroup => 'insert into admin_groups values(?,?,?,?)',
   );
 
 sub _single
@@ -162,7 +210,7 @@ sub _single
 sub stmt {
   my ($self, $name) = @_;
 
-  $name =~ s/BSE:://;
+  $name =~ s/BSE.*:://;
 
   $statements{$name} or confess "Statement named '$name' not found";
   my $sth = $self->{dbh}->prepare($statements{$name})

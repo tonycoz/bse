@@ -1,4 +1,4 @@
-<:wrap base.tmpl:> <:embed start:><:admin:> 
+<:wrap base.tmpl:> <:admin:> 
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <tr> 
     <td width="80%" height="24">&nbsp;&nbsp;<font face="Arial, Helvetica, sans-serif" size="4" color="#FF7F00"><b><:title:></b></font></td>
@@ -23,8 +23,8 @@
   </tr>
 </table>
 <:if Article body:> 
-<p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font></p>
-<:or Article:><:eif Article:><:if Embedded:><:or Embedded:><:ifAdmin:><:if Allkids:> 
+<p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font></p><:or Article:><:eif Article:>
+<:if Embedded:><:or Embedded:><:ifAdmin:><:if Allkids:> 
 <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Reorder child articles: 
   <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&sort=title&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
   title</a> | <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&sort=date&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
@@ -44,45 +44,59 @@ Stepparents:>
 <p><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">The following 
   other related sections may be of interest:</font></p>
 <ul>
-<:iterator begin stepparents:>
+  <:iterator begin stepparents:>
   <li><a href="<:url stepparent:>"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:stepparent 
     title:></font></a> <:iterator end stepparents:> 
 </ul>
 <:or Stepparents:><:eif Stepparents:><:eif Embedded:><br>
-<:if Files:> <br>
-<table border="0" cellspacing="0" cellpadding="0">
+<:embed start:><:if Embedded:><:ifAdmin:> 
+<table cellpadding="4" cellspacing="0" border="0">
   <tr> 
+    <td> 
+      <form action="/cgi-bin/admin/add.pl">
+        <input type=hidden name=id value="<:article id:>">
+        <input class="mini-admin" type=submit value="Edit Article" name="submit">
+      </form>
+    </td>
+    <td> 
+      <form action="/cgi-bin/admin/add.pl">
+        <input class="mini-admin" type=submit value="Add Child" name="submit">
+        <input type=hidden name=parentid value="<:article id:>">
+      </form>
+    </td>
+  </tr>
+</table>
+<:or:><:eif:><:or Embedded:><:eif Embedded:><:if Files:><br>
+<table border="0" cellspacing="0" cellpadding="0" width="100%">
+  <:if Embedded:><tr> 
     <td> 
       <table border="0" cellspacing="0" cellpadding="4" bgcolor="#999999">
         <tr> 
-          <th nowrap><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#FFFFFF">&nbsp;&nbsp;Related 
-            file downloads&nbsp;&nbsp;</font></th>
+          <th nowrap><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#FFFFFF">&nbsp;&nbsp;<:title:>&nbsp;&nbsp;</font></th>
         </tr>
       </table>
     </td>
-  </tr>
-  <tr> 
+  </tr><:or Embedded:><:eif Embedded:>
+  <tr>
     <td bgcolor="#999999"> 
-      <table cellspacing="1" cellpadding="4">
+      <table cellspacing="1" cellpadding="4" width="100%">
         <tr bgcolor="#CCCCCC"> 
-          <th><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Description</font></th>
-          <th><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Filename</font></th>
+          <th width="70%"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Description</font></th>
+          <th width="30%"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Filename</font></th>
           <th><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Size</font></th>
-          <th><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Download</font></th>
+          <th><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Status</font></th>
         </tr>
         <:iterator begin files:> 
         <tr bgcolor="#FFFFFF"> 
-          <td bgcolor="#FFFFFF"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:file 
+          <td bgcolor="#FFFFFF" width="70%"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:file 
             description:></font></td>
-          <td bgcolor="#FFFFFF"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:if 
+          <td bgcolor="#FFFFFF" width="30%"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:if 
             File forSale:><:file displayName:><:or File:><a href="/cgi-bin/user.pl?download_file=1&file=<:file id:>"> 
             <:file displayName:></a><:eif File:></font></td>
           <td align="right"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:kb 
             file sizeInBytes:></font></td>
-          <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:if 
-            File forSale:> Sorry, this document cannot be downloaded <:or File:> 
-            <a href="/cgi-bin/user.pl?download_file=1&file=<:file id:>">Download</a> 
-            <:eif File:> </font></td>
+          <td nowrap> <:if 
+            File forSale:><img src="/images/filestatus/locked.gif" width="15" height="15" alt="Locked" title="Locked"><:or File:><a href="/cgi-bin/user.pl?download_file=1&file=<:file id:>"><img src="/images/filestatus/download.gif" width="15" height="15" alt="Download now" title="Download now" border="0"></a><:eif File:><:if File requireUser:><img src="/images/filestatus/requireUser.gif" width="15" height="15" alt="For registered users only" title="For registered users only"><:or File:><img src="/images/trans_pixel.gif" width="15" height="15"><:eif File:><:if File forSale:><img src="/images/filestatus/forSale.gif" width="15" height="15" alt="File must be purchased" title="File must be purchased"><:or File:><img src="/images/trans_pixel.gif" width="15" height="15"><:eif File:></td>
         </tr>
         <:iterator end files:> 
       </table>

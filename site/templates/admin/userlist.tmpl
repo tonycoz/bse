@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+
+  <title>Administration - Admin Users</title>
+
+  <link rel="stylesheet" type="text/css" href="/css/admin.css" />
+
+</head>
+
+<body>
+<h1>Admin Users</h1>
+<p>
+| <a href="/admin/">Admin menu</a> 
+| <a href="<:script:>?a_groups=1">Group list</a> |
+</p>
+<:ifMessage:>
+<p><b><:message:></b></p>
+<:or:><:eif:> 
+
+<form method="post" action="<:script:>">
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
+    <tr>
+      <td>
+        <table cellpadding="6" border="0" cellspacing="1">
+          <tr> 
+            <th bgcolor="#FFFFFF" nowrap> Logon</th>
+            <th bgcolor="#FFFFFF" nowrap> Name</th>
+            <th bgcolor="#FFFFFF" nowrap> In Groups</th>
+          </tr>
+          <:if Users:> <: iterator begin users :> 
+          <tr bgcolor="#FFFFFF"> 
+            <td nowrap> <a href="<:script:>?a_showuser=1&userid=<:iuser id:>"><:iuser logon:></a></td>
+            <td valign="top"><:iuser name:></td>
+            <td valign="top"><:ifUser_groups iuser:><:iterator begin user_groups iuser:><:user_group name:> <:iterator separator user_groups:>, <:iterator end user_groups:><:or:>(none)<:eif:>
+            </td>
+          </tr>
+          <: iterator end users :> 
+          <:or Users:> 
+          <tr bgcolor="#FFFFFF"> 
+            <td colspan="3" align="center">Your system has no users.</td>
+          </tr>
+          <:eif Users:> 
+        </table>
+</td>
+</tr>
+</table>
+</form>
+<h2>Add new user</h2>
+
+<form method="POST" action="<:script:>">
+
+  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
+    <tr> 
+      <td> 
+        <table cellpadding="6" border="0" cellspacing="1">
+          <tr> 
+            <th bgcolor="#FFFFFF" align="left">Logon: </th>
+            <td bgcolor="#FFFFFF"> 
+              <input type="text" name="logon" />
+            </td>
+            <td bgcolor="#FFFFFF"><:help adduser logon:> </td>
+          </tr>
+          <tr> 
+            <th bgcolor="#FFFFFF" align="left">Name: </th>
+            <td bgcolor="#FFFFFF"> 
+              <input type="text" name="name" />
+            </td>
+            <td bgcolor="#FFFFFF"><:help adduser name:> </td>
+          </tr>
+          <tr> 
+            <th bgcolor="#FFFFFF" align="left"> Password: </th>
+            <td bgcolor="#FFFFFF"> 
+              <input type="password" name="password" />
+              </td>
+            <td bgcolor="#FFFFFF"> <:help adduser password:></td>
+          </tr>
+          <tr> 
+            <th bgcolor="#FFFFFF" align="left"> Confirm: </th>
+            <td bgcolor="#FFFFFF"> 
+              <input type="password" name="confirm" />
+            </td>
+            <td bgcolor="#FFFFFF"><:help adduser confirm:> </td>
+          </tr>
+          <tr> 
+            <td bgcolor="#FFFFFF" colspan="3" align="right"> 
+              <input type="submit" name="a_adduser" value="  Add User  " />
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</form>
+  
+<p><font size="-1">BSE Release <:release:></font></p>
+</body
+></html>

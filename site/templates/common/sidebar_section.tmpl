@@ -22,8 +22,9 @@
     </td>
   </tr>
 </table>
+<:if Article body:> 
 <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font></p>
-<:embed start:><:ifAdmin:> 
+<:or Article:><:eif Article:><:embed start:><:ifAdmin:> 
 <table cellpadding="4" cellspacing="0" border="0">
   <tr> 
     <td> 

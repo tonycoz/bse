@@ -140,8 +140,18 @@ sub save {
 
 sub remove {
   my $self = shift;
+
   my $sth = $dh->stmt('delete'.ref($self));
-  $sth->execute(@$self{$self->primary});
+  my $bases = $self->bases;
+  my @primary = @$self{$self->primary};
+  $sth->execute(@primary);
+  while (keys %$bases) {
+    my ($col) = keys %$bases;
+    my $class = $bases->{$col}{class};
+    my $sth = $dh->stmt('delete'.$class);
+    $sth->execute(@primary);
+    $bases = $class->bases;
+  }
 
   # BUG: this should invalidate the cache
 }

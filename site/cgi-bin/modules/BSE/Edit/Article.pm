@@ -73,6 +73,7 @@ sub article_actions {
      save_stepparents => 'save_stepparents',
      artimg => 'save_image_changes',
      addimg => 'add_image',
+     remove => 'remove',
      showimages => 'show_images',
      process => 'save_image_changes',
      removeimg => 'remove_img',
@@ -767,6 +768,7 @@ sub low_edit_tags {
   my ($self, $acts, $request, $article, $articles, $msg, $errors) = @_;
 
   my $cgi = $request->cgi;
+  $msg ||= $cgi->param('message');
   $msg ||= '';
   $errors ||= {};
   if (keys %$errors && !$msg) {
@@ -1615,10 +1617,10 @@ sub remove_img {
   my ($image) = grep $_->{id} == $imageid, @images
     or return $self->show_images($req, $article, $articles, "No such image");
   my $imagedir = $req->cfg->entry('paths', 'images', $Constants::IMAGEDIR);
-  unlink "$imagedir$image->{image}" if !$image->{id};
+  unlink "$imagedir$image->{image}";
   $image->remove;
 
-  return $self->refresh($article, $req->cgi, undef, undef, '&showimage=1');
+  return $self->refresh($article, $req->cgi, undef, undef, '&showimages=1');
 }
 
 sub move_img_up {
@@ -1873,6 +1875,56 @@ sub filesave {
   }
 
   $self->_refresh_filelist($req, $article);
+}
+
+sub can_remove {
+  my ($self, $req, $article, $articles, $rmsg) = @_;
+
+  if ($articles->children($article->{id})) {
+    $$rmsg = "This article has children.  You must delete the children first (or change their parents)";
+    return;
+  }
+  if (grep $_ == $article->{id}, @Constants::NO_DELETE) {
+    $$rmsg = "Sorry, these pages are essential to the site structure - they cannot be deleted";
+    return;
+  }
+  if ($article->{id} == $Constants::SHOPID) {
+    $$rmsg = "Sorry, these pages are essential to the store - they cannot be deleted - you may want to hide the the store instead.";
+    return;
+  }
+
+  return 1;
+}
+
+sub remove {
+  my ($self, $req, $article, $articles) = @_;
+
+  my $why_not;
+  unless ($self->can_remove($req, $article, $articles, \$why_not)) {
+    return $self->edit_form($req, $article, $articles, $why_not);
+  }
+
+  require Images;
+  my @images = Images->getBy(articleId=>$article->{id});
+  my $imagedir = $self->{cfg}->entry('paths', 'images', $Constants::IMAGEDIR);
+  for my $image (@images) {
+    unlink("$imagedir/$image->{image}");
+    $image->remove();
+  }
+  
+  # remove any step(child|parent) links
+  require OtherParents;
+  my @steprels = OtherParents->anylinks($article->{id});
+  for my $link (@steprels) {
+    $link->remove();
+  }
+  
+  my $parentid = $article->{parentid};
+  $article->remove;
+  my $urlbase = $self->{cfg}->entryVar('site', 'url');
+  my $url = "$urlbase$ENV{SCRIPT_NAME}?id=$parentid";
+  $url .= "&message=Article+deleted";
+  return BSE::Template->get_refresh($url, $self->{cfg});
 }
 
 1;

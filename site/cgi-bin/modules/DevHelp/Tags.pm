@@ -70,9 +70,9 @@ sub _iter_iterate {
 }
 
 sub _iter_if {
-  my ($rdata, $code, $loaded, $args) = @_;
+  my ($rdata, $code, $loaded, $args, $acts, $func, $templater) = @_;
 
-  _iter_count($rdata, $code, $loaded, $args);
+  _iter_count($rdata, $code, $loaded, $args, $acts, $func, $templater);
 }
 
 sub _iter_count {

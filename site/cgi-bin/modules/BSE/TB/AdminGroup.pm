@@ -4,7 +4,7 @@ use base qw(BSE::TB::AdminBase);
 
 sub columns {
   return ($_[0]->SUPER::columns,
-	  qw/base_id name description perm_map/;
+	  qw/base_id name description perm_map/ );
 }
 
 sub bases {

@@ -10,6 +10,42 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.12_08
+
+This is a development release.  If you want stable try 0.12_01, since
+many destabilizing changes have occurred since then.
+
+If you install this release it's possible the upgrade_mysql.pl script
+cannot be used to upgrade to a later release.
+
+=over
+
+=item *
+
+oops, forgot to implement deleting articles, so I implemented it for
+articles and unused products
+
+=item *
+
+you can now add admin groups and users.  This is in progress and the
+templates and code still need work.
+
+=item *
+
+image files weren't being deleted when an image was deleted from an
+article.
+
+=item *
+
+the page refreshed to the normal article edit page after deleting an
+image, it should refresh to the image list
+
+=item *
+
+updated and new templates and new file icons from Adrian
+
+=back
+
 =head2 0.12_07
 
 =over
