@@ -65,6 +65,9 @@ my %steps =
    add_stepkid=>\&add_stepkid,
    del_stepkid=>\&del_stepkid,
    save_stepkids => \&save_stepkids,
+   add_stepparent => \&add_stepparent,
+   del_stepparent => \&del_stepparent,
+   save_stepparents => \&save_stepparents,
   );
 
 my $level = param('level') || 3;
@@ -161,7 +164,7 @@ if (should_be_catalog($article, $parent, $articles)) {
   @templates = @{$levels{catalog}{templates}}
     if $levels{catalog}{templates};
   if (opendir CAT_TEMPL, "$TMPLDIR/catalog") {
-    push(@templates, map "catalog/$_", 
+    push(@templates, sort map "catalog/$_", 
          grep -f "$TMPLDIR/catalog/$_" && /\.tmpl/i, readdir CAT_TEMPL);
     closedir CAT_TEMPL;
   }
@@ -175,7 +178,7 @@ else {
     if $levels{$level}{templates};
   for my $where ($level, 'common') {
     if (opendir SECT_TEMPL, "$TMPLDIR/$where") {
-      push(@templates, map { "$where/$_" } 
+      push(@templates, sort map { "$where/$_" } 
            grep -f "$TMPLDIR/$where/$_" && /\.tmpl$/i, readdir SECT_TEMPL);
       closedir SECT_TEMPL;
     }
@@ -206,6 +209,13 @@ my %stepkids = map { $_->{childId} => $_ } @stepkids;
 my @allkids = $article->allkids if $article->{id} && $article->{id} > 0;
 my $allkids_index = -1;
 my @possibles;
+my @stepparents = OtherParents->getBy(childId=>$article->{id})
+  if $article->{id} && $article->{id} > 0;
+my @stepparent_targets = $article->step_parents 
+  if $article->{id} && $article->{id} > 0;
+my %stepparent_targets = map { $_->{id}, $_ } @stepparent_targets;
+my @stepparent_possibles = grep !$stepparent_targets{$_->{id}}, $articles->all;
+my $stepparent_index;
 
 my $child_index = -1;
 %acts =
@@ -319,11 +329,13 @@ HTML
    },
    possible_stepkids =>
    sub {
-     @possibles =
-       sort { $a->{title} cmp $b->{title} }
-       grep $_->{generator} eq 'Generate::Product' && !$stepkids{$_->{id}},
-       $articles->all()
-	 unless @possibles;
+#       @possibles =
+#         sort { $a->{title} cmp $b->{title} }
+#         grep $_->{generator} eq 'Generate::Product' && !$stepkids{$_->{id}},
+#         $articles->all()
+#  	 unless @possibles;
+     @possibles = possible_stepkids($articles, \%stepkids)
+       unless @possibles;
      my %labels = map { $_->{id}, "$_->{title} ($_->{id})" } @possibles;
      CGI::popup_menu(-name=>'stepkid',
 		     -values => [ map $_->{id}, @possibles ],
@@ -331,13 +343,47 @@ HTML
    },
    ifPossibles =>
    sub {
-     @possibles =
-       sort { $a->{title} cmp $b->{title} }
-       grep $_->{generator} eq 'Generate::Product' && !$stepkids{$_->{id}},
-       $articles->all()
-	 unless @possibles;
+     @possibles = possible_stepkids($articles, \%stepkids)
+       unless @possibles;
+#       @possibles =
+#         sort { $a->{title} cmp $b->{title} }
+#         grep $_->{generator} eq 'Generate::Product' && !$stepkids{$_->{id}},
+#         $articles->all()
+#  	 unless @possibles;
      @possibles;
    },
+   ifStepParents => sub { @stepparents },
+   iterate_stepparents_reset => sub { $stepparent_index = -1; },
+   iterate_stepparents => sub { ++$stepparent_index < @stepparents },
+   stepparent => sub { CGI::escapeHTML($stepparents[$stepparent_index]{$_[0]}) },
+   stepparent_targ =>
+   sub {
+     CGI::escapeHTML($stepparent_targets[$stepparent_index]{$_[0]});
+   },
+   movestepparent =>
+   sub {
+     my $html = '';
+     my $refreshto = CGI::escape($ENV{SCRIPT_NAME}
+				 ."?id=$article->{id}#stepparents");
+     if ($stepparent_index < $#stepparents) {
+	 $html .= <<HTML;
+<a href="$CGI_URI/admin/move.pl?stepchild=$article->{id}&id=$stepparents[$stepparent_index]{parentId}&d=swap&other=$stepparents[$stepparent_index+1]{parentId}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+HTML
+       }
+       if ($stepparent_index > 0) {
+	 $html .= <<HTML;
+<a href="$CGI_URI/admin/move.pl?stepchild=$article->{id}&id=$stepparents[$stepparent_index]{parentId}&d=swap&other=$stepparents[$stepparent_index-1]{parentId}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+HTML
+       }
+       return $html;
+     },
+     ifStepparentPossibles => sub { @stepparent_possibles },
+     stepparent_possibles => sub {
+       popup_menu(-name=>'stepparent',
+		  -values=>[ map $_->{id}, @stepparent_possibles ],
+		  -labels=>{ map { $_->{id}, "$_->{title} ($_->{id})" } 
+			     @stepparent_possibles });
+     },
   );
 
 if ($imageEditor->action($CGI::Q)) {
@@ -355,6 +401,7 @@ start();
 
 # the startup page for a new article/subsection
 sub start {
+  $message = shift if @_;
   # just substitute empty defaults into the blank page
   if (should_be_catalog($article, $parent, $articles)) {
     page('admin/edit_catalog.tmpl');
@@ -601,9 +648,8 @@ sub add_stepkid {
       or die "No stepkid supplied to add_stepkid";
     int($childId) eq $childId
       or die "Invalid stepkid supplied to add_stepkid";
-    require 'Products.pm';
-    my $child = Products->getByPkey($childId)
-      or die "Product $childId not found";
+    my $child = $articles->getByPkey($childId)
+      or die "Article $childId not found";
     
     my $release = param('release');
     defined $release
@@ -631,16 +677,16 @@ sub add_stepkid {
 sub del_stepkid {
   require 'BSE/Admin/StepParents.pm';
 
-  my $childId = param('stepkid');
-  defined $childId
-    or die "No stepkid supplied to add_stepkid";
-  int($childId) eq $childId
-    or die "Invalid stepkid supplied to add_stepkid";
-  require 'Products.pm';
-  my $child = Products->getByPkey($childId)
-    or die "Product $childId not found";
-    
   eval {
+    my $childId = param('stepkid');
+    defined $childId
+      or die "No stepkid supplied to add_stepkid";
+    int($childId) eq $childId
+      or die "Invalid stepkid supplied to add_stepkid";
+    require 'Products.pm';
+    my $child = $articles->getByPkey($childId)
+      or die "Article $childId not found";
+    
     BSE::Admin::StepParents->del($article, $child);
   };
   
@@ -679,6 +725,101 @@ sub save_stepkids {
     $@ and return refresh('', $@);
   }
   refresh('step');
+}
+
+#####################
+# Step parents
+
+sub add_stepparent {
+  require 'BSE/Admin/StepParents.pm';
+  #my $productid = param('id');
+
+  $article->{id} && $article->{id} > 0
+    or return start("No id supplied to add_stepproduct");
+  
+  eval {
+    my $step_parent_id = param('stepparent');
+    defined($step_parent_id)
+      or die "No stepparent supplied to add_stepparent";
+    int($step_parent_id) eq $step_parent_id
+      or die "Invalid stepcat supplied to add_stepcat";
+    my $step_parent = Articles->getByPkey($step_parent_id)
+      or die "Parnet $step_parent_id not found\n";
+
+    my $release = param('release');
+    defined $release
+      or $release = "01/01/2000";
+    use BSE::Util::Valid qw/valid_date/;
+    $release eq '' or valid_date($release)
+      or die "Invalid release date";
+    my $expire = param('expire');
+    defined $expire
+      or $expire = '31/12/2999';
+    $expire eq '' or valid_date($expire)
+      or die "Invalid expire data";
+  
+    my $newentry = 
+      BSE::Admin::StepParents->add($step_parent, $article, $release, $expire);
+  };
+  $@ and return refresh('step', $@);
+
+  return refresh('step');
+}
+
+sub del_stepparent {
+  require 'BSE/Admin/StepParents.pm';
+
+  $article->{id} && $article->{id} > 0
+    or return refresh('', 'No article id supplied');
+  my $step_parent_id = param('stepparent');
+  defined($step_parent_id)
+    or return refresh('stepparents', "No stepparent supplied to add_stepcat");
+  int($step_parent_id) eq $step_parent_id
+    or return refresh('stepparents', "Invalid stepparent supplied to add_stepparent");
+  my $step_parent = $articles->getByPkey($step_parent_id)
+    or return refresh('stepparent', "Catalog $step_parent_id not found");
+
+  eval {
+    BSE::Admin::StepParents->del($step_parent, $article);
+  };
+  $@ and return refresh('stepparents', $@);
+
+  return refresh('stepparents');
+}
+
+sub save_stepparents {
+  require 'BSE/Admin/StepParents.pm';
+
+  $article->{id} && $article->{id} > 0
+    or return refresh('', 'No article id supplied');
+    
+  my @stepparents = OtherParents->getBy(childId=>$article->{id});
+  my %stepparents = map { $_->{parentId}, $_ } @stepparents;
+  my %datedefs = ( release => '2000-01-01', expire=>'2999-12-31' );
+  for my $stepparent (@stepparents) {
+    for my $name (qw/release expire/) {
+      my $date = param($name.'_'.$stepparent->{parentId});
+      if (defined $date) {
+	if ($date eq '') {
+	  $date = $datedefs{$name};
+	}
+	elsif (valid_date($date)) {
+	  use BSE::Util::SQL qw/date_to_sql/;
+	  $date = date_to_sql($date);
+	}
+	else {
+	  return refresh("Invalid date '$date'");
+	}
+	$stepparent->{$name} = $date;
+      }
+    }
+    eval {
+      $stepparent->save();
+    };
+    $@ and return refresh('', $@);
+  }
+
+  refresh('stepparents');
 }
 
 sub refresh {
@@ -953,6 +1094,18 @@ sub should_be_catalog {
   return $article->{parentid} && $parent &&
     ($article->{parentid} == $SHOPID || 
      $parent->{generator} eq 'Generate::Catalog');
+}
+
+sub possible_stepkids {
+  my ($articles, $stepkids) = @_;
+
+  #@possibles =
+  #  sort { $a->{title} cmp $b->{title} }
+  #    grep $_->{generator} eq 'Generate::Product' && !$stepkids{$_->{id}},
+  #    $articles->all();
+
+  return sort { $a->{title} cmp $b->{title} }
+    grep !$stepkids->{$_->{id}}, $articles->all;
 }
 
 __END__
