@@ -146,7 +146,7 @@ sub baseActs {
   my @files = sort { $b->{displayOrder} <=> $a->{displayOrder} }
     ArticleFiles->getBy(articleId=>$article->{id});
   
-  my $blank = qq!<img src="$IMAGES_URI/trans_pixel.gif"  width="17" height="13" border="0" align="absbottom" />!;
+  my $blank = qq!<img src="$IMAGES_URI/trans_pixel.gif"  width="17" height="13" border="0" align="absbottom" alt="" />!;
 
   my @stepkids;
   my @allkids;

@@ -10,6 +10,64 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.13_02
+
+Another development release.
+
+Please play with this and consider how named images and automatic image
+placement should interact.  Should using a named image:
+
+=over
+
+=item *
+
+completely suppress automatic image placement?
+
+=item *
+
+suppress placement of just the used named images?
+
+=back
+
+Or should named images never be automatically placed, with no effect
+on automatic placement of other images?
+
+Changes from the last release:
+
+=over
+
+=item *
+
+0.13_01 shipped an out of date mysql.str file
+
+=item *
+
+the spacer <img> tag used to align arrows now has the alt value set
+(to the empty string, since it has no semantic meaning) (#262)
+
+=item *
+
+the new formatting code was missing a library include
+
+=item *
+
+the body image[] tag wasn't suppressing automatic image placement (due
+to the replacement of the body formatting code.)
+
+=item *
+
+adding an image was requiring an image name (it shouldn't)
+
+=item *
+
+the title for the image wizard help file was "Files Wizard".
+
+=item *
+
+added test script for the [] tag parameter processor
+
+=back
+
 =head2 0.13_01
 
 Time to get a little adventurous.

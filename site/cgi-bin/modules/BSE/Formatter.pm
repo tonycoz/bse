@@ -1,5 +1,6 @@
 package BSE::Formatter;
 use strict;
+use DevHelp::HTML;
 
 use base 'DevHelp::Formatter';
 
@@ -54,6 +55,8 @@ sub image {
       $text = qq!<a href="! . escape_html($url) . qq!">$text</a>!;
     }
   }
+  ${$self->{auto_images}} = 0;
+
   return $text;
 }
 

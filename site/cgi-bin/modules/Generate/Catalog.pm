@@ -149,7 +149,7 @@ HTML
        my $can_move_up = $allprod_index > 0;
        my $can_move_down = $allprod_index < $#allprods;
        return '' unless $can_move_up || $can_move_down;
-       my $blank = '<img src="/images/trans_pixel.gif" width="17" height="13" border="0" alt="" align="absbotton" />';
+       my $blank = '<img src="/images/trans_pixel.gif" width="17" height="13" border="0" align="absbotton" alt="" />';
        my $myid = $allprods[$allprod_index]{id};
        my $refreshto = "$CGI_URI/admin/admin.pl?id=$article->{id}$urladd";
        if ($can_move_down) {

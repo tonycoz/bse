@@ -126,13 +126,12 @@ sub static {
      },
      cfg =>
      sub {
-       my ($section, $key, $def) = split ' ', $_[0];
+       my ($args, $acts, $myfunc, $templater) = @_;
+       my ($section, $key, $def) = 
+	 DevHelp::Tags->get_parms($args, $acts, $templater);
        $cfg or return '';
-       my $value = $cfg->entry($section, $key);
-       unless (defined $value) {
-	 $value = defined($def) ? $def : '';
-       }
-       $value;
+       defined $def or $def = '';
+       $cfg->entry($section, $key, $def);
      },
      kb =>
      sub {

@@ -529,7 +529,7 @@ sub tag_move_stepkid {
   $url .= $urladd;
   $url .= "#step";
   my $refreshto = CGI::escape($url);
-  my $blank = qq!<img src="$images_uri/trans_pixel.gif" width="17" height="13" border="0" align="absbottom" />!;
+  my $blank = qq!<img src="$images_uri/trans_pixel.gif" width="17" height="13" border="0" align="absbottom" alt="" />!;
   if ($$rallkids_index < $#$allkids) {
     $html .= <<HTML;
 <a href="$cgi_uri/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids->[$$rallkids_index]{id}&other=$allkids->[$$rallkids_index+1]{id}&refreshto=$refreshto"><img src="$images_uri/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom" /></a>
@@ -632,7 +632,7 @@ sub tag_move_stepparent {
   }
   $url .= $urladd;
   $url .= "#stepparents";
-  my $blank = qq!<img src="$images_uri/trans_pixel.gif" width="17" height="13" border="0" align="absbottom" />!;
+  my $blank = qq!<img src="$images_uri/trans_pixel.gif" width="17" height="13" border="0" align="absbottom" alt="" />!;
   my $refreshto = CGI::escape($url);
   if ($$rindex < $#$stepparents) {
     $html .= <<HTML;
@@ -743,7 +743,7 @@ sub tag_movechild {
   $url .= $urladd;
   $url = escape_uri($url);
   my $html = '';
-  my $nomove = '<img src="/images/trans_pixel.gif" width="17" height="13" border="0" alt="" align="absbottom" />';
+  my $nomove = '<img src="/images/trans_pixel.gif" width="17" height="13" border="0" align="absbottom" alt="" />';
   my $id = $kids->[$$rindex]{id};
   if ($$rindex < $#$kids) {
     $html .= <<HTML;
@@ -809,7 +809,7 @@ sub tag_imgmove {
   $url = CGI::escape($url);
 
   my $html = '';
-  my $nomove = '<img src="/images/trans_pixel.gif" width="17" height="13" border="0" alt="" align="absbottom" />';
+  my $nomove = '<img src="/images/trans_pixel.gif" width="17" height="13" border="0" align="absbottom" alt="" />';
   my $image = $images->[$$rindex];
   if ($$rindex > 0) {
     $html .= <<HTML
@@ -849,7 +849,7 @@ sub tag_movefiles {
   $$rindex >= 0 && $$rindex < @$files
     or return '** movefiles can only be used in the files iterator **';
 
-  my $nomove = '<img src="/images/trans_pixel.gif" width="17" height="13" border="0" alt="" align="absbottom" />';
+  my $nomove = '<img src="/images/trans_pixel.gif" width="17" height="13" border="0" align="absbottom" alt="" />';
   my $images_uri = $self->{cfg}->entry('uri', 'images', '/images');
 
   my $urlbase = $self->{cfg}->entryVar('site', 'url');
@@ -1978,7 +1978,7 @@ sub add_image {
   my %errors;
   my $msg;
   my $imageref = $cgi->param('name');
-  if (defined $imageref) {
+  if (defined $imageref && $imageref ne '') {
     if ($imageref =~ /^[a-z_]\w+$/i) {
       # make sure it's unique
       my @images = $article->images;

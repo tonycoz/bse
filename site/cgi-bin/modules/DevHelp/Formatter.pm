@@ -161,7 +161,7 @@ sub format {
     elsif ($part =~ /^pre\[([^\[\]]*(?:(?:\[[^\[\]]*\])[^\[\]]*)*)\]$/i) {
       my $work = $1;
       1 while $self->replace_char(\$work);
-      $out .= $work;
+      $out .= "<pre>$work</pre>";
     }
     else {
     TRY: while (1) {
@@ -193,7 +193,7 @@ sub format {
 	  and next TRY;
 	$part =~ s#center\[([^\]\[]+)\]#<center>$1</center>#ig
 	  and next TRY;
-	$part =~ s#hrcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#<table width="$1" height="$2" border="0" bgcolor="$3" cellpadding="0" cellspacing="0"><tr><td><img src="/images/trans_pixel.gif" width="1" height="1" /></td></tr></table>#ig
+	$part =~ s#hrcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#<table width="$1" height="$2" border="0" bgcolor="$3" cellpadding="0" cellspacing="0"><tr><td><img src="/images/trans_pixel.gif" width="1" height="1" alt="" /></td></tr></table>#ig
 	  and next TRY;
 	$part =~ s#image\[([^\]\[]+)\]# $self->image($1) #ige
 	    and next TRY;

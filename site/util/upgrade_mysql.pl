@@ -51,6 +51,7 @@ my %tables;
 my $table;
 while (<STRUCT>) {
   chomp;
+  tr/\r//d;
   if (/^Table\s+([^,]+)/) {
     $table = $1;
   }
