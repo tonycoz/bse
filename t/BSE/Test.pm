@@ -41,6 +41,7 @@ sub test_dbpass { $conf{dbpass} or die "No dbpass in test config" }
 sub test_dbclass { $conf{dbclass} or die "No dbclass in test config" }
 
 sub test_sessionclass { $conf{sessionclass} or die "No sessionclass in config" }
+sub test_perl { $conf{perl} or "/usr/bin/perl" }
 
 sub test_conffile {
   return $conffile;

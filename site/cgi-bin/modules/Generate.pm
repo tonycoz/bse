@@ -5,6 +5,7 @@ use Constants qw($IMAGEDIR $LOCAL_FORMAT $BODY_EMBED
                  $EMBED_MAX_DEPTH $HAVE_HTML_PARSER);
 use DevHelp::Tags;
 use DevHelp::HTML;
+use BSE::Util::Tags;
 use Util;
 
 my $excerptSize = 300;
@@ -182,8 +183,9 @@ sub _embed_low {
   if ($what !~ /^\d+$/) {
     # not an article id, assume there's an article here we can use
     $id = $acts->{$what} && $acts->{$what}->('id');
-    unless ($id =~ /^\d+$/) {
+    unless ($id && $id =~ /^\d+$/) {
       # save it for later
+      defined $template or $template = "-";
       return "<:embed $what $template $maxdepth:>";
     }
   }
@@ -302,46 +304,35 @@ sub format_body {
 
     #my $incr = @images > 1 ? 2*$len / (2*@images+1) : 0;
     my $incr = $len / @images;
-    if ($imagePos =~ /t/) {
-      # inserting the image tags moves character positions around
-      # so we need the temp buffer
-      my $output = '';
-      for my $image (@images) {
-	# adjust to make sure this isn't in the middle of a tag or entity
-	my $pos = $self->adjust_for_html($body, $incr);
-
-	# assuming 5.005_03 would make this simpler, but <sigh>
-	my $img = qq!<img src="/images/$image->{image}"!
-	  .qq! width="$image->{width}" height="$image->{height}" border="0"!
-	    .qq! alt="$image->{alt}" align="$align" hspace="10" vspace="10" />!;
-	if ($image->{url}) {
-	  $img = qq!<a href="$image->{url}">$img</a>!;
-	}
-	$output .= $img;
-	$output .= substr($body, 0, $pos);
-	substr($body, 0, $pos) = '';
+    # inserting the image tags moves character positions around
+    # so we need the temp buffer
+    if ($imagePos =~ /b/) {
+      @images = reverse @images;
+      if (@images % 2 == 0) {
+	# starting at the bottom, swap it around
 	$align = $align eq 'right' ? 'left' : 'right';
       }
-      $body = $output . $body; # don't forget the rest of it
     }
-    else {
-      # work from the end
-      my $pos = $len;
-      for my $image (@images) {
-	my $workpos = $self->adjust_for_html($body, $pos);;
-
-	substr($body, $workpos, 0) = <<IMG;
-<img src="/images/$image->{image}" width="$image->{width}" height="$image->{height}"
-border="0" alt="$image->{alt}" align="$align" hspace="10" vspace="10" />
-IMG
-	$pos -= $incr;
-	$align = $align eq 'right' ? 'left' : 'right';
+    my $output = '';
+    for my $image (@images) {
+      # adjust to make sure this isn't in the middle of a tag or entity
+      my $pos = $self->adjust_for_html($body, $incr);
+      
+      # assuming 5.005_03 would make this simpler, but <sigh>
+      my $img = qq!<img src="/images/$image->{image}"!
+	.qq! width="$image->{width}" height="$image->{height}" border="0"!
+	  .qq! alt="$image->{alt}" align="$align" hspace="10" vspace="10" />!;
+      if ($image->{url}) {
+	$img = qq!<a href="$image->{url}">$img</a>!;
       }
-
+      $output .= $img;
+      $output .= substr($body, 0, $pos);
+      substr($body, 0, $pos) = '';
+      $align = $align eq 'right' ? 'left' : 'right';
     }
-
+    $body = $output . $body; # don't forget the rest of it
   }
-
+  
   return make_entities($body);
 }
 

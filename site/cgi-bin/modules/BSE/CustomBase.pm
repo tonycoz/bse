@@ -50,7 +50,7 @@ sub recalc {
 sub required_fields {
   my ($class, $q, $state, $cfg) = @_;
 
-  qw(name1 name2 address city postcode state country email);
+  qw(name1 name2 address city postcode state country telephone email);
 }
 
 sub purchase_actions {

@@ -548,16 +548,18 @@ sub saveopts {
   $user->save;
 
   # subscriptions
+  my $subs;
   if ($cgi->param('saveSubscriptions')) {
-    my $subs = $self->_save_subs($user, $session, $cfg, $cgi);
-    if ($nopassword) {
-      return $self->send_conf_request($session, $cgi, $cfg, $user)
-	if $newemail;
-    }
-    else {
-      return $self->send_conf_request($session, $cgi, $cfg, $user)
-	if $subs && !$user->{confirmed};
-    }
+    $subs = $self->_save_subs($user, $session, $cfg, $cgi);
+  }
+  if ($nopassword) {
+    return $self->send_conf_request($session, $cgi, $cfg, $user)
+      if $newemail;
+  }
+  else {
+    $subs = () = $user->subscriptions unless defined $subs;
+    return $self->send_conf_request($session, $cgi, $cfg, $user)
+      if $subs && !$user->{confirmed};
   }
 
   my $url = $cgi->param('r');
@@ -832,6 +834,9 @@ sub userpage {
       'prodfile', 'prodfiles', \$file_index),
      ifFileAvail =>
      sub {
+       if ($file_index >= 0 && $file_index < @files) {
+	 return 1 if !$files[$file_index]{forSale};
+       }
        return 0 if $must_be_paid && !$orders[$order_index]{paidFor};
        return 0 if $must_be_filled && !$orders[$order_index]{filled};
        return 1;

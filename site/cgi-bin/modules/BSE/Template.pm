@@ -148,7 +148,7 @@ sub output_result {
   push @{$result->{headers}}, $req->extra_headers;
   if (exists $ENV{GATEWAY_INTERFACE}
       && $ENV{GATEWAY_INTERFACE} =~ /^CGI-Perl\//) {
-    use Apache;
+    require Apache;
     my $r = Apache->request or die;
     $r->send_cgi_header(join("\n", @{$result->{headers}})."\n");
   }

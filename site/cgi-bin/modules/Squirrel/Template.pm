@@ -4,7 +4,7 @@ use strict;
 use Carp qw/cluck confess/;
 use constant DEBUG => 0;
 
-$VERSION="0.07";
+$VERSION="0.08";
 
 sub new {
   my ($class, %opts) = @_;
@@ -273,7 +273,7 @@ sub switch {
 
   print STDERR "** switch\n" if DEBUG;
 
-  my @cases = split /(?=<:\s*case\s)/gs, $content;
+  my @cases = split /(?=<:\s*case\s)/s, $content;
   shift @cases if @cases && $cases[0] !~ /<:\s*case\s/;
   my $case;
   while ($case = shift @cases) {

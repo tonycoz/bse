@@ -4,6 +4,7 @@ use strict;
 use File::Copy;
 use lib 't';
 use BSE::Test ();
+require ExtUtils::Manifest;
 
 my $dist = shift or die "Usage: $0 distdir [leavedb]";
 my $leavedb = shift or 0;
@@ -25,6 +26,26 @@ system "rm -f $instbase/htdocs/{*.html,a/*.html,shop/*.html,images/*.jpg}"
 
 system "cp -rf $dist/site/cgi-bin $instbase"
   and die "Cannot copy cgi-bin";
+
+my $perl = BSE::Test::test_perl();
+if ($perl ne '/usr/bin/perl') {
+  my $manifest = ExtUtils::Manifest::maniread();
+
+  for my $file (grep /\.pl$/, keys %$manifest) {
+    (my $work = $file) =~ s!^site!!;
+    next unless $work =~ /cgi-bin/;
+    my $full = $instbase . $work;
+    open SCRIPT, "< $full" or die "Cannot open $full: $!";
+    binmode SCRIPT;
+    my @all = <SCRIPT>;
+    close SCRIPT;
+    $all[0] =~ s/^#!\S*perl\S*/#!$perl/;
+    open SCRIPT, "> $full" or die "Cannot create $full: $!";
+    binmode SCRIPT;
+    print SCRIPT @all;
+    close SCRIPT;
+  }
+}
 
 system "cp -rf $dist/site/htdocs $instbase"
   and die "Cannot copy htdocs";

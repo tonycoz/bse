@@ -160,6 +160,7 @@ sub generate_extras {
   }
   close EXTRAS;
   use Generate;
+  require BSE::Template;
   my $gen = Generate->new(cfg=>$cfg);
   for my $row (@extras) {
     my ($in, $out) = @$row;

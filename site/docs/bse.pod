@@ -10,6 +10,62 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.14_10
+
+=over
+
+=item *
+
+the stepkid tag would sometimes result in a warning in the web server
+error log
+
+=item *
+
+the templater would produce a warning from a <:switch:> tag under perl
+5.8.
+
+=item *
+
+the installer while now set the #! line of scripts based on the "perl"
+configuration option in test.cfg.
+
+=item *
+
+some scripts would produce compilation errors when run under a perl
+without mod_perl installed.
+
+=item *
+
+the implementation top/bottom left/right image placement has changed.
+When you select a "bottom" option the images are simply placed as if
+they were present in reverse order.  This means that the image urls
+are now used to form links.
+
+=item *
+
+gen.pl could produce a compilation error in some circumstances.
+
+=item *
+
+the telephone field is now actually required on checkout.
+
+=item *
+
+if the user options form included the email address but not the
+subscriptions list and the user changed their email address, the
+confirmation email wasn't being sent.
+
+=item *
+
+the <:ifItemAvail:> tag wasn't returning true for files that don't
+require payment
+
+=item *
+
+spaces are now preserved in uploaded filenames, as underscores.
+
+=back
+
 =head2 0.14_09
 
 =over

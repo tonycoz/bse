@@ -481,10 +481,11 @@ sub tag_step_kid {
 
   my $kid = $allkids->[$$rallkid_index]
     or return '';
-  $step_kids->{$kid->{id}}
-    or return;
-  #print STDERR "found kid (want $arg): ", Dumper $kid;
-  escape_html($step_kids->{$kid->{id}}{$arg});
+  my $step_kid = $step_kids->{$kid->{id}}
+    or return '';
+  #use Data::Dumper;
+  #print STDERR "found kid (want $arg): ", Dumper($kid), Dumper($step_kid);
+  escape_html($step_kid->{$arg});
 }
 
 sub tag_move_stepkid {
@@ -2222,7 +2223,8 @@ sub fileadd {
   }
   
   my $basename = '';
-  $file =~ /([\w.-]+)$/ and $basename = $1;
+  $file =~ /([ \w.-]+)$/ and $basename = $1;
+  $basename =~ tr/ /_/;
 
   my $filename = time. '_'. $basename;
 
