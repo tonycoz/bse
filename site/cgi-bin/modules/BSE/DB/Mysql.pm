@@ -144,7 +144,7 @@ SQL
 replace bse_siteuser_images values(?,?,?,?,?,?,?,?)
 SQL
    deleteBSESiteuserImage=> <<SQL,
-delete from bse_siteuser_images where member_id = ? and image_id = ?
+delete from bse_siteuser_images where siteuser_id = ? and image_id = ?
 SQL
 
    SubscriptionTypes =>
