@@ -159,7 +159,7 @@ if ($article->{parentid} && $article->{parentid} == $SHOPID) {
     if $levels{catalog}{templates};
   if (opendir CAT_TEMPL, "$TMPLDIR/catalog") {
     push(@templates, map "catalog/$_", 
-         grep -f "$TMPLDIR/catalog/$_" && /\.tmpl/i, readdir SECT_TEMPL);
+         grep -f "$TMPLDIR/catalog/$_" && /\.tmpl/i, readdir CAT_TEMPL);
     closedir CAT_TEMPL;
   }
   push(@templates, "catalog.tmpl")
