@@ -26,7 +26,7 @@
 
 <form method="POST" action="<:script:>">
 <input type=hidden name=groupid value=<:group id:>>
-<input type=hidden name=savegroups value=1>
+<input type=hidden name=saveusers value=1>
   <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
     <tr> 
       <td> 
@@ -49,7 +49,7 @@
             <th bgcolor="#FFFFFF" align="left"> Members: </th>
             <td bgcolor="#FFFFFF"> 
 	      <:iterator begin users:>
-	        <:if UserCan admin_group_save:><input type=checkbox name=users value=<:iuser id:> <:ifMemberof iuser:>checked<:or:><:eif:> /><:or UserCan:><img src="/images/admin/<:ifMemberof iuser:>checked<:or:>unchecked<:eif:>.gif"><:eif UserCan:> <:iuser name:>
+	        <:if UserCan admin_group_save:><input type=checkbox name=users value=<:iuser id:> <:ifMemberof iuser:>checked<:or:><:eif:> /><:or UserCan:><img src="/images/admin/<:ifMemberof iuser:>checked<:or:>unchecked<:eif:>.gif"><:eif UserCan:> <a href="<:script:>?a_showuser=1&userid=<:iuser id:>"><:ifIuser name:><:iuser name:> (<:iuser logon:>)<:or:><:iuser logon:><:eif:></a>
 	      <:iterator separator users:>
 	      <br>
 	      <:iterator end users:>

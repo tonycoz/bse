@@ -493,7 +493,10 @@ sub tag_step_kid {
 }
 
 sub tag_move_stepkid {
-  my ($self, $cgi, $article, $allkids, $rallkids_index) = @_;
+  my ($self, $cgi, $req, $article, $allkids, $rallkids_index) = @_;
+
+  $req->user_can(edit_reorder_children => $article)
+    or return '';
 
   my $cgi_uri = $self->{cfg}->entry('uri', 'cgi', '/cgi-bin');
   my $images_uri = $self->{cfg}->entry('uri', 'images', '/images');
@@ -518,19 +521,26 @@ HTML
 }
 
 sub possible_stepkids {
-  my ($articles, $stepkids) = @_;
+  my ($req, $article, $articles, $stepkids) = @_;
 
-  return sort { lc $a->{title} cmp lc $b->{title} }
+  $req->user_can(edit_stepkid_add => $article)
+    or return;
+
+  my @possible = sort { lc $a->{title} cmp lc $b->{title} }
     grep !$stepkids->{$_->{id}}, $articles->all;
+  if ($req->access_control) {
+    @possible = grep $req->user_can(edit_stepparent_add => $_), @possible;
+  }
+  return @possible;
 }
 
 
 
 sub tag_possible_stepkids {
-  my ($step_kids, $article, $possstepkids, $articles, $cgi) = @_;
+  my ($step_kids, $req, $article, $possstepkids, $articles, $cgi) = @_;
 
   _load_step_kids($article, $step_kids) unless $step_kids->{loaded};
-  @$possstepkids = possible_stepkids($articles, $step_kids)
+  @$possstepkids = possible_stepkids($req, $article, $articles, $step_kids)
     unless @$possstepkids;
   my %labels = map { $_->{id} => "$_->{title} ($_->{id})" } @$possstepkids;
   return
@@ -540,10 +550,10 @@ sub tag_possible_stepkids {
 }
 
 sub tag_if_possible_stepkids {
-  my ($step_kids, $article, $possstepkids, $articles, $cgi) = @_;
+  my ($step_kids, $req, $article, $possstepkids, $articles, $cgi) = @_;
 
   _load_step_kids($article, $step_kids) unless $step_kids->{loaded};
-  @$possstepkids = possible_stepkids($articles, $step_kids)
+  @$possstepkids = possible_stepkids($req, $article, $articles, $step_kids)
     unless @$possstepkids;
   
   @$possstepkids;
@@ -573,7 +583,10 @@ sub tag_stepparent_targ {
 }
 
 sub tag_move_stepparent {
-  my ($self, $cgi, $article, $stepparents, $rindex) = @_;
+  my ($self, $cgi, $req, $article, $stepparents, $rindex) = @_;
+
+  $req->user_can(edit_reorder_stepparents => $article)
+    or return '';
 
   my $cgi_uri = $self->{cfg}->entry('uri', 'cgi', '/cgi-bin');
   my $images_uri = $self->{cfg}->entry('uri', 'images', '/images');
@@ -598,24 +611,30 @@ HTML
 }
 
 sub tag_if_stepparent_possibles {
-  my ($article, $articles, $targs, $possibles) = @_;
+  my ($req, $article, $articles, $targs, $possibles) = @_;
 
   if ($article->{id} && $article->{id} > 0) {
     @$targs = $article->step_parents unless @$targs;
     my %targs = map { $_->{id}, 1 } @$targs;
     @$possibles = grep !$targs{$_->{id}}, $articles->all;
+    if ($req->access_control) {
+      @$possibles = grep $req->user_can(edit_stepkid_add => $_), @$possibles;
+    }
   }
   scalar @$possibles;
 }
 
 sub tag_stepparent_possibles {
-  my ($cgi, $article, $articles, $targs, $possibles) = @_;
+  my ($cgi, $req, $article, $articles, $targs, $possibles) = @_;
 
   if ($article->{id} && $article->{id} > 0) {
     @$targs = $article->step_parents unless @$targs;
     my %targs = map { $_->{id}, 1 } @$targs;
     @$possibles = sort { lc $a->{title} cmp lc $b->{title} }
       grep !$targs{$_->{id}}, $articles->all;
+    if ($req->access_control) {
+      @$possibles = grep $req->user_can(edit_stepkid_add => $_), @$possibles;
+    }
   }
   $cgi->popup_menu(-name=>'stepparent',
 		   -values => [ map $_->{id}, @$possibles ],
@@ -922,13 +941,14 @@ sub low_edit_tags {
      stepkid => [ \&tag_step_kid, $article, \@allkids, \$allkid_index, 
 		  \%stepkids ],
      movestepkid => 
-     [ \&tag_move_stepkid, $self, $cgi, $article, \@allkids, \$allkid_index ],
+     [ \&tag_move_stepkid, $self, $cgi, $request, $article, \@allkids, 
+       \$allkid_index ],
      possible_stepkids =>
-     [ \&tag_possible_stepkids, \%stepkids, $article, \@possstepkids, 
-       $articles, $cgi ],
+     [ \&tag_possible_stepkids, \%stepkids, $request, $article, 
+       \@possstepkids, $articles, $cgi ],
      ifPossibles => 
-     [ \&tag_if_possible_stepkids, \%stepkids, $article, \@possstepkids, 
-       $articles, $cgi ],
+     [ \&tag_if_possible_stepkids, \%stepkids, $request, $article, 
+       \@possstepkids, $articles, $cgi ],
      DevHelp::Tags->make_iterator2
      ( [ \&iter_get_stepparents, $article ], 'stepparent', 'stepparents', 
        \@stepparents, \$stepparent_index),
@@ -937,13 +957,13 @@ sub low_edit_tags {
      [ \&tag_stepparent_targ, $article, \@stepparent_targs, 
        \$stepparent_index ],
      movestepparent => 
-     [ \&tag_move_stepparent, $self, $cgi, $article, \@stepparents, 
+     [ \&tag_move_stepparent, $self, $cgi, $request, $article, \@stepparents, 
        \$stepparent_index ],
      ifStepparentPossibles =>
-     [ \&tag_if_stepparent_possibles, $article, $articles, \@stepparent_targs, 
-       \@stepparentpossibles, ],
+     [ \&tag_if_stepparent_possibles, $request, $article, $articles, 
+       \@stepparent_targs, \@stepparentpossibles, ],
      stepparent_possibles =>
-     [ \&tag_stepparent_possibles, $cgi, $article, $articles, 
+     [ \&tag_stepparent_possibles, $cgi, $request, $article, $articles, 
        \@stepparent_targs, \@stepparentpossibles, ],
      DevHelp::Tags->make_iterator2
      ([ \&iter_files, $article ], 'file', 'files', \@files, \$file_index ),
@@ -1439,6 +1459,10 @@ sub child_types {
 sub add_stepkid {
   my ($self, $req, $article, $articles) = @_;
 
+  $req->user_can(edit_stepkid_add => $article)
+    or return $self->edit_form($req, $article, $articles,
+			       "You don't have access to add step children to this article");
+
   my $cgi = $req->cgi;
   require 'BSE/Admin/StepParents.pm';
   eval {
@@ -1449,6 +1473,9 @@ sub add_stepkid {
       or die "Invalid stepkid supplied to add_stepkid";
     my $child = $articles->getByPkey($childId)
       or die "Article $childId not found";
+
+    $req->user_can(edit_stepparent_add => $child)
+      or die "You don't have access to add a stepparent to that article\n";
     
     use BSE::Util::Valid qw/valid_date/;
     my $release = $cgi->param('release');
@@ -1472,6 +1499,10 @@ sub add_stepkid {
 sub del_stepkid {
   my ($self, $req, $article, $articles) = @_;
 
+  $req->user_can(edit_stepkid_delete => $article)
+    or return $self->edit_form($req, $article, $articles,
+			       "You don't have access to delete stepchildren from this article");
+
   my $cgi = $req->cgi;
   require 'BSE/Admin/StepParents.pm';
   eval {
@@ -1482,6 +1513,9 @@ sub del_stepkid {
       or die "Invalid stepkid supplied to add_stepkid";
     my $child = $articles->getByPkey($childId)
       or die "Article $childId not found";
+
+    $req->user_can(edit_stepparent_delete => $child)
+      or die "You cannot remove stepparents from that article\n";
     
     BSE::Admin::StepParents->del($article, $child);
   };
@@ -1498,12 +1532,18 @@ sub del_stepkid {
 sub save_stepkids {
   my ($self, $req, $article, $articles) = @_;
 
+  $req->user_can(edit_stepkid_save => $article)
+    or return $self->edit_form($req, $article, $articles,
+			       "No access to save stepkid data for this article");
+
   my $cgi = $req->cgi;
   require 'BSE/Admin/StepParents.pm';
   my @stepcats = OtherParents->getBy(parentId=>$article->{id});
   my %stepcats = map { $_->{parentId}, $_ } @stepcats;
   my %datedefs = ( release => '2000-01-01', expire=>'2999-12-31' );
   for my $stepcat (@stepcats) {
+    $req->user_can(edit_stepparent_save => $stepcat->{childId})
+      or next;
     for my $name (qw/release expire/) {
       my $date = $cgi->param($name.'_'.$stepcat->{childId});
       if (defined $date) {
@@ -1534,6 +1574,10 @@ sub save_stepkids {
 sub add_stepparent {
   my ($self, $req, $article, $articles) = @_;
 
+  $req->user_can(edit_stepparent_add => $article)
+    or return $self->edit_form($req, $article, $articles,
+			       "You don't have access to add stepparents to this article");
+
   my $cgi = $req->cgi;
   require 'BSE/Admin/StepParents.pm';
   eval {
@@ -1543,7 +1587,10 @@ sub add_stepparent {
     int($step_parent_id) eq $step_parent_id
       or die "Invalid stepcat supplied to add_stepcat";
     my $step_parent = $articles->getByPkey($step_parent_id)
-      or die "Parnet $step_parent_id not found\n";
+      or die "Parent $step_parent_id not found\n";
+
+    $req->user_can(edit_stepkid_add => $step_parent)
+      or die "You don't have access to add a stepkid to that article\n";
 
     my $release = $cgi->param('release');
     defined $release
@@ -1571,6 +1618,10 @@ sub add_stepparent {
 sub del_stepparent {
   my ($self, $req, $article, $articles) = @_;
 
+  $req->user_can(edit_stepparent_delete => $article)
+    or return $self->edit_form($req, $article, $articles,
+			       "You cannot remove stepparents from that article");
+
   my $cgi = $req->cgi;
   require 'BSE/Admin/StepParents.pm';
   my $step_parent_id = $cgi->param('stepparent');
@@ -1583,6 +1634,9 @@ sub del_stepparent {
   my $step_parent = $articles->getByPkey($step_parent_id)
     or return $self->refresh($article, $cgi, 'stepparent', 
 			     "Stepparent $step_parent_id not found");
+
+  $req->user_can(edit_stepkid_delete => $step_parent)
+    or die "You don't have access to remove the stepkid from that article\n";
 
   eval {
     BSE::Admin::StepParents->del($step_parent, $article);
@@ -1598,6 +1652,10 @@ sub del_stepparent {
 sub save_stepparents {
   my ($self, $req, $article, $articles) = @_;
 
+  $req->user_can(edit_stepparent_save => $article)
+    or return $self->edit_form($req, $article, $articles,
+			       "No access to save stepparent data for this artice");
+
   my $cgi = $req->cgi;
 
   require 'BSE/Admin/StepParents.pm';
@@ -1605,6 +1663,8 @@ sub save_stepparents {
   my %stepparents = map { $_->{parentId}, $_ } @stepparents;
   my %datedefs = ( release => '2000-01-01', expire=>'2999-12-31' );
   for my $stepparent (@stepparents) {
+    $req->user_can(edit_stepkid_save => $stepparent->{parentId})
+      or next;
     for my $name (qw/release expire/) {
       my $date = $cgi->param($name.'_'.$stepparent->{parentId});
       if (defined $date) {

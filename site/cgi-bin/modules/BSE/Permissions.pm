@@ -18,7 +18,7 @@ sub new {
   my %gobjs;
   my %gvalues = $cfg->entries('global permissions');
   my $maxgid = 0;
-  for my $name (keys %gvalues) {
+  for my $name (sort keys %gvalues) {
     my $id = $gvalues{$name};
     if ($id > 250) {
       print STDERR "permission id for $name out of range\n";
@@ -46,7 +46,7 @@ sub new {
   my %aobjs;
   my %avalues = $cfg->entries('article permissions');
   my $maxaid = 0;
-  for my $name (keys %avalues) {
+  for my $name (sort keys %avalues) {
     my $id = $avalues{$name};
     if ($id > 250) {
       print STDERR "permission id for $name out of range\n";
@@ -233,22 +233,22 @@ sub _garticle_match {
     push @articles, $self->_art_ancestors($article);
   }
 
-  for my $test (@{$perm->{artinfo}{arts}}) {
+  for my $test (@{$perm->{arts}}) {
     if ($test->{type} eq 'exact') {
-      return 1
+      return !$perm->{not}
 	if grep $_->{id} == $test->{article}, @articles;
     }
     elsif ($test->{type} eq 'childof') {
-      return 1
+      return !$perm->{not}
 	if grep $_->{parentid} == $test->{article}, @articles;
     }
     elsif ($test->{type} eq 'typeof') {
-      return 1
+      return !$perm->{not}
 	if grep $_->{generator} eq "Generate::$test->{name}", @articles;
     }
   }
 
-  return 0;
+  return $perm->{not};
 }
 
 sub _aarticle_match {
@@ -300,7 +300,7 @@ sub user_has_perm {
 	  and substr($permmap, $globperm->{id}, 1);
       _permname_match($action, $globperm->{perminfo})
 	or next;
-      $self->_garticle_match($article, $globperm)
+      $self->_garticle_match($article, $globperm->{artinfo})
 	and return 1;
     }
   }

@@ -13,6 +13,7 @@
 <p>
 | <a href="/cgi-bin/admin/menu.pl">Admin menu</a>
 | <a href="<:script:>">User list</a> |
+<a href="<:script:>?a_groups=1">Group list</a> |
 </p>
 <p>
 | User Details | <a href="<:script:>?a_showuser=1&userid=<:user id:>&_t=glob">Global Permissions</a>
@@ -63,7 +64,7 @@
             <th bgcolor="#FFFFFF" align="left" valign="top"> Groups: </th>
             <td bgcolor="#FFFFFF"> 
 	      <:iterator begin groups:>
-	        <:if UserCan admin_user_save:><input type=checkbox name=groups value=<:igroup id:> <:ifMemberof igroup:>checked<:or:><:eif:> /><:or UserCan:><img src="/images/admin/<:ifMemberof igroup:>checked<:or:>unchecked<:eif:>.gif"><:eif UserCan:> <:igroup name:>
+	        <:if UserCan admin_user_save:><input type=checkbox name=groups value=<:igroup id:> <:ifMemberof igroup:>checked<:or:><:eif:> /><:or UserCan:><img src="/images/admin/<:ifMemberof igroup:>checked<:or:>unchecked<:eif:>.gif"><:eif UserCan:> <a href="<:script:>?a_showgroup=1&groupid=<:igroup id:>"><:igroup name:></a>
 	      <:iterator separator groups:>
 	      <br>
 	      <:iterator end groups:>

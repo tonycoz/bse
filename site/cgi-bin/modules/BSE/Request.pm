@@ -97,6 +97,10 @@ sub get_object {
   return;
 }
 
+sub access_control {
+  $_[0]->{cfg}->entry('basic', 'access_control', 0);
+}
+
 sub DESTROY {
   my ($self) = @_;
   if ($self->{session}) {

@@ -10,6 +10,37 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.12_18
+
+=over
+
+=item *
+
+article and global permissions should now be listed sorted by their
+identifier
+
+=item * 
+
+the not and descendants flags were being ignored on global permissions
+
+=item *
+
+stepchildren and stepparents had no access control at all, now they
+do.  Note that you may sometimes get a save button on the step
+parent/children page with no fields to edit - this means you have save
+rights on the current article but not on any of the listed step
+children/parents.
+
+=item *
+
+fixed shopitem template from Adrian
+
+=item *
+
+more navigation links in the user/group management pages
+
+=back
+
 =head2 0.12_17
 
 =over
@@ -52,6 +83,11 @@ the job.
 
 the edit_product template displayed the hide/show link even if the
 user wasn't permitted to do so
+
+=item *
+
+new templates from adrian to hardcode the text color in the file lists
+on article pages
 
 =back
 
