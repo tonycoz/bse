@@ -44,7 +44,7 @@ sub user_tags {
 	 return $user;
        }
      },
-     user => sub { $user && CGI::escapeHTML($user->{$_[0]}) },
+     user => $user ? [ \&tag_hash, $user ] : '',
     );
 }
 

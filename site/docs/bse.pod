@@ -10,6 +10,69 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_01
+
+=over
+
+=item *
+
+formatted lists where there was no other text between the lists would
+produce mis-formatted lists.
+
+=item *
+
+the tt[] and pre[] tags were not removed from search result except
+text. (#460)
+
+=item *
+
+creating a new user with subscriptions enabled could sometimes cause a
+500 server error.  This was due to calling escape_url() instead of
+escape_uri().  Thanks to Piers Johnson from Might Media for reporting
+and patching this.
+
+=item *
+
+added the billMobile and delivMobile fields to the orders and site
+users tables
+
+=item *
+
+the user tag in user.pl could sometimes produce undefined value
+warnings in the error log.
+
+=item *
+
+search excerpt text is now correctly HTML escaped
+
+=item *
+
+added the strepeats iterator for use on all pages (resolved on the
+first build when pre-building templates for dynamic pages)
+
+=item *
+
+added the dI<digits> prefix to the arithmetic tag, which rounds the
+result, so for example:
+
+  <:arithmetic d2:1.234:>
+
+results in:
+
+  1.23
+
+=item *
+
+C<img> elements produced by the thumbnail tag now include an empty alt
+parameter.
+
+=item *
+
+the tt[...] tag is now removed from body text in those cases where
+we're removing other tags
+
+=back
+
 =head2 0.15
 
 No changes since 0.14_37, no issues reported with 0.14_37.

@@ -269,7 +269,7 @@ sub baseActs {
            .'" width="'.$acts->{$which}->('thumbWidth')
              .'" height="'.$acts->{$which}->('thumbHeight').'"';
          $result .= qq! class="$class"! if $class;
-         $result .= ' border="0" />';
+         $result .= ' border="0" alt="" />';
          return $result;
        }
        else {

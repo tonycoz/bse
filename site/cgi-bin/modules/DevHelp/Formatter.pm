@@ -109,6 +109,30 @@ sub _format_ol {
   return "$ol<li>".join("</li><li>", @points)."</li></ol>";
 }
 
+sub _format_lists {
+  my ($text) = @_;
+
+  my $out = '';
+
+  while (length $text) {
+    if ($text =~ s!^((?: *\#\#[^\n]+(?:\n|$)\n?[^\S\n]*)+)\n?!!) {
+      $out .= _format_ol($1);
+    }
+    elsif ($text =~ s#^((?: *\*\*[^\n]+(?:\n|$)\n?[^\S\n]*)+)\n?##) {
+      $out .= _format_bullets($1);
+    }
+    elsif ($text =~ s!^((?: *%%[^\n]+(?:\n|$)\n?[^\S\n]*)+)\n?!!) {
+      $out .= _format_ol($1, 'a', '%%');
+    }
+    else {
+      $out .= $text;
+      $text = '';
+    }
+  }
+
+  return $out;
+}
+
 # raw html - this has some limitations
 # the input text has already been escaped, so we need to unescape it
 # too bad if you want [] in your html (but you can use entities)
@@ -209,11 +233,7 @@ sub format {
 	  and next TRY;
 	$part =~ s#table\[([^\]\[]+)\|([^\]\[|]+)\]#_make_table($1, "|$2")#ieg
 	  and next TRY;
-	$part =~ s#(?:^|\n{1,2})((?: *\*\*[^\n]+(?:\n|$)\n?[^\S\n]*)+)\n?#_format_bullets($1)#eg
-	  and next TRY;
-	$part =~ s!(?:^|\n{1,2})((?: *##[^\n]+(?:\n|$)\n?[^\S\n]*)+)\n?!_format_ol($1)!eg
-	  and next TRY;
-	$part =~ s!(?:^|\n{1,2})((?: *%%[^\n]+(?:\n|$)\n?[^\S\n]*)+)\n?!_format_ol($1, 'a', '%%')!eg
+	$part =~ s#(?:^|\n{1,2})((?: *(?:\*\*|\#\#|\%\%)[^\n]+(?:\n|$)\n?[^\S\n]*)+)\n?#_format_lists($1)#eg
 	  and next TRY;
 	$part =~ s#indent\[([^\]\[]+)\]#<ul>$1</ul>#ig
 	  and next TRY;
@@ -252,7 +272,8 @@ sub remove_format {
 
   my $out = '';
   for my $part (split /((?:html\[(?:[^\[\]]*(?:(?:\[[^\[\]]*\])[^\[\]]*)*)\])
-			|embed\[(?:[^,\[\]]*)(?:,(?:[^,\[\]]*)){0,2}\])/ix, $body) {
+			|embed\[(?:[^,\[\]]*)(?:,(?:[^,\[\]]*)){0,2}\]
+                        |pre\[(?:[^\[\]]*(?:(?:\[[^\[\]]*\])[^\[\]]*)*)\])/ix, $body) {
     #print STDERR "Part is $part\n";
     if ($part =~ /^html\[([^\[\]]*(?:(?:\[[^\[\]]*\])[^\[\]]*)*)\]$/i) {
       $out .= _strip_html($1);
@@ -262,6 +283,10 @@ sub remove_format {
     }
     elsif ($part =~ /^embed\[([^,\[\]]*)\]$/i) {
       $out .= "";
+    }
+    elsif ($part =~ /^pre\[([^\[\]]*(?:(?:\[[^\[\]]*\])[^\[\]]*)*)\]$/i) {
+      my $work = $1;
+      $out .= $self->remove_format($work);
     }
     else {
     TRY: while (1) {
@@ -279,7 +304,9 @@ sub remove_format {
 	  and next TRY;
 	$part =~ s#link\[([^|\]\[]+)\]#$1#ig
 	  and next TRY;
-	$part =~ s#([bi])\[([^\]\[]+)\]#$2#ig
+	$part =~ s#[bi]\[([^\]\[]+)\]#$1#ig
+	  and next TRY;
+	$part =~ s#tt\[([^\]\[]+)\]#$1#ig
 	  and next TRY;
 	$part =~ s#align\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
 	  and next TRY;

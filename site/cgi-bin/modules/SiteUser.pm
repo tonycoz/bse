@@ -21,7 +21,7 @@ sub columns {
             billEmail adminNotes disabled flags
             customText1 customText2 customText3
             customStr1 customStr2 customStr3
-            affiliate_name/;
+            affiliate_name delivMobile billMobile/;
 }
 
 sub valid_fields {
@@ -43,6 +43,8 @@ sub valid_fields {
      title => { description=>'Title', rules=>"dh_one_line", maxlen=>127  },
      organization => { description=>'Organization', rules=>"dh_one_line", 
 		       maxlen=>127  },
+     delivMobile => { description => "Mobile", rules=>"phone",
+		      maxlen => 80 },
      textOnlyEmail => { description => "Text Only Email", type=>"boolean" },
      referral => { description=>'Referral', rules=>"natural"  },
      otherReferral => { description=>'Other Referral', rules=>"dh_one_line",
@@ -73,6 +75,8 @@ sub valid_fields {
 			maxlen=>80 },
      billEmail => { description => "Billing Email", rules=>"email", 
 		    maxlen=>255 },
+     billMobile => { description => "Billing Mobile", rules=>"phone",
+		     maxlen => 80 },
      customText1 => { description => "Custom Text 1" },
      customText2 => { description => "Custom Text 2" },
      customText3 => { description => "Custom Text 3" },

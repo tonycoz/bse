@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 42;
+use Test::More tests => 43;
 
 sub format_test($$$;$);
 
@@ -158,6 +158,15 @@ this shouldn't be a bullet ** some text
 ** so should this
 IN
 this shouldn't be a bullet ** some text<ul><li>this should be a bullet</li><li>so should this</li></ul>
+OUT
+
+  format_test <<IN, <<OUT, 'mixed', 'both';
+** joe
+** bob
+## one
+## two
+IN
+<ul><li>joe</li><li>bob</li></ul><ol><li>one</li><li>two</li></ol>
 OUT
 
   format_test 'indent[text]', '<ul>text</ul>', 'indent';

@@ -583,6 +583,8 @@ sub excerpt {
   $self->remove_block('Articles', [], \$body);
   1 while $body =~ s/[bi]\[([^\]\[]+)\]/$1/g;
 
+  $body = escape_html($body);
+
   my @found = find_terms(\$body, $case_sensitive, @terms);
 
   my @reterms = @terms;

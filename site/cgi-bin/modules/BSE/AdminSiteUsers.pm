@@ -588,7 +588,7 @@ sub req_add {
       $r = $req->url('siteusers', { list => 1, 
 				    'm' => "User $user->{userId} added" });
     }
-    $r .= "&m=".escape_url($msg) if $msg;
+    $r .= "&m=".escape_uri($msg) if $msg;
     return BSE::Template->get_refresh($r, $cfg);
   }
   else {

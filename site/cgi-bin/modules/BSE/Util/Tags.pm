@@ -258,6 +258,7 @@ sub static {
      },
      adminbase => [ \&tag_adminbase, $cfg ],
      help => [ \&tag_help, $cfg, 'user' ],
+     $it->make_iterator(\&DevHelp::Tags::iter_get_repeat, 'strepeat', 'strepeats'),
      
      _format => 
      sub {
@@ -314,6 +315,9 @@ sub tag_arithmetic {
   }
   elsif ($prefix eq 'r') {
     $result = sprintf("%.0f", $result);
+  }
+  elsif ($prefix =~ /^d(\d+)$/) {
+    $result = sprintf("%.*f", $1, $result);
   }
 
   return escape_html($result);

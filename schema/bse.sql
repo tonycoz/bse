@@ -242,6 +242,9 @@ create table orders (
 
   shipping_cost integer not null default 0,
 
+  delivMobile varchar(80) not null default '',
+  billMobile varchar(80) not null default '',
+
   primary key (id),
   index order_cchash(ccNumberHash),
   index order_userId(userId, orderDate)
@@ -495,6 +498,9 @@ create table site_users (
   customStr3 varchar(255),
 
   affiliate_name varchar(40) not null default '',
+
+  delivMobile varchar(80) not null default '',
+  billMobile varchar(80) not null default '',
 
   primary key (id),
   unique (userId),

@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>58;
+use Test::More tests=>64;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
@@ -171,10 +171,12 @@ EXPECTED
 template_test "arithmetic", $top, <<'TEMPLATE', <<EXPECTED;
 <:arithmetic 2+2:>
 <:arithmetic 2+[add 1 1]:>
+<:arithmetic d2:1.234+1.542:>
 <:arithmetic 2+[add 1 2]+[undefinedtag x]+[add 1 1]+[undefinedtag2]:>
 TEMPLATE
 4
 4
+2.78
 <:arithmetic 2+3+[undefinedtag x]+2+[undefinedtag2]:>
 EXPECTED
 
@@ -188,6 +190,26 @@ template_test "date", $parent, <<'TEMPLATE', <<EXPECTED;
 <:date "%a %d/%m/%Y" article lastModified:>
 TEMPLATE
 Thu 23/09/2004
+EXPECTED
+
+template_test "strepeats", $parent, <<'TEMPLATE', <<EXPECTED;
+<:iterator begin strepeats [arithmetic 1+1]:><:strepeat index:> <:strepeat value:>
+<:iterator end strepeats:>
+TEMPLATE
+0 1
+1 2
+
+EXPECTED
+
+template_test "strepeats2", $parent, <<'TEMPLATE', <<EXPECTED;
+<:iterator begin strepeats [arithmetic 1+1] 5:><:strepeat index:> <:strepeat value:>
+<:iterator end strepeats:>
+TEMPLATE
+0 2
+1 3
+2 4
+3 5
+
 EXPECTED
 
 BSE::Admin::StepParents->del($parent, $parent);

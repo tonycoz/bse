@@ -9,5 +9,5 @@ SKIP: {
 
   DevHelp::HTML->import('escape_xml');
 
-  is(escape_xml("<&\xE9"), '&lt;&amp;&#233;', "don't escape like html");
+  is(escape_xml("<&\xE9"), "&lt;&amp;\xE9", "don't escape like html");
 }

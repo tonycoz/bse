@@ -8,7 +8,8 @@ Delivery: <:order delivFirstName :> <:order delivLastName :>
           <:order delivCountry:>
 
 Phone   : <:order telephone:>
-Fax     : <:order facsimile:>
+<:ifOrder delivMobile:>Mobile  : <:order delivMobile:>
+<:or:><:eif:>Fax     : <:order facsimile:>
 Email   : <:order emailAddress:>
 
 Product                                   Units  Price   Extended
