@@ -37,7 +37,7 @@ sub tie_it {
   # save the new sessionid
     print "Set-Cookie: ",
     CGI::Cookie->new(-name=>'sessionid', -value=>$session->{_session_id}, 
-		     -expires=>$lifetime),"\n";
+		     -expires=>$lifetime, -path=>"/"),"\n";
   }
   $saved = $session;
 }

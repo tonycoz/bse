@@ -634,7 +634,8 @@ sub purchase {
     return;
   }
 
-  $order{orderDate} = $today;
+  use BSE::Util::SQL qw(now_sqldatetime);
+  $order{orderDate} = now_sqldatetime;
   $order{paymentType} = $paymentType;
   ++$session{changed};
 

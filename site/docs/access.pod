@@ -4,145 +4,278 @@ access.pod - access control for administration of BSE
 
 =head1 SYNOPSIS
 
-The implementation of access control for BSE.
+How to configure and enable access control for BSE administration.
 
 =head1 DESCRIPTION
+
+As of release 0.12_13 of BSE, it provides a moderately powerful
+mechanism to control access to various administration functions,
+especially for maintaining content.
 
 The aim is to provide flexible access control, without requiring
 micro-management from the administrators.
 
-Since we want to be control a user's access to specific fields
-(eg. the template and parent fields), rather than having an admin have
-to setup specific access to those fields, we want some sort of "macro"
-mechansim to control several things at once.
+Internally BSE now provides for fairly fine-grained access to editing
+existing articles and creating new articles, hopefully without
+overloading the person who will manage the users and groups.
 
-Some possible access macros could be:
+=head1 BEFORE ENABLING ACCESS CONTROL
+
+Make sure you create users with sufficient access control to maintain
+the system.
+
+At the very least create a user and give them the 
+I<User/Group management> global permission.
+
+=head1 ENABLING ACCESS CONTROL
+
+Once you have at least created a user/groups administrator, set the
+access_control value to 1 in bse.cfg.
+
+Once you've done that you will be prompted for a username and password
+whenever you try to access BSE's administration functions.
+
+=head1 USERS, GROUPS AND PERMISSIONS
+
+All permissions in BSE are positive - the permissions you give a user
+and their groups are combined together so that if the user has a right
+enabled for themselves, for any group they are a member of, or for the
+I<everyone> group, they will have access to the function.
+
+The permissions visible to the user administrator are split into two
+categories:
+
+=over
+
+=item 1.
+
+Global permissions - these apply in general, like access to the order
+list, or to user/group management.  These can also include article
+permissions that have been applied to specific articles, or to subsets
+of the article tree.
+
+=item 2.
+
+Article permissions - these are applied to specific articles by the
+user administrator, and can control the article or all of the children
+of the article, depending on how the permission was setup.
+
+=back
+
+BSE provides default sets of global and article permissions, but you
+can add extrs more specific to your business needs, see L</ADDING NEW
+PERMISSIONS>.
+
+The standard global permissions shipped with BSE are:
 
 =over
 
 =item *
 
-allow editing body and title of an article
+B<Shop admin> - the user has complete access to modify the content in
+the shop
 
 =item *
 
-add an article, with everything fixed, except for title and body
+B<All but shop admin> - the user has complete access to modify
+content, except in the shop
 
 =item *
 
-allow changes to everything but the shop
+B<Subscriptions> - the user can create, modify and send subcriptions
+from the subscriptions manager.
 
 =item *
 
-allow changes only to the shop
+B<Shop Orders> - the user can view the order list, order details and
+mark orders filled.
+
+=item *
+
+B<Users/Group management> - the user can create new users and groups,
+manage group membership, and control the permissions that the users
+and groups have
 
 =back
 
-We also need to be able to separately control whole trees, rather than
-just specific articles, so it should be possible to refer to "all
-descendants of article foo".
-
-Possible article permissions:
+The article permissions are:
 
 =over
 
 =item *
 
-add child
+B<Full access> - the user can modify the article and any of it's
+children, and add new children.
 
 =item *
 
-modify
-
-=item *
-
-modify field I<foo>
-
-=item *
-
-add image
-
-=item *
-
-reorder children
-
-=item *
-
-delete
-
-=item *
-
-delete image
-
-=item *
-
-change image details
+B<Change body or title> - the user can change the body and title of
+the indicated article.  No other fields can be changed.
 
 =back
 
-=head1 MACRO PERMISSIONS
+=head1 ADDING NEW PERMISSIONS
 
-These would be split into two types of macro permissions, those that
-control specific articles, and those that are applied to an article.
+Besides the standard permissions described above, you can add
+permissions more specific to your organizaton by adding entries to a
+few sections in the bse.cfg file.
 
-Each macro will need to be described in bse.cfg, and the name of the
-macro assigned an index so that it can be controlled.
+Each permission has a unique index associated with it.  This must be a
+natural number (0 or a positive whole number).
 
-Since most normal permissions aren't going to be directly useful, the
-only permissions stored in the system will be macro based permissions.
+Each permission has an identifier which is used to choose the
+configuration section that the permission is described in.
 
-=head2 Attached macros
+Article permissions are listed in the [Article permissions] section,
+and global permission in the [Global permissions] section, with the
+identifer being the key, and the index being the value.  eg.
 
-These name one or more articles and the permissions can be different
-for each article.
+  [Global permissions]
+  shop_access = 1
+  all_but_shop = 3
+  subscriptions=4
+  orders=5
+  users_and_groups=6
 
-=head2 Unattached macros
+  [Article permissions]
+  full_access = 0
+  change_body = 2
 
-These supply a set of permissions to some article specified through
-the administration interface.
+The identifier for each permission is used to find the description of
+the permission, for an I<identifier> the section would be [permission
+I<identifier>].
 
-=head1 GROUPS
-
-To make it simpler to control permissions, each user belongs to one of
-more groups, each of which only supplied positive permissions.
-
-Whether or not listed in the group, each user is in the "everyone"
-group.
-
-=head1 DEFAULT PERMISSIONS
-
-The everyone group, and the administrator user, both have the macro
-"Full Access" on all descendants of article -1.
-
-
-=head1 MACRO STORAGE
-
-To simplify processing we have two sections in the config file:
+For article permissions you can define the following entries in the
+description:
 
 =over
 
 =item *
 
-[Global permissions] - keeps permissions that have all article
-references resolved
+brief - the brief description of the permission that is displayed in
+the administration user interface.  Default: the permission identifier.
 
 =item *
 
-[Article permissions] - permissions which have to reference an article
+help - a longer description of the permission used as the title of the
+help images next to each permission.  Default: empty string.
+
+=item *
+
+permissions - which low-level permissions are granted by this
+permission.  See L<Describing low-level permissions>.  The permission
+will only be used if this is set.
+
+=item *
+
+descendants - if this is set to 1 then the permission also applies to
+the descendants of the article the permission is set on.  Default: 0.
 
 =back
 
-The [permission ids] section is used to translate permission indexes to
-permission ids.
+Group permission require only one extra entry:
 
-The [permission names] section is used to translate permission indexes
-to descriptive permission names.
+=over
 
-=head1 PERMISSIONS REFERENCE
+=item *
+
+articles - the articles this permission applies to.  See L<Selecting
+articles for global permissions>.
+
+=back
+
+See the supplied bse.cfg for the definitions of the standard global
+and article permissions.
+
+=head2 Describing low-level permissions
+
+The C<permissions> keyword is a comma separated list of permission
+names, or patterns for permission names.
+
+Typically you will either use explicit permission names, or a base
+name with a wildcard, but it's possible to use more complex matches.
+
+Alternatively, the permission can be C<not(>I<permission list>C<)>
+where I<permission list is a comma separated list of permission names
+or patterns.
+
+Eg. if you want the permission to give the use access to all edit
+functions for the selected articles you could do:
+
+  permissions=edit_*
+
+If you want to give the user access to edit and save all field of an
+article:
+
+  permissions=edit_field_edit_*,edit_save
+
+Alternatively this could be:
+
+  permissions=edit_(field_edit_*|save)
+
+but the first is probably clearer.
+
+The patterns you can use, are effectively any perl regular expression,
+except that you're limited by the permissions field being split on
+commas, and the translation of '*' to '.*'.  If you don't understand
+this, just use '*' to match anything.
+
+See L<LOW-LEVEL ARTICLE PERMISSIONS> and L<LOW-LEVEL GENERAL
+PERMISSIONS> for descriptions of the permissions themselves.
+
+=head2 Selecting articles for global permissions
+
+The simplest form for the C<articles> value is a list of article ids:
+
+  articles=3,9
+
+You can also match articles that are children of a given article:
+
+  articles=childof(3)
+
+or a given type of article:
+
+  articles=typeof(Product)
+
+You can also to negate a set of articles:
+
+  articles=not(child(3),9)
+
+=head1 LOW-LEVEL ARTICLE PERMISSIONS
+
+These permissions are applied to specific articles, and depending on
+whether the childof() operator or descendants flag is set, can apply
+to the give article or it's children.
 
 =head2 Article editing
 
+These control adding new articles and modifying the content of
+existing articles.
+
+If you want a "macro" to allow all of the following, add 'edit_*' to
+the permissions keyword.
+
 =over
+
+=item *
+
+edit_save
+
+The user can save changes to the given article.  The user will also
+need appropriate permissions to modify the fields
+(edit_field_edit_I<fieldname>).
+
+=item *
+
+edit_field_edit_I<fieldname>
+
+The user can edit the given field in an existing article.  Note that
+the system may prevent editing of some fields even if you give them
+permission, like the title and summary fields of a product that have
+been used in an order.
+
+To give permission to edit any field add 'edit_field_edit_*' to the
+permission description.
 
 =item *
 
@@ -150,12 +283,6 @@ edit_add_child
 
 The user can add a child to this article, or reparent an article to
 have this article as a parent.
-
-=item *
-
-edit_field_edit_I<fieldname>
-
-The user can edit the given field in an existing article.
 
 =item *
 
@@ -170,35 +297,90 @@ section, or some default value will be used.
 
 =item *
 
+edit_reorder_children
+
+The user can change the order of the children or stepchildren of the
+article.
+
+=item *
+
+edit_reorder_stepparents
+
+The user can change the order of the stepparents of the article.
+
+=back
+
+=head2 Image management
+
+You can control whether a user can add, remove, reorder or change the
+details of the images attached to an article.
+
+There is no control over individual images.
+
+If you want to give users full image control, add 'edit_images_*' to
+the permissions entry.
+
+=over
+
+=item *
+
 edit_images_add
+
+The user can add a new image.
+
+=item *
 
 edit_images_reorder
 
+The order of the images can be changed.
+
+=item *
+
 edit_images_save
 
+The fields for each image (url, alt text) can be changed.
+
+=item *
+
 edit_images_delete
+
+Images can be deleted.
+
+=back
+
+=head2 File management
+
+=over
 
 =item *
 
 edit_files_reorder
 
+The user can change the order of the files for the article(s).
+
+=item *
+
 edit_files_add
+
+The user can add new files to the article(s).
+
+=item *
 
 edit_files_delete
 
+The user can delete files from the article(s).
+
+=item *
+
 edit_files_save
 
-=item *
+The user can change the details for files from the article(s).
 
-edit_reorder_children
+=back
 
-edit_reorder_stepparents
+=head2 Regeneration
 
-=item *
-
-subs_add
-
-subs_edit
+=over
 
 =item *
 
@@ -208,25 +390,161 @@ regen_article
 
 regen_all
 
-=item *
-
-shop_order_list
-
-shop_order_detail
-
-shop_order_filled
-
 =back
 
-=head2 User/Group Administration
+=head1 LOW-LEVEL GENERAL PERMISSIONS
+
+These permissions don't apply to specific articles and control
+operations outside of the article tree.  For the permissions to be
+appliedn they should be applied to article "-1" (the site)
+
+=head2 Subscriptions
 
 =over
 
 =item *
 
-admin_*
+subs_add
+
+The user can create new subscriptions.
+
+=item *
+
+subs_edit
+
+The user can edit existing subscriptions.
+
+=item *
+
+subs_send
+
+The user can send subscriptions
 
 =back
+
+=head2 Shop orders
+
+These permissions provide no control over the content of the shop,
+since that can be controlled through article permissions.
+
+To create a "macro" with access to all order management functions, use
+'shop_order_*'.
+
+=over
+
+=item *
+
+shop_order_list
+
+The user can view the list of orders.
+
+=item *
+
+shop_order_detail
+
+The user can view the details of an order.
+
+=item *
+
+shop_order_filled
+
+The user can mark orders as filled.
+
+=back
+
+=head2 User/Group Administration
+
+This controls whether a the user can manage users and groups.
+
+Typically you will just want to add 'admin_*' to the permissions key
+for the macro.
+
+These permissions assume a bit of foresight on the user - ie. that
+they won't delete the permissions they need to do their job.
+
+=over
+
+=item *
+
+admin_user_add
+
+The user can create new users.
+
+=item *
+
+admin_user_save
+
+The user can save changes to existing users.
+
+=item *
+
+admin_group_save_gperms
+
+The user can set global permissions for users.
+
+=item *
+
+admin_user_save_groups
+
+The user can save changes to the group membership of users.
+
+=item *
+
+admin_user_save_artrights
+
+The user can save article rights for users.
+
+=item *
+
+admin_user_del
+
+The user can delete users.
+
+=item *
+
+admin_group_add
+
+The user can create groups.
+
+=item *
+
+admin_group_save
+
+The user can save changes to groups.
+
+=item *
+
+admin_group_save_gperms
+
+The user can save global permissions for groups.
+
+=item *
+
+admin_group_save_users
+
+The user can save the membership for groups.
+
+=item *
+
+admin_group_save_artrights
+
+The user can save article rights for groups.
+
+=item *
+
+admin_group_del
+
+The user can delete groups.
+
+=back
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=head1 REVISION
+
+$Revision$
 
 =cut
 

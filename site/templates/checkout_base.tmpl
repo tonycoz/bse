@@ -126,7 +126,33 @@ function BSE_validateForm {
     <td></td>
   </tr>
 </table>
-<p>&nbsp;</p>
+<script language="JavaScript">
+<!--
+// extract the userid cookie, if any, and either present a logon form,
+// or a logoff button
+var cookies = document.cookie;
+var start = cookies.indexOf("userid=");
+var userid = '';
+if (start != -1) {
+  start += 7;
+  var end = cookies.indexOf(';', start);
+  if (end == -1) end = cookies.length;
+  userid = cookies.substring(start, end);
+}
+if (userid != '') {
+    document.write('<p>&nbsp;</p>');
+}
+else {
+    document.write('<br>');
+    document.write('<table bgcolor="#EEEEEE" border="0" cellspacing="0" cellpadding="10" width="100%">');
+    document.write('<tr>');
+    document.write('  <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2">If you wish to track the status of your order you must either <a href="/cgi-bin/user.pl?show_register=1&r=/cgi-bin/shop.pl?checkout=1"><b>Register</b></a> or <a href="/cgi-bin/user.pl?show_logon=1&r=/cgi-bin/shop.pl?checkout=1"><b>Logon</b></a> before you continue with this purchase.</font></td>');
+    document.write('</tr>');
+    document.write('</table>');
+    document.write('<br>');
+}
+//-->
+</script>
 <form action="/cgi-bin/shop.pl" method="POST" onSubmit="BSE_validateForm();return document.MM_returnValue">
   <font face="Verdana, Arial, Helvetica, sans-serif" size="3"> <b>Shipping Details:</b></font> 
   <hr noshade size="1">

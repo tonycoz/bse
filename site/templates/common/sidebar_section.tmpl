@@ -69,12 +69,12 @@
           <td bgcolor="#FFFFFF"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:file 
             description:></font></td>
           <td bgcolor="#FFFFFF"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:if 
-            File forSale:><:file displayName:><:or File:><a href="/cgi-bin/user.pl?download_file=1&file=<:file id:>"> 
+            File forSale:><:file displayName:><:or File:><a href="/cgi-bin/user.pl?download_file=1&file=<:file id:><:ifFile requireUser:>&r=<:if Embedded:><:url parent:><:or Embedded:><:url article:><:eif Embedded:><:or:><:eif:>"> 
             <:file displayName:></a><:eif File:></font></td>
           <td align="right"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:kb 
             file sizeInBytes:></font></td>
           <td nowrap align="center"> <:if 
-            File forSale:><img src="/images/filestatus/locked.gif" width="15" height="15" alt="Locked" title="Locked"><img src="/images/filestatus/forSale.gif" width="15" height="15" alt="File must be purchased" title="File must be purchased"><:or File:><a href="/cgi-bin/user.pl?download_file=1&file=<:file id:>"><img src="/images/filestatus/download.gif" width="15" height="15" alt="Download now" title="Download now" border="0"></a><:ifFile requireUser:><img src="/images/filestatus/requireUser.gif" width="15" height="15" alt="For registered users only" title="For registered users only"><:or:><img src="/images/trans_pixel.gif" width="15" height="15" title="For registered users only"><:eif:><:eif File:></td>
+            File forSale:><img src="/images/filestatus/locked.gif" width="15" height="15" alt="Locked" title="Locked"><img src="/images/filestatus/forSale.gif" width="15" height="15" alt="File must be purchased" title="File must be purchased"><:or File:><a href="/cgi-bin/user.pl?download_file=1&file=<:file id:><:ifFile requireUser:>&r=<:if Embedded:><:url parent:><:or Embedded:><:url article:><:eif Embedded:><:or:><:eif:>"><img src="/images/filestatus/download.gif" width="15" height="15" alt="Download now" title="Download now" border="0"></a><:ifFile requireUser:><img src="/images/filestatus/requireUser.gif" width="15" height="15" alt="For registered users only" title="For registered users only"><:or:><img src="/images/trans_pixel.gif" width="15" height="15" title="For registered users only"><:eif:><:eif File:></td>
         </tr>
         <:iterator end files:> 
       </table>

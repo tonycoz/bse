@@ -10,6 +10,44 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.12_14
+
+=over
+
+=item *
+
+product_detail.tmpl hadn't been converted to use the global money tag
+
+=item *
+
+different versions of CGI::Cookie use different default paths, we now
+force a path of "/".
+
+=item *
+
+really store the date and _time_ in the order date.
+
+=item *
+
+if the system needs you to logon for checkout, it now supplies the
+correct parameter to the logon code to return you to the checkout
+after you logon.
+
+=item *
+
+when setting configuration values from test.cfg with the:
+
+I<section>.I<key> = I<value>
+
+syntax, I<section> can now have spaces in it.
+
+=item *
+
+added some basic permission descriptions, and documentation on the
+permissions system
+
+=back
+
 =head2 0.12_13
 
 =over

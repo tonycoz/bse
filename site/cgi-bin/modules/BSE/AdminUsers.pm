@@ -563,7 +563,7 @@ sub req_saveuser {
       or return $class->req_showuser($req, "Password and confirmation password don't match");
     $user->{password} = $password;
   }
-  if ($cgi->param('savegperms')) {
+  if ($cgi->param('savegperms') && $req->user_can('admin_user_save_gperms')) {
     my $perms = '';
     my @gperms = $cgi->param('gperms');
     for my $id (@gperms) {
@@ -576,7 +576,7 @@ sub req_saveuser {
   }
   $user->save;
 
-  if ($cgi->param('savegroups') && $req->user_can("admin_save_user_groups")) {
+  if ($cgi->param('savegroups') && $req->user_can("admin_user_save_groups")) {
     require BSE::TB::AdminGroups;
     require BSE::TB::AdminUsers;
     my @group_ids = map $_->{id}, BSE::TB::AdminGroups->all;
@@ -668,7 +668,7 @@ sub req_savegroup {
   }
   $group->save;
 
-  if ($cgi->param('saveusers') && $req->user_can("admin_save_group_users")) {
+  if ($cgi->param('saveusers') && $req->user_can("admin_group_save_users")) {
     require BSE::TB::AdminGroups;
     require BSE::TB::AdminUsers;
     my @member_ids = map $_->{id}, BSE::TB::AdminUsers->all;
