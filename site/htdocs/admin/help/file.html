@@ -1,0 +1,52 @@
+<html>
+  <head>
+    <title>Files Wizard - BSE</title>
+    <link rel="stylesheet" href="/css/admin.css">
+  </head>
+<body>
+<h1>File Wizard</h1>
+<div>
+<h2><a name="file">File to add</h2>
+
+<p>Either enter the name of a file on your machine, or use the Browse
+button to select a file.</p>
+
+<p>Please note that if you select a large file, it may take several
+minutes to upload to the web server unless you have a large link.
+eg. on a 56K link a 1 megabyte file will take 4 minutes to upload,
+assuming you have a perfect ISP.</p>
+
+</div>
+
+<div>
+<h2><a name="description">Description</h2>
+
+<p>This text can be used in your templates to describe the file.</p>
+
+</div>
+<div>
+<h2><a name="content_type">Content Type</h2>
+<p>This is the format that the users browser will open the file as.
+BSE understands common types such as PDF, text and HTML, and more can
+be configured.</p>
+
+<p>If BSE cannot guess the type of the file it will be set to
+<b>application/octet-stream</b>, ie. a binary file</p>
+
+<p>BSE guesses the file type based on its extension, if BSE's built-in
+list of extensions is not matching your file, you can add extra
+entries to the [content types] section of the configuration file.</p>
+</div>
+
+<div>
+<h2><a name="download">Treat as download</h2>
+
+<p>If this checkbox is checked then BSE will attempt to make the users
+browser download the file rather than display it.</p>
+
+<p>This can be useful for some types such as PDF files, since
+displaying PDFs can destabilize some browsers.</p>
+
+</div>
+
+</body></html>

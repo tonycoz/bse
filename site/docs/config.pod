@@ -1,0 +1,165 @@
+=head1 NAME
+
+config.pod - documents BSE configuration file options
+
+=head1 DESCRIPTION
+
+BSE historically used Constants.pm to keep most configuration
+information.  The plan is to make sure any new configuration is kept
+in bse.cfg, and to slowly move most configuration information into
+bse.cfg.
+
+Keeping configuration information in Constants.pm makes it difficult
+to perform upgrades and makes it impossible to use tools such as
+mod_perl, at least if you want more than one site on the machine.
+
+=head1 CONFIGURATION ENTRIES
+
+=head2 [paths]
+
+Contains various file system paths.
+
+=over
+
+=item downloads
+
+This is where the files uploads with the file wizard are stored.  It
+must be writable by the web server user.
+
+=item admin_templates
+
+Directory containing administrative templates.  Note: this is not
+completely implemented for now, so assume the default.  Default: admin
+directory under $TMPLDIR.
+
+=item templates
+
+Directory base for most templates.  Note: this is not completely
+implemented for now, so assume the default.  Default: $TMPLDIR.
+
+=back
+
+=head2 [extensions]
+
+This section is used by the file wizard to map uploaded file
+extensions to MIME content types.  This can be used to extend
+BSE::FileEditor's internal extension map.  It cannot override that
+map.
+
+The key for each entry is the extension, without the leading '.'.
+
+eg.
+
+  xls = application/msexcel
+
+=head2 [templates]
+
+Used for translating symbolic template names into full names under the
+template directory.
+
+In each case the default is the name with a C<.tmpl> extension.
+
+=over
+
+=item user/logon
+
+user logon page
+
+=item user/register
+
+user registration page
+
+=back
+
+=head2 [admin templates]
+
+Used for translating the names of administration templates into filenames.
+
+In each case the default is the name with a C<.tmpl> extension.
+
+=over
+
+=item filelist
+
+article file wizard
+
+=back
+
+=head2 [html]
+
+Minor html items.
+
+=over
+
+=item charset
+
+The value of the charset keyword when outputting HTML from a script.
+Set to the empty string to suppress the charset keyword.  Default:
+iso-8859-1.
+
+=back
+
+=head2 [basic]
+
+=over
+
+=item cookie_lifetime
+
+The expiry time for cookies.  This should be in the form supported by
+CGI.pm for the -expires parameter.  Typically you want a plus ('+'), a
+number, and a time character (s - seconds, m - minutes, h - hours, d -
+days, M - months).  Default: +3h
+
+=item minpassword
+
+Minimum password length in characters.  Default: 4.
+
+=back
+
+=head2 [messages]
+
+This can be used to control translation of error messages.  Each key
+has a prefix identifying the module that uses the error, followed by
+'/' followed by a specific identifier for the message.
+
+Message parameters, expressed as $I<digit>, are replaced with the
+parameters passed to the message.  C<$$> is replaced with C<$>.
+
+Each message identifier below is documented with the id, when it
+occurs, the default message, and any parameters.
+
+=over
+
+=item user/needlogon
+
+the user attempted to logon without entering a logon name.  Default:
+"Please enter a logon name".  No parameters.
+
+=item user/needpass
+
+the user attempted to logon without entering a password.  Default:
+"Please enter your password."  No parameters.
+
+=item user/baduserpass
+
+the user's logon name or password was not found or did not match.
+Default: "Invalid user or password".  No parameters.
+
+=item user/notloggedon
+
+the user attempted to logoff while not logged on.  Default: "You
+aren't logged on".  No parameters.
+
+=item user/optsoldpass
+
+the user entered a new password on the options page without entering
+their old password.  Default: "You need to enter your old password to
+change your password".  No parameters.
+
+=back
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=cut
