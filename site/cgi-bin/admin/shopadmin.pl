@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # -d:ptkdb
-BEGIN { $ENV{DISPLAY} = '192.168.32.97:0.0'; }
+BEGIN { $ENV{DISPLAY} = '192.168.32.15:0.0'; }
 
 use strict;
 use FindBin;
@@ -23,6 +23,7 @@ use Articles;
 use BSE::Sort;
 use BSE::Util::Tags;
 use BSE::Request;
+use Util 'refresh_to';
 
 my $req = BSE::Request->new;
 my $cfg = $req->cfg;
@@ -891,8 +892,14 @@ sub order_filled {
     $order->{filled} = $filled;
     if ($order->{filled}) {
       $order->{whenFilled} = epoch_to_sql_datetime(time);
-      $order->{whoFilled} = defined($ENV{REMOTE_USER})
-	? $ENV{REMOTE_USER} : "-unknown-";
+      my $user = $req->user;
+      if ($user) {
+	$order->{whoFilled} = $user->{logon};
+      }
+      else {
+	$order->{whoFilled} = defined($ENV{REMOTE_USER})
+	  ? $ENV{REMOTE_USER} : "-unknown-";
+      }
     }
     $order->save();
     if ($req->cgi->param('detail')) {

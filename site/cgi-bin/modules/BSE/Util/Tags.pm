@@ -345,9 +345,6 @@ my %dummy_site_article =
 sub tag_if_user_can {
   my ($req, $rperms, $args, $acts, $funcname, $templater) = @_;
 
-  require BSE::Permissions;
-  $$rperms ||= BSE::Permissions->new($req->cfg);
-
   my @checks = split /,/, $args;
   for my $check (@checks) {
     my ($perm, $artname) = split /:/, $check, 2;
@@ -402,12 +399,22 @@ sub tag_if_user_can {
     }
 
     # whew, so we should have an article
-    
-    $$rperms->user_has_perm($req->user, $article, $perm)
+    $req->user_can($perm, $article)
       or return;
   }
 
   return 1;
+}
+
+sub tag_admin_user {
+  my ($req, $field) = @_;
+
+  my $user = $req->user
+    or return '';
+  my $value = $user->{$field};
+  defined $value or $value = '';
+
+  return encode_entities($value);
 }
 
 sub secure {
@@ -417,6 +424,9 @@ sub secure {
   return
     (
      ifUserCan => [ \&tag_if_user_can, $req, \$perms ],
+     ifFormLogon => $req->session->{adminuserid},
+     ifLoggedOn => [ \&tag_if_logged_on, $req ],
+     adminuser => [ \&tag_admin_user, $req ],
     );
 }
 

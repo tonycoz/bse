@@ -463,6 +463,6 @@ sub send_message {
 	     sub {
 	       print "<div>",CGI::escapeHTML($_[0]),"</div>\n";
 	     });
-  print qq!<p><a target="_top" href="/admin/">Back to Admin Menu</a></p>\n!;
+  print qq!<p><a target="_top" href="/cgi-bin/admin/menu.pl">Back to Admin Menu</a></p>\n!;
   print "</body></html>\n";
 }

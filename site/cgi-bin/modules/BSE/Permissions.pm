@@ -5,8 +5,8 @@ use strict;
 my @checks =
   qw(
      edit_delete_article
-     edit_field_title
-     edit_field_summary
+     edit_field_edit_title
+     edit_field_edit_summary
      );
 my %checks = map { $_=> 1 } @checks;  
 
@@ -155,7 +155,12 @@ sub _load_user_perms {
 
   require BSE::TB::AdminGroups;
   my @usergroups = BSE::TB::AdminGroups->getSpecial(userPermissionGroups=>$user->{id});
-  my @userperms = BSE::DB->query(userAndGroupPerms=>$user->{id}, $user->{id});
+  my @userperms = 
+    ( 
+     BSE::DB->query(userPerms=>$user->{id}),
+     BSE::DB->query(groupPerms=>$user->{id}),
+     BSE::DB->query('commonPerms'),
+    );
   $self->{usergroups} = \@usergroups;
   $self->{userperms} = \@userperms;
 
@@ -266,17 +271,21 @@ sub user_has_perm {
     my $msg;
     $rmsg = \$msg;
   }
-  $self->{cfg}->entry('basic', 'access_control', 0)
-    or return 1;
-
+  unless ($self->{cfg}->entry('basic', 'access_control', 0))  {
+    if ($checks{$action}) {
+      unless (ref $article) {
+	$article = $self->_get_article($article)
+	  or return;
+      }
+      my $method = "check_$action";
+      $self->$method($user, $article, $action, $rmsg)
+	or return;
+    }
+    return 1;
+  }
+  
   unless (ref $article) {
     $article = $self->_get_article($article)
-      or return;
-  }
-
-  if ($checks{$action}) {
-    my $method = "check_$action";
-    $self->$method($user, $article, $action, $rmsg)
       or return;
   }
 
@@ -413,9 +422,9 @@ sub check_edit_delete_article {
   return 1;
 }
 
-sub check_edit_field_title {
+sub check_edit_field_edit_title {
   my ($self, $user, $article, $action, $rmsg) = @_;
-  
+
   if (_is_product_and_in_use($article)) {
     $$rmsg = "There are orders for this product.  The title cannot be changed.";
     return;
@@ -424,7 +433,7 @@ sub check_edit_field_title {
   return 1;
 }
 
-sub check_edit_field_summary {
+sub check_edit_field_edit_summary {
   my ($self, $user, $article, $action, $rmsg) = @_;
   
   if (_is_product_and_in_use($article)) {

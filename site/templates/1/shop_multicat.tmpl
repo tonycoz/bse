@@ -24,12 +24,13 @@
 <:admin:>
 <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font></p> 
   
+<:ifAdmin:>
 <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Reorder child articles: 
   <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&sort=title&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
   title</a> | <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&sort=date&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
   date</a> | <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&reverse=1&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">reverse 
   order</a></font></p>
-<:iterator begin allkids:> 
+<:or:><:eif:><:iterator begin allkids:> 
 <p><:thumbnail allkid:> <a href="<:url allkid:>"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><:allkid 
   title:></font></b></a> <:movestepkid:><br>
   <:if Allkid summaryLength:><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:summary 

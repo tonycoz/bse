@@ -12,7 +12,7 @@
 <body>
 <h1>Manage step <:ifMatch [article generator] "Product":><:or:> children/<:eif:>parents</h1>
 
-<p>| <a href="/admin/">Admin menu</a> | <:ifMatch [article generator] "Product":><a href="/cgi-bin/admin/shopadmin.pl">Manage 
+<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | <:ifMatch [article generator] "Product":><a href="/cgi-bin/admin/shopadmin.pl">Manage 
   catalogs</a> | <a href="/cgi-bin/admin/add.pl?id=<:article id:>">Edit 
   product</a><:or:><a href="/cgi-bin/admin/add.pl?id=<:article id:>"><:if Eq [article 
   parentid] 3:>Edit catalog<:or Eq:>Edit article<:eif Eq:></a><:eif:> |</p>

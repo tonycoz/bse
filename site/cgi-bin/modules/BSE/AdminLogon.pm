@@ -8,6 +8,7 @@ my %actions =
   (
    logon_form=>1,
    logon=>1,
+   logoff=>1,
   );
 
 sub dispatch {
@@ -66,5 +67,15 @@ sub req_logon {
   return BSE::Template->get_refresh($r, $req->cfg);
 }
 
+sub req_logoff {
+  my ($class, $req) = @_;
+
+  delete $req->session->{adminuserid};
+  ++$req->session->{changed};
+
+  my $r = $req->cfg->entryErr('site', 'url') . "/cgi-bin/admin/logon.pl";
+
+  return BSE::Template->get_refresh($r, $req->cfg);
+}
 
 1;

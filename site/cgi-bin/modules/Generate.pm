@@ -129,10 +129,14 @@ sub _make_table {
 # make a UL
 sub _format_bullets {
   my ($text) = @_;
+
   $text =~ s/^\s+|\s+$//g;
-  my @points = split /\*\*/, $text;
+  my @points = split /(?:\r?\n)?\*\*\s*/, $text;
   shift @points if @points and $points[0] eq '';
   return '' unless @points;
+  for my $point (@points) {
+    $point =~ s!\n$!<br /><br />!;
+  }
   return "<ul><li>".join("<li>", @points)."</ul>";
 }
 
@@ -140,9 +144,13 @@ sub _format_bullets {
 sub _format_ol {
   my ($text) = @_;
   $text =~ s/^\s+|\s+$//g;
-  my @points = split /##/, $text;
+  my @points = split /(?:\r?\n)?##\s*/, $text;
   shift @points if @points and $points[0] eq '';
   return '' unless @points;
+  for my $point (@points) {
+    #print STDERR  "point: ",unpack("H*", $point),"\n";
+    $point =~ s!\n$!<br /><br />!;
+  }
   return "<ol><li>".join("<li>", @points)."</ol>";
 }
 
@@ -323,9 +331,9 @@ sub format_body {
 	  and next TRY;
 	$part =~ s#table\[([^\]\[]+)\|([^\]\[|]+)\]#_make_table($1, "|$2")#ieg
 	  and next TRY;
-	$part =~ s#((?:\*\*[^\n]+\n[^\S\n]*)+)#_format_bullets($1)#eg
+	$part =~ s#\n{0,2}((?:\*\*[^\n]+\n\n?[^\S\n]*)+)\n?#_format_bullets($1)#eg
 	  and next TRY;
-	$part =~ s!((?:##[^\n]+\n[^\S\n]*)+)!_format_ol($1)!eg
+	$part =~ s!\n{0,2}((?:##[^\n]+\n\n?[^\S\n]*)+)\n?!_format_ol($1)!eg
 	  and next TRY;
 	$part =~ s#fontcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#<font size="$1" color="$2">$3</font>#ig
 	  and next TRY;

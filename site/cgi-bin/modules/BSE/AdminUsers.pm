@@ -75,6 +75,42 @@ sub iter_get_group_users {
   return BSE::DB->query(adminGroupsUsers => $id);
 }
 
+my @saltchars = ('.', '/', 0..9, 'A'..'Z', 'a'..'z');
+
+sub _save_htusers {
+  my ($class, $req, $rmsg) = @_;
+
+  my $cfg = $req->cfg;
+
+  my $userfile = $cfg->entry('basic', 'htusers')
+    or return 1;
+
+  my @users = BSE::TB::AdminUsers->all;
+  unless (@users) {
+    $$rmsg = "No users to load into $userfile file";
+    return;
+  }
+
+  my $work = $userfile . ".tmp";
+  unless (open USERS, "> $work") {
+    $$rmsg = "Cannot create work userfile $work: $!";
+    return;
+  }
+  for my $user (@users) {
+    my $salt = join '', @saltchars[rand(@saltchars), rand(@saltchars)];
+    my $cryptpw = crypt $user->{password}, $salt;
+    print USERS "$user->{logon}:$cryptpw\n";
+  }
+  close USERS;
+  chmod 0644, $work;
+  unless (rename $work, $userfile) {
+    $$rmsg = "Could not rename $work to $userfile: $!";
+    return;
+  }
+
+  return 1;
+}
+
 sub common_tags {
   my ($class, $req, $msg) = @_;
 
@@ -175,8 +211,13 @@ sub req_adduser {
   my @cols = BSE::TB::AdminUser->columns;
   shift @cols;
   my $user = BSE::TB::AdminUsers->add(@user{@cols});
+
+  my $msg = "User $logon created";
+
+  $class->_save_htusers($req, \$msg);
+
   return $class->refresh($req, 'a_showuser', userid=>$user->{id},
-			 'm'=>"User $logon created");
+			 'm'=>$msg);
 }
 
 sub req_addgroup {
@@ -553,8 +594,13 @@ sub req_saveuser {
     }
   }
 
+  my $msg = 'User saved';
+  $class->_save_htusers($req, \$msg);
+
+
+
   return $class->refresh($req, a_showuser => userid => $user->{id},
-			'm' => 'User saved');
+			'm' => $msg);
 }
 
 sub req_saveuserart {
@@ -698,8 +744,12 @@ sub req_deluser {
   my $logon = $user->{logon};
   $user->remove;
 
+  my $msg = "User '$logon' deleted";
+
+  $class->_save_htusers($req, \$msg);
+
   return $class->refresh($req, a_users =>
-			 'm' => "User '$logon' deleted");
+			 'm' => $msg);
 }
 
 sub req_delgroup {

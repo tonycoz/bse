@@ -67,24 +67,34 @@ my $site_article = { id=>-1, title=>"unknown", parentid=>0 };
 sub user_can {
   my ($self, $perm, $object, $rmsg) = @_;
 
-  return 1 unless $self->{adminuser};
   require BSE::Permissions;
   $self->{perms} ||= BSE::Permissions->new($self->cfg);
-  $object ||= $site_article;
-  unless (ref $object) {
-    require Articles;
-    my $art = $object == -1 ? $site_article : Articles->getByPkey($object);
-    if ($art) {
-      $object = $art;
+  if ($self->cfg->entry('basic', 'access_control', 0)) {
+    $object ||= $site_article;
+    unless (ref $object) {
+      require Articles;
+      my $art = $object == -1 ? $site_article : Articles->getByPkey($object);
+      if ($art) {
+	$object = $art;
+      }
+      else {
+	print STDERR "** Cannot find article id $object\n";
+	require Carp;
+	Carp::cluck "Cannot find article id $object";
+	return 0;
+      }
     }
-    else {
-      print STDERR "** Cannot find article id $object\n";
-      require Carp;
-      Carp::cluck "Cannot find article id $object";
-      return 0;
-    }
+    return $self->{perms}->user_has_perm($self->user, $object, $perm, $rmsg);
   }
-  return $self->{perms}->user_has_perm($self->user, $object, $perm, $rmsg);
+  else {
+    # some checks need to happen even if we don't want logons
+    return $self->{perms}->user_has_perm({ id=>-1 }, $object, $perm, $rmsg);
+  }
+}
+
+# a stub for now
+sub get_object {
+  return;
 }
 
 sub DESTROY {

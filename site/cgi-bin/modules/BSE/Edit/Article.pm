@@ -94,6 +94,8 @@ sub article_actions {
      fileswap => 'fileswap',
      filedel => 'filedel',
      filesave => 'filesave',
+     hide => 'hide',
+     unhide => 'unhide',
     );
 }
 
@@ -811,10 +813,11 @@ sub tag_if_field_perm {
     return;
   }
   if ($article->{id}) {
+    print STDERR "checking field $field\n";
     return $req->user_can("edit_field_edit_$field", $article);
   }
   else {
-    print STDERR "adding, always successful\n";
+    #print STDERR "adding, always successful\n";
     return 1;
   }
 }
@@ -1199,6 +1202,10 @@ sub save_new {
 sub fill_old_data {
   my ($self, $req, $article, $data) = @_;
 
+  if (exists $data->{body}) {
+    $data->{body} =~ s/\x0D\x0A/\n/g;
+    $data->{body} =~ tr/\r/\n/;
+  }
   for my $col (Article->columns) {
     $article->{$col} = $data->{$col}
       if exists $data->{$col} && $col ne 'id' && $col ne 'parentid';
@@ -1209,6 +1216,10 @@ sub fill_old_data {
 
 sub save {
   my ($self, $req, $article, $articles) = @_;
+
+  $req->user_can(edit_save => $article)
+    or return $self->edit_form($req, $article, $articles,
+			       "You don't have access to save this article");
   
   my $cgi = $req->cgi;
   my %data;
@@ -2099,6 +2110,42 @@ sub remove {
   my $url = "$urlbase$ENV{SCRIPT_NAME}?id=$parentid";
   $url .= "&message=Article+deleted";
   return BSE::Template->get_refresh($url, $self->{cfg});
+}
+
+sub unhide {
+  my ($self, $req, $article, $articles) = @_;
+
+  if ($req->user_can(edit_field_edit_listed => $article)
+      && $req->user_can(edit_save => $article)) {
+    $article->{listed} = 1;
+    $article->save;
+
+    use Util 'generate_article';
+    generate_article($articles, $article) if $Constants::AUTO_GENERATE;
+  }
+  my $r = $req->cgi->param('r');
+  unless ($r) {
+    $r = $req->cfg->entryVar('site', 'url') . "/cgi-bin/admin/add.pl?id=" . $article->{parentid};
+  }
+  return BSE::Template->get_refresh($r, $req->cfg);
+}
+
+sub hide {
+  my ($self, $req, $article, $articles) = @_;
+
+  if ($req->user_can(edit_field_edit_listed => $article)
+      && $req->user_can(edit_save => $article)) {
+    $article->{listed} = 0;
+    $article->save;
+
+    use Util 'generate_article';
+    generate_article($articles, $article) if $Constants::AUTO_GENERATE;
+  }
+  my $r = $req->cgi->param('r');
+  unless ($r) {
+    $r = $req->cfg->entryVar('site', 'url') . "/cgi-bin/admin/add.pl?id=" . $article->{parentid};
+  }
+  return BSE::Template->get_refresh($r, $req->cfg);
 }
 
 sub default_value {

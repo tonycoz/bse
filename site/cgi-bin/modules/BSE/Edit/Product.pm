@@ -185,6 +185,13 @@ sub _fill_product_data {
       or $src->{leadTime} = 0;
     $data->{leadTime} = $src->{leadTime};
   }
+  if (exists $src->{summary} && length $src->{summary}) {
+    if ($data->{id}) {
+      if ($req->user_can('edit_field_edit_summary', $data)) {
+	$data->{summary} = $src->{summary};
+      }
+    }
+  }
 }
 
 sub fill_new_data {

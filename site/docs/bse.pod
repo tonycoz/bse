@@ -10,6 +10,72 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.12_13
+
+=over
+
+=item *
+
+the title field could be changed on products that had been ordered (an
+edit field was presented for the summary field, but wasn't saved)
+
+=item *
+
+edit_0.tmpl had two manage access forms on it
+
+=item *
+
+use the new system logon rather than just checking for a browser
+authentication userid, when marking an order filled.
+
+=item *
+
+attempt to account for differences between what browsers send us for
+text areas (currently only for the body)
+
+=item *
+
+prevent <br> between each element of a <ol> or <ul> list, and try to
+prevent one after the end.  Double spaced entries in a list are now
+followed by <br>s to make it easier to do spaced out lists.
+
+=item *
+
+new hide and unhide targets for add.pl to make the links in the
+product list work again
+
+=item *
+
+the save target for existing articles in add.pl now checks the user is
+allowed to do it.
+
+=item *
+
+the product link on the final checkout page was broken (adrian)
+
+=item *
+
+the reordering links were displayed on the shop index page with the
+multicat template
+
+=item *
+
+the query used to retrieve user, group and everyone permissions from
+the database was broken.  Broke it into three separate queries.  I
+wish mysql supported unions
+
+=item *
+
+you can now logout if you logged in using the form based logon
+
+=item *
+
+creating a user, saving an existing user or deleting a user will now
+create an apache suitable user file, if the htusers field in [basic]
+is set.
+
+=back
+
 =head2 0.12_12
 
 =over

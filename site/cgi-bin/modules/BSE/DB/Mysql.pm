@@ -226,12 +226,20 @@ select * from admin_perms where object_id = ? and admin_id = ?
 SQL
    addArticleObjectPerm => 'insert into admin_perms values(?,?,?)',
    replaceArticleObjectPerm => 'replace into admin_perms values(?,?,?)',
-   userAndGroupPerms => <<SQL,
+   userPerms => <<SQL,
 select distinct ap.* 
-from admin_perms ap, admin_users au, admin_groups ag, admin_membership am
+from admin_perms ap
 where ap.admin_id = ?
-   or (ap.admin_id = am.group_id and am.user_id = ?)
-   or (ap.admin_id = ag.base_id and ag.name = 'everyone')
+SQL
+   groupPerms => <<SQL,
+select distinct ap.* 
+from admin_perms ap, admin_membership am
+where ap.admin_id = am.group_id and am.user_id = ?
+SQL
+   commonPerms => <<SQL,
+select distinct ap.* 
+from admin_perms ap, admin_groups ag
+where ap.admin_id = ag.base_id and ag.name = 'everyone'
 SQL
   );
 

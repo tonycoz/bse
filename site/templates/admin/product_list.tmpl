@@ -18,7 +18,7 @@
 <p>&nbsp; </p>
 <hr noshade size="1">
 <:iterator end catalogs:> 
-<:ifUserCan edit_add_child [cfg articles shop]:><form action="/cgi-bin/admin/add.pl"><input type=hidden name=type value="Catalog">
+<:ifUserCan edit_add_child:[cfg articles shop]:><form action="/cgi-bin/admin/add.pl"><input type=hidden name=type value="Catalog">
   <input type=hidden name=parentid value=3><input type=submit value="Add Catalog"></form><:or:><:eif:>
 <p><font size="-1">BSE Release <:release:></font></p>
 </body>
