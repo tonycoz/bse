@@ -10,6 +10,7 @@ use Squirrel::Template;
 use Squirrel::ImageEditor;
 use CGI::Cookie;
 use BSE::Custom;
+use BSE::Mail;
 
 require $SESSION_REQUIRE;
 
@@ -26,9 +27,6 @@ my $crypto_class = $SHOP_CRYPTO;
 # leave as undef to use your default key
 my $signing_id = $SHOP_SIGNING_ID;
 
-# location of sendmail
-my $sendmail = $SHOP_SENDMAIL;
-
 # location of PGP
 my $pgpe = $SHOP_PGPE;
 my $pgp = $SHOP_PGP;
@@ -38,9 +36,6 @@ my $from = $SHOP_FROM;
 
 my $toName = $SHOP_TO_NAME;
 my $toEmail= $SHOP_TO_EMAIL;
-
-#my $opts = '-t -odi';
-my $opts = '-t';
 
 # Lifetime (in hours _OR_ minutes) of the shopping cart cookie.
 # Value can be in minutes (append an 'm') or hours (append an 'h').
@@ -350,7 +345,7 @@ sub checkout {
      option => sub { CGI::escapeHTML($options[$option_index]{$_[0]}) },
      ifOptions => sub { @options },
      options => sub { nice_options(@options) },
-     BSE::Custom->checkout_actions(\%acts, \@cart, \@cart_prods, \%custom_state),
+     BSE::Custom->checkout_actions(\%acts, \@cart, \@cart_prods, \%custom_state, $CGI::Q),
     );
   $session{custom} = \%custom_state;
 
@@ -782,6 +777,7 @@ sub send_order {
     );
   my $templ = Squirrel::Template->new;
 
+  my $mailer = BSE::Mail->new;
   # ok, send some email
   my $confirm = $templ->show_page($TMPLDIR, 'mailconfirm.tmpl', \%acts);
   if ($SHOP_EMAIL_ORDER) {
@@ -811,25 +807,14 @@ sub send_order {
     my $crypted = $encrypter->encrypt($recip, $ordertext, %opts )
       or die "Cannot encrypt ", $encrypter->error;
 
-    sendmail($toEmail, 'New Order', $crypted, $from);
+    $mailer->send(to=>$toEmail, from=>$from, subject=>'New Order',
+		  body=>$crypted)
+      or do { print "Content-Type: text/plain\n\nError: ",$mailer->errstr,"\n"; exit };
   }
-  sendmail($order->{emailAddress}, $subject . " " . localtime, $confirm, $from);
-
-}
-
-sub sendmail {
-  my ($recip, $subject, $body, $from) = @_;
-
-  open MAIL, "| $sendmail $opts"
-    or die "Cannot open pipe to sendmail: $!";
-  print MAIL <<EOS;
-From: $from
-To: $recip
-Subject: $subject
-
-$body
-EOS
-  close MAIL;
+  $mailer->send(to=>$order->{emailAddress}, from=>$from,
+		subject=>$subject . " " . localtime,
+		body=>$confirm)
+    or do { print "Content-Type: text/plain\n\nError: ",$mailer->errstr,"\n"; exit };
 }
 
 sub page {
