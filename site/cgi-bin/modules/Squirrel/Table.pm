@@ -6,9 +6,9 @@ use strict;
 
 $VERSION = 0.1;
 
-use DatabaseHandle;
+use BSE::DB;
 
-my $dh = single DatabaseHandle;
+my $dh = BSE::DB->single;
 
 # no caching is performed if this is zero
 my $cache_timeout = 2; # seconds
@@ -30,7 +30,7 @@ sub new {
       && defined $cache{$class}{time}
       && $cache{$class}{time}+$cache_timeout >= time;
 
-  my $sth = $dh->{$class}
+  my $sth = $dh->stmt($class)
     or confess "No $class member in DatabaseHandle";
   $sth->execute
     or confess "Cannot execute $class handle from DatabaseHandle:",DBI->errstr;
@@ -77,7 +77,7 @@ sub getByPkey {
     my $rowClass = $self->rowClass;
     require $rowClass . ".pm";
     my $member = "get${rowClass}ByPkey";
-    my $sth = $dh->{$member}
+    my $sth = $dh->stmt($member)
       or confess "No $member in DatabaseHandle";
     $sth->execute(@values)
       or confess "Cannot execute $member handle from DatabaseHandle:", DBI->errstr;
@@ -135,10 +135,10 @@ sub getBy {
     my $rowClass = $self->rowClass;
     require $rowClass . ".pm";
     my $member = "get${rowClass}By\u$column";
-    my $sth = $dh->{$member}
-      or confess "No $member in DatabaseHandle";
+    my $sth = $dh->stmt($member)
+      or confess "No $member in BSE::DB";
     $sth->execute($value)
-      or confess "Cannot execute $member from DatabaseHandle: ",DBI->errstr;
+      or confess "Cannot execute $member from BSE::DB: ",DBI->errstr;
     while (my $row = $sth->fetchrow_arrayref) {
       push(@results, $rowClass->new(@$row));
     }
@@ -150,6 +150,11 @@ sub getBy {
 # a list of all rows in select order
 sub all {
   my $self = shift;
+
+  unless (ref $self) {
+    $self = $self->new();
+  }
+
   return @{$self->{order}};
 }
 
