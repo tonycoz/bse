@@ -140,26 +140,26 @@ my @prebuilt =
     titleImage=>'',
     body=><<'EOS',
 anchor[basic] b[Sample basic formatting:]
-indent[link[/a/8.html|regular link text]
+indent[link[/a/1.html|regular link text]
 
-b[link[/a/8.html|bold link text]]
+b[link[/a/1.html|bold link text]]
 
-i[link[/a/8.html|italic link text]]
+i[link[/a/1.html|italic link text]]
 
-i[b[link[/a/8.html|bold italic link text]]]
+i[b[link[/a/1.html|bold italic link text]]]
 
-link[http://www.visualthought.com.au|link to external web site]
+link[http://www.google.com|link to external web site]
 ]
 
 align[center|Align center text (NB: American spelling)]
 
 align[right|Align right text]
 
-This is how you can make an email link: link[mailto:adriann@visualthought.com.au|email us here!]
+This is how you can make an email link: link[mailto:adriann@devbox.org|email us here!]
 
-hrcolor[100%|1|#ffffff] anchor[font]
+hrcolor[100%|1|#CCCCFF] anchor[font]
 b[Sample font sizing:] (use numbers 1 - 7 only)
-indent[fontcolor[7|#6699CC|This is font size 7 and colour]
+indent[fontcolor[7|#FFCC33|This is font size 7 and colour]
 
 font[6|This is font size 6]
 
@@ -173,22 +173,20 @@ font[2|This is font size 2]
 
 font[1|This is font size 1]
 
-(but they can be minus numbers too)
+(but they can be plus or minus numbers too)
+
+font[+2|This is font size +2]
+
+font[+3|This is font size +3]
 
 font[-2|This is font size -2]
 
 font[-3|This is font size -3]
-
-(or positive numbers)
-
-font[+1|This is font size +1]
-
 ]
 
-b[HINT:] The default font size for your body text is size 2 and the
-headings are size 4 Bold.
+b[HINT:] The default font size for your body text is size 2 and the headings are size 4 Bold.
 
-hrcolor[100%|1|#ffffff] anchor[indent]
+hrcolor[100%|1|#CCCCFF] anchor[indent]
 b[Sample indenting and bullet points:]
 indent[This is a simple indent and bullet list
 ** Add a bullet point to this line
@@ -199,34 +197,40 @@ indent[This is a simple indent and bullet list
 ## It's very easy to format lists now
 ## Now we can count to three]
 
-hrcolor[100%|1|#ffffff]
-b[The NSWFITC colours:]
+hrcolor[100%|1|#CCCCFF]
+b[The BSE colours:]
 indent[
-table[bgcolor=#ffffff width=170 cellpadding=5
-|fontcolor[2|#000000|White - #FFFFFF]
-]
-table[bgcolor=#6699CC width=170 cellpadding=5
-|fontcolor[2|#000000|Light Blue - #6699CC]
-]
-table[bgcolor=#336699 width=170 cellpadding=5
-|fontcolor[2|#ffffff|Medium Blue - #336699]
-]
-table[bgcolor=#336699 width=170 cellpadding=1 cellspacing=0 |table[bgcolor=#003366 width=100% cellspacing=0 cellpadding=5
-|fontcolor[2|#ffffff|Regular Blue - #003366]
+table[bgcolor=#999999 width=170 cellpadding=1 cellspacing=0 |table[bgcolor=#FFFFCC width=100% cellspacing=0 cellpadding=5
+|fontcolor[2|#000000|Background - #FFFFCC]
 ]]
-table[bgcolor=#000033 width=170 cellpadding=5
-|fontcolor[2|#ffffff|Dark Blue - #000033]
+table[bgcolor=#FFFF99 width=170 cellpadding=5
+|fontcolor[2|#000000|Navbar - #FFFF99]
+]
+table[bgcolor=#FFCC33 width=170 cellpadding=5
+|fontcolor[2|#000000|Sidebar Title - #FFCC33]
+]
+table[bgcolor=#CCCCFF width=170 cellpadding=5
+|fontcolor[2|#000000|Title Panel - #CCCCFF]
+]
+table[bgcolor=#333399 width=170 cellpadding=5
+|fontcolor[2|#ffffff|Crumb Panel - #333399]
+]
+table[bgcolor=#999999 width=170 cellpadding=5
+|fontcolor[2|#000000|Outlines - #999999]
+]
+table[bgcolor=#FFFFFF width=170 cellpadding=5
+|fontcolor[2|#000000|Item Panel - #FFFFFF]
 ]
 ]
-hrcolor[100%|1|#ffffff]
+hrcolor[100%|1|#CCCCFF]
 b[Sample links to an anchor:]
 indent[link[#basic|Jump to "Sample basic formatting"]
 link[#font|Jump to "Sample font sizing"]
-r link[#indent|Jump to "Sample indenting and bullet points"]
+link[#indent|Jump to "Sample indenting and bullet points"]
 link[#table|Jump to "Making a table"]]
 
 
-hrcolor[100%|1|#ffffff] anchor[table]
+hrcolor[100%|1|#CCCCFF] anchor[table]
 b[Making a table:]
 indent[
 BSE has special tags to create simple tables, but if you wish to do anything more complicated, we recommend you develop the table in HTML and insert the raw HTML into the body text field.
@@ -236,8 +240,8 @@ table[
 |table|with 4 cells
 ]
 
-table[bgcolor=#6699CC width=90% cellpadding=5
-|align[center|link[/a/2.html|this one]]|is
+table[bgcolor=#CCCCFF width=90% cellpadding=5
+|align[center|link[/a/1.html|this one]]|is
 |not so|simple
 ]
 
@@ -251,7 +255,119 @@ table[width=100% cellpadding=5
 ]
 ]
 
-hrcolor[100%|1|#ffffff]
+hrcolor[100%|1|#CCCCFF]
+
+b[Inserting a plain HTML table:]
+
+Use an HTML editor to create table like this, then paste the generated HTML code into the text body area as you would any normal text.
+
+html[ 
+<table width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#999999">
+  <tr>
+    <td>
+      <table width="100%" border="0" cellpadding="5" cellspacing="1">
+        <tr bgcolor="#FFCC33"> 
+          <td width="25%" height="18"> <b><font face="Verdana, Arial, Helvetica, sans-serif" size="2">PROJECT 
+            MANAGEMENT</font></b></td>
+          <td width="25%" height="18"> <b><font face="Verdana, Arial, Helvetica, sans-serif" size="2">MANAGEMENT 
+            CONSULTING</font></b></td>
+          <td width="25%" height="18"> <b><font face="Verdana, Arial, Helvetica, sans-serif" size="2">PROPERTY</font></b></td>
+          <td width="25%" height="18"> <b><font face="Verdana, Arial, Helvetica, sans-serif" size="2">EVENTS</font></b></td>
+        </tr>
+        <tr valign="top" bgcolor="#FFFFCC"> 
+          <td width="25%"> 
+            <ul>
+              <li><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"> 
+                Project assessment and initiation</font></li>
+              <li><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Project 
+                audit</font></li>
+              <li><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Distressed 
+                project recovery</font></li>
+              <li><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Construction 
+                advisory</font></li>
+              <li><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Relocation 
+                management </font></li>
+            </ul>
+          </td>
+          <td width="25%"> 
+            <ul>
+              <li><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Business 
+                improvement </font></li>
+              <li><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Change 
+                management</font></li>
+              <li><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Market 
+                testing and Outsourcing</font></li>
+              <li><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Information 
+                management</font></li>
+              <li><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Employee 
+                relations</font></li>
+            </ul>
+          </td>
+          <td width="25%"> 
+            <ul>
+              <li><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Development 
+                management and packaging</font></li>
+              <li><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Property 
+                asset strategy</font></li>
+              <li><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Property 
+                advisory</font></li>
+              <li><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Property 
+                workout</font></li>
+            </ul>
+          </td>
+          <td width="25%"> 
+            <ul>
+              <li><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Event 
+                management</font></li>
+              <li><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Sponsorship 
+                and marketing</font></li>
+              <li><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Event 
+                overlay works</font></li>
+              <li><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Venue 
+                management</font></li>
+              <li><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Special 
+                event consulting </font></li>
+            </ul>
+          </td>
+        </tr>
+        <tr valign="top" bgcolor="#003366 "> 
+          <td colspan="4" bgcolor="#CCCCFF"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2">This 
+            could be a subtitle</font></b> </td>
+        </tr>
+        <tr valign="top" bgcolor="#FFFFCC"> 
+          <td width="25%"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Contract 
+            and commercial </font></td>
+          <td width="25%"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Asset 
+            management </font></td>
+          <td width="25%"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Project 
+            Marketing</font><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"> 
+            Contract </font></td>
+          <td width="25%"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Sponsorship</font></td>
+        </tr>
+        <tr valign="top" bgcolor="#FFFFCC"> 
+          <td width="25%"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Project 
+            information systems</font></td>
+          <td width="25%"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Risk 
+            management</font></td>
+          <td width="25%"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Project 
+            Marketing</font></td>
+          <td width="25%"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Event 
+            management</font></td>
+        </tr>
+        <tr valign="top" bgcolor="#FFFFCC"> 
+          <td width="25%"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Independent 
+            certification</font></td>
+          <td width="25%"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Business 
+            advisory</font></td>
+          <td width="25%"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Feasibility 
+            financial modelling</font></td>
+          <td width="25%"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Event 
+            overlay works</font></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>]
 EOS
     imagePos=>'tr',
     release=>'0000-00-00 00:00:00',
