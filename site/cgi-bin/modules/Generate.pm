@@ -208,9 +208,9 @@ sub _make_img {
 #      }
     my $im = $images->[$index-1];
     $text = qq!<img src="/images/$im->{image}" width="$im->{width}"!
-      . qq! height="$im->{height}" alt="! . CGI::escapeHTML($im->{alt});
+      . qq! height="$im->{height}" alt="! . CGI::escapeHTML($im->{alt}).'"';
     $text .= qq! align="$align"! if $align;
-    $text .= qq!" />!;
+    $text .= qq! />!;
     if ($url) {
       $text = qq!<a href="! . CGI::escapeHTML($url) . qq!">$text</a>!;
     }
@@ -220,7 +220,7 @@ sub _make_img {
 
 # replace markup, insert img tags
 sub format_body {
-  my ($self, $acts, $articles, $body, $imagePos, @images)  = @_;
+  my ($self, $acts, $articles, $body, $imagePos, $auto_images, @images)  = @_;
 
   return substr($body, 6) if $body =~ /^<html>/i;
 
@@ -240,7 +240,6 @@ sub format_body {
   # This needs a real parser
 
   my $out = '';
-  my $imgtags = 0; # if we seen any image[] tags
   for my $part (split /((?:html\[(?:[^\[\]]*(?:(?:\[[^\[\]]*\])[^\[\]]*)*)\])
 			|embed\[(?:[^,\[\]]*)(?:,(?:[^,\[\]]*))?\])/ix, $body) {
     #print STDERR "Part is $part\n";
@@ -293,7 +292,7 @@ sub format_body {
 	  and next TRY;
 	$part =~ s#hrcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#<table width="$1" height="$2" border="0" bgcolor="$3" cellpadding="0" cellspacing="0"><tr><td><img src="/images/trans_pixel.gif" width="1" height="1"></td></tr></table>#ig
 	  and next TRY;
-	$part =~ s#image\[([^\]\[]+)\]#++$imgtags, _make_img($1, \$imagePos, \@images)#ige
+	$part =~ s#image\[([^\]\[]+)\]#($auto_images = 0), _make_img($1, \$imagePos, \@images)#ige
 	  and next TRY;
 	last;
       }
@@ -304,7 +303,7 @@ sub format_body {
   }
   $body = $out;
 
-  if (!$imgtags && @images) {
+  if ($auto_images && @images) {
     # the first image simply goes where we're told to put it
     # the imagePos is [tb][rl] (top|bottom)(right|left)
     my $align = $imagePos =~ /r/ ? 'right' : 'left';
