@@ -114,6 +114,41 @@ days, M - months).  Default: +3h
 
 Minimum password length in characters.  Default: 4.
 
+=item randomdata
+
+Device to read random data from.  This device should not block when it
+runs out of entropy.
+
+=back
+
+=head2 [mail]
+
+This section controls how BSE send email.
+
+=over
+
+=item smtp_server
+
+The host or IP address of your mail server.  If this is not set
+C<sendmail> will be used instead.  If this is set you must also set
+I<helo>.
+
+=item helo
+
+The name that BSE uses to identify itself when sending mail via SMTP.
+Required if I<smtp_server> is set.
+
+=item sendmail
+
+The path to the C<sendmail> binary.  Default: /usr/lib/sendmail
+
+=item sendmail_opts
+
+The options supplied to sendmail.  Default: -t -oi
+
+You may want to add the -odq option to this if you want mail queued
+rather than sent immediately.
+
 =back
 
 =head2 [children of id]
@@ -188,6 +223,23 @@ be downloaded.
 
 if non-zero the order must be marked as filled before the files can be
 downloaded.
+
+=back
+
+=head2 [confirmations]
+
+Control over confirmation emails.
+
+=over
+
+=item subject
+
+The subject of email confirmation emails.  Default: Subcription
+Confirmation.
+
+=item from
+
+The from field for the email.  Default: $SHOP_FROM
 
 =back
 

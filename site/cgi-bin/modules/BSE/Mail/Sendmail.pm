@@ -1,14 +1,13 @@
 package BSE::Mail::Sendmail;
 use strict;
-use Constants qw/:email/;
 use vars qw/@ISA/;
 
 @ISA = qw/BSE::Mail/;
 
 sub new {
-  my ($class) = @_;
+  my ($class, %opts) = @_;
 
-  return bless {}, $class;
+  return bless \%opts, $class;
 }
 
 sub send {
@@ -28,7 +27,10 @@ sub send {
   $args{headers} =~ /^\s/
     and return $self->_error("headers starts with whitespace");
 
-  open MAIL, "| $SHOP_SENDMAIL -t -oi -odq"
+  my $cfg = $self->{cfg};
+  my $sendmail = $cfg->entry('mail', 'sendmail') || '/usr/lib/sendmail';
+  my $opts = $cfg->entry('mail', 'sendmail_opts') || '-t -oi';
+  open MAIL, "| $sendmail $opts"
     or return $self->_error("Cannot open pipe to sendmail");
   print MAIL <<EOS;
 From: $args{from}

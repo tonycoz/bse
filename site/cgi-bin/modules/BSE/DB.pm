@@ -1,6 +1,7 @@
 package BSE::DB;
 require 5.005;
 use strict;
+use Carp qw(croak);
 
 use vars qw($VERSION);
 $VERSION = '1.00';
@@ -13,6 +14,22 @@ require "$file.pm";
 
 sub single {
   $DBCLASS->_single();
+}
+
+sub query {
+  my ($self, $name, @args) = @_;
+
+  $self = BSE::DB->single unless ref $self;
+
+  my $sth = $self->stmt($name);
+
+  $sth->execute(@args)
+    or croak "Cannot execute statement $name: ",$sth->errstr;
+  my @results;
+  while (my $row = $sth->fetchrow_hashref) {
+    push(@results, { %$row } );
+  }
+  return @results;
 }
 
 1;

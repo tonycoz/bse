@@ -1,5 +1,6 @@
 package BSE::Util::Tags;
 use strict;
+use HTML::Entities;
 
 sub _get_parms {
   my ($acts, $args) = @_;
@@ -62,6 +63,23 @@ sub static {
 	 or return '';
        sprintf("%.02f", $value/100.0);
      },
+     bodytext =>
+     sub {
+       my ($func, $args) = split ' ', $_[0], 2;
+
+       $args = '' unless defined $args;
+       exists $acts->{$func}
+	 or return "<: bodytext $func $args :>";
+       my $value = $acts->{$func}->($args);
+       defined $value
+	 or return '';
+       
+       $value = decode_entities($value);
+       require 'Generate.pm';
+       my $gen = Generate->new;
+       
+       return $gen->format_body($acts, 'Articles', $value, 'tr', 0);
+     },
      ifEq =>
      sub {
        (my ($left, $right) = _get_parms($acts, $_[0])) == 2
@@ -78,16 +96,22 @@ sub static {
      sub {
        my ($value, $fmt) = @_;
        if ($fmt eq 'u') {
-	 return CGI::escape($_[0]);
+	 return CGI::escape($value);
        }
-       return $_[0];
+       elsif ($fmt eq 'h') {
+	 return CGI::escapeHTML($value);
+       }
+       return $value;
      },
     );  
 }
 
 sub basic {
-  my ($class, $acts, $cgi) = @_;
+  my ($class, $acts, $cgi, $cfg) = @_;
 
+  print STDERR "Have config\n" if $cfg;
+  print STDERR "No config ",caller(),"\n" unless $cfg;
+  
   return
     (
      $class->static($acts),
@@ -100,6 +124,15 @@ sub basic {
        $cgi or return '';
        my @value = $cgi->param($_[0]);
        CGI::escapeHTML("@value");
+     },
+     cfg =>
+     sub {
+       my ($section, $key) = split ' ', $_[0];
+       $cfg or return '';
+       print STDERR "Checking for >$section< >$key<\n";
+       my $value = $cfg->entry($section, $key);
+       defined $value or $value = '';
+       $value;
      },
     );
 }

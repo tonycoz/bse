@@ -2,7 +2,8 @@ package BSE::Util::SQL;
 use strict;
 use vars qw(@EXPORT_OK @ISA);
 require 'Exporter.pm';
-@EXPORT_OK = qw/now_datetime sql_datetime date_to_sql sql_to_date sql_date now_sqldate/;
+@EXPORT_OK = qw/now_datetime sql_datetime date_to_sql sql_to_date sql_date 
+                now_sqldate sql_datetime_to_epoch/;
 @ISA = qw/Exporter/;
 
 =head1 NAME
@@ -15,6 +16,7 @@ require 'Exporter.pm';
   my $sqlthen = sql_datetime($when);
   my $sqldate = date_to_sql($date);
   my $date = sql_to_date($sqldate);
+  my $epoch = sql_datetime_to_epoch($sqldate);
 
 =head1 DESCRIPTION
 
@@ -59,6 +61,15 @@ sub sql_to_date {
   my ($year, $month, $day) = $sqldate =~ /^(\d+)\D+(\d+)\D+(\d+)/;
 
   return "$day/$month/$year";
+}
+
+sub sql_datetime_to_epoch {
+  my $sqldate = shift;
+
+  my ($year, $month, $day, $hour, $min, $sec) = 
+    $sqldate =~ /^(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)/;
+  use POSIX qw(mktime);
+  return mktime($sec, $min, $hour, $day, $month-1, $year-1900);
 }
 
 1;

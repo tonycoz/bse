@@ -1,16 +1,19 @@
 package BSE::Mail;
 use strict;
-use Constants qw/:email/;
+use Constants;
+use Carp qw/confess/;
 
 sub new {
-  my ($class, @args) = @_;
-  if ($SMTP_SERVER) {
+  my ($class, %opts) = @_;
+  my $cfg = $opts{cfg}
+    or confess "No cfg parameter supplied";
+  if ($cfg->entry('mail', 'smtp_server')) {
     require 'BSE/Mail/SMTP.pm';
-    return BSE::Mail::SMTP->new(@args);
+    return BSE::Mail::SMTP->new(%opts);
   }
   else {
     require 'BSE/Mail/Sendmail.pm';
-    return BSE::Mail::Sendmail->new(@args);
+    return BSE::Mail::Sendmail->new(%opts);
   }
 }
 
@@ -26,7 +29,7 @@ sub errstr {
   my ($self) = @_;
 
   $self->{errstr};
- }
+}
 
 
 1;
@@ -38,7 +41,7 @@ sub errstr {
 =head1 SYNOPSIS
 
   use BSE::Mail;
-  my $mail = BSE::Mail->new;
+  my $mail = BSE::Mail->new(cfg=>$cfg);
   $mail->send(from=>$from, to=>$to, subject=>$subject, 
 	      headers=>$headers, body=>$body)
     or die $mail->errstr;

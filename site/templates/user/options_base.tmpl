@@ -54,8 +54,29 @@
   <td><input type="checkbox" name="keepAddress" value="1"<:ifLast keepAddress:> checked <:or:><:eif:> /></td>
 </tr>
 <tr>
-  <td>Newsletter:</td>
-  <td><input type="checkbox" name="wantLetter" value="1"<:ifLast wantLetter:> checked <:or:><:eif:> /></td>
+  <td>Newsletters:</td>
+  <td>
+    <table>
+      <:iterator begin subscriptions:>
+        <tr>
+	  <td><input type="checkbox" name="subscription" value="<:subscription id:>"<:ifSubscribed:> checked<:or:><:eif:> /></td>
+	  <td><:subscription name:></td>
+	  <td><a href="#" onClick="javascript:window.open('<:siteUrl:><:script:>?subinfo=1&id=<:subscription id:>', 'subscription_info','width=350,height=200,location=no,status=no,menubar=no,scrollbars=yes'); return 0"><img src="/images/info.gif" width="16" height="16" border="0" /></a></td>
+	</tr>
+      <:iterator end subscriptions:>
+    </table>
+    <:if AnySubs:>
+      <:if Subscription confirmed:><:or Subscription:>
+        <div>Note: you haven't confirmed your subscriptions.  You will not receive any subscriptions until you go to the URL provided in the confirmation email sent to your email address.</div>
+      <:eif Subscription:>
+    <:or AnySubs:>
+      <:if Subscription confirmed:>
+        <!-- possible note that subscriptions will be enabled immediately -->
+      <:or Subscription:>
+        <div>If you select any newsletters, they will not be sent until you confirm your subscription.  If you change your email address you will need to reconfirm your subscription.</div>
+      <:eif Subscription:>
+    <:eif AnySubs:>
+  </td>
 </tr>
 <tr>
   <td>First Name:</td>

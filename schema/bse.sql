@@ -281,6 +281,64 @@ create table article_files (
   primary key (id)
 );
 
+drop table if exists subscription_types;
+create table subscription_types (
+  id integer not null auto_increment,
+
+  -- name as listed to users on the user options page, and as listed
+  -- on the subscriptions management page
+  name varchar(80) not null,
+
+  -- the default title put into the article, and used for the article title 
+  -- field when generating the article
+  title varchar(64) not null,
+
+  -- a description for the subscription
+  -- used on user options page to give more info about a subscription
+  description text not null,
+
+  -- description of the frequency of subscriptions
+  -- eg. "weekly", "Every Monday and Thursday"
+  frequency varchar(127) not null,
+
+  -- keyword field for the generated article
+  keyword varchar(255) not null,
+
+  -- do we archive the email to an article?
+  archive integer not null default 1,
+
+  -- template used when we build the article
+  article_template varchar(127) not null,
+
+  -- one or both of the following template needs to be defined
+  -- if you only define the html template then the email won't be sent
+  -- to users who only accept text emails
+  -- template used for the HTML portion of the email
+  html_template varchar(127) not null,
+
+  -- template used for the text portion of the email
+  text_template varchar(127) not null,
+
+  -- which parent to put the generated article under
+  -- can be 0 to indicate no article is generated
+  parentId integer not null,
+
+  -- the last time this was sent out
+  lastSent datetime not null default '0000-00-00 00:00',
+  
+  primary key (id)
+);
+
+-- which lists users are subscribed to
+drop table if exists subscribed_users;
+create table subscribed_users (
+  id integer not null auto_increment,
+  subId integer not null,
+  userId integer not null,
+  primary key(id),
+  unique (subId, userId)  
+);
+
 -- contains web site users
 -- there will be a separate admin users table at some point
 drop table if exists site_users;
@@ -308,8 +366,86 @@ create table site_users (
 
   -- the user wants to receive the site newsletter if any
   -- this should default to NO
+  -- this is probably ignored for now
   wantLetter integer not null default 0,
+
+  -- if this is non-zero, we have permission to send email to this
+  -- user
+  confirmed integer not null default 0,
+
+  -- the confirmation message we send to a user includes this value
+  -- in the confirmation url
+  confirmSecret varchar(40) not null default '',
+
+  -- non-zero if we sent a confirmation message
+  waitingForConfirmation integer not null default 0,
+
+  textOnlyMail integer not null,
+
+  title varchar(10),
+  organization varchar(127),
+  
+  referral integer,
+  otherReferral varchar(127) not null,
+  prompt integer,
+  otherPrompt varchar(127) not null,
+  profession integer not null,
+  otherProfession varchar(127) not null,
 
   primary key (id),
   unique (userId)
+);
+
+-- this is used to track email addresses that we've sent subscription
+-- confirmations to
+-- this is used to prevent an attacked creating a few hundred site users
+-- and having the system send confirmation requests to those users
+-- we make sure we only send one confirmation request per 48 hours
+-- and a maximum of 3 unacknowledged confirmation requests
+-- once the 3rd confirmation request is sent we don't send the user
+-- any more requests - ever
+--
+-- each confirmation message also includes a blacklist address the 
+-- recipient can use to add themselves to the blacklist
+--
+-- We don't have an unverified mechanism to add users to the blacklist
+-- since someone could use this as a DoS.
+--
+-- Once we receive an acknowledgement from the recipient we remove them 
+-- from this table.
+drop table if exists email_requests;
+create table email_requests (
+  -- the table/row classes need this for now
+  id integer not null auto_increment,
+
+  # the actual email address the confirmation was sent to
+  email varchar(127) not null,
+
+  # the genericized email address
+  genEmail varchar(127) not null,
+
+  -- when the last confirmation email was sent
+  lastConfSent datetime not null default '0000-00-00 00:00:00',
+
+  -- how many confirmation messages have been sent
+  unackedConfMsgs integer not null default 0,
+
+  primary key (id),
+  unique (email),
+  unique (genEmail)
+);
+
+-- these are emails that someone has asked not to be subscribed to 
+-- any mailing list
+drop table if exists email_blacklist;
+create table email_blacklist (
+  -- the table/row classes need this for now
+  id integer not null auto_increment,
+  email varchar(127) not null,
+
+  -- a short description of why the address was blacklisted
+  why varchar(20) not null,
+
+  primary key (id),
+  unique (email)
 );

@@ -25,7 +25,7 @@ $(DISTTGZ): distdir
 
 #	tar czf $(DISTFILE) -C .. bse --exclude '*~' --exclude '*,v' --exclude 'pod2html-*cache'
 
-distdir: docs
+distdir: docs dbinfo
 	-perl -MExtUtils::Command -e rm_rf $(DISTBUILD)
 	perl -MExtUtils::Manifest=manicopy,maniread -e "manicopy(maniread(), '$(DISTBUILD)')"
 	mkdir $(DISTBUILD)/site/htdocs/shop
@@ -53,6 +53,11 @@ INSTALL.html: INSTALL.pod
 
 otherdocs:
 	cd site/docs ; make all
+
+dbinfo: site/util/mysql.str
+
+site/util/mysql.str: schema/bse.sql
+	perl schema/mysql_build.pl >site/util/mysql.str
 
 # this is very rough
 testinst: distdir

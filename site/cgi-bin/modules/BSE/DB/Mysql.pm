@@ -1,6 +1,8 @@
 package BSE::DB::Mysql;
 use strict;
 use DBI;
+use vars qw/@ISA/;
+@ISA = qw(BSE::DB);
 
 use vars qw($VERSION);
 
@@ -97,8 +99,38 @@ EOS
    
    getSiteUserByUserId =>
    'select * from site_users where userId = ?',
-   addSiteUser => 'insert site_users values(null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
-   replaceSiteUser => 'replace site_users values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+   addSiteUser => 'insert site_users values(null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+   replaceSiteUser => 'replace site_users values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+   'SiteUsers.removeSubscriptions'=>
+   'delete from subscribed_users where userId = ?',
+
+   SubscriptionTypes =>
+   'select * from subscription_types',
+   addSubscriptionType=>
+   'insert subscription_types values(null,?,?,?,?,?,?,?,?,?,?,?)',
+   replaceSubscriptionType=>
+   'replace subscription_types values(?,?,?,?,?,?,?,?,?,?,?,?)',
+   getSubscriptionTypeByPkey =>
+   'select * from subscription_types where id = ? order by name',
+
+   addSubscribedUser=>
+   'insert subscribed_users values(null,?,?)',
+   getSubscribedUserByUserId =>
+   'select * from subscribed_users where userId = ?',
+
+   # the following don't work with the row/table classes
+   articlesList =>
+   'select id, title from article order by level, displayOrder desc',
+
+   getEmailBlackEntryByEmail =>
+   'select * from email_blacklist where email = ?',
+
+   addEmailRequest =>
+   'insert email_requests values(null,?,?,?,?)',
+   replaceEmailRequest =>
+   'replace email_requests values(?,?,?,?,?)',
+   getEmailRequestByGenEmail =>
+   'select * from email_requests where genEmail = ?',
   );
 
 sub _single
@@ -118,7 +150,9 @@ sub _single
 sub stmt {
   my ($self, $name) = @_;
 
-  $statements{$name} or croak "Statement named '$name' not found";
+  $name =~ s/BSE:://;
+
+  $statements{$name} or confess "Statement named '$name' not found";
   my $sth = $self->{dbh}->prepare($statements{$name})
     or croak "Cannot prepare $name statment: ",$self->{dbh}->errstr;
 

@@ -1,7 +1,7 @@
 package Generate::Article;
 use strict;
 use Squirrel::Template;
-use Constants qw($TMPLDIR $URLBASE %TEMPLATE_OPTS %LEVEL_DEFAULTS 
+use Constants qw($TMPLDIR %TEMPLATE_OPTS %LEVEL_DEFAULTS 
                  $CGI_URI $ADMIN_URI $IMAGES_URI $UNLISTED_LEVEL1_IN_CRUMBS);
 use Images;
 use vars qw(@ISA);
@@ -340,12 +340,14 @@ HTML
 
   if ($article->{link} =~ /^\w+:/) {
     my $oldurl = $acts{url};
+    my $cfg = $self->{cfg} || BSE::Cfg->new;
+    my $urlbase = $cfg->entryErr('site', 'url');
     $acts{url} =
       sub {
         my $value = $oldurl->(@_);
         unless ($value =~ /^\w+:/) {
           # put in the base site url
-          $value = $URLBASE . $value;
+          $value = $urlbase . $value;
         }
         return $value;
       };

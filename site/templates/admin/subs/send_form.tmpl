@@ -1,0 +1,69 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+
+  <title>Administration - Send Subscription</title>
+
+  <link rel="stylesheet" type="text/css" href="/css/admin.css" />
+
+</head>
+
+<body>
+
+<h1><:cfg site name:> Send Subscription</h1>
+
+<:ifMessage:><p><b><:message:></b></p><:or:><:eif:>
+
+<p>| <a href="/admin/" target="_top"><b>Admin menu</b></a> | <a href="<:script:>" target="_top"><b>Subscriptions List</b></a> |</p>
+
+<form action="<:script:>" method="POST" target="_self"><input type="hidden" name="id" value="<:subscription id:>">
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000">
+    <tr>
+      <td>
+  <table cellpadding="6" border="0" cellspacing="1">
+    <tr bgcolor="#FFFFFF">
+      <th>Title/Subject:</th>
+      <td><input type="text" name="title" value="<:old title:>" size="40" /> <:help subssend title:> <:ifError title:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error title:>" /><:or:><:eif:></td>
+    </tr>
+    <tr bgcolor="#FFFFFF">
+      <th>Body:</th>
+      <td valign="top"><textarea name="body" cols="60" rows="10" wrap="virtual"><:old body:></textarea> <:help subssend body:> <:ifError body:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error body:>" /><:or:><:eif:></td>
+    </tr>
+<:if Cfg subscriptions override:>
+    <tr bgcolor="#FFFFFF">
+      <th>HTML Template:</th>
+      <td><:template html_template htmlemail 1:> <:help subssend html_template:> <:ifError html_template:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error html_template:>" /><:or:><:eif:></td>
+    </tr>
+    <tr bgcolor="#FFFFFF">
+      <th>Text Template:</th>
+      <td><:template text_template textemail:> <:help subssend text_template:> <:ifError text_template:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error text_template:>" /><:or:><:eif:></td>
+    </tr>
+    <tr bgcolor="#FFFFFF">
+      <th colspan="2">Archiving <:help subssend archiving:></th>
+    </tr>
+    <tr bgcolor="#FFFFFF">
+      <th>Archive:</th>
+      <td><input type="checkbox" name="archive" value="1"<:ifOld archive:> checked<:or:><:eif:> /> <:help subssend archive:> </td>
+    </tr>
+    <tr bgcolor="#FFFFFF">
+      <th>Keywords:</th>
+      <td><input type="text" name="keyword" value="<:old keyword:>" size="40" /> <:help subssend keyword:></td>
+    </tr>
+    <tr bgcolor="#FFFFFF">
+      <th>Article Template:</th>
+      <td><:template article_template:> <:help subssend template:> <:ifError article_template:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error article_template:>" /><:or:><:eif:></td>
+    </tr>
+    <tr bgcolor="#FFFFFF">
+      <th>Archive Parent:</th>
+      <td><:parent:> <:help subssend parent:> <:ifError parentId:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error parentId:>" /><:or:><:eif:></td>
+    </tr>
+<:or Cfg:><:eif Cfg:>
+  </table>
+</td>
+</tr>
+</table>
+<input type="submit" name="send" value="Send Subscription"> <input type="button" value="HTML Preview" onClick=""> <input type="button" value="Text Preview" onClick="">
+</form>
+
+</body>
+</html>

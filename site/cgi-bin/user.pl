@@ -32,6 +32,9 @@ my %actions =
    download=>'download',
    show_lost_password => 'show_lost_password',
    lost_password => 'lost_password',
+   subinfo => 'subinfo',
+   blacklist => 'blacklist',
+   confirm => 'confirm',
   );
 
 my $cgi = CGI->new;

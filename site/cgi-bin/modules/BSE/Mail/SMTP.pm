@@ -1,15 +1,14 @@
 package BSE::Mail::SMTP;
 use strict;
-use Constants qw/:email/;
 use vars qw/@ISA/;
 use Net::SMTP;
 
 @ISA = qw/BSE::Mail/;
 
 sub new {
-  my ($class) = @_;
+  my ($class, %opts) = @_;
 
-  return bless {}, $class;
+  return bless \%opts, $class;
 }
 
 sub send {
@@ -29,7 +28,10 @@ sub send {
   $args{headers} =~ /^\s/
     and return $self->_error("headers starts with whitespace");
 
-  my $smtp = Net::SMTP->new($SMTP_SERVER, Hello=>$SMTP_HELO)
+  my $cfg = $self->{cfg};
+  my $server = $cfg->entryErr('mail', 'smtp_server');
+  my $helo = $cfg->entryErr('mail', 'helo');
+  my $smtp = Net::SMTP->new($server, Hello=>$helo)
     or return $self->_error("Cannot connect to mail server: $!");
   $smtp->mail($args{from})
     or return $self->_error("mail command failed: ".$smtp->message);

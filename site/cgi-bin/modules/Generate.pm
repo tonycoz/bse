@@ -2,7 +2,7 @@ package Generate;
 use strict;
 use Articles;
 use CGI ();
-use Constants qw(%EXTRA_TAGS $IMAGEDIR $LOCAL_FORMAT $TMPLDIR $BODY_EMBED 
+use Constants qw($IMAGEDIR $LOCAL_FORMAT $TMPLDIR $BODY_EMBED 
                  $EMBED_MAX_DEPTH $HAVE_HTML_PARSER);
 use BSE::Custom;
 
@@ -441,12 +441,12 @@ sub baseActs {
   my @level3; # filled as we move through the subsections
   my $level3_index = -1;
 
-  my %extras = %EXTRA_TAGS;
+  my $cfg = $self->{cfg} || BSE::Cfg->new;
+  my %extras = $cfg->entriesCS('extra tags');
   for my $key (keys %extras) {
-    unless (ref $extras{$key}) {
-      my $data = $extras{$key};
-      $extras{$key} = sub { $data };
-    }
+    # follow any links
+    my $data = $cfg->entryVar('extra tags', $key);
+    $extras{$key} = sub { $data };
   }
 
   return 

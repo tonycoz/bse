@@ -39,4 +39,8 @@ sub listedChildren {
 	     && $today le $_->{expire}} $self->children($id);
 }
 
+sub summary {
+  BSE::DB->query('articlesList');
+}
+
 1;

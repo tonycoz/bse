@@ -5,7 +5,7 @@ require Exporter;
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(generate_article generate_all generate_button 
                 refresh_to regen_and_refresh);
-use Constants qw($CONTENTBASE $TMPLDIR $URLBASE %TEMPLATE_OPTS
+use Constants qw($CONTENTBASE $TMPLDIR %TEMPLATE_OPTS
 		 $GENERATE_BUTTON $SHOPID $AUTO_GENERATE);
 
 my %gen_cache;
@@ -108,7 +108,8 @@ sub generate_shop {
     );
   require 'Generate/Article.pm';
   my $shop = $articles->getByPkey($SHOPID);
-  my $gen = Generate::Article->new;
+  my $cfg = BSE::Cfg->new;
+  my $gen = Generate::Article->new(cfg=>$cfg);
   for my $name (@pages) {
     my %acts;
     %acts = $gen->baseActs($articles, \%acts, $shop);
@@ -120,7 +121,7 @@ sub generate_shop {
         my $value = $oldurl->(@_);
         unless ($value =~ /^\w+:/) {
           # put in the base site url
-          $value = $URLBASE.$value;
+          $value = $cfg->entryErr('site', 'url').$value;
         }
         return $value;
       };
@@ -159,7 +160,7 @@ sub generate_extras {
   }
   close EXTRAS;
   use Generate;
-  my $gen = Generate->new;
+  my $gen = Generate->new(cfg=>$cfg);
   for my $row (@extras) {
     my ($in, $out) = @$row;
     my %acts;
@@ -184,7 +185,7 @@ sub generate_extras {
   my %entries = $cfg->entries('pregenerate');
   if (keys %entries) {
     require 'Generate/Article.pm';
-    my $gen = Generate::Article->new;
+    my $gen = Generate::Article->new(cfg=>$cfg);
     for my $out (keys %entries) {
       my ($presets, $input) = split ',', $entries{$out}, 2;
       my %article = map { $_, '' } Article->columns;

@@ -14,6 +14,7 @@ GetOptions("v:i", \$verbose,
 	   "n", \$pretend,
 	   "b", \$didbackup);
 $verbose = 1 if defined $verbose && $verbose == 0;
+$verbose = 0 unless $verbose;
 
 if ($didbackup) {
   print "Since you gave the -b option, I assume you made a backup.\n";

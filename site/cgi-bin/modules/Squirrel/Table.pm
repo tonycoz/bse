@@ -38,7 +38,8 @@ sub new {
   my %coll;
   my @order;
   my $rowClass = $class->rowClass;
-  require $rowClass.".pm";
+  (my $reqName = $rowClass) =~ s!::!/!g;
+  require $reqName.".pm";
   while (my $row = $sth->fetchrow_arrayref) {
     my $item = $rowClass->new(@$row);
     $coll{$item->{pkey}} = $item;
@@ -75,7 +76,8 @@ sub getByPkey {
   else {
     # try to get row by key
     my $rowClass = $self->rowClass;
-    require $rowClass . ".pm";
+    (my $reqName = $rowClass) =~ s!::!/!g;
+    require $reqName . ".pm";
     my $member = "get${rowClass}ByPkey";
     my $sth = $dh->stmt($member)
       or confess "No $member in DatabaseHandle";
@@ -94,7 +96,8 @@ sub getByPkey {
 sub add {
   my ($self, @data) = @_;
 
-  require $self->rowClass.".pm";
+  (my $rowRequire = $self->rowClass) =~ s!::!/!;
+  require $rowRequire.".pm";
   my $item = $self->rowClass->new(undef, @data);
 
   # if called as an instance method
@@ -145,7 +148,8 @@ sub getBy {
   else {
     # ask the database directly
     my $rowClass = $self->rowClass;
-    require $rowClass . ".pm";
+    (my $reqName = $rowClass) =~ s!::!/!g;
+    require $reqName . ".pm";
     my $member = "get${rowClass}By".join("And", map "\u$_", @cols);
     my $sth = $dh->stmt($member)
       or confess "No $member in BSE::DB";
@@ -177,6 +181,19 @@ sub getSpecial {
   }
 
   wantarray ? @results : \@results;
+}
+
+sub doSpecial {
+  my ($self, $name, @args) = @_;
+
+  my $class = ref $self ? ref $self : $self;
+  my $sqlname = $class . "." . $name;
+  my $sth = $dh->stmt($sqlname)
+    or confess "No $sqlname in database object";
+  $sth->execute(@args)
+    or confess "Cannot execute $sqlname: ", $sth->errstr;
+
+  return $sth->rows;
 }
 
 # a list of all rows in select order

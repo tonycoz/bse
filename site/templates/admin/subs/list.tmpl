@@ -1,0 +1,54 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+
+  <title>Administration - Subscriptions Manager</title>
+
+  <link rel="stylesheet" type="text/css" href="/css/admin.css" />
+
+</head>
+
+<body>
+
+<h1>Subscriptions List</h1>
+
+<:ifMessage:><p><b><:message:></b></p><:or:><:eif:>
+
+<p>| <a href="/admin/"><b>Admin menu</b></a> | <a href="<:script:>?add=1"><b>Add New Subscription</b></a> |</p>
+
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000">
+    <tr>
+      <td>
+  <table cellpadding="6" border="0" cellspacing="1">
+    <tr bgcolor="#FFFFFF">
+      <th>Name</th>
+      <th>Title</th>
+      <th>Frequency</th>
+      <th>Last published</th>
+      <th>&nbsp;</th>
+    </tr>
+<:if Subscriptions:>
+<:iterator begin subscriptions:>
+    <tr bgcolor="#FFFFFF">
+      <td><:subscription name:></td>
+      <td><:subscription title:></td>
+      <td><:subscription frequency:></td>
+      <td align="center"><:ifMatch [subscription lastSent] "0000-00-00":>Never<:or:><:date subscription lastSent:><:eif:></td>
+      <td>
+        <a href="<:script:>?edit=1&id=<:subscription id:>"><b>Edit</b></a>
+        <a href="<:script:>?start_send=1&id=<:subscription id:>"><b>Send</b></a>
+      </td>
+    </tr>
+<:iterator end subscriptions:>
+<:or Subscriptions:>
+    <tr bgcolor="#FFFFFF">
+      <td colspan="5" align="center">You don't have any subscriptions defined</td>
+    </tr>
+<:eif Subscriptions:>
+  </table>
+</td>
+</tr>
+</table>
+
+</body>
+</html>

@@ -61,7 +61,8 @@ If the section or key doesn not exist, return undef.
 sub entry {
   my ($self, $section, $key) = @_;
 
-  $self->{config}{lc $section} && $self->{config}{lc $section}{lc $key};
+  $self->{config}{lc $section} 
+    && $self->{config}{lc $section}{values}{lc $key};
 }
 
 =item entries($section)
@@ -71,13 +72,35 @@ Returns a keyword/value list of the entries from the given section.
 This can be assigned to a hash by the caller.  There is no particular
 order to the keys.
 
+The keys are all lower-case.
+
 =cut
 
 sub entries {
   my ($self, $section) = @_;
 
   if ($self->{config}{lc $section}) {
-    return %{$self->{config}{lc $section}};
+    return %{$self->{config}{lc $section}{values}};
+  }
+  return;
+}
+
+=item entriesCS($section)
+
+Returns a keyword/value list of the entries from the given section.
+
+This can be assigned to a hash by the caller.  There is no particular
+order to the keys.
+
+The keys are in original case.
+
+=cut
+
+sub entriesCS {
+  my ($self, $section) = @_;
+
+  if ($self->{config}{lc $section}) {
+    return %{$self->{config}{lc $section}{case}};
   }
   return;
 }
@@ -216,7 +239,8 @@ sub _load_cfg {
     }
     elsif (/^\s*([^=\s]+)\s*=\s*(.*)$/) {
       $section or next;
-      $sections{$section}{lc $1} = $2;
+      $sections{$section}{values}{lc $1} = $2;
+      $sections{$section}{case}{lc $1} = $2;
     }
   }
   close CFG;

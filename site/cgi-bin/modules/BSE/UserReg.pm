@@ -3,8 +3,15 @@ use strict;
 use SiteUsers;
 use BSE::Util::Tags;
 use BSE::Template;
-use Constants qw($URLBASE $SHOP_FROM);
+use Constants qw($SHOP_FROM);
 use BSE::Message;
+use BSE::SubscriptionTypes;
+use BSE::SubscribedUsers;
+use BSE::Mail;
+use BSE::EmailRequests;
+
+use constant MAX_UNACKED_CONF_MSGS => 3;
+use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
 
 sub user_tags {
   my ($self, $acts, $session, $user) = @_;
@@ -24,10 +31,10 @@ sub user_tags {
     );
 }
 
-sub _refresh_userpage {
-  my ($msg) = @_;
+sub _refresh_userpage ($$) {
+  my ($cfg, $msg) = @_;
 
-  my $url = "$URLBASE/cgi-bin/user.pl?userpage=1";
+  my $url = $cfg->entryErr('site', 'url') . "/cgi-bin/user.pl?userpage=1";
   if (defined $msg) {
     $url .= '&message='.CGI::escape($msg);
   }
@@ -45,7 +52,7 @@ sub show_logon {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $cgi),
+     BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
      $self->user_tags(\%acts, $session),
      message => sub { CGI::escapeHTML($message) },
     );
@@ -79,7 +86,7 @@ sub logon {
     refresh_to($refresh);
   }
   else {
-    refresh_to("$URLBASE$ENV{SCRIPT_NAME}?userpage=1");
+    refresh_to($cfg->entryErr('site', 'url') . "$ENV{SCRIPT_NAME}?userpage=1");
   }
 }
 
@@ -105,7 +112,7 @@ sub show_register {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $cgi),
+     BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
      $self->user_tags(\%acts, $session),
      old => 
      sub {
@@ -126,12 +133,16 @@ sub show_opts {
     or return $self->show_logon($session, $cgi, $cfg);
   my $user = SiteUsers->getBy(userId=>$userid)
     or return $self->show_logon($session, $cgi, $cfg);
+  my @subs = BSE::SubscriptionTypes->all;
+  my @usersubs = BSE::SubscribedUsers->getBy(userId=>$user->{id});
+  my %usersubs = map { $_->{subId}, $_ } @usersubs;
   
+  my $sub_index;
   $message ||= $cgi->param('message') || '';
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $cgi),
+     BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
      $self->user_tags(\%acts, $session, $user),
      last => 
      sub {
@@ -141,6 +152,10 @@ sub show_opts {
        CGI::escapeHTML($value);
      },
      message => sub { CGI::escapeHTML($message) },
+     BSE::Util::Tags->make_iterator(\@subs, 'subscription', 'subscriptions',
+				    \$sub_index),
+     ifSubscribed=>sub { $usersubs{$subs[$sub_index]{id}} },
+     ifAnySubs => sub { @usersubs },
     );
 
   BSE::Template->show_page('user/options', $cfg, \%acts);
@@ -193,18 +208,48 @@ sub saveopts {
     or return $self->show_opts($session, $cgi, $cfg,
 			       $msgs->(optsbademail=>
 				       "Please enter a valid email address"));
+  if ($email ne $user->{email}) {
+    $user->{confirmed} = 0;
+    $user->{confirmSecret} = '';
+  }
   $user->{email} = $email;
-  my @donttouch = qw(id userId password email);
+  my @donttouch = qw(id userId password email confirmed confirmSecret waitingForConfirmation);
   my %donttouch = map { $_, $_ } @donttouch;
   my @cols = grep !$donttouch{$_}, SiteUser->columns;
   for my $col (@cols) {
     my $value = $cgi->param($col);
     if (defined $value) {
+	
       $user->{$col} = $value;
     }
   }
   $user->save;
-  refresh_to("$URLBASE$ENV{SCRIPT_NAME}?userpage=1");
+
+  # subscriptions
+  my @subids = $cgi->param('subscription');
+  $user->removeSubscriptions;
+  if (@subids) {
+    my @usersubs;
+    my @subs;
+    my @cols = BSE::SubscribedUser->columns;
+    shift @cols; # don't set id
+    for my $subid (@subids) {
+      $subid =~ /^\d+$/ or next;
+      my $sub = BSE::SubscriptionTypes->getByPkey($subid)
+	or next;
+      my %usersub;
+      $usersub{subId} = $subid;
+      $usersub{userId} = $user->{id};
+
+      push(@usersubs, BSE::SubscribedUsers->add(@usersub{@cols}));
+      push(@subs, $sub);
+    }
+    if (!$user->{confirmed}) {
+      return $self->send_conf_request($session, $cgi, $cfg, $user,
+				      \@usersubs, \@subs);
+    }
+  }
+  refresh_to($cfg->entryErr('site', 'url') . "$ENV{SCRIPT_NAME}?userpage=1");
 }
 
 sub register {
@@ -292,7 +337,7 @@ sub register {
       refresh_to($refresh);
     }
     else {
-      return refresh_to("$URLBASE/cgi-bin/user.pl?show_opts=1");
+      return refresh_to($cfg->entryErr('site', 'url') . "/cgi-bin/user.pl?show_opts=1");
     }
   }
   else {
@@ -328,7 +373,7 @@ sub userpage {
   my $file_index;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $cgi),
+     BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
      $self->user_tags(\%acts, $session, $user),
      message => sub { CGI::escapeHTML($message) },
      BSE::Util::Tags->make_iterator(\@orders, 'order', 'orders', 
@@ -380,44 +425,44 @@ sub download {
 				    $msgs->('pleaselogon', "Please logon"));
 
   my $orderid = $cgi->param('order')
-    or return _refresh_userpage($msgs->('noorderid', "No order id supplied"));
+    or return _refresh_userpage($cfg, $msgs->('noorderid', "No order id supplied"));
   require 'Orders.pm';
   my $order = Orders->getByPkey($orderid)
-    or return _refresh_userpage($msgs->('nosuchorder',
+    or return _refresh_userpage($cfg, $msgs->('nosuchorder',
 					"No such orderd $orderid", $orderid));
   unless (length $order->{userId}
 	  && $order->{userId} eq $userid) {
-    return _refresh_userpage($msgs->("notyourorder",
+    return _refresh_userpage($cfg, $msgs->("notyourorder",
 				     "Order $orderid isn't yours", $orderid));
   }
   my $itemid = $cgi->param('item')
-    or return _refresh_userpage($msgs->('noitemid', "No item id supplied"));
+    or return _refresh_userpage($cfg, $msgs->('noitemid', "No item id supplied"));
   require 'OrderItems.pm';
   my ($item) = grep $_->{id} == $itemid,
   OrderItems->getBy(orderId=>$order->{id})
-    or return _refresh_userpage($msgs->(notinorder=>"Not part of that order"));
+    or return _refresh_userpage($cfg, $msgs->(notinorder=>"Not part of that order"));
   require 'ArticleFiles.pm';
   my @files = ArticleFiles->getBy(articleId=>$item->{productId})
-    or return _refresh_userpage($msgs->(nofilesonline=>"No files in this line"));
+    or return _refresh_userpage($cfg, $msgs->(nofilesonline=>"No files in this line"));
   my $fileid = $cgi->param('file')
-    or return _refresh_userpage($msgs->(nofileid=>"No file id supplied"));
+    or return _refresh_userpage($cfg, $msgs->(nofileid=>"No file id supplied"));
   my ($file) = grep $_->{id} == $fileid, @files
-    or return _refresh_userpage($msgs->(nosuchfile=>"No such file in that line item"));
+    or return _refresh_userpage($cfg, $msgs->(nosuchfile=>"No such file in that line item"));
   
   my $must_be_paid = $cfg->entryBool('downloads', 'must_be_paid', 0);
   my $must_be_filled = $cfg->entryBool('download', 'must_be_filled', 0);
   if ($must_be_paid && !$order->{paidFor}) {
-    return _refresh_userpage($msgs->("paidfor", 
+    return _refresh_userpage($cfg, $msgs->("paidfor", 
 				     "Order not marked as paid for"));
   }
   if ($must_be_filled && !$order->{filled}) {
-    return _refresh_userpage($msgs->("filled", 
+    return _refresh_userpage($cfg, $msgs->("filled", 
 				     "Order not marked as filled"));
   }
   
   my $filebase = $cfg->entryVar('paths', 'downloads');
   open FILE, "< $filebase/$file->{filename}"
-    or return _refresh_userpage(
+    or return _refresh_userpage($cfg, 
 	       $msgs->(openfile =>
 		       "Sorry, cannot open that file.  Contact the webmaster.",
 		       $!));
@@ -447,7 +492,7 @@ sub show_lost_password {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $cgi),
+     BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
      message => sub { CGI::escapeHTML($message) },
     );
   BSE::Template->show_page('user/lostpassword', $cfg, \%acts);
@@ -470,14 +515,14 @@ sub lost_password {
 
   require 'BSE/Mail.pm';
 
-  my $mail = BSE::Mail->new;
+  my $mail = BSE::Mail->new(cfg=>$cfg);
 
   my %mailacts;
   %mailacts =
     (
      user => sub { $user->{$_[0]} },
      host => sub { $ENV{REMOTE_ADDR} },
-     site => sub { $URLBASE },
+     site => sub { $cfg->entryErr('site', 'url') },
     );
   my $body = BSE::Template->get_page('user/lostpwdemail', $cfg, \%mailacts);
   my $from = $cfg->entry('basic', 'emailfrom') || $SHOP_FROM;
@@ -492,10 +537,197 @@ sub lost_password {
   my %acts;
   %acts = 
     (
-     BSE::Util::Tags->basic(\%acts, $cgi),
+     BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
      user => sub { CGI::escapeHTML($user->{$_[0]}) },
     );
   BSE::Template->show_page('user/lostemailsent', $cfg, \%acts);
+}
+
+sub subinfo {
+  my ($self, $session, $cgi, $cfg) = @_;
+
+  my $id = $cgi->param('id')
+    or return $self->show_opts($session, $cgi, $cfg, "No subscription id parameter");
+  my $sub = BSE::SubscriptionTypes->getByPkey($id)
+    or return $self->show_opts($session, $cgi, $cfg, "Unknown subscription id");
+  my %acts;
+  %acts =
+    (
+     BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
+     subscription=>sub { CGI::escapeHTML($sub->{$_[0]}) },
+    );
+  BSE::Template->show_page('user/subdetail', $cfg, \%acts);
+}
+
+sub blacklist {
+  my ($self, $session, $cgi, $cfg) = @_;
+
+  my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
+  my $email = $cgi->param('blacklist')
+    or return $self->show_logon($session, $cgi, $cfg,
+				$msgs->(blnoemail=>"No email supplied"));
+  my $genemail = _generic_email($email);
+
+  my %acts;
+  %acts =
+    (
+     BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
+     email => sub { CGI::escapeHTML($email) },
+    );
+  my $black = BSE::EmailBlacklist->getEntry($genemail);
+  if ($black) {
+    BSE::Template->show_page('user/alreadyblacklisted', $cfg, \%acts);
+    return;
+  }
+  my %black;
+  my @cols = BSE::EmailBlackEntry->columns;
+  shift @cols;
+  $black{email} = $genemail;
+  $black{why} = "HTTP request from $ENV{REMOTE_ADDR}";
+  $black = BSE::EmailBlacklist->add(@cols);
+  BSE::Template->show_page('user/blacklistdone', $cfg, \%acts);
+}
+
+sub confirm {
+  my ($self, $session, $cgi, $cfg) = @_;
+
+  my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
+  my $secret = $cgi->param('confirm')
+    or return $self->show_logon($session, $cgi, $cfg,
+				$msgs->(confnosecret=>"No secret supplied for confirmation"));
+  my $userid = $cgi->param('u')
+    or return $self->show_logon($session, $cgi, $cfg,
+				$msgs->(confnouser=>"No user supplied for confirmation"));
+  if ($userid + 0 != $userid || $userid < 1) {
+    return $self->show_logon($session, $cgi, $cfg,
+			     $msgs->(confbaduser=>"Invalid or unknown user supplied for confirmation"));
+  }
+  my $user = BSE::SiteUsers->getByPkey($userid)
+    or return $self->show_logon($session, $cgi, $cfg,
+			     $msgs->(confbaduser=>"Invalid or unknown user supplied for confirmation"));
+  unless ($secret eq $user->{confirmSecret}) {
+    return $self->show_logon($session, $cgi, $cfg, 
+			     $msgs->(confbadsecret=>"Sorry, the confirmation secret does not match"));
+  }
+
+  $user->{confirmed} = 1;
+  $user->{confirmSecret} = '';
+  $user->save;
+  my $genEmail = _generic_email($user->{email});
+  my $request = BSE::EmailRequest->getBy(genEmail=>$genEmail);
+  $request and $request->remove();
+  my %acts;
+  %acts =
+    (
+     BSE::Util::Tags->basic_tags(\%acts, $cgi, $cfg),
+     user=>sub { CGI::escapeHTML($user->{$_[0]}) },
+    );
+  BSE::Template->show_page('user/confirmed', $cfg, \%acts);
+}
+
+sub _generic_email {
+  my ($checkemail) = @_;
+
+  # Build a generic form for the email - since an attacker could
+  # include comments or extra spaces or a bunch of other stuff.
+  # this isn't strictly correct, but it's good enough
+  1 while $checkemail =~ s/\([^)]\)//g;
+  if ($checkemail =~ /<([^>]+)>/) {
+    $checkemail = $1;
+  }
+  $checkemail = lc $checkemail;
+  $checkemail =~ s/\s+//g;
+
+  $checkemail;
+}
+
+sub send_conf_request {
+  my ($self, $session, $cgi, $cfg, $user, $usersubs, $subs) = @_;
+
+  # check for existing in-progress confirmations
+  my $checkemail = _generic_email($user->{email});
+
+  # check the blacklist
+  require 'BSE/EmailBlacklist.pm';
+
+  my %acts;
+  %acts =
+    (
+     BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
+     user=>sub { CGI::escapeHTML($user->{$_[0]}) },
+    );
+  
+  my $blackentry = BSE::EmailBlacklist->getEntry($checkemail);
+
+  if ($blackentry) {
+    $acts{black} = sub { CGI::escapeHTML($blackentry->{$_[0]}) },
+    BSE::Template->show_page('user/blacklisted', $cfg, \%acts);
+    return;
+  }
+  
+  # check for existing confirmations
+  my $confirm = BSE::EmailRequests->getBy(genEmail=>$checkemail);
+  if ($confirm) {
+    $acts{confirm} = sub { CGI::escapeHTML($confirm->{$_[0]}) };
+    my $too_many = $confirm->{unackedConfMsgs} >= MAX_UNACKED_CONF_MSGS;
+    $acts{ifTooMany} = sub { $too_many };
+    use BSE::Util::SQL qw/sql_datetime_to_epoch/;
+    my $lastSentEpoch = sql_datetime_to_epoch($confirm->{lastConfSent});
+    my $too_soon = $lastSentEpoch + MIN_UNACKED_CONF_GAP > time;
+    $acts{ifTooSoon} = sub { $too_soon };
+    # check how many
+    if ($too_many) {
+      BSE::Template->show_page('user/toomany', $cfg, \%acts);
+      return;
+    }
+    if ($too_soon) {
+      BSE::Template->show_page('user/toosoon', $cfg, \%acts);
+      return;
+    }
+  }
+  else {
+    my %confirm;
+    my @cols = BSE::EmailRequest->columns;
+    shift @cols;
+    $confirm{email} = $user->{email};
+    $confirm{genEmail} = $checkemail;
+    # prevents silliness on error
+    use BSE::Util::SQL qw(sql_datetime);
+    $confirm{lastConfSent} = sql_datetime(time - MIN_UNACKED_CONF_GAP);
+    $confirm{unackedConfMsgs} = 0;
+    $confirm = BSE::EmailRequests->add(@confirm{@cols});
+  }
+
+  unless ($user->{confirmSecret}) {
+    use BSE::Util::Secure qw/make_secret/;
+    $user->{confirmSecret} = make_secret($cfg);
+  }
+  # ok, now we can send the confirmation request
+  my %confacts;
+  %confacts =
+    (
+     BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
+     user => sub { $user->{$_[0]} },
+     confirm => sub { $confirm->{$_[0]} },
+     remote_addr => sub { $ENV{REMOTE_ADDR} },
+    );
+  my $body = BSE::Template->get_page('user/email_confirm', $cfg, \%confacts);
+  
+  my $mail = BSE::Mail->new(cfg=>$cfg);
+  my $subject = $cfg->entry('confirmations', 'subject') 
+    || 'Subscription Confirmation';
+  my $from = $cfg->entry('confirmation', 'from') || $SHOP_FROM;
+  unless ($mail->send(from=>$from, to=>$user->{email}, subject=>$subject,
+		      body=>$body)) {
+    # a problem sending the mail
+    $acts{mailerror} = sub { $mail->errstr };
+    BSE::Template->show_page('user/email_conferror', $cfg, \%acts);
+    return;
+  }
+  ++$confirm->{unackedConfMsgs};
+  $confirm->{lastConfSent} = now_datetime;
+  $confirm->save;
+  BSE::Template->show_page('user/confsent', $cfg, \%acts);
 }
 
 1;
