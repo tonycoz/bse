@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # -d:ptkdb
-BEGIN { $ENV{DISPLAY} = ':0'; }
+#BEGIN { $ENV{DISPLAY} = '192.168.32.97:0.0'; }
 
 use strict;
 use FindBin;
@@ -126,7 +126,7 @@ if (!$article) {
       }
     }
     else {
-      $level = 1;
+      $level ||= 1;
       $article->{parentid} = -1;
     }
   }
