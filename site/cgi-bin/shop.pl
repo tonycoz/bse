@@ -11,6 +11,7 @@ use Squirrel::ImageEditor;
 use CGI::Cookie;
 use BSE::Custom;
 use BSE::Mail;
+use BSE::Shop::Util qw/shop_cart_tags cart_item_opts nice_options total basic_tags/;
 
 require $SESSION_REQUIRE;
 
@@ -91,6 +92,7 @@ my %steps =
    add=>\&add_item,
    cart=>\&show_cart,
    checkout=>\&checkout,
+   confirm => \&checkout_confirm,
    recalc=>\&recalc,
    recalculate=>\&recalc,
    purchase=>\&purchase,
@@ -147,54 +149,6 @@ sub add_item {
 
   $session{cart} = \@cart;
   show_cart();
-}
-
-sub total {
-  my ($cart, $products, $state) = @_;
-
-  my $total = 0;
-  for my $item (@$cart) {
-    $total += $item->{units} * $item->{price};
-  }
-  $total += BSE::Custom->total_extras($cart, $products, $state);
-
-  return $total;
-}
-
-sub cart_item_opts {
-  my ($cart_item, $product) = @_;
-
-  my @options = ();
-  my @values = split /,/, $cart_item->{options};
-  my @ids = split /,/, $product->{options};
-  for my $opt_index (0 .. $#ids) {
-    my $entry = $SHOP_PRODUCT_OPTS{$ids[$opt_index]};
-    my $option = {
-		  id=>$ids[$opt_index],
-		  value=>$values[$opt_index],
-		  desc => $entry->{desc} || $ids[$opt_index],
-		 };
-    if ($entry->{labels}) {
-      $option->{label} = $entry->{labels}{$values[$opt_index]};
-    }
-    else {
-      $option->{label} = $option->{value};
-    }
-    push(@options, $option);
-  }
-
-  return @options;
-}
-
-sub nice_options {
-  my (@options) = @_;
-
-  if (@options) {
-    return '('.join(", ", map("$_->{desc} $_->{label}", @options)).')';
-  }
-  else {
-    return '';
-  }
 }
 
 sub show_cart {
@@ -263,7 +217,6 @@ sub update_quantities {
 	$cart[$index]{units} = 0;
       }
     }
-    
   }
   @cart = grep { $_->{units} != 0 } @cart;
   $session{cart} = \@cart;
@@ -354,6 +307,28 @@ sub checkout {
   $session{custom} = \%custom_state;
 
   page('checkout.tmpl', \%acts);
+}
+
+# displays the data entered by the user so they can either confirm the
+# details or redisplay the checkout page
+sub checkout_confirm {
+  my %order;
+  my $error;
+
+  my @cart_prods;
+  unless (load_order_fields(0, $CGI::Q, \%order, \%session, \@cart_prods,
+                            \$error)) {
+    return checkout($error, 1);
+  }
+  my @cart = @{$session{cart}};
+  # display the confirmation page
+  my %acts;
+  %acts =
+    (
+     order => sub { CGI::escapeHTML($order{$_[0]}) },
+     shop_cart_tags(\%acts, \@cart, \@cart_prods, \%session, $CGI::Q),
+     basic_tags(\%acts),
+    );
 }
 
 # this can be used instead of the purchase page to work in 2 steps:
