@@ -166,6 +166,8 @@ site/docs/bugs.html
 site/docs/bugs.pod
 site/docs/config.html
 site/docs/config.pod
+site/docs/formmail.html
+site/docs/formmail.pod
 site/docs/future_plans.html
 site/docs/future_plans.pod
 site/docs/gen.html
