@@ -213,7 +213,8 @@ sub _make_img {
 #      }
     my $im = $images->[$index-1];
     $text = qq!<img src="/images/$im->{image}" width="$im->{width}"!
-      . qq! height="$im->{height}" alt="! . CGI::escapeHTML($im->{alt}).'"';
+      . qq! height="$im->{height}" alt="! . CGI::escapeHTML($im->{alt}).'"'
+	. qq! border="0"!;
     $text .= qq! align="$align"! if $align;
     $text .= qq! />!;
     if (!$url && $im->{url}) {
@@ -765,7 +766,7 @@ pages.
 
 =head1 DESCRIPTION
 
-This is probably better documented in L<templates>.
+This is probably better documented in L<templates.pod>.
 
 =head1 TAGS
 
