@@ -1,0 +1,83 @@
+<html>
+<head>
+<title><:article title:></title>
+<meta name="ROBOTS" content="ALL">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Expires" content="Thu, 01 Jan 1970 00:00:00 GMT">
+<link rel="stylesheet" href="/css/style-main.css">
+
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#333399" vlink="#333399" alink="#CC0033" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr valign="top"> 
+    <td width="150"><!-- #BeginLibraryItem "/Library/search.lbi" --><table width="100%" border="0" cellspacing="0" cellpadding="5" name="search">
+              <tr align="center"> 
+                <td> 
+                  <form name="search" method="GET" action="/cgi-bin/search.pl">
+                    <input type="hidden" name="s" value="">
+                    <input type="hidden" name="d" value="ar">
+                    <input type="hidden" name="m" value="0">
+                    <br>
+                    <nobr> 
+                    <input type="text" name="q" size="14">
+                    <input type="submit" value="Go" name="submit">
+                    <br>
+                    <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"> 
+                    Try our <a href="/cgi-bin/search.pl">advanced search</a></font></nobr> 
+                  </form></td></tr>
+            </table><!-- #EndLibraryItem --> <!-- #BeginLibraryItem "/Library/nav.lbi" --><table width="150" border="0" cellspacing="0" cellpadding="0" name="nav">
+        <tr> 
+          <td> <:iterator begin level1:> <:if Level2:> 
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr> 
+                <td> 
+                  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                    <tr bgcolor="#CCCCFF"> 
+                      <td height="20" width="100%" nowrap><font class="nav_head" face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>&nbsp;<a href="<:url level1:>"><:level1 
+                        title:></a></b></font></td></tr>
+                  </table></td></tr>
+              <tr> 
+                <td> 
+                  <table width="100%" border="0" cellspacing="0" cellpadding="5">
+                    <tr> 
+                      <td> <font class="nav_link" face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:iterator 
+                        begin level2:><a href="<:url level2:>"><:level2 title:></a> 
+                        <:iterator separator level2:><br>
+                        <img src="/images/trans_pixel.gif" width="2" height="4" border="0"><br>
+                        <:iterator end level2:> </font></td></tr>
+                  </table></td></tr>
+            </table><:or Level2:> 
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr> 
+                <td> 
+                  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                    <tr bgcolor="#CCCCFF"> 
+                      <td height="20" width="100%" nowrap><font class="nav_head" face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>&nbsp;<a href="<:url level1:>"><:level1 
+                        title:></a></b></font></td></tr>
+                  </table></td></tr>
+            </table><br>
+            <:eif Level2:><:iterator separator level1:><:iterator end level1:> 
+          </td></tr>
+      </table><!-- #EndLibraryItem --></td>
+    <td width="100%"><:embed start:><font class="section_Heading" face="Verdana, Arial, Helvetica, sans-serif" size="5" color="#6600FF"><b><:title:></b></font> 
+      <hr noshade width="100%" size="1">
+      <:admin:><:if Embedded:><:or Embedded:><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">/ 
+      <a href="<:if Admin:>/cgi-bin/admin/admin.pl?id=1<:or Admin:>/<:eif Admin:>">Home</a><:iterator 
+      begin crumbs:> / <a href="<:url crumbs:>"><:crumbs title:></a><:iterator 
+      end crumbs:></font><:eif Embedded:> 
+      <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font></p>
+      <:embed end:><:if UnderThreshold:><:iterator begin children:><:ifAdmin:><br>
+      <br>
+      <:or:><:eif:><:moveDown:><:moveUp:><:embed child:><:iterator separator children:><:iterator 
+      end children:> <:or UnderThreshold:> <:iterator begin children:> 
+      <p><a href="<:url child:>"><b><font class="index_heads" face="Verdana, Arial, Helvetica, sans-serif" size="3" color="#660033"><:child 
+        title:></font></b></a><:moveDown:><:moveUp:><br>
+        <:if Child summaryLength:><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:summary:></font><:or 
+        Child:><:eif Child:></p>
+      <:iterator separator children:><:iterator end children:><:eif UnderThreshold:></td>
+  </tr>
+</table>
+</body>
+</html>
+
