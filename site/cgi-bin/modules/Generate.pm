@@ -65,12 +65,18 @@ sub _make_table {
   }
   elsif ($options =~ /\S/) {
     $options =~ s/\s+$//;
-    my ($width, $bg, $pad, $fontsz) = split /\|/, $options;
+    my ($width, $bg, $pad, $fontsz, $fontface) = split /\|/, $options;
+    for ($width, $bg, $pad, $fontsz, $fontface) {
+      $_ = '' unless defined;
+    }
     $tag .= qq! width="$width"! if length $width;
     $tag .= qq! bgcolor="$bg"! if length $bg;
     $tag .= qq! cellpadding="$pad"! if length $pad;
-    if (length $fontsz) {
-      $cellstart = qq!<font size="$fontsz">!;
+    if (length $fontsz || length $fontface) {
+      $cellstart = qq!<font!;
+      $cellstart .= qq! size="$fontsz"! if length $fontsz;
+      $cellstart .= qq! face="$fontface"! if length $fontface;
+      $cellstart .= qq!>!;
       $cellend = "</font>";
     }
   }
@@ -137,7 +143,7 @@ sub format_body {
       and ++$match;
     $body =~ s#i\[([^\]\[]+)\]#<i>$1</i>#ig
       and ++$match;
-    $body =~ s#align\[([^|\]]+)\|([^\]]+)\]#<div align="$1">$2</div>#ig
+    $body =~ s#align\[([^|\]\[]+)\|([^\]\[]+)\]#<div align="$1">$2</div>#ig
       and ++$match;
     $body =~ s#font\[([^|\]\[]+)\|([^\]\[]+)\]#<font size="$1">$2</font>#ig
       and ++$match;
@@ -149,17 +155,19 @@ sub format_body {
       and ++$match;
     $body =~ s#table\[([^\n\[\]]*)\n([^\[\]]+)\n\s*\]#_make_table($1, $2)#ieg
       and ++$match;
+    $body =~ s#table\[([^\]\[]+)\|([^\]\[|]+)\]#_make_table($1, $2)#ieg
+      and ++$match;
     $body =~ s#((?:\*\*[^\n]+\n[^\S\n]*)+)#_format_bullets($1)#eg
       and ++$match;
     $body =~ s!((?:##[^\n]+\n[^\S\n]*)+)!_format_ol($1)!eg
       and ++$match;
-    $body =~ s#fontcolor\[([^|\]]+)\|([^\]]+)\|([^\]]+)\]#<font size="$1" color="$2">$3</font>#ig
+    $body =~ s#fontcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#<font size="$1" color="$2">$3</font>#ig
       and ++$match;
-    $body =~ s#indent\[([^\]]+)\]#<ul>$1</ul>#ig
+    $body =~ s#indent\[([^\]\[]+)\]#<ul>$1</ul>#ig
       and ++$match;
-    $body =~ s#center\[([^\]]+)\]#<center>$1</center>#ig
+    $body =~ s#center\[([^\]\[]+)\]#<center>$1</center>#ig
       and ++$match;
-    $body =~ s#hrcolor\[([^|\]]+)\|([^\]]+)\|([^\]]+)\]#<table width="$1" height="$2" border="0" bgcolor="$3" cellpadding="0" cellspacing="0"><tr><td><img src="/images/interface/pixel.gif" width="1" height="1"></td></tr></table>#ig
+    $body =~ s#hrcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#<table width="$1" height="$2" border="0" bgcolor="$3" cellpadding="0" cellspacing="0"><tr><td><img src="/images/interface/pixel.gif" width="1" height="1"></td></tr></table>#ig
       and ++$match;
       
   } while ($match);
@@ -167,12 +175,6 @@ sub format_body {
   $body =~ s/\n([ \r]*\n)+/<p>/g;
   $body =~ s/\n/<br>/g;
   
-# Formatting tags introduced by Adrian      
-  
-  $body =~ s#table\[([^|\]]+)\|([^\]]+)\|([^\]]+)\|([^\]]+)\|([^\]]+)\]#<table width="$1" border="0" bgcolor="$2" cellpadding="$3"><tr><td><font face="Verdana, Arial, Helvetica, sans-serif" size="$4">$5</font></td></tr></table>#ig;
-  $body =~ s#tablec\[([^|\]]+)\|([^\]]+)\|([^\]]+)\|([^\]]+)\|([^\]]+)\]#<center><table width="$1" border="0" bgcolor="$2" cellpadding="$3"><tr><td><font size="$4">$5</font></td></tr></table></center>#ig;
-
-
   if (@images) {
     # the first image simply goes where we're told to put it
     # the imagePos is [tb][rl] (top|bottom)(right|left)
@@ -371,11 +373,62 @@ sub find_terms {
   return @found;
 }
 
+# this takes the same inputs as _make_table(), but eliminates any
+# markup instead
+sub _cleanup_table {
+  my ($opts, $data) = @_;
+  my @lines = split /\n/, $data;
+  for (@lines) {
+    s/^[^|]*\|//;
+    tr/|/ /s;
+  }
+  return join(' ', @lines);
+}
+
 # produce a nice excerpt for a found article
 sub excerpt {
   my ($self, $article, $found, $case_sensitive, @terms) = @_;
 
   my $body = $article->{body};
+
+  # we remove any formatting tags here, otherwise we get wierd table
+  # rubbish or other formatting in the excerpt.
+  my $match;
+  do {
+    $match = 0;
+    $body =~ s#a\[([^,\]\[]+),([^\]\[]+)\]#$2#ig
+      and ++$match;
+    $body =~ s#link\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
+      and ++$match;
+    $body =~ s#[bi]\[([^\]\[]+)\]#$1#ig
+      and ++$match;
+    $body =~ s#align\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
+      and ++$match;
+    $body =~ s#font\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
+      and ++$match;
+    $body =~ s#hr\[([^|\]\[]*)\|([^\]\[]*)\]##ieg
+      and ++$match;
+    $body =~ s#hr\[([^|\]\[]*)\]##ieg
+      and ++$match;
+    $body =~ s#anchor\[([^|\]\[]*)\]##ig
+      and ++$match;
+    $body =~ s#table\[([^\n\[\]]*)\n([^\[\]]+)\n\s*\]#_cleanup_table($1, $2)#ieg
+      and ++$match;
+    $body =~ s#table\[([^\]\[]+)\|([^\]\[|]+)\]#_cleanup_table($1, $2)#ieg
+      and ++$match;
+    $body =~ s#\*\*([^\n]+)#$1#eg
+      and ++$match;
+    $body =~ s!##([^\n]+)!$1!eg
+      and ++$match;
+    $body =~ s#fontcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#$3#ig
+      and ++$match;
+    $body =~ s#(?:indent|center)\[([^\]\[]+)\]#$1#ig
+      and ++$match;
+    $body =~ s#hrcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]##ig
+      and ++$match;
+      
+  } while ($match);
+
 
   my @found = find_terms(\$body, $case_sensitive, @terms);
 
