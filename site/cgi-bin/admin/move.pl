@@ -52,6 +52,16 @@ elsif ($direction eq 'up') {
   $siblings[$index-1]->save();
   
 }
+elsif ($direction eq 'swap') {
+  my $other = param('other')
+    or die "Need to specify an 'other' article to swap with";
+  my ($other_index) = grep $siblings[$_]{id} == $other, 0..$#siblings;
+  defined $other_index or die "No such such sibling";
+  
+  ($article->{displayOrder}, $siblings[$other_index]{displayOrder})
+    = ($siblings[$other_index]{displayOrder}, $article->{displayOrder});
+  $siblings[$other_index]->save();
+}
 else {
   die "Sorry, can't move articles sideways";
 }
