@@ -21,7 +21,8 @@ Product                                   Units  Price   Extended
                                                 Total: <:order total |m10:>
 						  GST: <:order gst   |m10:>
 
-<:ifEq [order paymentType] "0" :>Paid by credit card.<:if Order ccOnline
+<:ifEq [order paymentType] "0" :>Paid by credit card.
+<:if Order ccOnline
 :>Processed online.
 Receipt No.  : <:order ccReceipt:>
 <:or Order

@@ -112,17 +112,6 @@
         <input type="Text" name="cardExpiry" size=5 maxlength="5" value="<:old cardExpiry:>"><:error_img cardExpiry:>
         (eg: 09/01) *</font></td>
     </tr>
-    <tr> 
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Card Type:</font></td>
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-        <select name="cardType">
-          <option value="">Choose type</option>
-          <option value="Visa" <:ifEq [cgi cardType] "Visa":>selected="selected"<:or:><:eif:>>Visa</option>
-          <option value="Mastercard" <:ifEq [cgi cardType] "Mastercard":>selected="selected"<:or:><:eif:>>Mastercard</option>
-          <option value="Bankcard" <:ifEq [cgi cardType] "Bankcard":>selected="selected"<:or:><:eif:>>Bankcard</option>
-        </select><:error_img cardType:>
-        &nbsp;*</font></td>
-    </tr>
   </table>
   <:or Payments:><:eif Payments:>
   <:if Payments Cheque:>

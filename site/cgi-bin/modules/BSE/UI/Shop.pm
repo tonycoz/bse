@@ -33,6 +33,22 @@ my %actions =
    orderdone => 1,
   );
 
+my %field_map = 
+  (
+   name1 => 'delivFirstName',
+   name2 => 'delivLastName',
+   address => 'delivStreet',
+   city => 'delivSuburb',
+   postcode => 'delivPostCode',
+   state => 'delivState',
+   country => 'delivCountry',
+   email => 'emailAddress',
+   cardHolder => 'ccName',
+   cardType => 'ccType',
+  );
+
+my %rev_field_map = reverse %field_map;
+
 sub actions { \%actions }
 
 sub default_action { 'cart' }
@@ -53,7 +69,8 @@ sub req_cart {
   my ($class, $req, $msg) = @_;
 
   my @cart = @{$req->session->{cart} || []};
-  my @cart_prods = map { Products->getByPkey($_->{productId}) } @cart;
+  my @cart_prods;
+  my @items = $class->_build_items($req, \@cart_prods);
   my $item_index = -1;
   my @options;
   my $option_index;
@@ -71,7 +88,7 @@ sub req_cart {
     (
      $cust_class->cart_actions(\%acts, \@cart, \@cart_prods, \%custom_state, 
 			       $req->cfg),
-     shop_cart_tags(\%acts, \@cart, \@cart_prods, $req->session, $req->cgi, 
+     shop_cart_tags(\%acts, \@items, \@cart_prods, $req->session, $req->cgi, 
 		    $req->cfg, 'cart'),
      basic_tags(\%acts),
      msg => $msg,
@@ -211,7 +228,8 @@ sub req_checkout {
 
   @cart or return $class->req_cart($req);
 
-  my @cart_prods = map { Products->getByPkey($_->{productId}) } @cart;
+  my @cart_prods;
+  my @items = $class->_build_items($req, \@cart_prods);
 
   if (my ($msg, $id) = $class->_need_logon($req, \@cart, \@cart_prods)) {
     return $class->_refresh_logon($req, $msg, $id);
@@ -229,13 +247,15 @@ sub req_checkout {
   my $affiliate_code = $req->session->{affiliate_code};
   defined $affiliate_code or $affiliate_code = '';
 
+  my $order_info = $req->session->{order_info};
+
   my $item_index = -1;
   my @options;
   my $option_index;
   my %acts;
   %acts =
     (
-     shop_cart_tags(\%acts, \@cart, \@cart_prods, $req->session, $req->cgi, 
+     shop_cart_tags(\%acts, \@items, \@cart_prods, $req->session, $req->cgi, 
 		    $cfg, 'checkout'),
      basic_tags(\%acts),
      message => $message,
@@ -251,8 +271,13 @@ sub req_checkout {
 	     if $user;
 	 }
        }
+       elsif ($order_info && defined $order_info->{$_[0]}) {
+	 $value = $order_info->{$_[0]};
+       }
        else {
-	 $value = $user && defined $user->{$_[0]} ? $user->{$_[0]} : '';
+	 my $field = $_[0];
+	 $rev_field_map{$field} and $field = $rev_field_map{$field};
+	 $value = $user && defined $user->{$field} ? $user->{$field} : '';
        }
        
        defined $value or $value = '';
@@ -296,20 +321,6 @@ sub req_remove_item {
 
   return BSE::Template->get_refresh($ENV{SCRIPT_NAME}, $req->cfg);
 }
-
-my %field_map = 
-  (
-   name1 => 'delivFirstName',
-   name2 => 'delivLastName',
-   address => 'delivStreet',
-   city => 'delivSuburb',
-   postcode => 'delivPostCode',
-   state => 'delivState',
-   country => 'delivCountry',
-   email => 'emailAddress',
-   cardHolder => 'ccName',
-   cardType => 'ccType',
-  );
 
 
 # saves order and refresh to payment page

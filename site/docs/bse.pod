@@ -10,6 +10,36 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_06
+
+Interim release with some minor fixes while I fiddle with trying to
+re-use the same order after a CC processing failure.
+
+=over
+
+=item *
+
+0.15_05 field name changes meant that values from the logged on user
+record weren't used for delivery fields.  The checkout page now adapts
+for that.
+
+=item *
+
+previously if you submitted the checkout page, then went back to it,
+it would use the defaults from the logged on user (or empty fields).
+Now it uses those saved values as defaults.
+
+=item *
+
+the cardType field is no longer required, or processed.
+
+=item *
+
+the extended cart fields are now available on the cart and checkout
+pages, since it isn't used anywhere anyway.
+
+=back
+
 =head2 0.15_05
 
 WARNING: this release makes major changes to the way the shop works.
