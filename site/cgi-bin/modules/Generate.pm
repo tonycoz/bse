@@ -364,7 +364,7 @@ sub embed {
 sub iter_kids_of {
   my ($args, $acts, $name, $templater) = @_;
 
-  my @ids = split ' ', $args;
+  my @ids = map { split } DevHelp::Tags->get_parms($args, $acts, $templater);
   for my $id (@ids) {
     unless ($id =~ /^\d+$|^-1$/) {
       $id = $templater->perform($acts, $id, "id");
@@ -377,7 +377,7 @@ sub iter_kids_of {
 sub iter_all_kids_of {
   my ($args, $acts, $name, $templater) = @_;
 
-  my @ids = split ' ', $args;
+  my @ids = map { split } DevHelp::Tags->get_parms($args, $acts, $templater);
   for my $id (@ids) {
     unless ($id =~ /^\d+$|^-1$/) {
       $id = $templater->perform($acts, $id, "id");
@@ -390,7 +390,7 @@ sub iter_all_kids_of {
 sub iter_inlines {
   my ($args, $acts, $name, $templater) = @_;
 
-  my @ids = split ' ', $args;
+  my @ids = map { split } DevHelp::Tags->get_parms($args, $acts, $templater);
   for my $id (@ids) {
     unless ($id =~ /^\d+$/) {
       $id = $templater->perform($acts, $id, "id");
@@ -714,74 +714,6 @@ sub remove_block {
 				      1, \0, []);
 
   $$body = $formatter->remove_format($$body);
-
-#   if ($$body =~ /^<html>/i) {
-#     $$body =_strip_html(substr($$body, 6));
-#     return;
-#   }
-
-#   my $out = '';
-#   for my $part (split /((?:html\[(?:[^\[\]]*(?:(?:\[[^\[\]]*\])[^\[\]]*)*)\])
-# 			|embed\[(?:[^,\[\]]*)(?:,(?:[^,\[\]]*))?\])/ix, $$body) {
-#     #print STDERR "Part is $part\n";
-#     if ($part =~ /^html\[([^\[\]]*(?:(?:\[[^\[\]]*\])[^\[\]]*)*)\]$/i) {
-#       $out .= _strip_html($1);
-#     }
-#     elsif ($part =~ /^embed\[([^,\[\]]*),([^,\[\]]*)\]$/i) {
-#       $out .= ""; # what would you do here?
-#     }
-#     elsif ($part =~ /^embed\[([^,\[\]]*)\]$/i) {
-#       $out .= ""; # $self->_body_embed($acts, $articles, $1, "")
-#     }
-#     else {
-#     TRY: while (1) {
-# 	$LOCAL_FORMAT and $LOCAL_FORMAT->clean(\$part)
-# 	  and next TRY;
-# 	$part =~ s#a\[([^,\]\[]+),([^\]\[]+)\]#$2#ig
-# 	  and next TRY;
-# 	$part =~ s#link\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
-# 	  and next TRY;
-# 	$part =~ s#([bi])\[([^\]\[]+)\]#$1\001$2\002#ig
-# 	  and next TRY;
-# 	$part =~ s#align\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
-# 	  and next TRY;
-# 	$part =~ s#font\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
-# 	  and next TRY;
-# 	$part =~ s#hr\[([^|\]\[]*)\|([^\]\[]*)\]##ig
-# 	  and next TRY;
-# 	$part =~ s#hr\[([^|\]\[]*)\]##ig
-# 	  and next TRY;
-# 	$part =~ s#anchor\[([^|\]\[]*)\]##ig
-# 	  and next TRY;
-# 	$part =~ s#table\[([^\n\[\]]*)\n([^\[\]]+)\n\s*\]#_cleanup_table($1, $2)#ieg
-# 	  and next TRY;
-# 	$part =~ s#table\[([^\]\[]+)\|([^\]\[|]+)\]#_cleanup_table($1, "|$2")#ieg
-# 	  and next TRY;
-# 	$part =~ s#\*\*([^\n]+)#$1#g
-# 	  and next TRY;
-# 	$part =~ s!##([^\n]+)!$1!g
-# 	  and next TRY;
-# 	$part =~ s#fontcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#$3#ig
-# 	  and next TRY;
-# 	$part =~ s#(?:indent|center)\[([^\]\[]+)\]#$1#ig
-# 	  and next TRY;
-# 	$part =~ s#hrcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]##ig
-# 	  and next TRY;
-# 	$part =~ s#image\[([^\]\[]+)\]##ig
-# 	  and next TRY;
-# 	$part =~ s#(?<=\W)\[([^\]\[]+)\]#\003$1\004#g
-# 	  and next TRY;
-	
-# 	last TRY;
-#       }
-#       1 while $part =~ s#([bi])\001([^\001\002]*)\002#$1\[$2\]#ig;
-#       $part =~ tr/\003\004/[]/;
-#       $out .= $part;
-#     }
-#   } 
-
-#   $$body = $out;
-
 }
 
 sub get_gimage {

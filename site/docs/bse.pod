@@ -10,6 +10,43 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.14_35
+
+This is a release candidate for 0.15.
+
+=over
+
+=item *
+
+you can now use the |x flag on a tag to re-encode the value suitably
+for XML (to avoid HTML entities like &eacute;).  Note: since most BSE
+tags already HTML escape their data, this tag will convert HTML
+entities to characters before re-encoding as XML.
+
+=item *
+
+the allkids_of, kids_of and inlines iterators now support the [tag
+...] syntax for their arguments.  Any values returned by the [...]
+constructs are further split on spaces, so you can have a single tag
+return more than one value here.  This is convenient if you want to
+use the cfg tag to specify article numbers from bse.cfg.
+
+=item *
+
+the <:date ...:> tag now presents the correct day of week. (#450)
+
+=item *
+
+added a new tag C<nobodytext> which strips all bodytext markup from
+its argument.
+
+=item *
+
+subadmin.pl now uses the bse_subscr_* prefix for it's various security
+checks
+
+=back
+
 =head2 0.14_34
 
 =over

@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>52;
+use Test::More tests=>58;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
@@ -15,7 +15,8 @@ require BSE::Util::SQL;
 BSE::Util::SQL->import(qw/sql_datetime/);
 sub template_test($$$$);
 
-my $parent = add_article(title=>'Parent', body=>'parent article');
+my $parent = add_article(title=>'Parent', body=>'parent article',
+			lastModified => '2004-09-23 06:00:00');
 ok($parent, "create section");
 my @kids;
 for my $name ('One', 'Two', 'Three') {
@@ -175,6 +176,18 @@ TEMPLATE
 4
 4
 <:arithmetic 2+3+[undefinedtag x]+2+[undefinedtag2]:>
+EXPECTED
+
+template_test "nobodytext", $kids[0], <<'TEMPLATE', <<EXPECTED;
+<:nobodytext article body:>
+TEMPLATE
+One
+EXPECTED
+
+template_test "date", $parent, <<'TEMPLATE', <<EXPECTED;
+<:date "%a %d/%m/%Y" article lastModified:>
+TEMPLATE
+Thu 23/09/2004
 EXPECTED
 
 BSE::Admin::StepParents->del($parent, $parent);

@@ -4,7 +4,7 @@ use Carp qw(confess);
 
 require Exporter;
 use vars qw(@EXPORT_OK @EXPORT @ISA %EXPORT_TAGS);
-@EXPORT_OK = qw(escape_html escape_uri unescape_html unescape_uri popup_menu);
+@EXPORT_OK = qw(escape_html escape_uri unescape_html unescape_uri popup_menu escape_xml);
 @EXPORT = qw(escape_html escape_uri unescape_html unescape_uri);
 %EXPORT_TAGS =
   (
@@ -26,6 +26,16 @@ sub escape_html {
 
 sub unescape_html {
   HTML::Entities::decode(shift);
+}
+
+my %xml_entities = qw(< lt > gt & amp " quot);
+
+sub escape_xml {
+  my ($text) = @_;
+
+  $text =~ s/([<>&\"\x7F])/$xml_entities{$1} ? "&$xml_entities{$1};" : "&#".ord($1).";"/ge;
+  
+  return $text;
 }
 
 sub escape_uri {

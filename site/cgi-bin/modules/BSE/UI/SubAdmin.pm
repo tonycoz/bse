@@ -11,14 +11,14 @@ use DevHelp::HTML;
 
 my %rights =
   (
-   list => 'bse_subs_list',
-   addform => 'bse_subs_add',
-   add => 'bse_subs_add',
-   edit => 'bse_subs_edit',
-   save => 'bse_subs_edit',
-   detail => 'bse_subs_detail',
-   remove => 'bse_subs_delete',
-   update => 'bse_subs_update',
+   list => 'bse_subscr_list',
+   addform => 'bse_subscr_add',
+   add => 'bse_subscr_add',
+   edit => 'bse_subscr_edit',
+   save => 'bse_subscr_edit',
+   detail => 'bse_subscr_detail',
+   remove => 'bse_subscr_delete',
+   update => 'bse_subscr_update',
   );
 
 sub actions { \%rights }

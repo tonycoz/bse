@@ -2,7 +2,7 @@ package BSE::Util::Tags;
 use strict;
 use HTML::Entities;
 use DevHelp::Tags;
-use DevHelp::HTML;
+use DevHelp::HTML qw(:default escape_xml);
 use vars qw(@EXPORT_OK @ISA);
 @EXPORT_OK = qw(tag_error_img tag_hash tag_hash_plain);
 @ISA = qw(Exporter);
@@ -91,7 +91,7 @@ sub static {
        $hour = $min = $sec = 0 unless defined $sec;
        $year -= 1900;
        --$month;
-       return POSIX::strftime($fmt, $sec, $min, $hour, $day, $month, $year, 0, 0);
+       return POSIX::strftime($fmt, $sec, $min, $hour, $day, $month, $year);
      },
      today => \&tag_today,
      money =>
@@ -127,6 +127,7 @@ sub static {
        return $gen->format_body($acts, 'Articles', $value, 'tr',
 				1, 0);
      },
+     nobodytext => [\&tag_nobodytext, $cfg ],
      ifEq =>
      sub {
        my ($arg, $acts, $name, $templater) = @_;
@@ -267,6 +268,9 @@ sub static {
        elsif ($fmt eq 'h') {
 	 return escape_html($value);
        }
+       elsif ($fmt eq 'x') {
+	 return escape_xml(unescape_html($value));
+       }
        return $value;
      },
     );  
@@ -313,6 +317,26 @@ sub tag_arithmetic {
   }
 
   return escape_html($result);
+}
+
+sub tag_nobodytext {
+  my ($cfg, $arg, $acts, $name, $templater) = @_;
+  my ($func, $args) = split ' ', $arg, 2;
+  
+  $args = '' unless defined $args;
+  exists $acts->{$func}
+    or return "<: nobodytext $func $args :>";
+  my $value = $templater->perform($acts, $func, $args);
+  defined $value
+    or return '';
+  
+  $value = decode_entities($value);
+  
+  require Generate;
+  my $gen = Generate->new(cfg=>$cfg);
+  $gen->remove_block('Articles', $acts, \$value);
+  
+  return escape_html($value);
 }
 
 sub tag_old {

@@ -5,6 +5,7 @@ use Products;
 use HTML::Entities;
 use BSE::Template;
 use BSE::Util::Iterate;
+use DevHelp::HTML;
 
 my %money_fields =
   (
@@ -51,13 +52,27 @@ sub iter_subs {
   BSE::TB::Subscriptions->all;
 }
 
+sub tag_hash_mbcs {
+  my ($object, $args) = @_;
+
+  my $value = $object->{$args};
+  defined $value or $value = '';
+  if ($value =~ /\cJ/ && $value =~ /\cM/) {
+    $value =~ tr/\cM//d;
+  }
+  escape_html($value, '<>&"');
+}
+
 sub low_edit_tags {
   my ($self, $acts, $req, $article, $articles, $msg, $errors) = @_;
- 
+
+  my $cfg = $req->cfg;
+  my $mbcs = $cfg->entry('html', 'mbcs', 0);
+  my $tag_hash = $mbcs ? \&tag_hash_mbcs : \&hash_tag;
   my $it = BSE::Util::Iterate->new;
   return 
     (
-     product => [ \&hash_tag, $article ],
+     product => [ $tag_hash, $article ],
      $self->SUPER::low_edit_tags($acts, $req, $article, $articles, $msg,
 				$errors),
      alloptions => join(",", sort keys %Constants::SHOP_PRODUCT_OPTS),
