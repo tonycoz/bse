@@ -324,9 +324,11 @@ site/util/mysql.str
 site/util/upgrade_mysql.pl
 t/BSE/Test.pm
 t/t00smoke.t	makes a request to most of the scripts
+t/t010template.t	Tests Squirrel::Template
 t/t050format.t	DevHelp::Formatter tests
 t/t060parms.t
 t/t10edit.t
 t/t20gen.t
 t/t30rules.t	Check for use strict and warnings
+t/t40images.t	Tests image management
 test.cfg.base

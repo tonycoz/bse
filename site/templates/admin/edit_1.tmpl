@@ -16,7 +16,7 @@
 
 <:ifNew:><:or:>
 <:if Or [iadminuser_count] [iadmingroup_count]:>
-      <form action="/cgi-bin/admin/adminusers.pl">
+      <form action="/cgi-bin/admin/adminusers.pl" name="access">
   <input type=hidden name=id value="<: article id:>" />
   <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
   <tr>
@@ -49,7 +49,7 @@
 <br>
 <:or Or:><:eif Or:>
 <:eif:>
-  <form enctype="multipart/form-data" method="post" action="<:script:>">
+  <form enctype="multipart/form-data" method="post" action="<:script:>" name="edit">
 
     <input type="hidden" name="level" value="<: level :>" />
     <input type="hidden" name="id" value="<: article id :>" />
@@ -200,7 +200,7 @@
           <tr> 
             <th valign="top" nowrap="nowrap" bgcolor="#FFFFFF" align="left">Images: 
             </th>
-            <td align="center" bgcolor="#FFFFFF" width="100%"><:if Images:> <:iterator begin 
+            <td align="center" bgcolor="#FFFFFF" width="100%" name="images"><:if Images:> <:iterator begin 
               images:> <img src="/images/<: image image :>" alt="<:image alt :>" width= 
               <:image width:> height=<:image height:>> <:iterator separator images:> 
               <hr noshade size="1">
@@ -265,7 +265,7 @@
 <:if HaveChildType:>
 <:if New:>
 <:or New:>
-<:if UserCan edit_add_child:article:><form action="/cgi-bin/admin/add.pl">
+<:if UserCan edit_add_child:article:><form action="/cgi-bin/admin/add.pl" "addchild">
 <input type="hidden" name="parentid" value="<:article id:>" />
   <p> 
     <input type="submit" value="Add <:ifEq [article id] [cfg articles shop]:>Catalog<:or:><: childtype :><:eif:>" />

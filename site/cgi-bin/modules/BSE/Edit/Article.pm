@@ -524,7 +524,7 @@ sub possible_stepkids {
     or return;
 
   my @possible = sort { lc $a->{title} cmp lc $b->{title} }
-    grep !$stepkids->{$_->{id}}, $articles->all;
+    grep !$stepkids->{$_->{id}} && $_->{id} != $article->{id}, $articles->all;
   if ($req->access_control) {
     @possible = grep $req->user_can(edit_stepparent_add => $_), @possible;
   }
@@ -620,7 +620,8 @@ sub _stepparent_possibles {
 
   @$targs = $article->step_parents unless @$targs;
   my %targs = map { $_->{id}, 1 } @$targs;
-  my @possibles = grep !$targs{$_->{id}}, $articles->all;
+  my @possibles = grep !$targs{$_->{id}} && $_->{id} != $article->{id}, 
+    $articles->all;
   if ($req->access_control) {
     @possibles = grep $req->user_can(edit_stepkid_add => $_), @possibles;
   }

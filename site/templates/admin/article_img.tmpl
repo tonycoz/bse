@@ -15,7 +15,7 @@
 |</p><:if UserCan edit_images_add:article:>
 <h2>Add new image</h2>
 
-<form method="post" action="<:script:>" enctype="multipart/form-data">
+<form method="post" action="<:script:>" enctype="multipart/form-data" name="add">
 
 <input type="hidden" name="level" value="<: level :>" />
 <input type="hidden" name="id" value="<: article id :>" />
@@ -66,7 +66,7 @@
 </form>
 <:or UserCan:><:eif UserCan:>
 
-<form method="post" action="<:script:>" enctype="multipart/form-data">
+<form method="post" action="<:script:>" enctype="multipart/form-data" name="manage">
 <input type="hidden" name="level" value="<: level :>" />
 <input type="hidden" name="id" value="<: article id :>" />
 <input type="hidden" name="parentid" value="<: article parentid :>" />

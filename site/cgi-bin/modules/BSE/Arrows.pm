@@ -38,6 +38,8 @@ sub make_arrows {
   else {
     $html .= $nomove;
   }
+
+  $html;
 }
 
 1;

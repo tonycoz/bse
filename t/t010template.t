@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 9;
+use Test::More tests => 12;
 
 sub template_test($$$$;$);
 
@@ -45,6 +45,17 @@ TEMPLATE
 Alpha
 OUTPUT
 		"wrap", \%acts);
+  my $switch = <<IN;
+<:switch:>ignored<:case Eq [strref] "ABC":>ONE<:case Eq [strref] "XYZ":>TWO<:
+case default:>DEF<:endswitch:>
+IN
+  $str = "ABC";
+  template_test($switch, "ONE", "switch1", \%acts, "both");
+  $str = "XYZ";
+  template_test($switch, "TWO", "switch2", \%acts, "both");
+  $str = "DEF";
+  template_test($switch, "DEF", "switch def", \%acts, "both");
+  
 }
 
 sub template_test ($$$$;$) {

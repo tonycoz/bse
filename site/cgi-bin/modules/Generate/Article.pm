@@ -224,7 +224,7 @@ sub baseActs {
 	 my $req = $self->{request};
          my $html = <<HTML;
 <table><tr>
-<td><form action="$CGI_URI/admin/add.pl">
+<td><form action="$CGI_URI/admin/add.pl" name="edit">
 <input type=submit value="Edit $level_names{$article->{level}}">
 <input type=hidden name=id value="$article->{id}">
 </form></td>
@@ -235,7 +235,7 @@ HTML
          if (exists $level_names{1+$article->{level}}
 	     && $req->user_can(edit_add_child=>$article)) {
            $html .= <<HTML;
-<td><form action="$CGI_URI/admin/add.pl">
+<td><form action="$CGI_URI/admin/add.pl" name="addchild">
 <input type=submit value="Add $level_names{1+$article->{level}}">
 <input type=hidden name=parentid value="$article->{id}">
 </form></td>
@@ -243,7 +243,7 @@ HTML
 	 }
 	 if (generate_button() && $req->user_can(regen_article=>$article)) {
 	   $html .= <<HTML;
-<td><form action="$CGI_URI/admin/generate.pl">
+<td><form action="$CGI_URI/admin/generate.pl" name="regen">
 <input type=hidden name=id value="$article->{id}">
 <input type=submit value="Regenerate">
 </form></td>

@@ -5,7 +5,8 @@ use vars qw(@ISA @EXPORT @EXPORT_OK);
 require 'Exporter.pm';
 @EXPORT = qw(base_url ok fetch_ok make_url skip make_ua);
 @EXPORT_OK = qw(base_url ok make_ua fetch_url fetch_ok make_url skip 
-                make_post check_form post_ok check_content);
+                make_post check_form post_ok check_content follow_ok
+                follow_refresh_ok click_ok);
 
 my %conf;
 
@@ -49,23 +50,35 @@ my $test_num = 1;
 sub ok ($$) {
   my ($ok, $desc) = @_;
 
-  if ($ok) {
-    print "ok $test_num # $desc\n";
+  if ($INC{"Test/More.pm"}) {
+    return Test::More::ok($ok, $desc);
   }
   else {
-    print "not ok $test_num # $desc ",join(",", caller()),"\n";
+    if ($ok) {
+      print "ok $test_num # $desc\n";
+    }
+    else {
+      print "not ok $test_num # $desc ",join(",", caller()),"\n";
+    }
+    ++$test_num;
+    return $ok;
   }
-  ++$test_num;
-  return $ok;
 }
 
 sub skip {
   my ($desc, $count) = @_;
 
-  $count ||= 1;
-  for my $i (1..$count) {
-    print "ok $test_num # skipped: $desc\n";
-    ++$test_num;
+  if ($INC{"Test/More.pm"}) {
+  SKIP: {
+      Test::More::skip($desc, $count);
+    }
+  }
+  else {
+    $count ||= 1;
+    for my $i (1..$count) {
+      print "ok $test_num # skipped: $desc\n";
+      ++$test_num;
+    }
   }
 }
 
@@ -190,6 +203,50 @@ sub fetch_ok {
   my ($ua, $note, $url, $match, $headmatch) = @_;
 
   my $ok = $ua->get($url);
+  return _check_fetch($ua->{content}, $ua->{status}, $ok, 
+		      $ua->{res}->headers_as_string, $note, 
+		      $match, $headmatch)
+}
+
+sub follow_ok {
+  my ($ua, $note, $link, $match, $headmatch) = @_;
+
+  my $ok = $ua->follow($link);
+
+  return _check_fetch($ua->{content}, $ua->{status}, $ok, 
+		      $ua->{res}->headers_as_string, $note, 
+		      $match, $headmatch)
+}
+
+sub follow_refresh_ok {
+  my ($ua, $note, $match, $headmatch) = @_;
+
+  my $skip = 1;
+  ++$skip if $match;
+  ++$headmatch if $headmatch;
+  my $refresh = $ua->response->header('Refresh');
+  if (ok($refresh, "$note - refresh header")) {
+    my $url;
+    if ($refresh =~ /^\s*\d+\s*;\s*url=\"([^\"]+)\"/
+       or $refresh =~ /^\s*\d+\s*;\s*url\s*=\s*(\S+)/) {
+      $url = $1;
+      $url = URI->new_abs($url, $ua->uri);
+    }
+    else {
+      $url = $ua->uri;
+    }
+    print "# refresh to $url\n";
+    fetch_ok($ua, "$note - fetch", $url);
+  }
+  else {
+    skip("$note - skipped, not a refresh", $skip);
+  }
+}
+
+sub click_ok {
+  my ($ua, $note, $name, $match, $headmatch) = @_;
+
+  my $ok = ok($ua->click($name), "$note - click");
   return _check_fetch($ua->{content}, $ua->{status}, $ok, 
 		      $ua->{res}->headers_as_string, $note, 
 		      $match, $headmatch)
