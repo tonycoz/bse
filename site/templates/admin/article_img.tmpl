@@ -1,13 +1,4 @@
-<html>
-<head>
-
-  <title>Administration - <: articleType :> Image Wizard</title>
-
-  <link rel="stylesheet" type="text/css" href="/css/admin.css">
-
-</head>
-
-<body>
+<:wrap admin/xbase.tmpl title=>"Image Wizard" :>
 <h1><:ifEq [article id] "-1":>Global<:or:><: articleType :><:eif:> Image Wizard</h1>
 <:ifMessage:> 
 <p><b><:message:> </b></p>
@@ -24,12 +15,12 @@
 |</p><:if UserCan edit_images_add:article:>
 <h2>Add new image</h2>
 
-<form method="POST" action="<:script:>" enctype="multipart/form-data">
+<form method="post" action="<:script:>" enctype="multipart/form-data">
 
-<input type="hidden" name="level" value="<: level :>">
-<input type="hidden" name="id" value="<: article id :>">
-<input type="hidden" name="parentid" value="<: article parentid :>">
-<input type="hidden" name="imgtype" value="<: articleType :>">
+<input type="hidden" name="level" value="<: level :>" />
+<input type="hidden" name="id" value="<: article id :>" />
+<input type="hidden" name="parentid" value="<: article parentid :>" />
+<input type="hidden" name="imgtype" value="<: articleType :>" />
 <input type="hidden" name="_t" value="img" />
   <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
     <tr> 
@@ -38,34 +29,34 @@
           <tr> 
             <th bgcolor="#FFFFFF" align="left">Image file to add:</th>
             <td bgcolor="#FFFFFF"> 
-              <input type="file" name="image"> 
+              <input type="file" name="image" /> 
             </td>
-            <td nowrap bgcolor="#FFFFFF"><:help image file:> <:error_img image:></td>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help image file:> <:error_img image:></td>
           </tr>
           <tr> 
             <th bgcolor="#FFFFFF" align="left">Alt text for image:</th>
             <td bgcolor="#FFFFFF"> 
-              <input type="text" name="altIn" value="<:old altIn:>">
+              <input type="text" name="altIn" value="<:old altIn:>" />
             </td>
-            <td nowrap bgcolor="#FFFFFF"><:help image alt:> <:error_img altIn:></td>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help image alt:> <:error_img altIn:></td>
           </tr>
           <tr> 
             <th bgcolor="#FFFFFF" align="left">URL for image:</th>
             <td bgcolor="#FFFFFF"> 
-              <input type="text" name="url" value="<:old url:>">
+              <input type="text" name="url" value="<:old url:>" />
             </td>
-            <td nowrap bgcolor="#FFFFFF"><:help image url:> <:error_img url:></td>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help image url:> <:error_img url:></td>
           </tr>
           <tr> 
             <th bgcolor="#FFFFFF" align="left">Identifier for image:</th>
             <td bgcolor="#FFFFFF"> 
-              <input type="text" name="name" value="<:old name:>">
+              <input type="text" name="name" value="<:old name:>" />
             </td>
-            <td nowrap bgcolor="#FFFFFF"><:help image name:> <:error_img name:></td>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help image name:> <:error_img name:></td>
           </tr>
           <tr> 
             <td bgcolor="#FFFFFF" colspan="3" align="right"> 
-              <input type="submit" name="addimg" value="Add Image">
+              <input type="submit" name="addimg" value="Add Image" />
             </td>
           </tr>
         </table>
@@ -76,10 +67,10 @@
 <:or UserCan:><:eif UserCan:>
 
 <form method="post" action="<:script:>" enctype="multipart/form-data">
-<input type="hidden" name="level" value="<: level :>">
-<input type="hidden" name="id" value="<: article id :>">
-<input type="hidden" name="parentid" value="<: article parentid :>">
-<input type="hidden" name="imgtype" value="<: articleType :>">
+<input type="hidden" name="level" value="<: level :>" />
+<input type="hidden" name="id" value="<: article id :>" />
+<input type="hidden" name="parentid" value="<: article parentid :>" />
+<input type="hidden" name="imgtype" value="<: articleType :>" />
 <input type="hidden" name="_t" value="img" />
   <h2>Manage images</h2>
 
@@ -95,10 +86,10 @@
               <table width="100%" border="0" cellspacing="0" cellpadding="0">
                 <tr>
                   <td width="100%" align="center"><input type="radio" name="imagePos" value="tl" <: ifEq [article imagePos] "tl":>checked<:or:><:eif:>
-	      >Top Left &nbsp;<input type="radio" name="imagePos" value="tr"  <: ifEq [article imagePos] "tr":>checked<:or:><:eif:>
-	      >Top Right &nbsp; <input type="radio" name="imagePos" value="bl"  <: ifEq [article imagePos] "bl":>checked<:or:><:eif:>
-	      >Bottom Left &nbsp; <input type="radio" name="imagePos" value="br"  <: ifEq [article imagePos] "br":>checked<:or:><:eif:>
-	      >Bottom Right</td>
+	      />Top Left &nbsp;<input type="radio" name="imagePos" value="tr"  <: ifEq [article imagePos] "tr":>checked<:or:><:eif:>
+	      />Top Right &nbsp; <input type="radio" name="imagePos" value="bl"  <: ifEq [article imagePos] "bl":>checked<:or:><:eif:>
+	      />Bottom Left &nbsp; <input type="radio" name="imagePos" value="br"  <: ifEq [article imagePos] "br":>checked<:or:><:eif:>
+	      />Bottom Right</td>
                   <td bgcolor="#FFFFFF"><:help image file:> </td>
                 </tr>
               </table>
@@ -111,26 +102,26 @@
           <: iterator begin images :> 
           <tr bgcolor="#FFFFFF"> 
             <td align="center" colspan="5"> <img src="/images/<: image image :>" alt="<: image alt :>" width="<: 
-              image width :>" height="<: image height :>"></td>
+              image width :>" height="<: image height :>" /></td>
           </tr>
           <tr bgcolor="#FFFFFF"> 
             <th> Alt Text</th>
             <th width="50%"> URL</th>
             <th> Identifier</th>
-            <th nowrap> Modify</th>
-			<th nowrap> Move</th>
+            <th nowrap="nowrap"> Modify</th>
+			<th nowrap="nowrap"> Move</th>
           </tr>
           <tr bgcolor="#FFFFFF"> 
             <td valign="top"> 
-              <:ifUserCan edit_images_save:article:><input type="text" name="alt" value="<: image alt :>" size="32"><:or:><: image alt :><:eif:>
+              <:ifUserCan edit_images_save:article:><input type="text" name="alt" value="<: image alt :>" size="32" /><:or:><: image alt :><:eif:>
             </td>
             <td valign="top" width="50%"> 
-              <:ifUserCan edit_images_save:article:><input type="text" name="url" value="<: image url :>" size="32"><:or:><: image url :><:eif:>
+              <:ifUserCan edit_images_save:article:><input type="text" name="url" value="<: image url :>" size="32" /><:or:><: image url :><:eif:>
             </td>
-            <td valign="top" nowrap> 
-              <:ifUserCan edit_images_save:article:><input type="text" name="name<:image_index:>" value="<: image name :>" size="32"> <:error_img [concatenate "name" [image_index] ]:><:or:><: image name :><:eif:>
+            <td valign="top" nowrap="nowrap"> 
+              <:ifUserCan edit_images_save:article:><input type="text" name="name<:image_index:>" value="<: image name :>" size="32" /> <:error_img [concatenate "name" [image_index] ]:><:or:><: image name :><:eif:>
             </td>
-            <td valign="bottom" nowrap> 
+            <td valign="bottom" nowrap="nowrap"> 
               <:ifUserCan edit_images_delete:article:><b><a href="<:script:>?id=<:article id:>&removeimg_<: image id :>=1&_t=img" onClick="return window.confirm('Are you sure you want to delete this Image')">Delete</a></b><:or:><:eif:></td>
             <td><:imgmove:></td>
           </tr>
@@ -142,7 +133,7 @@
 <:ifUserCan edit_images_save:article:>
           <tr> 
             <td align="right" bgcolor="#FFFFFF" colspan="5"> 
-              <input type="submit" name="process" value="Save changes">
+              <input type="submit" name="process" value="Save changes" />
             </td>
 	  </tr>
 <:or:><:eif:>
@@ -155,11 +146,7 @@
 </table>
 
   <p>
-    <input type="submit" name="back" value=" <<  Back  ">
+    <input type="submit" name="back" value=" &lt;&lt;  Back  " />
   </p>
 
 </form>
-
-<p><font size="-1">BSE Release <:release:></font></p>
-</body
-></html>

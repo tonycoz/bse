@@ -6,7 +6,7 @@ use Images;
 use Articles;
 use Constants qw($IMAGEDIR);
 
-my %articleIds;
+my %articleIds = ( -1 => 1 );
 my $images = Images->new;
 my @images = $images->all;
 

@@ -6,7 +6,8 @@ use BSE::Util::SQL qw(now_sqldate);
 use BSE::Util::Valid qw/valid_date/;
 use BSE::Permissions;
 use Util qw(custom_class);
-use DevHelp::HTML;
+use DevHelp::HTML qw(:default popup_menu);
+use BSE::Arrows;
 
 sub article_dispatch {
   my ($self, $req, $article, $articles) = @_;
@@ -228,26 +229,26 @@ sub tag_list {
       $labels{2} = "In content, but not menus";
       push(@values, 2);
     }
-    return $cgi->popup_menu(-name=>'listed',
-			    -values=>\@values,
-			    -labels=>\%labels,
-			    -default=>$article->{listed});
+    return popup_menu(-name=>'listed',
+		      -values=>\@values,
+		      -labels=>\%labels,
+		      -default=>$article->{listed});
   }
   else {
     my ($values, $labels) = $self->possible_parents($article, $articles, $req);
     my $html;
     if (defined $article->{parentid}) {
-      $html = $cgi->popup_menu(-name=>'parentid',
-			       -values=> $values,
-			       -labels => $labels,
-			       -default => $article->{parentid},
-			       -override=>1);
+      $html = popup_menu(-name=>'parentid',
+			 -values=> $values,
+			 -labels => $labels,
+			 -default => $article->{parentid},
+			 -override=>1);
     }
     else {
-      $html = $cgi->popup_menu(-name=>'parentid',
-			       -values=> $values,
-			       -labels => $labels,
-			       -override=>1);
+      $html = popup_menu(-name=>'parentid',
+			 -values=> $values,
+			 -labels => $labels,
+			 -override=>1);
     }
 
     # munge the html - we display a default value, so we need to wrap the 
@@ -326,10 +327,10 @@ sub tag_templates {
     my @options;
     $default = $self->default_template($article, $cfg, \@templates);
   }
-  return $cgi->popup_menu(-name=>'template',
-			  -values=>\@templates,
-			  -default=>$default,
-			  -override=>1);
+  return popup_menu(-name=>'template',
+		    -values=>\@templates,
+		    -default=>$default,
+		    -override=>1);
 }
 
 sub title_images {
@@ -500,34 +501,22 @@ sub tag_move_stepkid {
   $urladd = '' unless defined $urladd;
 
   my $cgi_uri = $self->{cfg}->entry('uri', 'cgi', '/cgi-bin');
-  my $images_uri = $self->{cfg}->entry('uri', 'images', '/images');
-  my $html = '';
   my $url = $ENV{SCRIPT_NAME} . "?id=$article->{id}";
   if ($cgi->param('_t')) {
     $url .= "&_t=".$cgi->param('_t');
   }
   $url .= $urladd;
   $url .= "#step";
-  my $refreshto = CGI::escape($url);
-  my $blank = qq!<img src="$images_uri/trans_pixel.gif" width="17" height="13" border="0" align="absbottom" alt="" />!;
+  my $down_url = '';
   if ($$rallkids_index < $#$allkids) {
-    $html .= <<HTML;
-<a href="$cgi_uri/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids->[$$rallkids_index]{id}&other=$allkids->[$$rallkids_index+1]{id}&refreshto=$refreshto"><img src="$images_uri/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom" /></a>
-HTML
+    $down_url = "$cgi_uri/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids->[$$rallkids_index]{id}&other=$allkids->[$$rallkids_index+1]{id}";
   }
-  else {
-    $html .= $blank;
-  }
+  my $up_url = '';
   if ($$rallkids_index > 0) {
-    $html .= <<HTML;
-<a href="$cgi_uri/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids->[$$rallkids_index]{id}&other=$allkids->[$$rallkids_index-1]{id}&refreshto=$refreshto"><img src="$images_uri/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom" /></a>
-HTML
+    $up_url = "$cgi_uri/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids->[$$rallkids_index]{id}&other=$allkids->[$$rallkids_index-1]{id}";
   }
-  else {
-    $html .= $blank;
-  }
-  $html =~ tr/\n//d;
-  return $html;
+  
+  return make_arrows($req->cfg, $down_url, $up_url, $url, $img_prefix);
 }
 
 sub possible_stepkids {
@@ -552,9 +541,9 @@ sub tag_possible_stepkids {
     unless @$possstepkids;
   my %labels = map { $_->{id} => "$_->{title} ($_->{id})" } @$possstepkids;
   return
-    $cgi->popup_menu(-name=>'stepkid',
-		     -values=> [ map $_->{id}, @$possstepkids ],
-		     -labels => \%labels);
+    popup_menu(-name=>'stepkid',
+	       -values=> [ map $_->{id}, @$possstepkids ],
+	       -labels => \%labels);
 }
 
 sub tag_if_possible_stepkids {
@@ -613,25 +602,16 @@ sub tag_move_stepparent {
   $url .= $urladd;
   $url .= "#stepparents";
   my $blank = qq!<img src="$images_uri/trans_pixel.gif" width="17" height="13" border="0" align="absbottom" alt="" />!;
-  my $refreshto = CGI::escape($url);
+  my $down_url = '';
   if ($$rindex < $#$stepparents) {
-    $html .= <<HTML;
-<a href="$cgi_uri/admin/move.pl?stepchild=$article->{id}&id=$stepparents->[$$rindex]{parentId}&d=swap&other=$stepparents->[$$rindex+1]{parentId}&refreshto=$refreshto&all=1"><img src="$images_uri/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom" /></a>
-HTML
+    $down_url = "$cgi_uri/admin/move.pl?stepchild=$article->{id}&id=$stepparents->[$$rindex]{parentId}&d=swap&other=$stepparents->[$$rindex+1]{parentId}";
   }
-  else {
-    $html .= $blank;
-  }
+  my $up_url = '';
   if ($$rindex > 0) {
-    $html .= <<HTML;
-<a href="$cgi_uri/admin/move.pl?stepchild=$article->{id}&id=$stepparents->[$$rindex]{parentId}&d=swap&other=$stepparents->[$$rindex-1]{parentId}&refreshto=$refreshto&all=1"><img src="$images_uri/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom" /></a>
-HTML
+    $up_url = "$cgi_uri/admin/move.pl?stepchild=$article->{id}&id=$stepparents->[$$rindex]{parentId}&d=swap&other=$stepparents->[$$rindex-1]{parentId}";
   }
-  else {
-    $html .= $blank;
-  }
-  $html =~ tr/\n//d;
-  return $html;
+
+  return make_arrows($req->cfg, $down_url, $up_url, $url, $img_prefix);
 }
 
 sub _stepparent_possibles {
@@ -666,10 +646,10 @@ sub tag_stepparent_possibles {
   if ($article->{id} && $article->{id} > 0 && !@$possibles) {
     @$possibles = _stepparent_possibles($req, $article, $articles, $targs);
   }
-  $cgi->popup_menu(-name=>'stepparent',
-		   -values => [ map $_->{id}, @$possibles ],
-		   -labels => { map { $_->{id}, "$_->{title} ($_->{id})" }
-				@$possibles });
+  popup_menu(-name=>'stepparent',
+	     -values => [ map $_->{id}, @$possibles ],
+	     -labels => { map { $_->{id}, "$_->{title} ($_->{id})" }
+			  @$possibles });
 }
 
 sub iter_files {
@@ -715,39 +695,29 @@ sub tag_movechild {
   my $cgi_uri = $self->{cfg}->entry('uri', 'cgi', '/cgi-bin');
   my $images_uri = $self->{cfg}->entry('uri', 'images', '/images');
   my $urlbase = $req->cfg->entryVar('site', 'url');
-  my $url = "$urlbase$ENV{SCRIPT_NAME}?id=$article->{id}";
+  my $refresh_url = "$urlbase$ENV{SCRIPT_NAME}?id=$article->{id}";
   my $t = $req->cgi->param('_t');
   if ($t && $t =~ /^\w+$/) {
-    $url .= "&_t=$t";
+    $refresh_url .= "&_t=$t";
   }
-  $url .= $urladd;
-  $url = escape_uri($url);
-  my $html = '';
-  my $nomove = '<img src="/images/trans_pixel.gif" width="17" height="13" border="0" align="absbottom" alt="" />';
-  my $id = $kids->[$$rindex]{id};
-  if ($$rindex < $#$kids) {
-    $html .= <<HTML;
-<a href="$cgi_uri/admin/move.pl?id=$id&d=down&edit=1&all=1&r=$url"><img src="$images_uri/admin/${img_prefix}move_down.gif" width="17" height="13" alt="Move Down" border="0" align="absbottom" /></a>
-HTML
-  }
-  else {
-    $html .= $nomove;
-  }
-  if ($$rindex > 0) {
-    $html .= <<HTML;
-<a href="$cgi_uri/admin/move.pl?id=$id&d=up&edit=1&all=1&r=$url"><img src="$images_uri/admin/${img_prefix}move_up.gif" width="17" height="13" alt="Move Up" border="0" align="absbottom" /></a>
-HTML
-  }
-  else {
-    $html .= $nomove;
-  }
-  $html =~ tr/\n//d;
 
-  $html;
+  $refresh_url .= $urladd;
+
+  my $id = $kids->[$$rindex]{id};
+  my $down_url = '';
+  if ($$rindex < $#$kids) {
+    $down_url = "$cgi_uri/admin/move.pl?id=$id&d=down&edit=1&all=1";
+  }
+  my $up_url = '';
+  if ($$rindex > 0) {
+    $up_url = "$cgi_uri/admin/move.pl?id=$id&d=up&edit=1&all=1"
+  }
+
+  return make_arrows($req->cfg, $down_url, $up_url, $refresh_url, $img_prefix);
 }
 
 sub tag_edit_link {
-  my ($args, $acts, $funcname, $templater) = @_;
+  my ($article, $args, $acts, $funcname, $templater) = @_;
   my ($which, $name) = split / /, $args, 2;
   $name ||= 'Edit';
   my $gen_class;
@@ -755,7 +725,7 @@ sub tag_edit_link {
       && ($gen_class = $templater->perform($acts, $which, 'generator'))) {
     eval "use $gen_class";
     unless ($@) {
-      my $gen = $gen_class->new;
+      my $gen = $gen_class->new(top => $article);
       my $link = $gen->edit_link($templater->perform($acts, $which, 'id'));
       return qq!<a href="$link">$name</a>!;
     }
@@ -786,29 +756,17 @@ sub tag_imgmove {
     $url .= "&_t=$t";
   }
   $url .= $urladd;
-  $url = CGI::escape($url);
 
-  my $html = '';
-  my $nomove = '<img src="/images/trans_pixel.gif" width="17" height="13" border="0" align="absbottom" alt="" />';
   my $image = $images->[$$rindex];
-  if ($$rindex > 0) {
-    $html .= <<HTML
-<a href="$ENV{SCRIPT_NAME}?id=$article->{id}&moveimgup=1&imageid=$image->{id}&r=$url"><img src="/images/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom" /></a>
-HTML
-  }
-  else {
-    $html .= $nomove;
-  }
+  my $down_url;
   if ($$rindex < $#$images) {
-    $html .= <<HTML
-<a href="$ENV{SCRIPT_NAME}?id=$article->{id}&moveimgdown=1&imageid=$image->{id}&r=$url"><img src="/images/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom" /></a>
-HTML
+    $down_url = "$ENV{SCRIPT_NAME}?id=$article->{id}&moveimgdown=1&imageid=$image->{id}";
   }
-  else {
-    $html .= $nomove;
+  my $up_url = '';
+  if ($$rindex > 0) {
+    $up_url = "$ENV{SCRIPT_NAME}?id=$article->{id}&moveimgup=1&imageid=$image->{id}";
   }
-  $html =~ tr/\n//d;
-  return $html;
+  return make_arrows($req->cfg, $down_url, $up_url, $url, $img_prefix);
 }
 
 sub tag_movefiles {
@@ -824,36 +782,22 @@ sub tag_movefiles {
   $img_prefix = '' unless defined $img_prefix;
   $urladd = '' unless defined $urladd;
 
-  my $html = '';
-
   $$rindex >= 0 && $$rindex < @$files
     or return '** movefiles can only be used in the files iterator **';
 
-  my $nomove = '<img src="/images/trans_pixel.gif" width="17" height="13" border="0" align="absbottom" alt="" />';
-  my $images_uri = $self->{cfg}->entry('uri', 'images', '/images');
-
   my $urlbase = $self->{cfg}->entryVar('site', 'url');
   my $url = "$urlbase$ENV{SCRIPT_NAME}?id=$article->{id}&filelist=1$urladd";
-  $url = CGI::escape($url);
-  
+
+  my $down_url = "";
   if ($$rindex < $#$files) {
-    $html .= <<HTML;
-<a href="$ENV{SCRIPT_NAME}?fileswap=1&id=$article->{id}&file1=$files->[$$rindex]{id}&file2=$files->[$$rindex+1]{id}&r=$url"><img src="$images_uri/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom" /></a>
-HTML
+    $down_url = "$ENV{SCRIPT_NAME}?fileswap=1&amp;id=$article->{id}&amp;file1=$files->[$$rindex]{id}&amp;file2=$files->[$$rindex+1]{id}";
   }
-  else {
-    $html .= $nomove;
-  }
+  my $up_url = "";
   if ($$rindex > 0) {
-    $html .= <<HTML;
-<a href="$ENV{SCRIPT_NAME}?fileswap=1&id=$article->{id}&file1=$files->[$$rindex]{id}&file2=$files->[$$rindex-1]{id}&r=$url"><img src="$images_uri/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom" /></a>
-HTML
+    $up_url = "$ENV{SCRIPT_NAME}?fileswap=1&amp;id=$article->{id}&amp;file1=$files->[$$rindex]{id}&amp;file2=$files->[$$rindex-1]{id}";
   }
-  else {
-    $html .= $nomove;
-  }
-  $html =~ tr/\n//d;
-  $html;
+
+  return make_arrows($req->cfg, $down_url, $up_url, $url, $img_prefix);
 }
 
 sub tag_old {
@@ -1079,7 +1023,7 @@ sub low_edit_tags {
      (\&iter_admin_users, 'iadminuser', 'adminusers'),
      DevHelp::Tags->make_iterator2
      (\&iter_admin_groups, 'iadmingroup', 'admingroups'),
-     edit => \&tag_edit_link,
+     edit => [ \&tag_edit_link, $article ],
      error => [ \&tag_hash, $errors ],
      error_img => [ \&tag_error_img, $cfg, $errors ],
      ifFieldPerm => [ \&tag_if_field_perm, $request, $article ],
@@ -2009,8 +1953,9 @@ sub add_image {
     $imageref = '';
   }
   unless ($errors{name}) {
-    $self->validate_image_name($imageref, \$msg)
-      or $errors{name} = $msg;
+    my $workmsg;
+    $self->validate_image_name($imageref, \$workmsg)
+      or $errors{name} = $workmsg;
   }
 
   my $image = $cgi->param('image');
@@ -2020,7 +1965,7 @@ sub add_image {
     }
   }
   else {
-    $msg = 'Enter or select the name of an image file on your machine';
+    #$msg = 'Enter or select the name of an image file on your machine';
     $errors{image} = 'Please enter an image filename';
   }
   if ($msg || keys %errors) {

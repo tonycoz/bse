@@ -170,19 +170,6 @@ $SEARCH_TITLE = "Search";
 # the search base page
 $SEARCH_TITLE_IMAGE = "";
 
-# defines extra tags added to the tags defined by Generate.pm
-# constants are converted to subs automatically
-# you cannot override existing tags
-# the initial set of tags are used in various places in the default
-# templates
-#  %EXTRA_TAGS =
-#    (
-#     siteName => 'My Site',
-#     salesPhoneNo => '61 2 9999 8888',
-#     salesEmail => 'tony@develop-help.com',
-#     siteUrl => $URLBASE,
-#    );
-
 # articles that cannot be deleted
 # you don't need to include the shop ids here, they are always 
 # protected
@@ -268,11 +255,13 @@ $SHOP_PGPE = 'pgpe';
 $SHOP_MAIL_SUBJECT = "Your (web site) order";
 
 # name used in the From line for both the order emails
-$SHOP_FROM = 'tony@develop-help.com';
+#$SHOP_FROM = 'someone@yoursite.com';
+$SHOP_FROM = '';
 
 # the name/email your copy of emailled orders should be sent to
 $SHOP_TO_NAME = 'Your Name';
-$SHOP_TO_EMAIL = 'sales@develop-help.com';
+#$SHOP_TO_EMAIL = 'someone@yoursite.com';
+$SHOP_TO_EMAIL = '';
 
 # non-zero if we should email an encrypted order to $SHOP_TO_EMAIL
 $SHOP_EMAIL_ORDER = 0;
@@ -326,7 +315,8 @@ $SHOP_EMAIL_ORDER = 0;
 # Maintenance tools
 
 # datadump.pl emails the dump to this address
-$DATA_EMAIL = 'you@yoursite.com';
+#$DATA_EMAIL = 'you@yoursite.com';
+$DATA_EMAIL = '';
 
 # the name of your copy of mysqldump (used by datadump.pl)
 # if it's not in the PATH then give the absolute path here

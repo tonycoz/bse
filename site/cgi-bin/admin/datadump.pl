@@ -1,18 +1,32 @@
 #!/usr/bin/perl -w
+# -d:ptkdb
+BEGIN { $ENV{DISPLAY} = '192.168.32.15:0.0' }
 use strict;
 use FindBin;
 use lib "$FindBin::Bin/../modules";
-use Constants qw($UN $PW $DSN $SHOP_FROM);
+use Constants qw($UN $PW $DSN $SHOP_FROM $DATA_EMAIL);
 use BSE::Mail;
 use BSE::Cfg;
+use DevHelp::HTML;
 my $cfg = BSE::Cfg->new;
 
-my $email = $cfg->entryIfVar('datadump', 'to') || $SHOP_FROM;
+my $email = $cfg->entryIfVar('datadump', 'to') || $DATA_EMAIL;
+my $from = $cfg->entryIfVar('datadump', 'from') || $SHOP_FROM;
 my $urlbase = $cfg->entryVar('site', 'url');
 my $opts = '-t';
 my $dumper = $cfg->entryIfVar('datadump', 'mysqldump') || 'mysqldump';
 $|=1;
 print "Content-Type: text/html\n\n";
+
+unless ($email) {
+  print "Configuration Error: You need to set the <b>to</b> key in the [datadump] section of the config file, or \$DATA_EMAIL in Constants.pm";
+  exit;
+}
+unless ($from) {
+  print "Configuration Error: You need to set the <b>from</b> key in the [datadump] section of the config file, or \$SHOP_FROM in Constants.pm";
+  exit;
+}
+
 my $user = $UN;
 my $pass = $PW;
 my $data;
@@ -35,7 +49,7 @@ elsif ($DSN =~ /^dbi:mysql:(.*)$/i) {
     }
   }
   unless ($data) {
-    print "Sorry, could not find database in ",CGI::escapeHTML($DSN),"<br>\n";
+    print "Sorry, could not find database in ",escape_html($DSN),"<br>\n";
     exit;
   }
 }
@@ -43,6 +57,7 @@ else {
   print "Sorry, this doesn't appear to be a mysql database<br>\n";
   exit;
 }
+
 for ($user, $pass, $data) {
   s/(["\\`\$])/\\$1/;
 }
@@ -88,11 +103,11 @@ EOS
 
 my $mailer = BSE::Mail->new(cfg=>$cfg);
 $mailer->send(to=>$email,
-	      from=>$SHOP_FROM,
+	      from=>$from,
 	      headers=>$headers,
 	      body=>$body,
 	      subject=>$cfg->entry('datadump') || "Data dump")
-  or print "Error sending email: ",CGI::escapeHTML($mailer->errstr),"<br>\n";
+  or print "Error sending email: ",escape_html($mailer->errstr),"<br>\n";
 unless (close DUMP) {
   print "There may have been a problem retrieving the dump, please check the error log<br>";
 }

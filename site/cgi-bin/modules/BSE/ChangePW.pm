@@ -88,7 +88,12 @@ sub req_change {
   $user->{password} = $newpw;
   $user->save;
 
-  return BSE::Template->get_refresh($req->url('menu', { m => "New password saved" }), $req->cfg);
+  my $r = $cgi->param('r');
+  unless ($r) {
+    $r = $req->url('menu', { m => "New password saved" });
+  }
+
+  return BSE::Template->get_refresh($r, $req->cfg);
 }
 
 1;

@@ -381,6 +381,26 @@ Control over subscription messages.
 
 The from field for the email.  Default: $SHOP_FROM.
 
+=item testname
+
+Default for the "Test Name" field for sending test subscription
+messages.
+
+=item testemail
+
+Default for the "Test Email" field for sending test subscription
+messages.
+
+=item testtextonly
+
+Set to 1 if you want the "Test Text Only" box checked by default for
+sending test subscription messages.
+
+=item testing
+
+Set to 0 to disable display of the test subscription messages portions
+of the subscriptions send form.
+
 =back
 
 =head2 [search]
@@ -459,6 +479,21 @@ in Constants.pm
 
 To email for emailed orders sent by the shop.  Overrides $SHOP_TO_EMAIL
 in Constants.pm
+
+=item noencrypt
+
+If this is true then orders sent to you by the shop will not be
+encrypted.  Enabling this disabled acceptance of credit card orders,
+and the default for C<payment_types> will become C<1> instead or C<0>.
+
+Please realize that other potentially commercially sensitive
+information is being sent in the clear to a central location,
+unencrypted.
+
+=item email_order
+
+If true, then the order is email to to_email, possibly with credit
+card information included.  Default: $SHOP_EMAIL_ORDER.
 
 =back
 
@@ -598,6 +633,22 @@ form of those articles and their children under.
 The keys are ids of articles that shouldn't have their link field
 overwritten.  The value should be a true value, but is otherwise
 ignored.
+
+=head2 [datadump]
+
+=over
+
+=item to
+
+The recipient for the data dump email sent by datadump.pl. Default:
+$DATA_EMAIL.
+
+=item from
+
+the From for the data dump email sent by datadump.pl.  Default:
+$SHOP_FROM.
+
+=back
 
 =head1 AUTHOR
 

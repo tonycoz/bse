@@ -213,7 +213,7 @@ sub template_test($$$$) {
       (my $filename = $article->{generator}) =~ s!::!/!g;
       $filename .= ".pm";
       require $filename;
-      $article->{generator}->new(cfg => $cfg);
+      $article->{generator}->new(cfg => $cfg, top => $article);
     };
   ok($gen, "$tag: created generator $article->{generator}");
   diag $@ unless $gen;

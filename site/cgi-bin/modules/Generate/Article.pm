@@ -11,11 +11,21 @@ use BSE::Util::Tags;
 use ArticleFiles;
 @ISA = qw/Generate/;
 use DevHelp::HTML;
+use BSE::Arrows;
+use Carp 'confess';
 
 my $excerptSize = 300;
 
 my %level_names = map { $_, $LEVEL_DEFAULTS{$_}{display} }
   grep { $LEVEL_DEFAULTS{$_}{display} } keys %LEVEL_DEFAULTS;
+
+sub new {
+  my ($class, %opts) = @_;
+
+  $opts{top} or confess "Please supply 'top' to $class->new";
+
+  return $class->SUPER::new(%opts);
+}
 
 sub edit_link {
   my ($self, $id) = @_;
@@ -41,10 +51,10 @@ sub link_to_form {
       my ($name, $value) = split /=/, $attr, 2;
       # I'm assuming none of the values are uri escaped
       $value = escape_html($value);
-      $form .= qq!<input type=hidden name="$name" value="$value">!
+      $form .= qq!<input type=hidden name="$name" value="$value" />!
     }
   }
-  $form .= qq!<input type=submit value="!.escape_html($text).'">';
+  $form .= qq!<input type=submit value="!.escape_html($text).'" />';
   $form .= "</form>";
 
   return $form;
@@ -318,7 +328,7 @@ HTML
        @children > 1 or return '';
        if ($self->{admin} && $child_index < $#children) {
          my $html = <<HTML;
-<a href="$CGI_URI/admin/move.pl?id=$children[$child_index]{id}&d=down"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom" /></a>
+<a href="$CGI_URI/admin/move.pl?id=$children[$child_index]{id}&amp;d=down"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="bottom" /></a>
 HTML
 	 chop $html;
 	 return $html;
@@ -331,7 +341,7 @@ HTML
        @children > 1 or return '';
        if ($self->{admin} && $child_index > 0) {
          my $html = <<HTML;
-<a href="$CGI_URI/admin/move.pl?id=$children[$child_index]{id}&d=up"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom" /></a>
+<a href="$CGI_URI/admin/move.pl?id=$children[$child_index]{id}&amp;d=up"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="bottom" /></a>
 HTML
 	 chop $html;
 	 return $html;
@@ -339,6 +349,7 @@ HTML
          return $blank;
        }
      },
+     movekid => [ \&tag_movekid, $self, \$child_index, \@children, $article ],
      movestepkid =>
      sub {
        my ($arg, $acts, $funcname, $templater) = @_;
@@ -349,25 +360,18 @@ HTML
 	 DevHelp::Tags->get_parms($arg, $acts, $templater);
        $img_prefix = '' unless defined $img_prefix;
        $urladd = '' unless defined $urladd;
-       my $refreshto = escape_uri($ENV{SCRIPT_NAME} . "?id=$article->{id}$urladd");
+       my $top = $self->{top} || $article;
+       my $refreshto = $ENV{SCRIPT_NAME} . "?id=$top->{id}$urladd";
+       my $down_url = "";
        if ($allkids_index < $#allkids) {
-	 $html .= <<HTML
-<a href="$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids[$allkids_index]{id}&other=$allkids[$allkids_index+1]{id}&refreshto=$refreshto"><img src="$IMAGES_URI/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom" /></a>
-HTML
+	 $down_url = "$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids[$allkids_index]{id}&other=$allkids[$allkids_index+1]{id}";
        }
-       else {
-	 $html .= $blank;
-       }
+       my $up_url = "";
        if ($allkids_index > 0) {
-	 $html .= <<HTML
-<a href="$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids[$allkids_index]{id}&other=$allkids[$allkids_index-1]{id}&refreshto=$refreshto"><img src="$IMAGES_URI/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom" /></a>
-HTML
+	 $up_url = "$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids[$allkids_index]{id}&other=$allkids[$allkids_index-1]{id}";
        }
-       else {
-	 $html .= $blank;
-       }
-       $html =~ tr/\n//d;
-       return $html;
+       
+       return make_arrows($self->{cfg}, $down_url, $up_url, $refreshto, $img_prefix);
      },
      ifCurrentPage=>
      sub {
@@ -419,6 +423,7 @@ HTML
      BSE::Util::Tags->make_iterator(\@stepkids, 'stepkid', 'stepkids'),
      BSE::Util::Tags->make_iterator(\@allkids, 'allkid', 'allkids', \$allkids_index),
      BSE::Util::Tags->make_iterator(\@stepparents, 'stepparent', 'stepparents'),
+     top => [ \&tag_top, $self, $article ],
     );
 
   if ($article->{link} =~ /^\w+:/) {
@@ -445,6 +450,43 @@ sub generate {
   $html =~ s/<:\s*embed\s+(?:start|end)\s*:>//g;
 
   return $self->generate_low($html, $article, $articles, 0);
+}
+
+sub tag_movekid {
+  my ($self, $rindex, $rchildren, $article, $args, $acts, 
+      $funcname, $templater) = @_;
+
+  $self->{admin} or return '';
+  @$rchildren or return '';
+
+  my ($img_prefix, $urladd) = 
+    DevHelp::Tags->get_parms($args, $acts, $templater);
+  defined $img_prefix or $img_prefix = '';
+  defined $urladd or $urladd = '';
+
+  my $top = $self->{top} || $article;
+  my $refreshto = $ENV{SCRIPT_NAME} . "?id=$top->{id}$urladd";
+  my $down_url = "";
+  if ($$rindex < $#$rchildren) {
+    $down_url = "$CGI_URI/admin/move.pl?id=$rchildren->[$$rindex]{id}&d=down";
+  }
+  my $up_url = "";
+  if ($$rindex > 0) {
+    $up_url = "$CGI_URI/admin/move.pl?id=$rchildren->[$$rindex]{id}&d=up";
+  }
+
+  return make_arrows($self->{cfg}, $down_url, $up_url, $refreshto, $img_prefix);
+}
+
+sub tag_top {
+  my ($self, $article, $args) = @_;
+
+  my $top = $self->{top} || $article;
+
+  my $value = $top->{$args};
+  defined $value or $value = '';
+
+  $value;
 }
 
 1;

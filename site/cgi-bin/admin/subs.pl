@@ -32,6 +32,7 @@ if (BSE::Permissions->check_logon($req)) {
      html_preview => \&html_preview,
      text_preview => \&text_preview,
      send => \&send_message,
+     send_test => \&send_test,
      delconfirm => \&req_delconfirm,
      delete => \&req_delete,
     );
@@ -468,11 +469,24 @@ sub _first {
   undef;
 }
 
-sub send_message {
-  my ($q, $req, $cfg) = @_;
+sub _send_errors {
+  my ($q, $cfg, $sub, $errors) = @_;
 
-  $req->user_can('subs_send')
-    or return list($q, $req, $cfg, "You dont have access to send subscriptions");
+  my @errors = map +{ field=> $_, message => $errors->{$_} }, keys %$errors;
+  my %acts;
+  %acts =
+    (
+     BSE::Util::Tags->basic(\%acts, $q, $cfg),
+     BSE::Util::Tags->admin(\%acts, $cfg),
+     subscription => sub { escape_html($sub->{$_[0]}) },
+     BSE::Util::Tags->make_iterator(\@errors, 'error', 'errors'),
+    );
+  
+  BSE::Template->show_page('admin/subs/send_error', $cfg, \%acts);
+}
+
+sub _send_setup {
+  my ($q, $req, $cfg, $opts, $rsub) = @_;
 
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'subs');
   my $id = $q->param('id')
@@ -480,17 +494,87 @@ sub send_message {
   my $sub = BSE::SubscriptionTypes->getByPkey($id)
     or return _refresh_list($q, $cfg, $msgs->(startnosub=>"Cannot find record $id"));
 
-  my %opts;
+  my %errors;
   for my $key ($q->param()) {
     # I'm not worried about multiple items
-    $opts{$key} = ($q->param($key))[0];
+    $opts->{$key} = ($q->param($key))[0];
   }
   if ($q->param('have_archive_check')) {
-    $opts{archive} = defined $q->param('archive')
+    $opts->{archive} = defined $q->param('archive')
   }
-  if (($opts{archive} || $sub->{archive}) && $opts{parentId}) {
-    $req->user_can('edit_add_child', $opts{parentId})
-      or delete $opts{parentId};
+  # work our way through, so we have a consistent set of data to validate
+  for my $key (grep $_ ne 'id', BSE::SubscriptionType->columns) {
+    unless (exists $opts->{$key}) {
+      $opts->{$key} = $sub->{$key};
+    }
+  }
+  if ($opts->{archive} &&
+      ($opts->{parentId} && $opts->{parentId} != $sub->{parentId})) {
+    $req->user_can('edit_add_child', $opts->{parentId})
+      or $errors{parentId} = "You cannot add children to the archive parent";
+  }
+  $opts->{title} eq ''
+    and $errors{title} = "Please enter a title";
+  $opts->{body} eq ''
+    and $errors{body} = "Please enter a body";
+
+  if (keys %errors) {
+    _send_errors($q, $cfg, $sub, \%errors);
+    return;
+  }
+  
+  $$rsub = $sub;
+
+  return 1;
+}
+
+sub send_test {
+  my ($q, $req, $cfg) = @_;
+
+  $req->user_can('subs_send')
+    or return list($q, $req, $cfg, "You dont have access to send subscriptions");
+
+  my %opts;
+  my $sub;
+  _send_setup($q, $req, $cfg, \%opts, \$sub)
+    or return;
+
+  $cfg->entry('subscriptions', 'testing', 1)
+    or return _send_errors($q, $cfg, $sub, 
+			   { error => "Test subscription messages disabled" });
+
+  # make sure the user is being authenticated in some way
+  # this prevents spammers from using this to send their messages
+  $ENV{REMOTE_USER} || $req->getuser
+    or return _send_errors($q, $cfg, $sub, 
+			   { error => "You must be authenticated to use this function.  Either enable access control or setup .htpasswd." });
+
+  my $testemail = $q->param('testemail');
+  my $testname = $q->param('testname');
+  my $testtextonly = $q->param('testtextonly');
+
+  require SiteUsers;
+  my %recipient = 
+    (
+     (map { $_ => '' } SiteUser->columns),
+     id => 999,
+     userId => 'xxxx',
+     email => $testemail,
+     name1 => $testname,
+     confirmSecret => 'TESTTESTTESTTESTTESTTESTTESTTEST',
+     textOnlyEmail => (defined $testtextonly ? 1 : 0 ),
+    );
+
+  my %errors;
+  unless ($testemail && $testemail =~ /.\@./) {
+    $errors{testemail} = "Please enter a test email address to send a test";
+  }
+  unless ($testname) {
+    $errors{testname} = "Please enter a test name to send a test";
+  }
+  if (keys %errors) {
+    _send_errors($q, $cfg, $sub, \%errors);
+    return;
   }
 
   my $template = BSE::Template->get_source('admin/subs/sending', $cfg);
@@ -510,6 +594,50 @@ sub send_message {
      user => sub { $acts_user ? escape_html($acts_user->{$_[0]}) : '' },
      ifUser => sub { $acts_user },
      ifError => sub { $is_error },
+     testing => 1,
+    );
+  BSE::Template->show_replaced($prefix, $cfg, \%acts);
+  $sub->send_test($cfg, \%opts,
+		  sub {
+		    my ($type, $user, $msg) = @_;
+		    $acts_message = defined($msg) ? $msg : '';
+		    $acts_user = $user;
+		    $is_error = $type eq 'error';
+		    print BSE::Template->replace($permessage, $cfg, \%acts);
+		  },
+		 \%recipient);
+  print BSE::Template->replace($suffix, $cfg, \%acts);
+}
+
+sub send_message {
+  my ($q, $req, $cfg) = @_;
+
+  $req->user_can('subs_send')
+    or return list($q, $req, $cfg, "You dont have access to send subscriptions");
+
+  my %opts;
+  my $sub;
+  _send_setup($q, $req, $cfg, \%opts, \$sub)
+    or return;
+
+  my $template = BSE::Template->get_source('admin/subs/sending', $cfg);
+
+  my ($prefix, $permessage, $suffix) = 
+    split /<:\s*iterator\s+(?:begin|end)\s+messages\s*:>/, $template;
+  my $acts_message;
+  my $acts_user;
+  my $is_error;
+  my %acts;
+  %acts =
+    (
+     BSE::Util::Tags->basic(\%acts, $q, $cfg),
+     BSE::Util::Tags->admin(\%acts, $cfg),
+     subscription => sub { escape_html($sub->{$_[0]}) },
+     message => sub { $acts_message },
+     user => sub { $acts_user ? escape_html($acts_user->{$_[0]}) : '' },
+     ifUser => sub { $acts_user },
+     ifError => sub { $is_error },
+     testing => 0,
     );
   BSE::Template->show_replaced($prefix, $cfg, \%acts);
   $sub->send($cfg, \%opts,

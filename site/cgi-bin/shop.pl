@@ -264,9 +264,17 @@ sub checkout {
   my $cust_class = Util::custom_class($cfg);
   $cust_class->enter_cart(\@cart, \@cart_prods, \%custom_state, $cfg);
 
+  my $noencrypt = $cfg->entryBool('shop', 'noencrypt', 0);
+
   my @payment_types = split /,/, $cfg->entry('shop', 'payment_types', '0');
   @payment_types = grep $valid_payment_types{$_}, @payment_types;
-  @payment_types or @payment_types = ( 0 );
+  if ($noencrypt) {
+    @payment_types = grep $_ ne PAYMENT_CC, @payment_types;
+    @payment_types or @payment_types = ( PAYMENT_CALLME );
+  }
+  else {
+    @payment_types or @payment_types = ( PAYMENT_CC );
+  }
   @payment_types = sort { $a <=> $b } @payment_types;
   my %payment_types = map { $_=> 1 } @payment_types;
 
@@ -543,14 +551,27 @@ sub prePurchase {
 
 # the real work
 sub purchase {
+  $from && $from =~ /.\@./
+    or return checkout("Configuration error: shop from address not set", 1);
+  $toEmail && $toEmail =~ /.\@./
+    or return checkout("Configuration error: shop to_email address not set", 1);
+
   # some basic validation, in case the user switched off javascript
   my $cust_class = Util::custom_class($cfg);
   my @required = 
     $cust_class->required_fields($CGI::Q, $session{custom}, $cfg);
 
+  my $noencrypt = $cfg->entryBool('shop', 'noencrypt', 0);
+
   my @payment_types = split /,/, $cfg->entry('shop', 'payment_types', '0');
   @payment_types = grep $valid_payment_types{$_}, @payment_types;
-  @payment_types or @payment_types = ( 0 );
+  if ($noencrypt) {
+    @payment_types = grep $_ ne PAYMENT_CC, @payment_types;
+    @payment_types or @payment_types = ( PAYMENT_CALLME );
+  }
+  else {
+    @payment_types or @payment_types = ( PAYMENT_CC );
+  }
   @payment_types = sort { $a <=> $b } @payment_types;
   my %payment_types = map { $_=> 1 } @payment_types;
 
@@ -761,7 +782,7 @@ sub purchase {
     my $id = $payment_names{$name};
     $acts{"if${name}Payment"} = $order->{paymentType} == $id;
   }
-  send_order($order, \@items, \@products);
+  send_order($order, \@items, \@products, $noencrypt);
   $session{cart} = []; # empty the cart
   page('checkoutfinal.tmpl', \%acts);
 }
@@ -769,7 +790,7 @@ sub purchase {
 # sends the email order confirmation and the PGP encrypted
 # email to the site owner
 sub send_order {
-  my ($order, $items, $products) = @_;
+  my ($order, $items, $products, $noencrypt) = @_;
 
   my %extras = $cfg->entriesCS('extra tags');
   for my $key (keys %extras) {
@@ -839,38 +860,46 @@ sub send_order {
   my $mailer = BSE::Mail->new(cfg=>$cfg);
   # ok, send some email
   my $confirm = BSE::Template->get_page('mailconfirm', $cfg, \%acts);
-  if ($SHOP_EMAIL_ORDER) {
-    $acts{cardNumber} = sub { param('cardNumber') };
-    $acts{cardExpiry} = sub { param('cardExpiry') };
+  my $email_order = $cfg->entryBool('shop', 'email_order', $SHOP_EMAIL_ORDER);
+  if ($email_order) {
+    unless ($noencrypt) {
+      $acts{cardNumber} = sub { param('cardNumber') };
+      $acts{cardExpiry} = sub { param('cardExpiry') };
+    }
     my $ordertext = BSE::Template->get_page('mailorder', $cfg, \%acts);
-
-    eval "use $crypto_class";
-    !$@ or die $@;
-    my $encrypter = $crypto_class->new;
-
-    my $debug = $cfg->entryBool('debug', 'mail_encryption', 0);
-    my $sign = $cfg->entryBool('basic', 'sign', 1);
-
-    # encrypt and sign
-    my %opts = 
-      (
-       sign=> $sign,
-       passphrase=> $passphrase,
-       stripwarn=>1,
-       debug=>$debug,
-      );
     
-    $opts{secretkeyid} = $signing_id if $signing_id;
-    $opts{pgp} = $pgp if $pgp;
-    $opts{gpg} = $gpg if $gpg;
-    $opts{pgpe} = $pgpe if $pgpe;
-    my $recip = "$toName $toEmail";
+    my $send_text;
+    if ($noencrypt) {
+      $send_text = $ordertext;
+    }
+    else {
+      eval "use $crypto_class";
+      !$@ or die $@;
+      my $encrypter = $crypto_class->new;
+      
+      my $debug = $cfg->entryBool('debug', 'mail_encryption', 0);
+      my $sign = $cfg->entryBool('basic', 'sign', 1);
+      
+      # encrypt and sign
+      my %opts = 
+	(
+	 sign=> $sign,
+	 passphrase=> $passphrase,
+	 stripwarn=>1,
+	 debug=>$debug,
+	);
+      
+      $opts{secretkeyid} = $signing_id if $signing_id;
+      $opts{pgp} = $pgp if $pgp;
+      $opts{gpg} = $gpg if $gpg;
+      $opts{pgpe} = $pgpe if $pgpe;
+      my $recip = "$toName $toEmail";
 
-    my $crypted = $encrypter->encrypt($recip, $ordertext, %opts )
-      or die "Cannot encrypt ", $encrypter->error;
-
+      $send_text = $encrypter->encrypt($recip, $ordertext, %opts )
+	or die "Cannot encrypt ", $encrypter->error;
+    }
     $mailer->send(to=>$toEmail, from=>$from, subject=>'New Order '.$order->{id},
-		  body=>$crypted)
+		  body=>$send_text)
       or print STDERR "Error sending order to admin: ",$mailer->errstr,"\n";
   }
   $mailer->send(to=>$order->{emailAddress}, from=>$from,

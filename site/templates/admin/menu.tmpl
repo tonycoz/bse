@@ -36,23 +36,23 @@ href="/cgi-bin/admin/add.pl?id=-1">Administer sections</a></td>
 <:if UserCan edit_add_child:-1 :>
   <tr> 
     <td width="15">&nbsp;</td>
-    <td>&#149; <a 
+    <td>&#183; <a 
 
-href="/cgi-bin/admin/add.pl?level=1&parentid=-1">Add a new 
+href="/cgi-bin/admin/add.pl?level=1&amp;parentid=-1">Add a new 
 section</a></td>
   </tr>
 <:or UserCan:><:eif UserCan:>
   <tr> 
     <td width="15">&nbsp;</td>
  
-<td>&#149; <a 
+<td>&#183; <a 
 href="/cgi-bin/admin/add.pl?level=2">Add a new 
 subsection</a></td>
   </tr>
   <tr> 
     <td width="15">&nbsp;</td>
  
-<td>&#149; <a 
+<td>&#183; <a 
 href="/cgi-bin/admin/add.pl">Add a new 
 article</a></td>
   </tr>
@@ -70,21 +70,21 @@ href="/cgi-bin/admin/shopadmin.pl">Shop administration</a></td>
   <tr> 
     <td 
 width="15">&nbsp;</td>
-    <td>&#149; <a 
+    <td>&#183; <a 
 
-href="/cgi-bin/admin/shopadmin.pl?order_list=1&template=order_list_unfilled">View 
+href="/cgi-bin/admin/shopadmin.pl?order_list=1&amp;template=order_list_unfilled">View 
 
       current orders</a> (<a 
 href="/cgi-bin/admin/shopadmin.pl?order_list=1">all</a> 
       or <a 
-href="/cgi-bin/admin/shopadmin.pl?order_list=1&template=order_list_filled">filled</a>)</td>
+href="/cgi-bin/admin/shopadmin.pl?order_list=1&amp;template=order_list_filled">filled</a>)</td>
  
 </tr>
 <:or UserCan:><:eif UserCan:>
   <tr> 
     <td 
 width="15">&nbsp;</td>
-    <td>&#149; <a 
+    <td>&#183; <a 
 
 href="/cgi-bin/admin/add.pl?parentid=3">Add catalog</a></td>
  
@@ -127,11 +127,11 @@ href="/cgi-bin/admin/generate.pl?progress=1">verbose</a>)</td>
 <:ifUserCan regen_extras:>
   <tr> 
     <td width="15">&nbsp;</td>
-    <td>&#149; <a 
+    <td>&#183; <a 
 href="/cgi-bin/admin/generate.pl?id=extras">Regenerate extras 
  
 and base pages</a> (<a 
-href="/cgi-bin/admin/generate.pl?id=extras&progress=1">verbose</a>)</td>
+href="/cgi-bin/admin/generate.pl?id=extras&amp;progress=1">verbose</a>)</td>
  
 </tr>
 <:or:><:eif:>

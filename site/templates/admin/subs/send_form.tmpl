@@ -75,6 +75,30 @@
             <td><:help subssend parent:> <:ifError parentId:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error parentId:>" /><:or:><:eif:></td>
           </tr>
           <:or Cfg:><:eif Cfg:> 
+          <:if Cfg subscriptions testing 1:> 
+          <tr bgcolor="#FFFFFF"> 
+            <th colspan="2">Testing </th>
+            <td><:help subssend testing:></td>
+          </tr>
+          <tr bgcolor="#FFFFFF"> 
+            <th align="left" nowrap>Test Name:</th>
+            <td> 
+              <input type="text" name="testname" value="<:cfg subscriptions testname "":>" size="40" /></td>
+            <td><:help subssend testname:> </td>
+          </tr>
+          <tr bgcolor="#FFFFFF"> 
+            <th align="left" nowrap>Test Email:</th>
+            <td> 
+              <input type="text" name="testemail" value="<:cfg subscriptions testemail "":>" size="40" />
+            </td>
+            <td><:help subssend testemail:></td>
+          </tr>
+          <tr bgcolor="#FFFFFF"> 
+            <th align="left" nowrap>Test Text Only:</th>
+            <td><input type="checkbox" name="testtextonly" <:ifCfg subscriptions testtextonly 0:>checked<:or:><:eif:> />Set for text only test message
+            </td>
+            <td><:help subssend testtextonly:></td>
+          <:or Cfg:><:eif Cfg:> 
         </table>
 </td>
 </tr>
@@ -82,6 +106,8 @@
 <p>
     <input type="submit" name="send" value="Send Subscription">
     <:help subssend send:> 
+    <:ifCfg subscriptions testing 1:> <input type="submit" name="send_test" value="Send Test">
+    <:help subssend sendtest:> <:or:><:eif:>
     <input type="submit" name="html_preview" value="HTML Preview">
     <:help subssend html_preview:> 
     <input type="submit" name="text_preview" value="Text Preview">

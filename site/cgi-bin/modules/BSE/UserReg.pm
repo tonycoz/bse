@@ -10,6 +10,7 @@ use BSE::SubscribedUsers;
 use BSE::Mail;
 use BSE::EmailRequests;
 use BSE::Util::SQL qw/now_datetime/;
+use DevHelp::HTML;
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -825,6 +826,14 @@ sub send_conf_request {
      user=>sub { CGI::escapeHTML($user->{$_[0]}) },
     );
   
+  # check that the from address has been configured
+  my $from = $cfg->entry('confirmations', 'from') || $SHOP_FROM;
+  unless ($from) {
+    $acts{mailerror} = sub { escape_html("Configuration Error: The confirmations from address has not been configured") };
+    BSE::Template->show_page('user/email_conferror', $cfg, \%acts);
+    return;
+  }
+
   my $blackentry = BSE::EmailBlacklist->getEntry($checkemail);
 
   if ($blackentry) {
@@ -887,7 +896,6 @@ sub send_conf_request {
   my $mail = BSE::Mail->new(cfg=>$cfg);
   my $subject = $cfg->entry('confirmations', 'subject') 
     || 'Subscription Confirmation';
-  my $from = $cfg->entry('confirmation', 'from') || $SHOP_FROM;
   unless ($mail->send(from=>$from, to=>$user->{email}, subject=>$subject,
 		      body=>$body)) {
     # a problem sending the mail

@@ -9,6 +9,7 @@ use Constants qw($CGI_URI $IMAGES_URI $ADMIN_URI);
 use Util qw(generate_button);
 use OtherParents;
 use DevHelp::HTML;
+use BSE::Arrows;
 
 sub generate_low {
   my ($self, $template, $article, $articles, $embedded) = @_;
@@ -105,7 +106,7 @@ HTML
      sub {
        if ($self->{admin} && $product_index < $#products) {
 	 my $html = <<HTML;
- <a href="$CGI_URI/admin/move.pl?id=$products[$product_index]{id}&d=down"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom" /></a>
+ <a href="$CGI_URI/admin/move.pl?id=$products[$product_index]{id}&amp;d=down"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom" /></a>
 HTML
 	 chop $html;
 	 return $html;
@@ -118,7 +119,7 @@ HTML
      sub {
        if ($self->{admin} && $product_index > 0) {
 	 my $html = <<HTML;
- <a href="$CGI_URI/admin/move.pl?id=$products[$product_index]{id}&d=up"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom" /></a>
+ <a href="$CGI_URI/admin/move.pl?id=$products[$product_index]{id}&amp;d=up"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom" /></a>
 HTML
 	 chop $html;
 	 return $html;
@@ -145,33 +146,24 @@ HTML
        $img_prefix = '' unless defined $img_prefix;
        $urladd = '' unless defined $urladd;
 
-       my $html = '';
        my $can_move_up = $allprod_index > 0;
        my $can_move_down = $allprod_index < $#allprods;
        return '' unless $can_move_up || $can_move_down;
        my $blank = '<img src="/images/trans_pixel.gif" width="17" height="13" border="0" align="absbotton" alt="" />';
        my $myid = $allprods[$allprod_index]{id};
-       my $refreshto = "$CGI_URI/admin/admin.pl?id=$article->{id}$urladd";
+       my $top = $self->{top} || $article;
+       my $refreshto = "$CGI_URI/admin/admin.pl?id=$top->{id}$urladd";
+       my $down_url = "";
        if ($can_move_down) {
 	 my $nextid = $allprods[$allprod_index+1]{id};
-	 $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$myid&other=$nextid&refreshto=$refreshto"><img src="$IMAGES_URI/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom" /></a>
-HTML
+	 $down_url = "$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$myid&other=$nextid";
        }
-       else {
-	 $html .= $blank;
-       }
+       my $up_url = "";
        if ($can_move_up) {
 	 my $previd = $allprods[$allprod_index-1]{id};
-	 $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$myid&other=$previd&refreshto=$refreshto"><img src="$IMAGES_URI/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom" /></a>
-HTML
+	 $up_url = "$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$myid&other=$previd";
        }
-       else {
-	 $html .= $blank;
-       }
-       $html =~ tr/\n//d;
-       return $html;
+       return make_arrows($self->{cfg}, $down_url, $up_url, $refreshto, $img_prefix);
      },
      ifAnyProds => sub { escape_html(@allprods) },
      iterate_stepprods_reset => sub { $stepprod_index = -1 },

@@ -295,7 +295,7 @@ sub excerpt {
   eval "use $generator";
   confess "Cannot use $generator: $@" if $@;
 
-  $gens{$generator} ||= $generator->new(admin=>$admin, cfg=>$cfg);
+  $gens{$generator} ||= $generator->new(admin=>$admin, cfg=>$cfg, top=>$article);
 
   return $gens{$generator}->excerpt($article, $found, $case_sensitive, @terms);
 }

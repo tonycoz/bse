@@ -24,6 +24,7 @@ use BSE::Util::Tags;
 use BSE::Request;
 use Util 'refresh_to';
 use DevHelp::HTML;
+use BSE::Arrows;
 
 my $req = BSE::Request->new;
 my $cfg = $req->cfg;
@@ -129,40 +130,26 @@ sub embedded_catalog {
        defined $urladd or $urladd = '';
        @list > 1 or return '';
        # links to move products up/down
-       my $html = '';
-       my $refreshto = CGI::escape($ENV{SCRIPT_NAME}."$urladd#cat".$catalog->{id});
+       my $refreshto = $ENV{SCRIPT_NAME}."$urladd#cat".$catalog->{id};
+       my $down_url = '';
        if ($list_index < $#list) {
 	 if ($session->{showstepkids}) {
-	   $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?stepparent=$catalog->{id}&d=swap&id=$list[$list_index]{id}&other=$list[$list_index+1]{id}&refreshto=$refreshto"><img src="$IMAGES_URI/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom" /></a>
-HTML
+	   $down_url = "$CGI_URI/admin/move.pl?stepparent=$catalog->{id}&d=swap&id=$list[$list_index]{id}&other=$list[$list_index+1]{id}";
 	 }
 	 else {
-	   $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?id=$list[$list_index]{id}&d=swap&other=$list[$list_index+1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom" /></a>
-HTML
+	   $down_url = "$CGI_URI/admin/move.pl?id=$list[$list_index]{id}&d=swap&other=$list[$list_index+1]{id}";
 	 }
        }
-       else {
-	 $html .= $blank;
-       }
+       my $up_url = '';
        if ($list_index > 0) {
 	 if ($session->{showstepkids}) {
-	   $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?stepparent=$catalog->{id}&d=swap&id=$list[$list_index]{id}&other=$list[$list_index-1]{id}&refreshto=$refreshto"><img src="$IMAGES_URI/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom" /></a>
-HTML
+	   $up_url = "$CGI_URI/admin/move.pl?stepparent=$catalog->{id}&d=swap&id=$list[$list_index]{id}&other=$list[$list_index-1]{id}";
 	 }
 	 else {
-	   $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?id=$list[$list_index]{id}&d=swap&other=$list[$list_index-1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom" /></a>
-HTML
+	   $up_url = "$CGI_URI/admin/move.pl?id=$list[$list_index]{id}&d=swap&other=$list[$list_index-1]{id}";
 	 }
        }
-       else {
-	 $html .= $blank;
-       }
-       $html =~ tr/\n//d;
-       return $html;
+       return make_arrows($req->cfg, $down_url, $up_url, $refreshto, $img_prefix);
      },
      script=>sub { $ENV{SCRIPT_NAME} },
      embed =>
@@ -179,29 +166,19 @@ HTML
 	 or return '';
        @subcats > 1 or return '';
        # links to move catalogs up/down
-       my $html = '';
        my ($img_prefix, $urladd) = DevHelp::Tags->get_parms($arg, $acts, $templater);
        defined $img_prefix or $img_prefix = '';
        defined $urladd or $urladd = '';
-       my $refreshto = CGI::escape($ENV{SCRIPT_NAME}.$urladd);
+       my $refreshto = $ENV{SCRIPT_NAME}.$urladd;
+       my $down_url = "";
        if ($subcat_index < $#subcats) {
-	 $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?id=$subcats[$subcat_index]{id}&d=swap&other=$subcats[$subcat_index+1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom" /></a>
-HTML
+	 $down_url = "$CGI_URI/admin/move.pl?id=$subcats[$subcat_index]{id}&d=swap&other=$subcats[$subcat_index+1]{id}&all=1";
        }
-       else {
-	 $html .= $blank;
-       }
+       my $up_url = "";
        if ($subcat_index > 0) {
-	 $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?id=$subcats[$subcat_index]{id}&d=swap&other=$subcats[$subcat_index-1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom" /></a>
-HTML
+	 $up_url = "$CGI_URI/admin/move.pl?id=$subcats[$subcat_index]{id}&d=swap&other=$subcats[$subcat_index-1]{id}&all=1";
        }
-       else {
-	 $html .= $blank;
-       }
-       $html =~ tr/\n//d;
-       return $html;
+       return make_arrows($req->cfg, $down_url, $up_url, $refreshto, $img_prefix);
      },
     );
 
@@ -250,29 +227,19 @@ sub product_list {
 	 or return '';
        @catalogs > 1 or return '';
        # links to move catalogs up/down
-       my $html = '';
        my ($img_prefix, $urladd) = DevHelp::Tags->get_parms($arg, $acts, $templater);
        defined $img_prefix or $img_prefix = '';
        defined $urladd or $urladd = '';
-       my $refreshto = CGI::escape($ENV{SCRIPT_NAME} . $urladd);
+       my $refreshto = $ENV{SCRIPT_NAME} . $urladd;
+       my $down_url = '';
        if ($catalog_index < $#catalogs) {
-	 $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?id=$catalogs[$catalog_index]{id}&d=swap&other=$catalogs[$catalog_index+1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/${img_prefix}move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom" /></a>
-HTML
+	 $down_url = "$CGI_URI/admin/move.pl?id=$catalogs[$catalog_index]{id}&d=swap&other=$catalogs[$catalog_index+1]{id}";
        }
-       else {
-	 $html .= $blank;
-       }
+       my $up_url = '';
        if ($catalog_index > 0) {
-	 $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?id=$catalogs[$catalog_index]{id}&d=swap&other=$catalogs[$catalog_index-1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/${img_prefix}move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom" /></a>
-HTML
+	 $up_url = "$CGI_URI/admin/move.pl?id=$catalogs[$catalog_index]{id}&d=swap&other=$catalogs[$catalog_index-1]{id}";
        }
-       else {
-	 $html .= $blank;
-       }
-       $html =~ tr/\n//d;
-       return $html;
+       return make_arrows($req->cfg, $down_url, $up_url, $refreshto, $img_prefix);
      },
      ifShowStepKids => sub { $session->{showstepkids} },
     );
@@ -391,30 +358,24 @@ sub product_form {
      },
      movestepcat =>
      sub {
+       my ($arg, $acts, $funcname, $templater) = @_;
        return ''
 	 unless $req->user_can(edit_reorder_stepparents => $product),
-       my $html = '';
-       my $refreshto = CGI::escape($ENV{SCRIPT_NAME}
-				   ."?id=$product->{id}&$template=1#step");
        @stepcats > 1 or return '';
+       my ($img_prefix, $urladd) = DevHelp::Tags->get_parms($arg, $acts, $templater);
+       $img_prefix = '' unless defined $img_prefix;
+       $urladd = '' unless defined $urladd;
+       my $refreshto = CGI::escape($ENV{SCRIPT_NAME}
+				   ."?id=$product->{id}&$template=1$urladd#step");
+       my $down_url = "";
        if ($stepcat_index < $#stepcats) {
-	 $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?stepchild=$product->{id}&id=$stepcats[$stepcat_index]{parentId}&d=swap&other=$stepcats[$stepcat_index+1]{parentId}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom" /></a>
-HTML
+	 $down_url = "$CGI_URI/admin/move.pl?stepchild=$product->{id}&id=$stepcats[$stepcat_index]{parentId}&d=swap&other=$stepcats[$stepcat_index+1]{parentId}&all=1";
        }
-       else {
-         $html .= $blank;
-       }
+       my $up_url = "";
        if ($stepcat_index > 0) {
-	 $html .= <<HTML;
-<a href="$CGI_URI/admin/move.pl?stepchild=$product->{id}&id=$stepcats[$stepcat_index]{parentId}&d=swap&other=$stepcats[$stepcat_index-1]{parentId}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom" /></a>
-HTML
+	 $up_url = "$CGI_URI/admin/move.pl?stepchild=$product->{id}&id=$stepcats[$stepcat_index]{parentId}&d=swap&other=$stepcats[$stepcat_index-1]{parentId}&all=1";
        }
-       else {
-         $html .= $blank;
-       }
-       $html =~ tr/\n//d;
-       return $html;
+       return make_arrows($req->cfg, $down_url, $up_url, $refreshto, $img_prefix);
      },
      ifStepcatPossibles => sub { @stepcat_possibles },
      stepcat_possibles => sub {

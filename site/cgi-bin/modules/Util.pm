@@ -8,8 +8,6 @@ require Exporter;
 use Constants qw($CONTENTBASE $GENERATE_BUTTON $SHOPID $AUTO_GENERATE);
 use Carp qw(confess);
 
-my %gen_cache;
-
 # returns non-zero if the Regenerate button should work
 sub generate_button {
   if ($GENERATE_BUTTON) {
@@ -37,14 +35,14 @@ sub generate_low {
   my $genname = $article->{generator};
   eval "use $genname";
   $@ && die $@;
-  $gen_cache{$genname} ||= $genname->new(articles=>$articles, cfg=>$cfg);
+  my $gen = $genname->new(articles=>$articles, cfg=>$cfg, top=>$article);
 
   my $outname = $article->{link};
   $outname =~ s!/\w*$!!;
   $outname =~ s{^\w+://[\w.-]+(?::\d+)?}{};
   $outname = $CONTENTBASE . $outname;
   $outname =~ s!//+!/!;
-  my $content = $gen_cache{$genname}->generate($article, $articles);
+  my $content = $gen->generate($article, $articles);
   my $tempname = $outname . ".work";
   unlink $tempname;
   open OUT, "> $tempname" or die "Cannot create $tempname: $!";
@@ -77,14 +75,14 @@ sub generate_search {
 
   $cfg or confess "Call generate search with a config object";
 
-  require 'Generate/Article.pm';
-  my $gen = Generate::Article->new(cfg=>$cfg);
-
   # build a dummy article
   use Constants qw($SEARCH_TITLE $SEARCH_TITLE_IMAGE $CGI_URI);
   my %article = map { $_, '' } Article->columns;
   @article{qw(id parentid title titleImage displayOrder link level listed)} =
     (-1, -1, $SEARCH_TITLE, $SEARCH_TITLE_IMAGE, 0, $CGI_URI."/search.pl", 0, 1);
+
+  require 'Generate/Article.pm';
+  my $gen = Generate::Article->new(cfg=>$cfg, top => \%article);
 
   my %acts;
   %acts = $gen->baseActs($articles, \%acts, \%article);
@@ -111,7 +109,7 @@ sub generate_shop {
   require 'Generate/Article.pm';
   my $shop = $articles->getByPkey($SHOPID);
   my $cfg = BSE::Cfg->new;
-  my $gen = Generate::Article->new(cfg=>$cfg);
+  my $gen = Generate::Article->new(cfg=>$cfg, top=>$shop);
   for my $name (@pages) {
     my %acts;
     %acts = $gen->baseActs($articles, \%acts, $shop);
@@ -196,7 +194,6 @@ sub generate_extras {
   my %entries = $cfg->entries('pregenerate');
   if (keys %entries) {
     require 'Generate/Article.pm';
-    my $gen = Generate::Article->new(cfg=>$cfg);
     for my $out (keys %entries) {
       my ($presets, $input) = split ',', $entries{$out}, 2;
       $callback->("$input to $out with $presets") if $callback;
@@ -210,6 +207,7 @@ sub generate_extras {
 	}
       }
       my %acts;
+      my $gen = Generate::Article->new(cfg=>$cfg, top=>\%article);
       %acts = $gen->baseActs($articles, \%acts, \%article);
       my $oldurl = $acts{url};
       $acts{url} =
@@ -240,7 +238,6 @@ sub generate_extras {
 sub generate_all {
   my ($articles, $cfg, $callback) = @_;
 
-  %gen_cache = ();
   my @articleids = $articles->allids;
   my $pc = 0;
   $callback->("Generating articles (".scalar(@articleids)." to do)")
@@ -263,7 +260,6 @@ sub generate_all {
       $pc = int $newpc;
     }
   }
-  %gen_cache = ();
 
   $callback->("Generating search base") if $callback;
   generate_search($articles, $cfg);

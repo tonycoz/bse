@@ -24,7 +24,7 @@ sub _build_article {
   }
   use BSE::Util::SQL qw(now_datetime now_sqldate);
   $article->{body} = $opts->{body} || '';
-  $article->{title} = $opts->{title} || $sub->{title};
+  $article->{title} = defined($opts->{title}) ? $opts->{title} : $sub->{title};
   $article->{parentid} = $opts->{parentId} || $sub->{parentId};
   $article->{displayOrder} = time;
   $article->{imagePos} = 'tr';
@@ -137,17 +137,15 @@ sub recipient_count {
   $rows[0]{count};
 }
 
-sub send {
-  my ($sub, $cfg, $opts, $callback) = @_;
+sub _send {
+  my ($sub, $cfg, $opts, $callback, $recipients, $article) = @_;
 
-  my @recipients = $sub->recipients;
-  $callback->('general', undef, scalar(@recipients)." recipients to process");
+  $callback->('general', undef, scalar(@$recipients)." recipients to process");
   require 'BSE/Mail.pm';
   my $mailer = BSE::Mail->new(cfg=>$cfg);
-  my %article;
-  $sub->_build_article(\%article, $opts);
+  $sub->_build_article($article, $opts);
   my $gen;
-  if ($article{template}) {
+  if ($article->{template}) {
     #print STDERR "Making generator\n";
     require 'Generate/Subscription.pm';
     $gen = Generate::Subscription->new(cfg=>$cfg);
@@ -157,16 +155,20 @@ sub send {
   unless ($from) {
     $from = $Constants::SHOP_FROM;
   }
+  unless ($from) {
+    $callback->('error', undef, "Configuration error: No from address configured, please set from in the subscriptions section of the config file, or \$SHOP_FROM in Constants.pm");
+    return;
+  }
   my $charset = $cfg->entry('basic', 'charset') || 'iso-8859-1';
   my $index = 0;
-  for my $user (@recipients) {
+  for my $user (@$recipients) {
     $callback->('user', $user) if $callback;
-    my $text = $sub->_text_format_low($cfg, $user, $opts, \%article);
+    my $text = $sub->_text_format_low($cfg, $user, $opts, $article);
     my $html;
     if ($gen && !$user->{textOnlyMail}) {
       #print STDERR "Making HTML\n";
       $gen->set_user($user);
-      $html = $gen->generate(\%article, 'Articles');
+      $html = $gen->generate($article, 'Articles');
     }
     my @headers;
     my $content;
@@ -176,12 +178,12 @@ sub send {
       my $boundary = "====" . time . "=_=" .int(rand(10000))."=";
       push(@headers, qq!Content-Type: multipart/alternative; boundary="$boundary"!);
       $content = "This is a multi-part message in MIME format\n\n"
-	. "--$boundary\n"
-	  .qq!Content-Type: text/html; charset="$charset"\n\n!
-	    . $html . "\n\n";
-      $content .= "--$boundary\n"
-	. qq!Content-Type: text/plain; charset="$charset"\n\n!
-	  . $text . "\n\n";
+	. "--$boundary\n";
+      $content .= qq!Content-Type: text/plain; charset="$charset"\n\n!
+	. $text . "\n\n";
+      $content .= "--$boundary\n";
+      $content .= qq!Content-Type: text/html; charset="$charset"\n\n!
+	. $html . "\n\n";
       $content .= "--$boundary--\n";
     }
     else {
@@ -191,13 +193,23 @@ sub send {
     }
     unless ($mailer->send(from	  =>$from, 
 			  to	  =>$user->{email},
-			  subject =>$article{title}, 
+			  subject =>$article->{title}, 
 			  headers =>join("\n", @headers, ""),
 			  body	  =>$content)) {
       $callback->('error', $user, scalar($mailer->errstr));
     }
     ++$index;
   }
+}
+
+sub send {
+  my ($sub, $cfg, $opts, $callback) = @_;
+
+  my @recipients = $sub->recipients;
+
+  my %article;
+  $sub->_send($cfg, $opts, $callback, \@recipients, \%article);
+
   if (exists $opts->{archive} && $opts->{archive}
       || $sub->{archive}) {
     $callback->('general', undef, "Archiving article");
@@ -222,9 +234,19 @@ sub send {
     $callback->('general', undef, "Generating article");
     Util::generate_article('Articles', $article, $cfg);
   }
+
   use BSE::Util::SQL qw/now_datetime/;
   $sub->{lastSent} = now_datetime;
   $sub->save;
+}
+
+sub send_test {
+  my ($sub, $cfg, $opts, $callback, $recipient) = @_;
+
+  my @recipients = ( $recipient );
+
+  my %article;
+  $sub->_send($cfg, $opts, $callback, \@recipients, \%article);
 }
 
 1;

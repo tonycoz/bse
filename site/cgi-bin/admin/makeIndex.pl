@@ -106,7 +106,7 @@ sub makeIndex {
     my $sectionid = $section->{id};
     eval "use $article->{generator}";
     $@ and die $@;
-    my $gen = $article->{generator}->new;
+    my $gen = $article->{generator}->new(top=>$article);
     next unless $gen->visible($article) or $do_search{$sectionid};
     
     next if $dont_search{$sectionid};

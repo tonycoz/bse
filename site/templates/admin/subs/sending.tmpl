@@ -12,13 +12,26 @@
 
 <h1>Sending Subscription <:subscription name:></h1>
 
+<:if Testing:>
+
+<p>This is a test transmission, a copy of the generated message will
+be sent to the email address you specified.</p>
+
+<:or Testing:>
+
 <p>Hitting Stop, your browser Back button, or Refresh on this page may
 result in incomplete, or duplicate transmissions.</p>
+
+<:eif Testing:>
 
 <ul>
 <:iterator begin messages:>
 <:if Error:>
+<:if User:>
 <li><b><:message:> sending to <:user email:></b></li>
+<:or User:>
+<li><b><:message:></b></li>
+<:eif User:>
 <:or Error:>
 <:if User:>
 <li>Sending to: <:user email:></li>
@@ -29,7 +42,7 @@ result in incomplete, or duplicate transmissions.</p>
 <:iterator end messages:>
 </ul>
 
-<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |</p>
+<p>| <a href="/cgi-bin/admin/menu.pl" target="_top">Admin menu</a> |</p>
 
 <p><font size="-1">BSE Release <:release:></font></p>
 </body>

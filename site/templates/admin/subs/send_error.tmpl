@@ -1,0 +1,8 @@
+<:wrap admin/xbase.tmpl title=>"Form Errors":>
+<h1>Errors</h1>
+<p>Your send form contained the following errors:</p>
+<ul>
+<:iterator begin errors:>
+<li><:error message:></li>
+<:iterator end errors:>
+</ul>

@@ -42,6 +42,10 @@ sub setuser {
   $_[0]{adminuser} = $_[1];
 }
 
+sub getuser {
+  $_[0]{adminuser};
+}
+
 sub url {
   my ($self, $action, $params, $name) = @_;
 

@@ -34,6 +34,9 @@ sub low_perform {
 	my ($code, @params) = @$action;
 	$value = $code->(@params, $args, $acts, $func, $self);
       }
+      elsif (ref $action eq 'SCALAR') {
+	$value = $$action;
+      }
       else {
 	return $orig;
       }
@@ -284,7 +287,20 @@ sub replace_template {
 	if (defined $params) {
 	  while ($params =~ s/^\s*(\w+)\s*=>\s*\"([^\"]+)\"//
 		 || $params =~ s/^\s*(\w+)\s*=>\s*([^\s,]+)//) {
-	    $params{$1} = $2;
+	    my ($name, $value) = ($1, $2);
+	    $value =~ s/(\[\s*
+                         (\w+)  # tag name
+                           (?:  # followed optionally by
+                            \s+  # white space
+                              (  # and some parameters
+                                ([^\]\s]
+                                  (?:[^\]\[]*[^\]\s])?
+                                )
+                              )
+                            )?
+                         \s*\])/ $self->perform($acts, $2, $3, $1) /egsx;
+
+	    $params{$name} = $value;
 	    $params =~ s/\s*,\s*//;
 	  }
 	  $params =~ /^\s*$/
@@ -297,7 +313,8 @@ sub replace_template {
     }
   }
 
-  $acts->{param} ||= [ \&tag_param, \%params ];
+  my $oldparam_tag = $acts->{param};
+  local $acts->{param} = $oldparam_tag || [ \&tag_param, \%params ];
 
   if ($self->{template_dir} && !$acts->{include}) {
     my $loops = 0;

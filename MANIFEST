@@ -41,6 +41,7 @@ site/cgi-bin/modules/BSE/Admin/StepParents.pm
 site/cgi-bin/modules/BSE/AdminLogon.pm
 site/cgi-bin/modules/BSE/AdminMenu.pm
 site/cgi-bin/modules/BSE/AdminUsers.pm
+site/cgi-bin/modules/BSE/Arrows.pm
 site/cgi-bin/modules/BSE/Cfg.pm
 site/cgi-bin/modules/BSE/ChangePW.pm
 site/cgi-bin/modules/BSE/Custom.pm
@@ -248,9 +249,11 @@ site/templates/admin/subs/delete.tmpl
 site/templates/admin/subs/edit.tmpl
 site/templates/admin/subs/list.tmpl
 site/templates/admin/subs/sending.tmpl
+site/templates/admin/subs/send_error.tmpl
 site/templates/admin/subs/send_form.tmpl
 site/templates/admin/subs/start_send.tmpl
 site/templates/admin/userlist.tmpl
+site/templates/admin/xbase.tmpl
 site/templates/base.tmpl
 site/templates/cart_base.tmpl
 site/templates/catalog.tmpl

@@ -3,9 +3,14 @@ use strict;
 use Carp qw(confess);
 
 require Exporter;
-use vars qw(@EXPORT_OK @EXPORT @ISA);
+use vars qw(@EXPORT_OK @EXPORT @ISA %EXPORT_TAGS);
 @EXPORT_OK = qw(escape_html escape_uri unescape_html unescape_uri popup_menu);
 @EXPORT = qw(escape_html escape_uri unescape_html unescape_uri);
+%EXPORT_TAGS =
+  (
+   all => \@EXPORT_OK,
+   default => \@EXPORT,
+  );
 @ISA = qw(Exporter);
 
 use HTML::Entities ();
@@ -38,17 +43,12 @@ sub popup_menu {
   my $values = $opts{"-values"};
   my $default = $opts{"-default"};
   for my $value (@$values) {
-    my $option = "<option";
+    my $option = '<option value="' . escape_html($value) . '"';
     my $label = $labels->{$value};
-    if (defined $label) {
-      $option .= ' value="' . escape_html($value) . '"';
-      $option .= ' checked' if defined($default) && $default eq $value;
-      $option .= '>' . escape_html($label) . "</option>";
-    }
-    else {
-      $option .= ' checked' if defined($default) && $default eq $value;
-      $option .= '>' . escape_html($value);
-    }
+    defined $label or $label = $value;
+    $option .= ' selected="selected"'
+      if defined($default) && $default eq $value;
+    $option .= '>' . escape_html($label) . "</option>";
     $html .= $option . "\n";
   }
   $html .= "</select>";

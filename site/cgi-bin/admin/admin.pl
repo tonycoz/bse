@@ -28,7 +28,9 @@ if ($req->check_admin_logon()) {
   
   eval "use $article->{generator}";
   die $@ if $@;
-  my $generator = $article->{generator}->new(admin=>$admin, articles=>$articles, cfg=>$cfg, request=>$req);
+  my $generator = $article->{generator}
+    ->new(admin=>$admin, articles=>$articles, cfg=>$cfg, request=>$req, 
+	  top=>$article);
   
   print "Content-Type: text/html\n\n";
   print $generator->generate($article, $articles);
