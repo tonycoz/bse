@@ -43,6 +43,7 @@ site/cgi-bin/modules/Squirrel/Row.pm
 site/cgi-bin/modules/Squirrel/Table.pm
 site/cgi-bin/modules/Squirrel/Template.pm
 site/cgi-bin/modules/Util.pm
+site/cgi-bin/printable.pl
 site/cgi-bin/search.pl
 site/cgi-bin/shop.pl
 site/data/stopwords.txt
@@ -109,6 +110,7 @@ site/templates/admin/edit_4.tmpl
 site/templates/admin/edit_5.tmpl
 site/templates/admin/edit_catalog.tmpl
 site/templates/admin/edit_product.tmpl
+site/templates/error.tmpl
 site/templates/extras.txt
 site/templates/index.tmpl
 site/templates/index2.tmpl
@@ -126,4 +128,5 @@ site/templates/shopitem.tmpl
 site/templates/common/rssbase.tmpl
 site/templates/include/rsslinks.tmpl
 site/templates/include/rssitems.tmpl
+site/templates/printable/printable.tmpl
 site/util/initial.pl
