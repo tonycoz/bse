@@ -2,7 +2,7 @@ package Generate;
 use strict;
 use Articles;
 use CGI ();
-use Constants qw(%EXTRA_TAGS $IMAGEDIR);
+use Constants qw(%EXTRA_TAGS $IMAGEDIR $LOCAL_FORMAT $TMPLDIR);
 
 my $excerptSize = 300;
 
@@ -117,6 +117,13 @@ sub _format_ol {
   return "<ol><li>".join("<li>", @points)."</ol>";
 }
 
+# raw html - this has some limitations
+# the input text has already been escaped, so we need to unescape it
+# too bad if you want [] in your html (but you can use entities)
+sub _make_html {
+  return CGI::unescapeHTML($_[0]);
+}
+
 # replace markup, insert img tags
 sub format_body {
   my ($self, $body, $imagePos, @images)  = @_;
@@ -134,44 +141,48 @@ sub format_body {
   # before
 
   my $match;
-  do {
+ TRY: while (1) {
     $match = 0;
+    $body =~ s#html\[([^\[\]]*(?:(?:\[[^\[\]]*\])[^\[\]]*)+)\]#
+      _make_html($1)#eig;
+    $LOCAL_FORMAT and $LOCAL_FORMAT->body(\$body)
+      and next TRY;
     $body =~ s#a\[([^,\]\[]+),([^\]\[]+)\]#<a href="$1">$2</a>#ig
-      and ++$match;
+      and next TRY;
     $body =~ s#link\[([^|\]\[]+)\|([^\]\[]+)\]#<a href="$1">$2</a>#ig
-      and ++$match;
+      and next TRY;
     $body =~ s#b\[([^\]\[]+)\]#<b>$1</b>#ig
-      and ++$match;
+      and next TRY;
     $body =~ s#i\[([^\]\[]+)\]#<i>$1</i>#ig
-      and ++$match;
+      and next TRY;
     $body =~ s#align\[([^|\]\[]+)\|([^\]\[]+)\]#<div align="$1">$2</div>#ig
-      and ++$match;
+      and next TRY;
     $body =~ s#font\[([^|\]\[]+)\|([^\]\[]+)\]#<font size="$1">$2</font>#ig
-      and ++$match;
+      and next TRY;
     $body =~ s#hr\[([^|\]\[]*)\|([^\]\[]*)\]#_make_hr($1, $2)#ieg
-      and ++$match;
+      and next TRY;
     $body =~ s#hr\[([^|\]\[]*)\]#_make_hr($1, '')#ieg
-      and ++$match;
+      and next TRY;
     $body =~ s#anchor\[([^|\]\[]*)\]#<a name="$1"></a>#ig
-      and ++$match;
+      and next TRY;
     $body =~ s#table\[([^\n\[\]]*)\n([^\[\]]+)\n\s*\]#_make_table($1, $2)#ieg
-      and ++$match;
+      and next TRY;
     $body =~ s#table\[([^\]\[]+)\|([^\]\[|]+)\]#_make_table($1, "|$2")#ieg
-      and ++$match;
+      and next TRY;
     $body =~ s#((?:\*\*[^\n]+\n[^\S\n]*)+)#_format_bullets($1)#eg
-      and ++$match;
+      and next TRY;
     $body =~ s!((?:##[^\n]+\n[^\S\n]*)+)!_format_ol($1)!eg
-      and ++$match;
+      and next TRY;
     $body =~ s#fontcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#<font size="$1" color="$2">$3</font>#ig
-      and ++$match;
+      and next TRY;
     $body =~ s#indent\[([^\]\[]+)\]#<ul>$1</ul>#ig
-      and ++$match;
+      and next TRY;
     $body =~ s#center\[([^\]\[]+)\]#<center>$1</center>#ig
-      and ++$match;
+      and next TRY;
     $body =~ s#hrcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#<table width="$1" height="$2" border="0" bgcolor="$3" cellpadding="0" cellspacing="0"><tr><td><img src="/images/trans_pixel.gif" width="1" height="1"></td></tr></table>#ig
-      and ++$match;
-      
-  } while ($match);
+      and next TRY;
+    last;
+  }
 
   $body =~ s/\n([ \r]*\n)+/<p>/g;
   $body =~ s/\n/<br>/g;
@@ -234,8 +245,32 @@ IMG
   return make_entities($body);
 }
 
+sub embed {
+  my ($self, $article, $articles, $template) = @_;
+  
+  print STDERR "Embedding with $template\n";
+
+  $template = $article->{template}
+    unless defined($template) && $template =~ /\S/;
+  print STDERR "really Embedding with $template\n";
+
+  open SOURCE, "< $TMPLDIR$template"
+    or die "Cannot open template $template: $!";
+  my $html = do { local $/; <SOURCE> };
+  close SOURCE;
+
+  # the template will hopefully contain <:embed start:> and <:embed end:>
+  # tags
+  # otherwise pull out the body content
+  if ($html =~ /<:\s*embed\s*start\s*:>(.*)<:\s*embed\s*end\s*:>/s
+     || $html =~ m"<\s*body[^>]*>(.*)<\s*/\s*body>"s) {
+    $html = $1;
+  }
+  return $self->generate_low($html, $article, $articles, 1);
+}
+
 sub baseActs {
-  my ($self, $articles, $acts) = @_;
+  my ($self, $articles, $acts, $embedded) = @_;
 
   # used to generate the side menu
   my $section_index = -1;
@@ -258,6 +293,42 @@ sub baseActs {
   return 
     (
      %extras,
+
+     # for embedding the content from children and other sources
+     ifEmbedded=> sub { $embedded },
+     embed => sub {
+       my ($what, $template) = split ' ', $_[0];
+       my $id;
+       if ($what !~ /^\d+$/) {
+	 # not an article id, assume there's an article here we can use
+	 $id = $acts->{$what} && $acts->{$what}->('id');
+	 unless ($id =~ /^\d+$/) {
+	   # save it for later
+	   return "<:embed $what $template:>";
+	 }
+       }
+       else {
+	 $id = $what;
+       }
+       my $embed = $articles->getByPkey($id);
+       if ($embed) {
+	 my $gen = $self;
+	 if (ref($self) ne $embed->{generator}) {
+	   my $genname = $embed->{generator};
+	   $genname =~ s#::#/#g; # broken on MacOS I suppose
+	   $genname .= ".pm";
+	   eval {
+	     require $genname;
+	   };
+	   $@ and return "** Cannot load generator $embed->{generator} for article $id **";
+	   $gen = $embed->{generator}->new(admin=>$self->{admin});
+	 }
+	 return $gen->embed($embed, $articles, $template);
+       }
+       else {
+	 return "** Cannot find article $id to be embedded **";
+       }
+     },
 
      ifAdmin => sub { $self->{admin} },
      
@@ -350,10 +421,6 @@ sub baseActs {
 sub find_terms {
   my ($body, $case_sensitive, @terms) = @_;
   
-  $$body =~ s#a\[([^,\]]+),([^\]]+)\]#$2#ig;
-  $$body =~ s#link\[([^|\]]+)\|([^\]]+)\]#$2#ig;
-  $$body =~ s/[bi]\[([^\]]+)\]/$1/ig;
-  
   # locate the terms
   my @found;
   if ($case_sensitive) {
@@ -397,6 +464,8 @@ sub excerpt {
   my $match;
   do {
     $match = 0;
+    $LOCAL_FORMAT and $LOCAL_FORMAT->clean(\$body)
+      and ++$match;
     $body =~ s#a\[([^,\]\[]+),([^\]\[]+)\]#$2#ig
       and ++$match;
     $body =~ s#link\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
@@ -427,9 +496,7 @@ sub excerpt {
       and ++$match;
     $body =~ s#hrcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]##ig
       and ++$match;
-      
   } while ($match);
-
 
   my @found = find_terms(\$body, $case_sensitive, @terms);
 
@@ -443,30 +510,18 @@ sub excerpt {
   # terms) are replaced first
   my $re_str = join("|", reverse sort @reterms);
   my $re = $case_sensitive ? qr/\b($re_str)\b/ : qr/\b($re_str)\b/i;
-  if (!@found) {
-    # this is a little ugly
-    use Articles;
-    my @kids = Articles->listedChildren($article->{id});
-    undef $article;
-    for my $kid (@kids) {
-      $body = $kid->{body};
-      @found = find_terms(\$body, $case_sensitive, @terms);
-      if (@found) {
-	$article = $kid;
-	last;
-      }
-    }
 
-    if (!@found) {
-      # we tried hard and failed
-      # return a generic article
-      if (length $body > $excerptSize) {
-	$body = substr($body, 0, $excerptSize);
-	$body =~ s/\S+\s*$/.../;
-      }
-      $$found = 0;
-      return $body;
+  # this used to try searching children as well, but it broke more
+  # than it fixed
+  if (!@found) {
+    # we tried hard and failed
+    # return a generic article
+    if (length $body > $excerptSize) {
+      $body = substr($body, 0, $excerptSize);
+      $body =~ s/\S+\s*$/.../;
     }
+    $$found = 0;
+    return $body;
   }
 
   # only the first 5
@@ -514,8 +569,54 @@ sub visible {
   return 1;
 }
 
+# make whatever text $body points at safe for summarizing by removing most
+# block level formatting
+sub remove_block {
+  my ($self, $body) = @_;
+
+  my $match;
+  do {{
+    $match = 0;
+    $LOCAL_FORMAT and $LOCAL_FORMAT->clean($body)
+      and ++$match;
+    $$body =~ s#a\[([^,\]\[]+),([^\]\[]+)\]#$2#ig
+      and ++$match;
+    $$body =~ s#link\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
+      and ++$match;
+    $$body =~ s#([bi])\[([^\]\[]+)\]#$1\001$2\002#ig
+      and ++$match;
+    $$body =~ s#align\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
+      and ++$match;
+    $$body =~ s#font\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
+      and ++$match;
+    $$body =~ s#hr\[([^|\]\[]*)\|([^\]\[]*)\]##ig
+      and ++$match;
+    $$body =~ s#hr\[([^|\]\[]*)\]##ig
+      and ++$match;
+    $$body =~ s#anchor\[([^|\]\[]*)\]##ig
+      and ++$match;
+    $$body =~ s#table\[([^\n\[\]]*)\n([^\[\]]+)\n\s*\]#_cleanup_table($1, $2)#ieg
+      and ++$match;
+    $$body =~ s#table\[([^\]\[]+)\|([^\]\[|]+)\]#_cleanup_table($1, "|$2")#ieg
+      and ++$match;
+    $$body =~ s#\*\*([^\n]+)#$1#g
+      and ++$match;
+    $$body =~ s!##([^\n]+)!$1!g
+      and ++$match;
+    $$body =~ s#fontcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#$3#ig
+      and ++$match;
+    $$body =~ s#(?:indent|center)\[([^\]\[]+)\]#$1#ig
+      and ++$match;
+    $$body =~ s#hrcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]##ig
+      and ++$match;
+  }} while ($match);
+  1 while $$body =~ s#([bi])\001([^\001\002]*)\002#$1\[$2\]#ig;
+  
+}
 
 1;
+
+__END__
 
 =head1 NAME
 
@@ -525,6 +626,8 @@ pages.
 =head1 SYNOPSIS
 
 =head1 DESCRIPTION
+
+This is probably better documented in L<templates>.
 
 =head1 TAGS
 
@@ -590,6 +693,28 @@ Conditional tag, true if the given item can appear in a menu.
 Generates an IMG tag if the given I<imagename> is in the title image
 directory ($IMAGEDIR/titles).  If it doesn't exists, produces the
 I<text>.
+
+=item embed I<which>
+
+=item embed I<which> I<template>
+
+=item embed child
+
+Embeds the article specified by which using either the specified
+template or the articles template.
+
+In this case I<which> can also be an article ID.
+
+I<template> is a filename relative to the templates directory.
+
+=item embed start ... embed end
+
+Marks the range of text that would be embedded in a parent that used
+C<embed child>.
+
+=item ifEmbedded
+
+Conditional tag, true if the current article is being embedded.
 
 =back
 
