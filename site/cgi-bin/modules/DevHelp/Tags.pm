@@ -250,7 +250,7 @@ sub tag_date {
 sub iter_get_repeat {
   my ($args, $acts, $name, $templater) = @_;
 
-  print STDERR "iter_get_repeat $args\n";
+  #print STDERR "iter_get_repeat $args\n";
 
   my @args = __PACKAGE__->get_parms($args, $acts, $templater);
 

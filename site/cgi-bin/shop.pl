@@ -787,6 +787,10 @@ sub purchase {
   page('checkoutfinal.tmpl', \%acts);
 }
 
+sub tag_with_wrap {
+  
+}
+
 # sends the email order confirmation and the PGP encrypted
 # email to the site owner
 sub send_order {
@@ -855,6 +859,7 @@ sub send_order {
      option => sub { CGI::escapeHTML($options[$option_index]{$_[0]}) },
      ifOptions => sub { @options },
      options => sub { nice_options(@options) },
+     with_wrap => \&tag_with_wrap,
     );
 
   my $mailer = BSE::Mail->new(cfg=>$cfg);

@@ -10,11 +10,16 @@ sub sorter {
   
   my $cgi = $opts{cgi}
     or confess "No cgi object supplied.";
+  my @saved;
+  if ($opts{get}) {
+    my ($code, @parms) = @{$opts{get}};
+    @saved = $code->(@parms);
+  }
   my $data = $opts{data}
     or confess "No data supplied";
   my $fields = $opts{fields} || {};
-  my $def_sortby = $opts{sortby};
-  my $def_reverse = $opts{reverse};
+  my $def_sortby = defined $saved[0] ? $saved[0] : $opts{sortby};
+  my $def_reverse = defined $saved[1] ? $saved[1] : $opts{reverse};
   my $sortby_param = $opts{sortparam} || 's';
   my $tie_field = $opts{tiefield};
   my $reverse_param = $opts{reverseparam} || 'r';
@@ -55,6 +60,11 @@ sub sorter {
 	  $cmp;
 	} @$data;
     }
+  }
+
+  if ($opts{save}) {
+    my ($code, @parms) = @{$opts{save}};
+    $code->(@parms, $sortby, $reverse);
   }
 
   return ($sortby, $reverse);
@@ -145,6 +155,17 @@ The name of the CGI parameter to get the reversal from.  Default 'r'.
 Name of the field to use for breaking ties in the sort order.
 Default: ties aren't broken.  If this is set to a field name then that
 field will be used to break ties in sorting by the primary sort field.
+
+=item get
+
+An arrayref containing a code reference and parameters to be called to
+get saved defaults for the sort field and order.  Default: defaults
+as supplied by the C<sortby> and C<reverse> parameters.
+
+=item save
+
+An array ref contang a code reference and parameters to be called to back
+save the sort field and order.
 
 =back
 

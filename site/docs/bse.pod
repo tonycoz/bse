@@ -10,9 +10,32 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.14_04
+
 This is a development release and is not suitable for production use.
 
+=over
+
+=item *
+
+sort ordering, pagination information is now saved in the site user
+list
+
+=item *
+
+added a customization hook called when a change is made to the site
+users list
+
+=item *
+
+added a site user authentication hook.  You must set user_auth=1 in
+the [custom] section of the config file for this to be used.
+
+=back
+
 =head2 0.14_03
+
+This is a development release and is not suitable for production use.
 
 =over
 

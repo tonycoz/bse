@@ -4,7 +4,7 @@ use strict;
 use Carp qw/cluck confess/;
 use constant DEBUG => 0;
 
-$VERSION="0.06";
+$VERSION="0.07";
 
 sub new {
   my ($class, %opts) = @_;
@@ -105,7 +105,7 @@ sub perform {
   return $value;
 }
 
-sub iterate {
+sub iterator {
   my ($self, $name, $args, $input, $sep, $acts, $orig) = @_;
 
   $args = '' unless defined $args;
@@ -154,6 +154,42 @@ sub iterate {
   }
   else {
     return $self->{verbose} ? "** No iterator $name **" : $orig;
+  }
+}
+
+sub with {
+  my ($self, $name, $args, $input, $sep, $acts, $orig) = @_;
+
+  $args = '' unless defined $args;
+  if (my $entry = $acts->{"with_$name"}) {
+    my $code;
+    my @args;
+    my $replace = 1;
+    if (ref $entry eq 'CODE') {
+      $code = $entry;
+    }
+    elsif (ref $entry eq 'ARRAY') {
+      ($code, @args) = @$entry;
+    }
+    elsif (ref $entry eq 'HASH') {
+      $code = $entry->{code};
+      @args = @{$entry->{args}} if $entry->{args};
+      $replace = $entry->{replace} if exists $entry->{replace};
+    }
+    else {
+      print STDERR "Cannot use '$entry' as a with_$name handler\n";
+      return $orig;
+    }
+
+    my $result = $input;
+    if ($replace) {
+      $result = $self->replace_template($result, $acts);
+    }
+
+    return $code->(@args, $result, $sep, $acts, $name, $self);
+  }
+  else {
+    return $orig;
   }
 }
 
@@ -367,14 +403,14 @@ sub replace_template {
   }
 
   # more general iterators
-  $template =~ s/(<:\s*iterator\s+begin\s+(\w+)(?:\s+([^:]*))?\s*:>
+  $template =~ s/(<:\s*(iterator|with)\s+begin\s+(\w+)(?:\s+([^:]*))?\s*:>
                   (.*?)
 		    (?: 
-		     <:\s*iterator\s+separator\s+\2\s*:>
+		     <:\s*\2\s+separator\s+\3\s*:>
                       (.*?)
 		     ) ?
-                 <:\s*iterator\s+end\s+\2\s*:>)/
-                   $self->iterate($2, $3, $4, $5, $acts, $1) /segx;
+                 <:\s*\2\s+end\s+\3\s*:>)/
+                   $self->$2($3, $4, $5, $6, $acts, $1) /segx;
 
   # conditionals
   my $nesting = 0; # prevents loops if result is an if statement

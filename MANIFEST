@@ -87,6 +87,7 @@ site/cgi-bin/modules/BSE/TB/AdminUser.pm
 site/cgi-bin/modules/BSE/TB/AdminUsers.pm
 site/cgi-bin/modules/BSE/Template.pm
 site/cgi-bin/modules/BSE/UserReg.pm
+site/cgi-bin/modules/BSE/Util/DynSort.pm
 site/cgi-bin/modules/BSE/Util/Iterate.pm
 site/cgi-bin/modules/BSE/Util/SQL.pm
 site/cgi-bin/modules/BSE/Util/Secure.pm

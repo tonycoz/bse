@@ -29,6 +29,7 @@ sub tie_it {
      LockHandle=>$dh->{dbh}
     };
   };
+  print STDERR "Error getting session: $@\n" if $@ && $debug;
   if ($@ && $@ =~ /Object does not exist/) {
     # try again
     undef $sessionid;
@@ -40,8 +41,10 @@ sub tie_it {
   }
   unless ($sessionid) {
   # save the new sessionid
+    my $domain = $ENV{HTTP_HOST};
     my $cookie = CGI::Cookie->new(-name=>'sessionid', -value=>$session->{_session_id}, 
-		     -expires=>$lifetime, -path=>"/");
+				  -expires=>$lifetime, -path=>"/",
+				  -domain=>$domain);
 # from trying to debug Opera cookie issues
 #     my ($value, @rest) = split ';', $cookie;
 #     my @out = $value;

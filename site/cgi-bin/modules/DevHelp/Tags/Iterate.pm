@@ -78,14 +78,21 @@ sub _iter_if_last {
 
 sub make_paged_iterator {
   my ($self, $single, $plural, $rdata, $rindex, $cgi, $pagename,
-      $perpage) = @_;
+      $perpage_parm, $save, $get) = @_;
 
+  my ($def_per_page, $def_page_num);
+  if ($get) {
+    my ($code, @parms) = @$get;
+    ($def_per_page, $def_page_num) = 
+      $code->(@parms);
+  }
   my $index;
   defined $rindex or $rindex = \$index;
   $$rindex = -1;
   $rdata or die;
   my $loaded = 0;
   my $max;
+  my $perpage = ref $perpage_parm ? $$perpage_parm : $perpage_parm;
   unless ($perpage =~ /^\d+$/) {
     my ($name, $count) = $perpage =~ /^(\w+)=(\d+)$/
       or confess "Invalid perpage '$perpage'";
@@ -96,13 +103,15 @@ sub make_paged_iterator {
       $perpage = $work;
     }
     else {
-      $perpage = $count;
+      $perpage = defined $def_per_page ? $def_per_page : $count;
     }
+    $$perpage_parm =~ s/\d+/$perpage/ if ref $perpage_parm;
   }
   my $page_count = int((@$rdata + $perpage - 1) / $perpage);
   $page_count = 1 unless $page_count;
   $pagename ||= 'p';
   my $page_num = $cgi->param($pagename);
+  defined $page_num or $page_num = $def_page_num;
   unless (defined($page_num) && $page_num =~ /^\d+$/
 	  && $page_num >= 1 && $page_num <= $page_count) {
     $page_num = 1;
@@ -112,6 +121,11 @@ sub make_paged_iterator {
   $end_index <= $#$rdata or $end_index = $#$rdata;
   my @data;
   @data = @$rdata[$base_index .. $end_index] if @$rdata;
+
+  if ($save) {
+    my ($code, @parms) = @$save;
+    $code->(@parms, $perpage, $page_num);
+  }
 
   my $page_counter;
 

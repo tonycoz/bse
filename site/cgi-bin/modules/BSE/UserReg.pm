@@ -11,6 +11,7 @@ use BSE::Mail;
 use BSE::EmailRequests;
 use BSE::Util::SQL qw/now_datetime/;
 use DevHelp::HTML;
+use Util;
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -329,12 +330,19 @@ sub _get_user {
     return $user;
   }
   else {
-    my $userid = $session->{userid}
-      or do { $self->show_logon($session, $cgi, $cfg); return };
-    my $user = SiteUsers->getBy(userId=>$userid)
-      or do { $self->show_logon($session, $cgi, $cfg); return };
+    if ($cfg->entryBool('custom', 'user_auth')) {
+      my $custom = Util::custom_class($cfg);
 
-    return $user;
+      return $custom->siteuser_auth($session, $cgi, $cfg);
+    }
+    else {
+      my $userid = $session->{userid}
+	or do { $self->show_logon($session, $cgi, $cfg); return };
+      my $user = SiteUsers->getBy(userId=>$userid)
+	or do { $self->show_logon($session, $cgi, $cfg); return };
+      
+      return $user;
+    }
   }
 }
 
@@ -560,6 +568,9 @@ sub saveopts {
     }
   }
 
+  my $custom = Util::custom_class($cfg);
+  $custom->siteusers_changed($cfg);
+
   refresh_to($url);
 }
 
@@ -744,6 +755,9 @@ sub register {
     use Util qw/refresh_to/;
     
     _got_user_refresh($session, $cgi, $cfg);
+
+    my $custom = Util::custom_class($cfg);
+    $custom->siteusers_changed($cfg);
   }
   else {
     $self->show_register($session, $cgi, $cfg,

@@ -103,6 +103,18 @@ sub article_fill {
   1;
 }
 
+sub siteusers_changed {
+  my ($self, $cfg) = @_;
+
+  1;
+}
+
+sub siteuser_auth {
+  my ($self, $session, $cgi, $cfg) = @_;
+
+  return;
+}
+
 1;
 
 =head1 NAME
@@ -176,6 +188,10 @@ Defines extra tags for use on the checkout page.
 =item BSE::Custom->base_tags($articles, $acts, $article, $embedded)
 
 Defines extra tags for use on any page.
+
+=item BSE::Custom->siteusers_changed($cfg)
+
+Called when a change is made to the site users table.
 
 =back
 

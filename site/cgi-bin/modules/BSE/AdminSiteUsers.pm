@@ -4,8 +4,9 @@ use BSE::Util::Tags qw(tag_error_img tag_hash);
 use DevHelp::HTML;
 use SiteUsers;
 use BSE::Util::Iterate;
-use DevHelp::DynSort qw(sorter tag_sorthelp);
+use BSE::Util::DynSort qw(sorter tag_sorthelp);
 use BSE::Util::SQL qw/now_datetime/;
+use Util;
 
 my %actions =
   (
@@ -50,7 +51,8 @@ sub req_list {
   }
   my @users = SiteUsers->all;
   my ($sortby, $reverse) =
-    sorter(data=>\@users, cgi=>$cgi, sortby=>'userId');
+    sorter(data=>\@users, cgi=>$cgi, sortby=>'userId', session=>$req->session,
+	   name=>'siteusers');
   my $it = BSE::Util::Iterate->new;
 			    
   my %acts;
@@ -61,7 +63,8 @@ sub req_list {
      BSE::Util::Tags->secure($req),
      message => $msg,
      $it->make_paged_iterator('siteuser', 'siteusers', \@users, undef,
-			      $cgi, undef, 'pp=20'),
+			      $cgi, undef, 'pp=20', $req->session, 
+			      'siteusers'),
      sortby=>$sortby,
      reverse=>$reverse,
      sorthelp => [ \&tag_sorthelp, $sortby, $reverse ],
@@ -93,6 +96,9 @@ sub req_edit {
   $errors ||= {};
   if ($msg) {
     $msg = escape_html($msg);
+  }
+  elsif ($cgi->param('m')) {
+    $msg = join("<br />", map escape_html($_), $cgi->param('m'));
   }
   else {
     if (keys %$errors) {
@@ -153,44 +159,46 @@ sub req_save {
 
   my $saveemail;
   my $email = $cgi->param('email');
-  if (!$email) {
-    $errors{email} = "Email is a required field";
-  }
-  elsif ($email !~ /.\@./) {
-    $errors{email} = "Email is invalid";
-  }
-  unless ($errors{email}) {
-    if ($nopassword) {
-      my $conf_email = $cgi->param('confirmemail');
-      if ($conf_email) {
-	if ($conf_email eq $email) {
-	  my $other = SiteUsers->getBy(userId=>$email);
-	  if ($other) {
-	    $errors{email} = "That email address is already in use";
+  if (defined $email) {
+    if (!$email) {
+      $errors{email} = "Email is a required field";
+    }
+    elsif ($email !~ /.\@./) {
+      $errors{email} = "Email is invalid";
+    }
+    unless ($errors{email}) {
+      if ($nopassword) {
+	my $conf_email = $cgi->param('confirmemail');
+	if ($conf_email) {
+	  if ($conf_email eq $email) {
+	    my $other = SiteUsers->getBy(userId=>$email);
+	    if ($other) {
+	      $errors{email} = "That email address is already in use";
+	    }
+	    else {
+	      ++$saveemail;
+	    }
 	  }
 	  else {
-	    ++$saveemail;
+	    $errors{confirmemail} =
+	      "Confirmation email address doesn't match email address";
 	  }
-	}
+      }
 	else {
-	  $errors{confirmemail} =
-	    "Confirmation email address doesn't match email address";
+	  $errors{confirmemail} = "Please enter a confirmation email address";
 	}
       }
       else {
-	$errors{confirmemail} = "Please enter a confirmation email address";
+	++$saveemail;
       }
     }
-    else {
-      ++$saveemail;
-    }
-  }
-  unless ($errors{email}) {
-    my $checkemail = SiteUser->generic_email($email);
-    require BSE::EmailBlacklist;
-    my $blackentry = BSE::EmailBlacklist->getEntry($checkemail);
-    if ($blackentry) {
-      $errors{email} = "Email $email is blacklisted: $blackentry->{why}";
+    unless ($errors{email}) {
+      my $checkemail = SiteUser->generic_email($email);
+      require BSE::EmailBlacklist;
+      my $blackentry = BSE::EmailBlacklist->getEntry($checkemail);
+      if ($blackentry) {
+	$errors{email} = "Email $email is blacklisted: $blackentry->{why}";
+      }
     }
   }
 
@@ -242,7 +250,10 @@ sub req_save {
     if $cgi->param('saveDisabled') && !defined $cgi->param('disabled');
   $user->save;
 
-  my @msgs = ( "User saved" );
+  my $custom = Util::custom_class($cfg);
+  $custom->siteusers_changed($cfg);
+
+  my @msgs;
 
   my $sent_ok = 1; # no error handling if true
   my $code;
@@ -272,7 +283,7 @@ sub req_save {
   
   my $r = $cgi->param('r');
   unless ($r) {
-    $r = $req->url('siteusers', { list => 1 });
+    $r = $req->url('siteusers', { list => 1, m => "User saved" });
   }
   $r .= "&m=".escape_uri($_) for @msgs;
 
@@ -287,6 +298,9 @@ sub req_addform {
   $errors ||= {};
   if ($msg) {
     $msg = escape_html($msg);
+  }
+  elsif ($cgi->param('m')) {
+    $msg = join("<br />", map escape_html($_), $cgi->param('m'));
   }
   else {
     if (keys %$errors) {
@@ -443,6 +457,10 @@ sub req_add {
       my $code;
       my $sent_ok = $user->send_conf_request($cgi, $cfg, \$code, \$msg);
     }
+    
+    my $custom = Util::custom_class($cfg);
+    $custom->siteusers_changed($cfg);
+
     my $r = $cgi->param('r');
     unless ($r) {
       $r = $req->url('siteusers', { list => 1, 
