@@ -4,7 +4,7 @@ use HTML::Entities;
 use DevHelp::Tags;
 use DevHelp::HTML;
 use vars qw(@EXPORT_OK @ISA);
-@EXPORT_OK = qw(tag_error_img tag_hash);
+@EXPORT_OK = qw(tag_error_img tag_hash tag_hash_plain);
 @ISA = qw(Exporter);
 require Exporter;
 
@@ -604,6 +604,15 @@ sub tag_hash {
   defined $value or $value = '';
 
   escape_html($value);
+}
+
+sub tag_hash_plain {
+  my ($hash, $args) = @_;
+
+  my $value = $hash->{$args};
+  defined $value or $value = '';
+
+  $value;
 }
 
 1;
