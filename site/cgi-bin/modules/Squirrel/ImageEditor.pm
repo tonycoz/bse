@@ -6,7 +6,7 @@ use Constants qw($URLBASE $TMPLDIR %TEMPLATE_OPTS);
 sub new {
   my ($class, %opts) = @_;
   $opts{message} = '';
-  $opts{template} ||= 'article_img.tmpl';
+  $opts{template} ||= 'admin/article_img.tmpl';
   return bless \%opts, $_[0];
 }
 
