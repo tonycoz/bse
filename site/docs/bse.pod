@@ -10,6 +10,31 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.13_08
+
+This is a release candidate for 0.14, please report any problems with
+it as soon as possible.
+
+Once I release 0.14 I'll start on a new round of changes
+
+=over
+
+=item *
+
+the common <:old I<name> I<func> I<args>:> tag was HTML escaping the
+result from the <:I<func> I<args>:> call, which gave a double escaped
+result.
+
+=item *
+
+the test count in t/t40images.t was incorrect
+
+=item *
+
+even more tests have been added to t/t40images.t
+
+=back
+
 =head2 0.13_07
 
 =over

@@ -238,14 +238,16 @@ sub tag_old {
   my ($field, $func, $funcargs) = split ' ', $args;
 
   my $value = $cgi->param($field);
-  unless (defined $value) {
-    return '' unless $func && exists $acts->{$func};
-
-    $value = $templater->perform($acts, $func, $funcargs);
+  if (defined $value) {
+    return escape_html($value);
   }
+
+  return '' unless $func && exists $acts->{$func};
+
+  $value = $templater->perform($acts, $func, $funcargs);
   defined $value or $value = '';
 
-  escape_html($value);
+  return $value;
 }
 
 sub basic {

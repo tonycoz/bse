@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test qw(make_ua base_url fetch_ok follow_ok click_ok follow_refresh_ok);
-use Test::More tests => 67;
+use Test::More tests => 122;
 
 my $base_url = base_url;
 my $ua = make_ua;
@@ -57,6 +57,9 @@ follow_refresh_ok($ua, "refresh back to image wizard",
 
 follow_ok($ua, "back to editor", "Edit article", "Edit Page Lev1");
 
+# remember where we are
+my $edit_url = $ua->uri;
+
 # this page should include the two images we added
 my @images = get_images($ua->content);
 
@@ -110,9 +113,6 @@ ok($ua->form("edit"), "select edit form");
 
 click_ok($ua, "back to editor", undef, qr/Edit Page Lev1/);
 
-# remember where we are
-my $edit_url = $ua->uri;
-
 follow_ok($ua, "admin menu", "Admin menu", qr/Administration Centre/);
 
 follow_ok($ua, "sections", "Administer sections", qr/Manage Sections/);
@@ -145,7 +145,76 @@ click_ok($ua, "add a global image", 'addimg', undef, qr/Refresh/);
 
 follow_refresh_ok($ua, "refresh back to image wizard", "Global Image Wizard");
 
+# back to the article
+print "# edit url $edit_url\n";
+fetch_ok($ua, "back to edit", $edit_url, qr/Edit Page Lev1/);
 
+# update the body to reference the global image
+ok($ua->form("edit"), "select edit form");
+$ua->field(body =>"ONE((image[test]))\n\nTWO\{\{image[2]\}\}\n\nTHREE<<gimage[$global_name]>>");
+
+click_ok($ua, "save the new body", "save", undef, qr/Refresh/);
+follow_refresh_ok($ua, "refresh back to edit");
+follow_ok($ua, "to display", "See article", qr/Images test article/);
+print "# on page ",$ua->uri,"\n";
+my ($g_html) = $ua->content =~ /THREE&lt;&lt;(.*?)&gt;&gt;/;
+ok($g_html, "global image in page");
+print "# g_html $g_html\n";
+my %gim;
+while ($g_html =~ /(\w+)=\"([^\"]+)\"/g) {
+  $gim{$1} = $2;
+}
+
+is($gim{width}, 20, "gimage width");
+is($gim{height}, 20, "gimage height");
+is($gim{alt}, "three", "gimage alt");
+
+# check that the image matches
+$ua->_push_page_stack();
+my $gimage_abs = URI->new_abs($gim{src}, $ua->uri);
+fetch_ok($ua, "gimage content", $gimage_abs);
+
+is($ua->content, imageg(), "gimage content");
+$ua->back;
+
+# back to the editor
+ok($ua->form("edit"), "select edit form");
+click_ok($ua, "edit page", undef, qr/Edit Page Lev1/);
+
+follow_ok($ua, "image manager", "Manage Images", qr/Page Lev1 Image Wizard/);
+
+for my $im_index (0 .. 1) {
+  follow_ok($ua, "delete image $im_index", "Delete", undef, qr/Refresh/);
+  follow_refresh_ok($ua, "back to display");
+
+  # make sure the file was deleted
+  $ua->_push_page_stack();
+  my $img_url = URI->new_abs($images[$im_index]{src}, $ua->uri);
+  ok(!$ua->get($img_url)->is_success, 
+     "checking image file for $im_index was deleted");
+  $ua->back;
+}
+
+follow_ok($ua, "admin menu", "Admin menu", qr/Administration Centre/);
+follow_ok($ua, "sections", "Administer sections", qr/Manage Sections/);
+follow_ok($ua, "global images", "Global Images", qr/Global Image Wizard/);
+
+# since there may have been other global images, we need to be a bit 
+# more careful here
+my $links = $ua->extract_links;
+my @links = grep $_->[1] eq 'Delete', @$links;
+print "# link #", scalar(@links), "\n";
+follow_ok($ua, "delete global image", 
+	  { n=>scalar(@links), text=>"Delete" }, 
+	  undef, qr/Refresh/);
+follow_refresh_ok($ua, "back to display");
+
+# make sure the file was deleted
+$ua->_push_page_stack();
+my $img_url = URI->new_abs($gim{src}, $ua->uri);
+ok(!$ua->get($img_url)->is_success, 
+   "checking image file for global image was deleted");
+$ua->back;
 
 sub image1 {
   # based on testout/t105pal.gif from Imager

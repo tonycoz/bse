@@ -202,7 +202,8 @@ sub post_ok {
 sub fetch_ok {
   my ($ua, $note, $url, $match, $headmatch) = @_;
 
-  my $ok = $ua->get($url);
+  my $resp = $ua->get($url);
+  my $ok = $resp->is_success;
   return _check_fetch($ua->{content}, $ua->{status}, $ok, 
 		      $ua->{res}->headers_as_string, $note, 
 		      $match, $headmatch)
@@ -211,7 +212,14 @@ sub fetch_ok {
 sub follow_ok {
   my ($ua, $note, $link, $match, $headmatch) = @_;
 
-  my $ok = $ua->follow($link);
+  my $ok;
+  if (ref $link) {
+    my $resp = $ua->follow_link(%$link);
+    $ok = $resp->is_success;
+  }
+  else {
+    $ok = $ua->follow($link);
+  }
 
   return _check_fetch($ua->{content}, $ua->{status}, $ok, 
 		      $ua->{res}->headers_as_string, $note, 
