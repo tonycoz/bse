@@ -11,7 +11,8 @@ use Squirrel::ImageEditor;
 use CGI::Cookie;
 use BSE::Custom;
 use BSE::Mail;
-use BSE::Shop::Util qw/shop_cart_tags cart_item_opts nice_options total basic_tags load_order_fields/;
+use BSE::Shop::Util qw/shop_cart_tags cart_item_opts nice_options total 
+                       basic_tags load_order_fields/;
 
 require $SESSION_REQUIRE;
 
