@@ -7,10 +7,12 @@
 <p><b><:message:></b></p>
 <:or:><:eif:> 
 <p>| <a href="/admin/">Admin menu</a> | <a href="<:product admin:>">See product</a> 
-  | <a href="<:script:>">Manage catalogs</a><:if Product listed:> | <a href="<:script:>?id=<:product id:>&delete_product=1">Hide</a> 
-  |<:or Product:> | <a href="<:script:>?id=<:product id:>&undelete_product=1">Show</a> 
-  |<:eif Product:> <a href="/cgi-bin/admin/add.pl?id=<:product id:>&_t=steps">Manage 
-  step parents</a> |<:hiddenNote:></p>
+  | <a href="/cgi-bin/admin/add.pl?id=<:product parentid:>">Edit parent</a> 
+  | <a href="/cgi-bin/admin/shopadmin.pl">Manage catalogs</a><:if Product listed:> 
+  | <a href="<:script:>?id=<:product id:>&delete_product=1">Hide product</a> <:or 
+  Product:> | <a href="<:script:>?id=<:product id:>&undelete_product=1">Show product</a> 
+  <:eif Product:>| <a href="/cgi-bin/admin/add.pl?id=<:product id:>&_t=steps">Manage 
+  step parents</a> | <:hiddenNote:></p>
 <h2>Manage Images</h2>
 <form action="<:script:>" enctype="multipart/form-data" method="POST">
   <p>

@@ -29,12 +29,12 @@
   title</a> | <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&sort=date&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
   date</a> | <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&reverse=1&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">reverse 
   order</a></font></p>
-<:or Allkids:><:eif Allkids:><:or:><:eif:><:if UnderThreshold allkids:><:iterator begin 
-allkids:><:ifAdmin:> 
+<:or Allkids:><:eif Allkids:><:or:><:eif:><:if UnderThreshold allkids:><:iterator 
+begin allkids:><:ifAdmin:> 
 <hr noshade size="1">
 <:or:><:eif:><:movestepkid:><:embed allkid:><:iterator separator allkids:><br>
 <:iterator end allkids:> <:or UnderThreshold:><:iterator begin allkids:> 
-<p><:thumbnail allkid:> <a href="<:url child:>"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="3"></font></b></a><a href="<:url allkid:>"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><:allkid 
+<p><:thumbnail allkid:> <a href="<:url allkid:>"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><:allkid 
   title:></font></b></a> <:movestepkid:><br>
   <:if Allkid summaryLength:><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:summary 
   allkid:></font><:or Allkid:><:eif Allkid:></p>

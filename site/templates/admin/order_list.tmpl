@@ -16,13 +16,14 @@
         <tr bgcolor="#FFFFFF"> 
           <th>Id</th>
           <th width="100%">Name</th>
+          <th>Status</th>
           <th>Date</th>
           <th>Total</th>
           <th>GST</th>
           <th>Details</th>
         </tr>
         <tr bgcolor="#FFFFFF"> 
-          <td colspan="6"> 
+          <td colspan="7"> 
             <form action="<:script:>" method="POST">
               <input type="hidden" name="order_list" value="1">
               From date: 
@@ -38,6 +39,8 @@
           <td align="center" nowrap><a href="<:script:>?id=<:order id:>&order_detail=1"><:order 
             id:></a></td>
           <td width="100%"><:order delivFirstName:> <:order delivLastName:></td>
+          <td nowrap bgcolor="<:ifOrder filled:>#CC0033<:or:>#66CC00<:eif:>"><:ifOrder 
+            filled:><font color="#999999">Completed</font><:or:><font color="#FFFFFF">Processing</font><:eif:></td>
           <td nowrap><:date orderDate:></td>
           <td align=right nowrap>$<:money total:></td>
           <td align=right nowrap>$<:money gst:></td>

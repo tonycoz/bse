@@ -12,10 +12,10 @@
 <body>
 <h1>Manage step <:ifMatch [article generator] "Product":><:or:> children/<:eif:>parents</h1>
 
-<p>| <a href="/admin/">Admin menu</a> | <:ifMatch [article generator] "Product":><a href="<:script:>">Manage 
+<p>| <a href="/admin/">Admin menu</a> | <:ifMatch [article generator] "Product":><a href="/cgi-bin/admin/shopadmin.pl">Manage 
   catalogs</a> | <a href="/cgi-bin/admin/shopadmin.pl?id=<:article id:>&edit_product=1">Edit 
-  product</a><:or:><a href="/cgi-bin/admin/add.pl?id=<:article id:>">Edit article</a><:eif:> 
-  |</p>
+  product</a><:or:><a href="/cgi-bin/admin/add.pl?id=<:article id:>"><:if Eq [article 
+  parentid] 3:>Edit catalog<:or Eq:>Edit article<:eif Eq:></a><:eif:> |</p>
 <:if new:><:or new:> <:if Match [article generator] "Product":><:or Match:> 
 <h2><a name="step"></a>Step children</h2>
 <table border="0" cellspacing="0" cellpadding="0" bgcolor='#000000' width="100%" class="table">
