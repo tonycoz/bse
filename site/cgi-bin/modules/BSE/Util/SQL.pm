@@ -13,6 +13,7 @@ require 'Exporter.pm';
 =head1 SYNOPSIS
 
   my $sqlnow = now_sqldatetime();
+  my $sqlnowdate = now_sqldate();
   my $sqlthen = sql_datetime($when);
   my $sqldate = date_to_sql($date);
   my $date = sql_to_date($sqldate);

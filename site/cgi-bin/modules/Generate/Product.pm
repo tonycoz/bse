@@ -6,6 +6,7 @@ use Images;
 use base qw(Generate::Article);
 use Squirrel::Template;
 use Constants qw(:shop $TMPLDIR %TEMPLATE_OPTS $CGI_URI $ADMIN_URI);
+use Carp qw(confess);
 
 sub edit_link {
   my ($self, $id) = @_;
@@ -21,6 +22,10 @@ sub generate {
 
 sub baseActs {
   my ($self, $articles, $acts, $product, $embedded) = @_;
+
+  unless ($product->isa('Product')) {
+    $product = Products->getByPkey($product->{id});
+  }
 
   my @stepcats = $product->step_parents();
   my $stepcat_index;

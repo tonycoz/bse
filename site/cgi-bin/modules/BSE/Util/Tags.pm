@@ -6,7 +6,7 @@ sub _get_parms {
   my ($acts, $args) = @_;
 
   my @out;
-  while ($args) {
+  while (length $args) {
     if ($args =~ s/^\s*\[\s*(\w+)(?:\s+(\S[^\]]*))?\]\s*//) {
       my ($func, $subargs) = ($1, $2);
       if ($acts->{$func}) {

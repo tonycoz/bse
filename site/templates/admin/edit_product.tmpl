@@ -72,6 +72,18 @@
               (dd/mm/yyyy)</td>
           </tr>
           <tr> 
+            <th nowrap align="left" bgcolor="#FFFFFF">Summary length:</th>
+            <td nowrap bgcolor="#FFFFFF"> 
+              <input type="text" name="summaryLength" size="10" maxlength="10" value="<:product summaryLength:>">
+            </td>
+          </tr>
+          <tr> 
+            <th nowrap align="left" bgcolor="#FFFFFF">Display threshold:</th>
+            <td nowrap bgcolor="#FFFFFF"> 
+              <input type="text" name="threshold" size=10 maxlength=10 value="<:product threshold:>">
+	    </td>
+          </tr>
+          <tr> 
             <th align="left" bgcolor="#FFFFFF">Options:</th>
             <td bgcolor="#FFFFFF"> 
               <input type="text" name="options" value="<:product options:>" size=30>
@@ -114,6 +126,17 @@
                 <a href="<:script:>?filelist=1&id=<:article id:>"><b>Manage Files</b></a></p>
             </td>
           </tr>
+          <tr> 
+            <th valign="top" nowrap bgcolor="#FFFFFF"> Uploaded images: </th>
+            <td align="center" bgcolor="#FFFFFF" width="100%">
+	     <:if Images:> <:iterator begin 
+              images:> <img src="/images/<: image image :>" alt="<:image alt :>" width= 
+              <:image width:> height=<:image height:>> <:iterator separator images:> 
+              <hr noshade size="1">
+              <: iterator end images :> &nbsp; 
+	     <:or Images:>No images<:eif Images:>
+	    </td>
+	  </tr>
         </table>
       </td>
     </tr>

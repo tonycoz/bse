@@ -15,6 +15,3 @@ select {  font-family: "MS Sans Serif", Verdana, sans-serif; font-size: 12px}
 input {  font-family: "MS Sans Serif", Verdana, sans-serif; font-size: 12px}
 textarea {  font-family: "MS Sans Serif", Verdana, sans-serif; font-size: 12px}
 th {  font-size: 10px; font-weight: bold; background-color: #999999; color: #FFFFFF}
-dl { font-weight: normal }
-dd { margin-left: 1em }
-dt { margin-left: 3em; margin-bottom: 0.5em }

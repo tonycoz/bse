@@ -1,7 +1,8 @@
 body {  text-decoration: none}
 a {  text-decoration: none}
-a:hover {  text-decoration: underline; color: #6767CC}
+a:hover {  text-decoration: underline; color: #FF7F00}
 select {  font-family: "MS Sans Serif", Verdana, sans-serif; font-size: 12px}
 input {  font-family: "MS Sans Serif", Verdana, sans-serif; font-size: 12px}
 textarea {  font-family: "MS Sans Serif", Verdana, sans-serif; font-size: 12px}
 .mini-admin { font-family: "MS Sans Serif", Verdana, sans-serif; font-size: 10px}
+.user-buttons { font-family: "MS Sans Serif", Verdana, sans-serif; font-size: 12px ; border: 2px #FF7F00 groove; background-color: #FFFFFF}

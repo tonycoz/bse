@@ -602,7 +602,7 @@ sub excerpt {
   for (@reterms) {
     tr/ / /s;
     $_ = quotemeta;
-    s/\s+/\\s+/g;
+    s/\\?\s+/\\s+/g;
   }
   # do a reverse sort so that the longer terms (and composite
   # terms) are replaced first
@@ -664,6 +664,7 @@ sub excerpt {
     }
     $result .= $part;
   }
+  print STDERR "\$re is $re\n";
   $result =~ s{$re}{<b>$1</b>}ig;
   $$found = 1;
 

@@ -54,7 +54,8 @@ my %what_to_do =
   );
 
 my @modifiable = qw(body retailPrice wholesalePrice gst release expire 
-                    parentid leadTime options template);
+                    parentid leadTime options template threshold
+                    summaryLength);
 my %modifiable = map { $_=>1 } @modifiable;
 
 my $product;
@@ -71,6 +72,8 @@ else {
 my %acts;
 %acts = 
   (
+   BSE::Util::Tags->basic(\%acts, $CGI::Q, $cfg),
+   BSE::Util::Tags->admin(\%acts, $cfg),
    articleType=>sub { 'Product' },
    article=>
    sub {
@@ -133,6 +136,8 @@ sub embedded_catalog {
   my %acts;
   %acts =
     (
+     BSE::Util::Tags->basic(\%acts, $CGI::Q, $cfg),
+     BSE::Util::Tags->admin(\%acts, $cfg),
      catalog => sub { CGI::escapeHTML($catalog->{$_[0]}) },
      date => sub { display_date($list[$list_index]{$_[0]}) },
      money => sub { sprintf("%.2f", $list[$list_index]{$_[0]}/100.0) },
@@ -224,6 +229,8 @@ sub product_list {
   exists $session{showstepkids} or $session{showstepkids} = 1;
   my %acts =
     (
+     BSE::Util::Tags->basic(\%acts, $CGI::Q, $cfg),
+     BSE::Util::Tags->admin(\%acts, $cfg),
      catalog=> sub { CGI::escapeHTML($catalogs[$catalog_index]{$_[0]}) },
      iterate_catalogs => sub { ++$catalog_index < @catalogs  },
      shopid=>sub { $SHOPID },
@@ -263,10 +270,18 @@ sub add_product {
 
   $product->{leadTime} = 0;
   @$product{qw/retailPrice wholesalePrice gst/} = qw(0 0 0);
-  $product->{release} = '2000-01-01';
+  use BSE::Util::SQL qw(now_sqldate);
+  $product->{release} = now_sqldate;
   $product->{expire} = '9999-12-31';
   $product->{parentid} = param('parentid')
     if param('parentid');
+  if ($product->{parentid}) {
+    my $parent = Articles->getByPkey($product->{parentid});
+    if ($parent) {
+      $product->{threshold} = $parent->{threshold};
+      $product->{summaryLength} = $parent->{summaryLength};
+    }
+  }
   if (!exists $session{imageid} || $session{imageid} ne '') {
     $session{imageid} = '';
     #$imageEditor->set([], 'tr');
@@ -353,12 +368,15 @@ sub save_product {
 
   # save the product
   $product{parentid} ||= $PRODUCTPARENT;
+
+  my $parent = Articles->getByPkey($product{parentid})
+    or return product_form(\%product, $original ? "Edit" : "Add New",
+			   "Unknown parent id");
+
   $product{titleImage} = '';
   $product{keyword} ||= '';
   $product{template} ||= 'shopitem.tmpl';
-  $product{threshold} = 0; # ignored
-  $product{summaryLength} = 200; # ignored
-  $product{level} = 2;
+  $product{level} = $parent->{level} + 1;
   $product{lastModified} = epoch_to_sql(time);
   $product{imagePos} = $imageEditor->imagePos || 'tr';
   $product{generator} = 'Generate::Product';
@@ -395,6 +413,10 @@ sub save_product {
     $product{admin} = '';
     $product{listed} = 2;
     $product{displayOrder} = time;
+
+    for my $col (qw(threshold summaryLength)) {
+      $product{$col} = $parent->{$col} unless exists $product{$col};
+    }
 
     my @data = @product{Product->columns};
     shift @data;
@@ -506,15 +528,22 @@ sub product_form {
   # ugh
   my $realproduct;
   $realproduct = UNIVERSAL::isa($product, 'Product') ? $product : Products->getByPkey($product->{id});
-  my @stepcats = OtherParents->getBy(childId=>$product->{id}) 
+  my @stepcats;
+  @stepcats = OtherParents->getBy(childId=>$product->{id}) 
     if $product->{id};
   my @stepcat_targets = $realproduct->step_parents if $realproduct;
   my %stepcat_targets = map { $_->{id}, $_ } @stepcat_targets;
   my @stepcat_possibles = grep !$stepcat_targets{$_->{id}}, @catalogs;
+  my @images;
+  @images = $imageEditor->images()
+    if $product->{id};
+  my $image_index;
 
   my %acts;
   %acts =
     (
+     BSE::Util::Tags->basic(\%acts, $CGI::Q, $cfg),
+     BSE::Util::Tags->admin(\%acts, $cfg),
      catalogs => 
      sub {
        return popup_menu(-name=>'parentid',
@@ -579,6 +608,8 @@ HTML
      },
      BSE::Util::Tags->
      make_iterator(\@files, 'file', 'files', \$file_index),
+     BSE::Util::Tags->
+     make_iterator(\@images, 'image', 'images', \$image_index),
     );
 
   page($template, \%acts);
@@ -637,6 +668,8 @@ sub order_list_low {
   my %acts;
   %acts =
     (
+     BSE::Util::Tags->basic(\%acts, $CGI::Q, $cfg),
+     BSE::Util::Tags->admin(\%acts, $cfg),
      order=> sub { CGI::escapeHTML($orders_work[$order_index]{$_[0]}) },
      iterate_orders_reset =>
      sub {
@@ -747,6 +780,8 @@ sub order_detail {
     my %acts;
     %acts =
       (
+       BSE::Util::Tags->basic(\%acts, $CGI::Q, $cfg),
+       BSE::Util::Tags->admin(\%acts, $cfg),
        item => sub { CGI::escapeHTML($lines[$line_index]{$_[0]}) },
        iterate_items_reset => sub { $line_index = -1 },
        iterate_items => 

@@ -352,7 +352,8 @@ sub prePurchase {
     $order{wholesale} += $item->{wholesalePrice} * $item->{units};
     $order{gst} += $item->{gst} * $item->{units};
   }
-  $order{orderDate} = $today;
+  use BSE::Util::SQL qw(now_sqldatetime);
+  $order{orderDate} = now_sqldatetime();
 
   if (my ($msg, $id) = need_logon($cfg, \@cart, \@products, \%session)) {
     refresh_logon($msg, $id);

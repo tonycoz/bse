@@ -50,12 +50,39 @@ looking in [download] (#128)
 =item *
 
 prevent a warning about using a regexp range of [\w-.] by making it
-[\w.-]
+[\w.-] (BSE::UserReg)
 
 =item *
 
-stop <:parent field:> from auto-instantiating $parent, making ifParent
-true even when there was no parent
+store the date _and_ time in the orderDate field so that orders are
+sorted correctly on the user page. (#132)
+
+=item *
+
+add sort order after date to sort by id descending for orders on the
+same date (#132)
+
+=item *
+
+highlight multi-word matches in search excerpts (#125)
+
+=item *
+
+help for body text from add product page (#118)
+
+=item *
+
+new templates from Adrian
+
+=item *
+
+when creating a new product, the release date was being set to
+2001-01-01, rather than the more useful C<today> (whatever day that
+happens to be).  This was mostly visible to the search engine. (#130)
+
+=item *
+
+images list now available on edit_product.html page
 
 =back
 

@@ -440,7 +440,8 @@ sub userpage {
   }
   $user or return $self->show_logon($session, $cgi, $cfg, "Please logon");
   require 'Orders.pm';
-  my @orders = sort { $b->{orderDate} cmp $a->{orderDate} }
+  my @orders = sort { $b->{orderDate} cmp $a->{orderDate}
+			|| $b->{id} <=> $a->{id} }
     Orders->getBy(userId=>$userid);
   $message ||= $cgi->param('message') || '';
 
