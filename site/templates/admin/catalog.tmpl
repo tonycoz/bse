@@ -1,0 +1,52 @@
+<p><a href="/cgi-bin/admin/add.pl?id=<:catalog id:>">Edit catalog</a></p>
+<:if Products:>
+<h3>Products list</h3>
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000">
+  <tr>
+    <td>
+      <table border=0 cellpadding="6" cellspacing="1">
+        <tr> 
+          <th>Id</th>
+          <th>Name</th>
+          <th>Release</th>
+          <th>Expire</th>
+          <th>Retail</th>
+          <th>Wholesale</th>
+          <th>GST</th>
+          <th>&nbsp;</th>
+          <th>&nbsp;</th>
+        </tr>
+        <:iterator begin products:> 
+        <tr bgcolor="#FFFFFF"> 
+          <td align="center"><a href="<:script:>?id=<:product id:>&product_detail=1"><:product 
+            id:></a></td>
+          <td><:product title:></td>
+          <td><:date release:></td>
+          <td><:date expire:></td>
+          <td align=right>$<:money retailPrice:></td>
+          <td align=right>$<:money wholesalePrice:></td>
+          <td align=right>$<:money gst:></td>
+          <td nowrap><a href="<:script:>?id=<:product id:>&edit_product=1">Edit</a> 
+            <:if Product listed:> <a href="<:script:>?id=<:product id:>&delete_product=1">Hide</a> 
+            <:or Product:> <a href="<:script:>?id=<:product id:>&undelete_product=1">Show</a> 
+            <:eif Product:> <:move:> </td>
+          <td><:hiddenNote:></td>
+        </tr>
+        <:iterator end products:> 
+      </table>
+    </td>
+  </tr>
+</table>
+<:or Products:><:eif Products:>
+<form action="<:script:>"><input type=hidden name=parentid value="<:catalog id:>"><p><input type=submit name="add_product" value="Add Product"></p></form>
+<h3>Sub catalogs</h3>
+<:if Subcats :>
+<:iterator begin subcats:>
+<ul>
+<h2>Catalog: <:subcat title:> <:movecat:></h2>
+<:embed subcat catalog.tmpl:>
+</ul>
+<:iterator end subcats:>
+<:or Subcats:><:eif Subcats:>
+<form action="/cgi-bin/admin/add.pl"><input type=hidden name=parentid value="<:catalog id:>"><input type=submit value="Add Sub-catalog"></form>
+
