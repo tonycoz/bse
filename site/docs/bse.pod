@@ -74,7 +74,8 @@ titleImage for this dummy article can be specified in Constants.pm.
 =item *
 
 you can now control whether an unlisted level1 article is displayed in
-the crumbs for an article.
+the crumbs for an article.  By default unlisted level1 articles are
+NOT listed anymore.
 
 =item *
 

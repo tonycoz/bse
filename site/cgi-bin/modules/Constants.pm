@@ -213,7 +213,7 @@ $REPARENT_UPDOWN = 1;
 # will be listed in it's crumbs
 # this can be overridden with the 'listedonly' and 'showtop' options
 # for the <:iterator begin crumbs:> tag
-$UNLISTED_LEVEL1_IN_CRUMBS = 1;
+$UNLISTED_LEVEL1_IN_CRUMBS = 0;
 
 # this should be non-zero if you have HTML::Parser installed
 # if non-zero then HTML::Parser will be used to strip HTML tags
