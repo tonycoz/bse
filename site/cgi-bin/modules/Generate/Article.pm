@@ -213,26 +213,26 @@ HTML
 <input type=hidden name=parentid value="$article->{id}">
 </form></td>
 HTML
-	   if (generate_button()) {
-	     $html .= <<HTML;
+	 }
+	 if (generate_button()) {
+	   $html .= <<HTML;
 <td><form action="$CGI_URI/admin/generate.pl">
 <input type=hidden name=id value="$article->{id}">
 <input type=submit value="Regenerate">
 </form></td>
 HTML
-	   }
-           $html .= "<td>".$self->link_to_form($article->{admin}."&admin=0",
-                                               "Display", "_blank")."</td>";
-           if ($article->{link}) {
-             $html .= "<td>"
-               . $self->link_to_form($article->{link}, "On site", "_blank")
-                 . "</td>";
-           } elsif ($parent && $parent->{link}) {
-             $html .= "<td>"
-               . $self->link_to_form($parent->{link}, "On site", "_blank")
-                 . "</td>";
-           }
-         }
+	 }
+	 $html .= "<td>".$self->link_to_form($article->{admin}."&admin=0",
+					     "Display", "_blank")."</td>";
+	 if ($article->{link}) {
+	   $html .= "<td>"
+	     . $self->link_to_form($article->{link}, "On site", "_blank")
+	       . "</td>";
+	 } elsif ($parent && $parent->{link}) {
+	   $html .= "<td>"
+	     . $self->link_to_form($parent->{link}, "On site", "_blank")
+	       . "</td>";
+	 }
          if ($parent && $parent->{admin} ne $article->{admin} && !$embedded) {
            $html .= "<td>"
              .$self->link_to_form($parent->{admin}, "Parent")."</td>";
