@@ -95,6 +95,8 @@ CREATE TABLE image (
   alt varchar(255) DEFAULT '[Image]' NOT NULL,
   width smallint(5) unsigned,
   height smallint(5) unsigned,
+  url varchar(255),
+
   PRIMARY KEY (id)
 );
 
@@ -124,6 +126,9 @@ create table product (
 
   -- amount of GST on this item
   gst integer not null,
+
+  -- options that can be specified for this product
+  options varchar(255) not null,
   
   primary key(articleId)
 );
@@ -169,6 +174,21 @@ create table orders (
   ccExpiryHash varchar(127) not null default '',
   ccType varchar(30) not null,
 
+  -- non-zero if the order was filled
+  filled integer not null default 0,
+  whenFilled datetime,
+  whoFilled varchar(40) not null default '',
+
+  -- if the order has been paid for
+  paidFor integer not null default 0,
+  paymentReceipt varchar(40),
+
+  -- hard to guess identifier
+  randomId varchar(40),
+
+  -- order was cancelled
+  cancelled integer not null default 0,
+
   primary key (id),
   index order_cchash(ccNumberHash)
 );
@@ -189,6 +209,9 @@ create table order_item (
   price integer not null,
   wholesalePrice integer not null,
   gst integer not null,
+
+  -- options (if any) specified on this item in the order
+  options varchar(255) not null,
 
   primary key (id),
   index order_item_order(orderId, id)
