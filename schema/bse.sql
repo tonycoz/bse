@@ -1,5 +1,5 @@
 -- represents sections, articles
-
+DROP TABLE IF EXISTS article;
 CREATE TABLE article (
   id integer DEFAULT '0' NOT NULL auto_increment,
 
@@ -73,6 +73,8 @@ CREATE TABLE article (
 #
 # Table structure for table 'searchindex'
 #
+
+DROP TABLE IF EXISTS searchindex;
 CREATE TABLE searchindex (
   id varchar(200) binary DEFAULT '' NOT NULL,
   -- a comma-separated lists of article and section ids
@@ -85,6 +87,7 @@ CREATE TABLE searchindex (
 #
 # Table structure for table 'image'
 #
+DROP TABLE IF EXISTS image;
 CREATE TABLE image (
   id mediumint(8) unsigned NOT NULL auto_increment,
   articleId integer not null,
@@ -96,6 +99,7 @@ CREATE TABLE image (
 );
 
 # used for session tracking with Apache::Session::MySQL
+DROP TABLE IF EXISTS sessions;
 CREATE TABLE sessions (
   id char(32) not null primary key,
   a_session text,
@@ -104,6 +108,7 @@ CREATE TABLE sessions (
 );
 
 -- these share data with the article table
+DROP TABLE IF EXISTS product;
 create table product (
   -- fkey to article id
   articleId integer not null,
@@ -125,6 +130,7 @@ create table product (
 
 -- order is a reserved word
 -- I couldn't think of/find another word here
+DROP TABLE IF EXISTS orders;
 create table orders (
   id integer not null auto_increment,
 
@@ -167,6 +173,7 @@ create table orders (
   index order_cchash(ccNumberHash)
 );
 
+DROP TABLE IF EXISTS order_item;
 create table order_item (
   id integer not null auto_increment,
   -- foreign key to product
