@@ -1,0 +1,214 @@
+package Constants;
+use strict;
+
+use vars qw(@EXPORT_OK %EXPORT_TAGS @ISA $VERSION 
+$DBD $DB $UN $PW $D_00 $D_99 $D_XX
+$L_ID $TMPLDIR $IMAGEDIR $SEP $URLBASE $SECURLBASE %LEVEL_DEFAULTS $BASEDIR
+$MAXPHRASE $CONTENTBASE $SHOPID $PRODUCTPARENT $DATADIR $LINK_TITLES 
+@SEARCH_EXCLUDE @SEARCH_INCLUDE $SEARCH_LEVEL $SEARCH_ALL
+%TEMPLATE_OPTS %EXTRA_TAGS @NO_DELETE
+$SHOP_MAIL_SUBJECT $SHOP_PASSPHRASE $SHOP_CRYPTO $SHOP_SIGNING_ID
+$SHOP_GPG $SHOP_PGP $SHOP_FROM $SHOP_TO_NAME $SHOP_TO_EMAIL $SHOP_SENDMAIL
+$SHOP_PGPE $SHOP_EMAIL_ORDER
+$ROOT_URI $ARTICLE_URI $SHOP_URI $CGI_URI $ADMIN_URI $IMAGES_URI);
+
+$VERSION = 0.1;
+
+require Exporter;
+@ISA = qw/Exporter/;
+@EXPORT_OK = qw/$DBD $DB $UN $PW $D_00 $D_99 $D_XX $L_ID $TMPLDIR $SEP 
+$IMAGEDIR $URLBASE $SECURLBASE %LEVEL_DEFAULTS $BASEDIR $MAXPHRASE 
+$CONTENTBASE $SHOPID $PRODUCTPARENT $DATADIR $LINK_TITLES 
+@SEARCH_EXCLUDE @SEARCH_INCLUDE $SEARCH_LEVEL $SEARCH_ALL
+%TEMPLATE_OPTS %EXTRA_TAGS @NO_DELETE
+$SHOP_MAIL_SUBJECT $SHOP_PASSPHRASE $SHOP_CRYPTO 
+$SHOP_SIGNING_ID $SHOP_GPG $SHOP_PGP $SHOP_FROM 
+$SHOP_TO_NAME $SHOP_TO_EMAIL $SHOP_EMAIL_ORDER $SHOP_SENDMAIL $SHOP_PGPE
+$ROOT_URI $ARTICLE_URI $SHOP_URI $CGI_URI $ADMIN_URI $IMAGES_URI/;
+
+%EXPORT_TAGS =
+  (
+   shop=> [ qw/$SHOP_MAIL_SUBJECT $SHOP_PASSPHRASE $SHOP_CRYPTO 
+               $SHOP_SIGNING_ID $SHOP_GPG $SHOP_PGP $SHOP_FROM 
+               $SHOP_TO_NAME $SHOP_TO_EMAIL $SHOP_SENDMAIL $SHOP_PGPE
+               $SHOP_EMAIL_ORDER $SHOP_URI/ ]
+  );
+
+$DBD = 'mysql';
+
+$DB = 'bse';
+
+$UN = 'root';
+$PW = '';
+
+$L_ID = 'mysql_insertid';
+
+# base directory of the site
+$BASEDIR = '/home/httpd/html/common/work/bse/site';
+
+# where we keep templates
+$TMPLDIR = $BASEDIR.'/templates/';
+
+# where the html is kept
+$CONTENTBASE = $BASEDIR . '/htdocs/';
+
+# where we keep images
+$IMAGEDIR = $CONTENTBASE.'images/';
+
+# where we keep some data files (like stopwords.txt)
+$DATADIR = $BASEDIR.'/data/';
+
+# how the outside world sees our site
+$URLBASE = "http://bse.earth";
+$SECURLBASE = "http://sec.bse.earth";
+
+# the base directories for articles and the shop
+# relative to $CONTENTBASE except for $CGI_URI
+# you shouldn't need to modify these
+$ROOT_URI = '/';
+$ARTICLE_URI = $ROOT_URI."a";
+$SHOP_URI = $ROOT_URI."shop";
+$ADMIN_URI = $ROOT_URI."admin/";
+$IMAGES_URI = $ROOT_URI."images";
+$CGI_URI = "/cgi-bin";
+
+# level defaults
+%LEVEL_DEFAULTS = 
+  (
+   0=>{
+       display=>"Your Site",
+      },
+    
+   1=>{
+       threshold=>1,
+       template=>'1/default.tmpl',
+       display=>'Section',
+      },
+   2=>{
+       threshold=>3,
+       template=>'2/default.tmpl',
+       display=>'Subsection',
+      },
+   3=>{
+       threshold=>100000,
+       template=>'3/default.tmpl',
+       display=>'Article',
+      },
+   4=>{
+       threshold=>10,
+       template=>'4/default.tmpl',
+       display=>'Response',
+      },
+   5=>{
+       threshold=>10,
+       template=>'5/default.tmpl',
+       display=>"Sub-response",
+      },
+  );
+
+# set this to zero to disable adding titles to the end of links
+# eg. with this on, if article id 5 has a title of "hello world", then
+# links to it will be: /a/5.html/hello_world
+# the aim of this is if a search engine indexes on the url, it has something
+# useful to index on
+# To make this work with Apache, put the following in the .htaccess file
+# in the /a/ directory:
+#   RewriteEngine On
+#   RewriteRule ^([0-9]+\.html)/[0-9a-zA-Z_]*$ ./$1 [T=text/html]
+$LINK_TITLES = 0;
+
+# sections to exclude from the search
+@SEARCH_EXCLUDE = ( 1 );
+
+# sections to include in the search section drop-down, even if unlisted
+@SEARCH_INCLUDE = ();
+
+# any articles with a higher level than this are indexed as their ancestor 
+# at this level
+$SEARCH_LEVEL = 3;
+
+# used to mean "all of site" in the search section drop-down
+$SEARCH_ALL = "All Sections";
+
+# defines extra tags added to the tags defined by Generate.pm
+# constants are converted to subs automatically
+# you cannot override existing tags
+%EXTRA_TAGS =
+  (
+   siteName => 'My Site',
+  );
+
+# articles that cannot be deleted
+# you don't need to include the shop ids here, they are always 
+# protected
+@NO_DELETE = ( 1, 2 );
+
+# shop configuration
+
+# the cryto module used to encrypt your copy of the order
+# this can also be Squirrel::PGP5 or Squirrel::PGP6, at least if they
+# work...
+$SHOP_CRYPTO = 'Squirrel::GPG';
+
+# the passphrase for the secret key used to sign your copy of the order
+$SHOP_PASSPHRASE = "";
+
+# the id of the key
+$SHOP_SIGNING_ID = '0x00000000';
+
+# the path to the gpg program (if it isn't in the PATH)
+# (only for Squirrel::GPG)
+$SHOP_GPG = 'gpg';
+
+# the path to the pgp program (if it isn't in the PATH)
+# (only for Squirrel::PGP6)
+$SHOP_PGP = 'pgp';
+
+# the path to the pgpe program (if it isn't in the PATH)
+# (only for Squirrel::PGP5)
+$SHOP_PGPE = 'pgpe';
+
+# where to find sendmail (or something compatible)
+$SHOP_SENDMAIL = '/usr/lib/sendmail';
+
+# subject for the email sent to customers upon filling in an order
+$SHOP_MAIL_SUBJECT = "Your (web site) order";
+
+# name used in the From line for both the order emails
+$SHOP_FROM = 'you@yoursite.com';
+
+# the name/email your copy of emailled orders should be sent to
+$SHOP_TO_NAME = 'Your Name';
+$SHOP_TO_EMAIL = 'sales@yoursite.com';
+
+# non-zero if we should email an encrypted order to $SHOP_TO_EMAIL
+$SHOP_EMAIL_ORDER = 0;
+
+###########################################################
+### *** You should not need to modify the following *** ###
+###########################################################
+
+# maximum phrase length indexed
+$MAXPHRASE = 5;
+
+# the article (section) which is the online-store
+# used to link to the shop
+$SHOPID = 3;
+
+# article that acts as the parent for products
+# this must be the only child of $SHOPID
+$PRODUCTPARENT = 4;
+
+
+$SEP = "\x01";
+
+$D_00 = '0000-00-00 00:00:00' ;
+$D_99 = '9999-12-31 23:59:59' ;
+
+use POSIX qw/strftime/; 
+$D_XX = sub { strftime "%Y-%m-%d %H:%M:%S" => (localtime)[0..5] };
+
+%TEMPLATE_OPTS = ( template_dir => $TMPLDIR );
+
+
+1;
