@@ -54,7 +54,7 @@ my $sessionid;
 $sessionid = $cookies{sessionid}->value if exists $cookies{sessionid};
 my %session;
 
-my $dh = single DatabaseHandle;
+my $dh = BSE::DB->single;
 eval {
   tie %session, 'Apache::Session::MySQL', $sessionid,
     {
@@ -121,6 +121,12 @@ sub add_item {
   my $product;
   $product = Products->getByPkey($addid) if $addid;
   $product or return show_cart(); # oops
+
+  # collect the product options
+  my @options = map scalar param($_), split /,/, $product->{options};
+  grep(!defined, @options) 
+    and return show_cart(); # invalid parameter
+  my $options = join(",", @options);
   
   # the product must be non-expired and listed
   my $today = epoch_to_sql(time);
@@ -135,9 +141,12 @@ sub add_item {
   my @cart = @{$session{cart}};
  
   # if this is is already present, replace it
-  @cart = grep { $_->{productId} ne $addid } @cart;
+  @cart = grep { $_->{productId} ne $addid || $_->{options} ne $options } 
+    @cart;
   push(@cart, { productId => $addid, units => $quantity, 
-		price=>$product->{retailPrice} });
+		price=>$product->{retailPrice},
+		options=>$options });
+
   $session{cart} = \@cart;
   show_cart();
 }
@@ -153,15 +162,63 @@ sub total {
   return $total;
 }
 
+sub cart_item_opts {
+  my ($cart_item, $product) = @_;
+
+  my @options = ();
+  my @values = split /,/, $cart_item->{options};
+  my @ids = split /,/, $product->{options};
+  for my $opt_index (0 .. $#ids) {
+    my $entry = $SHOP_PRODUCT_OPTS{$ids[$opt_index]};
+    my $option = {
+		  id=>$ids[$opt_index],
+		  value=>$values[$opt_index],
+		  desc => $entry->{desc} || $ids[$opt_index],
+		 };
+    if ($entry->{labels}) {
+      $option->{label} = $entry->{labels}{$values[$opt_index]};
+    }
+    else {
+      $option->{label} = $option->{value};
+    }
+    push(@options, $option);
+  }
+
+  return @options;
+}
+
+sub nice_options {
+  my (@options) = @_;
+
+  if (@options) {
+    return '('.join(", ", map("$_->{desc} $_->{label}", @options)).')';
+  }
+  else {
+    return '';
+  }
+}
+
 sub show_cart {
   my @cart = @{$session{cart}};
   my @cart_prods = map { Products->getByPkey($_->{productId}) } @cart;
   my $item_index = -1;
+  my @options;
+  my $option_index;
 
   my %acts;
   %acts =
     (
-     iterate_items => sub { ++$item_index < @cart },
+     iterate_items_reset => sub { $item_index = -1; },
+     iterate_items => 
+     sub { 
+       if (++$item_index < @cart) {
+	 $option_index = -1;
+	 @options = cart_item_opts($cart[$item_index], 
+				   $cart_prods[$item_index]);
+	 return 1;
+       }
+       return 0;
+     },
      item => 
      sub { $cart[$item_index]{$_[0]} || $cart_prods[$item_index]{$_[0]} },
      index => sub { $item_index },
@@ -173,6 +230,11 @@ sub show_cart {
        return sprintf("%.02f", $acts{$func}->($args)/100);
      },
      count => sub { scalar @cart },
+     iterate_options_reset => sub { $option_index = -1 },
+     iterate_options => sub { ++$option_index < @options },
+     option => sub { CGI::escapeHTML($options[$option_index]{$_[0]}) },
+     ifOptions => sub { @options },
+     options => sub { nice_options(@options) },
     );
   page('cart.tmpl', \%acts);
 }
@@ -224,10 +286,22 @@ sub checkout {
   my @cart = @{$session{cart}};
   my @cart_prods = map { Products->getByPkey($_->{productId}) } @cart;
   my $item_index = -1;
+  my @options;
+  my $option_index;
   my %acts;
   %acts =
     (
-     iterate_items => sub { ++$item_index < @cart },
+     iterate_items_reset => sub { $item_index = -1 },
+     iterate_items => 
+     sub { 
+       if (++$item_index < @cart) {
+	 $option_index = -1;
+	 @options = cart_item_opts($cart[$item_index], 
+				   $cart_prods[$item_index]);
+	 return 1;
+       }
+       return 0;
+     },
      item => 
      sub { $cart[$item_index]{$_[0]} || $cart_prods[$item_index]{$_[0]} },
      index => sub { $item_index },
@@ -241,6 +315,11 @@ sub checkout {
      count => sub { scalar @cart },
      message => sub { $message },
      old => sub { $olddata ? param($_[0]) : '' },
+     iterate_options_reset => sub { $option_index = -1 },
+     iterate_options => sub { ++$option_index < @options },
+     option => sub { CGI::escapeHTML($options[$option_index]{$_[0]}) },
+     ifOptions => sub { @options },
+     options => sub { nice_options(@options) },
     );
 
   page('checkout.tmpl', \%acts);
@@ -352,11 +431,22 @@ sub purchase {
   }
 
   my $item_index = -1;
+  my @options;
+  my $option_index;
   my %acts;
   %acts =
     (
      iterate_items_reset => sub { $item_index = -1; },
-     iterate_items => sub { ++$item_index < @items },
+     iterate_items => 
+     sub { 
+       if (++$item_index < @items) {
+	 $option_index = -1;
+	 @options = cart_item_opts($items[$item_index], 
+				   $products[$item_index]);
+	 return 1;
+       }
+       return 0;
+     },
      item=> sub { CGI::escapeHTML($items[$item_index]{$_[0]}); },
      product => sub { CGI::escapeHTML($products[$item_index]{$_[0]}) },
      order => sub { CGI::escapeHTML($order->{$_[0]}) },
@@ -376,6 +466,11 @@ sub purchase {
 	 return sprintf($fmt, $value);
        }
      },
+     iterate_options_reset => sub { $option_index = -1 },
+     iterate_options => sub { ++$option_index < @options },
+     option => sub { CGI::escapeHTML($options[$option_index]{$_[0]}) },
+     ifOptions => sub { @options },
+     options => sub { nice_options(@options) },
     );
   send_order($order, \@items, \@products);
   $session{cart} = []; # empty the cart
@@ -396,13 +491,24 @@ sub send_order {
   }
 
   my $item_index = -1;
+  my @options;
+  my $option_index;
   my %acts;
   %acts =
     (
      %extras,
 
      iterate_items_reset => sub { $item_index = -1; },
-     iterate_items => sub { return ++$item_index < @$items },
+     iterate_items => 
+     sub { 
+       if (++$item_index < @$items) {
+	 $option_index = -1;
+	 @options = cart_item_opts($items->[$item_index], 
+				   $products->[$item_index]);
+	 return 1;
+       }
+       return 0;
+     },
      item=> sub { $items->[$item_index]{$_[0]}; },
      product => sub { $products->[$item_index]{$_[0]} },
      order => sub { $order->{$_[0]} },
@@ -432,6 +538,11 @@ sub send_order {
 	 return $value;
        }
      },
+     iterate_options_reset => sub { $option_index = -1 },
+     iterate_options => sub { ++$option_index < @options },
+     option => sub { CGI::escapeHTML($options[$option_index]{$_[0]}) },
+     ifOptions => sub { @options },
+     options => sub { nice_options(@options) },
     );
   my $templ = Squirrel::Template->new;
 
@@ -758,6 +869,58 @@ The wholesale price for the product.
 =item gst
 
 The gst for the product.
+
+=back
+
+=head2 Options
+
+New with 0.10_04 is the facility to set options for each product.
+
+The cart, checkout and checkoutfinal pages now include the following
+tags:
+
+=over
+
+=item iterator ... options
+
+within an item, iterates over the options for this item in the cart.
+Sets the item tag.
+
+=item option field
+
+Retrieves the given field from the option, possible field names are:
+
+=over
+
+=item id
+
+The type/identifier for this option.  eg. msize for a male clothing
+size field.
+
+=item value
+
+The underlying value of the option, eg. XL.
+
+=item desc
+
+The description of the field from the product options hash.  If the
+description isn't defined this is the same as the id. eg. Size.
+
+=item label
+
+The description of the value from the product options hash.
+eg. "Extra large".
+
+=back
+
+=item ifOptions
+
+A conditional tag, true if the current cart item has any options.
+
+=item options
+
+A simple rendering of the options as a parenthesized comma-separated
+list.
 
 =back
 
