@@ -42,15 +42,14 @@ sub summarize {
     $text .= '...';
   }
 
-  return $self->format_body({}, $articles, $text, 'tr');
+  return $self->format_body({}, $articles, $text, 'tr', 0);
 }
 
 sub make_article_body {
-  my ($self, $acts, $articles, $article) = @_;
+  my ($self, $acts, $articles, $article, $auto_images, @images) = @_;
 
-  my @images = Images->getBy('articleId', $article->{id});
-
-  return $self->format_body($acts, $articles, @$article{qw/body imagePos/}, @images);
+  return $self->format_body($acts, $articles, @$article{qw/body imagePos/}, 
+			    $auto_images, @images);
 }
 
 sub link_to_form {
@@ -106,6 +105,10 @@ sub baseActs {
 
   my $parent = $articles->getByPkey($article->{parentid});
   my $section = $crumbs[0];
+
+  my @images = Images->getBy('articleId', $article->{id});
+  my $image_index = -1;
+  my $had_image_tags = 0;
 
   # separate these so the closures can see %acts
   my %acts =
@@ -230,7 +233,8 @@ HTML
 
      # transform the article or response body (entities, images)
      body=>sub {
-       return $self->make_article_body($acts, $articles, $article);
+       return $self->make_article_body($acts, $articles, $article,
+				       !$had_image_tags, @images);
      },
 
      # used to display a navigation path of parent sections
@@ -298,6 +302,37 @@ HTML
        my $arg = shift;
        $arg && $acts->{$arg} && $acts->{$arg}->('id') == $article->{id};
      },
+     
+     # access to images, if any
+     iterate_images_reset => sub { $image_index = -1 },
+     iterate_images => sub { $had_image_tags = 1; ++$image_index < @images },
+     image =>
+     sub {
+       my ($which, $align) = split ' ', $_[0];
+
+       $had_image_tags = 1;
+       my $im;
+       if (defined $which && $which =~ /^\d+$/ && $which >=1 
+	   && $which <= @images) {
+	 $im = $images[$which];
+       }
+       else {
+	 $im = $images[$image_index];
+       }
+       my $html;
+       if ($align && exists $im->{$align}) {
+	 $html = CGI::escapeHTML($im->{$align});
+       }
+       else {
+	 $html = qq!<img src="/images/$im->{image}" width="$im->{width}"!
+	   . qq! height="$im->{height}" alt="! . CGI::escapeHTML($im->{alt});
+	 $html .= qq! align="$align"! if $align && $align ne '-';
+	 $html .= qq!" />!;
+       }
+       return $html;
+     },
+     ifImage => sub { $_[0] >= 1 && $_[0] <= @images },
+     ifImages => sub { @images },
     );
 
   if ($article->{link} =~ /^\w+:/) {
@@ -475,6 +510,62 @@ now.
 
 Conditional tag, true if the given I<which> is the page currently
 being generated.
+
+=item iterator ... images
+
+Iterates over the images for the given article.
+
+=item image which field
+
+Extracts the given field from the specified image.
+
+I<which> in this can be either an image index to access a specific
+image, or "-" to access the current image in the images iterator.
+
+The image fields are:
+
+=over
+
+=item articleId
+
+The identifier of the article the image belongs to.
+
+=item image
+
+A partial url of the image, relative to /images/.
+
+=item alt
+
+Alternative text of the image.
+
+=item width
+
+=item height
+
+dimensions of the image.
+
+=back
+
+=item image which align
+
+=item image which
+
+=item image
+
+Produces HTML to render the given image.
+
+I<which> can be an image index (1, 2, 3...) to select one of the
+images from the current article, or '-' or omitted to select the
+current image from the images iterator.  If align is present then the
+C<align> attribute of the image is set.
+
+=item ifImage imageindex
+
+Condition tag, true if an image exists at the given index.
+
+=item ifImages
+
+Conditional tag, true if the article has any images.
 
 =item embed child
 
