@@ -10,6 +10,26 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.10_13
+
+=over
+
+=item *
+
+remove the border from embedded images with a url
+
+=item *
+
+fixed an old bug that defaulted the threshold from the template (oops)
+
+=item *
+
+the ... in <:image which align ...:> or <:image which field ...:> is
+now appended to the attributes of the image field.  If it includes a
+border attribute the default border attribute is suppressed.
+
+=back
+
 =head2 0.10_12
 
 =over

@@ -342,7 +342,7 @@ sub format_body {
 
 	# assuming 5.005_03 would make this simpler, but <sigh>
 	my $img = qq!<img src="/images/$image->{image}"!
-	  .qq! width="$image->{width}" height="$image->{height}"!
+	  .qq! width="$image->{width}" height="$image->{height}" border="0"!
 	    .qq! alt="$image->{alt}" align="$align" hspace="10" vspace="10">!;
 	if ($image->{url}) {
 	  $img = qq!<a href="$image->{url}">$img</a>!;
@@ -362,7 +362,7 @@ sub format_body {
 
 	substr($body, $workpos, 0) = <<IMG;
 <img src="/images/$image->{image}" width="$image->{width}" height="$image->{height}"
-alt="$image->{alt}" align="$align" hspace="10" vspace="10">
+border="0" alt="$image->{alt}" align="$align" hspace="10" vspace="10">
 IMG
 	$pos -= $incr;
 	$align = $align eq 'right' ? 'left' : 'right';

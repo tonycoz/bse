@@ -318,7 +318,7 @@ HTML
      iterate_images => sub { $had_image_tags = 1; ++$image_index < @images },
      image =>
      sub {
-       my ($which, $align) = split ' ', $_[0];
+       my ($which, $align, $rest) = split ' ', $_[0], 3;
 
        $had_image_tags = 1;
        my $im;
@@ -337,6 +337,10 @@ HTML
 	 $html = qq!<img src="/images/$im->{image}" width="$im->{width}"!
 	   . qq! height="$im->{height}" alt="! . CGI::escapeHTML($im->{alt});
 	 $html .= qq! align="$align"! if $align && $align ne '-';
+         unless (defined($rest) && $rest =~ /\bborder=/i) {
+           $html .= ' border="0"';
+         }
+         $html .= " $rest" if defined $rest;
 	 $html .= qq!" />!;
 	 if ($im->{url}) {
 	   $html = qq!<a href="$im->{url}">$html</a>!;

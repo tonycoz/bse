@@ -11,9 +11,7 @@ use Images;
 use Image;
 use Squirrel::Template;
 use CGI qw(:standard);
-#use CGI::Carp qw(fatalsToBrowser);
 use CGI::Cookie;
-#use Apache::Session::MySQL;
 require $SESSION_REQUIRE;
 use BSE::DB;
 use Carp 'verbose';
@@ -402,7 +400,7 @@ sub save_new_article {
       if !defined $data{summaryLength} || $data{summaryLength} =~ /^\s*$/;
   }
   else {
-    $data{threshold} = $levels{$level}{template}
+    $data{threshold} = $levels{$level}{threshold}
       if !defined $data{threshold} || $data{threshold} =~ /^\s*$/;
     $data{summaryLength} = 200
       if !defined $data{summaryLength} || $data{summaryLength} =~ /^\s*$/;
