@@ -187,6 +187,14 @@
           <input type="text" name="facsimile" value="<:last facsimile:>" size="32" maxlength="80" /><:error_img facsimile:>
         </td>
       </tr>
+<:ifCfg affiliate prompt_name 0:>
+      <tr> 
+        <th nowrap="nowrap" align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Affiliate Name:</font></b></th>
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="affiliate_name" value="<:last affiliate_name:>" size="40" maxlength="40" /><:error_img affiliate_name:>
+        </td>
+      </tr>
+<:or:><:eif:>
 <:if Cfg "site users" billing_on_main_opts 1:>
       <tr> 
         <td colspan="2" height="20"><br>

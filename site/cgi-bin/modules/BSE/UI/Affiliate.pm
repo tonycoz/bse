@@ -26,6 +26,10 @@ BSE::UI::Affiliate - set the affiliate code for new orders or display a user inf
 
 http://your.site.com/cgi-bin/affiliate.pl?id=I<number>
 
+http://your.site.com/cgi-bin/affiliate.pl?lo=I<logon>
+
+http://your.site.com/cgi-bin/affiliate.pl?co=I<affiliate name>
+
 # set the stored affiliate code and refresh to the top of the site
 
 http://your.site.com/cgi-bin/affiliate.pl?a_set=1&id=I<code>
@@ -82,7 +86,7 @@ sub req_set {
     my @allowed = split /;/, $allowed_referer;
     my $referer = $ENV{HTTP_REFERER};
     if ($referer) {
-      my ($domain) = ($referer =~ m!^\w+://([\w/]+)!);
+      my ($domain) = ($referer =~ m!^\w+://([\w.]+)!);
       $domain = lc $domain;
       my $found = 0;
       for my $entry (@allowed) {
@@ -178,7 +182,9 @@ sub req_set2 {
 
 =item a_show
 
-Display the affiliate page based on a user id number.
+Display the affiliate page based on a either a user id number supplied
+in the C<id> paramater, a logon name supplied in the C<lo> parameter
+or an affiliate name supplied in the C<co> parameter.
 
 This is the default target, so you do not need to supply a target
 parameter.
@@ -198,11 +204,23 @@ sub req_show {
   my $cgi = $req->cgi;
   my $cfg = $req->cfg;
 
-  my $id = $cgi->param('id');
-  defined $id
-    or return $class->req_none($req, "No identifier supplied");
   require SiteUsers;
-  my $user = SiteUsers->getByPkey($id);
+  my $user;
+  my $id = $cgi->param('id');
+  my $lo = $cgi->param('lo');
+  my $co = $cgi->param('co');
+  if (defined $id && length $id && $id =~ /^\d+$/) {
+    $user = SiteUsers->getByPkey($id);
+  }
+  elsif (defined $lo && length $lo && $lo =~ /^\w+$/) {
+    $user = SiteUsers->getBy(userId => $lo);
+  }
+  elsif (defined $co && length $co && $co =~ /^\w+$/) {
+    $user = SiteUsers->getBy(affiliate_name => $co);
+  }
+  else {
+    return $class->req_none($req, "No identifier supplied");
+  }
   $user
     or return $class->req_none($req, "Unknown user");
 #  require BSE::TB::Subscriptions;

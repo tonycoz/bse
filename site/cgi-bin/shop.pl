@@ -19,6 +19,7 @@ use BSE::Shop::Util qw/shop_cart_tags cart_item_opts nice_options total
 use BSE::Session;
 use BSE::Cfg;
 use BSE::Util::Tags qw(tag_hash);
+use DevHelp::HTML;
 
 my $cfg = BSE::Cfg->new();
 
@@ -321,6 +322,9 @@ sub checkout {
   $olddata and $payment = param('paymentType');
   defined $payment or $payment = $payment_types[0];
 
+  my $affiliate_code = $session{affiliate_code};
+  defined $affiliate_code or $affiliate_code = '';
+
   my $item_index = -1;
   my @options;
   my $option_index;
@@ -356,6 +360,7 @@ sub checkout {
      user => $user ? [ \&tag_hash, $user ] : '',
      checkedPayment => [ \&tag_checkedPayment, $payment, \%types_by_name ],
      ifPayments => [ \&tag_ifPayments, \@payment_types, \%types_by_name ],
+     affiliate_code => escape_html($affiliate_code),
     );
   for my $type (@pay_types) {
     my $id = $type->{id};
@@ -400,205 +405,6 @@ sub checkout_confirm {
     );
   page('checkoutconfirm.tmpl', \%acts);
 }
-
-# this can be used instead of the purchase page to work in 2 steps:
-#  - collect shipping details
-#  - collect CC details
-# the collection of the CC details should go to another script that 
-# processes the CC information and then displays the order complete
-# information
-# BUG!!: this duplicates the code in purchase() a great deal
-# sub prePurchase {
-
-#   my $cust_class = custom_class($cfg);
-#   my @required = $cust_class->required_fields($CGI::Q, $session{custom}, $cfg);
-#   for my $field (@required) {
-#     defined(param($field)) && length(param($field))
-#       or return checkout("Field $field is required", 1);
-#   }
-#   if (grep /email/, @required) {
-#     defined(param('email')) && param('email') =~ /.\@./
-#       or return checkout("Please enter a valid email address", 1);
-#   }
-  
-#   use BSE::TB::Orders;
-#   use BSE::TB::OrderItems;
-
-#   # map some form fields to order field names
-#   my %field_map = 
-#     (
-#      name1 => 'delivFirstName',
-#      name2 => 'delivLastName',
-#      address => 'delivStreet',
-#      city => 'delivSuburb',
-#      postcode => 'delivPostCode',
-#      state => 'delivState',
-#      country => 'delivCountry',
-#      email => 'emailAddress',
-#      cardHolder => 'ccName',
-#      cardType => 'ccType',
-#     );
-#   # paranoia, don't store these
-#   my %nostore =
-#     (
-#      cardNumber => 1,
-#      cardExpiry => 1,
-#     );
-#   my %order;
-#   my @cart = @{$session{cart}};
-#   @cart or return show_cart('You have no items in your shopping cart');
-
-#   # so we can quickly check for columns
-#   my @columns = BSE::TB::Order->columns;
-#   my %columns; 
-#   @columns{@columns} = @columns;
-
-#   for my $field (param()) {
-#     $order{$field_map{$field} || $field} = param($field)
-#       unless $nostore{$field};
-#   }
-
-#   my $ccNumber = param('cardNumber');
-#   my $ccExpiry = param('cardExpiry');
-
-#   use Digest::MD5 'md5_hex';
-#   $ccNumber =~ tr/0-9//cd;
-#   $order{ccNumberHash} = md5_hex($ccNumber);
-#   $order{ccExpiryHash} = md5_hex($ccExpiry);
-
-#   # work out totals
-#   $order{total} = 0;
-#   $order{gst} = 0;
-#   $order{wholesale} = 0;
-#   my @products;
-#   my $today = epoch_to_sql(time);
-#   for my $item (@cart) {
-#     my $product = Products->getByPkey($item->{productId});
-#     # double check that it's still a valid product
-#     if (!$product) {
-#       return show_cart("Product $item->{productId} not found");
-#     }
-#     else {
-#       (my $comp_release = $product->{release}) =~ s/ .*//;
-#       (my $comp_expire = $product->{expire}) =~ s/ .*//;
-#       $comp_release le $today
-# 	or return show_cart("'$product->{title}' has not been released yet");
-#       $today le $comp_expire
-# 	or return show_cart("'$product->{title}' has expired");
-#       $product->{listed} 
-# 	or return show_cart("'$product->{title}' not available");
-#     }
-#     push(@products, $product); # used in page rendering
-#     @$item{qw/price wholesalePrice gst/} = 
-#       @$product{qw/retailPrice wholesalePrice gst/};
-#     $order{total} += $item->{price} * $item->{units};
-#     $order{wholesale} += $item->{wholesalePrice} * $item->{units};
-#     $order{gst} += $item->{gst} * $item->{units};
-#   }
-#   use BSE::Util::SQL qw(now_sqldatetime);
-#   $order{orderDate} = now_sqldatetime();
-
-#   if (my ($msg, $id) = need_logon($cfg, \@cart, \@products, \%session, $CGI::Q)) {
-#     refresh_logon($msg, $id);
-#     return;
-#   }
-
-#   $order{total} += $cust_class->total_extras(\@cart, \@products, 
-# 					     $session{custom}, $cfg, 'final');
-#   ++$session{changed};
-#   # blank anything else
-#   for my $column (@columns) {
-#     defined $order{$column} or $order{$column} = '';
-#   }
-#   # make sure the user can't set these behind our backs
-#   $order{filled} = 0;
-#   $order{paidFor} = 0;
-  
-#   # this should be hard to guess
-#   $order{randomId} = md5_hex(time().rand().{}.$$);
-
-#   # check if a customizer has anything to do
-#   eval {
-#     $cust_class->order_save($CGI::Q, \%order, \@cart, \@products, 
-# 			    $session{custom}, $cfg);
-#     ++$session{changed};
-#   };
-#   if ($@) {
-#     return checkout($@, 1);
-#   }
-
-#   # load up the database
-#   my @data = @order{@columns};
-#   shift @data; # lose the dummy id
-#   my $order = BSE::TB::Orders->add(@data)
-#     or die "Cannot add order";
-#   my @items;
-#   my @item_cols = BSE::TB::OrderItem->columns;
-#   for my $row (@cart) {
-#     $row->{orderId} = $order->{id};
-#     my @data = @$row{@item_cols};
-#     shift @data;
-#     push(@items, BSE::TB::OrderItems->add(@data));
-#   }
-
-#   my $item_index = -1;
-#   my @options;
-#   my $option_index;
-#   my %acts;
-#   %acts =
-#     (
-#      iterate_items_reset => sub { $item_index = -1; },
-#      iterate_items => 
-#      sub { 
-#        if (++$item_index < @items) {
-# 	 $option_index = -1;
-# 	 @options = cart_item_opts($items[$item_index], 
-# 				   $products[$item_index]);
-# 	 return 1;
-#        }
-#        return 0;
-#      },
-#      item=> sub { CGI::escapeHTML($items[$item_index]{$_[0]}); },
-#      product => 
-#      sub { 
-#        my $value = $products[$item_index]{$_[0]};
-#        defined($value) or $value = '';
-#        CGI::escapeHTML($value);
-#      },
-#      extended =>
-#      sub { 
-#        my $what = $_[0] || 'retailPrice';
-#        $items[$item_index]{units} * $items[$item_index]{$what};
-#      },
-#      order => sub { CGI::escapeHTML($order->{$_[0]}) },
-#      money =>
-#      sub {
-#        my ($func, $args) = split ' ', $_[0], 2;
-#        $acts{$func} || return "<: money $_[0] :>";
-#        return sprintf("%.02f", $acts{$func}->($args)/100);
-#      },
-#      old => sub { '' },
-#      _format =>
-#      sub {
-#        my ($value, $fmt) = @_;
-#        if ($fmt =~ /^m(\d+)/) {
-# 	 return sprintf("%$1s", sprintf("%.2f", $value/100));
-#        }
-#        elsif ($fmt =~ /%/) {
-# 	 return sprintf($fmt, $value);
-#        }
-#      },
-#      iterate_options_reset => sub { $option_index = -1 },
-#      iterate_options => sub { ++$option_index < @options },
-#      option => sub { CGI::escapeHTML($options[$option_index]{$_[0]}) },
-#      ifOptions => sub { @options },
-#      options => sub { nice_options(@options) },
-#     );
-#   # this should be reset once the order has been paid
-#   $session{orderPayment} = $order->{id};
-  
-#   page('checkoutcard.tmpl', \%acts);
-# }
 
 sub tag_ifPayment {
   my ($payment, $types_by_name, $args) = @_;
@@ -702,8 +508,11 @@ sub purchase {
   defined $ccNumber or $ccNumber = '';
   my $ccExpiry = param('cardExpiry');
   defined $ccExpiry or $ccExpiry = '';
-  $order{affiliate_code} = defined $session{affiliate_code} ?
-    $session{affiliate_code} : '';
+  my $affiliate_code = $session{affiliate_code};
+  defined $affiliate_code && length $affiliate_code
+    or $affiliate_code = param('affiliate_code');
+  defined $affiliate_code or $affiliate_code = '';
+  $order{affiliate_code} = $affiliate_code;
 
   use Digest::MD5 'md5_hex';
   $ccNumber =~ tr/0-9//cd;
@@ -762,9 +571,11 @@ sub purchase {
   my $user = get_siteuser(\%session, $cfg, $CGI::Q);
   if ($user) {
     $order{userId} = $user->{userId};
+    $order{siteuser_id} = $user->{id};
   }
   else {
     $order{userId} = '';
+    $order{siteuser_id} = -1;
   }
 
   # this should be hard to guess

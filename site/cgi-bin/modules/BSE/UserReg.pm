@@ -17,7 +17,7 @@ use BSE::WebUtil qw/refresh_to/;
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
 
-my @donttouch = qw(id userId password email confirmed confirmSecret waitingForConfirmation disabled flags);
+my @donttouch = qw(id userId password email confirmed confirmSecret waitingForConfirmation disabled flags affiliate_name);
 my %donttouch = map { $_, $_ } @donttouch;
 
 sub user_tags {
@@ -523,6 +523,26 @@ sub saveopts {
       }
     }
   }
+
+  my $aff_name = $cgi->param('affiliate_name');
+  if (defined $aff_name && length $aff_name) {
+    if ($aff_name =~ /^\s*\w+\s*$/) {
+      $aff_name =~ s/^\s+|\s+$//g;
+      my $other = SiteUsers->getBy(affiliate_name => $aff_name);
+      if ($other) {
+	$errors{affiliate_name} = $msgs->(dupaffiliatename =>
+					  "affiliate name $aff_name is already in use", $aff_name);
+      }
+    }
+    else {
+      $errors{affiliate_name} = $msgs->(badaffiliatename =>
+					"invalid affiliate name, no spaces or special characters are allowed");
+    }
+  }
+  else {
+    undef $aff_name;
+  }
+
   keys %errors
     and return $self->show_opts($session, $cgi, $cfg, undef, \%errors);
   my $newemail;
@@ -534,6 +554,8 @@ sub saveopts {
     ++$newemail;
   }
   $user->{password} = $newpass if !$nopassword && $newpass;
+
+  $user->{affiliate_name} = $aff_name if defined $aff_name;
   
   for my $col (@cols) {
     my $value = $cgi->param($col);

@@ -20,7 +20,8 @@ sub columns {
             billPostCode billCountry instructions billTelephone billFacsimile 
             billEmail adminNotes disabled flags
             customText1 customText2 customText3
-            customStr1 customStr2 customStr3/;
+            customStr1 customStr2 customStr3
+            affiliate_name/;
 }
 
 sub removeSubscriptions {
@@ -176,5 +177,84 @@ sub subscribed_to_grace {
 
   return; # PH for now, not subscribed
 }
+
+my @image_cols = 
+  qw(siteuser_id image_id filename width height bytes content_type alt);
+
+sub images_cfg {
+  my ($self, $cfg) = @_;
+
+  my @images;
+  my %ids = $cfg->entries('BSE Siteuser Images');
+  for my $id (keys %ids) {
+    my %image = ( id => $id );
+
+    my $sect = "BSE Siteuser Image $id";
+    for my $key (qw(description help minwidth minheight maxwidth maxheight
+                    minratio maxratio properror 
+                    widthsmallerror heightsmallerror smallerror
+                    widthlargeerror heightlargeerror largeerror
+                    maxspace spaceerror)) {
+      my $value = $cfg->entry($sect, $key);
+      if (defined $value) {
+	$image{$key} = $value;
+      }
+    }
+    push @images, \%image;
+  }
+  
+  @images;
+}
+
+sub images {
+  my ($self) = @_;
+
+  BSE::DB->query(getBSESiteuserImages => $self->{id});
+}
+
+sub get_image {
+  my ($self, $id) = @_;
+
+  my ($image) = BSE::DB->query(getBSESiteuserImage => $self->{id}, $id)
+    or return;
+
+  $image;
+}
+
+sub set_image {
+  my ($self, $cfg, $id, $image) = @_;
+
+  my %image = %$image;
+  $image{siteuser_id} = $self->{id};
+  my $old = $self->get_image($id);
+
+  if ($old) {
+    # replace it
+    BSE::DB->run(replaceBSESiteuserImage => @image{@image_cols});
+
+    # lose the old file
+    my $image_dir = $cfg->entryVar('paths', 'siteuser_images');
+    unlink "$image_dir/$old->{filename}";
+  }
+  else {
+    # add it
+    # replace it
+    BSE::DB->run(addBSESiteuserImage => @image{@image_cols});
+  }
+}
+
+sub remove_image {
+  my ($self, $cfg, $id) = @_;
+
+  if (my $old = $self->get_image($id)) {
+    # remove the entry
+    BSE::DB->run(deleteBSESiteuserImage => $self->{id}, $id);
+    
+    # lose the old file
+    my $image_dir = $cfg->entryVar('paths', 'siteuser_images');
+    unlink "$image_dir/$old->{filename}";
+  }
+}
+
 
 1;

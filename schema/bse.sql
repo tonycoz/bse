@@ -491,8 +491,11 @@ create table site_users (
   customStr2 varchar(255),
   customStr3 varchar(255),
 
+  affiliate_name varchar(40) not null default '',
+
   primary key (id),
-  unique (userId)
+  unique (userId),
+  index (affiliate_name)
 );
 
 -- this is used to track email addresses that we've sent subscription
@@ -616,4 +619,18 @@ create table admin_perms (
 --   ends_at date not null,
 --   primary key (subscription_id, siteuser_id)
 -- );
+
+drop table if exists bse_siteuser_images;
+create table bse_siteuser_images (
+  siteuser_id integer not null,
+  image_id varchar(20) not null,
+  filename varchar(80) not null,
+  width integer not null,
+  height integer not null,
+  bytes integer not null,
+  content_type varchar(80) not null,
+  alt varchar(255) not null,
+
+  primary key(siteuser_id, image_id)
+);
 

@@ -18,7 +18,7 @@ my %actions =
    add=>1,
   );
 
-my @donttouch = qw(id userId password email confirmed confirmSecret waitingForConfirmation flags); # flags is saved separately
+my @donttouch = qw(id userId password email confirmed confirmSecret waitingForConfirmation flags affiliate_name); # flags is saved separately
 my %donttouch = map { $_, $_ } @donttouch;
 
 sub dispatch {
@@ -301,6 +301,23 @@ sub req_save {
     }
   }
 
+  my $aff_name = $cgi->param('affiliate_name');
+  if (defined $aff_name && length $aff_name) {
+    if ($aff_name =~ /^\s*\w+\s*$/) {
+      $aff_name =~ s/^\s+|\s+$//g;
+      my $other = SiteUsers->getBy(affiliate_name => $aff_name);
+      if ($other) {
+	$errors{affiliate_name} = "affiliate name $aff_name is already in use";
+      }
+    }
+    else {
+      $errors{affiliate_name} = "invalid affiliate name, no spaces or special characters are allowed";
+    }
+  }
+  else {
+    undef $aff_name;
+  }
+
   keys %errors
     and return $class->req_edit($req, undef, \%errors);
   
@@ -313,6 +330,8 @@ sub req_save {
     ++$newemail;
   }
   $user->{password} = $newpass if !$nopassword && $newpass;
+  
+  $user->{affiliate_name} = $aff_name if defined $aff_name;
   
   for my $col (@cols) {
     my $value = $cgi->param($col);

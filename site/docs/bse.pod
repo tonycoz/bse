@@ -10,6 +10,52 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.14_26
+
+=over
+
+=item *
+
+the referer checks for affiliate.pl extracted the Referer header
+domain incorrectly.
+
+=item *
+
+the order affiliate_code is now accepted as a CGI parameter during
+purchase if it isn't set in the session.
+
+=item *
+
+the order siteuser_id field wasn't being set
+
+=item *
+
+added an affiliate_name column to the siteusers table.  This value is
+required to be unique if non-empty and may only contain alphanumeric
+characters.  You will need to add this to any custom templates.
+
+=item *
+
+affiliate.pl now accepts alternatives to the id parameter:
+
+=over
+
+=item *
+
+lo - the logon name of the user
+
+=item *
+
+co - the affiliate name of the user
+
+=back
+
+=item *
+
+some prep work for site user images
+
+=back
+
 =head2 0.14_25
 
 =over
