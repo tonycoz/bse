@@ -106,7 +106,7 @@ EOS
 select distinct af.*, oi.id as item_id
 from article_files af, order_item oi
 where af.articleId = oi.productId and oi.orderId = ?
-order by af.description
+order by oi.id, af.displayOrder desc
 SQL
    
    getSiteUserByUserId =>
