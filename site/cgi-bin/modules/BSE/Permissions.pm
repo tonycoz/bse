@@ -89,9 +89,11 @@ sub check_logon {
 
   return 1 if $req->user;
 
+  my $server_auth_admin = $cfg->entry('basic', 'server_auth', 0);
+
   my $user;
   require BSE::TB::AdminUsers;
-  if ($ENV{REMOTE_USER}) {
+  if ($server_auth_admin && $ENV{REMOTE_USER}) {
     ($user) = BSE::TB::AdminUsers->getBy(logon => $ENV{REMOTE_USER});
   }
   if ($req->session->{adminuserid}) {

@@ -338,7 +338,7 @@ sub payment_types {
 	   id => 0, 
 	   name => 'CC', 
 	   desc => 'Credit Card',
-	   require => [ qw/cardNumber cardExpiry/ ],
+	   require => [ qw/cardNumber cardExpiry cardHolder cardType/ ],
 	  },
      1 => { 
 	   id => 1, 

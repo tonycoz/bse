@@ -197,6 +197,8 @@ sub format {
 	  and next TRY;
 	$part =~ s#image\[([^\]\[]+)\]# $self->image($1) #ige
 	    and next TRY;
+	$part =~ s#class\[([^\]\[\|]+)\|([^\]\[]+)\]#<span class="$1">$2</span>#ig
+          and next TRY;
 	last;
       }
       $part =~ s!(\n([ \r]*\n)*)!$1 eq "\n" ? "<br />\n" : "</p>\n<p>"!eg;

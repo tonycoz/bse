@@ -638,8 +638,9 @@ sub purchase {
   push @required, @{$pay_types{$paymentType}{require}};
 
   for my $field (@required) {
+    my $display = $cfg->entry('shop', "display_$field", $field);
     defined(param($field)) && length(param($field))
-      or return checkout("Field $field is required", 1);
+      or return checkout("Field $display is required", 1);
   }
   defined(param('email')) && param('email') =~ /.\@./
     or return checkout("Please enter a valid email address", 1);

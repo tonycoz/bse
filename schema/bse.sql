@@ -465,6 +465,8 @@ create table site_users (
 
   disabled integer not null default 0,
 
+  flags varchar(80) not null default '',
+
   primary key (id),
   unique (userId)
 );

@@ -17,7 +17,7 @@ my %actions =
    add=>1,
   );
 
-my @donttouch = qw(id userId password email confirmed confirmSecret waitingForConfirmation);
+my @donttouch = qw(id userId password email confirmed confirmSecret waitingForConfirmation flags); # flags is saved separately
 my %donttouch = map { $_, $_ } @donttouch;
 
 sub dispatch {
@@ -37,6 +37,17 @@ sub dispatch {
   $action ||= 'list';
   my $method = "req_$action";
   $class->$method($req);
+}
+
+sub flags {
+  my ($cfg) = @_;
+
+  my %flags = $cfg->entriesCS('site user flags');
+
+  my @valid = grep /^\w+$/, keys %flags;
+
+  return map +{ id => $_, desc => $flags{$_} },
+    sort { lc($flags{$a}) cmp lc($flags{$b}) } @valid;
 }
 
 sub req_list {
@@ -83,6 +94,21 @@ sub tag_if_required {
   return $cfg->entryBool('site users', "require_$args", 0);
 }
 
+sub iter_flags {
+  my ($cfg) = @_;
+
+  flags($cfg);
+}
+
+sub tag_if_flag_set {
+  my ($flags, $arg, $acts, $funcname, $templater) = @_;
+
+  my @args = DevHelp::Tags->get_parms($arg, $acts, $templater);
+  @args or return;
+
+  return index($flags, $args[0]) >= 0;
+}
+
 sub req_edit {
   my ($class, $req, $msg, $errors) = @_;
 
@@ -92,6 +118,8 @@ sub req_edit {
     or return $class->req_list($req, "No site user id supplied");
   my $siteuser = SiteUsers->getByPkey($id)
     or return $class->req_list($req, "No such site user found");
+
+  my $it = BSE::Util::Iterate->new;
 
   $errors ||= {};
   if ($msg) {
@@ -122,6 +150,8 @@ sub req_edit {
      siteuser => [ \&tag_hash, $siteuser ],
      error_img => [ \&tag_error_img, $req->cfg, $errors ],
      ifRequired => [ \&tag_if_required, $req->cfg ],
+     $it->make_iterator([ \&iter_flags, $req->cfg], 'flag', 'flags'),
+     ifFlagSet => [ \&tag_if_flag_set, $siteuser->{flags} ],
     );  
 
   my $template = 'admin/users/edit';
@@ -241,6 +271,11 @@ sub req_save {
       $user->{$col} = $value;
     }
   }
+
+  my @flags = flags($cfg);
+  my %flags = map { $_->{id} => 1 } @flags;
+  $user->{flags} = join('', grep exists $flags{$_}, $cgi->param('flags'))
+    if $cgi->param('saveFlags');
 
   $user->{textOnlyMail} = 0 
     if $cgi->param('saveTextOnlyMail') && !defined $cgi->param('textOnlyMail');
@@ -445,6 +480,9 @@ sub req_add {
     use BSE::Util::Secure qw/make_secret/;
     $user{password} = make_secret($cfg);
   }
+  my @flags = flags($cfg);
+  my %flags = map { $_->{id} => 1 } @flags;
+  $user{flags} = join('', grep exists $flags{$_}, $cgi->param('flags'));
 
   my $user;
   eval {

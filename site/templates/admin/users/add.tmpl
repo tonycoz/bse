@@ -217,6 +217,19 @@
             </td>
             <td bgcolor="#FFFFFF" valign="top"><:help editsiteuser adminNotes:>  <:error_img adminNotes:></td>
           </tr>
+<:if Flags:>
+          <tr> 
+            <th bgcolor="#FFFFFF" align="left" valign="top">Flags: </th>
+            <td bgcolor="#FFFFFF"> 
+	    <:iterator begin flags:>
+	    <input type="checkbox" name="flags" value="<:flag id:>" /> <:flag desc:>
+	    <:iterator separator flags:>
+	    <br />
+	    <:iterator end flags:>
+            </td>
+            <td bgcolor="#FFFFFF" valign="top"><:help editsiteuser flags:>  <:error_img adminNotes:></td>
+          </tr>
+<:or Flags:><:eif Flags:>
           <tr> 
             <td bgcolor="#FFFFFF" colspan="3" align="right"> 
               <input type="submit" name="a_add" value="  Add User  " />

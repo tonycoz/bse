@@ -10,6 +10,57 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.14_07
+
+You will need to run upgrade_mysql.pl for this release.
+
+=over
+
+=item *
+
+checkoutfinal_base.tmpl now uses the new <:if Payment I<name>:> tags,
+and includes a payments customization shim.
+
+=item *
+
+shop.pl now uses [shop].display_I<field-name> to convert stored field
+names into display names for error messages.
+
+=item *
+
+cardType and cardHolder fields are now required fields for credit card
+payments
+
+=item *
+
+admin access control now requires that a configuration option to be
+set before it will accept admin user authentication information from
+the server (typically basic authentication.)
+
+=item *
+
+the class[I<classname>|I<text>] tag was lost when integrating the
+common tag handling code, added it back in (#284)
+
+=item *
+
+you can now define custom flags for site users, the flag value is a
+single letter or digit, case-sensitive.  Add an entry like:
+
+   I<letter-or-digit>=I<description>
+
+to the [site user flags] section of the config file.  For example:
+
+   a=Access to private area of the site
+   b=Accept orders on account
+
+You can check this on templates where the user is visible with the
+<:if Match:> tag:
+
+  <:ifMatch [siteuser flags] "b":>Accept orders on account<:or:><:eif:>
+
+=back
+
 =head2 0.14_06
 
 =over

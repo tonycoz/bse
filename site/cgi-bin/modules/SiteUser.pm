@@ -18,7 +18,7 @@ sub columns {
             prompt otherPrompt profession otherProfession previousLogon
             billFirstName billLastName billStreet billSuburb billState 
             billPostCode billCountry instructions billTelephone billFacsimile 
-            billEmail adminNotes disabled/;
+            billEmail adminNotes disabled flags/;
 }
 
 sub removeSubscriptions {

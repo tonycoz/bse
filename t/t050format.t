@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 36;
+use Test::More tests => 37;
 
 sub format_test($$$;$);
 
@@ -137,6 +137,8 @@ OUT
 <table width="80" height="10" border="0" bgcolor="#FF0000" cellpadding="0" cellspacing="0"><tr><td><img src="/images/trans_pixel.gif" width="1" height="1" alt="" /></td></tr></table>
 OUT
   format_test 'image[foo]', '', 'image';
+
+  format_test 'class[xxx|yyy]', '<span class="xxx">yyy</span>', 'class';
 }
 
 sub format_test ($$$;$) {

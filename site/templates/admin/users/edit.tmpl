@@ -208,6 +208,19 @@
             </td>
             <td bgcolor="#FFFFFF" valign="top"><:help editsiteuser adminNotes:>  <:error_img adminNotes:></td>
           </tr>
+<:if Flags:>
+          <tr> 
+            <th bgcolor="#FFFFFF" align="left" valign="top">Flags: </th>
+            <td bgcolor="#FFFFFF"> <input type="hidden" name="saveFlags" value="1" />
+	    <:iterator begin flags:>
+	    <input type="checkbox" name="flags" value="<:flag id:>" <:ifFlagSet [flag id]:>checked="checked" <:or:><:eif:>/> <:flag desc:>
+	    <:iterator separator flags:>
+	    <br />
+	    <:iterator end flags:>
+            </td>
+            <td bgcolor="#FFFFFF" valign="top"><:help editsiteuser flags:>  <:error_img adminNotes:></td>
+          </tr>
+<:or Flags:><:eif Flags:>
 <:if UserCan siteuser_changepw:>
 <:if Cfg "site users" nopassword:><:or Cfg:>
           <tr> 

@@ -190,6 +190,23 @@ sub _iter_number {
   1+$$rindex;
 }
 
+sub _iter_count {
+  my ($self, $rdata, $code, $loaded, $nocache, 
+      $args, $acts, $name, $templater) = @_;
+
+  if (!$$loaded && !@$rdata && $code || $args || $nocache) {
+    my ($sub, @args) = $code;
+
+    if (ref $code eq 'ARRAY') {
+      ($sub, @args) = @$code;
+    }
+    @$rdata = $sub->(@args, $args, $acts, $name, $templater);
+    ++$$loaded unless $args;
+  }
+
+  scalar(@$rdata);
+}
+
 sub make_iterator {
   my ($self, $code, $single, $plural, $rdata, $rindex, $nocache) = @_;
 
