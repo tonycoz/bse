@@ -23,6 +23,7 @@ site/cgi-bin/admin/shopadmin.pl
 site/cgi-bin/admin/subs.pl
 site/cgi-bin/admin/userlist.pl
 site/cgi-bin/bse.cfg
+site/cgi-bin/interest.pl
 site/cgi-bin/modules/AdminUtil.pm
 site/cgi-bin/modules/Apache/Session/DBIreal.pm
 site/cgi-bin/modules/Apache/Session/Store/DBIreal.pm
@@ -160,6 +161,7 @@ site/templates/admin/edit_catalog.tmpl
 site/templates/admin/edit_product.tmpl
 site/templates/admin/edit_steps.tmpl
 site/templates/admin/filelist.tmpl
+site/templates/admin/interestemail.tmpl
 site/templates/admin/order_detail.tmpl
 site/templates/admin/order_list.tmpl
 site/templates/admin/order_list_filled.tmpl
@@ -194,6 +196,9 @@ site/templates/include/rssitems.tmpl
 site/templates/include/rsslinks.tmpl
 site/templates/index.tmpl
 site/templates/index2.tmpl
+site/templates/interest/askagain_base.tmpl
+site/templates/interest/confirm_base.tmpl
+site/templates/interest/error_base.tmpl
 site/templates/lowmap.tmpl
 site/templates/mailconfirm.tmpl
 site/templates/mailorder.tmpl

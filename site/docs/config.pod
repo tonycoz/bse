@@ -328,6 +328,18 @@ not be set higher than this unless you change the database schema.
 
 =back
 
+=head2 [interest]
+
+Controls the interest.pl script.
+
+=over
+
+=item notify
+
+Email address that is notified of the interest.  Defaults to $SHOP_FROM.
+
+=bacl
+
 =head2 [debug]
 
 Used for debugging.

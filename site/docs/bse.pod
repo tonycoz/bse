@@ -10,6 +10,21 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.11_19
+
+=over
+
+=item *
+
+remove debugging code from Generate::excerpt() (#142) (TEST!)
+
+=item *
+
+added script interest.pl to send an email to the site owner when the
+user registers interest in a product (#133)
+
+=back
+
 =head2 0.11_18
 
 =over

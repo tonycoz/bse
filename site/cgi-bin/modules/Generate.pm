@@ -667,7 +667,6 @@ sub excerpt {
     }
     $result .= $part;
   }
-  print STDERR "\$re is $re\n";
   $result =~ s{$re}{<b>$1</b>}ig;
   $$found = 1;
 

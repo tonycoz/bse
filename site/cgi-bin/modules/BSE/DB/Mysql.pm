@@ -47,7 +47,7 @@ EOS
      'replace image values (?,?,?,?,?,?,?)',
    addImage => 'insert image values(null, ?, ?, ?, ?, ?, ?)',
    deleteImage => 'delete from image where id = ?',
-   getImageByArticleId => 'select * from image where articleId = ?',
+   getImageByArticleId => 'select * from image where articleId = ? order by id',
    
    dropIndex => 'delete from searchindex',
    insertIndex => 'insert searchindex values(?, ?, ?, ?)',
