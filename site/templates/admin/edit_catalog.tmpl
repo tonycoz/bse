@@ -29,7 +29,8 @@
 
   <h2>Catalog Details</h2>
 
-  <p><:message:> | <a href="/admin/">Admin menu</a> | <:ifnew:><:or:><a href="<:article admin:>">See article</a> | <:eif:><:editParent:>
+  <p><:message:> | <a href="/admin/">Admin menu</a> | <:ifnew:><:or:><a href="<:article admin:>">See article</a> | <:eif:><:editParent:> |
+  <:if new:><:or new:><a href="<:script:>?id=<:article id:>&_t=steps">Manage stepchildren/stepparents</a> | <:eif new:>
 <input type="hidden" name="level" value="<: level :>">
     <input type="hidden" name="id" value="<: article id :>">
   

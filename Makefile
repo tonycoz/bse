@@ -1,4 +1,4 @@
-VERSION=0.11_14
+VERSION=0.11_15
 DISTNAME=bse-$(VERSION)
 DISTBUILD=$(DISTNAME)
 DISTTAR=../$(DISTNAME).tar
@@ -10,6 +10,10 @@ help:
 	@echo make clean - delete generated files
 	@echo make distdir - build distribution directory
 	@echo make docs - build documentation
+
+foo:
+	echo cvs tag r`echo $(VERSION) | tr . _`
+
 
 # this target needs to be modified so that the output directory includes
 # the release number
@@ -36,7 +40,7 @@ $(DISTTGZ): distdir
 
 #	tar czf $(DISTFILE) -C .. bse --exclude '*~' --exclude '*,v' --exclude 'pod2html-*cache'
 
-distdir: docs dbinfo
+distdir: docs dbinfo version
 	-perl -MExtUtils::Command -e rm_rf $(DISTBUILD)
 	perl -MExtUtils::Manifest=manicopy,maniread -e "manicopy(maniread(), '$(DISTBUILD)')"
 	mkdir $(DISTBUILD)/site/htdocs/shop
@@ -69,6 +73,18 @@ dbinfo: site/util/mysql.str
 
 site/util/mysql.str: schema/bse.sql
 	perl schema/mysql_build.pl >site/util/mysql.str
+
+version: site/cgi-bin/modules/BSE/Version.pm
+
+site/cgi-bin/modules/BSE/Version.pm: Makefile
+	echo 'package BSE::Version;' >site/cgi-bin/modules/BSE/Version.pm
+	echo 'use strict;' >>site/cgi-bin/modules/BSE/Version.pm
+	echo  >>site/cgi-bin/modules/BSE/Version.pm
+	echo 'my $$VERSION = "$(VERSION)";' >>site/cgi-bin/modules/BSE/Version.pm
+	echo  >>site/cgi-bin/modules/BSE/Version.pm
+	echo 'sub version { $$VERSION }' >>site/cgi-bin/modules/BSE/Version.pm
+	echo  >>site/cgi-bin/modules/BSE/Version.pm
+	echo '1;' >>site/cgi-bin/modules/BSE/Version.pm
 
 # this is very rough
 testinst: distdir

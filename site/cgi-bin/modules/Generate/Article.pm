@@ -98,6 +98,7 @@ sub baseActs {
     @allkids	  = $article->all_visible_kids;
     @stepparents  = $article->step_parents;
   }
+  my $allkids_index;
   # separate these so the closures can see %acts
   my %acts =
     (
@@ -147,10 +148,11 @@ sub baseActs {
        }
 
        my $count;
-       if ($_[0] eq 'stepkids') {
+       my $what = $_[0] || '';
+       if ($what eq 'stepkids') {
 	 $count = @stepkids;
        }
-       elsif ($_[0] eq 'allkids') {
+       elsif ($what eq 'allkids') {
 	 $count = @allkids;
        }
        else {
@@ -299,6 +301,24 @@ HTML
          return '';
        }
      },
+     movestepkid =>
+     sub {
+       my $html = '';
+       return '' unless $self->{admin};
+       my $refreshto = CGI::escape($ENV{SCRIPT_NAME}
+				   ."?id=$article->{id}");
+       if ($allkids_index < $#allkids) {
+	 $html .= <<HTML
+<a href="$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids[$allkids_index]{id}&other=$allkids[$allkids_index+1]{id}&refreshto=$refreshto"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+HTML
+       }
+       if ($allkids_index > 0) {
+	 $html .= <<HTML
+<a href="$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids[$allkids_index]{id}&other=$allkids[$allkids_index-1]{id}&refreshto=$refreshto"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+HTML
+       }
+       return $html;
+     },
      ifCurrentPage=>
      sub {
        my $arg = shift;
@@ -344,7 +364,7 @@ HTML
      ifImages => sub { @images },
      BSE::Util::Tags->make_iterator(\@files, 'file', 'files'),
      BSE::Util::Tags->make_iterator(\@stepkids, 'stepkid', 'stepkids'),
-     BSE::Util::Tags->make_iterator(\@allkids, 'allkid', 'allkids'),
+     BSE::Util::Tags->make_iterator(\@allkids, 'allkid', 'allkids', \$allkids_index),
      BSE::Util::Tags->make_iterator(\@stepparents, 'stepparent', 'stepparents'),
     );
 

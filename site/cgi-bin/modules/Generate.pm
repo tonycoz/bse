@@ -801,100 +801,14 @@ pages.
 
 This is probably better documented in L<templates.pod>.
 
-=head1 TAGS
+=head1 COMMON TAGS
 
-=over 4
+These tags can be used anywhere, including in admin templates.  It's
+possible some admin code has been missed, if you find a place where
+these cannot be used let us know.
 
-=item ifAdmin
 
-Conditional tag, true if generating in admin mode.
-
-=item iterator ... level1
-
-Iterates over the listed level 1 articles.
-
-=item level1 I<name>
-
-The value of the I<name> field of the current level 1 article.
-
-=item iterator ... level2
-
-Iterates over the listed level 2 children of the current level 1 article.
-
-=item level2 I<name>
-
-The value of the I<name> field of the current level 2 article.
-
-=item ifLevel2 I<name>
-
-Conditional tag, true if the current level 1 article has any listed
-level 2 children.
-
-=item iterator ... level3
-
-Iterates over the listed level 3 children of the current level 2 article.
-
-=item level3 I<name>
-
-The value of the I<name> field of the current level 3 article.
-
-=item ifLevel3 I<name>
-
-Conditional tag, true if the current level 2 article has any listed
-level 3 children.
-
-=item url I<which>
-
-Returns a link to the specified article .  Due to the way the action
-list is built, this can be article types defined in derived classes of
-Generate, like the C<parent> article in Generate::Article.
-
-=item money I<data tag>
-
-Formats the given value as a monetary value.  This does not include a
-currency symbol.  Internally BSE stores monetary values as integers to
-prevent the loss of accuracy inherent in floating point numbers.  You
-need to use this tag to display any monetary value.
-
-=item ifInMenu I<which>
-
-Conditional tag, true if the given item can appear in a menu.
-
-=item titleImage I<imagename> I<text>
-
-Generates an IMG tag if the given I<imagename> is in the title image
-directory ($IMAGEDIR/titles).  If it doesn't exists, produces the
-I<text>.
-
-=item embed I<which>
-
-=item embed I<which> I<template>
-
-=item embed I<which> I<template> I<maxdepth>
-
-=item embed child
-
-Embeds the article specified by which using either the specified
-template or the articles template.
-
-In this case I<which> can also be an article ID.
-
-I<template> is a filename relative to the templates directory.  If
-this is "-" then the articles template is used (so you can set
-I<maxdepth> without setting the template.)  If I<template> contains a
-C<$> sign it will be replaced with the name of the original template.
-
-If I<maxdepth> is supplied and is less than the current maximum depth
-then it becomes the new maximum depth.  This can be used with ifCanEmbed.
-
-=item embed start ... embed end
-
-Marks the range of text that would be embedded in a parent that used
-C<embed child>.
-
-=item ifEmbedded
-
-Conditional tag, true if the current article is being embedded.
+=over
 
 =item kb I<data tag>
 
@@ -1037,6 +951,107 @@ string inside "" or a single word.
 Retrieves a value from the BSE configuration file.
 
 If you don't supply a default then a default will be the empty string.
+
+=item release
+
+The release number of BSE.
+
+=back
+
+=head1 TAGS
+
+=over 4
+
+=item ifAdmin
+
+Conditional tag, true if generating in admin mode.
+
+=item iterator ... level1
+
+Iterates over the listed level 1 articles.
+
+=item level1 I<name>
+
+The value of the I<name> field of the current level 1 article.
+
+=item iterator ... level2
+
+Iterates over the listed level 2 children of the current level 1 article.
+
+=item level2 I<name>
+
+The value of the I<name> field of the current level 2 article.
+
+=item ifLevel2 I<name>
+
+Conditional tag, true if the current level 1 article has any listed
+level 2 children.
+
+=item iterator ... level3
+
+Iterates over the listed level 3 children of the current level 2 article.
+
+=item level3 I<name>
+
+The value of the I<name> field of the current level 3 article.
+
+=item ifLevel3 I<name>
+
+Conditional tag, true if the current level 2 article has any listed
+level 3 children.
+
+=item url I<which>
+
+Returns a link to the specified article .  Due to the way the action
+list is built, this can be article types defined in derived classes of
+Generate, like the C<parent> article in Generate::Article.
+
+=item money I<data tag>
+
+Formats the given value as a monetary value.  This does not include a
+currency symbol.  Internally BSE stores monetary values as integers to
+prevent the loss of accuracy inherent in floating point numbers.  You
+need to use this tag to display any monetary value.
+
+=item ifInMenu I<which>
+
+Conditional tag, true if the given item can appear in a menu.
+
+=item titleImage I<imagename> I<text>
+
+Generates an IMG tag if the given I<imagename> is in the title image
+directory ($IMAGEDIR/titles).  If it doesn't exists, produces the
+I<text>.
+
+=item embed I<which>
+
+=item embed I<which> I<template>
+
+=item embed I<which> I<template> I<maxdepth>
+
+=item embed child
+
+Embeds the article specified by which using either the specified
+template or the articles template.
+
+In this case I<which> can also be an article ID.
+
+I<template> is a filename relative to the templates directory.  If
+this is "-" then the articles template is used (so you can set
+I<maxdepth> without setting the template.)  If I<template> contains a
+C<$> sign it will be replaced with the name of the original template.
+
+If I<maxdepth> is supplied and is less than the current maximum depth
+then it becomes the new maximum depth.  This can be used with ifCanEmbed.
+
+=item embed start ... embed end
+
+Marks the range of text that would be embedded in a parent that used
+C<embed child>.
+
+=item ifEmbedded
+
+Conditional tag, true if the current article is being embedded.
 
 =back
 

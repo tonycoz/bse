@@ -720,19 +720,22 @@ sub send_order {
     !$@ or die $@;
     my $encrypter = $crypto_class->new;
 
+    my $debug = $cfg->entryBool('debug', 'mail_encryption', 0);
+    my $sign = $cfg->entryBool('basic', 'sign', 1);
+
     # encrypt and sign
     my %opts = 
       (
-       sign=> $cfg->entryBool('basic', 'sign', 1),
+       sign=> $sign,
        passphrase=> $passphrase,
        stripwarn=>1,
-       #debug=>1,
+       debug=>$debug,
       );
+    
     $opts{secretkeyid} = $signing_id if $signing_id;
     $opts{pgp} = $pgp if $pgp;
     $opts{gpg} = $gpg if $gpg;
     $opts{pgpe} = $pgpe if $pgpe;
-    #$opts{home} = '/home/bodyscoop';
     my $recip = "$toName $toEmail";
 
     my $crypted = $encrypter->encrypt($recip, $ordertext, %opts )

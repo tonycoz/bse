@@ -8,7 +8,7 @@
   <a href="<:script:>?id=<:product id:>&product_detail=1">Product details</a> 
   <:if Product listed:> | <a href="<:script:>?id=<:product id:>&delete_product=1">Hide</a> 
   |<:or Product:> | <a href="<:script:>?id=<:product id:>&undelete_product=1">Show</a> 
-  |<:eif Product:> <:hiddenNote:></p>
+  |<:eif Product:> <a href="/cgi-bin/admin/add.pl?id=<:product id:>&_t=steps">Manage stepparents</a> |<:hiddenNote:></p>
 
 <form action="<:script:>" enctype="multipart/form-data" method="POST"><p><input type=submit name=showimages value="Image Wizard"></p>
 
@@ -111,79 +111,6 @@
   </table>
   <p><input type=submit name="save_product" value="Save"></p>
 </form>
-
-<a name="step"></a><h3>Step parents</h3>
-<table border="0" cellspacing="0" cellpadding="0" bgcolor='#000000'>
-<tr><td>
-      <table border=0 cellpadding="6" cellspacing="1">
-        <tr> 
-          <th>Id</th>
-          <th>Title</th>
-          <th>Release</th>
-          <th>Expire</th>
-          <th>&nbsp;</th>
-        </tr>
-        <:if Stepcats:> 
-        <tr bgcolor="#FFFFFF"> 
-          <td colspan="5" align="center">Note: Delete only removes the stepchild 
-            relationship. It does not delete the catalog.</td>
-        </tr>
-        <tr bgcolor="#FFFFFF"> 
-          <td colspan="5">Reorder stepparent articles: <a href="/cgi-bin/admin/reorder.pl?stepchild=<:product id:>&sort=title&refreshto=/cgi-bin/admin/shopadmin.pl?edit_product=1%26id=<:product id:>%23step">by 
-            title</a> | <a href="/cgi-bin/admin/reorder.pl?stepchild=<:product id:>&sort=date&refreshto=/cgi-bin/admin/shopadmin.pl?edit_product=1%26id=<:product id:>%23step">by 
-            date</a> | <a href="/cgi-bin/admin/reorder.pl?stepchild=<:product id:>&reverse=1&refreshto=/cgi-bin/admin/shopadmin.pl?edit_product=1%26id=<:product id:>%23step">reverse 
-            order</a></td>
-        </tr>
-        <form action="<:script:>">
-          <input type="hidden" name="id" value="<:product id:>">
-          <:iterator begin stepcats:> 
-          <tr bgcolor="#FFFFFF"> 
-            <td align="center"><a href="<:stepcat_targ admin:>"><:stepcat parentId:></a></td>
-            <td><:stepcat_targ title:></td>
-            <td> 
-              <input type="text" name="release_<:stepcat parentId:>" value="<:date stepcat release:>" size="10">
-            </td>
-            <td> 
-              <input type="text" name="expire_<:stepcat parentId:>" value="<:date stepcat expire:>" size="10">
-            </td>
-            <td><:movestepcat:> <b><a href="<:script:>?del_stepcat=1&id=<:stepcat childId:>&stepcat=<:stepcat parentId:>">Delete</a> 
-              <a href="/cgi-bin/admin/add.pl?id=<:stepcat parentId:>">Edit</a></b></td>
-          </tr>
-          <:iterator end stepcats:> 
-          <tr bgcolor="#FFFFFF"> 
-            <td colspan="5" align="center"> 
-              <input type="submit" name="save_stepcats" value="Save Changes">
-            </td>
-          </tr>
-        </form>
-        <:or Stepcats:> 
-        <tr bgcolor="#FFFFFF"> 
-          <td colspan="5" align="center">No step parents</td>
-        </tr>
-        <:eif Stepcats:> <:if StepcatPossibles:> 
-        <form action="<:script:>">
-          <input type="hidden" name="id" value="<:product id:>">
-          <tr bgcolor="#FFFFFF"> 
-            <td colspan=2><:stepcat_possibles:></td>
-            <td> 
-              <input type="text" name="release" value="01/01/2000" size="10">
-            </td>
-            <td> 
-              <input type="text" name="expire" value="31/12/2999" size="10">
-            </td>
-            <td> 
-              <input type="submit" name="add_stepcat" value="Add!">
-            </td>
-          </tr>
-        </form>
-        <:or StepcatPossibles:> 
-        <tr bgcolor="#FFFFFF"> 
-          <td colspan="5" align="center">No more possible catalogs to add.</td>
-        </tr>
-        <:eif StepcatPossibles:> 
-      </table>
-</td></tr>
-</table>
 
 </body>
 </html>

@@ -28,8 +28,6 @@ my $securlbase = $cfg->entryVar('site', 'secureurl');
 use Constants qw(%LEVEL_DEFAULTS $SHOPID $PRODUCTPARENT $LINK_TITLES);
 my %levels = %LEVEL_DEFAULTS;
 
-my %level_cache;
-
 # what to do
 my %steps =
   (
@@ -187,12 +185,6 @@ if ($parent && $parent->{id}) {
   }
 }
 
-unless ($level_cache{$level}{edit}) {
-  my $checkfor = "admin/edit_$level";
-  $level_cache{$level}{edit} = -e "$TMPLDIR/${checkfor}.tmpl" ? $checkfor :
-    $levels{$level}{edit};
-}
-
 my @files;
 if ($article->{id} && $article->{id} > 0) {
   require 'ArticleFiles.pm';
@@ -306,8 +298,12 @@ HTML
    movestepkid =>
    sub {
      my $html = '';
-     my $refreshto = CGI::escape($ENV{SCRIPT_NAME}
-				 ."?id=$article->{id}#step");
+     my $url = $ENV{SCRIPT_NAME} . "?id=$article->{id}";
+     if (param('_t')) {
+       $url .= "&_t=".param('_t');
+     }
+     $url .= "#step";
+     my $refreshto = CGI::escape($url);
      if ($allkids_index < $#allkids) {
        $html .= <<HTML
 <a href="$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$allkids[$allkids_index]{id}&other=$allkids[$allkids_index+1]{id}&refreshto=$refreshto"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
@@ -363,8 +359,12 @@ HTML
    movestepparent =>
    sub {
      my $html = '';
-     my $refreshto = CGI::escape($ENV{SCRIPT_NAME}
-				 ."?id=$article->{id}#stepparents");
+     my $url = $ENV{SCRIPT_NAME} . "?id=$article->{id}";
+     if (param('_t')) {
+       $url .= "&_t=".param('_t');
+     }
+     $url .= "#stepparents";
+     my $refreshto = CGI::escape($url);
      if ($stepparent_index < $#stepparents) {
 	 $html .= <<HTML;
 <a href="$CGI_URI/admin/move.pl?stepchild=$article->{id}&id=$stepparents[$stepparent_index]{parentId}&d=swap&other=$stepparents[$stepparent_index+1]{parentId}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
@@ -413,12 +413,20 @@ start();
 sub start {
   $message = shift if @_;
   # just substitute empty defaults into the blank page
+  my $base;
   if (should_be_catalog($article, $parent, $articles)) {
-    page('admin/edit_catalog.tmpl');
+    $base = 'catalog';
   }
   else {
-    page($level_cache{$level}{edit}.".tmpl");
+    $base = $level;
   }
+  if (param('_t')) {
+    $base = param('_t');
+    $base =~ s/\W//g;
+  }
+  my $template = $cfg->entry('admin templates', $base, 
+			    "admin/edit_$base.tmpl");
+  page($template);
 }
 
 sub save_new_article {
@@ -680,8 +688,7 @@ sub add_stepkid {
     $message = $@;
     return start();
   }
-  print "Refresh: 0; url=\"$urlbase$ENV{SCRIPT_NAME}?id=$article->{id}#step\"\n";
-  print "Content-type: text/html\n\n<HTML></HTML>\n";
+  refresh('step');
 }
 
 sub del_stepkid {
@@ -773,7 +780,7 @@ sub add_stepparent {
   };
   $@ and return refresh('step', $@);
 
-  return refresh('step');
+  return refresh('stepparents');
 }
 
 sub del_stepparent {
@@ -837,7 +844,11 @@ sub refresh {
 
   my $url = "$urlbase$ENV{SCRIPT_NAME}?id=$article->{id}";
   $url .= "&message=" . CGI::escape($message) if $message;
+  if (param('_t')) {
+    $url .= "&_t=".CGI::escape(param('_t'));
+  }
   $url .= "#$name" if $name;
+  print STDERR "Url $url\n";
 
   print "Refresh: 0; url=\"$url\"\n";
   print "Content-type: text/html\n\n<HTML></HTML>\n";

@@ -26,7 +26,9 @@
 
   <h2><:articleType:> Details</h2>
 
-  <p><:message:> | <a href="/admin/">Admin menu</a> | <:ifnew:><:or:><a href="<:article admin:>">See article</a> | <:eif:><:editParent:>
+  <:ifMessage:><p><b><:message:></p></p><:or:><:eif:>
+<p> | <a href="/admin/">Admin menu</a> | <:ifnew:><:or:><a href="<:article admin:>">See article</a> | <:eif:><:editParent:>
+  <:if new:><:or new:><a href="<:script:>?id=<:article id:>&_t=steps">Manage stepchildren/stepparents</a> | <:eif new:>
 <input type="hidden" name="level" value="<: level :>">
     <input type="hidden" name="id" value="<: article id :>">
 
@@ -37,7 +39,7 @@
 
         <table cellpadding="6" border="0" cellspacing="1">
           <tr> 
-            <th> <:parentType:>: </th>
+            <th> <:parentType:>: <:help edit section:></th>
             <td bgcolor="#FFFFFF"> 
               <select name="parentid">
                 <option value="">Please Select a <: parentType :> <: ifart :><: 
@@ -46,13 +48,13 @@
             </td>
           </tr>
           <tr> 
-            <th> <:articleType:> Title: </th>
+            <th> <:articleType:> Title: <:help edit title:></th>
             <td bgcolor="#FFFFFF"> 
               <input type="text" name="title" maxlength="<:cfg fields title_size 255:>" size="64" value="<: article title :>">
             </td>
           </tr>
           <tr> 
-            <th> Template: </th>
+            <th> Template: <:help edit template:></th>
             <td bgcolor="#FFFFFF"> 
               <:templates:>
             </td>
@@ -64,7 +66,7 @@
             </td>
           </tr>
           <tr> 
-            <th> Release Date: </th>
+            <th> Release Date: <:help edit release:></th>
             <td bgcolor="#FFFFFF"> 
               <input type="text" name="release" value="<: article release :>" size="10" maxlength="10">
               (dd/mm/yyyy<: ifnew :> - default is today<: or :><: eif :>)</td>
@@ -72,13 +74,13 @@
           
           
           <tr> 
-            <th> Expire Date: </th>
+            <th> Expire Date: <:help edit expire:></th>
             <td bgcolor="#FFFFFF"> 
               <input type="text" name="expire" value="<: article expire :>" size="10" maxlength="10">
               (dd/mm/yyyy - <: ifnew :>default is never, <: or :><: eif :>)</td>
           </tr>
           <tr> 
-            <th> Summary Length: </th>
+            <th> Summary Length: <:help edit summaryLength:></th>
             <td bgcolor="#FFFFFF"> 
               <input type="text" name="summaryLength" size="10" maxlength="10" value="<: article summaryLength :>">
               (in characters - <: ifnew :>default inherited from section<: if art :> or sub-section<: 
@@ -87,32 +89,32 @@
           </tr>
           
           <tr> 
-            <th> Display threshold: </th>
+            <th> Display threshold: <:help edit threshold:></th>
             <td bgcolor="#FFFFFF"> 
               <input type="text" name="threshold" size="10" maxlength="10" value="<: article threshold :>">
             </td>
           </tr>
           <tr> 
-            <th> Keywords: </th>
+            <th> Keywords: <:help edit keywords:></th>
             <td bgcolor="#FFFFFF"> 
               <input type="text" name="keyword" maxlength="255" size="60" value="<: article keyword :>">
                (comma separated)
             </td>
           </tr>
           <tr> 
-            <th>List article:</th>
+            <th>List article:<:help edit listed:></th>
             <td bgcolor="#FFFFFF">
               <:list listed:> </td>
           </tr>
           <tr> 
-            <th>Thumbnails:</th>
+            <th>Thumbnails:<:help edit thumb:></th>
             <td bgcolor="#FFFFFF"> 
               <input type=file name=thumbnail>
               <:ifArticle thumbImage:><img src="/images/<:article thumbImage:>"> <input type=checkbox name="remove_thumb"> Remove<:or:><:eif:></td>
           </tr>
           <:if Article id:>
           <tr>
-            <th><a name="files"></a>Files:</th>
+            <th><a name="files"></a>Files:<:help edit files:></th>
             <td nowrap bgcolor="#FFFFFF">
 <:if Files:>
               <table>
@@ -141,7 +143,7 @@
           </tr>
           <:or Article:><:eif Article:>
           <tr> 
-            <th valign="top"> Uploaded files: </th>
+            <th valign="top"> Uploaded images: <:help edit images:></th>
             <td align="center" bgcolor="#FFFFFF"> <: iterator begin images :> <img src="/images/<: image image :>" alt="<:image alt :>" width=<:image width:> height=<:image height:>> <: iterator separator images 
               :> 
               <hr noshade size="1">
@@ -204,136 +206,7 @@
 <input type=hidden name="parentid" value="<:article id:>">
 <p><input type=submit value="Add <:childtype:>"></p>
 </form>
-<p><:eif new:> <:or HaveChildType:> <:eif HaveChildType:> </p>
-<:if new:><:or new:>
-<h2><a name="step"></a>Step Products</h2>
-<table border="0" cellspacing="0" cellpadding="0" bgcolor='#000000'>
-<tr><td>
-      <table border="0" cellpadding="6" cellspacing="1">
-        <tr>
-  <th>Id</th>
-  <th>Title</th>
-  <th>Release</th>
-  <th>Expire</th>
-  <th>&nbsp;</th>
-</tr>
-<:if Kids:>
-        <tr> 
-          <td colspan="5" bgcolor="#FFFFFF">Reorder stepchild articles: <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&sort=title&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>%23step">by 
-            title</a> | <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&sort=date&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>%23step">by 
-            date</a> | <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&reverse=1&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>%23step">reverse 
-            order</a></td>
-        </tr>
-<form action="<:script:>" method="POST"><input type="hidden" name="id" value="<:article id:>">
-<:iterator begin kids:>
-        <tr bgcolor="#FFFFFF"> 
-          <td><:kid id:></td>
-          <td><:kid title:></td>
-          <td><:ifStepKid:> 
-            <input type="text" name="release_<:stepkid childId:>" value="<:date stepkid release:>" size=10><:or:>&nbsp;<:eif:></td>
-          <td><:ifStepKid:> 
-            <input type="text" name="expire_<:stepkid childId:>" value="<:date stepkid expire:>" size=10><:or:>&nbsp;<:eif:></td>
-          <td><:movestepkid:> <b><:ifStepKid:><a href="<:script:>?del_stepkid=1&id=<:stepkid parentId:>&stepkid=<:stepkid childId:>">Delete</a><:or:><:eif:> 
-            <:edit kid Edit:></b></td>
-</tr>
-<:iterator end kids:>
-        <tr bgcolor="#FFFFFF"> 
-          <td colspan="5" align="center"> 
-            <input type="submit" name="save_stepkids" value="Save Changes"></td>
-</tr>
-<:or Kids:>
-        <tr bgcolor="#FFFFFF"> 
-          <td colspan="5" align="center">No children</td>
-</tr>
-<:eif Kids:>
-</form>
-<:if Possibles:>
-<form action="<:script:>"><input type="hidden" name="id" value="<:article id:>">
-          <tr bgcolor="#FFFFFF"> 
-            <td colspan="2"><:possible_stepkids:></td>
-            <td> 
-              <input type="text" name="release" value="01/01/2000" size="10"></td>
-            <td> 
-              <input type="text" name="expire" value="31/12/2999" size="10"></td>
-            <td> 
-              <input type="submit" name="add_stepkid" value="Add Stepkid"></td>
-</tr>
-</form>
-<:or Possibles:><:eif Possibles:>
-</table>
-</td></tr></table>
-<:eif new:>
-<a name="stepparents"></a><h3>Step parents</h3>
-<table border="0" cellspacing="0" cellpadding="0" bgcolor='#000000'>
-<tr><td>
-      <table border=0 cellpadding="6" cellspacing="1">
-        <tr> 
-          <th>Id</th>
-          <th>Title</th>
-          <th>Release</th>
-          <th>Expire</th>
-          <th>&nbsp;</th>
-        </tr>
-        <:if StepParents:> 
-        <tr bgcolor="#FFFFFF"> 
-          <td colspan="5" align="center">Note: Delete only removes the stepchild 
-            relationship. It does not delete the article.</td>
-        </tr>
-        <tr bgcolor="#FFFFFF"> 
-          <td colspan="5">Reorder stepparent articles: <a href="/cgi-bin/admin/reorder.pl?stepchild=<:article id:>&sort=title&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>%23stepparents">by 
-            title</a> | <a href="/cgi-bin/admin/reorder.pl?stepchild=<:product id:>&sort=date&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>%23stepparents">by 
-            date</a> | <a href="/cgi-bin/admin/reorder.pl?stepchild=<:product id:>&reverse=1&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>%23stepparents">reverse 
-            order</a></td>
-        </tr>
-        <form action="<:script:>">
-          <input type="hidden" name="id" value="<:article id:>">
-          <:iterator begin stepparents:> 
-          <tr bgcolor="#FFFFFF"> 
-            <td align="center"><a href="<:stepparent_targ admin:>"><:stepparent parentId:></a></td>
-            <td><:stepparent_targ title:></td>
-            <td> 
-              <input type="text" name="release_<:stepparent parentId:>" value="<:date stepparent release:>" size="10">
-            </td>
-            <td> 
-              <input type="text" name="expire_<:stepparent parentId:>" value="<:date stepparent expire:>" size="10">
-            </td>
-            <td><:movestepparent:> <b><a href="<:script:>?del_stepparent=1&id=<:stepparent childId:>&stepparent=<:stepparent parentId:>">Delete</a> 
-              <a href="/cgi-bin/admin/add.pl?id=<:stepparent parentId:>">Edit</a></b></td>
-          </tr>
-          <:iterator end stepparents:> 
-          <tr bgcolor="#FFFFFF"> 
-            <td colspan="5" align="center"> 
-              <input type="submit" name="save_stepparents" value="Save Changes">
-            </td>
-          </tr>
-        </form>
-        <:or StepParents:> 
-        <tr bgcolor="#FFFFFF"> 
-          <td colspan="5" align="center">No step parents</td>
-        </tr>
-        <:eif StepParents:> <:if StepparentPossibles:> 
-        <form action="<:script:>">
-          <input type="hidden" name="id" value="<:article id:>">
-          <tr bgcolor="#FFFFFF"> 
-            <td colspan=2><:stepparent_possibles:></td>
-            <td> 
-              <input type="text" name="release" value="01/01/2000" size="10">
-            </td>
-            <td> 
-              <input type="text" name="expire" value="31/12/2999" size="10">
-            </td>
-            <td> 
-              <input type="submit" name="add_stepparent" value="Add!">
-            </td>
-          </tr>
-        </form>
-        <:or StepparentPossibles:> 
-        <tr bgcolor="#FFFFFF"> 
-          <td colspan="5" align="center">No more possible catalogs to add.</td>
-        </tr>
-        <:eif StepparentPossibles:> 
-      </table>
-</td></tr>
-</table>
+<:eif new:> <:or HaveChildType:> <:eif HaveChildType:>
+<p><font size="-1">BSE Release <:release:></font></p>
 </body
 ></html>

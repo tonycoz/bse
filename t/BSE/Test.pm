@@ -9,7 +9,9 @@ require 'Exporter.pm';
 
 my %conf;
 
-open TESTCFG, "< test.cfg" or die "Cannot open test.cfg: $!";
+my $conffile = $ENV{BSETEST} || 'test.cfg';
+
+open TESTCFG, "< $conffile" or die "Cannot open $conffile: $!";
 while (<TESTCFG>) {
   next if /^\s*[\#;]/;
   chomp;
@@ -21,7 +23,7 @@ close TESTCFG;
 sub base_url { $conf{base_url} or die "No base_url in test config" }
 
 sub base_securl { 
-  $conf{securl} or $conf{base_url} or die "No securl or base_url in test.cfg"
+  $conf{securl} or $conf{base_url} or die "No securl or base_url in $conffile"
 }
 
 sub base_dir { $conf{base_dir} or die "No base_dir in test config" }

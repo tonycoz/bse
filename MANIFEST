@@ -1,3 +1,5 @@
+Artistic
+COPYING
 INSTALL.html
 INSTALL.pod
 INSTALL.txt
@@ -57,6 +59,7 @@ site/cgi-bin/modules/BSE/Util/SQL.pm
 site/cgi-bin/modules/BSE/Util/Secure.pm
 site/cgi-bin/modules/BSE/Util/Tags.pm
 site/cgi-bin/modules/BSE/Util/Valid.pm
+site/cgi-bin/modules/BSE/Version.pm
 site/cgi-bin/modules/Constants.pm
 site/cgi-bin/modules/Generate.pm
 site/cgi-bin/modules/Generate/Article.pm
@@ -115,6 +118,7 @@ site/docs/upgrade_mysql.html
 site/htdocs/a/.htaccess
 site/htdocs/admin/advanced.html
 site/htdocs/admin/help/body.html
+site/htdocs/admin/help/edit.html
 site/htdocs/admin/help/file.html
 site/htdocs/admin/help/subs.html
 site/htdocs/admin/help/subssend.html
@@ -154,6 +158,7 @@ site/templates/admin/edit_4.tmpl
 site/templates/admin/edit_5.tmpl
 site/templates/admin/edit_catalog.tmpl
 site/templates/admin/edit_product.tmpl
+site/templates/admin/edit_steps.tmpl
 site/templates/admin/filelist.tmpl
 site/templates/admin/order_detail.tmpl
 site/templates/admin/order_list.tmpl

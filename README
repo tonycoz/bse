@@ -19,4 +19,7 @@ For version information please see site/docs/bse.pod
 Installation documentation can be found in INSTALL.* and plenty of
 other documentation can be found in site/docs/
 
+BSE is distributed under your choice of either the Artistic or GNU
+Public License, just as Perl is.
+
 Tony Cook <tony@develop-help.com>

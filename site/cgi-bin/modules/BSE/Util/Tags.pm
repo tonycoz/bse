@@ -117,6 +117,11 @@ sub static {
          return $value;
        }
      },
+     release =>
+     sub {
+       require BSE::Version;
+       BSE::Version->version;
+     },
      _format => 
      sub {
        my ($value, $fmt) = @_;

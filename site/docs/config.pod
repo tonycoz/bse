@@ -83,6 +83,26 @@ In each case the default is the name with a C<.tmpl> extension.
 
 article file wizard
 
+=item catalog
+
+Catalog editor page.  Default admin/edit_catalog.tmpl
+
+=item 1
+
+=item 2
+
+=item 3
+
+=item 4
+
+=item 5
+
+Article edit pages.  Default admin/edit_<number>.tmpl
+
+=item steps
+
+Step child/parent management page.  Default admin/edit_steps.tmpl
+
 =back
 
 =head2 [html]
@@ -325,7 +345,20 @@ logon form was triggered on the secure side of the site (possibly from
 the shop) or on the insecure side.  Since CGI doesn't necessarily give
 us all the information required, it's possible it will guess wrong.
 
-Setting this option to 1 will enable debugging information sent to standard error, which will be sent to the error log on Apache.  This probably isn't useful on IIS.
+Setting this option to 1 will enable debugging information sent to
+standard error, which will be sent to the error log on Apache.  This
+probably isn't useful on IIS.
+
+=item file_unlink
+
+Reports errors to STDERR (hence to the error log on Apache) if there
+is a problem deleting the actual file when an attached file is
+removed.
+
+=item mail_encryption
+
+Reports debugging information to standard error while encrypting your
+mail.
 
 =back
 

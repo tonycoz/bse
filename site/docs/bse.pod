@@ -10,6 +10,64 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.11_15
+
+=over
+
+=item *
+
+moved step kids/step parents management to their own page (if you use
+the old edit templates you can keep them on the same page.)
+
+=item *
+
+added file_unlink option to [debug] in bse.cfg
+
+=item *
+
+added mail_encryption option to [debug] in bse.cfg
+
+=item *
+
+minor reorganization of mail encryption to avoid a "Odd number of
+elements in hash assignment" error in some circumstances.
+
+=item *
+
+added help to the article editor pages
+
+=item *
+
+added license
+
+=item *
+
+added <:movestepkid:> tag to the Generate::Article set of tags
+
+=item *
+
+added the BSE::Version class and the <:release:> tag
+
+=item *
+
+more admin templates (most of the edit_*.tmpl) can now be controlled
+from the config file.
+
+=item *
+
+fixed a broken in-page link from the refresh after adding a stepparent
+
+=item *
+
+fixed an uninitialized value warning introduced in 0.11_14
+
+=item *
+
+changed the misleading "Uploaded files" to "Uploaded images" on the
+edit pages.
+
+=back
+
 =head2 0.11_14
 
 =over

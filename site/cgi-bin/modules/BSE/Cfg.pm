@@ -50,7 +50,7 @@ sub new {
   return $class->_load_cfg($file);
 }
 
-=item entry($section, $key)
+=item entry($section, $key, $def)
 
 Returns the value of the given $key from section $section.
 
@@ -59,10 +59,15 @@ If the section or key doesn not exist, return undef.
 =cut
 
 sub entry {
-  my ($self, $section, $key) = @_;
+  my ($self, $section, $key, $def) = @_;
 
-  $self->{config}{lc $section} 
-    && $self->{config}{lc $section}{values}{lc $key};
+  if (exists $self->{config}{lc $section} 
+      && exists $self->{config}{lc $section}{values}{lc $key}) {
+    return $self->{config}{lc $section}{values}{lc $key}
+  }
+  else {
+    return $def;
+  }
 }
 
 =item entries($section)

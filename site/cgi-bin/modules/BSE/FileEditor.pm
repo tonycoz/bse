@@ -252,7 +252,15 @@ sub filedel {
 
     if ($file) {
       my $downloadPath = $self->{cfg}->entryErr('paths', 'downloads');
-      unlink $downloadPath . "/" . $file->{filename};
+      my $filename = $downloadPath . "/" . $file->{filename};
+      my $debug_del = $self->{cfg}->entryBool('debug', 'file_unlink', 0);
+      if ($debug_del) {
+	unlink $filename
+	  or print STDERR "Error deleting $filename: $!\n";
+      }
+      else {
+	unlink $filename;
+      }
       $file->remove();
     }
   }

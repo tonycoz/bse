@@ -135,6 +135,23 @@ Java applet WYSIWYG body text editor (adrian)
 
 have the image cleanup tool cleanup downloads too (adrian)
 
+=item *
+
+Can we display allKids in the sitemap
+
+=item *
+
+Ability to reorder files from browse mode (the files attached to an
+article)
+
+=item *
+
+Clean up unreferenced files (like imageclean)
+
+=item *
+
+Split the step kids admin off to a separate admin page.
+
 =back
 
 =cut
