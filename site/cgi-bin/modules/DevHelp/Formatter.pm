@@ -38,7 +38,7 @@ sub _make_table {
   my $cellend = '';
   my $cellstart = '';
   if ($options =~ /=/) {
-    $tag .= " " . $options;
+    $tag .= " " . unescape_html($options);
   }
   elsif ($options =~ /\S/) {
     $options =~ s/\s+$//;

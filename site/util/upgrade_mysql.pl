@@ -8,13 +8,19 @@ use Getopt::Long;
 my $verbose;
 my $pretend;
 my $didbackup;
+my $input = "mysql.str";
+my $wanthelp;
 
 Getopt::Long::Configure('bundling');
 GetOptions("v:i", \$verbose,
 	   "n", \$pretend,
-	   "b", \$didbackup);
+	   "b", \$didbackup,
+	   "i=s", \$input,
+	   "h", \$wanthelp);
 $verbose = 1 if defined $verbose && $verbose == 0;
 $verbose = 0 unless $verbose;
+
+help() if $wanthelp;
 
 if ($didbackup) {
   print "Since you gave the -b option, I assume you made a backup.\n";
@@ -45,8 +51,8 @@ my $db = BSE::DB->single;
 UNIVERSAL::isa($db, 'BSE::DB::Mysql')
   or die "Sorry, this only works for Mysql databases\n";
 
-open STRUCT, "< mysql.str"
-  or die "Cannot open structure file mysql.str: $!\n";
+open STRUCT, "< $input"
+  or die "Cannot open structure file $input: $!\n";
 my %tables;
 my $table;
 while (<STRUCT>) {
@@ -55,7 +61,7 @@ while (<STRUCT>) {
   if (/^Table\s+([^,]+)/) {
     $table = $1;
   }
-  elsif (/^Column\s+(\w+),([^,]+),(\w*),([^,]*),([^,]*)/) {
+  elsif (/^Column\s+(\w+);([^;]+);(\w*);([^;]*);([^;]*)/) {
     $table or die "Column before Table";
     push(@{$tables{$table}{cols}}, 
 	 {
@@ -66,12 +72,12 @@ while (<STRUCT>) {
 	  extra=>$5,
 	 });		    
   }
-  elsif (/^Index\s+(\w+),(\d+),\[(\w+(?:,\w+)*)\]/) {
+  elsif (/^Index\s+(\w+);(\d+);\[(\w+(?:;\w+)*)\]/) {
     $tables{$table}{indices}{$1} =
       {
        name=>$1,
        unique => $2,
-       cols => [ split /,/, $3 ],
+       cols => [ split /;/, $3 ],
       };
   }
   else {
@@ -141,8 +147,8 @@ for my $table (sort keys %tables) {
   my $indices = $tables{$table}{indices};
   for my $name (grep $_ ne 'PRIMARY', keys %$indices) {
     next if $cindices{$name};
-    print "Creating index $name for $table\n" if $verbose;
     my $index = $indices->{$name};
+    print "Creating index $name(@{$index->{cols}}) for $table\n" if $verbose;
 
     my $sql = "alter table $table add ";
     $sql .= $index->{unique} ? "unique " : "index ";
@@ -227,7 +233,16 @@ sub create_clauses {
   }
 }
 
-__END__
+sub help {
+  # dump the POD up to the AUTHOR heading
+  while (<DATA>) {
+    last if /^=head1 AUTHOR/;
+    print;
+  }
+  exit;
+}
+
+__DATA__
 
 =head1 NAME
 
@@ -269,6 +284,14 @@ Level 2 will print debug messages containing any SQL that's being
 executed.
 
 Level 3 prints information useful only to developers.
+
+=item -i filename
+
+Specify and input filename that isn't mysql.str.
+
+=item -h
+
+Display help.
 
 =back
 

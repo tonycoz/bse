@@ -57,7 +57,7 @@ for my $table (@tables) {
     for my $name (@want) {
       defined $row->[$names{$name}] or $row->[$names{$name}] = "NULL";
     }
-    print "Column ",join(",",@$row[@names{@want}]),
+    print "Column ",join(";",@$row[@names{@want}]),
     "\n";
   }
   undef $ti;
@@ -76,8 +76,8 @@ for my $table (@tables) {
   #print Dumper(\%indices);
   for my $index (sort keys %indices) {
     my @sorted = sort { $a->[1] <=> $b->[1] } @{$indices{$index}};
-    print "Index $index,$unique{$index},[",
-      join(",", map $_->[0], @sorted),
+    print "Index $index;$unique{$index};[",
+      join(";", map $_->[0], @sorted),
       "]\n";
   }
 }

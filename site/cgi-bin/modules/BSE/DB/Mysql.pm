@@ -270,13 +270,26 @@ sub _single
   $self;
 }
 
+my $get_sql_by_name = 'select sql_statement from sql_statements where name=?';
+
 sub stmt {
   my ($self, $name) = @_;
 
   $name =~ s/BSE.*:://;
 
-  $statements{$name} or confess "Statement named '$name' not found";
-  my $sth = $self->{dbh}->prepare($statements{$name})
+  my $sql = $statements{$name};
+  unless ($sql) {
+    my @row = $self->{dbh}->selectrow_array($get_sql_by_name, {}, $name);
+    if (@row) {
+      $sql = $row[0];
+      print STDERR "Found SQL '$sql'\n";
+    }
+    else {
+      print STDERR "SQL statment $name not found in sql_statements table\n";
+    }
+  }
+  $sql or confess "Statement named '$name' not found";
+  my $sth = $self->{dbh}->prepare($sql)
     or croak "Cannot prepare $name statment: ",$self->{dbh}->errstr;
 
   $sth;

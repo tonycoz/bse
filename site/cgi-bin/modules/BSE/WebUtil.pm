@@ -19,7 +19,6 @@ sub refresh_to_admin {
   use Carp 'confess';
   defined $where or confess 'No url supplied';
 
-
   unless ($where =~ /^\w+:/) {
     require BSE::CfgInfo;
     my $adminbase = BSE::CfgInfo::admin_base_url($cfg);

@@ -29,7 +29,13 @@ sub cfg {
 }
 
 sub session {
+  $_[0]{session} or die "Session has been deleted already\n";
+
   return $_[0]{session};
+}
+
+sub end_request {
+  delete $_[0]{session};
 }
 
 sub extra_headers { return }

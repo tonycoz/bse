@@ -10,6 +10,44 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.14_16
+
+=over
+
+=item *
+
+upgrade_mysql.pl now takes a -i filename for the extra table
+structures to be installed.  A -h for help option was added too.
+
+=item *
+
+the format of the database structure file for upgrade_mysql.pl has
+changed, to allow for column types containing commas (like
+decimal(9,2)).
+
+=item *
+
+tbe table[htmloption="value" ... ] form of the table body tag no
+longer HTML escapes the options. (#348)
+
+=item *
+
+one of the changes to use the new formatter for summaries mixed up an
+argument order, breaking the <:summary ... :> tag (#347)
+
+=item *
+
+fixed some problems with the new sorting features in reorder.pl.
+
+=item *
+
+BSE::DB::Mysql will now attempt to search the sql_statements table for
+any SQL needed that isn't found in its internal table.  This is
+intended for use by external applications using BSE's database support
+tools, specifically for the nport project.
+
+=back
+
 =head2 0.14_15
 
 This adds several destabilizing changes, test before using in any

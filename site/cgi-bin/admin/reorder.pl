@@ -65,7 +65,8 @@ if ($req->user_can(edit_reorder_children => $parentid)) {
   
   
   my @order = sort { $b <=> $a } map $_->[1]{$_->[2]}, @kids;
-  my $sort = $cgi->param('sort') || 'current';
+  my $sort = join(",", $cgi->param('sort')) || 'current';
+  $sort =~ s/-,/-/g;
   my $reverse = $cgi->param('reverse');
   
   my $code;
@@ -86,9 +87,9 @@ if ($req->user_can(edit_reorder_children => $parentid)) {
     my @reverse = grep(s/^-// || 0, @fields);
     my %reverse;
     @reverse{@fields} = @reverse;
-    @fields = grep exists($kids[0]{$_}), @fields;
+    @fields = grep exists($kids[0][0]{$_}), @fields;
     my @num = 
-    my %num = map { $_ => 1 } $kids[0]->numeric;
+    my %num = map { $_ => 1 } Article->numeric;
 
     $code =
       sub {

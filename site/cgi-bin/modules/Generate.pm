@@ -445,8 +445,8 @@ sub baseActs {
 	 or return "<:summary $which No id returned :>";
        my $article = $articles->getByPkey($id)
 	 or return "<:summary $which Cannot find article $id:>";
-       return $self->summarize($articles, $article->{body}, 
-			       $article->{summaryLength}, $acts)
+       return $self->summarize($articles, $article->{body}, $acts, 
+			       $article->{summaryLength})
      },
      ifAdmin => sub { $self->{admin} },
      
