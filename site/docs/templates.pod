@@ -268,6 +268,11 @@ memory.)
 
 =head1 EMBEDDING
 
+From BSE 0.10 the embed tag can now embed any article, including
+articles specified by their id, and possibly using other than their
+normal template.  If can understand this section you should be able to
+apply that to embedding other articles.
+
 Embedding allows you to embed the contents of child articles within
 the display of the current article.  This can be used on a home page
 to present short (or long) current articles, or to simply present all
@@ -275,9 +280,9 @@ articles within a section inline, when there are few enough articles
 that a simple index is just too short.
 
 All article embedding is controlled by the templates.  If you find
-that your are getting all of the layout of a child page embedded into
-the parent page, then it's a template problem, not an article data
-problem.
+that you're are getting all of the layout of a child page embedded
+into the parent page, then it's a template problem, not an article
+data problem.
 
 =head2 Embedding tags
 
@@ -546,6 +551,28 @@ Generates an IMG tag if the given I<imagename> is in the title image
 directory ($IMAGEDIR/titles).  If it doesn't exists, produces the
 I<text>.
 
+=item embed I<which>
+
+=item embed I<which> I<template>
+
+=item embed child
+
+Embeds the article specified by which using either the specified
+template or the articles template.
+
+In this case I<which> can also be an article ID.
+
+I<template> is a filename relative to the templates directory.
+
+=item embed start ... embed end
+
+Marks the range of text that would be embedded in a parent that used
+C<embed child>.
+
+=item ifEmbedded
+
+Conditional tag, true if the current article is being embedded.
+
 =back
 
 =head2 Article tags
@@ -640,7 +667,7 @@ link to it.
 =item table[options\nrows...\n]
 
 Formats a table.  Options are either | separated table width, bgcolor,
-cellpadding, and font size, or raw html table attributes.
+cellpadding, font size and font face, or raw html table attributes.
 
 Each row is a single line:
 
@@ -657,9 +684,19 @@ An example:
  |3|9
  ]
 
+=item table[options|text]
+
+Formats a single cell table.  The options can be either | separated
+values as for the multi-line table[] tag, or raw HTML table options.
+
+  table[80%|#FF8080|Hello]
+
 =item ** text
 
-The text is formatted with bullets.
+The text is formatted with bullets.  Eg.
+
+  ** This will have a bullet at the left
+  ** So will this.
 
 =item ## text
 
@@ -673,11 +710,22 @@ is presented as:
  1.  the first line
  2.  the second line
 
+=item embed[which]
+
+=item embed[which,template]
+
+Embeds the article given by I<which>, which may be a symbolic name
+like "section" or an article id as a number.
+
+Make sure you don't create a loop where an article embeds itself or
+embeds another article that embeds the current article (or bigger
+loops).  This is handled with an error message in the page.
+
 =back
 
 =item keywords
 
-Ignore this one.
+This tag was never used.  Consider it deprecated.
 
 =item iterator ... crumbs
 
@@ -722,17 +770,7 @@ now.
 
 =item embed child
 
-Embeds the current child at that point.  Should be used with C<embed
-start> and C<embed end> in the child's template.
-
-=item embed start ... embed end
-
-Marks the range of text that would be embedded in a parent that used
-C<embed child>.
-
-=item ifEmbedded
-
-Conditional tag, true if the current article is being embedded.
+This has been made more general and been moved, see L<Generate/embed>.
 
 =back
 
