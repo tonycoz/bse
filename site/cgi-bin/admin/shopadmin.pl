@@ -70,6 +70,9 @@ my $imageEditor = Squirrel::ImageEditor->new(session=>\%session,
 my %what_to_do =
   (
    order_list=>\&order_list,
+   order_list_filled=>\&order_list_filled,
+   order_list_unfilled=>\&order_list_unfilled,
+   order_list_unpaid => \&order_list_unpaid,
    order_detail=>\&order_detail,
    order_filled=>\&order_filled,
    edit_product=>\&edit_product,
@@ -585,7 +588,33 @@ sub img_return {
 
 sub order_list_low {
   my ($template, $title, @orders) = @_;
-  
+
+  my $from = param('from');
+  my $to = param('to');
+  use BSE::Util::SQL qw/now_sqldate sql_to_date/;
+  my $today = now_sqldate();
+  for my $what ($from, $to) {
+    if (defined $what) {
+      if ($what eq 'today') {
+	$what = $today;
+      }
+      elsif (valid_date($what)) {
+	$what = date_to_sql($what);
+      }
+      else {
+	undef $what;
+      }
+    }
+  }
+  if (defined $from || defined $to) {
+    $from ||= '1900-01-01';
+    $to ||= '2999-12-31';
+    param('from', sql_to_date($from));
+    param('to', sql_to_date($to));
+    $to = $to."Z";
+    @orders = grep $from le $_->{orderDate} && $_->{orderDate} le $to,
+    @orders;
+  }
   my @orders_work;
   my $order_index = -1;
   my %acts;
@@ -605,6 +634,12 @@ sub order_list_low {
      title => sub { $title },
      ifHaveParam => sub { defined param($_[0]) },
      ifParam => sub { param($_[0]) },
+     cgi => 
+     sub { 
+       my $value = param($_[0]);
+       defined $value or $value = '';
+       CGI::escapeHTML($value);
+     },
     );
   page($template, \%acts);
 }
