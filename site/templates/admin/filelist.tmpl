@@ -1,0 +1,124 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+
+  <title>Administration - File Wizard</title>
+
+  <link rel="stylesheet" type="text/css" href="/css/admin.css" />
+
+</head>
+
+<body>
+
+  <input type="button" onclick="history.go(0);" value="  Refresh  " />
+
+  <h1>File Wizard</h1>
+
+  <h2>Add a new file</h2>
+
+<:ifMessage:><p><b><:message:></b></p><:or:><:eif:>
+
+<form method="post" action="<:script:>" enctype="multipart/form-data">
+
+<input type="hidden" name="id" value="<: article id :>" />
+  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000">
+    <tr> 
+      <td> 
+        <table cellpadding="6" border="0" cellspacing="1">
+          <tr> 
+            <th>File to add: </th>
+            <td bgcolor="#FFFFFF"> 
+              <input type="file" name="file" /> <:help file file:>
+            </td>
+          </tr>
+          <tr> 
+            <th>Description: </th>
+            <td bgcolor="#FFFFFF"> 
+              <input type="text" name="description" /> <:help file description:>
+            </td>
+          </tr>
+          <tr> 
+            <th> Content-Type: </th>
+            <td bgcolor="#FFFFFF"> 
+              <input type="text" name="contentType" /> <:help file content_type:> (blank for guess)
+            </td>
+          </tr>
+          <tr> 
+            <th> Treat as download: </th>
+            <td bgcolor="#FFFFFF"> 
+              <input type="checkbox" name="download" value="1" /> <:help file download:>
+            </td>
+          </tr>
+          <tr> 
+            <th>&nbsp; </th>
+            <td align="right" bgcolor="#FFFFFF"> 
+              <input type="submit" name="fileadd" value="  Add File  " />
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</form>
+
+  <h2>Manage Files</h2>
+
+<form method="post" action="<:script:>" enctype="multipart/form-data">
+<input type="hidden" name="id" value="<: article id :>" />
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000">
+    <tr>
+      <td>
+  <table cellpadding="6" border="0" cellspacing="1">
+    <tr>
+    <th>
+      File</th>
+    <th>
+      Description</th>
+    <th>
+      Content-Type</th>
+    <th>
+      Download</th>
+    <th>
+      &nbsp;</th></tr>
+<:if Files:>
+<: iterator begin files :>
+    <tr bgcolor="#FFFFFF"> 
+      <td align="center"> <:file displayName:></td>
+      <td valign="top"> 
+        <input type="text" name="description_<:file id:>" value="<: file description :>" /></td>
+      <td valign="top"> 
+        <input type="text" name="contentType_<:file id:>" value="<: file contentType :>" /></td>
+      <td valign="top" align="center"><input type="checkbox" name="download_<:file id:>"<:ifFile download:> checked<:or:><:eif:> /> </td>
+      <td> 
+        <b><a href="<:script:>?filedel=1&amp;id=<:article id:>&amp;file=<:file id:>">Remove</a></b> <:move:></td></tr>
+<: iterator separator files :>
+    <tr bgcolor="#FFFFFF"> 
+      <td colspan="5">&nbsp;</td>
+    </tr>
+<: iterator end files :>
+
+  <tr>
+      <td colspan="5" align="right" valign="bottom" bgcolor="#FFFFFF"> 
+        <input type="submit" name="filesave" value="  Save changes  " /></td>
+  </tr>
+
+<:or Files:>
+
+    <tr bgcolor="#FFFFFF"> 
+      <td colspan="5" align="center">No files are attached to this article</td>
+    </tr>
+
+<:eif Files:>
+
+  </table>
+</td>
+</tr>
+</table>
+
+  <p>
+    <input type="submit" name="back" value=" &lt;&lt;  Back  " /></p>
+
+</form>
+
+</body
+></html>
