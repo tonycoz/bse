@@ -111,6 +111,15 @@ since these can fail when an invalid address is supplied.
 
 document the body tags
 
+=item *
+
+more general access to the date tag from the search page (maybe with
+more formatting options)
+
+=item *
+
+a central image repository, so images can be shared between articles
+
 =back
 
 =cut
