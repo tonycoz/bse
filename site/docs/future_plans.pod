@@ -1,0 +1,53 @@
+=head1 NAME
+
+future_plans.pod - short to long term changes in BSE
+
+=head1 SYNOPSIS
+
+This document is intended to describe the future direction of BSE.
+
+=head1 MAJOR CHANGES
+
+=head2 Database access
+
+Currently the database access library used by BSE has global state,
+this prevents moving the configuration from Constants.pm to bse.cfg,
+and prevents using BSE in a mod_perl or fast CGI environment.
+
+The aim is to use the libraries from Resource (which were originally
+created for other projects), which should allow saner usage.
+
+This may break existing BSE::Custom modules.
+
+=head2 Elimintate Configuration in Constants.pm
+
+This file makes it hard to upgrade BSE.  Ideally everything goes into
+bse.cfg.
+
+=head2 Re-work shop.pl
+
+The shop is amongst the oldest code in the system, and the most
+convoluted.
+
+It needs to break up the checkout process in order to support online
+credit card processing.
+
+The handling of shipping vs billing fields needs to be changed.
+
+=head1 MINOR CHANGES
+
+Well relatively minor changes.
+
+=head2 Permission changes
+
+BSE native permissions should all use the C<bse_> prefix.
+
+=head2 Template search paths
+
+It should be possible to have more than one local_templates directory.
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=cut

@@ -13,17 +13,22 @@ sub escape {
 }
 
 sub _iter_reset_paged {
-  my ($self, $rdata, $rindex) = @_;
+  my ($self, $rdata, $rindex, $rstore) = @_;
 
   $$rindex = -1;
+  undef $$rstore if $rstore;
 
   1;
 }
 
 sub _iter_iterate {
-  my ($self, $rdata, $rindex) = @_;
+  my ($self, $rdata, $rindex, $rstore) = @_;
 
-  return ++$$rindex < @$rdata;
+  if (++$$rindex < @$rdata) {
+    $$rstore = $rdata->[$$rindex] if $rstore;
+    return 1;
+  }
+  return;
 }
 
 sub _iter_item {
@@ -78,7 +83,7 @@ sub _iter_if_last {
 
 sub make_paged_iterator {
   my ($self, $single, $plural, $rdata, $rindex, $cgi, $pagename,
-      $perpage_parm, $save, $get) = @_;
+      $perpage_parm, $save, $get, $rstore) = @_;
 
   my ($def_per_page, $def_page_num);
   if ($get) {
@@ -140,9 +145,9 @@ sub make_paged_iterator {
   return
     (
      "iterate_${plural}_reset" => 
-     [ _iter_reset_paged=>$self, \@data, $rindex ],
+     [ _iter_reset_paged=>$self, \@data, $rindex, $rstore ],
      "iterate_${plural}" =>
-     [ _iter_iterate=>$self, \@data, $rindex, $single ],
+     [ _iter_iterate=>$self, \@data, $rindex, $rstore ],
      $single => [ _iter_item => $self, \@data, $rindex, $single, $plural ],
      "if\u$plural" => scalar(@data),
      "${single}_index" => [ _iter_index=>$self, $rindex ],
@@ -180,7 +185,7 @@ sub make_paged_iterator {
 }
 
 sub _iter_reset {
-  my ($self, $rdata, $rindex, $code, $loaded, $nocache, 
+  my ($self, $rdata, $rindex, $code, $loaded, $nocache, $rstore,
       $args, $acts, $name, $templater) = @_;
 
   if (!$$loaded && !@$rdata && $code || $args || $nocache) {
@@ -194,6 +199,7 @@ sub _iter_reset {
   }
 
   $$rindex = -1;
+  undef $$rstore if $rstore;
 
   1;
 }
@@ -222,7 +228,7 @@ sub _iter_count {
 }
 
 sub make_iterator {
-  my ($self, $code, $single, $plural, $rdata, $rindex, $nocache) = @_;
+  my ($self, $code, $single, $plural, $rdata, $rindex, $nocache, $rstore) = @_;
 
   my $index;
   defined $rindex or $rindex = \$index;
@@ -232,9 +238,9 @@ sub make_iterator {
   return
     (
      "iterate_${plural}_reset" => 
-     [ _iter_reset=>$self, $rdata, $rindex, $code, \$loaded, $nocache ],
+     [ _iter_reset=>$self, $rdata, $rindex, $code, \$loaded, $nocache, $rstore ],
      "iterate_${plural}" =>
-     [ _iter_iterate=>$self, $rdata, $rindex, $nocache ],
+     [ _iter_iterate=>$self, $rdata, $rindex, $nocache, $rstore ],
      $single => 
      [ _iter_item=>$self, $rdata, $rindex, $single, $plural ],
      "${single}_index" => [ _iter_index=>$self, $rindex ],

@@ -318,6 +318,12 @@ sub user_has_perm {
     }
   }
 
+  # we want to switch to making all standard permissions bse_...
+  # so allow checks for those
+  if ($action =~ /^bse_(\w+)$/) {
+    return $self->user_has_perm($user, $article, $1, $rmsg);
+  }
+
   return;
 }
 

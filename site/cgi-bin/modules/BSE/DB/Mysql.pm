@@ -71,6 +71,11 @@ select ar.*, pr.* from article ar, product pr, other_parents op
    where ar.id = pr.articleId and op.childId = ar.id 
      and op.parentId = ? and ? between op.release and op.expire
 EOS
+   'Products.subscriptionDependent' => <<SQL,
+select ar.*, pr.* from article ar, product pr
+   where ar.id = pr.articleId
+     and (pr.subscription_id = ? or subscription_required = ?)
+SQL
    deleteProduct => 'delete from product where articleId = ?',
    Orders => 'select * from orders',
    getOrderByPkey => 'select * from orders where id = ?',
@@ -284,6 +289,21 @@ delete from bse_subscriptions where subscription_id = ?
 SQL
    getSubscriptionByPkey => <<SQL,
 select * from bse_subscriptions where subscription_id = ?
+SQL
+   subscriptionOrderItemCount => <<SQL,
+select count(*) as "count" from order_item where subscription_id = ?
+SQL
+   subscriptionOrderSummary => <<SQL,
+select od.id, od.userId, od.orderDate, od.siteuser_id, 
+    sum(oi.subscription_period) as "subscription_period"
+  from orders od, order_item oi
+  where oi.subscription_id = ? and od.id = oi.orderId
+  group by od.id, od.userId, od.orderDate, od.siteuser_id
+  order by od.orderDate desc
+SQL
+   subscriptionProductCount => <<SQL,
+select count(*) as "count" from product 
+  where subscription_id = ? or subscription_required = ?
 SQL
   );
 

@@ -42,4 +42,55 @@ sub valid_fields {
     );
 }
 
+sub is_removable {
+  my ($self, $rmsg) = @_;
+
+  # can only remove if no products use it and no existing orders refer
+  # to it
+  if ($self->product_count) {
+    $$rmsg = "There are products using this subscription, it cannot be deleted"
+      if $rmsg;
+    return;
+  }
+  if ($self->order_item_count) {
+    $$rmsg = "There are orders that include this subscription, it cannot be deleted"
+      if $rmsg;
+    return;
+  }
+
+  return 1;
+}
+
+sub product_count {
+  my ($self) = @_;
+
+  my ($row) = BSE::DB->query(subscriptionProductCount => 
+			     $self->{subscription_id}, $self->{subscription_id});
+
+  return $row->{count};
+}
+
+sub order_item_count {
+  my ($self) = @_;
+
+  my ($row) = BSE::DB->query(subscriptionOrderItemCount => 
+			     $self->{subscription_id});
+
+  return $row->{count};
+}
+
+sub dependent_products {
+  my ($self) = @_;
+
+  require Products;
+  Products->getSpecial(subscriptionDependent => $self->{subscription_id}, 
+		       $self->{subscription_id});
+}
+
+sub order_summary {
+  my ($self) = @_;
+
+  BSE::DB->query(subscriptionOrderSummary=>$self->{subscription_id});
+}
+
 1;

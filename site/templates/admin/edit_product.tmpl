@@ -235,7 +235,7 @@
             images:></td>
           </tr>
 		  <:or Article:><:eif Article:>
-          <!-- tr> 
+          <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF">Purchase subscribes to:</th>
             <td nowrap bgcolor="#FFFFFF"> 
 	      <select name="subscription_id">
@@ -243,7 +243,7 @@
 <:iterator begin subscriptions:>
                 <option value="<:subscription subscription_id:>"<:ifEq [old subscription_id] [subscription subscription_id]:> selected="selected"<:or:><:eif:>><:subscription title:></option>
 <:iterator end subscriptions:>
-	      </select> for <input type="text" name="subscription_period" value="<:old subscription_period:>" size="3" /><:error_img subscription_period:> months.
+	      </select> for <input type="text" name="subscription_period" value="<:ifEq [old subscription_period] "":><:default subscription_period:><:or:><:old subscription_period:><:eif:>" size="3" /><:error_img subscription_period:> months.
             </td>
             <td nowrap bgcolor="#FFFFFF"><:help product subscription_id:></td>
           </tr>
@@ -269,7 +269,7 @@
 	      </select> to purchase this product
             </td>
             <td nowrap bgcolor="#FFFFFF"><:help product subscription_id:></td>
-          </tr -->
+          </tr>
         </table>
       </td>
     </tr>

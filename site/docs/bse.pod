@@ -10,6 +10,47 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.14_29
+
+=over
+
+=item *
+
+I'm planning on making all base BSE permission checks use a "bse_"
+prefix to avoid conflicts with add ons like nPort.  The permission
+checks should all now allow checks against bse_foo when only the foo
+permission has been granted.
+
+This should allow templates to be updated to use the C<bse_> prefix.
+Note that the permission sets in bse.cfg must continue to use the
+non-C<bse_> names for now.
+
+=item *
+
+most of the structure of subscriptions has been done, provided for
+templating and testing.
+
+Note in particular that the users iterator on the subscription details
+page will return an empty list for now.
+
+=item *
+
+0.14_24 added ".html" to the end of "link title" links, this broke
+regeneration.  This release changes that to "_html" at the end of the
+links, which shouldn't break regeneration and will hopefully still
+allow google to index them.
+
+I'll probably preserve the current behaviour if we add a mechanism for
+setting the content filenames, since unlike filename changes this
+preserves the link, so a title change won't break links from external
+sites.
+
+=item *
+
+added site/docs/future_plans.pod to the distribution
+
+=back
+
 =head2 0.14_28
 
 Release in preparation for subscriptions implementation

@@ -29,6 +29,7 @@ href="/cgi-bin/admin/subs.pl">newsletters system.</a></p>
             <th bgcolor="#FFFFFF" nowrap> <a href="<:script:>?<:sorthelp title:>&p=<:subscriptions_pagenum:>&pp=<:subscriptions_perpage:>">Title</a></th>
             <th bgcolor="#FFFFFF" nowrap> <a href="<:script:>?<:sorthelp description:>&p=<:subscriptions_pagenum:>&pp=<:subscriptions_perpage:>">Description</a></th>
             <th bgcolor="#FFFFFF" nowrap> <a href="<:script:>?<:sorthelp max_lapsed:>&p=<:subscriptions_pagenum:>&pp=<:subscriptions_perpage:>">Max Lapse</a></th>
+	    <th bgcolor="#FFFFFF" nowrap>&nbsp;</th>
           </tr>
           <:if Subscriptions:> <: iterator begin subscriptions :> 
           <tr bgcolor="#FFFFFF"> 
@@ -36,6 +37,7 @@ href="/cgi-bin/admin/subs.pl">newsletters system.</a></p>
             <td valign="top"><:isubscription title:></td>
             <td valign="top"><:isubscription description:></td>
             <td valign="top"><:isubscription max_lapsed:></td>
+	    <td><a href="<:script:>?a_detail=1&amp;subscription_id=<:isubscription subscription_id:>">Details</a> <:ifRemovable:><a href="<:script:>?a_detail=1&amp;_t=delete&amp;subscription_id=<:isubscription subscription_id:>">Delete</a><:or:><:eif:></td>
           </tr>
           <: iterator end subscriptions :> 
           <:or Subscriptions:> 

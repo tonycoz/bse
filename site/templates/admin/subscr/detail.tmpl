@@ -1,0 +1,124 @@
+<:wrap admin/xbase.tmpl title=>"Subscription Detail: [subscription text_id]":>
+<h1>Subscription Detail: <:subscription text_id:></h1>
+<p>
+| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |
+<:if UserCan bse_subs_list :><a href="<:script:>?a_list=1">List Subscriptions</a> |<:or UserCan:><:eif UserCan:>
+<:if UserCan bse_subs_edit :>
+<a href="<:script:>?a_edit=1&amp;subscription_id=<:subscription subscription_id:>">Edit Subscription</a> |<:or UserCan:><:eif UserCan:>
+<:if UserCan bse_subs_add :>
+<a href="<:script:>?a_addform=1">Add Subscription</a> |<:or UserCan:><:eif UserCan:>
+<:ifMessage:>
+<p><b><:message:></b></p>
+<:or:><:eif:> 
+
+<table>
+<tr>
+  <th>Identifier:</th>
+  <td><:subscription text_id:></td>
+</tr>
+<tr>
+  <th>Title:</th>
+  <td><:subscription title:></td>
+</tr>
+<tr>
+  <th>Description:</th>
+  <td><:subscription description:></td>
+</tr>
+<tr>
+  <th>Max Lapsed:</th>
+  <td><:subscription max_lapsed:> Days</td>
+</tr>
+<tr>
+  <th>Associated Products:</th>
+  <td>
+<:if Products:>
+<table>
+<tr>
+  <th>Id</th>
+  <th>Name</th>
+  <th>Sells</th>
+  <th>Period</th>
+  <th>Condition</th>
+  <th>Requires</th>
+</tr>
+<:iterator begin products:>
+<tr>
+  <td><a href="/cgi-bin/admin/add.pl?id=<:product id:>"><:product id:></a></td>
+  <td><a href="/cgi-bin/admin/add.pl?id=<:product id:>"><:product title:></a></td>
+  <td>
+  <:switch:>
+  <:case Eq [subscription subscription_id] [product subscription_id]:>
+    Yes
+  <:case Eq [product subscription_id] "-1":>
+    None
+  <:case default:>
+    <a href="<:script:>?a_detail=1&amp;subscription_id=<:product subscription_id:>">Other</a>
+  <:endswitch:>
+  </td>
+  <td><:product subscription_period:></td>
+  <td>	
+    <:switch:>
+    <:case Eq [subscription subscription_usage] 1:>Start only
+    <:case Eq [subscription subscription_usage] 2:>Renew only
+    <:case Eq [subscription subscription_usage] 3:>Start or Renew
+    <:endswitch:>
+  </td>
+  <td>
+  <:switch:>
+  <:case Eq [subscription subscription_id] [product subscription_required]:>
+    Yes
+  <:case Eq [product subscription_required] "-1":>
+    None
+  <:case default:>
+    <a href="<:script:>?a_detail=1&amp;subscription_id=<:product subscription_required:>">Other</a>
+  <:endswitch:>
+  </td>
+</tr>
+<:iterator end products:>
+</table>
+<:or Products:>
+There are no products that subscribe to or require this subscription.
+<:eif Products:>  </td>
+</tr>
+<tr>
+  <th>Subscribed Users:</th>
+  <td>
+<:if Users:>
+<table>
+  <tr><th>Id</th><th>Logon</th><th>Email</th><th>Expires</th></tr>
+  <:iterator begin users:>
+  <tr>
+    <td><a href="/cgi-bin/admin/siteusers.pl?a_edit=1&amp;id=<:user id:>"><:user id:></a></td>
+    <td><a href="/cgi-bin/admin/siteusers.pl?a_edit=1&amp;id=<:user userId:>"><:user id:></a></td>
+    <td><a href="mailto:<:user email:>"><:user email:></a></td>
+    <td><:date user ends_at:></td>
+  </tr>
+  <:iterator end users:>
+</table>
+<:or Users:>
+No users are subscribed.
+<:eif Users:>    
+  </td>
+</tr>
+<tr>
+  <th>Orders:</th>
+  <td>
+<:if Orders:>
+<table>
+  <tr><th>Id</th><th>Date</th><th>User</th><th>Months</th></tr>
+<:iterator begin orders:>
+  <tr>
+    <td><:ifUserCan bse_shop_order_detail:><a href="/cgi-bin/admin/shopadmin.pl?order_detail=1&amp;id=<:order id:>"><:order id:></a><:or:><:order id:><:eif:></td>
+    <td><:date order orderDate:></td>
+    <td><a href="/cgi-bin/admin/siteusers.pl?a_edit=1&amp;id=<:order siteuser_id:>"><:order userId:></a></td>
+    <td><:order subscription_period:></td>
+  </tr>
+<:iterator end orders:>
+</table>
+<:or Orders:>
+There have been no orders for this subscription.
+<:eif Orders:>
+  </td>
+</tr>
+</table>
+

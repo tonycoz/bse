@@ -28,7 +28,7 @@ site/cgi-bin/admin/reorder.pl
 site/cgi-bin/admin/report.pl
 site/cgi-bin/admin/shopadmin.pl
 site/cgi-bin/admin/siteusers.pl
-#site/cgi-bin/admin/subadmin.pl
+site/cgi-bin/admin/subadmin.pl
 site/cgi-bin/admin/subs.pl
 site/cgi-bin/admin/userlist.pl
 site/cgi-bin/bse.cfg
@@ -92,8 +92,8 @@ site/cgi-bin/modules/BSE/TB/Order.pm
 site/cgi-bin/modules/BSE/TB/Orders.pm
 site/cgi-bin/modules/BSE/TB/OrderItem.pm
 site/cgi-bin/modules/BSE/TB/OrderItems.pm
-#site/cgi-bin/modules/BSE/TB/Subscription.pm
-#site/cgi-bin/modules/BSE/TB/Subscriptions.pm
+site/cgi-bin/modules/BSE/TB/Subscription.pm
+site/cgi-bin/modules/BSE/TB/Subscriptions.pm
 site/cgi-bin/modules/BSE/Template.pm
 site/cgi-bin/modules/BSE/UI/AdminDispatch.pm
 site/cgi-bin/modules/BSE/UI/Affiliate.pm
@@ -162,6 +162,8 @@ site/docs/bugs.html
 site/docs/bugs.pod
 site/docs/config.html
 site/docs/config.pod
+site/docs/future_plans.html
+site/docs/future_plans.pod
 site/docs/gen.html
 site/docs/makedocs
 site/docs/makedocs.html
@@ -274,9 +276,10 @@ site/templates/admin/subs/sending.tmpl
 site/templates/admin/subs/send_error.tmpl
 site/templates/admin/subs/send_form.tmpl
 site/templates/admin/subs/start_send.tmpl
-#site/templates/admin/subscr/add.tmpl
-#site/templates/admin/subscr/edit.tmpl
-#site/templates/admin/subscr/list.tmpl
+site/templates/admin/subscr/add.tmpl
+site/templates/admin/subscr/detail.tmpl
+site/templates/admin/subscr/edit.tmpl
+site/templates/admin/subscr/list.tmpl
 site/templates/admin/userlist.tmpl
 site/templates/admin/users/add.tmpl
 site/templates/admin/users/edit.tmpl

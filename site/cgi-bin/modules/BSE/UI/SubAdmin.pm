@@ -17,6 +17,7 @@ my %rights =
    edit => 'bse_subs_edit',
    save => 'bse_subs_edit',
    detail => 'bse_subs_detail',
+   remove => 'bse_subs_delete',
   );
 
 sub actions { \%rights }
@@ -37,6 +38,7 @@ sub req_list {
            name=>'subs', fields=> { subscription_id => {numeric => 1 },
 				     max_lapsed => { numeric => 1}});
   my $it = BSE::Util::Iterate->new;
+  my $current_sub;
 
   my %acts;
   %acts =
@@ -48,10 +50,11 @@ sub req_list {
      message => $msg,
      $it->make_paged_iterator('isubscription', 'subscriptions', \@subs, undef,
                               $cgi, undef, 'pp=20', $req->session, 
-                              'subscriptions'),
+                              'subscriptions', \$current_sub),
      sorthelp => [ \&tag_sorthelp, $sortby, $reverse ],
      sortby=>$sortby,
      reverse=>$reverse,
+     ifRemovable => [ \&tag_ifRemovable, \$current_sub ],
     );
 
   return $req->dyn_response('admin/subscr/list', \%acts);
@@ -169,7 +172,7 @@ sub req_save {
 }
 
 sub req_detail {
-  my ($class, $req) = @_;
+  my ($class, $req, $errors) = @_;
 
   my $sub_id = $req->cgi->param('subscription_id');
   $sub_id && $sub_id =~ /^\d+/
@@ -181,6 +184,7 @@ sub req_detail {
       ($req, { subscription_id=>'Unknown subscription_id' });
 
   my $msg = $req->message($errors);
+  my $it = BSE::Util::Iterate->new;
 
   my %acts;
   %acts =
@@ -191,11 +195,65 @@ sub req_detail {
      msg => $msg,
      message => $msg,
      subscription => [ \&tag_hash, $sub ],
-     # products that use it
-     # users subscribed to it
+     ifRemovable => [ \&tag_ifRemovable, \$sub ],
+     $it->make_iterator
+     ([ \&iter_products, $sub ], 'product', 'products'),
+     $it->make_iterator
+     ([ \&iter_orders, $sub ], 'order', 'orders'),
+     $it->make_iterator
+     ([ \&iter_users, $sub ], 'user', 'users'),
     );
 
   return $req->dyn_response('admin/subscr/detail', \%acts);
+}
+
+sub iter_products {
+  my ($sub) = @_;
+
+  $sub->dependent_products;
+}
+
+sub iter_orders {
+  my ($sub) = @_;
+
+  $sub->order_summary;
+}
+
+sub iter_users {
+  return;
+}
+
+sub req_remove {
+  my ($class, $req) = @_;
+
+  my $sub_id = $req->cgi->param('subscription_id');
+  $sub_id && $sub_id =~ /^\d+/
+    or return $class->req_list
+      ($req, { subscription_id=>'Missing or invalid subscription_id' });
+  my $sub = BSE::TB::Subscriptions->getByPkey($sub_id);
+  $sub
+    or return $class->req_list
+      ($req, { subscription_id=>'Unknown subscription_id' });
+
+  my $msg;
+  $sub->is_removable(\$msg)
+    or return $class->req_list
+      ($req, { subscription_id=>$msg });
+
+  my $id = "$sub->{text_id}/$sub->{title}";
+  $sub->remove;
+
+  my $r = $class->_list_refresh($req, "Subscription $id removed");
+
+  return BSE::Template->get_refresh($r, $req->cfg);
+}
+
+sub tag_ifRemovable {
+  my ($rsub) = @_;
+
+  $$rsub or return;
+
+  $$rsub->is_removable;
 }
 
 sub _list_refresh {

@@ -1237,7 +1237,7 @@ sub make_link {
   my $link_titles = $self->{cfg}->entryBool('basic', 'link_titles', 0);
   if ($link_titles) {
     (my $extra = lc $article->{title}) =~ tr/a-z0-9/_/sc;
-    $link .= "/" . $extra . ".html";
+    $link .= "/" . $extra . "_html";
   }
 
   $link;
@@ -1306,7 +1306,7 @@ sub save_new {
   }
 
   # these columns are handled a little differently
-  for my $col (qw(release expire  threshold summaryLength )) {
+  for my $col (qw(release expire threshold summaryLength )) {
     $data{$col} 
       or $data{$col} = $self->default_value($req, \%data, $col);
   }

@@ -46,10 +46,10 @@ sub hash_tag {
   return encode_entities($value);
 }
 
-#sub iter_subs {
-#  require BSE::TB::Subscriptions;
-#  BSE::TB::Subscriptions->all;
-#}
+sub iter_subs {
+  require BSE::TB::Subscriptions;
+  BSE::TB::Subscriptions->all;
+}
 
 sub low_edit_tags {
   my ($self, $acts, $req, $article, $articles, $msg, $errors) = @_;
@@ -61,8 +61,8 @@ sub low_edit_tags {
      $self->SUPER::low_edit_tags($acts, $req, $article, $articles, $msg,
 				$errors),
      alloptions => join(",", sort keys %Constants::SHOP_PRODUCT_OPTS),
-     #$it->make_iterator
-     #([ \&iter_subs, $req ], 'subscription', 'subscriptions'),
+     $it->make_iterator
+     ([ \&iter_subs, $req ], 'subscription', 'subscriptions'),
     );
 }
 
@@ -122,15 +122,15 @@ sub _validate_common {
     my $value = $data->{$sub_field};
     defined $value or next;
     if ($value ne '-1') {
-      #require BSE::TB::Subscriptions;
-      #@subs = BSE::TB::Subscriptions->all unless @subs;
-      #unless (grep $_->{subscription_id} == $value, @subs) {
+      require BSE::TB::Subscriptions;
+      @subs = BSE::TB::Subscriptions->all unless @subs;
+      unless (grep $_->{subscription_id} == $value, @subs) {
 	$errors->{$sub_field} = "Invalid $sub_field value";
-      #}
+      }
     }
   }
   if (defined $data->{subscription_period}) {
-    unless ($data->{subscription_period} =~ /^(?:|\d+)$/) {
+    unless ($data->{subscription_period} =~ /^\d+$/ && $data->{subscription_period} > 0) {
       $errors->{subscription_period} = "Invalid subscription period, it must be the number of months to subscribe";
     }
   }
