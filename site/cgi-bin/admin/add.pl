@@ -192,7 +192,7 @@ else {
 }
 
 unless ($level_cache{$level}{edit}) {
-  my $checkfor = "edit_$level";
+  my $checkfor = "admin/edit_$level";
   $level_cache{$level}{edit} = -e "$TMPLDIR/${checkfor}.tmpl" ? $checkfor :
     $levels{$level}{edit};
 }
@@ -281,7 +281,7 @@ start();
 sub start {
   # just substitute empty defaults into the blank page
   if ($article->{parentid} && $article->{parentid} == $SHOPID) {
-    page('edit_catalog.tmpl');
+    page('admin/edit_catalog.tmpl');
   }
   else {
     page($level_cache{$level}{edit}.".tmpl");
