@@ -10,6 +10,35 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+Trying again for a release candidate for 0.15.
+
+=head2 0.14_36
+
+=over
+
+=item *
+
+the <:money ...:> when used on static pages, or when resolved when
+pregenerating base pages, would ignore the third and subsequent
+arguments.
+
+=item *
+
+the checkupdate target for the checkout page would crash if there was
+no custom session data defined.
+
+=item *
+
+the final purchase page did not have access to the normal BSE static
+tags
+
+=item *
+
+the switch tag didn't handle the protocol used to handle unimplemented
+subtags.
+
+=back
+
 =head2 0.14_35
 
 This is a release candidate for 0.15.

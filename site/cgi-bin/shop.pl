@@ -264,6 +264,7 @@ sub remove_item {
 sub checkupdate {
   my @cart = @{$session{cart}};
   my @cart_prods = map { Products->getByPkey($_->{productId}) } @cart;
+  $session{custom} ||= {};
   my %custom_state = %{$session{custom}};
   custom_class($cfg)
       ->checkout_update($CGI::Q, \@cart, \@cart_prods, \%custom_state, $cfg);
@@ -667,6 +668,7 @@ sub purchase {
     (
      $cust_class->purchase_actions(\%acts, \@items, \@products, 
 				   $session{custom}, $cfg),
+     BSE::Util::Tags->static(\%acts, $cfg),
      iterate_items_reset => sub { $item_index = -1; },
      iterate_items => 
      sub { 

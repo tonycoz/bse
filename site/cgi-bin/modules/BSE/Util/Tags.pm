@@ -97,7 +97,7 @@ sub static {
      money =>
      sub {
        my ($arg, $acts, $name, $templater) = @_;
-       my ($func, $args) = split ' ', $arg;
+       my ($func, $args) = split ' ', $arg, 2;
        $args = '' unless defined $args;
        exists $acts->{$func}
 	 or return "<: money $func $args :>";

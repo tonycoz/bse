@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 17;
+use Test::More tests => 18;
 
 sub template_test($$$$;$);
 
@@ -64,6 +64,12 @@ IN
   $str = "ABC";
   template_test($switch2, "ONE", "switch without ignored", \%acts, "both");
 
+  template_test(<<IN, <<OUT, "unimplemented switch", \%acts, "both");
+<:switch:><:case Eq [strref] "XYZ":>FAIL<:case Eq [unknown] "ABC":><:endswitch:>
+IN
+<:switch:><:case Eq [unknown] "ABC":><:endswitch:>
+OUT
+
   template_test("<:with begin upper:>Alpha<:with end upper:>", "ALPHA", "with", \%acts);
   template_test("<:include doesnt/exist optional:>", "", "optional include", \%acts);
   template_test("<:include doesnt/exist:>", "** cannot find include doesnt/exist in path **", "failed include", \%acts);
@@ -117,6 +123,7 @@ sub get_expr {
     if ($args =~ s/\s*\[([^\[\]]+)\]\s*//) {
       my $expr = $1;
       my ($func, $funcargs) = split ' ', $expr, 2;
+      exists $acts->{$func} or die "ENOIMPL\n";
       push @values, scalar $templater->perform($acts, $func, $funcargs, $expr);
     }
     elsif ($args =~ s/\s*\"((?:[^\"\\]|\\[\"\\]|\"\")*)\"\s*//) {

@@ -309,18 +309,29 @@ sub switch {
 
     print STDERR "  testing $func $args\n" if DEBUG;
 
-    my $result;
-    if (exists $acts->{"if$func"}) {
-      print STDERR "   found cond if$func\n" if DEBUG > 1;
-      $result = $self->low_perform($acts, "if$func", $args, '');
-    }
-    elsif (exists $acts->{lcfirst $func}) {
-      print STDERR "   found cond $func\n" if DEBUG > 1;
-      $result = $self->low_perform($acts, lcfirst $func, $args, '');
-    }
-    else {
-      print STDERR "   not found\n" if DEBUG > 1;
-      return "<:switch:>$case".join("", @cases)."<:endswitch:>";
+    my $result = 
+      eval {
+	if (exists $acts->{"if$func"}) {
+	  print STDERR "   found cond if$func\n" if DEBUG > 1;
+	  return $self->low_perform($acts, "if$func", $args, '');
+	}
+	elsif (exists $acts->{lcfirst $func}) {
+	  print STDERR "   found cond $func\n" if DEBUG > 1;
+	  return $self->low_perform($acts, lcfirst $func, $args, '');
+	}
+	else {
+	  print STDERR "   not found\n" if DEBUG > 1;
+	  die "ENOIMPL\n";
+	}
+      };
+    if ($@) {
+      my $msg = $@;
+      $msg =~ /^ENOIMPL\b/
+	and return "<:switch:>$case".join("", @cases)."<:endswitch:>";
+
+      print STDERR "Eval error in cond: $msg\n";
+      $msg =~ s/([<>&])/"&#".ord($1).";"/ge;
+      return "<!-- switch cond $cond ** $msg ** -->";
     }
     print STDERR "    result ",!!$result,"\n" if DEBUG > 1;
     return $data if $result;
