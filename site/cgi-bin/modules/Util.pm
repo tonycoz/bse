@@ -3,9 +3,10 @@ use strict;
 use vars qw(@ISA @EXPORT_OK);
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(generate_article generate_all generate_button);
+@EXPORT_OK = qw(generate_article generate_all generate_button 
+                refresh_to regen_and_refresh);
 use Constants qw($CONTENTBASE $TMPLDIR $URLBASE %TEMPLATE_OPTS
-		 $GENERATE_BUTTON $SHOPID);
+		 $GENERATE_BUTTON $SHOPID $AUTO_GENERATE);
 
 my %gen_cache;
 
@@ -49,6 +50,7 @@ sub generate_low {
   open OUT, "> $tempname" or die "Cannot create $tempname: $!";
   print OUT $content or die "Cannot write content to $outname: $!";
   close OUT or die "Cannot close $outname: $!";
+  unlink $outname;
   rename($tempname, $outname)
     or die "Cannot rename $tempname to $outname: $!";
 }
@@ -102,7 +104,7 @@ sub generate_shop {
   my ($articles) = @_;
   my @pages =
     (
-     'cart', 'checkout', 'checkoutfinal',
+     'cart', 'checkout', 'checkoutfinal', 'checkoutcard',
     );
   require 'Generate/Article.pm';
   my $shop = $articles->getByPkey($SHOPID);
@@ -132,6 +134,7 @@ sub generate_shop {
       or die "Cannot write to $outname: $!";
     close OUT
       or die "Cannot close $outname: $!";
+    unlink $finalname;
     rename $outname, $finalname
       or die "Cannot rename $outname to $finalname: $!";
   }
@@ -167,6 +170,7 @@ sub generate_extras {
       or die "Cannot write content to $outname: $!";
     close OUT 
       or die "Cannot close $outname: $!";
+    unlink $finalname;
     rename $outname, $finalname
       or die "Cannot rename $outname to $finalname: $!";
   }
@@ -187,6 +191,63 @@ sub generate_all {
   generate_shop($articles);
 
   generate_extras($articles);
+}
+
+sub refresh_to {
+  my ($where) = @_;
+
+  print "Content-Type: text/html\n";
+  print qq!Refresh: 0; url="$where"\n\n<html></html>\n!;
+}
+
+=item regen_and_refresh($articles, $article, $generate, $refreshto)
+
+An error checking wrapper around the page regeneration code.
+
+In some cases IIS appears to lock the static pages, which was causing
+various problems.  Here we catch the error and let the user know what
+is going on.
+
+If $article is set to undef then everything is regenerated.
+
+$generate is typically 1 or $AUTO_GENERATE
+
+Returns 1 if the regeneration was performed successfully.
+
+=cut
+
+sub regen_and_refresh {
+  my ($articles, $article, $generate, $refreshto) = @_;
+
+  if ($generate) {
+    eval {
+      if ($article) {
+	generate_article($articles, $article);
+      }
+      else {
+	generate_all($articles);
+      }
+    };
+    if ($@) {
+      my $error = $@;
+      my %acts;
+      %acts =
+	(
+	 ifArticle => sub { $article },
+	 article => sub { CGI::escapeHTML($article->{$_[0]}) },
+	 error => sub { CGI::escapeHTML($error) },
+	);
+      my $gen = Squirrel::Template->new();
+      print "Content-Type: text/html\n\n";
+      print $gen->show_page($TMPLDIR, 'admin/regenerror.tmpl', \%acts);
+      
+      return 0;
+    }
+  }
+
+  refresh_to($refreshto);
+
+  return 1;
 }
 
 1;
