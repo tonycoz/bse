@@ -1,0 +1,36 @@
+<:wrap admin/base.tmpl title=>"Reports - BSE":>
+<h1>Report: <:report name:></h1>
+<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | <a href="/cgi-bin/admin/report.pl">Reports List</a> | <:ifReport has_params:><a href="/cgi-bin/admin/report.pl?s_prompt=1&r=<:report id:>">Arguments</a> | <:or:><:eif:></p>
+
+  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
+  <tr>
+    <td>
+<table cellpadding="6" cellspacing="1" border="0" >
+  <tr>
+    <:iterator begin level1_names:>
+    <th>
+      <:level1_name name:>
+    </th>
+    <:iterator end level1_names:>
+    <:if Report has_level1_links:><th>(links)</th><:or Report:><:eif Report:>
+  </tr>
+<:if Level1:>
+<:iterator begin level1:>
+  <tr>
+    <:iterator begin level1_cols:>
+      <td bgcolor="#FFFFFF"><:level1_col value:></td>
+    <:iterator end level1_cols:>
+  <:if Level1_links:>
+   <td bgcolor="#FFFFFF">
+     <:iterator begin level1_links:><:level1_link link:> <:iterator end level1_links:>
+   </td>
+  <:or Level1_links:><:eif Level1_links:>
+  </tr>
+<:iterator end level1:>
+<:or Level1:>
+  <tr><td colspan="<:level1_name_count:>">No rows returned</td></tr>
+<:eif Level1:>
+</table>
+    </td>
+   </tr>
+  </table>

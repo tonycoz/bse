@@ -3,6 +3,10 @@ use strict;
 use HTML::Entities;
 use DevHelp::Tags;
 use DevHelp::HTML;
+use vars qw(@EXPORT_OK @ISA);
+@EXPORT_OK = qw(tag_error_img);
+@ISA = qw(Exporter);
+require Exporter;
 
 sub _get_parms {
   my ($acts, $args) = @_;
@@ -164,6 +168,22 @@ sub static {
     );  
 }
 
+sub tag_old {
+  my ($cgi, $args, $acts, $name, $templater) = @_;
+
+  my ($field, $func, $funcargs) = split ' ', $args;
+
+  my $value = $cgi->param($field);
+  unless (defined $value) {
+    return '' unless $func && exists $acts->{$func};
+
+    $value = $templater->perform($acts, $func, $funcargs);
+  }
+  defined $value or $value = '';
+
+  escape_html($value);
+}
+
 sub basic {
   my ($class, $acts, $cgi, $cfg) = @_;
 
@@ -180,6 +200,7 @@ sub basic {
        my @value = $cgi->param($_[0]);
        escape_html("@value");
      },
+     old => [ \&tag_old, $cgi ],
     );
 }
 
@@ -419,6 +440,15 @@ sub secure {
      ifLoggedOn => [ \&tag_if_logged_on, $req ],
      adminuser => [ \&tag_admin_user, $req ],
     );
+}
+
+sub tag_error_img {
+  my ($cfg, $errors, $args) = @_;
+
+  return '' unless $errors->{$args};
+  my $images_uri = $cfg->entry('uri', 'images', '/images');
+  my $encoded = escape_html($errors->{$args});
+  return qq!<img src="$images_uri/admin/error.gif" alt="$encoded" title="$encoded" border="0" align="top">!; 
 }
 
 1;

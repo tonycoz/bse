@@ -74,7 +74,7 @@ sub get_refresh {
     {
      type=>$class->html_type($cfg),
      content=>"<html></html>",
-     headers=>[ qq/Refresh: 0; url="$url"/ ],
+     headers=>[ qq/Refresh: 0; url=$url/ ],
     };
 }
 

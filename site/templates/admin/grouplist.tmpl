@@ -40,7 +40,7 @@
           <: iterator end groups :> 
           <:or Groups:> 
           <tr bgcolor="#FFFFFF"> 
-            <td colspan="3" align="center">Your system has no groups.</td>
+            <td colspan="4" align="center">Your system has no groups.</td>
           </tr>
           <:eif Groups:> 
         </table>
@@ -60,14 +60,14 @@
           <tr> 
             <th bgcolor="#FFFFFF" align="left">Name: </th>
             <td bgcolor="#FFFFFF"> 
-              <input type="text" name="name" />
+              <input type="text" name="name" value="<:old name:>" />
             </td>
-            <td bgcolor="#FFFFFF"><:help addgroup name:> </td>
+            <td bgcolor="#FFFFFF"><:help addgroup name:> <:error_img name:></td>
           </tr>
           <tr> 
             <th bgcolor="#FFFFFF" align="left">Description: </th>
             <td bgcolor="#FFFFFF"> 
-              <input type="text" name="description" />
+              <input type="text" name="description" value="<:old description:>" <:error_img description:> />
             </td>
             <td bgcolor="#FFFFFF"><:help addgroup description:> </td>
           </tr>

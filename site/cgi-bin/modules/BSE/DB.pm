@@ -44,6 +44,9 @@ sub run {
     or confess "Cannot execute statement $name: ",$sth->errstr;
 }
 
+sub dbh {
+  $_[0]{dbh};
+}
 
 1;
 

@@ -132,6 +132,8 @@ EOS
    'replace subscription_types values(?,?,?,?,?,?,?,?,?,?,?,?,?)',
    getSubscriptionTypeByPkey =>
    'select * from subscription_types where id = ? order by name',
+   deleteSubscriptionType =>
+   'delete from subscription_types where id = ?',
 
    addSubscribedUser=>
    'insert subscribed_users values(null,?,?)',

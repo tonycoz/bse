@@ -281,7 +281,7 @@ sub refresh_to {
   my ($where) = @_;
 
   print "Content-Type: text/html\n";
-  print qq!Refresh: 0; url="$where"\n\n<html></html>\n!;
+  print qq!Refresh: 0; url=$where\n\n<html></html>\n!;
 }
 
 =item regen_and_refresh($articles, $article, $generate, $refreshto, $cfg, $progress)

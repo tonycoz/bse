@@ -6,6 +6,7 @@ use FindBin;
 use lib "$FindBin::Bin/../modules";
 use Articles;
 use BSE::Request;
+use Util 'refresh_to';
 use vars qw($VERSION);
 $VERSION = 1.02;
 
@@ -14,8 +15,7 @@ my $cfg = $req->cfg;
 my $cgi = $req->cgi;
 my $urlbase = $cfg->entryVar('site', 'url');
 unless ($req->check_admin_logon()) {
-  print "Refresh: 0; url=\"$urlbase/cgi-bin/admin/logon.pl\"\n";
-  print "Content-Type: text/html\n\n<html></html>\n";
+  refresh_to("$urlbase/cgi-bin/admin/logon.pl");
   exit;
 }
 
@@ -93,8 +93,7 @@ if ($req->user_can(edit_reorder_children => $parentid)) {
   }
 }
 
-print "Refresh: 0; url=\"$urlbase$refreshto\"\n";
-print "Content-Type: text/html\n\n<html></html>\n";
+refresh_to("$urlbase$refreshto");
 
 =head1 NAME
 

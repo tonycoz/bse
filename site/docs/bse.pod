@@ -10,6 +10,101 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.12_26
+
+=over
+
+=item *
+
+Dynamically generated templates that don't explicitly define an
+<:old:> tag now have a new <:old:> tag by default.  Usage:
+
+  <: old I<field> :>
+  <: old I<field> I<func> I<args> :>
+
+If a cgi parameter called I<field> has been supplied it will be
+returned, otherwise an existing function I<func> is called with
+I<args> and that value is used as the value of the <:old:> tag.
+
+Returns an empty string if no CGI parameter I<field> or function
+I<func> is defined. (#235)
+
+=item *
+
+userlist.tmpl and grouplist.tmpl now include appropriate
+
+  value="<:old I<foo>:>"
+
+tags
+
+=item *
+
+the "Your system has no groups" message in grouplist.tmpl did not span
+across enough columns
+
+=item *
+
+the <:typename I<which>:> and <:articleType:> tags now work on the
+user/group permissions pages which control access to articles. (#235)
+
+=item *
+
+the C<crumbs> iterator now works on user/group permissions pages which
+control access to articles (#235)
+
+=item *
+
+<:error_img:> is now available on the userlist/grouplist templates for
+displaying errors in adding a new user/group. (#235)
+
+=item *
+
+#235 mentions a problem with the <:cgi:> tag - could not reproduce
+
+=item *
+
+most save/add functions in adminusers.pl should now accept an C<r>
+parameter to override the default refresh location (#253)
+
+=item *
+
+a save of an empty administration user name was being ignored, the
+empty name is now saved (#250)
+
+=item *
+
+the name of a administration group can now be changed (#251)
+
+=item *
+
+quotes surrounding the URL in Refresh headers have been removed (#232)
+
+the Refresh header is only briefly documented at 
+http://wp.netscape.com/assist/net_sites/pushpull.html, and is not part of
+the HTTP specification, so all I can do is guess.
+
+=item *
+
+entry of a blank release date when editing an article now results in a
+validation error instead of a database error (seen as a 500 error)
+(#240)
+
+=item *
+
+template admin/subs/list.tmpl checked the C<subs_edit> permission when
+it should have checked the C<subs_send> permission when choosing to
+display the B<Send> link.
+
+=item *
+
+subscriptions can now be deleted (#173)
+
+=item *
+
+experimental reports system added (work in progress)
+
+=back
+
 =head2 0.12_25
 
 =over

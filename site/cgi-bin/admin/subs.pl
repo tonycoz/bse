@@ -31,6 +31,8 @@ if (BSE::Permissions->check_logon($req)) {
      html_preview => \&html_preview,
      text_preview => \&text_preview,
      send => \&send_message,
+     delconfirm => \&req_delconfirm,
+     delete => \&req_delete,
     );
   
   my $q = $req->cgi;
@@ -441,4 +443,36 @@ sub send_message {
 	     });
   print qq!<p><a target="_top" href="/cgi-bin/admin/menu.pl">Back to Admin Menu</a></p>\n!;
   print "</body></html>\n";
+}
+
+sub req_delconfirm {
+  my ($q, $req, $cfg) = @_;
+
+  $req->user_can('subs_delete')
+    or return list($q, $req, $cfg, "You dont have access to delete subscriptions");
+
+  my $id = $q->param('id')
+    or return _refresh_list($cfg, "No id supplied to be deleted");
+
+  my $sub = BSE::SubscriptionTypes->getByPkey($id)
+    or return _refresh_list($cfg, "Cannot find record $id");
+
+  sub_form($q, $req, $cfg, 'admin/subs/delete', $sub, 0);
+}
+
+sub req_delete {
+  my ($q, $req, $cfg) = @_;
+
+  $req->user_can('subs_delete')
+    or return list($q, $req, $cfg, "You dont have access to delete subscriptions");
+
+  my $id = $q->param('id')
+    or return _refresh_list($cfg, "No id supplied to be deleted");
+
+  my $sub = BSE::SubscriptionTypes->getByPkey($id)
+    or return _refresh_list($cfg, "Cannot find record $id");
+
+  $sub->remove;
+
+  _refresh_list($cfg);
 }

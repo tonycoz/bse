@@ -7,6 +7,7 @@ use Constants qw($BASEDIR $MAXPHRASE $DATADIR @SEARCH_EXCLUDE @SEARCH_INCLUDE $S
 use BSE::DB;
 use Generate;
 use BSE::Cfg;
+use Util 'refresh_to';
 my $in_cgi = exists $ENV{REQUEST_METHOD};
 if ($in_cgi) {
   #eval "use CGI::Carp qw(fatalsToBrowser)";
@@ -81,8 +82,7 @@ for my $key (sort keys %index) {
 }
 
 if ($in_cgi) {
-  print "Refresh: 0; url=\"$urlbase/admin/\"\n";
-  print "Content-Type: text/html\n\n<html></html>\n";
+  refresh_to("$urlbase/admin/");
 }
 
 sub makeIndex {

@@ -27,6 +27,8 @@
 
 <h2>Permissions for <:ifEq [article id] "-1":>the site<:or:>article <:article title:><:eif:></h2>
 
+<:if Eq [article id] "-1":><:or Eq:><p>/ <a href="<:script:>?a_showgroupart=1&userid=<:user id:>&id=-1">Site</a> / <:iterator begin crumbs:> <a href="<:script:>?a_showgroupart=1&userid=<:user id:>&id=<:crumb id:>"><:crumb title:></a> /<:iterator end crumbs:></p><:eif Eq:>
+
 <form method="POST" action="<:script:>">
 <input type=hidden name=groupid value=<:group id:>>
 <input type=hidden name=saveaperms value=1>

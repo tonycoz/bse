@@ -46,9 +46,9 @@ sub make_iterator {
 }
 
 sub _iter_reset {
-  my ($rdata, $rindex, $code, $loaded, $args, $acts, $name, $templater) = @_;
+  my ($rdata, $rindex, $code, $loaded, $nocache, $args, $acts, $name, $templater) = @_;
 
-  if (!$$loaded && !@$rdata && $code || $args) {
+  if (!$$loaded && !@$rdata && $code || $args || $nocache) {
     my ($sub, @args) = $code;
 
     if (ref $code eq 'ARRAY') {
@@ -70,15 +70,15 @@ sub _iter_iterate {
 }
 
 sub _iter_if {
-  my ($rdata, $code, $loaded, $args, $acts, $func, $templater) = @_;
+  my ($rdata, $code, $loaded, $nocache, $args, $acts, $func, $templater) = @_;
 
-  _iter_count($rdata, $code, $loaded, $args, $acts, $func, $templater);
+  _iter_count($rdata, $code, $loaded, $nocache, $args, $acts, $func, $templater);
 }
 
 sub _iter_count {
-  my ($rdata, $code, $loaded, $args, $acts, $func, $templater) = @_;
+  my ($rdata, $code, $loaded, $nocache, $args, $acts, $func, $templater) = @_;
 
-  if (!$$loaded && !@$rdata && $code || $args) {
+  if (!$$loaded && !@$rdata && $code || $args || $nocache) {
     my ($sub, @args) = $code;
 
     if (ref $code eq 'ARRAY') {
@@ -105,7 +105,7 @@ sub _iter_item {
 
 # builds an arrayref based iterator
 sub make_iterator2 {
-  my ($class, $code, $single, $plural, $rdata, $rindex) = @_;
+  my ($class, $code, $single, $plural, $rdata, $rindex, $nocache) = @_;
 
   my $index;
   defined $rindex or $rindex = \$index;
@@ -115,13 +115,13 @@ sub make_iterator2 {
   return
     (
      "iterate_${plural}_reset" => 
-     [ \&_iter_reset, $rdata, $rindex, $code, \$loaded ],
+     [ \&_iter_reset, $rdata, $rindex, $code, \$loaded, $nocache ],
      "iterate_${plural}" =>
-     [ \&_iter_iterate, $rdata, $rindex ],
+     [ \&_iter_iterate, $rdata, $rindex, $nocache ],
      $single => [ \&_iter_item, $rdata, $rindex, $single, $plural ],
-     "if\u$plural" => [ \&_iter_if, $rdata, $code, \$loaded ],
+     "if\u$plural" => [ \&_iter_if, $rdata, $code, \$loaded, $nocache ],
      "${single}_index" => [ \&_iter_index, $rindex ],
-     "${single}_count" => [ \&_iter_count, $rdata, $code, \$loaded ],
+     "${single}_count" => [ \&_iter_count, $rdata, $code, \$loaded, $nocache ],
     );
 }
 

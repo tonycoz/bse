@@ -2,8 +2,9 @@ package BSE::Edit::Article;
 use strict;
 use HTML::Entities;
 use base qw(BSE::Edit::Base);
-use BSE::Util::Tags;
+use BSE::Util::Tags qw(tag_error_img);
 use BSE::Util::SQL qw(now_sqldate);
+use BSE::Util::Valid qw/valid_date/;
 use BSE::Permissions;
 use Util qw(custom_class);
 
@@ -882,14 +883,14 @@ sub tag_old {
   }
 }
 
-sub tag_error_img {
-  my ($self, $errors, $args) = @_;
+# sub tag_error_img {
+#   my ($self, $errors, $args) = @_;
 
-  return '' unless $errors->{$args};
-  my $images_uri = $self->{cfg}->entry('uri', 'images', '/images');
-  my $encoded = encode_entities($errors->{$args});
-  return qq!<img src="$images_uri/admin/error.gif" alt="$encoded" title="$encoded" border="0" align="top">!; 
-}
+#   return '' unless $errors->{$args};
+#   my $images_uri = $self->{cfg}->entry('uri', 'images', '/images');
+#   my $encoded = encode_entities($errors->{$args});
+#   return qq!<img src="$images_uri/admin/error.gif" alt="$encoded" title="$encoded" border="0" align="top">!; 
+# }
 
 sub iter_admin_users {
   require BSE::TB::AdminUsers;
@@ -1096,7 +1097,7 @@ sub low_edit_tags {
      (\&iter_admin_groups, 'iadmingroup', 'admingroups'),
      edit => \&tag_edit_link,
      error => [ \&tag_hash, $errors ],
-     error_img => [ \&tag_error_img, $self, $errors ],
+     error_img => [ \&tag_error_img, $cfg, $errors ],
      ifFieldPerm => [ \&tag_if_field_perm, $request, $article ],
      parent => [ \&tag_hash, $parent ],
      DevHelp::Tags->make_iterator2
@@ -1200,7 +1201,7 @@ sub typename {
 }
 
 sub _validate_common {
-  my ($self, $data, $articles, $errors) = @_;
+  my ($self, $data, $articles, $errors, $article) = @_;
 
 #   if (defined $data->{parentid} && $data->{parentid} =~ /^(?:-1|\d+)$/) {
 #     unless ($data->{parentid} == -1 or 
@@ -1234,9 +1235,13 @@ sub validate {
 sub validate_old {
   my ($self, $article, $data, $articles, $errors) = @_;
 
-  $self->_validate_common($data, $articles, $errors);
+  $self->_validate_common($data, $articles, $errors, $article);
   custom_class($self->{cfg})
     ->article_validate($data, $article, $self->typename, $errors);
+
+  if (exists $data->{release} && !valid_date($data->{release})) {
+    $errors->{release} = "Invalid release date";
+  }
 
   return !keys %$errors;
 }

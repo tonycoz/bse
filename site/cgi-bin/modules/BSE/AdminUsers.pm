@@ -1,9 +1,8 @@
 package BSE::AdminUsers;
 use strict;
-use BSE::Util::Tags;
-use HTML::Entities;
-use URI::Escape;
+use BSE::Util::Tags qw/tag_error_img/;
 use BSE::Permissions;
+use DevHelp::HTML;
 
 my %actions =
   (
@@ -112,11 +111,21 @@ sub _save_htusers {
 }
 
 sub common_tags {
-  my ($class, $req, $msg) = @_;
+  my ($class, $req, $msg, $errors) = @_;
 
+  $errors ||= +{};
   $msg ||= $req->cgi->param('m');
-  $msg ||= '';
-  $msg = encode_entities($msg);
+  if ($msg) {
+    $msg = escape_html($msg);
+  }
+  else {
+    if (values %$errors) {
+      $msg = "<p>".join("<br />", map escape_html($_),values %$errors)."</p>";
+    }
+    else {
+      $msg = '';
+    }
+  }
   my @users;
   my $user_index;
   my @groups;
@@ -136,22 +145,23 @@ sub common_tags {
      ([ \&iter_get_user_groups, $req, ], 'user_group', 'user_groups'),
      DevHelp::Tags->make_iterator2
      ([ \&iter_get_group_users, $req, ], 'group_user', 'group_users'),
+     error_img => [ \&tag_error_img, $req->cfg, $errors ],
     );
 }
 
 sub req_users {
-  my ($class, $req, $msg) = @_;
+  my ($class, $req, $msg, $errors) = @_;
 
   my %acts;
-  %acts = $class->common_tags($req, $msg);
+  %acts = $class->common_tags($req, $msg, $errors);
   return BSE::Template->get_response('admin/userlist', $req->cfg, \%acts);
 }
 
 sub req_groups {
-  my ($class, $req, $msg) = @_;
+  my ($class, $req, $msg, $errors) = @_;
 
   my %acts;
-  %acts = $class->common_tags($req, $msg);
+  %acts = $class->common_tags($req, $msg, $errors);
 
   return BSE::Template->get_response('admin/grouplist', $req->cfg, \%acts);
 }
@@ -159,12 +169,16 @@ sub req_groups {
 sub refresh {
   my ($class, $req, $target, @parms) = @_;
 
-  my $url = $req->cfg->entryVar('site', 'url');
-  $url .= $ENV{SCRIPT_NAME};
-  $url .= "?$target=1";
-  while (my ($key, $value) = splice @parms, 0, 2) {
-    $url .= "&$key=".uri_escape($value);
+  my $url = $req->cgi->param('r');
+  unless ($url) {
+    $url = $req->cfg->entryVar('site', 'url');
+    $url .= $ENV{SCRIPT_NAME};
+    $url .= "?$target=1";
+    while (my ($key, $value) = splice @parms, 0, 2) {
+      $url .= "&$key=".escape_uri($value);
+    }
   }
+  
   return BSE::Template->get_refresh($url, $req->cfg);
 }
 
@@ -173,7 +187,7 @@ sub hash_tag {
 
   my $value = $hash->{$args};
   defined $value or $value = '';
-  encode_entities($value);
+  escape_html($value);
 }
 
 sub req_adduser {
@@ -187,15 +201,28 @@ sub req_adduser {
   my $name = $cgi->param('name');
   my $password = $cgi->param('password');
   my $confirm = $cgi->param('confirm');
+  my %errors;
+
   defined $logon && length $logon
-    or return $class->req_users($req, 'No logon supplied');
+    or $errors{logon} = 'No logon supplied';
   $name = '' unless defined $name;
-  defined $password && length $password
-    or return $class->req_users($req, 'No password supplied');
-  defined $confirm && length $confirm
-    or return $class->req_users($req, 'No confirmation password supplied');
-  $password eq $confirm
-    or return $class->req_users($req, 'Password is different to confirmation password');
+  if (defined $password && length $password) {
+    if (defined $confirm && length $confirm) {
+      $password eq $confirm
+	or $errors{confirm} = 'Password is different to confirmation password';
+    }
+    else {
+      $errors{confirm} = 'No confirmation password supplied';
+    }
+  }
+  else {
+    $errors{password} = 'No password supplied';
+    defined $confirm && length $confirm
+      or $errors{confirm} = 'No confirmation password supplied';
+  }
+
+  keys %errors
+    and return $class->req_users($req, undef, \%errors);
 
   require BSE::TB::AdminUsers;
   my $old = BSE::TB::AdminUsers->getBy(logon=>$logon)
@@ -229,10 +256,12 @@ sub req_addgroup {
   my $cgi = $req->cgi;
   my $name = $cgi->param('name');
   my $description = $cgi->param('description');
+  my %errors;
   defined $name && length $name
-    or return $class->req_groups($req, 'No name supplied');
+    or $errors{name} = 'No name supplied';
   $description = '' unless defined $description;
-
+  keys %errors
+    and return $class->req_groups($req, undef, \%errors);
   require BSE::TB::AdminGroups;
   my $old = BSE::TB::AdminGroups->getBy(name=>$name)
     and return $class->req_groups($req, "Group '$name' already exists");
@@ -281,13 +310,13 @@ sub tag_if_gperm_set {
 }
 
 sub showuser_tags {
-  my ($class, $req, $user, $msg) = @_;
+  my ($class, $req, $user, $msg, $errors) = @_;
 
   my %members = map { $_->{group_id} => 1 } 
     BSE::DB->query(userGroups=>$user->{id});
   return
     (
-     $class->common_tags($req, $msg),
+     $class->common_tags($req, $msg, $errors),
      user => [ \&hash_tag, $user ],
      ifMemberof => [ \&tag_if_user_member_of, \%members ],
      DevHelp::Tags->make_iterator2
@@ -298,7 +327,7 @@ sub showuser_tags {
 }
 
 sub req_showuser {
-  my ($class, $req, $msg) = @_;
+  my ($class, $req, $msg, $errors) = @_;
 
   my $cgi = $req->cgi;
   my $userid = $cgi->param('userid');
@@ -310,7 +339,7 @@ sub req_showuser {
   my %acts;
   %acts =
     (
-     $class->showuser_tags($req, $user, $msg),
+     $class->showuser_tags($req, $user, $msg, $errors),
     );
 
   my $template = 'admin/showuser';
@@ -348,6 +377,33 @@ sub tag_if_aperm_set {
   substr($perm->{perm_map}, $id, 1);
 }
 
+sub tag_typename {
+  my ($args, $acts, $funcname, $templater) = @_;
+
+  exists $acts->{$args} or return "** need an article name **";
+  my $generator = $templater->perform($acts, $args, 'generator');
+
+  $generator =~ /^(?:BSE::)?Generate::(\w+)$/
+    or return "** invalid generator $generator **";
+
+  return $1;
+}
+
+sub iter_crumbs {
+  my ($req, $article) = @_;
+
+  return if $article->{id} == -1;
+
+  my @parents;
+  my $work = $article;
+  while ($work->{parentid} != -1) {
+    $work = $work->parent;
+    unshift @parents, $work;
+  }
+
+  @parents;
+}
+
 sub article_tags {
   my ($class, $req, $user, $article) = @_;
 
@@ -363,6 +419,8 @@ sub article_tags {
 	{
 	 id=>-1,
 	 title=>'Your site',
+	 generator => 'Generate::Site', # well...
+	 level => 0,
 	};
     }
   }
@@ -381,6 +439,11 @@ sub article_tags {
      ([ \&iter_get_aperms, $perms ], 'aperm', 'aperms' ),
      ifAperm_set =>
      [ \&tag_if_aperm_set, $perm ],
+     typename => \&tag_typename,
+     articleType => escape_html
+     (scalar($req->cfg->entry('level names', $article->{level}, "Site"))),
+     DevHelp::Tags->make_iterator2
+     ([ \&iter_crumbs, $req, $article ], 'crumb', 'crumbs'),
     );
 }
 
@@ -498,13 +561,13 @@ sub tag_if_member_of_group {
 }
 
 sub showgroup_tags {
-  my ($class, $req, $group, $msg) = @_;
+  my ($class, $req, $group, $msg, $errors) = @_;
 
   my %members = map { $_->{user_id} => 1 } 
     BSE::DB->query(groupUsers=>$group->{id});
   return
     (
-     $class->common_tags($req, $msg),
+     $class->common_tags($req, $msg, $errors),
      group => [ \&hash_tag, $group ],
      ifMemberof => [ \&tag_if_member_of_group, \%members ],
      DevHelp::Tags->make_iterator2
@@ -515,7 +578,7 @@ sub showgroup_tags {
 }
 
 sub req_showgroup {
-  my ($class, $req, $msg) = @_;
+  my ($class, $req, $msg, $errors) = @_;
 
   my $cgi = $req->cgi;
   my $groupid = $cgi->param('groupid');
@@ -527,7 +590,7 @@ sub req_showgroup {
   my %acts;
   %acts =
     (
-     $class->showgroup_tags($req, $group, $msg),
+     $class->showgroup_tags($req, $group, $msg, $errors),
     );
 
   my $template = 'admin/showgroup';
@@ -554,15 +617,24 @@ sub req_saveuser {
   my $name = $cgi->param('name');
   my $password = $cgi->param('password');
   my $confirm = $cgi->param('confirm');
-  $user->{name} = $name if defined $name and length $name;
+  my %errors;
+  $user->{name} = $name if defined $name;
   if (defined $password && defined $confirm
      && length $password) {
-    length $confirm
-      or return $class->req_showuser($req, "Enter both password and confirmation to change password");
-    $password eq $confirm
-      or return $class->req_showuser($req, "Password and confirmation password don't match");
-    $user->{password} = $password;
+    if (length $confirm) {
+      if ($password eq $confirm) {
+	$user->{password} = $password;
+      }
+      else {
+	$errors{confirm} = "Password and confirmation password didn't match"
+      }
+    }
+    else {
+      $errors{confirm} = "Enter both password and confirmation to change password";
+    }
   }
+  keys %errors
+    and return $class->req_showuser($req, undef, \%errors);
   if ($cgi->param('savegperms') && $req->user_can('admin_user_save_gperms')) {
     my $perms = '';
     my @gperms = $cgi->param('gperms');
@@ -596,8 +668,6 @@ sub req_saveuser {
 
   my $msg = 'User saved';
   $class->_save_htusers($req, \$msg);
-
-
 
   return $class->refresh($req, a_showuser => userid => $user->{id},
 			'm' => $msg);
@@ -653,7 +723,20 @@ sub req_savegroup {
   my $group = BSE::TB::AdminGroups->getByPkey($groupid)
     or return $class->req_groups($req, "Group id $groupid not found");
   my $description = $cgi->param('description');
+  my $name = $cgi->param('name');
   $group->{description} = $description if defined $description;
+  if (defined $name) {
+    length $name
+      or return $class->req_showgroup($req, undef, { name => 'No name supplied' });
+
+    if (lc $name ne lc $group->{name}) {
+      require BSE::TB::AdminGroups;
+      my $old = BSE::TB::AdminGroups->getBy(name=>$name)
+	and return $class->req_showgroup($req, undef, 
+					 { name => "Group '$name' already exists" });
+      $group->{name} = $name;
+    }
+  }
 
   if ($cgi->param('savegperms') && $req->user_can("admin_group_save_gperms")) {
     my $perms = '';

@@ -1,0 +1,24 @@
+<:wrap admin/base.tmpl title=>"Reports - BSE":>
+<h1>Report: <:report name:></h1>
+<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | <a href="/cgi-bin/admin/report.pl">Reports List</a> | </p>
+
+<:ifMsg:><p><b><:msg:></b></p><:or:><:eif:>
+
+<form action="<:script:>">
+<input type=hidden name="r" value="<:report id:>" />
+  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
+  <tr>
+    <td>
+<table cellpadding="6" cellspacing="1" border="0" width="100%">
+<:iterator begin fields:>
+<tr>
+<th><:field label:>:</th>
+<td bgcolor="#FFFFFF"><:field html:></td>
+</tr>
+<:iterator end fields:>
+<tr><td colspan="2" align="right" bgcolor="#FFFFFF"><input type="submit" name="s_show" value="Display" /></td></tr>
+</table>
+    </td>
+   </tr>
+  </table>
+</form>
