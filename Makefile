@@ -20,7 +20,7 @@ dist: cleantree $(DISTTGZ)
 
 # make sure everything is committed
 cleantree:
-	if cvs status 2>/dev/null | grep -qv '^\?\|Locally Modified' ; \
+	if cvs status 2>/dev/null | grep -q '^\?\|Locally Modified' ; \
           then echo '***' The tree has modified or unadded files ; \
           exit 1 ; \
         fi
