@@ -282,6 +282,8 @@ sub format_body {
 
   $body = $formatter->format($body);
 
+  # we don't format named images
+  @images = grep $_->{name} eq '', @images;
   if ($auto_images && @images) {
     # the first image simply goes where we're told to put it
     # the imagePos is [tb][rl] (top|bottom)(right|left)

@@ -62,6 +62,7 @@ sub image {
   if ($index =~ /^\d+$/) {
     if ($index >=1 && $index <= @$images) {
       $im = $images->[$index-1];
+      ${$self->{auto_images}} = 0;
     }
   }
   elsif ($index =~ /^[a-z]\w*$/i){
@@ -73,7 +74,6 @@ sub image {
       }
     }
   }
-  ${$self->{auto_images}} = 0;
   if ($im) {
     return $self->_image($im, $align, $url);
   }

@@ -461,8 +461,6 @@ sub _load_step_kids {
 
   my @stepkids = OtherParents->getBy(parentId=>$article->{id}) if $article->{id};
   %$step_kids = map { $_->{childId} => $_ } @stepkids;
-  use Data::Dumper;
-  print STDERR "stepkids:\n", Dumper($step_kids);
   $step_kids->{loaded} = 1;
 }
 
@@ -483,7 +481,7 @@ sub tag_step_kid {
 
   my $kid = $allkids->[$$rallkid_index]
     or return '';
-  print STDERR "found kid (want $arg): ", Dumper $kid;
+  #print STDERR "found kid (want $arg): ", Dumper $kid;
   escape_html($step_kids->{$kid->{id}}{$arg});
 }
 

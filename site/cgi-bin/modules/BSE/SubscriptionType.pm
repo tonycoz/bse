@@ -62,9 +62,10 @@ sub _word_wrap {
 }
 
 sub _format_body {
-  my ($cfg, $body) = @_;
+  my ($cfg, $article) = @_;
   require 'Generate.pm';
-  my $gen = Generate->new(cfg=>$cfg);
+  my $gen = Generate->new(cfg=>$cfg, top => $article);
+  my $body = $article->{body};
   $gen->remove_block(\$body);
   1 while $body =~ s/[bi]\[([^\[\]]+)\]/$1/g;
   $body =~ tr/\r//d; # in case
@@ -94,7 +95,7 @@ sub _text_format_low {
      },
      body =>
      sub {
-       _format_body($cfg, $article->{body});
+       _format_body($cfg, $article);
      },
      sub => sub { $sub->{$_[0]} },
     );
@@ -116,7 +117,7 @@ sub html_format {
   my %article;
   $sub->_build_article(\%article, $opts);
   require 'Generate/Subscription.pm';
-  my $gen = Generate::Subscription->new(cfg=>$cfg);
+  my $gen = Generate::Subscription->new(cfg=>$cfg, top => \%article);
   $gen->set_user($user);
   $gen->set_sub($sub);
 
@@ -148,7 +149,7 @@ sub _send {
   if ($article->{template}) {
     #print STDERR "Making generator\n";
     require 'Generate/Subscription.pm';
-    $gen = Generate::Subscription->new(cfg=>$cfg);
+    $gen = Generate::Subscription->new(cfg=>$cfg, top=>$article);
     $gen->set_sub($sub);
   }
   my $from = $cfg->entryIfVar('subscriptions', 'from');

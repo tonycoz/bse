@@ -40,6 +40,12 @@ sub stepkids {
   return ();
 }
 
+sub allstepkids {
+  my ($self) = @_;
+
+  return Articles->getSpecial('stepKids', $self->{id});
+}
+
 sub visible_stepkids {
   my ($self) = @_;
 
@@ -71,7 +77,7 @@ sub allkids {
 	       (map { $_->{id}, $_->{displayOrder} } @normalkids ),
 	       (map { $_->{childId}, $_->{parentDisplayOrder} } @otherlinks),
 	      );
-  my @stepkids = $self->stepkids;
+  my @stepkids = $self->allstepkids;
   my %kids = map { $_->{id}, $_ } @stepkids, @normalkids;
 
   return @kids{ sort { $order{$b} <=> $order{$a} } keys %kids };

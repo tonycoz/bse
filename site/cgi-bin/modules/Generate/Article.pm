@@ -128,6 +128,7 @@ sub baseActs {
   my $section = $crumbs[0];
 
   my @images = Images->getBy('articleId', $article->{id});
+  my @unnamed_images = grep $_->{name} eq '', @images;
   my $image_index = -1;
   my $had_image_tags = 0;
   my @files = sort { $b->{displayOrder} <=> $a->{displayOrder} }
@@ -390,7 +391,7 @@ HTML
      
      # access to images, if any
      iterate_images_reset => sub { $image_index = -1 },
-     iterate_images => sub { $had_image_tags = 1; ++$image_index < @images },
+     iterate_images => sub { $had_image_tags = 1; ++$image_index < @unnamed_images },
      image =>
      sub {
        my ($which, $align, $rest) = split ' ', $_[0], 3;
@@ -402,7 +403,7 @@ HTML
 	 $im = $images[$which-1];
        }
        else {
-	 $im = $images[$image_index];
+	 $im = $unnamed_images[$image_index];
        }
 
        return $self->_format_image($im, $align, $rest);
@@ -411,7 +412,6 @@ HTML
      sub {
        my ($name, $align, $rest) = split ' ', $_[0], 3;
 
-       $had_image_tags = 1;
        my ($im) = grep lc $name eq lc $_->{name}, @images
 	 or return '';
 

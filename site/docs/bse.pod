@@ -10,12 +10,68 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.13_06
+
+Making steps towards improved stability.
+
+=over
+
+=item *
+
+the subscriptions formatting was broken when I made arrows refresh
+back to their original article. D'oh.
+
+=item *
+
+the test text only email flag was ignored
+
+=item *
+
+an old problem, only products were listed as stepchildren to catalogs
+in the article editor
+
+=item *
+
+changes to the way named images interact with automatic image placement:
+
+=over
+
+=item *
+
+named images are never automatically placed
+
+=item *
+
+named images are not included in the list produced by the article
+display template images iterator
+
+=item *
+
+referring to a named image either with image[name] in the article
+body, or <:imagen name:> in the template will not suppress automated
+image placement
+
+=item *
+
+image[1] or <:image 1:> will continue to suppress automatic image
+placement (or <:image:> within the images iterator)
+
+=back
+
+This should provide reasonable behaviour that's compatible with
+existing sites running 0.13 or earlier.
+
+=back
+
 =head2 0.13_05
 
 If you get configuration errors from this release, it probably means
 you've been using some of the default email addresses, which were
 either nonsense, or my address.  Either update Constants.pm or set the
 appropriate value in bse.cfg.
+
+There have been a lot of changes in this development release, so
+there's probably at least one bug.
 
 =over
 

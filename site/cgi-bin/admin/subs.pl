@@ -562,7 +562,7 @@ sub send_test {
      email => $testemail,
      name1 => $testname,
      confirmSecret => 'TESTTESTTESTTESTTESTTESTTESTTEST',
-     textOnlyEmail => (defined $testtextonly ? 1 : 0 ),
+     textOnlyMail => (defined $testtextonly ? 1 : 0 ),
     );
 
   my %errors;
