@@ -10,15 +10,19 @@ This is a simple list of possible changes to BSE.
 
 =item *
 
-move admin templates to their own directory
-
-=item *
-
 all some sort of id to be used to identify articles (rather than numbers)
 
 =item *
 
 article defaults based on parent article id
+
+=item *
+
+the ability to have the child iterator iterate over the children of a
+given article, rather than having to embed the article with a special
+template
+
+<:iterator begin children parentid:>... <:iterator end children:>
 
 =back
 
