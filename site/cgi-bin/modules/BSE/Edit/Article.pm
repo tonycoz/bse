@@ -2,12 +2,12 @@ package BSE::Edit::Article;
 use strict;
 use base qw(BSE::Edit::Base);
 use BSE::Util::Tags qw(tag_error_img);
-use BSE::Util::SQL qw(now_sqldate);
+use BSE::Util::SQL qw(now_sqldate now_sqldatetime);
 use BSE::Util::Valid qw/valid_date/;
 use BSE::Permissions;
 use DevHelp::HTML qw(:default popup_menu);
 use BSE::Arrows;
-use BSE::CfgInfo qw(custom_class);
+use BSE::CfgInfo qw(custom_class admin_base_url);
 
 sub article_dispatch {
   my ($self, $req, $article, $articles) = @_;
@@ -696,7 +696,7 @@ sub tag_movechild {
 
   my $cgi_uri = $self->{cfg}->entry('uri', 'cgi', '/cgi-bin');
   my $images_uri = $self->{cfg}->entry('uri', 'images', '/images');
-  my $urlbase = $req->cfg->entryVar('site', 'url');
+  my $urlbase = admin_base_url($req->cfg);
   my $refresh_url = "$urlbase$ENV{SCRIPT_NAME}?id=$article->{id}";
   my $t = $req->cgi->param('_t');
   if ($t && $t =~ /^\w+$/) {
@@ -751,7 +751,7 @@ sub tag_imgmove {
   $img_prefix = '' unless defined $img_prefix;
   $urladd = '' unless defined $urladd;
 
-  my $urlbase = $req->cfg->entryVar('site', 'url');
+  my $urlbase = admin_base_url($req->cfg);
   my $url = "$urlbase$ENV{SCRIPT_NAME}?id=$article->{id}";
   my $t = $req->cgi->param('_t');
   if ($t && $t =~ /^\w+$/) {
@@ -787,7 +787,7 @@ sub tag_movefiles {
   $$rindex >= 0 && $$rindex < @$files
     or return '** movefiles can only be used in the files iterator **';
 
-  my $urlbase = $self->{cfg}->entryVar('site', 'url');
+  my $urlbase = admin_base_url($req->cfg);
   my $url = "$urlbase$ENV{SCRIPT_NAME}?id=$article->{id}$urladd";
   my $t = $req->cgi->param('_t');
   if ($t && $t =~ /^\w+$/) {
@@ -1304,7 +1304,7 @@ sub save_new {
       if !defined $data{summaryLength} || $data{summaryLength} =~ /^\s*$/;
   }
   $data{generator} = $self->generator;
-  $data{lastModified} = now_sqldate();
+  $data{lastModified} = now_sqldatetime();
   $data{level} = $level;
   $data{listed} = 1 unless defined $data{listed};
 
@@ -1327,8 +1327,8 @@ sub save_new {
     $r .= "id=$article->{id}";
   }
   else {
-    my $urlbase = $self->{cfg}->entryVar('site', 'url');
-    $r = $urlbase . $article->{admin};
+    
+    $r = admin_base_url($req->cfg) . $article->{admin};
   }
   return BSE::Template->get_refresh($r, $self->{cfg});
 
@@ -1433,7 +1433,7 @@ sub save {
   $article->{expire} = sql_date($cgi->param('expire')) || $Constants::D_99
     if defined $cgi->param('expire') && 
       $req->user_can('edit_field_edit_expire', $article);
-  $article->{lastModified} =  now_sqldate();
+  $article->{lastModified} =  now_sqldatetime();
   my $link_titles = $self->{cfg}->entryBool('basic', 'link_titles', 0);
   if ($article->{link} && 
       !$self->{cfg}->entry('protect link', $article->{id})) {
@@ -1822,7 +1822,7 @@ sub refresh {
 
   my $url = $cgi->param('r');
   unless ($url) {
-    my $urlbase = $self->{cfg}->entryVar('site', 'url');
+    my $urlbase = admin_base_url($self->{cfg});
     $url = "$urlbase$ENV{SCRIPT_NAME}?id=$article->{id}";
     $url .= "&message=" . CGI::escape($message) if $message;
     if ($cgi->param('_t')) {
@@ -2172,14 +2172,14 @@ my %types =
    mov  video/quicktime
    moov video/quicktime
    mpg  video/mpeg
+   mp4  video/mp4
    mpeg video/mpeg
    avi  video/avi
    flc  video/flc
    wmv  video/x-ms-wmv
    asf  video/x-ms-asf
-   mp2  audio/mpeg
-   mp3  audio/mpeg
-   mp4  audio/mp4
+   mp2  audio/x-mpeg
+   mp3  audio/x-mpeg
    m4a  audio/m4a
    3gp  audio/3gpp
    aif  audio/aiff
@@ -2464,7 +2464,7 @@ sub remove {
   $article->remove;
   my $url = $req->cgi->param('r');
   unless ($url) {
-    my $urlbase = $self->{cfg}->entryVar('site', 'url');
+    my $urlbase = admin_base_url($req->cfg);
     $url = "$urlbase$ENV{SCRIPT_NAME}?id=$parentid";
     $url .= "&message=Article+deleted";
   }
@@ -2498,7 +2498,8 @@ sub hide {
   }
   my $r = $req->cgi->param('r');
   unless ($r) {
-    $r = $req->cfg->entryVar('site', 'url') . "/cgi-bin/admin/add.pl?id=" . $article->{parentid};
+    $r = admin_base_url($req->cfg)
+      . "/cgi-bin/admin/add.pl?id=" . $article->{parentid};
   }
   return $self->refresh($article, $req->cgi, undef, 'Article hidden');
 }

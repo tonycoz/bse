@@ -36,6 +36,7 @@ text of the link.
 <dd>image[<i>index</i>]</dd>
 <dd>image[<i>index</i>|<i>alignment</i>]</dd>
 <dd>image[<i>index</i>|<i>alignment</i>|<i>url</i>]</dd>
+<dd>image[<i>index</i>|<i>alignment</i>|<i>url</i>|<i>style</i>]</dd>
 
 <dt>Inserts the image number <i>index</i> associated with the article.
 <i>index</i> counts from the top starting with 1.  If no alignment is
@@ -44,12 +45,19 @@ then the images URL is used if there is one.  If either url is present
 the image becomes a link, though no border is shown around the
 image.</dt>
 
+<dt>The <i>style</i> parameter can be either a CSS class name,
+inserted as a <code>class="<i>style</i>"</code> parameter, the
+parameters to the CSS style <code>padding</code>, inserted as a
+<code>style="padding: <i>style</i></code> or as CSS style commands
+inserted as a <code>style="<i>style</i>"</code> parameter.</dt>
+
 <dt>If you use the image[] tag then the normal automatic image
 insertion is not done.</dt>
 
 <dd>image[<i>name</i>]</dd>
 <dd>image[<i>name</i>|<i>alignment</i>]</dd>
 <dd>image[<i>name</i>|<i>alignment</i>|<i>url</i>]</dd>
+<dd>image[<i>name</i>|<i>alignment</i>|<i>url</i>|<i>style</i>]</dd>
 
 <dt>Same as above, but refers to the images by name.  This does not
 prevent the normal automatic image placement.</dt>
@@ -57,6 +65,7 @@ prevent the normal automatic image placement.</dt>
 <dd>gimage[<i>name</i>]</dd>
 <dd>gimage[<i>name</i>|<i>alignment</i>]</dd>
 <dd>gimage[<i>name</i>|<i>alignment</i>|<i>url</i>]</dd>
+<dd>gimage[<i>name</i>|<i>alignment</i>|<i>url</i>|<i>style</i>]</dd>
 
 <dt>Inserts the given global image where the image is identified by
 name.</dt>

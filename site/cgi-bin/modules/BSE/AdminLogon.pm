@@ -2,6 +2,7 @@ package BSE::AdminLogon;
 use strict;
 use BSE::Util::Tags qw(tag_error_img);
 use DevHelp::HTML;
+use BSE::CfgInfo 'admin_base_url';
 
 my %actions =
   (
@@ -77,7 +78,7 @@ sub req_logon {
 
   my $r = $cgi->param('r');
   unless ($r) {
-    $r = $req->cfg->entryErr('site', 'url') . "/cgi-bin/admin/menu.pl";
+    $r = admin_base_url($req->cfg) . "/cgi-bin/admin/menu.pl";
   }
 
   return BSE::Template->get_refresh($r, $req->cfg);
@@ -89,7 +90,7 @@ sub req_logoff {
   delete $req->session->{adminuserid};
   ++$req->session->{changed};
 
-  my $r = $req->cfg->entryErr('site', 'url') . "/cgi-bin/admin/logon.pl";
+  my $r = admin_base_url($req->cfg) . "/cgi-bin/admin/logon.pl";
 
   return BSE::Template->get_refresh($r, $req->cfg);
 }

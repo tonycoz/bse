@@ -22,12 +22,23 @@ sub new {
 }
 
 sub _image {
-  my ($self, $im, $align, $url) = @_;
+  my ($self, $im, $align, $url, $style) = @_;
 
   my $text = qq!<img src="/images/$im->{image}" width="$im->{width}"!
     . qq! height="$im->{height}" alt="! . escape_html($im->{alt}).'"'
       . qq! border="0"!;
   $text .= qq! align="$align"! if $align && $align ne 'center';
+  if ($style) {
+    if ($style =~ /^\w+$/) {
+      $text .= qq! class="$style"!;
+    }
+    elsif ($style =~ /^\d/) {
+      $text .= qq! style="padding: $style"!;
+    }
+    else {
+      $text .= qq! style="$style"!;
+    }
+  }
   $text .= qq! />!;
   $text = qq!<div align="center">$text</div>!
     if $align && $align eq 'center';
@@ -44,7 +55,7 @@ sub _image {
 sub gimage {
   my ($self, $args) = @_;
 
-  my ($name, $align, $url) = split /\|/, $args, 3;
+  my ($name, $align, $url, $style) = split /\|/, $args, 4;
   my $im = $self->{gen}->get_gimage($name);
   if ($im) {
     $self->_image($im, $align, $url);
@@ -58,7 +69,7 @@ sub image {
   my ($self, $args) = @_;
 
   my $images = $self->{images};
-  my ($index, $align, $url) = split /\|/, $args, 3;
+  my ($index, $align, $url, $style) = split /\|/, $args, 4;
   my $text = '';
   my $im;
   if ($index =~ /^\d+$/) {
@@ -77,7 +88,7 @@ sub image {
     }
   }
   if ($im) {
-    return $self->_image($im, $align, $url);
+    return $self->_image($im, $align, $url, $style);
   }
   else {
     return '';

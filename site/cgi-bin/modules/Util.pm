@@ -4,9 +4,10 @@ use vars qw(@ISA @EXPORT_OK);
 require Exporter;
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(generate_article generate_all generate_button 
-                refresh_to regen_and_refresh custom_class);
+                regen_and_refresh);
 use Constants qw($CONTENTBASE $GENERATE_BUTTON $SHOPID $AUTO_GENERATE);
 use Carp qw(confess);
+use BSE::WebUtil qw(refresh_to_admin);
 
 # returns non-zero if the Regenerate button should work
 sub generate_button {
@@ -275,13 +276,6 @@ sub generate_all {
   $callback->("Total of ".(time()-$allstart)." seconds") if $callback;
 }
 
-sub refresh_to {
-  my ($where) = @_;
-
-  print "Content-Type: text/html\n";
-  print qq!Refresh: 0; url=$where\n\n<html></html>\n!;
-}
-
 =item regen_and_refresh($articles, $article, $generate, $refreshto, $cfg, $progress)
 
 An error checking wrapper around the page regeneration code.
@@ -358,7 +352,7 @@ sub regen_and_refresh {
   }
 
   unless ($progress) {
-    refresh_to($refreshto);
+    refresh_to_admin($cfg, $refreshto);
   }
 
   return 1;

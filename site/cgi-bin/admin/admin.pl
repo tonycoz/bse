@@ -8,7 +8,7 @@ use CGI::Carp 'fatalsToBrowser';
 use lib "$FindBin::Bin/../modules";
 use Articles;
 use BSE::Request;
-use Util 'refresh_to';
+use BSE::WebUtil 'refresh_to_admin';
 
 my $req = BSE::Request->new;
 my $cfg = $req->cfg;
@@ -36,6 +36,5 @@ if ($req->check_admin_logon()) {
   print $generator->generate($article, $articles);
 }
 else {
-  my $urlbase = $cfg->entryErr('site', 'url');
-  refresh_to("$urlbase/cgi-bin/admin/logon.pl");
+  refresh_to_admin($cfg, "/cgi-bin/admin/logon.pl");
 }

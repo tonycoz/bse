@@ -15,6 +15,40 @@ mod_perl, at least if you want more than one site on the machine.
 
 =head1 CONFIGURATION ENTRIES
 
+=head2 [site]
+
+Contains URL configuration for the site.
+
+=over
+
+=item url
+
+The normal URL for the non-secure parts of the site.
+
+=item secureurl
+
+The secure URL for the shop, products and other portions of the site
+that should use SSL.  This isn't checked to make sure it is https.
+
+=item name
+
+Used as the site "name" in a few places.
+
+=item adminurl
+
+If set, this is used as the base URL for accessing the administrative
+functions of your site.
+
+=item secureadmin
+
+Ignored if C<adminurl> is set.
+
+If this is true then C<secureurl> is used as the base URL for
+accessing the administrative functions of your site, otherwise C<url>
+is used as the base URL.  Default: false (C<url>'s value is used)
+
+=back
+
 =head2 [paths]
 
 Contains various file system paths.

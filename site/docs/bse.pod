@@ -10,6 +10,45 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.14_15
+
+This adds several destabilizing changes, test before using in any
+production setting.
+
+=over
+
+=item *
+
+you can now specify that BSE uses the configured secure URL, the
+normal URL or a separate admin base URL for access to administrative
+functions.  The action parameter on any custom admin/logon.tmpl should
+be changed to include the new <:adminbase:> tag.
+
+=item *
+
+reorder.pl now accepts a more sophisticated C<sort> parameter, it can
+now be a comma separated list of fields to sort by, most significant
+at the front.  Any unknown fields are ignored.  You can put C<-> in
+front of any field name to sort that field in reverse.
+
+=item *
+
+the image[] and gimage[] tags now take a fourth parameter which can
+either be a simple class name (all alphanumeric), a set of parameters
+to the C<padding:> style command, or actual CSS style commands.
+
+=item *
+
+lastModified is now a datetime rather than a date, be sure to run
+upgrade_mysql.pl
+
+=item *
+
+applied a change to the default table mapping from extension to MIME
+content type, sent in by Adrian.
+
+=back
+
 =head2 0.14_14
 
 =over

@@ -22,7 +22,7 @@ use Articles;
 use BSE::Sort;
 use BSE::Util::Tags;
 use BSE::Request;
-use Util 'refresh_to';
+use BSE::WebUtil 'refresh_to_admin';
 use DevHelp::HTML;
 use BSE::Arrows;
 
@@ -31,7 +31,7 @@ my $cfg = $req->cfg;
 my $securlbase = $cfg->entryVar('site', 'secureurl');
 my $baseurl =  $cfg->entryVar('site', 'url');
 unless ($req->check_admin_logon()) {
-  refresh_to("$baseurl/cgi-bin/admin/logon.pl");
+  refresh_to_admin($cfg, "/cgi-bin/admin/logon.pl");
   exit;
 }
 #my %session;

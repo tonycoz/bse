@@ -11,16 +11,15 @@ use Carp 'verbose';
 use CGI::Carp 'fatalsToBrowser';
 use BSE::Request;
 use Constants;
-use Util 'refresh_to';
+use BSE::WebUtil qw/refresh_to refresh_to_admin/;
 
 my $req = BSE::Request->new;
 
 my $cfg = $req->cfg;
 my $cgi = $req->cgi;
-my $urlbase = $cfg->entryVar('site', 'url');
 
 unless ($req->check_admin_logon()) {
-  refresh_to("$urlbase/cgi-bin/admin/logon.pl");
+  refresh_to_admin($cfg, "/cgi-bin/admin/logon.pl");
   exit;
 }
 
@@ -141,17 +140,17 @@ else {
 }
 
 if ($cgi->param('refreshto')) {
-  refresh_to($urlbase .$cgi->param('refreshto'));
+  refresh_to_admin($cgi->param('refreshto'));
 }
 elsif ($cgi->param('r')) {
   refresh_to($cgi->param('r'));
 }
 elsif ($cgi->param('edit')) {
   # refresh back to editor
-  refresh_to("$urlbase/cgi-bin/admin/add.pl?id=$article->{parentid}#children");
+  refresh_to_admin($cfg, "/cgi-bin/admin/add.pl?id=$article->{parentid}#children");
 }
 else {
   # refresh back to the parent
   my $parent = $articles->getByPkey($article->{parentid});
-  refresh_to("$urlbase$parent->{admin}");
+  refresh_to_admin($cfg, $parent->{admin});
 }

@@ -49,7 +49,8 @@ sub getuser {
 sub url {
   my ($self, $action, $params, $name) = @_;
 
-  my $url = $self->cfg->entryErr('site', 'url');
+  require BSE::CfgInfo;
+  my $url = BSE::CfgInfo::admin_base_url($self->{cfg});
   $url .= "/cgi-bin/admin/$action.pl";
   if ($params && keys %$params) {
     $url .= "?" . join("&", map { "$_=".escape_uri($params->{$_}) } keys %$params);

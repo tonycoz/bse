@@ -3,6 +3,7 @@ use strict;
 use BSE::Util::Tags qw/tag_error_img/;
 use BSE::Permissions;
 use DevHelp::HTML;
+use BSE::CfgInfo qw(admin_base_url);
 
 my %actions =
   (
@@ -193,7 +194,7 @@ sub refresh {
 
   my $url = $req->cgi->param('r');
   unless ($url) {
-    $url = $req->cfg->entryVar('site', 'url');
+    $url = admin_base_url($req->cfg);
     $url .= $ENV{SCRIPT_NAME};
     $url .= "?$target=1";
     while (my ($key, $value) = splice @parms, 0, 2) {

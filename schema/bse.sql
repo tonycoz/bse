@@ -55,7 +55,7 @@ CREATE TABLE article (
   -- 2 - list in sections, but not on the menu
   listed smallint not null default 1,
   -- date last modified
-  lastModified date not null,
+  lastModified datetime not null,
 
   -- flags specified via the config file
   -- used by code and templates

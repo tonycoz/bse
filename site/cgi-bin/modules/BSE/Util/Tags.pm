@@ -64,8 +64,8 @@ sub iter_cfgsection {
 sub tag_adminbase {
   my ($cfg, $arg) = @_;
 
-  require Util;
-  return escape_html(Util::admin_base_url($cfg));
+  require BSE::CfgInfo;
+  return escape_html(BSE::CfgInfo::admin_base_url($cfg));
 }
 
 sub static {

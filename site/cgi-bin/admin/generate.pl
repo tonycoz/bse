@@ -7,7 +7,8 @@ use lib "$FindBin::Bin/../modules";
 use Articles;
 use CGI qw(:standard);
 use Constants;
-use Util qw(generate_button regen_and_refresh refresh_to);
+use Util qw(generate_button regen_and_refresh);
+use BSE::WebUtil qw(refresh_to_admin);
 use Carp 'verbose';
 use BSE::Request;
 use URI::Escape;
@@ -18,7 +19,7 @@ my $cfg = $req->cfg;
 my $cgi = $req->cgi;
 my $siteurl = $cfg->entryErr('site', 'url');
 unless ($req->check_admin_logon()) {
-  refresh_to("$siteurl/cgi-bin/admin/logon.pl");
+  refresh_to_admin($cfg, "/cgi-bin/admin/logon.pl");
   exit;
 }
 
@@ -68,14 +69,14 @@ if (generate_button()) {
 	if ($baseurl =~ /menu\.pl$/) {
 	  $baseurl .= "?m=".uri_escape("You don't have permission to regenerate that");
 	}
-	refresh_to("$siteurl$baseurl");
+	refresh_to_admin($cfg, $baseurl);
       }
     }
   }
   else {
     if ($req->user_can('regen_all')) {
       regen_and_refresh('Articles', undef, 1, 
-			$siteurl . $baseurl, $cfg, $callback);
+			$baseurl, $cfg, $callback);
     }
     else {
       if ($progress) {
@@ -85,7 +86,7 @@ if (generate_button()) {
 	if ($baseurl =~ /menu\.pl$/) {
 	  $baseurl .= "?m=".uri_escape("You don't have permission to regenerate all");
 	}
-	refresh_to("$siteurl$baseurl");
+	refresh_to_admin($cfg, $baseurl);
       }
     }
   }

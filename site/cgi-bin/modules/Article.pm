@@ -14,6 +14,11 @@ sub columns {
     customInt1 customInt2 customInt3 customInt4/;
 }
 
+sub numeric {
+  qw(id listed parentid threshold summaryLength level 
+     customInt1 customInt2 customInt3 customInt4);
+}
+
 sub step_parents {
   my ($self) = @_;
 

@@ -10,7 +10,7 @@ use Product;
 use Constants qw(:shop $CGI_URI);
 use BSE::Template;
 use CGI::Cookie;
-use Util qw(refresh_to);
+use BSE::WebUtil qw(refresh_to);
 use BSE::CfgInfo qw(custom_class);
 use BSE::Mail;
 use BSE::Shop::Util qw/shop_cart_tags cart_item_opts nice_options total 
@@ -18,7 +18,6 @@ use BSE::Shop::Util qw/shop_cart_tags cart_item_opts nice_options total
                        payment_types/;
 use BSE::Session;
 use BSE::Cfg;
-use Util qw/refresh_to/;
 use BSE::Util::Tags qw(tag_hash);
 
 

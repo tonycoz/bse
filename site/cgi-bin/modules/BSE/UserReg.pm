@@ -12,6 +12,7 @@ use BSE::EmailRequests;
 use BSE::Util::SQL qw/now_datetime/;
 use DevHelp::HTML;
 use BSE::CfgInfo qw(custom_class);
+use BSE::WebUtil qw/refresh_to/;
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -751,7 +752,6 @@ sub register {
     elsif ($subs) {
       return if $self->send_conf_request($session, $cgi, $cfg, $user, 1);
     }
-    use Util qw/refresh_to/;
     
     _got_user_refresh($session, $cgi, $cfg);
 

@@ -11,7 +11,7 @@ use BSE::Permissions;
 use BSE::Util::Tags;
 use DevHelp::Report;
 use DevHelp::HTML;
-use Util 'refresh_to';
+use BSE::WebUtil 'refresh_to';
 
 my $req = BSE::Request->new;
 my $cgi = $req->cgi;

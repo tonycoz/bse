@@ -6,16 +6,15 @@ use FindBin;
 use lib "$FindBin::Bin/../modules";
 use Articles;
 use BSE::Request;
-use Util 'refresh_to';
+use BSE::WebUtil 'refresh_to_admin';
 use vars qw($VERSION);
-$VERSION = 1.02;
+$VERSION = 1.03;
 
 my $req = BSE::Request->new;
 my $cfg = $req->cfg;
 my $cgi = $req->cgi;
-my $urlbase = $cfg->entryVar('site', 'url');
 unless ($req->check_admin_logon()) {
-  refresh_to("$urlbase/cgi-bin/admin/logon.pl");
+  refresh_to_admin("/cgi-bin/admin/logon.pl");
   exit;
 }
 
@@ -79,6 +78,35 @@ if ($req->user_can(edit_reorder_children => $parentid)) {
   elsif ($sort eq 'current') {
     $code = sub { $b->[1]{$b->[2]} <=> $a->[1]{$a->[2]} };
   }
+  elsif ($sort eq 'id') {
+    $code = sub { $a->[0]{id} <=> $b->[0]{id} };
+  }
+  elsif (@kids) {
+    my @fields = split ',', $sort;
+    my @reverse = grep(s/^-// || 0, @fields);
+    my %reverse;
+    @reverse{@fields} = @reverse;
+    @fields = grep exists($kids[0]{$_}), @fields;
+    my @num = 
+    my %num = map { $_ => 1 } $kids[0]->numeric;
+
+    $code =
+      sub {
+	for my $field (@fields) {
+	  my $rev = $reverse{$field};
+	  my $cmp;
+	  if ($num{$field}) {
+	    $cmp = $a->[0]{$field} <=> $b->[0]{$field};
+	  }
+	  else {
+	    $cmp = lc $a->[0]{$field} cmp lc $b->[0]{$field};
+	  }
+	  $cmp = -$cmp if $rev;
+	  return $cmp if $cmp;
+	}
+	return $a->[0]{id} <=> $b->[0]{id};
+      };
+  }
   if ($reverse) {
     my $temp = $code;
     $code = sub { -$temp->() };
@@ -93,7 +121,7 @@ if ($req->user_can(edit_reorder_children => $parentid)) {
   }
 }
 
-refresh_to("$urlbase$refreshto");
+refresh_to_admin($cfg, $refreshto);
 
 =head1 NAME
 

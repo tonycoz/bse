@@ -10,7 +10,7 @@ use BSE::DB;
 use BSE::Util::Tags;
 use BSE::Template;
 use Articles;
-use Util qw/refresh_to/;
+use BSE::WebUtil qw/refresh_to refresh_to_admin/;
 use BSE::Message;
 use BSE::Permissions;
 use BSE::Request;
@@ -276,13 +276,13 @@ sub _refresh_list {
 
   my $url = $q->param('r');
   unless ($url) {
-    $url = $cfg->entryErr('site', 'url') . "/cgi-bin/admin/subs.pl";
+    $url = "/cgi-bin/admin/subs.pl";
     if ($msg) {
       $url .= "?m=" . CGI::escape($msg);
     }
   }
 
-  refresh_to($url);
+  refresh_to_admin($cfg, $url);
 }
 
 sub addsave {
