@@ -1,5 +1,7 @@
 #!/usr/bin/perl -w
 use strict;
+#use File::Tree;
+use File::Copy;
 
 my $dist = shift or die "Usage: $0 distdir [leavedb]";
 my $leavedb = shift or 0;
@@ -22,7 +24,7 @@ system("rm -rf $instbase/cgi-bin")
   and die "Cannot remove cgi-bin";
 system "rm -rf $instbase/data"
   and die "Cannot remove data";
-system "rm -rf $instbase/htdocs"
+system "rm -f $instbase/htdocs/{*.html,a/*.html,shop/*.html,images/*.jpg}"
   and die "Cannot remove htdocs";
 
 system "cp -rf $dist/site/cgi-bin $instbase"
@@ -44,12 +46,19 @@ if ($gotconf) {
   my $con = do { local $/; <CON> };
   close CON;
 
-  $con =~ s/(^\$DB = ')[^']*/$1$Constants::DB/m;
+  if (defined $Constants::DB && !defined $Constants::DSN) {
+    $Constants::DSN = 'dbi:mysql:'.$Constants::DB;
+    $Constants::DBCLASS = "BSE::DB::Mysql";
+    $Constants::SESSION_CLASS = "Apache::Session::MySQL";
+  }
+  $con =~ s/(^\$DSN = ')[^']*/$1$Constants::DSN/m;
+  $con =~ s/(^\$DBCLASS = ')[^']*/$1$Constants::DBCLASS/m;
   $con =~ s/(^\$UN = ')[^']*/$1$Constants::UN/m;
   $con =~ s/(^\$PW = ')[^']*/$1$Constants::PW/m;
   $con =~ s/(^\$BASEDIR = ')[^']+/$1$Constants::BASEDIR/m;
   $con =~ s/(^\$URLBASE = ["'])[^'"]+/$1$Constants::URLBASE/m;
   $con =~ s/(^\$SECURLBASE = ["'])[^'"]+/$1$Constants::SECURLBASE/m;
+  $con =~ s/(^\$SESSION_CLASS = ["'])[^'"]+/$1$Constants::SESSION_CLASS/m;
   open CON, "> $instbase/cgi-bin/modules/Constants.pm"
     or die "Cannot open Constants.pm for write: $!";
   print CON $con;
@@ -57,9 +66,16 @@ if ($gotconf) {
 
   # build the database
   unless ($leavedb) {
-    system "$mysql -u$Constants::UN -p$Constants::PW $Constants::DB <$dist/schema/bse.sql"
-      and die "Cannot initialize database";
-    system "cd $instbase/util ; perl initial.pl"
-      and die "Cannot load database";
+    if ($Constants::DSN =~ /:mysql:(?:database=)?(\w+)/) {
+      my $db = $1;
+      system "$mysql -u$Constants::UN -p$Constants::PW $db <$dist/schema/bse.sql"
+	and die "Cannot initialize database";
+      system "cd $instbase/util ; perl initial.pl"
+	and die "Cannot load database";
+    }
+    else {
+      print "WARNING: cannot install to $Constants::DSN database\n";
+    }
   }
 }
+  
