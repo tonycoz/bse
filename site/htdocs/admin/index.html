@@ -1,28 +1,115 @@
 <html><head><title>Administration Centre</title>
-<link rel="stylesheet" href="/css/admin.css">
+<link 
+rel="stylesheet" 
+href="/css/admin.css">
 </head>
 <body>
-<h1>Administration Centre</h1>
+<h1>Administration 
+Centre</h1>
 <p>
-<ul>
-  <li><a href="/cgi-bin/admin/admin.pl?id=1">What's Hot admin</a> (browse in edit 
-    mode) 
-  <li><a href="/cgi-bin/admin/add.pl?parentid=2">Add to What's Hot</a> 
-  <li><a href="/cgi-bin/admin/add.pl">Add a new article</a> 
-  <li><a href="/cgi-bin/admin/add.pl?level=2">Add a new subsection</a>
-  <li><a href="/cgi-bin/admin/add.pl?level=1">Add a new section</a>
-  <li><a href="/cgi-bin/admin/add.pl?id=-1">Administer sections</a>
-  <li><a href="/cgi-bin/admin/shopadmin.pl">Shop administration<br>
-    </a>
-  <ul><li><a href="/cgi-bin/admin/add.pl?parentid=3">Add catalog</a></li></ul>
-    <br>
-    <br>
-  <li><a href="/cgi-bin/admin/generate.pl">Regenerate static pages and base pages</a> 
-  <li><a href="/cgi-bin/admin/makeIndex.pl">Regenerate search index</a><br>
-  <br>
-       <li><a href="advanced.html">Advanced tools</a><br><br>
-</ul>
-<br><br>
-<form action="/cgi-bin/admin/admin.pl">
-Jump to: <input type=text name=id size=4>
-</form></body></html>
+<table width="50%" border="0" cellspacing="0" 
+cellpadding="5">
+  <tr> 
+    <td colspan="2"><a 
+href="/cgi-bin/admin/admin.pl?id=1">Browse in edit mode</a></td>
+ 
+</tr>
+  <tr> 
+    <td colspan="2"><a href="/">Browse in static 
+mode</a></td>
+  </tr>
+  <tr> 
+    <td colspan="2"><a 
+href="/cgi-bin/admin/add.pl?parentid=2">Add to home page</a></td>
+ 
+</tr>
+  <tr> 
+    <td width="15">&nbsp;</td>
+    <td>&nbsp;</td>
+ 
+</tr>
+  <tr> 
+    <td colspan="2"><a 
+href="/cgi-bin/admin/add.pl?id=-1">Administer sections</a></td>
+ 
+</tr>
+  <tr> 
+    <td width="15">&nbsp;</td>
+    <td>&#149; <a 
+href="/cgi-bin/admin/add.pl?level=1">Add a new section</a></td>
+ 
+</tr>
+  <tr> 
+    <td width="15">&nbsp;</td>
+    <td>&#149; <a 
+href="/cgi-bin/admin/add.pl?level=2">Add a new subsection</a></td>
+ 
+</tr>
+  <tr> 
+    <td width="15">&nbsp;</td>
+    <td>&#149; <a 
+href="/cgi-bin/admin/add.pl">Add a new article</a></td>
+  </tr>
+ 
+<tr> 
+    <td width="15">&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+ 
+<tr> 
+    <td colspan="2"><a href="/cgi-bin/admin/shopadmin.pl">Shop 
+administration</a></td>
+  </tr>
+  <tr> 
+    <td 
+width="15">&nbsp;</td>
+    <td>&#149; <a 
+href="/cgi-bin/admin/add.pl?parentid=3">Add catalog</a></td>
+  </tr>
+ 
+<tr> 
+    <td width="15">&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+ 
+<tr> 
+    <td colspan="2"><a 
+href="/cgi-bin/admin/generate.pl">Regenerate static &amp; 
+      base 
+pages</a></td>
+  </tr>
+  <tr> 
+    <td colspan="2"><a 
+href="/cgi-bin/admin/makeIndex.pl">Regenerate search index</a></td>
+ 
+</tr>
+  <tr> 
+    <td width="15">&nbsp;</td>
+    <td>&nbsp;</td>
+ 
+</tr>
+  <tr> 
+    <td colspan="2"><a href="advanced.html">Advanced 
+tools</a></td>
+  </tr>
+  <tr> 
+    <td width="15">&nbsp;</td>
+ 
+<td>&nbsp;</td>
+  </tr>
+  <tr> 
+    <td colspan="2">
+      <form 
+action="/cgi-bin/admin/admin.pl">
+        Jump to: 
+        <input 
+type=text name=id size=4>
+        <input type="submit" 
+value="Jump!">
+        (Article ID eg: 1 = Home)
+      </form>
+ 
+</td>
+  </tr>
+</table>
+</body></html>
