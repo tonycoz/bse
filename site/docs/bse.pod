@@ -10,6 +10,21 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.10_03
+
+=over
+
+=item *
+
+added the admin/reorder.pl script
+
+=item *
+
+template names in <: embed :> tags have $ replaced with the template
+name of the article.
+
+=back
+
 =head2 0.10_02
 
 =over
@@ -22,6 +37,10 @@ added the image[] tag  (image[index|align|url])
 
 added printable.pl, site/templates/printable/printable.tmpl to allow
 printable versions of pages (among other things)
+
+=item *
+
+implemented the ifCurrentPage tag
 
 =back
 
