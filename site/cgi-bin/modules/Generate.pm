@@ -365,8 +365,13 @@ IMG
 sub embed {
   my ($self, $article, $articles, $template) = @_;
   
-  $template = $article->{template}
-    unless defined($template) && $template =~ /\S/;
+  if (defined $template && $template =~ /\$/) {
+    $template =~ s/\$/$article->{template}/;
+  }
+  else {
+    $template = $article->{template}
+      unless defined($template) && $template =~ /\S/;
+  }
 
   open SOURCE, "< $TMPLDIR$template"
     or die "Cannot open template $template: $!";
