@@ -741,16 +741,10 @@ sub order_list_low {
      BSE::Util::Tags->basic(\%acts, $CGI::Q, $cfg),
      BSE::Util::Tags->admin(\%acts, $cfg),
      BSE::Util::Tags->secure($req),
-     order=> sub { CGI::escapeHTML($orders_work[$order_index]{$_[0]}) },
-     iterate_orders_reset =>
-     sub {
-       @orders_work = 
-	 bse_sort({ id=>'n', total=>'n' }, $_[0], @orders);
-       $order_index = -1;
-     },
-     iterate_orders => sub { ++$order_index < @orders_work },
-     money => sub { sprintf("%.2f", $orders_work[$order_index]{$_[0]}/100.0) },
-     date => sub { display_date($orders_work[$order_index]{$_[0]}) },
+     #order=> sub { CGI::escapeHTML($orders_work[$order_index]{$_[0]}) },
+     DevHelp::Tags->make_iterator2
+     ( [ \&iter_orders, \@orders ],
+       'order', 'orders', \@orders_work, \$order_index, 'NoCache'),
      script => sub { $ENV{SCRIPT_NAME} },
      title => sub { $title },
      ifHaveParam => sub { defined $cgi->param($_[0]) },
@@ -763,6 +757,12 @@ sub order_list_low {
      },
     );
   page($template, \%acts);
+}
+
+sub iter_orders {
+  my ($orders, $args) = @_;
+
+  return bse_sort({ id => 'n', total => 'n', filled=>'n' }, $args, @$orders);
 }
 
 sub order_list {

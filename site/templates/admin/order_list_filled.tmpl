@@ -4,8 +4,8 @@
 <body>
 <h1>Shop Administration</h1>
 <p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | <a href="<:script:>">Manage catalogs</a> 
-  | <a href="<:script:>?order_list=1&template=order_list_unfilled">Unfilled orders</a> 
-  | <a href="<:script:>?order_list=1">All orders</a> |</p>
+  | <a href="<:script:>?order_list=1&template=order_list_unfilled">Unfilled orders</a>  [ <:order_count filter= filled==0:> ]
+  | <a href="<:script:>?order_list=1">All orders</a>  [ <:order_count filter= id!=0:> ] |</p>
 <h2>Order list - Filled orders</h2>
 
 <table bgcolor="#000000" cellpadding="0" cellspacing="0" border="0" width="100%" class="table">
@@ -39,9 +39,9 @@
             id:></a></td>
           <td width="100%"><:order delivFirstName:> <:order delivLastName:> <:ifOrder 
             userId:><font color="#CCCCCC">&#8212; (logged in)</font><:or:><:eif:></td>
-          <td nowrap><:date orderDate:></td>
-          <td align=right nowrap>$<:money total:></td>
-          <td align=right nowrap>$<:money gst:></td>
+          <td nowrap><:date order orderDate:></td>
+          <td align=right nowrap>$<:money order total:></td>
+          <td align=right nowrap>$<:money order gst:></td>
           <td nowrap> <a href="<:script:>?id=<:order id:>&order_detail=1">Order 
             details </a> </td>
         </tr>

@@ -4,8 +4,8 @@
 <body>
 <h1>Shop Administration</h1>
 <p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | <a href="<:script:>">Manage catalogs</a> 
-  | <a href="<:script:>?order_list=1&template=order_list_unfilled">Unfilled orders</a> 
-  | <a href="<:script:>?order_list=1&template=order_list_filled">Filled orders</a> 
+  | <a href="<:script:>?order_list=1&template=order_list_unfilled">Unfilled orders</a>  [ <:order_count filter= filled==0 :> ]
+  | <a href="<:script:>?order_list=1&template=order_list_filled">Filled orders</a>   [ <:order_count filter= filled!=0 :> ]
   |</p>
 <h2>Order list</h2>
 
@@ -42,9 +42,9 @@
             userId:><font color="#CCCCCC">&#8212; (logged in)</font><:or:><:eif:></td>
           <td nowrap bgcolor="<:ifOrder filled:>#CC0033<:or:>#66CC00<:eif:>"><:ifOrder 
             filled:><font color="#999999">Completed</font><:or:><font color="#FFFFFF">Processing</font><:eif:></td>
-          <td nowrap><:date orderDate:></td>
-          <td align=right nowrap>$<:money total:></td>
-          <td align=right nowrap>$<:money gst:></td>
+          <td nowrap><:date order orderDate:></td>
+          <td align=right nowrap>$<:money order total:></td>
+          <td align=right nowrap>$<:money order gst:></td>
           <td nowrap> <a href="<:script:>?id=<:order id:>&order_detail=1">Order 
             details </a> </td>
         </tr>

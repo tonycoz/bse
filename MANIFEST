@@ -193,6 +193,8 @@ site/htdocs/js/validate.js
 site/templates/1/shop_multicat.tmpl
 site/templates/1/sitemap.tmpl
 # site/templates/admin/add_product.tmpl
+site/templates/admin/addgroup.tmpl
+site/templates/admin/adduser.tmpl
 site/templates/admin/article_custom.tmpl
 site/templates/admin/article_img.tmpl
 site/templates/admin/base.tmpl

@@ -11,6 +11,7 @@ my %actions =
    showuserart=>1,
    saveuser=>1,
    saveuserart=>1,
+   adduserform => 1,
    adduser=>1,
    groups=>1,
    showgroupart=>1,
@@ -18,6 +19,7 @@ my %actions =
    savegroup=>1,
    savegroupart=>1,
    showobjectart=>1,
+   addgroupform=>1,
    addgroup=>1,
    deluser=>1,
    delgroup=>1,
@@ -157,6 +159,17 @@ sub req_users {
   return BSE::Template->get_response('admin/userlist', $req->cfg, \%acts);
 }
 
+sub req_adduserform {
+  my ($class, $req, $msg, $errors) = @_;
+
+  $req->user_can('admin_user_add')
+    or return $class->req_users($req, "You don't have admin_user_add access");
+
+  my %acts;
+  %acts = $class->common_tags($req, $msg, $errors);
+  return BSE::Template->get_response('admin/adduser', $req->cfg, \%acts);
+}
+
 sub req_groups {
   my ($class, $req, $msg, $errors) = @_;
 
@@ -164,6 +177,15 @@ sub req_groups {
   %acts = $class->common_tags($req, $msg, $errors);
 
   return BSE::Template->get_response('admin/grouplist', $req->cfg, \%acts);
+}
+
+sub req_addgroupform {
+  my ($class, $req, $msg, $errors) = @_;
+
+  my %acts;
+  %acts = $class->common_tags($req, $msg, $errors);
+
+  return BSE::Template->get_response('admin/addgroup', $req->cfg, \%acts);
 }
 
 sub refresh {
@@ -222,11 +244,11 @@ sub req_adduser {
   }
 
   keys %errors
-    and return $class->req_users($req, undef, \%errors);
+    and return $class->req_adduserform($req, undef, \%errors);
 
   require BSE::TB::AdminUsers;
   my $old = BSE::TB::AdminUsers->getBy(logon=>$logon)
-    and return $class->req_users($req, "Logon '$logon' already exists");
+    and return $class->req_adduserform($req, "Logon '$logon' already exists");
   my %user =
     (
      type => 'u',
@@ -261,10 +283,10 @@ sub req_addgroup {
     or $errors{name} = 'No name supplied';
   $description = '' unless defined $description;
   keys %errors
-    and return $class->req_groups($req, undef, \%errors);
+    and return $class->req_addgroupform($req, undef, \%errors);
   require BSE::TB::AdminGroups;
   my $old = BSE::TB::AdminGroups->getBy(name=>$name)
-    and return $class->req_groups($req, "Group '$name' already exists");
+    and return $class->req_addgroupform($req, "Group '$name' already exists");
   my %group =
     (
      type => 'g',
@@ -673,8 +695,12 @@ sub req_saveuser {
   my $msg = 'User saved';
   $class->_save_htusers($req, \$msg);
 
+  my $t = $cgi->param('_t');
+  my @extras;
+  push @extras, _t => $t if defined $t and $t =~ /^\w+$/;
+
   return $class->refresh($req, a_showuser => userid => $user->{id},
-			'm' => $msg);
+			'm' => $msg, @extras);
 }
 
 sub req_saveuserart {
@@ -773,8 +799,12 @@ sub req_savegroup {
     }
   }
 
+  my $t = $cgi->param('_t');
+  my @extras;
+  push @extras, _t => $t if defined $t and $t =~ /^\w+$/;
+
   return $class->refresh($req, a_showgroup => groupid => $group->{id},
-			'm' => 'Group saved');
+			'm' => 'Group saved', @extras);
 }
 
 sub req_savegroupart {

@@ -10,6 +10,35 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.12_28
+
+=over
+
+=item *
+
+the adduser and addgroup forms have been split off into their own
+pages
+
+=item *
+
+the a_saveuser and a_savegroup targets for adminusers.pl now supply
+the _t parameter passed to them to their default refresh targets.  The
+_t parameter must only contain letters and digits.
+
+=item *
+
+the orders iterator for the order_list target in shopadmin.pl now uses
+a generated iterator, so tags like <:order_count:> are now available.
+
+=item *
+
+the page specific date and money tags (<:date order_field:> and
+<:money order_field:>) are no longer available on the order_list
+pages, use the general date and money tags (<:date tag args:> and
+<:money tag args:>).
+
+=back
+
 =head2 0.12_27
 
 =over
@@ -34,7 +63,6 @@ I<regexp> I<with> I<global>:> now available everywhere.
 =item *
 
 the code to parse [...] and "..." parameters for tags now passes
-
 through backslashes (\) not followed by " or another \ inside "...".
 This makes it easier to enter a regular expression in "...".
 

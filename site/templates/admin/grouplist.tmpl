@@ -13,7 +13,7 @@
 <p>
 | <a href="/cgi-bin/admin/menu.pl">Admin menu</a>
 | <a href="<:script:>">User list</a> |
-</p>
+<:if UserCan admin_group_add :><a href="<:script:>?a_addgroupform=1">Add Group</a> |<:or UserCan:><:eif UserCan:></p>
 <:ifMessage:>
 <p><b><:message:></b></p>
 <:or:><:eif:> 
@@ -48,40 +48,6 @@
 </tr>
 </table>
 </form>
-<:if UserCan admin_group_add :>
-<h2>Add new group</h2>
-
-<form method="POST" action="<:script:>">
-
-  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
-    <tr> 
-      <td> 
-        <table cellpadding="6" border="0" cellspacing="1">
-          <tr> 
-            <th bgcolor="#FFFFFF" align="left">Name: </th>
-            <td bgcolor="#FFFFFF"> 
-              <input type="text" name="name" value="<:old name:>" />
-            </td>
-            <td bgcolor="#FFFFFF"><:help addgroup name:> <:error_img name:></td>
-          </tr>
-          <tr> 
-            <th bgcolor="#FFFFFF" align="left">Description: </th>
-            <td bgcolor="#FFFFFF"> 
-              <input type="text" name="description" value="<:old description:>" <:error_img description:> />
-            </td>
-            <td bgcolor="#FFFFFF"><:help addgroup description:> </td>
-          </tr>
-          <tr> 
-            <td bgcolor="#FFFFFF" colspan="3" align="right"> 
-              <input type="submit" name="a_addgroup" value="  Add Group  " />
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</form>
-<:or UserCan:><:eif UserCan:>  
   
 <p><font size="-1">BSE Release <:release:></font></p>
 </body
