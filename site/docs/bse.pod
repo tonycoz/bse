@@ -10,6 +10,10 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.14
+
+No changes in this release, just a stable release.  Enjoy.
+
 =head2 0.13_08
 
 This is a release candidate for 0.14, please report any problems with
