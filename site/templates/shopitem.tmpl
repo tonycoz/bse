@@ -24,6 +24,14 @@
 </table>
 <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font></p>
 <br clear="all">
+<:if StepCats:>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="2"><p><b>Related categories:</b></p>
+<ul>
+<:iterator begin stepcats:>
+<p><a href="<:url stepcat:>"><:stepcat title:></a></p>
+<:iterator end stepcats:>
+</ul></font>
+<:or StepCats:><:eif StepCats:>
             <form name="ff" method="POST" action="/cgi-bin/shop.pl">
               
 <:if Options:>

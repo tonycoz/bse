@@ -72,6 +72,7 @@ HTML
      iterate_stepcats_reset => sub { $stepcat_index = -1 },
      iterate_stepcats => sub { ++$stepcat_index < @stepcats },
      stepcat => sub { CGI::escapeHTML($stepcats[$stepcat_index]{$_[0]}) },
+     ifStepCats => sub { @stepcats },
     );
   return Squirrel::Template->new(%TEMPLATE_OPTS)
     ->show_page($TMPLDIR, $article->{template}, \%acts);
@@ -128,6 +129,19 @@ want the desc field.
   <:iterator end options:>
   <!-- and end a table here -->
   <:or Options:><:eif Options:>
+
+=item iterator ... stepcats
+
+Iterates over any step parents of the product, setting the I<stepcat>
+for each element.
+
+=item stepcat I<field>
+
+Access to fields of the step catalogs of the parent.
+
+=item ifStepCats
+
+Conditional tag, true if the product has any step catalogs.
 
 =back
 

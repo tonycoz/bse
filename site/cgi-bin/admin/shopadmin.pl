@@ -109,8 +109,15 @@ sub embedded_catalog {
 
   use POSIX 'strftime';
   my $products = Products->new;
-  my @list = sort { $b->{displayOrder} <=> $a->{displayOrder} } 
-    $products->getBy(parentid=>$catalog->{id});
+  my @list;
+  if ($session{showstepkids}) {
+    @list = grep $_->{generator} eq 'Generate::Product', $catalog->allkids;
+    @list = map { $products->getByPkey($_->{id}) } @list;
+  }
+  else {
+    @list = sort { $b->{displayOrder} <=> $a->{displayOrder} } 
+      $products->getBy(parentid=>$catalog->{id});
+  }
   my $list_index = -1;
   my $subcat_index = -1;
   my @subcats = sort { $b->{displayOrder} <=> $a->{displayOrder} } 
@@ -143,16 +150,30 @@ sub embedded_catalog {
      sub {
        # links to move products up/down
        my $html = '';
-       my $refreshto = CGI::escape($ENV{SCRIPT_NAME});
+       my $refreshto = CGI::escape($ENV{SCRIPT_NAME}."#cat".$catalog->{id});
        if ($list_index < $#list) {
-	 $html .= <<HTML;
+	 if ($session{showstepkids}) {
+	   $html .= <<HTML;
+<a href="$CGI_URI/admin/move.pl?stepparent=$catalog->{id}&d=swap&id=$list[$list_index]{id}&other=$list[$list_index+1]{id}&refreshto=$refreshto"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
+HTML
+	 }
+	 else {
+	   $html .= <<HTML;
 <a href="$CGI_URI/admin/move.pl?id=$list[$list_index]{id}&d=swap&other=$list[$list_index+1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom"></a>
 HTML
+	 }
        }
        if ($list_index > 0) {
-	 $html .= <<HTML;
+	 if ($session{showstepkids}) {
+	   $html .= <<HTML;
+<a href="$CGI_URI/admin/move.pl?stepparent=$catalog->{id}&d=swap&id=$list[$list_index]{id}&other=$list[$list_index-1]{id}&refreshto=$refreshto"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
+HTML
+	 }
+	 else {
+	   $html .= <<HTML;
 <a href="$CGI_URI/admin/move.pl?id=$list[$list_index]{id}&d=swap&other=$list[$list_index-1]{id}&refreshto=$refreshto&all=1"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom"></a>
 HTML
+	 }
        }
        return $html;
      },
@@ -191,6 +212,10 @@ sub product_list {
     Articles->children($SHOPID);
   my $catalog_index = -1;
   my $message = param('message') || shift || '';
+  if (defined param('showstepkids')) {
+    $session{showstepkids} = param('showstepkids');
+  }
+  exists $session{showstepkids} or $session{showstepkids} = 1;
   my %acts =
     (
      catalog=> sub { CGI::escapeHTML($catalogs[$catalog_index]{$_[0]}) },
@@ -221,6 +246,7 @@ HTML
        }
        return $html;
      },
+     ifShowStepKids => sub { $session{showstepkids} },
     );
 
   page('product_list', \%acts);

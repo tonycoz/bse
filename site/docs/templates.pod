@@ -891,6 +891,37 @@ Iterates over the products within this catalog.
 
 The give attribute of the product.
 
+=item ifProducts
+
+Conditional tag, true if there are any normal child products.
+
+=item iterator ... allprods
+
+Iterates over the products and step products of this catalog, setting
+the allprod tag for each item.
+
+=item allprod I<field>
+
+The given attribute of the product.
+
+=item ifAnyProds
+
+Conditional tag, true if there are any normal or step products.
+
+=item iterator ... stepprods
+
+Iterates over any step products of this catalog, setting the
+I<stepprod> tag to the current step product.  Does not iterate over
+normal child products.
+
+=item stepprod I<field>
+
+The given attribute of the current step product.
+
+=item ifStepProds
+
+Conditional tag, true if there are any step products.
+
 =item iterator ... catalogs
 
 Iterates over any sub-catalogs.
@@ -945,6 +976,19 @@ want the desc field.
   <:iterator end options:>
   <!-- and end a table here -->
   <:or Options:><:eif Options:>
+
+=item iterator ... stepcats
+
+Iterates over any step parents of the product, setting the I<stepcat>
+for each element.
+
+=item stepcat I<field>
+
+Access to fields of the step catalogs of the parent.
+
+=item ifStepCats
+
+Conditional tag, true if the product has any step catalogs.
 
 =back
 

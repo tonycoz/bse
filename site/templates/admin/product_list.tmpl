@@ -5,9 +5,9 @@
 <body>
 <h1>Shop Administration</h1>
 <p><:message:> | <a href="/admin/">Admin menu</a> | <a href="<:script:>?order_list=1">Order 
-  list</a> | <a href="/cgi-bin/admin/admin.pl?id=<:shopid:>">Online store</a> |</p>
+  list</a> | <a href="/cgi-bin/admin/admin.pl?id=<:shopid:>">Online store</a> | <:if ShowStepKids:><a href="<:script:>?showstepkids=0">Hide stepkids</a><:or ShowStepKids:><a href="<:script:>?showstepkids=1">Show stepkids</a><:eif ShowStepKids:> | </p> 
 <:iterator begin catalogs:>
-<h2>Catalog: <:catalog title:> <:movecat:></h2>
+<a name="cat<:catalog id:>"></a><h2>Catalog: <:catalog title:> <:movecat:></h2>
 <:embed catalog catalog.tmpl:>
 <:iterator end catalogs:>
 <p><form action="/cgi-bin/admin/add.pl"><input type=hidden name=parentid value=3><input type=submit value="Add Catalog"></form></p>

@@ -100,20 +100,33 @@ reorder.pl - reorder the article siblings, given their parent id
 
 =head1 DESCRIPTION
 
-Sorts the articles under a given I<parentid> depending on the value of
-the I<sort> and I<reverse> parameters.  Once the sort is complete a
-refresh is generated to the local url in I<refreshto>.
+Sorts the articles that are either the children, step children or step
+parents of a given article depending on the value of the I<sort> and
+I<reverse> parameters.  Once the sort is complete a refresh is
+generated to the local url in I<refreshto>.
 
-The parameters are:
+One of the I<parentid>, I<stepparent>, or I<stepchild> parameters
+needs to be defined, otherwise no sort is performed.
 
 =over
 
 =item parentid
 
-The parentid of the articles to be sorted.  If this is missing no sort
-is performed.  This can be C<-1> to sort sections.  If there are no
-articles that have this as their I<parentid> then zero articles are
-harmlessly sorted.
+The parentid of the articles to be sorted.  This can be C<-1> to sort
+sections.  If there are no articles that have this as their
+I<parentid> then zero articles are harmlessly sorted.
+
+=item stepparent
+
+the step parent is of articles to be sorted.  This will sort both the
+normal children and stepchildren of the given article.  This cannot be
+C<-1>.
+
+=item stepchild
+
+the step child of the articles to be sorted (currently must be a
+product).  This will sort only the step parents, and will not include
+the normal parent.
 
 =item sort
 

@@ -45,6 +45,7 @@ sub generate_low {
        return ++$product_index < @products;
      },
      product=> sub { CGI::escapeHTML($products[$product_index]{$_[0]}) },
+     ifProducts => sub { @products },
      admin => 
      sub { 
        if ($self->{admin}) {
@@ -110,20 +111,19 @@ HTML
 	 return '';
        }
      },
+     iterate_allprods_reset => sub { $allprod_index = -1 },
+     iterate_allprods => sub { ++$allprod_index < @allprods },
+     allprod => sub { CGI::escapeHTML($allprods[$allprod_index]{$_[0]}) },
+     ifAnyProds => sub { CGI::escapeHTML(@allprods) },
+     iterate_stepprods_reset => sub { $stepprod_index = -1 },
+     iterate_stepprods => sub { ++$stepprod_index < @stepprods; },
+     stepprod => sub { CGI::escapeHTML($stepprods[$stepprod_index]{$_[0]}) },
+     ifStepProds => sub { @stepprods },
      iterate_catalogs_reset => sub { $category_index = -1 },
      iterate_catalogs => sub { ++$category_index < @subcats },
      catalog => 
      sub { CGI::escapeHTML($subcats[$category_index]{$_[0]}) },
      ifSubcats => sub { @subcats },
-     iterate_stepprods_reset => sub { $stepprod_index = -1 },
-     iterate_stepprods =>
-     sub {
-       ++$stepprod_index < @stepprods;
-     },
-     stepprod => sub { CGI::escapeHTML($stepprods[$stepprod_index]{$_[0]}) },
-     iterate_allprods_reset => sub { $allprod_index = -1 },
-     iterate_allprods => sub { ++$allprod_index < @allprods },
-     allprod => sub { CGI::escapeHTML($allprods[$allprod_index]{$_[0]}) },
     );
   my $oldurl = $acts{url};
   $acts{url} =
@@ -199,6 +199,37 @@ Iterates over the products within this catalog.
 =item product I<field>
 
 The given attribute of the product.
+
+=item ifProducts
+
+Conditional tag, true if there are any normal child products.
+
+=item iterator ... allprods
+
+Iterates over the products and step products of this catalog, setting
+the allprod tag for each item.
+
+=item allprod I<field>
+
+The given attribute of the product.
+
+=item ifAnyProds
+
+Conditional tag, true if there are any normal or step products.
+
+=item iterator ... stepprods
+
+Iterates over any step products of this catalog, setting the
+I<stepprod> tag to the current step product.  Does not iterate over
+normal child products.
+
+=item stepprod I<field>
+
+The given attribute of the current step product.
+
+=item ifStepProds
+
+Conditional tag, true if there are any step products.
 
 =item iterator ... catalogs
 
