@@ -2135,20 +2135,66 @@ my %types =
    txt  text/plain
    htm  text/html
    html text/html
+   sgm  text/sgml
+   sgml text/sgml
+   xml  text/xml
+   tsv  text/tab-separated-values
+   csv  text/plain
    gif  image/gif
    jpg  image/jpeg
    jpeg image/jpeg
-   doc  application/msword
-   rtf  application/rtf
-   zip  application/zip
+   jp2  image/jpeg2000
    png  image/png
    bmp  image/bmp
    tif  image/tiff
    tiff image/tiff
-   sgm  text/sgml
-   sgml text/sgml
-   xml  text/xml
+   pct  image/pict
+   pict image/pict
+   eps  application/postscript
+   ps   application/postscript
+   doc  application/msword
+   rtf  application/rtf
+   zip  application/zip
+   gz   application/gzip
+   tar  application/x-tar
+   tgz  application/gzip
+   hqx  application/mac-binhex40
+   bin  application/macbinary
+   sit  application/x-stuffit
+   Z    application/x-compress
+   xls  application/ms-excel
+   ppt  application/ms-powerpoint
+   swf  application/x-shockwave-flash
+   fla  application/x-shockwave-flash
+   dxr  application/x-director
+   dcr  application/x-director
+   dir  application/x-director
    mov  video/quicktime
+   moov video/quicktime
+   mpg  video/mpeg
+   mpeg video/mpeg
+   avi  video/avi
+   flc  video/flc
+   wmv  video/x-ms-wmv
+   asf  video/x-ms-asf
+   mp2  audio/mpeg
+   mp3  audio/mpeg
+   mp4  audio/mp4
+   m4a  audio/m4a
+   3gp  audio/3gpp
+   aif  audio/aiff
+   aiff audio/aiff
+   aa   audio/audible
+   ra   audio/x-realaudio
+   ram  audio/x-pn-realaudio
+   rm   audio/vnd.rm-realmedia
+   wav  audio/wav
+   wma  audio/x-ms-wma
+   mid  audio/midi
+   swa  audio/mp3
+   diff text/plain
+   patch text/plain
+   css  text/css
    )
   );
 

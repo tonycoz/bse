@@ -51,6 +51,13 @@ sub html_type {
   return $type . "; charset=$charset";
 }
 
+sub get_type {
+  my ($class, $cfg, $template) = @_;
+
+  return $cfg->entry("template types", $template)
+    || $class->html_type($cfg);
+}
+
 sub show_page {
   my ($class, $template, $cfg, $acts, $base_template) = @_;
 
@@ -77,7 +84,7 @@ sub get_response {
 
   my $result =
     {
-     type => $class->html_type($cfg),
+     type => $class->get_type($cfg, $template),
      content => scalar($class->get_page($template, $cfg, $acts)),
     };
   push @{$result->{headers}}, "Content-Length: ".length($result->{content});
