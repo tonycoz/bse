@@ -15,7 +15,7 @@
 <:or Message:><:eif Message:>
   <tr>
     <td align="left"><a href="/cgi-bin/user.pl?show_lost_password=1">Lost password?</a></td>
-    <td align="right"><a href="/cgi-bin/user.pl?show_logon=1">Logon</a></td>
+    <td align="right"><a href="/cgi-bin/user.pl?show_logon=1<:ifCgi r:>&r=<:cgi r:><:or:><:eif:>">Logon</a></td>
   </tr>
 <:if User:>
   <tr>
@@ -23,6 +23,7 @@
   </tr>
 <:or User:><:eif User:>
 <form action="/cgi-bin/user.pl" method="post">
+<:ifCgi r:><input type="hidden" name="r" value="<:cgi r:>"><:or:><:eif:>
 <tr>
   <td>Logon Name</td>
   <td><input type="text" name="userid" value="<:old userid:>" /></td>

@@ -30,7 +30,7 @@ sub _get_parms {
 }
 
 sub basic {
-  my ($class, $acts) = @_;
+  my ($class, $acts, $cgi) = @_;
 
   return
     (
@@ -72,6 +72,20 @@ sub basic {
        (my ($left, $right) = _get_parms($acts, $_[0])) == 2
 	 or die; # leaves if in place
        $left =~ $right;
+     },
+     cgi =>
+     sub {
+       $cgi or return '';
+       my @value = $cgi->param($_[0]);
+       CGI::escapeHTML("@value");
+     },
+     _format => 
+     sub {
+       my ($value, $fmt) = @_;
+       if ($fmt eq 'u') {
+	 return CGI::escape($_[0]);
+       }
+       return $_[0];
      },
     );
 }

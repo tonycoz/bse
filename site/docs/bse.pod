@@ -10,6 +10,24 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.11_03
+
+=over
+
+=item *
+
+handling of downloads from the user page is handled better: you don't
+get a download link unless the file is downloadable, and rejected
+download results in a refresh to the user page rather than just
+displaying the user page
+
+=item *
+
+the logon and register pages can now be passed a refresh url, which
+the shop uses when it refreshes to the logon page
+
+=back
+
 =head2 0.11_02
 
 Another test release:

@@ -136,7 +136,7 @@ sub entryBool {
 
   my $entry = $self->entry($section, $key);
   if (defined $entry) {
-    return $entry =~ /^yes|true|y|t|1*$/;
+    return($entry =~ /^(?:yes|true|y|t|1*)$/i);
   }
   else {
     return $def;

@@ -158,6 +158,22 @@ change your password".  No parameters.
 
 =back
 
+=head2 [downloads]
+
+=over
+
+=item must_be_paid
+
+if non-zero, the order must be marked as paid for before the file can
+be downloaded.
+
+=item must_be_filled
+
+if non-zero the order must be marked as filled before the files can be
+downloaded.
+
+=back
+
 =head1 AUTHOR
 
 Tony Cook <tony@develop-help.com>

@@ -15,9 +15,9 @@ my $cfg = BSE::Cfg->new;
 my %session;
 BSE::Session->tie_it(\%session, $cfg);
 
-print STDERR "it's tied\n" if tied %session;
-use Data::Dumper;
-print STDERR Dumper \%session;
+#  print STDERR "it's tied\n" if tied %session;
+#  use Data::Dumper;
+#  print STDERR Dumper \%session;
 
 my %actions =
   (

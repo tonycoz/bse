@@ -5,7 +5,7 @@ use lib "$FindBin::Bin/modules";
 use CGI ':standard';
 use Products;
 use Product;
-use Constants qw(:shop $TMPLDIR %EXTRA_TAGS $CGI_URI $URLBASE);
+use Constants qw(:shop $TMPLDIR %EXTRA_TAGS $CGI_URI $URLBASE $SECURLBASE);
 use Squirrel::Template;
 use Squirrel::ImageEditor;
 use CGI::Cookie;
@@ -229,8 +229,7 @@ sub checkout {
   my @cart_prods = map { Products->getByPkey($_->{productId}) } @cart;
 
   if (need_logon($cfg, \@cart, \@cart_prods, \%session)) {
-    refresh_to("$URLBASE/cgi-bin/user.pl?message=".
-	       CGI::escape("Some of the products in your cart include downloadable files.  Please logon or register before checkout."));
+    refresh_logon("Some of the products in your cart include downloadable files.  Please logon or register before checkout.");
     return;
   }
 
@@ -414,8 +413,7 @@ sub prePurchase {
   $order{orderDate} = $today;
 
   if (need_logon($cfg, \@cart, \@products, \%session)) {
-    refresh_to("$URLBASE/cgi-bin/user.pl?message=".
-	       CGI::escape("Some of the products in your cart include downloadable files.  Please logon or register before checkout."));
+    refresh_logon("Some of the products in your cart include downloadable files.  Please logon or register before checkout.");
     return;
   }
 
@@ -597,8 +595,7 @@ sub purchase {
   }
 
   if (need_logon($cfg, \@cart, \@products, \%session)) {
-    refresh_to("$URLBASE/cgi-bin/user.pl?message=".
-	       CGI::escape("Some of the products in your cart include downloadable files.  Please logon or register before checkout."));
+    refresh_logon("Some of the products in your cart include downloadable files.  Please logon or register before checkout.");
     return;
   }
 
@@ -822,6 +819,17 @@ sub epoch_to_sql {
   my ($time) = @_;
 
   return strftime('%Y-%m-%d', localtime $time);
+}
+
+sub refresh_logon {
+  my ($msg) = @_;
+  my $url = $URLBASE."/cgi-bin/user.pl";
+  my %parms;
+  $parms{r} = $SECURLBASE."/cgi-bin/shop.pl?checkout=1";
+  $parms{message} = $msg if $msg;
+  $url .= "?" . join("&", map "$_=".CGI::escape($parms{$_}), keys %parms);
+  
+  refresh_to($url);
 }
 
 __END__

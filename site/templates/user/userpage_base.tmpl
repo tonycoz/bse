@@ -7,6 +7,11 @@
 <div align="center">
 <p><a href="<:script:>?show_opts=1">Edit Options</a></p>
 <table>
+<:if Message:>
+  <tr>
+    <th colspan="4" align="center"><b><:message:></b></th>
+  </tr>
+<:or Message:><:eif Message:>
   <tr>
     <th colspan="4" align="center">Your Orders</th>
   </tr>
@@ -51,7 +56,7 @@
         </tr>
 <:iterator begin prodfiles:>
         <tr>
-          <td><a href="/cgi-bin/user.pl?download=1&file=<:prodfile id:>&order=<:order id:>&item=<:item id:>"><:prodfile displayName:></a></td>
+          <td><:if FileAvail:><a href="/cgi-bin/user.pl?download=1&file=<:prodfile id:>&order=<:order id:>&item=<:item id:>"><:prodfile displayName:></a><:or FileAvail:><:prodfile displayName:><:eif FileAvail:></td>
 	  <td><:prodfile description:></td>
 	  <td align="center"><:prodfile sizeInBytes:></td>
         </tr>

@@ -24,6 +24,16 @@ sub user_tags {
     );
 }
 
+sub _refresh_userpage {
+  my ($msg) = @_;
+
+  my $url = "$URLBASE/cgi-bin/user.pl?userpage=1";
+  if (defined $msg) {
+    $url .= '&message='.CGI::escape($msg);
+  }
+  refresh_to($url);
+}
+
 sub show_logon {
   my ($self, $session, $cgi, $cfg, $message) = @_;
 
@@ -31,7 +41,7 @@ sub show_logon {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts),
+     BSE::Util::Tags->basic(\%acts, $cgi),
      $self->user_tags(\%acts, $session),
      message => sub { CGI::escapeHTML($message) },
     );
@@ -59,8 +69,14 @@ sub logon {
   print "Set-Cookie: ",CGI::Cookie->new(-name=>"userid", 
 					-value=>$user->{userId},
 					-path=>"/"),"\n";
-
-  refresh_to("$URLBASE$ENV{SCRIPT_NAME}?userpage=1");
+  
+  my $refresh = $cgi->param('r');
+  if ($refresh) {
+    refresh_to($refresh);
+  }
+  else {
+    refresh_to("$URLBASE$ENV{SCRIPT_NAME}?userpage=1");
+  }
 }
 
 sub logoff {
@@ -85,7 +101,7 @@ sub show_register {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts),
+     BSE::Util::Tags->basic(\%acts, $cgi),
      $self->user_tags(\%acts, $session),
      old => 
      sub {
@@ -111,7 +127,7 @@ sub show_opts {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts),
+     BSE::Util::Tags->basic(\%acts, $cgi),
      $self->user_tags(\%acts, $session, $user),
      last => 
      sub {
@@ -266,7 +282,14 @@ sub register {
 					  -path=>"/"),"\n";
     use Util qw/refresh_to/;
     
-    return refresh_to("$URLBASE/cgi-bin/user.pl?show_opts=1");
+    
+    my $refresh = $cgi->param('r');
+    if ($refresh) {
+      refresh_to($refresh);
+    }
+    else {
+      return refresh_to("$URLBASE/cgi-bin/user.pl?show_opts=1");
+    }
   }
   else {
     $self->show_register($session, $cgi, $cfg,
@@ -287,6 +310,10 @@ sub userpage {
   require 'Orders.pm';
   my @orders = sort { $b->{orderDate} cmp $a->{orderDate} }
     Orders->getBy(userId=>$userid);
+  $message ||= $cgi->param('message') || '';
+
+  my $must_be_paid = $cfg->entryBool('downloads', 'must_be_paid', 0);
+  my $must_be_filled = $cfg->entryBool('download', 'must_be_filled', 0);
 
   my $order_index;
   my $item_index;
@@ -297,7 +324,7 @@ sub userpage {
   my $file_index;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts),
+     BSE::Util::Tags->basic(\%acts, $cgi),
      $self->user_tags(\%acts, $session, $user),
      message => sub { CGI::escapeHTML($message) },
      BSE::Util::Tags->make_iterator(\@orders, 'order', 'orders', 
@@ -326,6 +353,12 @@ sub userpage {
 	  ArticleFiles->getBy(articleId=>$items[$item_index]{productId});
       },
       'prodfile', 'prodfiles', \$file_index),
+     ifFileAvail =>
+     sub {
+       return 0 if $must_be_paid && !$orders[$order_index]{paidFor};
+       return 0 if $must_be_filled && !$orders[$order_index]{filled};
+       return 1;
+     },
     );
   BSE::Template->show_page('user/userpage', $cfg, \%acts);
 }
@@ -343,55 +376,44 @@ sub download {
 				    $msgs->('pleaselogon', "Please logon"));
 
   my $orderid = $cgi->param('order')
-    or return $self->userpage($session, $cgi, $cfg,
-			      $msgs->('noorderid', "No order id supplied"));
+    or return _refresh_userpage($msgs->('noorderid', "No order id supplied"));
   require 'Orders.pm';
   my $order = Orders->getByPkey($orderid)
-    or return $self->userpage($session, $cgi, $cfg,
-			      $msgs->('nosuchorder',
-				      "No such orderd $orderid", $orderid));
+    or return _refresh_userpage($msgs->('nosuchorder',
+					"No such orderd $orderid", $orderid));
   unless (length $order->{userId}
 	  && $order->{userId} eq $userid) {
-    return $self->userpage($session, $cgi, $cfg,
-			   $msgs->("notyourorder",
-				   "Order $orderid isn't yours", $orderid));
+    return _refresh_userpage($msgs->("notyourorder",
+				     "Order $orderid isn't yours", $orderid));
   }
   my $itemid = $cgi->param('item')
-    or return $self->userpage($session, $cgi, $cfg,
-			      $msgs->('noitemid', "No item id supplied"));
+    or return _refresh_userpage($msgs->('noitemid', "No item id supplied"));
   require 'OrderItems.pm';
   my ($item) = grep $_->{id} == $itemid,
   OrderItems->getBy(orderId=>$order->{id})
-    or return $self->userpage($session, $cgi, $cfg,
-			      $msgs->(notinorder=>"Not part of that order"));
+    or return _refresh_userpage($msgs->(notinorder=>"Not part of that order"));
   require 'ArticleFiles.pm';
   my @files = ArticleFiles->getBy(articleId=>$item->{productId})
-    or return $self->userpage($session, $cgi, $cfg,
-			      $msgs->(nofilesonline=>"No files in this line"));
+    or return _refresh_userpage($msgs->(nofilesonline=>"No files in this line"));
   my $fileid = $cgi->param('file')
-    or return $self->userpage($session, $cgi, $cfg,
-			      $msgs->(nofileid=>"No file id supplied"));
+    or return _refresh_userpage($msgs->(nofileid=>"No file id supplied"));
   my ($file) = grep $_->{id} == $fileid, @files
-    or return $self->userpage($session, $cgi, $cfg,
-			      $msgs->(nosuchfile=>"No such file in that line item"));
+    or return _refresh_userpage($msgs->(nosuchfile=>"No such file in that line item"));
   
-  my $must_be_paid = $cfg->entry('downloads', 'must_be_paid');
-  my $must_be_filled = $cfg->entry('download', 'must_be_filled');
+  my $must_be_paid = $cfg->entryBool('downloads', 'must_be_paid', 0);
+  my $must_be_filled = $cfg->entryBool('download', 'must_be_filled', 0);
   if ($must_be_paid && !$order->{paidFor}) {
-    return $self->userpage($session, $cgi, $cfg,
-			   $msgs->("paidfor", 
-				   "Order not marked as paid for"));
+    return _refresh_userpage($msgs->("paidfor", 
+				     "Order not marked as paid for"));
   }
   if ($must_be_filled && !$order->{filled}) {
-    return $self->userpage($session, $cgi, $cfg,
-			   $msgs->("filled", 
-				   "Order not marked as filled"));
+    return _refresh_userpage($msgs->("filled", 
+				     "Order not marked as filled"));
   }
   
   my $filebase = $cfg->entryVar('paths', 'downloads');
   open FILE, "< $filebase/$file->{filename}"
-    or return $self->
-      userpage($session, $cgi, $cfg,
+    or return _refresh_userpage(
 	       $msgs->(openfile =>
 		       "Sorry, cannot open that file.  Contact the webmaster.",
 		       $!));
@@ -421,7 +443,7 @@ sub show_lost_password {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts),
+     BSE::Util::Tags->basic(\%acts, $cgi),
      message => sub { CGI::escapeHTML($message) },
     );
   BSE::Template->show_page('user/lostpassword', $cfg, \%acts);
@@ -466,7 +488,7 @@ sub lost_password {
   my %acts;
   %acts = 
     (
-     BSE::Util::Tags->basic(\%acts),
+     BSE::Util::Tags->basic(\%acts, $cgi),
      user => sub { CGI::escapeHTML($user->{$_[0]}) },
     );
   BSE::Template->show_page('user/lostemailsent', $cfg, \%acts);
