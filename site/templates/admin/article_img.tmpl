@@ -29,21 +29,24 @@
             <td bgcolor="#FFFFFF"> 
               <input type="file" name="image">
             </td>
+            <td bgcolor="#FFFFFF"><:help image file:> </td>
           </tr>
           <tr> 
             <th bgcolor="#FFFFFF" align="left"> Alt text for image: </th>
             <td bgcolor="#FFFFFF"> 
               <input type="text" name="altIn">
             </td>
+            <td bgcolor="#FFFFFF"><:help image alt:> </td>
           </tr>
           <tr> 
             <th bgcolor="#FFFFFF" align="left"> URL for image: </th>
             <td bgcolor="#FFFFFF"> 
               <input type="text" name="url" width="40">
             </td>
+            <td bgcolor="#FFFFFF"><:help image url:> </td>
           </tr>
           <tr> 
-            <td bgcolor="#FFFFFF" colspan="2" align="right"> 
+            <td bgcolor="#FFFFFF" colspan="3" align="right"> 
               <input type="submit" name="addimg" value="  Add Image  ">
             </td>
           </tr>
@@ -69,11 +72,18 @@
             <th valign="top" bgcolor="#FFFFFF" colspan="3">First Image Position</th>
           </tr>
           <tr> 
-            <td align="center" bgcolor="#FFFFFF" colspan="3"> <input type="radio" name="imagePos" value="tl" <: ifEq [article imagePos] "tl":>checked<:or:><:eif:>
+            <td bgcolor="#FFFFFF" colspan="3"> 
+              <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td width="100%" align="center"><input type="radio" name="imagePos" value="tl" <: ifEq [article imagePos] "tl":>checked<:or:><:eif:>
 	      >Top Left &nbsp;<input type="radio" name="imagePos" value="tr"  <: ifEq [article imagePos] "tr":>checked<:or:><:eif:>
 	      >Top Right &nbsp; <input type="radio" name="imagePos" value="bl"  <: ifEq [article imagePos] "bl":>checked<:or:><:eif:>
 	      >Bottom Left &nbsp; <input type="radio" name="imagePos" value="br"  <: ifEq [article imagePos] "br":>checked<:or:><:eif:>
-	      >Bottom Right
+	      >Bottom Right</td>
+                  <td bgcolor="#FFFFFF"><:help image file:> </td>
+                </tr>
+              </table>
+
 	    </td>
           </tr>
           <tr bgcolor="#FFFFFF"> 
@@ -85,19 +95,19 @@
               image width :>" height="<: image height :>"></td>
           </tr>
           <tr bgcolor="#FFFFFF"> 
-            <th width="50%"> Alt Text</th>
+            <th> Alt Text</th>
             <th width="50%"> URL</th>
             <th nowrap> Modify</th>
           </tr>
           <tr bgcolor="#FFFFFF"> 
-            <td valign="top" width="50%"> 
+            <td valign="top"> 
               <input type="text" name="alt" value="<: image alt :>" size="32">
             </td>
             <td valign="top" width="50%"> 
               <input type="text" name="url" value="<: image url :>" size="32">
             </td>
             <td valign="bottom" nowrap> 
-              <b><a href="<:script:>?level=<: level :>&parentid=<: article parentid :>&id=<:article id:>&imgtype=<: articleType :>&removeimg_<: image id :>">Delete</a></b>
+              <b><a href="<:script:>?level=<: level :>&parentid=<: article parentid :>&id=<:article id:>&imgtype=<: articleType :>&removeimg_<: image id :>" onClick="return window.confirm('Are you sure you want to delete this Image')">Delete</a></b>
 <:imgmove:> </td>
           </tr>
           <: iterator separator images :> 

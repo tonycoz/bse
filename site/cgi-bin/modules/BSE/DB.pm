@@ -2,6 +2,7 @@ package BSE::DB;
 require 5.005;
 use strict;
 use Carp qw(croak);
+use Carp qw/confess/;
 
 use vars qw($VERSION);
 $VERSION = '1.00';
@@ -31,6 +32,18 @@ sub query {
   }
   return @results;
 }
+
+sub run {
+  my ($self, $name, @args) = @_;
+
+  $self = BSE::DB->single unless ref $self;
+
+  my $sth = $self->stmt($name);
+
+  $sth->execute(@args)
+    or confess "Cannot execute statement $name: ",$sth->errstr;
+}
+
 
 1;
 

@@ -2,27 +2,19 @@
 <html>
 <head>
 
-  <title>Administration - Edit Group</title>
+  <title>Administration - Delete Group</title>
 
   <link rel="stylesheet" type="text/css" href="/css/admin.css" />
 
 </head>
 
 <body>
-<h1>Edit Group</h1>
+<h1>Delete Group</h1>
 <p>
 | <a href="/admin/">Admin menu</a>
 | <a href="<:script:>">User list</a>
 | <a href="<:script:>?a_groups=1">Group list</a> |
 </p>
-<p>
-| Group Details
-| <a href="<:script:>?a_showgroup=1&groupid=<:group id:>&_t=glob">Global Permissions</a>
-| <a href="<:script:>?a_showgroupart=1&groupid=<:group id:>&id=-1">Article Permissions</a> |
-</p>
-<:ifMessage:>
-<p><b><:message:></b></p>
-<:or:><:eif:> 
 
 <form method="POST" action="<:script:>">
 <input type=hidden name=groupid value=<:group id:>>
@@ -40,24 +32,18 @@
           <tr> 
             <th bgcolor="#FFFFFF" align="left">Description: </th>
             <td bgcolor="#FFFFFF"> 
-              <input type="text" name="description" value="<:group description:>" />
+              <:group description:>
             </td>
             <td bgcolor="#FFFFFF"><:help editgroup description:> </td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left"> Members: </th>
-            <td bgcolor="#FFFFFF"> 
-	      <:iterator begin users:>
-	        <input type=checkbox name=users value=<:iuser id:> <:ifMemberof iuser:>checked<:or:><:eif:> /> <:iuser name:>
-	      <:iterator separator users:>
-	      <br>
-	      <:iterator end users:>
+            <td bgcolor="#FFFFFF" colspan="3" align="right"> 
+	      Are you sure you want to delete this group?
             </td>
-            <td bgcolor="#FFFFFF" valign="top"><:help editgroup members:> </td>
           </tr>
           <tr> 
             <td bgcolor="#FFFFFF" colspan="3" align="right"> 
-              <input type="submit" name="a_savegroup" value="  Save Group  " />
+              <input type="submit" name="a_delgroup" value="  Delete Group  " />
             </td>
           </tr>
         </table>

@@ -71,8 +71,8 @@ EOS
    Orders => 'select * from orders',
    getOrderByPkey => 'select * from orders where id = ?',
    getOrderItemByOrderId => 'select * from order_item where orderId = ?',
-   addOrder => 'insert orders values(null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
-   replaceOrder => 'replace orders values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+   addOrder => 'insert orders values(null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+   replaceOrder => 'replace orders values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
    addOrderItem => 'insert order_item values(null,?,?,?,?,?,?,?)',
    getOrderByUserId => 'select * from orders where userId = ?',
 
@@ -148,6 +148,9 @@ EOS
    'select * from email_requests where genEmail = ?',
 
    addAdminBase => 'insert into admin_base values(null, ?)',
+   replaceAdminBase => 'replace into admin_base values(?, ?)',
+   deleteAdminBase => 'delete from admin_base where id = ?',
+   getAdminBaseByPkey => 'select * from admin_base where id=?',
    
    AdminUsers => <<SQL,
 select bs.*, us.* from admin_base bs, admin_users us
@@ -163,12 +166,16 @@ select bs.*, us.* from admin_base bs, admin_users us
   where bs.id = us.base_id and bs.id = ?
 SQL
    addAdminUser => 'insert into admin_users values(?,?,?,?,?)',
+   replaceAdminUser => 'replace into admin_users values(?,?,?,?,?)',
+   deleteAdminUser => 'delete from admin_users where base_id = ?',
    adminUsersGroups => <<SQL,
 select bs.*, gr.*
   from admin_base bs, admin_groups gr, admin_membership am
   where bs.id = gr.base_id && am.user_id = ? and am.group_id = bs.id
   order by gr.name
 SQL
+   userGroups => 'select * from admin_membership where user_id = ?',
+   deleteUserGroups => 'delete from admin_membership where user_id = ?',
 
    AdminGroups => <<SQL,
 select bs.*, gr.* 
@@ -191,6 +198,21 @@ select bs.*, gr.* from admin_base bs, admin_groups gr
   where bs.id = gr.base_id and bs.id = ?
 SQL
    addAdminGroup => 'insert into admin_groups values(?,?,?,?)',
+   replaceAdminGroup => 'replace into admin_groups values(?,?,?,?)',
+   deleteAdminGroup => 'delete from admin_groups where base_id = ?',
+   groupUsers => 'select * from admin_membership where group_id = ?',
+
+   addUserToGroup => 'insert into admin_membership values(?,?)',
+   delUserFromGroup => <<SQL,
+delete from admin_membership where user_id = ? and group_id = ?
+SQL
+   deleteGroupUsers => 'delete from admin_membership where group_id = ?',
+
+   articleObjectPerm => <<SQL,
+select * from admin_perms where object_id = ? and admin_id = ?
+SQL
+   addArticleObjectPerm => 'insert into admin_perms values(?,?,?)',
+   replaceArticleObjectPerm => 'replace into admin_perms values(?,?,?)',
   );
 
 sub _single

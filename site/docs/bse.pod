@@ -10,6 +10,55 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.12_09
+
+=over
+
+=item *
+
+ability to control permissions each admin user and group has access to
+
+=item *
+
+new help for image manager, other updated help files, many template
+changes, thanks to Adrian.
+
+=item *
+
+deleting admin users and groups
+
+=item *
+
+selectable payment types
+
+=item *
+
+when sending a subscription with HTML content, the boundary between
+MIME parts has been changed to hopefully prevent problems with some
+mail clients
+
+=item *
+
+when sending a subscription with HTML content, any carriage-returns
+are converted into linefeed to hopefully prevent problems when sending
+subscriptions based on Macintosh format files to some mail clients.
+
+=item *
+
+htmlemail/basic.tmpl now includes a DOCTYPE, which will hopefully
+prevent problems with some mail clients.
+
+=item *
+
+conditionals are now handled differently in the templating system to
+avoid some of the undefined value warnings it was producing.
+
+=item *
+
+added fields intended for custom processing to the orders table
+
+=back
+
 =head2 0.12_08
 
 This is a development release.  If you want stable try 0.12_01, since

@@ -115,3 +115,28 @@ The everyone group, and the administrator user, both have the macro
 "Full Access" on all descendants of article -1.
 
 
+=head1 MACRO STORAGE
+
+To simplify processing we have two sections in the config file:
+
+=over
+
+=item *
+
+[Global permissions] - keeps permissions that have all article
+references resolved
+
+=item *
+
+[Article permissions] - permissions which have to reference an article
+
+=back
+
+The [permission ids] section is used to translate permission indexes to
+permission ids.
+
+The [permission names] section is used to translate permission indexes
+to descriptive permission names.
+
+=cut
+

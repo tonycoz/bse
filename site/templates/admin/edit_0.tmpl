@@ -12,8 +12,20 @@
 <:ifMessage:> 
 <p><b><:message:></b></p>
 <:or:><:eif:>
-<p>| <a href="/admin/">Admin menu</a> | <:if children:> <a name="children"></a> 
-</p>
+<p>| <a href="/admin/">Admin menu</a> | </p>
+<form action="/cgi-bin/admin/adminusers.pl"><input type=submit name="a_showobjectart" value="Manage access for"><input type=hidden name=id value="<: article id:>">
+<select name=adminid>
+<:iterator begin adminusers:>
+<option value=<:iadminuser id:>>User <:iadminuser logon:>
+<:iterator end adminusers:>
+<:iterator begin admingroups:>
+<option value=<:iadmingroup id:>>Group <:iadmingroup name:>
+<:iterator end admingroups:>
+</select>
+
+</form>
+
+<:if children:> <a name="children"></a> 
 <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" width="100%" class="table">
   <tr>
       <td>

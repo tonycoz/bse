@@ -52,7 +52,7 @@
             <td><:ifStepKid:> 
               <input type="text" name="expire_<:stepkid childId:>" value="<:date "%d/%m/%Y" stepkid expire:>" size=10>
               <:or:>&nbsp;<:eif:></td>
-            <td nowrap><:edit kid Edit:> <:ifStepKid:><a href="<:script:>?del_stepkid=1&id=<:stepkid parentId:>&stepkid=<:stepkid childId:>&_t=steps">Delete</a><:or:><:eif:> 
+            <td nowrap><:edit kid Edit:> <:ifStepKid:><a href="<:script:>?del_stepkid=1&id=<:stepkid parentId:>&stepkid=<:stepkid childId:>&_t=steps" onClick="return window.confirm('Are you sure you want to delete this Step child')">Delete</a><:or:><:eif:> 
               <:movestepkid:></td>
           </tr>
           <:iterator end kids:> 
@@ -125,7 +125,7 @@
               <input type="text" name="expire_<:stepparent parentId:>" value="<:date "%d/%m/%Y" stepparent expire:>" size="10">
             </td>
             <td nowrap><a href="/cgi-bin/admin/add.pl?id=<:stepparent parentId:>">Edit</a> 
-              <a href="<:script:>?del_stepparent=1&id=<:stepparent childId:>&stepparent=<:stepparent parentId:>&_t=steps">Delete</a> 
+              <a href="<:script:>?del_stepparent=1&id=<:stepparent childId:>&stepparent=<:stepparent parentId:>&_t=steps" onClick="return window.confirm('Are you sure you want to delete this Step parent')">Delete</a> 
               <:movestepparent:></td>
           </tr>
           <:iterator end stepparents:> 

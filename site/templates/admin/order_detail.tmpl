@@ -75,6 +75,10 @@
 </td>
 </tr>
 </table>
+<:ifEq [order paymentType] "0":><p>Payment made by credit card.</p><:or:><:eif:>
+<:ifEq [order paymentType] "1":><p>Payment will be made by cheque.</p><:or:><:eif:>
+<:ifEq [order paymentType] "2":><p>Contact the customer to arrange for payment.</p><:or:><:eif:>
+
 <:if Order filled:>
 <p>This order was filled on <:date order whenFilled:> by <:order whoFilled:>.</p>
 <:or Order:>

@@ -42,6 +42,7 @@
             <td height="18"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FFFFFF"><b>Price:</b></font>&nbsp;</td>
             <td height="18">&nbsp; </td>
           </tr>
+          <:ifCount:>
           <:iterator begin items:> 
           <tr valign="middle" align="center" bgcolor="#FFFFFF"> 
             <td width="100%" align="left"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><a href="<:item link:>"><:item 
@@ -57,7 +58,12 @@
               <input type="submit" name="delete_<:index:>" value="Remove">
             </td>
           </tr>
-          <:iterator end items:> 
+          <:iterator end items:>
+          <:or:>
+          <tr valign="middle" align="center" bgcolor="#FFFFFF"> 
+            <td width="100%" height="20" align="center" colspan="4"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">You have no items in your shopping cart!</font></td>
+           </tr>
+          <:eif:>
         </table>
       </td>
     </tr>

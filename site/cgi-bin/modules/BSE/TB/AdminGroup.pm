@@ -11,4 +11,12 @@ sub bases {
   return { base_id=>{ class=>'BSE::TB::AdminBase' } };
 }
 
+sub remove {
+  my ($self) = @_;
+
+  BSE::DB->run(deleteGroupUsers => $self->{id});
+
+  $self->SUPER::remove();
+}
+
 1;

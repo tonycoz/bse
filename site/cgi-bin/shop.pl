@@ -1,4 +1,6 @@
 #!/usr/bin/perl -w
+# -d:ptkdb
+BEGIN { $ENV{DISPLAY} = '192.168.32.15:0.0' }
 use strict;
 use FindBin;
 use lib "$FindBin::Bin/modules";
@@ -38,6 +40,17 @@ my $from = $SHOP_FROM;
 
 my $toName = $SHOP_TO_NAME;
 my $toEmail= $SHOP_TO_EMAIL;
+
+use constant PAYMENT_CC => 0;
+use constant PAYMENT_CHEQUE => 1;
+use constant PAYMENT_CALLME => 2;
+my %valid_payment_types = 
+  ( 
+   PAYMENT_CC()     =>1, 
+   PAYMENT_CHEQUE() =>1, 
+   PAYMENT_CALLME() =>1
+  );
+my %payment_names = qw(CC 0 Cheque 1 CallMe 2);
 
 my $cfg = BSE::Cfg->new();
 my $urlbase = $cfg->entryVar('site', 'url');
@@ -234,6 +247,11 @@ sub checkout {
   my %custom_state = %{$session{custom}};
 
   BSE::Custom->enter_cart(\@cart, \@cart_prods, \%custom_state); 
+  my @payment_types = split /,/, $cfg->entry('shop', 'payment_types', '0');
+  @payment_types = grep $valid_payment_types{$_}, @payment_types;
+  @payment_types or @payment_types = ( 0 );
+  @payment_types = sort { $a <=> $b } @payment_types;
+  my %payment_types = map { $_=> 1 } @payment_types;
 
   my $item_index = -1;
   my @options;
@@ -247,7 +265,14 @@ sub checkout {
      old => sub { CGI::escapeHTML($olddata ? param($_[0]) : 
 		    $user && defined $user->{$_[0]} ? $user->{$_[0]} : '') },
      BSE::Custom->checkout_actions(\%acts, \@cart, \@cart_prods, \%custom_state, $CGI::Q),
+     ifMultPaymentTypes => @payment_types > 1,
     );
+  for my $name (keys %payment_names) {
+    my $id = $payment_names{$name};
+    $acts{"if${name}Payments"} = exists $payment_types{$id};
+    $acts{"if${name}FirstPayment"} = $payment_types[0] == $id;
+    $acts{"checkedIfFirst$name"} = $payment_types[0] == $id ? "checked " : "";
+  }
   $session{custom} = \%custom_state;
 
   page('checkout.tmpl', \%acts);
@@ -480,16 +505,32 @@ sub prePurchase {
 sub purchase {
   # some basic validation, in case the user switched off javascript
   my @required = 
-    (BSE::Custom->required_fields($CGI::Q, $session{custom}), 
-     qw(cardHolder cardExpiry) );
+    BSE::Custom->required_fields($CGI::Q, $session{custom});
+
+  my @payment_types = split /,/, $cfg->entry('shop', 'payment_types', '0');
+  @payment_types = grep $valid_payment_types{$_}, @payment_types;
+  @payment_types or @payment_types = ( 0 );
+  @payment_types = sort { $a <=> $b } @payment_types;
+  my %payment_types = map { $_=> 1 } @payment_types;
+
+  my $paymentType = param('paymentType');
+  defined $paymentType or $paymentType = $payment_types[0];
+  $payment_types{$paymentType}
+    or return checkout("Invalid payment type");
+
+  push @required, qw(cardHolder cardExpiry)
+    if $paymentType == PAYMENT_CC;
+
   for my $field (@required) {
     defined(param($field)) && length(param($field))
       or return checkout("Field $field is required", 1);
   }
   defined(param('email')) && param('email') =~ /.\@./
     or return checkout("Please enter a valid email address", 1);
-  defined(param('cardNumber')) && param('cardNumber') =~ /^\d+$/
-    or return checkout("Please enter a credit card number", 1);
+  if ($paymentType == PAYMENT_CC) {
+    defined(param('cardNumber')) && param('cardNumber') =~ /^\d+$/
+      or return checkout("Please enter a credit card number", 1);
+  }
 
   use Orders;
   use Order;
@@ -531,7 +572,9 @@ sub purchase {
   }
 
   my $ccNumber = param('cardNumber');
+  defined $ccNumber or $ccNumber = '';
   my $ccExpiry = param('cardExpiry');
+  defined $ccExpiry or $ccExpiry = '';
 
   use Digest::MD5 'md5_hex';
   $ccNumber =~ tr/0-9//cd;
@@ -576,6 +619,7 @@ sub purchase {
   $order{orderDate} = $today;
   $order{total} += BSE::Custom->total_extras(\@cart, \@products, 
 					     $session{custom});
+  $order{paymentType} = $paymentType;
   ++$session{changed};
 
   # blank anything else
@@ -667,6 +711,10 @@ sub purchase {
      ifOptions => sub { @options },
      options => sub { nice_options(@options) },
     );
+  for my $name (keys %payment_names) {
+    my $id = $payment_names{$name};
+    $acts{"if${name}Payment"} = $order->{paymentType} == $id;
+  }
   send_order($order, \@items, \@products);
   $session{cart} = []; # empty the cart
   page('checkoutfinal.tmpl', \%acts);
@@ -687,11 +735,13 @@ sub send_order {
   my $item_index = -1;
   my @options;
   my $option_index;
+  require BSE::Util::Tags;
   my %acts;
   %acts =
     (
      %extras,
 
+     BSE::Util::Tags->static(\%acts, $cfg),
      iterate_items_reset => sub { $item_index = -1; },
      iterate_items => 
      sub { 

@@ -1,7 +1,7 @@
 package Squirrel::Template;
 use vars qw($VERSION);
 use strict;
-use Carp;
+use Carp qw/cluck confess/;
 
 $VERSION="0.05";
 
@@ -11,19 +11,16 @@ sub new {
   return bless \%opts, $class;
 }
 
-sub perform {
+sub low_perform {
   my ($self, $acts, $func, $args, $orig) = @_;
 
-  $args = '' unless defined $args;
-
-  #print STDERR "perform $func $args\n";
   my $fmt;
   if ($acts->{_format} && $args =~ s/\|(\S+)\s*$//) {
     $fmt = $1;
   }
+  $args = '' unless defined $args;
 
   if (exists $acts->{$func}) {
-    $args = '' unless defined $args;
     $args =~ s/^\s+|\s+$//g;
     my $value;
     my $action = $acts->{$func};
@@ -43,10 +40,7 @@ sub perform {
     else {
       $value = $action;
     }
-    unless (defined $value) {
-      use Carp 'cluck';
-      cluck "** undefined value returned by $func $args tag";
-    }
+    return unless defined $value;
     return $fmt ? $acts->{_format}->($value, $fmt) : $value;
   }
   for my $match (keys %$acts) {
@@ -55,9 +49,12 @@ sub perform {
       if ($func =~ /$re/) {
 	$args =~ s/^\s+|\s+$//g;
 	my $value = $acts->{$match}->($func, $args);
-	defined $value
-	  or return "** function $func $args returned undef **";
-	return $fmt ? $acts->{_format}->($value, $fmt) : $value;
+	#defined $value
+	#  or return "** function $func $args returned undef **";
+	if (defined($value) && $fmt) {
+	  $value = $acts->{_format}->($value, $fmt);
+	}
+	return $value;
       }
     }
   }
@@ -78,7 +75,23 @@ sub perform {
     }
     # otherwise fall through
   }
+
   return $self->{verbose} ? "** unknown function $func **" : $orig;
+}
+
+sub perform {
+  my ($self, $acts, $func, $args, $orig) = @_;
+
+  $args = '' unless defined $args;
+
+  #print STDERR "perform $func $args\n";
+  my $value = $self->low_perform($acts, $func, $args, $orig);
+
+  unless (defined $value) {
+    cluck "** undefined value returned by $func $args **";
+  }
+
+  return $value;
 }
 
 sub iterate {
@@ -128,11 +141,11 @@ sub cond {
   my $result =
     eval {
       if (exists $acts->{"if$name"}) {
-	my $cond = $self->perform($acts, "if$name", $args, '');
+	my $cond = $self->low_perform($acts, "if$name", $args, '');
 	return $cond ? $true : $false;
       }
       elsif (exists $acts->{lcfirst $name}) {
-	my $cond = $self->perform($acts, lcfirst $name, $args, '');
+	my $cond = $self->low_perform($acts, lcfirst $name, $args, '');
 	return $cond ? $true : $false;
       }
       else {

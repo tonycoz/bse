@@ -27,18 +27,22 @@
             <th bgcolor="#FFFFFF" nowrap> Logon</th>
             <th bgcolor="#FFFFFF" nowrap> Name</th>
             <th bgcolor="#FFFFFF" nowrap> In Groups</th>
+            <th bgcolor="#FFFFFF" nowrap>&nbsp;</th>
           </tr>
           <:if Users:> <: iterator begin users :> 
           <tr bgcolor="#FFFFFF"> 
             <td nowrap> <a href="<:script:>?a_showuser=1&userid=<:iuser id:>"><:iuser logon:></a></td>
             <td valign="top"><:iuser name:></td>
-            <td valign="top"><:ifUser_groups iuser:><:iterator begin user_groups iuser:><:user_group name:> <:iterator separator user_groups:>, <:iterator end user_groups:><:or:>(none)<:eif:>
+            <td valign="top"><:ifUser_groups iuser:><:iterator begin user_groups iuser:><:user_group name:><:iterator separator user_groups:>, <:iterator end user_groups:><:or:>(none)<:eif:>
             </td>
+	    <td>
+	      <a href="<:script:>?a_showuser=1&userid=<:iuser id:>&_t=del">Delete</a>
+	    </td>
           </tr>
           <: iterator end users :> 
           <:or Users:> 
           <tr bgcolor="#FFFFFF"> 
-            <td colspan="3" align="center">Your system has no users.</td>
+            <td colspan="4" align="center">Your system has no users.</td>
           </tr>
           <:eif Users:> 
         </table>

@@ -27,13 +27,15 @@
             <th bgcolor="#FFFFFF" nowrap> Name</th>
             <th bgcolor="#FFFFFF" nowrap> Description</th>
             <th bgcolor="#FFFFFF" nowrap> Users</th>
+            <th bgcolor="#FFFFFF" nowrap>&nbsp;</th>
           </tr>
           <:if Groups:> <: iterator begin groups :> 
           <tr bgcolor="#FFFFFF"> 
             <td nowrap> <a href="<:script:>?a_showgroup=1&groupid=<:igroup id:>"><:igroup name:></a></td>
             <td valign="top"><:igroup description:></td>
-            <td valign="top"><:ifGroup_users igroup:><:iterator begin group_users igroup:><:group_user logon:> <:iterator separator group_users:>, <:iterator end group_users:><:or:>(none)<:eif:>
+            <td valign="top"><:ifGroup_users igroup:><:iterator begin group_users igroup:><:group_user logon:><:iterator separator group_users:>, <:iterator end group_users:><:or:>(none)<:eif:>
             </td>
+            <td valign="top"><a href="<:script:>?a_showgroup=1&groupid=<:igroup id:>&_t=del">Delete</a></td>
           </tr>
           <: iterator end groups :> 
           <:or Groups:> 

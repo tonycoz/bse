@@ -194,6 +194,21 @@ create table orders (
   -- an empty string if there's no user
   userId varchar(40) not null,
 
+  paymentType integer not null default 0,
+
+  -- intended for custom uses
+  customInt1 integer null,
+  customInt2 integer null,
+  customInt3 integer null,
+  customInt4 integer null,
+  customInt5 integer null,
+
+  customStr1 varchar(255) null,
+  customStr2 varchar(255) null,
+  customStr3 varchar(255) null,
+  customStr4 varchar(255) null,
+  customStr5 varchar(255) null,
+
   primary key (id),
   index order_cchash(ccNumberHash),
   index order_userId(userId, orderDate)

@@ -382,6 +382,37 @@ If true the customer is required to be logged on before checkout,
 whether or not for sale files are attached to products in the cart.
 Default: False.
 
+=item payment_types
+
+A comma-separated list of acceptable payment types.  Default: 0
+
+The possible payment types are:
+
+=over
+
+=item *
+
+0 - the user enters a credit card number, name and expiry date
+
+=item *
+
+1 - the customer will send a cheque
+
+=item *
+
+2 - contact customer for details
+
+=back
+
+=item address1
+
+=item address2
+
+=item address3
+
+These are used by various shop templates to present an address that a
+cheque payment should be sent to.
+
 =back
 
 =head2 [fields]

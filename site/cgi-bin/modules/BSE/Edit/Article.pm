@@ -764,6 +764,18 @@ sub tag_error_img {
   return qq!<img src="$images_uri/admin/error.gif" alt="$encoded" title="$encoded" border="0" align="top">!; 
 }
 
+sub iter_admin_users {
+  require BSE::TB::AdminUsers;
+
+  BSE::TB::AdminUsers->all;
+}
+
+sub iter_admin_groups {
+  require BSE::TB::AdminGroups;
+
+  BSE::TB::AdminGroups->all;
+}
+
 sub low_edit_tags {
   my ($self, $acts, $request, $article, $articles, $msg, $errors) = @_;
 
@@ -856,6 +868,10 @@ sub low_edit_tags {
      DevHelp::Tags->make_iterator2
      ([ \&iter_files, $article ], 'file', 'files', \@files, \$file_index ),
      movefiles => [ \&tag_movefiles, $self, $article, \@files, \$file_index ],
+     DevHelp::Tags->make_iterator2
+     (\&iter_admin_users, 'iadminuser', 'adminusers'),
+     DevHelp::Tags->make_iterator2
+     (\&iter_admin_groups, 'iadmingroup', 'admingroups'),
      edit => \&tag_edit_link,
      error => [ \&tag_hash, $errors ],
      error_img => [ \&tag_error_img, $self, $errors ],

@@ -60,7 +60,7 @@ Embedded:> <br>
           <th><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Description</font></th>
           <th><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Filename</font></th>
           <th><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Size</font></th>
-          <th><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Download</font></th>
+          <th><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Status</font></th>
         </tr>
         <:iterator begin files:> 
         <tr bgcolor="#FFFFFF"> 
@@ -71,10 +71,8 @@ Embedded:> <br>
             <:file displayName:></a><:eif File:></font></td>
           <td align="right"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:kb 
             file sizeInBytes:></font></td>
-          <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:if 
-            File forSale:> Sorry, this document cannot be downloaded <:or File:> 
-            <a href="/cgi-bin/user.pl?download_file=1&file=<:file id:>">Download</a> 
-            <:eif File:> </font></td>
+          <td nowrap align="center"> <:if 
+            File forSale:><img src="/images/filestatus/locked.gif" width="15" height="15" alt="Locked" title="Locked"><img src="/images/filestatus/forSale.gif" width="15" height="15" alt="File must be purchased" title="File must be purchased"><:or File:><a href="/cgi-bin/user.pl?download_file=1&file=<:file id:>"><img src="/images/filestatus/download.gif" width="15" height="15" alt="Download now" title="Download now" border="0"></a><:ifFile requireUser:><img src="/images/filestatus/requireUser.gif" width="15" height="15" alt="For registered users only" title="For registered users only"><:or:><img src="/images/trans_pixel.gif" width="15" height="15" title="For registered users only"><:eif:><:eif File:></td>
         </tr>
         <:iterator end files:> 
       </table>

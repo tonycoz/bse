@@ -54,6 +54,7 @@ site/cgi-bin/modules/BSE/Mail.pm
 site/cgi-bin/modules/BSE/Mail/SMTP.pm
 site/cgi-bin/modules/BSE/Mail/Sendmail.pm
 site/cgi-bin/modules/BSE/Message.pm
+site/cgi-bin/modules/BSE/Permissions.pm
 site/cgi-bin/modules/BSE/Request.pm
 site/cgi-bin/modules/BSE/Session.pm
 site/cgi-bin/modules/BSE/Shop/Util.pm
@@ -144,6 +145,7 @@ site/htdocs/admin/help/body.html
 site/htdocs/admin/help/catalog.html
 site/htdocs/admin/help/edit.html
 site/htdocs/admin/help/file.html
+site/htdocs/admin/help/image.html
 site/htdocs/admin/help/product.html
 site/htdocs/admin/help/subs.html
 site/htdocs/admin/help/subssend.html
@@ -200,7 +202,13 @@ site/templates/admin/product_detail.tmpl
 site/templates/admin/product_list.tmpl
 site/templates/admin/regenerror.tmpl
 site/templates/admin/showgroup.tmpl
+site/templates/admin/showgroupart.tmpl
+site/templates/admin/showgroup_del.tmpl
+site/templates/admin/showgroup_glob.tmpl
 site/templates/admin/showuser.tmpl
+site/templates/admin/showuserart.tmpl
+site/templates/admin/showuser_del.tmpl
+site/templates/admin/showuser_glob.tmpl
 site/templates/admin/subs/add.tmpl
 site/templates/admin/subs/edit.tmpl
 site/templates/admin/subs/list.tmpl

@@ -115,4 +115,10 @@ sub files {
   return ArticleFiles->getBy(articleId=>$self->{id});
 }
 
+sub parent {
+  my ($self) = @_;
+  $self->{parentid} == -1 and return;
+  return Articles->getByPkey($self->{parentid});
+}
+
 1;

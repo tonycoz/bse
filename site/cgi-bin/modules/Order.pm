@@ -15,7 +15,9 @@ sub columns {
            total wholesaleTotal gst orderDate
            ccNumberHash ccName ccExpiryHash ccType
            filled whenFilled whoFilled paidFor paymentReceipt
-           randomId cancelled userId/;
+           randomId cancelled userId paymentType
+           customInt1 customInt2 customInt3 customInt4 customInt5
+           customStr1 customStr2 customStr3 customStr4 customStr5/;
 }
 
 1;

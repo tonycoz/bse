@@ -161,7 +161,8 @@ sub send {
     my $content;
     push(@headers, "MIME-Version: 1.0");
     if ($html) {
-      my $boundary = time . "=_=" .int(rand(10000))."=";
+      $html =~ tr/\cM/\cJ/;
+      my $boundary = "====" . time . "=_=" .int(rand(10000))."=";
       push(@headers, qq!Content-Type: multipart/alternative; boundary="$boundary"!);
       $content = "This is a multi-part message in MIME format\n\n"
 	. "--$boundary\n"

@@ -14,12 +14,17 @@
 | <a href="/admin/">Admin menu</a>
 | <a href="<:script:>">User list</a> |
 </p>
+<p>
+| User Details | <a href="<:script:>?a_showuser=1&userid=<:user id:>&_t=glob">Global Permissions</a>
+| <a href="<:script:>?a_showuserart=1&userid=<:user id:>&id=-1">Article Permissions</a> |
+</p>
 <:ifMessage:>
 <p><b><:message:></b></p>
 <:or:><:eif:> 
 
 <form method="POST" action="<:script:>">
-
+<input type=hidden name=userid value=<:user id:>>
+<input type=hidden name=savegroups value=1>
   <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
     <tr> 
       <td> 
@@ -34,7 +39,7 @@
           <tr> 
             <th bgcolor="#FFFFFF" align="left">Name: </th>
             <td bgcolor="#FFFFFF"> 
-              <input type="text" name="name" value="<:user logon:>" />
+              <input type="text" name="name" value="<:user name:>" />
             </td>
             <td bgcolor="#FFFFFF"><:help edituser name:> </td>
           </tr>
@@ -51,6 +56,17 @@
               <input type="password" name="confirm" />
             </td>
             <td bgcolor="#FFFFFF"><:help edituser confirm:> </td>
+          </tr>
+          <tr> 
+            <th bgcolor="#FFFFFF" align="left" valign="top"> Groups: </th>
+            <td bgcolor="#FFFFFF"> 
+	      <:iterator begin groups:>
+	        <input type=checkbox name=groups value=<:igroup id:> <:ifMemberof igroup:>checked<:or:><:eif:> /> <:igroup name:>
+	      <:iterator separator groups:>
+	      <br>
+	      <:iterator end groups:>
+            </td>
+            <td bgcolor="#FFFFFF" valign="top"><:help edituser groups:> </td>
           </tr>
           <tr> 
             <td bgcolor="#FFFFFF" colspan="3" align="right"> 

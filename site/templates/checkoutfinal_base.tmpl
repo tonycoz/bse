@@ -28,6 +28,16 @@
 <p> The <:siteName:> store is run on a secure encrypted server, your details are 
   safe with us.<br>
 </p>
+<:if CCPayment:><:or CCPayment:><:eif CCPayment:>
+<:if ChequePayment:>
+<p>Please send your cheque to:</p>
+<ul><:cfg shop address1 |h:><br>
+<:cfg shop address2 |h:><br>
+<:cfg shop address3 |h:></ul>
+<:or ChequePayment:><:eif ChequePayment:>
+<:if CallMePayment:>
+<p>We will call you to arrange payment.</p>
+<:or CallMePayment:><:eif CallMePayment:>
 </font> 
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <tr> 

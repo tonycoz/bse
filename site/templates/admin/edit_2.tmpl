@@ -22,6 +22,18 @@
 
   <h2><:articleType:> Details</h2>
 
+<:ifnew:><:or:>
+<form action="/cgi-bin/admin/adminusers.pl"><input type=submit name="a_showobjectart" value="Manage access for"><input type=hidden name=id value="<: article id:>">
+<select name=adminid>
+<:iterator begin adminusers:>
+<option value=<:iadminuser id:>>User <:iadminuser logon:>
+<:iterator end adminusers:>
+<:iterator begin admingroups:>
+<option value=<:iadmingroup id:>>Group <:iadmingroup name:>
+<:iterator end admingroups:>
+</select>
+</form><:eif:>
+
   <form enctype="multipart/form-data" method="POST" action="<:script:>">
 
     <input type="hidden" name="level" value="<: level :>">

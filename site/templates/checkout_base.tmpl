@@ -24,6 +24,18 @@ function MM_validateForm() { //v4.0
   } if (errors) alert('The following error(s) occurred:\n'+errors);
   document.MM_returnValue = (errors == '');
 }
+
+function BSE_validateForm {
+  var typeEl = MM_findObj('paymentType');
+  var type = typeEl.value;
+  if (type == 0) {
+    MM_validateForm('name1','','R','name2','','R','address','','R','city','','R','postcode','','R','state','','R','country','','R','email','','RisEmail','cardHolder','','R','cardNumber','','R','cardExpiry','','R');
+  }
+  else {
+    MM_validateForm('name1','','R','name2','','R','address','','R','city','','R','postcode','','R','state','','R','country','','R','email','','RisEmail');
+  }
+}
+
 //-->
 </script>
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
@@ -115,7 +127,7 @@ function MM_validateForm() { //v4.0
   </tr>
 </table>
 <p>&nbsp;</p>
-<form action="/cgi-bin/shop.pl" method="POST" onSubmit="MM_validateForm('name1','','R','name2','','R','address','','R','city','','R','postcode','','R','state','','R','country','','R','email','','RisEmail','cardHolder','','R','cardNumber','','R','cardExpiry','','R');return document.MM_returnValue">
+<form action="/cgi-bin/shop.pl" method="POST" onSubmit="BSE_validateForm();return document.MM_returnValue">
   <font face="Verdana, Arial, Helvetica, sans-serif" size="3"> <b>Shipping Details:</b></font> 
   <hr noshade size="1">
   <table border="0" cellspacing="0" cellpadding="0">
@@ -196,6 +208,8 @@ function MM_validateForm() { //v4.0
   <p>&nbsp; </p>
   <font face="Verdana, Arial, Helvetica, sans-serif" size="3"> <b>Payment Details:</b></font> 
   <hr size="1" noshade>
+  <:if CCPayments :>
+  <:if MultPaymentTypes:><p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><input type=radio name=paymentType value=0 <:checkedIfFirstCC:>> Credit Card</font></p><:or MultPaymentTypes:><input type=hidden name=paymentType value=0><:eif MultPaymentTypes:>
   <table border="0" cellspacing="0" cellpadding="0">
     <tr> 
       <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Name on 
@@ -229,6 +243,24 @@ function MM_validateForm() { //v4.0
         &nbsp;*</font></td>
     </tr>
   </table>
+  <:or CCPayments:><:eif CCPayments:>
+  <:if ChequePayments:>
+  <:if MultPaymentTypes:><p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"> <input type=radio name=paymentType value=1 <:checkedIfFirstCheque:>/>
+    Cheque</font></p><:or MultPaymentTypes:><input type=hidden name=paymentType value=1><:eif MultPaymentTypes:>
+  <p> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Please send your cheque to:</font></p>
+  <ul> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> <:cfg shop address1:><br />
+     <:cfg shop address2:><br />
+     <:cfg shop address3:></font></ul>
+  <:or ChequePayments:><:eif ChequePayments:>
+  <:if CallMePayments:>
+   <:if MultPaymentTypes:><p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><input type=radio name=paymentType value=2 <:checkedIfFirstCallMe:>/> Contact me for billing details</font></p>
+   <:or MultPaymentTypes:>
+     <input type=hidden name=paymentType value=2>
+     <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">We will call you to arrange for payment.</font></p>
+   <:eif MultPaymentTypes:>
+  <:or CallMePayments:>
+
+  <:eif CallMePayments:>
   <p>&nbsp; </p>
   <font face="Verdana, Arial, Helvetica, sans-serif" size="3"> <b>Tax Invoice 
   / Receipt &amp; Delivery Costs:</b></font> 

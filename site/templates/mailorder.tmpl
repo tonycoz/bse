@@ -20,7 +20,11 @@ Product                                   Units  Price   Extended
                                                 Total: <:order total |m10:>
 						  GST: <:order gst   |m10:>
 
+<:ifEq [order paymentType] "0":>Paid by credit card:
 Card No.     : <:cardNumber:>
 Expires      : <:cardExpiry:>
 Name on Card : <:order ccName:>
-Card Type    : <:order ccType :>
+Card Type    : <:order ccType :><:or:><:eif
+:><:ifEq [order paymentType] "1" :>Will be paid by cheque<:or
+:><:eif:><:ifEq [order paymentType] "2"
+:>Please call the customer to arrange for payment<:or:><:eif:>

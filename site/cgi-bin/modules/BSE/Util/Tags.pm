@@ -87,10 +87,11 @@ sub static {
      ifEq =>
      sub {
        my ($arg, $acts, $name, $templater) = @_;
-       (my ($left, $right) = DevHelp::Tags->get_parms($arg, $acts, $templater)) == 2
-	 or die; # leaves if in place
+       my @args = DevHelp::Tags->get_parms($arg, $acts, $templater);
+       @args == 2
+	 or die "wrong number of args (@args)";
        #print STDERR "ifEq >$left< >$right<\n";
-       $left eq $right;
+       $args[0] eq $args[1];
      },
      ifMatch =>
      sub {
