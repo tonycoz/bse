@@ -13,7 +13,8 @@ Email   : <:order emailAddress:>
 
 Product                                   Units  Price   Extended
 -----------------------------------------------------------------
-<:iterator begin items:><:product title |42:><:item units|%2d:><:item price |m10:><:extended price|m11:>
+<:iterator begin items:><:product title |42:><:item units|%2d:><:item price |m10:><:extended price|m11:><:if Options:>
+   <:options:><:or Options:><:eif Options:>
 <:iterator separator items:><:iterator end items 
 :>-----------------------------------------------------------------
                                                 Total: <:order total |m10:>

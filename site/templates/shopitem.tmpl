@@ -26,6 +26,17 @@
 <br clear="all">
             <form name="ff" method="POST" action="/cgi-bin/shop.pl">
               
+<:if Options:>
+<table>
+<tr>
+<td>
+<:iterator begin options:>
+<:option desc:>: <:option popup:>
+<:iterator end options:>
+</td>
+</tr>
+</table>
+<:or Options:><:eif Options:>
   <table border="0" cellspacing="0" cellpadding="0">
     <tr valign="middle" align="center"> 
                   <td> <img src="/images/store/price_cap.gif" width="15" height="30"></td>
