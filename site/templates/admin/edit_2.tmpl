@@ -17,14 +17,6 @@
 <p>| <a href="/admin/">Admin menu</a> | <:ifnew:><:or:><a href="<:article admin:>">See 
   article</a> | <:eif:><:editParent:> <:if new:><:or new:><a href="<:script:>?id=<:article id:>&_t=steps">Manage 
   step children/parents</a> | <:eif new:></p>
-<:ifnew:><:or:><h2>Manage Images</h2><:eif:>
-
-  <:ifnew:><:or:><p>
-  <form action="<:script:>">
-  <input type="submit" name="showimages" value="<:articleType:> Image Wizard">
-  </form>
-  </p><:eif:>
-
 
   <h2><:articleType:> Details</h2>
 
@@ -159,11 +151,14 @@
           <tr> 
             <th valign="top" nowrap bgcolor="#FFFFFF" align="left"> Uploaded images: 
             </th>
-            <td align="center" bgcolor="#FFFFFF" width="100%"> <:iterator begin 
+            <td align="center" bgcolor="#FFFFFF" width="100%"> <:if Images:> <p><a href="<:script:>?id=<:article id:>&showimages=1"><b>Manage Images</b></a></p> <:iterator begin 
               images:> <img src="/images/<: image image :>" alt="<:image alt :>" width= 
               <:image width:> height=<:image height:>> <:iterator separator images:> 
               <hr noshade size="1">
-              <: iterator end images :> &nbsp; <br></td>
+              <: iterator end images :> &nbsp; <br>
+	      <:or Images:><p>No images are attached to this article.  <a href="<:script:>?id=<:article id:>&showimages=1"><b>Manage Images</b></a></p>
+	      <:eif Images:>
+	    </td>
             <td bgcolor="#FFFFFF" valign="top"><:help edit images:> </td>
           </tr>
           <:or Article:><:eif Article:> 

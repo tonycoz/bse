@@ -1498,7 +1498,7 @@ sub save_image_changes {
       $image->save;
     }
   }
-  return $self->refresh($article, $cgi, undef, undef, '&showimage=1');
+  return $self->refresh($article, $cgi, undef, undef, '&showimages=1');
 }
 
 sub add_image {
@@ -1573,7 +1573,7 @@ sub add_image {
   shift @cols;
   my $imageobj = Images->add(@image{@cols});
   
-  return $self->refresh($article, $cgi, undef, undef, '&showimage=1');
+  return $self->refresh($article, $cgi, undef, undef, '&showimages=1');
 }
 
 # remove an image

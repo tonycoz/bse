@@ -13,15 +13,9 @@
   Product:> | <a href="<:script:>?id=<:product id:>&undelete_product=1">Show product</a> 
   <:eif Product:>| <a href="/cgi-bin/admin/add.pl?id=<:product id:>&_t=steps">Manage 
   step parents</a> | <:ifProduct listed:><:or:>Hidden<:eif:></p>
-<h2>Manage Images</h2>
-<form action="<:script:>" enctype="multipart/form-data" method="POST">
-  <p>
-    <input type=submit name=showimages value="Image Wizard">
-  </p>
   <h2>Edit Product</h2>
-  <p>
+<form action="<:script:>" enctype="multipart/form-data" method="POST">
     <input type="hidden" name="id" value="<:product id:>">
-  </p>
   <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
     <tr>
       <td>
@@ -163,11 +157,13 @@
           <tr> 
             <th valign="top" nowrap bgcolor="#FFFFFF" align="left"> Uploaded images: 
             </th>
-            <td align="center" bgcolor="#FFFFFF" width="100%"> <:if Images:> <:iterator 
-              begin images:> <img src="/images/<: image image :>" alt="<:image alt :>" width= 
+            <td align="center" bgcolor="#FFFFFF" width="100%"> <:if Images:> <p><a href="<:script:>?id=<:article id:>&showimages=1"><b>Manage Images</b></a></p> <:iterator begin 
+              images:> <img src="/images/<: image image :>" alt="<:image alt :>" width= 
               <:image width:> height=<:image height:>> <:iterator separator images:> 
               <hr noshade size="1">
-              <: iterator end images :> &nbsp; <:or Images:>No images<:eif Images:> 
+              <: iterator end images :> &nbsp; <br>
+	      <:or Images:><p>No images are attached to this article.  <a href="<:script:>?id=<:article id:>&showimages=1"><b>Manage Images</b></a></p>
+	      <:eif Images:>
             </td>
             <td valign="top" bgcolor="#FFFFFF" width="100%"><:help product images:></td>
           </tr>

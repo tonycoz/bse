@@ -18,17 +18,6 @@
   catalog</a> | <:eif:><:editParent:> <a href="/cgi-bin/admin/shopadmin.pl">Manage 
   catalogs</a> | <:if new:><:or new:><a href="<:script:>?id=<:article id:>&_t=steps">Manage 
   step children/parents</a> | <:eif new:></p>
-  <:ifnew:><:or:><p>
-<h2>Manage Images</h2>
-
-
-  <!--input type="hidden" name="return_url" value="<:script:>?level=<: level :>&id=<:article id:>" -->
-
-  <form action="<:script:>">
-  <input type="submit" name="artimg" value="Catalog Image Wizard">
-  </form>
-  </p><:eif:>
-
 
   <form enctype="multipart/form-data" method="POST" action="<:script:>">
   <h2>Catalog Details</h2>
@@ -153,17 +142,20 @@
             </td>
             <td nowrap bgcolor="#FFFFFF" valign="top"><:help edit files:></td>
           </tr>
-          <:or Article:><:eif Article:> 
           <tr> 
             <th valign="top" bgcolor="#FFFFFF" nowrap align="left"> Uploaded images: 
             </th>
-            <td align="center" bgcolor="#FFFFFF" width="100%"> <: iterator begin 
-              images :> <img src="/images/<: image image :>" alt="<:image alt :>" width=              <:image 
-              width:> height=<:image height:>> <: iterator separator images :> 
+            <td align="center" bgcolor="#FFFFFF" width="100%"> <:if Images:> <p><a href="<:script:>?id=<:article id:>&showimages=1"><b>Manage Images</b></a></p> <:iterator begin 
+              images:> <img src="/images/<: image image :>" alt="<:image alt :>" width= 
+              <:image width:> height=<:image height:>> <:iterator separator images:> 
               <hr noshade size="1">
               <: iterator end images :> &nbsp; <br>
-            <td bgcolor="#FFFFFF" valign="top"><:help catalog images:>
+	      <:or Images:><p>No images are attached to this article.  <a href="<:script:>?id=<:article id:>&showimages=1"><b>Manage Images</b></a></p>
+	      <:eif Images:>
+	    </td>
+            <td bgcolor="#FFFFFF" valign="top"><:help catalog images:></td>
           
+          <:or Article:><:eif Article:> 
         </table>
 </td>
 </tr>

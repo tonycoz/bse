@@ -10,6 +10,25 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.12_04
+
+=over
+
+=item *
+
+the wrong url was redirected to after adding a new image or saving images
+
+=item *
+
+manage catalogs now points back at shopadmin.pl
+
+=item *
+
+removed the "Image Wizard" buttons and replaced them with "Manage
+Images" links in the image displays. (and fixed some missing </td> tags)
+
+=back
+
 =head2 0.12_03
 
 =over
