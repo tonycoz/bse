@@ -8,15 +8,13 @@
 </head>
 
 <body>
-<p><input type="button" onclick="history.go(0);" value="  Refresh  "></p>
-
-  <h1>Administration Page</h1>
+<h1>Administration Page</h1>
 <:ifMessage:> 
 <p><b><:message:></b></p>
 <:or:><:eif:>
 <p>| <a href="/admin/">Admin menu</a> | <:if children:> <a name="children"></a> 
 </p>
-<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" width="100%">
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" width="100%" class="table">
   <tr>
       <td>
       <table border=0 cellpadding="6" cellspacing="1" width="100%">

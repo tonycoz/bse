@@ -9,19 +9,16 @@
 </head>
 
 <body>
-
-  <input type="button" onclick="history.go(0);" value="  Refresh  " />
-
-  <h1>File Wizard</h1>
-
-  <h2>Add a new file</h2>
-
-<:ifMessage:><p><b><:message:></b></p><:or:><:eif:>
+<h1>File Wizard</h1>
+<:ifMessage:>
+<p><b><:message:></b></p>
+<:or:><:eif:> 
+<h2>Add new file</h2>
 
 <form method="post" action="<:script:>" enctype="multipart/form-data">
 
 <input type="hidden" name="id" value="<: article id :>" />
-  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000">
+  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
     <tr> 
       <td> 
         <table cellpadding="6" border="0" cellspacing="1">
@@ -61,7 +58,7 @@
             <td bgcolor="#FFFFFF"><:help file forSale:> </td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left"> Require user: </th>
+            <th bgcolor="#FFFFFF" align="left"> Require login: </th>
             <td bgcolor="#FFFFFF"> 
               <input type="checkbox" name="requireUser" value="1" />
             </td>
@@ -78,59 +75,63 @@
   </table>
 </form>
 
-  <h2>Manage Files</h2>
+  
+<h2>Manage files</h2>
 
 <form method="post" action="<:script:>" enctype="multipart/form-data">
 <input type="hidden" name="id" value="<: article id :>" />
-<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000">
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
     <tr>
       <td>
         <table cellpadding="6" border="0" cellspacing="1">
-          <tr>
+          <tr> 
             <th bgcolor="#FFFFFF" nowrap> File</th>
             <th bgcolor="#FFFFFF" nowrap> Description</th>
             <th bgcolor="#FFFFFF" nowrap> Content-Type</th>
-            <th bgcolor="#FFFFFF" nowrap> Download</th>
-            <th bgcolor="#FFFFFF" nowrap> Require<br>
-              Payment</th>
-            <th bgcolor="#FFFFFF" nowrap> Require<br>
-              User</th>
-            <th bgcolor="#FFFFFF" nowrap>Modify </th>
           </tr>
-<:if Files:>
-<: iterator begin files :>
-    <tr bgcolor="#FFFFFF"> 
-      <td align="center"> <:file displayName:></td>
-      <td valign="top"> 
-        <input type="text" name="description_<:file id:>" value="<: file description :>" /></td>
-      <td valign="top"> 
-        <input type="text" name="contentType_<:file id:>" value="<: file contentType :>" /></td>
-      <td valign="top" align="center"><input type="checkbox" name="download_<:file id:>"<:ifFile download:> checked<:or:><:eif:> /> </td>
-      <td valign="top" align="center"><input type="checkbox" name="forSale_<:file id:>"<:ifFile forSale:> checked<:or:><:eif:> /> </td>
-      <td valign="top" align="center"><input type="checkbox" name="requireUser_<:file id:>"<:ifFile requireUser:> checked<:or:><:eif:> /> </td>
-            <td nowrap> <b><a href="<:script:>?filedel=1&amp;id=<:article id:>&amp;file=<:file id:>">Remove</a></b> 
-              <:move:></td>
+          <:if Files:> <: iterator begin files :> 
+          <tr bgcolor="#FFFFFF"> 
+            <td nowrap> <:file displayName:></td>
+            <td valign="top"> 
+              <input type="text" name="description_<:file id:>" value="<: file description :>" />
+            </td>
+            <td valign="top"> 
+              <input type="text" name="contentType_<:file id:>" value="<: file contentType :>" />
+            </td>
           </tr>
-<: iterator separator files :>
-    <tr bgcolor="#FFFFFF"> 
-      <td colspan="7">&nbsp;</td>
-    </tr>
-<: iterator end files :>
-
-  <tr>
-      <td colspan="7" align="right" valign="bottom" bgcolor="#FFFFFF"> 
-        <input type="submit" name="filesave" value="  Save changes  " /></td>
-  </tr>
-
-<:or Files:>
-
-    <tr bgcolor="#FFFFFF"> 
-      <td colspan="7" align="center">No files are attached to this article</td>
-    </tr>
-
-<:eif Files:>
-
-  </table>
+          <tr bgcolor="#FFFFFF"> 
+            <td colspan="3"> 
+              <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr bgcolor="#FFFFFF"> 
+                  <td valign="top" align="center" nowrap> <input type="checkbox" name="download_<:file id:>"
+                    <:ifFile download:> checked<:or:><:eif:> />Download&nbsp;&nbsp;&nbsp;</td>
+                  <td valign="top" align="center" nowrap> <input type="checkbox" name="forSale_<:file id:>"
+                    <:ifFile forSale:> checked<:or:><:eif:> />Require payment&nbsp;&nbsp;&nbsp;</td>
+                  <td valign="top" align="center" nowrap> <input type="checkbox" name="requireUser_<:file id:>"
+                    <:ifFile requireUser:> checked<:or:><:eif:> />Require login 
+                    &nbsp;&nbsp;&nbsp;</td>
+                  <td nowrap align="right" width="100%"> <b><a href="<:script:>?filedel=1&amp;id=<:article id:>&amp;file=<:file id:>">Remove</a></b> 
+                    <:move:></td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <: iterator separator files :> 
+          <tr bgcolor="#FFFFFF"> 
+            <td colspan="3">&nbsp;</td>
+          </tr>
+          <: iterator end files :> 
+          <tr> 
+            <td colspan="3" align="right" valign="bottom" bgcolor="#FFFFFF"> 
+              <input type="submit" name="filesave" value="  Save changes  " />
+            </td>
+          </tr>
+          <:or Files:> 
+          <tr bgcolor="#FFFFFF"> 
+            <td colspan="3" align="center">No files are attached to this article</td>
+          </tr>
+          <:eif Files:> 
+        </table>
 </td>
 </tr>
 </table>

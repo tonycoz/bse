@@ -24,10 +24,11 @@
       </th>
     </tr>
     <tr> 
-      <td colspan="2" align="center"> 
-        <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Hello <:user 
-          userId:></font></p>
-      </td>
+      <td colspan="2" align="center"> <font face="Verdana, Arial, Helvetica, sans-serif" size="2">Hello 
+        <:user userId:><br>
+        Last logged in: <:date user lastLogon:><br>
+        <br>
+        </font></td>
     </tr>
     <:if Message:> 
     <tr> 
@@ -48,7 +49,7 @@
         <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Email 
           Address:</font></b></th>
         <td width="100%"> 
-          <input type="text" name="email" value="<:last email:>" size="40" />
+          <input type="text" name="email" value="<:last email:>" size="40" maxlength="127" />
         </td>
       </tr>
       <!--//<tr> 
@@ -69,7 +70,8 @@
           <table border="0" cellspacing="0" cellpadding="0">
             <:iterator begin subscriptions:> 
             <tr height="20"> 
-              <td> <input type="checkbox" name="subscription" value="<:subscription id:>"<:ifSubscribed:> checked<:or:><:eif:> /></td>
+              <td> <input type="checkbox" name="subscription" value="<:subscription id:>"<:ifSubscribed:> 
+                checked<:or:><:eif:> /></td>
               <td><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:subscription 
                 name:></font></td>
               <td>&nbsp;&nbsp;<a href="#" onClick="javascript:window.open('<:siteUrl:><:script:>?subinfo=1&id=<:subscription id:>', 'subscription_info','width=350,height=200,location=no,status=no,menubar=no,scrollbars=yes'); return 0"><img src="/images/info.gif" width="16" height="16" border="0" /></a></td>
@@ -89,8 +91,9 @@
             your subscription. If you change your email address you will need 
             to reconfirm your subscription.</font></div>
           <:eif User:> <:eif AnySubs:> 
-          <p> <input type="checkbox" name="textOnlyMail" value="1"<:ifLast textOnlyMail:> checked<:or:><:eif:> /> 
-          <font face="Verdana, Arial, Helvetica, sans-serif" size="2">Text only E-mail messages</font></p>
+          <p> <input type="checkbox" name="textOnlyMail" value="1"<:ifLast textOnlyMail:> 
+            checked<:or:><:eif:> /> <font face="Verdana, Arial, Helvetica, sans-serif" size="2">Text 
+            only E-mail messages</font></p>
         </td>
       </tr>
       <:or Subscriptions:><:eif Subscriptions:> 
@@ -98,57 +101,69 @@
         <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">First 
           Name:</font></b></th>
         <td width="100%"> 
-          <input type="text" name="name1" value="<:last name1:>" size="40" />
+          <input type="text" name="name1" value="<:last name1:>" size="40" maxlength="127" />
         </td>
       </tr>
       <tr> 
         <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Last 
           Name:</font></b></th>
         <td width="100%"> 
-          <input type="text" name="name2" value="<:last name2:>" size="40" />
+          <input type="text" name="name2" value="<:last name2:>" size="40" maxlength="127" />
+        </td>
+      </tr>
+      <tr> 
+        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Title:</font></b></th>
+        <td width="100%"> 
+          <input type="text" name="title" value="<:last title:>" size="40" maxlength="127" />
+        </td>
+      </tr>
+      <tr> 
+        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Organisation:</font></b></th>
+        <td width="100%"> 
+          <input type="text" name="organization" value="<:last organization:>" size="40" maxlength="127" />
         </td>
       </tr>
       <tr> 
         <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Street:</font></b></th>
         <td width="100%"> 
-          <input type="text" name="address" value="<:last address:>" size="40" />
+          <input type="text" name="address" value="<:last address:>" size="40" maxlength="127" />
         </td>
       </tr>
       <tr> 
         <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Suburb:</font></b></th>
         <td width="100%"> 
-          <input type="text" name="city" value="<:last city:>" size="40" />
+          <input type="text" name="city" value="<:last city:>" size="40" maxlength="127" />
         </td>
       </tr>
       <tr> 
         <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">State:</font></b></th>
         <td width="100%"> 
-          <input type="text" name="state" value="<:last state:>" size="8" />
+          <input type="text" name="state" value="<:last state:>" size="8" maxlength="40" />
         </td>
       </tr>
       <tr> 
         <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Post 
           Code:</font></b></th>
         <td width="100%"> 
-          <input type="text" name="postcode" value="<:last postcode:>" size="8" />
+          <input type="text" name="postcode" value="<:last postcode:>" size="8" maxlength="40" />
         </td>
       </tr>
       <tr> 
         <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Country:</font></b></th>
         <td width="100%"> 
-          <input type="text" name="country" value="<:last country:>" size="32" />
+          <input type="text" name="country" value="<:last country:>" size="32" maxlength="127" />
         </td>
       </tr>
       <tr> 
         <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Phone:</font></b></th>
         <td width="100%"> 
-          <input type="text" name="telephone" value="<:last telephone:>" size="32" />
+          <input type="text" name="telephone" value="<:last telephone:>" size="32" maxlength="80" />
         </td>
       </tr>
       <tr> 
         <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Facsimile:</font></b></th>
         <td width="100%"> 
-          <input type="text" name="facsimile" value="<:last facsimile:>" size="32" />
+          <input type="text" name="facsimile" value="<:last facsimile:>" size="32" maxlength="80" />
         </td>
       </tr>
       <tr> 
@@ -161,21 +176,21 @@
         <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Old 
           Password:</font></b></th>
         <td width="100%"> 
-          <input type="password" name="old_password" size="40" />
+          <input type="password" name="old_password" size="40" maxlength="40" />
         </td>
       </tr>
       <tr> 
         <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">New 
           Password:</font></b></th>
         <td width="100%"> 
-          <input type="password" name="password" value="" size="40" />
+          <input type="password" name="password" value="" size="40" maxlength="40" />
         </td>
       </tr>
       <tr> 
         <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Confirm 
           Password:</font></b></th>
         <td width="100%"> 
-          <input type="password" name="confirm_password" value="" size="40" />
+          <input type="password" name="confirm_password" value="" size="40" maxlength="40" />
         </td>
       </tr>
       <tr> 

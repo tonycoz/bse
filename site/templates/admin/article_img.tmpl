@@ -8,14 +8,11 @@
 </head>
 
 <body>
-
-  <input type="button" onclick="history.go(0);" value="  Refresh  ">
-
-  <h1><: articleType :> Image Wizard</h1>
-
-  <h2>Add a new image</h2>
-
-<:message:><p>
+<h1><: articleType :> Image Wizard</h1>
+<:ifMessage:> 
+<p><b><:message:> </b></p>
+<:or:><:eif:>
+<h2>Add new image</h2>
 
 <form method="POST" action="<:script:>" enctype="multipart/form-data">
 
@@ -23,7 +20,7 @@
 <input type="hidden" name="id" value="<: article id :>">
 <input type="hidden" name="parentid" value="<: article parentid :>">
 <input type="hidden" name="imgtype" value="<: articleType :>">
-  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000">
+  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
     <tr> 
       <td> 
         <table cellpadding="6" border="0" cellspacing="1">
@@ -62,47 +59,53 @@
 <input type="hidden" name="id" value="<: article id :>">
 <input type="hidden" name="parentid" value="<: article parentid :>">
 <input type="hidden" name="imgtype" value="<: articleType :>">
-  <h2>Manage Images</h2>
+  <h2>Manage images</h2>
 
-<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000">
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
     <tr>
       <td>
         <table cellpadding="6" border="0" cellspacing="1">
+          <tr> 
+            <th valign="top" bgcolor="#FFFFFF" colspan="3">First Image Position</th>
+          </tr>
+          <tr> 
+            <td align="center" bgcolor="#FFFFFF" colspan="3"> <input type="radio" name="imagePos" value="tl" <: 
+              checked tl :>>Top Left &nbsp;<input type="radio" name="imagePos" value="tr" <: 
+              checked tr :>>Top Right &nbsp; <input type="radio" name="imagePos" value="bl" <: 
+              checked bl :>>Bottom Left &nbsp; <input type="radio" name="imagePos" value="br" <: 
+              checked br :>>Bottom Right </td>
+          </tr>
           <tr bgcolor="#FFFFFF"> 
-            <th> Image</th>
-            <th> Alt Text</th>
-            <th> URL</th>
-
-            <th> Modify</th>
+            <th colspan="3">Image</th>
           </tr>
           <: iterator begin image :> 
           <tr bgcolor="#FFFFFF"> 
-            <td align="center"> <img src="/images/<: image image :>" alt="<: image alt :>"<: 
+            <td align="center" colspan="3"> <img src="/images/<: image image :>" alt="<: image alt :>"<: 
               image height :><: image width :>></td>
-            <td valign="top"> 
-              <input type="text" name="alt" value="<: image alt :>">
+          </tr>
+          <tr bgcolor="#FFFFFF"> 
+            <th width="50%"> Alt Text</th>
+            <th width="50%"> URL</th>
+            <th nowrap> Modify</th>
+          </tr>
+          <tr bgcolor="#FFFFFF"> 
+            <td valign="top" width="50%"> 
+              <input type="text" name="alt" value="<: image alt :>" size="32">
             </td>
-            <td valign="top"> 
-              <input type="text" name="url" value="<: image url :>">
+            <td valign="top" width="50%"> 
+              <input type="text" name="url" value="<: image url :>" size="32">
             </td>
-
             <td valign="bottom" nowrap> 
               <input type="submit" name="removeimg_<: image order :>" value="Delete" onClick="return window.alert('Remember to update the article after deletion is complete')" >
               <:imgmove:> </td>
           </tr>
           <: iterator separator image :> 
           <tr bgcolor="#FFFFFF"> 
-            <td colspan="4">&nbsp;</td>
+            <td colspan="3">&nbsp;</td>
           </tr>
           <: iterator end image :> 
           <tr> 
-            <th valign="top" bgcolor="#FFFFFF"> First Image Position: </th>
-            <td bgcolor="#FFFFFF"> <input type="radio" name="imagePos" value="tl"<: 
-              checked tl :>> &nbsp; Top Left <br><input type="radio" name="imagePos" value="tr"
-              <: checked tr :>> &nbsp; Top Right <br><input type="radio" name="imagePos" value="bl"
-              <: checked bl :>> &nbsp; Bottom Left <br><input type="radio" name="imagePos" value="br"
-              <: checked br :>> &nbsp; Bottom Right</td>
-            <td colspan="2" align="right" valign="bottom" bgcolor="#FFFFFF"> 
+            <td align="right" bgcolor="#FFFFFF" colspan="3"> 
               <input type="submit" name="process" value="Save changes">
             </td>
         </table>
@@ -111,7 +114,8 @@
 </table>
 
   <p>
-    <input type="submit" name="back" value=" <<  Back  "></p>
+    <input type="submit" name="back" value=" <<  Back  ">
+  </p>
 
 </form>
 

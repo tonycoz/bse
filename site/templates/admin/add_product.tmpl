@@ -3,17 +3,19 @@
 </head>
 <body>
 <h1>Shop Administration</h1>
-<h2><:action:> Product</h2>
-<:ifMessage:>
+<:ifMessage:> 
 <p><b><:message:> </b></p>
 <:or:><:eif:> 
-<p>| <a href="/admin/">Admin menu</a> | <a href="<:script:>">Manage store</a> 
+<p>| <a href="/admin/">Admin menu</a> | <a href="<:script:>">Manage catalogs</a> 
   | </p>
-
-<form action="<:script:>" enctype="multipart/form-data" method=POST><p><input type=submit name=showimages value="Image Wizard"></p>
-
-<input type="hidden" name="id" value="<:product id:>">
-  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000">
+<h2>Manage Images</h2>
+<form action="<:script:>" enctype="multipart/form-data" method=POST>
+  <p>
+    <input type=submit name=showimages value="Image Wizard">
+  </p>
+  <h2><:action:> Product</h2>
+  <input type="hidden" name="id" value="<:product id:>">
+  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
     <tr>
       <td>
         <table border=0 cellspacing="1" cellpadding="6">
@@ -22,85 +24,96 @@
             <td nowrap bgcolor="#FFFFFF"> 
               <input type="text" name="title" value="<:product title:>" size=60>
             </td>
+            <td nowrap bgcolor="#FFFFFF"><:help product title:></td>
           </tr>
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF">Summary*:</th>
             <td nowrap bgcolor="#FFFFFF"> 
               <input type="text" name="summary" value="<:product summary:>" size=60>
             </td>
+            <td nowrap bgcolor="#FFFFFF"><:help product summary:></td>
           </tr>
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF">Catalog:</th>
-            <td nowrap bgcolor="#FFFFFF"> 
-              <:catalogs:>
-            </td>
+            <td nowrap bgcolor="#FFFFFF"> <:catalogs:> </td>
+            <td nowrap bgcolor="#FFFFFF"><:help product catalog:></td>
           </tr>
           <tr> 
-            <th nowrap align="left" bgcolor="#FFFFFF" valign="top">Body:<:help 
-              body body:></th>
+            <th nowrap align="left" bgcolor="#FFFFFF" valign="top"> Body:</th>
             <td nowrap bgcolor="#FFFFFF"> 
               <textarea name="body" rows=15 cols=60 wrap=virtual><:product body:></textarea>
             </td>
+            <td nowrap bgcolor="#FFFFFF" valign="top"><:help body body:></td>
           </tr>
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF">Lead time:</th>
             <td nowrap bgcolor="#FFFFFF"> 
               <input type="text" name="leadTime" value="<:product leadTime:>" size=5>
               days</td>
+            <td nowrap bgcolor="#FFFFFF"><:help product leadtime:></td>
           </tr>
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF">Retail price:</th>
             <td nowrap bgcolor="#FFFFFF">$ 
               <input type="text" name="retailPrice" value="<:money retailPrice:>" size=7>
               (0.00)</td>
+            <td nowrap bgcolor="#FFFFFF"><:help product retail:></td>
           </tr>
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF">Wholesale price:</th>
             <td nowrap bgcolor="#FFFFFF">$ 
               <input type="text" name="wholesalePrice" value="<:money wholesalePrice:>" size=7>
               (0.00)</td>
+            <td nowrap bgcolor="#FFFFFF"><:help product wholesale:></td>
           </tr>
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF">GST:</th>
             <td nowrap bgcolor="#FFFFFF">$ 
               <input type="text" name="gst" value="<:money gst:>" size=7>
               (0.00)</td>
+            <td nowrap bgcolor="#FFFFFF"><:help product gst:></td>
           </tr>
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF">Release date:</th>
             <td nowrap bgcolor="#FFFFFF"> 
               <input type="text" name="release" value="<:date product release:>" size=11>
               (dd/mm/yyyy)</td>
+            <td nowrap bgcolor="#FFFFFF"><:help product release:></td>
           </tr>
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF">Expiry date:</th>
             <td nowrap bgcolor="#FFFFFF"> 
               <input type="text" name="expire" value="<:date product expire:>" size=11>
               (dd/mm/yyyy)</td>
+            <td nowrap bgcolor="#FFFFFF"><:help product expire:></td>
           </tr>
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF">Summary length:</th>
             <td nowrap bgcolor="#FFFFFF"> 
               <input type="text" name="summaryLength" size="10" maxlength="10" value="<:product summaryLength:>">
             </td>
+            <td nowrap bgcolor="#FFFFFF"><:help product summary:></td>
           </tr>
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF">Display threshold:</th>
             <td nowrap bgcolor="#FFFFFF"> 
               <input type="text" name="threshold" size=10 maxlength=10 value="<:product threshold:>">
-	    </td>
+            </td>
+            <td nowrap bgcolor="#FFFFFF"><:help product threshold:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF">Options:</th>
             <td bgcolor="#FFFFFF"> 
-              <input type="text" name="options" value="<:product options:>" size=30> (<:alloptions:>)
-              </td>
+              <input type="text" name="options" value="<:product options:>" size=30>
+              (<:alloptions:>) </td>
+            <td bgcolor="#FFFFFF"><:help product options:></td>
           </tr>
-          <tr>
-            <th nowrap align="left" bgcolor="#FFFFFF">Thumbnail image:</th>
-            <td nowrap bgcolor="#FFFFFF">
+          <tr> 
+            <th nowrap align="left" bgcolor="#FFFFFF" valign="top">Thumbnail image:</th>
+            <td nowrap bgcolor="#FFFFFF"> 
               <input type="file" name="thumbnail">
             </td>
+            <td nowrap bgcolor="#FFFFFF" valign="top"><:help product thumb:></td>
           </tr>
         </table>
       </td>

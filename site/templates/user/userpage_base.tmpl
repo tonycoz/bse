@@ -33,8 +33,17 @@
     </tr>
     <:or Message:><:eif Message:> 
     <tr> 
-      <th align="center"><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Your 
+      <th align="center" height="20"><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Your 
         Orders</font></th>
+    </tr>
+    <tr>
+      <td align="center"> 
+        <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Hello <:user 
+          userId:><br>
+          Last logged in: <:date user lastLogon:></font><br>
+          <br>
+        </p>
+        </td>
     </tr>
     <:if Orders:>
 <:iterator begin orders:>
@@ -72,9 +81,10 @@
         </table>
         <table width="100%" cellpadding="3" cellspacing="1">
           <tr bgcolor="#CCCCCC"> 
-            <th colspan="3"><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#666666"><:ifEq 
-              [cfg downloads must_be_filled] "yes":>Files available when order 
-              status is &#145;Complete&#146;<:or:>Files<:eif:></font></th>
+            <th colspan="3"><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#666666"><:if 
+              Order filled:>Files available<:or Order:><:ifEq [cfg downloads must_be_filled] 
+              "yes":>Files available when order status is &#145;Complete&#146;<:or:>Files<:eif:><:eif 
+              Order:></font></th>
           </tr>
           <tr bgcolor="#EEEEEE"> 
             <th width="50%" align="left"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Description</font></th>

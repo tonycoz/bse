@@ -10,15 +10,17 @@
 </head>
 
 <body>
-
-  <input type="button" onclick="history.go(0);" value="  Refresh  ">
-
-  
 <h1>Shop Administration</h1>
+<:ifMessage:> 
+<p><b><:message:></b></p>
+<:or:><:eif:> 
+<p>| <a href="/admin/">Admin menu</a> | <:ifnew:><:or:><a href="<:article admin:>">See 
+  catalog</a> | <:eif:><:editParent:> <a href="<:script:>">Manage catalogs</a> 
+  | <:if new:><:or new:><a href="<:script:>?id=<:article id:>&_t=steps">Manage 
+  step children/parents</a> | <:eif new:></p>
+<h2>Manage Images</h2>
 
-  <h2>Select Images First</h2>
-
-  <p><form enctype="multipart/form-data" method="POST" action="<:script:>">
+  <form enctype="multipart/form-data" method="POST" action="<:script:>">
 
   <!--input type="hidden" name="return_url" value="<:script:>?level=<: level :>&id=<:article id:>" -->
 
@@ -29,17 +31,9 @@
 
   <h2>Catalog Details</h2>
 
-  <p><:ifMessage:></p>
-  <p><b><:message:></b></p>
-  <:or:><:eif:> 
-  <p>| <a href="/admin/">Admin menu</a> | <:ifnew:><:or:><a href="<:article admin:>">See 
-    catalog</a> | <:eif:><:editParent:> <a href="/cgi-bin/admin/shopadmin.pl">Manage 
-    store</a> | <:if new:><:or new:><a href="<:script:>?id=<:article id:>&_t=steps">Manage 
-    stepchildren/stepparents</a> | <:eif new:> 
-    <input type="hidden" name="level" value="<: level :>">
-    <input type="hidden" name="id" value="<: article id :>">
-  </p>
-  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" width="100%">
+  <input type="hidden" name="level" value="<: level :>">
+  <input type="hidden" name="id" value="<: article id :>">
+  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" width="100%" class="table">
     <tr>
       <td>
 
@@ -48,82 +42,93 @@
             <th bgcolor="#FFFFFF" nowrap align="left"> Parent: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <select name="parentid">
-                <option value="">Please Select a <: parentType :> 
-		<: list subsections :> 
+                <option value="">Please Select a <: parentType :> <: list subsections 
+                :> 
               </select>
             </td>
+            <td bgcolor="#FFFFFF"><:help catalog parent:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" nowrap align="left"> Catalog Title: </th>
+            <th bgcolor="#FFFFFF" nowrap align="left"> Catalog title: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <input type="text" name="title" maxlength="64" size="64" value="<: article title :>">
             </td>
+            <td bgcolor="#FFFFFF"><:help catalog title:></td>
           </tr>
           <tr> 
             <th bgcolor="#FFFFFF" nowrap align="left"> Template: </th>
             <td bgcolor="#FFFFFF" width="100%"> <:templates:> </td>
+            <td bgcolor="#FFFFFF"><:help catalog template:></td>
           </tr>
           <tr> 
-            <th valign="top" bgcolor="#FFFFFF" nowrap align="left"> Body: </th>
+            <th valign="top" bgcolor="#FFFFFF" nowrap align="left"> Body:</th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <textarea name="body" rows="10" cols="60" wrap="virtual"><: article body :></textarea>
             </td>
+            <td bgcolor="#FFFFFF" valign="top"><:help body body:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" nowrap align="left"> Release Date: </th>
+            <th bgcolor="#FFFFFF" nowrap align="left"> Release date: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <input type="text" name="release" value="<: article release :>" size="10" maxlength="10">
               (dd/mm/yyyy<: ifnew :> - default is today<: or :><: eif :>)</td>
+            <td bgcolor="#FFFFFF"><:help catalog release:></td>
           </tr>
-          
           <tr> 
-            <th bgcolor="#FFFFFF" nowrap align="left"> Expire Date: </th>
+            <th bgcolor="#FFFFFF" nowrap align="left"> Expiry date: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <input type="text" name="expire" value="<: article expire :>" size="10" maxlength="10">
               (dd/mm/yyyy - <: ifnew :>default is never, <: or :><: eif :>blank 
               for never expires)</td>
+            <td bgcolor="#FFFFFF"><:help catalog expire:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" nowrap align="left"> Summary Length: </th>
+            <th bgcolor="#FFFFFF" nowrap align="left"> Summary length: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <input type="text" name="summaryLength" size="10" maxlength="10" value="<: article summaryLength :>">
-              (in characters - <: ifnew :>default inherited from section<: if art :> or sub-section<: 
-              or art :><: eif art :>, <: or :><: eif :>zero for no 
-              summary)</td>
+              (in characters - <: ifnew :>default inherited from section<: if 
+              art :> or sub-section<: or art :><: eif art :>, <: or :><: eif :>zero 
+              for no summary)</td>
+            <td bgcolor="#FFFFFF"><:help catalog summary:></td>
           </tr>
           <tr> 
             <th bgcolor="#FFFFFF" nowrap align="left"> Display threshold: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <input type="text" name="threshold" size="10" maxlength="10" value="<: article threshold :>">
             </td>
+            <td bgcolor="#FFFFFF"><:help catalog threshold:></td>
           </tr>
           <tr> 
             <th bgcolor="#FFFFFF" nowrap align="left"> Keywords: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <input type="text" name="keyword" maxlength="255" size="60" value="<: article keyword :>">
-               (comma separated)
-            </td>
+              (comma separated) </td>
+            <td bgcolor="#FFFFFF"><:help catalog keywords:></td>
           </tr>
           <tr> 
             <th bgcolor="#FFFFFF" nowrap align="left">List article:</th>
             <td bgcolor="#FFFFFF" width="100%"> <:list listed:> </td>
+            <td bgcolor="#FFFFFF"><:help catalog list:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" nowrap align="left">Thumbnails:</th>
+            <th bgcolor="#FFFFFF" nowrap align="left" valign="top">Thumbnail image:</th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <input type=file name=thumbnail>
               <:ifArticle thumbImage:><img src="/images/<:article thumbImage:>"> 
               <input type=checkbox name="remove_thumb">
-               Remove<:or:><:eif:></td>
+              Remove<:or:><:eif:></td>
+            <td bgcolor="#FFFFFF" valign="top"><:help catalog thumb:></td>
           </tr>
           <tr> 
-            <th valign="top" bgcolor="#FFFFFF" nowrap align="left"> Uploaded files: 
+            <th valign="top" bgcolor="#FFFFFF" nowrap align="left"> Uploaded images: 
             </th>
             <td align="center" bgcolor="#FFFFFF" width="100%"> <: iterator begin 
               images :> <img src="/images/<: image image :>" alt="<:image alt :>" width=              <:image 
               width:> height=<:image height:>> <: iterator separator images :> 
               <hr noshade size="1">
               <: iterator end images :> &nbsp; <br>
+            <td bgcolor="#FFFFFF" valign="top"><:help catalog images:>
+          
         </table>
 </td>
 </tr>
@@ -133,8 +138,10 @@
     <input type="submit" name="save"
            value="  <: ifnew :>Add New<: or :>Update<: eif :> Catalog  "></p>
   </form>
-<:if children:> <a name="children"></a> 
-<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" width="100%">
+<:if children:>
+<h2>Products / Sub-catalogs</h2>
+<a name="children"></a> 
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" width="100%" class="table">
   <tr>
       <td>
       <table border=0 cellpadding="6" cellspacing="1" width="100%">

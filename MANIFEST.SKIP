@@ -1,2 +1,11 @@
 .*,v
 .*~
+\bCVS\b
+\.cvsignore$
+^test\.cfg$
+^test-.*cfg$
+^nswfitc\.cfg$
+^site/htdocs/images/admin/help\.png$
+^install.perl$
+^schema/data/article\.txt$
+^schema/data/demoload\.pl$

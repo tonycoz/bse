@@ -10,13 +10,28 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.11_20
+
+=over
+
+=item *
+
+another set of new templates from Adrian
+
+=item *
+
+extended title and email fields of site_user to 127 and 255 characters
+respectively
+
+=back
+
 =head2 0.11_19
 
 =over
 
 =item *
 
-remove debugging code from Generate::excerpt() (#142) (TEST!)
+remove debugging code from Generate::excerpt() (#142)
 
 =item *
 

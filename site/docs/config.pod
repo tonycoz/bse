@@ -152,7 +152,7 @@ security threat.  Default: True.
 
 =head2 [mail]
 
-This section controls how BSE send email.
+This section controls how BSE sends email.
 
 =over
 

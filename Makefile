@@ -1,4 +1,4 @@
-VERSION=0.11_19
+VERSION=0.11_20
 DISTNAME=bse-$(VERSION)
 DISTBUILD=$(DISTNAME)
 DISTTAR=../$(DISTNAME).tar
@@ -94,3 +94,9 @@ testfiles: distdir
 
 test: testinst
 	perl -MTest::Harness=runtests -It -e 'runtests glob q!t/*.t!'
+
+manicheck:
+	perl -MExtUtils::Manifest=manicheck -e 'manicheck()'
+
+filecheck:
+	perl -MExtUtils::Manifest=filecheck -e 'filecheck()'

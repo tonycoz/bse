@@ -3,18 +3,18 @@
 </head>
 <body>
 <h1>Shop Administration</h1>
-<h2>Product details</h2>
 <p>| <a href="/admin/">Admin menu</a> | <a href="<:product admin:>">See product</a> 
-  | <a href="<:script:>">Manage store</a> | <a href="<:script:>?id=<:product id:>&edit_product=1">Edit</a> 
-  <:if Product listed:> | <a href="<:script:>?id=<:product id:>&delete_product=1">Hide</a> 
+  | <a href="<:script:>">Manage catalogs</a> | <a href="<:script:>?id=<:product id:>&edit_product=1">Edit 
+  product </a> <:if Product listed:> | <a href="<:script:>?id=<:product id:>&delete_product=1">Hide</a> 
   |<:or Product:> | <a href="<:script:>?id=<:product id:>&undelete_product=1">Show</a> 
   |<:eif Product:> <:hiddenNote:></p>
-<table bgcolor="#000000" cellpadding="0" cellspacing="0" border="0" width="100%">
+<h2>Product details</h2>
+<table bgcolor="#000000" cellpadding="0" cellspacing="0" border="0" width="100%" class="table">
   <tr>
 <td>
       <table border=0 cellpadding="6" cellspacing="1" width="100%">
         <tr> 
-          <th align="left" nowrap bgcolor="#FFFFFF">Name:</th>
+          <th align="left" nowrap bgcolor="#FFFFFF">Title:</th>
           <td bgcolor="#FFFFFF" width="100%"><:product title:></td>
         </tr>
         <tr> 
@@ -47,7 +47,8 @@
         </tr>
         <tr> 
           <th align="left" nowrap bgcolor="#FFFFFF">Expiry date:</th>
-          <td bgcolor="#FFFFFF" width="100%"><:date product expire:></td>
+          <td nowrap bgcolor="#FFFFFF"><:ifMatch [date product expire] "31/12/9999":>Never<:or:><:date 
+            product expire:><:eif:></td>
         </tr>
         <tr> 
           <th align="left" nowrap bgcolor="#FFFFFF">Options:</th>

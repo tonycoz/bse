@@ -10,14 +10,16 @@
 </head>
 
 <body>
+<h1>Administration Page</h1>
+<:ifMessage:> 
+<p><b><:message:></b></p>
+<:or:><:eif:>
+<p>| <a href="/admin/">Admin menu</a> | <:ifnew:><:or:><a href="<:article admin:>">See 
+  article</a> | <:eif:><:editParent:> <:if new:><:or new:><a href="<:script:>?id=<:article id:>&_t=steps">Manage 
+  step children/parents</a> | <:eif new:></p>
+<h2>Manage Images</h2>
 
-  <input type="button" onclick="history.go(0);" value="  Refresh  ">
-
-  <h1>Administration Page</h1>
-
-  <h2>Select Images First</h2>
-
-  <p><form enctype="multipart/form-data" method="POST" action="<:script:>">
+  <form enctype="multipart/form-data" method="POST" action="<:script:>">
 
   <p>
   <input type="submit" name="artimg" value="<:articleType:> Image Wizard">
@@ -26,16 +28,10 @@
 
   <h2><:articleType:> Details</h2>
 
-  <:ifMessage:> 
-  <p><b><:message:></b></p>
-  <:or:><:eif:>
-  <p>| <a href="/admin/">Admin menu</a> | <:ifnew:><:or:><a href="<:article admin:>">See 
-    article</a> | <:eif:><:editParent:> <:if new:><:or new:><a href="<:script:>?id=<:article id:>&_t=steps">Manage 
-    stepchildren/stepparents</a> | <:eif new:> 
     <input type="hidden" name="level" value="<: level :>">
     <input type="hidden" name="id" value="<: article id :>">
-  </p>
-  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" width="100%">
+
+  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" width="100%" class="table">
     <tr>
       <td>
 
@@ -51,7 +47,7 @@
             <td bgcolor="#FFFFFF"><:help edit section:> </td>
           </tr>
           <tr> 
-            <th nowrap bgcolor="#FFFFFF" align="left"> <:articleType:> Title: 
+            <th nowrap bgcolor="#FFFFFF" align="left"> <:articleType:> title: 
             </th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <input type="text" name="title" maxlength="<:cfg fields title_size 255:>" size="64" value="<: article title :>">
@@ -59,7 +55,7 @@
             <td bgcolor="#FFFFFF"><:help edit title:> </td>
           </tr>
           <tr> 
-            <th nowrap bgcolor="#FFFFFF" align="left"> Title Image: </th>
+            <th nowrap bgcolor="#FFFFFF" align="left"> Title image: </th>
             <td bgcolor="#FFFFFF" width="100%"> <:titleImages:> (upload this to 
               the /images/titles directory)</td>
             <td bgcolor="#FFFFFF">&nbsp;</td>
@@ -74,17 +70,17 @@
             <td bgcolor="#FFFFFF" width="100%"> 
               <textarea name="body" rows="10" cols="60" wrap="virtual"><: article body :></textarea>
             </td>
-            <td bgcolor="#FFFFFF"><:help body body:> </td>
+            <td bgcolor="#FFFFFF" valign="top"><:help body body:> </td>
           </tr>
           <tr> 
-            <th nowrap bgcolor="#FFFFFF" align="left"> Release Date: </th>
+            <th nowrap bgcolor="#FFFFFF" align="left"> Release date: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <input type="text" name="release" value="<: article release :>" size="10" maxlength="10">
               (dd/mm/yyyy<: ifnew :> - default is today<: or :><: eif :>)</td>
             <td bgcolor="#FFFFFF"><:help edit release:></td>
           </tr>
           <tr> 
-            <th nowrap bgcolor="#FFFFFF" align="left"> Expire Date: </th>
+            <th nowrap bgcolor="#FFFFFF" align="left"> Expiry date: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <input type="text" name="expire" value="<: article expire :>" size="10" maxlength="10">
               (dd/mm/yyyy - <: ifnew :>default is never, <: or :><: eif :>blank 
@@ -92,13 +88,13 @@
             <td bgcolor="#FFFFFF"><:help edit expire:></td>
           </tr>
           <tr> 
-            <th nowrap bgcolor="#FFFFFF" align="left"> Summary Length: </th>
+            <th nowrap bgcolor="#FFFFFF" align="left"> Summary length: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <input type="text" name="summaryLength" size="10" maxlength="10" value="<: article summaryLength :>">
               (in characters - <: ifnew :>default inherited from section<: if 
               art :> or sub-section<: or art :><: eif art :>, <: or :><: eif :> 
               zero for no summary)</td>
-            <td bgcolor="#FFFFFF"><:help edit summaryLength:></td>
+            <td bgcolor="#FFFFFF"><:help edit summary:></td>
           </tr>
           <tr> 
             <th nowrap bgcolor="#FFFFFF" align="left"> Display threshold: </th>
@@ -120,17 +116,17 @@
             <td bgcolor="#FFFFFF"><:help edit listed:></td>
           </tr>
           <tr> 
-            <th nowrap bgcolor="#FFFFFF" align="left">Thumbnails:</th>
+            <th nowrap bgcolor="#FFFFFF" align="left" valign="top">Thumbnail image:</th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <input type=file name=thumbnail>
               <:ifArticle thumbImage:><img src="/images/<:article thumbImage:>"> 
               <input type=checkbox name="remove_thumb">
               Remove<:or:><:eif:></td>
-            <td bgcolor="#FFFFFF"><:help edit thumb:></td>
+            <td bgcolor="#FFFFFF" valign="top"><:help edit thumb:></td>
           </tr>
           <:if Article id:> 
           <tr> 
-            <th nowrap bgcolor="#FFFFFF" align="left"><a name="files"></a>Files:</th>
+            <th nowrap bgcolor="#FFFFFF" align="left" valign="top"><a name="files"></a>Files:</th>
             <td nowrap bgcolor="#FFFFFF" width="100%"> <:if Files:> 
               <table cellpadding="0" cellspacing="0" border="0" bgcolor="#333333">
                 <tr><td> 
@@ -139,24 +135,26 @@
                         <th>Filename</th>
                         <th>Size</th>
                         <th>Type</th>
-                        <th>Download?</th>
-                        <th>Requires Payment</th>
-                </tr>
-                <:iterator begin files:> 
+                        <th>D/l</th>
+                        <th>Pay</th>
+                        <th>User</th>
+                      </tr>
+                      <:iterator begin files:> 
                       <tr bgcolor="#FFFFFF"> 
                         <td><:file displayName:></td>
-                        <td align="center"><:file sizeInBytes:></td>
+                        <td align="center"><:kb file sizeInBytes:></td>
                         <td><:file contentType:></td>
                         <td align=center><:ifFile download:>Yes<:or:>No<:eif:></td>
                         <td align=center><:ifFile forSale:>Yes<:or:>No<:eif:></td>
-                </tr>
-                <:iterator end files:> 
-               </table>
+                        <td align=center><:ifFile requireUser:>Yes<:or:>No<:eif:></td>
+                      </tr>
+                      <:iterator end files:> 
+                    </table>
               </td></tr></table>
-              <p><:or Files:> No files are attached to this article. <:eif Files:> 
+              <:or Files:><p>No files are attached to this article.<:eif Files:> 
                 <a href="<:script:>?filelist=1&id=<:article id:>"><b>Manage Files</b></a></p>
             </td>
-            <td nowrap bgcolor="#FFFFFF"><:help edit files:></td>
+            <td nowrap bgcolor="#FFFFFF" valign="top"><:help edit files:></td>
           </tr>
           <:or Article:><:eif Article:> 
           <tr> 
@@ -167,8 +165,8 @@
               <:image width:> height=<:image height:>> <:iterator separator images:> 
               <hr noshade size="1">
               <: iterator end images :> &nbsp; <br></td>
-            <td align="center" bgcolor="#FFFFFF"><:help edit images:>
-          </td></tr>
+            <td bgcolor="#FFFFFF" valign="top"><:help edit images:> </td>
+          </tr>
         </table>
 </td>
 </tr>
@@ -176,10 +174,14 @@
 
   <p>
     <input type="submit" name="save"
-           value="  <: ifnew :>Add New<: or :>Update<: eif :> <: articleType:>  "></p>
+           value="  <: ifnew :>Add New<: or :>Update<: eif :> <: articleType :>  "></p>
   </form>
-<:if children:> <a name="children"></a> 
-<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" width="100%">
+<:if children:> <:ifEq [article id] 3:> 
+<h2>Catalogs</h2>
+<:or:> 
+<h2><: childtype :></h2>
+<:eif:><a name="children"></a> 
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" width="100%" class="table">
   <tr>
       <td>
       <table border=0 cellpadding="6" cellspacing="1" width="100%">
@@ -218,7 +220,9 @@
 <:or new:>
 <form action="/cgi-bin/admin/add.pl" method="POST">
 <input type=hidden name="parentid" value="<:article id:>">
-<p><input type=submit value="Add <:childtype:>"></p>
+  <p> 
+    <input type=submit value="Add <:ifEq [article id] 3:>Catalog<:or:><: childtype :><:eif:>">
+  </p>
 </form>
 <:eif new:> <:or HaveChildType:> <:eif HaveChildType:>
 <p><font size="-1">BSE Release <:release:></font></p>

@@ -353,7 +353,7 @@ create table site_users (
 
   userId varchar(40) not null,
   password varchar(40) not null,
-  email varchar(40) not null,
+  email varchar(255) not null,
 
   keepAddress integer not null default 1,
   whenRegistered datetime not null,
@@ -388,7 +388,7 @@ create table site_users (
 
   textOnlyMail integer not null,
 
-  title varchar(10),
+  title varchar(127),
   organization varchar(127),
   
   referral integer,

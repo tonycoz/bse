@@ -8,13 +8,13 @@ form {  display: inline}
 li {  padding-bottom: 10px;}
 td.sep {  background: #339; font-size: 0.1em}
 input.float { position: absolute; right: 1em}
-body {  font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 10px; margin-left: 4em; background-color: #CCCCCC}
+body {  font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 10px; margin-left: 4em; background-color: #CCCC99}
 td {  font: 10px Verdana, Arial, Helvetica, sans-serif}
 p {  font: 10px Verdana, Arial, Helvetica, sans-serif}
 select {  font-family: "MS Sans Serif", Verdana, sans-serif; font-size: 12px}
 input {  font-family: "MS Sans Serif", Verdana, sans-serif; font-size: 12px}
 textarea {  font-family: "MS Sans Serif", Verdana, sans-serif; font-size: 12px}
-th {  font-size: 10px; font-weight: bold; background-color: #999999; color: #FFFFFF}
-.table {  background-color: #666666}
+th {  font-size: 10px; font-weight: bold; background-color: #999966; color: #FFFFFF}
+.table {  background-color: #666633}
 h3 {  font-size: 14px}
 h4 {  font-size: 12px}

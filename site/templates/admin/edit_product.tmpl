@@ -3,141 +3,167 @@
 </head>
 <body>
 <h1>Shop Administration</h1>
-<h2><:action:> Product</h2>
-<p><:ifMessage:></p>
+<:ifMessage:>
 <p><b><:message:></b></p>
 <:or:><:eif:> 
-<p>| <a href="/admin/">Admin menu</a> | <a href="<:product admin:>">See 
-  product</a> | <a href="<:script:>">Manage store</a> <:if Product listed:> | 
-  <a href="<:script:>?id=<:product id:>&delete_product=1">Hide</a> |<:or Product:> 
-  | <a href="<:script:>?id=<:product id:>&undelete_product=1">Show</a> |<:eif 
-  Product:> <a href="/cgi-bin/admin/add.pl?id=<:product id:>&_t=steps">Manage 
-  stepparents</a> |<:hiddenNote:></p>
-
-<form action="<:script:>" enctype="multipart/form-data" method="POST"><p><input type=submit name=showimages value="Image Wizard"></p>
-
-<input type="hidden" name="id" value="<:product id:>">
-  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000">
+<p>| <a href="/admin/">Admin menu</a> | <a href="<:product admin:>">See product</a> 
+  | <a href="<:script:>">Manage catalogs</a><:if Product listed:> | <a href="<:script:>?id=<:product id:>&delete_product=1">Hide</a> 
+  |<:or Product:> | <a href="<:script:>?id=<:product id:>&undelete_product=1">Show</a> 
+  |<:eif Product:> <a href="/cgi-bin/admin/add.pl?id=<:product id:>&_t=steps">Manage 
+  step parents</a> |<:hiddenNote:></p>
+<h2>Manage Images</h2>
+<form action="<:script:>" enctype="multipart/form-data" method="POST">
+  <p>
+    <input type=submit name=showimages value="Image Wizard">
+  </p>
+  <h2><:action:> Product</h2>
+  <p>
+    <input type="hidden" name="id" value="<:product id:>">
+  </p>
+  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
     <tr>
       <td>
         <table border=0 cellpadding="6" cellspacing="1" width="100%">
           <tr> 
             <th align="left" bgcolor="#FFFFFF">Title:</th>
             <td bgcolor="#FFFFFF"><:product title:></td>
+            <td nowrap bgcolor="#FFFFFF"><:help product title:></td>
+          </tr>
+          <tr> 
+            <th nowrap align="left" bgcolor="#FFFFFF">Summary:</th>
+            <td nowrap bgcolor="#FFFFFF"><:product summary:></td>
+            <td nowrap bgcolor="#FFFFFF"><:help product summary:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF">Catalog:</th>
             <td bgcolor="#FFFFFF"><:catalogs:></td>
+            <td nowrap bgcolor="#FFFFFF"><:help product catalog:></td>
           </tr>
           <tr> 
-            <th align="left" bgcolor="#FFFFFF" valign="top">Description:</th>
+            <th align="left" bgcolor="#FFFFFF" valign="top"> Body:</th>
             <td bgcolor="#FFFFFF"> 
               <textarea name=body rows=15 cols=60 wrap=virtual><:product body:></textarea>
             </td>
+            <td nowrap bgcolor="#FFFFFF" valign="top"><:help body body:></td>
           </tr>
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF">Lead time:</th>
             <td nowrap bgcolor="#FFFFFF"> 
               <input type="text" name="leadTime" value="<:product leadTime:>" size=5>
               days</td>
+            <td nowrap bgcolor="#FFFFFF"><:help product leadtime:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF">Retail price:</th>
             <td bgcolor="#FFFFFF">$ 
               <input type="text" name="retailPrice" value="<:money retailPrice:>" size=7>
               (0.00)</td>
+            <td nowrap bgcolor="#FFFFFF"><:help product retail:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF">Wholesale price:</th>
             <td bgcolor="#FFFFFF">$ 
               <input type="text" name="wholesalePrice" value="<:money wholesalePrice:>" size=7>
               (0.00)</td>
+            <td nowrap bgcolor="#FFFFFF"><:help product wholesale:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF">GST:</th>
             <td bgcolor="#FFFFFF">$ 
               <input type="text" name="gst" value="<:money gst:>" size=7>
               (0.00)</td>
+            <td nowrap bgcolor="#FFFFFF"><:help product gst:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF">Release date:</th>
             <td bgcolor="#FFFFFF"> 
               <input type="text" name="release" value="<:date product release:>" size=11>
               (dd/mm/yyyy)</td>
+            <td nowrap bgcolor="#FFFFFF"><:help product release:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF">Expiry date:</th>
             <td bgcolor="#FFFFFF"> 
               <input type="text" name="expire" value="<:date product expire:>" size=11>
               (dd/mm/yyyy)</td>
+            <td nowrap bgcolor="#FFFFFF"><:help product expire:></td>
           </tr>
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF">Summary length:</th>
             <td nowrap bgcolor="#FFFFFF"> 
               <input type="text" name="summaryLength" size="10" maxlength="10" value="<:product summaryLength:>">
             </td>
+            <td nowrap bgcolor="#FFFFFF"><:help product summary:></td>
           </tr>
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF">Display threshold:</th>
             <td nowrap bgcolor="#FFFFFF"> 
               <input type="text" name="threshold" size=10 maxlength=10 value="<:product threshold:>">
-	    </td>
+            </td>
+            <td nowrap bgcolor="#FFFFFF"><:help product threshold:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF">Options:</th>
             <td bgcolor="#FFFFFF"> 
               <input type="text" name="options" value="<:product options:>" size=30>
               (<:alloptions:>) </td>
+            <td bgcolor="#FFFFFF"><:help product options:></td>
           </tr>
           <tr> 
-            <th nowrap align="left" bgcolor="#FFFFFF">Thumbnail image:</th>
+            <th nowrap align="left" bgcolor="#FFFFFF" valign="top">Thumbnail image:</th>
             <td nowrap bgcolor="#FFFFFF"> 
               <input type="file" name="thumbnail">
-              <:ifProduct thumbImage:><img src="/images/<:product thumbImage:>">
+              <:ifProduct thumbImage:><img src="/images/<:product thumbImage:>"> 
               <input type=checkbox name="remove_thumb">
               Remove<:or:><:eif:> </td>
+            <td nowrap bgcolor="#FFFFFF" valign="top"><:help product thumb:></td>
           </tr>
           <tr> 
-            <th nowrap align="left" bgcolor="#FFFFFF"><a name="files"></a>Files:</th>
+            <th nowrap align="left" bgcolor="#FFFFFF" valign="top"><a name="files"></a>Files:</th>
             <td nowrap bgcolor="#FFFFFF" width="100%"> <:if Files:> 
               <table cellpadding="0" cellspacing="0" border="0" bgcolor="#333333">
-                <tr>
+                <tr> 
                   <td> 
                     <table cellpadding="5" cellspacing="1" border="0">
                       <tr bgcolor="#FFFFFF"> 
                         <th>Filename</th>
                         <th>Size</th>
                         <th>Type</th>
-                        <th>Download?</th>
+                        <th>D/l</th>
+                        <th>Pay</th>
+                        <th>User</th>
                       </tr>
                       <:iterator begin files:> 
                       <tr bgcolor="#FFFFFF"> 
                         <td><:file displayName:></td>
-                        <td align="center"><:file sizeInBytes:></td>
+                        <td align="center"><:kb file sizeInBytes:></td>
                         <td><:file contentType:></td>
                         <td align=center><:ifFile download:>Yes<:or:>No<:eif:></td>
+                        <td align=center><:ifFile forSale:>Yes<:or:>No<:eif:></td>
+                        <td align=center><:ifFile requireUser:>Yes<:or:>No<:eif:></td>
                       </tr>
                       <:iterator end files:> 
                     </table>
                   </td>
                 </tr>
               </table>
-              <p><:or Files:> No files are attached to this article. <:eif Files:> 
-                <a href="<:script:>?filelist=1&id=<:product id:>"><b>Manage 
-                Files</b></a></p>
+              <:or Files:><p>No files are attached to this article.<:eif Files:> 
+                <a href="<:script:>?filelist=1&id=<:product id:>"><b>Manage Files</b></a></p>
             </td>
+            <td nowrap bgcolor="#FFFFFF" width="100%" valign="top"><:help product 
+              files:></td>
           </tr>
           <tr> 
-            <th valign="top" nowrap bgcolor="#FFFFFF"> Uploaded images: </th>
-            <td align="center" bgcolor="#FFFFFF" width="100%">
-	     <:if Images:> <:iterator begin 
-              images:> <img src="/images/<: image image :>" alt="<:image alt :>" width= 
+            <th valign="top" nowrap bgcolor="#FFFFFF" align="left"> Uploaded images: 
+            </th>
+            <td align="center" bgcolor="#FFFFFF" width="100%"> <:if Images:> <:iterator 
+              begin images:> <img src="/images/<: image image :>" alt="<:image alt :>" width= 
               <:image width:> height=<:image height:>> <:iterator separator images:> 
               <hr noshade size="1">
-              <: iterator end images :> &nbsp; 
-	     <:or Images:>No images<:eif Images:>
-	    </td>
-	  </tr>
+              <: iterator end images :> &nbsp; <:or Images:>No images<:eif Images:> 
+            </td>
+            <td valign="top" bgcolor="#FFFFFF" width="100%"><:help product images:></td>
+          </tr>
         </table>
       </td>
     </tr>
