@@ -123,4 +123,7 @@ site/templates/search_base.tmpl
 site/templates/shop_help.tmpl
 site/templates/shop_sect.tmpl
 site/templates/shopitem.tmpl
+site/templates/common/rssbase.tmpl
+site/templates/include/rsslinks.tmpl
+site/templates/include/rssitems.tmpl
 site/util/initial.pl
