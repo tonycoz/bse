@@ -41,6 +41,7 @@ sub single
 				dropIndex => $dbh->prepare('delete from searchindex'),
 				insertIndex => $dbh->prepare('insert searchindex values(?, ?, ?, ?)'),
 				searchIndex => $dbh->prepare('select * from searchindex where id = ?'),
+				searchIndexWC => $dbh->prepare('select * from searchindex where id like ?'),
 
 				Products=> $dbh->prepare('select article.*, product.* from article, product where id = articleId'),
 				addProduct => $dbh->prepare('insert product values(?,?,?,?,?,?)'),

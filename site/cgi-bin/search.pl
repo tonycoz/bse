@@ -6,7 +6,7 @@ use lib 'modules';
 use Articles;
 use DatabaseHandle;
 use Squirrel::Template;
-use Constants qw($TMPLDIR @SEARCH_EXCLUDE @SEARCH_INCLUDE $SEARCH_ALL);
+use Constants qw(:search);
 use Carp;
 
 my $results_per_page = 10;
@@ -159,28 +159,55 @@ sub getSearchResult {
   #$words = lc $words;
   $words =~ s/^\s+|\s+$//g;
 
+  # array of [ term, unquoted ]
   my @terms;
-  while ($words =~ /\G\s*"([^"]+)"/gc
-	 || $words =~ /\G\s*'([^']+)'/gc
-	 || $words =~ /\G\s*(\S+)/gc) {
-    push(@terms, $1);
+ TERMS: {
+    if ($words =~ /\G\s*"([^"]+)"/gc
+	|| $words =~ /\G\s*'([^']+)'/gc) {
+      push(@terms, [ $1, 0 ]);
+      next TERMS;
+    }
+    if ($words =~ /\G\s*(\S+)/gc) {
+      push(@terms, [ $1, 1 ]);
+      next TERMS;
+    }
   }
 
   # if the user entered a plain multi-word phrase
   if ($words !~ /["']/ && $words =~ /\s/) {
     # treat it as if they entered it in quotes as well
     # giving articles with that phrase an extra score
-    push(@terms, $words);
+    push(@terms, [ $words, 0 ]);
+  }
+
+  # disable wildcarding for short terms
+  for my $term (@terms) {
+    if ($term->[1] && length($term->[0]) < $SEARCH_WILDCARD_MIN) {
+      $term->[1] = 0;
+    }
   }
 
   my %scores;
-  my $sth = $dh->{searchIndex};
+  my $sth;
   my %terms;
   for my $term (@terms) {
-    $sth->execute($term)
-      or die "Could not execute search: ",$sth->errstr;
+    if ($SEARCH_AUTO_WILDCARD && $term->[1]) {
+      $sth = $dh->{searchIndexWC};
+      $sth->execute($term->[0]."%")
+	or die "Could not execute search: ",$sth->errstr;
+	
+    }
+    else {
+      $sth = $dh->{searchIndex};
+      $sth->execute($term->[0])
+	or die "Could not execute search: ",$sth->errstr;
+    }
 
     while (my $row = $sth->fetchrow_arrayref) {
+      # skip any results that contain spaces if our term doesn't
+      # contain spaces.  This loses wildcard matches which hit
+      # phrase entries
+      next if $term->[0] !~ /\s/ && $row->[0] =~ /\s/;
       my @ids = split ' ', $row->[1];
       my @scores = split ' ', $row->[3];
       if ($section) {
