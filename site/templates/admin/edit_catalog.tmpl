@@ -134,23 +134,31 @@
     <tr>
       <td>
       <table border=0 cellpadding="6" cellspacing="1">
-        <tr><th>Title</th><th>Summary</th><th>Listed</th><th>&nbsp;</th></tr>
-<:iterator begin children:>
+        <tr>
+          <th>Title</th>
+          <th>Summary</th>
+          <th>Listed</th>
+          <th>&nbsp;</th>
+        </tr>
+        <tr> 
+          <td colspan="4" bgcolor="#FFFFFF">Reorder child articles: <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=title&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">by 
+            title</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=date&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">by 
+            date</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&reverse=1&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">reverse 
+            order</a></td>
+        </tr>
+        <:iterator begin children:> 
         <tr bgcolor="#FFFFFF"> 
           <td><a href="<:child admin:>"><:child title:></a></td>
           <td><: summary child body :></td>
           <td align="center"><: is child listed :></td>
-          <td nowrap> <: edit child Edit :> 
-            <:if NextChild:> <a href="/cgi-bin/admin/move.pl?id=<:child id:>&d=down&edit=1&all=1"> 
+          <td nowrap> <: edit child Edit :> <:if NextChild:> <a href="/cgi-bin/admin/move.pl?id=<:child id:>&d=down&edit=1&all=1"> 
             <img src="/images/admin/move_down.gif" width="17" height="13" alt="Move Down" border="0"></a> 
             <:or NextChild:> <:eif NextChild:> <:if PrevChild:> <a href="/cgi-bin/admin/move.pl?id=<:child id:>&d=up&edit=1&all=1"> 
             <img src="/images/admin/move_up.gif" width="17" height="13" alt="Move Up" border="0"></a> 
-            <:or PrevChild:> <:eif PrevChild:> 
-</td>
-</tr>
-<:iterator separator children:>
-<:iterator end children:>
-</table>
+            <:or PrevChild:> <:eif PrevChild:> </td>
+        </tr>
+        <:iterator separator children:> <:iterator end children:> 
+      </table>
 </td>
 </tr>
 </table>
@@ -167,40 +175,48 @@
 
 <h2><a name="step"></a>Step Products</h2>
 <table border="0" cellspacing="0" cellpadding="0" bgcolor='#000000'>
-<tr><td><table border="0" cellpadding="6" cellspacing="1" bgcolor='#FFFFFF'>
-<tr>
+<tr><td>
+      <table border="0" cellpadding="6" cellspacing="1">
+        <tr>
   <th>Id</th>
   <th>Title</th>
   <th>Release</th>
   <th>Expire</th>
-  <th>&nbsp</th>
+  <th>&nbsp;</th>
 </tr>
 <:if Kids:>
 <form action="<:script:>" method="POST"><input type="hidden" name="id" value="<:article id:>">
 <:iterator begin kids:>
-<tr>
-  <td><:kid id:></td>
-  <td><:kid title:></td>
-  <td><:ifStepKid:><input type="text" name="release_<:stepkid childId:>" value="<:date stepkid release:>" size=10><:or:>&nbsp;<:eif:></td>
-  <td><:ifStepKid:><input type="text" name="expire_<:stepkid childId:>" value="<:date stepkid expire:>" size=10><:or:>&nbsp;<:eif:></td>
-  <td><:movestepkid:> <b><:ifStepKid:><a href="<:script:>?del_stepkid=1&id=<:stepkid parentId:>&stepkid=<:stepkid childId:>">Delete</a><:or:><:eif:> <:edit kid Edit:></b></td>
+        <tr bgcolor="#FFFFFF"> 
+          <td><:kid id:></td>
+          <td><:kid title:></td>
+          <td><:ifStepKid:> 
+            <input type="text" name="release_<:stepkid childId:>" value="<:date stepkid release:>" size=10><:or:>&nbsp;<:eif:></td>
+          <td><:ifStepKid:> 
+            <input type="text" name="expire_<:stepkid childId:>" value="<:date stepkid expire:>" size=10><:or:>&nbsp;<:eif:></td>
+          <td><:movestepkid:> <b><:ifStepKid:><a href="<:script:>?del_stepkid=1&id=<:stepkid parentId:>&stepkid=<:stepkid childId:>">Delete</a><:or:><:eif:> 
+            <:edit kid Edit:></b></td>
 </tr>
 <:iterator end kids:>
-<tr>
-  <td colspan="5" align="center"><input type="submit" name="save_stepkids" value="Save Changes"></td>
+        <tr bgcolor="#FFFFFF"> 
+          <td colspan="5" align="center"> 
+            <input type="submit" name="save_stepkids" value="Save Changes"></td>
 </tr>
 <:or Kids:>
-<tr>
-  <td colspan="5" align="center">No children</td>
+        <tr bgcolor="#FFFFFF"> 
+          <td colspan="5" align="center">No children</td>
 </tr>
 <:eif Kids:>
 <:if Possibles:>
 <form action="<:script:>"><input type="hidden" name="id" value="<:article id:>">
-<tr>
-  <td colspan="2"><:possible_stepkids:></td>
-  <td><input type="text" name="release" value="01/01/2000" size="10"></td>
-  <td><input type="text" name="expire" value="31/12/2999" size="10"></td>
-  <td><input type="submit" name="add_stepkid" value="Add Stepkid"></td>
+          <tr bgcolor="#FFFFFF"> 
+            <td colspan="2"><:possible_stepkids:></td>
+            <td> 
+              <input type="text" name="release" value="01/01/2000" size="10"></td>
+            <td> 
+              <input type="text" name="expire" value="31/12/2999" size="10"></td>
+            <td> 
+              <input type="submit" name="add_stepkid" value="Add Stepkid"></td>
 </tr>
 </form>
 <:or Possibles:><:eif Possibles:>
