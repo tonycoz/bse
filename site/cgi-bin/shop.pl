@@ -1,16 +1,16 @@
 #!/usr/bin/perl -w
 use strict;
-use lib 'modules';
+use FindBin;
+use lib "$FindBin::Bin/modules";
 use CGI ':standard';
 use CGI::Carp 'fatalsToBrowser';
 use Products;
 use Product;
-use Constants qw(:shop $TMPLDIR %EXTRA_TAGS $CGI_URI);
+use Constants qw(:shop :session $TMPLDIR %EXTRA_TAGS $CGI_URI);
 use Squirrel::Template;
-use Apache::Session;
 use Squirrel::ImageEditor;
 use CGI::Cookie;
-use Apache::Session::MySQL;
+require $SESSION_REQUIRE;
 
 my $subject = $SHOP_MAIL_SUBJECT;
 
@@ -56,7 +56,7 @@ my %session;
 
 my $dh = BSE::DB->single;
 eval {
-  tie %session, 'Apache::Session::MySQL', $sessionid,
+  tie %session, $SESSION_CLASS, $sessionid,
     {
      Handle=>$dh->{dbh},
      LockHandle=>$dh->{dbh}
@@ -65,7 +65,7 @@ eval {
 if ($@ && $@ =~ /Object does not exist/) {
   # try again
   undef $sessionid;
-  tie %session, 'Apache::Session::MySQL', $sessionid,
+  tie %session, $SESSION_CLASS, $sessionid,
     {
      Handle=>$dh->{dbh},
      LockHandle=>$dh->{dbh}
@@ -97,6 +97,7 @@ my %steps =
    checkout=>\&checkout,
    recalc=>\&recalc,
    purchase=>\&purchase,
+   prePurchase=>\&prePurchase,
   );
 
 for my $key (keys %steps) {
@@ -221,6 +222,11 @@ sub show_cart {
      },
      item => 
      sub { $cart[$item_index]{$_[0]} || $cart_prods[$item_index]{$_[0]} },
+     extended =>
+     sub { 
+       my $what = $_[0] || 'retailPrice';
+       $cart[$item_index]{units} * $cart_prods[$item_index]{$what};
+     },
      index => sub { $item_index },
      total => sub { total(\@cart) },
      money =>
@@ -304,6 +310,11 @@ sub checkout {
      },
      item => 
      sub { $cart[$item_index]{$_[0]} || $cart_prods[$item_index]{$_[0]} },
+     extended =>
+     sub { 
+       my $what = $_[0] || 'retailPrice';
+       $cart[$item_index]{units} * $cart_prods[$item_index]{$what};
+     },
      index => sub { $item_index },
      total => sub { total(\@cart) },
      money =>
@@ -323,6 +334,174 @@ sub checkout {
     );
 
   page('checkout.tmpl', \%acts);
+}
+
+# this can be used instead of the purchase page to work in 2 steps:
+#  - collect shipping details
+#  - collect CC details
+# the collection of the CC details should go to another script that 
+# processes the CC information and then displays the order complete
+# information
+# BUG!!: this duplicates the code in purchase() a great deal
+sub prePurchase {
+  my @required = 
+    qw(name1 name2 address city postcode state country);
+  for my $field (@required) {
+    defined(param($field)) && length(param($field))
+      or return checkout("Field $field is required", 1);
+  }
+  defined(param('email')) && param('email') =~ /.\@./
+    or return checkout("Please enter a valid email address", 1);
+
+  use Orders;
+  use Order;
+  use OrderItems;
+  use OrderItem;
+
+  # map some form fields to order field names
+  my %field_map = 
+    (
+     name1 => 'delivFirstName',
+     name2 => 'delivLastName',
+     address => 'delivStreet',
+     city => 'delivSuburb',
+     postcode => 'delivPostCode',
+     state => 'delivState',
+     country => 'delivCountry',
+     email => 'emailAddress',
+     cardHolder => 'ccName',
+     cardType => 'ccType',
+    );
+  # paranoia, don't store these
+  my %nostore =
+    (
+     cardNumber => 1,
+     cardExpiry => 1,
+    );
+  my %order;
+  my @cart = @{$session{cart}};
+  @cart or return show_cart('You have no items in your shopping cart');
+
+  # so we can quickly check for columns
+  my @columns = Order->columns;
+  my %columns; 
+  @columns{@columns} = @columns;
+
+  for my $field (param()) {
+    $order{$field_map{$field} || $field} = param($field)
+      unless $nostore{$field};
+  }
+
+  my $ccNumber = param('cardNumber');
+  my $ccExpiry = param('cardExpiry');
+
+  use Digest::MD5 'md5_hex';
+  $ccNumber =~ tr/0-9//cd;
+  $order{ccNumberHash} = md5_hex($ccNumber);
+  $order{ccExpiryHash} = md5_hex($ccExpiry);
+
+  # work out totals
+  $order{total} = 0;
+  $order{gst} = 0;
+  $order{wholesale} = 0;
+  my @products;
+  my $today = epoch_to_sql(time);
+  for my $item (@cart) {
+    my $product = Products->getByPkey($item->{productId});
+    # double check that it's still a valid product
+    if (!$product) {
+      return show_cart("Product $item->{productId} not found");
+    }
+    elsif ($product->{release} gt $today || $product->{expire} lt $today
+	   || !$product->{listed}) {
+      return show_cart("Sorry, '$product->{title}' is no longer available");
+    }
+    push(@products, $product); # used in page rendering
+    @$item{qw/price wholesalePrice gst/} = 
+      @$product{qw/retailPrice wholesalePrice gst/};
+    $order{total} += $item->{price} * $item->{units};
+    $order{wholesale} += $item->{wholesalePrice} * $item->{units};
+    $order{gst} += $item->{gst} * $item->{units};
+  }
+  $order{orderDate} = $today;
+
+  # blank anything else
+  for my $column (@columns) {
+    defined $order{$column} or $order{$column} = '';
+  }
+  # make sure the user can't set these behind our backs
+  $order{filled} = 0;
+  $order{paidFor} = 0;
+  
+  # this should be hard to guess
+  $order{randomId} = md5_hex(time().rand().{}.$$);
+
+  # load up the database
+  my @data = @order{@columns};
+  shift @data; # lose the dummy id
+  my $order = Orders->add(@data)
+    or die "Cannot add order";
+  my @items;
+  my @item_cols = OrderItem->columns;
+  for my $row (@cart) {
+    $row->{orderId} = $order->{id};
+    my @data = @$row{@item_cols};
+    shift @data;
+    push(@items, OrderItems->add(@data));
+  }
+
+  my $item_index = -1;
+  my @options;
+  my $option_index;
+  my %acts;
+  %acts =
+    (
+     iterate_items_reset => sub { $item_index = -1; },
+     iterate_items => 
+     sub { 
+       if (++$item_index < @items) {
+	 $option_index = -1;
+	 @options = cart_item_opts($items[$item_index], 
+				   $products[$item_index]);
+	 return 1;
+       }
+       return 0;
+     },
+     item=> sub { CGI::escapeHTML($items[$item_index]{$_[0]}); },
+     product => sub { CGI::escapeHTML($products[$item_index]{$_[0]}) },
+     extended =>
+     sub { 
+       my $what = $_[0] || 'retailPrice';
+       $items[$item_index]{units} * $items[$item_index]{$what};
+     },
+     order => sub { CGI::escapeHTML($order->{$_[0]}) },
+     money =>
+     sub {
+       my ($func, $args) = split ' ', $_[0], 2;
+       $acts{$func} || return "<: money $_[0] :>";
+       return sprintf("%.02f", $acts{$func}->($args)/100);
+     },
+     old => sub { '' },
+     _format =>
+     sub {
+       my ($value, $fmt) = @_;
+       if ($fmt =~ /^m(\d+)/) {
+	 return sprintf("%$1s", sprintf("%.2f", $value/100));
+       }
+       elsif ($fmt =~ /%/) {
+	 return sprintf($fmt, $value);
+       }
+     },
+     iterate_options_reset => sub { $option_index = -1 },
+     iterate_options => sub { ++$option_index < @options },
+     option => sub { CGI::escapeHTML($options[$option_index]{$_[0]}) },
+     ifOptions => sub { @options },
+     options => sub { nice_options(@options) },
+    );
+  # this should be reset once the order has been paid
+  $session{orderPayment} = $order->{id};
+  
+  page('checkoutcard.tmpl', \%acts);
 }
 
 # the real work
@@ -415,6 +594,12 @@ sub purchase {
   for my $column (@columns) {
     defined $order{$column} or $order{$column} = '';
   }
+  # make sure the user can't set these behind our backs
+  $order{filled} = 0;
+  $order{paidFor} = 0;
+
+  # this should be hard to guess
+  $order{randomId} = md5_hex(time().rand().{}.$$);
 
   # load up the database
   my @data = @order{@columns};
@@ -449,6 +634,11 @@ sub purchase {
      },
      item=> sub { CGI::escapeHTML($items[$item_index]{$_[0]}); },
      product => sub { CGI::escapeHTML($products[$item_index]{$_[0]}) },
+     extended =>
+     sub { 
+       my $what = $_[0] || 'retailPrice';
+       $items[$item_index]{units} * $items[$item_index]{$what};
+     },
      order => sub { CGI::escapeHTML($order->{$_[0]}) },
      money =>
      sub {
@@ -640,6 +830,12 @@ fields for this item.
 
 The numeric index of the current item.
 
+=item extended [<field>]
+
+The "extended price", the product of the unit cost and the number of
+units for the current item in the cart.  I<field> defaults to the
+price of the product.
+
 =item money I<which> <field>
 
 Formats the given field as a money value (without a currency symbol.)
@@ -777,6 +973,10 @@ The entered expiry date for the user's credit card.
 
 =head2 Order fields
 
+These names can be used with the <: order ... :> tag.
+
+Monetary values should typically be used with <:money order ...:>
+
 =over 4
 
 =item id
@@ -840,6 +1040,41 @@ GST (in Australia) payable on the order, if you entered GST for the products.
 
 When the order was made.
 
+=item filled
+
+Whether or not the order has been filled.  This can be used with the
+order_filled target in shopadmin.pl for tracking filled orders.
+
+=item whenFilled
+
+The time and date when the order was filled.
+
+=item whoFilled
+
+The user who marked the order as filled.
+
+=item paidFor
+
+Whether or not the order has been paid for.  This can be used with a
+custom purchasing handler to mark the product as paid for.  You can
+then filter the order list to only display paid for orders.
+
+=item paymentReceipt
+
+A custom payment handler can fill this with receipt information.
+
+=item randomId
+
+Generated by the prePurchase target, this can be used as a difficult
+to guess identifier for orders, when working with custom payment
+handlers.
+
+=item cancelled
+
+This can be used by a custom payment handler to mark an order as
+cancelled if the user starts processing an order without completing
+payment.
+
 =back
 
 =head2 Order item fields
@@ -869,6 +1104,11 @@ The wholesale price for the product.
 =item gst
 
 The gst for the product.
+
+=item options
+
+A comma separated list of options specified for this item.  These
+correspond to the option names in the product.
 
 =back
 
