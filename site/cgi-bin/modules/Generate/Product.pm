@@ -5,7 +5,7 @@ use Products;
 use Images;
 use base qw(Generate::Article);
 use Squirrel::Template;
-use Constants qw(:shop $TMPLDIR %TEMPLATE_OPTS $URLBASE $CGI_URI $ADMIN_URI);
+use Constants qw(:shop $TMPLDIR %TEMPLATE_OPTS $CGI_URI $ADMIN_URI);
 
 sub edit_link {
   my ($self, $id) = @_;

@@ -30,7 +30,8 @@ sub send {
   my $cfg = $self->{cfg};
   my $sendmail = $cfg->entry('mail', 'sendmail') || '/usr/lib/sendmail';
   my $opts = $cfg->entry('mail', 'sendmail_opts') || '-t -oi';
-  open MAIL, "| $sendmail $opts"
+  # redirect to /dev/null so we don't keep stdout open in a CGI
+  open MAIL, "| $sendmail $opts >/dev/null"
     or return $self->_error("Cannot open pipe to sendmail");
   print MAIL <<EOS;
 From: $args{from}

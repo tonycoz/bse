@@ -192,7 +192,7 @@ sub _embed_low {
 	require $genname;
       };
       $@ and return "** Cannot load generator $embed->{generator} for article $id **";
-      $gen = $embed->{generator}->new(admin=>$self->{admin});
+      $gen = $embed->{generator}->new(admin=>$self->{admin}, cfg=>$self->{cfg});
     }
 
     # a rare appropriate use of local
@@ -448,13 +448,12 @@ sub baseActs {
     my $data = $cfg->entryVar('extra tags', $key);
     $extras{$key} = sub { $data };
   }
-
   return 
     (
      %extras,
 
      BSE::Custom->base_tags($articles, $acts, $article, $embedded),
-     BSE::Util::Tags->static($acts),
+     BSE::Util::Tags->static($acts, $self->{cfg}),
      # for embedding the content from children and other sources
      ifEmbedded=> sub { $embedded },
      embed => sub {

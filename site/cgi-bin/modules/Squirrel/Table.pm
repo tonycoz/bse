@@ -10,6 +10,9 @@ use BSE::DB;
 
 my $dh = BSE::DB->single;
 
+my %query_cache;
+my $cache_queries;
+
 # no caching is performed if this is zero
 my $cache_timeout = 2; # seconds
 
@@ -70,8 +73,21 @@ sub getNext {
 
 sub getByPkey {
   my ($self, @values) = @_;
+
+  my $class = ref($self) || $self;
+  my $key = "$class getByPkey ".join("\x01", @values);
+  my $desc = "getByPkey valuesquery";
+  if ($cache_queries) {
+    #print STDERR "Checking for $desc\n";
+    if (exists $query_cache{$key}) {
+     # print STDERR "Found query getBy @query\n";
+      return $query_cache{$key}; 
+    }
+  }
+
+  my $result;
   if (ref($self)) {
-    return $self->{coll}{join "", @values};
+    $result = $self->{coll}{join "", @values};
   }
   else {
     # try to get row by key
@@ -85,12 +101,15 @@ sub getByPkey {
       or confess "Cannot execute $member handle from DatabaseHandle:", DBI->errstr;
     # should only be one row
     if (my $row = $sth->fetchrow_arrayref) {
-      return $rowClass->new(@$row);
+      $result = $rowClass->new(@$row);
     }
     else {
-      return undef;
+      $result = undef;
     }
   }
+  $query_cache{$key} = $result if $cache_queries;
+
+  return $result;
 }
 
 sub add {
@@ -121,6 +140,16 @@ sub getAll {
   return wantarray ? @values : \@values;
 }
 
+sub caching {
+  my ($self, $value) = @_;
+
+  print STDERR "Setting caching to $value\n";
+  $cache_queries = $value;
+  unless ($value) {
+    %query_cache = ();
+  }
+}
+
 # column grep
 sub getBy {
   my ($self, @query) = @_;
@@ -129,6 +158,17 @@ sub getBy {
   
   @query % 2 == 0
     or confess "Odd number of arguments supplied to getBy()";
+
+  my $class = ref($self) || $self;
+  my $key = "$class getBy ".join("\x01", @query);
+  my $desc = "getBy @query";
+  if ($cache_queries) {
+    #print STDERR "Checking for $desc\n";
+    if (my $entry = $query_cache{$key}) {
+     # print STDERR "Found query getBy @query\n";
+      return wantarray ? @$entry : $entry->[0]; 
+    }
+  }
 
   while (my ($col, $val) = splice(@query, 0, 2)) {
     push(@cols, $col);
@@ -160,17 +200,30 @@ sub getBy {
     }
   }
 
+  if ($cache_queries) {
+    #print STDERR "Saving $desc\n";
+    $query_cache{$key} = \@results;
+  }
+
   return wantarray ? @results : $results[0];
 }
 
 sub getSpecial {
   my ($self, $name, @args) = @_;
 
-  unless (ref $self) {
-    $self = $self->new(preload=>0);
+  my $class = ref($self) || $self;
+  my $key = "$class getSpecial $name ".join("\x01", @args);
+  my $desc = "getSpecial $name @args";
+  if ($cache_queries) {
+    #print STDERR "Checking for $desc\n";
+    if (my $entry = $query_cache{$key}) {
+     # print STDERR "Found query getBy @query\n";
+      return wantarray ? @$entry : $entry; 
+    }
   }
+
   my $rowClass = $self->rowClass;
-  my $sqlname = ref($self) . "." . $name;
+  my $sqlname = $class . "." . $name;
   my $sth = $dh->stmt($sqlname)
     or confess "No $sqlname in database object";
   $sth->execute(@args)
@@ -178,6 +231,11 @@ sub getSpecial {
   my @results;
   while (my $row = $sth->fetchrow_arrayref) {
     push(@results, $rowClass->new(@$row));
+  }
+
+  if ($cache_queries) {
+    #print STDERR "Saving $desc\n";
+    $query_cache{$key} = \@results;
   }
 
   wantarray ? @results : \@results;

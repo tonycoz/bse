@@ -31,7 +31,7 @@ sub _get_parms {
 }
 
 sub static {
-  my ($class, $acts) = @_;
+  my ($class, $acts, $cfg) = @_;
 
   return
     (
@@ -92,6 +92,14 @@ sub static {
 	 or die; # leaves if in place
        $left =~ $right;
      },
+     cfg =>
+     sub {
+       my ($section, $key) = split ' ', $_[0];
+       $cfg or return '';
+       my $value = $cfg->entry($section, $key);
+       defined $value or $value = '';
+       $value;
+     },
      _format => 
      sub {
        my ($value, $fmt) = @_;
@@ -109,12 +117,9 @@ sub static {
 sub basic {
   my ($class, $acts, $cgi, $cfg) = @_;
 
-  print STDERR "Have config\n" if $cfg;
-  print STDERR "No config ",caller(),"\n" unless $cfg;
-  
   return
     (
-     $class->static($acts),
+     $class->static($acts, $cfg),
      script =>
      sub {
        $ENV{SCRIPT_NAME}
@@ -124,15 +129,6 @@ sub basic {
        $cgi or return '';
        my @value = $cgi->param($_[0]);
        CGI::escapeHTML("@value");
-     },
-     cfg =>
-     sub {
-       my ($section, $key) = split ' ', $_[0];
-       $cfg or return '';
-       print STDERR "Checking for >$section< >$key<\n";
-       my $value = $cfg->entry($section, $key);
-       defined $value or $value = '';
-       $value;
      },
     );
 }
@@ -286,7 +282,7 @@ sub admin {
 
 #       qq!<a href="/admin/help/$file.html#$entry" target="_blank"><img src="/images/admin/help.gif" width="16" height="16" border="0" /></a>!;
        return <<HTML;
-<a href="#" onClick="window.open('/admin/help/$file.html#$entry', 'adminhelp', 'width=400,height=300,location=no,status=no,menubar=no,scrollbars=yes'); return 0;"><img src="/images/admin/help.gif" width="16" height="16" border="0" alt="help" /></a>
+<a href="#" onClick="window.open('/admin/help/$file.html#$entry', 'adminhelp', 'width=400,height=300,location=no,status=no,menubar=no,scrollbars=yes'); return 0;"><img src="/images/admin/help.gif" width="16" height="16" border="0" alt="help on $entry" /></a>
 HTML
      },
     );

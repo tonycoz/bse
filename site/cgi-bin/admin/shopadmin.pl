@@ -17,7 +17,7 @@ use OrderItem;
 use Constants qw($TMPLDIR);
 use Squirrel::Template;
 use Squirrel::ImageEditor;
-use Constants qw(:shop $SHOPID $PRODUCTPARENT $SECURLBASE 
+use Constants qw(:shop $SHOPID $PRODUCTPARENT 
                  $SHOP_URI $CGI_URI $IMAGES_URI $AUTO_GENERATE);
 use Images;
 use Articles;
@@ -27,6 +27,7 @@ use BSE::Session;
 use BSE::Util::Tags;
 
 my $cfg = BSE::Cfg->new();
+my $securlbase = $cfg->entryVar('site', 'secureurl');
 my %session;
 BSE::Session->tie_it(\%session, $cfg);
 
@@ -406,7 +407,7 @@ sub save_product {
     }
     else {
       # update the link info
-      $product->{link} = $SECURLBASE . $SHOP_URI . '/shop'.$product->{id}.'.html';
+      $product->{link} = $securlbase . $SHOP_URI . '/shop'.$product->{id}.'.html';
       $product->{admin} = "$CGI_URI/admin/admin.pl?id=$product->{id}";
       $product->save();
 

@@ -2,42 +2,72 @@
 use strict;
 use FindBin;
 use lib "$FindBin::Bin/../modules";
-use Constants qw($UN $PW $DB $SHOP_SENDMAIL $SHOP_FROM $URLBASE $DATA_EMAIL
-                 $MYSQLDUMP);
+use Constants qw($UN $PW $DSN $SHOP_FROM);
+use BSE::Mail;
+use BSE::Cfg;
+my $cfg = BSE::Cfg->new;
 
-my $email = $DATA_EMAIL;
+my $email = $cfg->entryIfVar('datadump', 'to') || $SHOP_FROM;
+my $urlbase = $cfg->entryVar('site', 'url');
 my $opts = '-t';
-my $dumper = $MYSQLDUMP;
+my $dumper = $cfg->entryIfVar('datadump', 'mysqldump') || 'mysqldump';
 $|=1;
-print "Content-Type: text/plain\n\n";
+print "Content-Type: text/html\n\n";
 my $user = $UN;
 my $pass = $PW;
-my $data = $DB;
+my $data;
+my $host;
+my $port;
+if ($DSN =~ /^dbi:mysql:(\w+)$/i) {
+  $data = $1;
+}
+elsif ($DSN =~ /^dbi:mysql:(.*)$/i) {
+  my @entries = split /;/, $1;
+  for my $entry (@entries) {
+    if ($entry =~ /^hostname=(.+)$/i) {
+      $host = $1;
+    }
+    elsif ($entry =~ /^database=(.+)$/i) {
+      $data = $1;
+    }
+    elsif ($entry =~ /^port=(.+)$/i) {
+      $port = $1;
+    }
+  }
+  unless ($data) {
+    print "Sorry, could not find database in ",CGI::escapeHTML($DSN),"<br>\n";
+    exit;
+  }
+}
+else {
+  print "Sorry, this doesn't appear to be a mysql database<br>\n";
+  exit;
+}
 for ($user, $pass, $data) {
   s/(["\\`\$])/\\$1/;
 }
-my $cmd = qq!$dumper "-u$user" "-p$pass" "$data"!;
+my $cmd = qq!$dumper !;
+$cmd .= qq!-P$port ! if $port;
+$cmd .= qq!-h$host ! if $host;
+$cmd .= qq!"-u$user" "-p$pass" "$data"!;
 open DUMP, "$cmd 2>&1 |"
   or do { print "Cannot open mysqldump: $!\n"; exit };
 
-# redirect to /dev/null so that the server sees STDOUT close
-# as soon as possible
-open EMAIL, "| $SHOP_SENDMAIL $opts >/dev/null"
-  or do { print "Cannot open sendmail: $!\n"; exit };
 my $boundary = "============_".time."_==========";
-print EMAIL <<EOS;
-To: $email
-From: $SHOP_FROM
+my $headers = <<EOS;
 Content-Type: multipart/mixed;
     boundary="$boundary"
 MIME-Version: 1.0
+EOS
+
+my $body = <<EOS;
 
 This is a multipart message in MIME format
 
 --$boundary
 Content-Type: text/plain
 
-This message contains a database dump of the BSE site $URLBASE.
+This message contains a database dump of the BSE site $urlbase.
 
 If you did not request this dump you may want to change the 
 administration password for your site.
@@ -48,19 +78,25 @@ Content-Disposition: attachment; filename=bsedump.txt
 
 EOS
 while (<DUMP>) {
-print EMAIL;
+  $body .= $_;
 }
-print EMAIL <<EOS;
+
+$body .= <<EOS;
 --$boundary--
 
 EOS
-unless (close EMAIL) {
-  print "There may have been a problem sending the email, please check the error log\n";
-}
+
+my $mailer = BSE::Mail->new(cfg=>$cfg);
+$mailer->send(to=>$email,
+	      from=>$SHOP_FROM,
+	      headers=>$headers,
+	      body=>$body,
+	      subject=>$cfg->entry('datadump') || "Data dump")
+  or print "Error sending email: ",CGI::escapeHTML($mailer->errstr),"<br>\n";
 unless (close DUMP) {
-  print "There may have been a problem retrieving the dump, please check the error log\n";
+  print "There may have been a problem retrieving the dump, please check the error log<br>";
 }
-print "Database dump for $URLBASE sent to $email\n";
+print "Database dump for $urlbase sent to $email\n";
 
 __END__
 

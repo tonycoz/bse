@@ -7,16 +7,15 @@
   <link rel="stylesheet" type="text/css" href="/css/admin.css" />
 
 </head>
-
 <body>
 
 <h1><:cfg site name:> Send Subscription</h1>
 
 <:ifMessage:><p><b><:message:></b></p><:or:><:eif:>
 
-<p>| <a href="/admin/" target="_top"><b>Admin menu</b></a> | <a href="<:script:>" target="_top"><b>Subscriptions List</b></a> |</p>
+<p>| <a href="/admin/"><b>Admin menu</b></a> | <a href="<:script:>" target="_top"><b>Subscriptions List</b></a> |</p>
 
-<form action="<:script:>" method="POST" target="_self"><input type="hidden" name="id" value="<:subscription id:>">
+<form action="<:script:>" method="POST" name="sub" target="preview"><input type="hidden" name="id" value="<:subscription id:>">
 <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000">
     <tr>
       <td>
@@ -43,7 +42,7 @@
     </tr>
     <tr bgcolor="#FFFFFF">
       <th>Archive:</th>
-      <td><input type="checkbox" name="archive" value="1"<:ifOld archive:> checked<:or:><:eif:> /> <:help subssend archive:> </td>
+      <td><input type="hidden" name="have_archive_check" value="1"><input type="checkbox" name="archive" value="1"<:ifOld archive:> checked<:or:><:eif:> /> <:help subssend archive:> </td>
     </tr>
     <tr bgcolor="#FFFFFF">
       <th>Keywords:</th>
@@ -62,7 +61,9 @@
 </td>
 </tr>
 </table>
-<input type="submit" name="send" value="Send Subscription"> <input type="button" value="HTML Preview" onClick=""> <input type="button" value="Text Preview" onClick="">
+<input type="submit" name="send" value="Send Subscription"> <:help subssend send:>
+<input type="submit" name="html_preview" value="HTML Preview"> <:help subssend html_preview:>
+<input type="submit" name="text_preview" value="Text Preview"> <:help subssend text_preview:>
 </form>
 
 </body>

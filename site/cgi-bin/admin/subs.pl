@@ -28,6 +28,8 @@ my %steps =
    start_send => \&start_send,
    send_form => \&send_form,
    html_preview => \&html_preview,
+   text_preview => \&text_preview,
+   send => \&send_message,
   );
 
 my $q = CGI->new;
@@ -60,6 +62,54 @@ sub list {
   BSE::Template->show_page('admin/subs/list', $cfg, \%acts);
 }
 
+sub _template_popup {
+  my ($cfg, $q, $sub, $old, $args) = @_;
+
+  my ($name, $type, $optional) = split ' ', $args;
+  
+  my @templates;
+  my $base = 'common';
+  if ($type) {
+    $base = $cfg->entry('subscriptions', "${type}_templates")
+      || $type;
+  }
+  if (opendir TEMPL, "$TMPLDIR/$base") {
+    push(@templates, sort map "$base/$_",
+	 grep -f "$TMPLDIR/$base/$_" && /\.tmpl$/i, readdir TEMPL);
+    closedir TEMPL;
+    @templates or push(@templates, "Could not find templates in $base");
+  }
+  else {
+    push(@templates, "Cannot open dir $TMPLDIR/$base");
+  }
+  my $def = $old ? $q->param($name) :
+    $sub ? $sub->{$name} : $templates[0];
+  my %labels;
+  @labels{@templates} = @templates;
+  if ($optional) {
+    unshift(@templates, '');
+    $labels{''} = "(no HTML part)";
+  }
+  return CGI::popup_menu(-name=>$name, -values=>\@templates,
+			 -labels=>\%labels,
+			 -default=>$def, -override=>1);
+}
+
+sub _parent_popup {
+  my ($sub, $old) = @_;
+
+  my @all = Articles->summary();
+  my %labels = map { $_->{id}, "$_->{title} ($_->{id})" } @all;
+  my @extras;
+  if ($sub && !$old) {
+    @extras = ( -default=>$sub->{parentId} );
+  }
+  return CGI::popup_menu(-name=>'parentId',
+			 -values=> [ map $_->{id}, @all ],
+			 -labels => \%labels,
+			 @extras);
+}
+
 sub sub_form {
   my ($q, $session, $cfg, $template, $sub, $old, $errors) = @_;
 
@@ -85,50 +135,8 @@ sub sub_form {
 		       $defs{$_[0]} || '');
      },
      message => sub { $message },
-     template =>
-     sub {
-       my ($name, $type, $optional) = split ' ', $_[0];
-
-       my @templates;
-       my $base = 'common';
-       if ($type) {
-	 $base = $cfg->entry('subscriptions', "${type}_templates")
-	   || $type;
-       }
-       if (opendir TEMPL, "$TMPLDIR/$base") {
-	 push(@templates, sort map "$base/$_",
-	      grep -f "$TMPLDIR/$base/$_" && /\.tmpl$/i, readdir TEMPL);
-	 closedir TEMPL;
-	 @templates or push(@templates, "Could not find templates in $base");
-       }
-       else {
-	 push(@templates, "Cannot open dir $TMPLDIR/$base");
-       }
-       my $def = $old ? $q->param($name) :
-	         $sub ? $sub->{$name} : $templates[0];
-       my %labels;
-       @labels{@templates} = @templates;
-       if ($optional) {
-	 unshift(@templates, '');
-	 $labels{''} = "(no HTML part)";
-       }
-       return CGI::popup_menu(-name=>$name, -values=>\@templates,
-			      -labels=>\%labels,
-			      -default=>$def, -override=>1);
-     },
-     parent=>
-     sub {
-       my @all = Articles->summary();
-       my %labels = map { $_->{id}, "$_->{title} ($_->{id})" } @all;
-       my @extras;
-       if ($sub && !$old) {
-	 @extras = ( -default=>$sub->{parentId} );
-       }
-       return CGI::popup_menu(-name=>'parentId',
-			      -values=> [ map $_->{id}, @all ],
-			      -labels => \%labels,
-			      @extras);
-     },
+     template => sub { return _template_popup($cfg, $q, $sub, $old, $_[0]) },
+     parent=> sub { _parent_popup($sub, $old)  },
      error =>
      sub {
        my ($name, $sep) = split ' ', $_[0], 2;
@@ -212,7 +220,7 @@ sub addsave {
     $subs{lastSent} = '0000-00-00 00:00';
     my $sub = BSE::SubscriptionTypes->add(@subs{@fields});
     
-    _refresh_list();  
+    _refresh_list($cfg);  
   }
   else {
     sub_form($q, $session, $cfg, 'admin/subs/add', undef, 1, \@errors);
@@ -223,9 +231,9 @@ sub edit {
   my ($q, $session, $cfg) = @_;
 
   my $id = $q->param('id')
-    or return _refresh_list("No id supplied to be edited");
+    or return _refresh_list($cfg, "No id supplied to be edited");
   my $sub = BSE::SubscriptionTypes->getByPkey($id)
-    or return _refresh_list("Cannot find record $id");
+    or return _refresh_list($cfg, "Cannot find record $id");
   sub_form($q, $session, $cfg, 'admin/subs/edit', $sub, 0);
 }
 
@@ -233,9 +241,9 @@ sub editsave {
   my ($q, $session, $cfg) = @_;
 
   my $id = $q->param('id')
-    or return _refresh_list("No id supplied to be edited");
+    or return _refresh_list($cfg, "No id supplied to be edited");
   my $sub = BSE::SubscriptionTypes->getByPkey($id)
-    or return _refresh_list("Cannot find record $id");
+    or return _refresh_list($cfg, "Cannot find record $id");
 
   my @errors;
   if (validate($q, $cfg, \@errors)) {
@@ -244,7 +252,7 @@ sub editsave {
       $sub->{$field} = $q->param($field) if defined $q->param($field);
     }
     $sub->save();
-    _refresh_list();
+    _refresh_list($cfg);
   }
   else {
     sub_form($q, $session, $cfg, 'admin/subs/edit', $sub, 1, \@errors);
@@ -256,9 +264,9 @@ sub start_send {
 
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'subs');
   my $id = $q->param('id')
-    or return _refresh_list($msgs->(startnoid=>"No id supplied to be edited"));
+    or return _refresh_list($cfg, $msgs->(startnoid=>"No id supplied to be edited"));
   my $sub = BSE::SubscriptionTypes->getByPkey($id)
-    or return _refresh_list($msgs->(startnosub=>"Cannot find record $id"));
+    or return _refresh_list($cfg, $msgs->(startnosub=>"Cannot find record $id"));
   my %acts;
   %acts =
     (
@@ -273,18 +281,20 @@ sub send_form {
 
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'subs');
   my $id = $q->param('id')
-    or return _refresh_list($msgs->(startnoid=>"No id supplied to be edited"));
+    or return _refresh_list($cfg, $msgs->(startnoid=>"No id supplied to be edited"));
   my $sub = BSE::SubscriptionTypes->getByPkey($id)
-    or return _refresh_list($msgs->(startnosub=>"Cannot find record $id"));
+    or return _refresh_list($cfg, $msgs->(startnosub=>"Cannot find record $id"));
   my %acts;
   %acts =
     (
      BSE::Util::Tags->basic(\%acts, $q, $cfg),
      BSE::Util::Tags->admin(\%acts, $cfg),
-     sub => sub { CGI::escapeHTML($sub->{$_[0]}) },
+     subscription => sub { CGI::escapeHTML($sub->{$_[0]}) },
      message => sub { '' },
      ifError => sub { 0 },
      old => sub { CGI::escapeHTML(defined $sub->{$_[0]} ? $sub->{$_[0]} : '') },
+     template => sub { return _template_popup($cfg, $q, $sub, 0, $_[0]) },
+     parent=> sub { _parent_popup($sub, {})  },
     );
   BSE::Template->show_page('admin/subs/send_form', $cfg, \%acts);
 }
@@ -292,5 +302,127 @@ sub send_form {
 sub html_preview {
   my ($q, $session, $cfg) = @_;
 
-  print "Content-Type: text/html\n\n<html></html>\n";
+  my $msgs = BSE::Message->new(cfg=>$cfg, section=>'subs');
+  my $id = $q->param('id')
+    or return _refresh_list($cfg, $msgs->(startnoid=>"No id supplied to be edited"));
+  my $sub = BSE::SubscriptionTypes->getByPkey($id)
+    or return _refresh_list($cfg, $msgs->(startnosub=>"Cannot find record $id"));
+  my %opts;
+  for my $key ($q->param()) {
+    # I'm not worried about multiple items
+    $opts{$key} = ($q->param($key))[0];
+  }
+  my $template = $q->param('html_template');
+  $template = $sub->{html_template} unless defined $template;
+  if ($template) {
+    # build a fake article
+    my $text = $sub->html_format($cfg, _dummy_user(), \%opts);
+    print "Content-Type: text/html\n\n";
+    print $text;
+  }
+  else {
+    print <<EOS;
+Content-Type: text/html
+
+You have no HTML template selected.
+EOS
+  }
+}
+
+#  sub _text_format {
+#    my ($cfg, $article, $user, $template) = @_;
+
+#    my %acts;
+#    %acts =
+#      (
+#       article=>sub { $article->{$_[0]} },
+#       ifUser => sub { $user },
+#       user =>
+#       sub {
+#         $user or return '';
+#         defined $user->{$_[0]} or return '';
+#         $user->{$_[0]}
+#       },
+#       body =>
+#       sub {
+#         _format_body($cfg, $article->{body});
+#       },
+#      );
+#    my $base = $cfg->entry('paths', 'templates') 
+#      || $TMPLDIR;
+#    my $obj = Squirrel::Template->new(template_dir=>$base);
+#    return $obj->show_page($base, $template, \%acts);
+#  }
+
+sub _dummy_user {
+  my %user;
+  $user{id} = 0;
+  $user{userId} = "demo";
+  $user{email} = 'someone@somewhere.com';
+  $user{name1} = "Some";
+  $user{name2} = "One";
+  $user{confirmSecret} = "X" x 32;
+
+  \%user;
+}
+
+sub text_preview {
+  my ($q, $session, $cfg) = @_;
+
+  my $msgs = BSE::Message->new(cfg=>$cfg, section=>'subs');
+  my $id = $q->param('id')
+    or return _refresh_list($cfg, $msgs->(startnoid=>"No id supplied to be edited"));
+  my $sub = BSE::SubscriptionTypes->getByPkey($id)
+    or return _refresh_list($cfg, $msgs->(startnosub=>"Cannot find record $id"));
+
+  my %opts;
+  for my $key ($q->param()) {
+    # I'm not worried about multiple items
+    $opts{$key} = ($q->param($key))[0];
+  }
+  my $text = $sub->text_format($cfg, _dummy_user(), \%opts);
+  if ($ENV{HTTP_USER_AGENT} =~ /MSIE/) {
+    # IE is so broken
+    print "Content-Type: text/html\n\n";
+    print "<html><body><pre>",CGI::escapeHTML($text),"</pre></body></html>";
+  }
+  else {
+    print "Content-Type: text/plain\n\n";
+    print $text;
+  }
+}
+
+sub _first {
+  for (@_) {
+    return $_ if defined;
+  }
+  undef;
+}
+
+sub send_message {
+  my ($q, $session, $cfg) = @_;
+
+  my $msgs = BSE::Message->new(cfg=>$cfg, section=>'subs');
+  my $id = $q->param('id')
+    or return _refresh_list($cfg, $msgs->(startnoid=>"No id supplied to be edited"));
+  my $sub = BSE::SubscriptionTypes->getByPkey($id)
+    or return _refresh_list($cfg, $msgs->(startnosub=>"Cannot find record $id"));
+
+  my %opts;
+  for my $key ($q->param()) {
+    # I'm not worried about multiple items
+    $opts{$key} = ($q->param($key))[0];
+  }
+  if ($q->param('have_archive_check')) {
+    $opts{archive} = defined $q->param('archive')
+  }
+
+  print "Content-Type: text/html\n\n";
+  print "<html><head><title>Send Subscription - BSE</title></head>";
+  print "<body><h2>Send Subscription</h2>\n";
+  $sub->send($cfg, \%opts,
+	     sub {
+	       print "<div>",CGI::escapeHTML($_[0]),"</div>\n";
+	     });
+  print "</body></html>\n";
 }

@@ -3,13 +3,17 @@ use strict;
 use FindBin;
 use lib "$FindBin::Bin/../modules";
 use Articles;
-use Constants qw($BASEDIR $MAXPHRASE $URLBASE $DATADIR @SEARCH_EXCLUDE @SEARCH_INCLUDE $SEARCH_LEVEL);
+use Constants qw($BASEDIR $MAXPHRASE $DATADIR @SEARCH_EXCLUDE @SEARCH_INCLUDE $SEARCH_LEVEL);
 use BSE::DB;
 use Generate;
+use BSE::Cfg;
 my $in_cgi = exists $ENV{REQUEST_METHOD};
 if ($in_cgi) {
   #eval "use CGI::Carp qw(fatalsToBrowser)";
 }
+
+my $cfg = BSE::Cfg->new;
+my $urlbase = $cfg->entryVar('site', 'url');
 
 my $stopwords = "$DATADIR/stopwords.txt";
 
@@ -69,7 +73,7 @@ for my $key (sort keys %index) {
 }
 
 if ($in_cgi) {
-  print "Refresh: 0; url=\"$URLBASE/admin/\"\n";
+  print "Refresh: 0; url=\"$urlbase/admin/\"\n";
   print "Content-Type: text/html\n\n<html></html>\n";
 }
 

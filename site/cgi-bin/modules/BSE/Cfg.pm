@@ -150,6 +150,24 @@ sub entryVar {
   $value;
 }
 
+=item entryIfVar($section, $key)
+
+Same as entryVar(), except that it returns undef if there is no value
+for the given section/key.
+
+=cut
+
+sub entryIfVar {
+  my ($self, $section, $key) = @_;
+
+  my $value = $self->entry($section, $key);
+  if (defined $value) {
+    $value = $self->entryVar($section, $key);
+  }
+
+  $value;
+}
+
 =item entryBool($section, $key, [ $def ])
 
 =cut
@@ -240,7 +258,7 @@ sub _load_cfg {
     elsif (/^\s*([^=\s]+)\s*=\s*(.*)$/) {
       $section or next;
       $sections{$section}{values}{lc $1} = $2;
-      $sections{$section}{case}{lc $1} = $2;
+      $sections{$section}{case}{$1} = $2;
     }
   }
   close CFG;

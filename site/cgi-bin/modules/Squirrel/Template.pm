@@ -23,7 +23,7 @@ sub perform {
   if (exists $acts->{$func}) {
     $args = '' unless defined $args;
     $args =~ s/^\s+|\s+$//g;
-    my $value = $acts->{$func}->($args);
+    my $value = ref $acts->{$func} ? $acts->{$func}->($args) : $acts->{$func};
     defined $value
       or return "** function $func $args returned undef **";
     return $fmt ? $acts->{_format}->($value, $fmt) : $value;

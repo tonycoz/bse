@@ -6,9 +6,12 @@ use FindBin;
 use lib "$FindBin::Bin/../modules";
 use Articles;
 use CGI qw(:standard);
-use Constants qw($URLBASE);
+use BSE::Cfg;
 use vars qw($VERSION);
 $VERSION = 1.02;
+
+my $cfg = BSE::Cfg->new;
+my $urlbase = $cfg->entryVar('site', 'url');
 
 my $refreshto = param('refreshto') || '/admin/';
 # each entry of @kids is an arrayref containing the article
@@ -82,7 +85,7 @@ if ($code) {
   }
 }
 
-print "Refresh: 0; url=\"$URLBASE$refreshto\"\n";
+print "Refresh: 0; url=\"$urlbase$refreshto\"\n";
 print "Content-Type: text/html\n\n<html></html>\n";
 
 =head1 NAME

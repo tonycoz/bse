@@ -5,7 +5,7 @@ use lib "$FindBin::Bin/modules";
 use CGI ':standard';
 use Products;
 use Product;
-use Constants qw(:shop $TMPLDIR %EXTRA_TAGS $CGI_URI $URLBASE $SECURLBASE);
+use Constants qw(:shop $TMPLDIR $CGI_URI);
 use Squirrel::Template;
 use Squirrel::ImageEditor;
 use CGI::Cookie;
@@ -41,6 +41,8 @@ my $toName = $SHOP_TO_NAME;
 my $toEmail= $SHOP_TO_EMAIL;
 
 my $cfg = BSE::Cfg->new();
+my $urlbase = $cfg->entryVar('site', 'url');
+my $securlbase = $cfg->entryVar('site', 'secureurl');
 my %session;
 BSE::Session->tie_it(\%session, $cfg);
 
@@ -703,12 +705,11 @@ sub purchase {
 sub send_order {
   my ($order, $items, $products) = @_;
 
-  my %extras = %EXTRA_TAGS;
+  my %extras = $cfg->entriesCS('extra tags');
   for my $key (keys %extras) {
-    unless (ref $extras{$key}) {
-      my $data = $extras{$key};
-      $extras{$key} = sub { $data };
-    }
+    # follow any links
+    my $data = $cfg->entryVar('extra tags', $key);
+    $extras{$key} = sub { $data };
   }
 
   my $item_index = -1;
@@ -823,9 +824,9 @@ sub epoch_to_sql {
 
 sub refresh_logon {
   my ($msg, $msgid) = @_;
-  my $url = $URLBASE."/cgi-bin/user.pl";
+  my $url = $urlbase."/cgi-bin/user.pl";
   my %parms;
-  $parms{r} = $SECURLBASE."/cgi-bin/shop.pl?checkout=1";
+  $parms{r} = $securlbase."/cgi-bin/shop.pl?checkout=1";
   $parms{message} = $msg if $msg;
   $parms{mid} = $msgid if $msgid;
   $url .= "?" . join("&", map "$_=".CGI::escape($parms{$_}), keys %parms);

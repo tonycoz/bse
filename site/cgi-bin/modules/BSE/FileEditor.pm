@@ -1,7 +1,7 @@
 package BSE::FileEditor;
 use strict;
 use BSE::Util::Tags;
-use Constants qw($TMPLDIR $URLBASE $IMAGES_URI);
+use Constants qw($TMPLDIR $IMAGES_URI);
 use ArticleFiles;
 use Util qw/refresh_to/;
 
@@ -117,9 +117,10 @@ my %types =
   );
 
 sub _refresh_list {
-  my ($article) = @_;
+  my ($self, $article) = @_;
 
-  my $url = $URLBASE . $ENV{SCRIPT_NAME} . "?id=$article->{id}&filelist=1";
+  my $urlbase = $self->{cfg}->entryVar('site', 'url');
+  my $url = $urlbase . $ENV{SCRIPT_NAME} . "?id=$article->{id}&filelist=1";
   refresh_to($url);
 }
 
@@ -213,7 +214,7 @@ sub fileadd {
 
   my $fileobj = ArticleFiles->add(@file{@cols});
 
-  _refresh_list($article);
+  $self->_refresh_list($article);
 }
 
 sub fileswap {
@@ -236,7 +237,7 @@ sub fileswap {
     }
   }
 
-  _refresh_list($article);
+  $self->_refresh_list($article);
 }
 
 sub filedel {
@@ -255,7 +256,7 @@ sub filedel {
     }
   }
 
-  _refresh_list($article);
+  $self->_refresh_list($article);
 }
 
 sub filesave {
@@ -274,7 +275,7 @@ sub filesave {
     }
   }
 
-  _refresh_list($article);
+  $self->_refresh_list($article);
 }
 
 sub show_page {

@@ -35,6 +35,7 @@ my %actions =
    subinfo => 'subinfo',
    blacklist => 'blacklist',
    confirm => 'confirm',
+   unsub => 'unsub',
   );
 
 my $cgi = CGI->new;

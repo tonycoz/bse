@@ -4,11 +4,59 @@ BSE - an engine for simple magazine style WWW sites.
 
 =head1 DESCRIPTION
 
-BSE is an engine for creating simple magazine stype web sites.
+BSE is an engine for creating simple magazine type web sites.
 
 Maybe I'll add some other bits here.
 
 =head1 CHANGES
+
+=head2 0.11_06
+
+This is a test release.
+
+I wouldn't be suprised to find problems in this release, there have
+been a lot of changes.
+
+Still needs some documenting.
+
+=over
+
+=item *
+
+optimized generate_all() for large sites.  Despite the fact most of
+the improvement came from caching, generate seems to use less memory.
+
+=item *
+
+added gen.pl command-line regen script
+
+=item *
+
+added option to generate.pl to just regen extras and base pages
+
+=item *
+
+$URLBASE and $SECURLBASE from Constants.pm have been moved to C<url>
+and C<secureurl> in the C<[site]> section of bse.cfg
+
+=item *
+
+datadump.pl now uses the newer database configs (has it worked
+recently?) and the newer mail interfaces.
+
+=item *
+
+subscriptions management - interfaces to add new subscription
+(newsletter) types, and displays options in user options to allow a
+user to subscribe.  To prevent abuse by spammers (maybe) and by other
+attackers, we get the user to confirm subscription of their email
+address.  This is big.
+
+=item *
+
+%EXTRA_TAGS has been moved to C<[extra tags]> in bse.cfg
+
+=back
 
 =head2 0.11_05
 

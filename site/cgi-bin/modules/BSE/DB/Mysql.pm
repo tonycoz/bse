@@ -40,6 +40,7 @@ select ar.* from article ar, other_parents op
    where op.childId = ar.id 
      and op.parentId = ? and ? between op.release and op.expire
 EOS
+   'Articles.ids'=>'select id from article',
 
    Images => 'select * from image',
    replaceImage =>
@@ -99,10 +100,18 @@ EOS
    
    getSiteUserByUserId =>
    'select * from site_users where userId = ?',
+   getSiteUserByPkey =>
+   'select * from site_users where id = ?',
    addSiteUser => 'insert site_users values(null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
    replaceSiteUser => 'replace site_users values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
    'SiteUsers.removeSubscriptions'=>
    'delete from subscribed_users where userId = ?',
+   'SiteUsers.removeSub'=>
+   'delete from subscribed_users where userId = ? and subId = ?',
+   'SiteUsers.subRecipients' => <<EOS,
+select si.* from site_users si, subscribed_users su
+  where confirmed <> 0 and si.id = su.userId and su.subId = ?
+EOS
 
    SubscriptionTypes =>
    'select * from subscription_types',
@@ -129,6 +138,8 @@ EOS
    'insert email_requests values(null,?,?,?,?)',
    replaceEmailRequest =>
    'replace email_requests values(?,?,?,?,?)',
+   deleteEmailRequest =>
+   'delete from email_requests where id = ?',
    getEmailRequestByGenEmail =>
    'select * from email_requests where genEmail = ?',
   );

@@ -219,10 +219,10 @@ sub saveopts {
   for my $col (@cols) {
     my $value = $cgi->param($col);
     if (defined $value) {
-	
       $user->{$col} = $value;
     }
   }
+  $user->{textOnlyMail} = 0 unless defined $cgi->param('textOnlyMail');
   $user->save;
 
   # subscriptions
@@ -602,7 +602,7 @@ sub confirm {
     return $self->show_logon($session, $cgi, $cfg,
 			     $msgs->(confbaduser=>"Invalid or unknown user supplied for confirmation"));
   }
-  my $user = BSE::SiteUsers->getByPkey($userid)
+  my $user = SiteUsers->getByPkey($userid)
     or return $self->show_logon($session, $cgi, $cfg,
 			     $msgs->(confbaduser=>"Invalid or unknown user supplied for confirmation"));
   unless ($secret eq $user->{confirmSecret}) {
@@ -611,15 +611,16 @@ sub confirm {
   }
 
   $user->{confirmed} = 1;
-  $user->{confirmSecret} = '';
+  # I used to reset this, but it doesn't really make sense
+  # $user->{confirmSecret} = '';
   $user->save;
   my $genEmail = _generic_email($user->{email});
-  my $request = BSE::EmailRequest->getBy(genEmail=>$genEmail);
+  my $request = BSE::EmailRequests->getBy(genEmail=>$genEmail);
   $request and $request->remove();
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic_tags(\%acts, $cgi, $cfg),
+     BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
      user=>sub { CGI::escapeHTML($user->{$_[0]}) },
     );
   BSE::Template->show_page('user/confirmed', $cfg, \%acts);
@@ -698,9 +699,12 @@ sub send_conf_request {
     $confirm = BSE::EmailRequests->add(@confirm{@cols});
   }
 
+  #print STDERR "Checking for secret $user->{confirmSecret}\n";
   unless ($user->{confirmSecret}) {
     use BSE::Util::Secure qw/make_secret/;
+    # print STDERR "Generating secret\n";
     $user->{confirmSecret} = make_secret($cfg);
+    $user->save;
   }
   # ok, now we can send the confirmation request
   my %confacts;
@@ -728,6 +732,51 @@ sub send_conf_request {
   $confirm->{lastConfSent} = now_datetime;
   $confirm->save;
   BSE::Template->show_page('user/confsent', $cfg, \%acts);
+}
+
+sub unsub {
+  my ($self, $session, $cgi, $cfg) = @_;
+
+  my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
+  my $secret = $cgi->param('unsub')
+    or return $self->show_logon($session, $cgi, $cfg,
+				$msgs->(unsubnosecret=>"No secret supplied for unsubscribe"));
+  my $userid = $cgi->param('u')
+    or return $self->show_logon($session, $cgi, $cfg,
+				$msgs->(unsubnouser=>"No user supplied for unsubscribe"));
+  if ($userid + 0 != $userid || $userid < 1) {
+    return $self->show_logon($session, $cgi, $cfg,
+			     $msgs->(unsubbaduser=>"Invalid or unknown user supplied for unsubscribe"));
+  }
+  my $user = SiteUsers->getByPkey($userid)
+    or return $self->show_logon($session, $cgi, $cfg,
+			     $msgs->(unsubbaduser=>"Invalid or unknown user supplied for unsubscribe"));
+  unless ($secret eq $user->{confirmSecret}) {
+    return $self->show_logon($session, $cgi, $cfg, 
+			     $msgs->(unsubbadsecret=>"Sorry, the ubsubscribe secret does not match"));
+  }
+  
+  my %acts;
+  %acts =
+    (
+     BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
+     user => sub { CGI::escapeHTML($user->{$_[0]}) },
+    );
+  my $subid = $cgi->param('s');
+  my $sub;
+  if ($subid eq 'all') {
+    $user->removeSubscriptions();
+    BSE::Template->show_page('user/unsuball', $cfg, \%acts);
+  }
+  elsif (0+$subid eq $subid 
+	 and $sub = BSE::SubscriptionTypes->getByPkey($subid)) {
+    $acts{subscription} = sub { CGI::escapeHTML($sub->{$_[0]}) };
+    $user->removeSubscription($subid);
+    BSE::Template->show_page('user/unsubone', $cfg, \%acts);
+  }
+  else {
+    BSE::Template->show_page('user/cantunsub', $cfg, \%acts);
+  }
 }
 
 1;

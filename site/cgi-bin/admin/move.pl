@@ -9,7 +9,10 @@ use Articles;
 use CGI ':standard';
 use Carp 'verbose';
 use CGI::Carp 'fatalsToBrowser';
-use Constants qw($URLBASE);
+use Constants;
+
+my $cfg = BSE::Cfg->new;
+my $urlbase = $cfg->entryVar('site', 'url');
 
 my $id = param('id');
 my $direction = param('d');
@@ -121,15 +124,15 @@ else {
 }
 
 if (param('refreshto')) {
-  print "Refresh: 0; url=\"$URLBASE",param('refreshto'),"\"\n";
+  print "Refresh: 0; url=\"$urlbase",param('refreshto'),"\"\n";
 }
 elsif (param('edit')) {
   # refresh back to editor
-  print "Refresh: 0; url=\"$URLBASE/cgi-bin/admin/add.pl?id=$article->{parentid}#children\"\n";
+  print "Refresh: 0; url=\"$urlbase/cgi-bin/admin/add.pl?id=$article->{parentid}#children\"\n";
 }
 else {
   # refresh back to the parent
   my $parent = $articles->getByPkey($article->{parentid});
-  print "Refresh: 0; url=\"$URLBASE$parent->{admin}\"\n";
+  print "Refresh: 0; url=\"$urlbase$parent->{admin}\"\n";
 }
 print "Content-Type: text/html\n\n<html></html>\n";

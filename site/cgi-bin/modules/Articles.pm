@@ -3,6 +3,7 @@ use strict;
 use Squirrel::Table;
 use vars qw(@ISA $VERSION);
 @ISA = qw(Squirrel::Table);
+use Article;
 
 sub rowClass {
   return 'Article';
@@ -41,6 +42,17 @@ sub listedChildren {
 
 sub summary {
   BSE::DB->query('articlesList');
+}
+
+sub allids {
+  my ($self) = @_;
+
+  if (ref $self) {
+    return map $_->{id}, $self->all;
+  }
+  else {
+    return map $_->{id}, BSE::DB->query('Articles.ids');
+  }
 }
 
 1;

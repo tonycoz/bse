@@ -19,4 +19,10 @@ sub removeSubscriptions {
   SiteUsers->doSpecial('removeSubscriptions', $self->{id});
 }
 
+sub removeSubscription {
+  my ($self, $subid) = @_;
+
+  SiteUsers->doSpecial('removeSub', $self->{id}, $subid);
+}
+
 1;

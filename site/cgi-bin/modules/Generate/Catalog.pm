@@ -5,7 +5,7 @@ use Generate;
 use Products;
 use base 'Generate::Article';
 use Squirrel::Template;
-use Constants qw($TMPLDIR $URLBASE %TEMPLATE_OPTS $CGI_URI $IMAGES_URI
+use Constants qw($TMPLDIR %TEMPLATE_OPTS $CGI_URI $IMAGES_URI
                  $ADMIN_URI);
 use Util qw(generate_button);
 use OtherParents;
@@ -126,12 +126,13 @@ HTML
      ifSubcats => sub { @subcats },
     );
   my $oldurl = $acts{url};
+  my $urlbase = $self->{cfg}->entryVar('site', 'url');
   $acts{url} =
     sub {
       my $value = $oldurl->(@_);
       unless ($value =~ /^\w+:/) {
         # put in the base site url
-        $value = $URLBASE . $value;
+        $value = $urlbase . $value;
       }
       return $value;
     };

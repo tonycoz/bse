@@ -31,13 +31,13 @@ sub generate_button {
 
 # regenerate an individual article
 sub generate_low {
-  my ($articles, $article) = @_;
+  my ($articles, $article, $cfg) = @_;
 
+  $cfg ||= BSE::Cfg->new;
   my $genname = $article->{generator};
-
   eval "use $genname";
   $@ && die $@;
-  $gen_cache{$genname} ||= $genname->new(articles=>$articles);
+  $gen_cache{$genname} ||= $genname->new(articles=>$articles, cfg=>$cfg);
 
   my $outname = $article->{link};
   $outname =~ s!/\w*$!!;
@@ -56,10 +56,10 @@ sub generate_low {
 }
 
 sub generate_article {
-  my ($articles, $article) = @_;
+  my ($articles, $article, $cfg) = @_;
 
   while ($article) {
-    generate_low($articles, $article) 
+    generate_low($articles, $article, $cfg) 
       if $article->{link} && $article->{template};
 
     if ($article->{parentid} != -1) {
@@ -142,10 +142,10 @@ sub generate_shop {
 }
 
 sub generate_extras {
-  my ($articles) = @_;
+  my ($articles, $cfg, $callback) = @_;
 
   use BSE::Cfg;
-  my $cfg = BSE::Cfg->new;
+  $cfg ||= BSE::Cfg->new;
   my $template_dir = $cfg->entry('paths', 'templates') || $TMPLDIR;
 
   open EXTRAS, "$template_dir/extras.txt"
@@ -163,6 +163,7 @@ sub generate_extras {
   my $gen = Generate->new(cfg=>$cfg);
   for my $row (@extras) {
     my ($in, $out) = @$row;
+    $callback->("$in to $out") if $callback;
     my %acts;
     %acts = $gen->baseActs($articles, \%acts);
     my $templ = Squirrel::Template->new(%TEMPLATE_OPTS, 
@@ -188,6 +189,7 @@ sub generate_extras {
     my $gen = Generate::Article->new(cfg=>$cfg);
     for my $out (keys %entries) {
       my ($presets, $input) = split ',', $entries{$out}, 2;
+      $callback->("$input to $out with $presets") if $callback;
       my %article = map { $_, '' } Article->columns;
       $article{displayOrder} = 1;
       $article{id} = -5;
@@ -218,20 +220,45 @@ sub generate_extras {
 }
 
 sub generate_all {
-  my ($articles) = @_;
+  my ($articles, $cfg, $callback) = @_;
 
   %gen_cache = ();
-  for my $article ($articles->all()) {
-    generate_low($articles, $article) 
-      if $article->{link} && $article->{template};
+  my @articleids = $articles->allids;
+  my $pc = 0;
+  $callback->("Generating articles (".scalar(@articleids)." to do)")
+    if $callback;
+  my $index;
+  my $total = 0;
+  use Time::HiRes;
+  Squirrel::Table->caching(1);
+  my $allstart = Time::HiRes::time;
+  for my $articleid (@articleids) {
+    my $start = Time::HiRes::time;
+    my $article = $articles->getByPkey($articleid);
+    ++$index;
+    if ($article->{link} && $article->{template}) {
+      #$callback->("Article $articleid");
+      generate_low($articles, $article, $cfg);
+    }
+    my $newpc = $index / @articleids * 100;
+    if ($callback && $newpc >= $pc + 1 || abs($newpc-100) < 0.01) {
+      my $now = Time::HiRes::time;
+      my $len = $now - $start;
+      $total += $len;
+      $callback->(sprintf("%5d:  %.1f%% done - dur: %.2f  cumulative: %.1f  elapsed: %.1f", $articleid, $newpc, $len, $total, $now - $allstart)) if $callback;
+      $pc = int $newpc;
+    }
   }
   %gen_cache = ();
 
+  $callback->("Generating search base") if $callback;
   generate_search($articles);
 
+  $callback->("Generating shop base pages") if $callback;
   generate_shop($articles);
 
-  generate_extras($articles);
+  $callback->("Generating extra pages") if $callback;
+  generate_extras($articles, $cfg, $callback);
 }
 
 sub refresh_to {
@@ -241,7 +268,7 @@ sub refresh_to {
   print qq!Refresh: 0; url="$where"\n\n<html></html>\n!;
 }
 
-=item regen_and_refresh($articles, $article, $generate, $refreshto)
+=item regen_and_refresh($articles, $article, $generate, $refreshto, $progress)
 
 An error checking wrapper around the page regeneration code.
 
@@ -258,35 +285,63 @@ Returns 1 if the regeneration was performed successfully.
 =cut
 
 sub regen_and_refresh {
-  my ($articles, $article, $generate, $refreshto) = @_;
+  my ($articles, $article, $generate, $refreshto, $cfg, $progress) = @_;
 
   if ($generate) {
     eval {
       if ($article) {
-	generate_article($articles, $article);
+	if ($article eq 'extras') {
+	  $progress->("Generating search base") if $progress;
+	  generate_search($articles);
+	  
+	  $progress->("Generating shop base pages") if $progress  ;
+	  generate_shop($articles);
+	  
+	  $progress->("Generating extra pages") if $progress;
+	  generate_extras($articles, $cfg, $progress);
+	}
+	else {
+	  generate_article($articles, $article, $cfg);
+	}
       }
       else {
-	generate_all($articles);
+	generate_all($articles, $cfg, $progress);
       }
     };
     if ($@) {
-      my $error = $@;
-      my %acts;
-      %acts =
-	(
-	 ifArticle => sub { $article },
-	 article => sub { CGI::escapeHTML($article->{$_[0]}) },
-	 error => sub { CGI::escapeHTML($error) },
-	);
-      my $gen = Squirrel::Template->new();
-      print "Content-Type: text/html\n\n";
-      print $gen->show_page($TMPLDIR, 'admin/regenerror.tmpl', \%acts);
-      
-      return 0;
+      if ($progress) {
+	$progress->($@);
+      }
+      else {
+	my $error = $@;
+	require 'BSE/Util/Tags.pm';
+	require 'BSE/Template.pm';
+	my %acts;
+	%acts =
+	  (
+	   BSE::Util::Tags->basic(\%acts, undef, $cfg),
+	   ifArticle => sub { $article },
+	   article => 
+	   sub { 
+	     if (ref $article) {
+	       return CGI::escapeHTML($article->{$_[0]});
+	     }
+	     else {
+	       return 'extras';
+	     }
+	   },
+	   error => sub { CGI::escapeHTML($error) },
+	  );
+	BSE::Template->show_page('admin/regenerror', $cfg, \%acts);
+	
+	return 0;
+      }
     }
   }
 
-  refresh_to($refreshto);
+  unless ($progress) {
+    refresh_to($refreshto);
+  }
 
   return 1;
 }

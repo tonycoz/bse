@@ -243,6 +243,18 @@ The from field for the email.  Default: $SHOP_FROM
 
 =back
 
+=head2 [subscriptions]
+
+Control over subscription messages.
+
+=over
+
+=item from
+
+The from field for the email.  Default: $SHOP_FROM.
+
+=back
+
 =head1 AUTHOR
 
 Tony Cook <tony@develop-help.com>

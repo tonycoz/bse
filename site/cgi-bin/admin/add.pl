@@ -22,6 +22,8 @@ my $cfg = BSE::Cfg->new;
 my %session;
 BSE::Session->tie_it(\%session, $cfg);
 
+my $urlbase = $cfg->entryVar('site', 'url');
+my $securlbase = $cfg->entryVar('site', 'secureurl');
 use Constants qw(%LEVEL_DEFAULTS $SHOPID $PRODUCTPARENT $LINK_TITLES);
 my %levels = %LEVEL_DEFAULTS;
 
@@ -42,7 +44,8 @@ my %steps =
 
 my $level = param('level') || 3;
 
-my $articles = Articles->new;
+#my $articles = Articles->new;
+my $articles = 'Articles';
 my $article;
 my $id = param('id');
 
@@ -50,7 +53,8 @@ my %acts;
 
 my $imageEditor = Squirrel::ImageEditor->new(session=>\%session, 
 					     extras=>\%acts,
-					     keep=>[ qw/id level parentid/ ]);
+					     keep=>[ qw/id level parentid/ ],
+					     cfg=>$cfg);
 
 if (defined $id && $id) {
   if ($id != -1) {
@@ -457,7 +461,7 @@ sub save_new_article {
     $article->setAdmin("$CGI_URI/admin/admin.pl?id=$article->{id}");
   }
   else {
-    $link = $SECURLBASE.$SHOP_URI."/shop$article->{id}.html";
+    $link = $urlbase.$SHOP_URI."/shop$article->{id}.html";
     $article->setAdmin($CGI_URI."/admin/shopadmin.pl");
   }
   $article->setLink($link);
@@ -577,7 +581,7 @@ sub save {
   use Util 'generate_article';
   generate_article($articles, $article) if $AUTO_GENERATE;
 
-  print "Refresh: 0; url=\"$URLBASE$article->{admin}\"\n";
+  print "Refresh: 0; url=\"$urlbase$article->{admin}\"\n";
   print "Content-type: text/html\n\n<HTML></HTML>\n";
 }
 
@@ -656,7 +660,7 @@ sub add_stepkid {
     $message = $@;
     return start();
   }
-  print "Refresh: 0; url=\"$URLBASE$ENV{SCRIPT_NAME}?id=$article->{id}#step\"\n";
+  print "Refresh: 0; url=\"$urlbase$ENV{SCRIPT_NAME}?id=$article->{id}#step\"\n";
   print "Content-type: text/html\n\n<HTML></HTML>\n";
 }
 
@@ -811,7 +815,7 @@ sub save_stepparents {
 sub refresh {
   my ($name, $message) = @_;
 
-  my $url = "$URLBASE$ENV{SCRIPT_NAME}?id=$article->{id}";
+  my $url = "$urlbase$ENV{SCRIPT_NAME}?id=$article->{id}";
   $url .= "&message=" . CGI::escape($message) if $message;
   $url .= "#$name" if $name;
 

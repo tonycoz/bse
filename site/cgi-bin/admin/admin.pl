@@ -8,20 +8,23 @@ use CGI qw(:standard);
 #use Carp 'verbose'; # remove the 'verbose' in production
 use lib "$FindBin::Bin/../modules";
 use Articles;
+use BSE::Cfg;
 
 my $id = param('id');
 defined $id or $id = 1;
 my $admin = 1;
 $admin = param('admin') if defined param('admin');
 
-my $articles = Articles->new;
+my $cfg = BSE::Cfg->new;
+#my $articles = Articles->new;
+my $articles = 'Articles';
 
 my $article = $articles->getByPkey($id)
   or die "Cannot find article ",$id;
 
 eval "use $article->{generator}";
 die $@ if $@;
-my $generator = $article->{generator}->new(admin=>$admin, articles=>$articles);
+my $generator = $article->{generator}->new(admin=>$admin, articles=>$articles, cfg=>$cfg);
 
 print "Content-Type: text/html\n\n";
 print $generator->generate($article, $articles);

@@ -1,7 +1,7 @@
 package Squirrel::ImageEditor;
 #use CGI 'param';
 use strict;
-use Constants qw($URLBASE $TMPLDIR %TEMPLATE_OPTS);
+use Constants qw($TMPLDIR %TEMPLATE_OPTS);
 
 sub new {
   my ($class, %opts) = @_;
@@ -179,7 +179,8 @@ sub addimg {
 		  width=>$width, url=>$query->param('url') });
 
   $self->{session}{images} = \@images;
-  my $url = $self->_fix_url($query, "$URLBASE$ENV{SCRIPT_NAME}?showimages=");
+  my $url = $self->_fix_url($query, $self->{cfg}->entryVar('site', 'url').
+			    "$ENV{SCRIPT_NAME}?showimages=");
   print  "Refresh: 0; url=\"$url\"\n";
   print "Content-type: text/html\n\n<HTML></HTML>\n";
 }
@@ -192,7 +193,8 @@ sub remove_img {
   unlink "$IMAGEDIR$image->{image}" if !$image->{id};
   $self->{session}{images} = \@images;
 
-  my $url = $self->_fix_url($query, "$URLBASE$ENV{SCRIPT_NAME}?showimages=");
+  my $url = $self->_fix_url($query, $self->{cfg}->entryVar('site', 'url').
+			    "$ENV{SCRIPT_NAME}?showimages=");
   print  "Refresh: 0; url=\"$url\"\n";
   print "Content-type: text/html\n\n<HTML></HTML>\n";
 }
@@ -206,7 +208,8 @@ sub moveup {
     $self->{session}{images} = \@images;
   }
 
-  my $url = $self->_fix_url($query, "$URLBASE$ENV{SCRIPT_NAME}?showimages=");
+  my $url = $self->_fix_url($query, $self->{cfg}->entryVar('site', 'url').
+			    "$ENV{SCRIPT_NAME}?showimages=");
   print  "Refresh: 0; url=\"$url\"\n";
   print "Content-type: text/html\n\n<HTML></HTML>\n";
 }
@@ -220,7 +223,8 @@ sub movedown {
     $self->{session}{images} = \@images;
   }
 
-  my $url = $self->_fix_url($query, "$URLBASE$ENV{SCRIPT_NAME}?showimages=");
+  my $url = $self->_fix_url($query, $self->{cfg}->entryVar('site', 'url').
+			    "$ENV{SCRIPT_NAME}?showimages=");
   print  "Refresh: 0; url=\"$url\"\n";
   print "Content-type: text/html\n\n<HTML></HTML>\n";
 }
