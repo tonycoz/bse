@@ -272,7 +272,7 @@ sub static {
 sub tag_old {
   my ($cgi, $args, $acts, $name, $templater) = @_;
 
-  my ($field, $func, $funcargs) = split ' ', $args;
+  my ($field, $func, $funcargs) = split ' ', $args, 3;
 
   my $value = $cgi->param($field);
   if (defined $value) {
@@ -282,6 +282,25 @@ sub tag_old {
   return '' unless $func && exists $acts->{$func};
 
   $value = $templater->perform($acts, $func, $funcargs);
+  defined $value or $value = '';
+
+  return $value;
+}
+
+sub tag_oldi {
+  my ($cgi, $args, $acts, $name, $templater) = @_;
+
+  my ($field, $num, $func, @funcargs) = 
+    DevHelp::Tags->get_parms($args, $acts, $templater);
+
+  my @values = $cgi->param($field);
+  if (@values && $num < @values) {
+    return escape_html($values[$num]);
+  }
+
+  return '' unless $func && exists $acts->{$func};
+
+  my $value = $templater->perform($acts, $func, "@funcargs");
   defined $value or $value = '';
 
   return $value;
@@ -306,6 +325,7 @@ sub basic {
        escape_html("@value");
      },
      old => [ \&tag_old, $cgi ],
+     oldi => [ \&tag_oldi, $cgi ],
      $it->make_iterator(\&DevHelp::Tags::iter_get_repeat, 'repeat', 'repeats'),
     );
 }
@@ -551,11 +571,17 @@ sub secure {
 sub tag_error_img {
   my ($cfg, $errors, $args, $acts, $func, $templater) = @_;
 
-  my ($arg) = DevHelp::Tags->get_parms($args, $acts, $templater);
-  #print STDERR "name $arg\n";
+  my ($arg, $num) = DevHelp::Tags->get_parms($args, $acts, $templater);
+  #print STDERR "name $arg num $num\n";
   return '' unless $errors->{$arg};
+  my $msg = $errors->{$arg};
+  if (ref $errors->{$arg}) {
+    my @errors = @$msg;
+    return '' unless @$msg > $num && $msg->[$num];
+    $msg = $msg->[$num];
+  }
   my $images_uri = $cfg->entry('uri', 'images', '/images');
-  my $encoded = escape_html($errors->{$arg});
+  my $encoded = escape_html($msg);
   return qq!<img src="$images_uri/admin/error.gif" alt="$encoded" title="$encoded" border="0" align="top" />!; 
 }
 

@@ -707,6 +707,36 @@ name must be quoted with double quotes.
 
 =back
 
+=head2 Dynamic Tags
+
+These can be used on any dynamically generated page.
+
+=over
+
+=item script
+
+The CGI SCRIPT_NAME value
+
+=item cgi I<field>
+
+Extracts the value of the given CGI field.  If more than one value is
+supplied for the CGI field then all values are returned with spaces
+between them.
+
+=item old I<field> I<func> I<args>
+
+Returns the CGI parameter I<field> if supplied, otherwise calls tag
+I<func> with I<args> as arguments and returns that value.
+
+This is meant to be used as the value="" parameter in input tags.
+
+=item oldi I<field> I<index> I<func> I<args>
+
+Returns the I<index>th CGI value named I<field>.  If that doesn't
+exist then tag I<func> is called with I<args> and returns that value.
+
+=back
+
 =head2 Base tags
 
 These tags can be used in any article, catalog, product or

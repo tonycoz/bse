@@ -120,6 +120,13 @@ sub access_control {
   $_[0]->{cfg}->entry('basic', 'access_control', 0);
 }
 
+sub output_result {
+  my ($req, $result) = @_;
+
+  require BSE::Template;
+  BSE::Template->output_result($req, $result);
+}
+
 sub DESTROY {
   my ($self) = @_;
   if ($self->{session}) {

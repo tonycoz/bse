@@ -10,6 +10,40 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.14_19
+
+=over
+
+=item *
+
+image[...|url] was HTML encoding the url twice.
+
+=item *
+
+added an output_result() method to BSE::Request.  This is currently a
+shim around BSE::Request->output_result(), but it may change in the
+future.
+
+=item *
+
+added the <:oldi ...:> tag, for use on any dynamic page
+
+  <:oldi fieldname index func funcargs:>
+
+This is used for extracting the correct previously entered value for a
+multi-value field.
+
+=item *
+
+the default <:old ...:> tag was ignoring the fourth and subsequent
+parameters, for example, if the tag was:
+
+  <:old fieldx taga arg1 arg2:>
+
+only arg1 was being passed to taga.
+
+=back
+
 =head2 0.14_18
 
 =over

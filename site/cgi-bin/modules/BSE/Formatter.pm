@@ -42,11 +42,13 @@ sub _image {
   $text .= qq! />!;
   $text = qq!<div align="center">$text</div>!
     if $align && $align eq 'center';
+  # the text in $url would have been HTML escaped already, the url
+  # in the image record hasn't been
   if (!$url && $im->{url}) {
-    $url = $im->{url};
+    $url = escape_html($im->{url});
   }
   if ($url) {
-    $text = qq!<a href="! . escape_html($url) . qq!">$text</a>!;
+    $text = qq!<a href="$url">$text</a>!;
   }
 
   return $text;
