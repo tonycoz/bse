@@ -141,6 +141,12 @@ sub tag_if_subscribed {
   $usersubs->{$sub->{id}};
 }
 
+sub iter_orders {
+  my ($siteuser) = @_;
+
+  return $siteuser->orders;
+}
+
 sub req_edit {
   my ($class, $req, $msg, $errors) = @_;
 
@@ -193,6 +199,8 @@ sub req_edit {
 			\$sub_index),
      ifSubscribed =>
      [ \&tag_if_subscribed, $cgi, \@subs, \$sub_index, \%usersubs ],
+     $it->make_iterator([ \&iter_orders, $siteuser ], 
+			'userorder', 'userorders' ),
     );  
 
   my $template = 'admin/users/edit';

@@ -2269,7 +2269,10 @@ sub fileadd {
   }
   
   my $basename = '';
-  $file =~ /([ \w.-]+)$/ and $basename = $1;
+  my $workfile = $file;
+  $workfile =~ s![^\w.:/\\-]+!_!g;
+  $workfile =~ tr/_/_/s;
+  $workfile =~ /([ \w.-]+)$/ and $basename = $1;
   $basename =~ tr/ /_/;
 
   my $filename = time. '_'. $basename;

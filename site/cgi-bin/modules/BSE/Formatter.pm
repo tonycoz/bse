@@ -1,17 +1,20 @@
 package BSE::Formatter;
 use strict;
 use DevHelp::HTML;
+use Carp 'confess';
 
 use base 'DevHelp::Formatter';
 
 sub new {
-  my ($class, $gen, $acts, $articles, $rauto_images, $images) = @_;
+  my ($class, $gen, $acts, $articles, $article, $top, $rauto_images, $images) = @_;
 
   my $self = $class->SUPER::new;
 
   $self->{gen} = $gen;
   $self->{acts} = $acts;
   $self->{articles} = $articles;
+  $self->{article} = $article;
+  $self->{top} = $top;
   $self->{auto_images} = $rauto_images;
   $self->{images} = $images;
   #$self->{level} = $level;
@@ -89,10 +92,54 @@ sub embed {
 			   $templateid, $maxdepth);
 }
 
+sub doclink {
+  my ($self, $id, $title) = @_;
+  
+  my $admin = $self->{gen}{admin};
+  my $cfg = $self->{gen}->{cfg}
+    or confess "cfg not set in acts";
+  my $dispid;
+  if ($id =~ /^\d+$/) {
+    $dispid = $id;
+  }
+  else {
+    # try to find it in the config
+    my $work = $cfg->entry('articles', $id);
+    unless ($work) {
+      return "&#42;&#42; No article name '".escape_html($id)."' in the [articles] section of bse.cfg &#42;&#42;";
+    }
+    $dispid = "$id ($work)";
+    $id = $work;
+  }
+  my $art = $self->{articles}->getByPkey($id);
+  unless ($art) {
+    return "&#42;&#42; Cannot find article id $dispid &#42;&#42;";
+  }
+
+  # make the URL absolute if necessary
+  my $link = $admin ? 'admin' : 'link';
+  my $url = $art->{$link};
+  if ($self->{top}->{$link} =~ /^\w+:/
+      || $self->{article}->{$link} =~ /^\w+:/) {
+    $url = $cfg->entryErr('site', 'url') . $url
+      unless $url =~ /^\w+:/;
+  }
+
+  unless ($title) {
+    $title = escape_html($art->{title});
+  }
+  
+  return qq!<a href="$url">$title</a>!;
+}
+
 sub replace {
   my ($self, $rpart) = @_;
 
   $$rpart =~ s#gimage\[([^\]\[]+)\]# $self->gimage($1) #ige
+    and return 1;
+  $$rpart =~ s#doclink\[(\w+)\|([^\]\[]+)\]# $self->doclink($1, $2) #ige
+    and return 1;
+  $$rpart =~ s#doclink\[(\w+)\]# $self->doclink($1) #ige
     and return 1;
 
   return $self->SUPER::replace($rpart);

@@ -152,4 +152,12 @@ sub send_conf_request {
   return 1;
 }
 
+sub orders {
+  my ($self) = @_;
+
+  require Orders;
+
+  return Orders->getBy(userId => $self->{userId});
+}
+
 1;

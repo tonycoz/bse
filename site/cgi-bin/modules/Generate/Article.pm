@@ -35,7 +35,8 @@ sub edit_link {
 sub make_article_body {
   my ($self, $acts, $articles, $article, $auto_images, @images) = @_;
 
-  return $self->format_body($acts, $articles, @$article{qw/body imagePos/}, 
+  my $top = $self->{top} || $article;
+  return $self->format_body($acts, $articles, $article, $top, 
 			    $auto_images, @images);
 }
 
@@ -426,7 +427,9 @@ HTML
      top => [ \&tag_top, $self, $article ],
     );
 
-  if ($article->{link} =~ /^\w+:/) {
+  my $top = $self->{top} || $article;
+  if ($article->{link} =~ /^\w+:/
+     || $top->{link} =~ /^\w+:/) {
     my $oldurl = $acts{url};
     my $cfg = $self->{cfg} || BSE::Cfg->new;
     my $urlbase = $cfg->entryErr('site', 'url');

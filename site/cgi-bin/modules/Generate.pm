@@ -273,13 +273,17 @@ sub _make_img {
 
 # replace markup, insert img tags
 sub format_body {
-  my ($self, $acts, $articles, $body, $imagePos, $auto_images, @images)  = @_;
+  my ($self, $acts, $articles, $article, $top, $auto_images, @images)  = @_;
+
+  my $body = $article->{body};
+  my $imagePos = $article->{imagePos};
 
   return substr($body, 6) if $body =~ /^<html>/i;
 
   require BSE::Formatter;
 
-  my $formatter = BSE::Formatter->new($self, $acts, $articles, \$auto_images,
+  my $formatter = BSE::Formatter->new($self, $acts, $articles,
+				      $article, $top, \$auto_images,
 				      \@images);
 
   $body = $formatter->format($body);

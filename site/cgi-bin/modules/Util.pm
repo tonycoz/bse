@@ -202,6 +202,7 @@ sub generate_extras {
       $article{displayOrder} = 1;
       $article{id} = -5;
       $article{parentid} = -1;
+      $article{link} = $cfg->entryErr('site', 'url');
       for my $field (Article->columns) {
 	if ($cfg->entry("$presets settings", $field)) {
 	  $article{$field} = $cfg->entryVar("$presets settings", $field);

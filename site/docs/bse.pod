@@ -10,6 +10,59 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.14_12
+
+=over
+
+=item *
+
+added doclink[] body tag
+
+=item *
+
+cookie generation is now centralized to prevent differences in cookie
+generation from causing problems.  This won't help with certain
+configuration issues, which you'll need to fix yourself.
+
+=item *
+
+allow files not marked for sale, and listed in an ordered item to be
+downloaded by a user from the userpage.
+
+=item *
+
+order files listed for an order on the userpage by item and display
+order instead of alphabetically
+
+=item *
+
+filenames for uploaded files with non-alphanumeric characters are now
+handled a bit differently - non-alphanumerics are now replaced with
+'_' and then duplicate '_' are removed.
+
+=item *
+
+userpage base pages are now generated with an absolute link field to
+force absolute article URLs to be generated
+
+=item *
+
+the text version of emails in subscriptions now includes the URL at
+the bottom of the body text, with a bracketted number at the original
+text
+
+=item *
+
+the edit member page now links to a list of orders for that user (if
+any)
+
+=item *
+
+the order detail page now links to the user's order list and their
+edit page.
+
+=back
+
 =head2 0.14_11
 
 =over

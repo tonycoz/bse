@@ -61,16 +61,96 @@ sub _word_wrap {
   $text;
 }
 
+sub _body_link {
+  my ($urls, $url, $title, $rindex) = @_;
+
+  push @$urls, $url;
+
+  return "$title [" . $$rindex++ . "]";
+}
+
+sub _doclink {
+  my ($cfg, $urls, $id, $title, $rindex) = @_;
+
+  my $dispid;
+  if ($id =~ /^\d+$/) {
+    $dispid = $id;
+  }
+  else {
+    # try to find it in the config
+    my $work = $cfg->entry('articles', $id);
+    unless ($work) {
+      return "&#42;&#42; No article name '".escape_html($id)."' in the [articles] section of bse.cfg &#42;&#42;";
+    }
+    $dispid = "$id ($work)";
+    $id = $work;
+  }
+  require Articles;
+  my $art = Articles->getByPkey($id);
+  unless ($art) {
+    return "&#42;&#42; Cannot find article id $dispid &#42;&#42;";
+  }
+
+  # make the URL absolute
+  my $url = $art->{link};
+  $url = $cfg->entryErr('site', 'url') . $url
+    unless $url =~ /^\w+:/;
+
+  unless ($title) {
+    $title = $art->{title};
+  }
+
+  push @$urls, $url;
+
+  return "$title [". $$rindex++ . "]";
+}
+
+sub _any_link {
+  my ($cfg, $urls, $type, $content, $rindex) = @_;
+
+  if ($type eq 'link') {
+    if ($content =~ /^([^|]+)\|(.*)$/) {
+      return _body_link($urls, $1, $2, $rindex);
+    }
+    else {
+      return $content;
+    }
+  }
+  else { # must be doclink
+    if ($content =~ /^([^|]+)\|(.*)$/) {
+      return _doclink($cfg, $urls, $1, $2, $rindex);
+    }
+    else {
+      return _doclink($cfg, $urls, $content, undef, $rindex);
+    }
+  }
+}
+
 sub _format_body {
   my ($cfg, $article) = @_;
   require 'Generate.pm';
   my $gen = Generate->new(cfg=>$cfg, top => $article);
   my $body = $article->{body};
+  my @urls;
+  my $url_index = 1;
+  while ($body =~ s#(doclink|link)\[([^\]\[]+)\]#_any_link($cfg, \@urls, $1, $2, \$url_index)#ie) {
+  }
+
   $gen->remove_block(\$body);
   1 while $body =~ s/[bi]\[([^\[\]]+)\]/$1/g;
   $body =~ tr/\r//d; # in case
   $body =~ s/(^(?:[ \t]*\n)?|\n[ \t]*\n)([^\n]{73,})(?=\n[ \t]*\n|\n?\z)/
     $1 . _word_wrap($2)/ge;
+
+  if (@urls) {
+    $body .= "\n" unless $body =~ /\n$/;
+    $body .= "-----\n";
+    $url_index = 1;
+    for my $url (@urls) {
+      $body .= "[$url_index] $url\n";
+      ++$url_index;
+    }
+  }
 
   $body;
 }

@@ -571,6 +571,22 @@ sub nice_options {
   }
 }
 
+sub tag_siteuser {
+  my ($order, $rsiteuser, $arg) = @_;
+
+  unless ($$rsiteuser) {
+    $$rsiteuser = $order->siteuser || {};
+  }
+
+  my $siteuser = $$rsiteuser;
+  return '' unless $siteuser->{id};
+
+  my $value = $siteuser->{$arg};
+  defined $value or $value = '';
+
+  return escape_html($value);
+}
+
 sub order_detail {
   my ($req, $message) = @_;
 
@@ -588,6 +604,7 @@ sub order_detail {
     my $product;
     my @options;
     my $option_index = -1;
+    my $siteuser;
     my %acts;
     %acts =
       (
@@ -629,6 +646,7 @@ sub order_detail {
        ifOptions => sub { @options },
        options => sub { nice_options(@options) },
        message => sub { $message },
+       siteuser => [ \&tag_siteuser, $order, \$siteuser, ],
       );
     page('order_detail', \%acts);
   }

@@ -41,11 +41,7 @@ sub tie_it {
   }
   unless ($sessionid) {
   # save the new sessionid
-    my $domain = $ENV{HTTP_HOST};
-    $domain =~ s/:\d+$//;
-    my $cookie = CGI::Cookie->new(-name=>'sessionid', -value=>$session->{_session_id}, 
-				  -expires=>$lifetime, -path=>"/",
-				  -domain=>$domain);
+    my $cookie = $self->make_cookie($cfg, sessionid => $session->{_session_id});
 # from trying to debug Opera cookie issues
 #     my ($value, @rest) = split ';', $cookie;
 #     my @out = $value;
@@ -69,10 +65,8 @@ sub tie_it {
 sub change_cookie {
   my ($self, $session, $cfg, $sessionid, $newsession) = @_;
 
-  my $lifetime = $cfg->entry('basic', 'cookie_lifetime') || '+3h';
   print "Set-Cookie: ",
-  CGI::Cookie->new(-name=>'sessionid', -value=>$sessionid, 
-		   -expires=>$lifetime, -path=>"/"),"\n";
+    $self->make_cookie($cfg, 'sessionid', $sessionid),"\n";
   my $dh = BSE::DB->single;
   eval {
     tie %$newsession, $SESSION_CLASS, $sessionid,
@@ -81,6 +75,26 @@ sub change_cookie {
      LockHandle=>$dh->{dbh}
     };
   };
+}
+
+sub make_cookie {
+  my ($self, $cfg, $name, $value, $lifetime) = @_;
+
+  $lifetime ||= $cfg->entry('basic', 'cookie_lifetime') || '+3h';
+  my $domain = $ENV{HTTP_HOST};
+  $domain =~ s/:\d+$//;
+  my %opts =
+    (
+     -name => $name,
+     -value => $value,
+     -path=> '/',
+     -expires=>$lifetime,
+    );
+  if ($domain !~ /^\d+\.\d+\.\d+\.\d+$/) {
+    $opts{"-domain"} = $domain;
+  }
+  
+  return CGI::Cookie->new(%opts);
 }
 
 # this shouldn't be necessary, but it stopped working elsewhere and this

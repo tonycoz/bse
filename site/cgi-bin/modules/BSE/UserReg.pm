@@ -108,12 +108,8 @@ sub logon {
   $user->{previousLogon} = $user->{lastLogon};
   $user->{lastLogon} = now_datetime;
   $user->save;
-  my $lifetime = $cfg->entry('basic', 'cookie_lifetime') || '+3h';
-  use CGI::Cookie;
-  print "Set-Cookie: ",CGI::Cookie->new(-name=>"userid", 
-					-value=>$user->{userId},
-					-path=>"/",
-					-expires=>$lifetime),"\n";
+  print "Set-Cookie: ",BSE::Session->
+    make_cookie($cfg, userid=>$user->{userId}),"\n";
 
   _got_user_refresh($session, $cgi, $cfg);
 }
@@ -125,8 +121,8 @@ sub _got_user_refresh {
   my $securl = $cfg->entryVar('site', 'secureurl');
   my $need_magic = $baseurl ne $securl;
   my $onbase = 1;
+  my $debug = $cfg->entryBool('debug', 'logon_cookies', 0);
   if ($need_magic) {
-    my $debug = $cfg->entryBool('debug', 'logon_cookies', 0);
     print STDERR "Logon Cookies Debug\n" if $debug;
 
     # which host are we on?
@@ -149,6 +145,7 @@ sub _got_user_refresh {
     if (lc $ENV{SERVER_NAME} ne lc $basehost
        || lc $protocol ne $baseprot
        || $baseport != $port) {
+      print STDERR "not on base host ('$ENV{SERVER_NAME}' cmp '$basehost' '$protocol cmp '$baseprot'  $baseport cmp $port\n";
       $onbase = 0;
     }
   }
@@ -165,6 +162,7 @@ sub _got_user_refresh {
     my $url = $onbase ? $securl : $baseurl;
     my $finalbase = $onbase ? $baseurl : $securl;
     $refresh = $finalbase . $refresh unless $refresh =~ /^\w+:/;
+    print STDERR "Heading to $url to setcookie\n" if $debug;
     $url .= "$ENV{SCRIPT_NAME}?setcookie=".$session->{_session_id};
     $url .= "&r=".CGI::escape($refresh);
     refresh_to($url);
@@ -177,10 +175,12 @@ sub _got_user_refresh {
 sub set_cookie {
   my ($self, $session, $cgi, $cfg) = @_;
 
+  my $debug = $cfg->entryBool('debug', 'logon_cookies', 0);
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
   my $cookie = $cgi->param('setcookie')
     or return $self->show_logon($session, $cgi, $cfg, 
 				$msgs->(nocookie=>"No cookie provided"));
+  print STDERR "Setting sessionid to $cookie for $ENV{HTTP_HOST}\n";
   my %newsession;
   BSE::Session->change_cookie($session, $cfg, $cookie, \%newsession);
   if (exists $session->{cart} && !exists $newsession{cart}) {
@@ -193,18 +193,13 @@ sub set_cookie {
   my $userid = $newsession{userid};
   if ($userid) {
     my $user = SiteUsers->getBy(userId => $userid);
-    my $lifetime = $cfg->entry('basic', 'cookie_lifetime') || '+3h';
-    use CGI::Cookie;
-    print "Set-Cookie: ",CGI::Cookie->new(-name=>"userid", 
-					  -value=>$userid,
-					  -path=>"/",
-					  -expires=>$lifetime),"\n";
+    print "Set-Cookie: ",BSE::Session->
+      make_cookie($cfg, userid=>$userid),"\n";
   }
   else {
     # clear it 
-    print "Set-Cookie: ",CGI::Cookie->new(-name=>"userid", 
-					  -value=>'',
-					  -path=>"/"),"\n";
+    print "Set-Cookie: ",BSE::Session->
+      make_cookie($cfg, userid=> ''),"\n";
  }
   refresh_to($refresh);
 }
@@ -224,9 +219,8 @@ sub logoff {
 				$msgs->(notloggedon=>"You aren't logged on"));
 
   delete $session->{userid};
-  print "Set-Cookie: ",CGI::Cookie->new(-name=>"userid", 
-					-value=>'',
-					-path=>"/"),"\n";
+  print "Set-Cookie: ",BSE::Session->
+    make_cookie($cfg, userid=>''),"\n";
 
   _got_user_refresh($session, $cgi, $cfg);
 }
@@ -747,10 +741,8 @@ sub register {
     $user = SiteUsers->add(@user{@cols});
   };
   if ($user) {
-    use CGI::Cookie;
-    print "Set-Cookie: ",CGI::Cookie->new(-name=>"userid", 
-					  -value=>$user->{userId},
-					  -path=>"/"),"\n";
+    print "Set-Cookie: ",BSE::Session->
+      make_cookie($cfg, userid=>$user->{userId}),"\n";
     $session->{userid} = $user->{userId} unless $nopassword;
     my $subs = $self->_save_subs($user, $session, $cfg, $cgi);
     if ($nopassword) {

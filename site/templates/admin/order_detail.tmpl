@@ -6,7 +6,10 @@
 <p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | <a href="<:script:>"></a><a href="<:script:>">Manage 
   catalogs</a> | <a href="<:script:>?order_list=1">Manage orders</a> | <a href="<:script:>?order_list=1&template=order_list_unfilled">Unfilled 
   orders</a> | <a href="<:script:>?order_list=1&template=order_list_filled">Filled 
-  orders</a> |</p>
+  orders</a> |
+<:ifSiteuser id:><a href="/cgi-bin/admin/siteusers.pl?a_edit=1&amp;id=<:siteuser id:>">Edit Member</a> |
+<a href="/cgi-bin/admin/siteusers.pl?a_edit=1&amp;id=<:siteuser id:>&amp;_t=orders">Other member orders</a> |<:or:><:eif:>
+</p>
 <h2>Order details - No: #<:order id:></h2>
 <table cellpadding="6" cellspacing="1" border="0">
   <tr> 

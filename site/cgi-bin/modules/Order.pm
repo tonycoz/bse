@@ -21,4 +21,20 @@ sub columns {
            instructions billTelephone billFacsimile billEmail/;
 }
 
+=item siteuser
+
+returns the SiteUser object of the user who made this order.
+
+=cut
+
+sub siteuser {
+  my ($self) = @_;
+
+  $self->{userId} or return;
+
+  require SiteUsers;
+
+  return ( SiteUsers->getBy(userId=>$self->{userId}) )[0];
+}
+
 1;

@@ -261,6 +261,7 @@ site/templates/admin/subs/start_send.tmpl
 site/templates/admin/userlist.tmpl
 site/templates/admin/users/add.tmpl
 site/templates/admin/users/edit.tmpl
+site/templates/admin/users/edit_orders.tmpl
 site/templates/admin/users/list.tmpl
 site/templates/admin/xbase.tmpl
 site/templates/base.tmpl
