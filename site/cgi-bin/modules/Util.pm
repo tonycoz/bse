@@ -72,10 +72,18 @@ sub generate_article {
 # generates search.tmpl from search_base.tmpl
 sub generate_search {
   my ($articles) = @_;
-  use Generate;
-  my $gen = Generate->new;
+
+  require 'Generate/Article.pm';
+  my $gen = Generate::Article->new;
+
+  # build a dummy article
+  use Constants qw($SEARCH_TITLE $SEARCH_TITLE_IMAGE $CGI_URI);
+  my %article = map { $_, '' } Article->columns;
+  @article{qw(id title titleImage displayOrder link level listed)} =
+    (-1, $SEARCH_TITLE, $SEARCH_TITLE_IMAGE, 0, $CGI_URI."/search.pl", 0, 1);
+
   my %acts;
-  %acts = $gen->baseActs($articles, \%acts);
+  %acts = $gen->baseActs($articles, \%acts, \%article);
   my $templ = Squirrel::Template->new(%TEMPLATE_OPTS);
   my $content = $templ->show_page($TMPLDIR, 'search_base.tmpl', \%acts);
   my $outname = "$TMPLDIR/search.tmpl.work";
