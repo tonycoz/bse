@@ -10,6 +10,10 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.12
+
+0.11_21 seems stable enough.
+
 =head2 0.11_21
 
 Assuming no other problems are found this will become 0.12
