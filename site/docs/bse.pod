@@ -109,6 +109,14 @@ as a file
 
 schema/bse.sql now drops the tables if they already exist
 
+=item *
+
+the item description in the shopping cart is now a link to the item
+
+=item *
+
+changed some defaults in Constants.pm
+
 =back
 
 =head2 0.09
