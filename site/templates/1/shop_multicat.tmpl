@@ -1,0 +1,88 @@
+<html>
+<head>
+<title><:article title:></title>
+<meta name="ROBOTS" content="ALL">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Expires" content="Thu, 01 Jan 1970 00:00:00 GMT">
+<link rel="stylesheet" href="/css/style-main.css">
+
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#333399" vlink="#333399" alink="#CC0033" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr valign="top"> 
+    <td width="150"><!-- #BeginLibraryItem "/Library/search.lbi" --><table width="100%" border="0" cellspacing="0" cellpadding="5" name="search">
+              <tr align="center"> 
+                <td> 
+                  <form name="search" method="GET" action="/cgi-bin/search.pl">
+                    <input type="hidden" name="s" value="">
+                    <input type="hidden" name="d" value="ar">
+                    <input type="hidden" name="m" value="0">
+                    <br>
+                    <nobr> 
+                    <input type="text" name="q" size="14">
+                    <input type="submit" value="Go" name="submit">
+                    <br>
+                    <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"> 
+                    Try our <a href="/cgi-bin/search.pl">advanced search</a></font></nobr> 
+                  </form></td></tr>
+            </table><!-- #EndLibraryItem --> <!-- #BeginLibraryItem "/Library/nav.lbi" --><table width="150" border="0" cellspacing="0" cellpadding="0" name="nav">
+        <tr> 
+          <td> <:iterator begin level1:> <:if Level2:> 
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr> 
+                <td> 
+                  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                    <tr bgcolor="#CCCCFF"> 
+                      <td height="20" width="100%" nowrap><font class="nav_head" face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>&nbsp;<a href="<:url level1:>"><:level1 
+                        title:></a></b></font></td></tr>
+                  </table></td></tr>
+              <tr> 
+                <td> 
+                  <table width="100%" border="0" cellspacing="0" cellpadding="5">
+                    <tr> 
+                      <td> <font class="nav_link" face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:iterator 
+                        begin level2:><a href="<:url level2:>"><:level2 title:></a> 
+                        <:iterator separator level2:><br>
+                        <img src="/images/trans_pixel.gif" width="2" height="4" border="0"><br>
+                        <:iterator end level2:> </font></td></tr>
+                  </table></td></tr>
+            </table><:or Level2:> 
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr> 
+                <td> 
+                  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                    <tr bgcolor="#CCCCFF"> 
+                      <td height="20" width="100%" nowrap><font class="nav_head" face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>&nbsp;<a href="<:url level1:>"><:level1 
+                        title:></a></b></font></td></tr>
+                  </table></td></tr>
+            </table><br>
+            <:eif Level2:><:iterator separator level1:><:iterator end level1:> 
+          </td></tr>
+      </table><!-- #EndLibraryItem --></td>
+    <td width="100%"><font class="section_Heading" face="Verdana, Arial, Helvetica, sans-serif" size="5" color="#6600FF"><b><:title:></b></font>
+      <hr noshade width="100%" size="1">
+	<:admin:>
+      <font class="section_Body" face="" size="3" color="#000099"><:body:></font>
+<:iterator begin children:> 
+      <p><a href="<:url child:>"><b><font class="index_heads" face="Verdana, Arial, Helvetica, sans-serif" size="3" color="#660033"><:child 
+        title:></font></b></a><:moveDown:><:moveUp:><br>
+        <font class="index_body_text" face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <:summary:> </font></p>
+      <:iterator separator children:><:iterator end children:>
+
+<p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><span class="article_body_text"><a href="http://www.thawte.com"><img src="/images/stamp.gif" width="150" height="101" align="RIGHT" border="0"></a>We 
+  want to make sure you have complete confidence when you make on-line purchases 
+  in our store. </span></font></p>
+<p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><span class="article_body_text">We 
+use sophisticated <b>secure socket layer (SSL) encryption technology</b> to encode 
+your personal and credit card details when it is sent from your computer to ours. 
+It&#146;s the same technology that is used by larger online stores like dStore. 
+</span></font></p>
+</td>
+  </tr>
+
+</table>
+</body>
+</html>
+
