@@ -5,6 +5,7 @@ use CGI ();
 use Constants qw($IMAGEDIR $LOCAL_FORMAT $TMPLDIR $BODY_EMBED 
                  $EMBED_MAX_DEPTH $HAVE_HTML_PARSER);
 use BSE::Custom;
+use DevHelp::Tags;
 
 my $excerptSize = 300;
 
@@ -431,6 +432,32 @@ sub embed {
   return $self->generate_low($html, $article, $articles, 1);
 }
 
+sub iter_kids_of {
+  my ($args, $acts, $name, $templater) = @_;
+
+  my @ids = split ' ', $args;
+  for my $id (@ids) {
+    unless ($id =~ /^\d+$|^-1$/) {
+      $id = $templater->perform($acts, $id, "id");
+    }
+  }
+  @ids = grep /^\d+$|^-1$/, @ids;
+  map Articles->listedChildren($_), @ids;
+}
+
+sub iter_inlines {
+  my ($args, $acts, $name, $templater) = @_;
+
+  my @ids = split ' ', $args;
+  for my $id (@ids) {
+    unless ($id =~ /^\d+$/) {
+      $id = $templater->perform($acts, $id, "id");
+    }
+  }
+  @ids = grep /^\d+$/, @ids;
+  map Articles->getByPkey($_), @ids;
+}
+
 sub baseActs {
   my ($self, $articles, $acts, $article, $embedded) = @_;
 
@@ -530,10 +557,10 @@ sub baseActs {
      # generate an admin or link url, depending on admin state
      url=>
      sub {
-       my $name = shift;
+       my ($name, $acts, $func, $templater) = @_;
        my $item = $self->{admin} ? 'admin' : 'link';
        $acts->{$name} or return "<:url $name:>";
-       return $acts->{$name}->($item);
+       return $templater->perform($acts, $name, $item);
      },
      ifInMenu =>
      sub {
@@ -550,6 +577,10 @@ sub baseActs {
          return CGI::escapeHTML($text);
        }
      },
+     DevHelp::Tags->make_iterator2
+     ( \&iter_kids_of, 'ofchild', 'children_of' ), 
+     DevHelp::Tags->make_iterator2
+     ( \&iter_inlines, 'inline', 'inlines' ),
     );
 }
 

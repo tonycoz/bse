@@ -3,7 +3,7 @@ use vars qw($VERSION);
 use strict;
 use Carp;
 
-$VERSION="0.04";
+$VERSION="0.05";
 
 sub new {
   my ($class, %opts) = @_;
@@ -15,17 +15,34 @@ sub perform {
   my ($self, $acts, $func, $args, $orig) = @_;
 
   $args = '' unless defined $args;
+
+  #print STDERR "perform $func $args\n";
   my $fmt;
-  if ($acts->{_format} && $args =~ s/\|([\w%]+)\s*$//) {
+  if ($acts->{_format} && $args =~ s/\|(\S+)\s*$//) {
     $fmt = $1;
   }
 
   if (exists $acts->{$func}) {
     $args = '' unless defined $args;
     $args =~ s/^\s+|\s+$//g;
-    my $value = ref $acts->{$func} ? $acts->{$func}->($args) : $acts->{$func};
-    defined $value
-      or return "** function $func $args returned undef **";
+    my $value;
+    my $action = $acts->{$func};
+    if (ref $action) {
+      if (ref $action eq 'CODE') {
+	$value = $action->($args, $acts, $func, $self);
+	defined $value or return $orig;
+      }
+      elsif (ref $action eq 'ARRAY') {
+	my ($code, @params) = @$action;
+	$value = $code->(@params, $args, $acts, $func, $self);
+      }
+      else {
+	return $orig;
+      }
+    }
+    else {
+      $value = $action;
+    }
     return $fmt ? $acts->{_format}->($value, $fmt) : $value;
   }
   for my $match (keys %$acts) {
@@ -68,10 +85,29 @@ sub iterate {
 
   if (my $entry = $acts->{"iterate_$name"}) {
     $args =~ s/^\s+|\s+$//g;
-    my $reset;
-    $reset->($args) if $reset = $acts->{"iterate_${name}_reset"};
+
+    my $reset = $acts->{"iterate_${name}_reset"};
+    my ($resetf, @rargs);
+    if ($reset) {
+      if (ref $reset eq 'ARRAY') {
+	($resetf, @rargs) = @$reset;
+      }
+      else {
+	$resetf = $reset;
+      }
+    }
+
+    my ($entryf, @eargs);
+    if (ref $entry eq 'ARRAY') {
+      ($entryf, @eargs) = @$entry;
+    }
+    else {
+      $entryf = $entry;
+    }
+
+    $resetf->(@rargs, $args, $acts, $name, $self) if $resetf;
     my $result = '';
-    while ($entry->($name, $args)) {
+    while ($entryf->(@eargs, $name, $args)) {
       $result .= $self->replace_template($sep, $acts) if length $result;
       $result .= $self->replace_template($input, $acts);
     }
@@ -88,16 +124,25 @@ sub cond {
   my $result =
     eval {
       if (exists $acts->{"if$name"}) {
-	return $acts->{"if$name"}->($args) ? $true : $false;
+	my $cond = $self->perform($acts, "if$name", $args, '');
+	return $cond ? $true : $false;
       }
       elsif (exists $acts->{lcfirst $name}) {
-	return $acts->{lcfirst $name}->($args) ? $true : $false;
+	my $cond = $self->perform($acts, lcfirst $name, $args, '');
+	return $cond ? $true : $false;
       }
       else {
 	return $orig;
       }
     };
-  $@ && return $orig;
+  if ($@) {
+    my $msg = $@;
+    $msg =~ /^ENOIMPL\b/
+      and return $orig;
+    $msg =~ s/([<>&])/"&#".ord($1).";"/ge;
+    return "<!-- ** $msg ** -->";
+  }
+
   return $result;
 }
 
@@ -108,12 +153,20 @@ sub replace_template {
     or confess "Template must be defined";
 
   # add any wrappers
+  my %params;
   if ($self->{template_dir}) {
     my $wrap_count = 0;
-    while ($template =~ /^(\s*<:\s*wrap\s+(\S+)\s*:>)/i
-           && -e "$self->{template_dir}/$2"
-           && ++$wrap_count < 10) {
+    while ($template =~ /^(\s*<:\s*wrap\s+(\S+?)(?:\s+(\S.*?))?:>)/i) {
       my $wrapper = "$self->{template_dir}/$2";
+      unless (-e $wrapper) {
+	print STDERR "WARNING: Unknown wrap name: $wrapper\n";
+	last;
+      }
+      unless (++$wrap_count < 10) {
+	print STDERR "WARNING: Exceeded wrap count trying to load $wrapper\n";
+	last;
+      }
+      my $params = $3;
       if (open WRAPPER, "< $wrapper") {
         my $wraptext = do { local $/; <WRAPPER> };
         close WRAPPER;
@@ -121,6 +174,17 @@ sub replace_template {
         $wraptext =~ s/<:\s*wrap\s+here\s*:>/$template/i
           and $template = $wraptext
             or last;
+	
+	while ($params =~ s/^\s*(\w+)\s*=>\s*\"([^\"]+)\"//
+	       || $params =~ s/^\s*(\w+)\s*=>\s*([^\s,]+)//) {
+	  $params{$1} = $2;
+	  $params =~ s/\s*,\s*//;
+	}
+	$params =~ /^\s*$/
+	  or print STDERR "WARNING: Extra data after parameters '$params'\n";
+      }
+      else {
+	print "ERROR: Unable to load wrapper $wrapper: $!\n";
       }
     }
   }
@@ -153,22 +217,26 @@ sub replace_template {
 
   # conditionals
   my $nesting = 0; # prevents loops if result is an if statement
-  1 while $template =~ s/(<:\s*if\s+(\w+)(?:\s+([^:]*))?\s*:>
+  1 while $template =~ s/(<:\s*if\s+(\w+)(?:\s+(.*?))?\s*:>
                           (.*?)
                          <:\s*or\s+\2\s*:>
                           (.*?)
                          <:\s*eif\s+\2\s*:>)/
                         $self->cond($2, $3, $4, $5, $acts, $1) /sgex
 			  && ++$nesting < 5;
-  $template =~ s/(<:\s*if(\w+)(?:\s+([^:]*))?\s*:>
+  $template =~ s/(<:\s*if(\w+)(?:\s+(.*?))?\s*:>
                   (.*?)
                  <:\s*or\s*:>
                   (.*?)
                  <:\s*eif\s*:>)/
                 $self->cond($2, $3, $4, $5, $acts, $1) /sgex;
 
-  $template =~ s/(<:\s*(\w+)(?:\s+([^:]*))?\s*:>)/ 
-    $self->perform($acts, $2, $3, $1) /egx;
+  $template =~ s/(<:\s*(\w+)(?:\s+(.*?))?\s*:>)/ 
+    $self->perform($acts, $2, $3, $1) /segx;
+
+  # replace any wrap parameters
+  $template =~ s/(<:\s*param\s+(\w+)\s*:>)/
+    exists $params{$2} ? $params{$2} : $1 /eg;
 
   return $template;
 }
@@ -178,7 +246,7 @@ sub show_page {
 
   $acts ||= {};
 
-  my $file = "$base/$page";
+  my $file = $page ? "$base/$page" : $base;
   open TMPLT, "< $file"
     or die "Cannot open template $file: $!";
   my $template = do { local $/; <TMPLT> };

@@ -71,9 +71,11 @@ sub baseActs {
   # generate a list of ancester articles/sections
   # jason calls these breadcrumbs
   my @crumbs;
+  my @ancestors;
   my $temp = $article;
   while ($temp->{parentid} > 0
 	and my $crumb = $articles->getByPkey($temp->{parentid})) {
+    unshift(@ancestors, $crumb);
     unshift(@crumbs, $crumb) if $crumb->{listed} == 1 || $crumb->{level} == 1;
     $temp = $crumb;
   }
@@ -323,6 +325,15 @@ HTML
      sub {
        my $arg = shift;
        $arg && $acts->{$arg} && $acts->{$arg}->('id') == $article->{id};
+     },
+     ifAncestor =>
+     sub {
+       my ($arg, $acts, $name, $templater) = @_;
+       unless ($arg =~ /^\d+$/) {
+	 $arg = $acts->{$arg} && $templater->perform($acts, $arg, 'id')
+	   or return;
+       }
+       scalar grep $_->{id} == $arg, @ancestors, $article;
      },
      
      # access to images, if any

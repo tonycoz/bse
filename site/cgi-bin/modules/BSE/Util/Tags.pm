@@ -1,6 +1,7 @@
 package BSE::Util::Tags;
 use strict;
 use HTML::Entities;
+use DevHelp::Tags;
 
 sub _get_parms {
   my ($acts, $args) = @_;
@@ -37,13 +38,14 @@ sub static {
     (
      date =>
      sub {
+       my ($arg, $acts, $name, $templater) = @_;
        my ($fmt, $func, $args) = 
-	 $_[0] =~ m/(?:\"([^\"]+)\"\s+)?(\S+)(?:\s+(\S+.*))?/;
+	 $arg =~ m/(?:\"([^\"]+)\"\s+)?(\S+)(?:\s+(\S+.*))?/;
        $fmt = "%d-%b-%Y" unless defined $fmt;
        require 'POSIX.pm';
        exists $acts->{$func}
 	 or return "<:date $_[0]:>";
-       my $date = $acts->{$func}->($args)
+       my $date = $templater->perform($acts, $func, $args)
 	 or return '';
        my ($year, $month, $day, $hour, $min, $sec) = 
 	 $date =~ /(\d+)\D+(\d+)\D+(\d+)(?:\D+(\d+)\D+(\d+)\D+(\d+))?/;
@@ -54,23 +56,25 @@ sub static {
      },
      money =>
      sub {
-       my ($func, $args) = split ' ', $_[0];
+       my ($arg, $acts, $name, $templater) = @_;
+       my ($func, $args) = split ' ', $arg;
        $args = '' unless defined $args;
        exists $acts->{$func}
 	 or return "<: money $func $args :>";
-       my $value = $acts->{$func}->($args);
+       my $value = $templater->perform($acts, $func, $args);
        defined $value
 	 or return '';
        sprintf("%.02f", $value/100.0);
      },
      bodytext =>
      sub {
-       my ($func, $args) = split ' ', $_[0], 2;
+       my ($arg, $acts, $name, $templater) = @_;
+       my ($func, $args) = split ' ', $arg, 2;
 
        $args = '' unless defined $args;
        exists $acts->{$func}
 	 or return "<: bodytext $func $args :>";
-       my $value = $acts->{$func}->($args);
+       my $value = $templater->perform($acts, $func, $args);
        defined $value
 	 or return '';
        
@@ -82,13 +86,15 @@ sub static {
      },
      ifEq =>
      sub {
-       (my ($left, $right) = _get_parms($acts, $_[0])) == 2
+       my ($arg, $acts, $name, $templater) = @_;
+       (my ($left, $right) = DevHelp::Tags->get_parms($arg, $acts, $templater)) == 2
 	 or die; # leaves if in place
        $left eq $right;
      },
      ifMatch =>
      sub {
-       (my ($left, $right) = _get_parms($acts, $_[0])) == 2
+       my ($arg, $acts, $name, $templater) = @_;
+       (my ($left, $right) = DevHelp::Tags->get_parms($arg, $acts, $templater)) == 2
 	 or die; # leaves if in place
        $left =~ $right;
      },
@@ -104,9 +110,10 @@ sub static {
      },
      kb =>
      sub {
-       my ($key, $args) = split ' ', $_[0], 2;
-       $acts->{$key} or return "<:kb $_[0]:>";
-       my $value = $acts->{$key}->($args);
+       my ($arg, $acts, $name, $templater) = @_;
+       my ($key, $args) = split ' ', $arg, 2;
+       $acts->{$key} or return "<:kb $arg:>";
+       my $value = $templater->perform($acts, $key, $args);
        if ($value > 100000) {
          return sprintf("%.0fk", $value/1000.0);
        }

@@ -45,6 +45,86 @@ sub make_iterator {
   }
 }
 
+sub _iter_reset {
+  my ($rdata, $rindex, $code, $loaded, $args, $acts, $name, $templater) = @_;
+
+  if (!$$loaded && !@$rdata && $code || $args) {
+    my ($sub, @args) = $code;
+
+    if (ref $code eq 'ARRAY') {
+      ($sub, @args) = @$code;
+    }
+    @$rdata = $sub->(@args, $args, $acts, $name, $templater);
+    ++$$loaded unless $args;
+  }
+
+  $$rindex = -1;
+
+  1;
+}
+
+sub _iter_iterate {
+  my ($rdata, $rindex) = @_;
+
+  return ++$$rindex < @$rdata;
+}
+
+sub _iter_if {
+  my ($rdata, $code, $loaded, $args) = @_;
+
+  _iter_count($rdata, $code, $loaded, $args);
+}
+
+sub _iter_count {
+  my ($rdata, $code, $loaded, $args, $acts, $func, $templater) = @_;
+
+  if (!$$loaded && !@$rdata && $code || $args) {
+    my ($sub, @args) = $code;
+
+    if (ref $code eq 'ARRAY') {
+      ($sub, @args) = @$code;
+    }
+    @$rdata = $sub->(@args, $args, $acts, $func, $templater);
+    ++$$loaded unless $args;
+  }
+
+  scalar @$rdata;
+}
+
+sub _iter_index {
+  return ${$_[0]};
+}
+
+sub _iter_item {
+  my ($rdata, $rindex, $single, $plural, $args) = @_;
+
+  $$rindex >= 0 && $$rindex < @$rdata
+    or return "** $single should only be used inside iterator $plural **";
+  return $rdata->[$$rindex]{$args};
+}
+
+# builds an arrayref based iterator
+sub make_iterator2 {
+  my ($class, $code, $single, $plural, $rdata, $rindex) = @_;
+
+  my $index;
+  defined $rindex or $rindex = \$index;
+  $$rindex = -1;
+  $rdata ||= [];
+  my $loaded = 0;
+  return
+    (
+     "iterate_${plural}_reset" => 
+     [ \&_iter_reset, $rdata, $rindex, $code, \$loaded ],
+     "iterate_${plural}" =>
+     [ \&_iter_iterate, $rdata, $rindex ],
+     $single => [ \&_iter_item, $rdata, $rindex, $single, $plural ],
+     "if\u$plural" => [ \&_iter_if, $rdata, $code, \$loaded ],
+     "${single}_index" => [ \&_iter_index, $rindex ],
+     "${single}_count" => [ \&_iter_count, $rdata, $code, \$loaded ],
+    );
+}
+
 sub make_dependent_iterator {
   my ($class, $base_index, $getdata, $single, $plural, $saveto) = @_;
 
@@ -148,51 +228,77 @@ sub make_multidependent_iterator {
   }
 }
 
+sub tag_date {
+  my ($args, $acts, $myfunc, $self) = @_;
+
+  my ($fmt, $func, $funcargs) = 
+    $args =~ m/(?:\"([^\"]+)\"\s+)?(\S+)(?:\s+(\S+.*))?/;
+  $fmt = "%d-%b-%Y" unless defined $fmt;
+  require 'POSIX.pm';
+  exists $acts->{$func}
+    or return "<:date $args:>";
+  my $date = $self->perform($acts, $func, $funcargs)
+    or return '';
+  my ($year, $month, $day, $hour, $min, $sec) = 
+    $date =~ /(\d+)\D+(\d+)\D+(\d+)(?:\D+(\d+)\D+(\d+)\D+(\d+))?/;
+  $hour = $min = $sec = 0 unless defined $sec;
+  $year -= 1900;
+  --$month;
+  return POSIX::strftime($fmt, $sec, $min, $hour, $day, $month, $year, 0, 0);
+}
+
+sub iter_get_repeat {
+  my ($args, $acts, $name, $templater) = @_;
+
+  my @args = __PACKAGE__->get_parms($args, $acts, $templater);
+
+  my @values;
+  if (@args == 2) {
+    @values = $args[0] .. $args[1];
+  }
+  elsif (@args) {
+    @values = 1 .. $args[0];
+  }
+  else {
+    return;
+  }
+
+  return map { index => $_, value => $values[$_] }, 0..$#values;
+}
+
 sub static {
-  my ($class, $acts) = @_;
+  my ($class) = @_;
 
   return
     (
-     date =>
-     sub {
-       my ($fmt, $func, $args) = 
-	 $_[0] =~ m/(?:\"([^\"]+)\"\s+)?(\S+)(?:\s+(\S+.*))?/;
-       $fmt = "%d-%b-%Y" unless defined $fmt;
-       require 'POSIX.pm';
-       exists $acts->{$func}
-	 or return "<:date $_[0]:>";
-       my $date = $acts->{$func}->($args)
-	 or return '';
-       my ($year, $month, $day, $hour, $min, $sec) = 
-	 $date =~ /(\d+)\D+(\d+)\D+(\d+)(?:\D+(\d+)\D+(\d+)\D+(\d+))?/;
-       $hour = $min = $sec = 0 unless defined $sec;
-       $year -= 1900;
-       --$month;
-       return POSIX::strftime($fmt, $sec, $min, $hour, $day, $month, $year, 0, 0);
-     },
-     money =>
-     sub {
-       my ($func, $args) = split ' ', $_[0];
-       $args = '' unless defined $args;
-       exists $acts->{$func}
-	 or return "<: money $func $args :>";
-       my $value = $acts->{$func}->($args);
-       defined $value
-	 or return '';
-       sprintf("%.02f", $value/100.0);
-     },
+     date => \&tag_date,
+#       money =>
+#       sub {
+#         my ($func, $args) = split ' ', $_[0];
+#         $args = '' unless defined $args;
+#         exists $acts->{$func}
+#  	 or return "<: money $func $args :>";
+#         my $value = $acts->{$func}->($args);
+#         defined $value
+#  	 or return '';
+#         sprintf("%.02f", $value/100.0);
+#       },
      ifEq =>
      sub {
-       (my ($left, $right) = _get_parms($acts, $_[0])) == 2
-	 or die; # leaves if in place
-       $left eq $right;
+       my @args = __PACKAGE__->get_parms(@_[0,1,3]);
+       @args == 2 
+	 or do { print STDERR "Not enough args for ifEq\n"; return 0; };
+       return $args[0] eq $args[1];
      },
      ifMatch =>
      sub {
-       (my ($left, $right) = _get_parms($acts, $_[0])) == 2
-	 or die; # leaves if in place
-       $left =~ $right;
+       my @args = __PACKAGE__->get_parms(@_[0,1,3]);
+       @args == 2
+	 or die "Not enough args for ifMatch\n";
+       print STDERR "Matching >$args[0]< against >$args[1]<\n";
+       $args[0] =~ $args[1];
      },
+     __PACKAGE__->make_iterator2(\&iter_get_repeat, 'repeat', 'repeats'),
      _format => 
      sub {
        my ($value, $fmt) = @_;
@@ -202,9 +308,42 @@ sub static {
        elsif ($fmt eq 'h') {
 	 return CGI::escapeHTML($value);
        }
+       elsif ($fmt eq 'j') {
+	 $value =~ s/(["'&<>\\])/sprintf "\\%03o", ord $1/ge;
+         return $value;
+       }
        return $value;
      },
     );  
 }
+
+sub get_parms {
+  my ($class, $args, $acts, $templater) = @_;
+
+  my @out;
+  while ($args) {
+    if ($args =~ s/^\s*\[\s*(\w+)(?:\s+(\S[^\]]*))?\]\s*//) {
+      my ($func, $subargs) = ($1, $2);
+      if ($acts->{$func}) {
+	$subargs = '' unless defined $subargs;
+	push(@out, $templater->perform($acts, $func, $subargs));
+      }
+    }
+    elsif ($args =~ s/^\s*\"((?:[^\"\\]|\\[\\\"])*)\"\s*//) {
+      my $out = $1;
+      $out =~ s/\\([\\\"])/$1/g;
+      push(@out, $out);
+    }
+    elsif ($args =~ s/^\s*(\S+)\s*//) {
+      push(@out, $1);
+    }
+    else {
+      last;
+    }
+  }
+
+  @out;
+}
+
 
 1;

@@ -63,6 +63,7 @@ site/cgi-bin/modules/BSE/Util/Tags.pm
 site/cgi-bin/modules/BSE/Util/Valid.pm
 site/cgi-bin/modules/BSE/Version.pm
 site/cgi-bin/modules/Constants.pm
+site/cgi-bin/modules/DevHelp/Tags.pm
 site/cgi-bin/modules/Generate.pm
 site/cgi-bin/modules/Generate/Article.pm
 site/cgi-bin/modules/Generate/Catalog.pm
@@ -246,4 +247,5 @@ site/util/upgrade_mysql.pl
 t/BSE/Test.pm
 t/t00smoke.t
 t/t10edit.t
+t/t20gen.t
 test.cfg.base

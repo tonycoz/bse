@@ -10,6 +10,53 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.12_01
+
+Some derived tags may not work with the new fields, since I've
+switched to the version of Squirrel::Template used by Resource, which
+should reduce memory consumption a little, once all the tags are
+converted.
+
+I think I have all the derived tags, but there might be one I
+missed...
+
+=over
+
+=item *
+
+added ifAncestor conditional tag
+
+=item *
+
+added iterator children_of and tag ofchild, usage:
+
+=over
+
+<:iterator begin children_of I<parent_id1> ...:>
+<:ofchild I<field>:>
+<:iterator end children_of:>
+
+=back
+
+=item *
+
+added iterator inlines and tag inline, usage:
+
+=over
+
+<:iterator begin inlines I<article_id1> ...:>
+<:inline I<field>:>
+<:iterator end inlines:>
+
+=back
+
+=item *
+
+more test code to test the above (now I have the infrastructure to
+simplify adding these types of tests
+
+=back
+
 =head2 0.12
 
 0.11_21 seems stable enough.
