@@ -1,4 +1,6 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl -w -d:ptkdb
+BEGIN { $ENV{DISPLAY} = '192.168.32.97:0.0'; }
+
 use strict;
 use FindBin;
 use lib "$FindBin::Bin/../modules";
@@ -55,17 +57,7 @@ END {
   untie %session;
 }
 
-my %acts;
-%acts = 
-  (
-   articleType=>sub { 'Product' },
-  );
-
 param();
-
-my $imageEditor = Squirrel::ImageEditor->new(session=>\%session,
-					     extras=>\%acts,
-					     keep => [ 'id' ]);
 
 my %what_to_do =
   (
@@ -90,6 +82,28 @@ my %what_to_do =
 my @modifiable = qw(body retailPrice wholesalePrice gst release expire 
                     parentid leadTime options template);
 my %modifiable = map { $_=>1 } @modifiable;
+
+my $product;
+my $id = param('id');
+if ($id) {
+  $product = Products->getByPkey($id);
+}
+my %acts;
+%acts = 
+  (
+   articleType=>sub { 'Product' },
+   article=>
+   sub {
+     my $value = $product->{$_[0]};
+     defined $value or $value = '';
+     CGI::escapeHTML($value);
+   },
+   level => sub { 3; }, # doesn't really matter here
+  );
+
+my $imageEditor = Squirrel::ImageEditor->new(session=>\%session,
+					     extras=>\%acts,
+					     keep => [ 'id' ]);
 
 if ($imageEditor->action($CGI::Q)) {
   exit;
@@ -266,7 +280,7 @@ sub add_product {
     if param('parentid');
   if (!exists $session{imageid} || $session{imageid} ne '') {
     $session{imageid} = '';
-    $imageEditor->set([], 'tr');
+    #$imageEditor->set([], 'tr');
   }
 
   product_form($product, "Add New");
@@ -371,8 +385,10 @@ sub save_product {
     }
     # in with the new
     my @images = $imageEditor->images();
+    my @cols = Image->columns;
+    splice @cols, 0, 2;
     for my $image (@images) {
-      Images->add($original->{id}, @$image{qw/image alt width height/});
+      Images->add($original->{id}, @$image{@cols});
     }
     $imageEditor->clear();
     delete $session{imageid};

@@ -331,8 +331,6 @@ sub checkout_confirm {
      shop_cart_tags(\%acts, \@cart, \@cart_prods, \%session, $CGI::Q),
      basic_tags(\%acts),
      old => sub { CGI::escapeHTML(param($_[0])) },
-     BSE::Custom->checkout_actions(\%acts, \@cart, \@cart_prods, 
-                                   $session{custom}, $CGI::Q),
     );
   page('checkoutconfirm.tmpl', \%acts);
 }
