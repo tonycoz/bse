@@ -11,7 +11,7 @@ use Squirrel::ImageEditor;
 use CGI::Cookie;
 use BSE::Custom;
 use BSE::Mail;
-use BSE::Shop::Util qw/shop_cart_tags cart_item_opts nice_options total basic_tags/;
+use BSE::Shop::Util qw/shop_cart_tags cart_item_opts nice_options total basic_tags load_order_fields/;
 
 require $SESSION_REQUIRE;
 
@@ -92,6 +92,7 @@ my %steps =
    add=>\&add_item,
    cart=>\&show_cart,
    checkout=>\&checkout,
+   recheckout => sub { checkout('', 1); },
    confirm => \&checkout_confirm,
    recalc=>\&recalc,
    recalculate=>\&recalc,
@@ -329,6 +330,7 @@ sub checkout_confirm {
      shop_cart_tags(\%acts, \@cart, \@cart_prods, \%session, $CGI::Q),
      basic_tags(\%acts),
     );
+  page('checkoutconfirm.tmpl', \%acts);
 }
 
 # this can be used instead of the purchase page to work in 2 steps:

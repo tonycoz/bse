@@ -119,7 +119,7 @@ my %nostore =
   );
 
 sub load_order_fields {
-  my ($wantcard, $q, $order, $session, $error, $cart_prods) = @_;
+  my ($wantcard, $q, $order, $session, $cart_prods, $error) = @_;
 
   my @required = BSE::Custom->required_fields($CGI::Q, $session->{custom});
   push(@required, qw(cardHolder cardExpiry)) if $wantcard;
@@ -150,13 +150,13 @@ sub load_order_fields {
   my %columns; 
   @columns{@columns} = @columns;
 
-  for my $field (param()) {
-    $order->{$field_map{$field} || $field} = param($field)
+  for my $field ($q->param()) {
+    $order->{$field_map{$field} || $field} = $q->param($field)
       unless $nostore{$field};
   }
 
-  my $ccNumber = param('cardNumber');
-  my $ccExpiry = param('cardExpiry');
+  my $ccNumber = $q->param('cardNumber');
+  my $ccExpiry = $q->param('cardExpiry');
 
   use Digest::MD5 'md5_hex';
   $ccNumber =~ tr/0-9//cd;
@@ -211,7 +211,8 @@ sub load_order_fields {
     return 0;
   }
 
-  @$cart_prods = @products;
+  @$cart_prods = @products if $cart_prods;
+
   return 1;
 }
 

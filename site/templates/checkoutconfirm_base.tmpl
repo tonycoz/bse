@@ -1,0 +1,215 @@
+<:wrap base.tmpl:> 
+<script language="JavaScript">
+<!--
+function MM_findObj(n, d) { //v4.01
+  var p,i,x;  if(!d) d=document; if((p=n.indexOf("?"))>0&&parent.frames.length) {
+    d=parent.frames[n.substring(p+1)].document; n=n.substring(0,p);}
+  if(!(x=d[n])&&d.all) x=d.all[n]; for (i=0;!x&&i<d.forms.length;i++) x=d.forms[i][n];
+  for(i=0;!x&&d.layers&&i<d.layers.length;i++) x=MM_findObj(n,d.layers[i].document);
+  if(!x && d.getElementById) x=d.getElementById(n); return x;
+}
+
+function MM_validateForm() { //v4.0
+  var i,p,q,nm,test,num,min,max,errors='',args=MM_validateForm.arguments;
+  for (i=0; i<(args.length-2); i+=3) { test=args[i+2]; val=MM_findObj(args[i]);
+    if (val) { nm=val.name; if ((val=val.value)!="") {
+      if (test.indexOf('isEmail')!=-1) { p=val.indexOf('@');
+        if (p<1 || p==(val.length-1)) errors+='- '+nm+' must contain an e-mail address.\n';
+      } else if (test!='R') {
+        if (isNaN(val)) errors+='- '+nm+' must contain a number.\n';
+        if (test.indexOf('inRange') != -1) { p=test.indexOf(':');
+          min=test.substring(8,p); max=test.substring(p+1);
+          if (val<min || max<val) errors+='- '+nm+' must contain a number between '+min+' and '+max+'.\n';
+    } } } else if (test.charAt(0) == 'R') errors += '- '+nm+' is required.\n'; }
+  } if (errors) alert('The following error(s) occurred:\n'+errors);
+  document.MM_returnValue = (errors == '');
+}
+//-->
+</script>
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr> 
+    <td bgcolor="#CCCCFF" width="80%" height="24">&nbsp;&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="4"><b><:title:></b></font></td>
+    <td height="24">&nbsp;</td>
+  </tr>
+  <tr> 
+    <td bgcolor="#999999" colspan="2" height="1"><img src="/images/trans_pixel.gif" width="24" height="1" border="0"></td>
+  </tr>
+  <tr> 
+    <td colspan="2"> 
+      <table width="100%" border="0" cellspacing="0" cellpadding="0">
+        <tr> 
+          <td width="100"><img src="/images/trans_pixel.gif" width="100" height="10" border="0"></td>
+          <td bgcolor="#333399" width="100%">&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2">/ 
+            <a href="<:ifAdmin:>/cgi-bin/admin/admin.pl?id=1<:or:>/<:eif:>"><font color="#FFFFFF">Home</font></a> 
+            / <a href="/shop/index.html"><font color="#FFFFFF"><:article title:></font></a> 
+            /</font></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<p> <b><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Please confirm your entered details.</font></b></p>
+<font class="article_body_text" face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+<p> The <:siteName:> store is run on a secure encrypted server, your details are 
+  safe with us.<br>
+</p>
+</font> 
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr> 
+    <td align="center" bgcolor="#CCCCFF" width="100%" height="18"> <font size="2" face="Verdana, Arial, Helvetica, sans-serif"> 
+      <b>Shopping Cart Items</b></font></td>
+  </tr>
+</table>
+<table border="0" cellspacing="0" cellpadding="1" width="100%" bgcolor="#6767CC">
+  <tr valign="middle" align="center"> 
+    <td width="100%"> 
+      <table width="100%" border="0" cellspacing="0" cellpadding="2">
+        <tr valign="middle" align="center" bgcolor="#6767CC"> 
+          <td width="100%" align="left" height="18"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FFFFFF"><b>Item:</b></font>&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FFFFFF">(All 
+            prices in AUD &#150; includes GST and shipping costs where applicable)</font></td>
+          <td nowrap height="18"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FFFFFF"><b>Qty:</b></font>&nbsp;</td>
+          <td height="18"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FFFFFF"><b>Price:</b></font>&nbsp;</td>
+        </tr>
+        <:iterator begin items:> 
+        <tr valign="middle" align="center" bgcolor="#FFFFFF"> 
+          <td width="100%" align="left"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:item 
+            summary:>  <:options:></font></td>
+          <td nowrap align="center"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:item 
+            units:></font></td>
+          <td align="right"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>$<: 
+            money item retailPrice :></b></font></td>
+        </tr>
+        <:iterator end items:> 
+      </table>
+    </td>
+  </tr>
+</table>
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr> 
+    <td>&nbsp;</td>
+    <td height="20">&nbsp;</td>
+    <td height="20" bgcolor="#6767CC">&nbsp;</td>
+    <td align="CENTER" height="20" bgcolor="#6767CC" NOWRAP><font size="2" face="Verdana, Arial, Helvetica, sans-serif" color="#FFFFFF"> 
+      <b>GRAND TOTAL</b></font></td>
+    <td height="20" bgcolor="#6767CC">&nbsp;</td>
+  </tr>
+  <tr> 
+    <td width="100%" valign="MIDDLE"><a href="/shop/index.html"><img src="/images/store/browse_more.gif" width="133" height="21" border="0" alt="Browse More"></a></td>
+    <td NOWRAP> 
+      <table border="0" cellspacing="0" cellpadding="0">
+        <tr></tr>
+      </table>
+    </td>
+    <td><img src="/images/store/left_bottom_corner_line.gif" width="26" height="31"></td>
+    <td align="center" bgcolor="#FFFFFF" height="100%" NOWRAP> <font size="3" face="Verdana, Arial, Helvetica, sans-serif"> 
+      <b>$<:money total:></b></font></td>
+    <td><img src="/images/store/right_bottom_corner_line.gif" width="26" height="31"></td>
+  </tr>
+  <tr> 
+    <td width="100%"></td>
+    <td></td>
+    <td></td>
+    <td bgcolor="#6666CC"><img src="/images/trans_pixel.gif" width="1" height="1"></td>
+    <td></td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<form action="/cgi-bin/shop.pl" method="POST">
+<input type="hidden" name="name1" value="<:order delivFirstName:>">
+<input type="hidden" name="name2" value="<:order delivLastName:>">
+<input type="hidden" name="address" value="<:order delivStreet:>">
+<input type="hidden" name="city" value="<:order delivSuburb:>">
+<input type="hidden" name="postcode" value="<:order delivPostCode:>">
+<input type="hidden" name="state" value="<:order delivState:>">
+<input type="hidden" name="country" value="<:order delivCountry:>">
+<input type="hidden" name="email" value="<:order emailAddress:>">
+<input type="hidden" name="cardHolder" value="<:order cardHolder:>">
+<input type="hidden" name="cardType" value="<:order ccType:>">
+<input type="hidden" name="telephone" value="<:order telephone:>">
+<input type="hidden" name="facsimile" value="<:order facsimile:>">
+
+  <font face="Verdana, Arial, Helvetica, sans-serif" size="3"> <b>Shipping Details:</b></font> 
+  <hr noshade size="1">
+  <table border="0" cellspacing="0" cellpadding="0" width="100%">
+    <tr> 
+      <td width="25%"> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> First 
+        Name:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <:order delivFirstName:>
+        </font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Last Name:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <:order delivLastName:>
+        </font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Address:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <:order delivStreet:>
+        </font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> City:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <:order delivSuburb:>
+        </font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Postcode:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <:order delivPostCode:>
+        </font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> State:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <:order delivState:>
+        </font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Country:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <:order delivCountry:>
+        </font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Telephone:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <:order telephone:>
+        </font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Facsimile:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <:order facsimile:>
+        </font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> E-mail:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <:order emailAddress:>
+        </font></td>
+    </tr>
+  </table>
+  <p>&nbsp; </p>
+  <font face="Verdana, Arial, Helvetica, sans-serif" size="3"> <b>Tax Invoice 
+  / Receipt &amp; Delivery Costs:</b></font> 
+  <hr size="1" noshade>
+  <table border="0" cellspacing="0" cellpadding="0" width="375">
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2">We will 
+        include a tax invoice / receipt with your order, clearly showing the GST 
+        and delivery components of the purchase price. These are included in the 
+        price below and are indicated on the details page for each store item.</font></td>
+    </tr>
+  </table>
+  <p></p>
+  <font size="3" face="Arial, Helvetica, sans-serif" color="#FFFFFF"></font> 
+  <p> 
+    <input type="submit" value="Correct Address" name="recheckout">
+    <input type="submit" value="Purchase Now" name="purchase">
+  </p>
+  <p></p>
+</form>

@@ -118,6 +118,7 @@ site/templates/catalog.tmpl
 site/templates/catalog/multi.tmpl
 #site/templates/catalog/nested.tmpl
 site/templates/checkout_base.tmpl
+site/templates/checkoutconfirm_base.tmpl
 site/templates/checkoutcard_base.tmpl
 site/templates/checkoutfinal_base.tmpl
 site/templates/common/default.tmpl

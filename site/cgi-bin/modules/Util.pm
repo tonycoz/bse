@@ -104,7 +104,7 @@ sub generate_shop {
   my ($articles) = @_;
   my @pages =
     (
-     'cart', 'checkout', 'checkoutfinal', 'checkoutcard',
+     'cart', 'checkout', 'checkoutfinal', 'checkoutcard', 'checkoutconfirm',
     );
   require 'Generate/Article.pm';
   my $shop = $articles->getByPkey($SHOPID);
