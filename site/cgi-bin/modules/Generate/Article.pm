@@ -328,6 +328,9 @@ HTML
 	   . qq! height="$im->{height}" alt="! . CGI::escapeHTML($im->{alt});
 	 $html .= qq! align="$align"! if $align && $align ne '-';
 	 $html .= qq!" />!;
+	 if ($im->{url}) {
+	   $html = qq!<a href="$im->{url}">$html</a>!;
+	 }
        }
        return $html;
      },
@@ -470,7 +473,8 @@ I<option>.  This can be used in <: ifCrumbs :> too.
 
 =item crumbs I<name>
 
-Access to the fields of the specific ancestor.
+Access to the fields of the specific ancestor.  I<name> can be any of
+the L<Article attributes>.
 
 =item ifCrumbs [options]
 
@@ -509,7 +513,8 @@ now.
 =item ifCurrentPage I<which>
 
 Conditional tag, true if the given I<which> is the page currently
-being generated.
+being generated.  This can be used to apply special formatting if a
+C<level1> or C<level2> article is the current page.
 
 =item iterator ... images
 
@@ -544,6 +549,10 @@ Alternative text of the image.
 
 dimensions of the image.
 
+=item url
+
+the url if any associated with the image
+
 =back
 
 =item image which align
@@ -558,6 +567,9 @@ I<which> can be an image index (1, 2, 3...) to select one of the
 images from the current article, or '-' or omitted to select the
 current image from the images iterator.  If align is present then the
 C<align> attribute of the image is set.
+
+If the image has a URL that <a href="...">...</a> will also be
+generated.
 
 =item ifImage imageindex
 
