@@ -165,10 +165,22 @@ sub _embed_low {
     }
 
     # a rare appropriate use of local
-    local $gen->{depth} = $self->{depth}+1;
-    local $gen->{maxdepth} = $maxdepth;
+    # it's a pity that it's broken before 5.8
+    #local $gen->{depth} = $self->{depth}+1;
+    #local $gen->{maxdepth} = $maxdepth;
+    #$template = "" if defined($template) && $template eq "-";
+    #return $gen->embed($embed, $articles, $template);
+
+    my $olddepth = $gen->{depth};
+    $gen->{depth} = $self->{depth}+1;
+    my $oldmaxdepth = $gen->{maxdepth};
+    $gen->{maxdepth} = $maxdepth;
     $template = "" if defined($template) && $template eq "-";
-    return $gen->embed($embed, $articles, $template);
+    my $result = $gen->embed($embed, $articles, $template);
+    $gen->{depth} = $olddepth;
+    $gen->{maxdepth} = $oldmaxdepth;
+
+    return $result;
   }
   else {
     return "** Cannot find article $id to be embedded **";
