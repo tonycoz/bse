@@ -1,22 +1,25 @@
 <:wrap base.tmpl:>
-<div align=center><table width="80%">
-<tr>
-  <th colspan="2" align="center">
-    <p><b>Cannot Send Confirmation</b></p>
-  </th>
-</tr>
-<tr>
-  <td colspan="2">
-    <p>I attempted to send a confirmation email message to your email address, 
-    <b><:user email:></b>.</p>
-
-    <p>The following error occurred: <b><:mailerror:></b>.</p>
-  </td>
-</tr>
-<tr>
-  <td colspan="2" align="center">
-    <a href="<:script:>?show_opts=1">Return to User Options page</a>
-  </td>
-</tr>
-</table>
+<div align=center>
+  <table width="350">
+    <tr> 
+      <th colspan="2" align="center"> 
+        <p><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Cannot 
+          Send Confirmation</b></font></p>
+      </th>
+    </tr>
+    <tr> 
+      <td colspan="2"> 
+        <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">I attempted 
+          to send a confirmation email message to your email address, <b><:user 
+          email:></b>.</font></p>
+        <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">The following 
+          error occurred: <b><:mailerror:></b>.</font></p>
+      </td>
+    </tr>
+    <tr> 
+      <td colspan="2" align="center"> <br>
+        <a href="<:script:>?show_opts=1"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Return 
+        to User Profile page</font></a> </td>
+    </tr>
+  </table>
 </div>

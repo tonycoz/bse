@@ -1,123 +1,173 @@
 <:wrap base.tmpl:>
-<div align=center><table>
-<tr>
-  <th colspan="2" align="center">
-    <p><b>User Options</b></p>
-  </th>
-</tr>
-
-<tr>
-  <td colspan="2" align="center">
-    <p>Hello <:user userId:></p>
-  </td>
-</tr>
-
-<tr>
-  <td colspan="2" align="center">
-    <p><a href="<:script:>?userpage=1">Your Orders</a></p>
-  </td>
-</tr>
-
-<:if Message:>
-<tr>
-  <td colspan="2" align="center">
-    <p><b>Error: <:message:></b></p>
-  </td>
-</tr>
-<:or Message:><:eif Message:>
-<form action="/cgi-bin/user.pl" method="post">
-<tr>
-  <td>Logon Name</td>
-  <td><:user userId:></td>
-</tr>
-<tr>
-  <td colspan="2" align="center">To change your password please enter your old password, and your new password</td>
-</tr>
-<tr>
-  <td>Old password:</td>
-  <td><input type="password" name="old_password" value="" /></td>
-</tr>
-<tr>
-  <td>Password:</td>
-  <td><input type="password" name="password" value="" /></td>
-</tr>
-<tr>
-  <td>Confirm Password:</td>
-  <td><input type="password" name="confirm_password" value="" /></td>
-</tr>
-<tr>
-  <td>Email Address:</td>
-  <td><input type="text" name="email" value="<:last email:>" size="40" /></td>
-</tr>
-<tr>
-  <td>Keep Details:</td>
-  <td><input type="checkbox" name="keepAddress" value="1"<:ifLast keepAddress:> checked <:or:><:eif:> /></td>
-</tr>
-<tr>
-  <td>Newsletters:</td>
-  <td>
-    <table>
-      <:iterator begin subscriptions:>
-        <tr>
-	  <td><input type="checkbox" name="subscription" value="<:subscription id:>"<:ifSubscribed:> checked<:or:><:eif:> /></td>
-	  <td><:subscription name:></td>
-	  <td><a href="#" onClick="javascript:window.open('<:siteUrl:><:script:>?subinfo=1&id=<:subscription id:>', 'subscription_info','width=350,height=200,location=no,status=no,menubar=no,scrollbars=yes'); return 0"><img src="/images/info.gif" width="16" height="16" border="0" /></a></td>
-	</tr>
-      <:iterator end subscriptions:>
-    </table>
-    <:if AnySubs:>
-      <:if User confirmed:><:or User:>
-        <div>Note: you haven't confirmed your subscriptions.  You will not receive any subscriptions until you go to the URL provided in the confirmation email sent to your email address.</div>
-      <:eif User:>
-    <:or AnySubs:>
-      <:if User confirmed:>
-        <!-- possible note that subscriptions will be enabled immediately -->
-      <:or User:>
-        <div>If you select any newsletters, they will not be sent until you confirm your subscription.  If you change your email address you will need to reconfirm your subscription.</div>
-      <:eif User:>
-    <:eif AnySubs:>
-    <p><input type="checkbox" name="textOnlyMail" value="1"<:ifLast textOnlyMail:> checked<:or:><:eif:> /> Text only E-mail messages</p>
-  </td>
-</tr>
-<tr>
-  <td>First Name:</td>
-  <td><input type="text" name="name1" value="<:last name1:>" /></td>
-</tr>
-<tr>
-  <td>Last Name:</td>
-  <td><input type="text" name="name2" value="<:last name2:>" /></td>
-</tr>
-<tr>
-  <td>Street:</td>
-  <td><input type="text" name="address" value="<:last address:>" /></td>
-</tr>
-<tr>
-  <td>Suburb:</td>
-  <td><input type="text" name="city" value="<:last city:>" /></td>
-</tr>
-<tr>
-  <td>State:</td>
-  <td><input type="text" name="state" value="<:last state:>" /></td>
-</tr>
-<tr>
-  <td>Post Code:</td>
-  <td><input type="text" name="postcode" value="<:last postcode:>" /></td>
-</tr>
-<tr>
-  <td>Country:</td>
-  <td><input type="text" name="country" value="<:last country:>" /></td>
-</tr>
-<tr>
-  <td>Phone:</td>
-  <td><input type="text" name="telephone" value="<:last telephone:>" /></td>
-</tr>
-<tr>
-  <td>Facsimile:</td>
-  <td><input type="text" name="facsimile" value="<:last facsimile:>" /></td>
-</tr>
-<tr>
-   <td colspan="2" align="center"><input type="submit" name="saveopts" value="Save Options" /></td>
-</tr>
-</form>
-</table>
+<div align=center><p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><a href="<:script:>?userpage=1">View 
+          Your Orders</a></font></p>
+  <table width="250">
+    <tr> 
+      <th colspan="2" align="center" height="20"> 
+        <p><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>User 
+          Options</b></font></p>
+      </th>
+    </tr>
+    <tr> 
+      <td colspan="2" align="center"> 
+        <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Hello <:user 
+          userId:></font></p>
+      </td>
+    </tr>
+    <:if Message:> 
+    <tr> 
+      <td colspan="2" align="center"> 
+        <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b>Error: 
+          <:message:></b></font></p>
+      </td>
+    </tr>
+    <:or Message:><:eif Message:> 
+    <form action="/cgi-bin/user.pl" method="post">
+      <tr> 
+        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Logon 
+          Name:</font></b></th>
+        <td width="100%"><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:user 
+          userId:></font></td>
+      </tr>
+      <tr> 
+        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Email 
+          Address:</font></b></th>
+        <td width="100%"> 
+          <input type="text" name="email" value="<:last email:>" size="40" />
+        </td>
+      </tr>
+      <tr> 
+        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Keep 
+          Details:</font></b></th>
+        <td width="100%"><input type="checkbox" name="keepAddress" value="1"<:ifLast keepAddress:> checked<:or:><:eif:> /></td>
+      </tr>
+      <:if Subscriptions:> 
+      <tr> 
+        <td nowrap valign="top"> 
+          <table width="100%" border="0" cellspacing="0" cellpadding="0" height="20">
+            <tr> 
+              <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Newsletter:</font></b></th>
+            </tr>
+          </table>
+        </td>
+        <td width="100%"> 
+          <table border="0" cellspacing="0" cellpadding="0">
+            <:iterator begin subscriptions:> 
+            <tr height="20"> 
+              <td> <input type="checkbox" name="subscription" value="<:subscription id:>"<:ifSubscribed:> checked<:or:><:eif:> /></td>
+              <td><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:subscription 
+                name:></font></td>
+              <td>&nbsp;&nbsp;<a href="#" onClick="javascript:window.open('<:siteUrl:><:script:>?subinfo=1&id=<:subscription id:>', 'subscription_info','width=350,height=200,location=no,status=no,menubar=no,scrollbars=yes'); return 0"><img src="/images/info.gif" width="16" height="16" border="0" /></a></td>
+            </tr>
+            <:iterator end subscriptions:> 
+          </table>
+          <:if AnySubs:> <:if User confirmed:><:or User:> 
+          <div><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b>Note:</b> 
+            you haven't confirmed your subscriptions. You will not receive any 
+            subscriptions until you go to the URL provided in the confirmation 
+            email sent to your email address.</font></div>
+          <:eif User:> <:or AnySubs:> <:if User confirmed:> 
+          <!-- possible note that subscriptions will be enabled immediately -->
+          <:or User:> 
+          <div><font face="Verdana, Arial, Helvetica, sans-serif" size="2">If 
+            you select any newsletters, they will not be sent until you confirm 
+            your subscription. If you change your email address you will need 
+            to reconfirm your subscription.</font></div>
+          <:eif User:> <:eif AnySubs:> 
+          <p> <input type="checkbox" name="textOnlyMail" value="1"<:ifLast textOnlyMail:> checked<:or:><:eif:>/> 
+          <font face="Verdana, Arial, Helvetica, sans-serif" size="2">Text only E-mail messages</font></p>
+        </td>
+      </tr>
+      <:or Subscriptions:><:eif Subscriptions:> 
+      <tr> 
+        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">First 
+          Name:</font></b></th>
+        <td width="100%"> 
+          <input type="text" name="name1" value="<:last name1:>" size="40" />
+        </td>
+      </tr>
+      <tr> 
+        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Last 
+          Name:</font></b></th>
+        <td width="100%"> 
+          <input type="text" name="name2" value="<:last name2:>" size="40" />
+        </td>
+      </tr>
+      <tr> 
+        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Street:</font></b></th>
+        <td width="100%"> 
+          <input type="text" name="address" value="<:last address:>" size="40" />
+        </td>
+      </tr>
+      <tr> 
+        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Suburb:</font></b></th>
+        <td width="100%"> 
+          <input type="text" name="city" value="<:last city:>" size="40" />
+        </td>
+      </tr>
+      <tr> 
+        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">State:</font></b></th>
+        <td width="100%"> 
+          <input type="text" name="state" value="<:last state:>" size="8" />
+        </td>
+      </tr>
+      <tr> 
+        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Post 
+          Code:</font></b></th>
+        <td width="100%"> 
+          <input type="text" name="postcode" value="<:last postcode:>" size="8" />
+        </td>
+      </tr>
+      <tr> 
+        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Country:</font></b></th>
+        <td width="100%"> 
+          <input type="text" name="country" value="<:last country:>" size="32" />
+        </td>
+      </tr>
+      <tr> 
+        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Phone:</font></b></th>
+        <td width="100%"> 
+          <input type="text" name="telephone" value="<:last telephone:>" size="32" />
+        </td>
+      </tr>
+      <tr> 
+        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Facsimile:</font></b></th>
+        <td width="100%"> 
+          <input type="text" name="facsimile" value="<:last facsimile:>" size="32" />
+        </td>
+      </tr>
+      <tr> 
+        <td colspan="2" align="left" height="20"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><br>
+          <br>
+          To change your password please enter your old password, and your new 
+          password</font></td>
+      </tr>
+      <tr> 
+        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Old 
+          Password:</font></b></th>
+        <td width="100%"> 
+          <input type="password" name="old_password" size="40" />
+        </td>
+      </tr>
+      <tr> 
+        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">New 
+          Password:</font></b></th>
+        <td width="100%"> 
+          <input type="password" name="password" value="" size="40" />
+        </td>
+      </tr>
+      <tr> 
+        <th nowrap align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Confirm 
+          Password:</font></b></th>
+        <td width="100%"> 
+          <input type="password" name="confirm_password" value="" size="40" />
+        </td>
+      </tr>
+      <tr> 
+        <td colspan="2" align="right"> 
+          <input type="submit" name="saveopts" value="Save Options" />
+        </td>
+      </tr>
+    </form>
+  </table>
 </div>
