@@ -430,6 +430,13 @@ sub remove {
       start();
       exit;
     }
+
+    # first lose the images
+    my @images = Images->getBy(articleId=>$deleteid);
+    for my $image (@images) {
+      unlink("$IMAGEDIR/$image->{image}");
+      $image->remove();
+    }
     
     $delart->remove();
     $articles = Articles->new(1);
