@@ -1,10 +1,11 @@
 #!/usr/bin/perl -w
+# -d:ptkdb
+BEGIN { $ENV{DISPLAY} = ':0'; }
+
 
 use strict;
 use lib '../modules';
-use Constants qw($TMPLDIR $IMAGEDIR $D_00 $D_99 $URLBASE @NO_DELETE 
-                 $SECURLBASE $ARTICLE_URI $CGI_URI $SHOP_URI $ROOT_URI
-		 $AUTO_GENERATE);
+use Constants qw(:edit);
 
 use Articles;
 use Article;
@@ -367,7 +368,7 @@ sub save_new_article {
 sub save_old_article {
   for my $name ($article->columns) {
     $article->{$name} = param($name) 
-      if defined(param($name)) and $name ne 'id';
+      if defined(param($name)) and $name ne 'id' && $name ne 'parentid';
   }
   if (exists $article->{template} &&
       $article->{template} =~ m#\.\.#) {
@@ -375,6 +376,43 @@ sub save_old_article {
     start();
     exit;
   }
+
+  # reparenting
+  my $newparentid = param('parentid');
+  if ($newparentid == $article->{parentid}) {
+    # nothing to do
+  }
+  elsif ($newparentid != -1) {
+    my $newparent = $articles->getByPkey($newparentid);
+    if ($newparent) {
+      if ($newparent->{level} != $article->{level}-1) {
+	# the article cannot become a child of itself or one of it's 
+	# children
+	if ($id == $newparentid 
+	    || is_descendant($article->{id}, $newparentid)) {
+	  $message = "Cannot become a child of itself or of a descendant";
+	  start();
+	  exit;
+	}
+	if (is_descendant($article->{id}, $SHOPID)) {
+	  $message = "Cannot become a descendant of the shop";
+	  start();
+	  exit;
+	}
+	reparent($article, $newparentid);
+      }
+      else {
+	# stays at the same level, nothing special
+	$article->{parentid} = $newparentid;
+      }
+    }
+    # else ignore it
+  }
+  else {
+    # becoming a section
+    reparent($article, -1);
+  }
+
   
   $article->{imagePos} = $imageEditor->imagePos();
   $article->{listed} = param('listed');
@@ -500,24 +538,55 @@ sub list {
 		      -default=>$article->{listed});
   }
   else {
+    # articles that this article could become a child of
     my @parents = $articles->getBy('level', $level-1);
     @parents = grep { $_->{generator} eq 'Generate::Article' 
                     && $_->{id} != $SHOPID } @parents;
+
     
     my $values = [ map {$_->{id}} @parents ];
     my $labels = { map { $_->{id} => "$_->{title} ($_->{id})" } @parents };
+
+    if ($level == 1) {
+      push @$values, -1;
+      $labels->{-1} = "No parent - this is a section";
+    }
     
+    if ($id && reparent_updown()) {
+      # we also list the siblings and grandparent (if any)
+      my @siblings = grep $_->{id} != $id && $_->{id} != $SHOPID,
+	$articles->getBy(parentid => $article->{parentid});
+      push @$values, map $_->{id}, @siblings;
+      @$labels{map $_->{id}, @siblings} =
+	map { "-- move down a level -- $_->{title} ($_->{id})" } @siblings;
+
+      if ($article->{parentid} != -1) {
+	my $parent = $articles->getByPkey($article->{parentid});
+	if ($parent->{parentid} != -1) {
+	  my $gparent = $articles->getByPkey($parent->{parentid});
+	  push @$values, $gparent->{id};
+	  $labels->{$gparent->{id}} =
+	    "-- move up a level -- $gparent->{title} ($gparent->{id})";
+	}
+	else {
+	  push @$values, -1;
+	  $labels->{-1} = "-- move up a level -- become a section";
+	}
+      }
+    }
     my $html;
     if (defined $article->{parentid}) {
       $html = popup_menu(-name=>'parentid',
 			 -values=> $values,
 			 -labels => $labels,
-			 -default => $article->{parentid});
+			 -default => $article->{parentid},
+			 -override=>1);
     }
     else {
       $html = popup_menu(-name=>'parentid',
 			 -values=> $values,
-			 -labels => $labels);
+			 -labels => $labels,
+			 -override=>1);
     }
 
     # munge the html - we display a default value, so we need to wrap the 
@@ -602,6 +671,70 @@ sub epoch_to_sql {
   my ($time) = @_;
 
   return strftime('%Y-%m-%d', localtime $time);
+}
+
+# can the user reparent to a different level?
+sub reparent_updown {
+  if (ref $REPARENT_UPDOWN) {
+    return $REPARENT_UPDOWN->();
+  }
+  else {
+    return $REPARENT_UPDOWN;
+  }
+}
+
+# tests if $desc is a descendant of $art
+# where both are article ids
+sub is_descendant {
+  my ($art, $desc) = @_;
+  
+  my @check = ($art);
+  while (@check) {
+    my $parent = shift @check;
+    $parent == $desc and return 1;
+    my @kids = $articles->getBy(parentid=>$parent);
+    push @check, map $_->{id}, @kids;
+  }
+
+  return 0;
+}
+
+# reparent an article
+# this includes fixing the level number of the article's children
+sub reparent {
+  my ($article, $newparentid) = @_;
+
+  my $newlevel;
+  if ($newparentid == -1) {
+    $newlevel = 1;
+  }
+  else {
+    my $parent = $articles->getByPkey($newparentid);
+    unless ($parent) {
+      $message = "Cannot get new parent article";
+      start();
+      exit;
+    }
+    $newlevel = $parent->{level} + 1;
+  }
+  # the caller will save this one
+  $article->{parentid} = $newparentid;
+  $article->{level} = $newlevel;
+  $article->{displayOrder} = time;
+
+  my @change = ( [ $article->{id}, $newlevel ] );
+  while (@change) {
+    my $this = shift @change;
+    my ($art, $level) = @$this;
+
+    my @kids = $articles->getBy(parentid=>$art);
+    push @change, map { [ $_->{id}, $level+1 ] } @kids;
+
+    for my $kid (@kids) {
+      $kid->{level} = $level+1;
+      $kid->save;
+    }
+  }
 }
 
 __END__
