@@ -69,6 +69,25 @@ search result entries.  This is needed since the search base page is
 generated as an article, using a dummy article.  The title and
 titleImage for this dummy article can be specified in Constants.pm.
 
+=item *
+
+you can now control whether an unlisted level1 article is displayed in
+the crumbs for an article.
+
+=item *
+
+a bunch of new templates from adrian, including moving the common
+layout into base.tmpl where possible, support for "sidebars".
+
+=item *
+
+a formatting guide article in initial.pl (from adrian)
+
+=item *
+
+renamed INSTALL to INSTALL.txt to prevent wierdness if someone tries
+"make install" on a case-insensitive file system.
+
 =back
 
 =head2 0.09
