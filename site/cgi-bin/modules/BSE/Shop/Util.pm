@@ -7,10 +7,15 @@ use vars qw(@ISA @EXPORT_OK);
 use Constants qw/:shop/;
 use BSE::Util::SQL qw(now_sqldate);
 use BSE::Custom;
+use BSE::Util::Tags;
+use Carp 'confess';
 
 # returns a list of tags which display the cart details
 sub shop_cart_tags {
-  my ($acts, $cart, $cart_prods, $session, $q) = @_;
+  my ($acts, $cart, $cart_prods, $session, $q, $cfg, $stage) = @_;
+
+  $cfg or confess "No config";
+  $cfg->isa("BSE::Cfg") or confess "Not a config";
 
   my $item_index;
   my $option_index;
@@ -23,6 +28,7 @@ sub shop_cart_tags {
 
   return
     (
+     BSE::Util::Tags->basic($acts, $q, $cfg),
      ifUser => sub { $user },
      user => sub { CGI::escapeHTML($user ? $user->{$_[0]} : '') },
      iterate_items_reset => sub { $item_index = -1 },
@@ -44,7 +50,8 @@ sub shop_cart_tags {
        $cart->[$item_index]{units} * $cart_prods->[$item_index]{$what};
      },
      index => sub { $item_index },
-     total => sub { total($cart, $cart_prods, $session->{custom}) },
+     total => 
+     sub { total($cart, $cart_prods, $session->{custom}, $cfg, $stage) },
      count => sub { scalar @$cart },
      iterate_options_reset => sub { $option_index = -1 },
      iterate_options => sub { ++$option_index < @options },
@@ -95,13 +102,13 @@ sub nice_options {
 *shop_nice_options = \&nice_options;
 
 sub total {
-  my ($cart, $products, $state) = @_;
+  my ($cart, $products, $state, $cfg, $stage) = @_;
 
   my $total = 0;
   for my $item (@$cart) {
     $total += $item->{units} * $item->{price};
   }
-  $total += BSE::Custom->total_extras($cart, $products, $state);
+  $total += BSE::Custom->total_extras($cart, $products, $state, $cfg, $stage);
 
   return $total;
 }
@@ -243,12 +250,12 @@ sub basic_tags {
 
   return 
     (
-     money =>
-     sub {
-       my ($func, $args) = split ' ', $_[0], 2;
-       $acts->{$func} || return "<: money $_[0] :>";
-       return sprintf("%.02f", $acts->{$func}->($args)/100);
-     },
+#       money =>
+#       sub {
+#         my ($func, $args) = split ' ', $_[0], 2;
+#         $acts->{$func} || return "<: money $_[0] :>";
+#         return sprintf("%.02f", $acts->{$func}->($args)/100);
+#       },
     );
 }
 

@@ -110,7 +110,7 @@ for my $sect (keys %conf) {
   if ($conf{$sect} && keys %{$conf{$sect}}) {
     push @cfg, "[$sect]";
     for my $key (sort keys %{$conf{$sect}}) {
-      push @cfg, "$key=$conf{$section}{$key}";
+      push @cfg, "$key=$conf{$sect}{$key}";
     }
     push @cfg, "";
   }

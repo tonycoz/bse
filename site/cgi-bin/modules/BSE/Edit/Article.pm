@@ -1191,6 +1191,7 @@ sub save {
   my %errors;
   $self->validate_old($article, \%data, $articles, \%errors)
     or return $self->edit_form($req, $article, $articles, undef, \%errors);
+  $self->save_thumbnail($cgi, $article, \%data);
   $self->fill_old_data($req, $article, \%data);
   if (exists $article->{template} &&
       $article->{template} =~ m|\.\.|) {

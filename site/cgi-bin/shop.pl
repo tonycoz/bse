@@ -172,7 +172,8 @@ sub show_cart {
     (
      BSE::Custom->cart_actions(\%acts, \@cart, \@cart_prods, \%custom_state, 
 			       $cfg),
-     shop_cart_tags(\%acts, \@cart, \@cart_prods, \%session, $CGI::Q),
+     shop_cart_tags(\%acts, \@cart, \@cart_prods, \%session, $CGI::Q, $cfg,
+		    'cart'),
      basic_tags(\%acts),
      msg => $msg,
     );
@@ -272,7 +273,8 @@ sub checkout {
   my %acts;
   %acts =
     (
-     shop_cart_tags(\%acts, \@cart, \@cart_prods, \%session, $CGI::Q),
+     shop_cart_tags(\%acts, \@cart, \@cart_prods, \%session, $CGI::Q, $cfg,
+		   'checkout'),
      basic_tags(\%acts),
      message => sub { $message },
      old => sub { CGI::escapeHTML($olddata ? param($_[0]) : 
@@ -310,7 +312,8 @@ sub checkout_confirm {
   %acts =
     (
      order => sub { CGI::escapeHTML($order{$_[0]}) },
-     shop_cart_tags(\%acts, \@cart, \@cart_prods, \%session, $CGI::Q),
+     shop_cart_tags(\%acts, \@cart, \@cart_prods, \%session, $CGI::Q, $cfg,
+		    'confirm'),
      basic_tags(\%acts),
      old => 
      sub { 
@@ -425,7 +428,7 @@ sub prePurchase {
   }
 
   $order{total} += BSE::Custom->total_extras(\@cart, \@products, 
-					     $session{custom}, $cfg);
+					     $session{custom}, $cfg, 'final');
   ++$session{changed};
   # blank anything else
   for my $column (@columns) {
@@ -632,8 +635,6 @@ sub purchase {
   }
 
   $order{orderDate} = $today;
-  $order{total} += BSE::Custom->total_extras(\@cart, \@products, 
-					     $session{custom}, $cfg);
   $order{paymentType} = $paymentType;
   ++$session{changed};
 
@@ -662,6 +663,9 @@ sub purchase {
   if ($@) {
     return checkout($@, 1);
   }
+
+  $order{total} += BSE::Custom->total_extras(\@cart, \@products, 
+					     $session{custom}, $cfg, 'final');
 
   # load up the database
   my @data = @order{@columns};
@@ -755,7 +759,8 @@ sub send_order {
   %acts =
     (
      %extras,
-
+     BSE::Custom->order_mail_actions(\%acts, $order, $items, $products, 
+				     $session{custom}, $cfg),
      BSE::Util::Tags->static(\%acts, $cfg),
      iterate_items_reset => sub { $item_index = -1; },
      iterate_items => 
@@ -774,12 +779,6 @@ sub send_order {
      extended => 
      sub {
        $items->[$item_index]{units} * $items->[$item_index]{$_[0]};
-     },
-     money =>
-     sub {
-       my ($func, $args) = split ' ', $_[0], 2;
-       $acts{$func} || return "<: money $_[0] :>";
-       return sprintf("%.02f", $acts{$func}->($args)/100);
      },
      _format =>
      sub {

@@ -51,6 +51,12 @@ sub purchase_actions {
   return;
 }
 
+sub order_mail_actions {
+  my ($class, $acts, $order, $items, $products, $state, $cfg) = @_;
+
+  return ();
+}
+
 sub base_tags {
   my ($class, $articles, $acts, $article, $embedded, $cfg) = @_;
 

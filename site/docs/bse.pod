@@ -10,6 +10,33 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.12_11
+
+=over
+
+=item *
+
+thumbnails are now saved when editing an existing article
+
+=item *
+
+the code to save keys to config sections which didn't already exist
+was broken
+
+=item *
+
+the total_extras custom hook now takes two extra parameters, the
+config object and a "stage" of processing, either "cart", "checkout",
+"confirm" or "final".
+
+=item *
+
+new customization hook order_mail_actions($order, $items, $products,
+$state, $cfg) for adding extra tags to the confirmation and order
+emails.
+
+=back
+
 =head2 0.12_10
 
 =over
