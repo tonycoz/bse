@@ -1,7 +1,8 @@
-<:wrap base.tmpl:> <:title section:><:embed start:> 
+<:wrap base.tmpl:> 
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <tr> 
-    <td bgcolor="#336699" width="80%" height="24">&nbsp;&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="4"><b><:title:></b></font></td>
+    <td bgcolor="#CCCCFF" width="80%" height="24">&nbsp;&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="4"><b><:title 
+      section:> - <:title:></b></font></td>
     <td height="24">&nbsp;</td>
   </tr>
   <tr> 
@@ -12,60 +13,66 @@
       <table width="100%" border="0" cellspacing="0" cellpadding="0">
         <tr> 
           <td width="100"><img src="/images/trans_pixel.gif" width="100" height="10" border="0"></td>
-          <td bgcolor="#000033" width="100%">&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2">/ 
-            <a href="<:ifAdmin:>/cgi-bin/admin/admin.pl?id=1<:or:>/<:eif:>">Home</a> 
-            / <:iterator begin crumbs:> <a href="<:url crumbs:>"><:crumbs title:></a> 
-            / <:iterator end crumbs:></font></td>
+          <td bgcolor="#333399" width="100%">&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2">/ 
+            <a href="<:ifAdmin:>/cgi-bin/admin/admin.pl?id=1<:or:>/<:eif:>"><font color="#FFFFFF">Home</font></a> 
+            / <:iterator begin crumbs:> <a href="<:url crumbs:>"><font color="#FFFFFF"><:crumbs 
+            title:></font></a> / <:iterator end crumbs:></font></td>
         </tr>
       </table>
     </td>
   </tr>
 </table>
-<:admin:> 
+<:embed start:><:admin:> 
+<p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font> 
+</p>
 <form name="ff" method="POST" action="/cgi-bin/shop.pl">
   <table width="100%" border="0" cellspacing="0" cellpadding="0">
     <tr> 
-      <td align="center" bgcolor="#336699" width="100%" height="18"><b><font size="2" face="Verdana, Arial, Helvetica, sans-serif" color="#FFFFFF"><:article title:> - 
-        Catalogue Items</font></b> </td>
+      <td align="center" bgcolor="#CCCCFF" width="100%" height="18"> <font size="2" face="Verdana, Arial, Helvetica, sans-serif"> 
+        <b><:article title:> - Catalogue Items</b></font></td>
     </tr>
   </table>
-  <table border="0" cellspacing="0" cellpadding="1" width="100%" bgcolor="#6699CC">
+  <table border="0" cellspacing="0" cellpadding="1" width="100%" bgcolor="#6767CC">
     <tr valign="middle" align="center"> 
       <td width="100%"> 
         <table width="100%" border="0" cellspacing="0" cellpadding="2">
-          <tr valign="middle" align="center" bgcolor="#CCFF00"> 
-            <td width="100%" align="left" height="18">&nbsp;<b><font size="-2" color="#000000" face="Verdana, Arial, Helvetica, sans-serif">Item:</font></b>&nbsp; 
-              <font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#000000">(All 
+          <tr valign="middle" align="center" bgcolor="#6767CC"> 
+            <td width="100%" align="left" height="18"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FFFFFF"><b>Item:</b></font>&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FFFFFF">(All 
               prices in AUD &#150; includes GST and shipping costs where applicable)</font></td>
-            <td height="18" NOWRAP>&nbsp;<font size="-2" face="Verdana, Arial, Helvetica, sans-serif" color="#000000"><b>Price:&nbsp;</b></font></td>
+            <td height="18"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FFFFFF"><b>Price:</b></font>&nbsp;</td>
           </tr>
           <:iterator begin products:> 
-          <tr valign="middle" align="center" bgcolor="#003366"> 
-            <td width="100%" align="left" height="25">&nbsp;<a href="<:url product:>"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:product 
-              summary:></font></a><:moveUp:><:moveDown:></td>
-            <td align="right" height="25"><b><font size="-2" face="Verdana, Arial, Helvetica, sans-serif">$<:money 
-              product retailPrice:>&nbsp;</font></b></td>
+          <tr valign="middle" align="center" bgcolor="#FFFFFF"> 
+            <td width="100%" align="left"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><a href="<:url product:>"><:product 
+              summary:></a></font><:moveUp:><:moveDown:></td>
+            <td align="right"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>$<:money 
+              product retailPrice:></b></font></td>
           </tr>
           <:iterator end products:> 
         </table>
       </td>
     </tr>
   </table>
-  <div align="RIGHT"> 
-    <table border="0" cellspacing="0" cellpadding="0">
-      <tr> 
-        <td><img src="/images/store/left_bottom_corner_line.gif" width="26" height="31"></td>
-        <td align="center" bgcolor="#003366" height="100%" NOWRAP valign="MIDDLE"> 
-          <input type="submit" name="button" value="View my shopping cart">
-        </td>
-        <td><img src="/images/store/right_bottom_corner_line.gif" width="26" height="31"></td>
-      </tr>
-      <tr> 
-        <td></td>
-        <td bgcolor="#6699CC"><img src="/images/trans_pixel.gif" width="1" height="1"></td>
-        <td></td>
-      </tr>
-    </table>
-  </div>
+  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+    <tr>
+      <td width="100%">&nbsp;</td>
+      <td align="right"> 
+        <table border="0" cellspacing="0" cellpadding="0">
+          <tr> 
+            <td><img src="/images/store/left_bottom_corner_line.gif" width="26" height="31"></td>
+            <td align="center" bgcolor="#FFFFFF" height="100%" NOWRAP valign="MIDDLE"> 
+              <input type="submit" name="button" value="View my shopping cart">
+            </td>
+            <td><img src="/images/store/right_bottom_corner_line.gif" width="26" height="31"></td>
+          </tr>
+          <tr> 
+            <td></td>
+            <td bgcolor="#6666CC"><img src="/images/trans_pixel.gif" width="1" height="1"></td>
+            <td></td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
 </form>
-<:embed end:> 
+<:embed end:>
