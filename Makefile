@@ -1,4 +1,4 @@
-VERSION=0.10_04
+VERSION=0.10_05
 DISTNAME=bse-$(VERSION)
 DISTBUILD=$(DISTNAME)
 DISTTAR=../$(DISTNAME).tar
@@ -25,7 +25,7 @@ $(DISTTGZ): distdir
 
 #	tar czf $(DISTFILE) -C .. bse --exclude '*~' --exclude '*,v' --exclude 'pod2html-*cache'
 
-distdir:
+distdir: docs
 	-perl -MExtUtils::Command -e rm_rf $(DISTBUILD)
 	perl -MExtUtils::Manifest=manicopy,maniread -e "manicopy(maniread(), '$(DISTBUILD)')"
 	mkdir $(DISTBUILD)/site/htdocs/shop
