@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<rdf:RDF
+ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+ xmlns="http://purl.org/rss/1.0/"
+ xmlns:dc="http://purl.org/dc/elements/1.1/"
+ xmlns:syn="http://purl.org/rss/1.0/modules/syndication/"
+ xmlns:perljobs="http://jobs.perl.org/rss/"
+ xmlns:taxo="http://purl.org/rss/1.0/modules/taxonomy/"
+>
+
+<channel rdf:about="<:siteUrl:>">
+<title><:siteName:></title>
+<link><:siteUrl:></link>
+<dc:language>en-us</dc:language>
+<textinput rdf:resource="<:siteUrl:>/cgi-bin/search.pl" />
+<items>
+ <rdf:Seq>
+<:embed 2 include/rsslinks.tmpl:>
+ </rdf:Seq>
+</items>
+</channel>
+<textinput rdf:about="<:siteUrl:>/cgi-bin/search.pl">
+ <title><:siteName:></title>
+ <description>Search <:siteName:></description>
+ <link><:siteUrl:>/cgi-bin/search.pl</link>
+ <name>q</name>
+</textinput>
+<:embed 2 include/rssitems.tmpl:>
+</rdf:RDF>
