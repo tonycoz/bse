@@ -1,0 +1,76 @@
+<:wrap base.tmpl:>
+<table width="100%">
+  <tr>
+  </tr>
+</table>
+
+<div align="center">
+<p><a href="<:script:>?show_opts=1">Edit Options</a></p>
+<table>
+  <tr>
+    <th colspan="4" align="center">Your Orders</th>
+  </tr>
+<:if Orders:>
+  <tr>
+    <th>Order Id</th>
+    <th>Date</th>
+    <th>Total</th>
+    <th>Filled</th>
+  </tr>
+<:iterator begin orders:>
+  <tr>
+    <td align="center"><:order id:></td>
+    <td><:date order orderDate:></td>
+    <td><:money order total:></td>
+    <td align="center"><:ifOrder filled:>Yes<:or:>No<:eif:></td>
+  </tr>
+<:if Items:>
+  <tr>
+    <td>&nbsp;</td>
+    <td colspan="3">
+      <table>
+        <tr>
+          <th>Product</th>
+          <th>Quantity</th>
+          <th>Cost</th>
+        </tr>
+<:iterator begin items:>
+        <tr>
+          <td><:product title:></td>
+	  <td align="center"><:item units:></td>
+	  <td align="center"><:money item price:></td>
+        </tr>
+<:if Prodfiles:>
+        <tr>
+	  <th colspan="3">Files</th>
+	</tr>
+        <tr>
+          <th>File</th>
+	  <th>Description</th>
+	  <th>Size</th>
+        </tr>
+<:iterator begin prodfiles:>
+        <tr>
+          <td><a href="/cgi-bin/user.pl?download=1&file=<:prodfile id:>&order=<:order id:>&item=<:item id:>"><:prodfile displayName:></a></td>
+	  <td><:prodfile description:></td>
+	  <td align="center"><:prodfile sizeInBytes:></td>
+        </tr>
+<:iterator end prodfiles:>
+<:or Prodfiles:><:eif Prodfiles:>
+<:iterator end items:>
+      </table>
+    </td>
+  </tr>
+<:or Items:><:eif Items:>
+<:iterator separator orders:>
+  <tr>
+    <td colspan="4"><hr /></td>
+  </tr>
+<:iterator end orders:>
+<:or Orders:>
+  <tr>
+    <td colspan="4" align="center">You haven't made any orders yet.</td>
+  </tr>
+<:eif Orders:>
+</table>
+</div>

@@ -1,0 +1,101 @@
+<:wrap base.tmpl:>
+<div align=center><table>
+<tr>
+  <th colspan="2" align="center">
+    <p><b>User Options</b></p>
+  </th>
+</tr>
+
+<tr>
+  <td colspan="2" align="center">
+    <p>Hello <:user userId:></p>
+  </td>
+</tr>
+
+<tr>
+  <td colspan="2" align="center">
+    <p><a href="<:script:>?userpage=1">Your Orders</a></p>
+  </td>
+</tr>
+
+<:if Message:>
+<tr>
+  <td colspan="2" align="center">
+    <p><b><:message:></b></p>
+  </td>
+</tr>
+<:or Message:><:eif Message:>
+<form action="/cgi-bin/user.pl" method="post">
+<tr>
+  <td>Logon Name</td>
+  <td><:user userId:></td>
+</tr>
+<tr>
+  <td colspan="2" align="center">To change your password please enter your old password, and your new password</td>
+</tr>
+<tr>
+  <td>Old password:</td>
+  <td><input type="password" name="old_password" value="" /></td>
+</tr>
+<tr>
+  <td>Password:</td>
+  <td><input type="password" name="password" value="" /></td>
+</tr>
+<tr>
+  <td>Confirm Password:</td>
+  <td><input type="password" name="confirm_password" value="" /></td>
+</tr>
+<tr>
+  <td>Email Address:</td>
+  <td><input type="text" name="email" value="<:last email:>" size="40" /></td>
+</tr>
+<tr>
+  <td>Keep Details:</td>
+  <td><input type="checkbox" name="keepAddress" value="1"<:ifLast keepAddress:> checked <:or:><:eif:> /></td>
+</tr>
+<tr>
+  <td>Newsletter:</td>
+  <td><input type="checkbox" name="wantLetter" value="1"<:ifLast wantLetter:> checked <:or:><:eif:> /></td>
+</tr>
+<tr>
+  <td>First Name:</td>
+  <td><input type="text" name="name1" value="<:last name1:>" /></td>
+</tr>
+<tr>
+  <td>Last Name:</td>
+  <td><input type="text" name="name2" value="<:last name2:>" /></td>
+</tr>
+<tr>
+  <td>Street:</td>
+  <td><input type="text" name="address" value="<:last address:>" /></td>
+</tr>
+<tr>
+  <td>Suburb:</td>
+  <td><input type="text" name="city" value="<:last city:>" /></td>
+</tr>
+<tr>
+  <td>State:</td>
+  <td><input type="text" name="state" value="<:last state:>" /></td>
+</tr>
+<tr>
+  <td>Post Code:</td>
+  <td><input type="text" name="postcode" value="<:last postcode:>" /></td>
+</tr>
+<tr>
+  <td>Country:</td>
+  <td><input type="text" name="country" value="<:last country:>" /></td>
+</tr>
+<tr>
+  <td>Phone:</td>
+  <td><input type="text" name="telephone" value="<:last telephone:>" /></td>
+</tr>
+<tr>
+  <td>Facsimile:</td>
+  <td><input type="text" name="facsimile" value="<:last facsimile:>" /></td>
+</tr>
+<tr>
+   <td colspan="2" align="center"><input type="submit" name="saveopts" value="Save Options" /></td>
+</tr>
+</form>
+</table>
+</div>

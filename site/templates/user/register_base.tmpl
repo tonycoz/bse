@@ -1,0 +1,50 @@
+<:wrap base.tmpl:>
+<div align=center><table>
+<tr>
+  <th colspan="2" align="center">
+    <p><b>User Registration</b></p>
+  </th>
+</tr>
+
+<:if Message:>
+<tr>
+  <td colspan="2" align="center">
+    <p><b><:message:></b></p>
+  </td>
+</tr>
+<:or Message:><:eif Message:>
+  <tr>
+    <td align="left"><a href="/cgi-bin/user.pl?show_lost_password=1">Lost password?</a></td>
+    <td align="right"><a href="/cgi-bin/user.pl?show_logon=1">Logon</a></td>
+  </tr>
+<:if User:>
+  <tr>
+   <td colspan="2">You are already logged on - Why register again?</td>
+  </tr>
+<:or User:><:eif User:>
+<form action="/cgi-bin/user.pl" method="post">
+<tr>
+  <td>Logon Name</td>
+  <td><input type="text" name="userid" value="<:old userid:>" /></td>
+</tr>
+<tr>
+  <td>Password:</td>
+  <td><input type="password" name="password" value="" /></td>
+</tr>
+<tr>
+  <td>Confirm Password:</td>
+  <td><input type="password" name="confirm_password" value="" /></td>
+</tr>
+<tr>
+  <td>Email Address:</td>
+  <td><input type="text" name="email" value="<:old email:>" /></td>
+</tr>
+<tr>
+  <td colspan="2" align="center">If you lose your password, you can have it emailed to you.</td>
+</tr>
+<tr>
+   <td colspan="2" align="right"><input type="submit" name="register" value="Register" /></td>
+</tr>
+</form>
+</table>
+</div>
