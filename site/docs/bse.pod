@@ -10,6 +10,57 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.10_04
+
+=over
+
+=item *
+
+URLs can be directly associated with an image
+
+=item *
+
+multiple levels of catalogs
+
+=item *
+
+shop item options
+
+=item *
+
+filtering/sorting of orders from the template
+
+=item *
+
+embedded templates can be based on the template of the article being
+embedded
+
+=item *
+
+order status information, marking an order has having been filled
+
+=item *
+
+better handling of generation errors
+
+=item *
+
+partial support for Microsoft SQL Server under IIS
+
+=item *
+
+extended price tag for the cart and checkout pages
+
+=item *
+
+prePurchase target for the shop, to allow custom credit card processing
+
+=item *
+
+template based filtering of the order list
+
+=back
+
 =head2 0.10_03
 
 =over
