@@ -1,4 +1,4 @@
-VERSION=0.09adrian2
+VERSION=0.09adrian3
 DISTNAME=bse-$(VERSION)
 DISTBUILD=$(DISTNAME)
 DISTTAR=../$(DISTNAME).tar
@@ -7,6 +7,8 @@ DISTTGZ=$(DISTTAR).gz
 help:
 	@echo make dist - build the tar.gz file
 	@echo make clean - delete generated files
+	@echo make distdir - build distribution directory
+	@echo make docs - build documentation
 
 # this target needs to be modified so that the output directory includes
 # the release number
@@ -26,6 +28,8 @@ $(DISTTGZ): distdir
 distdir:
 	-rm -rf $(DISTBUILD)
 	perl -MExtUtils::Manifest=manicopy,maniread -e "manicopy(maniread(), '$(DISTBUILD)')"
+	mkdir $(DISTBUILD)/site/htdocs/shop
+	find $(DISTBUILD) -type f | xargs chmod u+w
 
 clean:
 	-rm site/htdocs/index.html
@@ -40,10 +44,10 @@ clean:
 	-rm site/htdocs/images/*.jpg
 	-rm -rf $DISTBUILD
 
-docs: INSTALL INSTALL.html otherdocs
+docs: INSTALL.txt INSTALL.html otherdocs
 
-INSTALL: INSTALL.pod
-	pod2text <INSTALL.pod >INSTALL
+INSTALL.txt: INSTALL.pod
+	pod2text <INSTALL.pod >INSTALL.txt
 
 INSTALL.html: INSTALL.pod
 	pod2html --infile=INSTALL.pod --outfile=INSTALL.html
@@ -51,3 +55,7 @@ INSTALL.html: INSTALL.pod
 
 otherdocs:
 	cd site/docs ; make all
+
+# this is very rough
+testinst: distdir
+	perl localinst.perl $(DISTBUILD)
