@@ -70,7 +70,7 @@ Current methods that can be implemented in BSE::Custom are:
 
 =over
 
-=item checkout_actions($acts, $items, $products)
+=item checkout_actions($acts, $items, $products, $state, $cgi)
 
 Return a list of extra "actions" or members of the %acts hash used for
 converting the checkout template to the final output.  Used to define
@@ -111,3 +111,5 @@ or remove them, depending on the products bought.
 Defines extra tags for use on the checkout page.
 
 =back
+
+=cut
