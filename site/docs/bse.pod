@@ -10,6 +10,22 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.11
+
+Looks like all known problems are fixed.  Time to do a semi-major
+release.
+
+=head2 0.10_16
+
+=over
+
+=item *
+
+hopefully fixed an occasionaly problem where the images would reorder
+themselves
+
+=back
+
 =head2 0.10_15
 
 =over
