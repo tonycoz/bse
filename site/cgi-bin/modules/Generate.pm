@@ -482,7 +482,7 @@ sub baseActs {
     (
      %extras,
 
-     BSE::Custom->base_tags($articles, $acts, $article, $embedded),
+     BSE::Custom->base_tags($articles, $acts, $article, $embedded, $cfg),
      BSE::Util::Tags->static($acts, $self->{cfg}),
      # for embedding the content from children and other sources
      ifEmbedded=> sub { $embedded },

@@ -138,5 +138,47 @@ permission ids.
 The [permission names] section is used to translate permission indexes
 to descriptive permission names.
 
+=head1 PERMISSIONS REFERENCE
+
+=head2 Article editing
+
+=over
+
+=item *
+
+edit_add_child
+
+The user can add a child to this article, or reparent an article to
+have this article as a parent.
+
+=item *
+
+edit_field_edit_I<fieldname>
+
+The user can edit the given field in an existing article.
+
+=item *
+
+edit_field_add_I<fieldname>
+
+The user can edit the give field when creating a new article.  These
+permissions are applied to the parent where articles might be added.
+
+For fields that the user doesn't have permission for, either the value
+from the [children of I<parentid>] section, the [level I<level>]
+section, or some default value will be used.
+
+=back
+
+=head2 User/Group Administration
+
+=over
+
+=item *
+
+admin_*
+
+=back
+
 =cut
 

@@ -23,7 +23,7 @@
   <h2><:articleType:> Details</h2>
 
 <:ifnew:><:or:>
-<form action="/cgi-bin/admin/adminusers.pl"><input type=submit name="a_showobjectart" value="Manage access for"><input type=hidden name=id value="<: article id:>">
+<table><tr><td nowrap><form action="/cgi-bin/admin/adminusers.pl"><font size=2>Manage access: <input type=hidden name=id value="<: article id:>">
 <select name=adminid>
 <:iterator begin adminusers:>
 <option value=<:iadminuser id:>>User <:iadminuser logon:>
@@ -31,8 +31,8 @@
 <:iterator begin admingroups:>
 <option value=<:iadmingroup id:>>Group <:iadmingroup name:>
 <:iterator end admingroups:>
-</select>
-</form><:eif:>
+</select><input type=submit name="a_showobjectart" value="Manage">
+</font></form></td></tr></table><:eif:>
 
   <form enctype="multipart/form-data" method="POST" action="<:script:>">
 
@@ -47,9 +47,9 @@
           <tr> 
             <th nowrap bgcolor="#FFFFFF" align="left"> <:parentType:>: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
-              <select name="parentid">
+              <:ifFieldPerm parentid:><select name="parentid">
                 <option value="">Please select a <:parentType:><: list:>
-              </select>
+              </select><:or:><input type=hidden name=parentid value=<:article parentid:><:eif:>
             </td>
             <td bgcolor="#FFFFFF"><:help edit section:> </td>
           </tr>
@@ -57,7 +57,7 @@
             <th nowrap bgcolor="#FFFFFF" align="left"> <:articleType:> title: 
             </th>
             <td bgcolor="#FFFFFF" width="100%"> 
-              <input type="text" name="title" maxlength="<:cfg fields title_size 255:>" size="64" value="<: article title :>">
+              <:ifFieldPerm title:><input type="text" name="title" maxlength="<:cfg fields title_size 255:>" size="64" value="<: article title :>"><:or:><:default title:><:eif:>
             </td>
             <td bgcolor="#FFFFFF"><:help edit title:> </td>
           </tr>

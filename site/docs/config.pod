@@ -160,6 +160,18 @@ followed by a / and then by a simplified version of the article title.
 The aim is to include at least some title information in the URL
 without modifying the name of the HTML file.  Default: False.
 
+=item access_control
+
+If this is true then the user/group/permissions database is used to
+control access to the system.  Default: False.
+
+=item htusers
+
+This should be the path to a file to be updated with the list of users
+and crypt() versions of their passwords.  If this is set then the
+security system will check for a user set by the browser before
+attempting a form based logon.  Default: None.
+
 =back
 
 =head2 [mail]
@@ -492,9 +504,14 @@ The URI where images are kept.  Default: /images
 
 =item articles
 
-
-
 =back
+
+=head2 [articles]
+
+This will provide translations from symbolic names to article ids.
+
+Currently this is used for converting article ids in the access
+control code, and for looking up the id of the shop.
 
 =head1 AUTHOR
 

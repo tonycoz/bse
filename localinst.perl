@@ -51,29 +51,83 @@ $con =~ s/(^\$PW = ')[^']*/$1$dbpass/m;
 $con =~ s/(^\$BASEDIR = ')[^']+/$1 . BSE::Test::base_dir/me;
 #$con =~ s/(^\$URLBASE = ["'])[^'"]+/$1 . BSE::Test::base_url/me;
 #$con =~ s/(^\$SECURLBASE = ["'])[^'"]+/$1 . BSE::Test::test_securl/me;
-$con =~ s/(^\$SESSION_CLASS = ["'])[^'"]+/$1 . BSE::Test::test_sessionclass()/me;
+$con =~ s/(^\$SESSION_CLASS = [\"\'])[^\'\"]+/$1 . BSE::Test::test_sessionclass()/me;
 open CON, "> $instbase/cgi-bin/modules/Constants.pm"
   or die "Cannot open Constants.pm for write: $!";
 print CON $con;
 close CON;
 
+# rebuild the config file
+# first load values from the test.cfg file
+my $conffile = BSE::Test::test_conffile();
+my %conf;
+$conf{site}{name} = "Test Server";
+$conf{site}{url} = BSE::Test::base_url();
+$conf{site}{secureurl} = BSE::Test::base_securl();
+my $uploads = "$instbase/uploads";
+$conf{paths}{downloads} = $uploads;
+open TESTCONF, "< $conffile"
+  or die "Could not open config file $conffile: $!";
+while (<TESTCONF>) {
+  chomp;
+  /^\s*(\w+)\.(\w+)\s*=\s*(.*\S)\s*$/ or next;
+  $conf{lc $1}{lc $2} = $3;
+}
+
+$uploads = $conf{paths}{downloads};
 # fix bse.cfg
 open CFG, "< $instbase/cgi-bin/bse.cfg"
   or die "Cannot open $instbase/cgi-bin/bse.cfg: $!";
-my $cfg = do { local $/; <CFG> };
+my $section = "";
+my @cfg;
+while (<CFG>) {
+  chomp;
+  if (/^\[(.*)\]\s*$/) {
+    my $newsect = lc $1;
+    if ($conf{$section} && keys %{$conf{$section}}) {
+      for my $key (sort keys %{$conf{$section}}) {
+	push @cfg, "$key=$conf{$section}{$key}";
+      }
+      delete $conf{$section};
+    }
+    $section = $newsect;
+  }
+  elsif (/^\s*(\w+)\s*=\s*.*$/ && exists $conf{$section}{lc $1}) {
+    my $key = lc $1;
+    print "found $section.$key\n";
+    $_ = "$key=$conf{$section}{$key}";
+    delete $conf{$section}{$key};
+  }
+  push @cfg, $_;
+}
+if ($conf{$section} && keys %{$conf{$section}}) {
+  for my $key (sort keys %{$conf{$section}}) {
+    push @cfg, "$key=$conf{$section}{$key}";
+  }
+  delete $conf{$section};
+}
+for my $sect (keys %conf) {
+  if ($conf{$sect} && keys %{$conf{$sect}}) {
+    push @cfg, "[$sect]";
+    for my $key (sort keys %{$conf{$sect}}) {
+      push @cfg, "$key=$conf{$section}{$key}";
+    }
+    push @cfg, "";
+  }
+}
 close CFG;
-$cfg =~ s/^name\s*=.*/name=Test Server/m;
-$cfg =~ s/^url\s*=.*/"url=" . BSE::Test::base_url()/me;
-$cfg =~ s/^secureurl\s*=.*/"secureurl=" . BSE::Test::base_securl()/me;
-my $uploads = "$instbase/uploads";
-$cfg =~ s!^downloads\s*=.*!downloads=$uploads!m;
+
+open CFG, "> $instbase/cgi-bin/bse.cfg"
+  or die "Cannot create $instbase/cgi-bin/bse.cfg: $!";
+for my $line (@cfg) {
+  print CFG $line, "\n";
+}
+close CFG;
+
 -d $uploads 
   or mkdir $uploads, 0777 
   or die "Cannot find or create upload directory: $!";
-open CFG, "> $instbase/cgi-bin/bse.cfg"
-  or die "Cannot create $instbase/cgi-bin/bse.cfg: $!";
-print CFG $cfg;
-close CFG;
+
 
 # build the database
 unless ($leavedb) {

@@ -75,6 +75,7 @@ my %steps =
    add=>\&add_item,
    cart=>\&show_cart,
    checkout=>\&checkout,
+   checkupdate => \&checkupdate,
    recheckout => sub { checkout('', 1); },
    confirm => \&checkout_confirm,
    recalc=>\&recalc,
@@ -162,14 +163,15 @@ sub show_cart {
   $session{custom} ||= {};
   my %custom_state = %{$session{custom}};
 
-  BSE::Custom->enter_cart(\@cart, \@cart_prods, \%custom_state); 
+  BSE::Custom->enter_cart(\@cart, \@cart_prods, \%custom_state, $cfg); 
   $msg = '' unless defined $msg;
   $msg = CGI::escapeHTML($msg);
 
   my %acts;
   %acts =
     (
-     BSE::Custom->cart_actions(\%acts, \@cart, \@cart_prods, \%custom_state),
+     BSE::Custom->cart_actions(\%acts, \@cart, \@cart_prods, \%custom_state, 
+			       $cfg),
      shop_cart_tags(\%acts, \@cart, \@cart_prods, \%session, $CGI::Q),
      basic_tags(\%acts),
      msg => $msg,
@@ -196,7 +198,7 @@ sub update_quantities {
   $session{cart} = \@cart;
   $session{custom} ||= {};
   my %custom_state = %{$session{custom}};
-  BSE::Custom->recalc($CGI::Q, \@cart, [], \%custom_state);
+  BSE::Custom->recalc($CGI::Q, \@cart, [], \%custom_state, $cfg);
   $session{custom} = \%custom_state;
 }
 
@@ -215,6 +217,17 @@ sub remove_item {
 
   print "Refresh: 0; url=\"$ENV{SCRIPT_NAME}\"\n";
   print "Content-Type: text/html\n\n<html> </html>\n";
+}
+
+sub checkupdate {
+  my @cart = @{$session{cart}};
+  my @cart_prods = map { Products->getByPkey($_->{productId}) } @cart;
+  my %custom_state = %{$session{custom}};
+  BSE::Custom->checkout_update($CGI::Q, \@cart, \@cart_prods, \%custom_state, 
+			       $cfg);
+  $session{custom} = \%custom_state;
+  
+  checkout("", 1);
 }
 
 # display the checkout form
@@ -246,7 +259,7 @@ sub checkout {
   $session{custom} ||= {};
   my %custom_state = %{$session{custom}};
 
-  BSE::Custom->enter_cart(\@cart, \@cart_prods, \%custom_state); 
+  BSE::Custom->enter_cart(\@cart, \@cart_prods, \%custom_state, $cfg); 
   my @payment_types = split /,/, $cfg->entry('shop', 'payment_types', '0');
   @payment_types = grep $valid_payment_types{$_}, @payment_types;
   @payment_types or @payment_types = ( 0 );
@@ -264,7 +277,8 @@ sub checkout {
      message => sub { $message },
      old => sub { CGI::escapeHTML($olddata ? param($_[0]) : 
 		    $user && defined $user->{$_[0]} ? $user->{$_[0]} : '') },
-     BSE::Custom->checkout_actions(\%acts, \@cart, \@cart_prods, \%custom_state, $CGI::Q),
+     BSE::Custom->checkout_actions(\%acts, \@cart, \@cart_prods, 
+				   \%custom_state, $CGI::Q, $cfg),
      ifMultPaymentTypes => @payment_types > 1,
     );
   for my $name (keys %payment_names) {
@@ -316,7 +330,7 @@ sub checkout_confirm {
 # information
 # BUG!!: this duplicates the code in purchase() a great deal
 sub prePurchase {
-  my @required = BSE::Custom->required_fields($CGI::Q, $session{custom});
+  my @required = BSE::Custom->required_fields($CGI::Q, $session{custom}, $cfg);
   for my $field (@required) {
     defined(param($field)) && length(param($field))
       or return checkout("Field $field is required", 1);
@@ -411,7 +425,7 @@ sub prePurchase {
   }
 
   $order{total} += BSE::Custom->total_extras(\@cart, \@products, 
-					     $session{custom});
+					     $session{custom}, $cfg);
   ++$session{changed};
   # blank anything else
   for my $column (@columns) {
@@ -426,7 +440,8 @@ sub prePurchase {
 
   # check if a customizer has anything to do
   eval {
-    BSE::Custom->order_save($CGI::Q, \%order, \@cart, \@products, $session{custom});
+    BSE::Custom->order_save($CGI::Q, \%order, \@cart, \@products, 
+			    $session{custom}, $cfg);
     ++$session{changed};
   };
   if ($@) {
@@ -505,7 +520,7 @@ sub prePurchase {
 sub purchase {
   # some basic validation, in case the user switched off javascript
   my @required = 
-    BSE::Custom->required_fields($CGI::Q, $session{custom});
+    BSE::Custom->required_fields($CGI::Q, $session{custom}, $cfg);
 
   my @payment_types = split /,/, $cfg->entry('shop', 'payment_types', '0');
   @payment_types = grep $valid_payment_types{$_}, @payment_types;
@@ -618,7 +633,7 @@ sub purchase {
 
   $order{orderDate} = $today;
   $order{total} += BSE::Custom->total_extras(\@cart, \@products, 
-					     $session{custom});
+					     $session{custom}, $cfg);
   $order{paymentType} = $paymentType;
   ++$session{changed};
 
@@ -642,7 +657,7 @@ sub purchase {
 
   # check if a customizer has anything to do
   eval {
-    BSE::Custom->order_save($CGI::Q, \%order, \@cart, \@products);
+    BSE::Custom->order_save($CGI::Q, \%order, \@cart, \@products, $cfg);
   };
   if ($@) {
     return checkout($@, 1);
@@ -669,7 +684,7 @@ sub purchase {
   %acts =
     (
      BSE::Custom->purchase_actions(\%acts, \@items, \@products, 
-				   $session{custom}),
+				   $session{custom}, $cfg),
      iterate_items_reset => sub { $item_index = -1; },
      iterate_items => 
      sub { 

@@ -18,7 +18,9 @@ site/cgi-bin/admin/adminusers.pl
 site/cgi-bin/admin/datadump.pl
 site/cgi-bin/admin/generate.pl
 site/cgi-bin/admin/imageclean.pl
+site/cgi-bin/admin/logon.pl
 site/cgi-bin/admin/makeIndex.pl
+site/cgi-bin/admin/menu.pl
 site/cgi-bin/admin/move.pl
 site/cgi-bin/admin/reorder.pl
 site/cgi-bin/admin/shopadmin.pl
@@ -34,6 +36,8 @@ site/cgi-bin/modules/ArticleFile.pm
 site/cgi-bin/modules/ArticleFiles.pm
 site/cgi-bin/modules/Articles.pm
 site/cgi-bin/modules/BSE/Admin/StepParents.pm
+site/cgi-bin/modules/BSE/AdminLogon.pm
+site/cgi-bin/modules/BSE/AdminMenu.pm
 site/cgi-bin/modules/BSE/AdminUsers.pm
 site/cgi-bin/modules/BSE/Cfg.pm
 site/cgi-bin/modules/BSE/Custom.pm
@@ -193,6 +197,9 @@ site/templates/admin/edit_product.tmpl
 site/templates/admin/edit_steps.tmpl
 site/templates/admin/filelist.tmpl
 site/templates/admin/grouplist.tmpl
+site/templates/admin/logon.tmpl
+site/templates/admin/menu.tmpl
+site/templates/admin/menu_adv.tmpl
 site/templates/admin/interestemail.tmpl
 site/templates/admin/order_detail.tmpl
 site/templates/admin/order_list.tmpl

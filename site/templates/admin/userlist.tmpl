@@ -36,7 +36,7 @@
             <td valign="top"><:ifUser_groups iuser:><:iterator begin user_groups iuser:><:user_group name:><:iterator separator user_groups:>, <:iterator end user_groups:><:or:>(none)<:eif:>
             </td>
 	    <td>
-	      <a href="<:script:>?a_showuser=1&userid=<:iuser id:>&_t=del">Delete</a>
+	      <:ifUserCan admin_user_del:><a href="<:script:>?a_showuser=1&userid=<:iuser id:>&_t=del">Delete</a><:or:><:eif:>
 	    </td>
           </tr>
           <: iterator end users :> 
@@ -50,6 +50,7 @@
 </tr>
 </table>
 </form>
+<:if UserCan admin_user_add :>
 <h2>Add new user</h2>
 
 <form method="POST" action="<:script:>">
@@ -96,7 +97,7 @@
     </tr>
   </table>
 </form>
-  
+<:or UserCan:><:eif UserCan:>  
 <p><font size="-1">BSE Release <:release:></font></p>
 </body
 ></html>

@@ -35,7 +35,7 @@
             <td valign="top"><:igroup description:></td>
             <td valign="top"><:ifGroup_users igroup:><:iterator begin group_users igroup:><:group_user logon:><:iterator separator group_users:>, <:iterator end group_users:><:or:>(none)<:eif:>
             </td>
-            <td valign="top"><a href="<:script:>?a_showgroup=1&groupid=<:igroup id:>&_t=del">Delete</a></td>
+            <:ifUserCan admin_group_del:><td valign="top"><a href="<:script:>?a_showgroup=1&groupid=<:igroup id:>&_t=del">Delete</a></td><:or:><:eif:>
           </tr>
           <: iterator end groups :> 
           <:or Groups:> 
@@ -48,6 +48,7 @@
 </tr>
 </table>
 </form>
+<:if UserCan admin_group_add :>
 <h2>Add new group</h2>
 
 <form method="POST" action="<:script:>">
@@ -80,6 +81,7 @@
     </tr>
   </table>
 </form>
+<:or UserCan:><:eif UserCan:>  
   
 <p><font size="-1">BSE Release <:release:></font></p>
 </body

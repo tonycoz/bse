@@ -4,11 +4,15 @@ use HTML::Entities;
 use base qw(BSE::Edit::Base);
 use BSE::Util::Tags;
 use BSE::Util::SQL qw(now_sqldate);
+use BSE::Permissions;
 
 sub article_dispatch {
-  my ($self, $request, $article, $articles) = @_;
-  
-  my $cgi = $request->cgi;
+  my ($self, $req, $article, $articles) = @_;
+
+  BSE::Permissions->check_logon($req)
+    or return BSE::Template->get_refresh($req->url('logon'), $req->cfg);
+
+  my $cgi = $req->cgi;
   my $action;
   my %actions = $self->article_actions;
   for my $check (keys %actions) {
@@ -23,13 +27,16 @@ sub article_dispatch {
   }
   $action ||= 'edit';
   my $method = $actions{$action};
-  return $self->$method($request, $article, $articles, @extraargs);
+  return $self->$method($req, $article, $articles, @extraargs);
 }
 
 sub noarticle_dispatch {
-  my ($self, $request, $articles) = @_;
+  my ($self, $req, $articles) = @_;
 
-  my $cgi = $request->cgi;
+  BSE::Permissions->check_logon($req)
+    or return BSE::Template->get_refresh($req->url('logon'), $req->cfg);
+
+  my $cgi = $req->cgi;
   my $action = 'add';
   my %actions = $self->noarticle_actions;
   for my $check (keys %actions) {
@@ -39,11 +46,14 @@ sub noarticle_dispatch {
     }
   }
   my $method = $actions{$action};
-  return $self->$method($request, $articles);
+  return $self->$method($req, $articles);
 }
 
 sub edit_sections {
   my ($self, $req, $articles) = @_;
+
+  BSE::Permissions->check_logon($req)
+    or return BSE::Template->get_refresh($req->url('logon'), $req->cfg);
 
   my %article;
   my @cols = Article->columns;
@@ -164,7 +174,7 @@ sub should_be_catalog {
 }
 
 sub possible_parents {
-  my ($self, $article, $articles) = @_;
+  my ($self, $article, $articles, $req) = @_;
 
   my %labels;
   my @values;
@@ -173,11 +183,14 @@ sub possible_parents {
   my @parents = $articles->getBy('level', $article->{level}-1);
   @parents = grep { $_->{generator} eq 'Generate::Article' 
 		      && $_->{id} != $shopid } @parents;
+
+  # user can only select parent they can add to
+  @parents = grep $req->user_can('edit_add_child', $_), @parents;
   
   @values = ( map {$_->{id}} @parents );
   %labels = ( map { $_->{id} => "$_->{title} ($_->{id})" } @parents );
   
-  if ($article->{level} == 1) {
+  if ($article->{level} == 1 && $req->user_can('edit_add_child')) {
     push @values, -1;
     $labels{-1} = "No parent - this is a section";
   }
@@ -186,6 +199,7 @@ sub possible_parents {
     # we also list the siblings and grandparent (if any)
     my @siblings = grep $_->{id} != $article->{id} && $_->{id} != $shopid,
     $articles->getBy(parentid => $article->{parentid});
+    @siblings = grep $req->user_can('edit_add_child', $_), @siblings;
     push @values, map $_->{id}, @siblings;
     @labels{map $_->{id}, @siblings} =
       map { "-- move down a level -- $_->{title} ($_->{id})" } @siblings;
@@ -194,13 +208,17 @@ sub possible_parents {
       my $parent = $articles->getByPkey($article->{parentid});
       if ($parent->{parentid} != -1) {
 	my $gparent = $articles->getByPkey($parent->{parentid});
-	push @values, $gparent->{id};
-	$labels{$gparent->{id}} =
-	  "-- move up a level -- $gparent->{title} ($gparent->{id})";
+	if ($req->user_can('edit_add_child', $gparent)) {
+	  push @values, $gparent->{id};
+	  $labels{$gparent->{id}} =
+	    "-- move up a level -- $gparent->{title} ($gparent->{id})";
+	}
       }
       else {
-	push @values, -1;
-	$labels{-1} = "-- move up a level -- become a section";
+	if ($req->user_can('edit_add_child')) {
+	  push @values, -1;
+	  $labels{-1} = "-- move up a level -- become a section";
+	}
       }
     }
   }
@@ -209,7 +227,7 @@ sub possible_parents {
 }
 
 sub tag_list {
-  my ($self, $article, $articles, $cgi, $what) = @_;
+  my ($self, $article, $articles, $cgi, $req, $what) = @_;
 
   if ($what eq 'listed') {
     my @values = qw(0 1);
@@ -228,7 +246,7 @@ sub tag_list {
 			    -default=>$article->{listed});
   }
   else {
-    my ($values, $labels) = $self->possible_parents($article, $articles);
+    my ($values, $labels) = $self->possible_parents($article, $articles, $req);
     my $html;
     if (defined $article->{parentid}) {
       $html = $cgi->popup_menu(-name=>'parentid',
@@ -776,6 +794,38 @@ sub iter_admin_groups {
   BSE::TB::AdminGroups->all;
 }
 
+sub tag_if_field_perm {
+  my ($req, $article, $field) = @_;
+
+  $field =~ /^\w+$/ or return;
+  if ($article->{id}) {
+    return 1;
+  }
+  else {
+    return $req->user_can("edit_field_edit_$field", $article);
+  }
+}
+
+sub tag_default {
+  my ($self, $req, $article, $args, $acts, $funcname, $templater) = @_;
+
+  my ($col, $func, $funcargs) = split ' ', $args, 3;
+  if ($article->{id}) {
+    if ($func) {
+      return $templater->perform($acts, $func, $funcargs);
+    }
+    else {
+      my $value = $article->{$args};
+      defined $value or $value = '';
+      return encode_entities($value);
+    }
+  }
+  else {
+    my $value = $self->default_value($req, $article, $col);
+    return encode_entities($value);
+  }
+}
+
 sub low_edit_tags {
   my ($self, $acts, $request, $article, $articles, $msg, $errors) = @_;
 
@@ -810,12 +860,14 @@ sub low_edit_tags {
     (
      BSE::Util::Tags->basic($acts, $cgi, $cfg),
      BSE::Util::Tags->admin($acts, $cfg),
+     BSE::Util::Tags->secure($request),
      article => [ \&tag_hash, $article ],
      old => [ \&tag_old, $article, $cgi ],
+     default => [ \&tag_default, $self, $request, $article ],
      articleType => [ \&tag_art_type, $article->{level}, $cfg ],
      parentType => [ \&tag_art_type, $article->{level}-1, $cfg ],
      ifnew => [ \&tag_if_new, $article ],
-     list => [ \&tag_list, $self, $article, $articles, $cgi ],
+     list => [ \&tag_list, $self, $article, $articles, $cgi, $request ],
      script => $ENV{SCRIPT_NAME},
      level => $article->{level},
      checked => \&tag_checked,
@@ -875,6 +927,7 @@ sub low_edit_tags {
      edit => \&tag_edit_link,
      error => [ \&tag_hash, $errors ],
      error_img => [ \&tag_error_img, $self, $errors ],
+     ifFieldPerm => [ \&tag_if_field_perm, $request, $article ],
     );
 }
 
@@ -916,10 +969,10 @@ sub edit_form {
 }
 
 sub add_form {
-  my ($self, $request, $articles, $msg, $errors) = @_;
+  my ($self, $req, $articles, $msg, $errors) = @_;
 
   my $level;
-  my $cgi = $request->cgi;
+  my $cgi = $req->cgi;
   my $parentid = $cgi->param('parentid');
   if ($parentid) {
     if ($parentid =~ /^\d+$/) {
@@ -951,7 +1004,11 @@ sub add_form {
   $article{listed} = 1;
   $article{generator} = $self->generator;
 
-  return $self->low_edit_form($request, \%article, $articles, $msg, $errors);
+  my ($values, $labels) = $self->possible_parents(\%article, $articles, $req);
+  @$values
+    or return $req->access_error("You can't add children to any article at that level");
+
+  return $self->low_edit_form($req, \%article, $articles, $msg, $errors);
 }
 
 sub generator { 'Generate::Article' }
@@ -1024,7 +1081,8 @@ sub save_new {
   my @columns = $table_object->rowClass->columns;
   $self->save_thumbnail($cgi, undef, \%data);
   for my $name (@columns) {
-    $data{$name} = $cgi->param($name) if defined $cgi->param($name);
+    $data{$name} = $cgi->param($name) 
+      if defined $cgi->param($name);
   }
 
   my $msg;
@@ -1035,14 +1093,34 @@ sub save_new {
   my $parent;
   if ($data{parentid} > 0) {
     $parent = $articles->getByPkey($data{parentid}) or die;
+    $req->user_can('edit_add_child', $parent)
+      or return $self->add_form($req, $articles,
+				"You cannot add a child to that article");
+    for my $name (@columns) {
+      if (exists $data{$name} && 
+	  !$req->user_can("edit_add_field_$name", $parent)) {
+	delete $data{$name};
+      }
+    }
   }
-
+  else {
+    $req->user_can('edit_add_child')
+      or return $self->add_form($req, $articles, 
+				"You cannot create a top-level article");
+    for my $name (@columns) {
+      if (exists $data{$name} && 
+	  !$req->user_can("edit_add_field_$name")) {
+	delete $data{$name};
+      }
+    }
+  }
+  
   $self->validate_parent(\%data, $articles, $parent, \$msg)
     or return $self->add_form($req, $articles, $msg);
 
   $self->fill_new_data($req, \%data, $articles);
   my $level = $parent ? $parent->{level}+1 : 1;
-  $data{displayOrder} ||= time;
+  $data{displayOrder} = time;
   $data{titleImage} ||= '';
   $data{imagePos} = 'tr';
   $data{release} = sql_date($data{release}) || now_sqldate();
@@ -1941,6 +2019,22 @@ sub remove {
   my $url = "$urlbase$ENV{SCRIPT_NAME}?id=$parentid";
   $url .= "&message=Article+deleted";
   return BSE::Template->get_refresh($url, $self->{cfg});
+}
+
+sub default_value {
+  my ($self, $req, $article, $col) = @_;
+
+  if ($article->{parentid}) {
+    my $section = "children of $article->{parentid}";
+    my $value = $req->cfg->entry($section, $col);
+    if (defined $value) {
+    }
+  }
+  my $section = "level $article->{level}";
+  my $value = $req->cfg->entry($section, $col);
+  defined($value) and return encode_entities($value);
+  
+  return '';
 }
 
 1;

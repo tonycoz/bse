@@ -2,53 +2,57 @@ package BSE::CustomBase;
 use strict;
 
 sub enter_cart {
-  my ($class, $items, $products, $state) = @_;
+  my ($class, $items, $products, $state, $cfg) = @_;
 
   return 1;
 }
 
 sub cart_actions {
-  my ($class, $acts, $items, $products, $state) = @_;
+  my ($class, $acts, $items, $products, $state, $cfg) = @_;
 
   return ();
 }
 
 sub checkout_actions {
-  my ($class, $acts, $items, $products) = @_;
+  my ($class, $acts, $items, $products, $cfg) = @_;
 
   return ();
 }
 
+sub checkout_update {
+  my ($class, $q, $items, $products, $state, $cfg) = @_;
+}
+
 sub order_save {
-  my ($class, $cgi, $order, $items) = @_;
+  my ($class, $cgi, $order, $items, $cfg) = @_;
 
   return 1;
 }
 
 sub total_extras {
-  my ($class, $cart,$state) = @_;
+  my ($class, $cart, $state, $cfg) = @_;
 
   0;
 }
 
 sub recalc {
-  my ($class, $q, $items, $products, $state) = @_;
+  my ($class, $q, $items, $products, $state, $cfg) = @_;
 }
 
 sub required_fields {
-  my ($class, $q, $state) = @_;
+  my ($class, $q, $state, $cfg) = @_;
 
   qw(name1 name2 address city postcode state country email);
 }
 
 sub purchase_actions {
-  my ($class, $acts, $items, $products, $state) = @_;
+  my ($class, $acts, $items, $products, $state, $cfg) = @_;
 
   return;
 }
 
 sub base_tags {
-  my ($class, $articles, $acts, $article, $embedded) = @_;
+  my ($class, $articles, $acts, $article, $embedded, $cfg) = @_;
 
   return ();
 }
@@ -83,6 +87,11 @@ Current methods that can be implemented in BSE::Custom are:
 Return a list of extra "actions" or members of the %acts hash used for
 converting the checkout template to the final output.  Used to define
 extra tags for the checkout page.
+
+=item checkout_update($cgi, $items, $products, $state, $cfg)
+
+This is called by the checkupdate target of shop.pl, which does
+nothing else.
 
 =item order_save($cgi, $order, $items)
 

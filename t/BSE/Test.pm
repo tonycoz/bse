@@ -40,6 +40,10 @@ sub test_dbclass { $conf{dbclass} or die "No dbclass in test config" }
 
 sub test_sessionclass { $conf{sessionclass} or die "No sessionclass in config" }
 
+sub test_conffile {
+  return $conffile;
+}
+
 my $test_num = 1;
 
 sub ok ($$) {

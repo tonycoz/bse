@@ -22,7 +22,7 @@
   <h2>Catalog Details</h2>
 
 <:ifnew:><:or:>
-<form action="/cgi-bin/admin/adminusers.pl"><input type=submit name="a_showobjectart" value="Manage access for"><input type=hidden name=id value="<: article id:>">
+<table><tr><td nowrap><form action="/cgi-bin/admin/adminusers.pl"><font size=2>Manage access: <input type=hidden name=id value="<: article id:>">
 <select name=adminid>
 <:iterator begin adminusers:>
 <option value=<:iadminuser id:>>User <:iadminuser logon:>
@@ -30,8 +30,8 @@
 <:iterator begin admingroups:>
 <option value=<:iadmingroup id:>>Group <:iadmingroup name:>
 <:iterator end admingroups:>
-</select>
-</form><:eif:>
+</select><input type=submit name="a_showobjectart" value="Manage">
+</font></form></td></tr></table><:eif:>
 
   <form enctype="multipart/form-data" method="POST" action="<:script:>">
   <input type=hidden name=type value="Catalog">

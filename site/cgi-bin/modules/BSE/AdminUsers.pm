@@ -3,6 +3,7 @@ use strict;
 use BSE::Util::Tags;
 use HTML::Entities;
 use URI::Escape;
+use BSE::Permissions;
 
 my %actions =
   (
@@ -25,6 +26,9 @@ my %actions =
 
 sub dispatch {
   my ($class, $req) = @_;
+
+  BSE::Permissions->check_logon($req)
+    or return BSE::Template->get_refresh($req->url('logon'), $req->cfg);
 
   my $cgi = $req->cgi;
   my $action;
@@ -85,6 +89,7 @@ sub common_tags {
     (
      BSE::Util::Tags->admin(undef, $req->cfg),
      BSE::Util::Tags->basic(undef, $req->cgi, $req->cfg),
+     BSE::Util::Tags->secure($req),
      message => $msg,
      DevHelp::Tags->make_iterator2
      ([ \&iter_get_users, $req ], 'iuser', 'users', \@users, \$user_index),
@@ -138,6 +143,9 @@ sub hash_tag {
 sub req_adduser {
   my ($class, $req) = @_;
 
+  $req->user_can('admin_user_add')
+    or return $req->access_error("You don't have admin_user_add access");
+
   my $cgi = $req->cgi;
   my $logon = $cgi->param('logon');
   my $name = $cgi->param('name');
@@ -173,6 +181,9 @@ sub req_adduser {
 
 sub req_addgroup {
   my ($class, $req) = @_;
+
+  $req->user_can('admin_group_add')
+    or return $req->access_error("You don't have admin_user_add access");
 
   my $cgi = $req->cgi;
   my $name = $cgi->param('name');
@@ -488,6 +499,9 @@ sub req_showgroup {
 sub req_saveuser {
   my ($class, $req) = @_;
 
+  $req->user_can('admin_user_save')
+    or return $req->access_error("You don't have admin_user_save access");
+
   my $cgi = $req->cgi;
   my $userid = $cgi->param('userid');
   $userid
@@ -495,6 +509,7 @@ sub req_saveuser {
   require BSE::TB::AdminUsers;
   my $user = BSE::TB::AdminUsers->getByPkey($userid)
     or return $class->req_users($req, "User id $userid not found");
+
   my $name = $cgi->param('name');
   my $password = $cgi->param('password');
   my $confirm = $cgi->param('confirm');
@@ -520,7 +535,7 @@ sub req_saveuser {
   }
   $user->save;
 
-  if ($cgi->param('savegroups')) {
+  if ($cgi->param('savegroups') && $req->user_can("admin_save_user_groups")) {
     require BSE::TB::AdminGroups;
     require BSE::TB::AdminUsers;
     my @group_ids = map $_->{id}, BSE::TB::AdminGroups->all;
@@ -544,6 +559,9 @@ sub req_saveuser {
 
 sub req_saveuserart {
   my ($class, $req) = @_;
+
+  $req->user_can("admin_user_save_artrights")
+    or return $req->access_error("You don't have admin_user_save_artrights access");
 
   my $cgi = $req->cgi;
   my $userid = $cgi->param('userid');
@@ -578,6 +596,9 @@ sub req_saveuserart {
 sub req_savegroup {
   my ($class, $req, $msg) = @_;
 
+  $req->user_can("admin_group_save")
+    or return $req->access_error("You don't have admin_group_save access");
+
   my $cgi = $req->cgi;
   my $groupid = $cgi->param('groupid');
   $groupid
@@ -588,7 +609,7 @@ sub req_savegroup {
   my $description = $cgi->param('description');
   $group->{description} = $description if defined $description;
 
-  if ($cgi->param('savegperms')) {
+  if ($cgi->param('savegperms') && $req->user_can("admin_group_save_gperms")) {
     my $perms = '';
     my @gperms = $cgi->param('gperms');
     for my $id (@gperms) {
@@ -601,19 +622,21 @@ sub req_savegroup {
   }
   $group->save;
 
-  require BSE::TB::AdminGroups;
-  require BSE::TB::AdminUsers;
-  my @member_ids = map $_->{id}, BSE::TB::AdminUsers->all;
-  my %want_users = map { $_ => 1 } $cgi->param('users');
-  my %current_users = map { $_->{user_id} => 1 }
-    BSE::DB->query(groupUsers=>$group->{id});
-
-  for my $user_id (@member_ids) {
-    if ($want_users{$user_id} && !$current_users{$user_id}) {
-      BSE::DB->run(addUserToGroup=>$user_id, $group->{id});
-    }
-    elsif (!$want_users{$user_id} && $current_users{$user_id}) {
-      BSE::DB->run(delUserFromGroup=>$user_id, $group->{id});
+  if ($cgi->param('saveusers') && $req->user_can("admin_save_group_users")) {
+    require BSE::TB::AdminGroups;
+    require BSE::TB::AdminUsers;
+    my @member_ids = map $_->{id}, BSE::TB::AdminUsers->all;
+    my %want_users = map { $_ => 1 } $cgi->param('users');
+    my %current_users = map { $_->{user_id} => 1 }
+      BSE::DB->query(groupUsers=>$group->{id});
+    
+    for my $user_id (@member_ids) {
+      if ($want_users{$user_id} && !$current_users{$user_id}) {
+	BSE::DB->run(addUserToGroup=>$user_id, $group->{id});
+      }
+      elsif (!$want_users{$user_id} && $current_users{$user_id}) {
+	BSE::DB->run(delUserFromGroup=>$user_id, $group->{id});
+      }
     }
   }
 
@@ -623,6 +646,9 @@ sub req_savegroup {
 
 sub req_savegroupart {
   my ($class, $req) = @_;
+
+  $req->user_can("admin_group_save_artrights")
+    or return $req->access_error("You don't have admin_group_save_artrights access");
 
   my $cgi = $req->cgi;
   my $userid = $cgi->param('userid');
@@ -658,6 +684,9 @@ sub req_savegroupart {
 sub req_deluser {
   my ($class, $req) = @_;
 
+  $req->user_can("admin_user_del")
+    or return $req->access_error("You don't have admin_user_del access");
+  
   my $cgi = $req->cgi;
   my $userid = $cgi->param('userid');
   $userid
@@ -676,6 +705,9 @@ sub req_deluser {
 sub req_delgroup {
   my ($class, $req, $msg) = @_;
 
+  $req->user_can("admin_group_del")
+    or return $req->access_error("You don't have admin_group_del access");
+  
   my $cgi = $req->cgi;
   my $groupid = $cgi->param('groupid');
   $groupid

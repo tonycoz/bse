@@ -201,6 +201,12 @@ SQL
    replaceAdminGroup => 'replace into admin_groups values(?,?,?,?)',
    deleteAdminGroup => 'delete from admin_groups where base_id = ?',
    groupUsers => 'select * from admin_membership where group_id = ?',
+   'AdminGroups.userPermissionGroups' => <<SQL,
+select bs.*, ag.* from admin_base bs, admin_groups ag, admin_membership am
+where bs.id = ag.base_id
+  and ( (ag.base_id = am.group_id and am.user_id = ?) 
+        or ag.name = 'everyone' )
+SQL
 
    addUserToGroup => 'insert into admin_membership values(?,?)',
    delUserFromGroup => <<SQL,
@@ -213,6 +219,13 @@ select * from admin_perms where object_id = ? and admin_id = ?
 SQL
    addArticleObjectPerm => 'insert into admin_perms values(?,?,?)',
    replaceArticleObjectPerm => 'replace into admin_perms values(?,?,?)',
+   userAndGroupPerms => <<SQL,
+select distinct ap.* 
+from admin_perms ap, admin_users au, admin_groups ag, admin_membership am
+where ap.admin_id = ?
+   or (ap.admin_id = am.group_id and am.user_id = ?)
+   or (ap.admin_id = ag.base_id and ag.name = 'everyone')
+SQL
   );
 
 sub _single

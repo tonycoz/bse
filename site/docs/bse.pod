@@ -10,6 +10,41 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.12_10
+
+=over
+
+=item *
+
+pass the configuration object to each BSE::Custom method
+
+=item *
+
+new shop target, "checkupdate" intended for updating information on
+the checkout page for customizations
+
+=item *
+
+you can now set extra configuration items in test.cfg using 
+
+I<section>.I<key> = I<value>
+
+(Adrian asked for this a while back.)
+
+=item *
+
+dynamic menu display
+
+=item *
+
+logon page (only seen if access control is enabled)
+
+=item *
+
+start of access control
+
+=back
+
 =head2 0.12_09
 
 =over

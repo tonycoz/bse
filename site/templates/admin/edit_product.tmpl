@@ -14,8 +14,7 @@
   <:eif Product:>| <a href="/cgi-bin/admin/add.pl?id=<:product id:>&_t=steps">Manage 
   step parents</a> | <:ifProduct listed:><:or:>Hidden<:eif:></p>
   <h2>Edit Product</h2>
-<:ifnew:><:or:>
-<form action="/cgi-bin/admin/adminusers.pl"><input type=submit name="a_showobjectart" value="Manage access for"><input type=hidden name=id value="<: article id:>">
+<table><tr><td nowrap><form action="/cgi-bin/admin/adminusers.pl"><font size=2>Manage access: <input type=hidden name=id value="<: article id:>">
 <select name=adminid>
 <:iterator begin adminusers:>
 <option value=<:iadminuser id:>>User <:iadminuser logon:>
@@ -23,8 +22,8 @@
 <:iterator begin admingroups:>
 <option value=<:iadmingroup id:>>Group <:iadmingroup name:>
 <:iterator end admingroups:>
-</select>
-</form><:eif:>
+</select><input type=submit name="a_showobjectart" value="Manage">
+</font></form></td></tr></table>
 <form action="<:script:>" enctype="multipart/form-data" method="POST">
     <input type="hidden" name="id" value="<:product id:>">
   <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">

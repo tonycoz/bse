@@ -319,4 +319,88 @@ HTML
     );
 }
 
+my %dummy_site_article =
+  (
+	 id=>-1,
+	 parentid=>0,
+	 title=>'Your site',
+   );
+
+sub tag_if_user_can {
+  my ($req, $rperms, $args, $acts, $funcname, $templater) = @_;
+
+  require BSE::Permissions;
+  $$rperms ||= BSE::Permissions->new($req->cfg);
+
+  my @checks = split /,/, $args;
+  for my $check (@checks) {
+    my ($perm, $artname) = split /:/, $check, 2;
+    my $article;
+    if ($artname) {
+      if ($artname =~ /^\[/) {
+	my ($workname) = DevHelp::Tags->get_parms($artname, $acts, $templater);
+	unless ($workname) {
+	  print STDERR "Could not translate '$artname'\n";
+	  return;
+	}
+	$artname = $workname;
+      }
+      if ($artname =~ /^(-1|\d+)$/) {
+	if ($artname == -1) {
+	  $article = \%dummy_site_article;
+	}
+	else {
+	  $article = Articles->getByPkey($artname);
+	  unless ($article) {
+	    print STDERR "Could not find article $artname\n";
+	    return;
+	  }
+	}
+      }
+      elsif ($artname =~ /^\w+$/) {
+	$article = $req->get_object($artname);
+	unless ($article) {
+	  if (my $artid = $req->cfg->entry('articles', $artname)) {
+	    if ($artid == -1) {
+	      $article = \%dummy_site_article;
+	    }
+	    else {
+	      $article = Articles->getByPkey($artid);
+	    }
+	    unless ($article) {
+	      print STDERR "Could not find article id $artid (from $artname)\n";
+	      return;
+	    }
+	  }
+	  else {
+	    print STDERR "Unknown article name $artname\n";
+	    return;
+	  }
+	}
+      }
+    }
+    else {
+      $article = \%dummy_site_article;
+    }
+
+    # whew, so we should have an article
+    
+    $$rperms->user_has_perm($req->user, $article, $perm)
+      or return;
+  }
+
+  return 1;
+}
+
+sub secure {
+  my ($class, $req) = @_;
+
+  my $perms;
+  return
+    (
+     ifUserCan => [ \&tag_if_user_can, $req, \$perms ],
+    );
+}
+
 1;
+
