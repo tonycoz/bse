@@ -2,7 +2,6 @@
 # -d:ptkdb
 BEGIN { $ENV{DISPLAY} = ':0'; }
 
-
 use strict;
 use lib '../modules';
 use Constants qw(:edit);
@@ -16,7 +15,7 @@ use CGI qw(:standard);
 use CGI::Carp qw(fatalsToBrowser);
 use CGI::Cookie;
 use Apache::Session::MySQL;
-use DatabaseHandle;
+use BSE::DB;
 use Carp 'verbose';
 use Squirrel::ImageEditor;
 
@@ -28,7 +27,7 @@ my $sessionid;
 $sessionid = $cookies{sessionid}->value if exists $cookies{sessionid};
 my %session;
 
-my $dh = single DatabaseHandle;
+my $dh = BSE::DB->single;
 eval {
   tie %session, 'Apache::Session::MySQL', $sessionid,
     {
@@ -136,6 +135,9 @@ if (!$article) {
     $imageEditor->set([], 'tr');
   }
 }
+my $parent;
+$parent = $articles->getByPkey($article->{parentid})
+  if $article && $article->{parentid} && $article->{parentid} > 0;
 
 my @images;
 my $message = ''; # for displaying error message
@@ -154,7 +156,7 @@ if (opendir TITLE_IMAGES, "$IMAGEDIR/titles") {
 }
 
 my @templates;
-if ($article->{parentid} && $article->{parentid} == $SHOPID) {
+if (should_be_catalog($article, $parent, $articles)) {
   @templates = @{$levels{catalog}{templates}}
     if $levels{catalog}{templates};
   if (opendir CAT_TEMPL, "$TMPLDIR/catalog") {
@@ -260,6 +262,11 @@ HTML
        return '';
      }
    },
+   ifType => sub {
+     my ($which, $type) = split ' ', $_[0];
+     $acts{$which} or return 0;
+     $acts{$which}->('generator') eq "Generate::$type";
+   },
    edit => \&edit_link,
    adminMenu => sub { $ROOT_URI . "admin/"; },
   );
@@ -280,7 +287,7 @@ start();
 # the startup page for a new article/subsection
 sub start {
   # just substitute empty defaults into the blank page
-  if ($article->{parentid} && $article->{parentid} == $SHOPID) {
+  if (should_be_catalog($article, $parent, $articles)) {
     page('admin/edit_catalog.tmpl');
   }
   else {
@@ -330,7 +337,7 @@ sub save_new_article {
     $data{summaryLength} = 200
       if !defined $data{summaryLength} || $data{summaryLength} =~ /^\s*$/;
   }
-  $data{generator} = $data{parentid} == $SHOPID 
+  $data{generator} = should_be_catalog($article, $parent, $articles) 
     ? 'Generate::Catalog' : 'Generate::Article';
   $data{lastModified} = epoch_to_sql(time);
 
@@ -383,6 +390,7 @@ sub save_old_article {
     # nothing to do
   }
   elsif ($newparentid != -1) {
+    print STDERR "Reparenting...\n";
     my $newparent = $articles->getByPkey($newparentid);
     if ($newparent) {
       if ($newparent->{level} != $article->{level}-1) {
@@ -538,54 +546,73 @@ sub list {
 		      -default=>$article->{listed});
   }
   else {
+    my @values;
+    my %labels;
+
     # articles that this article could become a child of
-    my @parents = $articles->getBy('level', $level-1);
-    @parents = grep { $_->{generator} eq 'Generate::Article' 
-                    && $_->{id} != $SHOPID } @parents;
-
-    
-    my $values = [ map {$_->{id}} @parents ];
-    my $labels = { map { $_->{id} => "$_->{title} ($_->{id})" } @parents };
-
-    if ($level == 1) {
-      push @$values, -1;
-      $labels->{-1} = "No parent - this is a section";
+    if (should_be_catalog($article, $parent, $articles)) {
+      # the parents of a catalog can be other catalogs or the shop
+      my $shop = $articles->getByPkey($SHOPID);
+      my @work = [ $SHOPID, $shop->{title} ];
+      while (@work) {
+	my ($id, $title) = @{pop @work};
+	push(@values, $id);
+	$labels{$id} = $title;
+	push @work, map [ $_->{id}, $title.' / '.$_->{title} ],
+	sort { $b->{displayOrder} <=> $a->{displayOrder} }
+	  grep $_->{generator} eq 'Generate::Catalog', 
+	  $articles->getBy(parentid=>$id);
+      }
     }
-    
-    if ($id && reparent_updown()) {
-      # we also list the siblings and grandparent (if any)
-      my @siblings = grep $_->{id} != $id && $_->{id} != $SHOPID,
+    else {
+      my @parents = $articles->getBy('level', $level-1);
+      @parents = grep { $_->{generator} eq 'Generate::Article' 
+			  && $_->{id} != $SHOPID } @parents;
+      
+      
+      @values = ( map {$_->{id}} @parents );
+      %labels = ( map { $_->{id} => "$_->{title} ($_->{id})" } @parents );
+      
+      if ($level == 1) {
+	push @values, -1;
+	$labels{-1} = "No parent - this is a section";
+      }
+      
+      if ($id && reparent_updown()) {
+	# we also list the siblings and grandparent (if any)
+	my @siblings = grep $_->{id} != $id && $_->{id} != $SHOPID,
 	$articles->getBy(parentid => $article->{parentid});
-      push @$values, map $_->{id}, @siblings;
-      @$labels{map $_->{id}, @siblings} =
-	map { "-- move down a level -- $_->{title} ($_->{id})" } @siblings;
-
-      if ($article->{parentid} != -1) {
-	my $parent = $articles->getByPkey($article->{parentid});
-	if ($parent->{parentid} != -1) {
-	  my $gparent = $articles->getByPkey($parent->{parentid});
-	  push @$values, $gparent->{id};
-	  $labels->{$gparent->{id}} =
-	    "-- move up a level -- $gparent->{title} ($gparent->{id})";
-	}
-	else {
-	  push @$values, -1;
-	  $labels->{-1} = "-- move up a level -- become a section";
+	push @values, map $_->{id}, @siblings;
+	@labels{map $_->{id}, @siblings} =
+	  map { "-- move down a level -- $_->{title} ($_->{id})" } @siblings;
+	
+	if ($article->{parentid} != -1) {
+	  my $parent = $articles->getByPkey($article->{parentid});
+	  if ($parent->{parentid} != -1) {
+	    my $gparent = $articles->getByPkey($parent->{parentid});
+	    push @values, $gparent->{id};
+	    $labels{$gparent->{id}} =
+	      "-- move up a level -- $gparent->{title} ($gparent->{id})";
+	  }
+	  else {
+	    push @values, -1;
+	    $labels{-1} = "-- move up a level -- become a section";
+	  }
 	}
       }
     }
     my $html;
     if (defined $article->{parentid}) {
       $html = popup_menu(-name=>'parentid',
-			 -values=> $values,
-			 -labels => $labels,
+			 -values=> \@values,
+			 -labels => \%labels,
 			 -default => $article->{parentid},
 			 -override=>1);
     }
     else {
       $html = popup_menu(-name=>'parentid',
-			 -values=> $values,
-			 -labels => $labels,
+			 -values=> \@values,
+			 -labels => \%labels,
 			 -override=>1);
     }
 
@@ -735,6 +762,18 @@ sub reparent {
       $kid->save;
     }
   }
+}
+
+sub should_be_catalog {
+  my ($article, $parent, $articles) = @_;
+
+  if ($article->{parentid} && (!$parent || $parent->{id} != $article->{parentid})) {
+    $parent = $articles->getByPkey($article->{id});
+  }
+
+  return $article->{parentid} &&
+    ($article->{parentid} == $SHOPID || 
+     $parent->{generator} eq 'Generate::Catalog');
 }
 
 __END__

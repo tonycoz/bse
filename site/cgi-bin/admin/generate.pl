@@ -3,7 +3,6 @@ use strict;
 use lib '../modules';
 use Articles;
 use CGI qw(:standard);
-use CGI::Carp qw(fatalsToBrowser);
 use Constants qw($URLBASE);
 use Util qw(generate_button);
 
