@@ -1,0 +1,16 @@
+<html><head><title><:article title:></title></head>
+<body bgcolor="#FFFFFF">
+<:embed start:>
+<font face="Verdana, Arial, Helvetica, sans-serif">
+<:if Embedded:><:ifInMenu:><p><font size="+2"><:title:></font></p><:or:><:eif:>
+<:or Embedded:><p><font size="+2"><:title:></font></p><:eif Embedded:>
+<:body:>
+</font>
+<:iterator begin children:>
+<:embed child printable/printable.tmpl:>
+<:iterator separator children:>
+<hr>
+<:iterator end children:>
+<:embed end:>
+</body>
+</html>
