@@ -10,6 +10,44 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.14_09
+
+=over
+
+=item *
+
+the <:switch:> template construct had required there be some text
+between "<:switch:>" and the first case, this is no longer necessary.
+You still might want to keep a newline there to make it easier to pick
+out cases
+
+=item *
+
+the list of possible archive parents for subscriptions is now sorted
+by title (#295) We now select the highest id article by default when
+creating a new subscription, presuming it was created to store an
+archive.
+
+=item *
+
+the <:recipient_count:> tag is now available on the subscription send
+form, and the Send link is now always available on the subscriptions
+list. (#269)
+
+=item *
+
+the subscription send action, if it somehow is submitted with no users
+subcribed, will no longer archive an article and update the most
+recent send date.  This can happen if the last user unsubscribes while
+the administrator is composing their newsletter.
+
+=item *
+
+the class[] body text tag now nests correctly when spanning over
+paragraphs
+
+=back
+
 =head2 0.14_08
 
 =over

@@ -52,7 +52,7 @@ else {
   refresh_to($req->url('logon'));
 }
 
-sub tag_recipient_count {
+sub tag_list_recipient_count {
   my ($subs, $subindex) = @_;
 
   $$subindex >= 0 && $$subindex < @$subs
@@ -75,7 +75,7 @@ sub list {
 				    \$subindex),
      BSE::Util::Tags->secure($req),
      message => sub { CGI::escapeHTML($message) },
-     recipient_count => [ \&tag_recipient_count, \@subs, \$subindex ],
+     recipient_count => [ \&tag_list_recipient_count, \@subs, \$subindex ],
     );
   BSE::Template->show_page('admin/subs/list', $cfg, \%acts);
 }
@@ -139,16 +139,27 @@ sub _parent_popup {
   my @all = grep($req->user_can('edit_add_child', $_)
 		 || $sub->{parentId} == $_->{id},
 		 Articles->all());
-  @all = grep 
+  @all = 
+    grep 
     {
       my $type = ($_->{generator} =~ /(\w+)$/)[0] || 'Article';
 
       $valid_types{$type} && $_->{id} != $shopid
     } @all;
   my %labels = map { $_->{id}, "$_->{title} ($_->{id})" } @all;
+  @all = sort { lc $labels{$a->{id}} cmp lc $labels{$b->{id}} } @all;
   my @extras;
-  if ($sub && !$old) {
-    @extras = ( -default=>$sub->{parentId} );
+  unless ($old) {
+    if ($sub) {
+      @extras = ( -default=>$sub->{parentId} );
+    }
+    else {
+      # use the highest id, presuming the most recent article created
+      # was created to store subscriptions
+      my $max = -1;
+      $max < $_->{id} and $max = $_->{id} for @all;
+      @extras = ( -default=>$max );
+    }
   }
   return CGI::popup_menu(-name=>'parentId',
 			 -values=> [ map $_->{id}, @all ],
@@ -362,6 +373,14 @@ sub start_send {
   BSE::Template->show_page('admin/subs/start_send', $cfg, \%acts);
 }
 
+sub tag_recipient_count {
+  my ($sub, $rcount_cache) = @_;
+
+  defined $$rcount_cache or $$rcount_cache = $sub->recipient_count;
+
+  $$rcount_cache;
+}
+
 sub send_form {
   my ($q, $req, $cfg) = @_;
 
@@ -373,6 +392,7 @@ sub send_form {
     or return _refresh_list($q, $cfg, $msgs->(startnoid=>"No id supplied to be edited"));
   my $sub = BSE::SubscriptionTypes->getByPkey($id)
     or return _refresh_list($q, $cfg, $msgs->(startnosub=>"Cannot find record $id"));
+  my $count_cache;
   my %acts;
   %acts =
     (
@@ -384,6 +404,7 @@ sub send_form {
      old => sub { CGI::escapeHTML(defined $sub->{$_[0]} ? $sub->{$_[0]} : '') },
      template => sub { return _template_popup($cfg, $q, $sub, 0, $_[0]) },
      parent=> sub { _parent_popup($req, $sub)  },
+     recipient_count => [ \&tag_recipient_count, $sub, \$count_cache ],
     );
   BSE::Template->show_page('admin/subs/send_form', $cfg, \%acts);
 }

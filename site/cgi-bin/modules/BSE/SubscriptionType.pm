@@ -208,6 +208,11 @@ sub send {
 
   my @recipients = $sub->recipients;
 
+  unless (@recipients) {
+    $callback->('error', undef, 'This subscription has no recipients, no action taken');
+    return;
+  }
+
   my %article;
   $sub->_send($cfg, $opts, $callback, \@recipients, \%article);
 

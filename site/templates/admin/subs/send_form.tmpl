@@ -104,8 +104,8 @@
 </tr>
 </table>
 <p>
-    <input type="submit" name="send" value="Send Subscription">
-    <:help subssend send:> 
+    <:ifRecipient_count:><input type="submit" name="send" value="Send Subscription">
+    <:help subssend send:> <:or:><:eif:>
     <:ifCfg subscriptions testing 1:> <input type="submit" name="send_test" value="Send Test">
     <:help subssend sendtest:> <:or:><:eif:>
     <input type="submit" name="html_preview" value="HTML Preview">

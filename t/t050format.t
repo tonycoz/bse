@@ -1,13 +1,13 @@
 #!perl -w
 use strict;
-use Test::More tests => 37;
+use Test::More tests => 38;
 
 sub format_test($$$;$);
 
 my $gotmodule = require_ok('DevHelp::Formatter');
 
 SKIP: {
-  skip "couldn't load module", 35 unless $gotmodule;
+  skip "couldn't load module", 37 unless $gotmodule;
 
   format_test <<IN, <<OUT, 'bold', 'both';
 b[hello]
@@ -139,6 +139,10 @@ OUT
   format_test 'image[foo]', '', 'image';
 
   format_test 'class[xxx|yyy]', '<span class="xxx">yyy</span>', 'class';
+  format_test "class[xxx|yy\n\nzz]", <<EOS, 'class2', 'out';
+<span class="xxx">yy</span></p>
+<p><span class="xxx">zz</span>
+EOS
 }
 
 sub format_test ($$$;$) {

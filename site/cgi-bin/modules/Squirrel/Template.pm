@@ -274,7 +274,7 @@ sub switch {
   print STDERR "** switch\n" if DEBUG;
 
   my @cases = split /(?=<:\s*case\s)/gs, $content;
-  shift @cases; # drop the loser at the front
+  shift @cases if @cases && $cases[0] !~ /<:\s*case\s/;
   my $case;
   while ($case = shift @cases) {
     my ($cond, $data) = $case =~ /<:\s*case\s+(.*?):>(.*)/s;

@@ -197,7 +197,8 @@ sub format {
 	  and next TRY;
 	$part =~ s#image\[([^\]\[]+)\]# $self->image($1) #ige
 	    and next TRY;
-	$part =~ s#class\[([^\]\[\|]+)\|([^\]\[]+)\]#<span class="$1">$2</span>#ig
+	$part =~ s#class\[([^\]\[\|]+)\|([^\]\[]+)\]#
+	  _fix_spanned(qq/<span class="$1">/, "</span>", $2)#eig
           and next TRY;
 	last;
       }
