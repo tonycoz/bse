@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<!DOCTYPE wml PUBLIC "-//WAPFORUM//DTD WML 1.1//EN" "http://www.wapforum.org/DTD/wml_1.1.xml">
+<wml>
+<card id="card<:article id:>" title="<:article title:>">
+<p><small><:iterator begin level1:><a href="/cgi-bin/printable.pl?id=<:level1 id:>&amp;template=wap.tmpl">[<:level1 title:>]</a><:iterator separator level1:><br /><:iterator end level1:></small></p>
+<:ifArticle body:><p><:body:></p><:or:><:eif:>
+<:ifChildren:><p><:iterator begin children:><small><a href="/cgi-bin/printable.pl?id=<:child id:>&amp;template=wap.tmpl">[<:child title:>]</a></small><:iterator separator children:><br /><:iterator end children:></p><:or:><:eif:>
+<p><small><a href="/wap/">+</a> <:iterator begin crumbs:><a href="/cgi-bin/printable.pl?id=<:crumbs id:>&amp;template=wap.tmpl">+</a> <:iterator separator crumbs:> <:iterator end crumbs:></small></p>
+</card>
+</wml>

@@ -31,11 +31,12 @@
           <th>Expire</th>
           <th>Modify</th>
         </tr>
+        <:if Kids:>
         <tr bgcolor="#FFFFFF"> 
           <td colspan="5" align="center">Note: Delete only removes the stepchild 
             relationship. It does not delete the article.</td>
         </tr>
-        <:if Kids:> 
+ 
 <:if UserCan edit_reorder_children:article:>
         <tr> 
           <td colspan="5" bgcolor="#FFFFFF">Reorder stepchild articles: <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&sort=title&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>%26_t=steps%23step">by 
@@ -108,7 +109,7 @@
         </tr>
         <:if StepParents:> 
         <tr bgcolor="#FFFFFF"> 
-          <td colspan="5" align="center">Note: Delete only removes the stepchild 
+          <td colspan="5" align="center">Note: Delete only removes the stepparent 
             relationship. It does not delete the article.</td>
         </tr>
 <:if UserCan edit_reorder_stepparents:article :>

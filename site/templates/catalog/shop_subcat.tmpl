@@ -1,0 +1,38 @@
+<:wrap base.tmpl:> <:embed start:> <:admin:> 
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr> 
+    <td width="80%" height="24">&nbsp;&nbsp;<font face="Arial, Helvetica, sans-serif" size="4" color="#FF7F00"><b><:title:></b></font></td>
+    <td height="24">&nbsp;</td>
+  </tr>
+  <tr> 
+    <td colspan="2" height="1" bgcolor="#999999"><img src="/images/trans_pixel.gif" width="24" height="1" border="0"></td>
+  </tr>
+  <tr> 
+    <td colspan="2"> 
+      <table width="100%" border="0" cellspacing="0" cellpadding="0">
+        <tr> 
+          <td width="100"><img src="/images/trans_pixel.gif" width="100" height="10" border="0"></td>
+          <td bgcolor="#999999" width="100%">&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2">/ 
+            <a href="<:ifAdmin:>/cgi-bin/admin/admin.pl?id=1<:or:>/<:eif:>"><font color="#FFFFFF">Home</font></a> 
+            / <:iterator begin crumbs:> <a href="<:url crumbs:>"><font color="#FFFFFF"><:crumbs 
+            title:></font></a> / <:iterator end crumbs:></font></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<:ifArticle body:> 
+<p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font></p>
+<:or:><:eif:> <:if Subcats:> <:ifAdmin:> 
+<p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Reorder child articles: 
+  <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=title&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
+  title</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=date&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
+  date</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&reverse=1&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">reverse 
+  order</a></font></p>
+<:or:><:eif:><:iterator begin catalogs:> 
+<p><:thumbnail catalog:> <a href="<:url catalog:>"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><:catalog 
+  title:></font></b></a> <:moveDown:><:moveUp:><br>
+  <:if Catalog summaryLength:><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:summary 
+  catalog:></font><:or Catalog:><:eif Catalog:></p>
+<:iterator separator catalogs:><:iterator end catalogs:><:or Subcats:><:eif Subcats:><:embed 
+end:>

@@ -518,6 +518,12 @@ This will provide translations from symbolic names to article ids.
 Currently this is used for converting article ids in the access
 control code, and for looking up the id of the shop.
 
+=head2 [printable type]
+
+If the user supplies a template name to printable.pl then you can use
+a different content type by adding an entry to this section.  The key
+is the template name, and the value is the full content type.
+
 =head1 AUTHOR
 
 Tony Cook <tony@develop-help.com>

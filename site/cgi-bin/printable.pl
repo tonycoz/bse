@@ -7,6 +7,10 @@ use Carp; # 'verbose'; # remove the 'verbose' in production
 use Articles;
 use Constants qw($TMPLDIR);
 use Squirrel::Template;
+use BSE::Cfg;
+use BSE::Template;
+
+my $cfg = BSE::Cfg->new;
 
 my $id = param('id');
 defined $id or $id = 1;
@@ -27,13 +31,18 @@ my $template = param('template');
 
 # make sure they don't try to work outside the 
 my $file;
+my $type;
 if ($template) {
   if ($template =~ m!^/! || $template =~ /\.\./ || $template !~ /\.tmpl$/i) {
     error_page("Invalid template name '$template'");
   }
 
-  -e file_from_template($template) 
+  $file = file_from_template($template);
+  -e $file
     or error_page("Cannot find template '$template'");
+
+  $type = $cfg->entry('printable types', $template)
+    || BSE::Template->html_type($cfg);
 }
 else {
   for my $work ($article->{template}, 'printable.tmpl') {
@@ -43,6 +52,7 @@ else {
     last if -e $file;
   }
   -e $file or error_page("No template available for this page");
+  $type = BSE::Template->html_type($cfg);
 }
 
 open TMPLT, "< $file"
@@ -52,7 +62,7 @@ close TMPLT;
 
 $text =~ s/<:\s*embed\s+(?:start|end)\s*:>//g;
 
-print "Content-Type: text/html\n\n";
+print "Content-Type: $type\n\n";
 print $generator->generate_low($text, $article, 'Articles');
 
 sub error_page {

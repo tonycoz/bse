@@ -1,4 +1,4 @@
-<:wrap base.tmpl:> 
+<:wrap base.tmpl:> <:embed start:><:admin:> <:if Embedded:><:or Embedded:> 
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <tr> 
     <td width="80%" height="24">&nbsp;&nbsp;<font face="Arial, Helvetica, sans-serif" size="4" color="#FF7F00"><b><:title:></b></font></td>
@@ -21,9 +21,9 @@
     </td>
   </tr>
 </table>
-<:embed start:><:admin:> 
-<p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font> 
-</p>
+<:eif Embedded:> <:ifArticle body:> 
+<p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font></p>
+<:or:><:eif:>
 <form name="ff" method="POST" action="/cgi-bin/shop.pl">
   <table width="100%" border="0" cellspacing="0" cellpadding="0">
     <tr> 

@@ -348,7 +348,7 @@ sub format_body {
 	last;
       }
       $part =~ s/\n([ \r]*\n)+/<p>/g;
-      $part =~ s/\n/<br>/g;
+      $part =~ s/\n/<br \/>/g;
       $out .= $part;
     }
   }

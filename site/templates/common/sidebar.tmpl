@@ -33,7 +33,9 @@
                   </table>
                   <table width="100%" border="0" cellspacing="0" cellpadding="10">
                     <tr> 
-                      <td><:if Article body:><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font><:or Article:><:eif Article:><:ifAdmin:><:if Allkids:> 
+                      <td>
+<:ifArticle body:><p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font></p><:or:><:eif:>
+                        <:ifAdmin:><:if Allkids:> 
                         <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Reorder 
                           child articles: <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&sort=title&refreshto=/cgi-bin/admin/admin.pl?id=1">by 
                           title</a> | <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&sort=date&refreshto=/cgi-bin/admin/admin.pl?id=1">by 
@@ -43,11 +45,11 @@
                         allkids:><:iterator begin allkids:><:ifAdmin:> <br>
                         <:or:><:eif:><:movestepkid:><:embed allkid:><:iterator 
                         separator allkids:><:iterator end allkids:> <:or UnderThreshold:><:iterator 
-                        begin allkids:> 
-                        <p><a href="<:url allkid:>"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:allkid 
-                          title:></font></b></a> <:movestepkid:></p>
-                        <:iterator separator allkids:><:iterator end allkids:><:eif 
-                        UnderThreshold:></td>
+                        begin allkids:> <a href="<:url allkid:>"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:allkid 
+                        title:></font></b></a> <:movestepkid:> <:iterator separator 
+                        allkids:>
+                        <hr width="100%" size="1" noshade>
+                        <:iterator end allkids:><:eif UnderThreshold:></td>
                     </tr>
                   </table>
                 </td>
@@ -84,9 +86,8 @@
     </td>
   </tr>
 </table>
-<:if Article body:> 
-<p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font></p>
-<:or Article:><:eif Article:><:if Embedded:><:or Embedded:><:ifAdmin:><:if Allkids:> 
+<:ifArticle body:><p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font></p><:or:><:eif:>
+<:if Embedded:><:or Embedded:><:ifAdmin:><:if Allkids:> 
 <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Reorder child articles: 
   <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&sort=title&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
   title</a> | <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&sort=date&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
@@ -105,18 +106,15 @@ begin allkids:><:ifAdmin:>
 Embedded:><:if Files:> <br>
 <table border="0" cellspacing="0" cellpadding="0">
   <tr> 
-    <td> 
-      <table border="0" cellspacing="0" cellpadding="4" bgcolor="#999999">
+    <td> <table border="0" cellspacing="0" cellpadding="4" bgcolor="#999999">
         <tr> 
           <th nowrap><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#FFFFFF">&nbsp;&nbsp;Related 
             file downloads&nbsp;&nbsp;</font></th>
         </tr>
-      </table>
-    </td>
+      </table></td>
   </tr>
   <tr> 
-    <td bgcolor="#999999"> 
-      <table cellspacing="1" cellpadding="4">
+    <td bgcolor="#999999"> <table cellspacing="1" cellpadding="4">
         <tr bgcolor="#CCCCCC"> 
           <th><font color="#000000" size="-2" face="Verdana, Arial, Helvetica, sans-serif">Description</font></th>
           <th><font color="#000000" size="-2" face="Verdana, Arial, Helvetica, sans-serif">Filename</font></th>
@@ -137,8 +135,7 @@ Embedded:><:if Files:> <br>
             requireUser:><img src="/images/filestatus/requireUser.gif" width="15" height="15" alt="For registered users only" title="For registered users only"><:or:><img src="/images/trans_pixel.gif" width="15" height="15" title="For registered users only"><:eif:><:eif 
             File:></td>
         </tr>
-        <:iterator end files:> </table>
-    </td>
+        <:iterator end files:> </table></td>
   </tr>
 </table>
 <:or Files:><:eif Files:>

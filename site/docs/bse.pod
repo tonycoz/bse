@@ -10,6 +10,32 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.12_21
+
+=over
+
+=item *
+
+template change from adriam (edit_steps.tmpl):
+
+Finally fixed something that has bugged me for a while... I simply 
+moved the "if Kids" conditional to include the note about "Delete 
+only removes the stepkid relationship..." since not much point in 
+showing that is no step kids available... the step parent panel 
+already did this.
+
+=item *
+
+printable.pl now attempts to look for a content type for a given
+template.  This can be used for different types of presentation, for
+example WAP.
+
+=item *
+
+printable.pl now uses the configured charset if set.
+
+=back
+
 =head2 0.12_20
 
 =over

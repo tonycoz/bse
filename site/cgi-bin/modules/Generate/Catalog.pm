@@ -67,6 +67,10 @@ HTML
 <input type=hidden name="parentid" value="$article->{id}">
 <input type=hidden name="type" value="Product">
 <input type=submit value="Add product"></form></td>
+<td><form action="$CGI_URI/admin/add.pl">
+<input type=hidden name="parentid" value="$article->{id}">
+<input type=hidden name="type" value="Catalog">
+<input type=submit value="Add product"></form></td>
 HTML
          }
 	 $html .= <<HTML;

@@ -37,7 +37,8 @@
         <tr bgcolor="#FFFFFF"> 
           <td align="center" nowrap><a href="<:script:>?id=<:order id:>&order_detail=1"><:order 
             id:></a></td>
-          <td width="100%"><:order delivFirstName:> <:order delivLastName:></td>
+          <td width="100%"><:order delivFirstName:> <:order delivLastName:> <:ifOrder 
+            userId:><font color="#CCCCCC">&#8212; (logged in)</font><:or:><:eif:></td>
           <td nowrap><:date orderDate:></td>
           <td align=right nowrap>$<:money total:></td>
           <td align=right nowrap>$<:money gst:></td>

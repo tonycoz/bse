@@ -1,4 +1,4 @@
-<:wrap base.tmpl:> 
+<:wrap base.tmpl:> <:embed start:> <:admin:> 
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <tr> 
     <td width="80%" height="24">&nbsp;&nbsp;<font face="Arial, Helvetica, sans-serif" size="4" color="#FF7F00"><b><:title:></b></font></td>
@@ -21,10 +21,9 @@
     </td>
   </tr>
 </table>
-<:admin:>
-<p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font></p> 
-  
-<:ifAdmin:>
+<:ifArticle body:> 
+<p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font></p>
+<:or:><:eif:><:ifAdmin:>
 <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Reorder child articles: 
   <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&sort=title&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
   title</a> | <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&sort=date&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
@@ -42,3 +41,4 @@
   <b>secure socket layer (SSL) encryption technology</b> to encode your personal 
   and credit card details when it is sent from your computer to ours. It&#146;s 
   the same technology that is used by larger online stores.</font></p>
+  <:embed end:>

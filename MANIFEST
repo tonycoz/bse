@@ -232,6 +232,7 @@ site/templates/base.tmpl
 site/templates/cart_base.tmpl
 site/templates/catalog.tmpl
 site/templates/catalog/multi.tmpl
+site/templates/catalog/shop_subcat.tmpl
 site/templates/checkout_base.tmpl
 site/templates/checkoutcard_base.tmpl
 site/templates/checkoutconfirm_base.tmpl
@@ -264,6 +265,7 @@ site/templates/menu/menu3.tmpl
 site/templates/menu/menu4.tmpl
 site/templates/menu/menu5.tmpl
 site/templates/printable/printable.tmpl
+site/templates/printable/wap.tmpl
 site/templates/search_base.tmpl
 site/templates/shop_help.tmpl
 site/templates/shop_sect.tmpl
