@@ -39,21 +39,32 @@
     </td>
   </tr>
 </table>
-<p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Reorder child articles: 
-  <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=title&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
-  title</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=date&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
-  date</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&reverse=1&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">reverse 
-  order</a></font></p>
 <:or Admin:><:eif Admin:> 
 <p><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:title:></font></b><:or:><:eif:></p>
-<:ifEmbedded:>
-<ul><:or:><:eif:><p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font></p><:ifEmbedded:></ul><:or:><:eif:>
 <:ifEmbedded:> 
-
-<ul><:or:><:eif:><:iterator 
-  begin children:> 
+<ul>
+  <:or:><:eif:>
+  <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font></p>
+  <:ifEmbedded:>
+</ul>
+<:or:><:eif:> <:if Children:><:if Embedded:> 
+<ul>
+  <p><:if Admin:><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Reorder 
+    child articles: <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=title&refreshto=/cgi-bin/admin/admin.pl?id=<:parent id:>">by 
+    title</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=date&refreshto=/cgi-bin/admin/admin.pl?id=<:parent id:>">by 
+    date</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&reverse=1&refreshto=/cgi-bin/admin/admin.pl?id=<:parent id:>">reverse 
+    order</a></font><:or Admin:><:eif Admin:></p>
+  <:or Embedded:> 
+  <p><:if Admin:><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Reorder 
+    child articles: <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=title&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
+    title</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=date&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
+    date</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&reverse=1&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">reverse 
+    order</a></font><:or Admin:><:eif Admin:></p>
+  <:eif Embedded:><:or Children:><:eif Children:> <:iterator begin children:> 
   <p><a href="<:url child:>"><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:child 
     title:></font></a><:moveDown:><:moveUp:><br>
-  <:if Child summaryLength:><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:summary:></font><:or 
-  Child:><:eif Child:></p>
-<:iterator separator children:><:iterator end children:><:ifEmbedded:></ul><:or:><:eif:><:embed end:>
+    <:if Child summaryLength:><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:summary:></font><:or 
+    Child:><:eif Child:></p>
+  <:iterator separator children:><:iterator end children:><:ifEmbedded:> 
+</ul>
+<:or:><:eif:><:embed end:>

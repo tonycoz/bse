@@ -36,9 +36,9 @@
                       <td><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font> 
                         <:ifAdmin:><:if Children:> 
                         <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Reorder 
-                          child articles: <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=title&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
-                          title</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=date&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
-                          date</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&reverse=1&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">reverse 
+                          child articles: <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=title&refreshto=/cgi-bin/admin/admin.pl?id=<:parent id:>">by 
+                          title</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=date&refreshto=/cgi-bin/admin/admin.pl?id=<:parent id:>">by 
+                          date</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&reverse=1&refreshto=/cgi-bin/admin/admin.pl?id=<:parent id:>">reverse 
                           order</a></font></p>
                         <:or Children:><:eif Children:><:or:><:eif:><:if UnderThreshold:><:iterator 
                         begin children:><:ifAdmin:> <br>

@@ -23,7 +23,49 @@
   </tr>
 </table>
 <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font></p>
-<:embed end:><:ifAdmin:><:if Allkids:> 
+<:if Embedded:><br>
+<:if Files:> 
+<table border="0" cellspacing="0" cellpadding="0">
+  <tr> 
+    <td> 
+      <table border="0" cellspacing="0" cellpadding="4" bgcolor="#999999">
+        <tr> 
+          <th nowrap><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#FFFFFF">Related 
+            file downloads</font></th>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr> 
+    <td bgcolor="#999999"> 
+      <table cellspacing="1" cellpadding="4">
+        <tr bgcolor="#FFFF99"> 
+          <th><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Description</font></th>
+          <th><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Filename</font></th>
+          <th><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Size</font></th>
+          <th><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Download</font></th>
+        </tr>
+        <:iterator begin files:> 
+        <tr bgcolor="#FFFFFF"> 
+          <td bgcolor="#FFFFFF"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:file 
+            description:></font></td>
+          <td bgcolor="#FFFFFF"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:if 
+            File forSale:><:file displayName:><:or File:><a href="/cgi-bin/user.pl?download_file=1&file=<:file id:>"> 
+            <:file displayName:></a><:eif File:></font></td>
+          <td><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:kb 
+            file sizeInBytes:></font></td>
+          <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:if 
+            File forSale:> Sorry, this document cannot be downloaded <:or File:> 
+            <a href="/cgi-bin/user.pl?download_file=1&file=<:file id:>">Download</a> 
+            <:eif File:> </font></td>
+        </tr>
+        <:iterator end files:> 
+      </table>
+    </td>
+  </tr>
+</table>
+<:or Files:><:eif Files:><:or Embedded:><:eif Embedded:><:embed end:><:ifAdmin:><:if 
+Allkids:> 
 <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Reorder child articles: 
   <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&sort=title&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
   title</a> | <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&sort=date&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
@@ -42,4 +84,46 @@
 <li><a href="<:url stepparent:>"><:stepparent title:></a>
 <:iterator end stepparents:>
 </ul>
-<:or Stepparents:><:eif Stepparents:>
+<:or Stepparents:><:eif Stepparents:><br>
+<br>
+<:if Files:> 
+<table border="0" cellspacing="0" cellpadding="0">
+  <tr> 
+    <td> 
+      <table border="0" cellspacing="0" cellpadding="4" bgcolor="#999999">
+        <tr> 
+          <th nowrap><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#FFFFFF">Related 
+            file downloads</font></th>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr> 
+    <td bgcolor="#999999"> 
+      <table cellspacing="1" cellpadding="4">
+        <tr bgcolor="#FFFF99"> 
+          <th><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Description</font></th>
+          <th><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Filename</font></th>
+          <th><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Size</font></th>
+          <th><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Download</font></th>
+        </tr>
+        <:iterator begin files:> 
+        <tr bgcolor="#FFFFFF"> 
+          <td bgcolor="#FFFFFF"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:file 
+            description:></font></td>
+          <td bgcolor="#FFFFFF"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:if 
+            File forSale:><:file displayName:><:or File:><a href="/cgi-bin/user.pl?download_file=1&file=<:file id:>"> 
+            <:file displayName:></a><:eif File:></font></td>
+          <td><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:kb 
+            file sizeInBytes:></font></td>
+          <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:if 
+            File forSale:> Sorry, this document cannot be downloaded <:or File:> 
+            <a href="/cgi-bin/user.pl?download_file=1&file=<:file id:>">Download</a> 
+            <:eif File:> </font></td>
+        </tr>
+        <:iterator end files:> 
+      </table>
+    </td>
+  </tr>
+</table>
+<:or Files:><:eif Files:>
