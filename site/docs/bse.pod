@@ -26,6 +26,14 @@ displaying the user page
 the logon and register pages can now be passed a refresh url, which
 the shop uses when it refreshes to the logon page
 
+=item *
+
+add an orders button when logged in
+
+=item *
+
+the file list was messed up
+
 =back
 
 =head2 0.11_02

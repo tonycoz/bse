@@ -345,8 +345,8 @@ sub userpage {
        CGI::escapeHTML($product->{$_[0]});
      },
      BSE::Util::Tags->
-     make_dependent_iterator
-     (\$file_index,
+     make_multidependent_iterator
+     ([ \$item_index, \$order_index],
       sub {
 	require 'ArticleFiles.pm';
 	@files = sort { $b->{displayOrder} <=> $a->{displayOrder} }

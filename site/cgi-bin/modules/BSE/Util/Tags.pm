@@ -176,6 +176,58 @@ sub make_dependent_iterator {
   }
 }
 
+sub make_multidependent_iterator {
+  my ($class, $base_indices, $getdata, $single, $plural, $saveto) = @_;
+
+  # $base_indicies is an arrayref containing scalar refs
+  my @last_bases;
+  my @data;
+  my $index;
+  my @result =
+      (
+       "iterate_${plural}_reset" => 
+       sub { 
+	 if (join(",", map $$_, @$base_indices) ne join(",", @last_bases)) {
+	   @last_bases = map $$_, @$base_indices;
+	   @data = $getdata->(@last_bases);
+	 }
+	 $index = -1
+       },
+       $single => sub { CGI::escapeHTML($data[$index]{$_[0]}) },
+       "if\u$plural" =>
+       sub { 
+	 if (join(",", map $$_, @$base_indices) ne join(",", @last_bases)) {
+	   @last_bases = map $$_, @$base_indices;
+	   @data = $getdata->(@last_bases);
+	 }
+	 @data
+       },
+       "${single}_index" => sub { $index },
+      );
+  if ($saveto) {
+    return
+      (
+       @result, 
+       "iterate_${plural}" => 
+       sub {
+	 if (++$index < @data) {
+	   $$saveto = $index;
+	   return 1;
+	 }
+	 return 0;
+       },
+      );
+  }
+  else {
+    return
+      (
+       @result, 
+       "iterate_${plural}" => 
+       sub { ++$index < @data },
+      );
+  }
+}
+
 sub admin {
   my ($class, $acts, $cfg) = @_;
 
