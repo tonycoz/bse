@@ -216,3 +216,20 @@ create table order_item (
   primary key (id),
   index order_item_order(orderId, id)
 );
+
+drop table if exists other_parents;
+create table other_parents (
+  id integer not null auto_increment,
+
+  parentId integer not null,
+  childId integer not null,
+
+  -- order as seen from the parent
+  parentDisplayOrder integer not null,
+  -- order as seen from the child
+  childDisplayOrder integer not null,
+
+  primary key(id),
+  unique (parentId, childId),
+  index (childId)
+);
