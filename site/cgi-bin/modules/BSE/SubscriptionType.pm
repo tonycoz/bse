@@ -108,7 +108,7 @@ sub _doclink {
     # try to find it in the config
     my $work = $cfg->entry('articles', $id);
     unless ($work) {
-      return "&#42;&#42; No article name '".escape_html($id)."' in the [articles] section of bse.cfg &#42;&#42;";
+      return ">> No article name '$id' in the [articles] section of bse.cfg <<";
     }
     $dispid = "$id ($work)";
     $id = $work;
@@ -116,7 +116,7 @@ sub _doclink {
   require Articles;
   my $art = Articles->getByPkey($id);
   unless ($art) {
-    return "&#42;&#42; Cannot find article id $dispid &#42;&#42;";
+    return ">> Cannot find article id $dispid <<";
   }
 
   # make the URL absolute
@@ -136,7 +136,7 @@ sub _doclink {
 sub _any_link {
   my ($cfg, $urls, $type, $content, $rindex) = @_;
 
-  if ($type eq 'link') {
+  if (lc $type eq 'link') {
     if ($content =~ /^([^|]+)\|(.*)$/) {
       return _body_link($cfg, $urls, $1, $2, $rindex);
     }

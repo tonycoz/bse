@@ -705,6 +705,14 @@ Iterates over the key definitions in a section of the configuration
 file.  Possible values for field are C<key> or C<value>.  The section
 name must be quoted with double quotes.
 
+=item help I<file> I<entry>
+
+=item help I<file> I<entry> I<style>
+
+Inserts a help icon in the text.  By default this will link to
+/help/I<topic>.html#I<entry>, but this can be modified by the
+configuration depending on the style.  The default style is "user".
+
 =back
 
 =head2 Dynamic Tags

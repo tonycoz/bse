@@ -10,6 +10,34 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.14_21
+
+=over
+
+=item *
+
+non-lower-case link[] commands in subscription body text was causing
+500 errors, (doclink[] with unknown article names/ids could cause the
+same issue)
+
+=item *
+
+the <:help file entry:> tag can now be used in all templates, and
+optionally takes a style argument, with the default style depending on
+context.  This tag is replaced as pregeneration time for pregenerated
+pages.
+
+In user pages (including the admin version of article pages) the style
+defaults to "user".
+
+In admin pages the style defaults to "admin".
+
+The style chosen can select a template, and change icons and path
+depending on the configuration file, see [help style ...] in
+L<config.pod>.
+
+=back
+
 =head2 0.14_20
 
 =over

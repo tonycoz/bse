@@ -254,6 +254,7 @@ sub static {
        $out;
      },
      adminbase => [ \&tag_adminbase, $cfg ],
+     help => [ \&tag_help, $cfg, 'admin' ],
      
      _format => 
      sub {
@@ -473,17 +474,58 @@ sub admin {
 
   return
     (
-     help =>
-     sub {
-       my ($file, $entry) = split ' ', $_[0];
-
-#       qq!<a href="/admin/help/$file.html#$entry" target="_blank"><img src="/images/admin/help.gif" width="16" height="16" border="0" /></a>!;
-       return <<HTML;
-<a href="#" onclick="window.open('/admin/help/$file.html#$entry', 'adminhelp', 'width=400,height=300,location=no,status=no,menubar=no,scrollbars=yes'); return 0;"><img src="/images/admin/help.gif" width="16" height="16" border="0" alt="help on $entry" /></a>
-HTML
-     },
+     help => [ \&tag_help, $cfg, 'admin' ],
     );
 }
+
+my %help_styles =
+  (
+   admin => { 
+	     template => 'admin/helpicon',
+	     prefix => '/admin/help/',
+	    },
+   user => {
+	    template => 'helpicon',
+	    prefix => '/help/',
+	   },
+  );
+
+sub tag_stylecfg {
+  my ($cfg, $style, $args) = @_;
+
+  my ($name, $default) = split ' ', $args, 2;
+
+  return $cfg->entry("help style $style", $name, $default);
+}
+
+sub tag_help {
+  my ($cfg, $defstyle, $args) = @_;
+
+  my ($file, $entry, $style) = split ' ', $args;
+
+  $style ||= $defstyle;
+
+  my $template = $cfg->entry("help style $style", 'template')
+    || $cfg->entry("help style $defstyle", 'template')
+    || $help_styles{$style}{template}
+    || $help_styles{$defstyle}{template};
+  my $prefix = $cfg->entry("help style $style", 'prefix')
+    || $cfg->entry("help style $defstyle", 'prefix')
+    || $help_styles{$defstyle}{prefix}
+    || $help_styles{$defstyle}{prefix};
+  require BSE::Template;
+  my %acts=
+    (
+     prefix => $prefix,
+     file => $file,
+     entry => $entry,
+     stylename => $style,
+     stylecfg => [ \&tag_stylecfg, $cfg, $style ],
+    );
+
+  return BSE::Template->get_page($template, $cfg, \%acts,
+				 $help_styles{$defstyle}{template});
+ }
 
 my %dummy_site_article =
   (

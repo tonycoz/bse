@@ -870,6 +870,45 @@ See [payment type names].
 Set the key given by the payment type id to a value of a
 comma-separated list of fields required for that payment type.
 
+=head2 [help style I<style-name>]
+
+This type of configuration section is used to set values for a style
+of help icon.  Only the C<template> and C<prefix> values are used
+directly by the code, the others are used by the default helpicon
+templates.
+
+=over
+
+=item prefix
+
+The URI to the help files for this style.  Default: /help/ in style
+"user", /admin/help/ in style "admin".
+
+=item template
+
+The template used to produce the icon.  Default: helpicon in style
+user, admin/helpicon in style "admin".
+
+=item icon
+
+URI to the help icon image.   Default: /images/admin/help.gif
+
+=item iconwidth
+
+The width of the help icon image.  Default: 16
+
+=item iconheight
+
+The height of the help icon image.  Default: 16
+
+=back
+
+If you just want to change the help icon image for user help icons you
+might do:
+
+  [help style user]
+  icon=/images/help.gif
+
 =head1 AUTHOR
 
 Tony Cook <tony@develop-help.com>

@@ -80,12 +80,12 @@ sub show_literal {
 }
 
 sub get_response {
-  my ($class, $template, $cfg, $acts) = @_;
+  my ($class, $template, $cfg, $acts, $base_template) = @_;
 
   my $result =
     {
      type => $class->get_type($cfg, $template),
-     content => scalar($class->get_page($template, $cfg, $acts)),
+     content => scalar($class->get_page($template, $cfg, $acts, $base_template)),
     };
   push @{$result->{headers}}, "Content-Length: ".length($result->{content});
 
