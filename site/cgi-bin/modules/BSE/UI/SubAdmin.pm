@@ -266,7 +266,7 @@ sub tag_ifRemovable {
 
   $$rsub or return;
 
-  $$rsub->is_removable;
+  $$rsub->is_removable || 0;
 }
 
 sub _list_refresh {

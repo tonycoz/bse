@@ -10,9 +10,31 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
-Trying again for a release candidate for 0.15.
+=head2 0.14_37
+
+This will become 0.15 on Friday unless a major problem is reported.
+
+=over
+
+=item *
+
+The ifRemovable tag on the subscription list should no longer produce
+undefined value messages.
+
+=item *
+
+you can now configure a site user (member) flag that must be set for
+the affiliate page to be displayed for that user.
+
+=item *
+
+documented the [site user flags] configuration file section
+
+=back
 
 =head2 0.14_36
+
+Trying again for a release candidate for 0.15.
 
 =over
 

@@ -235,6 +235,11 @@ sub req_show {
       return $class->req_none($req, "User not subscribed to the required subscription");
     }
   }
+  my $flag = $cfg->entry('affiliate', 'flag_required');
+  if (defined $flag) {
+    $user->{flags} =~ /\Q$flag/
+      or return $class->req_none($req, "User not flagged with the affiliate flag $flag");
+  }
 
   my %acts;
   %acts =

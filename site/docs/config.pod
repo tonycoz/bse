@@ -954,6 +954,11 @@ Default: the site base url.
 This is either the numeric or text of a subscription for which the
 affiliate must have an active subscription.
 
+=item flag_required
+
+A single letter flag which the site administrator must set for the
+affiliate page to be displayed for the given member.
+
 =back
 
 =head2 [BSE Siteuser Images]
@@ -1119,6 +1124,17 @@ URI to the image file.
 The width and height of the error icon image.
 
 =back
+
+=head2 [site user flags]
+
+Flags that can be set for site users.
+
+All flag Ids are single letters or digits.  Uppercase letters are
+reserved for use by BSE internally, leaving lower-case letters and
+digits for your own use.
+
+Use the id of the flag as the key, and a description of the flag as
+it's value.
 
 =head1 AUTHOR
 
