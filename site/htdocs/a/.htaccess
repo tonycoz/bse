@@ -1,0 +1,2 @@
+RewriteEngine On
+RewriteRule ^([0-9]+\.html)/[0-9a-zA-Z_]*$ ./$1 [T=text/html]
