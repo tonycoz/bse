@@ -1,8 +1,9 @@
 #!/usr/bin/perl -w
 use strict;
+use FindBin;
+use lib "$FindBin::Bin/modules";
 use CGI qw(:standard);
 use Carp; # 'verbose'; # remove the 'verbose' in production
-use lib 'modules';
 use Articles;
 use Constants qw($TMPLDIR);
 use Squirrel::Template;

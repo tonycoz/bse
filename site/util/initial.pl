@@ -6,7 +6,7 @@ use strict;
 use lib '../cgi-bin/modules';
 use DBI;
 use Article;
-use Constants qw($DBD $DB $UN $PW $SECURLBASE $CGI_URI $SHOP_URI $ROOT_URI);
+use Constants qw($DSN $UN $PW $SECURLBASE $CGI_URI $SHOP_URI $ROOT_URI);
 
 my @prebuilt =
   (
@@ -416,7 +416,7 @@ EOS
    },
   );
 
-my $dbh = DBI->connect("dbi:$DBD:$DB", $UN, $PW)
+my $dbh = DBI->connect($DSN, $UN, $PW)
   or die "Cannot connect to database: ",DBI->errstr;
 my @columns = Article->columns;
 $dbh->do('delete from article')

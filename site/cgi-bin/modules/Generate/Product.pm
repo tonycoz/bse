@@ -5,7 +5,7 @@ use Products;
 use Images;
 use base qw(Generate::Article);
 use Squirrel::Template;
-use Constants qw($TMPLDIR %TEMPLATE_OPTS $URLBASE $CGI_URI $ADMIN_URI);
+use Constants qw(:shop $TMPLDIR %TEMPLATE_OPTS $URLBASE $CGI_URI $ADMIN_URI);
 
 sub edit_link {
   my ($self, $id) = @_;
@@ -16,6 +16,10 @@ sub generate {
   my ($self, $article, $articles) = @_;
 
   my $product = Products->getByPkey($article->{id});
+  my @options = 
+    map { +{ id=>$_, %{$SHOP_PRODUCT_OPTS{$_}} } } 
+      split /,/, $product->{options};
+  my $option_index;
   my %acts;
   %acts =
     (
@@ -42,6 +46,27 @@ sub generate {
 </table>
 HTML
      },
+     iterate_options_reset => sub { $option_index = -1 },
+     iterate_options => sub { ++$option_index < @options },
+     option => 
+     sub {
+       if ($_[0] eq 'popup') {
+	 my $option = $options[$option_index];
+	 my @args =
+	   (
+	    -name      => $option->{id},
+	    -values    => $option->{values},
+	    -override  => 1,
+	   );
+	 push(@args, -labels=>$option->{labels}) if $option->{labels};
+	 push(@args, -default=>$option->{default}) if $option->{default};
+	 return CGI::popup_menu(@args);
+       }
+       else {
+	 return CGI::escapeHTML($options[$option_index]{$_[0]})
+       }
+     },
+     ifOptions => sub { @options },
     );
   return Squirrel::Template->new(%TEMPLATE_OPTS)
     ->show_page($TMPLDIR, $article->{template}, \%acts);
@@ -78,6 +103,27 @@ you access to the product fields.
 
 Produces product specific administration links in admin mode.
 
+=item iterator ... options
+
+Iterates over the options available for the product, setting the option tag.
+
+=item option popup
+
+The popup list of values for the current option.
+
+=item option field
+
+Retrieves the given field from the option.  Most commonly you just
+want the desc field.
+
+  <:if Options:>
+  <!-- you might want to start a table here -->
+  <:iterator begin options:>
+  <:option desc:>: <:option popup:>
+  <:iterator end options:>
+  <!-- and end a table here -->
+  <:or Options:><:eif Options:>
+
 =back
 
 =head2 Product specific fields
@@ -107,6 +153,10 @@ display.
 =item gst
 
 The GST (in Australia) payable on the product.
+
+=item options
+
+The raw version of the options that can be set for this product.
 
 =back
 

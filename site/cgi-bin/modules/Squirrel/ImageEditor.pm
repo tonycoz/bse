@@ -102,6 +102,12 @@ sub images_update {
       $images[$index]{alt} = $alt[$index];
     }
   }
+  my @urls = $query->param('url');
+  if (@urls) {
+    for my $index (0 .. $#images) {
+      $images[$index]{url} = $urls[$index];
+    }
+  }
 
   #my @order = $query->param('order');
   #if (@order) {
@@ -176,7 +182,7 @@ sub addimg {
   my($width,$height) = imgsize("$IMAGEDIR/$filename");
 
   push(@images, { image=>$filename, alt=>$query->param('altIn'), height=>$height, 
-		  width=>$width });
+		  width=>$width, url=>$query->param('url') });
 
   $self->{session}{images} = \@images;
   my $url = $self->_fix_url($query, "$URLBASE$ENV{SCRIPT_NAME}?showimages=");

@@ -7,7 +7,7 @@ use vars qw/@ISA/;
 
 sub columns {
   return ($_[0]->SUPER::columns(), 
-	  qw/articleId summary leadTime retailPrice wholesalePrice gst/ );
+	  qw/articleId summary leadTime retailPrice wholesalePrice gst options/ );
 }
 
 sub bases {

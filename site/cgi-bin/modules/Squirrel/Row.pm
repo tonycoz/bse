@@ -3,9 +3,9 @@ require 5.005;
 use strict;
 
 use Carp;
-use DatabaseHandle 0.1;
+use BSE::DB;
 
-my $dh = single DatabaseHandle;
+my $dh = BSE::DB->single;
 
 sub new {
   my ($class, @values) = @_;
@@ -22,14 +22,13 @@ sub new {
   @$self{@columns} = @values;
   
   unless (defined $self->{$primary[0]}) {
-    use Constants '$L_ID';
     my $bases = $class->bases;
     if (keys %$bases) {
       keys %$bases == 1
 	or confess "I don't know how to handle more than one base for $class";
       my ($my_col) = keys %$bases;
       my $base_class = $bases->{$my_col}{class};
-      my $sth = $dh->{"add$base_class"}
+      my $sth = $dh->stmt("add$base_class")
 	or confess "No add$base_class member in DatabaseHandle";
       
       # extract the base class columns
@@ -39,7 +38,7 @@ sub new {
       $sth->execute(@data{@base_cols[1..$#base_cols]})
 	or confess "Could not add $class/$base_class(undef, @data{@base_cols[1..$#base_cols]} )";
       $self->{$primary[0]} = $self->{$my_col} =
-	$data{$my_col} = $data{$primary[0]} = $sth->{$L_ID};
+	$data{$my_col} = $data{$primary[0]} = $dh->insert_id($sth);
       
       # now do this class
       # what do we store
@@ -47,18 +46,18 @@ sub new {
       @saved{@base_cols} = @base_cols;
       delete $saved{$my_col}; # make sure we save this
       my @save_cols = grep !$saved{$_}, @columns;
-      $sth = $dh->{"add$class"}
+      $sth = $dh->stmt("add$class")
 	or confess "No add$class member in DatabaseHandle";
       $sth->execute(@data{@save_cols})
 	or confess "Could not add $class(@data{1..$#save_cols})";
     }
     else {
-      my $sth = $dh->{"add$class"}
+      my $sth = $dh->stmt("add$class")
 	or confess "No add$class member in DatabaseHandle";
       my $ret = $sth->execute(@values[1..$#values]);
       $ret != 0
 	or confess "Could not add $class(undef, @values[1..$#values]) to database: ",$sth->errstr;
-      $self->{$primary[0]} = $sth->{$L_ID};
+      $self->{$primary[0]} = $dh->insert_id($sth);
     }
   }
 
@@ -113,7 +112,7 @@ sub save {
       # we have bases, update them
       my $base_class = $bases->{$base_key}{class};
       my @base_cols = $base_class->columns;
-      my $sth = $dh->{'replace'.$base_class}
+      my $sth = $dh->stmt('replace'.$base_class)
 	or confess "No replace$base_class member in DatabaseHandle";
       my @data;
       for my $col (@base_cols) {
@@ -126,7 +125,7 @@ sub save {
     }
   }
 
-  my $sth = $dh->{'replace'.ref $self}
+  my $sth = $dh->stmt('replace'.ref $self)
     or confess "No replace",ref $self," member in DatabaseHandle";
   my @data;
   for my $col ($self->columns) {
@@ -141,7 +140,7 @@ sub save {
 
 sub remove {
   my $self = shift;
-  my $sth = $dh->{'delete'.ref($self)};
+  my $sth = $dh->stmt('delete'.ref($self));
   $sth->execute(@$self{$self->primary});
 
   # BUG: this should invalidate the cache

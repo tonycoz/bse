@@ -1,8 +1,9 @@
 #!/usr/bin/perl -w
 use strict;
-use lib '../modules';
+use FindBin;
+use lib "$FindBin::Bin/../modules";
 use CGI ':standard';
-use CGI::Carp 'fatalsToBrowser';
+
 #use Carp; # 'verbose';
 use Products;
 use Product;
@@ -13,12 +14,13 @@ use OrderItem;
 use Constants qw($TMPLDIR);
 use Squirrel::Template;
 use Squirrel::ImageEditor;
-use Constants qw(:shop $SHOPID $PRODUCTPARENT $SECURLBASE 
+use Constants qw(:shop :session $SHOPID $PRODUCTPARENT $SECURLBASE 
                  $SHOP_URI $CGI_URI $IMAGES_URI $AUTO_GENERATE);
 use CGI::Cookie;
-use Apache::Session::MySQL;
+require $SESSION_REQUIRE;
 use Images;
 use Articles;
+use BSE::Sort;
 
 my %cookies = fetch CGI::Cookie;
 my $sessionid;
@@ -27,7 +29,7 @@ my %session;
 
 my $dh = BSE::DB->single;
 eval {
-  tie %session, 'Apache::Session::MySQL', $sessionid,
+  tie %session, $SESSION_CLASS, $sessionid,
     {
      Handle=>$dh->{dbh},
      LockHandle=>$dh->{dbh}
@@ -36,17 +38,17 @@ eval {
 if ($@ && $@ =~ /Object does not exist/) {
   # try again
   undef $sessionid;
-  tie %session, 'Apache::Session::MySQL', $sessionid,
+  tie %session, $SESSION_CLASS, $sessionid,
     {
      Handle=>$dh->{dbh},
      LockHandle=>$dh->{dbh}
     };
 }
+
 unless ($sessionid) {
   # save the new sessionid
   print "Set-Cookie: ",CGI::Cookie->new(-name=>'sessionid', -value=>$session{_session_id}),"\n";
 }
-
 # this shouldn't be necessary, but it stopped working and this fixed it
 # <sigh>
 END {
@@ -69,6 +71,7 @@ my %what_to_do =
   (
    order_list=>\&order_list,
    order_detail=>\&order_detail,
+   order_filled=>\&order_filled,
    edit_product=>\&edit_product,
    add_product=>\&add_product,
    save_product=>\&save_product,
@@ -78,7 +81,8 @@ my %what_to_do =
    back=>\&img_return,
   );
 
-my @modifiable = qw(body retailPrice wholesalePrice gst release expire parentid leadTime options);
+my @modifiable = qw(body retailPrice wholesalePrice gst release expire 
+                    parentid leadTime options template);
 my %modifiable = map { $_=>1 } @modifiable;
 
 if ($imageEditor->action($CGI::Q)) {
@@ -316,7 +320,7 @@ sub save_product {
   $product{parentid} ||= $PRODUCTPARENT;
   $product{titleImage} = '';
   $product{keyword} ||= '';
-  $product{template} = 'shopitem.tmpl';
+  $product{template} ||= 'shopitem.tmpl';
   $product{threshold} = 0; # ignored
   $product{summaryLength} = 200; # ignored
   $product{level} = 2;
@@ -341,10 +345,12 @@ sub save_product {
     $imageEditor->clear();
     delete $session{imageid};
 
-    use Util 'generate_article';
-    generate_article('Articles', $original) if $AUTO_GENERATE;
+    use Util 'regen_and_refresh';
+    
+    regen_and_refresh('Articles', $original, $AUTO_GENERATE,
+		      shop_url("?message=Saved")); 
 
-    shop_redirect('?message=Saved'); # redirect to product list
+    exit;
   }
   else {
     # set these properly afterwards
@@ -377,10 +383,11 @@ sub save_product {
       $imageEditor->clear();
       delete $session{imageid};
 
-      use Util 'generate_article';
-      generate_article('Articles', $product) if $AUTO_GENERATE;
-
-      shop_redirect(''); # redirect to product list
+      use Util 'regen_and_refresh';
+      
+      regen_and_refresh('Articles', $original, $AUTO_GENERATE,
+			shop_url("?message=New+Product+Saved"));
+      exit;
     }
   }
 }
@@ -443,6 +450,15 @@ sub product_form {
     unshift(@work, map [ $_->{id}, $title.$_->{title} ], @kids);
   }
 
+  my @templates;
+  push(@templates, "shopitem.tmpl")
+    if -e "$TMPLDIR/shopitem.tmpl";
+  if (opendir PROD_TEMPL, "$TMPLDIR/products") {
+    push @templates, map "products/$_",
+      grep -f "$TMPLDIR/products/$_" && /\.tmpl$/i, readdir PROD_TEMPL;
+    closedir PROD_TEMPL;
+  }
+
   my %acts;
   %acts =
     (
@@ -464,6 +480,12 @@ sub product_form {
      hiddenNote => sub { $product->{listed} ? "&nbsp;" : "Hidden" },
      alloptions => 
      sub { CGI::escapeHTML(join(',', sort keys %SHOP_PRODUCT_OPTS)) },
+     templates => 
+     sub {
+       return CGI::popup_menu(-name=>'template', -values=>\@templates,
+                              -default=>$product->{id} ? $product->{template} :
+                              $templates[0]);
+     },
     );
 
   page($template, \%acts);
@@ -487,21 +509,67 @@ sub img_return {
 #####################
 # order management
 
-sub order_list {
-  my $orders = Orders->new;
-  my @orders = sort { $b->{orderDate} cmp $a->{orderDate} } $orders->all;
-
+sub order_list_low {
+  my ($template, $title, @orders) = @_;
+  
+  my @orders_work;
   my $order_index = -1;
   my %acts;
   %acts =
     (
      order=> sub { CGI::escapeHTML($orders[$order_index]{$_[0]}) },
-     iterate_orders => sub { ++$order_index < @orders },
+     iterate_orders_reset =>
+     sub {
+       @orders_work = 
+	 bse_sort({ id=>'n', total=>'n' }, $_[0], @orders);
+       $order_index = -1;
+     },
+     iterate_orders => sub { ++$order_index < @orders_work },
      money => sub { sprintf("%.2f", $orders[$order_index]{$_[0]}/100.0) },
      date => sub { display_date($orders[$order_index]{$_[0]}) },
      script => sub { $ENV{SCRIPT_NAME} },
+     title => sub { $title },
+     ifHaveParam => sub { defined param($_[0]) },
+     ifParam => sub { param($_[0]) },
     );
-  page('order_list', \%acts);
+  page($template, \%acts);
+}
+
+sub order_list {
+  my $orders = Orders->new;
+  my @orders = sort { $b->{orderDate} cmp $a->{orderDate} } $orders->all;
+  my $template = param('template');
+  unless (defined $template && $template =~ /^\w+$/) {
+    $template = 'order_list';
+  }
+
+  order_list_low($template, 'Order list', @orders);
+}
+
+sub order_list_filled {
+  my $orders = Orders->new;
+  my @orders = sort { $b->{orderDate} cmp $a->{orderDate} } 
+    grep $_->{filled} && $_->{paidFor}, $orders->all;
+
+  order_list_low('order_list_filled', 'Order list - Filled orders', @orders);
+}
+
+sub order_list_unfilled {
+  my $orders = Orders->new;
+  my @orders = sort { $b->{orderDate} cmp $a->{orderDate} } 
+    grep !$_->{filled} && $_->{paidFor}, $orders->all;
+
+  order_list_low('order_list_unfilled', 'Order list - Unfilled orders', 
+		 @orders);
+}
+
+sub order_list_unpaid {
+  my $orders = Orders->new;
+  my @orders = sort { $b->{orderDate} cmp $a->{orderDate} } 
+    grep !$_->{paidFor}, $orders->all;
+
+  order_list_low('order_list_unpaid', 'Order list - Incomplete orders', 
+		 @orders);
 }
 
 sub cart_item_opts {
@@ -595,6 +663,30 @@ sub order_detail {
   }
 }
 
+sub order_filled {
+  my $id = param('id');
+  if ($id and
+      my $order = Orders->getByPkey($id)) {
+    my $filled = param('filled');
+    $order->{filled} = $filled;
+    if ($order->{filled}) {
+      $order->{whenFilled} = epoch_to_sql_datetime(time);
+      $order->{whoFilled} = defined($ENV{REMOTE_USER})
+	? $ENV{REMOTE_USER} : "-unknown-";
+    }
+    $order->save();
+    if (param('detail')) {
+      order_detail();
+    }
+    else {
+      order_list();
+    }
+  }
+  else {
+    order_list();
+  }
+}
+
 #####################
 # utilities
 # perhaps some of these belong in a class...
@@ -608,10 +700,15 @@ sub page {
   print $templ->show_page($TMPLDIR, 'admin/' . $which . ".tmpl", $acts, $iter);
 }
 
+sub shop_url {
+  my $url = shift;
+  "$ENV{SCRIPT_NAME}$url"
+}
+
 sub shop_redirect {
   my $url = shift;
   print "Content-Type: text/html\n";
-  print "Refresh: 0; url=\"$ENV{SCRIPT_NAME}$url\"\n\n<html></html>\n";
+  print qq!Refresh: 0; url=\"!,shop_url($url),qq!"\n\n<html></html>\n!;
   exit;
 }
 
@@ -655,6 +752,14 @@ sub epoch_to_sql {
   my ($time) = @_;
 
   return strftime('%Y-%m-%d', localtime $time);
+}
+
+# convert an epoch time to sql format
+sub epoch_to_sql_datetime {
+  use POSIX 'strftime';
+  my ($time) = @_;
+
+  return strftime('%Y-%m-%d %H:%M', localtime $time);
 }
 
 
@@ -755,7 +860,9 @@ Conditional, true if the product has an image.
 
 =head2 order_list.tmpl
 
-Used to display the list of orders.
+Used to display the list of orders.  You can also specify a template
+parameter to the order_list target, and perform filtering and sorting
+within the template.
 
 =over 4
 
@@ -763,9 +870,25 @@ Used to display the list of orders.
 
 The given field of the order.
 
-=item iterator ... orders
+=item iterator ... orders [filter-sort-spec]
 
 Iterates over the orders in reverse orderDate order.
+
+The [filter-sort-spec] can contain none, either or both of the following:
+
+=over
+
+=item filter= field op value, ...
+
+filter the data by checking the given expression.
+
+eg. filter= filled == 0
+
+=item sort= [+|-] keyword, ...
+
+Sorts the result by the specified fields, in reverse if preceded by '-'.
+
+=back
 
 =item money I<name>
 
@@ -818,6 +941,22 @@ The given product field of the product for the current item.
 =item script
 
 The name of the current script (for use in urls).
+
+=item iterator ... options
+
+Iterates over the options set for the current order item.
+
+=item option I<field>
+
+Access to a field of the option, any of id, value, desc or label.
+
+=item ifOptions
+
+Conditional tag, true if the current product has any options.
+
+=item options
+
+A laid-out list of the options set for the current order item.
 
 =back
 

@@ -6,7 +6,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 
 sub columns {
-  return qw/id productId orderId units price wholesalePrice gst/;
+  return qw/id productId orderId units price wholesalePrice gst options/;
 }
 
 1;

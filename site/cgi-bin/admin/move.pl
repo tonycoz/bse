@@ -3,7 +3,8 @@
 # reorders the article then refreshes back to the parent
 
 use strict;
-use lib '../modules';
+use FindBin;
+use lib "$FindBin::Bin/../modules";
 use Articles;
 use CGI ':standard';
 use Carp 'verbose';

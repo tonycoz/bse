@@ -44,15 +44,15 @@ sub single
 				searchIndexWC => $dbh->prepare('select * from searchindex where id like ?'),
 
 				Products=> $dbh->prepare('select article.*, product.* from article, product where id = articleId'),
-				addProduct => $dbh->prepare('insert product values(?,?,?,?,?,?)'),
+				addProduct => $dbh->prepare('insert product values(?,?,?,?,?,?,?)'),
 				getProductByPkey => $dbh->prepare('select article.*, product.* from article, product where id=? and articleId = id'),
-				replaceProduct => $dbh->prepare('replace product values(?,?,?,?,?,?)'),
+				replaceProduct => $dbh->prepare('replace product values(?,?,?,?,?,?,?)'),
 
 				Orders => $dbh->prepare('select * from orders'),
 				getOrderByPkey => $dbh->prepare('select * from orders where id = ?'),
 				getOrderItemByOrderId => $dbh->prepare('select * from order_item where orderId = ?'),
 				addOrder => $dbh->prepare('insert orders values(null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'),
-				addOrderItem => $dbh->prepare('insert order_item values(null,?,?,?,?,?,?)'),
+				addOrderItem => $dbh->prepare('insert order_item values(null,?,?,?,?,?,?,?)'),
 
 			      }, $class;
 	}

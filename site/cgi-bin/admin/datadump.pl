@@ -1,5 +1,7 @@
-#!/usr/bin/perl
-use lib '../modules';
+#!/usr/bin/perl -w
+use strict;
+use FindBin;
+use lib "$FindBin::Bin/../modules";
 use Constants qw($UN $PW $DB $SHOP_SENDMAIL $SHOP_FROM $URLBASE $DATA_EMAIL
                  $MYSQLDUMP);
 

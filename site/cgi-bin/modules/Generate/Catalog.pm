@@ -16,6 +16,10 @@ sub generate_low {
   my @products = sort { $b->{displayOrder} <=> $a->{displayOrder} }
     grep $_->{listed} && $_->{parentid} == $article->{id}, $products->all;
   my $product_index = -1;
+  my @subcats = sort { $b->{displayOrder} <=> $a->{displayOrder} }
+    grep $_->{listed} && UNIVERSAL::isa($_->{generator}, 'Generate::Catalog'),
+    $articles->getBy(parentid => $article->{id});
+  my $category_index = -1;
   my %acts;
   %acts =
     (
@@ -91,6 +95,11 @@ HTML
 	 return '';
        }
      },
+     iterate_catalogs_reset => sub { $category_index = -1 },
+     iterate_catalogs => sub { ++$category_index < @subcats },
+     catalog => 
+     sub { CGI::escapeHTML($subcats[$category_index]{$_[0]}) },
+     ifSubcats => sub { @subcats },
     );
   my $oldurl = $acts{url};
   $acts{url} =
@@ -127,7 +136,7 @@ sub embed {
     unless defined($template) && $template =~ /\S/;
 
   open SOURCE, "< $TMPLDIR$template"
-    or die "Cannot open template $article->{template}: $!";
+    or die "Cannot open template $template: $!";
   my $html = do { local $/; <SOURCE> };
   close SOURCE;
 
@@ -159,13 +168,25 @@ __END__
 
 =over 4
 
-=item iterate ... products
+=item iterator ... products
 
 Iterates over the products within this catalog.
 
 =item product I<field>
 
-The give attribute of the product.
+The given attribute of the product.
+
+=item iterator ... catalogs
+
+Iterates over any sub-catalogs.
+
+=item catalog I<field>
+
+The given field of the current catalog.
+
+=item ifSubcats
+
+Conditional tag, true if there are any subcatalogs.
 
 =item admin
 

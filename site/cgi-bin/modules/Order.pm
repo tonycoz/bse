@@ -13,7 +13,9 @@ sub columns {
            billPostCode billCountry
            telephone facsimile emailAddress
            total wholesaleTotal gst orderDate
-           ccNumberHash ccName ccExpiryHash ccType/;
+           ccNumberHash ccName ccExpiryHash ccType
+           filled whenFilled whoFilled paidFor paymentReceipt
+           randomId cancelled/;
 }
 
 1;

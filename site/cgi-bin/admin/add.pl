@@ -3,8 +3,9 @@
 BEGIN { $ENV{DISPLAY} = ':0'; }
 
 use strict;
-use lib '../modules';
-use Constants qw(:edit);
+use FindBin;
+use lib "$FindBin::Bin/../modules";
+use Constants qw(:edit :session);
 
 use Articles;
 use Article;
@@ -12,9 +13,10 @@ use Images;
 use Image;
 use Squirrel::Template;
 use CGI qw(:standard);
-use CGI::Carp qw(fatalsToBrowser);
+#use CGI::Carp qw(fatalsToBrowser);
 use CGI::Cookie;
-use Apache::Session::MySQL;
+#use Apache::Session::MySQL;
+require $SESSION_REQUIRE;
 use BSE::DB;
 use Carp 'verbose';
 use Squirrel::ImageEditor;
@@ -29,7 +31,7 @@ my %session;
 
 my $dh = BSE::DB->single;
 eval {
-  tie %session, 'Apache::Session::MySQL', $sessionid,
+  tie %session, $SESSION_CLASS, $sessionid,
     {
      Handle=>$dh->{dbh},
      LockHandle=>$dh->{dbh}
@@ -38,7 +40,7 @@ eval {
 if ($@ && $@ =~ /Object does not exist/) {
   # try again
   undef $sessionid;
-  tie %session, 'Apache::Session::MySQL', $sessionid,
+  tie %session, $SESSION_CLASS, $sessionid,
     {
      Handle=>$dh->{dbh},
      LockHandle=>$dh->{dbh}
@@ -48,7 +50,6 @@ unless ($sessionid) {
   # save the new sessionid
   print "Set-Cookie: ",CGI::Cookie->new(-name=>'sessionid', -value=>$session{_session_id}),"\n";
 }
-
 # this shouldn't be necessary, but it stopped working and this fixed it
 # <sigh>
 END {
@@ -117,7 +118,7 @@ if (!$article) {
 
   # allows a button to add to this section/subsection/article
   if (defined(my $parentid = param('parentid'))) {
-    if ($parentid != -1) {
+    if ($parentid && $parentid != -1) {
       my $parent = $articles->getByPkey($parentid);
       if ($parent) {
         $level = $parent->{level}+1;
@@ -342,7 +343,7 @@ sub save_new_article {
   $data{lastModified} = epoch_to_sql(time);
 
   shift @columns;
-  my $article = $articles->add(@data{@columns});
+  $article = $articles->add(@data{@columns});
 
   # we now have an id - generate the links
   my $link;
@@ -363,8 +364,10 @@ sub save_new_article {
 
   # save the images
   my @images = $imageEditor->images();
+  my @imcols = Image->columns;
+  splice(@imcols, 0, 2);
   for my $image (@images) {
-    my $obj = Images->add($article->{id}, @$image{qw/image alt width height/});
+    my $obj = Images->add($article->{id}, @$image{@imcols});
   }
   $imageEditor->clear();
   delete $session{imagesid};
@@ -451,8 +454,10 @@ sub save_old_article {
     $image->remove();
   }
   # in with the new
+  my @imcols = Image->columns;
+  splice(@imcols, 0, 2);
   for my $image (@images) {
-    Images->add($article->{id}, @$image{qw/image alt width height/});
+    Images->add($article->{id}, @$image{@imcols});
   }
 
   $imageEditor->clear();

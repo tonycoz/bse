@@ -211,6 +211,9 @@ sub _make_img {
       . qq! height="$im->{height}" alt="! . CGI::escapeHTML($im->{alt}).'"';
     $text .= qq! align="$align"! if $align;
     $text .= qq! />!;
+    if (!$url && $im->{url}) {
+      $url = $im->{url};
+    }
     if ($url) {
       $text = qq!<a href="! . CGI::escapeHTML($url) . qq!">$text</a>!;
     }
@@ -330,10 +333,13 @@ sub format_body {
 	my $pos = $self->adjust_for_html($body, $incr);
 
 	# assuming 5.005_03 would make this simpler, but <sigh>
-	$output .= <<IMG;
-<img src="/images/$image->{image}" width="$image->{width}" height="$image->{height}"
-alt="$image->{alt}" align="$align" hspace="10" vspace="10">
-IMG
+	my $img = qq!<img src="/images/$image->{image}"!
+	  .qq! width="$image->{width}" height="$image->{height}"!
+	    .qq! alt="$image->{alt}" align="$align" hspace="10" vspace="10">!;
+	if ($image->{url}) {
+	  $img = qq!<a href="$image->{url}">$img</a>!;
+	}
+	$output .= $img;
 	$output .= substr($body, 0, $pos);
 	substr($body, 0, $pos) = '';
 	$align = $align eq 'right' ? 'left' : 'right';
@@ -833,7 +839,8 @@ In this case I<which> can also be an article ID.
 
 I<template> is a filename relative to the templates directory.  If
 this is "-" then the articles template is used (so you can set
-I<maxdepth> without setting the template.)
+I<maxdepth> without setting the template.)  If I<template> contains a
+C<$> sign it will be replaced with the name of the original template.
 
 If I<maxdepth> is supplied and is less than the current maximum depth
 then it becomes the new maximum depth.  This can be used with ifCanEmbed.

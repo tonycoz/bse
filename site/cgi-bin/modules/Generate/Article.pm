@@ -314,7 +314,7 @@ HTML
        my $im;
        if (defined $which && $which =~ /^\d+$/ && $which >=1 
 	   && $which <= @images) {
-	 $im = $images[$which];
+	 $im = $images[$which-1];
        }
        else {
 	 $im = $images[$image_index];

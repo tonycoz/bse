@@ -1,9 +1,10 @@
 #!/usr/bin/perl -w
 use strict;
+use FindBin;
 use CGI::Carp 'fatalsToBrowser';
 use CGI qw(:standard);
-use Carp 'verbose'; # remove the 'verbose' in production
-use lib '../modules';
+#use Carp 'verbose'; # remove the 'verbose' in production
+use lib "$FindBin::Bin/../modules";
 use Articles;
 
 my $id = param('id');

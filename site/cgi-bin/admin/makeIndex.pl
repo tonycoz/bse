@@ -1,13 +1,14 @@
 #!/usr/bin/perl -w
 use strict;
-use lib '../modules';
+use FindBin;
+use lib "$FindBin::Bin/../modules";
 use Articles;
 use Constants qw($BASEDIR $MAXPHRASE $URLBASE $DATADIR @SEARCH_EXCLUDE @SEARCH_INCLUDE $SEARCH_LEVEL);
-use DatabaseHandle;
+use BSE::DB;
 use Generate;
 my $in_cgi = exists $ENV{REQUEST_METHOD};
 if ($in_cgi) {
-  eval "use CGI::Carp qw(fatalsToBrowser)";
+  #eval "use CGI::Carp qw(fatalsToBrowser)";
 }
 
 my $stopwords = "$DATADIR/stopwords.txt";
@@ -44,11 +45,11 @@ makeIndex($articles);
 #use Data::Dumper;
 #print Dumper(\%index);
 
-my $dh = DatabaseHandle->single;
-my $dropIndex = $dh->{dropIndex}
-  or die "No dropIndex member in DatabaseHandle";
-my $insertIndex = $dh->{insertIndex}
-  or die "No insertIndex member in DatabaseHandle";
+my $dh = BSE::DB->single;
+my $dropIndex = $dh->stmt('dropIndex')
+  or die "No dropIndex member in BSE::DB";
+my $insertIndex = $dh->stmt('insertIndex')
+  or die "No insertIndex member in BSE::DB";
 
 $dropIndex->execute()
   or die "Could not drop search index ",$dropIndex->errstr;

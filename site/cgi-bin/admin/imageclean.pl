@@ -1,6 +1,7 @@
 #!/usr/bin/perl -w
 use strict;
-use lib '../modules';
+use FindBin;
+use lib "$FindBin::Bin/../modules";
 use Images;
 use Articles;
 use Constants qw($IMAGEDIR);

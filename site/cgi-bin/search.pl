@@ -1,7 +1,8 @@
 #!/usr/bin/perl -w
 use strict;
 use CGI qw(:standard);
-use lib 'modules';
+use FindBin;
+use lib "$FindBin::Bin/modules";
 use Articles;
 use BSE::DB;
 use Squirrel::Template;
