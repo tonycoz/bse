@@ -245,6 +245,22 @@ create table orders (
   delivMobile varchar(80) not null default '',
   billMobile varchar(80) not null default '',
 
+  -- information from online credit card processing
+  -- non-zero if we did online CC processing
+  ccOnline integer not null default 0,
+  -- non-zero if processing was successful
+  ccSuccess integer not null default 0,
+  -- receipt number
+  ccReceipt varchar(80) not null default '',
+  -- main status code (value depends on driver)
+  ccStatus integer not null default 0,
+  ccStatusText varchar(80) not null default '',
+  -- secondary status code (if any)
+  ccStatus2 integer not null default 0,
+  -- card processor transaction identifier
+  -- the ORDER_NUMBER for Inpho
+  ccTranId varchar(40) not null default '',
+
   primary key (id),
   index order_cchash(ccNumberHash),
   index order_userId(userId, orderDate)

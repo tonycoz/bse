@@ -10,6 +10,109 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_05
+
+WARNING: this release makes major changes to the way the shop works.
+Make sure you test B<BEFORE> you deploy.
+
+This release may introduce incompatibilities with older BSE::Custom
+modules, if you come across any of these, please let me know.
+
+To deploy this with a custom template set the following templates will
+need to be updated:
+
+  - checkoutnew_base.tmpl - new checkout page
+  - checkoutpay_base.tmpl - new payment page
+  - mailconfirm.tmpl - handle CC processing
+  - mailorder.tmpl - handle CC processing
+  - checkoutfinal_base.tmpl - display credit card receipt number
+
+This is primarily intended as a test release, currently it has three
+known problems:
+
+=over
+
+=item *
+
+the checkout page won't load the saved order values if you go back to
+it after having gone through it without finishing the order.
+
+=item *
+
+each failed online credit card transaction results in a new order in
+the database (marked as failed)
+
+=item *
+
+some admin side templates still need updating
+
+=back
+
+The changes:
+
+=over
+
+=item *
+
+major changes to the structure of the shop, There is no longer a
+purchase action, this has been split into an order action, which saves
+user information, and a payment action, which attempts to process a
+payment.
+
+The initial checkout page now uses the checkoutnew template rather
+than the checkout template.  The payment page uses the checkoutpay
+template.
+
+=item *
+
+the final order display is now a separate request from the
+purchase/payment action, you can now make changes to the template and
+test them without having to create a new order each time.  The final
+order display page will only display the last successful order for 5
+minutes.
+
+=item *
+
+the shop can now process credit card transactions online through the
+Inpho credit card gateway.  There is also a also a "test" gateway
+module that allows for offline testing.  See [shop].cardprocessor in
+config.pod
+
+=item *
+
+the shop (and other scripts that use the general dispatcher, like
+affiliate.pl and fmail.pl) should now work with image buttons
+submitting the form.
+
+=item *
+
+conditions to check for payments types on the shop pages that accepted
+a payment type name (like <:ifPayments Name:>) would always return
+value for the CC type, even when it was enabled.
+
+=item *
+
+fields that were marked as required previously are now actually
+required, this most likely a problem for the cardType field.  I may
+end up marking this as not required.
+
+=item *
+
+a new credit card field value is accepted and passed to the online
+credit card processor, the cardVerify field.
+
+=item *
+
+fields on the checkout page now must use the name defined in the order
+record.  The older names are no longer usable, except in the required
+method of BSE::Custom.
+
+=item *
+
+the error_img tag is now available on the checkout and payment pages
+
+=back
+
 =head2 0.15_04
 
 =over

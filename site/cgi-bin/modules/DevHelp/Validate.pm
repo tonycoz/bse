@@ -69,6 +69,15 @@ my %built_ins =
    {
     ccexpiry => 1,
    },
+   creditcardexpirysingle =>
+   {
+    ccexpirysingle => 1,
+   },
+   creditcardcvv =>
+   {
+    match => qr/^(\d){3,4}$/,
+    error => '$n is the 3 or 4 digit code on the back of your card',
+   },
    miaa =>
    {
     match => qr/^\s*\d{1,6}\s*$/,
@@ -364,6 +373,28 @@ sub validate_field {
 	$now_year += 1900;
 	++$now_month;
 	if ($year < $now_year || $year == $now_year && $data < $now_month) {
+	  $errors->{$field} = _make_error($field, $info, $rule,
+					  q!$n is in the past, your card has expired!);
+	  last RULE;
+	}
+      }
+      if ($rule->{ccexpirysingle}) {
+	unless ($data =~ m!^\s*(\d+)\s*/\s*(\d+)+\s*$!) {
+	  $errors->{$field} = _make_error($field, $info, $rule,
+					  q!$n must be in MM/YY format!);
+	  last RULE;
+	}
+	my ($month, $year) = ($1, $2);
+	$year += 2000;
+	if ($month < 1 || $month > 12) {
+	  $errors->{$field} = _make_error($field, $info, $rule,
+					  q!$n month must be between 1 and 12!);
+	  last RULE;
+	}
+	my ($now_year, $now_month) = (localtime)[5, 4];
+	$now_year += 1900;
+	++$now_month;
+	if ($year < $now_year || $year == $now_year && $month < $now_month) {
 	  $errors->{$field} = _make_error($field, $info, $rule,
 					  q!$n is in the past, your card has expired!);
 	  last RULE;

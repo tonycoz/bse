@@ -29,10 +29,10 @@ function BSE_validateForm {
   var typeEl = MM_findObj('paymentType');
   var type = typeEl.value;
   if (type == 0) {
-    MM_validateForm('delivFirstName','','R','delivLastName','','R','delivStreet','','R','delivSuburb','','R','delivPostCode','','R','delivState','','R','delivCountry','','R','email','','RisEmail','cardHolder','','R','cardNumber','','R','cardExpiry','','R');
+    MM_validateForm('delivFirstName','','R','delivLastName','','R','delivStreet','','R','delivSuburb','','R','delivPostCode','','R','delivState','','R','delivCountry','','R','emailAddress','','RisEmail','cardHolder','','R','cardNumber','','R','cardExpiry','','R');
   }
   else {
-    MM_validateForm('delivFirstName','','R','delivLastName','','R','delivStreet','','R','delivSuburb','','R','delivPostCode','','R','delivState','','R','delivCountry','','R','email','','RisEmail');
+    MM_validateForm('delivFirstName','','R','delivLastName','','R','delivStreet','','R','delivSuburb','','R','delivPostCode','','R','delivState','','R','delivCountry','','R','emailAddress','','RisEmail');
   }
 }
 
@@ -212,13 +212,13 @@ function BSE_validateForm {
     <tr> 
       <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> E-mail:</font></td>
       <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-        <input type="Text" name="email" size=34 value="<:old email:>"><:error_img email:>
+        <input type="Text" name="emailAddress" size=34 value="<:old emailAddress:>"><:error_img emailAddress:>
         *</font></td>
     </tr>
     <tr> 
       <td valign="top"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Special<br />Instructions:</font></td>
       <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-        <textarea name="instructions" rows="5" cols="40" wrap="virtual"><:old instructions:></textarea></font></td>
+        <textarea name="instructions" rows="5" cols="40" wrap="virtual"><:old instructions:></textarea></font><:error_img instructions:></td>
     </tr>
     <tr> 
       <td colspan="2"> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
@@ -295,7 +295,7 @@ function BSE_validateForm {
     <tr> 
       <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Facsimile:</font></td>
       <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-        <input type="Text" name="billFacsimile" size=20 value="<:old billFacsimile:>"><:error_img billFacsimile:>
+        <input type="Text" name="billFacsimile" size=20 value="<:old billFacsimile:>" /><:error_img billFacsimile:>
         *</font></td>
     </tr>
   </table>
@@ -304,73 +304,6 @@ function BSE_validateForm {
    <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"> <input type="checkbox" name="need_billing" onClick="this.form.checkupdate.click()" /> Billing details different to shipping</font></p>
  <:eif Cgi:>
 <:include custom/checkout.include optional:>
-  <font face="Verdana, Arial, Helvetica, sans-serif" size="3"> <b>Payment Details:</b></font> 
-  <hr size="1" noshade>
-  <:if Payments CC :>
-  <:if MultPaymentTypes:><p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><input type=radio name=paymentType value=0 <:checkedPayment CC:>> Credit Card</font></p><:or MultPaymentTypes:><input type=hidden name=paymentType value=0><:eif MultPaymentTypes:>
-  <table border="0" cellspacing="0" cellpadding="0">
-    <tr> 
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Name on 
-        Card: </font></td>
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-        <input type="Text" name="cardHolder" size=30 value="<:old cardHolder:>">
-        (As per card) *</font></td>
-    </tr>
-    <tr> 
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Card Number:</font></td>
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-        <input type="Text" name="cardNumber" size=16 maxlength="16" value="<:old cardNumber:>">
-        (no spaces) *</font></td>
-    </tr>
-    <tr> 
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Expiry 
-        Date:</font></td>
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-        <input type="Text" name="cardExpiry" size=5 maxlength="5" value="<:old cardExpiry:>">
-        (eg: 09/01) *</font></td>
-    </tr>
-    <tr> 
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Card Type:</font></td>
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-        <select name="cardType">
-          <option SELECTED>Choose type</option>
-          <option value="Visa">Visa</option>
-          <option value="Mastercard">Mastercard</option>
-          <option value="Bankcard">Bankcard</option>
-        </select>
-        &nbsp;*</font></td>
-    </tr>
-  </table>
-  <:or Payments:><:eif Payments:>
-  <:if Payments Cheque:>
-  <:if MultPaymentTypes:><p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"> <input type=radio name=paymentType value=1 <:checkedPayment Cheque:>/>
-    Cheque</font></p><:or MultPaymentTypes:><input type=hidden name=paymentType value=1><:eif MultPaymentTypes:>
-  <p> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Please send your cheque to:</font></p>
-  <ul> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> <:cfg shop address1:><br />
-     <:cfg shop address2:><br />
-     <:cfg shop address3:></font></ul>
-  <:or Payments:><:eif Payments:>
-  <:if Payments CallMe:>
-   <:if MultPaymentTypes:><p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><input type=radio name=paymentType value=2 <:checkedPayment CallMe:>/> Contact me for billing details</font></p>
-   <:or MultPaymentTypes:>
-     <input type=hidden name=paymentType value=2>
-     <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">We will call you to arrange for payment.</font></p>
-   <:eif MultPaymentTypes:>
-  <:or Payments:>
-
-  <:eif Payments:>
-  <:include custom/payment_type.include optional:>
-  <p>&nbsp; </p>
-  <font face="Verdana, Arial, Helvetica, sans-serif" size="3"> <b>Tax Invoice 
-  / Receipt &amp; Delivery Costs:</b></font> 
-  <hr size="1" noshade>
-  <table border="0" cellspacing="0" cellpadding="0" width="375">
-    <tr> 
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2">We will 
-        include a tax invoice / receipt with your order, clearly showing the GST 
-        and delivery components of the purchase price.</font></td>
-    </tr>
-  </table>
   <p>
     <input type="submit" value="Update" name="checkupdate" />
     <input type="submit" value="Purchase Now" name="a_order">

@@ -11,13 +11,26 @@ sub dispatch {
 
   my $actions = $class->actions;
 
+  my $prefix = $class->action_prefix;
   my $cgi = $req->cgi;
   my $action;
   for my $check (keys %$actions) {
-    if ($cgi->param("a_$check")) {
+    if ($cgi->param("$prefix$check") || $cgi->param("$prefix$check.x")) {
       $action = $check;
       last;
     }
+  }
+  if (!$action && $prefix ne 'a_') {
+    for my $check (keys %$actions) {
+      if ($cgi->param("a_$check") || $cgi->param("a_$check.x")) {
+	$action = $check;
+      last;
+      }
+    }
+  }
+  my @extras;
+  unless ($action) {
+    ($action, @extras) = $class->other_action($cgi);
   }
   $action ||= $class->default_action;
 
@@ -25,7 +38,7 @@ sub dispatch {
     or return $result;
 
   my $method = "req_$action";
-  $class->$method($req);
+  $class->$method($req, @extras);
 }
 
 sub check_secure {
@@ -38,6 +51,14 @@ sub check_action {
   my ($class, $req, $action, $rresult) = @_;
 
   return 1;
+}
+
+sub other_action {
+  return;
+}
+
+sub action_prefix {
+  'a_';
 }
 
 1;

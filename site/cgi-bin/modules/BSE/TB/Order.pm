@@ -20,7 +20,9 @@ sub columns {
            customStr1 customStr2 customStr3 customStr4 customStr5
            instructions billTelephone billFacsimile billEmail
            siteuser_id affiliate_code shipping_cost
-           delivMobile billMobile/;
+           delivMobile billMobile
+           ccOnline ccSuccess ccReceipt ccStatus ccStatusText
+           ccStatus2 ccTranId/;
 }
 
 =item siteuser
@@ -57,6 +59,95 @@ sub products {
 
   require Products;
   Products->getSpecial(orderProducts=>$self->{id});
+}
+
+sub valid_fields {
+  my ($class, $cfg) = @_;
+
+  my %fields =
+    (
+     delivFirstName => { description=>'Delivery First Name', },
+     delivLastName => { description => 'Delivery Last Name' },
+     delivStreet => { description => 'Delivery Street' },
+     delivState => { description => 'Delivery State' },
+     delivSuburb => { description => 'Delivery Suburb' },
+     delivPostCode => { description => 'Delivery Post Code' },
+     delivCountry => { description => 'Delivery Country' },
+     billFirstName => { description => 'Billing First Name' },
+     billLastName => { description => 'Billing Last Name' },
+     billStreet => { description => 'Billing First Name' },
+     billSuburb => { description => 'Billing First Name' },
+     billState => { description => 'Billing First Name' },
+     billPostCode => { description => 'Billing First Name' },
+     billCountry => { description => 'Billing First Name' },
+     telephone => { description => 'Telephone Number',
+		    rules => "phone" },
+     facsimile => { description => 'Facsimile Number',
+		    rules => 'phone' },
+     emailAddress => { description => 'Email Address',
+		       rules=>'email;required' },
+     instructions => { description => 'Instructions' },
+     billTelephone => { description => 'Billing Telephone Number', 
+			rules=>'phone' },
+     billFacsimile => { description => 'Billing Facsimile Number',
+			rules=>'phone' },
+     billEmail => { description => 'Billing Email Address',
+		    rules => 'email' },
+     delivMobile => { description => 'Delivery Mobile Number',
+		      rules => 'phone' },
+     billMobile => { description => 'Billing Mobile Number',
+		     rules=>'phone' },
+     instructions => { description => 'Instructions' },
+    );
+
+  for my $field (keys %fields) {
+    my $display = $cfg->entry('shop', "display_$field");
+    $display and $fields{$field}{description} = $display;
+  }
+
+  return %fields;
+}
+
+sub valid_rules {
+  my ($class, $cfg) = @_;
+
+  return;
+}
+
+sub valid_payment_fields {
+  my ($class, $cfg) = @_;
+
+  my %fields =
+    (
+     cardNumber => 
+     { 
+      description => "Credit Card Number",
+      rules=>"creditcardnumber",
+     },
+     cardExpiry => 
+     {
+      description => "Credit Card Expiry Date",
+      rules => 'creditcardexpirysingle',
+     },
+     cardHolder => { description => "Credit Card Holder" },
+     cardType => { description => "Credit Card Type" },
+     cardVerify => 
+     { 
+      description => 'Card Verification Value',
+      rules => 'creditcardcvv',
+     },
+    );
+
+  for my $field (keys %fields) {
+    my $display = $cfg->entry('shop', "display_$field");
+    $display and $fields{$field}{description} = $display;
+  }
+
+  return %fields;
+}
+
+sub valid_payment_rules {
+  return;
 }
 
 1;

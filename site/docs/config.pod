@@ -595,7 +595,19 @@ card information included.  Default: $SHOP_EMAIL_ORDER.
 Used to translate the stored order field name into a presentation name
 suitable for error messages.
 
+=item cardprocessor
+
+The name of a class to load to process credit card transactions online.
+
+Currently this can be either DevHelp::Payments::Test or
+DevHelp::Payments::Inpho.
+
 =back
+
+=head2 [Shop Order Validation]
+
+This section can contain extra order validation information, including
+specifying required fields, display names and extra validation rules.
 
 =head2 [fields]
 
@@ -1158,6 +1170,45 @@ C<[level >I<level>C<]> sections.
 
 These defaults are used when creating an article where no value is
 supplied, they can also be accessed via the <:default I<name>:> tag.
+
+=head2 [inpho]
+
+This is used to configure the DevHelp::Payments::Inpho module.
+
+=over
+
+=item test
+
+If this is set then the test parameters are used instead of the
+product values.
+
+=item url
+
+The URL to process requests through.  
+
+Default: https://extranet.inpho.com.au/cc_ssl/process
+
+=item user
+
+Inpho supplied user name.
+
+=item password
+
+Inpho supplied password.
+
+=item test_url
+
+The URL to process test requests through.
+
+=item test_user
+
+The user to supply to test requests.
+
+=item test_password
+
+The password to supply to test requests.
+
+=back
 
 =head1 AUTHOR
 

@@ -411,8 +411,16 @@ sub payment_types {
     $types{$type}{enabled} = 1;
   }
 
-  #use Data::Dumper;
-  #print STDERR Dumper \%types;
+  # credit card payments require either encrypted emails enabled or
+  # an online CC processing module
+  if ($types{0}) {
+    my $noencrypt = $cfg->entryBool('shop', 'noencrypt', 0);
+    my $ccprocessor = $cfg->entry('shop', 'cardprocessor');
+
+    if ($noencrypt && !$ccprocessor) {
+      $types{0}{enabled} = 0;
+    }
+  }
 
   return values %types;
 }

@@ -28,7 +28,7 @@
 <p> The <:siteName:> store is run on a secure encrypted server, your details are 
   safe with us.<br>
 </p>
-<:if Payment CC:><:or Payment:><:eif Payment:>
+<:if Payment CC:><p>Paid by credit card.</p><:if Order ccOnline:><p>Credit Card Receipt Number: <:order ccReceipt:></p><:or Order:><:eif Order:><:or Payment:><:eif Payment:>
 <:if Payment Cheque:>
 <p>Please send your cheque to:</p>
 <ul><:cfg shop address1 |h:><br>
