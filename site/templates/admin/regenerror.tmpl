@@ -1,0 +1,52 @@
+<html>
+<head>
+
+  <title>Administration - Edit <:articleType:></title>
+
+  <link rel="stylesheet" type="text/css" href="/css/admin.css">
+
+</head>
+
+<body>
+
+  <h1>Page regeneration error</h1>
+
+<:if Article :>
+
+<p>An error occurred while regenerating the static version of the
+"<:article title:>" page.</p>
+
+<:or Article:>
+
+<p>An error occurred while regenerating your site.</p>
+
+<:eif Article:>
+
+<p><b><:error:></b></p>
+
+<:if Article :>
+
+<p>If your system as been running for a while, you are using IIS and
+the error is a <b>Permission denied error</b> it's possible that IIS
+has locked the static page.  If so, wait 60 seconds, and try to <b><a
+href="/cgi-bin/admin/generate.pl?id=<:article id:>&fromid=<:article
+id:>">regenerate</a></b> the page again.</p>
+
+<:or Article:>
+
+<p>If your system as been running for a while, you are using IIS and
+the error is a <b>Permission denied error</b> it's possible that IIS
+has locked a static page.  If so, wait 60 seconds, and try to <b><a
+href="/cgi-bin/admin/generate.pl">regenerate</a></b> the site again.</p>
+
+<:eif Article :>
+
+<p>If you don't want to regenerate the page immediately, you can
+return to the <a href="/admin/">main admin menu</a> or the <a
+href="/cgi-bin/admin/shopadmin.pl">shop administration</a>.</p>
+
+<p>Please <i>do not</i> use the browser Back button to return to the
+article or product editing page, since you may lose any images
+associated with the article if you do so.</p>
+
+</body ></html>
