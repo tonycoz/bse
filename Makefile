@@ -1,4 +1,4 @@
-VERSION=0.10_03
+VERSION=0.10_04
 DISTNAME=bse-$(VERSION)
 DISTBUILD=$(DISTNAME)
 DISTTAR=../$(DISTNAME).tar
@@ -20,29 +20,27 @@ $(DISTTGZ): distdir
 	       exit 1 ; \
 	fi
 	tar cf $(DISTTAR) $(DISTBUILD)
-	-rm -rf $(DISTBUILD)
+	-perl -MExtUtils::Command -e rm_rf $(DISTBUILD)
 	gzip $(DISTTAR)
 
 #	tar czf $(DISTFILE) -C .. bse --exclude '*~' --exclude '*,v' --exclude 'pod2html-*cache'
 
 distdir:
-	-rm -rf $(DISTBUILD)
+	-perl -MExtUtils::Command -e rm_rf $(DISTBUILD)
 	perl -MExtUtils::Manifest=manicopy,maniread -e "manicopy(maniread(), '$(DISTBUILD)')"
 	mkdir $(DISTBUILD)/site/htdocs/shop
 	find $(DISTBUILD) -type f | xargs chmod u+w
 
 clean:
-	-rm site/htdocs/index.html
-	-rm site/htdocs/shop/*.html
-	-rm site/htdocs/a/*.html
+	-perl -MExtUtils::Command -e rm_f site/htdocs/index.html site/htdocs/shop/*.html site/htdocs/a/*.html
 	-cd site/htdocs/images ; \
 	for i in *.gif ; do \
 	  if [ $$i != trans_pixel.gif ] ; then \
 	    rm $$i ; \
 	  fi ; \
 	done
-	-rm site/htdocs/images/*.jpg
-	-rm -rf $(DISTBUILD)
+	-perl -MExtUtils::Command -e rm_f site/htdocs/images/*.jpg
+	-perl -MExtUtils::Command -e rm_rf $(DISTBUILD)
 
 docs: INSTALL.txt INSTALL.html otherdocs
 
@@ -59,9 +57,10 @@ otherdocs:
 # this is very rough
 testinst: distdir
 	perl localinst.perl $(DISTBUILD)
-	-rm -rf $(DISTBUILD)
+	perl -MExtUtils::Command -e rm_rf $(DISTBUILD)
 
 testfiles: distdir
 	perl localinst.perl $(DISTBUILD) leavedb
-	-rm -rf $(DISTBUILD)
+	perl -MExtUtils::Command -e rm_rf $(DISTBUILD)
+
 
