@@ -311,6 +311,8 @@ sub get_siteuser {
       or return;
     my $user = SiteUsers->getBy(userId=>$userid)
       or return;
+    $user->{disabled}
+      and return;
     
     return $user;
   }

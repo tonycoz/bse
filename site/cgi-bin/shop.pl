@@ -235,6 +235,32 @@ sub checkupdate {
   checkout("", 1);
 }
 
+sub tag_checkedPayment {
+  my ($payment, $types_by_name, $args) = @_;
+
+  my $type = $args;
+  if ($type !~ /^\d+$/) {
+    return '' unless $types_by_name->{$type};
+    $type = $types_by_name->{$type};
+  }
+
+  return $payment == $type  ? 'checked="checked"' : '';
+}
+
+sub tag_ifPayments {
+  my ($enabled, $types_by_name, $args) = @_;
+
+  my $type = $args;
+  if ($type !~ /^\d+$/) {
+    return '' unless $types_by_name->{$type};
+    $type = $types_by_name->{$type};
+  }
+
+  my @found = grep $_ == $type, @$enabled;
+
+  return scalar @found;
+}
+
 # display the checkout form
 # can also be called with an error message and a flag to fillin the old
 # values for the form elements
@@ -267,6 +293,7 @@ sub checkout {
 
   my @pay_types = payment_types($cfg);
   my @payment_types = map $_->{id}, grep $_->{enabled}, @pay_types;
+  my %types_by_name = map { $_->{name} => $_->{id} } @pay_types;
   if ($noencrypt) {
     @payment_types = grep $_ ne PAYMENT_CC, @payment_types;
     @payment_types or @payment_types = ( PAYMENT_CALLME );
@@ -276,6 +303,9 @@ sub checkout {
   }
   @payment_types = sort { $a <=> $b } @payment_types;
   my %payment_types = map { $_=> 1 } @payment_types;
+  my $payment;
+  $olddata and $payment = param('paymentType');
+  defined $payment or $payment = $payment_types[0];
 
   my $item_index = -1;
   my @options;
@@ -293,6 +323,10 @@ sub checkout {
 
        if ($olddata) {
 	 $value = param($_[0]);
+	 unless (defined $value) {
+	   $value = $user->{$_[0]}
+	     if $user;
+	 }
        }
        else {
 	 $value = $user && defined $user->{$_[0]} ? $user->{$_[0]} : '';
@@ -306,10 +340,9 @@ sub checkout {
      ifMultPaymentTypes => @payment_types > 1,
      ifUser => defined $user,
      user => $user ? [ \&tag_hash, $user ] : '',
+     checkedPayment => [ \&tag_checkedPayment, $payment, \%types_by_name ],
+     ifPayments => [ \&tag_ifPayments, \@payment_types, \%types_by_name ],
     );
-  my $payment;
-  $olddata and $payment = param('paymentType');
-  defined $payment or $payment = $payment_types[0];
   for my $type (@pay_types) {
     my $id = $type->{id};
     my $name = $type->{name};
@@ -555,6 +588,18 @@ sub prePurchase {
   page('checkoutcard.tmpl', \%acts);
 }
 
+sub tag_ifPayment {
+  my ($payment, $types_by_name, $args) = @_;
+
+  my $type = $args;
+  if ($type !~ /^\d+$/) {
+    return '' unless $types_by_name->{$type};
+    $type = $types_by_name->{$type};
+  }
+
+  return $payment == $type;
+}
+
 # the real work
 sub purchase {
   $from && $from =~ /.\@./
@@ -571,6 +616,7 @@ sub purchase {
 
   my @pay_types = payment_types($cfg);
   my %pay_types = map { $_->{id} => $_ } @pay_types;
+  my %types_by_name = map { $_->{name} => $_->{id} } @pay_types;
   use Data::Dumper;
   print STDERR Dumper \%pay_types;
   my @payment_types = map $_->{id}, grep $_->{enabled}, @pay_types;
@@ -786,6 +832,7 @@ sub purchase {
      option => sub { CGI::escapeHTML($options[$option_index]{$_[0]}) },
      ifOptions => sub { @options },
      options => sub { nice_options(@options) },
+     ifPayment => [ \&tag_ifPayment, $order->{paymentType}, \%types_by_name ],
     );
   for my $type (@pay_types) {
     my $id = $type->{id};

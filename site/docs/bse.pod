@@ -10,6 +10,58 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.14_06
+
+=over
+
+=item *
+
+the article editor was using [catalogs].template as the default
+template rather than the documented [products].template
+
+=item *
+
+added the [products].extra_templates configuation file entry.  This is
+a comma-separated list of extra templates that can be used for
+products.  You can also just put templates into the C<products>
+directory (and have been able to for a while.)
+
+=item *
+
+the <:include ...:> meta-tag now takes a second optional argument, if
+this is the word "optional" then no error text is inserted if the file
+specified is not found.
+
+=item *
+
+updated includes of custom shims to use the "optional" option
+
+=item *
+
+removed custom includes from the distribution that didn't have any
+real content
+
+=item *
+
+reorganized menu.tmpl a bit and added the member ("site user") manager
+to the list
+
+=item *
+
+added <:if Payments I<name-of-type> :> and <:checkedPayment
+I<name-of-type> :> tags to the checkout page, and <:if Payment
+I<name-of-type> :> to the checkoutfinal page.  If I<name-of-type> is
+unknown these will return false (or the empty string) to allow their
+use in portable templates where a specific type might not be
+configured.
+
+=item *
+
+the checkout page now uses the ifUser tag to check if there's a logged
+in user rather than hacking on the user cookie.
+
+=back
+
 =head2 0.14_05
 
 This is still a development release.

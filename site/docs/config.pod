@@ -289,6 +289,11 @@ The default template for catalogs.
 
 The default template for products.
 
+=item extra_templates
+
+A comma separated list of extra templates that can be used for
+products.
+
 =back
 
 =head2 [messages]

@@ -26,6 +26,10 @@ sub extra_templates {
     if grep -f "$_/shopitem.tmpl", 
       BSE::Template->template_dirs($self->{cfg});
 
+  my $extras = $self->{cfg}->entry('products', 'extra_templates');
+  push @extras, grep /\.(tmpl|html)$/i, split /,/, $extras
+    if $extras;
+
   return @extras;
 }
 
@@ -227,7 +231,7 @@ sub fill_old_data {
 sub default_template {
   my ($self, $article, $cfg, $templates) = @_;
 
-  my $template = $cfg->entry('catalogs', 'template');
+  my $template = $cfg->entry('products', 'template');
   return $template
     if $template && grep $_ eq $template, @$templates;
 

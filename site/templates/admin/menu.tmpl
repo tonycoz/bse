@@ -2,177 +2,112 @@
 <h1>Administration Centre</h1>
 <:ifFormLogon:><p>| <a href="/cgi-bin/admin/logon.pl?a_logoff=1">Logoff <:adminuser logon:></a> | <a href="/cgi-bin/admin/changepw.pl">Change Password</a> |</p><:or:><:eif:>
 <:ifMessage:><p><b><:message:></b></p><:or:><:eif:>
-<p>
-<table width="50%" border="0" cellspacing="0" 
 
-cellpadding="5">
-  <tr> 
-    <td colspan="2"><a 
+  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
+  <tr>
+    <td>
 
-href="/cgi-bin/admin/admin.pl?id=1">Browse in edit mode</a></td>
- 
+<table cellpadding="6" cellspacing="1" border="0" width="100%">
+<tr>
+  <th width="33%">Content</th>
+  <th width="33%">Users</th>
+  <th width="33%">Maintenance</th>
 </tr>
-  <tr> 
-    <td colspan="2"><a href="/">Browse in static 
-mode</a></td>
-  </tr>
+<tr>
+  <td bgcolor="#FFFFFF">
+<p><a href="/cgi-bin/admin/admin.pl?id=1">Browse in edit mode</a></p>
+
+<p><a href="/">Browse in static mode</a></p>
+
 <:if UserCan edit_add_child:2 :>
-  <tr> 
-    <td colspan="2"><a href="/cgi-bin/admin/add.pl?parentid=2">Add to home page</a></td>
- 
-</tr>
-<:or UserCan:><:eif UserCan:>
-  <tr> 
-    <td width="15">&nbsp;</td>
-    <td>&nbsp;</td>
- 
-</tr>
-  <tr> 
-    <td colspan="2"><a 
+<p><a href="/cgi-bin/admin/add.pl?parentid=2">Add to home page</a></p><:or UserCan:><:eif UserCan:>
 
-href="/cgi-bin/admin/add.pl?id=-1">Administer sections</a></td>
+<p>&nbsp;</p>
+
+<p><a href="/cgi-bin/admin/add.pl?id=-1">Administer sections</a></p>
  
-</tr>
+<ul>
+
 <:if UserCan edit_add_child:-1 :>
-  <tr> 
-    <td width="15">&nbsp;</td>
-    <td>&#183; <a 
-
-href="/cgi-bin/admin/add.pl?level=1&amp;parentid=-1">Add a new 
-section</a></td>
-  </tr>
+<li><a href="/cgi-bin/admin/add.pl?level=1&amp;parentid=-1">Add a new 
+section</a></li>
 <:or UserCan:><:eif UserCan:>
-  <tr> 
-    <td width="15">&nbsp;</td>
+
+<li><a href="/cgi-bin/admin/add.pl?level=2">Add a new subsection</a></li>
+
+<li><a href="/cgi-bin/admin/add.pl">Add a new article</a></li>
+
+</ul>
+
+<p>&nbsp;</p>
+
+  </td>
+  <td bgcolor="#FFFFFF">
+<p><a href="/cgi-bin/admin/adminusers.pl">Admin User/Group administration</a></p>
+
+<p>&nbsp;</p>
  
-<td>&#183; <a 
-href="/cgi-bin/admin/add.pl?level=2">Add a new 
-subsection</a></td>
-  </tr>
-  <tr> 
-    <td width="15">&nbsp;</td>
- 
-<td>&#183; <a 
-href="/cgi-bin/admin/add.pl">Add a new 
-article</a></td>
-  </tr>
-  <tr> 
-    <td width="15">&nbsp;</td>
- 
-<td>&nbsp;</td>
-  </tr>
-  <tr> 
-    <td colspan="2"><a 
-href="/cgi-bin/admin/shopadmin.pl">Shop administration</a></td>
+<p><a href="/cgi-bin/admin/siteusers.pl">Member administration</a></p>
+<ul><li><a href="/cgi-bin/admin/userlist.pl">Download member list</a></li></ul>
+<p>&nbsp;</p>
+
+<p><a href="/cgi-bin/admin/subs.pl">Subscriptions administration</a></p>
+  </td>
+  <td bgcolor="#FFFFFF">
+<:ifUserCan regen_all:>
+<p><a href="/cgi-bin/admin/generate.pl">Regenerate static &amp; base
+pages</a> (<a
+href="/cgi-bin/admin/generate.pl?progress=1">verbose</a>)</p>
+<:or:><:eif:>
+
+<:ifUserCan regen_extras:>
+<ul>
+<li><a 
+href="/cgi-bin/admin/generate.pl?id=extras">Regenerate extras 
+and base pages</a> (<a 
+href="/cgi-bin/admin/generate.pl?id=extras&amp;progress=1">verbose</a>)</li></ul>
+<:or:><:eif:>
+
+<p><a href="/cgi-bin/admin/makeIndex.pl">Regenerate search index</a></p>
+
+<p>&nbsp;</p>
+
+<p><a href="/cgi-bin/admin/shopadmin.pl">Shop administration</a></p>
+
+<ul>
  
 <:if UserCan shop_order_list :>
-</tr>
-  <tr> 
-    <td 
-width="15">&nbsp;</td>
-    <td>&#183; <a 
-
-href="/cgi-bin/admin/shopadmin.pl?order_list=1&amp;template=order_list_unfilled">View 
-
-      current orders</a> (<a 
-href="/cgi-bin/admin/shopadmin.pl?order_list=1">all</a> 
-      or <a 
-href="/cgi-bin/admin/shopadmin.pl?order_list=1&amp;template=order_list_filled">filled</a>)</td>
- 
-</tr>
+<li><a
+href="/cgi-bin/admin/shopadmin.pl?order_list=1&amp;template=order_list_unfilled">View
+current orders</a> <br>(<a
+href="/cgi-bin/admin/shopadmin.pl?order_list=1">all</a> or <a
+href="/cgi-bin/admin/shopadmin.pl?order_list=1&amp;template=order_list_filled">filled</a>)</li>
 <:or UserCan:><:eif UserCan:>
-  <tr> 
-    <td 
-width="15">&nbsp;</td>
-    <td>&#183; <a 
 
-href="/cgi-bin/admin/add.pl?parentid=3">Add catalog</a></td>
- 
-</tr>
-  <tr> 
-    <td width="15">&nbsp;</td>
-    <td>&nbsp;</td>
- 
-</tr>
-  <tr> 
-    <td colspan="2"><a 
-href="/cgi-bin/admin/subs.pl">Subscriptions administration</a></td>
- 
-</tr>
-  <tr> 
-    <td width="15">&nbsp;</td>
-    <td>&nbsp;</td>
- 
-</tr>
-  <tr> 
-    <td colspan="2"><a 
-href="/cgi-bin/admin/adminusers.pl">User/Group administration</a></td>
- 
-</tr>
-  <tr> 
-    <td width="15">&nbsp;</td>
-    <td>&nbsp;</td>
- 
-</tr>
-<:ifUserCan regen_all:>
-  <tr> 
-    <td colspan="2"><a 
-href="/cgi-bin/admin/generate.pl">Regenerate static &amp; 
-      base 
-pages</a> (<a 
-href="/cgi-bin/admin/generate.pl?progress=1">verbose</a>)</td>
- 
-</tr>
-<:or:><:eif:>
-<:ifUserCan regen_extras:>
-  <tr> 
-    <td width="15">&nbsp;</td>
-    <td>&#183; <a 
-href="/cgi-bin/admin/generate.pl?id=extras">Regenerate extras 
- 
-and base pages</a> (<a 
-href="/cgi-bin/admin/generate.pl?id=extras&amp;progress=1">verbose</a>)</td>
- 
-</tr>
-<:or:><:eif:>
-  <tr> 
-    <td colspan="2"><a 
+<li><a href="/cgi-bin/admin/add.pl?parentid=3">Add catalog</a></li>
 
-href="/cgi-bin/admin/makeIndex.pl">Regenerate search index</a></td>
- 
+</ul>
+  </td>
 </tr>
-  <tr> 
-    <td width="15">&nbsp;</td>
-    <td>&nbsp;</td>
- 
+</table>
+  </td>
 </tr>
-  <tr> 
-    <td colspan="2"><a href="/cgi-bin/admin/userlist.pl">Download member list</a></td>
+</table>
+
+
+
  
-</tr>
-  <tr> 
-    <td width="15">&nbsp;</td>
-    <td>&nbsp;</td>
- 
-</tr>
-<:include admin/menu_custom.tmpl :>
-  <tr> 
-    <td colspan="2"><a href="/cgi-bin/admin/menu.pl?_t=adv">Advanced 
-tools</a></td>
-  </tr>
-  <tr> 
-    <td width="15">&nbsp;</td>
- 
-<td>&nbsp;</td>
-  </tr>
-  <tr> 
-    <td colspan="2"> 
+<p>&nbsp;</p>
+
+<:include admin/menu_custom.tmpl optional :>
+
+<p><a href="/cgi-bin/admin/menu.pl?_t=adv">Advanced tools</a></p>
+
+<p>&nbsp;</p>
+
       <form action="/cgi-bin/admin/admin.pl">
         Jump to: 
         <input type=text name=id size=4>
         <input type="submit" value="Jump!">
         (Article ID eg: 1 = Home) 
       </form>
-    </td>
-  </tr>
-</table>

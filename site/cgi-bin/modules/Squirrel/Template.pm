@@ -243,12 +243,19 @@ sub find_template {
 }
 
 sub include {
-  my ($self, $name) = @_;
+  my ($self, $name, $options) = @_;
 
+  defined $options or $options = '';
+  
   # print STDERR "Including $name\n";
 
-  my $filename = $self->find_template($name)
-    or return "** cannot find include $name in path **";
+  my $filename = $self->find_template($name);
+  unless ($filename) {
+    return '' if $options eq 'optional';
+
+    print STDERR "** Could not find include code $name\n";
+    return "** cannot find include $name in path **";
+  }
 
   # print STDERR "Found $filename\n";
 
@@ -378,10 +385,14 @@ sub replace_template {
                 include
                 \s+
                 ((?:\w+/)*\w+(?:\.\w+)?)
+                (?:
+                  \s+
+                  ([\w,]+)
+                )?
                 \s*
                :>
              ! 
-               $self->include($1) 
+               $self->include($1,$2) 
              !gex
 	       && ++$loops < 10;
   }

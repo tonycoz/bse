@@ -209,11 +209,11 @@ site/templates/1/sitemap.tmpl
 # site/templates/admin/add_product.tmpl
 site/templates/admin/addgroup.tmpl
 site/templates/admin/adduser.tmpl
-site/templates/admin/article_custom.tmpl
+# site/templates/admin/article_custom.tmpl
 site/templates/admin/article_img.tmpl
 site/templates/admin/base.tmpl
 site/templates/admin/catalog.tmpl  # embedded in the shopadmin catalog/product display
-site/templates/admin/catalog_custom.tmpl
+# site/templates/admin/catalog_custom.tmpl
 site/templates/admin/changepw.tmpl
 site/templates/admin/edit_0.tmpl
 site/templates/admin/edit_1.tmpl
@@ -229,13 +229,13 @@ site/templates/admin/grouplist.tmpl
 site/templates/admin/logon.tmpl
 site/templates/admin/menu.tmpl
 site/templates/admin/menu_adv.tmpl
-site/templates/admin/menu_custom.tmpl
+# site/templates/admin/menu_custom.tmpl
 site/templates/admin/interestemail.tmpl
 site/templates/admin/order_detail.tmpl
 site/templates/admin/order_list.tmpl
 site/templates/admin/order_list_filled.tmpl
 site/templates/admin/order_list_unfilled.tmpl
-site/templates/admin/product_custom.tmpl
+# site/templates/admin/product_custom.tmpl
 site/templates/admin/product_detail.tmpl
 site/templates/admin/product_list.tmpl
 site/templates/admin/regenerror.tmpl
@@ -280,10 +280,10 @@ site/templates/common/news_item.tmpl
 site/templates/common/rssbase.tmpl
 site/templates/common/sidebar.tmpl
 site/templates/common/sidebar_section.tmpl
-site/templates/custom/checkout.include
-site/templates/custom/order_detail.include
+# site/templates/custom/checkout.include
+# site/templates/custom/order_detail.include
 site/templates/custom/order_detail_payment.include
-site/templates/custom/payment_type.include
+# site/templates/custom/payment_type.include
 site/templates/custom/payment_type_email.include
 site/templates/error.tmpl
 site/templates/extras.txt

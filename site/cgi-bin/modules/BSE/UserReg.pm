@@ -343,6 +343,8 @@ sub _get_user {
 	or do { $self->show_logon($session, $cgi, $cfg); return };
       my $user = SiteUsers->getBy(userId=>$userid)
 	or do { $self->show_logon($session, $cgi, $cfg); return };
+      $user->{disabled}
+	and do { $self->show_logon($session, $cgi, $cfg, "Account disabled"); return };
       
       return $user;
     }

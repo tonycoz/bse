@@ -126,33 +126,17 @@ function BSE_validateForm {
     <td></td>
   </tr>
 </table>
-<script language="JavaScript">
-<!--
-// extract the userid cookie, if any, and either present a logon form,
-// or a logoff button
-var cookies = document.cookie;
-var start = cookies.indexOf("userid=");
-var userid = '';
-if (start != -1) {
-  start += 7;
-  var end = cookies.indexOf(';', start);
-  if (end == -1) end = cookies.length;
-  userid = cookies.substring(start, end);
-}
-if (userid != '') {
-    document.write('<p>&nbsp;</p>');
-}
-else {
-    document.write('<br>');
-    document.write('<table bgcolor="#EEEEEE" border="0" cellspacing="0" cellpadding="10" width="100%">');
-    document.write('<tr>');
-    document.write('  <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2">If you wish to track the status of your order you must either <a href="/cgi-bin/user.pl?show_register=1&r=/cgi-bin/shop.pl?checkout=1"><b>Register</b></a> or <a href="/cgi-bin/user.pl?show_logon=1&r=/cgi-bin/shop.pl?checkout=1"><b>Logon</b></a> before you continue with this purchase.</font></td>');
-    document.write('</tr>');
-    document.write('</table>');
-    document.write('<br>');
-}
-//-->
-</script>
+<:if User:>
+<p>&nbsp;</p>
+<:or User:>
+    <br>
+    <table bgcolor="#EEEEEE" border="0" cellspacing="0" cellpadding="10" width="100%">
+    <tr>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2">If you wish to track the status of your order you must either <a href="/cgi-bin/user.pl?show_register=1&r=/cgi-bin/shop.pl?checkout=1"><b>Register</b></a> or <a href="/cgi-bin/user.pl?show_logon=1&r=/cgi-bin/shop.pl?checkout=1"><b>Logon</b></a> before you continue with this purchase.</font></td>
+    </tr>
+    </table>
+    <br>
+<:eif User:>
 <form action="/cgi-bin/shop.pl" method="POST" onSubmit="BSE_validateForm();return document.MM_returnValue">
   <font face="Verdana, Arial, Helvetica, sans-serif" size="3"> <b>Shipping Details:</b></font> 
   <hr noshade size="1">
@@ -290,11 +274,11 @@ else {
  <:or Cgi:>
    <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"> <input type="checkbox" name="need_billing" onClick="this.form.checkupdate.click()" /> Billing details different to shipping</font></p>
  <:eif Cgi:>
-<:include custom/checkout.include:>
+<:include custom/checkout.include optional:>
   <font face="Verdana, Arial, Helvetica, sans-serif" size="3"> <b>Payment Details:</b></font> 
   <hr size="1" noshade>
-  <:if CCPayments :>
-  <:if MultPaymentTypes:><p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><input type=radio name=paymentType value=0 <:checkedPaymentCC:>> Credit Card</font></p><:or MultPaymentTypes:><input type=hidden name=paymentType value=0><:eif MultPaymentTypes:>
+  <:if Payments CC :>
+  <:if MultPaymentTypes:><p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><input type=radio name=paymentType value=0 <:checkedPayment CC:>> Credit Card</font></p><:or MultPaymentTypes:><input type=hidden name=paymentType value=0><:eif MultPaymentTypes:>
   <table border="0" cellspacing="0" cellpadding="0">
     <tr> 
       <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Name on 
@@ -328,25 +312,25 @@ else {
         &nbsp;*</font></td>
     </tr>
   </table>
-  <:or CCPayments:><:eif CCPayments:>
-  <:if ChequePayments:>
-  <:if MultPaymentTypes:><p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"> <input type=radio name=paymentType value=1 <:checkedPaymentCheque:>/>
+  <:or Payments:><:eif Payments:>
+  <:if Payments Cheque:>
+  <:if MultPaymentTypes:><p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"> <input type=radio name=paymentType value=1 <:checkedPayment Cheque:>/>
     Cheque</font></p><:or MultPaymentTypes:><input type=hidden name=paymentType value=1><:eif MultPaymentTypes:>
   <p> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Please send your cheque to:</font></p>
   <ul> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> <:cfg shop address1:><br />
      <:cfg shop address2:><br />
      <:cfg shop address3:></font></ul>
-  <:or ChequePayments:><:eif ChequePayments:>
-  <:if CallMePayments:>
-   <:if MultPaymentTypes:><p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><input type=radio name=paymentType value=2 <:checkedPaymentCallMe:>/> Contact me for billing details</font></p>
+  <:or Payments:><:eif Payments:>
+  <:if Payments CallMe:>
+   <:if MultPaymentTypes:><p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><input type=radio name=paymentType value=2 <:checkedPayment CallMe:>/> Contact me for billing details</font></p>
    <:or MultPaymentTypes:>
      <input type=hidden name=paymentType value=2>
      <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">We will call you to arrange for payment.</font></p>
    <:eif MultPaymentTypes:>
-  <:or CallMePayments:>
+  <:or Payments:>
 
-  <:eif CallMePayments:>
-  <:include custom/payment_type.include:>
+  <:eif Payments:>
+  <:include custom/payment_type.include optional:>
   <p>&nbsp; </p>
   <font face="Verdana, Arial, Helvetica, sans-serif" size="3"> <b>Tax Invoice 
   / Receipt &amp; Delivery Costs:</b></font> 

@@ -1,14 +1,14 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 13;
+use Test::More tests => 16;
 
 sub template_test($$$$;$);
 
 my $gotmodule = require_ok('Squirrel::Template');
 
 SKIP: {
-  skip "couldn't load module", 7 unless $gotmodule;
+  skip "couldn't load module", 15 unless $gotmodule;
 
   my $flag = 0;
   my $str = "ABC";
@@ -58,6 +58,9 @@ IN
   template_test($switch, "DEF", "switch def", \%acts, "both");
 
   template_test("<:with begin upper:>Alpha<:with end upper:>", "ALPHA", "with", \%acts);
+  template_test("<:include doesnt/exist optional:>", "", "optional include", \%acts);
+  template_test("<:include doesnt/exist:>", "** cannot find include doesnt/exist in path **", "failed include", \%acts);
+  template_test("x<:include included.include:>z", "xyz", "include", \%acts);
 }
 
 sub template_test ($$$$;$) {
