@@ -1,0 +1,1306 @@
+=head1 NAME
+
+BSE templates documentation
+
+=head1 SYNOPSIS
+
+What's a template, what can you do.
+
+=head1 DESCRIPTION
+
+With BSE, templates define all the visual aspects of your site.
+
+=head1 BASICS
+
+BSE templates use 3 basic types of tag:
+
+=over 4
+
+=item *
+
+data - gives you access to data from the database
+
+=item *
+
+conditional - chooses to produce text or html based on some condition
+
+=item *
+
+iteration - repeat a section of text for each element of a list
+
+=back
+
+There are also the <:wrap ... :> and <:embed ... :> tags, which are
+described under L<WRAPPING> and L<Embedding tags> respectively.
+
+=head2 Data tags
+
+Data tags give you access to the data items that are defined on the
+current page, many of these tags include parameters so you can select
+the particular item to display.
+
+A data tag typically looks like:
+
+ <: name arguments :>
+
+In some rare cases they can also include formatting information:
+
+ <: name arguments |formatting:>
+
+Some data tags are context senstive, for example a level2 tag is only
+usable inside an <:iterator begin level2 :> ... <:iterator end
+level2:> block.
+
+Some data tags simply provide formatting, for example the <:money:>
+tag in the shop pages formats a price as a money value.
+
+=head2 Conditional tags
+
+Conditional tags let you choose to display different tags depending on
+a condition.  Note that the condition names must already be defined
+for the page, you cannot test on general conditions.
+
+Each condition tag has two forms:
+
+=over 4
+
+=item short form
+
+  <:ifName:>I<true-text><:or:>I<false-text><:eif:>
+
+=item long form
+
+  <:if Name:>I<true-text><:or Name:>I<false-text><:eif Name:>
+
+=back
+
+Note that for the short form, there cannot be a space between "if" and
+the name of the condition, while the long form requires the space.
+
+You must always use the long form if there is another conditional tag
+in the I<true-text> or I<false-text>.
+
+In the tag documentation below you will find two types of tags that
+can be used as condition names:
+
+=over 4
+
+=item *
+
+tags explicitly documented as conditional tags.  These typically test
+some mildly complex condition.
+
+=item *
+
+true or false data tags.  You can use an data tag as a conditional
+tag.  If the result of the data tag is '0' or empty then the condition
+is false, and the I<false-text> will be displayed, otherwise the
+I<true-text> is displayed.
+
+=back
+
+=head2 Iterator tags
+
+Iterator tags step through a list of items, often articles, and
+repeats the content for each item in the list.  There is usually some
+data tag that gives access to the current item in the list.
+
+An iterator tag can have two forms:
+
+=over 4
+
+=item *
+
+With a separator block:
+
+  <:iterator start I<name>:>
+   I<repeated-content>
+  <:iterator separator I<name>:>
+   I<separator>
+  <:iterator end I<name>:>
+
+=item *
+
+and without:
+
+  <:iterator start I<name>:>
+   I<repeated-content>
+  <:iterator end I<name>:>
+
+=back
+
+If the I<separator> is present, then the copies of I<repeated-content>
+are separated by I<separator>.
+
+
+=head1 SOLUTIONS
+
+=head2 A home page with article bodies
+
+See L<Embedding multiple levels>
+
+=head2 Complete articles appearing within others
+
+Make sure you have:
+
+  <:embed start:>
+
+and:
+
+  <:embed end:>
+
+surrounding that part of the article you want embedded in the parent.
+
+If you don't want the child article embedded at all, then:
+
+=over 4
+
+=item *
+
+you have an <:embed child:> which isn't protected by an <:if
+UnderThreshold:> conditional tag, or
+
+=item *
+
+you have too high a threshold in the parent article, or
+
+=item *
+
+you shouldn't be using <: embed child :> at all in the parent.
+
+=back
+
+=head2 Tags are not being replaced
+
+If you find a tag is not being replaced, you most likely have either a
+nesting problem on the tag, or a spelling error, for example:
+
+  <:if UnderThreshold:>
+  <:or UnderThreshold:>
+  <:eif UndreThreshold:>
+
+won't be replaced, since the closing tag has the wrong name.
+
+Also it's not just for matching, sticking with UnderThreshold:
+
+  <:if UndreThreshold:>
+  <:or UndreThreshold:>
+  <:or UndreThreshold:>
+
+will be kept as-is on your page, since there is no matching tag.
+
+Another possibility for embedded pages is incorrect nesting of the
+<:embed start:> ... <:embed end:> tags and other tags, for example:
+
+    <:if UnderThreshold:>
+    <:embed start:>
+    ...
+    <:or UnderThreshold:>
+    ...
+    <:eif UnderThreshold:>
+    <:embed end:>
+
+You would end up with spurious <:or UnderThreshold:> and <:eif
+UnderThreshold:> tags when the article is embedded.
+
+=head2 Producing a side-menu of children
+
+The normal menu tags can currently only produce a menu starting from
+the top of the article tree.
+
+The way to do this is to use the <: iterator ... children :> tag:
+
+  <:iterator begin children:>
+   <a href="<:url child:>"><:child title:></a><br>
+  <:iterator end children:>
+
+Of course, you might want to include reordering tags too:
+
+  <:iterator begin children:>
+   <a href="<:url child:>"><:child title:></a><:moveUp:><:moveDown:><br>
+  <:iterator end children:>
+
+Unfortunately, this will include articles which are marked not to
+appear in menus, so you might want to use:
+
+  <:iterator begin children:>
+   <:if InMenu child:>
+    <a href="<:url child:>"><:child title:></a><:moveUp:><:moveDown:><br>
+   <:or InMenu:><:eif InMenu:>
+  <:iterator end children:>
+
+
+=head1 WRAPPING
+
+Wrapping can be used by your templates to simplify creating a single
+look for your site.
+
+You can create a basic template than includes only content and
+formatting specific to that content, and then wrap that with a
+template that includes the top, side and bottom bars for your site,
+with normal tag substitution occurring in the new composite template.
+
+This also allows you to design the whole base template without having
+to deal with small parts of the layout, which a component based system
+may force you to.
+
+You need two tags to wrap one template with another:
+
+=over 4
+
+=item 1
+
+Insert "<:wrap I<wrapper>:>" at the top of the template to be wrapped
+around, where I<wrapper> is the name of a template in the template
+directory.  This should include the F<.tmpl> if any.
+
+=item 2
+
+Put "<: wrap here :>" the template file specified above, at the location where the calling template should be inserted.
+
+=back
+
+The wrapping template may also include a <:wrap I<wrapper>:> tag, in
+which case the template is wrapped again.  This can be repeated
+several times (there is a limit to prevent self-recursion using all of
+memory.)
+
+
+=head1 EMBEDDING
+
+Embedding allows you to embed the contents of child articles within
+the display of the current article.  This can be used on a home page
+to present short (or long) current articles, or to simply present all
+articles within a section inline, when there are few enough articles
+that a simple index is just too short.
+
+All article embedding is controlled by the templates.  If you find
+that your are getting all of the layout of a child page embedded into
+the parent page, then it's a template problem, not an article data
+problem.
+
+=head2 Embedding tags
+
+To embed the current child article (within an C<E<lt>:iterator begin
+... endE<gt>:> block), use:
+
+  <:embed child:>
+
+This will be replaced by the rendered content of the child article.
+
+Of course, in most cases you don't want the entire child article
+rendered within the parent.  To limit the content that is embedded
+within the parent use:
+
+   <:embed start:>
+    I<embedded-content>
+   <:embed end:>
+
+You can also test within the template as to whether or not the current
+article is being embedded with another article:
+
+   <:if Embedded:>
+    I<rendered-if-embedded>
+   <:or Embedded:>
+    I<only-if-not-embedded>
+   <:eif Embedded:>
+
+Of course, if you put the <:embed start:> ... <:embed end:> tags
+within the I<rendered-if-embedded> text then the content displayed for
+the embedded article can be completely different from when the article
+isn't embedded.
+
+=head2 Controlling embedding
+
+Each article includes a I<threshold> which can be used with the <:if
+UnderThreshold:> conditional tag to decide whether or not to embed
+child articles.
+
+For example a section page might have:
+
+  <:if UnderThreshold :>
+   <!-- embed the children -->
+   <:iterator begin children:>
+   <:embed child:>
+   <:iterator separator children:>
+   <hr>
+   <:iterator end children:>
+  <:or UnderThreshold:>
+   <!-- summarize the children -->
+   <:iterator begin children:>
+    <p><b><a href="<:url child:>"><:child title:></a></b></p>
+    <p><:summary:></p>
+   <:iterator separator children:>
+   <br>
+   <:iterator end children:>
+  <:eif UnderThreshold:>
+
+=head2 Embedding multiple levels
+
+To maintain the association between a level of your site and the type
+of content it contains, eg. that articles are at level 3, you can have
+one level embed within another, that then embeds with the level above
+that.
+
+This allows you to have the look of having level 3 items directly
+within level 1 items without having to mix templates between levels.
+
+To do this:
+
+=over 4
+
+=item 1
+
+Create a level 1 template that includes the following:
+
+  <:iterator begin children:>
+  <:embed child:>
+  <:iterator end children:>
+
+You will want to include extra formatting :)
+
+Note that this child iterator will only include a single level2
+article.
+
+=item 2
+
+Create a level2 template that contains:
+
+  <:embed start:>
+  <:iterator begin children:>
+  <:moveUp:><:moveDown:>
+  <:embed child:>
+  <:iterator end children:>
+  <:embed end:>
+
+You may want to include extra formatting within the child iterator.
+
+You may also want to use thresholds to choose whether to include the
+article content or a summary and link:
+
+  <:embed start:>
+  <:if UnderThreshold:>
+   <:iterator begin children:>
+   <:moveUp:><:moveDown:>
+   <:embed child:>
+   <:iterator end children:>
+  <:or UnderThreshold:>
+   <:iterator begin children:>
+   <p><b><a href="<:url child:>"><:child title:></a></b></p>
+   <:summary:>
+   <:iterator end children:>
+  <:eif UnderThreshold:>
+  <:embed end:>
+
+=item 3
+
+Create the level 1 article that will include multiple levels, and set
+it's template to the template you created in step 1.
+
+You could also modify an existing article.
+
+=item 4
+
+Create the level 2 article, settings it's parent to the level 1
+article you created in step 3 and using the template you created in
+step2.
+
+Set the "List article" option of this level 2 article to "In sections,
+but not menu".
+
+=back
+
+So now if you add new level 3 articles to your level 2 article above,
+they will appear inline to the level 1 article.
+
+=head1 TEMPLATE LOCATIONS
+
+In general, page templates can be kept in any directory under the
+configured $TMPLDIR, but the article editing pages look for templates
+in certain locations, and some template names are special:
+
+=over 4
+
+=item *
+
+F<search_base.tmpl> is used to generate menus and possibly other
+generic content into F<search.tmpl>, the advanced search page (used by
+F<cgi-bin/search.pl>)
+
+=item *
+
+F<cart_base.tmpl>, F<checkout_base.tmpl> and
+F<checkoutfinal_base.tmpl> are used to generated menus and other
+generic content into F<cart.tmpl>, F<checkout.tmpl> and
+F<checkoutfinal.tmpl> respectively.
+
+These are the shopping cart, checkout page and completed order pages
+respectively, used by F<cgi-bin/shop.pl>.
+
+=item *
+
+F<shopitem.tmpl> is hard-wired as the name of the template used to
+format products.
+
+=back
+
+The article administration interface displays lists of articles based
+on the level of the article, and in some cases the type of article.
+
+The templates for normal articles are kept in 2 places, the F<common>
+directory and the a numbered directory based on the level of the
+article, eg. level 1 templates can also be found in directory F<1>
+under the template root.
+
+Template names for shop catalog pages can be any F<.tmpl> file in the
+F<catalog> directory or F<catalog.tmpl>.
+
+The templates used for editing articles are kept in
+F<edit_I<level>.tmpl>, you shouldn't need to modify these, unless you
+need to limit what your site administrators can do.
+
+The home article is also presented with F<index.tmpl> as a choice, if
+it's present, and it's child is presented with F<index2.tmpl> as a
+choice if it's present.
+
+=head1 TAG REFERENCE
+
+Tags are documented without the <: and :>.
+
+If a tag is documented as C<iterator ...I<name>> then it's an iterator
+tag and can be used:
+
+  <:iterator begin I<name>:>
+   I<repeated-text>
+  <:iterator separator I<name>:>
+   I<repeated-text>
+  <:iterator end I<name>:>
+
+Some tags have a I<which> parameter.  For these tags I<which> can be
+any other tag which is valid for the current page which retrieves
+article or product attributes, such as C<section>, C<parent> or
+C<article> itself.
+
+=head2 Base tags
+
+=over 4
+
+=item ifAdmin
+
+Conditional tag, true if generating in admin mode.
+
+=item iterator ... level1
+
+Iterates over the listed level 1 articles.
+
+=item level1 I<name>
+
+The value of the I<name> field of the current level 1 article.
+
+=item iterator ... level2
+
+Iterates over the listed level 2 children of the current level 1 article.
+
+=item level2 I<name>
+
+The value of the I<name> field of the current level 2 article.
+
+=item ifLevel2 I<name>
+
+Conditional tag, true if the current level 1 article has any listed
+level 2 children.
+
+=item iterator ... level3
+
+Iterates over the listed level 3 children of the current level 2 article.
+
+=item level3 I<name>
+
+The value of the I<name> field of the current level 3 article.
+
+=item ifLevel3 I<name>
+
+Conditional tag, true if the current level 2 article has any listed
+level 3 children.
+
+=item url I<which>
+
+Returns a link to the specified article .  Due to the way the action
+list is built, this can be article types defined in derived classes of
+Generate, like the C<parent> article in Generate::Article.
+
+=item money I<data tag>
+
+Formats the given value as a monetary value.  This does not include a
+currency symbol.  Internally BSE stores monetary values as integers to
+prevent the loss of accuracy inherent in floating point numbers.  You
+need to use this tag to display any monetary value.
+
+=item ifInMenu I<which>
+
+Conditional tag, true if the given item can appear in a menu.
+
+=item titleImage I<imagename> I<text>
+
+Generates an IMG tag if the given I<imagename> is in the title image
+directory ($IMAGEDIR/titles).  If it doesn't exists, produces the
+I<text>.
+
+=back
+
+=head2 Article tags
+
+=over 4
+
+=item article I<name>
+
+Access to fields of the article. See L<Article attributes>.
+
+=item parent I<name>
+
+Access to fields of the parent article. See L<Article attributes>.
+
+=item ifParent
+
+Conditional tag, true if there is a parent.
+
+=item section I<name>
+
+Access to the fields of the section containing the article.  See
+L<Article attributes>.
+
+=item title I<which>
+
+The title of the article presented as an image if there is a
+titleImage or as text.  See L<Tag notes> for values for I<which>.
+
+=item ifTitleImage I<which>
+
+Conditional tag, true if the given article has a titleImage,
+
+=item thumbnail I<which> I<class>
+
+The thumbnail image as an <img> tag for object I<which> where I<which>
+is one of the article objects defined.  The optional I<class> adds a
+class attribute to the tag with that class.
+
+=item ifThumbnail I<which>
+
+Conditional tag, true if the article specified by I<which> has a
+thumbnail.
+
+=item ifUnderThreshold
+
+Conditional tag, true if the number of children is less or equal to
+the article's threshold.
+
+=item body
+
+The formatted body of the article.
+
+You can use the following formatting within the body of an article:
+
+=over 4
+
+=item a[url,title]
+
+=item link[url|title]
+
+Inserts a link with title that points to url.
+
+=item b[text]
+
+The text is formatted in bold.
+
+=item i[text]
+
+The text is formatted in italics.
+
+=item align[position|text]
+
+The text is formatted as a paragraph aligned to the left, right or
+center (not the US spelling of center).
+
+=item font[size|text]
+
+Formats the text at the given size, a number from 1 to 7, or a
+relative size like -2 or +1.
+
+=item hr[width|height]
+
+Inserts a horizontal rule. Width is either in pixels ("100") or a
+percentage ("50%").  Height should be in pixels.  If either is omitted
+the HTML or style-sheet default is used.
+
+=item anchor[name]
+
+Creates a local link target called name.  Use link[#name|title] to
+link to it.
+
+=item table[options\nrows...\n]
+
+Formats a table.  Options are either | separated table width, bgcolor,
+cellpadding, and font size, or raw html table attributes.
+
+Each row is a single line:
+
+  options|column 1|column 2 ...
+
+Where the options are raw HTML tr attributes.
+
+An example:
+
+ table[
+ |b[x]|b[x*x]
+ |1|1
+ |2|4
+ |3|9
+ ]
+
+=item ** text
+
+The text is formatted with bullets.
+
+=item ## text
+
+The text is formatted as part of a numbered list:
+
+ ## the first line
+ ## the second line
+
+is presented as:
+
+ 1.  the first line
+ 2.  the second line
+
+=back
+
+=item keywords
+
+Ignore this one.
+
+=item iterator ... crumbs
+
+Iterates over the ancestors of the article.  See the L</item crumbs>.
+
+=item crumbs I<name>
+
+Access to the fields of the specific ancestor.  I<name> can be any of
+the L<Article attributes>.
+
+=item ifCrumbs
+
+Conditional tag, true if there are any crumbs.
+
+=item ifChildren
+
+Conditional tag, true if the article has any children.
+
+=item iterator ... children
+
+Iterates over the children of the article.  See the L</item child>.
+
+=item child I<name>
+
+Access to the fields of the current child.
+
+=item summary
+
+Produces a processed summary of the current child's body.
+
+=item ifPrevChild
+
+Conditional tag, true if there is a previous child.  Originally used
+for generating a move up link, but you can use the moveUp tag for
+that now.
+
+=item ifNextChild
+
+Conditional tag, true if there is a next child.  Originally used to
+generating a move down link, but you can use the moveDown tag for that
+now.
+
+=item embed child
+
+Embeds the current child at that point.  Should be used with C<embed
+start> and C<embed end> in the child's template.
+
+=item embed start ... embed end
+
+Marks the range of text that would be embedded in a parent that used
+C<embed child>.
+
+=item ifEmbedded
+
+Conditional tag, true if the current article is being embedded.
+
+=back
+
+The following tags produce output only in admin mode.
+
+=over 4
+
+=item admin
+
+Produces buttons and links used for administering the article.
+
+=item moveUp
+
+Generates a move up link if there is a previous child for the current
+child.
+
+=item moveDown
+
+Generates a move down link if there is a next child for the current child.
+
+=back
+
+=head2 Catalog tags
+
+=over 4
+
+=item iterate ... products
+
+Iterates over the products within this catalog.
+
+=item product I<field>
+
+The give attribute of the product.
+
+=item admin
+
+Generates administrative tools (in admin mode).
+
+=back
+
+=head2 Product tags
+
+=over 4
+
+=item product I<field>
+
+Access to product fields of the product being rendered.  This is the
+same as the C<article> I<field> tag for normal articles, but also give
+you access to the product fields.
+
+=item admin
+
+Produces product specific administration links in admin mode.
+
+=back
+
+=head2 Search tags
+
+These tags are used on the page generated by F<search.pl>, and are
+found in F<search_base.tmpl>.
+
+Please note that these tags are replace once the actual search is
+done.  The tags defined in L<templates/"Base tags"> are replaced when
+you choose I<Generate static pages> from the admin page.
+
+=over 4
+
+=item iterator ... results
+
+Iterates over the articles for the current page of results.
+
+=item article I<field>
+
+Access to fields in the current search result article.
+
+=item date I<which> I<field>
+
+Formats the given field of the tag I<which> for display as a date.
+
+=item keywords
+
+Keywords for the current result article, if any keywords matches the
+requested search.
+
+=item ifResults
+
+Conditional tag, true if the search found any matching articles.
+
+=item ifSearch
+
+Conditional tag, true if the user entered any search terms.
+
+=item dateSelected I<datevalue>
+
+The date value chosen by the user for the last search.  Used in a
+<select> HTML tag to have the date field select the last value chosen
+by the user.
+
+=item excerpt
+
+An excerpt of the body of the current search result, with search terms
+highlighted.
+
+=item articleurl
+
+A link to the current search result article, taking admin mode into
+account.
+
+=item count
+
+The total number of matches found.
+
+=item ifMultiple
+
+Conditional tag, true if more than one match was found.  This can be
+used to improve the wording of descriptions of the search results.
+
+=item terms
+
+The entered search terms.
+
+=item resultSeq
+
+The number of the current search result (ie. the first found is 1, etc).
+
+=item list
+
+A drop-down list of searchable sections.
+
+=item iterator ... pages
+
+Iterates over page numbers of search results.
+
+=item page
+
+The current page number within the page number iterator.
+
+=item ifCurrentPage
+
+Conditional tag, true if the page in the page number iterator is the
+displayed page of search results.  This can be used for formatting the
+current page number differently (and not making it a link.)
+
+=item pageurl
+
+A link to the current page in the page number iterator.
+
+=back
+
+B<An example>
+
+ ...
+ <input type=text name=s value="<:terms:>">
+ ...
+
+ <:if Search:>
+ <:if Results:>
+  <dl>
+  <:iterator begin results:>
+  <dt><:resultSeq:> <a href="<:article url:>"><:article title:></a>
+  <dd><:excerpt:>
+  <:iterator end results:>
+  </dl>
+  <:iterator begin pages:>
+   <:if CurrentPage:>
+    <b><:page:></b>
+   <:or CurrentPage:>
+    <a href="<:pageurl:>"><:page:></a>
+   <:eif CurrentPage:>
+  <:iterator separator pages:>
+  |
+  <:iterator end pages:>
+ <:or Results:>
+ No articles matches your search.
+ <:eif Results:>
+ <:or Search:>
+ <:eif Search:>
+
+
+=head2 Cart page
+
+=over 4
+
+=item iterator ... items
+
+Iterates over the items in the shopping cart, setting the C<item> tag
+for each one.
+
+=item item I<field>
+
+Retreives the given field from the item.  This can include product
+fields for this item.
+
+=item index
+
+The numeric index of the current item.
+
+=item money I<which> <field>
+
+Formats the given field as a money value (without a currency symbol.)
+
+=item count
+
+The number of items in the cart.
+
+=back
+
+=head2 Checkout tags
+
+This has the same tags as the L<Cart page>, and some extras:
+
+=over 4
+
+=item total
+
+The total cost of all items in the cart.
+
+This will need to be formatted as a money value with the C<money> tag.
+
+=item message
+
+An error message, if a validation error occurred.
+
+=item old I<field>
+
+The previously entered value for I<field>.  This should be used as the
+value for the various checkout fields, so that if a validation error
+occurs the user won't need to re-enter values.
+
+=back
+
+=head2 Completed order
+
+These tags are used in the F<checkoutfinal_base.tmpl>.
+
+=over 4
+
+=item item I<field>
+
+=item product I<field>
+
+This is split out for these forms.
+
+=item order I<field>
+
+Order fields.
+
+=back
+
+You can also use "|format" at the end of a field to perform some
+simple formatting.  Eg. <:order total |m6:> or <:order id |%06d:>.
+
+=over 4
+
+=item m<number>
+
+Formats the value as a <number> wide money value.
+
+=item %<format>
+
+Performs sprintf() formatting on the value.  Eg. %06d will format 25
+as 000025.
+
+=back
+
+=head2 Mailed order tags
+
+These tags are used in the emails sent to the user to confirm an order
+and in the encrypted copy sent to the site administrator:
+
+=over 4
+
+=item iterate ... items
+
+Iterates over the items in the order.
+
+=item item I<field>
+
+Access to the given field in the order item.
+
+=item product I<field>
+
+Access to the product field for the current order item.
+
+=item order I<field>
+
+Access to fields of the order.
+
+=item extended I<field>
+
+The product of the I<field> in the current item and it's quantity.
+
+=item money I<tag> I<parameters>
+
+Formats the given field as a money value.
+
+=back
+
+The mail generation template can use extra formatting specified with
+'|format':
+
+=over 4
+
+=item m<number>
+
+Format the value as a I<number> wide money value.
+
+=item %<format>
+
+Performs sprintf formatting on the value.
+
+=item <number>
+
+Left justifies the value in a I<number> wide field.
+
+=back
+
+The order email sent to the site administrator has a couple of extra
+fields:
+
+=over 4
+
+=item cardNumber
+
+The credit card number of the user's credit card.
+
+=item cardExpiry
+
+The entered expiry date for the user's credit card.
+
+=back
+
+
+
+=head2 Article attributes
+
+=over 4
+
+=item id
+
+Identifies the article.
+
+=item parentId
+
+The identifier of the parent article.
+
+=item title
+
+The title of the article.  See the title tag
+
+=item titleImage
+
+The name of the title image for the article, if any.  See the title
+and ifTitleImage tags.
+
+=item body
+
+The body of the article.  See the body tag.
+
+=item thumbImage
+
+=item thumbWidth
+
+=item thumbHeight
+
+The thumbnail image for the article, if any.  See the thumbnail tag.
+
+=item release
+
+=item expire
+
+The release and expiry dates of the article.
+
+=item keyword
+
+Any keywords for the article.  Indexed by the search engine.
+
+=item link
+
+=item admin
+
+Links to the normal and adminstrative versions of the article.  The
+url tag defined by Generate.pm will select the appropriate tag for the
+current mode.
+
+=item threshold
+
+The maximum number of articles that should be embeded into the current
+article for display.  See the ifUnderThreshold tag.
+
+=item summaryLength
+
+The maximum amount of text displayed in the summary of an article.
+See the summary tag.
+
+=item generator
+
+The class used to generate the article.  Should be one of
+Generate::Article, Generate::Catalog or Generate::Product.
+
+=item level
+
+The level of the article.  Sections are level1, etc
+
+=item listed
+
+How the article is listed.  If zero then the article can only be found
+in a search.  If 1 then the article is listed in menus and article
+contents, if 2 then the article is only listed in article contents.
+
+=item lastModified
+
+When the article was last modified.  Currently only used for display
+in search results.
+
+=back
+
+The following attributes are unlikely to be used in a page:
+
+=over 4
+
+=item displayOrder
+
+Used internally to control the ordering of articles within a section.
+
+=item imagePos
+
+The position of the first image in the body.  The body tag will format
+images into the body as specified by this tag.
+
+=item template
+
+The template used to format the article.
+
+=back
+
+=head2 Product specific fields
+
+=over 4
+
+=item summary
+
+An in-between length description of the article for use on the catalog
+page.
+
+=item leadTime
+
+The number of days it takes to receive the product after it has been
+ordered.
+
+=item retailPrice
+
+The cost to the customer of the product.  You need to use the C<money>
+tag to format this field for display.
+
+=item wholesalePrice
+
+Your cost.  You need to use the C<money> tag to format this field for
+display.
+
+=item gst
+
+The GST (in Australia) payable on the product.
+
+=back
+
+
+=head2 Order fields
+
+=over 4
+
+=item id
+
+The order id or order number.
+
+=item delivFirstName
+
+=item delivLastName
+
+=item delivStreet
+
+=item delivSuburb
+
+=item delivState
+
+=item delivPostCode
+
+=item delivCountry
+
+Delivery information for the order.
+
+=item billFirstName
+
+=item billLastName
+
+=item billStreet
+
+=item billSuburb
+
+=item billState
+
+=item billPostCode
+
+=item billCountry
+
+Billing information for the order.
+
+=item telephone
+
+=item facsimile
+
+=item emailAddress
+
+Contact information for the order.
+
+=item total
+
+Total price of the order.
+
+=item wholesaleTotal
+
+Wholesale cost of the total.  Your costs, if you entered wholesale
+prices for the products.
+
+=item gst
+
+GST (in Australia) payable on the order, if you entered GST for the products.
+
+=item orderDate
+
+When the order was made.
+
+=back
+
+=head2 Order item fields
+
+=over 4
+
+=item productId
+
+The product id of this item.
+
+=item orderId 
+
+The order Id.
+
+=item units
+
+The number of units for this item.
+
+=item price
+
+The price paid for the product.
+
+=item wholesalePrice
+
+The wholesale price for the product.
+
+=item gst
+
+The gst for the product.
+
+=back
+
+
+=head1 BUGS
+
+Currently, template replacement is done using simple regular
+expressions, which can be a problem for nested <:if ...:> tags.
+
+=cut
