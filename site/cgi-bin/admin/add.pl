@@ -3,7 +3,8 @@
 use strict;
 use lib '../modules';
 use Constants qw($TMPLDIR $IMAGEDIR $D_00 $D_99 $URLBASE @NO_DELETE 
-                 $SECURLBASE $ARTICLE_URI $CGI_URI $SHOP_URI $ROOT_URI);
+                 $SECURLBASE $ARTICLE_URI $CGI_URI $SHOP_URI $ROOT_URI
+		 $AUTO_GENERATE);
 
 use Articles;
 use Article;
@@ -366,7 +367,7 @@ sub save_old_article {
   $article->{release} = sql_date(param('release')) || $D_00;
   $article->{expire} = sql_date(param('expire')) || $D_99;
   $article->{lastModified} =  epoch_to_sql(time);
-  if ($article->{link} && $LINK_TITLES) {
+  if ($article->{id} != 1 && $article->{link} && $LINK_TITLES) {
     (my $extra = lc $article->{title}) =~ tr/a-z0-9/_/sc;
     $article->{link} = "$ARTICLE_URI/$article->{id}.html/$extra";
   }
@@ -402,7 +403,7 @@ sub save {
   }
 
   use Util 'generate_article';
-  generate_article($articles, $article);
+  generate_article($articles, $article) if $AUTO_GENERATE;
 
   print "Refresh: 0; url=\"$URLBASE$article->{admin}\"\n";
   print "Content-type: text/html\n\n<HTML></HTML>\n";
@@ -433,7 +434,7 @@ sub remove {
     $delart->remove();
     $articles = Articles->new(1);
     use Util 'generate_article';
-    generate_article($articles, $article);
+    generate_article($articles, $article) if $AUTO_GENERATE;
     @children = grep { $_->{id} != $deleteid } @children;
     start();
   }
