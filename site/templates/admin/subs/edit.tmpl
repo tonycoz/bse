@@ -10,7 +10,7 @@
 
 <body>
 
-<h1>Edit Subscription</h1>
+<h1><:ifNew:>Add<:or:>Edit<:eif:> Subscription</h1>
 
 <:ifMessage:><p><b><:message:></b></p><:or:><:eif:>
 
@@ -98,7 +98,7 @@
 </tr>
 </table>
 <p>
-    <input type="submit" name="editsave" value="Save Subscription">
+    <:ifNew:><input type="submit" name="addsave" value="Add Subscription"><:or:><input type="submit" name="editsave" value="Save Subscription"><:eif:>
   </p>
 </form>
 

@@ -4,7 +4,7 @@ use BSE::Test qw(base_url make_ua fetch_ok skip check_form post_ok ok
                  check_content);
 #use WWW::Mechanize;
 ++$|;
-print "1..24\n";
+print "1..21\n";
 my $baseurl = base_url;
 my $ua = make_ua;
 
@@ -20,7 +20,6 @@ check_form($ua->{content},
 	   "edit form",
 	   parentid=>[ -1, 'select' ],
 	   id => [ '', 'hidden' ],
-	   titleImage => [ '', 'select' ],
 	   template=> [ 'common/default.tmpl', 'select' ],
 	   body => [ '<maximum of 64Kb>', 'textarea' ],
 	   listed => [ 1, 'select' ],

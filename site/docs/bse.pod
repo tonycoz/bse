@@ -84,6 +84,11 @@ changed default level names in Constants.pm and bse.cfg
 
 changed tests to use the new level names
 
+=item *
+
+templates admin/subs/add.tmpl and admin/add_product.tmpl have be
+consolidated into their edit versions
+
 =back
 
 =head2 0.12_22

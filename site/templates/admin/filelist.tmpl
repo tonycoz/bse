@@ -12,8 +12,13 @@
 <h1>File Wizard</h1>
 <:ifMessage:>
 <p><b><:message:></b></p>
-<:or:><:eif:> 
-<:if UserCan edit_files_add:article :>
+<:or:><:eif:>
+<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | <:if Match [article generator] "Product":><a href="/cgi-bin/admin/add.pl?id=<:article id:>">Edit
+    product</a> | <a href="/cgi-bin/admin/shopadmin.pl">Manage catalogs</a> <:or
+    Match:><:if Eq [article id] [cfg articles shop]:><a href="/cgi-bin/admin/add.pl?id=<:article id:>">Edit
+    shop</a><:or Eq:><a href="/cgi-bin/admin/add.pl?id=<:article id:>"><:ifMatch
+    [article generator] "Catalog":>Edit catalog<:or:>Edit article<:eif:></a><:eif
+    Eq:><:eif Match:> |</p><:if UserCan edit_files_add:article :>
 <h2>Add new file</h2>
 
 <form method="post" action="<:script:>" enctype="multipart/form-data">
@@ -24,50 +29,50 @@
       <td> 
         <table cellpadding="6" border="0" cellspacing="1">
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">File to add: </th>
+            <th bgcolor="#FFFFFF" align="left">File to add:</th>
             <td bgcolor="#FFFFFF"> 
-              <input type="file" name="file" />
+              <input type="file" name="file" /> 
             </td>
-            <td bgcolor="#FFFFFF"><:help file file:> </td>
+            <td bgcolor="#FFFFFF"><:help file file:> <:error_img file:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">Description: </th>
+            <th bgcolor="#FFFFFF" align="left">Description:</th>
             <td bgcolor="#FFFFFF"> 
-              <input type="text" name="description" />
+              <input type="text" name="description" value="<:old description:>" />
             </td>
-            <td bgcolor="#FFFFFF"><:help file description:> </td>
+            <td bgcolor="#FFFFFF"><:help file description:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left"> Content-Type: </th>
+            <th bgcolor="#FFFFFF" align="left">Content-Type:</th>
             <td bgcolor="#FFFFFF"> 
-              <input type="text" name="contentType" />
+              <input type="text" name="contentType" value="<:old contentType:>" />
               (blank for guess) </td>
-            <td bgcolor="#FFFFFF"> <:help file content_type:></td>
+            <td bgcolor="#FFFFFF"><:help file content_type:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left"> Treat as download: </th>
+            <th bgcolor="#FFFFFF" align="left">Treat as download:</th>
             <td bgcolor="#FFFFFF"> 
               <input type="checkbox" name="download" value="1" />
             </td>
-            <td bgcolor="#FFFFFF"><:help file download:> </td>
+            <td bgcolor="#FFFFFF"><:help file download:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left"> Require payment: </th>
+            <th bgcolor="#FFFFFF" align="left">Require payment:</th>
             <td bgcolor="#FFFFFF"> 
               <input type="checkbox" name="forSale" value="1" />
             </td>
-            <td bgcolor="#FFFFFF"><:help file forSale:> </td>
+            <td bgcolor="#FFFFFF"><:help file forSale:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left"> Require login: </th>
+            <th bgcolor="#FFFFFF" align="left">Require login:</th>
             <td bgcolor="#FFFFFF"> 
               <input type="checkbox" name="requireUser" value="1" />
             </td>
-            <td bgcolor="#FFFFFF"><:help file requireUser:> </td>
+            <td bgcolor="#FFFFFF"><:help file requireUser:></td>
           </tr>
           <tr> 
             <td bgcolor="#FFFFFF" colspan="3" align="right"> 
-              <input type="submit" name="fileadd" value="  Add File  " />
+              <input type="submit" name="fileadd" value="Add File" />
             </td>
           </tr>
         </table>
@@ -82,23 +87,25 @@
 
 <form method="post" action="<:script:>" enctype="multipart/form-data">
 <input type="hidden" name="id" value="<: article id :>" />
-<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="#000000" class="table">
     <tr>
       <td>
-        <table cellpadding="6" border="0" cellspacing="1">
-          <tr> 
-            <th bgcolor="#FFFFFF" nowrap> File</th>
-            <th bgcolor="#FFFFFF" nowrap> Description</th>
+        <table width="100%" border="0" cellpadding="6" cellspacing="1">
+          <:if Files:><tr> 
+            <th width="50%" nowrap bgcolor="#FFFFFF"> File</th>
+            <th width="50%" nowrap bgcolor="#FFFFFF"> Description</th>
             <th bgcolor="#FFFFFF" nowrap> Content-Type</th>
           </tr>
-          <:if Files:> <: iterator begin files :> 
+          <: iterator begin files :> 
           <tr bgcolor="#FFFFFF"> 
             <td nowrap> <:file displayName:></td>
             <td valign="top"> 
-              <:ifUserCan edit_files_save:article:><input type="text" name="description_<:file id:>" value="<: file description :>" /><:or:><: file description :><:eif:>
+              <:ifUserCan edit_files_save:article:><input name="description_<:file id:>" type="text" value="<: file description :>" size="35" />
+              <:or:><: file description :><:eif:>
             </td>
             <td valign="top"> 
-               <:ifUserCan edit_files_save:article:><input type="text" name="contentType_<:file id:>" value="<: file contentType :>" /><:or:><: file contentType :><:eif:>
+               <:ifUserCan edit_files_save:article:><input name="contentType_<:file id:>" type="text" value="<: file contentType :>" size="20" />
+               <:or:><: file contentType :><:eif:>
             </td>
           </tr>
           <tr bgcolor="#FFFFFF"> 

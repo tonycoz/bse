@@ -14,8 +14,7 @@
 
 <:ifMessage:><p><b><:message:></b></p><:or:><:eif:>
 
-<p>| <a href="/admin/">Admin menu</a> | <:ifUserCan subs_add:><a href="<:script:>?add=1">Add New Subscription</a> 
-  |<:or:><:eif:></p>
+<p>| <a href="/admin/">Admin menu</a> |</p>
 
 <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
     <tr>
@@ -51,7 +50,11 @@
 </td>
 </tr>
 </table>
-
+<:ifUserCan subs_add:>
+<form name="form1" method="post" action="<:script:>">
+  <p><input type="submit" name="add" value="Add Subscription">
+  </p>
+</form><:or:><:eif:>
 <p><font size="-1">BSE Release <:release:></font></p>
 </body>
 </html>

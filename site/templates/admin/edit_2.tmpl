@@ -19,7 +19,7 @@
     Eq:><a href="<:article admin:>">See article</a><:eif Eq:> | <:eif:><:editParent:> 
   <:if Eq [article id] [cfg articles shop]:><a href="/cgi-bin/admin/shopadmin.pl">Manage
    catalogs</a> |<:or Eq:><:eif Eq:><:if New:><:or New:> <a href="<:script:>?id=<:article id:>&_t=steps">Manage
-    step children/parents</a> | <:eif New:></p>
+    step children/parents</a> | <!--//<a href="<:script:>?id=<:article id:>&_t=options">Edit options</a> |//--><:eif New:></p>
 
   <h2><:articleType:> Details</h2>
 
@@ -69,7 +69,7 @@
 
         <table cellpadding="6" border="0" cellspacing="1" width="100%">
           <tr> 
-            <th nowrap bgcolor="#FFFFFF" align="left"> <:parentType:>: </th>
+            <th nowrap bgcolor="#FFFFFF" align="left">Parent:</th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <:if FieldPerm parentid:><select name="parentid">
                 <option value="">Please select a <:parentType:><: list:>
@@ -78,24 +78,18 @@
             <td bgcolor="#FFFFFF"><:help edit section:> </td>
           </tr>
           <tr> 
-            <th nowrap bgcolor="#FFFFFF" align="left"> <:articleType:> title: 
+            <th nowrap bgcolor="#FFFFFF" align="left">Title: 
             </th>
             <td bgcolor="#FFFFFF" width="100%"> 
-              <:ifFieldPerm title:><input type="text" name="title" maxlength="<:cfg fields title_size 255:>" size="64" value="<: article title :>"><:or:><:default title:><:eif:>
-            </td>
-            <td bgcolor="#FFFFFF"><:help edit title:> </td>
+            <:ifFieldPerm title:><input type="text" name="title" maxlength="<:cfg fields title_size 255:>" size="64" value="<: article title :>"><:or:><:default title:><:eif:></td>
+            <td bgcolor="#FFFFFF"><:help edit title:> <:error_img title:></td>
           </tr>
-          <tr> 
-            <th nowrap bgcolor="#FFFFFF" align="left"> Title image: </th>
+          <:if Cfg image title:><tr> 
+            <th nowrap bgcolor="#FFFFFF" align="left">Title image:</th>
             <td bgcolor="#FFFFFF" width="100%"><:ifFieldPerm titleImage:><:titleImages:> (upload this to 
               the /images/titles directory)<:or:><:article titleImage:><:eif:></td>
             <td bgcolor="#FFFFFF"><:help edit titleImage:></td>
-          </tr>
-          <tr> 
-            <th nowrap bgcolor="#FFFFFF" align="left"> Template: </th>
-            <td bgcolor="#FFFFFF" width="100%"><:ifFieldPerm template:> <:templates:><:or:><:article template:><:eif:> </td>
-            <td bgcolor="#FFFFFF"><:help edit template:> </td>
-          </tr>
+          </tr><:or Cfg:><:eif Cfg:>
           <tr> 
             <th valign="top" nowrap bgcolor="#FFFFFF" align="left"> Body: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
@@ -104,14 +98,32 @@
             <td bgcolor="#FFFFFF" valign="top"><:help body body:> </td>
           </tr>
           <tr> 
-            <th nowrap bgcolor="#FFFFFF" align="left"> Release date: </th>
+            <th nowrap bgcolor="#FFFFFF" align="left">Template:</th>
+            <td bgcolor="#FFFFFF" width="100%"><:ifFieldPerm template:> <:templates:><:or:><:article template:><:eif:> </td>
+            <td bgcolor="#FFFFFF"><:help edit template:> </td>
+          </tr>
+		  <tr> 
+            <th nowrap bgcolor="#FFFFFF" align="left">List article:</th>
+            <td bgcolor="#FFFFFF" width="100%"> <:if FieldPerm listed:><:list listed:><:or FieldPerm:><:if Article listed:><:ifEq [article listed] "1":>Yes<:or:>In Sections, but not menu<:eif:><:or Article:>No<:eif Article:><:eif FieldPerm:> </td>
+            <td bgcolor="#FFFFFF"><:help edit listed:></td>
+          </tr>
+		  <tr>
+            <th nowrap bgcolor="#FFFFFF" align="left">Flags:</th>
+            <td bgcolor="#FFFFFF" width="100%"><:iterator begin flags:><:if FieldPerm flags:>
+              <input type=checkbox name=flags value="<:flag id:>" <:ifFlagSet [flag id]:>checked<:or:>
+              <:eif:>><:or FieldPerm:><:ifFlagSet [flag id]:>Yes<:or:>No<:eif:>
+              <:eif FieldPerm:><:flag desc:><:iterator end flags:></td>
+            <td bgcolor="#FFFFFF"><:help edit listed:></td>
+          </tr>
+		  <tr> 
+            <th nowrap bgcolor="#FFFFFF" align="left">Release date:</th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <:if FieldPerm release:><input type="text" name="release" value="<: date "%d/%m/%Y" article release :>" size="10" maxlength="10">
               (dd/mm/yyyy<: ifNew :> - default is today<: or :><: eif :>)<:or FieldPerm:><: date "%d/%m/%Y" article release :><:eif FieldPerm:></td>
             <td bgcolor="#FFFFFF"><:help edit release:></td>
           </tr>
           <tr> 
-            <th nowrap bgcolor="#FFFFFF" align="left"> Expiry date: </th>
+            <th nowrap bgcolor="#FFFFFF" align="left">Expiry date:</th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <:if FieldPerm expire:><input type="text" name="expire" value="<: date "%d/%m/%Y" article expire :>" size="10" maxlength="10">
               (dd/mm/yyyy - <: ifNew :>default is never, <: or :><: eif :>blank 
@@ -119,7 +131,7 @@
             <td bgcolor="#FFFFFF"><:help edit expire:></td>
           </tr>
           <tr> 
-            <th nowrap bgcolor="#FFFFFF" align="left"> Summary length: </th>
+            <th nowrap bgcolor="#FFFFFF" align="left">Summary length:</th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <:if FieldPerm summaryLength:><input type="text" name="summaryLength" size="10" maxlength="10" value="<: article summaryLength :>">
               (in characters - <: ifNew :>default inherited from <:parentType:>, <: or :><: eif :> 
@@ -127,28 +139,18 @@
             <td bgcolor="#FFFFFF"><:help edit summary:></td>
           </tr>
           <tr> 
-            <th nowrap bgcolor="#FFFFFF" align="left"> Display threshold: </th>
+            <th nowrap bgcolor="#FFFFFF" align="left">Display threshold:</th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <:ifFieldPerm threshold:><input type="text" name="threshold" size="10" maxlength="10" value="<: article threshold :>"><:or:><: article threshold :><:eif:>
             </td>
             <td bgcolor="#FFFFFF"><:help edit threshold:> </td>
           </tr>
           <tr> 
-            <th nowrap bgcolor="#FFFFFF" align="left"> Keywords: </th>
+            <th nowrap bgcolor="#FFFFFF" align="left">Keywords:</th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <:ifFieldPerm keyword:><input type="text" name="keyword" maxlength="255" size="60" value="<: article keyword :>">
               (comma separated)<:or:><: article threshold :><:eif:></td>
-            <td bgcolor="#FFFFFF"><:help edit keywords:> </td>
-          </tr>
-          <tr> 
-            <th nowrap bgcolor="#FFFFFF" align="left">List article:</th>
-            <td bgcolor="#FFFFFF" width="100%"> <:if FieldPerm listed:><:list listed:><:or FieldPerm:><:if Article listed:><:ifEq [article listed] "1":>Yes<:or:>In Sections, but not menu<:eif:><:or Article:>No<:eif Article:><:eif FieldPerm:> </td>
-            <td bgcolor="#FFFFFF"><:help edit listed:></td>
-          </tr>
-          <tr> 
-            <th nowrap bgcolor="#FFFFFF" align="left">Flags:</th>
-            <td bgcolor="#FFFFFF" width="100%"><:iterator begin flags:><:if FieldPerm flags:><input type=checkbox name=flags value="<:flag id:>" <:ifFlagSet [flag id]:>checked<:or:><:eif:>><:or FieldPerm:><:ifFlagSet [flag id]:>Yes<:or:>No<:eif:><:eif FieldPerm:><:flag desc:><:iterator end flags:></td>
-            <td bgcolor="#FFFFFF"><:help edit listed:></td>
+            <td bgcolor="#FFFFFF"><:help edit keywords:></td>
           </tr>
           <tr> 
             <th nowrap bgcolor="#FFFFFF" align="left" valign="top">Thumbnail image:</th>
@@ -198,7 +200,7 @@
             <td nowrap bgcolor="#FFFFFF" valign="top"><:help edit files:></td>
           </tr>
           <tr> 
-            <th valign="top" nowrap bgcolor="#FFFFFF" align="left"> Images: 
+            <th valign="top" nowrap bgcolor="#FFFFFF" align="left">Images: 
             </th>
             <td align="center" bgcolor="#FFFFFF" width="100%"><:if Images:> <:iterator begin 
               images:> <img src="/images/<: image image :>" alt="<:image alt :>" width= 
@@ -242,10 +244,7 @@
         </tr>
 <:if UserCan edit_reorder_children:article:>
         <tr> 
-          <td colspan="5" bgcolor="#FFFFFF">Reorder child articles: <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=title&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">by 
-            title</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=date&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">by 
-            date</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&reverse=1&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">reverse 
-            order</a></td>
+          <td colspan="5" bgcolor="#FFFFFF">Sort by: <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=title&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">title</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=date&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">date</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&reverse=1&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">reverse</a></td>
         </tr>
 <:or UserCan:><:eif UserCan:>
         <:iterator begin children:> 

@@ -12,7 +12,12 @@
 <:ifMessage:> 
 <p><b><:message:> </b></p>
 <:or:><:eif:>
-<:if UserCan edit_images_add:article:>
+<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | <:if Match [article generator] "Product":><a href="/cgi-bin/admin/add.pl?id=<:article id:>">Edit
+    product</a> | <a href="/cgi-bin/admin/shopadmin.pl">Manage catalogs</a> <:or
+    Match:><:if Eq [article id] [cfg articles shop]:><a href="/cgi-bin/admin/add.pl?id=<:article id:>">Edit
+    shop</a><:or Eq:><a href="/cgi-bin/admin/add.pl?id=<:article id:>"><:ifMatch
+    [article generator] "Catalog":>Edit catalog<:or:>Edit article<:eif:></a><:eif
+    Eq:><:eif Match:> |</p><:if UserCan edit_images_add:article:>
 <h2>Add new image</h2>
 
 <form method="POST" action="<:script:>" enctype="multipart/form-data">
@@ -26,29 +31,29 @@
       <td> 
         <table cellpadding="6" border="0" cellspacing="1">
           <tr> 
-            <th bgcolor="#FFFFFF" align="left"> Image file to add: </th>
+            <th bgcolor="#FFFFFF" align="left">Image file to add:</th>
             <td bgcolor="#FFFFFF"> 
-              <input type="file" name="image">
+              <input type="file" name="image"> 
             </td>
-            <td bgcolor="#FFFFFF"><:help image file:> </td>
+            <td bgcolor="#FFFFFF"><:help image file:> <:error_img image:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left"> Alt text for image: </th>
+            <th bgcolor="#FFFFFF" align="left">Alt text for image:</th>
             <td bgcolor="#FFFFFF"> 
-              <input type="text" name="altIn">
+              <input type="text" name="altIn" value="<:old altIn:>">
             </td>
-            <td bgcolor="#FFFFFF"><:help image alt:> </td>
+            <td bgcolor="#FFFFFF"><:help image alt:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left"> URL for image: </th>
+            <th bgcolor="#FFFFFF" align="left">URL for image:</th>
             <td bgcolor="#FFFFFF"> 
-              <input type="text" name="url" width="40">
+              <input type="text" name="url" value="<:old url:>">
             </td>
-            <td bgcolor="#FFFFFF"><:help image url:> </td>
+            <td bgcolor="#FFFFFF"><:help image url:></td>
           </tr>
           <tr> 
             <td bgcolor="#FFFFFF" colspan="3" align="right"> 
-              <input type="submit" name="addimg" value="  Add Image  ">
+              <input type="submit" name="addimg" value="Add Image">
             </td>
           </tr>
         </table>
@@ -65,14 +70,14 @@
 <input type="hidden" name="imgtype" value="<: articleType :>">
   <h2>Manage images</h2>
 
-<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="#000000" class="table">
     <tr>
       <td>
-        <table cellpadding="6" border="0" cellspacing="1">
-          <tr> 
+        <table width="100%" border="0" cellpadding="6" cellspacing="1">
+          <:if Images:><tr> 
             <th valign="top" bgcolor="#FFFFFF" colspan="4">First Image Position</th>
           </tr>
-          <tr> 
+		  <tr> 
             <td bgcolor="#FFFFFF" colspan="4"> 
               <table width="100%" border="0" cellspacing="0" cellpadding="0">
                 <tr>
@@ -124,6 +129,9 @@
             </td>
 	  </tr>
 <:or:><:eif:>
+		  <:or Images:><tr><td colspan="4" align="center" bgcolor="#FFFFFF">No images
+		      are attached to this article</td>
+          </tr><:eif Images:>
         </table>
 </td>
 </tr>
