@@ -27,6 +27,16 @@ mail class
 
 work around a bug in the search index builder
 
+=item *
+
+finally added some test code.  This isn't ready for general use yet and
+could damage your system.  So don't use it.
+
+=item *
+
+BSE::Cfg now checks the current directory as well as $FindBin::Bin,
+this lets initial.pl work
+
 =back
 
 =head2 0.11_08

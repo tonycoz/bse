@@ -132,6 +132,10 @@ change makeIndex.pl to avoid overflowing the fields
 
 add a test suite
 
+=item *
+
+level parameter to add.pl isn't checked for validity
+
 =back
 
 =cut

@@ -7,7 +7,7 @@ print "1..27\n";
 my $baseurl = base_url;
 ok($baseurl =~ /^http:/, "basic check of base url");
 my $ua = make_ua;
-fetch_ok($ua, "admin menu", "$baseurl/admin/", "Admin");
+fetch_ok($ua, "admin menu - check the site exists at all", "$baseurl/admin/", "Admin");
 fetch_ok($ua, "generate all", "$baseurl/cgi-bin/admin/generate.pl",
 	"html", "Refresh: 0; .*/admin/");
 fetch_ok($ua, "generate all verbose", 

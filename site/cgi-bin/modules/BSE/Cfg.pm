@@ -44,7 +44,7 @@ sub new {
 
   #my $file = _find_cfg(MAIN_CFG)
   #  or _load_error("Cannot find config file ".MAIN_CFG);
-  my $file = _find_cfg(MAIN_CFG)
+  my $file = _find_cfg(MAIN_CFG) || _find_cfg(MAIN_CFG, ".")
     or return bless { config => {} }, $class;
 
   return $class->_load_cfg($file);

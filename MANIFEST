@@ -223,3 +223,7 @@ site/util/gen.pl
 site/util/initial.pl
 site/util/mysql.str
 site/util/upgrade_mysql.pl
+t/BSE/Test.pm
+t/t00smoke.t
+t/t10edit.t
+test.cfg.base

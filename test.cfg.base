@@ -1,1 +1,12 @@
-base_url = http://bsetest.develop-help.com
+# the url of your test sie
+base_url = http://blah.blah.blah
+# where to install the site
+base_dir = /foo/bar/quux
+# the database user/password/dsn
+dbuser = someuser
+dbpass = somepass
+dsn = dbi:blah:blah
+dbclass = BSE::DB::Something
+sessionclass = Apache::Session::MySQL
+# the location of mysql
+mysql = mysql
