@@ -2,7 +2,7 @@
 <head>
 
   <title>
-    bodyScoop Administration - <: ifnew :>New<: or :>Edit<: eif :> <:articleType:>
+    Administration - <: ifnew :>New<: or :>Edit<: eif :> <:articleType:>
   </title>
 
   <link rel="stylesheet" type="text/css" href="/css/admin.css">
@@ -19,8 +19,6 @@
 
   <p><form enctype="multipart/form-data" method="POST" action="<:script:>">
 
-  <!--input type="hidden" name="return_url" value="<:script:>?level=<: level :>&id=<:article id:>" -->
-
   <p>
   <input type="submit" name="artimg" value="<:articleType:> Image Wizard">
   </p>
@@ -28,14 +26,12 @@
 
   <h2><:articleType:> Details</h2>
 
-  <p><:ifnew:><:or:><a href="<:article admin:>">See article</a><:eif:></p>
-<:message:>
-<:editParent:>
+  <p><:message:> | <a href="/admin/">Admin menu</a> | <:ifnew:><:or:><a href="<:article admin:>">See article</a> | <:eif:><:editParent:>
+<input type="hidden" name="level" value="<: level :>">
+    <input type="hidden" name="id" value="<: article id :>">
 
-  <input type="hidden" name="level" value="<: level :>">
-  <input type="hidden" name="id" value="<: article id :>">
-
-  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000">
+  </p>
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000">
     <tr>
       <td>
 
@@ -68,26 +64,29 @@
             </td>
           </tr>
           <tr> 
-            <th> Release Date (in dd/mm/yyyy format): </th>
+            <th> Release Date: </th>
             <td bgcolor="#FFFFFF"> 
               <input type="text" name="release" value="<: article release :>" size="10" maxlength="10">
-              <: ifnew :>(default is today)<: or :><: eif :></td>
+              (dd/mm/yyyy<: ifnew :> - default is today<: or :><: eif :>)</td>
           </tr>
+          
+          
           <tr> 
-            <th> Expire Date (in dd/mm/yyyy format): </th>
+            <th> Expire Date: </th>
             <td bgcolor="#FFFFFF"> 
               <input type="text" name="expire" value="<: article expire :>" size="10" maxlength="10">
-              (<: ifnew :>default is two weeks from now, <: or :><: eif :>blank 
+              (dd/mm/yyyy - <: ifnew :>default is two weeks from now, <: or :><: eif :>blank 
               for never expires)</td>
           </tr>
           <tr> 
-            <th> Summary Length (in characters): </th>
+            <th> Summary Length: </th>
             <td bgcolor="#FFFFFF"> 
               <input type="text" name="summaryLength" size="10" maxlength="10" value="<: article summaryLength :>">
-              (<: ifnew :>default inherited from section<: if art :> or sub-section<: 
-              or art :><: eif art :>, <: or :><: eif :>zero for full listing in 
+              (in characters - <: ifnew :>default inherited from section<: if art :> or sub-section<: 
+              or art :><: eif art :>, <: or :><: eif :>zero for no 
               summary)</td>
           </tr>
+          
           <tr> 
             <th> Display threshold: </th>
             <td bgcolor="#FFFFFF"> 
@@ -95,14 +94,20 @@
             </td>
           </tr>
           <tr> 
-            <th> Keywords (optional, comma separated): </th>
+            <th> Keywords: </th>
             <td bgcolor="#FFFFFF"> 
               <input type="text" name="keyword" maxlength="255" size="60" value="<: article keyword :>">
+               (comma separated)
             </td>
           </tr>
+          
+          
+          
+          
+          
           <tr> 
             <th>List article:</th>
-            <td bgcolor="#FFFFFF">  
+            <td bgcolor="#FFFFFF">
               <:list listed:> </td>
           </tr>
           <tr> 
@@ -113,7 +118,8 @@
           </tr>
           <tr> 
             <th valign="top"> Uploaded files: </th>
-            <td align="center" bgcolor="#FFFFFF"> <: iterator begin images :> <img src="/images/<: image image :>" alt="<:image alt :>" width=<:image width:> height=<:image height:>> <: iterator separator images :> 
+            <td align="center" bgcolor="#FFFFFF"> <: iterator begin images :> <img src="/images/<: image image :>" alt="<:image alt :>" width=<:image width:> height=<:image height:>> <: iterator separator images 
+              :> 
               <hr noshade size="1">
               <: iterator end images :> &nbsp; <br>
         </table>
@@ -125,7 +131,7 @@
     <input type="submit" name="save"
            value="  <: ifnew :>Add New<: or :>Update<: eif :> <: articleType:>  "></p>
   </form>
-<:if children:> <a name="children"> 
+<:if children:> <a name="children"></a> 
 <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000">
     <tr>
       <td>
@@ -160,6 +166,5 @@
 <p><input type=submit value="Add <:childtype:>"></p>
 </form>
 <p><:eif new:> <:or HaveChildType:> <:eif HaveChildType:> </p>
-<p><a href="/admin/">Admin menu</a></p>
 </body
 ></html>
