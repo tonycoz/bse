@@ -48,7 +48,7 @@ sub change_cookie {
   my $lifetime = $cfg->entry('basic', 'cookie_lifetime') || '+3h';
   print "Set-Cookie: ",
   CGI::Cookie->new(-name=>'sessionid', -value=>$sessionid, 
-		   -expires=>$lifetime),"\n";
+		   -expires=>$lifetime, -path=>"/"),"\n";
   my $dh = BSE::DB->single;
   eval {
     tie %$newsession, $SESSION_CLASS, $sessionid,
@@ -66,3 +66,45 @@ END {
 }
 
 1;
+
+=head1 NAME
+
+BSE::Session - wrapper around Apache::Session for BSE.
+
+=head1 SYNOPSIS
+
+  use BSE::Session;
+  use BSE::Cfg
+  my %session;
+  my $cfg = BSE::Cfg->new;
+  BSE::Session->tie_it(\%session, $cfg);
+
+=head1 DESCRIPTION
+
+Provides a thinnish wrapper around Apache::Session, providing the interface
+to BSE's database abstraction, configuration, retries and cookie setup.
+
+=head1 KEYS
+
+=over
+
+=item *
+
+cart - the customer's shopping cart, should only be set on the secure side
+
+=item *
+
+custom - custom values set by shopping cart processing, should only be
+set on the secure side
+
+=item *
+
+userid - 
+
+=back
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=cut

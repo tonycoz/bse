@@ -19,6 +19,39 @@ sub new {
   $self;
 }
 
+sub _image {
+  my ($self, $im, $align, $url) = @_;
+
+  my $text = qq!<img src="/images/$im->{image}" width="$im->{width}"!
+    . qq! height="$im->{height}" alt="! . escape_html($im->{alt}).'"'
+      . qq! border="0"!;
+  $text .= qq! align="$align"! if $align && $align ne 'center';
+  $text .= qq! />!;
+  $text = qq!<div align="center">$text</div>!
+    if $align && $align eq 'center';
+  if (!$url && $im->{url}) {
+    $url = $im->{url};
+  }
+  if ($url) {
+    $text = qq!<a href="! . escape_html($url) . qq!">$text</a>!;
+  }
+
+  return $text;
+}
+
+sub gimage {
+  my ($self, $args) = @_;
+
+  my ($name, $align, $url) = split /\|/, $args, 3;
+  my $im = $self->{gen}->get_gimage($name);
+  if ($im) {
+    $self->_image($im, $align, $url);
+  }
+  else {
+    return '';
+  }
+}
+
 sub image {
   my ($self, $args) = @_;
 
@@ -40,24 +73,13 @@ sub image {
       }
     }
   }
-  if ($im) {
-    $text = qq!<img src="/images/$im->{image}" width="$im->{width}"!
-      . qq! height="$im->{height}" alt="! . escape_html($im->{alt}).'"'
-	. qq! border="0"!;
-    $text .= qq! align="$align"! if $align && $align ne 'center';
-    $text .= qq! />!;
-    $text = qq!<div align="center">$text</div>!
-      if $align && $align eq 'center';
-    if (!$url && $im->{url}) {
-      $url = $im->{url};
-    }
-    if ($url) {
-      $text = qq!<a href="! . escape_html($url) . qq!">$text</a>!;
-    }
-  }
   ${$self->{auto_images}} = 0;
-
-  return $text;
+  if ($im) {
+    return $self->_image($im, $align, $url);
+  }
+  else {
+    return '';
+  }
 }
 
 sub embed {
@@ -65,6 +87,15 @@ sub embed {
 
   $self->{gen}->_embed_low($self->{acts}, $self->{articles}, $name,
 			   $templateid, $maxdepth);
+}
+
+sub replace {
+  my ($self, $rpart) = @_;
+
+  $$rpart =~ s#gimage\[([^\]\[]+)\]# $self->gimage($1) #ige
+    and return 1;
+
+  return $self->SUPER::replace($rpart);
 }
 
 1;

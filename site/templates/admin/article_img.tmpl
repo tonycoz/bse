@@ -8,16 +8,20 @@
 </head>
 
 <body>
-<h1><: articleType :> Image Wizard</h1>
+<h1><:ifEq [article id] "-1":>Global<:or:><: articleType :><:eif:> Image Wizard</h1>
 <:ifMessage:> 
 <p><b><:message:> </b></p>
 <:or:><:eif:>
-<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | <:if Match [article generator] "Product":><a href="/cgi-bin/admin/add.pl?id=<:article id:>">Edit
-    product</a> | <a href="/cgi-bin/admin/shopadmin.pl">Manage catalogs</a> <:or
-    Match:><:if Eq [article id] [cfg articles shop]:><a href="/cgi-bin/admin/add.pl?id=<:article id:>">Edit
-    shop</a><:or Eq:><a href="/cgi-bin/admin/add.pl?id=<:article id:>"><:ifMatch
-    [article generator] "Catalog":>Edit catalog<:or:>Edit article<:eif:></a><:eif
-    Eq:><:eif Match:> |</p><:if UserCan edit_images_add:article:>
+<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | 
+<:switch:>
+<:case Match [article generator] "Product":><a href="/cgi-bin/admin/add.pl?id=<:article id:>">Edit
+    product</a> | <a href="/cgi-bin/admin/shopadmin.pl">Manage catalogs</a>
+<:case Eq [article id] [cfg articles shop]:><a href="/cgi-bin/admin/add.pl?id=<:article id:>">Edit shop</a>
+<:case Eq [article id] "-1":><a href="/cgi-bin/admin/add.pl?id=<:article id:>">Edit sections</a>
+<:case default:><a href="/cgi-bin/admin/add.pl?id=<:article id:>"><:ifMatch
+    [article generator] "Catalog":>Edit catalog<:or:>Edit article<:eif:></a>
+<:endswitch:>
+|</p><:if UserCan edit_images_add:article:>
 <h2>Add new image</h2>
 
 <form method="POST" action="<:script:>" enctype="multipart/form-data">
@@ -83,7 +87,7 @@
     <tr>
       <td>
         <table width="100%" border="0" cellpadding="6" cellspacing="1">
-          <:if Images:><tr> 
+          <:if Images:><:if Eq [article id] "-1":><:or Eq:><tr> 
             <th valign="top" bgcolor="#FFFFFF" colspan="5">First Image Position</th>
           </tr>
 		  <tr> 
@@ -100,7 +104,7 @@
               </table>
 
 	    </td>
-          </tr>
+          </tr><:eif Eq:>
           <tr bgcolor="#FFFFFF"> 
             <th colspan="5">Image</th>
           </tr>
@@ -142,8 +146,8 @@
             </td>
 	  </tr>
 <:or:><:eif:>
-		  <:or Images:><tr><td colspan="5" align="center" bgcolor="#FFFFFF">No images
-		      are attached to this article</td>
+		  <:or Images:><tr><td colspan="5" align="center" bgcolor="#FFFFFF"><:if Eq [article id] "-1":>There are no global images<:or Eq:>No images
+		      are attached to this article<:eif Eq:></td>
           </tr><:eif Images:>
         </table>
 </td>

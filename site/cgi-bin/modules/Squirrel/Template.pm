@@ -4,7 +4,7 @@ use strict;
 use Carp qw/cluck confess/;
 use constant DEBUG => 0;
 
-$VERSION="0.05";
+$VERSION="0.06";
 
 sub new {
   my ($class, %opts) = @_;
@@ -203,6 +203,46 @@ sub include {
   return $data;
 }
 
+sub switch {
+  my ($self, $content, $acts) = @_;
+
+  print STDERR "** switch\n" if DEBUG;
+
+  my @cases = split /(?=<:\s*case\s)/gs, $content;
+  shift @cases; # drop the loser at the front
+  my $case;
+  while ($case = shift @cases) {
+    my ($cond, $data) = $case =~ /<:\s*case\s+(.*?):>(.*)/s;
+
+    if ($cond eq 'default') {
+      print STDERR "  returning default\n" if DEBUG;
+      return $data;
+    }
+
+    my ($func, $args) = split ' ', $cond, 2;
+
+    print STDERR "  testing $func $args\n" if DEBUG;
+
+    my $result;
+    if (exists $acts->{"if$func"}) {
+      print STDERR "   found cond if$func\n" if DEBUG > 1;
+      $result = $self->low_perform($acts, "if$func", $args, '');
+    }
+    elsif (exists $acts->{lcfirst $func}) {
+      print STDERR "   found cond $func\n" if DEBUG > 1;
+      $result = $self->low_perform($acts, lcfirst $func, $args, '');
+    }
+    else {
+      print STDERR "   not found\n" if DEBUG > 1;
+      return "<:switch:>$case".join("", @cases)."<:endswitch:>";
+    }
+    print STDERR "    result ",!!$result,"\n" if DEBUG > 1;
+    return $data if $result;
+  }
+
+  return '';
+}
+
 sub tag_param {
   my ($params, $arg) = @_;
 
@@ -316,6 +356,13 @@ sub replace_template {
                   (.*?)
                  <:\s*eif\s*:>)/
                 $self->cond($2, $3, $4, $5, $acts, $1) /sgex;
+
+  $nesting = 0;
+  1 while $template =~ s/<:\s*switch\s*:>
+                         ((?!<:\s*switch).*?)
+                         <:\s*endswitch\s*:>/
+			   $self->switch($1, $acts)/segx
+			     && ++$nesting < 5;
 
   $template =~ s/(<:\s*(\w+)(?:\s+(.*?))?\s*:>)/ 
     $self->perform($acts, $2, $3, $1) /segx;

@@ -121,4 +121,24 @@ sub get_source {
   $html;
 }
 
+sub output_result {
+  my ($class, $req, $result) = @_;
+
+  select STDOUT;
+  $| = 1;
+  push @{$result->{headers}}, "Content-Type: $result->{type}";
+  push @{$result->{headers}}, $req->extra_headers;
+  if (exists $ENV{GATEWAY_INTERFACE}
+      && $ENV{GATEWAY_INTERFACE} =~ /^CGI-Perl\//) {
+    use Apache;
+    my $r = Apache->request or die;
+    $r->send_cgi_header(join("\n", @{$result->{headers}})."\n");
+  }
+  else {
+    print "$_\n" for @{$result->{headers}};
+    print "\n";
+  }
+  print $result->{content};
+}
+
 1;

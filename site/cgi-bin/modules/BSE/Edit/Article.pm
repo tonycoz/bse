@@ -51,26 +51,6 @@ sub noarticle_dispatch {
   return $self->$method($req, $articles);
 }
 
-sub edit_sections {
-  my ($self, $req, $articles, $msg) = @_;
-
-  BSE::Permissions->check_logon($req)
-    or return BSE::Template->get_refresh($req->url('logon'), $req->cfg);
-
-  my %article;
-  my @cols = Article->columns;
-  @article{@cols} = ('') x @cols;
-  $article{id} = '-1';
-  $article{parentid} = -1;
-  $article{level} = 0;
-  $article{body} = '';
-  $article{listed} = 0;
-  $article{generator} = $self->generator;
-  $article{flags} = '';
-
-  return $self->low_edit_form($req, \%article, $articles, $msg);
-}
-
 sub article_actions {
   my ($self) = @_;
 
@@ -284,10 +264,10 @@ sub tag_checked {
 }
 
 sub iter_get_images {
-  my ($article) = @_;
+  my ($self, $article) = @_;
 
   $article->{id} or return;
-  $article->images;
+  $self->get_images($article);
 }
 
 sub iter_get_kids {
@@ -1044,7 +1024,7 @@ sub low_edit_tags {
      level => $article->{level},
      checked => \&tag_checked,
      DevHelp::Tags->make_iterator2
-     ([ \&iter_get_images, $article ], 'image', 'images', \@images, 
+     ([ \&iter_get_images, $self, $article ], 'image', 'images', \@images, 
       \$image_index),
      imgmove => [ \&tag_imgmove, $request, $article, \$image_index, \@images ],
      message => $msg,
@@ -1931,7 +1911,7 @@ sub save_image_changes {
     $article->{imagePos} = $image_pos;
     $article->save;
   }
-  my @images = $article->images;
+  my @images = $self->get_images($article);
   
   @images or
     return $self->refresh($article, $cgi, undef, 'No images to save information for');
@@ -1971,6 +1951,12 @@ sub save_image_changes {
 	  $errors{"name$index"} = 'Image identifiers must be unique to the article';
 	}
       }
+      unless ($errors{"name$index"}) {
+	my $msg;
+	$self->validate_image_name($name, \$msg)
+	  or $errors{"name$index"} = $msg;
+      }
+      
       ++$index;
     }
   }
@@ -2007,7 +1993,7 @@ sub add_image {
   if (defined $imageref && $imageref ne '') {
     if ($imageref =~ /^[a-z_]\w+$/i) {
       # make sure it's unique
-      my @images = $article->images;
+      my @images = $self->get_images($article);
       for my $img (@images) {
 	if (defined $img->{name} && lc $img->{name} eq lc $imageref) {
 	  $errors{name} = 'Duplicate image name';
@@ -2021,6 +2007,10 @@ sub add_image {
   }
   else {
     $imageref = '';
+  }
+  unless ($errors{name}) {
+    $self->validate_image_name($imageref, \$msg)
+      or $errors{name} = $msg;
   }
 
   my $image = $cgi->param('image');
@@ -2112,7 +2102,7 @@ sub remove_img {
 
   $imageid or die;
 
-  my @images = $article->images();
+  my @images = $self->get_images($article);
   my ($image) = grep $_->{id} == $imageid, @images
     or return $self->show_images($req, $article, $articles, "No such image");
   my $imagedir = $req->cfg->entry('paths', 'images', $Constants::IMAGEDIR);
@@ -2133,7 +2123,7 @@ sub move_img_up {
 				 "You don't have access to reorder images in this article");
 
   my $imageid = $req->cgi->param('imageid');
-  my @images = $article->images;
+  my @images = $self->get_images($article);
   my ($imgindex) = grep $images[$_]{id} == $imageid, 0..$#images
     or return $self->edit_form($req, $article, $articles, "No such image");
   $imgindex > 0
@@ -2158,7 +2148,7 @@ sub move_img_down {
 				 "You don't have access to reorder images in this article");
 
   my $imageid = $req->cgi->param('imageid');
-  my @images = $article->images;
+  my @images = $self->get_images($article);
   my ($imgindex) = grep $images[$_]{id} == $imageid, 0..$#images
     or return $self->edit_form($req, $article, $articles, "No such image");
   $imgindex < $#images
@@ -2545,6 +2535,18 @@ sub flags {
   
   return map +{ id => $_, desc => $flags{$_} },
     sort { lc($flags{$a}) cmp lc($flags{$b}) }@valid;
+}
+
+sub get_images {
+  my ($self, $article) = @_;
+
+  $article->images;
+}
+
+sub validate_image_name {
+  my ($self, $name, $rmsg) = @_;
+
+  1; # no extra validation
 }
 
 1;

@@ -529,6 +529,15 @@ sub baseActs {
      ( \&iter_all_kids_of, 'ofallkid', 'allkids_of' ), 
      DevHelp::Tags->make_iterator2
      ( \&iter_inlines, 'inline', 'inlines' ),
+     gimage => 
+     sub {
+       my ($name, $align, $rest) = split ' ', $_[0], 3;
+
+       my $im = $self->get_gimage($name)
+	 or return '';
+
+       $self->_format_image($im, $align, $rest);
+     },
     );
 }
 
@@ -766,6 +775,42 @@ sub remove_block {
   } 
 
   $$body = $out;
+}
+
+sub get_gimage {
+  my ($self, $name) = @_;
+
+  unless ($self->{gimages}) {
+    require Images;
+    my @gimages = Images->getBy(articleId => -1);
+    my %gimages = map { $_->{name} => $_ } @gimages;
+    $self->{gimages} = \%gimages;
+  }
+
+  return $self->{gimages}{$name};
+}
+
+sub _format_image {
+  my ($self, $im, $align, $rest) = @_;
+
+  if ($align && exists $im->{$align}) {
+    return escape_html($im->{$align});
+  }
+  else {
+    my $html = qq!<img src="/images/$im->{image}" width="$im->{width}"!
+      . qq! height="$im->{height}" alt="! . escape_html($im->{alt})
+	     . qq!"!;
+    $html .= qq! align="$align"! if $align && $align ne '-';
+    unless (defined($rest) && $rest =~ /\bborder=/i) {
+      $html .= ' border="0"';
+    }
+    $html .= " $rest" if defined $rest;
+    $html .= qq! />!;
+    if ($im->{url}) {
+      $html = qq!<a href="$im->{url}">$html</a>!;
+    }
+    return $html;
+  }
 }
 
 1;

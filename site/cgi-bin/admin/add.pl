@@ -29,7 +29,7 @@ my $id = $cgi->param('id');
 my $articles = 'Articles'; # for a later switch to proper objects, I hope
 my $result;
 if (defined $id && $id =~ /\d/ && $id == -1) {
-  my $obj = get_class('BSE::Edit::Article', $cfg)
+  my $obj = get_class('BSE::Edit::Site', $cfg)
     or die "Cannot get sections class";
   $result = $obj->edit_sections($req, $articles);
 }

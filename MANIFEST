@@ -15,6 +15,7 @@ schema/mysql_build.pl   # builds site/util/mysql.str
 site/cgi-bin/admin/add.pl
 site/cgi-bin/admin/admin.pl
 site/cgi-bin/admin/adminusers.pl
+site/cgi-bin/admin/changepw.pl
 site/cgi-bin/admin/datadump.pl
 site/cgi-bin/admin/generate.pl
 site/cgi-bin/admin/imageclean.pl
@@ -41,6 +42,7 @@ site/cgi-bin/modules/BSE/AdminLogon.pm
 site/cgi-bin/modules/BSE/AdminMenu.pm
 site/cgi-bin/modules/BSE/AdminUsers.pm
 site/cgi-bin/modules/BSE/Cfg.pm
+site/cgi-bin/modules/BSE/ChangePW.pm
 site/cgi-bin/modules/BSE/Custom.pm
 site/cgi-bin/modules/BSE/CustomBase.pm
 site/cgi-bin/modules/BSE/DB.pm
@@ -50,6 +52,7 @@ site/cgi-bin/modules/BSE/Edit/Article.pm
 site/cgi-bin/modules/BSE/Edit/Base.pm
 site/cgi-bin/modules/BSE/Edit/Catalog.pm
 site/cgi-bin/modules/BSE/Edit/Product.pm
+site/cgi-bin/modules/BSE/Edit/Site.pm
 site/cgi-bin/modules/BSE/EmailBlackEntry.pm
 site/cgi-bin/modules/BSE/EmailBlacklist.pm
 site/cgi-bin/modules/BSE/EmailRequest.pm
@@ -204,6 +207,7 @@ site/templates/admin/article_img.tmpl
 site/templates/admin/base.tmpl
 site/templates/admin/catalog.tmpl  # embedded in the shopadmin catalog/product display
 site/templates/admin/catalog_custom.tmpl
+site/templates/admin/changepw.tmpl
 site/templates/admin/edit_0.tmpl
 site/templates/admin/edit_1.tmpl
 # site/templates/admin/edit_2.tmpl

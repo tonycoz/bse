@@ -58,29 +58,6 @@ sub generate_low {
   return BSE::Template->replace($template, $self->{cfg}, \%acts);
 }
 
-sub _format_image {
-  my ($im, $align, $rest) = @_;
-
-  if ($align && exists $im->{$align}) {
-    return escape_html($im->{$align});
-  }
-  else {
-    my $html = qq!<img src="/images/$im->{image}" width="$im->{width}"!
-      . qq! height="$im->{height}" alt="! . escape_html($im->{alt})
-	     . qq!"!;
-    $html .= qq! align="$align"! if $align && $align ne '-';
-    unless (defined($rest) && $rest =~ /\bborder=/i) {
-      $html .= ' border="0"';
-    }
-    $html .= " $rest" if defined $rest;
-    $html .= qq! />!;
-    if ($im->{url}) {
-      $html = qq!<a href="$im->{url}">$html</a>!;
-    }
-    return $html;
-  }
-}
-
 sub tag_title {
   my ($article, $images, $args, $acts, $funcname, $templater) = @_;
 
@@ -424,7 +401,7 @@ HTML
 	 $im = $images[$image_index];
        }
 
-       return _format_image($im, $align, $rest);
+       return $self->_format_image($im, $align, $rest);
      },
      imagen => 
      sub {
@@ -434,7 +411,7 @@ HTML
        my ($im) = grep lc $name eq lc $_->{name}, @images
 	 or return '';
 
-       _format_image($im, $align, $rest);
+       $self->_format_image($im, $align, $rest);
      },
      ifImage => sub { $_[0] >= 1 && $_[0] <= @images },
      ifImages => sub { @images },

@@ -3,7 +3,7 @@ use strict;
 use BSE::Test;
 
 ++$|;
-print "1..47\n";
+print "1..49\n";
 my $baseurl = base_url;
 ok($baseurl =~ /^http:/, "basic check of base url");
 my $ua = make_ua;
@@ -49,3 +49,6 @@ fetch_ok($ua, "subscriptions", "$baseurl/cgi-bin/admin/subs.pl",
 	 qr/Subscriptions\s+List/);
 fetch_ok($ua, "reports", "$baseurl/cgi-bin/admin/report.pl",
 	 qr/Reports/);
+# does a refresh unless the user is logged on
+fetch_ok($ua, "changepw", "$baseurl/cgi-bin/admin/changepw.pl",
+	 qr!Change Password|<html></html>!i);

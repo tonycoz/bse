@@ -1,8 +1,6 @@
 package BSE::AdminMenu;
 use strict;
 use BSE::Util::Tags;
-use HTML::Entities;
-use URI::Escape;
 use BSE::Permissions;
 
 my %actions =

@@ -8,11 +8,12 @@
 </head>
 
 <body>
-<h1>Administration Page</h1>
+<h1>Manage Sections</h1>
 <:ifMessage:> 
 <p><b><:message:></b></p>
 <:or:><:eif:>
-<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | </p>
+<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | 
+<a href="<:script:>?id=-1&_t=img">Global Images</a> | </p>
 
 <:if Or [iadminuser_count] [iadmingroup_count]:>
       <form action="/cgi-bin/admin/adminusers.pl">

@@ -10,7 +10,7 @@ use Product;
 use Constants qw(:shop $CGI_URI);
 use BSE::Template;
 use CGI::Cookie;
-use Util;
+use Util qw(refresh_to);
 use BSE::Mail;
 use BSE::Shop::Util qw/shop_cart_tags cart_item_opts nice_options total 
                        basic_tags load_order_fields need_logon/;
@@ -218,8 +218,7 @@ sub remove_item {
   }
   $session{cart} = \@cart;
 
-  print "Refresh: 0; url=\"$ENV{SCRIPT_NAME}\"\n";
-  print "Content-Type: text/html\n\n<html> </html>\n";
+  refresh_to($ENV{SCRIPT_NAME});
 }
 
 sub checkupdate {
@@ -281,8 +280,20 @@ sub checkout {
 		   'checkout'),
      basic_tags(\%acts),
      message => sub { $message },
-     old => sub { CGI::escapeHTML($olddata ? param($_[0]) : 
-		    $user && defined $user->{$_[0]} ? $user->{$_[0]} : '') },
+     old => 
+     sub { 
+       my $value;
+
+       if ($olddata) {
+	 $value = param($_[0]);
+       }
+       else {
+	 $value = $user && defined $user->{$_[0]} ? $user->{$_[0]} : '';
+       }
+       
+       defined $value or $value = '';
+       CGI::escapeHTML($value);
+     },
      $cust_class->checkout_actions(\%acts, \@cart, \@cart_prods, 
 				   \%custom_state, $CGI::Q, $cfg),
      ifMultPaymentTypes => @payment_types > 1,

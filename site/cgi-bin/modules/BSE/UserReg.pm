@@ -88,10 +88,12 @@ sub logon {
   $user->{previousLogon} = $user->{lastLogon};
   $user->{lastLogon} = now_datetime;
   $user->save;
+  my $lifetime = $cfg->entry('basic', 'cookie_lifetime') || '+3h';
   use CGI::Cookie;
   print "Set-Cookie: ",CGI::Cookie->new(-name=>"userid", 
 					-value=>$user->{userId},
-					-path=>"/"),"\n";
+					-path=>"/",
+					-expires=>$lifetime),"\n";
 
   _got_user_refresh($session, $cgi, $cfg);
 }
@@ -131,22 +133,24 @@ sub _got_user_refresh {
     }
   }
   my $refresh = $cgi->param('r');
+  unless ($refresh) {
+    if ($session->{userid}) {
+      $refresh = "$ENV{SCRIPT_NAME}?userpage=1";
+    }
+    else {
+      $refresh = "$ENV{SCRIPT_NAME}?show_logon=1";
+    }
+  }
   if ($need_magic) {
     my $url = $onbase ? $securl : $baseurl;
     my $finalbase = $onbase ? $baseurl : $securl;
-    $refresh ||= "$ENV{SCRIPT_NAME}?userpage=1";
     $refresh = $finalbase . $refresh unless $refresh =~ /^\w+:/;
     $url .= "$ENV{SCRIPT_NAME}?setcookie=".$session->{_session_id};
     $url .= "&r=".CGI::escape($refresh);
     refresh_to($url);
   }
   else {
-    if ($refresh) {
-      refresh_to($refresh);
-    }
-    else {
-      refresh_to($cfg->entryErr('site', 'url') . "$ENV{SCRIPT_NAME}?userpage=1");
-    }
+    refresh_to($refresh);
   }
 }
 
@@ -159,17 +163,29 @@ sub set_cookie {
 				$msgs->(nocookie=>"No cookie provided"));
   my %newsession;
   BSE::Session->change_cookie($session, $cfg, $cookie, \%newsession);
+  if (exists $session->{cart} && !exists $newsession{cart}) {
+    $newsession{cart} = $session->{cart};
+    $newsession{custom} = $session->{custom} if exists $session->{custom};
+  }
   my $refresh = $cgi->param('r') 
     or return $self->show_logon($session, $cgi, $cfg, 
 				$msgs->(norefresh=>"No refresh provided"));
   my $userid = $newsession{userid};
   if ($userid) {
     my $user = SiteUsers->getBy(userId => $userid);
+    my $lifetime = $cfg->entry('basic', 'cookie_lifetime') || '+3h';
     use CGI::Cookie;
     print "Set-Cookie: ",CGI::Cookie->new(-name=>"userid", 
 					  -value=>$userid,
-					  -path=>"/"),"\n";
+					  -path=>"/",
+					  -expires=>$lifetime),"\n";
   }
+  else {
+    # clear it 
+    print "Set-Cookie: ",CGI::Cookie->new(-name=>"userid", 
+					  -value=>'',
+					  -path=>"/"),"\n";
+ }
   refresh_to($refresh);
 }
 
@@ -185,7 +201,8 @@ sub logoff {
   print "Set-Cookie: ",CGI::Cookie->new(-name=>"userid", 
 					-value=>'',
 					-path=>"/"),"\n";
-  return $self->show_logon($session, $cgi, $cfg);
+
+  _got_user_refresh($session, $cgi, $cfg);
 }
 
 sub show_register {

@@ -10,9 +10,110 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
-Make sure you update your config file.
+=head2 0.13_04
+
+I'm still looking for feedback on article image names and the
+interaction with automatic image placement.  See the options described
+under the 0.13_02 release notes.
+
+This development release has some major changes.
+
+=over
+
+=item *
+
+the delete item handler in the shop now uses the common refresh code,
+preventing problems with Safari.
+
+=item *
+
+the <:old:> tag on the checkout page didn't work correctly in some
+cases
+
+=item *
+
+moved the response dispatch code template to BSE::Template to avoid
+duplication
+
+=item *
+
+admin/menu.tmpl now uses admin/base.tmpl
+
+=item *
+
+cookie handling was broken in various annoying ways:
+
+=over
+
+=item *
+
+the userid cookie didn't have a timeout
+
+=item *
+
+the change to the userid cookie wasn't
+propagated to the secure side when the user logged out (or to the
+non-secure side if they used a secure-side logout)
+
+=item *
+
+The wrong path was used when propagating the sessionid to the secure
+side, making it almost completely pointless
+
+=item *
+
+The cart is now copied from the old secure side cookie, if any.
+
+=back
+
+=item *
+
+admin users can now change their own passwords
+
+=item *
+
+the templater now supports a new type of conditional, a switch statement:
+
+  <:switch:>
+   text here is ignored
+   <:case conditional-function1 conditional-args1:> result text 1
+   <:case conditional-function1 conditional-args2:> result text 2
+   ...
+  <:endswitch:>
+
+Each condition is checked in order.
+
+A special:
+
+   <:case default:>
+
+always returns (and should always be last, since all conditions after
+it are ignored.)
+
+If there is no tag for the given condition-function on the page then
+the text of the switch tag will be returned, hopefully to be replaced
+by a second pass during processing of a pre-processed page (like the
+checkout page.)
+
+Hopefully this will reduce the need for nested ifs, but will probably
+introduce it's own problems related to partially generated pages <sigh>.
+
+Since the code attempts to do the innermost switch first it shouldn't
+have nesting problems for complete pages, but may have some when a
+page is partially generated, like with the shop and search templates.
+If this becomes a problem I'll add a version with 'names' to act as a
+nesting aid, but it will be ugly.
+
+=item *
+
+you can now manage site global images, accessible with the gimage[]
+tag from body text, and the <:gimage name ... :> from templates
+
+=back
 
 =head2 0.13_03
+
+Make sure you update your config file.
 
 =over
 
