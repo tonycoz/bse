@@ -379,9 +379,15 @@ sub save_old_article {
   # save the image list
   my @images = $imageEditor->images();
   my $images = Images->new;
+  my %imagefiles = map { $_->{image}, 1 } @images;
+
   # out with the old
   my @oldimages = $images->getBy('articleId', $id);
   for my $image (@oldimages) {
+    unless ($imagefiles{$image->{image}}) {
+      # image not used anymore
+      unlink "$IMAGEDIR/$image->{image}";
+    }
     $image->remove();
   }
   # in with the new
