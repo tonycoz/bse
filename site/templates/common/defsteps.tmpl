@@ -1,0 +1,45 @@
+<:wrap base.tmpl:> <:embed start:><:admin:> 
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr> 
+    <td bgcolor="#CCCCFF" width="80%" height="24">&nbsp;&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="4"><b><:title:></b></font></td>
+    <td height="24">&nbsp;<a href="/cgi-bin/printable.pl?id=<:article id:>"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#999999">printable 
+      version</font></a></td>
+  </tr>
+  <tr> 
+    <td bgcolor="#999999" colspan="2" height="1"><img src="/images/trans_pixel.gif" width="24" height="1" border="0"></td>
+  </tr>
+  <tr> 
+    <td colspan="2"> 
+      <table width="100%" border="0" cellspacing="0" cellpadding="0">
+        <tr> 
+          <td width="100"><img src="/images/trans_pixel.gif" width="100" height="10" border="0"></td>
+          <td bgcolor="#333399" width="100%">&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2">/ 
+            <a href="<:ifAdmin:>/cgi-bin/admin/admin.pl?id=1<:or:>/<:eif:>"><font color="#FFFFFF">Home</font></a> 
+            / <:iterator begin crumbs:> <a href="<:url crumbs:>"><font color="#FFFFFF"><:crumbs 
+            title:></font></a> / <:iterator end crumbs:></font></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font></p>
+<:embed end:><:ifAdmin:><:if Allkids:> 
+<p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Reorder child articles: 
+  <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&sort=title&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
+  title</a> | <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&sort=date&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
+  date</a> | <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&reverse=1&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">reverse 
+  order</a></font></p>
+<:or Allkids:><:eif Allkids:><:or:><:eif:><:iterator begin allkids:> 
+<p><a href="<:url allkid:>"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><:allkid 
+  title:></font></b></a><br>
+  <:if Allkid summaryLength:><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:summary allkid:></font><:or 
+  Allkid:><:eif Allkid:></p>
+<:iterator separator allkids:><:iterator end allkids:> 
+<:if Stepparents:>
+<p>The following other related sections may be of interest:</p>
+<ul>
+<:iterator begin stepparents:>
+<li><a href="<:url stepparent:>"><:stepparent title:></a>
+<:iterator end stepparents:>
+</ul>
+<:or Stepparents:><:eif Stepparents:>

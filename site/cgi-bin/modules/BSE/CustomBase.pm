@@ -47,6 +47,12 @@ sub purchase_actions {
   return;
 }
 
+sub base_tags {
+  my ($class, $articles, $acts, $article, $embedded) = @_;
+
+  return ();
+}
+
 1;
 
 =head1 NAME
@@ -111,6 +117,10 @@ or remove them, depending on the products bought.
 =item BSE::Custom->purchase_actions($acts, $items, $products, $state)
 
 Defines extra tags for use on the checkout page.
+
+=item BSE::Custom->base_tags($articles, $acts, $article, $embedded)
+
+Defines extra tags for use on any page.
 
 =back
 

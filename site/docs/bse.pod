@@ -10,6 +10,56 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.11_05
+
+This is a test release.
+
+=over
+
+=item *
+
+added base_tags() to BSE::Custom (tags available during static
+generation of most pages.)
+
+=item *
+
+step(kids|parents) now available to all articles, though you may have
+some problems connecting the shop articles (catalogs,products) to
+others
+
+=item *
+
+standard date tag available in most places
+
+=item *
+
+the <:summary:> tag now takes an optional which parameter, defaulting
+to "child".
+
+=item *
+
+you can now specify the default template for children of a given
+article.
+
+=item *
+
+you can specify extra template directories to search while editing a
+given article.
+
+=item *
+
+moved the side bar logon form to it's own article (loaded by
+initial.pl) and added it to the side bar subsection.
+
+=item *
+
+shortened the long message used in the refresh back to user.pl when
+the user has file based products in their cart, but hasn't logged in.
+This was causing problems with IE6.  It now attempts to pull a longer
+message out of the config file.
+
+=back
+
 =head2 0.11_03
 
 =over

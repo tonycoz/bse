@@ -138,6 +138,7 @@ site/templates/checkoutconfirm_base.tmpl
 site/templates/checkoutcard_base.tmpl
 site/templates/checkoutfinal_base.tmpl
 site/templates/common/default.tmpl
+site/templates/common/defsteps.tmpl
 site/templates/common/embedded_subsect.tmpl
 site/templates/common/news_item.tmpl
 site/templates/common/sidebar.tmpl
@@ -182,6 +183,7 @@ site/templates/search_base.tmpl
 site/templates/shop_help.tmpl
 site/templates/shop_sect.tmpl
 site/templates/shopitem.tmpl
+site/templates/sidebar/logon.tmpl
 site/templates/user/logon_base.tmpl
 site/templates/user/options_base.tmpl
 site/templates/user/register_base.tmpl

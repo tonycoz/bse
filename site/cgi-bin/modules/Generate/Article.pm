@@ -22,31 +22,6 @@ sub edit_link {
   return "$CGI_URI/admin/add.pl?id=$id";
 }
 
-sub summarize {
-  my ($self, $articles, $text, $length) = @_;
-
-  # remove any block level formatting
-  $self->remove_block(\$text);
-
-  $text =~ tr/\n\r / /s;
-
-  if (length $text > $length) {
-    $text = substr($text, 0, $length);
-    $text =~ s/\s+\S+$//;
-
-    # roughly balance [ and ]
-    my $temp = $text;
-    1 while $temp =~ s/\s\[[^\]]*\]//; # eliminate matched
-    my $count = 0;
-    ++$count while $temp =~ s/\w\[[^\]]*$//; # count unmatched
-
-    $text .= ']' x $count;
-    $text .= '...';
-  }
-
-  return $self->format_body({}, $articles, $text, 'tr', 0);
-}
-
 sub make_article_body {
   my ($self, $acts, $articles, $article, $auto_images, @images) = @_;
 
@@ -114,7 +89,15 @@ sub baseActs {
   my $had_image_tags = 0;
   my @files = sort { $b->{displayOrder} <=> $a->{displayOrder} }
     ArticleFiles->getBy(articleId=>$article->{id});
-
+  
+  my @stepkids;
+  my @allkids;
+  my @stepparents;
+  if (UNIVERSAL::isa($article, 'Article')) {
+    @stepkids	  = $article->visible_stepkids;
+    @allkids	  = $article->all_visible_kids;
+    @stepparents  = $article->step_parents;
+  }
   # separate these so the closures can see %acts
   my %acts =
     (
@@ -166,12 +149,6 @@ sub baseActs {
        @children <= $article->{threshold};
      },
      ifChildren => sub { scalar @children },
-     summary =>
-     sub {
-       my $child = $children[$child_index];
-       return $self->summarize($articles, $child->{body}, 
-			       $child->{summaryLength})
-     },
      keywords => sub { my $keywords = $article->{keyword};
                        $keywords =~ s/\S\s+/, /g;
                        return ",$keywords"; },
@@ -356,6 +333,9 @@ HTML
      ifImage => sub { $_[0] >= 1 && $_[0] <= @images },
      ifImages => sub { @images },
      BSE::Util::Tags->make_iterator(\@files, 'file', 'files'),
+     BSE::Util::Tags->make_iterator(\@stepkids, 'stepkid', 'stepkids'),
+     BSE::Util::Tags->make_iterator(\@allkids, 'allkid', 'allkids'),
+     BSE::Util::Tags->make_iterator(\@stepparents, 'stepparent', 'stepparents'),
     );
 
   if ($article->{link} =~ /^\w+:/) {

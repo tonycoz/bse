@@ -116,6 +116,23 @@ Minimum password length in characters.  Default: 4.
 
 =back
 
+=head2 [children of id]
+
+Where I<id> is the identifier for an article.
+
+=over
+
+=item template
+
+the name of the default template for children of the given parent
+
+=item template_dirs
+
+a comma-separated list of extra directories under $TMPLDIR to search
+for templates that can be used for children of the given parent article.
+
+=back
+
 =head2 [messages]
 
 This can be used to control translation of error messages.  Each key

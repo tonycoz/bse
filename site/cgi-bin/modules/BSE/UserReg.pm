@@ -38,6 +38,10 @@ sub show_logon {
   my ($self, $session, $cgi, $cfg, $message) = @_;
 
   $message ||= $cgi->param('message') || '';
+  if (my $msgid = $cgi->param('mid')) {
+    my $temp = $cfg->entry("messages", $msgid);
+    $message = $temp if $temp;
+  }
   my %acts;
   %acts =
     (

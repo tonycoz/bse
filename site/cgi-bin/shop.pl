@@ -229,7 +229,7 @@ sub checkout {
   my @cart_prods = map { Products->getByPkey($_->{productId}) } @cart;
 
   if (need_logon($cfg, \@cart, \@cart_prods, \%session)) {
-    refresh_logon("Some of the products in your cart include downloadable files.  Please logon or register before checkout.");
+    refresh_logon("register before checkout.", 'shop/fileitems');
     return;
   }
 
@@ -822,11 +822,12 @@ sub epoch_to_sql {
 }
 
 sub refresh_logon {
-  my ($msg) = @_;
+  my ($msg, $msgid) = @_;
   my $url = $URLBASE."/cgi-bin/user.pl";
   my %parms;
   $parms{r} = $SECURLBASE."/cgi-bin/shop.pl?checkout=1";
   $parms{message} = $msg if $msg;
+  $parms{mid} = $msgid if $msgid;
   $url .= "?" . join("&", map "$_=".CGI::escape($parms{$_}), keys %parms);
   
   refresh_to($url);

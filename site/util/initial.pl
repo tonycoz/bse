@@ -414,6 +414,34 @@ EOS
     level=>3,
     listed=>0,
    },
+   {
+    id=>8,
+    parentid=>5,
+    displayOrder=>20000,
+    title=>'[sidebar logon]',
+    titleImage=>'',
+    body=><<'EOS',
+This body text is not used.
+
+This article puts a registration/login bar in the sidebar
+EOS
+    imagePos=>'tr',
+    release=>'0000-00-00 00:00:00',
+    expire=>'9999-12-31 23:59:59',
+    lastModified=>'2001-12-05 16:35:00',
+    keyword=>'',
+    template=>'sidebar/logon.tmpl',
+    link=>'',
+    admin=>$CGI_URI.'/admin/admin.pl?id=8',
+    threshold=>1000, # ignored
+    summaryLength=>1000, #ignored
+    generator=>'Generate::Article',
+    thumbImage=>'',
+    thumbWidth=>0,
+    thumbHeight=>0,
+    level=>3,
+    listed=>1,
+   },
   );
 
 my $dbh = DBI->connect($DSN, $UN, $PW)

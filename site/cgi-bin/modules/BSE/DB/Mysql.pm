@@ -15,22 +15,11 @@ $VERSION = 1.01;
 my %statements =
   (
    Articles => 'select * from article',
-   Images => 'select * from image',
-   
    replaceArticle =>
      'replace article values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
-   replaceImage =>
-     'replace image values (?,?,?,?,?,?,?)',
-   
    addArticle =>  
      'insert article values (null, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
-   addImage => 'insert image values(null, ?, ?, ?, ?, ?, ?)',
-   
    deleteArticle => 'delete from article where id = ?',
-   deleteImage => 'delete from image where id = ?',
-   
-   getImageByArticleId => 'select * from image where articleId = ?',
-   
    getArticleByPkey => 'select * from article where id = ?',
    
    getArticleByLevel => 'select * from article where level = ?',
@@ -40,7 +29,23 @@ select ar.* from article ar, other_parents op
   where ar.id = op.parentId and op.childId = ?
 order by op.childDisplayOrder desc
 EOS
+   'Articles.stepKids' => <<EOS,
+select ar.* from article ar, other_parents op
+   where op.childId = ar.id and op.parentId = ?
+EOS
+   'Articles.visibleStepKids' => <<EOS,
+select ar.* from article ar, other_parents op
+   where op.childId = ar.id 
+     and op.parentId = ? and ? between op.release and op.expire
+EOS
 
+   Images => 'select * from image',
+   replaceImage =>
+     'replace image values (?,?,?,?,?,?,?)',
+   addImage => 'insert image values(null, ?, ?, ?, ?, ?, ?)',
+   deleteImage => 'delete from image where id = ?',
+   getImageByArticleId => 'select * from image where articleId = ?',
+   
    dropIndex => 'delete from searchindex',
    insertIndex => 'insert searchindex values(?, ?, ?, ?)',
    searchIndex => 'select * from searchindex where id = ?',

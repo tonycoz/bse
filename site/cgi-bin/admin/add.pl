@@ -3,7 +3,7 @@
 use strict;
 use FindBin;
 use lib "$FindBin::Bin/../modules";
-use Constants qw(:edit :session $CGI_URI $IMAGES_URI);
+use Constants qw(:edit $CGI_URI $IMAGES_URI);
 
 use Articles;
 use Article;
@@ -12,45 +12,15 @@ use Image;
 use Squirrel::Template;
 use CGI qw(:standard);
 use CGI::Cookie;
-require $SESSION_REQUIRE;
 use BSE::DB;
 use Carp 'verbose';
 use Squirrel::ImageEditor;
+use BSE::Cfg;
+use BSE::Session;
 
-# session management
-# this means all the cookies are handled here
-# means we only send one cookie to the user too
-my %cookies = fetch CGI::Cookie;
-my $sessionid;
-$sessionid = $cookies{sessionid}->value if exists $cookies{sessionid};
+my $cfg = BSE::Cfg->new;
 my %session;
-
-my $dh = BSE::DB->single;
-eval {
-  tie %session, $SESSION_CLASS, $sessionid,
-    {
-     Handle=>$dh->{dbh},
-     LockHandle=>$dh->{dbh}
-    };
-};
-if ($@ && $@ =~ /Object does not exist/) {
-  # try again
-  undef $sessionid;
-  tie %session, $SESSION_CLASS, $sessionid,
-    {
-     Handle=>$dh->{dbh},
-     LockHandle=>$dh->{dbh}
-    };
-}
-unless ($sessionid) {
-  # save the new sessionid
-  print "Set-Cookie: ",CGI::Cookie->new(-name=>'sessionid', -value=>$session{_session_id}),"\n";
-}
-# this shouldn't be necessary, but it stopped working and this fixed it
-# <sigh>
-END {
-  untie %session;
-}
+BSE::Session->tie_it(\%session, $cfg);
 
 use Constants qw(%LEVEL_DEFAULTS $SHOPID $PRODUCTPARENT $LINK_TITLES);
 my %levels = %LEVEL_DEFAULTS;
@@ -196,6 +166,21 @@ else {
       if $id == $SHOPID && -e "$TMPLDIR/shop_sect.tmpl";
   }
 }
+my $def_template;
+if ($parent && $parent->{id}) {
+  my $section = "children of $parent->{id}";
+  $def_template = $cfg->entry($section, "template");
+  if (my $dirs = $cfg->entry($section, "template_dirs")) {
+    for my $dir (split /,/, $dirs) {
+      next unless $dir && -d "$TMPLDIR/$dir";
+      if (opendir CUST_TEMPL, "$TMPLDIR/$dir") {
+	push(@templates, sort map "$dir/$_",
+	     grep -f "$TMPLDIR/$dir/$_" && /\.tmpl$/i, readdir CUST_TEMPL);
+	closedir CUST_TEMPL;
+      }
+    }
+  }
+}
 
 unless ($level_cache{$level}{edit}) {
   my $checkfor = "admin/edit_$level";
@@ -260,7 +245,8 @@ my $child_index = -1;
    templates=>
    sub {
      return popup_menu(-name=>'template', -values=>\@templates,
-                       -default=>$id?$article->{template}:$levels{$level}{template});
+                       -default=>$id?$article->{template}:
+		       ($def_template || $levels{$level}{template}));
    },
    titleImages=>
    sub {

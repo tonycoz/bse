@@ -86,31 +86,6 @@
             </table>
             <br>
             <:eif Level2:><:iterator separator level1:><:iterator end level1:> 
-<script language="JavaScript">
-<!--
-// extract the userid cookie, if any, and either present a logon form,
-// or a logoff button
-var cookies = document.cookie;
-var start = cookies.indexOf("userid=");
-var userid = '';
-if (start != -1) {
-  start += 7;
-  var end = cookies.indexOf(';', start);
-  if (end == -1) end = cookies.length;
-  userid = cookies.substring(start, end);
-}
-if (userid != '') {
-  document.write('<form action="/cgi-bin/user.pl" method="post">');
-  document.write('<table><tr><td align="left"><input type="submit" name="logoff" value="Logoff" /></td><td align="right"><input type="submit" name="userpage" value="Orders" /></td></tr></table></form>');
-}
-else {
-  document.write('<form action="/cgi-bin/user.pl" method="post">');
-  document.write('<table><tr><th><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">User:</font></th><td><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><input type="text" name="userid" size="10" /></font></td></tr>');
-  document.write('<tr><th><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Password:</font></th><td><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><input type="password" name="password" size="10" /></font></td></tr>');
-  document.write('<tr><td align="left"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><input type="submit" name="logon" value="Logon" /></font></td><td align="right"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><input type="submit" name="show_register" value="Register" /></font></td></tr></table></form>');
-}
-//-->
-</script>
             <:embed 5:> </td>
         </tr>
       </table>

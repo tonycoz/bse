@@ -29,37 +29,38 @@ sub _get_parms {
   @out;
 }
 
-sub basic {
-  my ($class, $acts, $cgi) = @_;
+sub static {
+  my ($class, $acts) = @_;
 
   return
     (
      date =>
      sub {
-       my ($func, $args) = split ' ', $_[0];
+       my ($fmt, $func, $args) = 
+	 $_[0] =~ m/(?:\"([^\"]+)\"\s+)?(\S+)(?:\s+(\S+.*))?/;
+       $fmt = "%d-%b-%Y" unless defined $fmt;
        require 'POSIX.pm';
        exists $acts->{$func}
 	 or return "<:date $_[0]:>";
        my $date = $acts->{$func}->($args)
 	 or return '';
-       my ($year, $month, $day) = $date =~ /(\d+)\D+(\d+)\D+(\d+)/;
+       my ($year, $month, $day, $hour, $min, $sec) = 
+	 $date =~ /(\d+)\D+(\d+)\D+(\d+)(?:\D+(\d+)\D+(\d+)\D+(\d+))/;
+       $hour = $min = $sec = 0 unless defined $sec;
        $year -= 1900;
        --$month;
-       return POSIX::strftime('%d-%b-%Y', 0, 0, 0, $day, $month, $year, 0, 0);
+       return POSIX::strftime($fmt, 0, 0, 0, $day, $month, $year, 0, 0);
      },
      money =>
      sub {
        my ($func, $args) = split ' ', $_[0];
+       $args = '' unless defined $args;
        exists $acts->{$func}
-	 or return "** $func not found for money **";
+	 or return "<: money $func $args :>";
        my $value = $acts->{$func}->($args);
        defined $value
 	 or return '';
        sprintf("%.02f", $value/100.0);
-     },
-     script =>
-     sub {
-       $ENV{SCRIPT_NAME}
      },
      ifEq =>
      sub {
@@ -73,12 +74,6 @@ sub basic {
 	 or die; # leaves if in place
        $left =~ $right;
      },
-     cgi =>
-     sub {
-       $cgi or return '';
-       my @value = $cgi->param($_[0]);
-       CGI::escapeHTML("@value");
-     },
      _format => 
      sub {
        my ($value, $fmt) = @_;
@@ -86,6 +81,25 @@ sub basic {
 	 return CGI::escape($_[0]);
        }
        return $_[0];
+     },
+    );  
+}
+
+sub basic {
+  my ($class, $acts, $cgi) = @_;
+
+  return
+    (
+     $class->static($acts),
+     script =>
+     sub {
+       $ENV{SCRIPT_NAME}
+     },
+     cgi =>
+     sub {
+       $cgi or return '';
+       my @value = $cgi->param($_[0]);
+       CGI::escapeHTML("@value");
      },
     );
 }

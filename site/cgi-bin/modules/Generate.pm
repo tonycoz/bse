@@ -4,6 +4,7 @@ use Articles;
 use CGI ();
 use Constants qw(%EXTRA_TAGS $IMAGEDIR $LOCAL_FORMAT $TMPLDIR $BODY_EMBED 
                  $EMBED_MAX_DEPTH $HAVE_HTML_PARSER);
+use BSE::Custom;
 
 my $excerptSize = 300;
 
@@ -26,6 +27,31 @@ sub make_entities {
   $text =~ s/\&#8217;/'/g;
 
   return $text;
+}
+
+sub summarize {
+  my ($self, $articles, $text, $length) = @_;
+
+  # remove any block level formatting
+  $self->remove_block(\$text);
+
+  $text =~ tr/\n\r / /s;
+
+  if (length $text > $length) {
+    $text = substr($text, 0, $length);
+    $text =~ s/\s+\S+$//;
+
+    # roughly balance [ and ]
+    my $temp = $text;
+    1 while $temp =~ s/\s\[[^\]]*\]//; # eliminate matched
+    my $count = 0;
+    ++$count while $temp =~ s/\w\[[^\]]*$//; # count unmatched
+
+    $text .= ']' x $count;
+    $text .= '...';
+  }
+
+  return $self->format_body({}, $articles, $text, 'tr', 0);
 }
 
 # attempts to move the given position forward if it's within a HTML tag,
@@ -427,6 +453,8 @@ sub baseActs {
     (
      %extras,
 
+     BSE::Custom->base_tags($articles, $acts, $article, $embedded),
+     BSE::Util::Tags->static($acts),
      # for embedding the content from children and other sources
      ifEmbedded=> sub { $embedded },
      embed => sub {
@@ -436,6 +464,19 @@ sub baseActs {
      },
      ifCanEmbed=> sub { $self->{depth} <= $self->{maxdepth} },
 
+     summary =>
+     sub {
+       my $which = shift;
+       $which or $which = "child";
+       $acts->{$which}
+	 or return "<:summary $which Cannot find $which:>";
+       my $id = $acts->{$which}->("id")
+	 or return "<:summary $which No id returned :>";
+       my $article = $articles->getByPkey($id)
+	 or return "<:summary $which Cannot find article $id:>";
+       return $self->summarize($articles, $article->{body}, 
+			       $article->{summaryLength})
+     },
      ifAdmin => sub { $self->{admin} },
      
      # for generating the side menu
@@ -491,21 +532,6 @@ sub baseActs {
        my $item = $self->{admin} ? 'admin' : 'link';
        $acts->{$name} or return "<:url $name:>";
        return $acts->{$name}->($item);
-     },
-     money=>
-     sub {
-       my ($func, $rest) = split ' ', $_[0], 2;
-       $rest = '' unless defined $rest;
-       if (!$acts->{$func}) {
-	 #print STDERR "money used on $func which doesn't exist\n";
-	 return "<: money $func $rest :>";
-       }
-       my $value = $acts->{$func}->($rest);
-       unless (defined $value) {
-	 print STDERR "money used on $func which returned undef\n";
-	 return "<: money $func $rest :>";
-       }
-       return sprintf("%.2f", $value/100);
      },
      ifInMenu =>
      sub {

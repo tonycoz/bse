@@ -33,18 +33,25 @@ sub stepkids {
     require 'Products.pm';
     return Products->getSpecial('stepProducts', $self->{id});
   }
+  else {
+    return Articles->getSpecial('stepKids', $self->{id});
+  }
   return ();
 }
 
 sub visible_stepkids {
   my ($self) = @_;
 
+  use BSE::Util::SQL qw/now_sqldate/;
+  my $today = now_sqldate();
+
   if ($self->{generator} eq 'Generate::Catalog') {
-    use BSE::Util::SQL qw/now_sqldate/;
     require 'Products.pm';
-    my $today = now_sqldate();
 
     return Products->getSpecial('visibleStep', $self->{id}, $today);
+  }
+  else {
+    return Articles->getSpecial('visibleStepKids', $self->{id}, $today);
   }
   
   return ();
