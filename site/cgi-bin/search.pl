@@ -94,7 +94,7 @@ my %acts;
        return 0;
      }
    },
-   article => 
+   result => 
    sub { 
      return CGI::escapeHTML($articles[$article_index]{$_[0]});
    },
@@ -308,7 +308,7 @@ you choose I<Generate static pages> from the admin page.
 
 Iterates over the articles for the current page of results.
 
-=item article I<field>
+=item result I<field>
 
 Access to fields in the current search result article.
 
@@ -396,7 +396,7 @@ B<An example>
  <:if Results:>
   <dl>
   <:iterator begin results:>
-  <dt><:resultSeq:> <a href="<:article url:>"><:article title:></a>
+  <dt><:resultSeq:> <a href="<:result url:>"><:result title:></a>
   <dd><:excerpt:>
   <:iterator end results:>
   </dl>
