@@ -61,6 +61,13 @@ sub iter_cfgsection {
   return BSE::Sort::bse_sort(\%types, $args, @entries);
 }
 
+sub tag_adminbase {
+  my ($cfg, $arg) = @_;
+
+  require Util;
+  return escape_html(Util::admin_base_url($cfg));
+}
+
 sub static {
   my ($class, $acts, $cfg) = @_;
 
@@ -246,6 +253,7 @@ sub static {
        $out =~ s/\b(\w)/\U$1/g;
        $out;
      },
+     adminbase => [ \&tag_adminbase, $cfg ],
      
      _format => 
      sub {

@@ -11,7 +11,7 @@ use BSE::Mail;
 use BSE::EmailRequests;
 use BSE::Util::SQL qw/now_datetime/;
 use DevHelp::HTML;
-use Util;
+use BSE::CfgInfo qw(custom_class);
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -328,7 +328,7 @@ sub _get_user {
   }
   else {
     if ($cfg->entryBool('custom', 'user_auth')) {
-      my $custom = Util::custom_class($cfg);
+      my $custom = custom_class($cfg);
 
       return $custom->siteuser_auth($session, $cgi, $cfg);
     }
@@ -569,7 +569,7 @@ sub saveopts {
     }
   }
 
-  my $custom = Util::custom_class($cfg);
+  my $custom = custom_class($cfg);
   $custom->siteusers_changed($cfg);
 
   refresh_to($url);
@@ -755,7 +755,7 @@ sub register {
     
     _got_user_refresh($session, $cgi, $cfg);
 
-    my $custom = Util::custom_class($cfg);
+    my $custom = custom_class($cfg);
     $custom->siteusers_changed($cfg);
   }
   else {

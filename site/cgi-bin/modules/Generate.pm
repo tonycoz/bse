@@ -6,7 +6,7 @@ use Constants qw($IMAGEDIR $LOCAL_FORMAT $BODY_EMBED
 use DevHelp::Tags;
 use DevHelp::HTML;
 use BSE::Util::Tags;
-use Util;
+use BSE::CfgInfo qw(custom_class);
 
 my $excerptSize = 300;
 
@@ -32,10 +32,10 @@ sub make_entities {
 }
 
 sub summarize {
-  my ($self, $articles, $text, $length) = @_;
+  my ($self, $articles, $text, $acts, $length) = @_;
 
   # remove any block level formatting
-  $self->remove_block(\$text);
+  $self->remove_block($articles, $acts, \$text);
 
   $text =~ tr/\n\r / /s;
 
@@ -76,84 +76,84 @@ sub adjust_for_html {
   return $pos;
 }
 
-sub _make_hr {
-  my ($width, $height) = @_;
-  my $tag = "<hr";
-  $tag .= qq!width="$width"! if length $width;
-  $tag .= qq!height="$height"! if length $height;
-  $tag .= " />";
-  return $tag;
-}
+# sub _make_hr {
+#   my ($width, $height) = @_;
+#   my $tag = "<hr";
+#   $tag .= qq!width="$width"! if length $width;
+#   $tag .= qq!height="$height"! if length $height;
+#   $tag .= " />";
+#   return $tag;
+# }
 
-# produces a table, possibly with options for the <table> and <tr> tags
-sub _make_table {
-  my ($options, $text) = @_;
-  my $tag = "<table";
-  my $cellend = '';
-  my $cellstart = '';
-  if ($options =~ /=/) {
-    $tag .= " " . $options;
-  }
-  elsif ($options =~ /\S/) {
-    $options =~ s/\s+$//;
-    my ($width, $bg, $pad, $fontsz, $fontface) = split /\|/, $options;
-    for ($width, $bg, $pad, $fontsz, $fontface) {
-      $_ = '' unless defined;
-    }
-    $tag .= qq! width="$width"! if length $width;
-    $tag .= qq! bgcolor="$bg"! if length $bg;
-    $tag .= qq! cellpadding="$pad"! if length $pad;
-    if (length $fontsz || length $fontface) {
-      $cellstart = qq!<font!;
-      $cellstart .= qq! size="$fontsz"! if length $fontsz;
-      $cellstart .= qq! face="$fontface"! if length $fontface;
-      $cellstart .= qq!>!;
-      $cellend = "</font>";
-    }
-  }
-  $tag .= ">";
-  my @rows = split '\n', $text;
-  my $maxwidth = 0;
-  for my $row (@rows) {
-    my ($opts, @cols) = split /\|/, $row;
-    $tag .= "<tr";
-    if ($opts =~ /=/) {
-      $tag .= " ".$opts;
-    }
-    $tag .= "><td>$cellstart".join("$cellend</td><td>$cellstart", @cols)
-      ."$cellend</td></tr>";
-  }
-  $tag .= "</table>";
-  return $tag;
-}
+# # produces a table, possibly with options for the <table> and <tr> tags
+# sub _make_table {
+#   my ($options, $text) = @_;
+#   my $tag = "<table";
+#   my $cellend = '';
+#   my $cellstart = '';
+#   if ($options =~ /=/) {
+#     $tag .= " " . $options;
+#   }
+#   elsif ($options =~ /\S/) {
+#     $options =~ s/\s+$//;
+#     my ($width, $bg, $pad, $fontsz, $fontface) = split /\|/, $options;
+#     for ($width, $bg, $pad, $fontsz, $fontface) {
+#       $_ = '' unless defined;
+#     }
+#     $tag .= qq! width="$width"! if length $width;
+#     $tag .= qq! bgcolor="$bg"! if length $bg;
+#     $tag .= qq! cellpadding="$pad"! if length $pad;
+#     if (length $fontsz || length $fontface) {
+#       $cellstart = qq!<font!;
+#       $cellstart .= qq! size="$fontsz"! if length $fontsz;
+#       $cellstart .= qq! face="$fontface"! if length $fontface;
+#       $cellstart .= qq!>!;
+#       $cellend = "</font>";
+#     }
+#   }
+#   $tag .= ">";
+#   my @rows = split '\n', $text;
+#   my $maxwidth = 0;
+#   for my $row (@rows) {
+#     my ($opts, @cols) = split /\|/, $row;
+#     $tag .= "<tr";
+#     if ($opts =~ /=/) {
+#       $tag .= " ".$opts;
+#     }
+#     $tag .= "><td>$cellstart".join("$cellend</td><td>$cellstart", @cols)
+#       ."$cellend</td></tr>";
+#   }
+#   $tag .= "</table>";
+#   return $tag;
+# }
 
-# make a UL
-sub _format_bullets {
-  my ($text) = @_;
+# # make a UL
+# sub _format_bullets {
+#   my ($text) = @_;
 
-  $text =~ s/^\s+|\s+$//g;
-  my @points = split /(?:\r?\n)?\*\*\s*/, $text;
-  shift @points if @points and $points[0] eq '';
-  return '' unless @points;
-  for my $point (@points) {
-    $point =~ s!\n$!<br /><br />!;
-  }
-  return "<ul><li>".join("<li>", @points)."</ul>";
-}
+#   $text =~ s/^\s+|\s+$//g;
+#   my @points = split /(?:\r?\n)?\*\*\s*/, $text;
+#   shift @points if @points and $points[0] eq '';
+#   return '' unless @points;
+#   for my $point (@points) {
+#     $point =~ s!\n$!<br /><br />!;
+#   }
+#   return "<ul><li>".join("<li>", @points)."</ul>";
+# }
 
-# make a OL
-sub _format_ol {
-  my ($text) = @_;
-  $text =~ s/^\s+|\s+$//g;
-  my @points = split /(?:\r?\n)?##\s*/, $text;
-  shift @points if @points and $points[0] eq '';
-  return '' unless @points;
-  for my $point (@points) {
-    #print STDERR  "point: ",unpack("H*", $point),"\n";
-    $point =~ s!\n$!<br /><br />!;
-  }
-  return "<ol><li>".join("<li>", @points)."</ol>";
-}
+# # make a OL
+# sub _format_ol {
+#   my ($text) = @_;
+#   $text =~ s/^\s+|\s+$//g;
+#   my @points = split /(?:\r?\n)?##\s*/, $text;
+#   shift @points if @points and $points[0] eq '';
+#   return '' unless @points;
+#   for my $point (@points) {
+#     #print STDERR  "point: ",unpack("H*", $point),"\n";
+#     $point =~ s!\n$!<br /><br />!;
+#   }
+#   return "<ol><li>".join("<li>", @points)."</ol>";
+# }
 
 # raw html - this has some limitations
 # the input text has already been escaped, so we need to unescape it
@@ -424,7 +424,7 @@ sub baseActs {
     (
      %extras,
 
-     Util::custom_class($cfg)->base_tags($articles, $acts, $article, $embedded, $cfg),
+     custom_class($cfg)->base_tags($articles, $acts, $article, $embedded, $cfg),
      BSE::Util::Tags->static($acts, $self->{cfg}),
      # for embedding the content from children and other sources
      ifEmbedded=> sub { $embedded },
@@ -446,7 +446,7 @@ sub baseActs {
        my $article = $articles->getByPkey($id)
 	 or return "<:summary $which Cannot find article $id:>";
        return $self->summarize($articles, $article->{body}, 
-			       $article->{summaryLength})
+			       $article->{summaryLength}, $acts)
      },
      ifAdmin => sub { $self->{admin} },
      
@@ -580,7 +580,7 @@ sub excerpt {
 
   # we remove any formatting tags here, otherwise we get wierd table
   # rubbish or other formatting in the excerpt.
-  $self->remove_block(\$body);
+  $self->remove_block('Articles', [], \$body);
   1 while $body =~ s/[bi]\[([^\]\[]+)\]/$1/g;
 
   my @found = find_terms(\$body, $case_sensitive, @terms);
@@ -661,119 +661,127 @@ sub visible {
   return 1;
 }
 
-# removes any html tags from the supplied text
-sub _strip_html {
-  my ($text) = @_;
+# # removes any html tags from the supplied text
+# sub _strip_html {
+#   my ($text) = @_;
 
-  if ($HAVE_HTML_PARSER) {
-    my $out = '';
-    # don't forget that require is smart
-    require "HTML/Parser.pm";
+#   if ($HAVE_HTML_PARSER) {
+#     my $out = '';
+#     # don't forget that require is smart
+#     require "HTML/Parser.pm";
 
-    # this may need to detect and skip <script></script> and stylesheets
-    my $ignore_text = 0; # non-zero in a <script></script> or <style></style>
-    my $start_h = 
-      sub {
-	++$ignore_text if $_[0] eq 'script' or $_[0] eq 'style';
-	if ($_[0] eq 'img' && $_[1]{alt} && !$ignore_text) {
-	  $out .= $_[1]{alt};
-	}
-      };
-    my $end_h = 
-      sub {
-	--$ignore_text if $_[0] eq 'script' or $_[0] eq 'style';
-      };
-    my $text_h = 
-      sub { 
-	$out .= $_[0] unless $ignore_text
-      };
-    my $p = HTML::Parser->new( text_h  => [ $text_h,  "dtext" ],
-                               start_h => [ $start_h, "tagname, attr" ],
-                               end_h   => [ $end_h,   "tagname" ]);
-    $p->parse($text);
-    $p->eof();
+#     # this may need to detect and skip <script></script> and stylesheets
+#     my $ignore_text = 0; # non-zero in a <script></script> or <style></style>
+#     my $start_h = 
+#       sub {
+# 	++$ignore_text if $_[0] eq 'script' or $_[0] eq 'style';
+# 	if ($_[0] eq 'img' && $_[1]{alt} && !$ignore_text) {
+# 	  $out .= $_[1]{alt};
+# 	}
+#       };
+#     my $end_h = 
+#       sub {
+# 	--$ignore_text if $_[0] eq 'script' or $_[0] eq 'style';
+#       };
+#     my $text_h = 
+#       sub { 
+# 	$out .= $_[0] unless $ignore_text
+#       };
+#     my $p = HTML::Parser->new( text_h  => [ $text_h,  "dtext" ],
+#                                start_h => [ $start_h, "tagname, attr" ],
+#                                end_h   => [ $end_h,   "tagname" ]);
+#     $p->parse($text);
+#     $p->eof();
 
-    $text = $out;
-  }
-  else {
-    # this won't work for some HTML, but it's a fallback
-    $text =~ s/<[^>]*>//g;
-  }
+#     $text = $out;
+#   }
+#   else {
+#     # this won't work for some HTML, but it's a fallback
+#     $text =~ s/<[^>]*>//g;
+#   }
 
-  return $text;
-}
+#   return $text;
+# }
 
 # make whatever text $body points at safe for summarizing by removing most
 # block level formatting
 sub remove_block {
-  my ($self, $body) = @_;
+  my ($self, $articles, $acts, $body) = @_;
 
-  if ($$body =~ /^<html>/i) {
-    $$body =_strip_html(substr($$body, 6));
-    return;
-  }
+  require BSE::Formatter;
 
-  my $out = '';
-  for my $part (split /((?:html\[(?:[^\[\]]*(?:(?:\[[^\[\]]*\])[^\[\]]*)*)\])
-			|embed\[(?:[^,\[\]]*)(?:,(?:[^,\[\]]*))?\])/ix, $$body) {
-    #print STDERR "Part is $part\n";
-    if ($part =~ /^html\[([^\[\]]*(?:(?:\[[^\[\]]*\])[^\[\]]*)*)\]$/i) {
-      $out .= _strip_html($1);
-    }
-    elsif ($part =~ /^embed\[([^,\[\]]*),([^,\[\]]*)\]$/i) {
-      $out .= ""; # what would you do here?
-    }
-    elsif ($part =~ /^embed\[([^,\[\]]*)\]$/i) {
-      $out .= ""; # $self->_body_embed($acts, $articles, $1, "")
-    }
-    else {
-    TRY: while (1) {
-	$LOCAL_FORMAT and $LOCAL_FORMAT->clean(\$part)
-	  and next TRY;
-	$part =~ s#a\[([^,\]\[]+),([^\]\[]+)\]#$2#ig
-	  and next TRY;
-	$part =~ s#link\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
-	  and next TRY;
-	$part =~ s#([bi])\[([^\]\[]+)\]#$1\001$2\002#ig
-	  and next TRY;
-	$part =~ s#align\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
-	  and next TRY;
-	$part =~ s#font\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
-	  and next TRY;
-	$part =~ s#hr\[([^|\]\[]*)\|([^\]\[]*)\]##ig
-	  and next TRY;
-	$part =~ s#hr\[([^|\]\[]*)\]##ig
-	  and next TRY;
-	$part =~ s#anchor\[([^|\]\[]*)\]##ig
-	  and next TRY;
-	$part =~ s#table\[([^\n\[\]]*)\n([^\[\]]+)\n\s*\]#_cleanup_table($1, $2)#ieg
-	  and next TRY;
-	$part =~ s#table\[([^\]\[]+)\|([^\]\[|]+)\]#_cleanup_table($1, "|$2")#ieg
-	  and next TRY;
-	$part =~ s#\*\*([^\n]+)#$1#g
-	  and next TRY;
-	$part =~ s!##([^\n]+)!$1!g
-	  and next TRY;
-	$part =~ s#fontcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#$3#ig
-	  and next TRY;
-	$part =~ s#(?:indent|center)\[([^\]\[]+)\]#$1#ig
-	  and next TRY;
-	$part =~ s#hrcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]##ig
-	  and next TRY;
-	$part =~ s#image\[([^\]\[]+)\]##ig
-	  and next TRY;
-	$part =~ s#(?<=\W)\[([^\]\[]+)\]#\003$1\004#g
-	  and next TRY;
+  my $formatter = BSE::Formatter->new($self, $acts, $articles,
+				      1, \0, []);
+
+  $$body = $formatter->remove_format($$body);
+
+#   if ($$body =~ /^<html>/i) {
+#     $$body =_strip_html(substr($$body, 6));
+#     return;
+#   }
+
+#   my $out = '';
+#   for my $part (split /((?:html\[(?:[^\[\]]*(?:(?:\[[^\[\]]*\])[^\[\]]*)*)\])
+# 			|embed\[(?:[^,\[\]]*)(?:,(?:[^,\[\]]*))?\])/ix, $$body) {
+#     #print STDERR "Part is $part\n";
+#     if ($part =~ /^html\[([^\[\]]*(?:(?:\[[^\[\]]*\])[^\[\]]*)*)\]$/i) {
+#       $out .= _strip_html($1);
+#     }
+#     elsif ($part =~ /^embed\[([^,\[\]]*),([^,\[\]]*)\]$/i) {
+#       $out .= ""; # what would you do here?
+#     }
+#     elsif ($part =~ /^embed\[([^,\[\]]*)\]$/i) {
+#       $out .= ""; # $self->_body_embed($acts, $articles, $1, "")
+#     }
+#     else {
+#     TRY: while (1) {
+# 	$LOCAL_FORMAT and $LOCAL_FORMAT->clean(\$part)
+# 	  and next TRY;
+# 	$part =~ s#a\[([^,\]\[]+),([^\]\[]+)\]#$2#ig
+# 	  and next TRY;
+# 	$part =~ s#link\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
+# 	  and next TRY;
+# 	$part =~ s#([bi])\[([^\]\[]+)\]#$1\001$2\002#ig
+# 	  and next TRY;
+# 	$part =~ s#align\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
+# 	  and next TRY;
+# 	$part =~ s#font\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
+# 	  and next TRY;
+# 	$part =~ s#hr\[([^|\]\[]*)\|([^\]\[]*)\]##ig
+# 	  and next TRY;
+# 	$part =~ s#hr\[([^|\]\[]*)\]##ig
+# 	  and next TRY;
+# 	$part =~ s#anchor\[([^|\]\[]*)\]##ig
+# 	  and next TRY;
+# 	$part =~ s#table\[([^\n\[\]]*)\n([^\[\]]+)\n\s*\]#_cleanup_table($1, $2)#ieg
+# 	  and next TRY;
+# 	$part =~ s#table\[([^\]\[]+)\|([^\]\[|]+)\]#_cleanup_table($1, "|$2")#ieg
+# 	  and next TRY;
+# 	$part =~ s#\*\*([^\n]+)#$1#g
+# 	  and next TRY;
+# 	$part =~ s!##([^\n]+)!$1!g
+# 	  and next TRY;
+# 	$part =~ s#fontcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#$3#ig
+# 	  and next TRY;
+# 	$part =~ s#(?:indent|center)\[([^\]\[]+)\]#$1#ig
+# 	  and next TRY;
+# 	$part =~ s#hrcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]##ig
+# 	  and next TRY;
+# 	$part =~ s#image\[([^\]\[]+)\]##ig
+# 	  and next TRY;
+# 	$part =~ s#(?<=\W)\[([^\]\[]+)\]#\003$1\004#g
+# 	  and next TRY;
 	
-	last TRY;
-      }
-      1 while $part =~ s#([bi])\001([^\001\002]*)\002#$1\[$2\]#ig;
-      $part =~ tr/\003\004/[]/;
-      $out .= $part;
-    }
-  } 
+# 	last TRY;
+#       }
+#       1 while $part =~ s#([bi])\001([^\001\002]*)\002#$1\[$2\]#ig;
+#       $part =~ tr/\003\004/[]/;
+#       $out .= $part;
+#     }
+#   } 
 
-  $$body = $out;
+#   $$body = $out;
+
 }
 
 sub get_gimage {

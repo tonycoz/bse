@@ -11,6 +11,7 @@ use Constants qw(:shop $CGI_URI);
 use BSE::Template;
 use CGI::Cookie;
 use Util qw(refresh_to);
+use BSE::CfgInfo qw(custom_class);
 use BSE::Mail;
 use BSE::Shop::Util qw/shop_cart_tags cart_item_opts nice_options total 
                        basic_tags load_order_fields need_logon get_siteuser
@@ -167,7 +168,7 @@ sub show_cart {
   $session{custom} ||= {};
   my %custom_state = %{$session{custom}};
 
-  my $cust_class = Util::custom_class($cfg);
+  my $cust_class = custom_class($cfg);
   $cust_class->enter_cart(\@cart, \@cart_prods, \%custom_state, $cfg); 
   $msg = '' unless defined $msg;
   $msg = CGI::escapeHTML($msg);
@@ -204,7 +205,7 @@ sub update_quantities {
   $session{cart} = \@cart;
   $session{custom} ||= {};
   my %custom_state = %{$session{custom}};
-  Util::custom_class($cfg)->recalc($CGI::Q, \@cart, [], \%custom_state, $cfg);
+  custom_class($cfg)->recalc($CGI::Q, \@cart, [], \%custom_state, $cfg);
   $session{custom} = \%custom_state;
 }
 
@@ -228,7 +229,7 @@ sub checkupdate {
   my @cart = @{$session{cart}};
   my @cart_prods = map { Products->getByPkey($_->{productId}) } @cart;
   my %custom_state = %{$session{custom}};
-  Util::custom_class($cfg)
+  custom_class($cfg)
       ->checkout_update($CGI::Q, \@cart, \@cart_prods, \%custom_state, $cfg);
   $session{custom} = \%custom_state;
   
@@ -286,7 +287,7 @@ sub checkout {
   $session{custom} ||= {};
   my %custom_state = %{$session{custom}};
 
-  my $cust_class = Util::custom_class($cfg);
+  my $cust_class = custom_class($cfg);
   $cust_class->enter_cart(\@cart, \@cart_prods, \%custom_state, $cfg);
 
   my $noencrypt = $cfg->entryBool('shop', 'noencrypt', 0);
@@ -396,7 +397,7 @@ sub checkout_confirm {
 # BUG!!: this duplicates the code in purchase() a great deal
 sub prePurchase {
 
-  my $cust_class = Util::custom_class($cfg);
+  my $cust_class = custom_class($cfg);
   my @required = $cust_class->required_fields($CGI::Q, $session{custom}, $cfg);
   for my $field (@required) {
     defined(param($field)) && length(param($field))
@@ -608,7 +609,7 @@ sub purchase {
     or return checkout("Configuration error: shop to_email address not set", 1);
 
   # some basic validation, in case the user switched off javascript
-  my $cust_class = Util::custom_class($cfg);
+  my $cust_class = custom_class($cfg);
   my @required = 
     $cust_class->required_fields($CGI::Q, $session{custom}, $cfg);
 
@@ -875,7 +876,7 @@ sub send_order {
   %acts =
     (
      %extras,
-     Util::custom_class($cfg)
+     custom_class($cfg)
      ->order_mail_actions(\%acts, $order, $items, $products, 
 			  $session{custom}, $cfg),
      BSE::Util::Tags->static(\%acts, $cfg),

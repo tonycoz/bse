@@ -7,7 +7,7 @@ use BSE::Util::Iterate;
 use BSE::Util::DynSort qw(sorter tag_sorthelp);
 use BSE::Util::SQL qw/now_datetime/;
 use BSE::SubscriptionTypes;
-use Util;
+use BSE::CfgInfo qw(custom_class);
 
 my %actions =
   (
@@ -64,7 +64,7 @@ sub req_list {
   my @users = SiteUsers->all;
   my ($sortby, $reverse) =
     sorter(data=>\@users, cgi=>$cgi, sortby=>'userId', session=>$req->session,
-	   name=>'siteusers');
+	   name=>'siteusers', fields=> { id => {numeric => 1 } });
   my $it = BSE::Util::Iterate->new;
 			    
   my %acts;
@@ -338,7 +338,7 @@ sub req_save {
     $class->save_subs($req, $user);
   }
 
-  my $custom = Util::custom_class($cfg);
+  my $custom = custom_class($cfg);
   $custom->siteusers_changed($cfg);
 
   my @msgs;
@@ -565,7 +565,7 @@ sub req_add {
       }
     }
     
-    my $custom = Util::custom_class($cfg);
+    my $custom = custom_class($cfg);
     $custom->siteusers_changed($cfg);
 
     my $r = $cgi->param('r');

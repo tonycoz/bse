@@ -102,6 +102,99 @@ sub tag_title {
   }
 }
 
+sub _default_admin {
+  my ($self, $article, $embedded) = @_;
+
+  my $req = $self->{request};
+  my $html = <<HTML;
+<table><tr>
+<td><form action="$CGI_URI/admin/add.pl" name="edit">
+<input type=submit value="Edit $level_names{$article->{level}}">
+<input type=hidden name=id value="$article->{id}">
+</form></td>
+<td><form action="$ADMIN_URI">
+<input type=submit value="Admin menu">
+</form></td>
+HTML
+  if (exists $level_names{1+$article->{level}}
+      && $req->user_can(edit_add_child=>$article)) {
+    $html .= <<HTML;
+<td><form action="$CGI_URI/admin/add.pl" name="addchild">
+<input type=submit value="Add $level_names{1+$article->{level}}">
+<input type=hidden name=parentid value="$article->{id}">
+</form></td>
+HTML
+  }
+  if (generate_button() && $req->user_can(regen_article=>$article)) {
+    $html .= <<HTML;
+<td><form action="$CGI_URI/admin/generate.pl" name="regen">
+<input type=hidden name=id value="$article->{id}">
+<input type=submit value="Regenerate">
+</form></td>
+HTML
+  }
+  $html .= "<td>".$self->link_to_form($article->{admin}."&admin=0",
+				      "Display", "_blank")."</td>";
+  my $parent = $article->parent;
+  if ($article->{link}) {
+    $html .= "<td>"
+      . $self->link_to_form($article->{link}, "On site", "_blank")
+	. "</td>";
+  } elsif ($parent && $parent->{link}) {
+    $html .= "<td>"
+      . $self->link_to_form($parent->{link}, "On site", "_blank")
+	. "</td>";
+  }
+  if ($parent && $parent->{admin} ne $article->{admin} && !$embedded) {
+    $html .= "<td>"
+      .$self->link_to_form($parent->{admin}, "Parent")."</td>";
+  }
+  $html .= <<HTML;
+</tr></table>
+HTML
+  return $html;
+}
+
+sub tag_article {
+  my ($article, $arg) = @_;
+
+  $arg or return '';
+  $article or return '';
+  defined $article->{$arg} or return '';
+
+  return escape_html($article->{$arg});
+}
+
+sub tag_admin {
+  my ($self, $article, $default, $embedded, $arg) = @_;
+
+  $self->{admin} or return '';
+  $self->{request} or return '';
+  my $cfg = $self->{cfg};
+
+  my $name = $arg || $default;
+  my $template = "admin/adminmenu/$name";
+
+  unless (BSE::Template->find_source($template, $cfg)) {
+    return $self->_default_admin($article, $embedded);
+  }
+
+  my $parent = $article->parent;
+  my %acts;
+  %acts =
+    (
+     BSE::Util::Tags->static(\%acts, $cfg),
+     BSE::Util::Tags->admin(\%acts, $cfg),
+     BSE::Util::Tags->secure($self->{request}),
+     article => [ \&tag_article, $article ],
+     parent => [ \&tag_article, $parent ],
+     ifParent => $parent,
+     ifEmbedded => $embedded,
+    );
+
+  return BSE::Template->get_page($template, $cfg, \%acts);
+}
+
 sub baseActs {
   my ($self, $articles, $acts, $article, $embedded) = @_;
 
@@ -221,60 +314,7 @@ sub baseActs {
      ifNextChild => sub { $child_index < $#children },
 
      # generate buttons for administration (only for admin generation)
-     admin=>
-     sub {
-       if ($self->{admin} && $self->{request}) {
-	 my $req = $self->{request};
-         my $html = <<HTML;
-<table><tr>
-<td><form action="$CGI_URI/admin/add.pl" name="edit">
-<input type=submit value="Edit $level_names{$article->{level}}">
-<input type=hidden name=id value="$article->{id}">
-</form></td>
-<td><form action="$ADMIN_URI">
-<input type=submit value="Admin menu">
-</form></td>
-HTML
-         if (exists $level_names{1+$article->{level}}
-	     && $req->user_can(edit_add_child=>$article)) {
-           $html .= <<HTML;
-<td><form action="$CGI_URI/admin/add.pl" name="addchild">
-<input type=submit value="Add $level_names{1+$article->{level}}">
-<input type=hidden name=parentid value="$article->{id}">
-</form></td>
-HTML
-	 }
-	 if (generate_button() && $req->user_can(regen_article=>$article)) {
-	   $html .= <<HTML;
-<td><form action="$CGI_URI/admin/generate.pl" name="regen">
-<input type=hidden name=id value="$article->{id}">
-<input type=submit value="Regenerate">
-</form></td>
-HTML
-	 }
-	 $html .= "<td>".$self->link_to_form($article->{admin}."&admin=0",
-					     "Display", "_blank")."</td>";
-	 if ($article->{link}) {
-	   $html .= "<td>"
-	     . $self->link_to_form($article->{link}, "On site", "_blank")
-	       . "</td>";
-	 } elsif ($parent && $parent->{link}) {
-	   $html .= "<td>"
-	     . $self->link_to_form($parent->{link}, "On site", "_blank")
-	       . "</td>";
-	 }
-         if ($parent && $parent->{admin} ne $article->{admin} && !$embedded) {
-           $html .= "<td>"
-             .$self->link_to_form($parent->{admin}, "Parent")."</td>";
-         }
-         $html .= <<HTML;
-</tr></table>
-HTML
-         return $html;
-       } else {
-         return '';
-       }
-     },
+     admin=> [ tag_admin=>$self, $article, 'article', $embedded ],
 
      # transform the article or response body (entities, images)
      body=>sub {
@@ -837,8 +877,50 @@ child.
 
 Generates a move down link if there is a next child for the current child.
 
+=item admin
+
+Produces buttons and links used for administering the article.
+
+This tag can use a specialized template if it's available.  If you
+call it with a parameter, <:admin I<template>:> then it will use
+template C<< admin/adminmenu/I<template>.tmpl >>.  When used in an
+article template C<< <:admin:> >> behaves like C<< <:admin article:>
+>>, when used in a catalog template C<< <:admin:> >> behaves like C<<
+<:admin catalog:> >>, when used in a product template C<< <:admin:> >>
+behaves like C<< <:admin product:> >>.  See L<Admin Menu Templates>
+for the tags available in admin menu templates.
+
+If the template doesn't exist then the old behaviour applies.
+
+=back
+
+=head2 Admin Menu Templates
+
+These tags can be used in the templates included by the C<< <:admin:>
+>> tag.
+
+The basic template tags and ifUserCan tag can be used in admin menu
+templates.
+
+=over
+
+=item article field
+
+Retrieves a field from the current article.
+
+=item parent field
+
+Retrieves a field from the parent of the current article.
+
+=item ifParent
+
+Conditional tag, true if the current article has a parent.
+
+=item ifEmbedded
+
+Conditional tag, true if the current article is embedded in another
+article, in this context.
 
 =back
 
 =cut
-

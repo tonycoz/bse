@@ -10,6 +10,52 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.14_14
+
+=over
+
+=item *
+
+added the style[] body text tag
+
+=item *
+
+doclink[], class[] and style[] are now removed correctly from summary
+and excerpt text.
+
+=item *
+
+the hr[] body tag now correctly uses C<size> instead of C<height>.
+
+=item *
+
+moved the custom_class() function to the new BSE::CfgInfo class.
+
+=item *
+
+first steps towards administration via the secure URL (or some other
+base URL)
+
+=item *
+
+the <:admin:> tag can now produce output based on a template.
+<:admin:> in an article template uses C<admin/adminmenu/article.tmpl>,
+<:admin:> in a product template uses C<admin/adminmenu/product.tmpl>,
+<:admin:> in a catalog template uses C<admin/adminmenu/catalog.tmpl>,
+<:admin foo:> uses C<admin/adminmenu/foo.tmpl>.
+
+=item *
+
+sorting the site user list by id should now sort numerically rather
+than stringwise.
+
+=item *
+
+You can now you %% instead of ## in body text for an alphabetical
+rather than numerical ordered list
+
+=back
+
 =head2 0.14_13
 
 =over

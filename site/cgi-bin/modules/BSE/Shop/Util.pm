@@ -8,7 +8,7 @@ use vars qw(@ISA @EXPORT_OK);
 use Constants qw/:shop/;
 use BSE::Util::SQL qw(now_sqldate);
 use BSE::Util::Tags;
-use Util;
+use BSE::CfgInfo qw(custom_class);
 use Carp 'confess';
 
 # returns a list of tags which display the cart details
@@ -64,7 +64,7 @@ sub shop_cart_tags {
      option => sub { CGI::escapeHTML($options[$option_index]{$_[0]}) },
      ifOptions => sub { @options },
      options => sub { nice_options(@options) },
-     Util::custom_class($cfg)
+     custom_class($cfg)
      ->checkout_actions($acts, $cart, $cart_prods, $session->{custom}, $q),
     );  
 }
@@ -114,7 +114,7 @@ sub total {
   for my $item (@$cart) {
     $total += $item->{units} * $item->{price};
   }
-  $total += Util::custom_class($cfg)
+  $total += custom_class($cfg)
     ->total_extras($cart, $products, $state, $cfg, $stage);
 
   return $total;
@@ -149,7 +149,7 @@ sub load_order_fields {
   require 'BSE/Cfg.pm';
   my $cfg = BSE::Cfg->new;
 
-  my $cust_class = Util::custom_class($cfg);
+  my $cust_class = custom_class($cfg);
 
   my @required = $cust_class->required_fields($CGI::Q, $session->{custom});
   push(@required, qw(cardHolder cardExpiry)) if $wantcard;
@@ -302,7 +302,7 @@ sub get_siteuser {
 
   require SiteUsers;
   if ($cfg->entryBool('custom', 'user_auth')) {
-    my $custom = Util::custom_class($cfg);
+    my $custom = custom_class($cfg);
     
     return $custom->siteuser_auth($session, $cgi, $cfg);
   }

@@ -20,6 +20,28 @@ sub generate {
   return $self->SUPER::generate($product, $articles);
 }
 
+sub _default_admin {
+  my ($self, $product, $embedded) = @_;
+
+       my $html = <<HTML;
+<table>
+<tr>
+<td><form action="$CGI_URI/admin/add.pl">
+<input type=hidden name="edit" value=1>
+<input type=hidden name=id value=$product->{id}>
+<input type=submit value="Edit Product"></form></td>
+<td><form action="$ADMIN_URI">
+<input type=submit value="Admin menu">
+</form></td>
+<td><form action="$CGI_URI/admin/admin.pl" target="_blank">
+<input type=submit value="Display">
+<input type=hidden name=admin value=0>
+<input type=hidden name=id value="$product->{id}"></form></td>
+</tr>
+</table>
+HTML
+}
+
 sub baseActs {
   my ($self, $articles, $acts, $product, $embedded) = @_;
 
@@ -39,27 +61,7 @@ sub baseActs {
     (
      $self->SUPER::baseActs($articles, $acts, $product, $embedded),
      product=> sub { escape_html($product->{$_[0]}) },
-     admin =>
-     sub {
-       return '' unless $self->{admin};
-       my $html = <<HTML;
-<table>
-<tr>
-<td><form action="$CGI_URI/admin/add.pl">
-<input type=hidden name="edit" value=1>
-<input type=hidden name=id value=$product->{id}>
-<input type=submit value="Edit Product"></form></td>
-<td><form action="$ADMIN_URI">
-<input type=submit value="Admin menu">
-</form></td>
-<td><form action="$CGI_URI/admin/admin.pl" target="_blank">
-<input type=submit value="Display">
-<input type=hidden name=admin value=0>
-<input type=hidden name=id value="$product->{id}"></form></td>
-</tr>
-</table>
-HTML
-     },
+     admin => [ tag_admin => $self, $product, 'product', $embedded ],
      iterate_options_reset => sub { $option_index = -1 },
      iterate_options => sub { ++$option_index < @options },
      option => 

@@ -1092,6 +1092,17 @@ The following tags produce output only in admin mode.
 
 Produces buttons and links used for administering the article.
 
+This tag can use a specialized template if it's available.  If you
+call it with a parameter, <:admin I<template>:> then it will use
+template C<< admin/adminmenu/I<template>.tmpl >>.  When used in an
+article template C<< <:admin:> >> behaves like C<< <:admin article:>
+>>, when used in a catalog template C<< <:admin:> >> behaves like C<<
+<:admin catalog:> >>, when used in a product template C<< <:admin:> >>
+behaves like C<< <:admin product:> >>.  See L<Admin Menu Templates>
+for the tags available in admin menu templates.
+
+If the template doesn't exist then the old behaviour applies.
+
 =item moveUp
 
 Generates a move up link if there is a previous child for the current
@@ -1500,6 +1511,34 @@ The entered expiry date for the user's credit card.
 
 =back
 
+=head2 Admin Menu Templates
+
+These tags can be used in the templates included by the C<< <:admin:>
+>> tag.
+
+The basic template tags and ifUserCan tag can be used in admin menu
+templates.
+
+=over
+
+=item article field
+
+Retrieves a field from the current article.
+
+=item parent field
+
+Retrieves a field from the parent of the current article.
+
+=item ifParent
+
+Conditional tag, true if the current article has a parent.
+
+=item ifEmbedded
+
+Conditional tag, true if the current article is embedded in another
+article, in this context.
+
+=back
 
 
 =head2 Article attributes

@@ -5,9 +5,9 @@ use BSE::Util::Tags qw(tag_error_img);
 use BSE::Util::SQL qw(now_sqldate);
 use BSE::Util::Valid qw/valid_date/;
 use BSE::Permissions;
-use Util qw(custom_class);
 use DevHelp::HTML qw(:default popup_menu);
 use BSE::Arrows;
+use BSE::CfgInfo qw(custom_class);
 
 sub article_dispatch {
   my ($self, $req, $article, $articles) = @_;

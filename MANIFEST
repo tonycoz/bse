@@ -45,6 +45,7 @@ site/cgi-bin/modules/BSE/AdminUsers.pm
 site/cgi-bin/modules/BSE/AdminSiteUsers.pm
 site/cgi-bin/modules/BSE/Arrows.pm
 site/cgi-bin/modules/BSE/Cfg.pm
+site/cgi-bin/modules/BSE/CfgInfo.pm
 site/cgi-bin/modules/BSE/ChangePW.pm
 site/cgi-bin/modules/BSE/Custom.pm
 site/cgi-bin/modules/BSE/CustomBase.pm

@@ -1,6 +1,7 @@
 package DevHelp::Formatter;
 use strict;
 use DevHelp::HTML;
+use Carp 'confess';
 
 sub new {
   my ($class) = @_;
@@ -25,7 +26,7 @@ sub _make_hr {
   my ($width, $height) = @_;
   my $tag = "<hr";
   $tag .= qq! width="$width"! if length $width;
-  $tag .= qq! height="$height"! if length $height;
+  $tag .= qq! size="$height"! if length $height;
   $tag .= " />";
   return $tag;
 }
@@ -88,15 +89,19 @@ sub _format_bullets {
 
 # make a OL
 sub _format_ol {
-  my ($text) = @_;
+  my ($text, $type, $code) = @_;
   $text =~ s/^\s+|\s+$//g;
-  my @points = split /(?:\r?\n)?##\s*/, $text;
+  $code ||= "##";
+  my @points = split /(?:\r?\n)?$code\s*/, $text;
   shift @points if @points and $points[0] eq '';
   return '' unless @points;
   for my $point (@points) {
     $point =~ s!\n$!<br /><br />!;
   }
-  return "<ol><li>".join("</li><li>", @points)."</li></ol>";
+  my $ol = "<ol";
+  $ol .= qq! type="$type"! if $type;
+  $ol .= ">";
+  return "$ol<li>".join("</li><li>", @points)."</li></ol>";
 }
 
 # raw html - this has some limitations
@@ -191,6 +196,8 @@ sub format {
 	  and next TRY;
 	$part =~ s!\n{0,2}((?:##[^\n]+(?:\n|$)\n?[^\S\n]*)+)\n?!_format_ol($1)!eg
 	  and next TRY;
+	$part =~ s!\n{0,2}((?:%%[^\n]+(?:\n|$)\n?[^\S\n]*)+)\n?!_format_ol($1, 'a', '%%')!eg
+	  and next TRY;
 	$part =~ s#indent\[([^\]\[]+)\]#<ul>$1</ul>#ig
 	  and next TRY;
 	$part =~ s#center\[([^\]\[]+)\]#<center>$1</center>#ig
@@ -201,6 +208,9 @@ sub format {
 	    and next TRY;
 	$part =~ s#class\[([^\]\[\|]+)\|([^\]\[]+)\]#
 	  _fix_spanned(qq/<span class="$1">/, "</span>", $2)#eig
+          and next TRY;
+	$part =~ s#style\[([^\]\[\|]+)\|([^\]\[]+)\]#
+	  _fix_spanned(qq/<span style="$1">/, "</span>", $2)#eig
           and next TRY;
 	last;
       }
@@ -215,6 +225,9 @@ sub format {
 
 sub remove_format {
   my ($self, $body) = @_;
+
+  defined $body 
+    or confess "undef body supplied to remove_format";
 
   if ($body =~ /^<html>/i) {
     return _strip_html(substr($body, 6));
@@ -237,6 +250,10 @@ sub remove_format {
     TRY: while (1) {
 	$self->remove(\$part)
 	  and next TRY;
+	$part =~ s#h([1-6])\[\|([^\[\]]+)\](?:\r?\n)?#$2#ig
+          and next TRY;
+	$part =~ s#h([1-6])\[([^\[\]\|]+)\|([^\[\]]+)\](?:\r?\n)?#$3#ig
+          and next TRY;
 	$part =~ s#link\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
 	  and next TRY;
 	$part =~ s#([bi])\[([^\]\[]+)\]#$2#ig
@@ -259,6 +276,8 @@ sub remove_format {
 	  and next TRY;
 	$part =~ s!##([^\n]+)!$1!g
 	  and next TRY;
+	$part =~ s!%%([^\n]+)!$1!g
+	  and next TRY;
 	$part =~ s#fontcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#$3#ig
 	  and next TRY;
 	$part =~ s#(?:indent|center)\[([^\]\[]*)\]#$1#ig
@@ -267,6 +286,10 @@ sub remove_format {
 	  and next TRY;
 	$part =~ s#image\[([^\]\[]+)\]##ig
 	  and next TRY;
+	$part =~ s#class\[([^\]\[\|]+)\|([^\]\[]+)\]#$2#ig
+          and next TRY;
+	$part =~ s#style\[([^\]\[\|]+)\|([^\]\[]+)\]#$2#ig
+          and next TRY;
 	
 	last TRY;
       }

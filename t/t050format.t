@@ -82,7 +82,7 @@ OUT
   format_test 'align[left|some text]', '<div align="left">some text</div>', 'align';
   format_test 'hr[]', '<hr />', 'hr0';
   format_test 'hr[80%]', '<hr width="80%" />', 'hr1';
-  format_test 'hr[80%|10]', '<hr width="80%" height="10" />', 'hr2';
+  format_test 'hr[80%|10]', '<hr width="80%" size="10" />', 'hr2';
   format_test <<IN, <<OUT, 'table1', 'both';
 table[80%
 bgcolor="black"|quux|blarg

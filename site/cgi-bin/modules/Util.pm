@@ -364,20 +364,4 @@ sub regen_and_refresh {
   return 1;
 }
 
-sub custom_class {
-  my ($cfg) = @_;
-
-  local @INC = @INC;
-
-  my $class = $cfg->entry('basic', 'custom_class', 'BSE::Custom');
-  (my $file = $class . ".pm") =~ s!::!/!g;
-
-  my $local_inc = $cfg->entry('paths', 'libraries');
-  unshift @INC, $local_inc if $local_inc;
-
-  require $file;
-
-  return $class->new(cfg=>$cfg);
-}
-
 1;

@@ -127,7 +127,7 @@ sub makeIndex {
       }
       #next if $text =~ m!^\<html\>!i; # I don't know how to do this (yet)
       if ($field eq 'body') {
-	Generate->remove_block(\$text);
+	$gen->remove_block($article, [], \$text);
 	$text =~ s/[abi]\[([^\]]+)\]/$1/g;
       }
 

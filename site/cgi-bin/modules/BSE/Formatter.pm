@@ -91,10 +91,9 @@ sub embed {
 			   $templateid, $maxdepth);
 }
 
-sub doclink {
-  my ($self, $id, $title) = @_;
-  
-  my $admin = $self->{gen}{admin};
+sub _get_article {
+  my ($self, $id, $error) = @_;
+
   my $cfg = $self->{gen}->{cfg}
     or confess "cfg not set in acts";
   my $dispid;
@@ -105,17 +104,33 @@ sub doclink {
     # try to find it in the config
     my $work = $cfg->entry('articles', $id);
     unless ($work) {
-      return "&#42;&#42; No article name '".escape_html($id)."' in the [articles] section of bse.cfg &#42;&#42;";
+      $$error = "&#42;&#42; No article name '".escape_html($id)."' in the [articles] section of bse.cfg &#42;&#42;";
+      return;
     }
     $dispid = "$id ($work)";
     $id = $work;
   }
   my $art = $self->{articles}->getByPkey($id);
   unless ($art) {
-    return "&#42;&#42; Cannot find article id $dispid &#42;&#42;";
+    $$error = "&#42;&#42; Cannot find article id $dispid &#42;&#42;";
+    return;
   }
 
+  return $art;
+}
+
+sub doclink {
+  my ($self, $id, $title) = @_;
+
+  my $error;
+  my $art = $self->_get_article($id, \$error)
+    or return $error;
+
+  my $cfg = $self->{gen}->{cfg}
+    or confess "cfg not set in acts";
+
   # make the URL absolute if necessary
+  my $admin = $self->{gen}{admin};
   my $link = $admin ? 'admin' : 'link';
   my $url = $art->{$link};
   if ($self->{abs_urls}) {
@@ -141,6 +156,28 @@ sub replace {
     and return 1;
 
   return $self->SUPER::replace($rpart);
+}
+
+sub remove_doclink {
+  my ($self, $id) = @_;
+
+  my $error;
+  my $art = $self->_get_article ($id, \$error)
+    or return $error;
+
+  return $art->{title};
+}
+
+sub remove {
+  my ($self, $rpart) = @_;
+
+  $$rpart =~ s#gimage\[([^\]\[]+)\]##ig
+    and return 1;
+  $$rpart =~ s#doclink\[(\w+)\|([^\]\[]+)\]#$2#ig
+    and return 1;
+  $$rpart =~ s#doclink\[(\w+)\]# $self->remove_doclink($1) #ige
+    and return 1;
+  
 }
 
 1;

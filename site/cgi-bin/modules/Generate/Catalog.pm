@@ -11,6 +11,57 @@ use OtherParents;
 use DevHelp::HTML;
 use BSE::Arrows;
 
+sub _default_admin {
+  my ($self, $article, $embedded) = @_;
+
+  my $req = $self->{request};
+  my $html = <<HTML;
+<table>
+<tr>
+<td><form action="$CGI_URI/admin/add.pl">
+<input type=submit value="Edit Catalog">
+<input type=hidden name=id value="$article->{id}">
+</form></td>
+<td><form action="$ADMIN_URI">
+<input type=submit value="Admin menu">
+</form></td>
+HTML
+  if ($req->user_can('edit_add_child', $article)) {
+    $html .= <<HTML;
+<td><form action="$CGI_URI/admin/add.pl">
+<input type=hidden name="parentid" value="$article->{id}">
+<input type=hidden name="type" value="Product">
+<input type=submit value="Add product"></form></td>
+<td><form action="$CGI_URI/admin/add.pl">
+<input type=hidden name="parentid" value="$article->{id}">
+<input type=hidden name="type" value="Catalog">
+<input type=submit value="Add Sub-catalog"></form></td>
+HTML
+  }
+  $html .= <<HTML;
+<td><form action="$CGI_URI/admin/shopadmin.pl">
+<input type=hidden name="product_list" value=1>
+<input type=submit value="Full product list"></form></td>
+HTML
+  if (generate_button()
+      && $req->user_can(regen_article=>$article)) {
+    $html .= <<HTML;
+<td><form action="$CGI_URI/admin/generate.pl">
+<input type=hidden name=id value="$article->{id}">
+<input type=submit value="Regenerate">
+</form></td>
+HTML
+  }
+  $html .= <<HTML;
+<td><form action="$CGI_URI/admin/admin.pl" target="_blank">
+<input type=submit value="Display">
+<input type=hidden name=id value="$article->{id}">
+<input type=hidden name=admin value="0"></form></td>
+</tr></table>
+HTML
+  return $html;
+}
+
 sub generate_low {
   my ($self, $template, $article, $articles, $embedded) = @_;
 
@@ -47,60 +98,7 @@ sub generate_low {
      },
      product=> sub { escape_html($products[$product_index]{$_[0]}) },
      ifProducts => sub { @products },
-     admin => 
-     sub { 
-       if ($self->{admin} && $self->{request}) {
-	 my $req = $self->{request};
-	 my $html = <<HTML;
-<table>
-<tr>
-<td><form action="$CGI_URI/admin/add.pl">
-<input type=submit value="Edit Catalog">
-<input type=hidden name=id value="$article->{id}">
-</form></td>
-<td><form action="$ADMIN_URI">
-<input type=submit value="Admin menu">
-</form></td>
-HTML
-	 if ($req->user_can('edit_add_child', $article)) {
-	   $html .= <<HTML;
-<td><form action="$CGI_URI/admin/add.pl">
-<input type=hidden name="parentid" value="$article->{id}">
-<input type=hidden name="type" value="Product">
-<input type=submit value="Add product"></form></td>
-<td><form action="$CGI_URI/admin/add.pl">
-<input type=hidden name="parentid" value="$article->{id}">
-<input type=hidden name="type" value="Catalog">
-<input type=submit value="Add Sub-catalog"></form></td>
-HTML
-         }
-	 $html .= <<HTML;
-<td><form action="$CGI_URI/admin/shopadmin.pl">
-<input type=hidden name="product_list" value=1>
-<input type=submit value="Full product list"></form></td>
-HTML
-	 if (generate_button()
-	     && $req->user_can(regen_article=>$article)) {
-	   $html .= <<HTML;
-<td><form action="$CGI_URI/admin/generate.pl">
-<input type=hidden name=id value="$article->{id}">
-<input type=submit value="Regenerate">
-</form></td>
-HTML
-	 }
-	 $html .= <<HTML;
-<td><form action="$CGI_URI/admin/admin.pl" target="_blank">
-<input type=submit value="Display">
-<input type=hidden name=id value="$article->{id}">
-<input type=hidden name=admin value="0"></form></td>
-</tr></table>
-HTML
-	 return $html;
-       }
-       else {
-	 return '';
-       }
-     },
+     admin => [ tag_admin => $self, $article, 'catalog', $embedded ],
      # for rearranging order in admin mode
      moveDown=>
      sub {

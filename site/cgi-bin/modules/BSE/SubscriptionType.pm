@@ -194,7 +194,7 @@ sub _format_body {
   while ($body =~ s#(doclink|link)\[([^\]\[]+)\]#_any_link($cfg, \@urls, $1, $2, \$url_index)#ie) {
   }
 
-  $gen->remove_block(\$body);
+  $gen->remove_block('Articles', [], \$body);
   while (1) {
     $body =~ s/[bi]\[([^\[\]]+)\]/$1/g
        and next;
