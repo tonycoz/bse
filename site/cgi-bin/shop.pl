@@ -92,6 +92,7 @@ my %steps =
    cart=>\&show_cart,
    checkout=>\&checkout,
    recalc=>\&recalc,
+   recalculate=>\&recalc,
    purchase=>\&purchase,
    prePurchase=>\&prePurchase,
   );
@@ -299,6 +300,9 @@ sub checkout {
 
   update_quantities();
   my @cart = @{$session{cart}};
+
+  @cart or return show_cart();
+
   my @cart_prods = map { Products->getByPkey($_->{productId}) } @cart;
   $session{custom} ||= {};
   my %custom_state = %{$session{custom}};
