@@ -4,7 +4,7 @@ use HTML::Entities;
 use DevHelp::Tags;
 use DevHelp::HTML;
 use vars qw(@EXPORT_OK @ISA);
-@EXPORT_OK = qw(tag_error_img);
+@EXPORT_OK = qw(tag_error_img tag_hash);
 @ISA = qw(Exporter);
 require Exporter;
 
@@ -253,6 +253,8 @@ sub tag_old {
 sub basic {
   my ($class, $acts, $cgi, $cfg) = @_;
 
+  require BSE::Util::Iterate;
+  my $it = BSE::Util::Iterate->new;
   return
     (
      $class->static($acts, $cfg),
@@ -267,6 +269,7 @@ sub basic {
        escape_html("@value");
      },
      old => [ \&tag_old, $cgi ],
+     $it->make_iterator(\&DevHelp::Tags::iter_get_repeat, 'repeat', 'repeats'),
     );
 }
 
@@ -555,6 +558,15 @@ sub tag_replace {
   }
     
   $str;
+}
+
+sub tag_hash {
+  my ($hash, $args) = @_;
+
+  my $value = $hash->{$args};
+  defined $value or $value = '';
+
+  escape_html($value);
 }
 
 1;

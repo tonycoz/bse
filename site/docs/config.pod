@@ -741,6 +741,16 @@ and follow the link in the confirmation email.
 You can get the I<id> of a subcription by looking at the Edit link on the
 subscriptions management page, the number after "id=" is the id.
 
+=item billing_on_main_opts
+
+If set to zero then user billing options will be managed on a separate
+page.  This is controlled by the user/options_base.tmpl template.
+
+=item user_register
+
+If set to zero then users cannot register themselves.  Default: true,
+allowing users to register themselves.
+
 =back
 
 =head1 AUTHOR

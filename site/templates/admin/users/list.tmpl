@@ -1,0 +1,45 @@
+<:wrap admin/xbase.tmpl title=>"Admin Site Users":>
+<h1>Admin Site Users</h1>
+<p>
+| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |
+<:if UserCan siteuser_add :>
+<a href="<:script:>?a_addform=1">Add User</a> |<:or UserCan:><:eif UserCan:>
+<:ifMessage:>
+<p><b><:message:></b></p>
+<:or:><:eif:> 
+
+<p>Page <:siteusers_pagenum:> of <:siteusers_pagecount:>
+<:ifFirstSiteusersPage:>&lt;&lt;&lt;&lt; &lt;&lt;<:or:><a href="<:script:>?s=<:sortby:>&r=<:reverse:>&p=1&pp=<:siteusers_perpage:>">&lt;&lt;&lt;&lt;</a> <a href="<:script:>?s=<:sortby:>&r=<:reverse:>&p=<:prevSiteusersPage:>&pp=<:siteusers_perpage:>">&lt;&lt;</a><:eif:>
+<:iterator begin repeats [siteusers_pagecount]:>
+<:if Eq [repeat value] [siteusers_pagenum]:><:repeat value:><:or Eq:><a href="<:script:>?s=<:sortby:>&r=<:reverse:>&p=<:repeat value:>&pp=<:siteusers_perpage:>"><:repeat value:></a><:eif Eq:>
+<:iterator end repeats:>
+<:ifLastSiteusersPage:>&gt;&gt; &gt;&gt;&gt;&gt;<:or:><a href="<:script:>?s=<:sortby:>&r=<:reverse:>&p=<:nextSiteusersPage:>&pp=<:siteusers_perpage:>">&gt;&gt;</a> <a href="<:script:>?s=<:sortby:>&r=<:reverse:>&p=<:siteusers_pagecount:>&pp=<:siteusers_perpage:>">&gt;&gt;&gt;&gt;</a><:eif:>
+</p>
+<form method="post" action="<:script:>">
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
+    <tr>
+      <td>
+        <table cellpadding="6" border="0" cellspacing="1">
+          <tr> 
+            <th bgcolor="#FFFFFF" nowrap> <a href="<:script:>?<:sorthelp userId:>&p=<:siteusers_pagenum:>&pp=<:siteusers_perpage:>">Logon</a></th>
+            <th bgcolor="#FFFFFF" nowrap> <a href="<:script:>?<:sorthelp name1:>&p=<:siteusers_pagenum:>&pp=<:siteusers_perpage:>">First Name</a></th>
+            <th bgcolor="#FFFFFF" nowrap> <a href="<:script:>?<:sorthelp name2:>&p=<:siteusers_pagenum:>&pp=<:siteusers_perpage:>">Last Name</a></th>
+          </tr>
+          <:if Siteusers:> <: iterator begin siteusers :> 
+          <tr bgcolor="#FFFFFF"> 
+            <td nowrap> <a href="<:script:>?a_edit=1&id=<:siteuser id:>"><:siteuser userId:></a></td>
+            <td valign="top"><:siteuser name1:></td>
+            <td valign="top"><:siteuser name2:></td>
+          </tr>
+          <: iterator end siteusers :> 
+          <:or Siteusers:> 
+          <tr bgcolor="#FFFFFF"> 
+            <td colspan="4" align="center">Your system has no users.</td>
+          </tr>
+          <:eif Siteusers:> 
+        </table>
+</td>
+</tr>
+</table>
+</form>
+

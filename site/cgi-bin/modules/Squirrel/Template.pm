@@ -32,7 +32,14 @@ sub low_perform {
       }
       elsif (ref $action eq 'ARRAY') {
 	my ($code, @params) = @$action;
-	$value = $code->(@params, $args, $acts, $func, $self);
+	if (ref $code) {
+	  $value = $code->(@params, $args, $acts, $func, $self);
+	}
+	else {
+	  # assume it's a method name, first param is the object/class
+	  my $obj = shift @params;
+	  $value = $obj->$code(@params, $args, $acts, $func, $self);
+	}
       }
       elsif (ref $action eq 'SCALAR') {
 	$value = $$action;
@@ -126,9 +133,20 @@ sub iterate {
       $entryf = $entry;
     }
 
-    $resetf->(@rargs, $args, $acts, $name, $self) if $resetf;
+    if ($resetf) {
+      if (ref $resetf) {
+	$resetf->(@rargs, $args, $acts, $name, $self);
+      }
+      else {
+	my $obj = shift @rargs;
+	$obj->$resetf(@rargs, $args, $acts, $name, $self);
+      }
+    }
+    my $eobj;
+    ref $entryf or $eobj = shift @eargs;
     my $result = '';
-    while ($entryf->(@eargs, $name, $args)) {
+    while ($eobj ? $eobj->$entryf(@eargs, $name, $args) 
+	   : $entryf->(@eargs, $name, $args)) {
       $result .= $self->replace_template($sep, $acts) if length $result;
       $result .= $self->replace_template($input, $acts);
     }

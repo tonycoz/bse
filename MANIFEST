@@ -26,6 +26,7 @@ site/cgi-bin/admin/move.pl
 site/cgi-bin/admin/reorder.pl
 site/cgi-bin/admin/report.pl
 site/cgi-bin/admin/shopadmin.pl
+site/cgi-bin/admin/siteusers.pl
 site/cgi-bin/admin/subs.pl
 site/cgi-bin/admin/userlist.pl
 site/cgi-bin/bse.cfg
@@ -41,6 +42,7 @@ site/cgi-bin/modules/BSE/Admin/StepParents.pm
 site/cgi-bin/modules/BSE/AdminLogon.pm
 site/cgi-bin/modules/BSE/AdminMenu.pm
 site/cgi-bin/modules/BSE/AdminUsers.pm
+site/cgi-bin/modules/BSE/AdminSiteUsers.pm
 site/cgi-bin/modules/BSE/Arrows.pm
 site/cgi-bin/modules/BSE/Cfg.pm
 site/cgi-bin/modules/BSE/ChangePW.pm
@@ -85,16 +87,19 @@ site/cgi-bin/modules/BSE/TB/AdminUser.pm
 site/cgi-bin/modules/BSE/TB/AdminUsers.pm
 site/cgi-bin/modules/BSE/Template.pm
 site/cgi-bin/modules/BSE/UserReg.pm
+site/cgi-bin/modules/BSE/Util/Iterate.pm
 site/cgi-bin/modules/BSE/Util/SQL.pm
 site/cgi-bin/modules/BSE/Util/Secure.pm
 site/cgi-bin/modules/BSE/Util/Tags.pm
 site/cgi-bin/modules/BSE/Util/Valid.pm
 site/cgi-bin/modules/BSE/Version.pm
 site/cgi-bin/modules/Constants.pm
+site/cgi-bin/modules/DevHelp/DynSort.pm
 site/cgi-bin/modules/DevHelp/Formatter.pm
 site/cgi-bin/modules/DevHelp/HTML.pm
 site/cgi-bin/modules/DevHelp/Report.pm
 site/cgi-bin/modules/DevHelp/Tags.pm
+site/cgi-bin/modules/DevHelp/Tags/Iterate.pm
 site/cgi-bin/modules/Generate.pm
 site/cgi-bin/modules/Generate/Article.pm
 site/cgi-bin/modules/Generate/Catalog.pm
@@ -253,6 +258,9 @@ site/templates/admin/subs/send_error.tmpl
 site/templates/admin/subs/send_form.tmpl
 site/templates/admin/subs/start_send.tmpl
 site/templates/admin/userlist.tmpl
+site/templates/admin/users/add.tmpl
+site/templates/admin/users/edit.tmpl
+site/templates/admin/users/list.tmpl
 site/templates/admin/xbase.tmpl
 site/templates/base.tmpl
 site/templates/cart_base.tmpl
@@ -314,6 +322,7 @@ site/templates/user/lostpassword_base.tmpl
 site/templates/user/lostpwdemail_base.tmpl
 site/templates/user/nopassword_base.tmpl
 site/templates/user/options_base.tmpl
+site/templates/user/options_billing_base.tmpl
 site/templates/user/options_saved_base.tmpl
 site/templates/user/register_base.tmpl
 site/templates/user/subdetail.tmpl

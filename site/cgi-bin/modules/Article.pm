@@ -10,7 +10,8 @@ sub columns {
     thumbImage thumbWidth thumbHeight imagePos
     release expire keyword template link admin threshold
     summaryLength generator level listed lastModified flags
-    customDate1 customDate2 customStr1 customStr2/;
+    customDate1 customDate2 customStr1 customStr2
+    customInt1 customInt2 customInt3 customInt4/;
 }
 
 sub step_parents {

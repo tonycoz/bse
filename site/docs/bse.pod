@@ -10,6 +10,73 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+This is a development release and is not suitable for production use.
+
+=head2 0.14_03
+
+=over
+
+=item *
+
+in some cases registration or saving user options wasn't outputting a
+page, producing a 500 error
+
+=item *
+
+user options templating changes:
+
+=over
+
+=item *
+
+for the textOnlyEmail option to be saved, a saveTextOnlyMail hidden
+field should be present with a non-zero value
+
+=item *
+
+for the keepAddress option to be saved, a saveKeepAddress hidden field
+should be present with a non-zero value
+
+=item *
+
+for the subscriptions to be saves, a saveSubscriptions hidden field
+should be present
+
+=back
+
+=item *
+
+added site user manager, this still needs some template work
+
+=item *
+
+user registration can be disabled with the C<user_register> option in
+the C<[site users]> section of the config file (you can still create
+users using the site user manager.)
+
+=item *
+
+billing information fields have been added to the site_users table.
+
+=item *
+
+adminNotes field has been added to the site users table (editable only
+by admins.)
+
+=item *
+
+instructions field has been added to the orders table, for shipping
+instructions (or any).  This still needs some support on the admin
+templates, and the email templates.
+
+=item *
+
+added config option C<billing_on_main_opts> to control whether billing
+options are on the main user options page.  This is managed by the
+templates, not the code.
+
+=back
+
 =head2 0.14_02
 
 =over

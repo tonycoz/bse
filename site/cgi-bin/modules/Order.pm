@@ -17,7 +17,8 @@ sub columns {
            filled whenFilled whoFilled paidFor paymentReceipt
            randomId cancelled userId paymentType
            customInt1 customInt2 customInt3 customInt4 customInt5
-           customStr1 customStr2 customStr3 customStr4 customStr5/;
+           customStr1 customStr2 customStr3 customStr4 customStr5
+           instructions billTelephone billFacsimile billEmail/;
 }
 
 1;

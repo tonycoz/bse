@@ -785,7 +785,11 @@ sub tag_movefiles {
     or return '** movefiles can only be used in the files iterator **';
 
   my $urlbase = $self->{cfg}->entryVar('site', 'url');
-  my $url = "$urlbase$ENV{SCRIPT_NAME}?id=$article->{id}&filelist=1$urladd";
+  my $url = "$urlbase$ENV{SCRIPT_NAME}?id=$article->{id}$urladd";
+  my $t = $req->cgi->param('_t');
+  if ($t && $t =~ /^\w+$/) {
+    $url .= "&_t=$t";
+  }
 
   my $down_url = "";
   if ($$rindex < $#$files) {
@@ -2290,7 +2294,7 @@ sub fileswap {
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
-  $self->_refresh_filelist($req, $article, 'File moved');
+  $self->refresh($article, $req->cgi, undef, 'File moved');
 }
 
 sub filedel {

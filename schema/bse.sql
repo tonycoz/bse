@@ -68,6 +68,11 @@ CREATE TABLE article (
   customStr1 varchar(255) null,
   customStr2 varchar(255) null,
 
+  customInt1 integer null,
+  customInt2 integer null,
+  customInt3 integer null,
+  customInt4 integer null,
+
   PRIMARY KEY (id),
 
   -- if we keep id in the indexes MySQL will sometimes be able to
@@ -221,6 +226,11 @@ create table orders (
   customStr3 varchar(255) null,
   customStr4 varchar(255) null,
   customStr5 varchar(255) null,
+
+  instructions text not null default '',
+  billTelephone varchar(80) not null default '',
+  billFacsimile varchar(80) not null default '',
+  billEmail varchar(255) not null default '',
 
   primary key (id),
   index order_cchash(ccNumberHash),
@@ -428,6 +438,24 @@ create table site_users (
   otherProfession varchar(127) not null,
 
   previousLogon datetime not null,
+
+  -- used for billing information on the checkout form
+  billFirstName varchar(127) not null default '',
+  billLastName varchar(127) not null default '',
+  billStreet varchar(127) not null default '',
+  billSuburb varchar(127) not null default '',
+  billState varchar(40) not null default '',
+  billPostCode varchar(40) not null default '',
+  billCountry varchar(127) not null default '',
+
+  instructions text not null default '',
+  billTelephone varchar(80) not null default '',
+  billFacsimile varchar(80) not null default '',
+  billEmail varchar(255) not null default '',
+
+  adminNotes text not null default '',
+
+  disabled integer not null default 0,
 
   primary key (id),
   unique (userId)

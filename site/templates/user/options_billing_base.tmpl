@@ -1,0 +1,131 @@
+<:wrap base.tmpl:>
+<div align=center class="useroptions"> 
+<:if Cfg "site users" nopassword:><:or Cfg:>
+  <table border="0" cellspacing="0" cellpadding="0">
+    <tr> 
+      <td> 
+        <form name="yourorders" method="post" action="<:script:>">
+          <input type="submit" name="Submit" value="View your account" class="user-buttons" />
+          <input type="hidden" name="userpage" value="1" />
+        </form>
+      </td>
+      <:ifCfg shop enabled:><td> 
+        <form name="ff" method="post" action="/cgi-bin/shop.pl">
+          <input type="submit" name="cart" value="View shopping cart" class="user-buttons" />
+        </form>
+      </td><:or:><:eif:>
+    </tr>
+  </table>
+  <br />
+<:eif Cfg:>
+  <table width="250">
+    <tr> 
+      <th colspan="2" height="20" class="thead"> 
+        <p>User Options - Billing</p>
+      </th>
+    <tr> 
+      <td colspan="2" align="center"> 
+        <p><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Hello <:ifUser name1:><:user name1:> <:user name2:><:or:><:user 
+          userId:><:eif:></font></b></p>
+        <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#999999">Last logged in: <:date user previousLogon:><br>
+          Registered since: <:date user whenRegistered:></font><br>
+          <br>
+        </p>
+        </td>
+    </tr>
+    <:if Message:> 
+    <tr> 
+      <td colspan="2" align="center"> 
+        <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b>Error: 
+          <:message:></b></font></p>
+      </td>
+    </tr>
+    <:or Message:><:eif Message:> 
+    </tr>
+      <tr> 
+        <td colspan="2" height="20" align="center"><br>
+          <br>
+          <a href="<:script:>?show_opts=1">Return to Main Options</a></td>
+      </tr>
+    <form action="/cgi-bin/user.pl" method="post">
+    <input type="hidden" name="_t" value="billing" />
+    <:if Cfg "site users" nopassword:>
+    <input type="hidden" name="u" value="<:user id:>" />
+    <input type="hidden" name="p" value="<:user password:>" />
+    <input type="hidden" name="r" value="<:script:>?show_opts=<:user password:>&amp;u=<:user id:>&_t=saved" />
+    <:or Cfg:><:eif Cfg:>
+<:if Cfg "site users" nopassword:><:or Cfg:>
+      <tr> 
+        <th>Logon Name:</th>
+        <td width="100%"><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:user 
+          userId:></font></td>
+      </tr>
+<:eif Cfg:>
+      <tr> 
+        <th>First Name:</th>
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="billFirstName" value="<:last billFirstName:>" size="40" maxlength="127" /><:error_img billFirstName:>
+        </td>
+      </tr>
+      <tr> 
+        <th>Last Name:</th>
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="billLastName" value="<:last billLastName:>" size="40" maxlength="127" /><:error_img billLastName:>
+        </td>
+      </tr>
+      <tr> 
+        <th>Street:</th>
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="billStreet" value="<:last billStreet:>" size="40" maxlength="127" /><:error_img billStreet:>
+        </td>
+      </tr>
+      <tr> 
+        <th>Suburb:</th>
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="billSuburb" value="<:last billSuburb:>" size="40" maxlength="127" /><:error_img billSuburb:>
+        </td>
+      </tr>
+      <tr> 
+        <th>State:</th>
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="billState" value="<:last billState:>" size="40" maxlength="127" /><:error_img billState:>
+        </td>
+      </tr>
+      <tr> 
+        <th>Post Code:</th>
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="billPostCode" value="<:last billPostCode:>" size="40" maxlength="127" /><:error_img billPostCode:>
+        </td>
+      </tr>
+      <tr> 
+        <th>Country:</th>
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="billCountry" value="<:last billCountry:>" size="40" maxlength="127" /><:error_img billCountry:>
+        </td>
+      </tr>
+      <tr> 
+        <th>Telephone:</th>
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="billTelephone" value="<:last billTelephone:>" size="40" maxlength="127" /><:error_img billTelephone:>
+        </td>
+      </tr>
+      <tr> 
+        <th>Facsimile:</th>
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="billFacsimile" value="<:last billFacsimile:>" size="40" maxlength="127" /><:error_img billFacsimile:>
+        </td>
+      </tr>
+      <tr> 
+        <th>Email:</th>
+        <td width="100%" nowrap="nowrap"> 
+          <input type="text" name="billEmail" value="<:last billEmail:>" size="40" maxlength="127" /><:error_img billEmail:>
+        </td>
+      </tr>
+      <tr> 
+        <td colspan="2" align="right"> 
+          <input type="submit" name="saveopts" value="Save Options" class="user-buttons" />
+        </td>
+      </tr>
+    </form>
+  </table>
+</div>
