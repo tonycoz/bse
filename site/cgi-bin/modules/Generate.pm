@@ -721,6 +721,8 @@ sub remove_block {
 	  and next TRY;
 	$part =~ s#hrcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]##ig
 	  and next TRY;
+	$part =~ s#image\[([^\]\[]+)\]##ig
+	  and next TRY;
 	
 	last TRY;
       }
