@@ -37,6 +37,10 @@ sub send {
     or return $self->_error("mail command failed: ".$smtp->message);
   $smtp->to($args{to})
     or return $self->_error("RCPT command failed: ".$smtp->message);
+  if ($args{bcc}) {
+    $smtp->to($args{bcc})
+      or return $self->_error("RCPT command failed (BCC): ".$smtp->message);
+  }
   $smtp->data()
     or return $self->_error("DATA command failed: ".$smtp->message);
   $smtp->datasend("To: $args{to}\n");

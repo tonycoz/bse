@@ -27,6 +27,10 @@ sub send {
   $args{headers} =~ /^\s/
     and return $self->_error("headers starts with whitespace");
 
+  if ($args{bcc}) {
+    $args{headers} = "Bcc: $args{bcc}\n".$args{headers};
+  }
+
   my $cfg = $self->{cfg};
   my $sendmail = $cfg->entry('mail', 'sendmail') || '/usr/lib/sendmail';
   my $opts = $cfg->entry('mail', 'sendmail_opts') || '-t -oi';
