@@ -17,6 +17,7 @@ my @targets =
    'shop.html',
    'add.html',
    'shopadmin.html',
+   'TODO.html',
   );
 
 my @exts = qw(.pod .pm .pl);
