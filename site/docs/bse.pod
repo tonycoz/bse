@@ -10,6 +10,87 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.14_08
+
+=over
+
+=item *
+
+If the last value of a parsed tag parameter list was an unquoted 0,
+the 0 was not passed to the tag for processing.
+
+=item *
+
+added the cfgsection iterator.
+
+=item *
+
+iterators that allowed sorting/filtering now actually sort on the
+right value
+
+=item *
+
+the stepkid tag on edit pages now checks the article is a stepkid
+before doing a hash lookup, preventing an undefined value warning
+
+=item *
+
+the admin/edit_steps template was using invalid article names in
+ifUserCan checks
+
+=item *
+
+the flags iterator and ifFlagSet tags weren't available on the add
+site user page.
+
+=item *
+
+saving a site user in nopassword mode would result in a validation
+error if the email field was present but no confirmation email field
+was present.  The confirmation email field is now only required if the
+supplied email address is different from that currently stored for the
+user.
+
+=item *
+
+changing the user's email address in nopassword mode (and possibly in
+normal mode with subscriptions) resulted in a server error.
+
+=item *
+
+printable.pl wasn't looking in the printable/ directory for it's
+templates (#298)
+
+=item *
+
+printable.pl's error reporting wasn't supplying the config value to
+the templater
+
+=item *
+
+printable.pl's error page now uses the article templater rather than
+the base templater
+
+=item *
+
+added smoke test for errors from printable.pl
+
+=item *
+
+added smoke test for admin/siteusers.pl
+
+=item *
+
+trying to call "site users" "site members" now.
+
+=item *
+
+you can now select subscriptions for a site member with the admin
+tool.  This still results in a confirmation email if the user hasn't
+been confirmed at their email address.
+
+=back
+
 =head2 0.14_07
 
 You will need to run upgrade_mysql.pl for this release.

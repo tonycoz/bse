@@ -36,9 +36,36 @@ sub _get_parms {
   @out;
 }
 
+sub iter_cfgsection {
+  my ($cfg, $args) = @_;
+
+  $args =~ s/^\s*\"([^\"]+)\"\s*//
+    or return;
+  my $section = $1;
+
+  my %entries = $cfg->entries($section);
+  my @entries = map +{ key => $_, value => $entries{$_} }, keys %entries;
+
+  my %types;
+
+  # guess types
+  unless (grep /\D/, keys %entries) {
+    $types{key} = 'n';
+  }
+  unless (grep /\D/, values %entries) {
+    $types{value} = 'n';
+  }
+
+  require BSE::Sort;
+
+  return BSE::Sort::bse_sort(\%types, $args, @entries);
+}
+
 sub static {
   my ($class, $acts, $cfg) = @_;
 
+  require BSE::Util::Iterate;
+  my $it = BSE::Util::Iterate->new;
   return
     (
      date =>
@@ -133,6 +160,7 @@ sub static {
        defined $def or $def = '';
        $cfg->entry($section, $key, $def);
      },
+     $it->make_iterator([ \&iter_cfgsection, $cfg ], 'cfgentry', 'cfgsection'),
      kb =>
      sub {
        my ($arg, $acts, $name, $templater) = @_;
@@ -218,6 +246,7 @@ sub static {
        $out =~ s/\b(\w)/\U$1/g;
        $out;
      },
+     
      _format => 
      sub {
        my ($value, $fmt) = @_;

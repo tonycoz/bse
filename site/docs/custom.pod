@@ -1,0 +1,94 @@
+=head1 NAME
+
+custom.pod - guide to customizing BSE
+
+=head1 SYNOPSIS
+
+A guide to customizing BSE, including through templating,
+configuration and code.
+
+=head1 DESCRIPTION
+
+BSE can be customized in several ways:
+
+=over
+
+=item *
+
+templates - this is the most common form of customization, and the one
+that most sites will do.  The tags are mostly documented in
+L<templates.pod>, with some tag documentation left by the wayside as
+new tags are added.
+
+=item *
+
+configuration - 
+
+=back
+
+=head1 TEMPLATING
+
+See L<templates.pod> for information on customizing templates.
+
+=head1 CONFIGURATION
+
+You can configure several types of information in BSE:
+
+=over
+
+=item *
+
+article defaults, based on parent id or level
+
+=item *
+
+flags available for articles/catalogs/products
+
+=item *
+
+flags available for site users
+
+=item *
+
+available payment types
+
+=item *
+
+template name translation
+
+=back
+
+and more.
+
+=head2 Article defaults
+
+You can set default values for article fields by either setting a key
+in C<< [children of I<article-id>] >> to set the default for children
+of the given I<article-id> or in C<< [level I<level>] >>, where
+I<level> is the level of the article.
+
+Currently these values are just used when the value isn't supplied by
+the article creation form, for example when the user doesn't have
+access to edit them, but they will fill in the defaults on the add
+form in the future.
+
+To set the default ***
+
+=head1 CODE
+
+=head1 ADMIN CUSTOMIZATION
+
+=head2 Permission Sets
+
+=head2 Reports
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=head1 REVISION
+
+$Revision$
+
+=cut
+

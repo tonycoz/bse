@@ -481,6 +481,8 @@ sub tag_step_kid {
 
   my $kid = $allkids->[$$rallkid_index]
     or return '';
+  $step_kids->{$kid->{id}}
+    or return;
   #print STDERR "found kid (want $arg): ", Dumper $kid;
   escape_html($step_kids->{$kid->{id}}{$arg});
 }

@@ -3,7 +3,7 @@ use strict;
 use BSE::Test qw(make_ua ok fetch_ok base_url config);
 
 ++$|;
-print "1..51\n";
+print "1..55\n";
 my $baseurl = base_url;
 ok($baseurl =~ /^http:/, "basic check of base url");
 my $ua = make_ua;
@@ -60,3 +60,7 @@ fetch_ok($ua, "changepw", "$baseurl/cgi-bin/admin/changepw.pl",
 	 qr!Change Password|<html></html>!i);
 fetch_ok($ua, "printable", "$baseurl/cgi-bin/printable.pl?id=5",
 	 qr!sidebar\s+subsection!i);
+fetch_ok($ua, "printable error", "$baseurl/cgi-bin/printable.pl?id=5&template=foo",
+	 qr!Invalid\s+template\s+name!i);
+fetch_ok($ua, "siteusers", "$baseurl/cgi-bin/admin/siteusers.pl",
+	 qr!Admin Site Members!i);

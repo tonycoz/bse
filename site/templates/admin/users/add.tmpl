@@ -1,8 +1,8 @@
-<:wrap admin/xbase.tmpl title=>"Add Site User":>
-<h1>Add Site User</h1>
+<:wrap admin/xbase.tmpl title=>"Add Site Member":>
+<h1>Add Site Member</h1>
 <p>
 | <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |
-<a href="/cgi-bin/admin/siteusers.pl">Site users</a> |
+<a href="/cgi-bin/admin/siteusers.pl">Site Members</a> |
 <a href="mailto:<:siteuser email:>">Email</a> |</p>
 
 <:ifMessage:>
@@ -230,6 +230,19 @@
             <td bgcolor="#FFFFFF" valign="top"><:help editsiteuser flags:>  <:error_img adminNotes:></td>
           </tr>
 <:or Flags:><:eif Flags:>
+<:if Subscriptions:>
+          <tr> 
+            <th bgcolor="#FFFFFF" align="left" valign="top">Subscriptions: </th>
+            <td bgcolor="#FFFFFF"> <input type="hidden" name="checkedsubs" value="1" />
+	    <:iterator begin subscriptions:>
+	    <input type="checkbox" name="subscription" value="<:subscription id:>" <:ifSubscribed:>checked="checked" <:or:><:eif:>/> <:subscription name:>
+	    <:iterator separator subscriptions:>
+	    <br />
+	    <:iterator end subscriptions:>
+            </td>
+            <td bgcolor="#FFFFFF" valign="top"><:help editsiteuser subscriptions:></td>
+          </tr>
+<:or Subscriptions:><:eif Subscriptions:>
           <tr> 
             <td bgcolor="#FFFFFF" colspan="3" align="right"> 
               <input type="submit" name="a_add" value="  Add User  " />

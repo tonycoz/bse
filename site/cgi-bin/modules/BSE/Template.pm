@@ -100,7 +100,7 @@ sub template_dirs {
   my ($class, $cfg) = @_;
 
   ref($cfg) eq 'BSE::Cfg'
-    or confess "Invalid cfg supplied\n";
+    or confess "Invalid cfg $cfg supplied\n";
 
   my $base = $cfg->entryVar('paths', 'templates');
   my $local = $cfg->entry('paths', 'local_templates');

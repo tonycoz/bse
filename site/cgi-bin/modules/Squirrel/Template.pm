@@ -9,6 +9,8 @@ $VERSION="0.07";
 sub new {
   my ($class, %opts) = @_;
 
+  $opts{errout} = \*STDOUT;
+
   return bless \%opts, $class;
 }
 
@@ -95,7 +97,6 @@ sub perform {
 
   $args = '' unless defined $args;
 
-  #print STDERR "perform $func $args\n";
   my $value = $self->low_perform($acts, $func, $args, $orig);
 
   unless (defined $value) {

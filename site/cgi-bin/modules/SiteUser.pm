@@ -92,6 +92,7 @@ sub send_conf_request {
   }
 
   # check for existing confirmations
+  require BSE::EmailRequests;
   my $confirm = BSE::EmailRequests->getBy(genEmail=>$checkemail);
   if ($confirm) {
     if ($confirm->{unackedConfMsgs} >= MAX_UNACKED_CONF_MSGS) {
@@ -132,7 +133,8 @@ sub send_conf_request {
   my $email_template = 
     $nopassword ? 'user/email_confirm_nop' : 'user/email_confirm';
   my $body = BSE::Template->get_page($email_template, $cfg, \%confacts);
-  
+
+  require BSE::Mail;
   my $mail = BSE::Mail->new(cfg=>$cfg);
   my $subject = $cfg->entry('confirmations', 'subject') 
     || 'Subscription Confirmation';

@@ -1,9 +1,9 @@
-<:wrap admin/xbase.tmpl title=>"Admin Site Users":>
-<h1>Admin Site Users</h1>
+<:wrap admin/xbase.tmpl title=>"Admin Site Members":>
+<h1>Admin Site Members</h1>
 <p>
 | <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |
 <:if UserCan siteuser_add :>
-<a href="<:script:>?a_addform=1">Add User</a> |<:or UserCan:><:eif UserCan:>
+<a href="<:script:>?a_addform=1">Add Member</a> |<:or UserCan:><:eif UserCan:>
 <:ifMessage:>
 <p><b><:message:></b></p>
 <:or:><:eif:> 

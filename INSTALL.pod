@@ -64,7 +64,19 @@ Apache::Session
 
 =item *
 
+Storable (and this requires Log::Agent sometimes)
+
+=item *
+
 HTML::Parser
+
+=item *
+
+URI::Escape
+
+=item *
+
+HTML::Entities
 
 =back
 

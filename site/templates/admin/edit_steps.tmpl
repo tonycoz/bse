@@ -41,12 +41,12 @@
             <td align="center" nowrap="nowrap"><:kid id:></td>
             <td width="100%"><:kid title:></td>
             <td nowrap="nowrap"><:ifStepKid:> 
-              <:if UserCan edit_stepkid_save:article,edit_stepparent_save:[stepkid childId]:><input type="text" name="release_<:stepkid childId:>" value="<:date "%d/%m/%Y" stepkid release:>" size="10" /><:or UserCan:><:date "%d/%m/%Y" stepkid release:><:eif UserCan:>
+              <:if UserCan edit_stepkid_save:article,edit_stepparent_save:kid :><input type="text" name="release_<:stepkid childId:>" value="<:date "%d/%m/%Y" stepkid release:>" size="10" /><:or UserCan:><:date "%d/%m/%Y" stepkid release:><:eif UserCan:>
               <:or:>&nbsp;<:eif:></td>
             <td nowrap="nowrap"><:ifStepKid:> 
-              <:if UserCan edit_stepkid_save:article,edit_stepparent_save:[stepkid childId]:><input type="text" name="expire_<:stepkid childId:>" value="<:date "%d/%m/%Y" stepkid expire:>" size="10" /><:or UserCan:><:date "%d/%m/%Y" stepkid expire:><:eif UserCan:>
+              <:if UserCan edit_stepkid_save:article,edit_stepparent_save:kid :><input type="text" name="expire_<:stepkid childId:>" value="<:date "%d/%m/%Y" stepkid expire:>" size="10" /><:or UserCan:><:date "%d/%m/%Y" stepkid expire:><:eif UserCan:>
               <:or:>&nbsp;<:eif:></td>
-            <td nowrap="nowrap"><:edit kid Edit:> <:ifStepKid:><:if UserCan edit_stepkid_delete:article,edit_stepparent_delete:[stepkid childId] :><a href="<:script:>?del_stepkid=1&amp;id=<:stepkid parentId:>&amp;stepkid=<:stepkid childId:>&amp;_t=steps" onClick="return window.confirm('Are you sure you want to delete this Step child')">Delete</a><:or UserCan:><:eif UserCan:><:or:><:eif:> </td>
+            <td nowrap="nowrap"><:edit kid Edit:> <:ifStepKid:><:if UserCan edit_stepkid_delete:article,edit_stepparent_delete:kid :><a href="<:script:>?del_stepkid=1&amp;id=<:stepkid parentId:>&amp;stepkid=<:stepkid childId:>&amp;_t=steps" onClick="return window.confirm('Are you sure you want to delete this Step child')">Delete</a><:or UserCan:><:eif UserCan:><:or:><:eif:> </td>
 			<td nowrap="nowrap"><:movestepkid:></td>
           </tr>
           <:iterator end kids:> 
@@ -115,13 +115,13 @@
               parentId:></a></td>
             <td width="100%"><:stepparent_targ title:></td>
             <td nowrap="nowrap"> 
-              <:if UserCan edit_stepparent_save:article,edit_stepkid_save:[stepparent parentId]:><input type="text" name="release_<:stepparent parentId:>" value="<:date "%d/%m/%Y" stepparent release:>" size="10" /><:or UserCan:><:date "%d/%m/%Y" stepparent release:><:eif UserCan:>
+              <:if UserCan edit_stepparent_save:article,edit_stepkid_save:stepparent_targ :><input type="text" name="release_<:stepparent parentId:>" value="<:date "%d/%m/%Y" stepparent release:>" size="10" /><:or UserCan:><:date "%d/%m/%Y" stepparent release:><:eif UserCan:>
             </td>
             <td nowrap="nowrap"> 
-              <:if UserCan edit_stepparent_save:article,edit_stepkid_save:[stepparent parentId]:><input type="text" name="expire_<:stepparent parentId:>" value="<:date "%d/%m/%Y" stepparent expire:>" size="10" /><:or UserCan:><:date "%d/%m/%Y" stepparent expire:><:eif UserCan:>
+              <:if UserCan edit_stepparent_save:article,edit_stepkid_save:stepparent_targ:><input type="text" name="expire_<:stepparent parentId:>" value="<:date "%d/%m/%Y" stepparent expire:>" size="10" /><:or UserCan:><:date "%d/%m/%Y" stepparent expire:><:eif UserCan:>
             </td>
             <td nowrap="nowrap"><a href="/cgi-bin/admin/add.pl?id=<:stepparent parentId:>">Edit</a> 
-              <:if UserCan edit_stepkid_delete:[stepparent parentId],edit_stepparent_delete:article :><a href="<:script:>?del_stepparent=1&amp;id=<:stepparent childId:>&amp;stepparent=<:stepparent parentId:>&amp;_t=steps" onClick="return window.confirm('Are you sure you want to delete this Step parent')">Delete</a> <:or UserCan:><:eif UserCan:></td>
+              <:if UserCan edit_stepkid_delete:stepparent_targ,edit_stepparent_delete:article :><a href="<:script:>?del_stepparent=1&amp;id=<:stepparent childId:>&amp;stepparent=<:stepparent parentId:>&amp;_t=steps" onClick="return window.confirm('Are you sure you want to delete this Step parent')">Delete</a> <:or UserCan:><:eif UserCan:></td>
 			  <td nowrap="nowrap"><:movestepparent:></td>
           </tr>
           <:iterator end stepparents:> 

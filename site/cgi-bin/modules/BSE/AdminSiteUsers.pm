@@ -6,6 +6,7 @@ use SiteUsers;
 use BSE::Util::Iterate;
 use BSE::Util::DynSort qw(sorter tag_sorthelp);
 use BSE::Util::SQL qw/now_datetime/;
+use BSE::SubscriptionTypes;
 use Util;
 
 my %actions =
@@ -109,6 +110,37 @@ sub tag_if_flag_set {
   return index($flags, $args[0]) >= 0;
 }
 
+sub tag_if_subscribed_register {
+  my ($cgi, $cfg, $subs, $rsub_index) = @_;
+
+  return 0 if $$rsub_index < 0 or $$rsub_index >= @$subs;
+  my $sub = $subs->[$$rsub_index];
+  if ($cgi->param('checkedsubs')) {
+    my @checked = $cgi->param('subscription');
+    return grep($sub->{id} == $_, @checked) != 0;
+  }
+  else {
+    my $def = $cfg->entryBool('site users', 'subscribe_all', 0);
+
+    return $cfg->entryBool('site users', "subscribe_$sub->{id}", $def);
+  }
+}
+
+sub tag_if_subscribed {
+  my ($cgi, $subs, $rsub_index, $usersubs) = @_;
+
+  $$rsub_index >= 0 && $$rsub_index < @$subs
+    or return;
+
+  my $sub = $subs->[$$rsub_index];
+  if ($cgi->param('checkedsubs')) {
+    my @checked = $cgi->param('subscription');
+    return grep($sub->{id} == $_, @checked) != 0;
+  }
+
+  $usersubs->{$sub->{id}};
+}
+
 sub req_edit {
   my ($class, $req, $msg, $errors) = @_;
 
@@ -140,6 +172,11 @@ sub req_edit {
     }
   }
 
+  my @subs = grep $_->{visible}, BSE::SubscriptionTypes->all;
+  my $sub_index;
+  require BSE::SubscribedUsers;
+  my @usersubs = BSE::SubscribedUsers->getBy(userId=>$siteuser->{id});
+  my %usersubs = map { $_->{subId}, $_ } @usersubs;
   my %acts;
   %acts =
     (
@@ -152,6 +189,10 @@ sub req_edit {
      ifRequired => [ \&tag_if_required, $req->cfg ],
      $it->make_iterator([ \&iter_flags, $req->cfg], 'flag', 'flags'),
      ifFlagSet => [ \&tag_if_flag_set, $siteuser->{flags} ],
+     $it->make_iterator(undef, 'subscription', 'subscriptions', \@subs, 
+			\$sub_index),
+     ifSubscribed =>
+     [ \&tag_if_subscribed, $cgi, \@subs, \$sub_index, \%usersubs ],
     );  
 
   my $template = 'admin/users/edit';
@@ -189,7 +230,7 @@ sub req_save {
 
   my $saveemail;
   my $email = $cgi->param('email');
-  if (defined $email) {
+  if (defined $email && $email ne $user->{email}) {
     if (!$email) {
       $errors{email} = "Email is a required field";
     }
@@ -285,6 +326,10 @@ sub req_save {
     if $cgi->param('saveDisabled') && !defined $cgi->param('disabled');
   $user->save;
 
+  if ($cgi->param('checkedsubs')) {
+    $class->save_subs($req, $user);
+  }
+
   my $custom = Util::custom_class($cfg);
   $custom->siteusers_changed($cfg);
 
@@ -299,7 +344,7 @@ sub req_save {
   }
   else {
     my @subs = $user->subscriptions;
-    if (@subs && $newemail) {
+    if (@subs && !$user->{confirmed}) {
       $sent_ok = $user->send_conf_request($req->cgi, $req->cfg, \$code, \$msg);
     }
   }
@@ -349,6 +394,10 @@ sub req_addform {
     }
   }
 
+  my $it = BSE::Util::Iterate->new;
+
+  my @subs = grep $_->{visible}, BSE::SubscriptionTypes->all;
+  my $sub_index;
   my %acts;
   %acts =
     (
@@ -358,6 +407,12 @@ sub req_addform {
      message => $msg,
      error_img => [ \&tag_error_img, $req->cfg, $errors ],
      ifRequired => [ \&tag_if_required, $req->cfg ],
+     $it->make_iterator([ \&iter_flags, $req->cfg], 'flag', 'flags'),
+     ifFlagSet => 0,
+     $it->make_iterator(undef, 'subscription', 'subscriptions', \@subs, 
+			\$sub_index),
+     ifSubscribed =>
+     [ \&tag_if_subscribed_register, $cgi, $req->cfg, \@subs, \$sub_index ],
     );  
 
   my $template = 'admin/users/add';
@@ -489,11 +544,17 @@ sub req_add {
     $user = SiteUsers->add(@user{@cols});
   };
   if ($user) {
-    # my $subs = $self->_save_subs($user, $session, $cfg, $cgi);
+    my $subs = $class->save_subs($req, $user);
     my $msg;
     if ($nopassword) {
       my $code;
       my $sent_ok = $user->send_conf_request($cgi, $cfg, \$code, \$msg);
+    }
+    else {
+      if ($subs) {
+	my $code;
+	my $sent_ok = $user->send_conf_request($cgi, $cfg, \$code, \$msg);
+      }
     }
     
     my $custom = Util::custom_class($cfg);
@@ -511,5 +572,31 @@ sub req_add {
     $class->req_add($req, "Database error $@");
   }
 }
+
+sub save_subs {
+  my ($class, $req, $user) = @_;
+
+  my @subs = grep $_->{visible}, BSE::SubscriptionTypes->all;
+  my %subs = map { $_->{id} => $_ } @subs;
+  my @subids = $req->cgi->param('subscription');
+  $user->removeSubscriptions;
+  require BSE::SubscribedUsers;
+  my @cols = BSE::SubscribedUser->columns;
+  shift @cols;
+  my $found = 0;
+  for my $id (@subids) {
+    if ($subs{$id}) {
+      my %usersub;
+      $usersub{subId} = $id;
+      $usersub{userId} = $user->{id};
+
+      BSE::SubscribedUsers->add(@usersub{@cols});
+      ++$found;
+    }
+  }
+
+  $found;
+}
+
 
 1;

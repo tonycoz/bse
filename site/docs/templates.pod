@@ -697,6 +697,14 @@ I<string> and upper-casing the first letter of I<string> respectively.
 
 Converts the first letter of every word in I<string> to uppercase.
 
+=item iterator ... cfgsection "I<section>" I<sort-parameters>
+
+=item cfgentry I<field>
+
+Iterates over the key definitions in a section of the configuration
+file.  Possible values for field are C<key> or C<value>.  The section
+name must be quoted with double quotes.
+
 =back
 
 =head2 Base tags

@@ -329,7 +329,7 @@ sub get_parms {
 
   print STDERR "** Entered get_parms -$args-\n" if DEBUG_GET_PARMS;
   my @out;
-  while ($args) {
+  while (length $args) {
     if ($args =~ s/^\s*\[\s*(\w+)
 	                (
 	                 (?:\s+

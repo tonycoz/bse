@@ -48,7 +48,7 @@ else {
     next unless $work =~ /\S/;
     $template = $work;
     $file = file_from_template($work);
-    last if -e $file;
+    last if $file && -e $file;
   }
   -e $file or error_page("No template available for this page");
   $type = BSE::Template->html_type($cfg);
@@ -69,12 +69,19 @@ sub error_page {
   my ($error) = @_;
   $error ||= "Unknown error";
 
-  require 'Generate.pm';
-  my $gen = Generate->new();
+  my %article;
+  my @cols = Article->columns;
+  @article{@cols} = ('') x @cols;
+  $article{id} = -10;
+  $article{title} = "Error";
+  $article{parentid} = -1;
+
+  require Generate::Article;
+  my $gen = Generate::Article->new(cfg=>$cfg, top => \%article);
   my %acts;
   %acts = 
     (
-     $gen->baseActs('Articles', \%acts),
+     $gen->baseActs('Articles', \%acts, \%article),
      error => sub { CGI::escapeHTML($error) },
     );
   
@@ -85,5 +92,5 @@ sub error_page {
 sub file_from_template {
   my ($template) = @_;
 
-  return BSE::Template->find_source($template, $cfg);
+  return BSE::Template->find_source("printable/$template", $cfg);
 }

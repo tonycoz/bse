@@ -21,7 +21,7 @@ sub bse_sort {
   while ($opts) {
     if ($opts =~ s/^\s*sort=//) {
       while ($opts =~ s/^([+-]?)(\w+)//) {
-	my ($dir, $field) = @_;
+	my ($dir, $field) = ($1, $2);
 	if ($types->{$field} && $types->{$field} eq 'n') {
 	  push(@sorts, $dir eq '-' ? sub { $b->{$field} <=> $a->{$field} }
 	       : sub { $a->{$field} <=> $b->{$field} });
