@@ -2,7 +2,7 @@ package Generate::Article;
 use strict;
 use Squirrel::Template;
 use Constants qw($TMPLDIR $URLBASE %TEMPLATE_OPTS %LEVEL_DEFAULTS 
-                 $CGI_URI $ADMIN_URI $IMAGES_URI);
+                 $CGI_URI $ADMIN_URI $IMAGES_URI $UNLISTED_LEVEL1_IN_CRUMBS);
 use Images;
 use vars qw(@ISA);
 use Generate;
@@ -102,6 +102,7 @@ sub baseActs {
     $temp = $crumb;
   }
   my $crumb_index = -1;
+  my @work_crumbs; # set by the crumbs iterator
 
   my $parent = $articles->getByPkey($article->{parentid});
   my $section = $crumbs[0];
@@ -233,17 +234,38 @@ HTML
      },
 
      # used to display a navigation path of parent sections
+     iterate_crumbs_reset => 
+     sub {
+       my $args = $_[0];
+       $args ||= $UNLISTED_LEVEL1_IN_CRUMBS ? 'showtop' : 'listedonly';
+       if ($args eq 'showtop') {
+	 @work_crumbs = @crumbs;
+       }
+       else {
+	 @work_crumbs = grep $_->{listed}, @crumbs;
+       }
+       $crumb_index = -1;
+     },
      iterate_crumbs =>
      sub {
-       return ++$crumb_index < @crumbs;
+       return ++$crumb_index < @work_crumbs;
      },
      crumbs =>
      sub {
-       return CGI::escapeHTML($crumbs[$crumb_index]{$_[0]});
+       return CGI::escapeHTML($work_crumbs[$crumb_index]{$_[0]});
      },
      ifCrumbs =>
      sub {
-       return scalar @crumbs;
+       my $args = $_[0];
+       $args ||= $UNLISTED_LEVEL1_IN_CRUMBS ? 'showtop' : 'listedonly';
+
+       my @temp;
+       if ($args eq 'showtop') {
+	 return scalar @crumbs;
+       }
+       else {
+	 return scalar grep $_->{listed}, @crumbs;
+       }
      },
 
      # access to parent
@@ -396,17 +418,25 @@ The formatted body of the article.
 
 Ignore this one.
 
-=item iterator ... crumbs
+=item iterator ... crumbs [option]
 
 Iterates over the ancestors of the article.  See the L</item crumbs>.
+
+I<option> can be empty, "listedonly" or "showtop".  If empty the
+display of an unlisted level1 ancestor is controlled by
+$UNLISTED_LEVEL1_IN_CRUMBS, if "listedonly" then an unlisted level1
+article isn't shown in the crumbs, and it is if "showtop" is the
+I<option>.  This can be used in <: ifCrumbs :> too.
 
 =item crumbs I<name>
 
 Access to the fields of the specific ancestor.
 
-=item ifCrumbs
+=item ifCrumbs [options]
 
 Conditional tag, true if there are any crumbs.
+
+See L</iterator ... crumbs [option]> for information on I<option>.
 
 =item ifChildren
 

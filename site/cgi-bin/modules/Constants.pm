@@ -15,7 +15,7 @@ $SHOP_PGPE $SHOP_EMAIL_ORDER
 $ROOT_URI $ARTICLE_URI $SHOP_URI $CGI_URI $ADMIN_URI $IMAGES_URI
 $LOCAL_FORMAT $GENERATE_BUTTON $AUTO_GENERATE
 $DATA_EMAIL $MYSQLDUMP $BODY_EMBED $EMBED_MAX_DEPTH $REPARENT_UPDOWN
-$HAVE_HTML_PARSER);
+$HAVE_HTML_PARSER $UNLISTED_LEVEL1_IN_CRUMBS);
 
 $VERSION = 0.1;
 
@@ -33,7 +33,7 @@ $SHOP_TO_NAME $SHOP_TO_EMAIL $SHOP_EMAIL_ORDER $SHOP_SENDMAIL $SHOP_PGPE
 $ROOT_URI $ARTICLE_URI $SHOP_URI $CGI_URI $ADMIN_URI $IMAGES_URI
 $LOCAL_FORMAT $GENERATE_BUTTON $AUTO_GENERATE
 $DATA_EMAIL $MYSQLDUMP $BODY_EMBED $EMBED_MAX_DEPTH $REPARENT_UPDOWN
-$HAVE_HTML_PARSER/;
+$HAVE_HTML_PARSER $UNLISTED_LEVEL1_IN_CRUMBS/;
 
 %EXPORT_TAGS =
   (
@@ -208,6 +208,12 @@ $AUTO_GENERATE = 1;
 # this can be a coderef if you want, which returns non-zero if the
 # user can reparent up/down
 $REPARENT_UPDOWN = 0;
+
+# if this is non-zero then by default the level 1 ancestor of an article
+# will be listed in it's crumbs
+# this can be overridden with the 'listedonly' and 'showtop' options
+# for the <:iterator begin crumbs:> tag
+$UNLISTED_LEVEL1_IN_CRUMBS = 1;
 
 # this should be non-zero if you have HTML::Parser installed
 # if non-zero then HTML::Parser will be used to strip HTML tags
