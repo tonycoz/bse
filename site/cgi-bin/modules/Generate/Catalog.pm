@@ -121,9 +121,12 @@ sub generate {
 }
 
 sub embed {
-  my ($self, $article, $articles) = @_;
+  my ($self, $article, $articles, $template) = @_;
 
-  open SOURCE, "< $TMPLDIR$article->{template}"
+  $template = $article->{template}
+    unless defined($template) && $template =~ /\S/;
+
+  open SOURCE, "< $TMPLDIR$template"
     or die "Cannot open template $article->{template}: $!";
   my $html = do { local $/; <SOURCE> };
   close SOURCE;
