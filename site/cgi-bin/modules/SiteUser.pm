@@ -5,7 +5,7 @@ use Squirrel::Row;
 use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 use Constants qw($SHOP_FROM);
-use BSE::Util::SQL qw/now_datetime now_sqldate sql_normal_date/;
+use BSE::Util::SQL qw/now_datetime now_sqldate sql_normal_date sql_add_date_days/;
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -275,7 +275,7 @@ sub subscribed_to_grace {
     or return;
 
   my $today = now_sqldate;
-  my $end_date = sql_add_date_days($entry->{end}, $entry->{max_lapsed});
+  my $end_date = sql_add_date_days($entry->{ends_at}, $entry->{max_lapsed});
   return $today le $end_date;
 }
 
@@ -365,6 +365,12 @@ sub recalculate_subscriptions {
   for my $sub (@subs) {
     $sub->update_user_expiry($self, $cfg);
   }
+}
+
+sub subscribed_services {
+  my ($self) = @_;
+
+  BSE::DB->query(siteuserSubscriptions => $self->{id});
 }
 
 1;

@@ -296,12 +296,15 @@ SQL
    getSubscriptionByPkey => <<SQL,
 select * from bse_subscriptions where subscription_id = ?
 SQL
+   getSubscriptionByText_id => <<SQL,
+select * from bse_subscriptions where text_id = ?
+SQL
    subscriptionOrderItemCount => <<SQL,
 select count(*) as "count" from order_item where subscription_id = ?
 SQL
    subscriptionOrderSummary => <<SQL,
 select od.id, od.userId, od.orderDate, od.siteuser_id, 
-    sum(oi.subscription_period) as "subscription_period"
+    sum(oi.subscription_period * oi.units) as "subscription_period"
   from orders od, order_item oi
   where oi.subscription_id = ? and od.id = oi.orderId
   group by od.id, od.userId, od.orderDate, od.siteuser_id
@@ -333,6 +336,12 @@ SQL
    userSubscribedEntry => <<SQL,
 select * from bse_user_subscribed 
   where siteuser_id = ? and subscription_id = ?
+SQL
+   siteuserSubscriptions => <<SQL,
+select su.*, us.started_at, us.ends_at, us.max_lapsed
+  from bse_subscriptions su, bse_user_subscribed us
+where us.siteuser_id = ? and us.subscription_id = su.subscription_id
+   and us.ends_at >= curdate()
 SQL
   );
 

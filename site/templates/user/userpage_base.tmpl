@@ -125,5 +125,12 @@
 	<:eif Cfg:>
   </table>
   
-  
+<:if Subscriptions:>  
+<table>
+<tr><th><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Name</font></th><th><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Expires</font></th></tr>
+<:iterator begin subscriptions:>
+<tr><td><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:subscription title:></font></td><td><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:date subscription ends_at:></font></td></tr>
+<:iterator end subscriptions:>
+</table>
+<:or Subscriptions:><:eif Subscriptions:>
 </div>

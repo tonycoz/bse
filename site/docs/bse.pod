@@ -10,6 +10,64 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.14_32
+
+=over
+
+=item *
+
+logging out now clears the shopping cart
+
+=item *
+
+after logging in when you failed to add an item requiring logon now
+refreshes back to adding the item again (#434)
+
+=item *
+
+setting [affiliate].subscription_required to an affiliate text id
+should now work
+
+=item *
+
+trying to add a subscription product while not logged in now refreshes
+more appropriately after you logon.
+
+=item *
+
+checks for renew/start only subscription products are now done when
+you attempt to add the product to your cart.
+
+=item *
+
+SiteUser.pm was missing an import of sql_add_date_days(), which caused
+a 500 error.
+
+=item *
+
+the subscription expiry date functions were checking the wrong field
+name for the expiry date.  This caused problems when trying to add a
+renewal product to the cart, amongst other things (#435)
+
+=item *
+
+the userpage now has access to a subscriptions iterator, includes
+access to the subscription fields, and the ends_at, started_at and
+max_lapsed status fields.  This only shows subscriptions the user is
+subscribed to. (#436)
+
+=item *
+
+the options page now has a ifSubscribedTo tag.  This accepts one
+parameter which is the text id of the subscription.
+
+=item *
+
+the subscription order summary on the subscription detail page now
+multiplies the period by the number of units bought
+
+=back
+
 =head2 0.14_31
 
 =over

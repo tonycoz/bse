@@ -14,6 +14,7 @@ use BSE::Util::SQL qw/now_datetime/;
 use DevHelp::HTML;
 use BSE::CfgInfo qw(custom_class);
 use BSE::WebUtil qw/refresh_to/;
+use BSE::Util::Iterate;
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -221,6 +222,7 @@ sub logoff {
 				$msgs->(notloggedon=>"You aren't logged on"));
 
   delete $session->{userid};
+  $session->{cart} = [];
   print "Set-Cookie: ",BSE::Session->
     make_cookie($cfg, userid=>''),"\n";
 
@@ -353,6 +355,16 @@ sub _get_user {
   }
 }
 
+sub tag_ifSubscribedTo {
+  my ($user, $args) = @_;
+
+  require BSE::TB::Subscriptions;
+  my $sub = BSE::TB::Subscriptions->getBy(text_id=>$args)
+    or return 0;
+
+  $user->subscribed_to($sub);
+}
+
 sub show_opts {
   my ($self, $session, $cgi, $cfg, $message, $errors) = @_;
 
@@ -402,6 +414,7 @@ sub show_opts {
      [ \&tag_if_required, $cfg ],
      error_img => [ \&tag_error_img, $cfg, $errors ],
      $self->_edit_tags($user, $cfg),
+     ifSubscribedTo => [ \&tag_ifSubscribedTo, $user ],
     );
 
   my $base = 'user/options';
@@ -786,6 +799,12 @@ sub register {
   }
 }
 
+sub iter_usersubs {
+  my ($user) = @_;
+
+  $user->subscribed_services;
+}
+
 sub userpage {
   my ($self, $session, $cgi, $cfg, $message) = @_;
 
@@ -800,6 +819,7 @@ sub userpage {
   my $must_be_paid = $cfg->entryBool('downloads', 'must_be_paid', 0);
   my $must_be_filled = $cfg->entryBool('downloads', 'must_be_filled', 0);
 
+  my $it = BSE::Util::Iterate->new;
   my $order_index;
   my $item_index;
   my @items;
@@ -854,6 +874,8 @@ sub userpage {
        return 0 if $must_be_filled && !$orders[$order_index]{filled};
        return 1;
      },
+     $it->make_iterator([ \&iter_usersubs, $user ], 
+			'subscription', 'subscriptions'),
     );
   my $base_template = 'user/userpage';
   my $template = $base_template;

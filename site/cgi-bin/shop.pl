@@ -132,12 +132,33 @@ sub add_item {
     or return show_cart("Product has expired");
   $product->{listed} or return show_cart("Product not available");
   
+  # used to refresh if a logon is needed
+  my $r = $securlbase . $ENV{SCRIPT_NAME} . "?add=1&id=$addid";
+  for my $opt_index (0..$#opt_names) {
+    $r .= "&$opt_names[$opt_index]=".ecape_uri($options[$opt_index]);
+  }
+  
   my $user = get_siteuser(\%session, $cfg, $CGI::Q);
   # need to be logged on if it has any subs
-  if ($product->{subscription_id} != -1 && !$user) {
-    refresh_logon("You must be logged on to add this product to your cart",
-		  'prodlogon');
-    return;
+  if ($product->{subscription_id} != -1) {
+    if ($user) {
+      my $sub = $product->subscription;
+      if ($product->is_renew_sub_only) {
+	unless ($user->subscribed_to_grace($sub)) {
+	  return show_cart("This product can only be used to renew your subscription to $sub->{title} and you are not subscribed nor within the renewal grace period");
+	}
+      }
+      elsif ($product->is_start_sub_only) {
+	if ($user->subscribed_to_grace($sub)) {
+	  return show_cart("This product can only be used to start your subscription to $sub->{title} and you are already subscribed or within the grace period");
+	}
+      }
+    }
+    else {
+      refresh_logon("You must be logged on to add this product to your cart",
+		    'prodlogon', $r);
+      return;
+    }
   }
   if ($product->{subscription_required} != -1) {
     my $sub = $product->subscription_required;
@@ -148,8 +169,9 @@ sub add_item {
       }
     }
     else {
+      # we want to refresh back to adding the item to the cart if possible
       refresh_logon("You must be logged on and subscribed to $sub->{title} to add this product to your cart",
-		    'prodlogonsub');
+		    'prodlogonsub', $r);
       return;
     }
   }
@@ -860,10 +882,13 @@ sub epoch_to_sql {
 }
 
 sub refresh_logon {
-  my ($msg, $msgid) = @_;
+  my ($msg, $msgid, $r) = @_;
   my $url = $securlbase."/cgi-bin/user.pl";
+
+  $r ||= $securlbase."/cgi-bin/shop.pl?checkout=1";
+  
   my %parms;
-  $parms{r} = $securlbase."/cgi-bin/shop.pl?checkout=1";
+  $parms{r} = $r;
   $parms{message} = $msg if $msg;
   $parms{mid} = $msgid if $msgid;
   $url .= "?" . join("&", map "$_=".CGI::escape($parms{$_}), keys %parms);
