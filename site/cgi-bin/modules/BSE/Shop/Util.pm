@@ -3,7 +3,7 @@ use strict;
 use vars qw(@ISA @EXPORT_OK);
 @ISA = qw/Exporter/;
 @EXPORT_OK = qw/shop_cart_tags cart_item_opts nice_options shop_nice_options
-                total shop_total load_order_fields/;
+                total shop_total load_order_fields basic_tags/;
 use Constants qw/:shop/;
 use BSE::Util::SQL qw(now_sqldate);
 use BSE::Custom;
