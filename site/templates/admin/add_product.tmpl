@@ -1,0 +1,95 @@
+<html><head><title>Add product - Shop administration</title>
+<link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<h1>Shop Administration</h1>
+<h2><:action:> Product</h2>
+
+<p><:message:></p>
+
+<form action="<:script:>" method=POST><p><input type=submit name=showimages value="Image Wizard"></p></form>
+
+<form action="<:script:>" enctype="multipart/form-data" method="POST">
+<input type="hidden" name="id" value="<:product id:>">
+  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000">
+    <tr>
+      <td>
+        <table border=0 cellspacing="1" cellpadding="6">
+          <tr> 
+            <th nowrap align="left">Title*:</th>
+            <td nowrap bgcolor="#FFFFFF"> 
+              <input type="text" name="title" value="<:product title:>" size=60>
+            </td>
+          </tr>
+          <tr> 
+            <th nowrap align="left">Summary*:</th>
+            <td nowrap bgcolor="#FFFFFF"> 
+              <input type="text" name="summary" value="<:product summary:>" size=60>
+            </td>
+          </tr>
+          <tr> 
+            <th nowrap align="left">Catalog:</th>
+            <td nowrap bgcolor="#FFFFFF"> 
+              <:catalogs:>
+            </td>
+          </tr>
+          <tr> 
+            <th nowrap align="left">Body:</th>
+            <td nowrap bgcolor="#FFFFFF"> 
+              <textarea name="body" rows=15 cols=60 wrap=virtual><:product body:></textarea>
+            </td>
+          </tr>
+          <tr> 
+            <th nowrap align="left">Lead time:</th>
+            <td nowrap bgcolor="#FFFFFF"> 
+              <input type="text" name="leadTime" value="<:product leadTime:>" size=5>
+              days</td>
+          </tr>
+          <tr> 
+            <th nowrap align="left">Retail price:</th>
+            <td nowrap bgcolor="#FFFFFF">$ 
+              <input type="text" name="retailPrice" value="<:money retailPrice:>" size=7>
+              (0.00)</td>
+          </tr>
+          <tr> 
+            <th nowrap align="left">Wholesale price:</th>
+            <td nowrap bgcolor="#FFFFFF">$ 
+              <input type="text" name="wholesalePrice" value="<:money wholesalePrice:>" size=7>
+              (0.00)</td>
+          </tr>
+          <tr> 
+            <th nowrap align="left">GST:</th>
+            <td nowrap bgcolor="#FFFFFF">$ 
+              <input type="text" name="gst" value="<:money gst:>" size=7>
+              (0.00)</td>
+          </tr>
+          <tr> 
+            <th nowrap align="left">Release date:</th>
+            <td nowrap bgcolor="#FFFFFF"> 
+              <input type="text" name="release" value="<:date release:>" size=11>
+              (dd/mm/yyyy)</td>
+          </tr>
+          <tr> 
+            <th nowrap align="left">Expiry date:</th>
+            <td nowrap bgcolor="#FFFFFF"> 
+              <input type="text" name="expire" value="<:date expire:>" size=11>
+              (dd/mm/yyyy)</td>
+          </tr>
+          <tr>
+            <th nowrap align="left">Thumbnail image:</th>
+            <td nowrap bgcolor="#FFFFFF">
+              <input type="file" name="thumbnail">
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+  <p><font size="-1">*These fields cannot be modified once you save this form.</font></p>
+<input type=submit name="save_product" value="Save">
+</form>
+<p>
+<a href="/admin/">Admin menu</a> | <a href="<:script:>">Product list</a> 
+</p>
+</body>
+</html>

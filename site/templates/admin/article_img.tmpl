@@ -1,0 +1,107 @@
+<html>
+<head>
+
+  <title>Administration - <: articleType :> Image Wizard</title>
+
+  <link rel="stylesheet" type="text/css" href="/css/admin.css">
+
+</head>
+
+<body>
+
+  <input type="button" onclick="history.go(0);" value="  Refresh  ">
+
+  <h1><: articleType :> Image Wizard</h1>
+
+  <h2>Add a new image</h2>
+
+<:message:><p>
+
+<form method="POST" action="<:script:>" enctype="multipart/form-data">
+
+<input type="hidden" name="level" value="<: level :>">
+<input type="hidden" name="id" value="<: article id :>">
+<input type="hidden" name="parentid" value="<: article parentid :>">
+<input type="hidden" name="imgtype" value="<: articleType :>">
+  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000">
+    <tr> 
+      <td> 
+        <table cellpadding="6" border="0" cellspacing="1">
+          <tr> 
+            <th> Image file to add: </th>
+            <td bgcolor="#FFFFFF"> 
+              <input type="file" name="image">
+            </td>
+          </tr>
+          <tr> 
+            <th> Alt text for image: </th>
+            <td bgcolor="#FFFFFF"> 
+              <input type="text" name="altIn">
+            </td>
+          </tr>
+          <tr> 
+            <th>&nbsp; </th>
+            <td align="right" bgcolor="#FFFFFF"> 
+              <input type="submit" name="addimg" value="  Add Image  ">
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+  <h2>Manage Images</h2>
+
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000">
+    <tr>
+      <td>
+  <table cellpadding="6" border="0" cellspacing="1">
+    <tr>
+    <th>
+      Image</th>
+    <th>
+      Alt Text</th>
+    <th>
+      Display Order</th>
+    <th>
+      Remove ?</th></tr>
+
+<: iterator begin image :>
+    <tr bgcolor="#FFFFFF"> 
+      <td align="center"> <img src="/images/<: image image :>" alt="<: image alt :>"<: 
+        image height :><: image width :>></td>
+      <td valign="top"> 
+        <input type="text" name="alt" value="<: image alt :>"></td>
+      <td valign="top"><:imgmove:> </td>
+      <td valign="bottom"> 
+        <input type="submit" name="removeimg_<: image order :>" value="Remove"></td></tr>
+<: iterator separator image :>
+    <tr bgcolor="#FFFFFF"> 
+      <td colspan="4">&nbsp;</td>
+    </tr>
+<: iterator end image :>
+
+  <tr>
+    <th align="right" valign="top">
+      First Image Position: </td>
+      <td bgcolor="#FFFFFF"> <input type="radio" name="imagePos" value="tl"<: checked 
+        tl :>> &nbsp; Top Left <br>
+      <input type="radio" name="imagePos" value="tr"<: checked tr :>> &nbsp; Top Right
+      <br>
+      <input type="radio" name="imagePos" value="bl"<: checked bl :>> &nbsp; Bottom Left
+      <br>
+      <input type="radio" name="imagePos" value="br"<: checked br :>> &nbsp; Bottom Right</td>
+      <td colspan="2" align="right" valign="bottom" bgcolor="#FFFFFF"> 
+        <input type="submit" name="process" value="  Process Images  "></td>
+
+  </table>
+</td>
+</tr>
+</table>
+
+  <p>
+    <input type="submit" name="back" value=" <<  Back  "></p>
+
+</form>
+
+</body
+></html>
