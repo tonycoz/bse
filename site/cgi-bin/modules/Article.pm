@@ -58,7 +58,7 @@ sub allkids {
   require 'OtherParents.pm';
 
   my @otherlinks = OtherParents->getBy(parentId=>$self->{id});
-  my @normalkids = Articles->children;
+  my @normalkids = Articles->children($self->{id});
   my %order = (
 	       (map { $_->{id}, $_->{displayOrder} } @normalkids ),
 	       (map { $_->{childId}, $_->{parentDisplayOrder} } @otherlinks),
@@ -77,10 +77,10 @@ sub all_visible_kids {
   require 'OtherParents.pm';
 
   my @otherlinks = OtherParents->getBy(parentId=>$self->{id});
-  my @normalkids = Articles->listedChildren;
+  my @normalkids = Articles->listedChildren($self->{id});
   my %order = (
 	       (map { $_->{id}, $_->{displayOrder} } @normalkids ),
-	       (map { $_->{id}, $_->{parentDisplayOrder} } @otherlinks),
+	       (map { $_->{childId}, $_->{parentDisplayOrder} } @otherlinks),
 	      );
   my @stepkids = $self->visible_stepkids;
   my %kids = map { $_->{id}, $_ } @stepkids, @normalkids;

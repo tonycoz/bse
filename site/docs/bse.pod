@@ -10,6 +10,26 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.10_08
+
+Making progress.
+
+=over
+
+=item *
+
+fixed the ordering of items in the allprods tag
+
+=item *
+
+make allprods always work with products
+
+=item *
+
+realware wanted a confirmation page
+
+=back
+
 =head2 0.10_07
 
 Another test release:
@@ -518,9 +538,9 @@ Tony Cook <tony@develop-help.com>
 I originally wrote BSE while an employee at SquirrelWeb
 http://www.squirrelweb.com.au/ for http://www.bodyscoop.com.au/
 
-Most of the BSE templates were created by Adrian Oldham
-<adriann@visualthought.com.au>.  He also funded and suggested many
-improvements.
+Most of the BSE templates were created by Adrian Oldham of Visual
+Thought Communications <bse@visualthought.com.au>.  He also funded
+and suggested many improvements.
 
 Realware Systems http://www.realware.com.au/ funded the nested
 catalogs, IIS support, the image access tags, and many other shop

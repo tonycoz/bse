@@ -26,6 +26,13 @@ sub generate_low {
   my @stepprods = $article->visible_stepkids;
   my $stepprod_index;
   my @allprods = $article->all_visible_kids;
+  require 'Generate/Product.pm';
+  @allprods = grep UNIVERSAL::isa($_->{generator}, 'Generate::Product'), @allprods;
+  for (@allprods) {
+    unless ($_->isa('Product')) {
+      $_ = Products->getByPkey($_->{id});
+    }
+  }
   my $allprod_index;
   my $category_index = -1;
   my %acts;

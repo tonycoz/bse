@@ -41,14 +41,14 @@
               prices in AUD &#150; includes GST and shipping costs where applicable)</font></td>
             <td height="18"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FFFFFF"><b>Price:</b></font>&nbsp;</td>
           </tr>
-          <:iterator begin products:> 
+          <:iterator begin allprods:> 
           <tr valign="middle" align="center" bgcolor="#FFFFFF"> 
-            <td width="100%" align="left"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><a href="<:url product:>"><:product 
+            <td width="100%" align="left"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><a href="<:url allprod:>"><:allprod 
               summary:></a></font><:moveUp:><:moveDown:></td>
             <td align="right"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>$<:money 
-              product retailPrice:></b></font></td>
+              allprod retailPrice:></b></font></td>
           </tr>
-          <:iterator end products:> 
+          <:iterator end allprods:> 
         </table>
       </td>
     </tr>
