@@ -101,11 +101,16 @@ sub get_response {
 sub get_refresh {
   my ($class, $url, $cfg) = @_;
 
+  # the commented out headers were meant to help Opera, but they didn't
   return
     {
      type=>$class->html_type($cfg),
      content=>"<html></html>",
-     headers=>[ qq/Refresh: 0; url=$url/ ],
+     headers=>[ qq/Refresh: 0; url=$url/,
+		#qq/Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0/,
+		#qq/Pragma: no-cache/,
+		#qq/Expires: Thu, 01 Jan 1970 00:00:00 GMT/
+	      ],
     };
 }
 

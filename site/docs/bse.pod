@@ -10,6 +10,78 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.14_24
+
+This release includes some structural changes to article editing,
+please test before deploying it.
+
+=over
+
+=item *
+
+doing a sort of all children wouldn't include the unreleased
+(step)childen in the sort (#389)
+
+=item *
+
+with access control enabled, using the reorder.pl script while not
+logged (including due to a cookie timeout) on would produce a server
+error (#419)
+
+=item *
+
+the Orders / Order / OrderItems / OrderItem classes are now
+BSE::TB::Orders / BSE::TB::Order / BSE::TB::OrderItems /
+BSE::TB::OrderItem, to try to use a more consistent naming system and
+clean up the top level namespace
+
+=item *
+
+the prePurchase target has been disabled in shop.pl, since it's
+effectively unmaintained, and probably completely broken
+
+=item *
+
+updated the document list of session values in BSE::Session.
+
+=item *
+
+defaults (both internal and configured) are now used to set
+article/product fields on creation, this should allow simplified
+creation templates to omit fields that don't need to be explicitly set
+
+=item *
+
+the warning about $Text::Wrap::columns only appearing once should
+disappear
+
+=item *
+
+a shipping_cost column has been added to the order table.  This is not
+set by BSE at all yet, but is available for use by custom order save
+code.
+
+=item *
+
+some fields and code have been added to support subscriptions (no, not
+the newsletter stuff)
+
+=item *
+
+removed some debug dump code from the shop
+
+=item *
+
+"link title" links now include ".html" at the end to allow Google to
+index them
+
+=item *
+
+some preperatory work has been done to handle affiliates and
+subscriptions
+
+=back
+
 =head2 0.14_23
 
 =over
@@ -56,7 +128,7 @@ basic help icon.
 =item *
 
 remove blank lines from the error messages produced on the admin user
-administration pages
+administration pages (#382)
 
 =item *
 

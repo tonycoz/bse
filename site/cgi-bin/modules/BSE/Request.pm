@@ -127,6 +127,51 @@ sub output_result {
   BSE::Template->output_result($req, $result);
 }
 
+sub message {
+  my ($req, $errors) = @_;
+
+  my $msg = '';
+  if ($errors and keys %$errors) {
+    my @fields = $req->cgi->param;
+    my %work = %$errors;
+    my @lines;
+    for my $field (@fields) {
+      if (my $entry = delete $work{$field}) {
+	push @lines, ref($entry) ? grep $_, @$entry : $entry;
+      }
+    }
+    for my $entry (values %work) {
+      if (ref $entry) {
+	push @lines, grep $_, @$entry;
+      }
+      else {
+	push @lines, $entry;
+      }
+    }
+    my %seen;
+    @lines = grep !$seen{$_}++, @lines; # don't need duplicates
+    $msg = join "<br />", map escape_html($_), @lines;
+  }
+  if (!$msg && $req->cgi->param('m')) {
+    $msg = escape_html($req->cgi->param('m'));
+  }
+
+  return $msg;
+}
+
+sub dyn_response {
+  my ($req, $template, $acts) = @_;
+
+  my $base_template = $template;
+  my $t = $req->cgi->param('t');
+  if ($t && $t =~ /^\w+$/) {
+    $template .= "_$t";
+  }
+
+  return BSE::Template->get_response($template, $req->cfg, $acts,
+				    $base_template);
+}
+
 sub DESTROY {
   my ($self) = @_;
   if ($self->{session}) {

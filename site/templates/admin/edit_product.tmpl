@@ -235,6 +235,41 @@
             images:></td>
           </tr>
 		  <:or Article:><:eif Article:>
+          <!-- tr> 
+            <th nowrap align="left" bgcolor="#FFFFFF">Purchase subscribes to:</th>
+            <td nowrap bgcolor="#FFFFFF"> 
+	      <select name="subscription_id">
+                <option value="-1"<:ifEq [old subscription_id] "-1":> selected="selected"<:or:><:eif:>>(nothing)</option>
+<:iterator begin subscriptions:>
+                <option value="<:subscription subscription_id:>"<:ifEq [old subscription_id] [subscription subscription_id]:> selected="selected"<:or:><:eif:>><:subscription title:></option>
+<:iterator end subscriptions:>
+	      </select> for <input type="text" name="subscription_period" value="<:old subscription_period:>" size="3" /><:error_img subscription_period:> months.
+            </td>
+            <td nowrap bgcolor="#FFFFFF"><:help product subscription_id:></td>
+          </tr>
+          <tr> 
+            <th nowrap align="left" bgcolor="#FFFFFF">Can be used to:</th>
+            <td nowrap bgcolor="#FFFFFF"> 
+	      <select name="subscription_usage">
+                <option value="3"<:ifEq [old subscription_usage] "3":> selected="selected"<:or:><:eif:>>Start or renew a subscription</option>
+                <option value="1"<:ifEq [old subscription_usage] "1":> selected="selected"<:or:><:eif:>>Start a subscription only</option>
+                <option value="2"<:ifEq [old subscription_usage] "2":> selected="selected"<:or:><:eif:>>Renew a subscription only</option>
+	      </select>
+            </td>
+            <td nowrap bgcolor="#FFFFFF"><:help product subscription_usage:></td>
+          </tr>
+          <tr> 
+            <th nowrap align="left" bgcolor="#FFFFFF">User must be subscribed to:</th>
+            <td nowrap bgcolor="#FFFFFF"> 
+	      <select name="subscription_required">
+                <option value="-1"<:ifEq [old subscription_required] "-1":> selected="selected"<:or:><:eif:>>(nothing)</option>
+<:iterator begin subscriptions:>
+                <option value="<:subscription subscription_id:>"<:ifEq [old subscription_required] [subscription subscription_id]:> selected="selected"<:or:><:eif:>><:subscription title:></option>
+<:iterator end subscriptions:>
+	      </select> to purchase this product
+            </td>
+            <td nowrap bgcolor="#FFFFFF"><:help product subscription_id:></td>
+          </tr -->
         </table>
       </td>
     </tr>

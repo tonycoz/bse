@@ -390,8 +390,8 @@ sub _is_product_and_in_use {
 
   if ($article->{generator} eq 'Generate::Product') {
     # can't delete products that have been used in orders
-    require OrderItems;
-    my @items = OrderItems->getBy(productId=>$article->{id});
+    require BSE::TB::OrderItems;
+    my @items = BSE::TB::OrderItems->getBy(productId=>$article->{id});
     if (@items) {
       return 1;
     }

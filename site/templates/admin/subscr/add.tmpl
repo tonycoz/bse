@@ -1,0 +1,37 @@
+<:wrap admin/xbase.tmpl title=>"Add Subscription":>
+<h1>Add Subscription</h1>
+<p>
+| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |
+<:if UserCan bse_subs_list :>
+<a href="<:script:>?a_list=1">List Subscriptions</a> |<:or UserCan:><:eif UserCan:>
+<:ifMessage:>
+<p><b><:message:></b></p>
+<:or:><:eif:> 
+
+<form action="<:script:>" method="post" name="addsub">
+<table>
+<tr>
+  <th>Identifier:</th>
+  <td><input type="text" name="text_id" value="<:old text_id:>" /></td>
+  <td><:error_img text_id:><:help addsubscr text_id:></td>
+</tr>
+<tr>
+  <th>Title:</th>
+  <td><input type="text" name="title" value="<:old title:>" /></td>
+  <td><:error_img title:><:help addsubscr title:></td>
+</tr>
+<tr>
+  <th>Description:</th>
+  <td><input type="text" name="description" value="<:old description:>" /></td>
+  <td><:error_img description:><:help addsubscr description:></td>
+</tr>
+<tr>
+  <th>Max Lapsed:</th>
+  <td><input type="text" name="max_lapsed" value="<:old max_lapsed:>" /></td>
+  <td><:error_img max_lapsed:><:help addsubscr max_lapsed:></td>
+</tr>
+<tr>
+  <td colspan="2"><input type="submit" name="a_add" value="Add Subscription" /></td>
+  <td>&nbsp;</td>
+</table>
+</form>

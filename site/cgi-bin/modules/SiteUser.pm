@@ -160,4 +160,19 @@ sub orders {
   return Orders->getBy(userId => $self->{userId});
 }
 
+# check if the user is subscribed to the given subscription
+sub subscribed_to {
+  my ($self, $sub) = @_;
+
+  return; # PH for now, not subscribed
+}
+
+# check if the user is subscribed to the given subscription, and allow
+# for the max_lapsed grace period
+sub subscribed_to_grace {
+  my ($self, $sub) = @_;
+
+  return; # PH for now, not subscribed
+}
+
 1;

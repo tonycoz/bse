@@ -4,6 +4,7 @@ use base 'BSE::Edit::Article';
 use Products;
 use HTML::Entities;
 use BSE::Template;
+use BSE::Util::Iterate;
 
 my %money_fields =
   (
@@ -45,15 +46,23 @@ sub hash_tag {
   return encode_entities($value);
 }
 
+#sub iter_subs {
+#  require BSE::TB::Subscriptions;
+#  BSE::TB::Subscriptions->all;
+#}
+
 sub low_edit_tags {
   my ($self, $acts, $req, $article, $articles, $msg, $errors) = @_;
  
+  my $it = BSE::Util::Iterate->new;
   return 
     (
      product => [ \&hash_tag, $article ],
      $self->SUPER::low_edit_tags($acts, $req, $article, $articles, $msg,
 				$errors),
      alloptions => join(",", sort keys %Constants::SHOP_PRODUCT_OPTS),
+     #$it->make_iterator
+     #([ \&iter_subs, $req ], 'subscription', 'subscriptions'),
     );
 }
 
@@ -94,15 +103,41 @@ sub _validate_common {
 
   for my $col (keys %money_fields) {
     my $value = $data->{$col};
+    defined $value or next;
     unless ($value =~ /^\d+(\.\d{1,2})?\s*/) {
       $errors->{$col} = "$money_fields{$col} invalid";
     }
   }
+  
+  if (defined $data->{options}) {
+    my @bad_opts =grep !$Constants::SHOP_PRODUCT_OPTS{$_}, 
+      split /,/, $data->{options};
+    if (@bad_opts) {
+      $errors->{options} = "Bad product options '". join(",", @bad_opts)."' entered";
+    }
+  }
 
-  my @bad_opts =grep !$Constants::SHOP_PRODUCT_OPTS{$_}, 
-  split /,/, $data->{options};
-  if (@bad_opts) {
-    $errors->{options} = "Bad product options '". join(",", @bad_opts)."' entered";
+  my @subs;
+  for my $sub_field (qw(subscription_id subscription_required)) {
+    my $value = $data->{$sub_field};
+    defined $value or next;
+    if ($value ne '-1') {
+      #require BSE::TB::Subscriptions;
+      #@subs = BSE::TB::Subscriptions->all unless @subs;
+      #unless (grep $_->{subscription_id} == $value, @subs) {
+	$errors->{$sub_field} = "Invalid $sub_field value";
+      #}
+    }
+  }
+  if (defined $data->{subscription_period}) {
+    unless ($data->{subscription_period} =~ /^(?:|\d+)$/) {
+      $errors->{subscription_period} = "Invalid subscription period, it must be the number of months to subscribe";
+    }
+  }
+  if (defined $data->{subscription_usage}) {
+    unless ($data->{subscription_usage} =~ /^[123]$/) {
+      $errors->{subscription_usage} = "Invalid subscription usage";
+    }
   }
 
   return !keys %$errors;
@@ -207,8 +242,15 @@ sub _fill_product_data {
       }
     }
   }
-  if (exists $src->{options}) {
-    $data->{options} = $src->{options};
+  for my $field (qw(options subscription_id subscription_period
+                    subscription_usage subscription_required)) {
+    if (exists $src->{$field}) {
+      $data->{$field} = $src->{$field};
+    }
+    elsif ($data == $src) {
+      # use the default
+      $data->{$field} = $self->default_value($req, $data, $field);
+    }
   }
 }
 
@@ -255,6 +297,27 @@ sub flag_sections {
   my ($self) = @_;
 
   return ( 'product flags', $self->SUPER::flag_sections );
+}
+
+my %defaults =
+  (
+   options => '',
+   subscription_id => -1,
+   subscription_required => -1,
+   subscription_period => 1,
+   subscription_usage => 3,
+   retailPrice => 0,
+  );
+
+sub default_value {
+  my ($self, $req, $article, $col) = @_;
+
+  my $value = $self->SUPER::default_value($req, $article, $col);
+  defined $value and return $value;
+
+  exists $defaults{$col} and return $defaults{$col};
+
+  return;
 }
 
 1;

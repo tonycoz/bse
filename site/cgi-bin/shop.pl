@@ -20,7 +20,6 @@ use BSE::Session;
 use BSE::Cfg;
 use BSE::Util::Tags qw(tag_hash);
 
-
 my $cfg = BSE::Cfg->new();
 
 my $subject = $cfg->entry('shop', 'subject', $SHOP_MAIL_SUBJECT);
@@ -49,13 +48,6 @@ my $toEmail= $cfg->entry('shop', 'to_email', $SHOP_TO_EMAIL);
 use constant PAYMENT_CC => 0;
 use constant PAYMENT_CHEQUE => 1;
 use constant PAYMENT_CALLME => 2;
-# my %valid_payment_types = 
-#   ( 
-#    PAYMENT_CC()     =>1, 
-#    PAYMENT_CHEQUE() =>1, 
-#    PAYMENT_CALLME() =>1
-#   );
-# my %payment_names = ;
 
 my $urlbase = $cfg->entryVar('site', 'url');
 my $securlbase = $cfg->entryVar('site', 'secureurl');
@@ -85,7 +77,7 @@ my %steps =
    recalc=>\&recalc,
    recalculate=>\&recalc,
    purchase=>\&purchase,
-   prePurchase=>\&prePurchase,
+   #prePurchase=>\&prePurchase,
   );
 
 for my $key (keys %steps) {
@@ -138,6 +130,28 @@ sub add_item {
   $today le $comp_expire
     or return show_cart("Product has expired");
   $product->{listed} or return show_cart("Product not available");
+  
+  my $user = get_siteuser(\%session, $cfg, $CGI::Q);
+  # need to be logged on if it has any subs
+  if ($product->{subscription_id} != -1 && !$user) {
+    refresh_logon("You must be logged on to add this product to your cart",
+		  'prodlogon');
+    return;
+  }
+  if ($product->{subscription_required} != -1) {
+    my $sub = $product->subscription_required;
+    if ($user) {
+      unless ($user->subscribed_to($sub)) {
+	show_cart("You must be subscribed to $sub->{title} to purchase this product");
+	return;
+      }
+    }
+    else {
+      refresh_logon("You must be logged on and subscribed to $sub->{title} to add this product to your cart",
+		    'prodlogonsub');
+      return;
+    }
+  }
 
   # we need a natural integer quantity
   $quantity =~ /^\d+$/
@@ -394,199 +408,197 @@ sub checkout_confirm {
 # processes the CC information and then displays the order complete
 # information
 # BUG!!: this duplicates the code in purchase() a great deal
-sub prePurchase {
+# sub prePurchase {
 
-  my $cust_class = custom_class($cfg);
-  my @required = $cust_class->required_fields($CGI::Q, $session{custom}, $cfg);
-  for my $field (@required) {
-    defined(param($field)) && length(param($field))
-      or return checkout("Field $field is required", 1);
-  }
-  if (grep /email/, @required) {
-    defined(param('email')) && param('email') =~ /.\@./
-      or return checkout("Please enter a valid email address", 1);
-  }
+#   my $cust_class = custom_class($cfg);
+#   my @required = $cust_class->required_fields($CGI::Q, $session{custom}, $cfg);
+#   for my $field (@required) {
+#     defined(param($field)) && length(param($field))
+#       or return checkout("Field $field is required", 1);
+#   }
+#   if (grep /email/, @required) {
+#     defined(param('email')) && param('email') =~ /.\@./
+#       or return checkout("Please enter a valid email address", 1);
+#   }
   
-  use Orders;
-  use Order;
-  use OrderItems;
-  use OrderItem;
+#   use BSE::TB::Orders;
+#   use BSE::TB::OrderItems;
 
-  # map some form fields to order field names
-  my %field_map = 
-    (
-     name1 => 'delivFirstName',
-     name2 => 'delivLastName',
-     address => 'delivStreet',
-     city => 'delivSuburb',
-     postcode => 'delivPostCode',
-     state => 'delivState',
-     country => 'delivCountry',
-     email => 'emailAddress',
-     cardHolder => 'ccName',
-     cardType => 'ccType',
-    );
-  # paranoia, don't store these
-  my %nostore =
-    (
-     cardNumber => 1,
-     cardExpiry => 1,
-    );
-  my %order;
-  my @cart = @{$session{cart}};
-  @cart or return show_cart('You have no items in your shopping cart');
+#   # map some form fields to order field names
+#   my %field_map = 
+#     (
+#      name1 => 'delivFirstName',
+#      name2 => 'delivLastName',
+#      address => 'delivStreet',
+#      city => 'delivSuburb',
+#      postcode => 'delivPostCode',
+#      state => 'delivState',
+#      country => 'delivCountry',
+#      email => 'emailAddress',
+#      cardHolder => 'ccName',
+#      cardType => 'ccType',
+#     );
+#   # paranoia, don't store these
+#   my %nostore =
+#     (
+#      cardNumber => 1,
+#      cardExpiry => 1,
+#     );
+#   my %order;
+#   my @cart = @{$session{cart}};
+#   @cart or return show_cart('You have no items in your shopping cart');
 
-  # so we can quickly check for columns
-  my @columns = Order->columns;
-  my %columns; 
-  @columns{@columns} = @columns;
+#   # so we can quickly check for columns
+#   my @columns = BSE::TB::Order->columns;
+#   my %columns; 
+#   @columns{@columns} = @columns;
 
-  for my $field (param()) {
-    $order{$field_map{$field} || $field} = param($field)
-      unless $nostore{$field};
-  }
+#   for my $field (param()) {
+#     $order{$field_map{$field} || $field} = param($field)
+#       unless $nostore{$field};
+#   }
 
-  my $ccNumber = param('cardNumber');
-  my $ccExpiry = param('cardExpiry');
+#   my $ccNumber = param('cardNumber');
+#   my $ccExpiry = param('cardExpiry');
 
-  use Digest::MD5 'md5_hex';
-  $ccNumber =~ tr/0-9//cd;
-  $order{ccNumberHash} = md5_hex($ccNumber);
-  $order{ccExpiryHash} = md5_hex($ccExpiry);
+#   use Digest::MD5 'md5_hex';
+#   $ccNumber =~ tr/0-9//cd;
+#   $order{ccNumberHash} = md5_hex($ccNumber);
+#   $order{ccExpiryHash} = md5_hex($ccExpiry);
 
-  # work out totals
-  $order{total} = 0;
-  $order{gst} = 0;
-  $order{wholesale} = 0;
-  my @products;
-  my $today = epoch_to_sql(time);
-  for my $item (@cart) {
-    my $product = Products->getByPkey($item->{productId});
-    # double check that it's still a valid product
-    if (!$product) {
-      return show_cart("Product $item->{productId} not found");
-    }
-    else {
-      (my $comp_release = $product->{release}) =~ s/ .*//;
-      (my $comp_expire = $product->{expire}) =~ s/ .*//;
-      $comp_release le $today
-	or return show_cart("'$product->{title}' has not been released yet");
-      $today le $comp_expire
-	or return show_cart("'$product->{title}' has expired");
-      $product->{listed} 
-	or return show_cart("'$product->{title}' not available");
-    }
-    push(@products, $product); # used in page rendering
-    @$item{qw/price wholesalePrice gst/} = 
-      @$product{qw/retailPrice wholesalePrice gst/};
-    $order{total} += $item->{price} * $item->{units};
-    $order{wholesale} += $item->{wholesalePrice} * $item->{units};
-    $order{gst} += $item->{gst} * $item->{units};
-  }
-  use BSE::Util::SQL qw(now_sqldatetime);
-  $order{orderDate} = now_sqldatetime();
+#   # work out totals
+#   $order{total} = 0;
+#   $order{gst} = 0;
+#   $order{wholesale} = 0;
+#   my @products;
+#   my $today = epoch_to_sql(time);
+#   for my $item (@cart) {
+#     my $product = Products->getByPkey($item->{productId});
+#     # double check that it's still a valid product
+#     if (!$product) {
+#       return show_cart("Product $item->{productId} not found");
+#     }
+#     else {
+#       (my $comp_release = $product->{release}) =~ s/ .*//;
+#       (my $comp_expire = $product->{expire}) =~ s/ .*//;
+#       $comp_release le $today
+# 	or return show_cart("'$product->{title}' has not been released yet");
+#       $today le $comp_expire
+# 	or return show_cart("'$product->{title}' has expired");
+#       $product->{listed} 
+# 	or return show_cart("'$product->{title}' not available");
+#     }
+#     push(@products, $product); # used in page rendering
+#     @$item{qw/price wholesalePrice gst/} = 
+#       @$product{qw/retailPrice wholesalePrice gst/};
+#     $order{total} += $item->{price} * $item->{units};
+#     $order{wholesale} += $item->{wholesalePrice} * $item->{units};
+#     $order{gst} += $item->{gst} * $item->{units};
+#   }
+#   use BSE::Util::SQL qw(now_sqldatetime);
+#   $order{orderDate} = now_sqldatetime();
 
-  if (my ($msg, $id) = need_logon($cfg, \@cart, \@products, \%session, $CGI::Q)) {
-    refresh_logon($msg, $id);
-    return;
-  }
+#   if (my ($msg, $id) = need_logon($cfg, \@cart, \@products, \%session, $CGI::Q)) {
+#     refresh_logon($msg, $id);
+#     return;
+#   }
 
-  $order{total} += $cust_class->total_extras(\@cart, \@products, 
-					     $session{custom}, $cfg, 'final');
-  ++$session{changed};
-  # blank anything else
-  for my $column (@columns) {
-    defined $order{$column} or $order{$column} = '';
-  }
-  # make sure the user can't set these behind our backs
-  $order{filled} = 0;
-  $order{paidFor} = 0;
+#   $order{total} += $cust_class->total_extras(\@cart, \@products, 
+# 					     $session{custom}, $cfg, 'final');
+#   ++$session{changed};
+#   # blank anything else
+#   for my $column (@columns) {
+#     defined $order{$column} or $order{$column} = '';
+#   }
+#   # make sure the user can't set these behind our backs
+#   $order{filled} = 0;
+#   $order{paidFor} = 0;
   
-  # this should be hard to guess
-  $order{randomId} = md5_hex(time().rand().{}.$$);
+#   # this should be hard to guess
+#   $order{randomId} = md5_hex(time().rand().{}.$$);
 
-  # check if a customizer has anything to do
-  eval {
-    $cust_class->order_save($CGI::Q, \%order, \@cart, \@products, 
-			    $session{custom}, $cfg);
-    ++$session{changed};
-  };
-  if ($@) {
-    return checkout($@, 1);
-  }
+#   # check if a customizer has anything to do
+#   eval {
+#     $cust_class->order_save($CGI::Q, \%order, \@cart, \@products, 
+# 			    $session{custom}, $cfg);
+#     ++$session{changed};
+#   };
+#   if ($@) {
+#     return checkout($@, 1);
+#   }
 
-  # load up the database
-  my @data = @order{@columns};
-  shift @data; # lose the dummy id
-  my $order = Orders->add(@data)
-    or die "Cannot add order";
-  my @items;
-  my @item_cols = OrderItem->columns;
-  for my $row (@cart) {
-    $row->{orderId} = $order->{id};
-    my @data = @$row{@item_cols};
-    shift @data;
-    push(@items, OrderItems->add(@data));
-  }
+#   # load up the database
+#   my @data = @order{@columns};
+#   shift @data; # lose the dummy id
+#   my $order = BSE::TB::Orders->add(@data)
+#     or die "Cannot add order";
+#   my @items;
+#   my @item_cols = BSE::TB::OrderItem->columns;
+#   for my $row (@cart) {
+#     $row->{orderId} = $order->{id};
+#     my @data = @$row{@item_cols};
+#     shift @data;
+#     push(@items, BSE::TB::OrderItems->add(@data));
+#   }
 
-  my $item_index = -1;
-  my @options;
-  my $option_index;
-  my %acts;
-  %acts =
-    (
-     iterate_items_reset => sub { $item_index = -1; },
-     iterate_items => 
-     sub { 
-       if (++$item_index < @items) {
-	 $option_index = -1;
-	 @options = cart_item_opts($items[$item_index], 
-				   $products[$item_index]);
-	 return 1;
-       }
-       return 0;
-     },
-     item=> sub { CGI::escapeHTML($items[$item_index]{$_[0]}); },
-     product => 
-     sub { 
-       my $value = $products[$item_index]{$_[0]};
-       defined($value) or $value = '';
-       CGI::escapeHTML($value);
-     },
-     extended =>
-     sub { 
-       my $what = $_[0] || 'retailPrice';
-       $items[$item_index]{units} * $items[$item_index]{$what};
-     },
-     order => sub { CGI::escapeHTML($order->{$_[0]}) },
-     money =>
-     sub {
-       my ($func, $args) = split ' ', $_[0], 2;
-       $acts{$func} || return "<: money $_[0] :>";
-       return sprintf("%.02f", $acts{$func}->($args)/100);
-     },
-     old => sub { '' },
-     _format =>
-     sub {
-       my ($value, $fmt) = @_;
-       if ($fmt =~ /^m(\d+)/) {
-	 return sprintf("%$1s", sprintf("%.2f", $value/100));
-       }
-       elsif ($fmt =~ /%/) {
-	 return sprintf($fmt, $value);
-       }
-     },
-     iterate_options_reset => sub { $option_index = -1 },
-     iterate_options => sub { ++$option_index < @options },
-     option => sub { CGI::escapeHTML($options[$option_index]{$_[0]}) },
-     ifOptions => sub { @options },
-     options => sub { nice_options(@options) },
-    );
-  # this should be reset once the order has been paid
-  $session{orderPayment} = $order->{id};
+#   my $item_index = -1;
+#   my @options;
+#   my $option_index;
+#   my %acts;
+#   %acts =
+#     (
+#      iterate_items_reset => sub { $item_index = -1; },
+#      iterate_items => 
+#      sub { 
+#        if (++$item_index < @items) {
+# 	 $option_index = -1;
+# 	 @options = cart_item_opts($items[$item_index], 
+# 				   $products[$item_index]);
+# 	 return 1;
+#        }
+#        return 0;
+#      },
+#      item=> sub { CGI::escapeHTML($items[$item_index]{$_[0]}); },
+#      product => 
+#      sub { 
+#        my $value = $products[$item_index]{$_[0]};
+#        defined($value) or $value = '';
+#        CGI::escapeHTML($value);
+#      },
+#      extended =>
+#      sub { 
+#        my $what = $_[0] || 'retailPrice';
+#        $items[$item_index]{units} * $items[$item_index]{$what};
+#      },
+#      order => sub { CGI::escapeHTML($order->{$_[0]}) },
+#      money =>
+#      sub {
+#        my ($func, $args) = split ' ', $_[0], 2;
+#        $acts{$func} || return "<: money $_[0] :>";
+#        return sprintf("%.02f", $acts{$func}->($args)/100);
+#      },
+#      old => sub { '' },
+#      _format =>
+#      sub {
+#        my ($value, $fmt) = @_;
+#        if ($fmt =~ /^m(\d+)/) {
+# 	 return sprintf("%$1s", sprintf("%.2f", $value/100));
+#        }
+#        elsif ($fmt =~ /%/) {
+# 	 return sprintf($fmt, $value);
+#        }
+#      },
+#      iterate_options_reset => sub { $option_index = -1 },
+#      iterate_options => sub { ++$option_index < @options },
+#      option => sub { CGI::escapeHTML($options[$option_index]{$_[0]}) },
+#      ifOptions => sub { @options },
+#      options => sub { nice_options(@options) },
+#     );
+#   # this should be reset once the order has been paid
+#   $session{orderPayment} = $order->{id};
   
-  page('checkoutcard.tmpl', \%acts);
-}
+#   page('checkoutcard.tmpl', \%acts);
+# }
 
 sub tag_ifPayment {
   my ($payment, $types_by_name, $args) = @_;
@@ -617,8 +629,8 @@ sub purchase {
   my @pay_types = payment_types($cfg);
   my %pay_types = map { $_->{id} => $_ } @pay_types;
   my %types_by_name = map { $_->{name} => $_->{id} } @pay_types;
-  use Data::Dumper;
-  print STDERR Dumper \%pay_types;
+  #use Data::Dumper;
+  #print STDERR Dumper \%pay_types;
   my @payment_types = map $_->{id}, grep $_->{enabled}, @pay_types;
   if ($noencrypt) {
     @payment_types = grep $_ ne PAYMENT_CC, @payment_types;
@@ -649,10 +661,8 @@ sub purchase {
       or return checkout("Please enter a credit card number", 1);
   }
 
-  use Orders;
-  use Order;
-  use OrderItems;
-  use OrderItem;
+  use BSE::TB::Orders;
+  use BSE::TB::OrderItems;
 
   # map some form fields to order field names
   my %field_map = 
@@ -679,7 +689,7 @@ sub purchase {
   @cart or return show_cart('You have no items in your shopping cart');
 
   # so we can quickly check for columns
-  my @columns = Order->columns;
+  my @columns = BSE::TB::Order->columns;
   my %columns; 
   @columns{@columns} = @columns;
 
@@ -692,6 +702,8 @@ sub purchase {
   defined $ccNumber or $ccNumber = '';
   my $ccExpiry = param('cardExpiry');
   defined $ccExpiry or $ccExpiry = '';
+  $order{affiliate_code} = defined $session{affiliate_code} ?
+    $session{affiliate_code} : '';
 
   use Digest::MD5 'md5_hex';
   $ccNumber =~ tr/0-9//cd;
@@ -702,6 +714,7 @@ sub purchase {
   $order{total} = 0;
   $order{gst} = 0;
   $order{wholesale} = 0;
+  $order{shipping_cost} = 0;
   my @products;
   my $today = now_sqldate();
   for my $item (@cart) {
@@ -758,6 +771,7 @@ sub purchase {
   $order{randomId} = md5_hex(time().rand().{}.$$);
 
   # check if a customizer has anything to do
+  # if it sets shipping cost it must also update the total
   eval {
     my %custom = %{$session{custom}};
     $cust_class->order_save($CGI::Q, \%order, \@cart, \@products, 
@@ -771,18 +785,33 @@ sub purchase {
   $order{total} += $cust_class->total_extras(\@cart, \@products, 
 					     $session{custom}, $cfg, 'final');
 
+  my %subscribing_to;
+
   # load up the database
   my @data = @order{@columns};
   shift @data; # lose the dummy id
-  my $order = Orders->add(@data)
+  my $order = BSE::TB::Orders->add(@data)
     or die "Cannot add order";
   my @items;
-  my @item_cols = OrderItem->columns;
-  for my $row (@cart) {
+  my @item_cols = BSE::TB::OrderItem->columns;
+  my @prod_xfer = qw/title summary subscription_id subscription_period/;
+  for my $row_num (0..$#cart) {
+    my $row = $cart[$row_num];
+    my $product = $products[$row_num];
     $row->{orderId} = $order->{id};
+
+    # store product data too
+    @$row{@prod_xfer} = @{$product}{@prod_xfer};
+
     my @data = @$row{@item_cols};
+    
     shift @data;
-    push(@items, OrderItems->add(@data));
+    push(@items, BSE::TB::OrderItems->add(@data));
+
+#     my $sub = $product->subscription;
+#     if ($sub) {
+#       $subscribing_to{$sub->{text_id}} = $sub;
+#     }
   }
 
   my $item_index = -1;
@@ -834,16 +863,23 @@ sub purchase {
      ifOptions => sub { @options },
      options => sub { nice_options(@options) },
      ifPayment => [ \&tag_ifPayment, $order->{paymentType}, \%types_by_name ],
+     #ifSubscribingTo => [ \&tag_ifSubscribingTo, \%subscribing_to ],
     );
   for my $type (@pay_types) {
     my $id = $type->{id};
     my $name = $type->{name};
     $acts{"if${name}Payment"} = $order->{paymentType} == $id;
   }
-  send_order($order, \@items, \@products, $noencrypt);
+  send_order($order, \@items, \@products, $noencrypt, \%subscribing_to);
   $session{cart} = []; # empty the cart
   page('checkoutfinal.tmpl', \%acts);
 }
+
+# sub tag_ifSubscribingTo {
+#   my ($subscribing_to, $args) = @_;
+
+#   exists $subscribing_to->{$args};
+# }
 
 sub tag_with_wrap {
   my ($args, $text) = @_;
@@ -851,6 +887,8 @@ sub tag_with_wrap {
   my $margin = $args =~ /^\d+$/ && $args > 30 ? $args : 70;
 
   require Text::Wrap;
+  # do it twice to prevent a warning
+  $Text::Wrap::columns = $margin;
   $Text::Wrap::columns = $margin;
 
   return Text::Wrap::fill('', '', split /\n/, $text);
@@ -859,7 +897,7 @@ sub tag_with_wrap {
 # sends the email order confirmation and the PGP encrypted
 # email to the site owner
 sub send_order {
-  my ($order, $items, $products, $noencrypt) = @_;
+  my ($order, $items, $products, $noencrypt, $subscribing_to) = @_;
 
   my %extras = $cfg->entriesCS('extra tags');
   for my $key (keys %extras) {
@@ -924,6 +962,7 @@ sub send_order {
      ifOptions => sub { @options },
      options => sub { nice_options(@options) },
      with_wrap => \&tag_with_wrap,
+     ifSubscribingTo => [ \&tag_ifSubscribingTo, $subscribing_to ],
     );
 
   my $mailer = BSE::Mail->new(cfg=>$cfg);

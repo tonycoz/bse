@@ -14,7 +14,7 @@ my $req = BSE::Request->new;
 my $cfg = $req->cfg;
 my $cgi = $req->cgi;
 unless ($req->check_admin_logon()) {
-  refresh_to_admin("/cgi-bin/admin/logon.pl");
+  refresh_to_admin($cfg, "/cgi-bin/admin/logon.pl");
   exit;
 }
 
@@ -38,7 +38,7 @@ if ($req->user_can(edit_reorder_children => $parentid)) {
     my $parent = Articles->getByPkey($stepparent);
     if ($parent) {
       my @otherlinks = OtherParents->getBy(parentId=>$stepparent);
-      my @normalkids = Articles->listedChildren($stepparent);
+      my @normalkids = Articles->children($stepparent);
       my @stepkids = $parent->stepkids;
       my %stepkids = map { $_->{id}, $_ } @stepkids;
       @kids = (
@@ -131,7 +131,7 @@ reorder.pl - reorder the article siblings, given their parent id
 =head1 SYNOPSIS
 
   <html>...
-  <a href="/cgi-bin/admin/reorder.pl?parentid=...&sort=...>Order</a>
+  <a href="/cgi-bin/admin/reorder.pl?parentid=...&amp;sort=...>Order</a>
   ...</html>
 
 =head1 DESCRIPTION

@@ -137,7 +137,15 @@ set on the secure side
 
 =item *
 
-userid - 
+userid - id of the logged on normal user.
+
+=item *
+
+adminuserid - id of the logged on admin user.
+
+=item *
+
+affiliate_code - id of the affiliate set by affiliate.pl
 
 =back
 

@@ -9,10 +9,8 @@ use lib "$FindBin::Bin/../modules";
 #use Carp; # 'verbose';
 use Products;
 use Product;
-use Orders;
-use Order;
-use OrderItems;
-use OrderItem;
+use BSE::TB::Orders;
+use BSE::TB::OrderItems;
 use BSE::Template;
 #use Squirrel::ImageEditor;
 use Constants qw(:shop $SHOPID $PRODUCTPARENT 
@@ -485,7 +483,7 @@ sub order_list {
   $req->user_can('shop_order_list')
     or return product_list($req, "You don't have access to the order list");
     
-  my $orders = Orders->new;
+  my $orders = BSE::TB::Orders->new;
   my @orders = sort { $b->{orderDate} cmp $a->{orderDate} } $orders->all;
   my $template = $req->cgi->param('template');
   unless (defined $template && $template =~ /^\w+$/) {
@@ -501,7 +499,7 @@ sub order_list_filled {
   $req->user_can('shop_order_list')
     or return product_list($req, "You don't have access to the order list");
 
-  my $orders = Orders->new;
+  my $orders = BSE::TB::Orders->new;
   my @orders = sort { $b->{orderDate} cmp $a->{orderDate} } 
     grep $_->{filled} && $_->{paidFor}, $orders->all;
 
@@ -514,7 +512,7 @@ sub order_list_unfilled {
   $req->user_can('shop_order_list')
     or return product_list($req, "You don't have access to the order list");
 
-  my $orders = Orders->new;
+  my $orders = BSE::TB::Orders->new;
   my @orders = sort { $b->{orderDate} cmp $a->{orderDate} } 
     grep !$_->{filled} && $_->{paidFor}, $orders->all;
 
@@ -528,7 +526,7 @@ sub order_list_unpaid {
   $req->user_can('shop_order_list')
     or return product_list($req, "You don't have access to the order list");
 
-  my $orders = Orders->new;
+  my $orders = BSE::TB::Orders->new;
   my @orders = sort { $b->{orderDate} cmp $a->{orderDate} } 
     grep !$_->{paidFor}, $orders->all;
 
@@ -597,9 +595,9 @@ sub order_detail {
   my $cgi = $req->cgi;
   my $id = $cgi->param('id');
   if ($id and
-      my $order = Orders->getByPkey($id)) {
+      my $order = BSE::TB::Orders->getByPkey($id)) {
     $message ||= $cgi->param('m') || '';
-    my @lines = OrderItems->getBy('orderId', $id);
+    my @lines = $order->items;
     my @products = map { Products->getByPkey($_->{productId}) } @lines;
     my $line_index = -1;
     my $product;
@@ -664,7 +662,7 @@ sub order_filled {
 
   my $id = $req->cgi->param('id');
   if ($id and
-      my $order = Orders->getByPkey($id)) {
+      my $order = BSE::TB::Orders->getByPkey($id)) {
     my $filled = $req->cgi->param('filled');
     $order->{filled} = $filled;
     if ($order->{filled}) {

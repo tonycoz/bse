@@ -279,12 +279,19 @@ sub need_logon {
   my $user = get_siteuser($session, $cfg, $cgi);
 
   if (!$user && $reg_if_files) {
-    require 'ArticleFiles.pm';
+    require ArticleFiles;
     # scan to see if any of the products have files
+    # requires a subscription or subscribes
     for my $prod (@$cart_prods) {
       my @files = ArticleFiles->getBy(articleId=>$prod->{id});
       if (grep $_->{forSale}, @files) {
 	return ("register before checkout", "shop/fileitems");
+      }
+      if ($prod->{subscription_id} != -1) {
+	return ("you must be logged in to purchase a subscription", "shop/buysub");
+      }
+      if ($prod->{subscription_required} != -1) {
+	return ("must be logged in to purchse a product requiring a subscription", "shop/subrequired");
       }
     }
   }
@@ -292,6 +299,29 @@ sub need_logon {
   my $require_logon = $cfg->entryBool('shop', 'require_logon', 0);
   if (!$user && $require_logon) {
     return ("register before checkout", "shop/logonrequired");
+  }
+
+  # check the user has the right required subs
+  # and that they qualify to subscribe for limited subscription products
+  if ($user) {
+    for my $prod (@$cart_prods) {
+      my $sub = $prod->subscription_required;
+      unless ($user->is_subscribed($sub)) {
+	return ("you must be subscribed to $sub->{title} to purchase one of these products", "shop/subrequired");
+      }
+
+      $sub = $prod->subscription;
+      if ($sub->renew_only) {
+	unless ($user->is_subscribed_grace) {
+	  return ("you must be subscribed to $sub->{title} to use this renew only product", "sub/renewsubonly");
+	}
+      }
+      if ($sub->new_only) {
+	if ($user->is_subscribed_grace) {
+	  return ("you must not be subscribed to $sub->{title} already to use this new subscription only product", "sub/newsubonly");
+	}
+      }
+    }
   }
   
   return;
@@ -383,8 +413,8 @@ sub payment_types {
     $types{$type}{enabled} = 1;
   }
 
-  use Data::Dumper;
-  print STDERR Dumper \%types;
+  #use Data::Dumper;
+  #print STDERR Dumper \%types;
 
   return values %types;
 }

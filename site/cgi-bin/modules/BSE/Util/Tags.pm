@@ -614,7 +614,7 @@ sub tag_if_user_can {
 
     # whew, so we should have an article
     $req->user_can($perm, $article)
-      or return;
+      or return 0;
   }
 
   return 1;
@@ -675,7 +675,7 @@ sub tag_replace {
 	defined or $_ = '' for @out;
 	my $tmp = $with;
 	{
-	  $tmp =~ s/\$([1-9\$])/$1 eq '$' ? '$' :
+	  $tmp =~ s/\$([1-9\$])/
 	    $1 eq '$' ? '$' : $out[$1-1] /ge;
 	}
 	$tmp;
@@ -689,7 +689,7 @@ sub tag_replace {
 	defined or $_ = '' for @out;
 	my $tmp = $with;
 	{
-	  $tmp =~ s/\$([1-9\$])/$1 eq '$' ? '$' :
+	  $tmp =~ s/\$([1-9\$])/
 	    $1 eq '$' ? '$' : $out[$1-1] /ge;
 	}
 	$tmp;

@@ -99,7 +99,19 @@ sub perform {
   
   print STDERR "  > perform $func $args\n" if DEBUG > 1;
 
-  my $value = $self->low_perform($acts, $func, $args, $orig);
+  my $value;
+  eval {
+    $value = $self->low_perform($acts, $func, $args, $orig);
+  };
+
+  if ($@) {
+    my $msg = $@;
+    $msg =~ /^ENOIMPL\b/
+      and return $orig;
+    print STDERR "Eval error in cond: $msg\n";
+    $msg =~ s/([<>&])/"&#".ord($1).";"/ge;
+    return "<!-- ** $msg ** -->";
+  }
 
   unless (defined $value) {
     cluck "** undefined value returned by $func $args **";

@@ -122,6 +122,18 @@
             </td>
             <td nowrap bgcolor="#FFFFFF" valign="top"><:help product thumb:></td>
           </tr>
+          <tr> 
+            <th nowrap align="left" bgcolor="#FFFFFF">Purchase subscribes to:</th>
+            <td nowrap bgcolor="#FFFFFF"> 
+	      <select name="subscription_id">
+                <option value="-1">(nothing)</option>
+<:iterator begin subscriptions:>
+                <option value="<:subscription subscription_id:>"><:subscription title:></option>
+<:iterator end subscriptions:>
+	      </select> for <input type="text" name="subscription_period" value="<:old subscription_period" /><:error_img subscription_period:> months.
+            </td>
+            <td nowrap bgcolor="#FFFFFF"><:help product subscription_id:></td>
+          </tr>
         </table>
       </td>
     </tr>

@@ -881,6 +881,7 @@ sub tag_default {
   }
   else {
     my $value = $self->default_value($req, $article, $col);
+    defined $value or $value = '';
     return escape_html($value);
   }
 }
@@ -1236,7 +1237,7 @@ sub make_link {
   my $link_titles = $self->{cfg}->entryBool('basic', 'link_titles', 0);
   if ($link_titles) {
     (my $extra = lc $article->{title}) =~ tr/a-z0-9/_/sc;
-    $link .= "/".$extra;
+    $link .= "/" . $extra . ".html";
   }
 
   $link;
@@ -1289,37 +1290,26 @@ sub save_new {
   $self->validate_parent(\%data, $articles, $parent, \$msg)
     or return $self->add_form($req, $articles, $msg);
 
-  $self->fill_new_data($req, \%data, $articles);
   my $level = $parent ? $parent->{level}+1 : 1;
+  $data{level} = $level;
   $data{displayOrder} = time;
-  $data{titleImage} ||= '';
-  $data{imagePos} = 'tr';
-  $data{release} = sql_date($data{release}) || now_sqldate();
-  $data{expire} = sql_date($data{expire}) || $Constants::D_99;
-  unless ($data{template}) {
-    $data{template} ||= 
-      $self->{cfg}->entry("children of $data{parentid}", 'template');
-    $data{template} ||=
-      $self->{cfg}->entry("level $level", 'template');
-  }
   $data{link} ||= '';
   $data{admin} ||= '';
-  if ($parent) {
-    $data{threshold} = $parent->{threshold}
-      if !defined $data{threshold} || $data{threshold} =~ /^\s*$/;
-    $data{summaryLength} = $parent->{summaryLength}
-      if !defined $data{summaryLength} || $data{summaryLength} =~ /^\s*$/;
-  }
-  else {
-    $data{threshold} = $self->{cfg}->entry("level $level", 'threshold', 5)
-      if !defined $data{threshold} || $data{threshold} =~ /^\s*$/;
-    $data{summaryLength} = 200
-      if !defined $data{summaryLength} || $data{summaryLength} =~ /^\s*$/;
-  }
   $data{generator} = $self->generator;
   $data{lastModified} = now_sqldatetime();
-  $data{level} = $level;
   $data{listed} = 1 unless defined $data{listed};
+
+  $self->fill_new_data($req, \%data, $articles);
+  for my $col (qw(titleImage imagePos template keyword)) {
+    defined $data{$col} 
+      or $data{$col} = $self->default_value($req, \%data, $col);
+  }
+
+  # these columns are handled a little differently
+  for my $col (qw(release expire  threshold summaryLength )) {
+    $data{$col} 
+      or $data{$col} = $self->default_value($req, \%data, $col);
+  }
 
   shift @columns;
   my $article = $table_object->add(@data{@columns});
@@ -2512,6 +2502,15 @@ sub hide {
   return $self->refresh($article, $req->cgi, undef, 'Article hidden');
 }
 
+my %defaults =
+  (
+   titleImage => '',
+   imagePos => 'tr',
+   expire => $Constants::D_99,
+   listed => 1,
+   keyword => '',
+  );
+
 sub default_value {
   my ($self, $req, $article, $col) = @_;
 
@@ -2525,8 +2524,30 @@ sub default_value {
   my $section = "level $article->{level}";
   my $value = $req->cfg->entry($section, $col);
   defined($value) and return $value;
+
+  exists $defaults{$col} and return $defaults{$col};
+
+  $col eq 'release' and return now_sqldate();
+
+  if ($col eq 'threshold') {
+    my $parent = $article->{parentid} != -1 
+      && Articles->getByPkey($article->{parentid}); 
+
+    $parent and return $parent->{threshold};
+    
+    return 5;
+  }
   
-  return '';
+  if ($col eq 'summaryLength') {
+    my $parent = $article->{parentid} != -1 
+      && Articles->getByPkey($article->{parentid}); 
+
+    $parent and return $parent->{summaryLength};
+    
+    return 200;
+  }
+  
+  return;
 }
 
 sub flag_sections {

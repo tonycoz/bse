@@ -148,6 +148,11 @@ create table product (
 
   -- options that can be specified for this product
   options varchar(255) not null,
+
+  subscription_id integer not null default -1,
+  subscription_period integer not null default 0,
+  subscription_usage integer not null default 3,
+  subscription_required integer not null default -1,
   
   primary key(articleId)
 );
@@ -232,6 +237,11 @@ create table orders (
   billFacsimile varchar(80) not null default '',
   billEmail varchar(255) not null default '',
 
+  siteuser_id integer,
+  affiliate_code varchar(40) not null default '',
+
+  shipping_cost integer not null default 0,
+
   primary key (id),
   index order_cchash(ccNumberHash),
   index order_userId(userId, orderDate)
@@ -264,6 +274,12 @@ create table order_item (
   customStr1 varchar(255) null,
   customStr2 varchar(255) null,
   customStr3 varchar(255) null,
+
+  -- transferred from the product
+  title varchar(255) not null default '',
+  summary varchar(255) not null default '',
+  subscription_id integer not null default -1,
+  subscription_period integer not null default 0,
 
   primary key (id),
   index order_item_order(orderId, id)
@@ -331,6 +347,7 @@ create table article_files (
   primary key (id)
 );
 
+-- these are mailing list subscriptions
 drop table if exists subscription_types;
 create table subscription_types (
   id integer not null auto_increment,
@@ -567,3 +584,29 @@ create table admin_perms (
   perm_map varchar(255),
   primary key (object_id, admin_id)
 );
+
+-- -- these are "product" subscriptions
+-- drop table if exists bse_subscriptions;
+-- create table bse_subscriptions (
+--   subscription_id integer not null auto_increment primary key,
+
+--   text_id varchar(20) not null,
+
+--   title varchar(255) not null,
+
+--   description text not null,
+
+--   max_lapsed integer not null,
+
+--   unique (text_id)
+-- );
+
+-- drop table if exists bse_user_subscribed;
+-- create table bse_user_subscribed (
+--   subscription_id integer not null,
+--   siteuser_id integer not null,
+--   started_at date not null,
+--   ends_at date not null,
+--   primary key (subscription_id, siteuser_id)
+-- );
+
