@@ -77,8 +77,10 @@
             <td align="center"><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:item units:></font></td>
             <td align="right"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">$<:money item price:></font></td>
           </tr>
-          <:if Prodfiles:> 
+<:iterator end items:>
         </table>
+
+          <:if Prodfiles:> 
         <table width="100%" cellpadding="3" cellspacing="1">
           <tr bgcolor="#CCCCCC"> 
             <th colspan="3"><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#666666"><:if 
@@ -86,11 +88,13 @@
               "yes":>Files available when order status is &#145;Complete&#146;<:or:>Files<:eif:><:eif 
               Order:></font></th>
           </tr>
+
           <tr bgcolor="#EEEEEE"> 
             <th width="50%" align="left"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Description</font></th>
             <th nowrap width="50%" align="left"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">File</font></th>
             <th><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Size</font></th>
           </tr>
+<:iterator begin items:>
           <:iterator begin prodfiles:> 
           <tr bgcolor="#FFFFFF"> 
             <td width="50%"><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:prodfile 
@@ -101,8 +105,9 @@
             <td align="right"><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:kb 
               prodfile sizeInBytes:></font></td>
           </tr>
-          <:iterator end prodfiles:> <:or Prodfiles:><:eif Prodfiles:> <:iterator end items:> 
+          <:iterator end prodfiles:><:iterator end items:> 
         </table>
+<:or Prodfiles:><:eif Prodfiles:>  
 <:or Items:><:eif Items:>
         </td>
     </tr>

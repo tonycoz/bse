@@ -88,6 +88,9 @@ control specific articles, and those that are applied to an article.
 Each macro will need to be described in bse.cfg, and the name of the
 macro assigned an index so that it can be controlled.
 
+Since most normal permissions aren't going to be directly useful, the
+only permissions stored in the system will be macro based permissions.
+
 =head2 Attached macros
 
 These name one or more articles and the permissions can be different

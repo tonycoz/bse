@@ -3,7 +3,7 @@ use strict;
 use BSE::Test;
 
 ++$|;
-print "1..29\n";
+print "1..39\n";
 my $baseurl = base_url;
 ok($baseurl =~ /^http:/, "basic check of base url");
 my $ua = make_ua;
@@ -31,4 +31,14 @@ fetch_ok($ua, "user logon page", "$baseurl/cgi-bin/user.pl",
 	 qr!User\s+Logon!s);
 fetch_ok($ua, "shop admin page", "$baseurl/cgi-bin/admin/shopadmin.pl",
 	 qr!Shop\s+administration!s);
+fetch_ok($ua, "add article form", "$baseurl/cgi-bin/admin/add.pl",
+	 qr!New\s+Subsect\sLev2!s);
+fetch_ok($ua, "add catalog form", "$baseurl/cgi-bin/admin/add.pl?type=Catalog",
+	 qr!New\s+Catalog!s);
+fetch_ok($ua, "add product form", "$baseurl/cgi-bin/admin/add.pl?type=Product",
+	 qr!Add\s+product!s);
+fetch_ok($ua, "edit article form", "$baseurl/cgi-bin/admin/add.pl?id=1",
+	 qr!Section\sDetails!s);
+fetch_ok($ua, "edit catalog form", "$baseurl/cgi-bin/admin/add.pl?id=4",
+	 qr!Catalog\sDetails!s);
 

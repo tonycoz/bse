@@ -458,3 +458,46 @@ create table email_blacklist (
   primary key (id),
   unique (email)
 );
+
+drop table if exists admin_base;
+create table admin_base (
+  id integer not null auto_increment,
+  type char not null,
+  primary key (id)
+);
+
+drop table if exists admin_users;
+create table admin_users (
+  base_id integer not null,
+  logon varchar(60) not null,
+  name varchar(255) not null,
+  password varchar(80) not null,
+  perm_map varchar(255) not null,
+  primary key (base_id),
+  unique (logon)
+);
+
+drop table if exists admin_groups;
+create table admin_groups (
+  base_id integer not null,
+  name varchar(80) not null,
+  description varchar(255) not null,
+  perm_map varchar(255) not null,
+  primary key (base_id),
+  unique (name)
+);
+
+drop table if exists admin_membership;
+create table admin_membership (
+  user_id integer not null,
+  group_id integer not null,
+  primary key (user_id, group_id)
+);
+
+drop table if exists admin_perms;
+create table admin_perms (
+  object_id integer not null,
+  admin_id integer not null,
+  perm_map varchar(255),
+  primary key (object_id, admin_id)
+);

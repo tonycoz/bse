@@ -203,4 +203,14 @@ sub fill_old_data {
   return $self->SUPER::fill_old_data($req, $article, $src);
 }
 
+sub default_template {
+  my ($self, $article, $cfg, $templates) = @_;
+
+  my $template = $cfg->entry('catalogs', 'template');
+  return $template
+    if $template && grep $_ eq $template, @$templates;
+
+  return $self->SUPER::default_template($article, $cfg, $templates);
+}
+
 1;

@@ -88,5 +88,15 @@ sub child_types {
   return qw(BSE::Edit::Product BSE::Edit::Catalog);
 }
 
+sub default_template {
+  my ($self, $article, $cfg, $templates) = @_;
+
+  my $template = $cfg->entry('catalogs', 'template');
+  return $template
+    if $template && grep $_ eq $template, @$templates;
+
+  return $self->SUPER::default_template($article, $cfg, $templates);
+}
+
 1;
 

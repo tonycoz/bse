@@ -291,6 +291,22 @@ sub tag_is {
   return $templater->perform($acts, $func, $funcargs) ? 'Yes' : 'No';
 }
 
+sub default_template {
+  my ($self, $article, $cfg, $templates) = @_;
+
+  if ($article->{parentid}) {
+    my $template = $cfg->entry("children of $article->{parentid}", "template");
+    return $template 
+      if $template && grep $_ eq $template, @$templates;
+  }
+  if ($article->{level}) {
+    my $template = $cfg->entry("level $article->{level}", "template");
+    return $template 
+      if $template && grep $_ eq $template, @$templates;
+  }
+  return $templates->[0];
+}
+
 sub tag_templates {
   my ($self, $article, $cfg, $cgi) = @_;
 
@@ -300,7 +316,8 @@ sub tag_templates {
     $default = $article->{template};
   }
   else {
-    $default = $templates[0];
+    my @options;
+    $default = $self->default_template($article, $cfg, \@templates);
   }
   return $cgi->popup_menu(-name=>'template',
 			  -values=>\@templates,
@@ -356,6 +373,11 @@ sub template_dirs {
     if (my $dirs = $self->{cfg}->entry($section, 'template_dirs')) {
       push @dirs, split /,/, $dirs;
     }
+  }
+  if ($article->{level}) {
+    push @dirs, $article->{level};
+    my $dirs = $self->{cfg}->entry("level $article->{level}", 'template_dirs');
+    push @dirs, split /,/, $dirs if $dirs;
   }
 
   @dirs;
@@ -1042,6 +1064,9 @@ sub save_new {
   $article->setLink($self->make_link($article));
   $article->save();
 
+  use Util 'generate_article';
+  generate_article($articles, $article) if $Constants::AUTO_GENERATE;
+
   my $urlbase = $self->{cfg}->entryVar('site', 'url');
   return BSE::Template->get_refresh($urlbase . $article->{admin}, 
 				    $self->{cfg});
@@ -1129,6 +1154,10 @@ sub save {
   }
 
   $article->save();
+
+  use Util 'generate_article';
+  generate_article($articles, $article) if $Constants::AUTO_GENERATE;
+
   my $urlbase = $self->{cfg}->entryVar('site', 'url');
   return BSE::Template->get_refresh($urlbase . $article->{admin}, 
 				    $self->{cfg});

@@ -54,7 +54,7 @@
 </form>
 
 
-<form method="POST" action="<:script:>" enctype="multipart/form-data">
+<form method="post" action="<:script:>" enctype="multipart/form-data">
 <input type="hidden" name="level" value="<: level :>">
 <input type="hidden" name="id" value="<: article id :>">
 <input type="hidden" name="parentid" value="<: article parentid :>">
@@ -97,8 +97,8 @@
               <input type="text" name="url" value="<: image url :>" size="32">
             </td>
             <td valign="bottom" nowrap> 
-              <input type="submit" name="removeimg_<: image id :>" value="Delete" onClick="return window.alert('Remember to update the article after deletion is complete')" >
-              <:imgmove:> </td>
+              <b><a href="<:script:>?level=<: level :>&parentid=<: article parentid :>&id=<:article id:>&imgtype=<: articleType :>&removeimg_<: image id :>">Delete</a></b>
+<:imgmove:> </td>
           </tr>
           <: iterator separator images :> 
           <tr bgcolor="#FFFFFF"> 

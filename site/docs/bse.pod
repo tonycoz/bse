@@ -10,6 +10,61 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.12_07
+
+=over
+
+=item *
+
+added handling for a default template based on parent, level and type.
+Returns to our original defaults from %LEVEL_DEFAULTS, but uses the
+config file instead.
+
+=item *
+
+now lists level specific templates in the templates drop-down for
+normal articles
+
+=item *
+
+updated templates from Adrian
+
+=item *
+
+since the default release date for new products is now the date the
+product was added, and release is a datetime, add_item()'s check to
+make sure the product had been released was broken, since it only
+compared it with a date.
+
+=item *
+
+the purchase() and prePurchase() functions in shop.pl had a similar
+problem
+
+=item *
+
+articles weren't being regenerated on save
+
+=item *
+
+report errors supplied to show_cart() in shop.pl
+
+=item *
+
+changed add_item() to report why it didn't add an item to the cart via
+show_cart() (#167)
+
+=item *
+
+t/t00smoke.t now checks add.pl for normal articles, catalogs and
+products
+
+=item *
+
+removed now unneeded onClick handler from delete in the image manager
+
+=back
+
 =head2 0.12_06
 
 This release includes some inactive files for access control.

@@ -228,6 +228,42 @@ used for the given article.
 
 =back
 
+=head2 [level I<level>]
+
+=over
+
+=item template
+
+The default template for this level of article, assuming it hasn't
+been set in the [children of I<article id>] section.
+
+=item template_dirs
+
+A comma-separated list of extra directories under $TMPLDIR to search
+for templates that can be used for articles at the given I<level>.
+
+=back
+
+=head2 [catalogs]
+
+=over
+
+=item template
+
+The default template for catalogs.
+
+=back
+
+=head2 [products]
+
+=over
+
+=item template
+
+The default template for products.
+
+=back
+
 =head2 [messages]
 
 This can be used to control translation of error messages.  Each key

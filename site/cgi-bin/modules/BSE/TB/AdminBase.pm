@@ -1,10 +1,9 @@
 package BSE::TB::AdminBase;
 use strict;
-bse base qw(Squirrel::Table);
-use BSE::TB::AdminBase;
+use base qw(Squirrel::Row);
 
-sub rowClass {
-  return 'BSE::TB::AdminBase';
+sub columns {
+  return qw/id type/;
 }
 
 1;

@@ -35,16 +35,15 @@
 <form name="ff" method="POST" action="/cgi-bin/shop.pl">
               
 <:if Options:>
-<table>
+  <table>
 <tr>
-      <td> <:iterator begin options:> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b><:option 
-        desc:>:</b></font> <:option popup:> <:iterator end options:> </td>
+       <:iterator begin options:><td valign="middle"> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b><:option desc:>:</b></font></td><td> <:option popup:> </td><:iterator end options:>
 </tr>
 </table>
   <:or Options:><:eif Options:>
-<:ifProduct leadTime:> 
-  <p> <b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FE7F00">Usually ships in: <:product leadTime:> <:if Eq [product leadTime] "1":>day<:or Eq:>days<:eif Eq:></font></b></p>
-<:or:><:eif:>
+  <:ifProduct leadTime:> 
+   <p><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FE7F00">Usually ships in: <:product leadTime:> <:if Eq [product leadTime] "1":>day<:or Eq:>days<:eif Eq:></font></b>
+</p><:or:><br><:eif:>
 
 <table border="0" cellspacing="0" cellpadding="0">
     <tr valign="middle" align="center"> 
@@ -67,7 +66,7 @@
     </tr>
   </table>
 </form>
-<:or Product:>
+<:or Product:><br>
 <table border="0" cellspacing="0" cellpadding="1" bgcolor="#CCCCCC">
   <tr>
     <td>

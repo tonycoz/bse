@@ -137,8 +137,10 @@
                       <:iterator end files:> 
                     </table>
               </td></tr></table>
-              <:or Files:><p>No files are attached to this article.<:eif Files:> 
-                <a href="<:script:>?filelist=1&id=<:article id:>"><b>Manage Files</b></a></p>
+              <p><a href="<:script:>?filelist=1&id=<:article id:>"><b>Manage Files</b></a>
+              </p>
+              <:or Files:>
+              <p>No files are attached to this article. <a href="<:script:>?filelist=1&id=<:article id:>"><b>Manage Files</b></a></p><:eif Files:>
             </td>
             <td nowrap bgcolor="#FFFFFF" valign="top"><:help edit files:></td>
           </tr>

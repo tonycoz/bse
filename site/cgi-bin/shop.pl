@@ -88,26 +88,42 @@ show_cart();
 
 sub add_item {
   my $addid = param('id');
+  $addid ||= '';
   my $quantity = param('quantity');
+  $quantity ||= 1;
   my $product;
   $product = Products->getByPkey($addid) if $addid;
-  $product or return show_cart(); # oops
+  $product or return show_cart("Cannot find product $addid"); # oops
 
   # collect the product options
-  my @options = map scalar param($_), split /,/, $product->{options};
-  grep(!defined, @options) 
-    and return show_cart(); # invalid parameter
+  my @options;
+  my @opt_names = split /,/, $product->{options};
+  my @not_def;
+  for my $name (@opt_names) {
+    my $value = param($name);
+    push @options, $value;
+    unless (defined $value) {
+      push @not_def, $name;
+    }
+  }
+  @not_def
+    and return show_cart("Some product options (@not_def) not supplied");
   my $options = join(",", @options);
   
   # the product must be non-expired and listed
-  my $today = epoch_to_sql(time);
-  $product->{release} le $today and $today le $product->{expire}
-    or return show_cart();
-  $product->{listed} or return show_cart();
+  use BSE::Util::SQL qw(now_sqldate);
+  (my $comp_release = $product->{release}) =~ s/ .*//;
+  (my $comp_expire = $product->{expire}) =~ s/ .*//;
+  my $today = now_sqldate();
+  $comp_release le $today
+    or return show_cart("Product has not been released yet");
+  $today le $comp_expire
+    or return show_cart("Product has expired");
+  $product->{listed} or return show_cart("Product not available");
 
   # we need a natural integer quantity
   $quantity =~ /^\d+$/
-    or return show_cart();
+    or return show_cart("Invalid quantity");
 
   my @cart = @{$session{cart}};
  
@@ -123,6 +139,7 @@ sub add_item {
 }
 
 sub show_cart {
+  my ($msg) = @_;
   my @cart = @{$session{cart}};
   my @cart_prods = map { Products->getByPkey($_->{productId}) } @cart;
   my $item_index = -1;
@@ -133,6 +150,8 @@ sub show_cart {
   my %custom_state = %{$session{custom}};
 
   BSE::Custom->enter_cart(\@cart, \@cart_prods, \%custom_state); 
+  $msg = '' unless defined $msg;
+  $msg = CGI::escapeHTML($msg);
 
   my %acts;
   %acts =
@@ -140,6 +159,7 @@ sub show_cart {
      BSE::Custom->cart_actions(\%acts, \@cart, \@cart_prods, \%custom_state),
      shop_cart_tags(\%acts, \@cart, \@cart_prods, \%session, $CGI::Q),
      basic_tags(\%acts),
+     msg => $msg,
     );
   $session{custom} = \%custom_state;
 
@@ -340,9 +360,15 @@ sub prePurchase {
     if (!$product) {
       return show_cart("Product $item->{productId} not found");
     }
-    elsif ($product->{release} gt $today || $product->{expire} lt $today
-	   || !$product->{listed}) {
-      return show_cart("Sorry, '$product->{title}' is no longer available");
+    else {
+      (my $comp_release = $product->{release}) =~ s/ .*//;
+      (my $comp_expire = $product->{expire}) =~ s/ .*//;
+      $comp_release le $today
+	or return show_cart("'$product->{title}' has not been released yet");
+      $today le $comp_expire
+	or return show_cart("'$product->{title}' has expired");
+      $product->{listed} 
+	or return show_cart("'$product->{title}' not available");
     }
     push(@products, $product); # used in page rendering
     @$item{qw/price wholesalePrice gst/} = 
@@ -517,16 +543,22 @@ sub purchase {
   $order{gst} = 0;
   $order{wholesale} = 0;
   my @products;
-  my $today = epoch_to_sql(time);
+  my $today = now_sqldate();
   for my $item (@cart) {
     my $product = Products->getByPkey($item->{productId});
     # double check that it's still a valid product
     if (!$product) {
       return show_cart("Product $item->{productId} not found");
     }
-    elsif ($product->{release} gt $today || $product->{expire} lt $today
-	   || !$product->{listed}) {
-      return show_cart("Sorry, '$product->{title}' is no longer available");
+    else {
+      (my $comp_release = $product->{release}) =~ s/ .*//;
+      (my $comp_expire = $product->{expire}) =~ s/ .*//;
+      $comp_release le $today
+	or return show_cart("'$product->{title}' has not been released yet");
+      $today le $comp_expire
+	or return show_cart("'$product->{title}' has expired");
+      $product->{listed} 
+	or return show_cart("'$product->{title}' not available");
     }
     push(@products, $product); # used in page rendering
     @$item{qw/price wholesalePrice gst/} = 

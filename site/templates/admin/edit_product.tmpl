@@ -32,7 +32,8 @@
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF">Catalog:</th>
-            <td bgcolor="#FFFFFF"><select name="parentid"><:list:></select></td>
+            <td bgcolor="#FFFFFF">
+<select name="parentid"><:list:></select></td>
             <td nowrap bgcolor="#FFFFFF"><:help product catalog:></td>
           </tr>
           <tr> 
@@ -121,7 +122,7 @@
           </tr>
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF" valign="top"><a name="files"></a>Files:</th>
-            <td nowrap bgcolor="#FFFFFF" width="100%"> <:if Files:> 
+            <td nowrap bgcolor="#FFFFFF"> <:if Files:> 
               <table cellpadding="0" cellspacing="0" border="0" bgcolor="#333333">
                 <tr> 
                   <td> 
@@ -147,17 +148,19 @@
                     </table>
                   </td>
                 </tr>
-              </table><br>
-              <:or Files:><p>No files are attached to this article.<:eif Files:> 
-                <a href="<:script:>?filelist=1&id=<:product id:>"><b>Manage Files</b></a></p>
+              </table>
+              <p><a href="<:script:>?filelist=1&id=<:article id:>"><b>Manage Files</b></a>
+              </p>
+              <:or Files:>
+              <p>No files are attached to this article. <a href="<:script:>?filelist=1&id=<:article id:>"><b>Manage Files</b></a></p><:eif Files:>
             </td>
-            <td nowrap bgcolor="#FFFFFF" width="100%" valign="top"><:help product 
+            <td nowrap bgcolor="#FFFFFF" valign="top"><:help product 
               files:></td>
           </tr>
           <tr> 
             <th valign="top" nowrap bgcolor="#FFFFFF" align="left"> Images: 
             </th>
-            <td align="center" bgcolor="#FFFFFF" width="100%"> <:if Images:> <:iterator begin 
+            <td align="center" bgcolor="#FFFFFF"> <:if Images:> <:iterator begin 
               images:> <img src="/images/<: image image :>" alt="<:image alt :>" width= 
               <:image width:> height=<:image height:>> <:iterator separator images:> 
               <hr noshade size="1">
@@ -166,7 +169,7 @@
 	      <:or Images:><p align="left">No images are attached to this article.  <a href="<:script:>?id=<:article id:>&showimages=1"><b>Manage Images</b></a></p>
 	      <:eif Images:>
             </td>
-            <td valign="top" bgcolor="#FFFFFF" width="100%"><:help product images:></td>
+            <td valign="top" bgcolor="#FFFFFF"><:help product images:></td>
           </tr>
         </table>
       </td>
