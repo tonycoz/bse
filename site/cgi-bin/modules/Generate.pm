@@ -2,13 +2,15 @@ package Generate;
 use strict;
 use Articles;
 use CGI ();
-use Constants qw(%EXTRA_TAGS $IMAGEDIR $LOCAL_FORMAT $TMPLDIR);
+use Constants qw(%EXTRA_TAGS $IMAGEDIR $LOCAL_FORMAT $TMPLDIR $BODY_EMBED 
+                 $EMBED_MAX_DEPTH);
 
 my $excerptSize = 300;
 
 sub new {
   my ($class, %opts) = @_;
-
+  $opts{maxdepth} = $EMBED_MAX_DEPTH unless exists $opts{maxdepth};
+  $opts{depth} = 0 unless $opts{depth};
   return bless \%opts, $class;
 }
 
@@ -124,15 +126,72 @@ sub _make_html {
   return CGI::unescapeHTML($_[0]);
 }
 
+sub _embed_low {
+  my ($self, $acts, $articles, $what, $template, $maxdepth) = @_;
+
+  $maxdepth = $self->{maxdepth} 
+    if !$maxdepth || $maxdepth > $self->{maxdepth};
+  #if ($self->{depth}) {
+  #  print STDERR "Embed depth $self->{depth}\n";
+  #}
+  if ($self->{depth} > $self->{maxdepth}) {
+    return "** too many embedding levels **";
+  }
+
+  my $id;
+  if ($what !~ /^\d+$/) {
+    # not an article id, assume there's an article here we can use
+    $id = $acts->{$what} && $acts->{$what}->('id');
+    unless ($id =~ /^\d+$/) {
+      # save it for later
+      return "<:embed $what $template $maxdepth:>";
+    }
+  }
+  else {
+    $id = $what;
+  }
+  my $embed = $articles->getByPkey($id);
+  if ($embed) {
+    my $gen = $self;
+    if (ref($self) ne $embed->{generator}) {
+      my $genname = $embed->{generator};
+      $genname =~ s#::#/#g; # broken on MacOS I suppose
+      $genname .= ".pm";
+      eval {
+	require $genname;
+      };
+      $@ and return "** Cannot load generator $embed->{generator} for article $id **";
+      $gen = $embed->{generator}->new(admin=>$self->{admin});
+    }
+
+    # a rare appropriate use of local
+    local $gen->{depth} = $self->{depth}+1;
+    local $gen->{maxdepth} = $maxdepth;
+    $template = "" if defined($template) && $template eq "-";
+    return $gen->embed($embed, $articles, $template);
+  }
+  else {
+    return "** Cannot find article $id to be embedded **";
+  }
+}
+
+sub _body_embed {
+  my ($self, $acts, $articles, $which, $template) = @_;
+
+  my $text = $self->_embed_low($acts, $articles, $which, $template);
+
+  return $text;
+}
+
 # replace markup, insert img tags
 sub format_body {
-  my ($self, $body, $imagePos, @images)  = @_;
+  my ($self, $acts, $articles, $body, $imagePos, @images)  = @_;
 
   return substr($body, 6) if $body =~ /^<html>/i;
 
   # clean up any possible existing markup
   $body = CGI::escapeHTML($body);
-
+  
   # I considered replacing these with single character codes and replacing
   # them later with the tags, to avoid having to check for the middle of 
   # tag in the image tag insertion code
@@ -140,53 +199,74 @@ sub format_body {
   # This wouldn't work because we still need to do the entity substitution
   # before
 
-  my $match;
- TRY: while (1) {
-    $match = 0;
-    $body =~ s#html\[([^\[\]]*(?:(?:\[[^\[\]]*\])[^\[\]]*)+)\]#
-      _make_html($1)#eig;
-    $LOCAL_FORMAT and $LOCAL_FORMAT->body(\$body)
-      and next TRY;
-    $body =~ s#a\[([^,\]\[]+),([^\]\[]+)\]#<a href="$1">$2</a>#ig
-      and next TRY;
-    $body =~ s#link\[([^|\]\[]+)\|([^\]\[]+)\]#<a href="$1">$2</a>#ig
-      and next TRY;
-    $body =~ s#b\[([^\]\[]+)\]#<b>$1</b>#ig
-      and next TRY;
-    $body =~ s#i\[([^\]\[]+)\]#<i>$1</i>#ig
-      and next TRY;
-    $body =~ s#align\[([^|\]\[]+)\|([^\]\[]+)\]#<div align="$1">$2</div>#ig
-      and next TRY;
-    $body =~ s#font\[([^|\]\[]+)\|([^\]\[]+)\]#<font size="$1">$2</font>#ig
-      and next TRY;
-    $body =~ s#hr\[([^|\]\[]*)\|([^\]\[]*)\]#_make_hr($1, $2)#ieg
-      and next TRY;
-    $body =~ s#hr\[([^|\]\[]*)\]#_make_hr($1, '')#ieg
-      and next TRY;
-    $body =~ s#anchor\[([^|\]\[]*)\]#<a name="$1"></a>#ig
-      and next TRY;
-    $body =~ s#table\[([^\n\[\]]*)\n([^\[\]]+)\n\s*\]#_make_table($1, $2)#ieg
-      and next TRY;
-    $body =~ s#table\[([^\]\[]+)\|([^\]\[|]+)\]#_make_table($1, "|$2")#ieg
-      and next TRY;
-    $body =~ s#((?:\*\*[^\n]+\n[^\S\n]*)+)#_format_bullets($1)#eg
-      and next TRY;
-    $body =~ s!((?:##[^\n]+\n[^\S\n]*)+)!_format_ol($1)!eg
-      and next TRY;
-    $body =~ s#fontcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#<font size="$1" color="$2">$3</font>#ig
-      and next TRY;
-    $body =~ s#indent\[([^\]\[]+)\]#<ul>$1</ul>#ig
-      and next TRY;
-    $body =~ s#center\[([^\]\[]+)\]#<center>$1</center>#ig
-      and next TRY;
-    $body =~ s#hrcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#<table width="$1" height="$2" border="0" bgcolor="$3" cellpadding="0" cellspacing="0"><tr><td><img src="/images/trans_pixel.gif" width="1" height="1"></td></tr></table>#ig
-      and next TRY;
-    last;
-  }
 
-  $body =~ s/\n([ \r]*\n)+/<p>/g;
-  $body =~ s/\n/<br>/g;
-  
+  # originally the following was just one big loop of replacements, but
+  # some tags are a little more complex
+  # This needs a real parser
+
+  my $out = '';
+  for my $part (split /((?:html\[(?:[^\[\]]*(?:(?:\[[^\[\]]*\])[^\[\]]*)*)\])
+			|embed\[(?:[^,\[\]]*)(?:,(?:[^,\[\]]*))?\])/ix, $body) {
+    #print STDERR "Part is $part\n";
+    if ($part =~ /^html\[([^\[\]]*(?:(?:\[[^\[\]]*\])[^\[\]]*)*)\]$/i) {
+      $out .= _make_html($1);
+    }
+    elsif ($part =~ /^embed\[([^,\[\]]*),([^,\[\]]*)\]$/i) {
+      $out .= $self->_body_embed($acts, $articles, $1, $2);
+    }
+    elsif ($part =~ /^embed\[([^,\[\]]*)\]$/i) {
+      $out .= $self->_body_embed($acts, $articles, $1, "")
+    }
+    else {
+      my $match;
+    TRY: while (1) {
+	$match = 0;
+	$LOCAL_FORMAT and $LOCAL_FORMAT->body(\$part)
+	  and next TRY;
+	$part =~ s#a\[([^,\]\[]+),([^\]\[]+)\]#<a href="$1">$2</a>#ig
+	  and next TRY;
+	$part =~ s#link\[([^|\]\[]+)\|([^\]\[]+)\]#<a href="$1">$2</a>#ig
+	  and next TRY;
+	$part =~ s#b\[([^\]\[]+)\]#<b>$1</b>#ig
+	  and next TRY;
+	$part =~ s#i\[([^\]\[]+)\]#<i>$1</i>#ig
+	  and next TRY;
+	$part =~ s#align\[([^|\]\[]+)\|([^\]\[]+)\]#<div align="$1">$2</div>#ig
+	  and next TRY;
+	$part =~ s#font\[([^|\]\[]+)\|([^\]\[]+)\]#<font size="$1">$2</font>#ig
+	  and next TRY;
+	$part =~ s#hr\[([^|\]\[]*)\|([^\]\[]*)\]#_make_hr($1, $2)#ieg
+	  and next TRY;
+	$part =~ s#hr\[([^|\]\[]*)\]#_make_hr($1, '')#ieg
+	  and next TRY;
+	$part =~ s#anchor\[([^|\]\[]*)\]#<a name="$1"></a>#ig
+	  and next TRY;
+	$part =~ s#table\[([^\n\[\]]*)\n([^\[\]]+)\n\s*\]#_make_table($1, $2)#ieg
+	  and next TRY;
+	$part =~ s#table\[([^\]\[]+)\|([^\]\[|]+)\]#_make_table($1, "|$2")#ieg
+	  and next TRY;
+	$part =~ s#((?:\*\*[^\n]+\n[^\S\n]*)+)#_format_bullets($1)#eg
+	  and next TRY;
+	$part =~ s!((?:##[^\n]+\n[^\S\n]*)+)!_format_ol($1)!eg
+	  and next TRY;
+	$part =~ s#fontcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#<font size="$1" color="$2">$3</font>#ig
+	  and next TRY;
+	$part =~ s#indent\[([^\]\[]+)\]#<ul>$1</ul>#ig
+	  and next TRY;
+	$part =~ s#center\[([^\]\[]+)\]#<center>$1</center>#ig
+	  and next TRY;
+	$part =~ s#hrcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#<table width="$1" height="$2" border="0" bgcolor="$3" cellpadding="0" cellspacing="0"><tr><td><img src="/images/trans_pixel.gif" width="1" height="1"></td></tr></table>#ig
+	  and next TRY;
+	
+	last;
+      }
+      $part =~ s/\n([ \r]*\n)+/<p>/g;
+      $part =~ s/\n/<br>/g;
+      $out .= $part;
+    }
+  }
+  $body = $out;
+
   if (@images) {
     # the first image simply goes where we're told to put it
     # the imagePos is [tb][rl] (top|bottom)(right|left)
@@ -248,11 +328,8 @@ IMG
 sub embed {
   my ($self, $article, $articles, $template) = @_;
   
-  print STDERR "Embedding with $template\n";
-
   $template = $article->{template}
     unless defined($template) && $template =~ /\S/;
-  print STDERR "really Embedding with $template\n";
 
   open SOURCE, "< $TMPLDIR$template"
     or die "Cannot open template $template: $!";
@@ -298,41 +375,14 @@ sub baseActs {
      ifEmbedded=> sub { $embedded },
      embed => sub {
        my ($what, $template) = split ' ', $_[0];
-       my $id;
-       if ($what !~ /^\d+$/) {
-	 # not an article id, assume there's an article here we can use
-	 $id = $acts->{$what} && $acts->{$what}->('id');
-	 unless ($id =~ /^\d+$/) {
-	   # save it for later
-	   return "<:embed $what $template:>";
-	 }
-       }
-       else {
-	 $id = $what;
-       }
-       my $embed = $articles->getByPkey($id);
-       if ($embed) {
-	 my $gen = $self;
-	 if (ref($self) ne $embed->{generator}) {
-	   my $genname = $embed->{generator};
-	   $genname =~ s#::#/#g; # broken on MacOS I suppose
-	   $genname .= ".pm";
-	   eval {
-	     require $genname;
-	   };
-	   $@ and return "** Cannot load generator $embed->{generator} for article $id **";
-	   $gen = $embed->{generator}->new(admin=>$self->{admin});
-	 }
-	 return $gen->embed($embed, $articles, $template);
-       }
-       else {
-	 return "** Cannot find article $id to be embedded **";
-       }
+       return $self->_embed_low($acts, $articles, $what, $template);
      },
+     ifCanEmbed=> sub { $self->{depth} <= $self->{maxdepth} },
 
      ifAdmin => sub { $self->{admin} },
      
      # for generating the side menu
+     iterate_level1_reset => sub { $section_index = -1 },
      iterate_level1 => sub {
        ++$section_index;
        if ($section_index < @sections) {
@@ -698,6 +748,8 @@ I<text>.
 
 =item embed I<which> I<template>
 
+=item embed I<which> I<template> I<maxdepth>
+
 =item embed child
 
 Embeds the article specified by which using either the specified
@@ -705,7 +757,12 @@ template or the articles template.
 
 In this case I<which> can also be an article ID.
 
-I<template> is a filename relative to the templates directory.
+I<template> is a filename relative to the templates directory.  If
+this is "-" then the articles template is used (so you can set
+I<maxdepth> without setting the template.)
+
+If I<maxdepth> is supplied and is less than the current maximum depth
+then it becomes the new maximum depth.  This can be used with ifCanEmbed.
 
 =item embed start ... embed end
 
