@@ -61,6 +61,7 @@ sub generate_low {
 </form></td>
 <td><form action="$CGI_URI/admin/add.pl">
 <input type=hidden name="parentid" value="$article->{id}">
+<input type=hidden name="type" value="Product">
 <input type=submit value="Add product"></form></td>
 <td><form action="$CGI_URI/admin/shopadmin.pl">
 <input type=hidden name="product_list" value=1>

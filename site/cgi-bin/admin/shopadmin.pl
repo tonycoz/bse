@@ -282,10 +282,10 @@ sub add_product {
       $product->{summaryLength} = $parent->{summaryLength};
     }
   }
-  if (!exists $session{imageid} || $session{imageid} ne '') {
-    $session{imageid} = '';
-    #$imageEditor->set([], 'tr');
-  }
+#    if (!exists $session{imageid} || $session{imageid} ne '') {
+#      $session{imageid} = '';
+#      #$imageEditor->set([], 'tr');
+#    }
 
   product_form($product, "Add New");
 }
@@ -295,11 +295,11 @@ sub edit_product {
   $id or shop_redirect('?product_list=1');
   my $product = Products->getByPkey($id)
     or shop_redirect("?message=Product+$id+not+found");
-  if (!exists $session{imageid} || $session{imageid} != $id) {
-    my @images = Images->getBy('articleId', $id);
-    $session{imageid} = $id;
-    $imageEditor->set(\@images, $product->{imagePos});
-  }
+#    if (!exists $session{imageid} || $session{imageid} != $id) {
+#      my @images = Images->getBy('articleId', $id);
+#      $session{imageid} = $id;
+#      $imageEditor->set(\@images, $product->{imagePos});
+#    }
   
   product_form($product, "Edit", '', 'edit_product');
 }
@@ -378,7 +378,7 @@ sub save_product {
   $product{template} ||= 'shopitem.tmpl';
   $product{level} = $parent->{level} + 1;
   $product{lastModified} = epoch_to_sql(time);
-  $product{imagePos} = $imageEditor->imagePos || 'tr';
+  $product{imagePos} = 'tr';
   $product{generator} = 'Generate::Product';
   
   if ($original) {
@@ -386,19 +386,19 @@ sub save_product {
     $original->save();
 
     # out with the old
-    my @oldimages = Images->getBy('articleId', $original->{id});
-    for my $image (@oldimages) {
-      $image->remove();
-    }
-    # in with the new
-    my @images = $imageEditor->images();
-    my @cols = Image->columns;
-    splice @cols, 0, 2;
-    for my $image (@images) {
-      Images->add($original->{id}, @$image{@cols});
-    }
-    $imageEditor->clear();
-    delete $session{imageid};
+#      my @oldimages = Images->getBy('articleId', $original->{id});
+#      for my $image (@oldimages) {
+#        $image->remove();
+#      }
+#      # in with the new
+#      my @images = $imageEditor->images();
+#      my @cols = Image->columns;
+#      splice @cols, 0, 2;
+#      for my $image (@images) {
+#        Images->add($original->{id}, @$image{@cols});
+#      }
+#      $imageEditor->clear();
+#      delete $session{imageid};
 
     use Util 'regen_and_refresh';
     
@@ -435,12 +435,12 @@ sub save_product {
       $product->save();
 
       # and save the images
-      my @images = $imageEditor->images();
-      for my $image (@images) {
-	Images->add($product->{id}, @$image{qw/image alt width height/});
-      }
-      $imageEditor->clear();
-      delete $session{imageid};
+#        my @images = $imageEditor->images();
+#        for my $image (@images) {
+#  	Images->add($product->{id}, @$image{qw/image alt width height/});
+#        }
+#        $imageEditor->clear();
+#        delete $session{imageid};
 
       use Util 'regen_and_refresh';
       
@@ -535,8 +535,8 @@ sub product_form {
   my %stepcat_targets = map { $_->{id}, $_ } @stepcat_targets;
   my @stepcat_possibles = grep !$stepcat_targets{$_->{id}}, @catalogs;
   my @images;
-  @images = $imageEditor->images()
-    if $product->{id};
+#    @images = $imageEditor->images()
+#      if $product->{id};
   my $image_index;
 
   my %acts;

@@ -21,14 +21,16 @@
   step children/parents</a> | <:eif new:></p>
 <:if new:><:or new:><h2>Manage Images</h2>
 
-  <form enctype="multipart/form-data" method="POST" action="<:script:>">
-
   <p>
+  <form method="GET" action="<:script:>">
   <input type="submit" name="showimages" value="<:articleType:> Image Wizard">
+  </form>
   </p>
 <:eif new:>
 
   <h2><:articleType:> Details</h2>
+
+  <form enctype="multipart/form-data" method="POST" action="<:script:>">
 
     <input type="hidden" name="level" value="<: level :>">
     <input type="hidden" name="id" value="<: article id :>">

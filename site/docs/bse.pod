@@ -10,6 +10,34 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.12_03
+
+=over
+
+=item *
+
+added child_types() method to BSE::Edit::Product so it knows what
+child types a product can have.  This meant that the Add Product
+button on the view in edit page was trying to add a normal article
+rather than a product.  Typically a type parameter should be supplied
+when creating new articles which aren't base articles.
+
+=item *
+
+shopadmin.pl was still using $imageEditor even though it wasn't
+defined
+
+=item *
+
+t00smoke.t wasn't checking shopadmin.pl
+
+=item *
+
+edit_[1-5].tmpl and edit_catalog.tmpl included the starting <form> tag
+in a conditional, breaking the form when creating a new article
+
+=back
+
 =head2 0.12_02
 
 When installing this release over earlier releases:

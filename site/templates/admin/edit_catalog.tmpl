@@ -21,17 +21,19 @@
   <:ifnew:><:or:><p>
 <h2>Manage Images</h2>
 
-  <form enctype="multipart/form-data" method="POST" action="<:script:>">
-  <input type=hidden name=type value="Catalog">
 
   <!--input type="hidden" name="return_url" value="<:script:>?level=<: level :>&id=<:article id:>" -->
 
+  <form action="<:script:>">
   <input type="submit" name="artimg" value="Catalog Image Wizard">
+  </form>
   </p><:eif:>
 
 
+  <form enctype="multipart/form-data" method="POST" action="<:script:>">
   <h2>Catalog Details</h2>
 
+  <input type=hidden name=type value="Catalog">
   <input type="hidden" name="level" value="<: level :>">
   <input type="hidden" name="id" value="<: article id :>">
   <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" width="100%" class="table">

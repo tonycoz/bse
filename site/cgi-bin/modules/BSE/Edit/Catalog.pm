@@ -84,4 +84,9 @@ sub make_link {
   return $urlbase.$shop_uri."/shop$article->{id}.html";
 }
 
+sub child_types {
+  return qw(BSE::Edit::Product BSE::Edit::Catalog);
+}
+
 1;
+
