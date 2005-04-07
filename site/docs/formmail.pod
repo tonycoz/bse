@@ -168,6 +168,12 @@ signed.  Default: $SHOP_PASSPHRASE from Constants.pm
 crypt_signing_id - the key id to sign the encrypted message with.
 Default: $SHOP_SIGNING_ID from Constants.pm.  eg. 564EB128
 
+=item *
+
+field_config - defines extra configuration values that will be loaded
+for each field.  These values are accessible through the <:fields
+...:> tag.  Multiple names can be provided, comma separated.
+
 =back
 
 You can also configure information used for validation and available
@@ -290,6 +296,18 @@ C<description> and so.
 
 On the mail and done templates I<fieldinfo> can also be C<value> to
 present the value captured from the user.
+
+=item *
+
+formcfg I<configkey>
+
+=item *
+
+formcfg I<configkey> I<default>
+
+Retrieves a value from the configuration file section for the form.
+This can be used to customize other values on a form basis without
+modifying the form template itself.
 
 =back
 

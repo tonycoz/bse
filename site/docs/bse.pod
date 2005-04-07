@@ -10,6 +10,37 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_09
+
+=over
+
+=item *
+
+added formcfg tag to the fmail templates, this tag allows access to
+other values in the form's configuration file section.
+
+=item *
+
+added field_config to the fmail form configuration file section.  This
+can list extra values to be retrieved from the config file for each
+field.
+
+=item *
+
+DevHelp::Validate depends on DevHelp::Date, which wasn't included.
+
+=item *
+
+BSE::UI::Formmail now loads the form specific field configuration
+rather than expecting DevHelp::Validate to do it (which shouldn't
+really have been modified to handle it)
+
+=item *
+
+using custom validation rules would cause a 500 error.
+
+=back
+
 =head2 0.15_08
 
 =over

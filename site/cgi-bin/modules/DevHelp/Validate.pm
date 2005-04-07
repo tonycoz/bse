@@ -427,7 +427,7 @@ sub _get_cfg_fields {
   my @names = ( split(/,/, $fields), keys %$field_hash );
 
   for my $field (@names) {
-    for my $cfg_name (qw(required rules description required_error range_error mindatemsg maxdatemsg htmltype type width height size)) {
+    for my $cfg_name (qw(required rules description required_error range_error mindatemsg maxdatemsg)) {
       my $value = $cfg->entry($section, "${field}_$cfg_name");
       if (defined $value) {
 	$cfg_fields->{$field}{$cfg_name} = $value;

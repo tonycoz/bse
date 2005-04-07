@@ -115,6 +115,7 @@ site/cgi-bin/modules/BSE/Util/Valid.pm
 site/cgi-bin/modules/BSE/Version.pm
 site/cgi-bin/modules/BSE/WebUtil.pm
 site/cgi-bin/modules/Constants.pm
+site/cgi-bin/modules/DevHelp/Date.pm
 site/cgi-bin/modules/DevHelp/DynSort.pm
 site/cgi-bin/modules/DevHelp/FileUpload.pm
 site/cgi-bin/modules/DevHelp/Formatter.pm

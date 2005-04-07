@@ -53,6 +53,7 @@ sub _get_form {
   my $section = "$id form";
 
   my %form;
+  $form{section} = $section;
   
   for my $field (keys(%form_defs), "email") {
     $form{$field} = $cfg->entry($section, $field, $form_defs{$field});
@@ -70,8 +71,26 @@ sub _get_form {
       { description => "\u$form_field" };
   }
 
-  my $fields = dh_configure_fields(\%fields, $cfg, "$id formmail validation");
-  $fields->{$_}{name} = $_ for keys %$fields;
+  my $valid_section = "$id formmail validation";
+  $form{validation_section} = $valid_section;
+  my $fields = dh_configure_fields(\%fields, $cfg, $valid_section);
+  my $extra_cfg_names = $cfg->entry($section, 'field_config', '') . ',' .
+    $cfg->entry("formmail", "field_config", '');
+  my %std_cfg_names = map { $_ => 1 } 
+    qw(required rules description required_error range_error mindatemsg 
+       maxdatemsg);
+  my @extra_cfg_names = grep /\S/ && !exists $std_cfg_names{$_}, 
+    split /,/, $extra_cfg_names;
+  for my $name (keys %$fields) {
+    my $field = $fields->{$name};
+    $field->{name} = $name;
+
+    for my $cfg_name (qw/htmltype type width height size maxlength/, 
+		      @extra_cfg_names) {
+      my $value = $cfg->entry($valid_section, "${name}_${cfg_name}");
+      defined $value and $field->{$cfg_name} = $value;
+    }
+  }
 
   $form{validation} = $fields;
   $form{fields} = [ @$fields{@names} ];
@@ -151,6 +170,17 @@ sub tag_ifValueSet {
   return scalar(grep $_ eq $$rcurrent_value->{id}, @values);
 }
 
+sub tag_formcfg {
+  my ($cfg, $form, $args, $acts, $templater) = @_;
+
+  my ($key, $def) = DevHelp::Tags->get_parms($args, $acts, $templater);
+
+  defined $def or $def = '';
+  defined $key or return '** key argument missing from formcfg tag **';
+
+  escape_html($cfg->entry($form->{section}, $key, $def));
+}
+
 sub req_show {
   my ($class, $req, $errors) = @_;
 
@@ -177,6 +207,7 @@ sub req_show {
      [ \&tag_values_select, $form, $req->cgi, \$current_field ],
      ifValueSet => 
      [ \&tag_ifValueSet, $req->cgi, \$current_field, \$current_value ],
+     formcfg => [ \&tag_formcfg, $req->cfg, $form ],
     );
 
   return $req->response($form->{query}, \%acts);
@@ -209,7 +240,7 @@ sub req_send {
   my %form = ( fields =>$form->{validation}, rules=>{} );
 
   my %errors;
-  dh_validate($cgi, \%errors, \%form); # already configured
+  dh_validate($cgi, \%errors, \%form, $cfg, $form->{validation_section});
 
   keys %errors
     and return $class->req_show($req, \%errors);
@@ -240,6 +271,7 @@ sub req_send {
      $it->make_iterator([ \&iter_cgi_values, $form, \$current_field ],
 			'value', 'values', undef, undef, 'nocache'),
      id => $form->{id},
+     formcfg => [ \&tag_formcfg, $req->cfg, $form ],
     );
 
   require BSE::Mail;
@@ -298,6 +330,7 @@ sub req_done {
      $it->make_iterator(undef, 'field', 'fields', $form->{fields}),
      id => $form->{id},
      value => [ \&tag_hash, $values ],
+     formcfg => [ \&tag_formcfg, $req->cfg, $form ],
     );
 
   return $req->response($form->{done}, \%acts);

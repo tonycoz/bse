@@ -33,14 +33,15 @@
   <br />
   <:iterator end values:>
   <:case default:>
-  <input type="text" name="<:field name:>" value="<:old [field name]:>" <:ifField width:>size="<:field width:>"<:or:><:eif:> />
+  <input type="text" name="<:field name:>" value="<:old [field name]:>" <:ifField width:>size="<:field width:>" <:or:><:eif:><:ifField maxlength:>maxlength="<:field maxlength:>"<:or:><:eif:> />
   <:endswitch:>
+  <:ifField notes:><:field notes:><:or:><:eif:>
   </td>
   <td><:error_img [field name]:></td>
 </tr>
 <:iterator end fields:>
 <tr>
-  <td colspan="2"><input type="submit" name="a_send" value="Send" /></td>
+  <td colspan="2"><input type="submit" name="a_send" value="<:formcfg submit:>" /></td>
   <td></td>
 </tr>
 </table>
