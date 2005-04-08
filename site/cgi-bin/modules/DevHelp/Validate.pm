@@ -181,7 +181,7 @@ sub validate {
       }
     }
 
-    # but we add rules
+    # but we add rules and required_if
     if ($dest->{rules}) {
       my $rules = $src->{rules};
 
@@ -193,6 +193,12 @@ sub validate {
     }
     elsif ($src->{rules}) {
       $dest->{rules} = $src->{rules};
+    }
+    if ($dest->{required_if}) {
+      $dest->{required_if} .= ";" . $src->{required_if} if $src->{required_if};
+    }
+    elsif ($src->{required_if}) {
+      $dest->{required_if} = $src->{required_if};
     }
 
     $cfg_fields->{$field} = $dest if keys %$dest;
@@ -439,7 +445,7 @@ sub _get_cfg_fields {
       my @values;
       if ($values =~ /;/) {
 	for my $entry (split /;/, $values) {
-	  if ($entry =~ /^([^=]+)=(.*)$/) {
+	  if ($entry =~ /^([^=]*)=(.*)$/) {
 	    push @values, [ $1, $2 ];
 	  }
 	  else {
@@ -448,6 +454,10 @@ sub _get_cfg_fields {
 	}
       }
       else {
+	my $strip;
+	if ($values =~ s/:([^:]*)$//) {
+	  $strip = $1;
+	}
 	my %entries = $cfg->entriesCS($values);
 	my @order = $cfg->orderCS($values);
 
@@ -455,6 +465,9 @@ sub _get_cfg_fields {
 	# we only want the last value in the order
 	@order = reverse grep !$seen{$_}++, reverse @order;
 	@values = map [ $_, $entries{$_} ], @order;
+	if ($strip) {
+	  $_->[0] =~ s/^\Q$strip// for @values;
+	}
       }
       $cfg_fields->{$field}{values} = \@values;
     }

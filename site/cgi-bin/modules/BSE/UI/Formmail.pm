@@ -41,6 +41,7 @@ my %form_defs =
    crypt_pgp => $Constants::SHOP_PGP,
    crypt_passphrase => $Constants::SHOP_PASSPHRASE,
    crypt_signing_id => $Constants::SHOP_SIGNING_ID,
+   crypt_content_type => 0,
   );
 
 sub _get_form {
@@ -280,7 +281,8 @@ sub req_send {
   my @headers;
   if ($form->{encrypt}) {
     $content = $class->_encrypt($cfg, $form, $content);
-    push @headers, "Content-Type: application/pgp; format=text; x-action=encrypt\n";
+    push @headers, "Content-Type: application/pgp; format=text; x-action=encrypt\n"
+      if $form->{crypt_content_type};
   }
   unless ($mailer->send(to=>$form->{email}, from=>$form->{email},
 			subject=>$form->{subject}, body=>$content,

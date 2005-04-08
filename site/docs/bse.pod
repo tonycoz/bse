@@ -10,6 +10,48 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_10
+
+=over
+
+=item *
+
+the pgp content type header for encrypted fmail emails is now added
+only if configured to do so with the crypt_content_type option.
+
+=item *
+
+the required_if validation option can now be used from the validation
+configuration.
+
+=item *
+
+empty values when specifying values in the form:
+
+  fieldname_values=value1=name1;value2=name2
+
+can now be specified
+
+=item *
+
+you can now specify a prefix for values specified via section name,
+for example:
+
+  fieldname_values=some section:prefix
+
+  [some section]
+  prefix=None Selected
+  prefix1=One
+  prefix2=Two
+
+where the values/names for the select will be:
+
+  ""   None selected
+  "1"  One
+  "2"  Two
+
+=back
+
 =head2 0.15_09
 
 =over
