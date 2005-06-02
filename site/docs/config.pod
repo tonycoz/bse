@@ -971,6 +971,31 @@ affiliate must have an active subscription.
 A single letter flag which the site administrator must set for the
 affiliate page to be displayed for the given member.
 
+=item set_cookie
+
+If this is set then affiliate.pl will set the named cookie to the
+affiliate id.
+
+=item linkbaseurl
+
+Used as the link base URL for the afflink.tmpl side bar template when
+an affiliate id is set.  Default: example.com
+
+=item linkbasedesc
+
+Used at the text of the link for the afflink.tmpl side bar template
+when an affiliate id is set.  Default: Your Site.
+
+=item linkdefurl
+
+Used as the link URL for the afflink.tmpl side bar template when an
+affiliate id is not set.  Default: example.com
+
+=item linkdefdesc
+
+Used as the text of the link for the afflink.tmpl side bar template
+when an affiliate id is not set.  Default: Our site
+
 =back
 
 =head2 [BSE Siteuser Images]

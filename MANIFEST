@@ -354,6 +354,7 @@ site/templates/search_base.tmpl
 site/templates/shop_help.tmpl
 site/templates/shop_sect.tmpl
 site/templates/shopitem.tmpl
+site/templates/sidebar/afflink.tmpl
 site/templates/sidebar/logon.tmpl
 site/templates/test/children.tmpl
 site/templates/textemail/basic.tmpl

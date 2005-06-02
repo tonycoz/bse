@@ -10,6 +10,21 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_12
+
+=over
+
+=item *
+
+affiliate.pl can now set a configured cookie to the value of the
+affiliate id.  See [affiliate].set_cookie in config.pod.
+
+=item *
+
+added template sidebar/afflink.tmpl that can use such a cookie
+
+=back
+
 =head2 0.15_11
 
 =over

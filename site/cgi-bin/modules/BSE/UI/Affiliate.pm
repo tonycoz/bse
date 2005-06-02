@@ -73,6 +73,8 @@ bse.cfg.  See L<config/[affiliate]> for more information.
 sub req_set {
   my ($class, $req) = @_;
 
+  my $result;
+
   my $cgi = $req->cgi;
   my $cfg = $req->cfg;
   my $id = $cgi->param('id');
@@ -118,7 +120,7 @@ sub req_set {
   my $securl = $cfg->entryVar('site', 'secureurl');
   
   if ($baseurl eq $securl) {
-    return BSE::Template->get_refresh($url, $cfg);
+    $result = BSE::Template->get_refresh($url, $cfg);
   }
   else {
     # which host are we on?
@@ -143,8 +145,16 @@ sub req_set {
     my $setter = $onbase ? $securl : $baseurl;
     $setter .= "$ENV{SCRIPT_NAME}?a_set2=1&id=".escape_uri($id);
     $setter .= "&r=".escape_uri($url);
-    return BSE::Template->get_refresh($setter, $cfg);
+    $result = BSE::Template->get_refresh($setter, $cfg);
   }
+
+  my $set_cookie = $cfg->entry('affiliate', 'set_cookie');
+  if ($set_cookie) {
+    my $cookie = BSE::Session->make_cookie($cfg, $set_cookie => $id);
+    push @{$result->{headers}}, "Set-Cookie: $cookie";
+  }
+
+  return $result;
 }
 
 =item a_set2
@@ -177,7 +187,15 @@ sub req_set2 {
   $url ||= $cfg->entry('affiliate', 'default_refresh');
   $url ||= $cfg->entryVar('site', 'url');
 
-  return BSE::Template->get_refresh($url, $cfg);
+  my $result = BSE::Template->get_refresh($url, $cfg);
+
+  my $set_cookie = $cfg->entry('affiliate', 'set_cookie');
+  if ($set_cookie) {
+    my $cookie = BSE::Session->make_cookie($cfg, $set_cookie => $id);
+    push @{$result->{headers}}, "Set-Cookie: $cookie";
+  }
+
+  return $result;
 }
 
 =item a_show

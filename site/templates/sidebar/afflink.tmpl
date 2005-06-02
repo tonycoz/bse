@@ -1,0 +1,45 @@
+<:wrap base.tmpl:> <:embed start:><:ifAdmin:>
+<table cellpadding="4" cellspacing="0" border="0">
+  <tr> 
+    <td> 
+      <form action="/cgi-bin/admin/add.pl">
+        <input type=hidden name=id value="<:article id:>">
+        <input class="mini-admin" type=submit value="Edit Panel">
+      </form>
+    </td>
+    <td> 
+      <form action="/cgi-bin/admin/add.pl">
+        <input class="mini-admin" type=submit value="Add Child">
+        <input type=hidden name=parentid value="<:article id:>">
+      </form>
+    </td>
+  </tr>
+</table>
+<:or:><:eif:>
+<div align="center">
+<script language="JavaScript">
+<!--
+// extract the affiliate id cookie, if any and present a specific link
+// or a general link
+var cookies = document.cookie;
+var cookie_name = "<:cfg affiliate set_cookie:>";
+var start = cookies.indexOf(cookie_name+"=");
+var affiliateid = '';
+if (start != -1) {
+  start += cookie_name.length + 1;
+  var end = cookies.indexOf(';', start);
+  if (end == -1) end = cookies.length;
+  affiliateid = cookies.substring(start, end);
+}
+if (affiliateid != '') {
+  var linkbaseurl = '<:cfg affiliate linkbaseurl "example.com":>';
+  document.write('<a href="http://'+affiliateid+'.'+linkbaseurl+'/"><:cfg affiliate linkyourdesc "Your site":></a>');
+}
+else {
+  var linkdefurl = '<:cfg affiliate linkdefurl "example.com":>';
+  document.write('<a href="http://'+linkdefurl+'/"><:cfg affiliate linkdefdesc "Our Site":></a>');
+}
+//-->
+</script>
+</div>
+<:embed end:>
