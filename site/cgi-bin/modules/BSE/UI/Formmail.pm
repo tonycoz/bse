@@ -158,6 +158,7 @@ sub tag_values_select {
   }
   
   return popup_menu(-name => $field->{name},
+		    -id => $field->{name},
 		    -values => [ map $_->[0], @{$field->{values}} ],
 		    -labels => \%labels,
 		    @extras);
@@ -273,6 +274,7 @@ sub req_send {
 			'value', 'values', undef, undef, 'nocache'),
      id => $form->{id},
      formcfg => [ \&tag_formcfg, $req->cfg, $form ],
+     remote_addr => escape_html($ENV{REMOTE_ADDR}),
     );
 
   require BSE::Mail;

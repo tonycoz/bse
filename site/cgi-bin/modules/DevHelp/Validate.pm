@@ -282,7 +282,7 @@ sub validate_field {
 	  last RULE;
 	}
       }
-      if ($rule->{nomatch}) {
+      if (defined $rule->{nomatch}) {
 	my $match = $rule->{nomatch};
 	if ($data =~ /$match/) {
 	  $errors->{$field} = _make_error($field, $info, $rule);

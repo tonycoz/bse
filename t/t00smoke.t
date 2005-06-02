@@ -3,7 +3,7 @@ use strict;
 use BSE::Test qw(make_ua ok fetch_ok base_url config);
 
 ++$|;
-print "1..58\n";
+print "1..60\n";
 my $baseurl = base_url;
 ok($baseurl =~ /^http:/, "basic check of base url");
 my $ua = make_ua;
@@ -67,3 +67,6 @@ fetch_ok($ua, "siteusers", "$baseurl/cgi-bin/admin/siteusers.pl",
 
 fetch_ok($ua, "reorder", "$baseurl/cgi-bin/admin/reorder.pl",
 	"html", "Refresh: 0; .*/menu\.pl");
+
+fetch_ok($ua, 'fmail', "$baseurl/cgi-bin/fmail.pl",
+	 qr!name="form"!);

@@ -253,7 +253,7 @@ sub static {
        my ($arg, $acts, $name, $templater) = @_;
        my @items = DevHelp::Tags->get_parms($arg, $acts, $templater);
        my $out = join '', @items;
-       $out =~ s/\b(\w)/\U$1/g;
+       $out =~ s/(^'?|\W'|[^'\w])(\w)/$1\U$2/g;
        $out;
      },
      adminbase => [ \&tag_adminbase, $cfg ],
