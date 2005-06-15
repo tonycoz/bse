@@ -248,6 +248,8 @@ sub add_article {
      keyword=>'', template=>'common/default.tmpl', link=>'', admin=>'',
      threshold => 5, summaryLength => 100, generator=>'Generate::Article',
      level => 1, listed=>1, lastModified => sql_datetime(time), flags=>'',
+     lastModifiedBy=>'t20gen', created=>sql_datetime(time),
+     createdBy=>'t20gen', author=>'', pageTitle=>'',
     );
   for my $key (%defaults) {
     unless (exists $parms{$key}) {

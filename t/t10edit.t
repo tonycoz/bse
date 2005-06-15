@@ -34,7 +34,7 @@ print "# $url\n";
 ok($ua->get($url), "check admin mode url");
 check_content($ua->{content}, "admin mode", 
   	   qr!
-  	   <title>Test\ Server\ -\ Test\ Article</title>
+  	   <title>Test\ Article\ -\ Test\ Server</title>
   	   .*
   	   This\ is\ a\ test\ body
   	   !xsm);
