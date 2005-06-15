@@ -201,8 +201,8 @@ follow_ok($ua, "global images", "Global Images", qr/Global Image Wizard/);
 
 # since there may have been other global images, we need to be a bit 
 # more careful here
-my $links = $ua->extract_links;
-my @links = grep $_->[1] eq 'Delete', @$links;
+my $links = $ua->links;
+my @links = grep $_->text eq 'Delete', @$links;
 print "# link #", scalar(@links), "\n";
 follow_ok($ua, "delete global image", 
 	  { n=>scalar(@links), text=>"Delete" }, 

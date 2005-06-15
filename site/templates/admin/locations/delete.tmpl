@@ -1,0 +1,25 @@
+<:wrap admin/xbase.tmpl title=>"Delete Location: [location description]":>
+<h1>Delete Location: <:location description:></h1>
+<p>
+| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |
+<:if UserCan bse_location_list :><a href="<:script:>?a_loclist=1">List Locations</a> |<:or UserCan:><:eif UserCan:>
+<:if UserCan bse_location_edit :>
+<a href="<:script:>?a_locedit=1&amp;id=<:location id:>">Edit Location</a> |<:or UserCan:><:eif UserCan:>
+<:if UserCan bse_location_add :>
+<a href="<:script:>?a_locaddform=1">Add Location</a> |<:or UserCan:><:eif UserCan:>
+<:ifMessage:>
+<p><b><:message:></b></p>
+<:or:><:eif:> 
+
+<form action="<:script:>" method="POST">
+<input type="hidden" name="id" value="<:location id:>" />
+<table>
+<tr>
+  <th><:field description description:>:</th>
+  <td><:location description:></td>
+</tr>
+<tr>
+  <td colspan="2"><input type="submit" name="a_locdelete" value="Delete Location" /></td>
+</tr>
+</table>
+</form>

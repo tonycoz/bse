@@ -112,7 +112,12 @@ sub generate_low {
   my @stepprods = $article->visible_stepkids;
   my $stepprod_index;
   my @allkids = $article->all_visible_kids;
-  require 'Generate/Product.pm';
+  # make sure we have all of the inheritance info
+  my %generate = map { $_->{generator} => 1 } @allkids;
+  for my $gen (keys %generate) {
+    (my $file = $gen . ".pm") =~ s!::!/!g;
+    require $file;
+  }
   my @allprods = grep UNIVERSAL::isa($_->{generator}, 'Generate::Product'), 
     @allkids;
   for (@allprods) {

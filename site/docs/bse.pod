@@ -10,6 +10,60 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_13
+
+This is a development release, not intended for production.
+
+=over
+
+=item *
+
+location maintenance at the basic level is in, accessible via
+http://example.com/cgi-bin/admin/admin_seminar.pl
+
+=item *
+
+you can create seminars, though there's no sessions or related data
+yet.
+
+=item *
+
+the generator field in articles has been expanded in size, so
+BSE::Generate::Whatever will fit in.
+
+=item *
+
+orders now accept delivery and billing organization names, and a
+second street line for the delivery and billing addresses
+
+=item *
+
+members can now have a second street address line in their billing and
+delivery addresses.  They can also have a billing organization.
+
+=item *
+
+the release and expiry dates for articles when creating a new article
+seem to have been handled incorrectly for a long time.  We now
+properly parse them when adding a new article (or product, etc)
+
+=item *
+
+in some cases the date tage %z value would be omitted under Linux.
+I'm not sure why this was happening, and the fix is pretty empirical.
+
+=item *
+
+we now attempt to handle nested non-tag [] when removing tags from
+body text.
+
+=item *
+
+t/t40images.t now uses the links() method instead of the internal
+extract_links() method.
+
+=back
+
 =head2 0.15_12
 
 =over

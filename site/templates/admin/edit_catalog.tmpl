@@ -257,16 +257,21 @@
 <:or New:>
 <:if UserCan edit_add_child:article:>
 <p>
-<form action="/cgi-bin/admin/add.pl" method="POST">
+<form action="/cgi-bin/admin/add.pl" method="get">
 <input type=hidden name="parentid" value="<:article id:>">
 <input type=hidden name="type" value="Catalog">
 
     <input type=submit value="Add Sub-catalog">
 </form>
-<form action="/cgi-bin/admin/add.pl" method="POST">
+<form action="/cgi-bin/admin/add.pl" method="get">
 <input type=hidden name="parentid" value="<:article id:>">
-<input type=hidden name="parentid" value="Product">
+<input type=hidden name="type" value="Product">
     <input type=submit value="Add Product">
+</form>
+<form action="/cgi-bin/admin/add.pl" method="get">
+<input type="hidden" name="parentid" value="<:article id:>">
+<input type="hidden" name="type" value="Seminar">
+    <input type=submit value="Add Seminar">
 </form><:or UserCan:><:eif UserCan:></p>
 <:eif New:> <:or HaveChildType:> <:eif HaveChildType:> 
 <p><font size="-1">BSE Release <:release:></font></p>

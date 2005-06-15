@@ -1,13 +1,14 @@
 #!perl -w
 use strict;
-use Test::More tests => 62;
+use Test::More tests => 64;
 
 sub format_test($$$;$);
+sub noformat_test($$$;$);
 
 my $gotmodule = require_ok('DevHelp::Formatter');
 
 SKIP: {
-  skip "couldn't load module", 41 unless $gotmodule;
+  skip "couldn't load module", 63 unless $gotmodule;
   format_test 'acronym[hello]', '<p><acronym>hello</acronym></p>', 'acronym';
   format_test 'acronym[|hello]', '<p><acronym>hello</acronym></p>', 'acronym with empty title';
   format_test 'acronym[foo|hello]', '<p><acronym title="foo">hello</acronym></p>', 'acronym with title';
@@ -259,6 +260,10 @@ EOS
 <p>bar</p>
 <h2>quux</h2></div>
 EOS
+
+  # remove_format() tests
+  noformat_test 'image[foo]', '', 'image';
+  noformat_test 'code[something [bar]]', 'something [bar]', 'nested []';
 }
 
 sub format_test ($$$;$) {
@@ -271,6 +276,20 @@ sub format_test ($$$;$) {
   my $formatter = DevHelp::Formatter->new;
 
   my $result = $formatter->format($in);
+
+  is($result, $out, $desc);
+}
+
+sub noformat_test($$$;$) {
+  my ($in, $out, $desc, $stripnl) = @_;
+
+  $stripnl ||= 'none';
+  $in =~ s/\n$// if $stripnl eq 'in' || $stripnl eq 'both';
+  $out =~ s/\n$// if $stripnl eq 'out' || $stripnl eq 'both';
+
+  my $formatter = DevHelp::Formatter->new;
+
+  my $result = $formatter->remove_format($in);
 
   is($result, $out, $desc);
 }

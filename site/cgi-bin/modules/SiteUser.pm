@@ -21,7 +21,9 @@ sub columns {
             billEmail adminNotes disabled flags
             customText1 customText2 customText3
             customStr1 customStr2 customStr3
-            affiliate_name delivMobile billMobile/;
+            affiliate_name delivMobile billMobile
+            delivStreet2 billStreet2
+            billOrganization/;
 }
 
 sub valid_fields {
@@ -45,6 +47,8 @@ sub valid_fields {
 		       maxlen=>127  },
      delivMobile => { description => "Mobile", rules=>"phone",
 		      maxlen => 80 },
+     delivStreet2 => { description => 'Address2', rules => "dh_one_line",
+		       maxlen=> 127 },
      textOnlyEmail => { description => "Text Only Email", type=>"boolean" },
      referral => { description=>'Referral', rules=>"natural"  },
      otherReferral => { description=>'Other Referral', rules=>"dh_one_line",
@@ -60,6 +64,8 @@ sub valid_fields {
      billLastName => { descriptin=>"Billing Last Name", rules=>"dh_one_line" },
      billStreet => { description => "Billing Street Address",
 		     rules=>"dh_one_line", maxlen=>127 },
+     billStreet2 => { description => 'Billing Street Address 2', 
+		      rules => "dh_one_line", maxlen=> 127 },
      billSuburb => { description => "Billing Suburb", rules=>"dh_one_line", 
 		     maxlen=>127 },
      billState => { description => "Billing State", rules=>"dh_one_line", 
@@ -77,6 +83,8 @@ sub valid_fields {
 		    maxlen=>255 },
      billMobile => { description => "Billing Mobile", rules=>"phone",
 		     maxlen => 80 },
+     billOrganization => { description => "Billing Organization",
+			   rules=>"dh_one_line", maxlen => 127 },
      customText1 => { description => "Custom Text 1" },
      customText2 => { description => "Custom Text 2" },
      customText3 => { description => "Custom Text 3" },

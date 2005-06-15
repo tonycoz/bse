@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # -d:ptkdb
-#BEGIN { $ENV{DISPLAY} = '192.168.32.97:0.0' }
+#BEGIN { $ENV{DISPLAY} = '192.168.32.15:0.0' }
 use strict;
 use FindBin;
 use CGI::Carp 'fatalsToBrowser';

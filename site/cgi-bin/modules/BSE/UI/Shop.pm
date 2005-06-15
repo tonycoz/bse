@@ -40,6 +40,7 @@ my %field_map =
    name1 => 'delivFirstName',
    name2 => 'delivLastName',
    address => 'delivStreet',
+   organization => 'delivOrganization',
    city => 'delivSuburb',
    postcode => 'delivPostCode',
    state => 'delivState',
@@ -154,12 +155,12 @@ sub req_add {
       my $sub = $product->subscription;
       if ($product->is_renew_sub_only) {
 	unless ($user->subscribed_to_grace($sub)) {
-	  return show_cart("This product can only be used to renew your subscription to $sub->{title} and you are not subscribed nor within the renewal grace period");
+	  return $class->req_cart($req, "This product can only be used to renew your subscription to $sub->{title} and you are not subscribed nor within the renewal grace period");
 	}
       }
       elsif ($product->is_start_sub_only) {
 	if ($user->subscribed_to_grace($sub)) {
-	  return show_cart("This product can only be used to start your subscription to $sub->{title} and you are already subscribed or within the grace period");
+	  return $class->req_cart($req, "This product can only be used to start your subscription to $sub->{title} and you are already subscribed or within the grace period");
 	}
       }
     }

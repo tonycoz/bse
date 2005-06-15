@@ -1384,10 +1384,15 @@ sub save_new {
       or $data{$col} = $self->default_value($req, \%data, $col);
   }
 
+  print STDERR "release cgi ", $cgi->param('release'), " data $data{release}\n";
   # these columns are handled a little differently
   for my $col (qw(release expire threshold summaryLength )) {
     $data{$col} 
       or $data{$col} = $self->default_value($req, \%data, $col);
+  }
+
+  for my $col (qw(release expire)) {
+    $data{$col} = sql_date($data{$col});
   }
 
   shift @columns;

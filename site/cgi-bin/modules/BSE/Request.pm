@@ -171,7 +171,7 @@ sub dyn_response {
   }
 
   return BSE::Template->get_response($template, $req->cfg, $acts,
-				    $base_template);
+				     $base_template);
 }
 
 sub response {
@@ -201,6 +201,49 @@ sub siteuser {
     $user->{disabled}
       and return;
     return $user;
+  }
+}
+
+sub validate {
+  my ($req, %options) = @_;
+
+  $options{rules} ||= {};
+
+  require BSE::Validate;
+  BSE::Validate::bse_validate($req->cgi, $options{errors},
+			      { 
+			       fields => $options{fields},
+			       rules => $options{rules},
+			      },
+			      $req->cfg, $options{section});
+}
+
+sub validate_hash {
+  my ($req, %options) = @_;
+
+  $options{rules} ||= {};
+
+  require BSE::Validate;
+  BSE::Validate::bse_validate_hash($options{data}, $options{errors},
+				   { 
+				    fields=>$options{fields},
+				    rules => $options{rules},
+				   },
+				   $req->cfg, $options{section});
+}
+
+sub configure_fields {
+  my ($self, $fields, $section) = @_;
+
+  my $cfg = $self->cfg;
+  require BSE::Validate;
+  BSE::Validate::bse_configure_fields($fields, $cfg, $section);
+
+  for my $name (keys %$fields) {
+    for my $cfg_name (qw/htmltype type width height size maxlength/) {
+      my $value = $cfg->entry($section, "${name}_${cfg_name}");
+      defined $value and $fields->{$name}{$cfg_name} = $value;
+    }
   }
 }
 

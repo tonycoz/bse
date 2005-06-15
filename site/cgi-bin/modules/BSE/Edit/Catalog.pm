@@ -93,7 +93,7 @@ sub make_link {
 }
 
 sub child_types {
-  return qw(BSE::Edit::Product BSE::Edit::Catalog);
+  return qw(BSE::Edit::Product BSE::Edit::Seminar BSE::Edit::Catalog);
 }
 
 sub default_template {

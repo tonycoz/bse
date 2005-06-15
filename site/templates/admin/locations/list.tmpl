@@ -1,0 +1,34 @@
+<:wrap admin/xbase.tmpl title=>"Location List":>
+<h1>Location List</h1>
+
+<:ifMessage:><p><b><:message:></b></p><:or:><:eif:>
+
+<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |<:ifUserCan bse_location_add:>
+<a href="<:script:>?a_locaddform=1">Add Location</a> |<:or:><:eif:></p>
+
+<table cellpadding="6" border="0" cellspacing="1">
+   <tr bgcolor="#FFFFFF">
+      <th>Description</th>
+      <th>Room</th>
+      <th>Street</th>
+      <th>Suburb</th>
+      <th>Disabled?</th>
+          <th>Modify</th>
+    </tr>
+<:if Locations:>
+<:iterator begin locations:>
+    <tr bgcolor="#FFFFFF">
+      <td><:ilocation description:></td>
+      <td><:ilocation room:></td>
+      <td><:ilocation street1:> <:ilocation street2:></td>
+      <td><:ilocation suburb:></td>
+      <td align="center"><:ifIlocation disabled:>Disabled<:or:><:eif:></td>
+      <td><:ifUserCan bse_location_edit:><a href="<:script:>?a_locedit=1&amp;id=<:ilocation id:>">Edit</a><:or:><:eif:> <:ifAnd [ifRemovable] [ifUserCan bse_location_delete]:><a href="<:script:>?a_locdelask=1&amp;id=<:ilocation id:>">Delete</a><:or:><:eif:></td>
+    </tr>
+<:iterator end locations:>
+<:or Locations:>
+    <tr bgcolor="#FFFFFF">
+      <td colspan="7" align="center">You don't have any locations defined</td>
+    </tr>
+<:eif Locations:>
+</table>

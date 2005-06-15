@@ -409,9 +409,12 @@ sub remove_format {
 	  and next TRY;
 	$part =~ s#style\[([^\]\[\|]+)\|([^\]\[]+)\]#$2#ig
 	  and next TRY;
+	$part =~ s!(?<=\W)\[([^\]\[]+)\]!\x01$1\x02!g
+          and next TRY;
 	
 	last TRY;
       }
+      $part =~ tr/\x01\x02/[]/; # put back the bare []
       $out .= $part;
     }
   } 

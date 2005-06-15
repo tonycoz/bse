@@ -44,7 +44,7 @@ CREATE TABLE article (
   summaryLength smallint(5) unsigned DEFAULT '200' NOT NULL,
 
   -- the class whose generate() method generates the page
-  generator varchar(20) not null default 'article',
+  generator varchar(40) not null default 'article',
 
   -- the level of the article, 1 for top-level
   level smallint not null,
@@ -263,6 +263,12 @@ create table orders (
 
   -- order was completed by the customer
   complete integer not null default 1,
+
+  delivOrganization varchar(127) not null default '',
+  billOrganization varchar(127) not null default '',
+
+  delivStreet2 varchar(127) not null default '',
+  billStreet2 varchar(127) not null default '',
 
   primary key (id),
   index order_cchash(ccNumberHash),
@@ -521,6 +527,11 @@ create table site_users (
   delivMobile varchar(80) not null default '',
   billMobile varchar(80) not null default '',
 
+  delivStreet2 varchar(127) not null default '',
+  billStreet2 varchar(127) not null default '',
+
+  billOrganization varchar(127) not null default '',
+
   primary key (id),
   unique (userId),
   index (affiliate_name)
@@ -661,5 +672,51 @@ create table bse_siteuser_images (
   alt varchar(255) not null,
 
   primary key(siteuser_id, image_id)
+);
+
+drop table if exists bse_locations;
+create table bse_locations (
+  id integer not null auto_increment,
+  description varchar(255) not null,
+  room varchar(40) not null,
+  street1 varchar(255) not null,
+  street2 varchar(255) not null,
+  suburb varchar(255) not null,
+  state varchar(80) not null,
+  country varchar(80) not null,
+  postcode varchar(40) not null,
+  public_notes text not null,
+
+  bookings_name varchar(80) not null,
+  bookings_phone varchar(80) not null,
+  bookings_fax varchar(80) not null,
+  bookings_url varchar(255) not null,
+  facilities_name varchar(255) not null,
+  facilities_phone varchar(80) not null,
+
+  admin_notes text not null,
+
+  disabled integer not null default 0,
+
+  primary key(id)
+);
+
+drop table if exists bse_seminars;
+create table bse_seminars (
+  seminar_id integer not null primary key,
+  duration integer not null
+);
+
+drop table if exists bse_seminar_sessions;
+create table bse_seminar_sessions (
+  id integer not null auto_increment,
+  seminar_id integer not null,
+  location_id integer not null,
+  when_at datetime not null,
+
+  primary key (id),
+  unique (seminar_id, location_id, when_at),
+  index (seminar_id),
+  index (location_id)
 );
 

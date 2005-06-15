@@ -4,7 +4,7 @@ use HTML::Entities;
 use DevHelp::Tags;
 use DevHelp::HTML qw(:default escape_xml);
 use vars qw(@EXPORT_OK @ISA);
-@EXPORT_OK = qw(tag_error_img tag_hash tag_hash_plain);
+@EXPORT_OK = qw(tag_error_img tag_hash tag_hash_plain tag_hash_mbcs);
 @ISA = qw(Exporter);
 require Exporter;
 
@@ -91,7 +91,14 @@ sub static {
        $hour = $min = $sec = 0 unless defined $sec;
        $year -= 1900;
        --$month;
-       return POSIX::strftime($fmt, $sec, $min, $hour, $day, $month, $year);
+       # passing the isdst as 0 seems to provide a more accurate result than
+       # -1 on glibc.
+       return POSIX::strftime($fmt, $sec, $min, $hour, $day, $month, $year, -1, -1, 0);
+       # the following breaks some of our defaults
+#        # pass the time through mktime() since the perl strftime()
+#        # doesn't actually do it.
+#        my $time = POSIX::mktime($sec, $min, $hour, $day, $month, $year);
+#        return POSIX::strftime($fmt, localtime $time);
      },
      today => \&tag_today,
      money =>
@@ -758,8 +765,22 @@ sub tag_hash {
 
   my $value = $hash->{$args};
   defined $value or $value = '';
+  if ($value =~ /\cJ/ && $value =~ /\cM/) {
+    $value =~ tr/\cM//d;
+  }
 
   escape_html($value);
+}
+
+sub tag_hash_mbcs {
+  my ($object, $args) = @_;
+
+  my $value = $object->{$args};
+  defined $value or $value = '';
+  if ($value =~ /\cJ/ && $value =~ /\cM/) {
+    $value =~ tr/\cM//d;
+  }
+  escape_html($value, '<>&"');
 }
 
 sub tag_hash_plain {

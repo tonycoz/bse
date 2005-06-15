@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>64;
+use Test::More tests=>67;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
@@ -212,6 +212,18 @@ TEMPLATE
 2 4
 3 5
 
+EXPECTED
+
+template_test "quotedreplace", $parent, <<'TEMPLATE', <<EXPECTED;
+<:date "%FT%T%z" article lastModified:>
+<meta name="DC.title" content="<:article title:>" />
+<meta name="DC.date" content="<:replace [date "%FT%T%z" article lastModified] "(\d\d)$" ":$1":>" />
+<meta name="DC.format" content="<:cfg site format "text/html":>" />
+TEMPLATE
+2004-09-23T06:00:00+1000
+<meta name="DC.title" content="Parent" />
+<meta name="DC.date" content="2004-09-23T06:00:00+10:00" />
+<meta name="DC.format" content="text/html" />
 EXPECTED
 
 BSE::Admin::StepParents->del($parent, $parent);

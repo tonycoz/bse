@@ -24,32 +24,38 @@ sub new {
   unless (defined $self->{$primary[0]}) {
     my $bases = $class->bases;
     if (keys %$bases) {
-      keys %$bases == 1
-	or confess "I don't know how to handle more than one base for $class";
-      my ($my_col) = keys %$bases;
-      my $base_class = $bases->{$my_col}{class};
+      my @bases = $class->_get_bases;
+      my $base_base = $bases[0];
+      my $base_class = $base_base->[1];
       my $sth = $dh->stmt("add$base_class")
 	or confess "No add$base_class member in DatabaseHandle";
-      
+
       # extract the base class columns
       my @base_cols = $base_class->columns;
       my %data;
       @data{$class->columns} = @values;
       $sth->execute(@data{@base_cols[1..$#base_cols]})
 	or confess "Could not add $class/$base_class(undef, @data{@base_cols[1..$#base_cols]} )";
-      $self->{$primary[0]} = $self->{$my_col} =
-	$data{$my_col} = $data{$primary[0]} = $dh->insert_id($sth);
-      
-      # now do this class
-      # what do we store
-      my %saved;
-      @saved{@base_cols} = @base_cols;
-      delete $saved{$my_col}; # make sure we save this
-      my @save_cols = grep !$saved{$_}, @columns;
-      $sth = $dh->stmt("add$class")
-	or confess "No add$class member in DatabaseHandle";
-      $sth->execute(@data{@save_cols})
-	or confess "Could not add $class(@data{1..$#save_cols})";
+      my $primary_value = $dh->insert_id($sth);
+
+      $self->{$primary[0]} = $primary_value;
+      my $used_cols = @base_cols;
+
+      # now do the derived classes and ourselves
+      for my $derived (@bases) {
+	my ($my_col, $base_class, $parent_class) = @$derived;
+
+	$self->{$my_col} = $primary_value;
+
+	my @cols = $parent_class->columns;
+	splice(@cols, 0, $used_cols); # strip base column names
+	$used_cols += @cols;
+
+	$sth = $dh->stmt("add$parent_class")
+	  or confess "No add$parent_class member in DatabaseHandle";
+	$sth->execute(@$self{@cols})
+	  or confess "Could not add $parent_class(@$self{@cols})";
+      }
     }
     else {
       my $sth = $dh->stmt("add$class")
@@ -63,25 +69,6 @@ sub new {
 
   confess "Undefined primary key fields in ${class}::new"
     if grep !defined, @$self{@primary};
-
-  my $foreign = $self->foreign;
-  for my $key (keys %$foreign) {
-    my $module = $foreign->{$key}{module};
-    my $version = $foreign->{$key}{version};
-
-    next unless defined $module;
-
-    next if !defined($self->{$key}) && exists $foreign->{$key}{null};
-
-    require $module.'.pm';
-
-    $module->VERSION($version) if defined $version;
-
-    my $mod = $module->new;
-
-    confess "Bad FK field $class($key) ($self->{$key})"
-	unless $self->{$key} = $mod->getByPkey($self->{$key});
-  }
 
   $self->{pkey} = join("", @$self{@primary});
   $self->{changed} = 0;
@@ -106,34 +93,37 @@ sub save {
   my %saved;
   my $bases = $self->bases;
   if (keys %$bases) {
-    # save to the bases
-    # this should probably recurse at some point
-    for my $base_key (keys %$bases) {
-      # we have bases, update them
-      my $base_class = $bases->{$base_key}{class};
-      my @base_cols = $base_class->columns;
-      my $sth = $dh->stmt('replace'.$base_class)
-	or confess "No replace$base_class member in DatabaseHandle";
-      my @data;
-      for my $col (@base_cols) {
-	push(@data, ref $self->{$col} ? $self->{$col}{pkey} : $self->{$col});
-	++$saved{$col};
-      }
-      $sth->execute(@data)
-	or confess "Cannot save $base_class part of ",ref $self,":",
-	  $sth->errstr;
+    my @bases = $self->_get_bases;
+    my $base_base = $bases[0];
+    my $base_class = $base_base->[1];
+    my $sth = $dh->stmt("replace$base_class")
+      or confess "No replace$base_class member in DatabaseHandle";
+
+    my @base_cols = $base_class->columns;
+    $sth->execute(@$self{@base_cols})
+      or confess "Cannot save $base_class part of ref $self:", $sth->errstr;
+      
+    # save the derived
+    for my $derived (@bases) {
+      my ($key_col, $base_class, $parent_class) = @$derived;
+
+      my $base_cols = () = $base_class->columns;
+      my @parent_cols = $parent_class->columns;
+      splice(@parent_cols, 0, $base_cols);
+
+      my $sth = $dh->stmt('replace'.$parent_class)
+	or confess "No replace$parent_class statement available";
+      $sth->execute(@$self{@parent_cols})
+	or confess "Cannot save $parent_class part of ",ref $self,":",
+	  $sth->errstr
     }
   }
-
-  my $sth = $dh->stmt('replace'.ref $self)
-    or confess "No replace",ref $self," member in DatabaseHandle";
-  my @data;
-  for my $col ($self->columns) {
-    push(@data, ref $self->{$col} ? $self->{$col}{pkey} : $self->{$col})
-      unless $saved{$col};
+  else {
+    my $sth = $dh->stmt('replace'.ref $self)
+      or confess "No replace",ref $self," member in DatabaseHandle";
+    $sth->execute(@$self{$self->columns})
+      or confess "Cannot save ",ref $self,":",$sth->errstr;
   }
-  $sth->execute(@data)
-    or confess "Cannot save ",ref $self,":",$sth->errstr;
 
   $self->{changed} = 0;
 }
@@ -176,6 +166,30 @@ sub AUTOLOAD {
   }
   confess qq/Can't locate object method "$calledName" via package "/,
     ref $_[0],'"';
+}
+
+sub _get_bases {
+  my ($class) = @_;
+
+  # make sure we have a class name
+  ref $class and $class = ref $class;
+
+  my @bases;
+  my $parent;
+  my $base = $class;
+  my $bases = $class->bases;
+  while ($bases && keys %$bases) {
+    keys %$bases == 1
+      or confess "I don't know how to handle more than one base for $class";
+    
+    my ($my_col) = keys %$bases;
+    $parent = $base;
+    $base = $bases->{$my_col}{class};
+    unshift @bases, [ $my_col, $base, $parent ];
+    $bases = $base->bases;
+  }
+
+  @bases;
 }
 
 # in case someone tries AUTOLOAD tricks

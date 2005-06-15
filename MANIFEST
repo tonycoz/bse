@@ -14,6 +14,7 @@ schema/mssql.sql
 schema/mysql_build.pl   # builds site/util/mysql.str
 site/cgi-bin/admin/add.pl
 site/cgi-bin/admin/admin.pl
+site/cgi-bin/admin/admin_seminar.pl
 site/cgi-bin/admin/adminusers.pl
 site/cgi-bin/affiliate.pl
 site/cgi-bin/admin/changepw.pl
@@ -59,12 +60,14 @@ site/cgi-bin/modules/BSE/Edit/Article.pm
 site/cgi-bin/modules/BSE/Edit/Base.pm
 site/cgi-bin/modules/BSE/Edit/Catalog.pm
 site/cgi-bin/modules/BSE/Edit/Product.pm
+site/cgi-bin/modules/BSE/Edit/Seminar.pm
 site/cgi-bin/modules/BSE/Edit/Site.pm
 site/cgi-bin/modules/BSE/EmailBlackEntry.pm
 site/cgi-bin/modules/BSE/EmailBlacklist.pm
 site/cgi-bin/modules/BSE/EmailRequest.pm
 site/cgi-bin/modules/BSE/EmailRequests.pm
 site/cgi-bin/modules/BSE/Formatter.pm
+site/cgi-bin/modules/BSE/Generate/Seminar.pm
 # site/cgi-bin/modules/BSE/FileEditor.pm
 site/cgi-bin/modules/BSE/Mail.pm
 site/cgi-bin/modules/BSE/Mail/SMTP.pm
@@ -89,16 +92,21 @@ site/cgi-bin/modules/BSE/TB/AdminPerm.pm
 site/cgi-bin/modules/BSE/TB/AdminPerms.pm
 site/cgi-bin/modules/BSE/TB/AdminUser.pm
 site/cgi-bin/modules/BSE/TB/AdminUsers.pm
+site/cgi-bin/modules/BSE/TB/Location.pm
+site/cgi-bin/modules/BSE/TB/Locations.pm
 site/cgi-bin/modules/BSE/TB/Order.pm
 site/cgi-bin/modules/BSE/TB/Orders.pm
 site/cgi-bin/modules/BSE/TB/OrderItem.pm
 site/cgi-bin/modules/BSE/TB/OrderItems.pm
+site/cgi-bin/modules/BSE/TB/Seminar.pm
+site/cgi-bin/modules/BSE/TB/Seminars.pm
 site/cgi-bin/modules/BSE/TB/Subscription.pm
 site/cgi-bin/modules/BSE/TB/Subscription/Calc.pm
 site/cgi-bin/modules/BSE/TB/Subscriptions.pm
 site/cgi-bin/modules/BSE/Template.pm
 site/cgi-bin/modules/BSE/Thumb/Imager.pm
 site/cgi-bin/modules/BSE/UI/AdminDispatch.pm
+site/cgi-bin/modules/BSE/UI/AdminSeminar.pm
 site/cgi-bin/modules/BSE/UI/Affiliate.pm
 site/cgi-bin/modules/BSE/UI/Dispatch.pm
 site/cgi-bin/modules/BSE/UI/Formmail.pm
@@ -112,6 +120,7 @@ site/cgi-bin/modules/BSE/Util/SQL.pm
 site/cgi-bin/modules/BSE/Util/Secure.pm
 site/cgi-bin/modules/BSE/Util/Tags.pm
 site/cgi-bin/modules/BSE/Util/Valid.pm
+site/cgi-bin/modules/BSE/Validate.pm
 site/cgi-bin/modules/BSE/Version.pm
 site/cgi-bin/modules/BSE/WebUtil.pm
 site/cgi-bin/modules/Constants.pm
@@ -253,6 +262,7 @@ site/templates/admin/edit_1.tmpl
 # site/templates/admin/edit_5.tmpl
 site/templates/admin/edit_catalog.tmpl
 site/templates/admin/edit_product.tmpl
+site/templates/admin/edit_seminar.tmpl
 site/templates/admin/edit_steps.tmpl
 site/templates/admin/filelist.tmpl
 site/templates/admin/grouplist.tmpl
@@ -262,6 +272,10 @@ site/templates/admin/menu.tmpl
 site/templates/admin/menu_adv.tmpl
 # site/templates/admin/menu_custom.tmpl
 site/templates/admin/interestemail.tmpl
+site/templates/admin/locations/add.tmpl
+site/templates/admin/locations/delete.tmpl
+site/templates/admin/locations/edit.tmpl
+site/templates/admin/locations/list.tmpl
 site/templates/admin/order_detail.tmpl
 site/templates/admin/order_list.tmpl
 site/templates/admin/order_list_filled.tmpl

@@ -23,7 +23,8 @@ sub columns {
            siteuser_id affiliate_code shipping_cost
            delivMobile billMobile
            ccOnline ccSuccess ccReceipt ccStatus ccStatusText
-           ccStatus2 ccTranId complete/;
+           ccStatus2 ccTranId complete delivOrganization billOrganization
+           delivStreet2 billStreet2/;
 }
 
 =item siteuser
@@ -67,20 +68,42 @@ sub valid_fields {
 
   my %fields =
     (
-     delivFirstName => { description=>'Delivery First Name', },
-     delivLastName => { description => 'Delivery Last Name' },
-     delivStreet => { description => 'Delivery Street' },
-     delivState => { description => 'Delivery State' },
-     delivSuburb => { description => 'Delivery Suburb' },
-     delivPostCode => { description => 'Delivery Post Code' },
-     delivCountry => { description => 'Delivery Country' },
-     billFirstName => { description => 'Billing First Name' },
-     billLastName => { description => 'Billing Last Name' },
-     billStreet => { description => 'Billing First Name' },
-     billSuburb => { description => 'Billing First Name' },
-     billState => { description => 'Billing First Name' },
-     billPostCode => { description => 'Billing First Name' },
-     billCountry => { description => 'Billing First Name' },
+     delivFirstName => { description=>'Delivery First Name', 
+			 rules=>'dh_one_line' },
+     delivLastName => { description => 'Delivery Last Name', 
+			 rules=>'dh_one_line'  },
+     delivOrganization => { description => 'Delivery Organization', 
+			    rules=>'dh_one_line'  },
+     delivStreet => { description => 'Delivery Street', 
+			 rules=>'dh_one_line'  },
+     delivStreet2 => { description => 'Delivery Street 2', 
+			 rules=>'dh_one_line'  },
+     delivState => { description => 'Delivery State', 
+			 rules=>'dh_one_line'  },
+     delivSuburb => { description => 'Delivery Suburb', 
+			 rules=>'dh_one_line'  },
+     delivPostCode => { description => 'Delivery Post Code', 
+			 rules=>'dh_one_line;postcode'  },
+     delivCountry => { description => 'Delivery Country', 
+			 rules=>'dh_one_line'  },
+     billFirstName => { description => 'Billing First Name', 
+			 rules=>'dh_one_line'  },
+     billLastName => { description => 'Billing Last Name', 
+			 rules=>'dh_one_line'  },
+     billOrganization => { description => 'Billing Organization', 
+			   rules=>'dh_one_line'  },
+     billStreet => { description => 'Billing Street', 
+			 rules=>'dh_one_line'  },
+     billStreet2 => { description => 'Billing Street 2', 
+			 rules=>'dh_one_line'  },
+     billSuburb => { description => 'Billing Suburb', 
+			 rules=>'dh_one_line'  },
+     billState => { description => 'Billing State', 
+			 rules=>'dh_one_line'  },
+     billPostCode => { description => 'Billing Post Code', 
+			 rules=>'dh_one_line;postcode'  },
+     billCountry => { description => 'Billing First Name', 
+			 rules=>'dh_one_line'  },
      telephone => { description => 'Telephone Number',
 		    rules => "phone" },
      facsimile => { description => 'Facsimile Number',
