@@ -73,6 +73,13 @@ CREATE TABLE article (
   customInt3 integer null,
   customInt4 integer null,
 
+  -- added by adrian
+  lastModifiedBy varchar(60) default '' not null,
+  created datetime default '0000-00-00 00:00:00' not null,
+  createdBy varchar(60) default '' not null,
+  author varchar(255) default '' not null,
+  pageTitle varchar(255) default '' not null,
+
   PRIMARY KEY (id),
 
   -- if we keep id in the indexes MySQL will sometimes be able to

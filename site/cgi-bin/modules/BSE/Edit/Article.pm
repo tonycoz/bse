@@ -1256,6 +1256,13 @@ sub validate {
   custom_class($self->{cfg})
     ->article_validate($data, undef, $self->typename, $errors);
 
+  if (!defined $data->{parentid} || $data->{parentid} eq '') {
+    $errors->{parentid} = "Please select a parent";
+  }
+  elsif ($data->{parentid} !~ /^(?:-1|\d+)$/) {
+    $errors->{parentid} = "Invalid parent selection (template bug)";
+  }
+
   return !keys %$errors;
 }
 
@@ -1377,6 +1384,13 @@ sub save_new {
   $data{generator} = $self->generator;
   $data{lastModified} = now_sqldatetime();
   $data{listed} = 1 unless defined $data{listed};
+
+# Added by adrian
+  $data{pageTitle} = '' unless defined $data{pageTitle};
+  my $user = $req->getuser;
+  $data{createdBy} = $user ? $user->{logon} : '';
+  $data{lastModifiedBy} = $user ? $user->{logon} : '';
+  $data{created} =  now_sqldatetime();
 
   $self->fill_new_data($req, \%data, $articles);
   for my $col (qw(titleImage imagePos template keyword)) {
@@ -1526,6 +1540,10 @@ sub save {
     my $article_uri = $self->make_link($article);
     $article->setLink($article_uri);
   }
+
+# Added by adrian
+  my $user = $req->getuser;
+  $article->{lastModifiedBy} = $user ? $user->{logon} : '';
 
   $article->save();
 
@@ -1976,11 +1994,11 @@ sub save_image_changes {
       if ($name ne '') {
 	if ($name =~ /^[a-z_]\w*$/i) {
 	  if ($used{lc $name}++) {
-	    $errors{"name$index"} = 'Names must be empty, or alphanumeric and unique to the article';
+	    $errors{"name$index"} = 'Image name must be empty or alphanumeric and unique to the article';
 	  }
 	}
 	else {
-	  $errors{"name$index"} = 'Image identifiers must be unique to the article';
+	  $errors{"name$index"} = 'Image name must be unique to the article';
 	}
       }
       unless ($errors{"name$index"}) {
@@ -2028,13 +2046,13 @@ sub add_image {
       my @images = $self->get_images($article);
       for my $img (@images) {
 	if (defined $img->{name} && lc $img->{name} eq lc $imageref) {
-	  $errors{name} = 'Duplicate image name';
+	  $errors{name} = 'Image name must be unique to the article';
 	  last;
 	}
       }
     }
     else {
-      $errors{name} = 'Name must be empty or alphanumeric';
+      $errors{name} = 'Image name must be empty or alphanumeric beginning with an alpha character';
     }
   }
   else {

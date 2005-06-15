@@ -11,7 +11,8 @@ sub columns {
     release expire keyword template link admin threshold
     summaryLength generator level listed lastModified flags
     customDate1 customDate2 customStr1 customStr2
-    customInt1 customInt2 customInt3 customInt4/;
+    customInt1 customInt2 customInt3 customInt4 
+    lastModifiedBy created createdBy author pageTitle/;
 }
 
 sub numeric {

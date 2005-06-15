@@ -108,6 +108,20 @@
               <:eif FieldPerm:><:flag desc:><:iterator separator flags:><br /><:iterator end flags:></td>
             <td nowrap="nowrap" bgcolor="#FFFFFF"><:help edit flags:> <:error_img flags:></td>
           </tr>
+          <tr>
+            <th nowrap="nowrap" align="left" bgcolor="#FFFFFF">Page title:</th>
+            <td width="100%" bgcolor="#FFFFFF">
+              <:ifFieldPerm pageTitle:><input type="text" name="pageTitle" value='<:old pageTitle article pageTitle:>' size="60" maxlength="255" tabindex="7" /> (alternate title)<:or:><:article pageTitle:><:eif:>
+            </td>
+           <td nowrap="nowrap" bgcolor="#FFFFFF"><:help edit pageTitle:> <:error_img pageTitle:></td>
+          </tr>
+          <tr>
+            <th nowrap="nowrap" align="left" bgcolor="#FFFFFF">Author name:</th>
+            <td width="100%" bgcolor="#FFFFFF" >
+              <:if FieldPerm author:><input type="text" name="author" value='<:ifCfg editor auto_author:><:old author adminuser name:><:or:><:old author:><:eif:>' size="40" maxlength="255" tabindex="7" /><:or FieldPerm:><:article author:><:eif FieldPerm:>
+            </td>
+            <td nowrap="nowrap" bgcolor="#FFFFFF" ><:help edit author:> <:error_img author:></td>
+          </tr>
 		  <tr> 
             <th nowrap="nowrap" bgcolor="#FFFFFF" align="left">Release date:</th>
             <td bgcolor="#FFFFFF" width="100%"> 

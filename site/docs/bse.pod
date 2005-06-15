@@ -60,7 +60,31 @@ body text.
 =item *
 
 t/t40images.t now uses the links() method instead of the internal
-extract_links() method.
+extract_links() method.  (this is part of the test suite and doesn't
+have an effect on most users)
+
+=item *
+
+articles now store their creation date, the user who created them the
+user who last modified them. (implemented by Adrian Oldham)
+
+=item *
+
+articles now have author and pageTitle attributes.  The pageTitle
+attribute overrides the value of the title field in the HTML header
+title tag.  Currently these are not indexed or searched by the search
+engine. (implemented by Adrian Oldham)
+
+=item *
+
+error messages for invalid image identifiers have been changed
+(implemented by Adrian Oldham)
+
+=item *
+
+previously the parentid wasn't being properly validated when adding a
+new article, possible causing a 500 error.  We validate the value and
+report an error on invalid values now.
 
 =back
 
