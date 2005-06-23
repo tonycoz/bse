@@ -1,9 +1,14 @@
 package DevHelp::Date;
 use strict;
-require Exporter;
-use vars qw(@EXPORT_OK @ISA);
-@EXPORT_OK = qw(dh_parse_date dh_parse_date_sql);
-@ISA = qw(Exporter);
+use Exporter 'import';
+use vars qw(@EXPORT_OK %EXPORT_TAGS);
+@EXPORT_OK = 
+  qw(dh_parse_date dh_parse_date_sql dh_parse_time dh_parse_time_sql);
+%EXPORT_TAGS =
+  (
+   all => \@EXPORT_OK,
+   sql => [ grep /_sql$/, @EXPORT_OK ],
+  );
 
 use constant SECS_PER_DAY => 24 * 60 * 60;
 
@@ -63,6 +68,63 @@ sub dh_parse_date_sql {
     or return;
 
   return sprintf("%04d-%02d-%02d", $year, $month, $day);
+}
+
+sub dh_parse_time {
+  my ($time, $rmsg) = @_;
+
+  if ($time =~ /^\s*(\d+)[:. ]?(\d{2})\s*$/) {
+    # 24 hour time
+    my ($hour, $min) = ($1, $2);
+
+    if ($hour > 23) {
+      $$rmsg = "Hour must be from 0 to 23 for 24-hour time";
+      return;
+    }
+    if ($min > 59) {
+      $$rmsg = "Minutes must be from 0 to 59";
+      return;
+    }
+
+    return (0+$hour, 0+$min, 0);
+  }
+  else {
+    # try for 12 hour time
+    my ($hour, $min, $ampm);
+
+    if ($time =~ /^\s*(\d+)\s*(?:([ap])m?)\s*$/i) {
+      # "12am", "2pm", etc
+      ($hour, $min, $ampm) = ($1, 0, $2);
+    }
+    elsif ($time =~ /^\s*(\d+)[.: ](\d{2})\s*(?:([ap])m?)\s*$/i) {
+      ($hour, $min, $ampm) = ($1, $2, $3);
+    }
+    else {
+      $$rmsg = "Unknown time format";
+      return;
+    }
+    if ($hour < 1 || $hour > 12) {
+      $$rmsg = "Hour must be from 1 to 12 for 12 hour time";
+      return;
+    }
+    if ($min > 59) {
+      $$rmsg = "Minutes must be from 0 to 59";
+      return;
+    }
+    $hour = 0 if $hour == 12;
+    $hour += 12 if lc $ampm eq 'p';
+
+    return (0+$hour, 0+$min, 0);
+  }
+}
+
+sub dh_parse_time_sql {
+  my ($time, $rmsg) = @_;
+
+  my ($hour, $min, $sec) = dh_parse_time($time, $rmsg)
+    or return;
+
+  sprintf("%02d:%02d:%02d", $hour, $min, $sec);
 }
 
 1;

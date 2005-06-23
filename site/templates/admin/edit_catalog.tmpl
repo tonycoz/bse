@@ -117,7 +117,7 @@
           <tr>
             <th nowrap="nowrap" align="left" bgcolor="#FFFFFF">Author name:</th>
             <td width="100%" bgcolor="#FFFFFF" >
-              <:ifFieldPerm author:><input type="text" name="author" value='<:ifCfg editor auto_author:><:old author adminuser name:><:or:><:old author:><:eif:>' size="40" maxlength="255" tabindex="7" /><:or:><:article author:><:eif:>
+              <:if FieldPerm author:><input type="text" name="author" value='<:ifCfg editor auto_author:><:old author adminuser name:><:or:><:old author:><:eif:>' size="40" maxlength="255" tabindex="7" /><:or FieldPerm:><:article author:><:eif FieldPerm:>
             </td>
             <td nowrap="nowrap" bgcolor="#FFFFFF" ><:help edit author:> <:error_img author:></td>
           </tr>

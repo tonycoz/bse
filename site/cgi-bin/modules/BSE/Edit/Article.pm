@@ -1004,7 +1004,7 @@ sub low_edit_tags {
 
   my $cgi = $request->cgi;
   my $show_full = $cgi->param('f_showfull');
-  $msg ||= $cgi->param('message');
+  $msg ||= join "\n", map escape_html($_), $cgi->param('message'), $cgi->param('m');
   $msg ||= '';
   $errors ||= {};
   if (keys %$errors && !$msg) {
@@ -1921,10 +1921,24 @@ sub refresh {
   my ($self, $article, $cgi, $name, $message, $extras) = @_;
 
   my $url = $cgi->param('r');
-  unless ($url) {
+  if ($url) {
+    if ($url !~ /[?&](m|message)=/ && $message) {
+      # add in messages if none in the provided refresh
+      my @msgs = ref $message ? @$message : $message;
+      for my $msg (@msgs) {
+	$url .= "&m=" . CGI::escape($msg);
+      }
+    }
+  }
+  else {
     my $urlbase = admin_base_url($self->{cfg});
     $url = "$urlbase$ENV{SCRIPT_NAME}?id=$article->{id}";
-    $url .= "&message=" . CGI::escape($message) if $message;
+    if ($message) {
+      my @msgs = ref $message ? @$message : $message;
+      for my $msg (@msgs) {
+	$url .= "&m=" . CGI::escape($msg);
+      }
+    }
     if ($cgi->param('_t')) {
       $url .= "&_t=".CGI::escape($cgi->param('_t'));
     }

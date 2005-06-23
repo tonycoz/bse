@@ -1,0 +1,39 @@
+<:wrap admin/xbase.tmpl title=>"Seminar [seminar title] - Add Session":>
+<h1>Seminar <:seminar title:> - Add Session</h1>
+<:ifMessage:>
+<p><b><:message:></b></p>
+<:or:><:eif:> 
+<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> 
+| <a href="<:script:>?id=<:seminar id:>">Edit seminar</a> |
+  <a href="<:script:>?id=<:seminar id:>&amp;_t=semsessions">Session list</a> |
+</p>
+
+<form action="<:script:>" method="post">
+<input type="hidden" name="id" value="<:seminar id:>" />
+<input type="hidden" name="_t" value="semsessadd" />
+<input type="hidden" name="r" value="<:script:>?id=<:seminar id:>&amp;_t=semsessions" />
+<table>
+  <tr>
+    <th>Location:</th>
+    <td><select name="location_id">
+<option value="">(select a location)</option>
+<:iterator begin locations enabled:>
+<option value="<:location id:>" <:ifEq [old location_id] [location id]:>selected="selected"<:or:><:eif:>><:location description:></option>
+<:iterator end locations:>
+        </select></td>
+    <td><:error_img location_id:><:help semsessadd location:></td>
+  </tr>
+  <tr>
+    <th>Date:</th>
+    <td><input type="text" name="when_at_date" value ="<:old when_at_date:>" size="10" /> (dd/mm/yy)</td>
+    <td><:error_img when_at_date:><:help semsessadd date:></td>
+  </tr>
+  <tr>
+    <th>Time:</th>
+    <td><input type="text" name="when_at_time" value ="<:old when_at_time:>" size="10" /> (HH:MM or HH:MMpm or HH:MMam)</td>
+    <td><:error_img when_at_date:><:help semsessadd time:></td>
+  </tr>
+  <tr>
+    <td colspan="3"><input type="submit" name="a_addsemsession" value="Add Session" /></td>
+  </tr>
+</table>

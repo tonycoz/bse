@@ -1,0 +1,48 @@
+<:wrap admin/xbase.tmpl title=>"Seminar [seminar title] - Delete Session":>
+<h1>Seminar <:seminar title:> - Delete Session</h1>
+<:ifMessage:>
+<p><b><:message:></b></p>
+<:or:><:eif:> 
+<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> 
+| <a href="<:script:>?id=<:seminar id:>">Edit seminar</a> |
+  <a href="<:script:>?id=<:seminar id:>&amp;_t=semsessions">Session list</a> |
+</p>
+
+<form action="<:script:>" method="post">
+<input type="hidden" name="id" value="<:seminar id:>" />
+<input type="hidden" name="session_id" value="<:session id:>" />
+<input type="hidden" name="r" value="<:script:>?id=<:seminar id:>&amp;_t=semsessions" />
+<table>
+  <tr>
+    <th>Location:</th>
+    <td><:location description:></td>
+  </tr>
+  <tr>
+    <th>Date:</th>
+    <td><:date "%d/%m/%Y" session when_at:></td>
+  </tr>
+  <tr>
+    <th>Time:</th>
+    <td><:date "%H:%M" session when_at:></td>
+  </tr>
+  <tr>
+    <th>Move to session:</th>
+    <td>
+      <select name="othersession_id">
+        <option value="">(select a session or choose to cancel)</option>
+	<option value="-1">(Cancel the session)</option>
+<:iterator begin other_sessions:>
+        <option value="<:other_session id:>"><:other_location description:> <:date "%H:%M %d/%m/%Y" other_session when_at:></option>
+<:iterator end other_sessions:>		
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <th>Notify Booked Members</th>
+    <td><input type="checkbox" name="notify" <:ifOld notify:>checked="checked"<:or:><:eif:> value="1" /> A notification email will be sent to users booked for this session if this is checked.</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="3"><input type="submit" name="a_delsemsession" value="Delete Session" /></td>
+  </tr>
+</table>

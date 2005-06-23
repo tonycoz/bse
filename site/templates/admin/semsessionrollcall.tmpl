@@ -1,0 +1,52 @@
+<:wrap admin/xbase.tmpl title=>"Seminar [seminar title] - Edit Session":>
+<h1>Seminar <:seminar title:> - Edit Session</h1>
+<:ifMessage:>
+<p><b><:message:></b></p>
+<:or:><:eif:> 
+<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> 
+| <a href="<:script:>?id=<:seminar id:>">Edit seminar</a> |
+  <a href="<:script:>?id=<:seminar id:>&amp;_t=semsessions">Session list</a> |
+</p>
+
+<form action="<:script:>" method="post" name="rollcall">
+<input type="hidden" name="id" value="<:seminar id:>" />
+<input type="hidden" name="session_id" value="<:session id:>" />
+<input type="hidden" name="r" value="<:script:>?id=<:seminar id:>&amp;_t=semsessions&amp;s=all" />
+<table>
+  <tr>
+    <th>Present</th>
+    <th>Logon</th>
+    <th>Name</th>
+    <th>Email</th>
+  </tr>
+<:iterator begin rollusers:>
+  <tr>
+    <td><input type="checkbox" name="roll_present_<:rolluser id:>" <:ifRolluser roll_present:>checked="checked"<:or:><:eif:> /></td>
+    <td><a href="/cgi-bin/admin/siteusers.pl?a_edit=1&amp;id=<:rolluser id:>"><:rolluser userId:></a></td>
+    <td><:rolluser name1:> <:rolluser name2:></td>
+    <td><a href="mailto:<:rolluser email:>"><:rolluser email:></a></td>
+  </tr>
+  <tr>
+    <!-- separate row to distinguish these from the save button -->
+    <td colspan="4">
+      <input type="button" value="All" onClick="set_all_roll(true)" />
+      <input type="button" value="None" onClick="set_all_roll(false)" />
+    </td>
+  </tr>
+<:iterator end rollusers:>
+  <tr>
+    <td colspan="4"><input type="submit" name="a_takesessionrolesave" value="Take Roll" /></td>
+  </tr>
+</table>
+<script>
+function set_all_roll(set_reset) {
+  var f = document.rollcall;
+  for (var i = 0; i < f.elements.length; i++) {
+    var elem = f.elements[i];
+    var elemname = elem.name;
+    if (elemname.slice(0, 13) == "roll_present_") {
+      elem.checked = set_reset;
+    }
+  }
+}
+</script>

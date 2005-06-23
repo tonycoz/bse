@@ -88,7 +88,7 @@ sub req_locaddform {
   my $msg = $req->message($errors);
 
   my %fields = BSE::TB::Location->valid_fields();
-  $req->configure_fields(\%fields, SECT_LOCATION_VALIDATION);
+  my $cfg_fields = $req->configure_fields(\%fields, SECT_LOCATION_VALIDATION);
 
   my %acts;
   %acts =
@@ -99,7 +99,7 @@ sub req_locaddform {
      msg => $msg,
      message => $msg,
      error_img => [ \&tag_error_img, $req->cfg, $errors ],
-     field => [ \&tag_field, \%fields ],
+     field => [ \&tag_field, $cfg_fields ],
     );
 
   return $req->dyn_response('admin/locations/add', \%acts);
@@ -150,7 +150,7 @@ sub _loc_show_common {
   my $msg = $req->message($errors);
 
   my %fields = BSE::TB::Location->valid_fields();
-  $req->configure_fields(\%fields, SECT_LOCATION_VALIDATION);
+  my $cfg_fields = $req->configure_fields(\%fields, SECT_LOCATION_VALIDATION);
 
   my %acts;
   %acts =
@@ -162,7 +162,7 @@ sub _loc_show_common {
      message => $msg,
      error_img => [ \&tag_error_img, $req->cfg, $errors ],
      location => [ \&tag_hash, $location ],
-     field => [ \&tag_field, \%fields ],
+     field => [ \&tag_field, $cfg_fields ],
     );
 
   return $req->dyn_response($template, \%acts);

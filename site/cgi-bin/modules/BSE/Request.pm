@@ -237,14 +237,16 @@ sub configure_fields {
 
   my $cfg = $self->cfg;
   require BSE::Validate;
-  BSE::Validate::bse_configure_fields($fields, $cfg, $section);
+  my $cfg_fields = BSE::Validate::bse_configure_fields($fields, $cfg, $section);
 
   for my $name (keys %$fields) {
     for my $cfg_name (qw/htmltype type width height size maxlength/) {
       my $value = $cfg->entry($section, "${name}_${cfg_name}");
-      defined $value and $fields->{$name}{$cfg_name} = $value;
+      defined $value and $cfg_fields->{$name}{$cfg_name} = $value;
     }
   }
+
+  $cfg_fields;
 }
 
 sub DESTROY {

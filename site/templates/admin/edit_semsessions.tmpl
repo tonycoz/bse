@@ -1,0 +1,33 @@
+<:wrap admin/xbase.tmpl title=>"Seminar [seminar title] - Sessions":>
+<h1>Seminar <:seminar title:> - Sessions</h1>
+<:ifMessage:>
+<p><b><:message:></b></p>
+<:or:><:eif:> 
+<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | <a href="<:script:>?id=<:seminar id:>">Edit seminar</a> | 
+Show: <:ifEq [cgi s] "all":><a href="<:script:>?id=<:seminar id:>&amp;_t=semsessions">Only new sessions</a><:or:><a href="<:script:>?id=<:seminar id:>&amp;_t=semsessions&amp;s=all">All sessions</a><:eif:> |
+<a href="<:script:>?id=<:seminar id:>&amp;_t=semsessadd">Add new session</a> |
+</p>
+
+<table>
+ <tr>
+   <th>Location</th>
+   <th>Date / Time</th>
+   <td></td>
+ </tr>
+<:if Sessions:>
+<:iterator begin sessions:>
+ <tr>
+   <td><:session description:></td>
+   <td><:date "%H:%M %a %d %b %Y" session when_at:></td>
+   <td><:ifSession past:><a href="<:script:>?a_takesessionrole=1&amp;id=<:seminar id:>&amp;session_id=<:session id:>">Roll call</a><:
+or:><a href="<:script:>?a_editsemsession=1&amp;id=<:seminar id:>&amp;session_id=<:session id:>">Edit</a><:eif:>
+<:ifSessionRemovable:><a href="<:script:>?a_askdelsemsession=1&amp;id=<:seminar id:>&amp;session_id=<:session id:>">Delete</a><:or:><:eif:>
+</td>
+ </tr>
+<:iterator end sessions:>
+<:or Sessions:>
+  <tr>
+    <td colspan="3">No sessions found for this seminar</td>
+  </tr>
+<:eif Sessions:>
+</table>

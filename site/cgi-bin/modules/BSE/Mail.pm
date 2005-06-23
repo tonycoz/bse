@@ -31,6 +31,38 @@ sub errstr {
   $self->{errstr};
 }
 
+sub complex_mail {
+  my ($self, %opts) = @_;
+
+  my $cfg = $self->{cfg};
+  my $section = $opts{section}
+    or confess "No section supplied to complex_mail";
+  my $template = $opts{template}
+    or confess "No template supplied to complex_mail";
+  my $acts = $opts{acts}
+    or confess "No acts supplied to complex_mail";
+
+  require BSE::Template;
+  # other tags will be added here
+  my %acts =
+    (
+     %$acts,
+    );
+
+  my $subject_alt = $cfg->entry($section, 'subject');
+  if ($subject_alt) {
+    # do template replacement on the subject
+    my $subject = BSE::Template->replace_template($subject_alt, \%acts);
+    
+    # subject may no contain newlines, and tab is bad too
+    $subject =~ tr[\x0a\x0d\t][ ]s;
+    $opts{subject} = $subject;
+  }
+
+  my $content = BSE::Template->get_page($template, $cfg, \%acts);
+  return $self->send(%opts, body=>$content);
+}
+
 
 1;
 

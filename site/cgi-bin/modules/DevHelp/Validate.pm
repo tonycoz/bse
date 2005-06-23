@@ -128,7 +128,22 @@ my %built_ins =
    {
     nomatch => qr/[\x0D\x0A]/,
     error => '$n may only contain a single line',
-   }
+   },
+   time =>
+   {
+    # we accept 24-hour time, or 12 hour with (a|p|am|pm)
+    match => qr!^(?:                   # first 24 hour time:
+                   (?:[01]?\d|2[0-3])  # hour 0-23
+                      [:.]             # separator
+                      [0-5]\d          # minute
+                  |                    # or 12 hour time:
+		    (?:0?[1-9]|1[012]) # hour 1-12
+		     (?:[:.]           # optionally separator followed
+		      [0-5]\d)?        # by minutes
+		    [ap]m?             # followed by afternoon/morning
+                  )$!ix,
+    error=>'Invalid time $n',
+   },
   );
 
 sub dh_validate {
@@ -332,8 +347,13 @@ sub validate_field {
 					  '$n must be a valid date - month out of range');
 	  last RULE;
 	}
+	require DevHelp::Date;
+	my $msg;
+	unless (($year, $month, $day) = DevHelp::Date::dh_parse_date($data, \$msg)) {
+	  $errors->{$field} = $msg;
+	  last RULE;
+	}
 	if ($rule->{mindate} || $rule->{maxdate}) {
-	  require DevHelp::Date;
 	  my $workdate = sprintf("%04d-%02d-%02d", $year, $month, $day);
 	  if ($rule->{mindate}) {
 	    my $mindate = DevHelp::Date::dh_parse_date_sql($rule->{mindate});

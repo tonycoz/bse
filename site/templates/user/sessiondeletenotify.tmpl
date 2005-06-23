@@ -1,0 +1,33 @@
+<:if Cancelled:>
+Your seminar, <:seminar title:>, has been cancelled.
+
+It was to be held at <:date "%HH:%MM on %d/%m/%Y" session when_at:> at:
+
+  <:location description:>
+  <:location room:>
+  <:location street1:>
+  <:location street2:>
+  <:location suburb:> <:location state:> <:location post_code:>
+
+<:or Cancelled:>
+
+Your seminar, <:seminar title:>, has been merged with another session.
+
+It will now be on <:date "%HH:%MM on %d/%m/%Y" other_session when_at:> at:
+
+  <:new_location description:>
+  <:new_location room:>
+  <:new_location street1:>
+  <:new_location street2:>
+  <:new_location suburb:> <:new_location state:> <:new_location post_code:>
+
+Originally your seminar was on <:date "%HH:%MM on %d/%m/%Y" session when_at:>
+at:
+
+  <:location description:>
+  <:location room:>
+  <:location street1:>
+  <:location street2:>
+  <:location suburb:> <:location state:> <:location post_code:>
+
+<:eif Cancelled:>

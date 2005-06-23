@@ -99,6 +99,8 @@ site/cgi-bin/modules/BSE/TB/Orders.pm
 site/cgi-bin/modules/BSE/TB/OrderItem.pm
 site/cgi-bin/modules/BSE/TB/OrderItems.pm
 site/cgi-bin/modules/BSE/TB/Seminar.pm
+site/cgi-bin/modules/BSE/TB/SeminarSession.pm
+site/cgi-bin/modules/BSE/TB/SeminarSessions.pm
 site/cgi-bin/modules/BSE/TB/Seminars.pm
 site/cgi-bin/modules/BSE/TB/Subscription.pm
 site/cgi-bin/modules/BSE/TB/Subscription/Calc.pm
@@ -263,6 +265,8 @@ site/templates/admin/edit_1.tmpl
 site/templates/admin/edit_catalog.tmpl
 site/templates/admin/edit_product.tmpl
 site/templates/admin/edit_seminar.tmpl
+site/templates/admin/edit_semsessions.tmpl
+site/templates/admin/edit_semsessadd.tmpl
 site/templates/admin/edit_steps.tmpl
 site/templates/admin/filelist.tmpl
 site/templates/admin/grouplist.tmpl
@@ -288,6 +292,9 @@ site/templates/admin/regenerror.tmpl
 site/templates/admin/reports/list.tmpl
 site/templates/admin/reports/prompt.tmpl
 site/templates/admin/reports/show1.tmpl
+site/templates/admin/semsessiondel.tmpl
+site/templates/admin/semsessionedit.tmpl
+site/templates/admin/semsessionrollcall.tmpl
 site/templates/admin/showgroup.tmpl
 site/templates/admin/showgroupart.tmpl
 site/templates/admin/showgroup_del.tmpl
@@ -392,6 +399,7 @@ site/templates/user/options_billing_base.tmpl
 site/templates/user/options_images_base.tmpl
 site/templates/user/options_saved_base.tmpl
 site/templates/user/register_base.tmpl
+site/templates/user/sessiondeletenotify.tmpl
 site/templates/user/subdetail.tmpl
 site/templates/user/toosoon_base.tmpl
 site/templates/user/toomany_base.tmpl
@@ -406,6 +414,7 @@ site/util/upgrade_mysql.pl
 t/BSE/Test.pm
 t/t00smoke.t	makes a request to most of the scripts
 t/t010template.t	Tests Squirrel::Template
+t/t011dhdates.t		Tests DevHelp::Date
 t/t050format.t	DevHelp::Formatter tests
 t/t060parms.t
 t/t070sqldates.t	Test SQL date tools

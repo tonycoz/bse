@@ -4,11 +4,7 @@ use strict;
 use Product;
 use vars qw/@ISA/;
 @ISA = qw/Product/;
-
-# subscription_usage values
-use constant SUBUSAGE_START_ONLY => 1;
-use constant SUBUSAGE_RENEW_ONLY => 2;
-use constant SUBUSAGE_EITHER => 3;
+use BSE::Util::SQL qw(now_sqldatetime);
 
 sub columns {
   return ($_[0]->SUPER::columns(), 
@@ -17,6 +13,42 @@ sub columns {
 
 sub bases {
   return { seminar_id=>{ class=>'Product'} };
+}
+
+sub sessions {
+  my ($self) = @_;
+
+  require BSE::TB::SeminarSessions;
+  BSE::TB::SeminarSessions->getBy(session_id => $self->{id});
+}
+
+sub future_sessions {
+  my ($self) = @_;
+
+  require BSE::TB::SeminarSessions;
+  BSE::TB::SeminarSessions->getSpecial(futureSessions => $self->{id}, now_sqldatetime());
+}
+
+sub session_info {
+  my ($self) = @_;
+
+  BSE::DB->query(seminarSessionInfo => $self->{id});
+}
+
+sub add_session {
+  my ($self, $when, $location) = @_;
+
+  require BSE::TB::SeminarSessions;
+  my %cols = 
+    ( 
+     seminar_id => $self->{id},
+     when_at => $when,
+     location_id => ref $location ? $location->{id} : $location,
+     roll_taken => 0,
+    );
+  my @cols = BSE::TB::SeminarSession->columns;
+  shift @cols;
+  return BSE::TB::SeminarSessions->add(@cols{@cols});
 }
 
 1;

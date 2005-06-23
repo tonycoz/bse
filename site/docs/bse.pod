@@ -10,6 +10,44 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+This is a development release, not intended for production.
+
+=head2 0.15_14
+
+=over
+
+=item *
+
+site/htdocs/images/trans_pixel.gif is now transparent again
+
+=item *
+
+search.pl would produce a 500 error if the search string contained
+regexp metacharacters (#502)
+
+=item *
+
+search.pl was only searching for the first search term
+
+=item *
+
+the shopadmin.pl product list wasn't listing seminars
+
+=item *
+
+field configuration for the location pages was being ignored
+
+=item *
+
+add.pl now generally accepts m or message for the message parameter,
+and can accept multiple messages.
+
+=item *
+
+functionality added to add, edit, delete, and take roll for sessions
+
+=back
+
 =head2 0.15_13
 
 This is a development release, not intended for production.

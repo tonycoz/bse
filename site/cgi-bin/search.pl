@@ -79,7 +79,7 @@ my $article_index = -1;
 my $result_seq = ($page_number-1) * $results_per_page;
 my $excerpt;
 my $keywords;
-my $words_re_str = '\b('.join('|', @terms).')\b';
+my $words_re_str = '\b('.join('|', map quotemeta, @terms).')\b';
 my $words_re = qr/$words_re_str/i;
 my %acts;
 %acts =
@@ -171,15 +171,17 @@ sub getSearchResult {
 
   # array of [ term, unquoted ]
   my @terms;
- TERMS: {
+  my $found = 1;
+  while ($found) {
+    $found = 0;
     if ($words =~ /\G\s*"([^"]+)"/gc
 	|| $words =~ /\G\s*'([^']+)'/gc) {
       push(@terms, [ $1, 0 ]);
-      next TERMS;
+      $found = 1;
     }
-    if ($words =~ /\G\s*(\S+)/gc) {
+    elsif ($words =~ /\G\s*(\S+)/gc) {
       push(@terms, [ $1, 1 ]);
-      next TERMS;
+      $found = 1;
     }
   }
 

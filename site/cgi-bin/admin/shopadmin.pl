@@ -79,7 +79,13 @@ sub embedded_catalog {
   my $products = Products->new;
   my @list;
   if ($session->{showstepkids}) {
-    @list = grep $_->{generator} eq 'Generate::Product', $catalog->allkids;
+    my @allkids = $catalog->allkids;
+    my %allgen = map { $_->{generator} => 1 } @allkids;
+    for my $gen (keys %allgen) {
+      (my $file = $gen . ".pm") =~ s!::!/!g;
+      require $file;
+    }
+    @list = grep UNIVERSAL::isa($_->{generator}, 'Generate::Product'), $catalog->allkids;
     @list = map { $products->getByPkey($_->{id}) } @list;
   }
   else {

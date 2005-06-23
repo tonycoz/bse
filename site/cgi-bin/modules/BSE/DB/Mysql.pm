@@ -372,6 +372,54 @@ select ar.*, pr.*, se.*
   from article ar, product pr, bse_seminars se
   where id = ? and ar.id = pr.articleId and ar.id = se.seminar_id
 SQL
+
+   seminarSessionInfo => <<SQL,
+select se.*, lo.description
+  from bse_seminar_sessions se, bse_locations lo
+  where se.seminar_id = ? and se.location_id = lo.id
+order by when_at desc
+SQL
+   addSeminarSession => 'insert bse_seminar_sessions values(null,?,?,?,?)',
+   replaceSeminarSession => 'replace bse_seminar_sessions values(?,?,?,?,?)',
+   deleteSeminarSession => 'delete from bse_seminar_sessions where id = ?',
+   getSeminarSessionByPkey => 'select * from bse_seminar_sessions where id = ?',
+   getSeminarSessionByLocation_idAndWhen_at => <<SQL,
+select * from bse_seminar_sessions
+  where location_id = ? and when_at = ?
+SQL
+   'SeminarSessions.futureSessions' => <<SQL,
+select * from bse_seminar_sessions
+  where seminar_id = ? and when_at >= ?
+SQL
+   'SiteUsers.sessionBookings' => <<SQL,
+select su.* from site_users su, bse_seminar_bookings sb
+  where sb.session_id = ? and su.id = sb.siteuser_id
+SQL
+   cancelSeminarSessionBookings => <<SQL,
+delete from bse_seminar_bookings where session_id = ?
+SQL
+   conflictSeminarSessions => <<SQL,
+select bo1.siteuser_id
+  from bse_seminar_bookings bo1, bse_seminar_bookings bo2
+where bo1.session_id = ? and bo2.session_id = ? 
+  and bo1.siteuser_id = bo2.siteuser_id
+SQL
+   seminarSessionBookedIds => <<SQL,
+select * from bse_seminar_bookings where session_id = ?
+SQL
+   seminarSessionBookUser => <<SQL,
+insert bse_seminar_bookings values(?,?)
+SQL
+   seminarSessionRollCallEntries => <<SQL,
+select bo.roll_present, su.id, su.userId, su.name1, su.name2, su.email
+  from bse_seminar_bookings bo, site_users su
+where bo.session_id = ? and bo.siteuser_id = su.id
+SQL
+  updateSessionRollPresent => <<SQL
+update bse_seminar_bookings
+  set roll_present = ?
+  where session_id = ? and siteuser_id = ?
+SQL
   );
 
 sub _single

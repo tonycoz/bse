@@ -14,7 +14,9 @@
    :> <a href="/cgi-bin/admin/add.pl?id=<:seminar id:>&_t=steps">Manage
       step parents</a> | <:if Seminar listed:> <a href="<:script:>?id=<:seminar id:>&hide=1&r=<:script:>?id=<:seminar id:>">Hide
       seminar</a> |<:or Seminar:> <a href="<:script:>?id=<:seminar id:>&unhide=1&r=<:script:>?id=<:seminar id:>">Show
-      seminar</a> |<:eif Seminar:><:or UserCan:><:eif UserCan:><:ifSeminar listed:><:or:> Hidden<:eif:><:eif
+      seminar</a> |<:eif Seminar:><:or UserCan:><:eif UserCan:><:ifSeminar listed:><:or:> Hidden<:eif:>
+<a href="<:script:>?id=<:seminar id:>&amp;_t=semsessions">Manage Sessions</a> |
+<:eif
       New:></p>
   <h2>Seminar Details</h2>
 <:ifNew:><:or:><:if Or [iadminuser_count] [iadmingroup_count]:>

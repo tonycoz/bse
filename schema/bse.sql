@@ -720,6 +720,7 @@ create table bse_seminar_sessions (
   seminar_id integer not null,
   location_id integer not null,
   when_at datetime not null,
+  roll_taken integer not null default 0,
 
   primary key (id),
   unique (seminar_id, location_id, when_at),
@@ -727,3 +728,12 @@ create table bse_seminar_sessions (
   index (location_id)
 );
 
+drop table if exists bse_seminar_bookings;
+create table bse_seminar_bookings (
+  session_id integer not null,
+  siteuser_id integer not null,
+  roll_present integer not null default 0,
+
+  primary key(session_id, siteuser_id),
+  index (siteuser_id)
+);
