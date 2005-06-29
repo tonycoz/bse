@@ -40,7 +40,7 @@ middle of the previous paragraph.  Any other entry will abort.
 EOS
   my $entered = <STDIN>;
   chomp $entered;
-  if ($conf ne $conf) {
+  if ($entered ne $conf) {
     print "Either you didn't backup your data of you didn't read the message.\n";
     exit;
   }
@@ -112,6 +112,9 @@ for my $table (sort keys %tables) {
     for my $i (0..$#ccols) {
       my $col = $cols->[$i];
       my $ccol = $ccols[$i];
+      if ($ccol->{type} =~ /^varchar\((\d+)\) binary$/) {
+	$ccol->{type} = "varbinary($1)";
+      }
       defined $ccol->{default} or $ccol->{default} = 'NULL';
       
       $col->{field} eq $ccol->{field}
@@ -119,6 +122,12 @@ for my $table (sort keys %tables) {
       
       if ($col->{type} ne $ccol->{type} || $col->{default} ne $ccol->{default}) {
 	print "fixing type or default for $col->{field}\n" if $verbose;
+	if ($verbose > 1) {
+	  print "old type: $ccol->{type}  new type: $col->{type}\n"
+	    if $ccol->{type} ne $col->{type};
+	  print "old default: $ccol->{default}  new default: $col->{default}\n"
+	    if $ccol->{default} ne $col->{default};
+	}
 	my $sql = "alter table $table modify ".create_clauses($col);
 	run_sql($sql)
 	  or die "Cannot fix $col->{field} type/default: $DBI::errstr\n";

@@ -40,7 +40,7 @@ sub replace_with {
     BSE::DB->query(seminarSessionBookedIds => $self->{id});
   for my $userid (@users_booked) {
     unless ($conflicts{$userid}) {
-      BSE::DB->run(seminarSessionBookUser => $other->{id}, $userid);
+      BSE::DB->run(seminarSessionBookUser => $other->{id}, $userid, 0);
     }
   }
   BSE::DB->run(cancelSeminarSessionBookings => $self->{id});
@@ -67,6 +67,15 @@ sub set_roll_present {
   $present = $present ? 1 : 0;
 
   BSE::DB->run(updateSessionRollPresent => $present, $self->{id}, $userid);
+}
+
+sub add_attendee {
+  my ($self, $user, $present) = @_;
+
+  $present ||= 0;
+  my $user_id = ref $user ? $user->{id} : $user;
+
+  BSE::DB->run(seminarSessionBookUser => $self->{id}, $user_id, $present);
 }
 
 1;

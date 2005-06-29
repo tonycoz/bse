@@ -10,6 +10,66 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_15
+
+=over
+
+=item *
+
+seminars can now be added to orders (if the user is logged on and
+isn't already booked)
+
+=item *
+
+added a_location target to shop.pl to display location information to
+end-users (intended for use as a pop-up)
+
+=item *
+
+removed old commented code from shop.pl
+
+=item *
+
+subs.pl now has normal admin tags on the newsletter list, including
+correcting the help tag.
+
+=item *
+
+the validation of the article parent id was incorrect, causing
+problems when saving existing articles.  Corrected the validation.
+
+=item *
+
+parsing and handling of the default value for the release and expire
+fields were reversed.
+
+=item *
+
+seminar display templates are now under the seminars directory
+
+=item *
+
+seminar display templates now have access to locations, location
+sessions and sessions iterators.
+
+=item *
+
+cart, checkoutnew and checkoutfinal templates now have access to
+per-item session and location tags
+
+=item *
+
+you can now add a user as a seminar attendee, without them having made
+an order.
+
+=item *
+
+DevHelp::Date had been changed to try to import its import method from
+Exporter, but this doesn't work on older perls.  Reverted to subclass
+Exporter.
+
+=back
+
 This is a development release, not intended for production.
 
 =head2 0.15_14

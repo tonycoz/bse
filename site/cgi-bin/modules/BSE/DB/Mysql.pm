@@ -86,7 +86,7 @@ SQL
    getOrderItemByOrderId => 'select * from order_item where orderId = ?',
    addOrder => 'insert orders values(null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
    replaceOrder => 'replace orders values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
-   addOrderItem => 'insert order_item values(null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+   addOrderItem => 'insert order_item values(null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
    getOrderByUserId => 'select * from orders where userId = ?',
    deleteOrdersItems => 'delete from order_item where orderId = ?',
 
@@ -363,7 +363,7 @@ SQL
    Seminars => <<SQL,
 select ar.*, pr.*, se.*
   from article ar, product pr, bse_seminars se
-  where ar.id = pr.articleId and ar.id = se.articleId
+  where ar.id = pr.articleId and ar.id = se.seminar_id
 SQL
    addSeminar => 'insert bse_seminars values(?,?)',
    replaceSeminar => 'replace bse_seminars values(?,?)',
@@ -372,11 +372,30 @@ select ar.*, pr.*, se.*
   from article ar, product pr, bse_seminars se
   where id = ? and ar.id = pr.articleId and ar.id = se.seminar_id
 SQL
+   'Locations.seminarFuture' => <<SQL,
+select distinct lo.*
+  from bse_locations lo, bse_seminar_sessions ss
+where ss.seminar_id = ? and ss.when_at > ?
+  and ss.location_id = lo.id
+order by lo.description
+SQL
+   'Locations.session_id' => <<SQL,
+select lo.*
+  from bse_locations lo, bse_seminar_sessions ss
+where lo.id = ss.location_id and ss.id = ?
+SQL
 
    seminarSessionInfo => <<SQL,
 select se.*, lo.description
   from bse_seminar_sessions se, bse_locations lo
   where se.seminar_id = ? and se.location_id = lo.id
+order by when_at desc
+SQL
+   seminarFutureSessionInfo => <<SQL,
+select se.*, lo.description, lo.room, lo.street1, lo.street2, lo.suburb, 
+    lo.state, lo.country, lo.postcode, lo.public_notes
+  from bse_seminar_sessions se, bse_locations lo
+  where se.seminar_id = ? and se.when_at > ? and se.location_id = lo.id
 order by when_at desc
 SQL
    addSeminarSession => 'insert bse_seminar_sessions values(null,?,?,?,?)',
@@ -387,9 +406,18 @@ SQL
 select * from bse_seminar_sessions
   where location_id = ? and when_at = ?
 SQL
+   getSeminarSessionBySeminar_id => <<SQL,
+select * from bse_seminar_sessions
+  where seminar_id = ?
+SQL
    'SeminarSessions.futureSessions' => <<SQL,
 select * from bse_seminar_sessions
   where seminar_id = ? and when_at >= ?
+SQL
+   'SeminarSessions.futureSeminarLocation' => <<SQL,
+select *
+  from bse_seminar_sessions
+  where seminar_id = ? and location_id = ? and when_at > ?
 SQL
    'SiteUsers.sessionBookings' => <<SQL,
 select su.* from site_users su, bse_seminar_bookings sb
@@ -408,17 +436,22 @@ SQL
 select * from bse_seminar_bookings where session_id = ?
 SQL
    seminarSessionBookUser => <<SQL,
-insert bse_seminar_bookings values(?,?)
+insert bse_seminar_bookings values(?,?,?)
 SQL
    seminarSessionRollCallEntries => <<SQL,
 select bo.roll_present, su.id, su.userId, su.name1, su.name2, su.email
   from bse_seminar_bookings bo, site_users su
 where bo.session_id = ? and bo.siteuser_id = su.id
 SQL
-  updateSessionRollPresent => <<SQL
+  updateSessionRollPresent => <<SQL,
 update bse_seminar_bookings
   set roll_present = ?
   where session_id = ? and siteuser_id = ?
+SQL
+  userSeminarSessionBookings => <<SQL,
+select session_id 
+  from bse_seminar_bookings sb, bse_seminar_sessions ss
+where ss.seminar_id = ? and ss.id = sb.session_id and siteuser_id = ?
 SQL
   );
 

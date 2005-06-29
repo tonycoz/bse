@@ -1,0 +1,169 @@
+ <:wrap base.tmpl:> <:embed start:><:admin:>
+<script>
+function show_location(locationid) {
+  window.open('/cgi-bin/shop.pl?a_location=1&amp;location_id='+locationid, 
+              'location', 
+              'width=600,height=300,location=no,status=no,menubar=no,scrollbars=yes');
+  return false;
+}
+</script>
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr> 
+    <td width="80%" height="24">&nbsp;&nbsp;<font face="Arial, Helvetica, sans-serif" size="4" color="#FF7F00"><b><:seminar 
+      title:></b></font></td>
+    <td height="24">&nbsp;</td>
+  </tr>
+  <tr> 
+    <td bgcolor="#999999" colspan="2" height="1"><img src="/images/trans_pixel.gif" width="24" height="1" border="0"></td>
+  </tr>
+  <tr> 
+    <td colspan="2"> 
+      <table width="100%" border="0" cellspacing="0" cellpadding="0">
+        <tr> 
+          <td width="100"><img src="/images/trans_pixel.gif" width="100" height="10" border="0"></td>
+          <td bgcolor="#999999" width="100%">&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2">/ 
+            <a href="<:ifAdmin:>/cgi-bin/admin/admin.pl?id=1<:or:>/<:eif:>"><font color="#FFFFFF">Home</font></a> 
+            / <:iterator begin crumbs:> <a href="<:url crumbs:>"><font color="#FFFFFF"><:crumbs 
+            title:></font></a> / <:iterator end crumbs:></font></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font></p>
+<:if StepCats:> <font face="Verdana, Arial, Helvetica, sans-serif" size="2">
+<p><b>Related categories:</b></p>
+<ul>
+<:iterator begin stepcats:>
+<li><a href="<:url stepcat:>"><:stepcat title:></a></li>
+<:iterator end stepcats:>
+</ul></font>
+<:or StepCats:><:eif StepCats:>
+<:if Product retailPrice:>
+<form name="ff" method="POST" action="/cgi-bin/shop.pl">
+<p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Select a seminar session to attend:</font></p>              
+     <:if Cfg seminar locations:>
+       <:iterator begin locations:>
+       <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b><a href="/cgi-bin/shop.pl?a_location=1&amp;location_id=<:location id:>" onClick="return show_location(<:location id:>)"><:location description:></a></b></font></p>
+        <ul>
+         <:iterator begin location_sessions:>
+          <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><input type="radio" name="session_id" value="<:location_session id:>" /><:date "%H:%M %d/%m/%Y" location_session when_at:></font></p>
+         <:iterator end location_sessions:>
+        </ul>
+       <:iterator end locations:>
+     <:or Cfg:>
+       <:iterator begin sessions:>
+         <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><input type="radio" name="session_id" value="<:session id:>" /><a href="/cgi-bin/shop.pl?a_location=1&amp;location_id=<:session location_id:>" onClick="return show_location(<:session location_id:>)"><:session description:></a> <:date "%H:%M %d/%m/%Y" session when_at:></font></p>
+       <:iterator end sessions:>
+     <:eif Cfg:>
+<:if Options:>
+  <table>
+<tr>
+       <:iterator begin options:><td valign="middle"> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b><:option desc:>:</b></font></td><td> <:option popup:> </td><:iterator end options:>
+</tr>
+</table>
+  <:or Options:><:eif Options:>
+  <:ifProduct leadTime:> 
+   
+  <p><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FE7F00">Usually ships in:</font><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"> <:seminar leadTime:> <:if Eq [product leadTime] "1":>day<:or Eq:>days<:eif Eq:></font></b>
+</p>
+  <:or:><br><:eif:>
+
+<table border="0" cellspacing="0" cellpadding="0">
+    <tr valign="middle" align="center"> 
+      <td bgcolor="#666666"> 
+        <table width="100%" border="0" cellspacing="1" cellpadding="4" height="30">
+          <tr valign="middle" align="center"> 
+            <td bgcolor="#666666" align="left"> &nbsp;&nbsp;<font size="2" face="Verdana, Arial, Helvetica, sans-serif" color="#FFFFFF"> 
+              <b>Price:</b></font> &nbsp;&nbsp;</td>
+            <td bgcolor="#FFFFFF"> &nbsp; <font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#000000"> 
+              <b>$<:money product retailPrice:> </b>(inc GST)</font> </td>
+          </tr>
+        </table>
+      </td>
+      <td nowrap> &nbsp; 
+        <input type="hidden" name="id" value="<:seminar id:>">
+        <input type="hidden" name="quantity" value="1">
+        <input type="submit" name="add" value="Add to cart">
+        <input type="submit" name="cart" value="View cart">
+      </td>
+    </tr>
+  </table>
+</form>
+<:or Product:><br>
+<br>
+<table border="0" cellspacing="0" cellpadding="1" bgcolor="#CCCCCC">
+  <tr>
+    <td>
+      <table width="100%" border="0" cellspacing="0" cellpadding="10" bgcolor="#FFFFFF">
+        <tr> 
+          <td>
+            <form name="notifyme" method="post" action="/cgi-bin/interest.pl">
+              <font face="Arial, Helvetica, sans-serif" size="4"><b>Coming soon!</b></font> 
+              <input type="hidden" name="product" value="<:seminar title:>">
+              <p><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Yes, 
+                I want this product, notify me when it becomes available</font></p>
+              <table border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+                    Email:</font></b>&nbsp;</td>
+                  <td>
+                    <input type="text" name="email" size="32">
+                    &nbsp; </td>
+                  <td> 
+                    <input type="submit" name="Submit" value="Notify me!">
+                  </td>
+                </tr>
+              </table>
+              </form>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<font face="Arial, Helvetica, sans-serif"><b><font size="4"> </font></b></font><:eif 
+Product:> 
+<p><br>
+  <a href="/shop/index.html"><img src="/images/store/browse_more.gif" width="133" height="21" border="0"></a>
+</p><br>
+<:if Files:> 
+<table border="0" cellspacing="0" cellpadding="0">
+  <tr> 
+    <td> 
+      <table border="0" cellspacing="0" cellpadding="4" bgcolor="#999999">
+        <tr> 
+          <th nowrap><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#FFFFFF">&nbsp;&nbsp;Related 
+            file downloads&nbsp;&nbsp;</font></th>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr> 
+    <td bgcolor="#999999"> 
+      <table cellspacing="1" cellpadding="4">
+        <tr bgcolor="#CCCCCC"> 
+          <th><font color="#000000" size="-2" face="Verdana, Arial, Helvetica, sans-serif">Description</font></th>
+          <th><font color="#000000" size="-2" face="Verdana, Arial, Helvetica, sans-serif">Filename</font></th>
+          <th><font color="#000000" size="-2" face="Verdana, Arial, Helvetica, sans-serif">Size</font></th>
+          <th><font color="#000000" size="-2" face="Verdana, Arial, Helvetica, sans-serif">Status</font></th>
+        </tr>
+        <:iterator begin files:> 
+        <tr bgcolor="#FFFFFF"> 
+          <td bgcolor="#FFFFFF"><font font color="#000000" face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:file 
+            description:></font></td>
+          <td bgcolor="#FFFFFF"><font color="#000000" size="-2" face="Verdana, Arial, Helvetica, sans-serif"><:if 
+            File forSale:><:file displayName:><:or File:><a href="/cgi-bin/user.pl?download_file=1&file=<:file id:><:ifFile requireUser:>&r=<:url article:><:or:><:eif:>"> 
+            <:file displayName:></a><:eif File:></font></td>
+          <td align="right"><font color="#000000" size="-2" face="Verdana, Arial, Helvetica, sans-serif"><:kb 
+            file sizeInBytes:></font></td>
+          <td nowrap align="center"> <:if File forSale:><img src="/images/filestatus/locked.gif" width="15" height="15" alt="Locked" title="Locked"><img src="/images/filestatus/forSale.gif" width="15" height="15" alt="File must be purchased" title="File must be purchased"><:or 
+            File:><a href="/cgi-bin/user.pl?download_file=1&file=<:file id:><:ifFile requireUser:>&r=<:url article:><:or:><:eif:>"><img src="/images/filestatus/download.gif" width="15" height="15" alt="Download now" title="Download now" border="0"></a><:ifFile 
+            requireUser:><img src="/images/filestatus/requireUser.gif" width="15" height="15" alt="For registered users only" title="For registered users only"><:or:><img src="/images/trans_pixel.gif" width="15" height="15" title="For registered users only"><:eif:><:eif 
+            File:></td>
+        </tr>
+        <:iterator end files:> </table>
+    </td>
+  </tr>
+</table>
+<:or Files:><:eif Files:><:embed end:>

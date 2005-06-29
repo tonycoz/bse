@@ -10,6 +10,7 @@ use BSE::Util::SQL qw(now_sqldate);
 use BSE::Util::Tags;
 use BSE::CfgInfo qw(custom_class);
 use Carp 'confess';
+use DevHelp::HTML qw(escape_html);
 
 # returns a list of tags which display the cart details
 sub shop_cart_tags {
@@ -26,7 +27,10 @@ sub shop_cart_tags {
     require 'SiteUsers.pm';
     $user = SiteUsers->getBy(userId=>$session->{userid});
   }
-
+  my $sem_session;
+  my $location;
+  my $item;
+  my $product;
   return
     (
      BSE::Util::Tags->basic($acts, $q, $cfg),
@@ -39,8 +43,16 @@ sub shop_cart_tags {
 	 $option_index = -1;
 	 @options = cart_item_opts($cart->[$item_index], 
 				   $cart_prods->[$item_index]);
+	 undef $sem_session;
+	 undef $location;
+	 $item = $cart->[$item_index];
+	 $product = $cart_prods->[$item_index];
 	 return 1;
        }
+       undef $item;
+       undef $sem_session;
+       undef $product;
+       undef $location;
        return 0;
      },
      item => 
@@ -64,9 +76,49 @@ sub shop_cart_tags {
      option => sub { CGI::escapeHTML($options[$option_index]{$_[0]}) },
      ifOptions => sub { @options },
      options => sub { nice_options(@options) },
+     session => [ \&tag_session, \$item, \$sem_session ],
+     location => [ \&tag_location, \$item, \$location ],
      custom_class($cfg)
      ->checkout_actions($acts, $cart, $cart_prods, $session->{custom}, $q, $cfg),
     );  
+}
+
+sub tag_session {
+  my ($ritem, $rsession, $arg) = @_;
+
+  $$ritem or return '';
+
+  $$ritem->{session_id} or return '';
+
+  unless ($$rsession) {
+    require BSE::TB::SeminarSessions;
+    $$rsession = BSE::TB::SeminarSessions->getByPkey($$ritem->{session_id})
+      or return '';
+  }
+
+  my $value = $$rsession->{$arg};
+  defined $value or return '';
+
+  escape_html($value);
+}
+
+sub tag_location {
+  my ($ritem, $rlocation, $arg) = @_;
+
+  $$ritem or return '';
+
+  $$ritem->{session_id} or return '';
+
+  unless ($$rlocation) {
+    require BSE::TB::Locations;
+    ($$rlocation) = BSE::TB::Locations->getSpecial(session_id => $$ritem->{session_id})
+      or return '';
+  }
+
+  my $value = $$rlocation->{$arg};
+  defined $value or return '';
+
+  escape_html($value);
 }
 
 sub cart_item_opts {

@@ -1,0 +1,33 @@
+<:wrap admin/xbase.tmpl title=>"Add Seminar Attendee":>
+<h1>Add Seminar Attendee - Select a Session</h1>
+<:ifMessage:>
+<p><b><:message:></b></p>
+<:or:><:eif:> 
+<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | 
+<a href="<:script:>?id=<:siteuser id:>">Edit user</a> |
+</p>
+<p>Adding user <:siteuser userId:> as an attendee to:</p>
+<!-- leave this as get, since submitting it just displays a new page -->
+<form action="<:script:>" method="get" name="addattendee1">
+<input type="hidden" name="siteuser_id" value="<:siteuser id:>" />
+<input type="hidden" name="seminar_id" value="<:seminar id:>" />
+<:ifCgi r:><input type="hidden" name="r" value="<:cgi r:>" /><:or:><:eif:>
+<table>
+  <tr>
+    <th>Seminar:</th>
+    <td><:seminar title:></td>
+  </tr>
+  <tr>
+    <th>Session:</th>
+    <td><select name="session_id">
+<option value="">(select a session)</option>
+<:iterator begin sessions:>
+<option value="<:session id:>" <:ifEq [old session_id] [session id]:>selected="selected"<:or:><:eif:>><:session description:> <:date "%H:%M %d/%m/%Y" session when_at:></option>
+<:iterator end sessions:>
+        </select></td>
+    <td><:error_img session_id:></td>
+  </tr>
+  <tr>
+    <td colspan="3"><input type="submit" name="a_addattendsave" value="Select Session &gt;&gt;" /></td>
+  </tr>
+</table>

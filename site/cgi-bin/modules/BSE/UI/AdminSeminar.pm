@@ -20,6 +20,9 @@ my %rights =
    locdelete => 'bse_location_delete',
 #    detail => 'bse_subscr_detail',
 #    update => 'bse_subscr_update',
+   addattendseminar => 'bse_session_addattendee',
+   addattendsession => 'bse_session_addattendee',
+   addattendsave => 'bse_session_addattendee',
   );
 
 sub actions { \%rights }
@@ -261,6 +264,148 @@ sub _loclist_refresh {
   }
 
   return $r;
+}
+
+sub req_addattendseminar {
+  my ($class, $req, $errors) = @_;
+
+  # make sure we're passed a valid siteuser_id
+  my $cgi = $req->cgi;
+  my $siteuser_id = $cgi->param('siteuser_id');
+  defined $siteuser_id && $siteuser_id =~ /^\d+$/
+    or return $class->req_loclist($req, { siteuser_id => 
+					  "Missing or invalid siteuser_id" });
+  require SiteUsers;
+  my $siteuser = SiteUsers->getByPkey($siteuser_id)
+    or return $class->req_loclist($req, { siteuser_id => "Unknown siteuser_id" });
+  my $msg = $req->message($errors);
+  require BSE::TB::Seminars;
+  my @seminars = BSE::TB::Seminars->all;
+
+  my $it = BSE::Util::Iterate->new;
+  my %acts;
+  %acts =
+    (
+     BSE::Util::Tags->basic(\%acts, $req->cgi, $req->cfg),
+     BSE::Util::Tags->admin(\%acts, $req->cfg),
+     BSE::Util::Tags->secure($req),
+     $it->make_iterator(undef, 'seminar', 'seminars', \@seminars),
+     siteuser => [ \&tag_hash, $siteuser ],
+     msg => $msg,
+     message => $msg,
+     error_img => [ \&tag_error_img, $req->cfg, $errors ],
+    );
+  
+  return $req->dyn_response('admin/addattendee1.tmpl', \%acts);
+}
+
+sub req_addattendsession {
+  my ($class, $req, $errors) = @_;
+
+  # make sure we're passed a valid siteuser_id
+  my $cgi = $req->cgi;
+  my $siteuser_id = $cgi->param('siteuser_id');
+  defined $siteuser_id && $siteuser_id =~ /^\d+$/
+    or return $class->req_loclist($req, { siteuser_id => 
+					  "Missing or invalid siteuser_id" });
+  require SiteUsers;
+  my $siteuser = SiteUsers->getByPkey($siteuser_id)
+    or return $class->req_loclist($req, { siteuser_id => "Unknown siteuser_id" });
+
+  # make sure we got a valid seminar
+  require BSE::TB::Seminars;
+  my $seminar_id = $cgi->param('seminar_id');
+  defined $seminar_id && $seminar_id =~ /^\d*$/
+    or return $class->req_addattendseminar
+      ($req, { seminar_id => "Missing or invalid seminar_id" });
+  $seminar_id
+    or return $class->req_addattendseminar
+      ($req, { seminar_id => "Please select a seminar" });
+  my $seminar = BSE::TB::Seminars->getByPkey($seminar_id)
+    or return $class->req_addattendseminar
+      ($req, { seminar_id => "Unknown seminar_id" });
+  my $msg = $req->message($errors);
+
+  my @sessions = $seminar->session_info;
+  my %user_booked = map { $_=>1 } 
+    $siteuser->seminar_sessions_booked($seminar_id);
+  @sessions = grep !$user_booked{$_->{id}}, @sessions;
+
+  my $it = BSE::Util::Iterate->new;
+  my %acts;
+  %acts =
+    (
+     BSE::Util::Tags->basic(\%acts, $req->cgi, $req->cfg),
+     BSE::Util::Tags->admin(\%acts, $req->cfg),
+     BSE::Util::Tags->secure($req),
+     siteuser => [ \&tag_hash, $siteuser ],
+     seminar => [ \&tag_hash, $seminar ],
+     msg => $msg,
+     message => $msg,
+     error_img => [ \&tag_error_img, $req->cfg, $errors ],
+     $it->make_iterator(undef, 'session', 'sessions', \@sessions),
+    );
+  
+  return $req->dyn_response('admin/addattendee2.tmpl', \%acts);
+}
+
+sub req_addattendsave {
+  my ($class, $req, $errors) = @_;
+
+  # make sure we're passed a valid siteuser_id
+  my $cgi = $req->cgi;
+  my $siteuser_id = $cgi->param('siteuser_id');
+  defined $siteuser_id && $siteuser_id =~ /^\d+$/
+    or return $class->req_loclist($req, { siteuser_id => 
+					  "Missing or invalid siteuser_id" });
+  require SiteUsers;
+  my $siteuser = SiteUsers->getByPkey($siteuser_id)
+    or return $class->req_loclist($req, { siteuser_id => "Unknown siteuser_id" });
+
+  # make sure we got a valid seminar
+  require BSE::TB::Seminars;
+  my $seminar_id = $cgi->param('seminar_id');
+  defined $seminar_id && $seminar_id =~ /^\d*$/
+    or return $class->req_addattendseminar
+      ($req, { seminar_id => "Missing or invalid seminar_id" });
+  $seminar_id
+    or return $class->req_addattendseminar
+      ($req, { seminar_id => "Please select a seminar" });
+  my $seminar = BSE::TB::Seminars->getByPkey($seminar_id)
+    or return $class->req_addattendseminar
+      ($req, { seminar_id => "Unknown seminar_id" });
+  my $msg = $req->message($errors);
+
+  # make sure we get a valid session
+  require BSE::TB::SeminarSessions;
+  my $session_id = $cgi->param('session_id');
+  defined $session_id && $session_id =~ /^\d*$/
+    or return $class->req_addattendsession
+      ($req, { session_id => "Missing or invalid session_id" });
+  $session_id
+    or return $class->req_addattendsession
+      ($req, { session_id => "Please select a session" });
+  my $session = BSE::TB::SeminarSessions->getByPkey($session_id)
+    or return $class->req_addattendsession
+      ($req, { session_id => "Unknown session_id" });
+
+  eval {
+    $session->add_attendee($siteuser, 1);
+  };
+  if ($@) {
+    if ($@ =~ /duplicate/i) {
+      return $class->req_addattendsession
+	($req, { session_id => "User already booked for this session" });
+    }
+  }
+
+  my $r = $cgi->param('r');
+  unless ($r) {
+    $r = "/cgi-bin/admin/siteusers.pl?a_edit=1&id=" . $siteuser->{id};
+  }
+  print STDERR "refresh $r\n";
+
+  return BSE::Template->get_refresh($r, $req->cfg);
 }
 
 1;

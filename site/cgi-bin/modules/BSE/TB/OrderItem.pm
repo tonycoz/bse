@@ -8,7 +8,8 @@ use vars qw/@ISA/;
 sub columns {
   return qw/id productId orderId units price wholesalePrice gst options
             customInt1 customInt2 customInt3 customStr1 customStr2 customStr3
-            title summary subscription_id subscription_period max_lapsed/;
+            title summary subscription_id subscription_period max_lapsed
+            session_id/;
 }
 
 1;

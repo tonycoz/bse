@@ -1256,13 +1256,6 @@ sub validate {
   custom_class($self->{cfg})
     ->article_validate($data, undef, $self->typename, $errors);
 
-  if (!defined $data->{parentid} || $data->{parentid} eq '') {
-    $errors->{parentid} = "Please select a parent";
-  }
-  elsif ($data->{parentid} !~ /^(?:-1|\d+)$/) {
-    $errors->{parentid} = "Invalid parent selection (template bug)";
-  }
-
   return !keys %$errors;
 }
 
@@ -1345,6 +1338,12 @@ sub save_new {
 
   my $msg;
   my %errors;
+  if (!defined $data{parentid} || $data{parentid} eq '') {
+    $errors{parentid} = "Please select a parent";
+  }
+  elsif ($data{parentid} !~ /^(?:-1|\d+)$/) {
+    $errors{parentid} = "Invalid parent selection (template bug)";
+  }
   $self->validate(\%data, $articles, \%errors)
     or return $self->add_form($req, $articles, $msg, \%errors);
 
@@ -1398,15 +1397,14 @@ sub save_new {
       or $data{$col} = $self->default_value($req, \%data, $col);
   }
 
-  print STDERR "release cgi ", $cgi->param('release'), " data $data{release}\n";
+  for my $col (qw(release expire)) {
+    $data{$col} = sql_date($data{$col});
+  }
+
   # these columns are handled a little differently
   for my $col (qw(release expire threshold summaryLength )) {
     $data{$col} 
       or $data{$col} = $self->default_value($req, \%data, $col);
-  }
-
-  for my $col (qw(release expire)) {
-    $data{$col} = sql_date($data{$col});
   }
 
   shift @columns;

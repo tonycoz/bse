@@ -48,7 +48,7 @@
             <td width="100%" align="left"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><a href="<:item link:>"><:item 
               summary:> <:if Options:>(<:iterator begin options:><:option desc:>: 
               <:option label:><:iterator separator options:>, <:iterator end options:>)<:or 
-              Options:><:eif Options:></a></font></td>
+              Options:><:eif Options:></a><:ifItem session_id:>(session at <:location description:> <:date "%H:%M %d/%m/%Y" session when_at:>)<:or:><:eif:></font></td>
             <td nowrap align="center"> 
               <input type="text" name="quantity_<:index:>" size="2" value="<:item units:>">
             </td>

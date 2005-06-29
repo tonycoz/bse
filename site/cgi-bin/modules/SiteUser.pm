@@ -396,4 +396,11 @@ sub is_disabled {
   return $self->{disabled};
 }
 
+sub seminar_sessions_booked {
+  my ($self, $seminar_id) = @_;
+
+  return map $_->{session_id}, 
+    BSE::DB->query(userSeminarSessionBookings => $seminar_id, $self->{id});
+}
+
 1;

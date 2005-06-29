@@ -9,8 +9,9 @@ use BSE::CfgInfo qw(custom_class credit_card_class);
 use BSE::TB::Orders;
 use BSE::TB::OrderItems;
 use BSE::Mail;
-use BSE::Util::Tags qw(tag_error_img);
+use BSE::Util::Tags qw(tag_error_img tag_hash);
 use Products;
+use BSE::TB::Seminars;
 use DevHelp::Validate qw(dh_validate dh_validate_hash);
 use Digest::MD5 'md5_hex';
 
@@ -33,6 +34,7 @@ my %actions =
    show_payment => 1,
    payment => 1,
    orderdone => 1,
+   location => 1,
   );
 
 my %field_map = 
@@ -112,7 +114,10 @@ sub req_add {
   my $quantity = $cgi->param('quantity');
   $quantity ||= 1;
   my $product;
-  $product = Products->getByPkey($addid) if $addid;
+  if ($addid) {
+    $product = BSE::TB::Seminars->getByPkey($addid);
+    $product ||= Products->getByPkey($addid);
+  }
   $product or 
     return $class->req_cart($req, "Cannot find product $addid"); # oops
 
@@ -190,6 +195,34 @@ sub req_add {
   $quantity =~ /^\d+$/
     or return $class->req_cart($req, "Invalid quantity");
 
+  my %extras;
+  if ($product->isa('BSE::TB::Seminar')) {
+    # you must be logged on to add a seminar
+    unless ($user) {
+      return $class->_refresh_logon
+	($req, "You must be logged on to add seminars to your cart", 
+	 'seminarlogon', $r);
+    }
+
+    # get and validate the session
+    my $session_id = $cgi->param('session_id');
+    defined $session_id
+      or return $class->req_cart($req, "Please select a session when adding a seminar");
+    $session_id =~ /^\d+$/
+      or return $class->req_cart($req, "Invalid session_id supplied");
+    require BSE::TB::SeminarSessions;
+    my $session = BSE::TB::SeminarSessions->getByPkey($session_id)
+      or return $class->req_cart($req, "Unknown session id supplied");
+    $session->{seminar_id} == $addid
+      or return $class->req_cart($req, "Session not for this seminar");
+
+    # check if the user is already booked for this session
+    grep($_ == $session_id, $user->seminar_sessions_booked($addid))
+      and return $class->req_cart($req, "You are already booked for this session");
+
+    $extras{session_id} = $session_id;
+  }
+
   $req->session->{cart} ||= [];
   my @cart = @{$req->session->{cart}};
  
@@ -201,7 +234,8 @@ sub req_add {
      productId => $addid, 
      units => $quantity, 
      price=>$product->{retailPrice},
-     options=>$options 
+     options=>$options,
+     %extras,
     };
 
   $req->session->{cart} = \@cart;
@@ -571,6 +605,15 @@ sub req_payment {
     if ($sub) {
       $subscribing_to{$sub->{text_id}} = $sub;
     }
+
+    if ($item->{session_id}) {
+      my $user = $req->siteuser;
+      require BSE::TB::SeminarSessions;
+      my $session = BSE::TB::SeminarSessions->getByPkey($item->{session_id});
+      eval {
+	$session->add_attendee($user, 0);
+      };
+    }
   }
 
   $order->{ccOnline} = 0;
@@ -678,6 +721,10 @@ sub req_orderdone {
   my $item_index = -1;
   my @options;
   my $option_index;
+  my $item;
+  my $product;
+  my $sem_session;
+  my $location;
   my %acts;
   %acts =
     (
@@ -691,8 +738,16 @@ sub req_orderdone {
 	 $option_index = -1;
 	 @options = cart_item_opts($items[$item_index], 
 				   $products[$item_index]);
+	 undef $sem_session;
+	 undef $location;
+	 $item = $items[$item_index];
+	 $product = $products[$item_index];
 	 return 1;
        }
+       undef $item;
+       undef $sem_session;
+       undef $product;
+       undef $location;
        return 0;
      },
      item=> sub { escape_html($showitems[$item_index]{$_[0]}); },
@@ -732,6 +787,8 @@ sub req_orderdone {
      options => sub { nice_options(@options) },
      ifPayment => [ \&tag_ifPayment, $order->{paymentType}, \%types_by_name ],
      #ifSubscribingTo => [ \&tag_ifSubscribingTo, \%subscribing_to ],
+     session => [ \&tag_session, \$item, \$sem_session ],
+     location => [ \&tag_location, \$item, \$location ],
     );
   for my $type (@pay_types) {
     my $id = $type->{id};
@@ -740,6 +797,44 @@ sub req_orderdone {
   }
 
   return $req->response('checkoutfinal', \%acts);
+}
+
+sub tag_session {
+  my ($ritem, $rsession, $arg) = @_;
+
+  $$ritem or return '';
+
+  $$ritem->{session_id} or return '';
+
+  unless ($$rsession) {
+    require BSE::TB::SeminarSessions;
+    $$rsession = BSE::TB::SeminarSessions->getByPkey($$ritem->{session_id})
+      or return '';
+  }
+
+  my $value = $$rsession->{$arg};
+  defined $value or return '';
+
+  escape_html($value);
+}
+
+sub tag_location {
+  my ($ritem, $rlocation, $arg) = @_;
+
+  $$ritem or return '';
+
+  $$ritem->{session_id} or return '';
+
+  unless ($$rlocation) {
+    require BSE::TB::Locations;
+    ($$rlocation) = BSE::TB::Locations->getSpecial(session_id => $$ritem->{session_id})
+      or return '';
+  }
+
+  my $value = $$rlocation->{$arg};
+  defined $value or return '';
+
+  escape_html($value);
 }
 
 sub tag_ifPayment {
@@ -1121,5 +1216,32 @@ sub _fillout_order {
 }
 
 sub action_prefix { '' }
+
+sub req_location {
+  my ($class, $req) = @_;
+
+  require BSE::TB::Locations;
+  my $cgi = $req->cgi;
+  my $location_id = $cgi->param('location_id');
+  my $location;
+  if (defined $location_id && $location_id =~ /^\d$/) {
+    $location = BSE::TB::Locations->getByPkey($location_id);
+    my %acts;
+    %acts =
+      (
+       BSE::Util::Tags->static(\%acts, $req->cfg),
+       location => [ \&tag_hash, $location ],
+      );
+
+    return $req->response('location', \%acts);
+  }
+  else {
+    return
+      {
+       type=>BSE::Template->get_type($req->cfg, 'error'),
+       content=>"Missing or invalid location_id",
+      };
+  }
+}
 
 1;

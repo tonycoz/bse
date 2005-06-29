@@ -19,7 +19,7 @@ sub sessions {
   my ($self) = @_;
 
   require BSE::TB::SeminarSessions;
-  BSE::TB::SeminarSessions->getBy(session_id => $self->{id});
+  BSE::TB::SeminarSessions->getBy(seminar_id => $self->{id});
 }
 
 sub future_sessions {
@@ -33,6 +33,12 @@ sub session_info {
   my ($self) = @_;
 
   BSE::DB->query(seminarSessionInfo => $self->{id});
+}
+
+sub future_session_info {
+  my ($self) = @_;
+
+  BSE::DB->query(seminarFutureSessionInfo=>$self->{id}, now_sqldatetime());
 }
 
 sub add_session {
@@ -49,6 +55,22 @@ sub add_session {
   my @cols = BSE::TB::SeminarSession->columns;
   shift @cols;
   return BSE::TB::SeminarSessions->add(@cols{@cols});
+}
+
+sub future_locations {
+  my ($self) = @_;
+
+  require BSE::TB::Locations;
+  return BSE::TB::Locations->getSpecial
+    (seminarFuture => $self->{id}, now_sqldatetime());
+}
+
+sub future_location_sessions {
+  my ($self, $location) = @_;
+
+  require BSE::TB::SeminarSessions;
+  return BSE::TB::SeminarSessions->getSpecial
+    (futureSeminarLocation => $self->{id}, $location->{id}, now_sqldatetime());
 }
 
 1;

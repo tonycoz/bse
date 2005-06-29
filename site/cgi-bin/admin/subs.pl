@@ -74,6 +74,7 @@ sub list {
      BSE::Util::Tags->make_iterator(\@subs, 'subscription', 'subscriptions',
 				    \$subindex),
      BSE::Util::Tags->secure($req),
+     BSE::Util::Tags->admin(\%acts, $cfg),
      message => sub { CGI::escapeHTML($message) },
      recipient_count => [ \&tag_list_recipient_count, \@subs, \$subindex ],
     );

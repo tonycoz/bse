@@ -319,6 +319,9 @@ create table order_item (
   -- transferred from the subscription
   max_lapsed integer not null default 0,
 
+  -- session for a seminar
+  session_id integer not null default -1,
+
   primary key (id),
   index order_item_order(orderId, id)
 );

@@ -1,7 +1,8 @@
 package DevHelp::Date;
 use strict;
-use Exporter 'import';
-use vars qw(@EXPORT_OK %EXPORT_TAGS);
+require Exporter;
+use vars qw(@EXPORT_OK %EXPORT_TAGS @ISA);
+@ISA = qw(Exporter);
 @EXPORT_OK = 
   qw(dh_parse_date dh_parse_date_sql dh_parse_time dh_parse_time_sql);
 %EXPORT_TAGS =

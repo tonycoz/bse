@@ -248,6 +248,8 @@ site/htdocs/js/validate.js
 site/templates/1/shop_multicat.tmpl
 site/templates/1/sitemap.tmpl
 # site/templates/admin/add_product.tmpl
+site/templates/admin/addattendee1.tmpl
+site/templates/admin/addattendee2.tmpl
 site/templates/admin/addgroup.tmpl
 site/templates/admin/adduser.tmpl
 # site/templates/admin/article_custom.tmpl
@@ -360,6 +362,7 @@ site/templates/index2.tmpl
 site/templates/interest/askagain_base.tmpl
 site/templates/interest/confirm_base.tmpl
 site/templates/interest/error_base.tmpl
+site/templates/location.tmpl
 site/templates/lowmap.tmpl
 site/templates/mailconfirm.tmpl
 site/templates/mailorder.tmpl
@@ -372,6 +375,7 @@ site/templates/menu/menu5.tmpl
 site/templates/printable/printable.tmpl
 site/templates/printable/wap.tmpl
 site/templates/search_base.tmpl
+site/templates/seminars/seminar.tmpl
 site/templates/shop_help.tmpl
 site/templates/shop_sect.tmpl
 site/templates/shopitem.tmpl

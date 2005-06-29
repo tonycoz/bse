@@ -7,6 +7,7 @@ use BSE::Util::SQL qw(now_sqldatetime);
 use DevHelp::Date qw(dh_parse_date_sql dh_parse_time_sql);
 use constant SECT_SEMSESSION_VALIDATION => 'BSE Seminar Session Validation';
 use DevHelp::HTML qw(escape_html);
+use BSE::Util::Iterate;
 
 sub article_actions {
   my ($self) = @_;
@@ -22,10 +23,6 @@ sub article_actions {
      a_takesessionrole => 'req_takesessionrole',
      a_takesessionrolesave => 'req_takesessionrolesave',
     );
-}
-
-sub base_template_dirs {
-  return ( "seminar" );
 }
 
 sub edit_template { 
@@ -591,6 +588,22 @@ sub req_takesessionrolesave {
   $session->save;
 
   return $self->refresh($article, $cgi, undef, "Roll saved");
+}
+
+sub base_template_dirs {
+  return ( "seminars" );
+}
+
+sub extra_templates {
+  my ($self, $article) = @_;
+
+  my @extras;
+
+  my $extras = $self->{cfg}->entry('seminars', 'extra_templates');
+  push @extras, grep /\.(tmpl|html)$/i, split /,/, $extras
+    if $extras;
+
+  return @extras;
 }
 
 1;
