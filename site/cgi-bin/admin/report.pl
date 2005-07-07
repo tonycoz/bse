@@ -9,7 +9,7 @@ use BSE::Request;
 use BSE::Template;
 use BSE::Permissions;
 use BSE::Util::Tags;
-use DevHelp::Report;
+use BSE::Report;
 use DevHelp::HTML;
 use BSE::WebUtil 'refresh_to';
 
@@ -19,7 +19,7 @@ my $cgi = $req->cgi;
 BSE::Permissions->check_logon($req)
   or do { refresh_to($req->url('logon'), $req->cfg); exit };
 
-my $reports = DevHelp::Report->new($req->cfg, 'reports');
+my $reports = BSE::Report->new($req);
 
 if ($cgi->param('s_prompt') || $cgi->param('s_prompt.x')) {
   prompt($req, $reports);
@@ -58,6 +58,9 @@ sub prompt {
   
   $reports->valid_report($repname)
     or return list_reports($req, $reports, 'Invalid report id supplied');
+
+  $reports->report_accessible($repname)
+    or return list_reports($req, $reports, 'Report not accessible');
   
   defined $msg or $msg = '';
   if (keys %$errors && $msg eq '') {
@@ -92,6 +95,9 @@ sub show {
   
   $reports->valid_report($repname)
     or return list_reports($req, $reports, 'Invalid report id supplied');
+  
+  $reports->report_accessible($repname)
+    or return list_reports($req, $reports, 'Report not accessible');
   
   my %errors;
   my @params = $reports->validate_params($repname, $req->cgi, 

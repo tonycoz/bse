@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>67;
+use Test::More tests=>70;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
@@ -224,6 +224,18 @@ TEMPLATE
 <meta name="DC.title" content="Parent" />
 <meta name="DC.date" content="2004-09-23T06:00:00+10:00" />
 <meta name="DC.format" content="text/html" />
+EXPECTED
+
+template_test "report", $parent, <<'TEMPLATE', <<EXPECTED;
+<:report bse_test test/testrep 2:>
+<:report bse_test test/testrep [article id]:>
+TEMPLATE
+Report: Test report
+id title
+2 [index subsection]
+Report: Test report
+id title
+$parent->{id} Parent
 EXPECTED
 
 BSE::Admin::StepParents->del($parent, $parent);

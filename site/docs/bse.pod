@@ -10,6 +10,26 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_16
+
+Adds the report changes except for control-break reports.
+
+I'm going to workaround control-break reports for now, it was taking
+way too long.  I'll implement them at a future date when there's no
+time pressure.
+
+=over
+
+=item *
+
+implemented the <:report ...:> and <:dynreport ...:> tags
+
+=item *
+
+added access controls to reports
+
+=back
+
 =head2 0.15_15
 
 =over
@@ -67,6 +87,17 @@ an order.
 DevHelp::Date had been changed to try to import its import method from
 Exporter, but this doesn't work on older perls.  Reverted to subclass
 Exporter.
+
+=item *
+
+upgrade_mysql.pl wasn't correctly checking the entered number, and
+would perform the upgrade even if the incorrect value was entered.
+
+=item *
+
+upgrade_mysql.pl now treats C< varchar(...) binary > as if it were C<
+varbinary(...) > and no longer treats this as a column type change
+(unless the size changes)
 
 =back
 

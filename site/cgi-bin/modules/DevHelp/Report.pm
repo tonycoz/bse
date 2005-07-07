@@ -12,7 +12,23 @@ sub new {
 sub list_reports {
   my ($self) = @_;
 
-  $self->{cfg}->entries($self->{section});
+  # we don't list reports with hide set
+  my %entries = $self->{cfg}->entries($self->{section});
+  my @delete;
+  # deleting while iterating is bad
+  for my $key (keys %entries) {
+    push @delete, $key
+      if $self->{cfg}->entry("report $key", "hide");
+  }
+  delete @entries{@delete};
+
+  %entries;
+}
+
+sub report_entry {
+  my ($self, $reportid, $entrykey) = @_;
+
+  $self->{cfg}->entry("report $reportid", $entrykey);
 }
 
 sub list_tags {
@@ -138,8 +154,22 @@ sub _load {
     ++$sql_index;
   }
   $report{sql} = \@sql;
+
+  my @breaks;
+  my $break_index = 1;
+  while (my $breaks = $cfg->entry($repsect, "break$break_index")) {
+    push @breaks, [ grep $_, split /[,;]/, lc $breaks ];
+    ++$break_index;
+  }
+  $report{breaks} = \@breaks;
+
+  @{$report{sql}} or return;
   
-  \%report;
+  bless \%report, 'DevHelp::Report::Report';
+}
+
+sub load {
+  goto &_load;
 }
 
 sub prompt_template {
@@ -174,7 +204,6 @@ sub _get_type_html {
     my $method;
     if ($type_type) {
       $method = "_get_type_html_$type_type";
-      print STDERR "method $method\n";
       $type_type = undef unless $self->can($method);
     }
     
@@ -431,6 +460,7 @@ sub levels {
 
   my $report = $self->_load($repid, undef, $db);
   scalar @{$report->{sql}};
+  # scalar 1+@{$report->{breaks}};
 }
 
 sub show_template {
@@ -488,6 +518,108 @@ sub iter_levelN {
     {
       1;
     } @$source;
+}
+
+# sub show_tags {
+#   my ($self, $repid, $db, $rmsg, @params) = @_;
+
+#   # build up result sets
+#   my $dbh = $db->dbh;
+#   my $report = $self->_load($repid, undef, $db);
+#   my @results;
+#   for my $sql (@{$report->{sql}}) {
+#     my %result;
+#     my $sth = $dbh->prepare($sql->{sql});
+#     unless ($sth) {
+#       $$rmsg = "Error preparing $sql->{sql}: ".$dbh->errstr;
+#       return;
+#     }
+#     my @sqlp = @params[ map $_-1, @{$sql->{params}} ];
+#     unless ($sth->execute(@sqlp)) {
+#       $$rmsg = "Error executing $sql->{sql}: ".$dbh->errstr;
+#       return;
+#     }
+#     my @names_lc = @{$sth->{NAME_lc}};
+#     $result{names} = \@names_lc;
+#     $result{names_hash} = 
+#       map { $names_lc[$_] => $_ } 0 .. $#names_lc;
+#     $result{titles} = [ @{$sth->{NAME}} ];
+#     my @rows;
+#     while (my $row = $sth->fetchrow_arrayref) {
+#       push @rows, [ @$row ];
+#     }
+#     $result{rows} = \@rows;
+
+#     push @results, \%result;
+#   }
+  
+#   # make sure all breaks are in all the sources
+#   my %missing_breaks;
+#   my $sql_index = 1;
+#   for my $result (@results) {
+#     for my $break_col (map @$_, @{$report->{breaks}}) {
+#       unless (exists $results->{names_hash}{$break_col}) {
+# 	print STDERR "Missing break column $break_col from sql$sql_index\n";
+# 	++$missing_breaks{$break_col};
+#       }
+#     }
+#     ++$sql_index;
+#   }
+
+#   # go through and remove any break levels with missing break columns
+#   my @breaks;
+#   for my $break ($report->{breaks}) {
+#     my @work_breaks = grep !$missing_breaks{$_}, @$break;
+#     push @breaks, \@work_breaks if @work_breaks;
+#   }
+#   my @allbreaks = map @$_, @breaks;
+
+#   # split into bottom level control breaks
+#   my @levels;
+#   if (@allbreaks) {
+#     # split out level 0
+#     my %allsegs;
+#     my @splitresults;
+#     for my $result (@results) {
+#       my %split;
+#       my @cols = map $result->{names_hash}{$_}, @allbreaks;
+#       for my $row (@{$result->{rows}}) {
+# 	my $key = join "\0", @$row{@cols};
+# 	++$allsegs{$key};
+# 	push @{$split{$key}}, $row;
+#       }
+#       push @splitresults, \%split;
+#     }
+#     push @levels, \@splitresults;
+
+#     # make up the other levels
+#     # first break out the levels by depth
+#     my @breaklevels;
+#     my @workbreaks;
+#     for my $break (@{$report->{breaks}}) {
+#       push @workbreaks, @$break;
+#       unshift @breaklevels, [ @workbreaks ];
+#     }
+#     shift @breaklevels; # don't need the last one
+    
+#     for my $break (@breaklevels) {
+#       my %split;
+#       my @cols = @$break;
+      
+#     }
+#   }
+#   else {
+#     push @levels,
+#       [
+#        map +{ '' => $_->{rows} }, @results;
+#       ];
+#   }
+# }
+
+package DevHelp::Report::Report;
+
+sub param_count {
+  scalar @{$_[0]{params}};
 }
 
 1;

@@ -266,6 +266,7 @@ sub static {
      adminbase => [ \&tag_adminbase, $cfg ],
      help => [ \&tag_help, $cfg, 'user' ],
      $it->make_iterator(\&DevHelp::Tags::iter_get_repeat, 'strepeat', 'strepeats'),
+     report => [ \&tag_report, $cfg ],
      
      _format => 
      sub {
@@ -420,6 +421,7 @@ sub basic {
      $it->make_iterator(\&DevHelp::Tags::iter_get_repeat, 'repeat', 'repeats'),
      dynreplace => \&tag_replace,
      dyntoday => \&tag_today,
+     dynreport => \&tag_report,
     );
 }
 
@@ -800,6 +802,46 @@ sub tag_today {
   $args ||= "%d-%b-%Y";
 
   return POSIX::strftime($args, localtime);
+}
+
+sub tag_report {
+  my ($cfg, $args, $acts, $tag_name, $templater) = @_;
+
+  my ($rep_name, $template, @args) = 
+    DevHelp::Tags->get_parms($args, $acts, $templater);
+  defined $rep_name
+    or return "** no report name supplied to $tag_name tag **";
+
+  require BSE::Report;
+  my $reports = BSE::Report->new($cfg);
+  my $report = $reports->load($rep_name, undef, BSE::DB->single);
+  $report
+    or return "** could not load report $rep_name **";
+
+  # this will get embedded and normal tag replacement will then
+  # operate on it, no need to include basic/static tags
+  my %acts;
+  my $msg;
+  %acts =
+    (
+     %$acts,
+     $reports->show_tags($rep_name, BSE::DB->single, \$msg, @args),
+    );
+
+  $msg
+    and return "** error in $tag_name: $msg **";
+
+  if (!defined $template or $template eq '-') {
+    $template = $reports->show_template($rep_name) || 'admin/reports/show';
+  }
+
+  my $html = BSE::Template->get_source($template, $cfg);
+  if ($html =~ /<:\s*embed\s*start\s*:>(.*)<:\s*embed\s*end\s*:>/s
+     || $html =~ m"<\s*body[^>]*>(.*)<\s*/\s*body>"s) {
+    $html = $1;
+  }
+
+  return BSE::Template->replace($html, $cfg, \%acts);
 }
 
 1;
