@@ -1196,6 +1196,20 @@ C<[level >I<level>C<]> sections.
 These defaults are used when creating an article where no value is
 supplied, they can also be accessed via the <:default I<name>:> tag.
 
+=head2 [newsletter filters]
+
+Contains C<criteria>I<index> entries starting from C<criteria1>, then
+C<criteria2>, etc.
+
+Each entry consists of a filter class name, followed by a ; followed
+by data passed to that filter.
+
+  ; user the original SQL based filter, configured from 
+  ; section [foo]
+  criteria1=BSE::NLFilter::SQL;foo
+
+See the documentation for each filter to configure the filters.
+
 =head2 [inpho]
 
 This is used to configure the DevHelp::Payments::Inpho module.

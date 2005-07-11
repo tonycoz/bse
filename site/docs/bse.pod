@@ -10,6 +10,23 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_17
+
+Iterim release with subscriptions work.
+
+=over
+
+=item *
+
+added newsletter subscription filters to subs.pl.
+
+=item *
+
+admin/users/edit.tmpl now has an optional include so we can use custom
+fields without modifying it.
+
+=back
+
 =head2 0.15_16
 
 Adds the report changes except for control-break reports.

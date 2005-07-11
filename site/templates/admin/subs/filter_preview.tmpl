@@ -1,0 +1,35 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+
+  <title>Administration - Filter Preview</title>
+
+  <link rel="stylesheet" type="text/css" href="/css/admin.css" />
+
+</head>
+<body>
+<h1>Filter Summary</h1>
+<!-- this is intended to be replaced by a custom version if more detail is needed -->
+<table>
+  <tr>
+   <th>Total Subscribers:</th>
+   <td><:total_count:></td>
+  </tr>
+<:iterator begin filters:>
+  <tr>
+    <th>Filter <:filter_number:>:</th>
+    <td>
+<:ifFilter enabled:>Returned <:filter filter_count:> matches.<br />
+        Which matched <:filter subscriber_count:> subcribers.
+<:or:>
+Filter not enabled.  Click the filter's checkbox to enable the filter.
+<:eif:>
+    </td>
+  </tr>
+<:iterator end filters:>
+  <tr>
+    <th>Final Count:</th>
+    <td><:filter_count:></td>
+  </tr>
+</table>
+</body></html>

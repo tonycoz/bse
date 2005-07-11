@@ -15,6 +15,7 @@ use BSE::Message;
 use BSE::Permissions;
 use BSE::Request;
 use DevHelp::HTML;
+use BSE::Util::Iterate;
 
 my $req = BSE::Request->new;
 if (BSE::Permissions->check_logon($req)) {
@@ -31,6 +32,7 @@ if (BSE::Permissions->check_logon($req)) {
      send_form => \&send_form,
      html_preview => \&html_preview,
      text_preview => \&text_preview,
+     filter_preview => \&filter_preview,
      send => \&send_message,
      send_test => \&send_test,
      delconfirm => \&req_delconfirm,
@@ -388,6 +390,8 @@ sub send_form {
   $req->user_can('subs_send')
     or return list($q, $req, $cfg, "You dont have access to send subscriptions");
 
+  my @filters = BSE::SubscriptionTypes->filters($cfg);
+
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'subs');
   my $id = $q->param('id')
     or return _refresh_list($q, $cfg, $msgs->(startnoid=>"No id supplied to be edited"));
@@ -406,7 +410,10 @@ sub send_form {
      template => sub { return _template_popup($cfg, $q, $sub, 0, $_[0]) },
      parent=> sub { _parent_popup($req, $sub)  },
      recipient_count => [ \&tag_recipient_count, $sub, \$count_cache ],
+     map($_->tags, @filters),
+     ifFilters => scalar(@filters),
     );
+
   BSE::Template->show_page('admin/subs/send_form', $cfg, \%acts);
 }
 
@@ -482,6 +489,66 @@ sub text_preview {
     print "Content-Type: text/plain\n\n";
     print $text;
   }
+}
+
+sub filter_preview {
+  my ($q, $req, $cfg) = @_;
+
+  $req->user_can('subs_send')
+    or return list($q, $req, $cfg, "You dont have access to send subscriptions");
+  my $msgs = BSE::Message->new(cfg=>$cfg, section=>'subs');
+  my $id = $q->param('id')
+    or return _refresh_list($q, $cfg, $msgs->(startnoid=>"No id supplied to be edited"));
+
+  my $sub = BSE::SubscriptionTypes->getByPkey($id)
+    or return _refresh_list($q, $cfg, $msgs->(startnosub=>"Cannot find record $id"));
+
+  my @filters = BSE::SubscriptionTypes->filters($cfg);
+  my @all_subscribers = $sub->recipients;
+  my @filter_res;
+  my @subscribers = @all_subscribers;
+
+  my $index = 1;
+  for my $filter (@filters) {
+    if ($q->param("criteria$index")) {
+      my @members = $filter->members($q);
+      my %members = map { $_ => 1 } @members;
+      @subscribers = grep $members{$_->{id}}, @subscribers;
+      # not much to say at this point
+      push @filter_res,
+	{
+	 enabled => 1,
+	 filter_count => scalar(@members),
+	 subscriber_count => scalar(@subscribers),
+	};
+    }
+    else {
+      push @filter_res,
+	{
+	 enabled => 0,
+	 filter_count => 0,
+	 subcriber_count => scalar(@subscribers),
+	};
+    }
+    ++$index;
+  }
+
+  my $it = BSE::Util::Iterate->new;
+  my %acts;
+  %acts =
+    (
+     BSE::Util::Tags->basic(\%acts, $q, $cfg),
+     BSE::Util::Tags->admin(\%acts, $cfg),
+     subscription => sub { CGI::escapeHTML($sub->{$_[0]}) },
+     (map {;
+       "filter$_" => [ \&tag_hash, $filter_res[$_-1] ],
+     } 1..@filters),
+     $it->make_iterator(undef, 'filter', 'filters', \@filter_res),
+     total_count => scalar(@all_subscribers),
+     filter_count => scalar(@subscribers),
+    );
+
+  BSE::Template->show_page('admin/subs/filter_preview', $cfg, \%acts);
 }
 
 sub _first {
@@ -631,6 +698,34 @@ sub send_test {
   print BSE::Template->replace($suffix, $cfg, \%acts);
 }
 
+sub _get_filtered_ids {
+  my ($req) = @_;
+
+  my @filters = BSE::SubscriptionTypes->filters($req->cfg);
+
+  my $cgi = $req->cgi;
+
+  # only want the enabled filters
+  my @active;
+  my $index = 1;
+  for my $filter (@filters) {
+    push @active, $filter
+      if $cgi->param("criteria$index");
+    ++$index;
+  }
+  @active
+    or return;
+
+  my $first = shift @active;
+  my @ids = $first->members($req->cgi);
+  for my $filter (@active) {
+    my %members = map { $_=>1 } $filter->members($req->cgi);
+    @ids = grep $members{$_}, @ids;
+  }
+
+  \@ids;
+}
+
 sub send_message {
   my ($q, $req, $cfg) = @_;
 
@@ -641,6 +736,8 @@ sub send_message {
   my $sub;
   _send_setup($q, $req, $cfg, \%opts, \$sub)
     or return;
+
+  my $filtered_ids = _get_filtered_ids($req);
 
   my $template = BSE::Template->get_source('admin/subs/sending', $cfg);
 
@@ -669,7 +766,7 @@ sub send_message {
 	       $acts_user = $user;
 	       $is_error = $type eq 'error';
 	       print BSE::Template->replace($permessage, $cfg, \%acts);
-	     });
+	     }, $filtered_ids);
   print BSE::Template->replace($suffix, $cfg, \%acts);
 }
 

@@ -98,6 +98,8 @@
             <td><input type="checkbox" name="testtextonly" <:ifCfg subscriptions testtextonly 0:>checked<:or:><:eif:> />Set for text only test message
             </td>
             <td><:help subssend testtextonly:></td>
+          </tr>
+<:include admin/subs/send_filters.tmpl optional:>
           <:or Cfg:><:eif Cfg:> 
         </table>
 </td>
@@ -111,7 +113,12 @@
     <input type="submit" name="html_preview" value="HTML Preview">
     <:help subssend html_preview:> 
     <input type="submit" name="text_preview" value="Text Preview">
-    <:help subssend text_preview:> </p>
+    <:help subssend text_preview:> 
+<:ifFilters:>
+    <input type="submit" name="filter_preview" value="Filter Preview">
+    <:help subssend filter_preview:> 
+<:or:><:eif:>
+</p>
 </form>
 
 <p><font size="-1">BSE Release <:release:></font></p>

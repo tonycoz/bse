@@ -344,14 +344,26 @@ sub _send {
   }
 }
 
+# filter is an optional array ref of permitted subscriber ids
 sub send {
-  my ($sub, $cfg, $opts, $callback) = @_;
+  my ($sub, $cfg, $opts, $callback, $filter) = @_;
 
   my @recipients = $sub->recipients;
 
   unless (@recipients) {
     $callback->('error', undef, 'This subscription has no recipients, no action taken');
     return;
+  }
+
+  # filter the recipients
+  if ($filter) {
+    my %filter = map { $_=>1 } @$filter;
+    @recipients = grep $filter{$_->{id}}, @recipients;
+
+    unless (@recipients) {
+      $callback->('error', undef, 'This subscription has no recipients after filters, no action taken');
+      return;
+    }
   }
 
   my %article;
