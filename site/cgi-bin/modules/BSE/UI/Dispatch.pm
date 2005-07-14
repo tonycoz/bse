@@ -61,4 +61,25 @@ sub action_prefix {
   'a_';
 }
 
+# returns a result of an error page
+sub error {
+  my ($class, $req, $errors, $template) = @_;
+
+  my $msg = $req->message($errors);
+
+  $template ||= 'error';
+
+  require BSE::Util::Tags;
+  my %acts;
+  %acts =
+    (
+     BSE::Util::Tags->basic(\%acts, $req->cgi. $req->cfg),
+     error_img => [ \&tag_error_img, $req->cfg, $errors ],
+     msg => $msg,
+     error => $msg, # so we can use the original error.tmpl
+    );
+
+  return $req->response($template, \%acts);
+}
+
 1;

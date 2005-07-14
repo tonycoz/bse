@@ -46,7 +46,7 @@ sub make_iterator {
 }
 
 sub _iter_reset {
-  my ($rdata, $rindex, $code, $loaded, $nocache, $args, $acts, $name, $templater) = @_;
+  my ($rdata, $rindex, $code, $loaded, $nocache, $rrow, $args, $acts, $name, $templater) = @_;
 
   if (!$$loaded && !@$rdata && $code || $args || $nocache) {
     my ($sub, @args) = $code;
@@ -59,14 +59,22 @@ sub _iter_reset {
   }
 
   $$rindex = -1;
+  defined $rrow and undef $$rrow;
 
   1;
 }
 
 sub _iter_iterate {
-  my ($rdata, $rindex) = @_;
+  my ($rdata, $rindex, $nocache, $rrow) = @_;
 
-  return ++$$rindex < @$rdata;
+  if (++$$rindex < @$rdata) {
+    defined $rrow and $$rrow = $rdata->[$$rindex];
+    return 1;
+  }
+  else {
+    defined $rrow and undef $rrow;
+    return 0;
+  }
 }
 
 sub _iter_if {
@@ -105,7 +113,7 @@ sub _iter_item {
 
 # builds an arrayref based iterator
 sub make_iterator2 {
-  my ($class, $code, $single, $plural, $rdata, $rindex, $nocache) = @_;
+  my ($class, $code, $single, $plural, $rdata, $rindex, $nocache, $rrow) = @_;
 
   my $index;
   defined $rindex or $rindex = \$index;
@@ -115,9 +123,9 @@ sub make_iterator2 {
   return
     (
      "iterate_${plural}_reset" => 
-     [ \&_iter_reset, $rdata, $rindex, $code, \$loaded, $nocache ],
+     [ \&_iter_reset, $rdata, $rindex, $code, \$loaded, $nocache, $rrow ],
      "iterate_${plural}" =>
-     [ \&_iter_iterate, $rdata, $rindex, $nocache ],
+     [ \&_iter_iterate, $rdata, $rindex, $nocache, $rrow ],
      $single => [ \&_iter_item, $rdata, $rindex, $single, $plural ],
      "if\u$plural" => [ \&_iter_if, $rdata, $code, \$loaded, $nocache ],
      "${single}_index" => [ \&_iter_index, $rindex ],

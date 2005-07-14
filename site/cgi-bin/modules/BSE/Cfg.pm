@@ -301,10 +301,16 @@ sub _load_cfg {
     }
     elsif (/^\s*([^=\s]+)\s*=\s*(.*)$/) {
       $section or next;
-      push @{$sections{$section}{order}}, lc $1;
-      $sections{$section}{values}{lc $1} = $2;
-      push @{$sections{$section}{order_nc}}, $1;
-      $sections{$section}{case}{$1} = $2;
+      my ($key, $value) = ($1, $2);
+      if ($value =~ /^<<(\w+)$/) {
+	$value = _get_heredoc(\*CFG, $file, $1);
+	defined $value
+	  or last;
+      }
+      push @{$sections{$section}{order}}, lc $key;
+      $sections{$section}{values}{lc $key} = $value;
+      push @{$sections{$section}{order_nc}}, $key;
+      $sections{$section}{case}{$key} = $value;
     }
   }
   close CFG;
@@ -350,10 +356,16 @@ sub _load_cfg {
 	}
 	elsif (/^\s*([^=\s]+)\s*=\s*(.*)$/) {
 	  $section or next;
-	  push @{$sections{$section}{order}}, lc $1;
-	  $sections{$section}{values}{lc $1} = $2;
-	  push @{$sections{$section}{order_nc}}, $1;
-	  $sections{$section}{case}{$1} = $2;
+	  my ($key, $value) = ($1, $2);
+	  if ($value =~ /^<<(\w+)$/) {
+	    $value = _get_heredoc(\*CFG, $file, $1);
+	    defined $value
+	      or last;
+	  }
+	  push @{$sections{$section}{order}}, lc $key;
+	  $sections{$section}{values}{lc $key} = $value;
+	  push @{$sections{$section}{order_nc}}, $key;
+	  $sections{$section}{case}{$key} = $value;
 	}
       }
       close CFG;
@@ -370,6 +382,31 @@ sub _load_cfg {
   $cache{$file} = $self;
 
   return $self;
+}
+
+=item _get_heredoc($fh, $end_marker)
+
+Read in a heredoc.
+
+Strips the last newline.
+
+=cut
+
+sub _get_heredoc {
+  my ($fh, $filename, $end_marker) = @_;
+  
+  my $start = $.; # to report it later
+  my $value = '';
+  while (my $line = <$fh>) {
+    chomp(my $test = $line);
+    if ($test eq $end_marker) {
+      chomp $value;
+      return $value;
+    }
+    $value .= $line;
+  }
+
+  print STDERR "No end to here-doc started line $start of $filename\n";
 }
 
 =item _error($msg)

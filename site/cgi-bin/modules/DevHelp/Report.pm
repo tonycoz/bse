@@ -109,6 +109,7 @@ sub _load {
   $report{has_params} = @params;
   $report{name} = $cfg->entry($self->{section}, $repid);
   $report{id} = $repid;
+  $report{debug} = $cfg->entry($repsect, 'debug', 0);
 
   my @sql;
   my $sql_index = 1;
@@ -377,12 +378,40 @@ sub _validate_enum {
   }
 }
 
+sub tag_levelN_col {
+  my ($rrow, $args) = @_;
+
+  defined $$rrow 
+    or return '** only inside level1 iterator **';
+
+  exists $$rrow->{$args} or return "** no column $args **";
+
+  escape_html($$rrow->{$args});
+}
+
+sub tag_levelN_sum {
+  my ($rows, $names, $args) = @_;
+
+  exists $names->{$args} or return "** no column $args **";
+
+  my $index = $names->{$args};
+  my $sum = 0;
+  for my $row (@$rows) {
+    $sum += $row->[$index];
+  }
+
+  $sum;
+}
+
 sub show_tags {
   my ($self, $repid, $db, $rmsg, @params) = @_;
 
   # build up result sets
   my $dbh = $db->dbh;
   my $report = $self->_load($repid, undef, $db);
+  if ($report->{debug}) {
+    print STDERR "Params: @params\n";
+  }
   my @results;
   for my $sql (@{$report->{sql}}) {
     my %result;
@@ -392,6 +421,7 @@ sub show_tags {
       return;
     }
     my @sqlp = @params[ map $_-1, @{$sql->{params}} ];
+    $report->{debug} and print STDERR "sql params: @sqlp\n";
     unless ($sth->execute(@sqlp)) {
       $$rmsg = "Error executing $sql->{sql}: ".$dbh->errstr;
       return;
@@ -399,13 +429,16 @@ sub show_tags {
     my @names_lc = @{$sth->{NAME_lc}};
     $result{names} = \@names_lc;
     $result{names_hash} = 
-      map { $names_lc[$_] => $_ } 0 .. $#names_lc;
+      { map { $names_lc[$_] => $_ } 0 .. $#names_lc };
     $result{titles} = [ @{$sth->{NAME}} ];
     my @rows;
     while (my $row = $sth->fetchrow_arrayref) {
       push @rows, [ @$row ];
     }
     $result{rows} = \@rows;
+    if ($report->{debug}) {
+      print STDERR "Result set of ",scalar(@rows)," rows\n";
+    }
 
     push @results, \%result;
   }
@@ -425,10 +458,11 @@ sub show_tags {
 # 			      0 .. $#$row 
 # 			     };
 # 		    } ;
+  my $level1_row;
   my %tags =
     (
      DevHelp::Tags->make_iterator2
-     (undef, 'level1', 'level1', $work[0], \$index[0]),
+     (undef, 'level1', 'level1', $work[0], \$index[0], undef, \$level1_row),
      DevHelp::Tags->make_iterator2
      ([ \&iter_levelN_cols, 0, \@results, $work[0], \$index[0] ], 
       'level1_col', 'level1_cols', undef, undef, 'NoCache'),
@@ -439,7 +473,9 @@ sub show_tags {
      ([ \&iter_levelN_links, 0, $report->{sql}[0]{links}, $work[0], 
 	\$index[0] ], 
       'level1_link', 'level1_links', undef, undef, 'NoCache'),
-     
+     level1_col => [ \&tag_levelN_col, \$level1_row ],
+     level1_sum => 
+     [ \&tag_levelN_sum, $results[0]{rows}, $results[0]{names_hash} ],
      report => [ \&tag_hash, $report ],
     );
   for my $level (1 .. $#results) {

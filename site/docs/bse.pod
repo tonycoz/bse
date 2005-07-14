@@ -10,6 +10,58 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_18
+
+=over
+
+=item *
+
+added loaddata.pl tool to util directory for use in loading up tables
+with data
+
+=item *
+
+full_access permission now includes all bse_ permissions
+
+=item *
+
+config file entries can now use "here-docs", for example:
+
+  [some section]
+  key=<<EOD
+  some data
+  EOD
+
+this is especially useful for sql statements for reports
+
+=item *
+
+fixed the dynreport tag, a parameter wasn't being passed to the
+handler.
+
+=item *
+
+added level1_col and level1_sum tags to the report tool.
+
+  <:level1_col column_name:>
+
+will extract the column of the given name.
+
+  <:level1_sum column_name:>
+
+will return the sum of that column for the result set.
+
+=item *
+
+you can now set a debug flag for a report.  This doesn't produce much
+information yet.
+
+=item *
+
+added builtin C<pastdate> rule to the validation module.
+
+=back
+
 =head2 0.15_17
 
 Iterim release with subscriptions work.

@@ -116,6 +116,12 @@ my %built_ins =
     mindate => '-1d',
     mindatemsg => 'The date entered must be in the future',
    },
+   pastdate => 
+   {
+    date => 1,
+    maxdate => '+1d',
+    maxdatemsg => 'The date entered must be in the past',
+   },
    natural => 
    {
     integer => '0-', # 0 or higher

@@ -421,7 +421,7 @@ sub basic {
      $it->make_iterator(\&DevHelp::Tags::iter_get_repeat, 'repeat', 'repeats'),
      dynreplace => \&tag_replace,
      dyntoday => \&tag_today,
-     dynreport => \&tag_report,
+     dynreport => [ \&tag_report, $cfg ],
     );
 }
 

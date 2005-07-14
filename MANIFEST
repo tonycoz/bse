@@ -133,6 +133,7 @@ site/cgi-bin/modules/DevHelp/DynSort.pm
 site/cgi-bin/modules/DevHelp/FileUpload.pm
 site/cgi-bin/modules/DevHelp/Formatter.pm
 site/cgi-bin/modules/DevHelp/HTML.pm
+site/cgi-bin/modules/DevHelp/LoaderData.pm
 site/cgi-bin/modules/DevHelp/Payments/Inpho.pm
 site/cgi-bin/modules/DevHelp/Payments/Test.pm
 site/cgi-bin/modules/DevHelp/Report.pm
@@ -417,6 +418,7 @@ site/templates/user/userpage_base.tmpl
 site/templates/xbase.tmpl
 site/util/gen.pl
 site/util/initial.pl
+site/util/loaddata.pl
 site/util/mysql.str
 site/util/upgrade_mysql.pl
 t/BSE/Test.pm
