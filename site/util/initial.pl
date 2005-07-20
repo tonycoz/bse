@@ -46,6 +46,9 @@ my @prebuilt =
     createdBy=>'',
     author=>'',
     pageTitle=>'',
+    force_dynamic => 0,
+    cached_dynamic => 0,
+    inherit_siteuser_rights => 1,
    },
    {
     # the invisible subsection for what's hot
@@ -77,6 +80,9 @@ my @prebuilt =
     createdBy=>'',
     author=>'',
     pageTitle=>'',
+    force_dynamic => 0,
+    cached_dynamic => 0,
+    inherit_siteuser_rights => 1,
    },
    {
     id=>3,
@@ -107,6 +113,9 @@ my @prebuilt =
     createdBy=>'',
     author=>'',
     pageTitle=>'',
+    force_dynamic => 0,
+    cached_dynamic => 0,
+    inherit_siteuser_rights => 1,
    },
    {
     id=>4,
@@ -137,6 +146,9 @@ my @prebuilt =
     createdBy=>'',
     author=>'',
     pageTitle=>'',
+    force_dynamic => 0,
+    cached_dynamic => 0,
+    inherit_siteuser_rights => 1,
    },
    {
     id=>5,
@@ -167,6 +179,9 @@ my @prebuilt =
     createdBy=>'',
     author=>'',
     pageTitle=>'',
+    force_dynamic => 0,
+    cached_dynamic => 0,
+    inherit_siteuser_rights => 1,
    },
    {
     id=>6,
@@ -427,6 +442,9 @@ EOS
     createdBy=>'',
     author=>'',
     pageTitle=>'',
+    force_dynamic => 0,
+    cached_dynamic => 0,
+    inherit_siteuser_rights => 1,
    },
    {
     id=>7,
@@ -461,6 +479,9 @@ EOS
     createdBy=>'',
     author=>'',
     pageTitle=>'',
+    force_dynamic => 0,
+    cached_dynamic => 0,
+    inherit_siteuser_rights => 1,
    },
    {
     id=>8,
@@ -495,6 +516,9 @@ EOS
     createdBy=>'',
     author=>'',
     pageTitle=>'',
+    force_dynamic => 0,
+    cached_dynamic => 0,
+    inherit_siteuser_rights => 1,
    },
   );
 

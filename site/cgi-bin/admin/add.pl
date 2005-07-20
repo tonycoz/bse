@@ -9,6 +9,7 @@ use Article;
 use BSE::DB;
 use BSE::Request;
 use BSE::Template;
+use BSE::Edit::Base;
 use Carp qw'verbose';
 use Carp 'confess';
 
@@ -33,7 +34,7 @@ if (defined $id && $id =~ /\d/ && $id == -1) {
     or die "Cannot get sections class";
   $result = $obj->edit_sections($req, $articles);
 }
-elsif (my ($obj, $article) = article_class($id, $articles, $cfg)) {
+elsif (my ($obj, $article) = BSE::Edit::Base->article_class_id($id, $articles, $cfg)) {
   $result = $obj->article_dispatch($req, $article, $articles);
 }
 else {
@@ -47,7 +48,7 @@ else {
   unless ($obj) {
     my $parentid = $cgi->param('parentid');
     my $parent;
-    if (($obj, $parent) = article_class($parentid, $articles, $cfg)) {
+    if (($obj, $parent) = BSE::Edit::Base->article_class_id($parentid, $articles, $cfg)) {
       if (my ($class) = $obj->child_types($parent)) {
 	$obj = get_class($class, $cfg);
       }
@@ -93,18 +94,3 @@ sub get_class {
   return $class->new(cfg=>$cfg, db=>BSE::DB->single);
 }
 
-sub article_class {
-  my ($id, $articles, $cfg) = @_;
-
-  return unless defined $id and $id =~ /^\d+$/;
-  my $class = "BSE::Edit::Article";
-  my $article = $articles->getByPkey($id)
-    or return;
-  $class = $article->{generator};
-  $class =~ s/^(?:BSE::)?Generate::/BSE::Edit::/;
-  my $obj = get_class($class, $cfg);
-  if ($obj) {
-    $article = $obj->get_article($articles, $article);
-  }
-  return ($obj, $article);
-}

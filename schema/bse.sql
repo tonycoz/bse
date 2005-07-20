@@ -80,6 +80,10 @@ CREATE TABLE article (
   author varchar(255) default '' not null,
   pageTitle varchar(255) default '' not null,
 
+  force_dynamic integer not null default 0,
+  cached_dynamic integer not null default 0,
+  inherit_siteuser_rights integer not null default 1,
+
   PRIMARY KEY (id),
 
   -- if we keep id in the indexes MySQL will sometimes be able to
@@ -739,4 +743,18 @@ create table bse_seminar_bookings (
 
   primary key(session_id, siteuser_id),
   index (siteuser_id)
+);
+
+drop table if exists bse_siteuser_groups;
+create table bse_siteuser_groups (
+  id integer not null auto_increment primary key,
+  name varchar(80) not null
+);
+
+drop table if exists bse_siteuser_membership;
+create table bse_siteuser_membership (
+  group_id integer not null,
+  siteuser_id integer not null,
+  primary key(group_id, siteuser_id),
+  index(siteuser_id)
 );

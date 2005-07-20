@@ -10,6 +10,31 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_19
+
+Minor release so I can patch some other things.
+
+=over
+
+=item *
+
+renamed the new level1_col tag to level1_byname to prevent a conflict
+with the older level1_col tag from the level1_cols iterator.
+
+=item *
+
+pages can now be generated dynamically, though I'm still working on
+the UI side of making them flagged dynamic.  Structure exists to make
+it possible to add extra dynamic tags on per article type basis, but
+isn't used yet.
+
+=item *
+
+you can create site user groups, and put users in them, and delete
+them.
+
+=back
+
 =head2 0.15_18
 
 =over

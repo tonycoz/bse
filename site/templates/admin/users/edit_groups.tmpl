@@ -1,0 +1,43 @@
+<:wrap admin/xbase.tmpl title=>"Edit Site Member - Groups":>
+<h1>Edit Site Member - Groups</h1>
+<p>
+| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |
+<a href="/cgi-bin/admin/siteusers.pl">Site Members</a> |
+<a href="mailto:<:siteuser email:>">Email</a>
+<:ifUserorders:>| <a href="/cgi-bin/admin/siteusers.pl?a_edit=1&amp;id=<:siteuser id:>&amp;_t=orders">Orders</a><:or:><:eif:> |
+<a href="/cgi-bin/admin/admin_seminar.pl?a_addattendseminar=1&amp;siteuser_id=<:siteuser id:>">Add to seminar</a> |
+</p>
+
+<:ifMessage:>
+<p><b><:message:></b></p>
+<:or:><:eif:> 
+
+<form method="post" action="<:script:>">
+<input type="hidden" name="id" value="<:siteuser id:>" />
+        <table cellpadding="6" border="0" cellspacing="1">
+  <tr>
+    <th>Group Name</th>
+    <th>Member</th>
+  </tr>
+<:if Groups:>
+<:iterator begin groups:>
+  <tr>
+   <td><:group name:></td>
+   <td>
+  <input type="hidden" name="set_group_id" value="<:group id:>" />
+  <input type="checkbox" name="group_id" value="<:group id:>" <:ifMember:>checked="checked"<:or:><:eif:> />
+   </td>
+  </tr>
+<:iterator end groups:>
+<:or Groups:>
+  <tr>
+    <td colspan="2">There are no groups defined</td>
+  </tr>
+<:eif Groups:>
+          <tr> 
+            <td colspan="2" align="right"> 
+              <input type="submit" name="a_save" value="  Save User  " />
+            </td>
+          </tr>
+        </table>
+</form>

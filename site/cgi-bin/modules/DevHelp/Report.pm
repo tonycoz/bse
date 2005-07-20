@@ -473,7 +473,7 @@ sub show_tags {
      ([ \&iter_levelN_links, 0, $report->{sql}[0]{links}, $work[0], 
 	\$index[0] ], 
       'level1_link', 'level1_links', undef, undef, 'NoCache'),
-     level1_col => [ \&tag_levelN_col, \$level1_row ],
+     level1_byname => [ \&tag_levelN_col, \$level1_row ],
      level1_sum => 
      [ \&tag_levelN_sum, $results[0]{rows}, $results[0]{names_hash} ],
      report => [ \&tag_hash, $report ],

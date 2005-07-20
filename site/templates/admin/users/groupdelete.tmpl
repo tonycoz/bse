@@ -1,0 +1,25 @@
+<:wrap admin/xbase.tmpl title=>"Delete Member Group":>
+<h2>Add Member Group</h2>
+<p>
+| 
+<a href="/cgi-bin/admin/menu.pl">Admin menu</a>
+|
+<a href="<:script:>">Member List</a>
+|
+<a href="<:script:>?a_grouplist=1">Group List</a>
+|
+</p>
+<:ifMsg:><p><:msg:></p><:or:><:eif:>
+
+<form method="post" action="<:script:>" name="deletegroup">
+<input type="hidden" name="id" value="<:group id:>" />
+<table>
+<tr>
+  <th>Group Name:</th>
+  <td><:group name:></td>
+</tr>
+<tr>
+  <td colspan="2"><input type="submit" name="a_deletegroup" value="Delete Group" /></td>
+</tr>
+</table>
+</form>

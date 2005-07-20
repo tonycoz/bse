@@ -262,6 +262,7 @@ sub add_article {
      level => 1, listed=>1, lastModified => sql_datetime(time), flags=>'',
      lastModifiedBy=>'t20gen', created=>sql_datetime(time),
      createdBy=>'t20gen', author=>'', pageTitle=>'',
+     cached_dynamic => 0, force_dynamic=>0, inherit_siteuser_rights => 1,
     );
   for my $key (%defaults) {
     unless (exists $parms{$key}) {

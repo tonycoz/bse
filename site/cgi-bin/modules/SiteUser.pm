@@ -403,4 +403,20 @@ sub seminar_sessions_booked {
     BSE::DB->query(userSeminarSessionBookings => $seminar_id, $self->{id});
 }
 
+sub is_member_of {
+  my ($self, $group) = @_;
+
+  my $group_id = ref $group ? $group->{id} : $group;
+
+  my @result = BSE::DB->query(siteuserMemberOfGroup => $self->{id}, $group_id);
+
+  return scalar(@result);
+}
+
+sub group_ids {
+  my ($self) = @_;
+
+  map $_->{id}, BSE::DB->query(siteuserGroupsForUser => $self->{id});
+}
+
 1;

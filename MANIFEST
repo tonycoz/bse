@@ -56,6 +56,10 @@ site/cgi-bin/modules/BSE/CustomBase.pm
 site/cgi-bin/modules/BSE/DB.pm
 site/cgi-bin/modules/BSE/DB/MSSQL.pm
 site/cgi-bin/modules/BSE/DB/Mysql.pm
+site/cgi-bin/modules/BSE/Dynamic/Article.pm
+site/cgi-bin/modules/BSE/Dynamic/Catalog.pm
+site/cgi-bin/modules/BSE/Dynamic/Product.pm
+site/cgi-bin/modules/BSE/Dynamic/Seminar.pm
 site/cgi-bin/modules/BSE/Edit/Article.pm
 site/cgi-bin/modules/BSE/Edit/Base.pm
 site/cgi-bin/modules/BSE/Edit/Catalog.pm
@@ -104,6 +108,8 @@ site/cgi-bin/modules/BSE/TB/Seminar.pm
 site/cgi-bin/modules/BSE/TB/SeminarSession.pm
 site/cgi-bin/modules/BSE/TB/SeminarSessions.pm
 site/cgi-bin/modules/BSE/TB/Seminars.pm
+site/cgi-bin/modules/BSE/TB/SiteUserGroup.pm
+site/cgi-bin/modules/BSE/TB/SiteUserGroups.pm
 site/cgi-bin/modules/BSE/TB/Subscription.pm
 site/cgi-bin/modules/BSE/TB/Subscription/Calc.pm
 site/cgi-bin/modules/BSE/TB/Subscriptions.pm
@@ -114,6 +120,7 @@ site/cgi-bin/modules/BSE/UI/AdminSeminar.pm
 site/cgi-bin/modules/BSE/UI/Affiliate.pm
 site/cgi-bin/modules/BSE/UI/Dispatch.pm
 site/cgi-bin/modules/BSE/UI/Formmail.pm
+site/cgi-bin/modules/BSE/UI/Page.pm
 site/cgi-bin/modules/BSE/UI/Shop.pm
 site/cgi-bin/modules/BSE/UI/SiteuserCommon.pm
 site/cgi-bin/modules/BSE/UI/SubAdmin.pm
@@ -161,6 +168,7 @@ site/cgi-bin/modules/Squirrel/Row.pm
 site/cgi-bin/modules/Squirrel/Table.pm
 site/cgi-bin/modules/Squirrel/Template.pm
 site/cgi-bin/modules/Util.pm
+site/cgi-bin/page.pl
 site/cgi-bin/printable.pl
 site/cgi-bin/search.pl
 site/cgi-bin/shop.pl
@@ -325,7 +333,13 @@ site/templates/admin/subscr/list.tmpl
 site/templates/admin/userlist.tmpl
 site/templates/admin/users/add.tmpl
 site/templates/admin/users/edit.tmpl
+site/templates/admin/users/edit_groups.tmpl
 site/templates/admin/users/edit_orders.tmpl
+site/templates/admin/users/groupadd.tmpl
+site/templates/admin/users/groupdelete.tmpl
+site/templates/admin/users/groupedit.tmpl
+site/templates/admin/users/grouplist.tmpl
+site/templates/admin/users/groupmembers.tmpl
 site/templates/admin/users/list.tmpl
 site/templates/admin/xbase.tmpl
 site/templates/affiliate.tmpl

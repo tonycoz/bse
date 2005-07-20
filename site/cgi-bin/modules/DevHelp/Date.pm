@@ -4,7 +4,8 @@ require Exporter;
 use vars qw(@EXPORT_OK %EXPORT_TAGS @ISA);
 @ISA = qw(Exporter);
 @EXPORT_OK = 
-  qw(dh_parse_date dh_parse_date_sql dh_parse_time dh_parse_time_sql);
+  qw(dh_parse_date dh_parse_date_sql dh_parse_time dh_parse_time_sql
+     dh_parse_sql_date dh_parse_sql_datetime dh_strftime_sql_datetime);
 %EXPORT_TAGS =
   (
    all => \@EXPORT_OK,
@@ -126,6 +127,40 @@ sub dh_parse_time_sql {
     or return;
 
   sprintf("%02d:%02d:%02d", $hour, $min, $sec);
+}
+
+sub dh_parse_sql_date {
+  my ($date) = @_;
+
+  $date =~ /^(\d+)\D+(\d+)\D+(\d+)/
+    or return;
+
+  return (0+$1, 0+$2, 0+$3);
+}
+
+sub dh_parse_sql_datetime {
+  my ($datetime) = @_;
+
+  my ($year, $month, $day, $hour, $min, $sec) = 
+    ($datetime =~ /^(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)\D+(\d+)/)
+      or return;
+
+  return ($year, 0+$month, 0+$day, 0+$hour, 0+$min, 0+$sec);
+}
+
+sub dh_strftime_sql_datetime {
+  my ($format, $datetime) = @_;
+
+  my ($year, $month, $day, $hour, $min, $sec) = 
+    dh_parse_sql_datetime($datetime)
+      or return;
+
+  $year -= 1900;
+  --$month;
+
+  require POSIX;
+  return POSIX::strftime($format, $sec, $min, $hour, $day, $month, $year, 
+			 0, 0);
 }
 
 1;

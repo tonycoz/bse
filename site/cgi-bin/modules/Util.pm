@@ -33,16 +33,33 @@ sub generate_low {
   my ($articles, $article, $cfg) = @_;
 
   $cfg ||= BSE::Cfg->new;
+
+  my $outname;
+  if ($article->is_dynamic) {
+    my $debug_jit = $cfg->entry('debug', 'jit_dynamic_regen');
+    my $dynamic_path = $cfg->entryVar('paths', 'dynamic_cache');
+    $outname = $dynamic_path . "/" . $article->{id} . ".html";
+    if ($article->{flags} !~ /R/ && 
+	$cfg->entry('basic', 'jit_dynamic_pregen')) {
+      $debug_jit and print STDERR "JIT: $article->{id} - deleting $outname\n";
+      # just delete the file, page.pl will make it if needed
+      unlink $outname;
+      return;
+    }
+  }
+  else {
+    $outname = $article->{link};
+    $outname =~ s!/\w*$!!;
+    $outname =~ s{^\w+://[\w.-]+(?::\d+)?}{};
+    $outname = $CONTENTBASE . $outname;
+    $outname =~ s!//+!/!;
+  }
+
   my $genname = $article->{generator};
   eval "use $genname";
   $@ && die $@;
   my $gen = $genname->new(articles=>$articles, cfg=>$cfg, top=>$article);
 
-  my $outname = $article->{link};
-  $outname =~ s!/\w*$!!;
-  $outname =~ s{^\w+://[\w.-]+(?::\d+)?}{};
-  $outname = $CONTENTBASE . $outname;
-  $outname =~ s!//+!/!;
   my $content = $gen->generate($article, $articles);
   my $tempname = $outname . ".work";
   unlink $tempname;

@@ -18,9 +18,9 @@ my %statements =
   (
    Articles => 'select * from article',
    replaceArticle =>
-     'replace article values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+     'replace article values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
    addArticle =>  
-     'insert article values (null, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+     'insert article values (null, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
    deleteArticle => 'delete from article where id = ?',
    getArticleByPkey => 'select * from article where id = ?',
    
@@ -146,6 +146,7 @@ select distinct su.*
   where su.id = od.siteuser_id and od.id = oi.orderId 
         and oi.subscription_id <> -1
 SQL
+   siteuserAllIds => 'select id from site_users',
    getBSESiteuserImage => <<SQL,
 select * from bse_siteuser_images
   where siteuser_id = ? and image_id = ?
@@ -448,10 +449,36 @@ update bse_seminar_bookings
   set roll_present = ?
   where session_id = ? and siteuser_id = ?
 SQL
-  userSeminarSessionBookings => <<SQL,
+   userSeminarSessionBookings => <<SQL,
 select session_id 
   from bse_seminar_bookings sb, bse_seminar_sessions ss
 where ss.seminar_id = ? and ss.id = sb.session_id and siteuser_id = ?
+SQL
+   SiteUserGroups => 'select * from bse_siteuser_groups',
+   addSiteUserGroup => 'insert bse_siteuser_groups values(null,?)',
+   replaceSiteUserGroup => 'replace bse_siteuser_groups values(?,?)',
+   deleteSiteUserGroup => 'delete from bse_siteuser_groups where id = ?',
+   getSiteUserGroupByPkey => 'select * from bse_siteuser_groups where id = ?',
+   siteuserGroupMemberIds => <<SQL,
+select siteuser_id as "id" 
+from bse_siteuser_membership 
+where group_id = ?
+SQL
+   siteuserGroupAddMember => <<SQL,
+insert bse_siteuser_membership values(?,?)
+SQL
+   siteuserGroupDeleteMember => <<SQL,
+delete from bse_siteuser_membership where group_id = ? and siteuser_id = ?
+SQL
+    siteuserGroupDeleteAllMembers => <<SQL,
+delete from bse_siteuser_membership where group_id = ?
+SQL
+    siteuserMemberOfGroup => <<SQL,
+select * from bse_siteuser_membership 
+where siteuser_id = ? and group_id = ?
+SQL
+    siteuserGroupsForUser => <<SQL,
+select group_id as "id" from bse_siteuser_membership where siteuser_id = ?
 SQL
   );
 

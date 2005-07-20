@@ -91,6 +91,11 @@ Where uploaded siteuser images are stored.  This must be set in the
 config file.  The default bse.cfg include an entry to use the current
 values of [paths].downloads
 
+=item dynamic_cache
+
+Pregenerated dynamic article pages are stored here.  This must be
+defined if you site contains any dynamicly generated pages.
+
 =back
 
 =head2 [extensions]
@@ -232,6 +237,11 @@ attempting a form based logon.  Default: None.
 The name of the custom class for your site.  This is currently only
 used for article editing customizations.  This class should derive
 from BSE::CustomBase.  Default: BSE::Custom.
+
+=item jit_dynamic_regen
+
+If this is true, then pre-generation for dynamic pages will be delayed
+until the page is displayed to a user.  Default: off.
 
 =back
 
@@ -677,6 +687,11 @@ from the database.
 =item subscription_expiry
 
 If non-zero then subscription expiry date calculations are dumped to
+STDERR.
+
+=item jit_dynamic_regen
+
+If non-zero then information about jit_dynamic_regen is sent to
 STDERR.
 
 =back

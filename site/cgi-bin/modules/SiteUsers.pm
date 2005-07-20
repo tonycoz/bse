@@ -15,4 +15,10 @@ sub all_subscribers {
   $class->getSpecial('allSubscribers');
 }
 
+sub all_ids {
+  my ($class) = @_;
+
+  map $_->{id}, BSE::DB->query('siteuserAllIds');
+}
+
 1;

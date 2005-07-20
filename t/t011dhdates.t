@@ -1,13 +1,13 @@
 #!perl -w
 use strict;
-use Test::More tests=>37;
+use Test::More tests=>42;
 
 my $gotmodule;
 BEGIN { $gotmodule = use_ok('DevHelp::Date', ':all'); }
 
 SKIP:
 {
-  skip "couldn't load module", 36 unless $gotmodule;
+  skip "couldn't load module", 41 unless $gotmodule;
   my $msg;
   is_deeply([ dh_parse_time("10:00", \$msg) ], [ 10, 0, 0 ], "parse 10:00");
   is($msg, undef, "no error");
@@ -68,4 +68,16 @@ SKIP:
   undef $msg;
   is(dh_parse_time_sql("2:30pm"), "14:30:00", "2:30pm to sql");
   is($msg, undef, "no error");
+
+  # parse SQL date
+  is_deeply([ dh_parse_sql_date("2005-07-12") ], [ 2005, 7, 12 ],
+	    "simple sql date parse");
+  is_deeply([ dh_parse_sql_date("20") ], [ ],
+	    "invalid sql date parse");
+  is_deeply([ dh_parse_sql_datetime("2005-06-30 12:00:05") ],
+	    [ 2005, 6, 30, 12, 0, 5 ], "parse SQL date time");
+  is_deeply([ dh_parse_sql_datetime("2005-06-30 12") ],
+	    [ ], "invalid parse SQL date time");
+  is(dh_strftime_sql_datetime("%d/%m/%Y", "2005-06-30 12:00:05"),
+     "30/06/2005", "dh_strftime_sql_datetime");
 }

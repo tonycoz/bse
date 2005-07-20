@@ -1,0 +1,27 @@
+<:wrap admin/xbase.tmpl title=>"Edit Member Group":>
+<h2>Add Member Group</h2>
+<p>
+| 
+<a href="/cgi-bin/admin/menu.pl">Admin menu</a>
+|
+<a href="<:script:>">Member List</a>
+|
+<a href="<:script:>?a_grouplist=1">Group List</a>
+|
+</p>
+<:ifMsg:><p><:msg:></p><:or:><:eif:>
+
+<form method="post" action="<:script:>" name="editgroup">
+<input type="hidden" name="id" value="<:group id:>" />
+<table>
+<tr>
+  <th>Group Name:</th>
+  <td><input type="text" name="name" value="<:old name group name:>" /></td>
+  <td><:error_img name:></td>
+</tr>
+<tr>
+  <td colspan="2"><input type="submit" name="a_savegroup" value="Save Group" /></td>
+  <td>&nbsp;</td>
+</tr>
+</table>
+</form>

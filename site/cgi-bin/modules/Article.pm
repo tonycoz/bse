@@ -4,6 +4,7 @@ use strict;
 use Squirrel::Row;
 use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
+use Carp 'confess';
 
 sub columns {
   return qw/id parentid displayOrder title titleImage body
@@ -12,7 +13,8 @@ sub columns {
     summaryLength generator level listed lastModified flags
     customDate1 customDate2 customStr1 customStr2
     customInt1 customInt2 customInt3 customInt4 
-    lastModifiedBy created createdBy author pageTitle/;
+    lastModifiedBy created createdBy author pageTitle
+    force_dynamic cached_dynamic inherit_siteuser_rights/;
 }
 
 sub numeric {
@@ -122,6 +124,28 @@ sub parent {
   my ($self) = @_;
   $self->{parentid} == -1 and return;
   return Articles->getByPkey($self->{parentid});
+}
+
+sub update_dynamic {
+  my ($self, $cfg) = @_;
+
+  $cfg && $cfg->can('entry')
+    or confess 'update_dynamic called without $cfg';
+
+  # conditional in case something strange is in the config file
+  my $dynamic = $cfg->entry('basic', 'all_dynamic', 0) ? 1 : 0;
+
+  $dynamic or $dynamic = $self->{force_dynamic};
+
+  unless ($dynamic) {
+    # check for groups, etc
+  }
+
+  $self->{cached_dynamic} = $dynamic;
+}
+
+sub is_dynamic {
+  $_[0]{cached_dynamic};
 }
 
 1;

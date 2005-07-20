@@ -476,6 +476,8 @@ HTML
      BSE::Util::Tags->make_iterator(\@allkids, 'allkid', 'allkids', \$allkids_index),
      BSE::Util::Tags->make_iterator(\@stepparents, 'stepparent', 'stepparents'),
      top => [ \&tag_top, $self, $article ],
+     ifDynamic => 
+     scalar(UNIVERSAL::isa($top, 'Article') ? $top->is_dynamic : 0),
     );
 
   if ($abs_urls) {

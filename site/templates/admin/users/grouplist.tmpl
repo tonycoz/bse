@@ -1,0 +1,35 @@
+<:wrap admin/xbase.tmpl title=>"Member Groups":>
+<h2>Member Groups</h2>
+<p>
+| 
+<a href="/cgi-bin/admin/menu.pl">Admin menu</a>
+|
+<a href="<:script:>">Member List</a>
+|
+<a href="<:script:>?a_addgroupform=1">Add New Group</a>
+|
+</p>
+<:ifMsg:><p><b><:msg:></b></p><:or:><:eif:>
+
+<table>
+<tr>
+  <th>Group</th>
+  <td>&nbsp;</td>
+</tr>
+<:if Groups:>
+<:iterator begin groups:>
+<tr>
+  <td><:group name:></td>
+  <td>
+    <a href="<:script:>?a_editgroup=1&amp;id=<:group id:>">Edit</a>
+    <a href="<:script:>?a_deletegroupform=1&amp;id=<:group id:>">Delete</a>
+    <a href="<:script:>?a_groupmemberform=1&amp;id=<:group id:>">Members</a>
+  </td>
+</tr>
+<:iterator end groups:>
+<:or Groups:>
+<tr>
+  <td colspan="2">No member groups defined</td>
+</tr>
+<:eif Groups:>
+</table>

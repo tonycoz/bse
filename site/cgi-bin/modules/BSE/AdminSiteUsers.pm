@@ -9,6 +9,7 @@ use BSE::Util::DynSort qw(sorter tag_sorthelp);
 use BSE::Util::SQL qw/now_datetime/;
 use BSE::SubscriptionTypes;
 use BSE::CfgInfo qw(custom_class);
+use constant SITEUSER_GROUP_SECT => 'BSE Siteuser groups validation';
 
 my %actions =
   (
@@ -17,6 +18,15 @@ my %actions =
    save=>1,
    addform=>1,
    add=>1,
+   grouplist=>1,
+   addgroupform=>1,
+   addgroup => 1,
+   editgroup=>1,
+   savegroup => 1,
+   deletegroupform =>1,
+   deletegroup=>1,
+   groupmemberform => 1,
+   savegroupmembers => 1,
   );
 
 my @donttouch = qw(id userId password email confirmed confirmSecret waitingForConfirmation flags affiliate_name previousLogon); # flags is saved separately
@@ -148,6 +158,20 @@ sub iter_orders {
   return $siteuser->orders;
 }
 
+sub iter_groups {
+  require BSE::TB::SiteUserGroups;
+
+  BSE::TB::SiteUserGroups->all;
+}
+
+sub tag_ifUserMember {
+  my ($user, $rgroup) = @_;
+
+  $$rgroup or return 0;
+
+  $user->is_member_of($$rgroup);
+}
+
 sub req_edit {
   my ($class, $req, $msg, $errors) = @_;
 
@@ -184,6 +208,7 @@ sub req_edit {
   require BSE::SubscribedUsers;
   my @usersubs = BSE::SubscribedUsers->getBy(userId=>$siteuser->{id});
   my %usersubs = map { $_->{subId}, $_ } @usersubs;
+  my $current_group;
   my %acts;
   %acts =
     (
@@ -203,6 +228,9 @@ sub req_edit {
      $it->make_iterator([ \&iter_orders, $siteuser ], 
 			'userorder', 'userorders' ),
      $class->_edit_tags($siteuser, $req->cfg),
+     $it->make_iterator(\&iter_groups, 'group', 'groups', 
+			undef, undef, undef, \$current_group),
+     ifMember => [ \&tag_ifUserMember, $siteuser, \$current_group ],
     );  
 
   my $template = 'admin/users/edit';
@@ -342,6 +370,26 @@ sub req_save {
   $user->{disabled} = 0
     if $cgi->param('saveDisabled') && !defined $cgi->param('disabled');
   $user->save;
+
+  # save group membership
+  my @save_ids = $cgi->param('set_group_id');
+  if (@save_ids) {
+    my %member_of = map { $_ => 1 } $user->group_ids;
+    my %new_ids = map { $_ => 1 } $cgi->param('group_id');
+    require BSE::TB::SiteUserGroups;
+    my %all_groups = map { $_->{id} => $_ } BSE::TB::SiteUserGroups->all;
+    
+    for my $id (@save_ids) {
+      my $group = $all_groups{$id} 
+	or next;
+      if ($member_of{$id} and !$new_ids{$id}) {
+	$group->remove_member($user->{id});
+      }
+      elsif (!$member_of{$id} and $new_ids{$id}) {
+	$group->add_member($user->{id});
+      }
+    }
+  }
 
   if ($cgi->param('checkedsubs')) {
     $class->save_subs($req, $user);
@@ -658,6 +706,221 @@ sub _validate_affiliate_name {
   }
 
   return;
+}
+
+sub _get_group {
+  my ($req, $msg) = @_;
+
+  my $id = $req->cgi->param('id');
+  defined $id && $id =~ /^\d+$/
+    or do { $$msg = "Missing or invalid group id"; return };
+  require BSE::TB::SiteUserGroups;
+  my $group = BSE::TB::SiteUserGroups->getByPkey($id);
+  $group
+    or do { $$msg = "Unknown group id"; return };
+
+  $group;
+}
+
+sub req_grouplist {
+  my ($class, $req, $errors) = @_;
+
+  require BSE::TB::SiteUserGroups;
+  my @groups = BSE::TB::SiteUserGroups->all;
+
+  my $msg = $req->message($errors);
+
+  my $it = BSE::Util::Iterate->new;
+  my %acts;
+  %acts =
+    (
+     BSE::Util::Tags->basic(undef, $req->cgi, $req->cfg),
+     BSE::Util::Tags->secure($req),
+     BSE::Util::Tags->admin(undef, $req->cfg),
+     msg=>$msg,
+     message=>$msg,
+     $it->make_iterator(undef, 'group', 'groups', \@groups),
+    );
+
+  return $req->response('admin/users/grouplist', \%acts);
+}
+
+sub req_addgroupform {
+  my ($class, $req, $errors) = @_;
+
+  my $msg = $req->message($errors);
+
+  my %acts;
+  %acts =
+    (
+     BSE::Util::Tags->basic(undef, $req->cgi, $req->cfg),
+     BSE::Util::Tags->secure($req),
+     BSE::Util::Tags->admin(undef, $req->cfg),
+     msg=>$msg,
+     message=>$msg,
+     error_img => [ \&tag_error_img, $req->cfg, $errors ],
+    );
+
+  return $req->response('admin/users/groupadd', \%acts);
+}
+
+sub req_addgroup {
+  my ($class, $req) = @_;
+
+  require BSE::TB::SiteUserGroups;
+  my %fields = BSE::TB::SiteUserGroup->valid_fields;
+  my %rules = BSE::TB::SiteUserGroup->valid_rules;
+
+  my %errors;
+  $req->validate(errors=>\%errors,
+		 fields=>\%fields,
+		 rules=>\%rules,
+		 section=>SITEUSER_GROUP_SECT)
+    or return $class->req_addgroupform($req, \%errors);
+
+  my $name = $req->cgi->param('name');
+  my $group = BSE::TB::SiteUserGroups->add($name);
+
+  return BSE::Template->get_refresh("$ENV{SCRIPT_NAME}?a_grouplist=1&m=Group+added", 
+				    $req->cfg);  
+}
+
+sub req_editgroup {
+  my ($class, $req, $errors) = @_;
+
+  return $class->_common_group($req, $errors, 'admin/users/groupedit');
+}
+
+sub req_savegroup {
+  my ($class, $req) = @_;
+
+  my $msg;
+  my $group = _get_group($req, \$msg)
+    or return $class->req_grouplist($req, { id => $msg });
+
+  my %fields = BSE::TB::SiteUserGroup->valid_fields;
+  my %rules = BSE::TB::SiteUserGroup->valid_rules;
+
+  my %errors;
+  $req->validate(errors=>\%errors,
+		 fields=>\%fields,
+		 rules=>\%rules,
+		 section=>SITEUSER_GROUP_SECT)
+    or return $class->req_editgroup($req, \%errors);
+  
+  $group->{name} = $req->cgi->param('name');
+  $group->save;
+
+  return BSE::Template->get_refresh("$ENV{SCRIPT_NAME}?a_grouplist=1&m=Group+saved", $req->cfg);
+}
+
+sub _common_group {
+  my ($class, $req, $errors, $template) = @_;
+
+  my $msg;
+  my $group = _get_group($req, \$msg)
+    or return $class->req_grouplist($req, { id=> $msg });
+
+  $msg = $req->message($errors);
+
+  my %acts;
+  %acts =
+    (
+     BSE::Util::Tags->basic(undef, $req->cgi, $req->cfg),
+     BSE::Util::Tags->secure($req),
+     BSE::Util::Tags->admin(undef, $req->cfg),
+     msg=>$msg,
+     message=>$msg,
+     error_img => [ \&tag_error_img, $req->cfg, $errors ],
+     group => [ \&tag_hash, $group ],
+    );
+
+  return $req->response($template, \%acts);
+}
+
+sub req_deletegroupform {
+  my ($class, $req, $errors) = @_;
+
+  return $class->_common_group($req, $errors, 'admin/users/groupdelete');
+}
+
+sub req_deletegroup {
+  my ($class, $req) = @_;
+
+  my $msg;
+  my $group = _get_group($req, \$msg)
+    or return $class->req_grouplist($req, { id=>$msg });
+
+  $group->remove;
+
+  return BSE::Template->get_refresh("$ENV{SCRIPT_NAME}?a_grouplist=1&m=Group+deleted", $req->cfg);
+}
+
+sub tag_ifMember {
+  my ($ruser, $members) = @_;
+
+  $$ruser or return 0;
+  exists $members->{$$ruser->{id}};
+}
+
+sub req_groupmemberform {
+  my ($class, $req, $errors) = @_;
+
+  my $msg;
+  my $group = _get_group($req, \$msg)
+    or return $class->req_grouplist($req, { id=>$msg });
+
+  $msg = $req->message($errors);
+
+  my %members = map { $_=> 1 } $group->member_ids;
+  my @siteusers = SiteUsers->all;
+
+  my $user;
+
+  my $it = BSE::Util::Iterate->new;
+  my %acts;
+  %acts =
+    (
+     BSE::Util::Tags->basic(undef, $req->cgi, $req->cfg),
+     BSE::Util::Tags->secure($req),
+     BSE::Util::Tags->admin(undef, $req->cfg),
+     msg=>$msg,
+     message=>$msg,
+     error_img => [ \&tag_error_img, $req->cfg, $errors ],
+     group => [ \&tag_hash, $group ],
+     $it->make_iterator(undef, 'siteuser', 'siteusers', \@siteusers, 
+			undef, undef, \$user),
+     ifMember => [ \&tag_ifMember, \$user, \%members ],
+    );
+
+  return $req->response('admin/users/groupmembers', \%acts);
+}
+
+sub req_savegroupmembers {
+  my ($class, $req) = @_;
+
+  my $msg;
+  my $group = _get_group($req, \$msg)
+    or return $class->req_grouplist($req, { id=>$msg });
+
+  my $cgi = $req->cgi;
+  my %current_ids = map { $_ => 1 } $group->member_ids;
+  my @to_be_set = $cgi->param('set_is_member');
+  my %set_ids = map { $_ => 1 } $cgi->param('is_member');
+  my %all_ids = map { $_ => 1 } SiteUsers->all_ids;
+
+  for my $id (@to_be_set) {
+    next unless $all_ids{$id};
+
+    if ($set_ids{$id} && !$current_ids{$id}) {
+      $group->add_member($id);
+    }
+    elsif (!$set_ids{$id} && $current_ids{$id}) {
+      $group->remove_member($id);
+    }
+  }
+
+  return BSE::Template->get_refresh("$ENV{SCRIPT_NAME}?a_grouplist=1&m=Membership+saved", $req->cfg);
 }
 
 1;

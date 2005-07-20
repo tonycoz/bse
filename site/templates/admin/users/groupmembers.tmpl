@@ -1,0 +1,38 @@
+<:wrap admin/xbase.tmpl title=>"Group Members":>
+<h1>Group Members: <:group name:></h1>
+<p>
+| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | <a href="<:script:>?a_grouplist=1">Groups</a> |
+<:if UserCan siteuser_add :>
+<a href="<:script:>?a_addform=1">Add Member</a> |<:or UserCan:><:eif UserCan:>
+<:ifMessage:>
+<p><b><:message:></b></p>
+<:or:><:eif:> 
+
+<form method="post" action="<:script:>">
+<input type="hidden" name="id" value="<:group id:>" />
+<table cellpadding="6" border="0" cellspacing="1">
+  <tr> 
+            <th bgcolor="#FFFFFF" nowrap> Logon</th>
+            <th bgcolor="#FFFFFF" nowrap> First Name</th>
+            <th bgcolor="#FFFFFF" nowrap> Last Name</th>
+	    <th bgcolor="#FFFFFF" nowrap>Member</th>
+          </tr>
+          <:if Siteusers:> <: iterator begin siteusers :> 
+          <tr bgcolor="#FFFFFF"> 
+            <td nowrap> <a href="<:script:>?a_edit=1&id=<:siteuser id:>"><:siteuser userId:></a></td>
+            <td valign="top"><:siteuser name1:></td>
+            <td valign="top"><:siteuser name2:></td>
+            <td valign="top"><input type="hidden" name="set_is_member" value="<:siteuser id:>" /><input type="checkbox" name="is_member" value="<:siteuser id:>" <:ifMember:>checked="checked"<:or:><:eif:> /></td>
+          </tr>
+          <: iterator end siteusers :> 
+  <tr>
+   <td colspan="4"><input type="submit" name="a_savegroupmembers" value="Save Group Membership" /></td>
+  </tr>
+          <:or Siteusers:> 
+          <tr bgcolor="#FFFFFF"> 
+            <td colspan="4" align="center">Your system has no users.</td>
+          </tr>
+          <:eif Siteusers:> 
+</table>
+</form>
+

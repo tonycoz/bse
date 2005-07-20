@@ -1311,6 +1311,10 @@ sub default_link_path {
 sub make_link {
   my ($self, $article) = @_;
 
+  if ($article->is_dynamic) {
+    return "/cgi-bin/page.pl?id=$article->{id}&title=".escape_uri($article->{title});
+  }
+
   my $article_uri = $self->link_path($article);
   my $link = "$article_uri/$article->{id}.html";
   my $link_titles = $self->{cfg}->entryBool('basic', 'link_titles', 0);
@@ -1390,6 +1394,9 @@ sub save_new {
   $data{createdBy} = $user ? $user->{logon} : '';
   $data{lastModifiedBy} = $user ? $user->{logon} : '';
   $data{created} =  now_sqldatetime();
+  $data{force_dynamic} = 0;
+  $data{cached_dynamic} = 0;
+  $data{inherit_siteuser_rights} = 1;
 
   $self->fill_new_data($req, \%data, $articles);
   for my $col (qw(titleImage imagePos template keyword)) {
@@ -1457,7 +1464,8 @@ sub save {
   $req->user_can(edit_save => $article)
     or return $self->edit_form($req, $article, $articles,
 			       "You don't have access to save this article");
-  
+
+  my $old_dynamic = $article->is_dynamic;
   my $cgi = $req->cgi;
   my %data;
   for my $name ($article->columns) {
@@ -1533,6 +1541,12 @@ sub save {
     if defined $cgi->param('expire') && 
       $req->user_can('edit_field_edit_expire', $article);
   $article->{lastModified} =  now_sqldatetime();
+  if ($cgi->param('save_force_dynamic')) {
+    $article->{force_dynamic} = $cgi->param('force_dynamic') ? 1 : 0;
+  }
+
+  # this need to go last
+  $article->update_dynamic($self->{cfg});
   if ($article->{link} && 
       !$self->{cfg}->entry('protect link', $article->{id})) {
     my $article_uri = $self->make_link($article);
@@ -1545,10 +1559,52 @@ sub save {
 
   $article->save();
 
+  # if we changed dynamic status, we need to update it for the kids too
+  my @extra_regen;
+  if ($article->is_dynamic != $old_dynamic) {
+    @extra_regen = $self->update_child_dynamic($article, $articles, $req);
+  }
+
   use Util 'generate_article';
-  generate_article($articles, $article) if $Constants::AUTO_GENERATE;
+  if ($Constants::AUTO_GENERATE) {
+    generate_article($articles, $article);
+    for my $regen_id (@extra_regen) {
+      my $regen = $articles->getByPkey($regen_id);
+      Util::generate_low($articles, $article, $self->{cfg});
+    }
+  }
 
   return $self->refresh($article, $cgi, undef, 'Article saved');
+}
+
+sub update_child_dynamic {
+  my ($self, $article, $articles, $req) = @_;
+
+  my $cfg = $req->cfg;
+  my @stack = $article->children;
+  my @regen;
+  while (@stack) {
+    my $workart = pop @stack;
+    my $old_dynamic = $workart->is_dynamic; # before update
+    $workart->update_dynamic($cfg);
+    if ($old_dynamic != $workart->is_dynamic) {
+      # update the link
+      if ($article->{link} && !$cfg->entry('protect link', $workart->{id})) {
+	my $editor;
+	($editor, $workart) = $self->article_class($workart, $articles, $cfg);
+
+	my $uri = $editor->make_link($workart);
+	$workart->setLink($uri);
+      }
+
+      # save dynamic cache change and link if that changed
+      $workart->save;
+    }
+    push @stack, $workart->children;
+    push @regen, $workart->{id};
+  }
+
+  @regen;
 }
 
 sub sql_date {
