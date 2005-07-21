@@ -32,6 +32,10 @@ the search engine now indexs the author and pageTitle fields.  The
 file_description is now indexed by default (previously you needed to
 configure it)
 
+=item *
+
+added: document [editor].check_modified in config.pod.
+
 =back
 
 =head2 0.15_19

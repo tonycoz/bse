@@ -1102,6 +1102,14 @@ Dimensions of the default thumbnail image.
 
 Alt text for the default thumbnail image.
 
+=item check_modified
+
+If this is true then BSE will check the value of the lastModified
+parameter passed against the value in the article.  If these don't
+match the article isn't saved and is redisplayed with an error
+message.  This provides simple protection against one user saving
+changes over those made by another.
+
 =back
 
 =head2 [thumbnails]
