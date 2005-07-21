@@ -57,10 +57,11 @@
 <:or Or:><:eif Or:>
 <:eif:>
 
-  <form enctype="multipart/form-data" method="POST" action="<:script:>">
-  <input type=hidden name=type value="Catalog">
-  <input type="hidden" name="level" value="<: level :>">
-  <input type="hidden" name="id" value="<: article id :>">
+  <form enctype="multipart/form-data" method="post" action="<:script:>">
+  <input type="hidden" name="lastModified" value="<: old lastModified article lastModified :>" />
+  <input type="hidden" name="type" value="Catalog" />
+  <input type="hidden" name="level" value="<: level :>" />
+  <input type="hidden" name="id" value="<: article id :>" />
   <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" width="100%" class="table">
     <tr>
       <td>

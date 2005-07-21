@@ -37,7 +37,10 @@ my %scores =
    title=>5,
    body=>3,
    keyword=>4,
-   file_description => 0,
+   pageTitle=>5,
+   author=>4,
+#   file_excerpt=>2,
+   file_description=>2,
   );
 
 for my $name (keys %scores) {

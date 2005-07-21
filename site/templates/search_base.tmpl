@@ -57,10 +57,13 @@
   <dd> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> <:excerpt:></font> 
     <br>
     <font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#808080"> 
-    Last modified on: <:date result lastModified:></font> <:if Keywords:> <br>
+    Last modified on: <:date result lastModified:></font><:if Keywords:><br>
     <font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#808080"> 
-    Keywords: <:keywords:></font><:or Keywords:><:eif Keywords:> 
-</dl>
+    Keywords: <:keywords:></font><:or Keywords:><:eif Keywords:><:if Author:><br>
+    <font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#808080"> 
+    Author: <:author:></font><:or Author:><:eif Author:><:if PageTitle:><br>
+    <font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#808080"> 
+    Page title: <:PageTitle:></font><:or PageTitle:><:eif PageTitle:></dl>
 <: iterator separator results:> <: iterator end results:> 
 <hr noshade size="1" width="100%">
 <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Result Pages: | <:iterator 

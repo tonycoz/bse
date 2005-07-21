@@ -79,6 +79,8 @@ my $article_index = -1;
 my $result_seq = ($page_number-1) * $results_per_page;
 my $excerpt;
 my $keywords;
+my $author;
+my $pageTitle;
 my $words_re_str = '\b('.join('|', map quotemeta, @terms).')\b';
 my $words_re = qr/$words_re_str/i;
 my %acts;
@@ -97,6 +99,14 @@ my %acts;
        $keywords = $articles[$article_index]{keyword};
        $keywords =~ s!$words_re!<b>$1</b>!g or $keywords = '';
 
+       # match against the author
+       $author = $articles[$article_index]{author};
+       $author =~ s!$words_re!<b>$1</b>!g or $author = '';
+
+       # match against the pageTitle
+       $pageTitle = $articles[$article_index]{pageTitle};
+       $pageTitle =~ s!$words_re!<b>$1</b>!g or $pageTitle = '';
+       
        return 1;
      }
      else {
@@ -124,6 +134,15 @@ my %acts;
    sub { 
      $keywords
    },
+   author => 
+   sub { 
+     $author
+   },
+   pageTitle => 
+   sub { 
+     $pageTitle
+   },
+
    ifResults => sub { scalar @results; },
    ifSearch => sub { defined $words and length $words },
    dateSelected => sub { $_[0] eq $date ? 'selected="selected"' : '' },

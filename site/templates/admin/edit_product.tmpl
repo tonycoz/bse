@@ -50,8 +50,10 @@
       </form>
 <br>
 <:or Or:><:eif Or:><:eif:>
-<form action="<:script:>" enctype="multipart/form-data" method="POST">
-    <input type="hidden" name="id" value="<:product id:>">
+<form action="<:script:>" enctype="multipart/form-data" method="post">
+    <input type="hidden" name="lastModified" value="<: old lastModified article lastModified :>" />
+    <input type="hidden" name="type" value="Product" />
+    <input type="hidden" name="id" value="<:product id:>" />
   <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
     <tr>
       <td>

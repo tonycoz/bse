@@ -10,6 +10,30 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_20
+
+Applied a patch from Adrian Oldham:
+
+=over
+
+=item *
+
+date fields in the articles created by initial.pl are now set to the
+date initial.pl is run rather than some date in the past.
+
+=item *
+
+simple (optional) protection against saving over pages modified by
+someone else.
+
+=item *
+
+the search engine now indexs the author and pageTitle fields.  The
+file_description is now indexed by default (previously you needed to
+configure it)
+
+=back
+
 =head2 0.15_19
 
 Minor release so I can patch some other things.

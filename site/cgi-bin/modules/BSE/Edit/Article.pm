@@ -1473,6 +1473,23 @@ sub save {
       if defined($cgi->param($name)) and $name ne 'id' && $name ne 'parentid'
 	&& $req->user_can("edit_field_edit_$name", $article);
   }
+  
+# Added by adrian
+# checks editor lastModified against record lastModified
+  if ($self->{cfg}->entry('editor', 'check_modified')) {
+    if ($article->{lastModified} ne $cgi->param('lastModified')) {
+      my $whoModified = '';
+      my $timeModified = ampm_time($article->{lastModified});
+      if ($article->{lastModifiedBy}) {
+        $whoModified = "by '$article->{lastModifiedBy}'";
+      }
+      print STDERR "non-matching lastModified, article not saved\n";
+      my $msg = "Article changes not saved, this article was modified $whoModified at $timeModified since this editor was loaded";
+	  return $self->edit_form($req, $article, $articles, $msg);
+    }
+  }
+# end adrian
+  
   # possibly this needs tighter error checking
   $data{flags} = join '', sort $cgi->param('flags')
     if $req->user_can("edit_field_edit_flags", $article);
@@ -1487,7 +1504,7 @@ sub save {
     my $msg = "Please only select templates from the list provided";
     return $self->edit_form($req, $article, $articles, $msg);
   }
-
+  
   # reparenting
   my $newparentid = $cgi->param('parentid');
   if ($newparentid && $req->user_can('edit_field_edit_parentid', $article)) {
@@ -1556,6 +1573,7 @@ sub save {
 # Added by adrian
   my $user = $req->getuser;
   $article->{lastModifiedBy} = $user ? $user->{logon} : '';
+# end adrian
 
   $article->save();
 
@@ -1619,6 +1637,27 @@ sub sql_date {
   }
   return undef;
 }
+
+# Added by adrian
+# Converts 24hr time to 12hr AM/PM time
+sub ampm_time {
+  my $str = shift;
+  my ($hour, $minute, $second, $ampm);
+
+  # look for a time
+  if (($hour, $minute, $second) = ($str =~ m!(\d+):(\d+):(\d+)!)) {
+    if ($hour > 12) {
+      $hour -= 12;
+      $ampm = 'PM';
+    }
+    else {
+      $ampm = 'AM';
+    }
+    return sprintf("%02d:%02d:%02d $ampm", $hour, $minute, $second);
+  }
+  return undef;
+}
+# end adrian
 
 sub reparent {
   my ($self, $article, $newparentid, $articles, $rmsg) = @_;
