@@ -1047,6 +1047,8 @@ sub low_edit_tags {
   my @stepparentpossibles;
   my @files;
   my $file_index;
+  my @groups;
+  my $current_group;
   my $it = BSE::Util::Iterate->new;
   return
     (
@@ -1133,7 +1135,26 @@ sub low_edit_tags {
      DevHelp::Tags->make_iterator2
      ([ \&iter_crumbs, $article, $articles ], 'crumb', 'crumbs' ),
      typename => \&tag_typename,
+     $it->make_iterator([ \&iter_groups, $request ], 
+			'group', 'groups', \@groups, undef, undef,
+			\$current_group),
+     ifGroupRequired => [ \&tag_ifGroupRequired, $article, \$current_group ],
     );
+}
+
+sub iter_groups {
+  my ($req) = @_;
+
+  require BSE::TB::SiteUserGroups;
+  BSE::TB::SiteUserGroups->admin_and_query_groups($req->cfg);
+}
+
+sub tag_ifGroupRequired {
+  my ($article, $rgroup) = @_;
+
+  $$rgroup or return 0;
+
+  $article->is_accessible_to($$rgroup);
 }
 
 sub edit_template {
@@ -1404,6 +1425,16 @@ sub save_new {
       or $data{$col} = $self->default_value($req, \%data, $col);
   }
 
+  for my $col (qw/force_dynamic inherit_siteuser_rights/) {
+    if ($req->user_can("edit_add_field_$col", $parent)
+	&& $cgi->param("save_$col")) {
+      $data{$col} = $cgi->param($col) ? 1 : 0;
+    }
+    else {
+      $data{$col} = $self->default_value($req, \%data, $col);
+    }
+  }
+
   for my $col (qw(release expire)) {
     $data{$col} = sql_date($data{$col});
   }
@@ -1558,8 +1589,36 @@ sub save {
     if defined $cgi->param('expire') && 
       $req->user_can('edit_field_edit_expire', $article);
   $article->{lastModified} =  now_sqldatetime();
-  if ($cgi->param('save_force_dynamic')) {
-    $article->{force_dynamic} = $cgi->param('force_dynamic') ? 1 : 0;
+  for my $col (qw/force_dynamic inherit_siteuser_rights/) {
+    if ($req->user_can("edit_field_edit_$col", $article)
+	&& $cgi->param("save_$col")) {
+      $article->{$col} = $cgi->param($col) ? 1 : 0;
+    }
+  }
+
+# Added by adrian
+  my $user = $req->getuser;
+  $article->{lastModifiedBy} = $user ? $user->{logon} : '';
+# end adrian
+
+  my @save_group_ids = $cgi->param('save_group_id');
+  if ($req->user_can('edit_field_edit_group_id')
+      && @save_group_ids) {
+    require BSE::TB::SiteUserGroups;
+    my %groups = map { $_->{id} => $_ }
+      BSE::TB::SiteUserGroups->admin_and_query_groups($self->{cfg});
+    my %set = map { $_ => 1 } $cgi->param('group_id');
+    my %current = map { $_ => 1 } $article->group_ids;
+
+    for my $group_id (@save_group_ids) {
+      $groups{$group_id} or next;
+      if ($current{$group_id} && !$set{$group_id}) {
+	$article->remove_group_id($group_id);
+      }
+      elsif (!$current{$group_id} && $set{$group_id}) {
+	$article->add_group_id($group_id);
+      }
+    }
   }
 
   # this need to go last
@@ -1569,11 +1628,6 @@ sub save {
     my $article_uri = $self->make_link($article);
     $article->setLink($article_uri);
   }
-
-# Added by adrian
-  my $user = $req->getuser;
-  $article->{lastModifiedBy} = $user ? $user->{logon} : '';
-# end adrian
 
   $article->save();
 
@@ -1651,6 +1705,7 @@ sub ampm_time {
       $ampm = 'PM';
     }
     else {
+      $hour = 12 if $hour == 0;
       $ampm = 'AM';
     }
     return sprintf("%02d:%02d:%02d $ampm", $hour, $minute, $second);
@@ -2794,6 +2849,8 @@ my %defaults =
    listed => 1,
    keyword => '',
    body => '<maximum of 64Kb>',
+   force_dynamic => 0,
+   inherit_siteuser_rights => 1,
   );
 
 sub default_value {

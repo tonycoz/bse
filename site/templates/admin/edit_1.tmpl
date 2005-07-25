@@ -8,7 +8,9 @@
     Eq:><a href="<:article admin:>">See article</a><:eif Eq:> | <:eif:><:editParent:> 
   <:if Eq [article id] [cfg articles shop]:><a href="/cgi-bin/admin/shopadmin.pl">Manage
    catalogs</a> |<:or Eq:><:eif Eq:><:if New:><:or New:> <a href="<:script:>?id=<:article id:>&amp;_t=steps">Manage
-    step children/parents</a> | <!--//<a href="<:script:>?id=<:article id:>&amp;_t=options">Edit options</a> |//--><:eif New:></p>
+    step children/parents</a> | 
+<a href="<:script:>?id=<:article id:>&amp;_t=groups">Manage access</a> |
+<:eif New:></p>
 
   <h2><:articleType:> Details</h2>
 
@@ -160,6 +162,13 @@
             <td bgcolor="#FFFFFF" width="100%"> 
               <:ifFieldPerm keyword:><input type="text" name="keyword" maxlength="255" size="60" value="<: old keyword default keyword :>" />
               (comma separated)<:or:><: article threshold :><:eif:></td>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help edit keywords:> <:error_img keyword:></td>
+          </tr>
+          <tr> 
+            <th nowrap="nowrap" bgcolor="#FFFFFF" align="left">Always Dynamic:</th>
+            <td bgcolor="#FFFFFF" width="100%"> 
+              <:ifFieldPerm force_dynamic:><input type="hidden" name="save_force_dynamic" value="1" /><input type="checkbox" name="force_dynamic" value="1" <:if Article force_dynamic :>checked="checked"<:or Article:><:eif Article:> />
+              <:or:><:ifArticle force_dynamic :>Yes<:or Article:>No<:eif Article:><:eif:></td>
             <td nowrap="nowrap" bgcolor="#FFFFFF"><:help edit keywords:> <:error_img keyword:></td>
           </tr>
 <:include admin/article_custom.tmpl optional:>

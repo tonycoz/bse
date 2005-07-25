@@ -16,6 +16,7 @@
       seminar</a> |<:or Seminar:> <a href="<:script:>?id=<:seminar id:>&unhide=1&r=<:script:>?id=<:seminar id:>">Show
       seminar</a> |<:eif Seminar:><:or UserCan:><:eif UserCan:><:ifSeminar listed:><:or:> Hidden<:eif:>
 <a href="<:script:>?id=<:seminar id:>&amp;_t=semsessions">Manage Sessions</a> |
+<a href="<:script:>?id=<:article id:>&amp;_t=groups">Manage access</a> |
 <:eif
       New:></p>
   <h2>Seminar Details</h2>
@@ -193,6 +194,20 @@
               <:ifFieldPerm options:><input type="text" name="options" value="<:old options default options:>" size=30>
               (<:alloptions:>)<:or:><:seminar options:><:eif:> </td>
             <td bgcolor="#FFFFFF"><:help product options:> <:error_img options:></td>
+          </tr>
+          <tr> 
+            <th bgcolor="#FFFFFF" nowrap align="left"> Keywords: </th>
+            <td bgcolor="#FFFFFF" width="100%"> 
+              <:ifFieldPerm keyword:><input type="text" name="keyword" maxlength="255" size="60" value="<: old keyword default keyword :>"><:or:><: article threshold :><:eif:>
+              (comma separated) </td>
+            <td nowrap bgcolor="#FFFFFF"><:help catalog keywords:> <:error_img keyword:></td>
+          </tr>
+          <tr> 
+            <th nowrap="nowrap" bgcolor="#FFFFFF" align="left">Always Dynamic:</th>
+            <td bgcolor="#FFFFFF" width="100%"> 
+              <:ifFieldPerm force_dynamic:><input type="hidden" name="save_force_dynamic" value="1" /><input type="checkbox" name="force_dynamic" value="1" <:if Article force_dynamic :>checked="checked"<:or Article:><:eif Article:> />
+              <:or:><:ifArticle force_dynamic :>Yes<:or Article:>No<:eif Article:><:eif:></td>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help edit keywords:> <:error_img keyword:></td>
           </tr>
 <:include admin/seminar_custom.tmpl optional:>
           <tr> 

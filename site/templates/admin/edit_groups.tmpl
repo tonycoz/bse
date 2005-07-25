@@ -1,0 +1,52 @@
+<:wrap admin/xbase.tmpl title=>"Manage Access" :>
+<h1>Manage Access</h1>
+<:ifMessage:> 
+<p><b><:message:></b></p>
+<:or:><:eif:>
+
+<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | <:if Match [article generator] "Product":><a href="/cgi-bin/admin/add.pl?id=<:article id:>">Edit
+    product</a> | <a href="/cgi-bin/admin/shopadmin.pl">Manage catalogs</a> <:or
+    Match:><:if Eq [article id] [cfg articles shop]:><a href="/cgi-bin/admin/add.pl?id=<:article id:>">Edit
+    shop</a><:or Eq:><a href="/cgi-bin/admin/add.pl?id=<:article id:>"><:ifMatch
+    [article generator] "Catalog":>Edit catalog<:or:>Edit article<:eif:></a><:eif
+    Eq:><:eif Match:> |</p>
+<h2><a name="groups"></a>Groups</h2>
+<form method="post" action="<:script:>">
+<input type="hidden" name="id" value="<:article id:>" />
+<table border="0" cellpadding="6" cellspacing="1">
+  <tr bgcolor="#FFFFFF"> 
+    <th>Group</th>
+    <th>Required</th>
+  </tr>
+<:if Groups:>
+<:iterator begin groups:>
+  <tr>
+    <td><:group name:></td>
+    <td>
+      <input type="hidden" name="save_group_id" value="<:group id:>" />
+      <input type="checkbox" name="group_id" value="<:group id:>" <:ifGroupRequired:>checked="checked" <:or:><:eif:>/>
+    </td>
+  </tr>
+<:iterator end groups:>
+<:or Groups:>
+  <tr>
+    <td colspan="2">You have no <a href="/cgi-bin/admin/siteusers.pl?a_grouplist=1">groups defined</a></td>
+  </tr>
+<:eif Groups:>
+  <tr>
+    <td colspan="2"><hr /></td>
+  </tr>
+  <tr>
+    <th>Inherit Parent groups</th>
+    <td>
+      <input type="hidden" name="save_inherit_siteuser_rights" value="1" />
+      <input type="checkbox" name="inherit_siteuser_rights" value="1" <:ifArticle inherit_siteuser_rights:>checked="checked"<:or:><:eif:> />
+    </td>
+  </tr>
+  <tr>
+   <td colspan="2">
+    <input type="submit" name="save" value="Save" />
+   </td>
+  </tr>
+      </table>
+</form>

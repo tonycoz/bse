@@ -471,6 +471,7 @@ HTML
      },
      ifImage => sub { $_[0] >= 1 && $_[0] <= @images },
      ifImages => sub { @images },
+     image_index => sub { $image_index },
      BSE::Util::Tags->make_iterator(\@files, 'file', 'files'),
      BSE::Util::Tags->make_iterator(\@stepkids, 'stepkid', 'stepkids'),
      BSE::Util::Tags->make_iterator(\@allkids, 'allkid', 'allkids', \$allkids_index),

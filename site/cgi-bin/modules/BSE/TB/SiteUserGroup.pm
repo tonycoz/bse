@@ -37,11 +37,13 @@ sub valid_rules {
 sub remove {
   my ($self) = @_;
 
-  # remove any permissions and members for this group
-  print STDERR "** FIXME ", __FILE__, " ", __LINE__, "\n";
-
   # remove any members
   BSE::DB->single->run(siteuserGroupDeleteAllMembers => $self->{id});
+
+  # remove any article permissions
+  # note: this may leave an article dynamic that doesn't need to be
+  # but I don't care much
+  BSE::DB->single->run(siteuserGroupDeleteAllPermissions => $self->{id});
 
   $self->SUPER::remove();
 }

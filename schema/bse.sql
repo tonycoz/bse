@@ -758,3 +758,17 @@ create table bse_siteuser_membership (
   primary key(group_id, siteuser_id),
   index(siteuser_id)
 );
+
+drop table if exists bse_article_groups;
+create table bse_article_groups (
+  article_id integer not null,
+  group_id integer not null,
+  primary key (article_id, group_id)
+);
+
+drop table if exists sql_statements;
+create table sql_statements (
+  name varchar(80) not null primary key,
+  sql_statement text not null
+);
+

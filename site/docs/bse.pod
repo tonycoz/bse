@@ -10,6 +10,47 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_21
+
+=over
+
+=item *
+
+added image.pl, intended for image display popups, accepts article id
+parameter as I<id> and either an image id as I<imid> or an image name
+as I<imname>.
+
+=item *
+
+you can now add siteuser groups required to view an article.  Adding
+such access requirements forces an article to be generated
+dynamically.
+
+=item *
+
+added sql_statements table, used for BSE extensions.
+
+=item *
+
+error.tmpl is now generated correctly from error_base.tmpl
+
+=item *
+
+siteuser group management actions now correctly refresh to the URL
+supplied in the r parameter, if any.
+
+=item *
+
+minor patch to fix the error message displayed when attempting to save
+over a modified article (midnight to 1am times now displayed
+correctly) (supplied by Adrian Oldham)
+
+=item *
+
+added image_index tag to the display article tags
+
+=back
+
 =head2 0.15_20
 
 Applied a patch from Adrian Oldham:

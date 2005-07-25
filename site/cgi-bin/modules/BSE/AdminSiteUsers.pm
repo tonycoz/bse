@@ -778,11 +778,15 @@ sub req_addgroup {
 		 section=>SITEUSER_GROUP_SECT)
     or return $class->req_addgroupform($req, \%errors);
 
-  my $name = $req->cgi->param('name');
+  my $cgi = $req->cgi;
+  my $name = $cgi->param('name');
   my $group = BSE::TB::SiteUserGroups->add($name);
 
-  return BSE::Template->get_refresh("$ENV{SCRIPT_NAME}?a_grouplist=1&m=Group+added", 
-				    $req->cfg);  
+  my $r = $cgi->param('r');
+  unless ($r) {
+    $r = $req->url('siteusers', { a_grouplist => 1, m => "Group created" });
+  }
+  return BSE::Template->get_refresh($r, $req->cfg);
 }
 
 sub req_editgroup {
@@ -807,11 +811,16 @@ sub req_savegroup {
 		 rules=>\%rules,
 		 section=>SITEUSER_GROUP_SECT)
     or return $class->req_editgroup($req, \%errors);
-  
-  $group->{name} = $req->cgi->param('name');
+
+  my $cgi = $req->cgi;
+  $group->{name} = $cgi->param('name');
   $group->save;
 
-  return BSE::Template->get_refresh("$ENV{SCRIPT_NAME}?a_grouplist=1&m=Group+saved", $req->cfg);
+  my $r = $cgi->param('r');
+  unless ($r) {
+    $r = $req->url('siteusers', { a_grouplist => 1, m => "Group saved" });
+  }
+  return BSE::Template->get_refresh($r, $req->cfg);
 }
 
 sub _common_group {
@@ -853,7 +862,11 @@ sub req_deletegroup {
 
   $group->remove;
 
-  return BSE::Template->get_refresh("$ENV{SCRIPT_NAME}?a_grouplist=1&m=Group+deleted", $req->cfg);
+  my $r = $req->cgi->param('r');
+  unless ($r) {
+    $r = $req->url('siteusers', { a_grouplist => 1, m => "Group deleted" });
+  }
+  return BSE::Template->get_refresh($r, $req->cfg);
 }
 
 sub tag_ifMember {
@@ -920,7 +933,11 @@ sub req_savegroupmembers {
     }
   }
 
-  return BSE::Template->get_refresh("$ENV{SCRIPT_NAME}?a_grouplist=1&m=Membership+saved", $req->cfg);
+  my $r = $cgi->param('r');
+  unless ($r) {
+    $r = $req->url('siteusers', { a_grouplist => 1, m => "Membership saved" });
+  }
+  return BSE::Template->get_refresh($r, $req->cfg);
 }
 
 1;

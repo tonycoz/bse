@@ -1233,6 +1233,34 @@ by data passed to that filter.
 
 See the documentation for each filter to configure the filters.
 
+=head2 [Query Groups]
+
+The key of each entry is the numeric identifier of a query group, the
+values are the name of the query group.  For example:
+
+  [query groups]
+  1=some name
+
+  [query group some name]
+  sql=select id from site_users where id = ? and name1 like '%some%'
+
+Each entry also has a corresponding [Query Group I<name>] section.
+
+=head2 [query group I<name>]
+
+This section corresponds to an entry in [Query Groups].
+
+=over
+
+=item sql
+
+This is an SQL statement.  One placeholder is required and is passed
+the siteuser id (primary key) of the user to be checked.  If this
+query returns I<any> rows then the user is considered part of the
+group.
+
+=back
+
 =head2 [inpho]
 
 This is used to configure the DevHelp::Payments::Inpho module.

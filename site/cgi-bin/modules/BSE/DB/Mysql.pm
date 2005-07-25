@@ -52,6 +52,10 @@ EOS
    addImage => 'insert image values(null, ?, ?, ?, ?, ?, ?, ?, ?)',
    deleteImage => 'delete from image where id = ?',
    getImageByArticleId => 'select * from image where articleId = ? order by displayOrder',
+   getImageByPkey => 'select * from image where id = ?',
+   getImageByArticleIdAndName => <<SQL,
+select * from image where articleId = ? and name = ?
+SQL
    
    dropIndex => 'delete from searchindex',
    insertIndex => 'insert searchindex values(?, ?, ?, ?)',
@@ -479,6 +483,25 @@ where siteuser_id = ? and group_id = ?
 SQL
     siteuserGroupsForUser => <<SQL,
 select group_id as "id" from bse_siteuser_membership where siteuser_id = ?
+SQL
+
+    articleAccessibleToGroup => <<SQL,
+select * from bse_article_groups
+where article_id = ? and group_id = ?
+SQL
+    siteuserGroupsForArticle => <<SQL,
+select group_id as "id" from bse_article_groups
+where article_id = ?
+SQL
+    articleAddSiteUserGroup => <<SQL,
+insert bse_article_groups values(?,?)
+SQL
+    articleDeleteSiteUserGroup => <<SQL,
+delete from bse_article_groups 
+where article_id = ? and group_id = ?
+SQL
+    siteuserGroupDeleteAllPermissions => <<SQL,
+delete from bse_article_groups where group_id = ?
 SQL
   );
 

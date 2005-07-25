@@ -14,7 +14,9 @@
    :> <a href="/cgi-bin/admin/add.pl?id=<:product id:>&_t=steps">Manage
       step parents</a> | <:if Product listed:> <a href="<:script:>?id=<:product id:>&hide=1&r=<:script:>?id=<:product id:>">Hide
       product</a> |<:or Product:> <a href="<:script:>?id=<:product id:>&unhide=1&r=<:script:>?id=<:product id:>">Show
-      product</a> |<:eif Product:><:or UserCan:><:eif UserCan:><:ifProduct listed:><:or:> Hidden<:eif:><:eif
+      product</a> |
+<a href="<:script:>?id=<:article id:>&amp;_t=groups">Manage access</a> |
+<:eif Product:><:or UserCan:><:eif UserCan:><:ifProduct listed:><:or:> Hidden<:eif:><:eif
       New:></p>
   <h2>Product Details</h2>
 <:ifNew:><:or:><:if Or [iadminuser_count] [iadmingroup_count]:>
@@ -178,6 +180,20 @@
             </td>
             <td nowrap bgcolor="#FFFFFF"><:help product threshold:> <:error_img
             threshold:></td>
+          </tr>
+          <tr> 
+            <th bgcolor="#FFFFFF" nowrap align="left"> Keywords: </th>
+            <td bgcolor="#FFFFFF" width="100%"> 
+              <:ifFieldPerm keyword:><input type="text" name="keyword" maxlength="255" size="60" value="<: old keyword default keyword :>"><:or:><: article threshold :><:eif:>
+              (comma separated) </td>
+            <td nowrap bgcolor="#FFFFFF"><:help catalog keywords:> <:error_img keyword:></td>
+          </tr>
+          <tr> 
+            <th nowrap="nowrap" bgcolor="#FFFFFF" align="left">Always Dynamic:</th>
+            <td bgcolor="#FFFFFF" width="100%"> 
+              <:ifFieldPerm force_dynamic:><input type="hidden" name="save_force_dynamic" value="1" /><input type="checkbox" name="force_dynamic" value="1" <:if Article force_dynamic :>checked="checked"<:or Article:><:eif Article:> />
+              <:or:><:ifArticle force_dynamic :>Yes<:or Article:>No<:eif Article:><:eif:></td>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help edit keywords:> <:error_img keyword:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF">Options:</th>

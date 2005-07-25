@@ -138,7 +138,13 @@ sub update_dynamic {
   $dynamic or $dynamic = $self->{force_dynamic};
 
   unless ($dynamic) {
-    # check for groups, etc
+    my @groups = $self->group_ids;
+    @groups and $dynamic = 1;
+  }
+
+  unless ($dynamic) {
+    my $parent = $self->parent;
+    $parent and $dynamic = $parent->is_dynamic;
   }
 
   $self->{cached_dynamic} = $dynamic;
@@ -146,6 +152,36 @@ sub update_dynamic {
 
 sub is_dynamic {
   $_[0]{cached_dynamic};
+}
+
+sub is_accessible_to {
+  my ($self, $group) = @_;
+
+  my $groupid = ref $group ? $group->{id} : $group;
+
+  my @rows = BSE::DB->query(articleAccessibleToGroup => $self->{id}, $groupid);
+
+  scalar @rows;
+}
+
+sub group_ids {
+  my ($self) = @_;
+
+  map $_->{id}, BSE::DB->query(siteuserGroupsForArticle => $self->{id});
+}
+
+sub add_group_id {
+  my ($self, $id) = @_;
+
+  eval {
+    BSE::DB->single->run(articleAddSiteUserGroup => $self->{id}, $id);
+  };
+}
+
+sub remove_group_id {
+  my ($self, $id) = @_;
+
+  BSE::DB->single->run(articleDeleteSiteUserGroup => $self->{id}, $id);
 }
 
 1;
