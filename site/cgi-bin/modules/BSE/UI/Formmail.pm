@@ -34,6 +34,8 @@ my %form_defs =
    mail => 'formmail/defemail',
    fields => 'from,subject,text',
    subject => 'User form emailed',
+   require_logon => 0,
+   logon_message => "You must logon for this form",
    encrypt => 0,
    crypt_class => $Constants::SHOP_CRYPTO,
    crypt_gpg => $Constants::SHOP_GPG,
@@ -188,6 +190,11 @@ sub req_show {
 
   my $form = _get_form($req);
 
+  if ($form->{require_logon}) {
+    $req->siteuser
+      or return _refresh_logon($req, $form);
+  }
+
   my $msg = $req->message($errors);
 
   my $it = BSE::Util::Iterate->new;
@@ -235,6 +242,11 @@ sub req_send {
   my ($class, $req) = @_;
 
   my $form = _get_form($req);
+
+  if ($form->{require_logon}) {
+    $req->siteuser
+      or return _refresh_logon($req, $form);
+  }
 
   my $cgi = $req->cgi;
   my $cfg = $req->cfg;
@@ -362,6 +374,15 @@ sub _encrypt {
     or die "Cannot encrypt ",$encryptor->error;
 
   $result;
+}
+
+sub _refresh_logon {
+  my ($req, $form) = @_;
+
+  my $r = $ENV{SCRIPT_NAME}."?form=".$form->{id};
+  my $logon = "/cgi-bin/user.pl?show_logon=1&r=".escape_uri($r)
+    ."&message=".escape_uri($form->{logon_message});
+  return BSE::Template->get_refresh($logon, $req->cfg);
 }
 
 1;

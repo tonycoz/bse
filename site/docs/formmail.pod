@@ -132,6 +132,16 @@ value configured as [shop].from or $SHOP_FROM from Constants.pm
 
 =item *
 
+require_logon - if this is non-zero then the user must be logged on to
+display or submit the form. See also: logon_message.
+
+=item *
+
+logon_message - this message is displayed on the logon form if
+require_logon is set and the user isn't logged on.
+
+=item *
+
 encrypt - if this is non-zero then the emailed form data is encrypted
 using PGP or GPG as configured (see the crypt options below).
 

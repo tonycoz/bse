@@ -3,6 +3,7 @@ use strict;
 use Articles;
 use Images;
 use BSE::Util::Tags qw(tag_hash);
+use DevHelp::HTML qw(escape_uri);
 
 # we don't do anything fancy on dispatch yet, so don't use the 
 # dispatch classes
@@ -31,6 +32,21 @@ sub dispatch {
       or return $class->error($req, "Invalid imname supplied");
     ($image) = Images->getBy(articleId=>$article->{id}, name=>$imname)
       or return $class->error($req, "Unknown image name supplied");
+  }
+
+  # check the user has access to the article
+  if ($article->is_dynamic && !$req->siteuser_has_access($article)) {
+    if ($req->siteuser) {
+      return $class->error
+	($req, "You do not have access to view this image");
+    }
+    else {
+      my $cfg = $req->cfg;
+      my $refresh = "/cgi-bin/image.pl?id=$article->{id}&imid=$image->{id}";
+      my $logon =
+	$cfg->entry('site', 'url') . "/cgi-bin/user.pl?show_logon=1&r=".escape_uri($refresh)."&message=You+need+to+logon+to+view+this+image";
+      return BSE::Template->get_refresh($logon, $cfg);
+    }
   }
 
   my %acts;

@@ -162,7 +162,8 @@ sub output_result {
 
   select STDOUT;
   $| = 1;
-  push @{$result->{headers}}, "Content-Type: $result->{type}";
+  push @{$result->{headers}}, "Content-Type: $result->{type}"
+    if $result->{type};
   push @{$result->{headers}}, $req->extra_headers;
   if (exists $ENV{GATEWAY_INTERFACE}
       && $ENV{GATEWAY_INTERFACE} =~ /^CGI-Perl\//) {

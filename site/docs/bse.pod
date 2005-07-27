@@ -10,6 +10,44 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_22
+
+=over
+
+=item *
+
+if siteuser groups were required on a non-top level article, and the
+user was not logged on, a 500 error would occur, instead of displaying
+the logon page.
+
+=item *
+
+you can now set require_logon to non-zero for an fmail.pl form to
+require the user to logon before displaying/submitting the form.  The
+message displayed on the logon form can be customized, see
+L</formmail.pod> for details.
+
+=item *
+
+the submit button on the defquery_base page had an empty value unless
+the submit text was configured
+
+=item *
+
+moved the security check code out of BSE::UI::Page to BSE::Request to
+make it more generally available.
+
+=item *
+
+image.pl now checks the user has access to the article before
+displaying the image
+
+=item *
+
+saving a dynamic catalog would cause a 500 error.
+
+=back
+
 =head2 0.15_21
 
 =over

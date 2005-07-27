@@ -33,7 +33,7 @@ sub dispatch {
 
   my $cfg = $req->cfg;
 
-  unless ($class->has_access($req, $article)) {
+  unless ($req->siteuser_has_access($article)) {
     if ($req->siteuser) {
       return $class->error
 	($req, "You do not have access to view this article");
@@ -100,66 +100,6 @@ sub _generate_pregen {
   }
 
   $content;
-}
-
-sub _have_group_access {
-  my ($req, $user, $group_ids, $membership) = @_;
-
-  if (grep $_ > 0, @$group_ids) {
-    $membership->{filled}
-      or %$membership = map { $_ => 1 } 'filled', $user->group_ids;
-    return 1
-      if grep $membership->{$_}, @$group_ids;
-  }
-  for my $query_id (grep $_ < 0, @$group_ids) {
-    require BSE::TB::SiteUserGroups;
-    my $group = BSE::TB::SiteUserGroups->getQueryGroup($req->cfg, $query_id)
-      or next;
-    my $rows = BSE::DB->single->dbh->selectall_arrayref($group->{sql}, { MaxRows=>1 }, $user->{id});
-    $rows && @$rows
-      and return 1;
-  }
-
-  return 0;
-}
-
-sub has_access {
-  my ($class, $req, $article, $user, $default, $membership) = @_;
-
-  defined $default or $default = 1;
-  defined $membership or $membership = {};
-
-  my @group_ids = $article->group_ids;
-  if ($article->{inherit_siteuser_rights}
-      && $article->{parentid} != -1) {
-    if (@group_ids) {
-      if (_have_group_access($req, $user, \@group_ids, $membership)) {
-	return 1;
-      }
-      else {
-	return $class->has_access($req, $article->parent, $user, 0);
-      }
-    }
-    else {
-      # ask parent
-      return $class->has_access($req, $article->parent, $user, $default);
-    }
-  }
-  else {
-    if (@group_ids) {
-      $user ||= $req->siteuser
-	or return 0;
-      if (_have_group_access($req, $user, \@group_ids, $membership)) {
-	return 1;
-      }
-      else {
-	return 0;
-      }
-    }
-    else {
-      return $default;
-    }
-  }
 }
 
 1;
