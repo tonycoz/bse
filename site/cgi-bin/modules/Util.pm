@@ -100,7 +100,8 @@ sub generate_search {
     (-1, -1, $SEARCH_TITLE, $SEARCH_TITLE_IMAGE, 0, $CGI_URI."/search.pl", 0, 1);
 
   require 'Generate/Article.pm';
-  my $gen = Generate::Article->new(cfg=>$cfg, top => \%article);
+  my $gen = Generate::Article->new(cfg=>$cfg, top => \%article, 
+				   force_dynamic => 1);
 
   my %acts;
   %acts = $gen->baseActs($articles, \%acts, \%article);
@@ -128,7 +129,7 @@ sub generate_shop {
   require 'Generate/Article.pm';
   my $shop = $articles->getByPkey($SHOPID);
   my $cfg = BSE::Cfg->new;
-  my $gen = Generate::Article->new(cfg=>$cfg, top=>$shop);
+  my $gen = Generate::Article->new(cfg=>$cfg, top=>$shop, force_dynamic => 1);
   for my $name (@pages) {
     my %acts;
     %acts = $gen->baseActs($articles, \%acts, $shop);
@@ -227,8 +228,12 @@ sub generate_extras {
 	  $article{$field} = $cfg->entryVar("$presets settings", $field);
 	}
       }
+      # by default all of these are handled as dynamic, but it can be 
+      # overidden, eg. the error template
+      my $dynamic = $cfg->entry("$presets settings", 'dynamic', 1);
       my %acts;
-      my $gen = Generate::Article->new(cfg=>$cfg, top=>\%article);
+      my $gen = Generate::Article->new(cfg=>$cfg, top=>\%article, 
+				       force_dynamic => $dynamic);
       %acts = $gen->baseActs($articles, \%acts, \%article);
       my $oldurl = $acts{url};
       $acts{url} =

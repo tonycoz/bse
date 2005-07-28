@@ -2,7 +2,6 @@
 # -d:ptkdb
 BEGIN { $ENV{DISPLAY} = '192.168.32.15:0.0' }
 use strict;
-use CGI;
 use FindBin;
 use lib "$FindBin::Bin/modules";
 use Articles;
@@ -13,14 +12,16 @@ use BSE::Cfg;
 use BSE::Template;
 use DevHelp::HTML qw':default popup_menu';
 use BSE::Util::Tags;
+use BSE::Request;
 
-my $cfg = BSE::Cfg->new;
+my $req = BSE::Request->new;
+my $cfg = $req->cfg;
 
 my $results_per_page = 10;
 
 my $dh = BSE::DB->single;
 
-my $cgi = CGI->new;
+my $cgi = $req->cgi;
 my $words = $cgi->param('q');
 my $section = $cgi->param('s');
 my $date = $cgi->param('d');
@@ -86,7 +87,7 @@ my $words_re = qr/$words_re_str/i;
 my %acts;
 %acts =
   (
-   BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
+   $req->dyn_user_tags(),
    iterate_results => 
    sub { 
      ++$result_seq;
@@ -106,10 +107,13 @@ my %acts;
        # match against the pageTitle
        $pageTitle = $articles[$article_index]{pageTitle};
        $pageTitle =~ s!$words_re!<b>$1</b>!g or $pageTitle = '';
+       $req->set_article(result => $articles[$article_index]);
        
        return 1;
      }
      else {
+       $req->set_article(result => undef);
+
        return 0;
      }
    },

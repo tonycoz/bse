@@ -93,8 +93,7 @@ sub req_cart {
     (
      $cust_class->cart_actions(\%acts, \@cart, \@cart_prods, \%custom_state, 
 			       $req->cfg),
-     shop_cart_tags(\%acts, \@items, \@cart_prods, $req->session, $req->cgi, 
-		    $req->cfg, 'cart'),
+     shop_cart_tags(\%acts, \@items, \@cart_prods, $req, 'cart'),
      basic_tags(\%acts),
      msg => $msg,
     );
@@ -292,8 +291,7 @@ sub req_checkout {
   my %acts;
   %acts =
     (
-     shop_cart_tags(\%acts, \@items, \@cart_prods, $req->session, $req->cgi, 
-		    $cfg, 'checkout'),
+     shop_cart_tags(\%acts, \@items, \@cart_prods, $req, 'checkout'),
      basic_tags(\%acts),
      message => $message,
      msg => $message,
@@ -458,8 +456,7 @@ sub req_show_payment {
      message => $msg,
      msg => $msg,
      order => [ \&tag_hash, $order_values ],
-     shop_cart_tags(\%acts, \@items, \@products, $req->session, $req->cgi,
-		    $req->cfg, 'payment'),
+     shop_cart_tags(\%acts, \@items, \@products, $req, 'payment'),
      ifMultPaymentTypes => @payment_types > 1,
      checkedPayment => [ \&tag_checkedPayment, $payment, \%types_by_name ],
      ifPayments => [ \&tag_ifPayments, \@payment_types, \%types_by_name ],

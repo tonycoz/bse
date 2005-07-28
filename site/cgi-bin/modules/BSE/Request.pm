@@ -311,11 +311,45 @@ sub siteuser_has_access {
   }
 }
 
+sub dyn_user_tags {
+  my ($self) = @_;
+
+  require BSE::Util::DynamicTags;
+  return BSE::Util::DynamicTags->tags($self);
+}
+
 sub DESTROY {
   my ($self) = @_;
   if ($self->{session}) {
     undef $self->{session};
   }
+}
+
+sub set_article {
+  my ($self, $name, $article) = @_;
+
+  if ($article) {
+    $self->{articles}{$name} = $article;
+  }
+  else {
+    delete $self->{articles}{$name};
+  }
+}
+
+sub get_article {
+  my ($self, $name) = @_;
+
+  exists $self->{articles}{$name}
+    or return;
+
+  my $article = $self->{articles}{$name};
+  if (ref $article eq 'SCALAR') {
+    $article = $$article;
+  }
+  $article 
+    or return;
+
+  $article;
 }
 
 1;

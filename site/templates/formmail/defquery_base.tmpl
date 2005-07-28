@@ -9,7 +9,7 @@
   <td>
   <:switch:>
   <:case Eq [field htmltype] "textarea":>
-  <textarea name="<:field name:>" <:ifField width:>cols="<:field width:>"<:or:><:eif:> <:ifField height:>rows="<:field height:>"<:or:><:eif:> wrap="virtual"><:old [field name]:></textarea>
+  <textarea name="<:field name:>" <:ifField width:>cols="<:field width:>"<:or:><:eif:> <:ifField height:>rows="<:field height:>"<:or:><:eif:> wrap="virtual"><:old [field name] field default:></textarea>
   <:case Eq [field htmltype] "password":>
   <input type="password" name="<:field name:>" value="<:old [field name]:>" <:ifField width:>size="<:field width:>"<:or:><:eif:> />
   <:case Eq [field htmltype] "select":>
@@ -33,7 +33,7 @@
   <br />
   <:iterator end values:>
   <:case default:>
-  <input type="text" name="<:field name:>" value="<:old [field name]:>" <:ifField width:>size="<:field width:>" <:or:><:eif:><:ifField maxlength:>maxlength="<:field maxlength:>"<:or:><:eif:> />
+  <input type="text" name="<:field name:>" value="<:old [field name] field default:>" <:ifField width:>size="<:field width:>" <:or:><:eif:><:ifField maxlength:>maxlength="<:field maxlength:>"<:or:><:eif:> />
   <:endswitch:>
   <:ifField notes:><:field notes:><:or:><:eif:>
   </td>

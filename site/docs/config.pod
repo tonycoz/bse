@@ -525,6 +525,11 @@ result excerpts.  Default: True
 Used by some templates to check if the shop is enabled.  Set this to 1
 to enable the shop, or 0 to disable it.
 
+=item secureurl_articles
+
+If this is false then shop articles will not use the secureurl as their 
+baseurl.  Default: True
+
 =item register_if_files
 
 If true the customer is required to register before checkout if there

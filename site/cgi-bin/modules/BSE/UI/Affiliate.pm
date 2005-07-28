@@ -262,7 +262,7 @@ sub req_show {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(undef, $req->cgi, $req->cfg),
+     $req->dyn_user_tags(),
      $class->_display_tags($user, $req->cfg),
     );
 

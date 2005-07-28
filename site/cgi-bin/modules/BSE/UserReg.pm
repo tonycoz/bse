@@ -22,32 +22,6 @@ use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
 my @donttouch = qw(id userId password email confirmed confirmSecret waitingForConfirmation disabled flags affiliate_name previousLogon);
 my %donttouch = map { $_, $_ } @donttouch;
 
-sub user_tags {
-  my ($self, $acts, $session, $user) = @_;
-
-  unless ($user) {
-    my $userid = $session->{userid};
-    
-    if ($userid) {
-      $user = SiteUsers->getBy(userId=>$userid);
-    }
-  }
-
-  return
-    (
-     ifUser=> 
-     sub { 
-       if ($_[0]) {
-	 return $user->{$_[0]};
-       }
-       else {
-	 return $user;
-       }
-     },
-     user => $user ? [ \&tag_hash, $user ] : '',
-    );
-}
-
 sub _refresh_userpage ($$) {
   my ($cfg, $msg) = @_;
 
@@ -59,12 +33,16 @@ sub _refresh_userpage ($$) {
 }
 
 sub show_logon {
-  my ($self, $session, $cgi, $cfg, $message) = @_;
+  my ($self, $req, $message) = @_;
+
+  my $cfg = $req->cfg;
+  my $cgi = $req->cgi;
+  my $session = $req->session;
 
   my $nopassword = $cfg->entryBool('site users', 'nopassword', 0);
 
   if ($nopassword) {
-    return $self->nopassword($session, $cgi, $cfg);
+    return $self->nopassword($req);
   }
 
   $message ||= $cgi->param('message') || '';
@@ -75,8 +53,7 @@ sub show_logon {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
-     $self->user_tags(\%acts, $session),
+     $req->dyn_user_tags(),
      message => sub { CGI::escapeHTML($message) },
     );
 
@@ -84,12 +61,16 @@ sub show_logon {
 }
 
 sub logon {
-  my ($self, $session, $cgi, $cfg) = @_;
+  my ($self, $req) = @_;
+
+  my $cfg = $req->cfg;
+  my $cgi = $req->cgi;
+  my $session = $req->session;
 
   my $nopassword = $cfg->entryBool('site users', 'nopassword', 0);
 
   if ($nopassword) {
-    return $self->nopassword($session, $cgi, $cfg);
+    return $self->nopassword($req);
   }
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
   my $userid = $cgi->param('userid')
@@ -176,7 +157,11 @@ sub _got_user_refresh {
 }
 
 sub set_cookie {
-  my ($self, $session, $cgi, $cfg) = @_;
+  my ($self, $req) = @_;
+
+  my $cfg = $req->cfg;
+  my $cgi = $req->cgi;
+  my $session = $req->session;
 
   my $debug = $cfg->entryBool('debug', 'logon_cookies', 0);
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
@@ -208,12 +193,16 @@ sub set_cookie {
 }
 
 sub logoff {
-  my ($self, $session, $cgi, $cfg) = @_;
+  my ($self, $req) = @_;
+
+  my $cfg = $req->cfg;
+  my $cgi = $req->cgi;
+  my $session = $req->session;
 
   my $nopassword = $cfg->entryBool('site users', 'nopassword', 0);
 
   if ($nopassword) {
-    return $self->nopassword($session, $cgi, $cfg);
+    return $self->nopassword($req);
   }
 
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
@@ -252,7 +241,11 @@ sub tag_if_required {
 }
 
 sub show_register {
-  my ($self, $session, $cgi, $cfg, $message, $errors) = @_;
+  my ($self, $req, $message, $errors) = @_;
+
+  my $cfg = $req->cfg;
+  my $cgi = $req->cgi;
+  my $session = $req->session;
 
   my $user_register = $cfg->entryBool('site users', 'user_register', 1);
   my $nopassword = $cfg->entryBool('site users', 'nopassword', 0);
@@ -289,8 +282,7 @@ sub show_register {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
-     $self->user_tags(\%acts, $session),
+     $req->dyn_user_tags(),
      old => 
      sub {
        my $value = $cgi->param($_[0]);
@@ -317,8 +309,11 @@ sub show_register {
 }
 
 sub _get_user {
-  my ($self, $session, $cgi, $cfg, $name) = @_;
+  my ($self, $req, $name) = @_;
 
+  my $cfg = $req->cfg;
+  my $cgi = $req->cgi;
+  my $session = $req->session;
   my $nopassword = $cfg->entryBool('site users', 'nopassword', 0);
   if ($nopassword) {
     my $password;
@@ -343,12 +338,10 @@ sub _get_user {
       return $custom->siteuser_auth($session, $cgi, $cfg);
     }
     else {
-      my $userid = $session->{userid}
-	or do { $self->show_logon($session, $cgi, $cfg); return };
-      my $user = SiteUsers->getBy(userId=>$userid)
-	or do { $self->show_logon($session, $cgi, $cfg); return };
+      my $user = $req->siteuser
+	or do { $self->show_logon($req); return };
       $user->{disabled}
-	and do { $self->show_logon($session, $cgi, $cfg, "Account disabled"); return };
+	and do { $self->show_logon($req, "Account disabled"); return };
       
       return $user;
     }
@@ -366,9 +359,13 @@ sub tag_ifSubscribedTo {
 }
 
 sub show_opts {
-  my ($self, $session, $cgi, $cfg, $message, $errors) = @_;
+  my ($self, $req, $message, $errors) = @_;
 
-  my $user = $self->_get_user($session, $cgi, $cfg, 'show_opts')
+  my $cfg = $req->cfg;
+  my $cgi = $req->cgi;
+  my $session = $req->session;
+
+  my $user = $self->_get_user($req, 'show_opts')
     or return;
   my @subs = grep $_->{visible}, BSE::SubscriptionTypes->all;
   my @usersubs = BSE::SubscribedUsers->getBy(userId=>$user->{id});
@@ -396,8 +393,7 @@ sub show_opts {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
-     $self->user_tags(\%acts, $session, $user),
+     $req->dyn_user_tags(),
      last => 
      sub {
        my $value = $cgi->param($_[0]);
@@ -477,11 +473,15 @@ sub _checkemail {
 }
 
 sub saveopts {
-  my ($self, $session, $cgi, $cfg) = @_;
+  my ($self, $req) = @_;
+
+  my $cfg = $req->cfg;
+  my $cgi = $req->cgi;
+  my $session = $req->session;
 
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
 
-  my $user = $self->_get_user($session, $cgi, $cfg)
+  my $user = $self->_get_user($req)
     or return;
   my $nopassword = $cfg->entryBool('site users', 'nopassword', 0);
   my %errors;
@@ -635,7 +635,11 @@ sub _save_subs {
 }
 
 sub register {
-  my ($self, $session, $cgi, $cfg) = @_;
+  my ($self, $req) = @_;
+
+  my $cfg = $req->cfg;
+  my $cgi = $req->cgi;
+  my $session = $req->session;
 
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
 
@@ -806,9 +810,13 @@ sub iter_usersubs {
 }
 
 sub userpage {
-  my ($self, $session, $cgi, $cfg, $message) = @_;
+  my ($self, $req, $message) = @_;
 
-  my $user = $self->_get_user($session, $cgi, $cfg, 'userpage')
+  my $cfg = $req->cfg;
+  my $cgi = $req->cgi;
+  my $session = $req->session;
+
+  my $user = $self->_get_user($req, 'userpage')
     or return;
   require BSE::TB::Orders;
   my @orders = sort { $b->{orderDate} cmp $a->{orderDate}
@@ -829,8 +837,7 @@ sub userpage {
   my $file_index;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
-     $self->user_tags(\%acts, $session, $user),
+     $req->dyn_user_tags(),
      message => sub { CGI::escapeHTML($message) },
      BSE::Util::Tags->make_iterator(\@orders, 'order', 'orders', 
 				    \$order_index),
@@ -919,9 +926,13 @@ sub tag_detail_ifFileAvail {
 }
 
 sub req_orderdetail {
-  my ($self, $session, $cgi, $cfg, $message) = @_;
+  my ($self, $req, $message) = @_;
 
-  my $user = $self->_get_user($session, $cgi, $cfg, 'userpage')
+  my $cfg = $req->cfg;
+  my $cgi = $req->cgi;
+  my $session = $req->session;
+
+  my $user = $self->_get_user($req, 'userpage')
     or return;
   my $order_id = $cgi->param('id');
   my $order;
@@ -950,9 +961,8 @@ sub req_orderdetail {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
+     $req->dyn_user_tags(),
      order => [ \&tag_hash, $order ],
-     $self->user_tags(\%acts, $session, $user),
      message => sub { CGI::escapeHTML($message) },
      $it->make_iterator
      (undef, 'item', 'items', \@items, undef, undef, \$current_item),
@@ -977,10 +987,14 @@ sub req_orderdetail {
 }
 
 sub download {
-  my ($self, $session, $cgi, $cfg) = @_;
+  my ($self, $req) = @_;
+
+  my $cfg = $req->cfg;
+  my $cgi = $req->cgi;
+  my $session = $req->session;
 
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
-  my $user = $self->_get_user($session, $cgi, $cfg, 'show_opts')
+  my $user = $self->_get_user($req, 'show_opts')
     or return;
 
   my $orderid = $cgi->param('order')
@@ -1045,7 +1059,11 @@ sub download {
 }
 
 sub download_file {
-  my ($self, $session, $cgi, $cfg) = @_;
+  my ($self, $req) = @_;
+
+  my $cfg = $req->cfg;
+  my $cgi = $req->cgi;
+  my $session = $req->session;
 
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
   my $userid = $session->{userid};
@@ -1100,7 +1118,11 @@ sub download_file {
 }
 
 sub show_lost_password {
-  my ($self, $session, $cgi, $cfg, $message) = @_;
+  my ($self, $req, $message) = @_;
+
+  my $cfg = $req->cfg;
+  my $cgi = $req->cgi;
+  my $session = $req->session;
 
   $message ||= $cgi->param('message') || '';
   $message = escape_html($message);
@@ -1113,15 +1135,18 @@ sub show_lost_password {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
+     $req->dyn_user_tags(),
      message => $message,
-     $self->user_tags(\%acts, $session, $user),
     );
   BSE::Template->show_page('user/lostpassword', $cfg, \%acts);
 }
 
 sub lost_password {
-  my ($self, $session, $cgi, $cfg, $message) = @_;
+  my ($self, $req, $message) = @_;
+
+  my $cfg = $req->cfg;
+  my $cgi = $req->cgi;
+  my $session = $req->session;
 
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
   my $userid = $cgi->param('userid');
@@ -1168,7 +1193,11 @@ sub lost_password {
 }
 
 sub subinfo {
-  my ($self, $session, $cgi, $cfg) = @_;
+  my ($self, $req) = @_;
+
+  my $cfg = $req->cfg;
+  my $cgi = $req->cgi;
+  my $session = $req->session;
 
   my $id = $cgi->param('id')
     or return $self->show_opts($session, $cgi, $cfg, "No subscription id parameter");
@@ -1184,7 +1213,11 @@ sub subinfo {
 }
 
 sub nopassword {
-  my ($self, $session, $cgi, $cfg) = @_;
+  my ($self, $req) = @_;
+
+  my $cfg = $req->cfg;
+  my $cgi = $req->cgi;
+  my $session = $req->session;
 
   my %acts;
   %acts =
@@ -1195,7 +1228,11 @@ sub nopassword {
 }
 
 sub blacklist {
-  my ($self, $session, $cgi, $cfg) = @_;
+  my ($self, $req) = @_;
+
+  my $cfg = $req->cfg;
+  my $cgi = $req->cgi;
+  my $session = $req->session;
 
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
   my $email = $cgi->param('blacklist')
@@ -1225,7 +1262,11 @@ sub blacklist {
 }
 
 sub confirm {
-  my ($self, $session, $cgi, $cfg) = @_;
+  my ($self, $req) = @_;
+
+  my $cfg = $req->cfg;
+  my $cgi = $req->cgi;
+  my $session = $req->session;
 
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
   my $secret = $cgi->param('confirm')
@@ -1388,7 +1429,11 @@ sub send_conf_request {
 }
 
 sub unsub {
-  my ($self, $session, $cgi, $cfg) = @_;
+  my ($self, $req) = @_;
+
+  my $cfg = $req->cfg;
+  my $cgi = $req->cgi;
+  my $session = $req->session;
 
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
   my $secret = $cgi->param('unsub')
@@ -1478,7 +1523,11 @@ sub _validate_affiliate_name {
 }
 
 sub req_image {
-  my ($self, $session, $cgi, $cfg) = @_;
+  my ($self, $req) = @_;
+
+  my $cfg = $req->cfg;
+  my $cgi = $req->cgi;
+  my $session = $req->session;
 
   my $u = $cgi->param('u');
   my $i = $cgi->param('i');

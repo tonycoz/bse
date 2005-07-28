@@ -1059,7 +1059,21 @@ C<level1> or C<level2> article is the current page.
 
 =item iterator ... images
 
-Iterates over the images for the given article.
+Iterates over the unnamed images for the given article.
+
+=item iterator ... images all
+
+Iterates over all images for the article.
+
+=item iterator ... images named
+
+Iterates over the named images for the article.
+
+=item iterator ... images named /regexp/
+
+Iterates over images with names matching the given regular expression.
+Note that if the expression matches an empty string then unnamed
+images will be included.
 
 =item image which field
 
@@ -1118,7 +1132,39 @@ Condition tag, true if an image exists at the given index.
 
 =item ifImages
 
+=item ifImages all
+
 Conditional tag, true if the article has any images.
+
+=item ifImages named
+
+Conditional tag, true if the article has any named images.
+
+=item ifImages named /regexp/
+
+Conditional tag, true if the article has any named images, where the
+name matches the regular expression.
+
+=item ifImages unnamed
+
+Conditional tag, true if the article has any unnamed images.
+
+=item ifDynamic
+
+Tests if the article is dynamically generated.
+
+=item top I<field>
+
+Toplevel article being generated.  This is the page that any articles
+are being embedded in.
+
+=item iterator ... files
+
+Iterates over the files attached to the article, setting the file tag.
+
+=item file I<field>
+
+Information from the current file in the files iterator.
 
 =back
 

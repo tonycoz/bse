@@ -44,6 +44,7 @@ my %form_defs =
    crypt_passphrase => $Constants::SHOP_PASSPHRASE,
    crypt_signing_id => $Constants::SHOP_SIGNING_ID,
    crypt_content_type => 0,
+   autofill => 1,
   );
 
 sub _get_form {
@@ -84,6 +85,7 @@ sub _get_form {
        maxdatemsg);
   my @extra_cfg_names = grep /\S/ && !exists $std_cfg_names{$_}, 
     split /,/, $extra_cfg_names;
+  my $user = $req->siteuser;
   for my $name (keys %$fields) {
     my $field = $fields->{$name};
     $field->{name} = $name;
@@ -92,6 +94,10 @@ sub _get_form {
 		      @extra_cfg_names) {
       my $value = $cfg->entry($valid_section, "${name}_${cfg_name}");
       defined $value and $field->{$cfg_name} = $value;
+    }
+
+    if ($form{autofill} && $user && exists $user->{$name}) {
+      $field->{default} = $user->{$name};
     }
   }
 
@@ -203,7 +209,7 @@ sub req_show {
   my $current_value;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $req->cgi, $req->cfg),
+     $req->dyn_user_tags(),
      error_img => [ \&tag_error_img, $req->cfg, $errors ],
      $it->make_iterator(undef, 'field', 'fields', $form->{fields},
 			undef, undef, \$current_field),

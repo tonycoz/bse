@@ -241,8 +241,9 @@ EXPECTED
 BSE::Admin::StepParents->del($parent, $parent);
 for my $kid (reverse @kids) {
   my $name = $kid->{title};
+  my $kidid = $kid->{id};
   $kid->remove();
-  ok(1, "removing kid $name");
+  ok(1, "removing kid $name ($kidid)");
 }
 $parent->remove();
 ok(1, "removed parent");

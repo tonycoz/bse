@@ -1,6 +1,6 @@
 package BSE::Dynamic::Seminar;
 use strict;
-use base 'BSE::Dynamic::Product;
+use base 'BSE::Dynamic::Product';
 use BSE::TB::Seminars;
 
 sub get_real_article {

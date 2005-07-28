@@ -142,6 +142,16 @@ require_logon is set and the user isn't logged on.
 
 =item *
 
+autofill - if this is non-zero then form values which match the names
+of siteuser fields are defaulted on the form with the values from the
+currently logged in user.  Default: Enabled.  To disable add:
+
+  autofill=0
+
+to the configuration area for your form.
+
+=item *
+
 encrypt - if this is non-zero then the emailed form data is encrypted
 using PGP or GPG as configured (see the crypt options below).
 

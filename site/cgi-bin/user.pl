@@ -5,19 +5,11 @@ use strict;
 use FindBin;
 use lib "$FindBin::Bin/modules";
 use Constants;
-use BSE::Cfg;
 use BSE::Session;
 use BSE::UserReg;
-use CGI;
+use BSE::Request;
 
-my $cfg = BSE::Cfg->new;
-
-my %session;
-BSE::Session->tie_it(\%session, $cfg);
-
-#  print STDERR "it's tied\n" if tied %session;
-#  use Data::Dumper;
-#  print STDERR Dumper \%session;
+my $req = BSE::Request->new;
 
 my %actions =
   (
@@ -43,12 +35,11 @@ my %actions =
    a_orderdetail => 'req_orderdetail',
   );
 
-my $cgi = CGI->new;
+my $cgi = $req->cgi;
 
 my ($action) = grep $cgi->param($_) || $cgi->param("$_.x"), keys %actions;
-$action ||= 'show_logon';
+$action ||= 'userpage';
 my $method = $actions{$action};
 
-BSE::UserReg->$method(\%session, $cgi, $cfg);
+BSE::UserReg->$method($req);
 
-untie %session;

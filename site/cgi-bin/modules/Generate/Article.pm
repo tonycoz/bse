@@ -223,6 +223,7 @@ sub baseActs {
 
   my @images = Images->getBy('articleId', $article->{id});
   my @unnamed_images = grep $_->{name} eq '', @images;
+  my @iter_images;
   my $image_index = -1;
   my $had_image_tags = 0;
   my @files = sort { $b->{displayOrder} <=> $a->{displayOrder} }
@@ -442,8 +443,26 @@ HTML
      },
      
      # access to images, if any
-     iterate_images_reset => sub { $image_index = -1 },
-     iterate_images => sub { $had_image_tags = 1; ++$image_index < @unnamed_images },
+     iterate_images_reset => 
+     sub { 
+       my ($arg) = @_;
+       $image_index = -1;
+       if ($arg eq 'all') {
+	 @iter_images = @images;
+       }
+       elsif ($arg eq 'named') {
+	 @iter_images = grep $_->{name} ne '', @images;
+       }
+       elsif ($arg =~ m!^named\s+/([^/]+)/$!) {
+	 my $re = $1;
+	 @iter_images = grep $_->{name} =~ /$re/i, @images;
+       }
+       else {
+	 @iter_images = @unnamed_images;
+       }
+     },
+     iterate_images => 
+     sub { $had_image_tags = 1; ++$image_index < @iter_images },
      image =>
      sub {
        my ($which, $align, $rest) = split ' ', $_[0], 3;
@@ -455,7 +474,7 @@ HTML
 	 $im = $images[$which-1];
        }
        else {
-	 $im = $unnamed_images[$image_index];
+	 $im = $iter_images[$image_index];
        }
 
        return $self->_format_image($im, $align, $rest);
@@ -470,15 +489,33 @@ HTML
        $self->_format_image($im, $align, $rest);
      },
      ifImage => sub { $_[0] >= 1 && $_[0] <= @images },
-     ifImages => sub { @images },
+     ifImages => 
+     sub {
+       my ($arg) = @_;
+       if ($arg eq 'all' or $arg eq '') {
+	 return @images;
+       }
+       elsif ($arg eq 'named') {
+	 return grep $_->{name} ne '', @images;
+       }
+       elsif ($arg =~ m!^named\s+/([^/]+)/$!) {
+	 my $re = $1;
+	 return grep $_->{name} =~ /$re/i, @images;
+       }
+       elsif ($arg eq 'unnamed') {
+	 return @unnamed_images;
+       }
+       else {
+	 return 0;
+       }
+     },
      image_index => sub { $image_index },
      BSE::Util::Tags->make_iterator(\@files, 'file', 'files'),
      BSE::Util::Tags->make_iterator(\@stepkids, 'stepkid', 'stepkids'),
      BSE::Util::Tags->make_iterator(\@allkids, 'allkid', 'allkids', \$allkids_index),
      BSE::Util::Tags->make_iterator(\@stepparents, 'stepparent', 'stepparents'),
      top => [ \&tag_top, $self, $article ],
-     ifDynamic => 
-     scalar(UNIVERSAL::isa($top, 'Article') ? $top->is_dynamic : 0),
+     ifDynamic => [ \&tag_ifDynamic, $self, $top ],
     );
 
   if ($abs_urls) {
@@ -496,6 +533,15 @@ HTML
       };
   }
   return %acts;
+}
+
+sub tag_ifDynamic {
+  my ($self, $top) = @_;
+
+  # this is to support pregenerated pages being handled as dynamic pages
+  $self->{force_dynamic} and return 1;
+
+  UNIVERSAL::isa($top, 'Article') ? $top->is_dynamic : 0;
 }
 
 sub generate {
@@ -700,7 +746,21 @@ C<level1> or C<level2> article is the current page.
 
 =item iterator ... images
 
-Iterates over the images for the given article.
+Iterates over the unnamed images for the given article.
+
+=item iterator ... images all
+
+Iterates over all images for the article.
+
+=item iterator ... images named
+
+Iterates over the named images for the article.
+
+=item iterator ... images named /regexp/
+
+Iterates over images with names matching the given regular expression.
+Note that if the expression matches an empty string then unnamed
+images will be included.
 
 =item image which field
 
@@ -759,11 +819,43 @@ Condition tag, true if an image exists at the given index.
 
 =item ifImages
 
+=item ifImages all
+
 Conditional tag, true if the article has any images.
+
+=item ifImages named
+
+Conditional tag, true if the article has any named images.
+
+=item ifImages named /regexp/
+
+Conditional tag, true if the article has any named images, where the
+name matches the regular expression.
+
+=item ifImages unnamed
+
+Conditional tag, true if the article has any unnamed images.
 
 =item embed child
 
 This has been made more general and been moved, see L<Generate/embed child>.
+
+=item ifDynamic
+
+Tests if the article is dynamically generated.
+
+=item top I<field>
+
+Toplevel article being generated.  This is the page that any articles
+are being embedded in.
+
+=item iterator ... files
+
+Iterates over the files attached to the article, setting the file tag.
+
+=item file I<field>
+
+Information from the current file in the files iterator.
 
 =back
 

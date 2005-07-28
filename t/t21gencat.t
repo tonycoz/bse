@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>69;
+use Test::More tests=>74;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
@@ -244,7 +244,12 @@ EXPECTED
 
 BSE::Admin::StepParents->del($parent, $stepkid);
 BSE::Admin::StepParents->del($parent, $stepprod);
-for my $kid (reverse @kids) {
+for my $kid (reverse @prods, $stepprod) {
+  my $name = $kid->{title};
+  $kid->remove();
+  ok(1, "removing product $name");
+}
+for my $kid (reverse @kids, $stepkid) {
   my $name = $kid->{title};
   $kid->remove();
   ok(1, "removing kid $name");

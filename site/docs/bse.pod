@@ -10,6 +10,56 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_23
+
+=over
+
+=item *
+
+added [shop].secureurl_articles option.  Patch by Adrian Oldham
+(http://www.visualthought.com.au/)
+
+=item *
+
+pregenerated templates used by various scripts are now generated as if
+they were dynamic articles, and the various scripts now make the
+dynamic article tags available.  This is a complex change, so it may
+have introduced some problems.
+
+=item *
+
+the sidebar logon panel has been updated to generate serverside when
+the containing page is dynamic.
+
+=item *
+
+the t21gencat.t test script wasn't cleaning up properly after itself,
+leaving the database in an inconsistent state.
+
+=item *
+
+fmail.pl forms are now filled from the currently logged on siteuser by
+default.  The field names must correspond to the siteuser field named
+for this to happen.  Note: custom defquery_base variants will need to
+be updated to support this.
+
+=item *
+
+user.pl now attempts to display the userpage by default, instead of
+the logon form.
+
+=item *
+
+the images iterator (on articles) now accepts various options to
+filter the images iterated over.  See templates.pod for details.
+
+=item *
+
+the ifImages conditions (on articles) now accepts various options to
+filter the images tested for.  See templates.pod for details.
+
+=back
+
 =head2 0.15_22
 
 =over

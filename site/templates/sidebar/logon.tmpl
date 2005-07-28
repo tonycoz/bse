@@ -1,9 +1,4 @@
-<:wrap base.tmpl:> <:embed start:><:if Cfg "site users" nopassword:>
-<!-- This form is not used when you have the nopassword option enabled -->
-<p><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Please use the URL from your confirmation email to access your
-details and subscription information.</font></p>
-<div align="center"><form action="/cgi-bin/user.pl" method="post"><input type="submit" name="show_register" value="Register" class="user-buttons" /></form></div>
-<:or Cfg:><:ifAdmin:>
+<:wrap base.tmpl:> <:embed start:><:ifAdmin:>
 <table cellpadding="4" cellspacing="0" border="0">
   <tr> 
     <td> 
@@ -20,7 +15,22 @@ details and subscription information.</font></p>
     </td>
   </tr>
 </table>
-<:or:><:eif:>
+<:or:><:eif:><:if Cfg "site users" nopassword:>
+<!-- This form is not used when you have the nopassword option enabled -->
+<p><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Please use the URL from your confirmation email to access your
+details and subscription information.</font></p>
+<div align="center"><form action="/cgi-bin/user.pl" method="post"><input type="submit" name="show_register" value="Register" class="user-buttons" /></form></div>
+<:or Cfg:><:if Dynamic:>
+<:if User:>
+<form action="/cgi-bin/user.pl" method="post">
+<table><tr><td align="left"><input type="submit" name="userpage" value="User profile" class="user-buttons" /></td><td align="right"><input type="submit" name="logoff" value="Logoff" class="user-buttons" /></td></tr></table></form>
+<:or User:>
+<form action="/cgi-bin/user.pl" method="post">
+<table><tr><th><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Username:</font></th><td><input type="text" name="userid" size="10" /></td></tr>
+<tr><th><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Password:</font></th><td><input type="password" name="password" size="10" /></td></tr>
+<tr><td align="left"><input type="submit" name="logon" value="Logon" class="user-buttons" /></td><td align="right"><input type="submit" name="show_register" value="Register" class="user-buttons" /></td></tr></table></form>
+<:eif User:>
+<:or Dynamic:>
 <div align="center">
 <script language="JavaScript">
 <!--
@@ -48,4 +58,4 @@ else {
 //-->
 </script>
 </div>
-<:eif Cfg:><:embed end:>
+<:eif Dynamic:><:eif Cfg:><:embed end:>

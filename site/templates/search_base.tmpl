@@ -52,8 +52,9 @@
 <: iterator begin results:> 
 <dl> 
   <dt> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> <b> <:resultSeq:>.
-    </b></font> <a href="<:articleurl:>"><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b><:result 
-    title:></b></font></a> 
+    </b></font> <:ifUserCanSee result:><a href="<:articleurl:>"><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b><:result 
+    title:></b></font></a> <:or:><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b><:result 
+    title:></b></font><:eif:>
   <dd> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> <:excerpt:></font> 
     <br>
     <font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#808080"> 

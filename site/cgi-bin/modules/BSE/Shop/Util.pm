@@ -14,28 +14,23 @@ use DevHelp::HTML qw(escape_html);
 
 # returns a list of tags which display the cart details
 sub shop_cart_tags {
-  my ($acts, $cart, $cart_prods, $session, $q, $cfg, $stage) = @_;
+  my ($acts, $cart, $cart_prods, $req, $stage) = @_;
 
+  my $cfg = $req->cfg;
+  my $q = $req->cgi;
   $cfg or confess "No config";
   $cfg->isa("BSE::Cfg") or confess "Not a config";
 
   my $item_index;
   my $option_index;
   my @options;
-  my $user;
-  if ($session->{userid}) {
-    require 'SiteUsers.pm';
-    $user = SiteUsers->getBy(userId=>$session->{userid});
-  }
   my $sem_session;
   my $location;
   my $item;
   my $product;
   return
     (
-     BSE::Util::Tags->basic($acts, $q, $cfg),
-     ifUser => sub { $user },
-     user => sub { CGI::escapeHTML($user ? $user->{$_[0]} : '') },
+     $req->dyn_user_tags(),
      iterate_items_reset => sub { $item_index = -1 },
      iterate_items => 
      sub { 
@@ -69,7 +64,7 @@ sub shop_cart_tags {
      },
      index => sub { $item_index },
      total => 
-     sub { total($cart, $cart_prods, $session->{custom}, $cfg, $stage) },
+     sub { total($cart, $cart_prods, $req->session->{custom}, $cfg, $stage) },
      count => sub { scalar @$cart },
      iterate_options_reset => sub { $option_index = -1 },
      iterate_options => sub { ++$option_index < @options },
@@ -79,7 +74,7 @@ sub shop_cart_tags {
      session => [ \&tag_session, \$item, \$sem_session ],
      location => [ \&tag_location, \$item, \$location ],
      custom_class($cfg)
-     ->checkout_actions($acts, $cart, $cart_prods, $session->{custom}, $q, $cfg),
+     ->checkout_actions($acts, $cart, $cart_prods, $req->session->{custom}, $q, $cfg),
     );  
 }
 

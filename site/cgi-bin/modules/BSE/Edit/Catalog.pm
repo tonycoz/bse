@@ -88,7 +88,12 @@ sub default_link_path {
 sub make_link {
   my ($self, $article) = @_;
 
-  my $urlbase = $self->{cfg}->entryVar('site', 'secureurl');
+# Modified by adrian
+  my $urlbase = '';
+  if ($self->{cfg}->entry('shop', 'secureurl_articles', 1)) {
+    $urlbase = $self->{cfg}->entryVar('site', 'secureurl');
+  }
+# end adrian
 
   if ($article->is_dynamic) {
     return "$urlbase/cgi-bin/page.pl?id=$article->{id}&title=".escape_uri($article->{title});

@@ -49,10 +49,11 @@ sub dispatch {
     }
   }
 
+  $req->set_article(article=>$article);
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->static(),
+     $req->dyn_user_tags(),
      article => [ \&tag_hash, $article ],
      image => [ \&tag_hash, $image ],
     );

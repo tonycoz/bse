@@ -5,24 +5,20 @@ use strict;
 use FindBin;
 use lib "$FindBin::Bin/modules";
 use Constants qw(:shop);
-use BSE::Cfg;
 use BSE::Session;
 use BSE::Mail;
 use BSE::Template;
 use BSE::Util::Tags;
-use SiteUsers;
-use CGI;
+use BSE::Request;
 
-my $cfg = BSE::Cfg->new;
+my $req = BSE::Request->new;
+my $cfg = $req->cfg;;
 
-my %session;
-BSE::Session->tie_it(\%session, $cfg);
-
-my $cgi = CGI->new;
+my $cgi = $req->cgi;
 my $useremail = $cgi->param('email');
 unless ($useremail) {
-  if ($session{userid}) {
-    my $user = SiteUsers->getBy(userId=>$session{userid});
+  my $user = $req->siteuser;
+  if ($user) {
     $useremail = $user->{email};
   }
 }
@@ -48,7 +44,7 @@ defined($product_id) or $product_id = '';
 my %acts;
 %acts =
   (
-   BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
+   $req->dyn_user_tags(),
    product => sub { $product },
    product_id => sub { $product_id },
    email => sub { $useremail },

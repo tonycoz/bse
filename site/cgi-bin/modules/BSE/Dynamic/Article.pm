@@ -2,6 +2,7 @@ package BSE::Dynamic::Article;
 use strict;
 use BSE::Util::Tags qw(tag_hash);
 use BSE::Template;
+use DevHelp::HTML;
 
 sub new {
   my ($class, $req) = @_;
@@ -28,11 +29,12 @@ sub generate {
 
 sub tags {
   my ($self, $article) = @_;
-
+  
+  $self->{req}->set_article(dynarticle => $article);
   return
     (
      dynarticle => [ \&tag_hash, $article ],
-     BSE::Util::Tags->basic({}, $self->{req}->cgi, $self->{req}->cfg),
+     $self->{req}->dyn_user_tags(),
     );
 }
 
