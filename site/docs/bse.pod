@@ -10,6 +10,41 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_24
+
+=over
+
+=item *
+
+if you did a search in a selected section, the search results page
+would leave the sections drop down back on "All Sections".  It now
+correctly uses the previous section.
+
+=item *
+
+added a notes field to files attached to articles.  This is indexed by
+the search engine.  Note that the indexing of the description is split
+into the indexing of the displayName and description.
+
+=item *
+
+admin.pl now applies the dynamic page tags for dynamic articles.
+
+=item *
+
+fmail.pl's a_done target now uses the dynamic page tags.
+
+=item *
+
+search.pl now displays matching files (with the same limitations as
+current match displays)
+
+=item *
+
+removed from debug output
+
+=back
+
 =head2 0.15_23
 
 =over

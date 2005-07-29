@@ -39,8 +39,9 @@ my %scores =
    keyword=>4,
    pageTitle=>5,
    author=>4,
-#   file_excerpt=>2,
+   file_displayName => 2,
    file_description=>2,
+   file_notes => 1,
   );
 
 for my $name (keys %scores) {
@@ -95,6 +96,8 @@ sub makeIndex {
   @dont_search{@SEARCH_EXCLUDE} = @SEARCH_EXCLUDE;
   @do_search{@SEARCH_INCLUDE} = @SEARCH_INCLUDE;
   INDEX: until ($articles->EOF) {
+    my @files;
+    my $got_files;
     # find the section
     my $article = $articles->getNext;
     next unless ($article->{listed} || $article->{flags} =~ /I/);
@@ -123,9 +126,10 @@ sub makeIndex {
 	$text = $article->{$field};
       }
       else {
-	if ($field eq 'file_description') {
-	  my @files = $article->files;
-	  $text = join "\n", map { @$_{qw/displayName description/} } @files;
+	if ($field =~ /^file_(.*)/) {
+          my $file_field = $1;
+          @files = $article->files unless $got_files++;
+          $text = join "\n", map $_->{$file_field}, @files;
 	}
       }
       #next if $text =~ m!^\<html\>!i; # I don't know how to do this (yet)

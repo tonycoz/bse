@@ -84,6 +84,8 @@ my $author;
 my $pageTitle;
 my $words_re_str = '\b('.join('|', map quotemeta, @terms).')\b';
 my $words_re = qr/$words_re_str/i;
+my @files;
+my $file_index;
 my %acts;
 %acts =
   (
@@ -108,6 +110,20 @@ my %acts;
        $pageTitle = $articles[$article_index]{pageTitle};
        $pageTitle =~ s!$words_re!<b>$1</b>!g or $pageTitle = '';
        $req->set_article(result => $articles[$article_index]);
+
+       # match files
+       @files = ();
+       for my $file ($articles[$article_index]->files) {
+	 my $found;
+	 my %fileout;
+	 for my $field (qw(displayName description notes)) {
+	   ++$found if ($fileout{$field} = $file->{$field}) 
+	     =~ s!$words_re!<b>$1</b>!g;
+	 }
+	 if ($found) {
+	   push @files, [ \%fileout, $file  ];
+	 }
+       }
        
        return 1;
      }
@@ -146,6 +162,23 @@ my %acts;
    sub { 
      $pageTitle
    },
+   ifMatchfiles => sub { @files },
+   matchfile_count => sub { @files },
+   iterate_matchfiles_reset => sub { $file_index = -1 },
+   iterate_matchfiles => sub { ++$file_index < @files },
+   matchfile =>
+   sub {
+     my ($args) = @_;
+     $file_index < @files or return '';
+     my $file_entry = $files[$file_index];
+     # already html escaped
+     exists $file_entry->[0]{$args} and return $file_entry->[0]{$args};
+
+     my $value = $file_entry->[1]{$args};
+     defined $value or return '';
+
+     escape_html($value);
+   },
 
    ifResults => sub { scalar @results; },
    ifSearch => sub { defined $words and length $words },
@@ -165,7 +198,8 @@ my %acts;
    resultSeq => sub { $result_seq },
    list => sub { popup_menu(-name=>'s', -id => 's',
 			    -values=>\@sections,
-			    -labels=>\%sections) },
+			    -labels=>\%sections,
+			    -default=>$section) },
    
    # result pages
    iterate_pages =>

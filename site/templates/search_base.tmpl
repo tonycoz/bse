@@ -64,7 +64,13 @@
     <font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#808080"> 
     Author: <:author:></font><:or Author:><:eif Author:><:if PageTitle:><br>
     <font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#808080"> 
-    Page title: <:PageTitle:></font><:or PageTitle:><:eif PageTitle:></dl>
+    Page title: <:PageTitle:></font><:or PageTitle:><:eif PageTitle:>
+<:if Matchfiles:><:iterator begin matchfiles:>
+<p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b>File match:</b> <:matchfile description:> - <:matchfile displayName:><br />
+<:dynreplace [matchfile notes] "
+" "<br />":></font></p>
+<:iterator end matchfiles:><:or Matchfiles:><:eif Matchfiles:>
+</dl>
 <: iterator separator results:> <: iterator end results:> 
 <hr noshade size="1" width="100%">
 <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Result Pages: | <:iterator 

@@ -8,7 +8,7 @@ use vars qw/@ISA/;
 sub columns {
   return qw/id articleId displayName filename sizeInBytes description 
             contentType displayOrder forSale download whenUploaded
-            requireUser/;
+            requireUser notes/;
 }
 
 1;

@@ -2737,6 +2737,9 @@ sub filesave {
       if (my $type = $cgi->param("contentType_$file->{id}")) {
 	$file->{contentType} = $type;
       }
+      if (my $notes = $cgi->param("notes_$file->{id}")) {
+	$file->{notes} = $notes;
+      }
       $file->{download} = 0 + defined $cgi->param("download_$file->{id}");
       $file->{forSale} = 0 + defined $cgi->param("forSale_$file->{id}");
       $file->{requireUser} = 0 + defined $cgi->param("requireUser_$file->{id}");

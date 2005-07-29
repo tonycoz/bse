@@ -56,8 +56,6 @@ sub tag_ifUserCanSee {
   $article
     or return 0;
 
-  print STDERR "$args -> $article ($article->{id})\n";
-
   $req->siteuser_has_access($article);
 }
 

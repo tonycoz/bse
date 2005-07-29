@@ -34,6 +34,13 @@
             <td nowrap="nowrap" bgcolor="#FFFFFF"><:help file description:> <:error_img description:></td>
           </tr>
           <tr> 
+            <th bgcolor="#FFFFFF" align="left">Notes:</th>
+            <td bgcolor="#FFFFFF"> 
+              <textarea name="notes" rows="10" cols="60" wrap="virtual"><:old notes:></textarea>
+            </td>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help file description:> <:error_img description:></td>
+          </tr>
+          <tr> 
             <th bgcolor="#FFFFFF" align="left">Content-Type:</th>
             <td bgcolor="#FFFFFF"> 
               <input type="text" name="contentType" value="<:old contentType:>" />
@@ -87,6 +94,7 @@
             <th width="50%" nowrap="nowrap" bgcolor="#FFFFFF"> File</th>
             <th width="50%" nowrap="nowrap" bgcolor="#FFFFFF"> Description</th>
             <th bgcolor="#FFFFFF" nowrap="nowrap"> Content-Type</th>
+            <th bgcolor="#FFFFFF">Notes</th>
           </tr>
           <: iterator begin files :> 
           <tr bgcolor="#FFFFFF"> 
@@ -98,6 +106,10 @@
             <td valign="top"> 
                <:ifUserCan edit_files_save:article:><input name="contentType_<:file id:>" type="text" value="<: file contentType :>" size="20" />
                <:or:><: file contentType :><:eif:>
+            </td>
+            <td valign="top" rowspan="2">
+              <:ifUserCan edit_files_save:article:><textarea name="notes_<:file id:>" cols="40" rows="5"><:file notes:></textarea><:or:><:replace [file notes] "
+" "<br />" :><:eif:>
             </td>
           </tr>
           <tr bgcolor="#FFFFFF"> 
@@ -124,7 +136,7 @@
           <: iterator end files :> 
 <:ifUserCan edit_files_save:article:>
           <tr> 
-            <td colspan="3" align="right" valign="bottom" bgcolor="#FFFFFF"> 
+            <td colspan="4" align="right" valign="bottom" bgcolor="#FFFFFF"> 
               <input type="submit" name="filesave" value="  Save changes  " />
             </td>
           </tr>

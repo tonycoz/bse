@@ -32,9 +32,22 @@ if ($req->check_admin_logon()) {
     my $generator = $article->{generator}
       ->new(admin=>$admin, articles=>$articles, cfg=>$cfg, request=>$req, 
 	    top=>$article);
-    
-    print "Content-Type: text/html\n\n";
-    print $generator->generate($article, $articles);
+
+    if ($article->is_dynamic) {
+      my $content = $generator->generate($article, $articles);
+      (my $dyn_gen_class = $article->{generator}) =~ s/.*\W//;
+      $dyn_gen_class = "BSE::Dynamic::".$dyn_gen_class;
+      (my $dyn_gen_file = $dyn_gen_class . ".pm") =~ s!::!/!g;
+      require $dyn_gen_file;
+      my $dyn_gen = $dyn_gen_class->new($req);
+      $article = $dyn_gen->get_real_article($article);
+      my $result = $dyn_gen->generate($article, $content);
+      BSE::Template->output_result($req, $result);
+    }
+    else {
+      print "Content-Type: text/html\n\n";
+      print $generator->generate($article, $articles);
+    }
   }
   else {
     # display a message on the admin menu

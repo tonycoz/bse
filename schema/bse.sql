@@ -389,6 +389,9 @@ create table article_files (
   -- user must be logged in to download this file
   requireUser integer not null default 0,
 
+  -- more descriptive stuff
+  notes text not null default '',
+
   primary key (id)
 );
 

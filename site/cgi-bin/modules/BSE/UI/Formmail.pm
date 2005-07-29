@@ -348,7 +348,7 @@ sub req_done {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $req->cgi, $req->cfg),
+     $req->dyn_user_tags(),
      $it->make_iterator(undef, 'field', 'fields', $form->{fields}),
      id => $form->{id},
      value => [ \&tag_hash, $values ],
