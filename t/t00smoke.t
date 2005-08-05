@@ -70,5 +70,5 @@ fetch_ok($ua, "reorder", "$baseurl/cgi-bin/admin/reorder.pl",
 
 fetch_ok($ua, 'fmail', "$baseurl/cgi-bin/fmail.pl",
 	 qr!name="form"!);
-fetch_ok($ua, 'page.pl?id=1', "$baseurl/cgi-bin/page.pl?id=1",
+fetch_ok($ua, 'page.pl?page=1', "$baseurl/cgi-bin/page.pl?id=1",
 	 qr!welcome\s+to\stest\s+server!i);

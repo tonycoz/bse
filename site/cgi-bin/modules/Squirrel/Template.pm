@@ -108,7 +108,7 @@ sub perform {
     my $msg = $@;
     $msg =~ /^ENOIMPL\b/
       and return $orig;
-    print STDERR "Eval error in cond: $msg\n";
+    print STDERR "Eval error in perform: $msg\n";
     $msg =~ s/([<>&])/"&#".ord($1).";"/ge;
     return "<!-- ** $msg ** -->";
   }
@@ -216,7 +216,7 @@ sub with {
 }
 
 sub cond {
-  my ($self, $name, $args, $true, $false, $acts, $orig) = @_;
+  my ($self, $name, $args, $acts, $start, $true, $else, $false, $endif) = @_;
 
   print STDERR "cond $name $args\n" if DEBUG;
 
@@ -234,13 +234,18 @@ sub cond {
       }
       else {
 	print STDERR " not found\n" if DEBUG > 1;
-	return $orig;
+	$true = $self->replace_template($true, $acts) if length $true;
+	$false = $self->replace_template($false, $acts) if length $false;
+	return "$start$true$else$false$endif";
       }
     };
   if ($@) {
     my $msg = $@;
-    $msg =~ /^ENOIMPL\b/
-      and return $orig;
+    if ($msg =~ /^ENOIMPL\b/) {
+      $true = $self->replace_template($true, $acts) if length $true;
+      $false = $self->replace_template($false, $acts) if length $false;
+      return "$start$true$else$false$endif";
+    }
     print STDERR "Eval error in cond: $msg\n";
     $msg =~ s/([<>&])/"&#".ord($1).";"/ge;
     return "<!-- ** $msg ** -->";
@@ -460,19 +465,19 @@ sub replace_template {
 
   # conditionals
   my $nesting = 0; # prevents loops if result is an if statement
-  1 while $template =~ s/(<:\s*if\s+(\w+)(?:\s+(.*?))?\s*:>
+  1 while $template =~ s/(<:\s*if\s+(\w+)(?:\s+(.*?))?\s*:>)
                           (.*?)
-                         <:\s*or\s+\2\s*:>
+                         (<:\s*or\s+\2\s*:>)
                           (.*?)
-                         <:\s*eif\s+\2\s*:>)/
-                        $self->cond($2, $3, $4, $5, $acts, $1) /sgex
+                         (<:\s*eif\s+\2\s*:>)/
+                        $self->cond($2, $3, $acts, $1, $4, $5, $6, $7) /sgex
 			  && ++$nesting < 5;
-  $template =~ s/(<:\s*if([A-Z]\w*)(?:\s+(.*?))?\s*:>
+  $template =~ s/(<:\s*if([A-Z]\w*)(?:\s+(.*?))?\s*:>)
                   (.*?)
-                 <:\s*or\s*:>
+                 (<:\s*or\s*:>)
                   (.*?)
-                 <:\s*eif\s*:>)/
-                $self->cond($2, $3, $4, $5, $acts, $1) /sgex;
+                 (<:\s*eif\s*:>)/
+                $self->cond($2, $3, $acts, $1, $4, $5, $6, $7) /sgex;
 
   $nesting = 0;
   1 while $template =~ s/<:\s*switch\s*:>

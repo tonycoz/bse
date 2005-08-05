@@ -74,18 +74,18 @@ sub logon {
   }
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
   my $userid = $cgi->param('userid')
-    or return $self->show_logon($session, $cgi, $cfg, 
+    or return $self->show_logon($req, 
 				$msgs->(needlogon=>"Please enter a logon name"));
   my $password = $cgi->param('password')
-    or return $self->show_logon($session, $cgi, $cfg, 
+    or return $self->show_logon($req,
 				$msgs->(needpass=>"Please enter your password"));
   my $user = SiteUsers->getBy(userId => $userid);
   unless ($user && $user->{password} eq $password) {
-    return $self->show_logon($session, $cgi, $cfg, 
+    return $self->show_logon($req,
 			     $msgs->(baduserpass=>"Invalid user or password"));
   }
   if ($user->{disabled}) {
-    return $self->show_logon($session, $cgi, $cfg,
+    return $self->show_logon($req,
 			     $msgs->(disableduser=>"Account $userid has been disabled"));
   }
   $session->{userid} = $user->{userId};
@@ -166,7 +166,7 @@ sub set_cookie {
   my $debug = $cfg->entryBool('debug', 'logon_cookies', 0);
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
   my $cookie = $cgi->param('setcookie')
-    or return $self->show_logon($session, $cgi, $cfg, 
+    or return $self->show_logon($req, 
 				$msgs->(nocookie=>"No cookie provided"));
   print STDERR "Setting sessionid to $cookie for $ENV{HTTP_HOST}\n";
   my %newsession;
@@ -176,7 +176,7 @@ sub set_cookie {
     $newsession{custom} = $session->{custom} if exists $session->{custom};
   }
   my $refresh = $cgi->param('r') 
-    or return $self->show_logon($session, $cgi, $cfg, 
+    or return $self->show_logon($req, 
 				$msgs->(norefresh=>"No refresh provided"));
   my $userid = $newsession{userid};
   if ($userid) {
@@ -207,7 +207,7 @@ sub logoff {
 
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
   my $userid = $session->{userid}
-    or return $self->show_logon($session, $cgi, $cfg, 
+    or return $self->show_logon($req, 
 				$msgs->(notloggedon=>"You aren't logged on"));
 
   delete $session->{userid};
@@ -251,11 +251,11 @@ sub show_register {
   my $nopassword = $cfg->entryBool('site users', 'nopassword', 0);
   unless ($user_register) {
     if ($nopassword) {
-      return $self->show_lost_password($session, $cgi, $cfg,
+      return $self->show_lost_password($req,
 				       "Registration disabled");
     }
     else {
-      return $self->show_logon($session, $cgi, $cfg,
+      return $self->show_logon($req,
 			       "Registration disabled");
     }
   }
@@ -545,7 +545,7 @@ sub saveopts {
   $self->_save_images($cfg, $cgi, $user, \%errors);
 
   keys %errors
-    and return $self->show_opts($session, $cgi, $cfg, undef, \%errors);
+    and return $self->show_opts($req, undef, \%errors);
   my $newemail;
   if ($saveemail && $email ne $user->{email}) {
     $user->{confirmed} = 0;
@@ -648,10 +648,10 @@ sub register {
   unless ($user_register) {
     my $msg = $msgs->(regdisabled => "Registration disabled");
     if ($nopassword) {
-      return $self->show_lost_password($session, $cgi, $cfg, $msg);
+      return $self->show_lost_password($req, $msg);
     }
     else {
-      return $self->show_logon($session, $cgi, $cfg, $msg);
+      return $self->show_logon($req, $msg);
     }
   }
 
@@ -761,7 +761,7 @@ sub register {
   defined $aff_name or $aff_name = '';
 
   if (keys %errors) {
-    return $self->show_register($session, $cgi, $cfg, undef, \%errors);
+    return $self->show_register($req, undef, \%errors);
   }
 
   $user{email} = $email;
@@ -797,9 +797,7 @@ sub register {
     $custom->siteusers_changed($cfg);
   }
   else {
-    $self->show_register($session, $cgi, $cfg,
-			 $msgs->(regdberr=>
-				 "Database error $@"));
+    $self->show_register($req, $msgs->(regdberr=> "Database error $@"));
   }
 }
 
@@ -943,7 +941,7 @@ sub req_orderdetail {
   $order->{userId} eq $user->{userId} || $order->{siteuser_id} == $user->{id}
     or undef $order;
   $order
-    or return $self->userpage($session, $cgi, $cfg, "No such order");
+    or return $self->userpage($req, "No such order");
   $message ||= $cgi->param('message') || '';
 
   my $must_be_paid = $cfg->entryBool('downloads', 'must_be_paid', 0);
@@ -1072,29 +1070,29 @@ sub download_file {
     $user = SiteUsers->getBy(userId=>$userid);
   }
   my $fileid = $cgi->param('file')
-    or return $self->show_logon($session, $cgi, $cfg, 
+    or return $self->show_logon($req, 
 			 $msgs->('nofileid', "No file id supplied"));
   require 'ArticleFiles.pm';
   my $file = ArticleFiles->getByPkey($fileid)
-    or return $self->show_logon($session, $cgi, $cfg,
+    or return $self->show_logon($req,
 			 $msgs->('nosuchfile', "No such download"));
   $cfg->entryBool('downloads', 'require_logon', 0) && !$user
-    and return $self->show_logon($session, $cgi, $cfg,
+    and return $self->show_logon($req,
 			  $msgs->('downloadlogonall', 
 				  "You must be logged on to download files"));
     
   $file->{requireUser} && !$user
-    and return $self->show_logon($session, $cgi, $cfg,
+    and return $self->show_logon($req,
 			  $msgs->('downloadlogon',
 				  "You must be logged on to download this file"));
   $file->{forSale}
-    and return $self->show_logon($session, $cgi, $cfg,
+    and return $self->show_logon($req,
 			  $msgs->('downloadforsale',
 				  "This file can only be downloaded as part of an order"));
   
   my $filebase = $cfg->entryVar('paths', 'downloads');
   open FILE, "< $filebase/$file->{filename}"
-    or return $self->show_logon($session, $cgi, $cfg, 
+    or return $self->show_logon($req, 
 	       $msgs->(openfile =>
 		       "Sorry, cannot open that file.  Contact the webmaster.",
 		       $!));
@@ -1151,12 +1149,12 @@ sub lost_password {
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
   my $userid = $cgi->param('userid');
   defined $userid && length $userid
-    or return $self->show_lost_password($session, $cgi, $cfg,
+    or return $self->show_lost_password($req,
 					$msgs->(lostnouserid=>
 						"Please enter a logon id"));
   
   my $user = SiteUsers->getBy(userId=>$userid)
-    or return $self->show_lost_password($session, $cgi, $cfg,
+    or return $self->show_lost_password($req,
 					$msgs->(lostnosuch=>
 						"No such userid", $userid));
 
@@ -1179,7 +1177,7 @@ sub lost_password {
     || ($nopassword ? "Your options" : "Your password");
   $mail->send(from=>$from, to=>$user->{email}, subject=>$subject,
 	      body=>$body)
-    or return $self->show_lost_password($session, $cgi, $cfg,
+    or return $self->show_lost_password($req,
 					$msgs->(lostmailerror=>
 						"Email error:".$mail->errstr,
 						$mail->errstr));
@@ -1200,9 +1198,9 @@ sub subinfo {
   my $session = $req->session;
 
   my $id = $cgi->param('id')
-    or return $self->show_opts($session, $cgi, $cfg, "No subscription id parameter");
+    or return $self->show_opts($req, "No subscription id parameter");
   my $sub = BSE::SubscriptionTypes->getByPkey($id)
-    or return $self->show_opts($session, $cgi, $cfg, "Unknown subscription id");
+    or return $self->show_opts($req, "Unknown subscription id");
   my %acts;
   %acts =
     (
@@ -1236,7 +1234,7 @@ sub blacklist {
 
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
   my $email = $cgi->param('blacklist')
-    or return $self->show_logon($session, $cgi, $cfg,
+    or return $self->show_logon($req,
 				$msgs->(blnoemail=>"No email supplied"));
   my $genemail = _generic_email($email);
 
@@ -1270,20 +1268,20 @@ sub confirm {
 
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
   my $secret = $cgi->param('confirm')
-    or return $self->show_logon($session, $cgi, $cfg,
+    or return $self->show_logon($req,
 				$msgs->(confnosecret=>"No secret supplied for confirmation"));
   my $userid = $cgi->param('u')
-    or return $self->show_logon($session, $cgi, $cfg,
+    or return $self->show_logon($req,
 				$msgs->(confnouser=>"No user supplied for confirmation"));
   if ($userid + 0 != $userid || $userid < 1) {
-    return $self->show_logon($session, $cgi, $cfg,
+    return $self->show_logon($req,
 			     $msgs->(confbaduser=>"Invalid or unknown user supplied for confirmation"));
   }
   my $user = SiteUsers->getByPkey($userid)
-    or return $self->show_logon($session, $cgi, $cfg,
+    or return $self->show_logon($req,
 			     $msgs->(confbaduser=>"Invalid or unknown user supplied for confirmation"));
   unless ($secret eq $user->{confirmSecret}) {
-    return $self->show_logon($session, $cgi, $cfg, 
+    return $self->show_logon($req, 
 			     $msgs->(confbadsecret=>"Sorry, the confirmation secret does not match"));
   }
 
@@ -1437,20 +1435,20 @@ sub unsub {
 
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
   my $secret = $cgi->param('unsub')
-    or return $self->show_logon($session, $cgi, $cfg,
+    or return $self->show_logon($req,
 				$msgs->(unsubnosecret=>"No secret supplied for unsubscribe"));
   my $userid = $cgi->param('u')
-    or return $self->show_logon($session, $cgi, $cfg,
+    or return $self->show_logon($req,
 				$msgs->(unsubnouser=>"No user supplied for unsubscribe"));
   if ($userid + 0 != $userid || $userid < 1) {
-    return $self->show_logon($session, $cgi, $cfg,
+    return $self->show_logon($req,
 			     $msgs->(unsubbaduser=>"Invalid or unknown user supplied for unsubscribe"));
   }
   my $user = SiteUsers->getByPkey($userid)
-    or return $self->show_logon($session, $cgi, $cfg,
+    or return $self->show_logon($req,
 			     $msgs->(unsubbaduser=>"Invalid or unknown user supplied for unsubscribe"));
   unless ($secret eq $user->{confirmSecret}) {
-    return $self->show_logon($session, $cgi, $cfg, 
+    return $self->show_logon($req, 
 			     $msgs->(unsubbadsecret=>"Sorry, the ubsubscribe secret does not match"));
   }
   
@@ -1532,20 +1530,16 @@ sub req_image {
   my $u = $cgi->param('u');
   my $i = $cgi->param('i');
   defined $u && $u =~ /^\d+$/ && defined $i && $i =~ /^\w+$/
-    or return $self->show_logon($session, $cgi, $cfg, 
-				"Missing or bad image parameter");
+    or return $self->show_logon($req, "Missing or bad image parameter");
 
   my $user = SiteUsers->getByPkey($u)
-    or return $self->show_logon($session, $cgi, $cfg, 
-				"Missing or bad image parameter");
+    or return $self->show_logon($req, "Missing or bad image parameter");
   my $image = $user->get_image($i)
-    or return $self->show_logon($session, $cgi, $cfg, 
-				"Unknown image id");
+    or return $self->show_logon($req, "Unknown image id");
   my $image_dir = $cfg->entryVar('paths', 'siteuser_images');
 
   open IMAGE, "< $image_dir/$image->{filename}"
-    or return $self->show_logon($session, $cgi, $cfg,
-				"Image file missing");
+    or return $self->show_logon($req, "Image file missing");
   binmode IMAGE;
   binmode STDOUT;
     

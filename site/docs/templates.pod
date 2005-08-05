@@ -1153,6 +1153,12 @@ Conditional tag, true if the article has any unnamed images.
 
 Tests if the article is dynamically generated.
 
+=item ifAccessControlled
+
+=item ifAccessControlled I<which>
+
+Tests if the article is access controlled.
+
 =item top I<field>
 
 Toplevel article being generated.  This is the page that any articles

@@ -184,4 +184,19 @@ sub remove_group_id {
   BSE::DB->single->run(articleDeleteSiteUserGroup => $self->{id}, $id);
 }
 
+sub is_access_controlled {
+  my ($self) = @_;
+
+  my @group_ids = $self->group_ids;
+  return 1 if @group_ids;
+
+  return 0
+    unless $self->{inherit_siteuser_rights};
+
+  my $parent = $self->parent
+    or return 0;
+
+  return $parent->is_access_controlled;
+}
+
 1;

@@ -241,7 +241,7 @@ sub make_link {
 # end adrian
 
   if ($article->is_dynamic) {
-    return "$urlbase/cgi-bin/page.pl?id=$article->{id}&title=".escape_uri($article->{title});
+    return "$urlbase/cgi-bin/page.pl?page=$article->{id}&title=".escape_uri($article->{title});
   }
 
   my $shop_uri = $self->link_path($article);

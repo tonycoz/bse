@@ -516,6 +516,7 @@ HTML
      BSE::Util::Tags->make_iterator(\@stepparents, 'stepparent', 'stepparents'),
      top => [ \&tag_top, $self, $article ],
      ifDynamic => [ \&tag_ifDynamic, $self, $top ],
+     ifAccessControlled => [ \&tag_ifAccessControlled, $article ],
     );
 
   if ($abs_urls) {
@@ -542,6 +543,28 @@ sub tag_ifDynamic {
   $self->{force_dynamic} and return 1;
 
   UNIVERSAL::isa($top, 'Article') ? $top->is_dynamic : 0;
+}
+
+sub tag_ifAccessControlled {
+  my ($article, $arg, $acts, $templater) = @_;
+
+  if ($arg) {
+    if ($acts->{$arg}) {
+      my $id = $templater->perform($acts, $arg, 'id');
+      $article = Articles->getByPkey($id);
+      unless ($article) {
+	print STDERR "** Unknown article $id from $arg in ifAccessControlled\n";
+	return 0;
+      }
+    }
+    else {
+      print STDERR "** Unknown article $arg in ifAccessControlled\n";
+      return 0;
+    }
+  }
+
+  return UNIVERSAL::isa($article, 'Article') ? 
+    $article->is_access_controlled : 0;
 }
 
 sub generate {

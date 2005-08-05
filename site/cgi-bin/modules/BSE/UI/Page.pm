@@ -9,9 +9,9 @@ sub dispatch {
   my ($class, $req) = @_;
 
   my $cgi = $req->cgi;
-  my $id = $cgi->param('id');
+  my $id = $cgi->param('page');
   $id && $id =~ /^\d+$/
-    or return $class->error($req, "required id parameter not present or invalid");
+    or return $class->error($req, "required page parameter not present or invalid");
   my $article = Articles->getByPkey($id)
     or return $class->error($req, "unknown article id $id");
 

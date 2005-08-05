@@ -10,6 +10,23 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_25
+
+=over
+
+=item *
+
+if a conditional tag isn't defined when during tag replacement,
+previously defined tags in the true and false parts of the tag were
+not replaced.  They are now.
+
+=item *
+
+page.pl now accepts the article id via the page parameter instead of
+id.
+
+=back
+
 =head2 0.15_24
 
 =over

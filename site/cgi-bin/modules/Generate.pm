@@ -7,6 +7,7 @@ use DevHelp::Tags;
 use DevHelp::HTML;
 use BSE::Util::Tags;
 use BSE::CfgInfo qw(custom_class);
+use BSE::Util::Iterate;
 
 my $excerptSize = 300;
 
@@ -425,6 +426,7 @@ sub baseActs {
     my $data = $cfg->entryVar('extra tags', $key);
     $extras{$key} = sub { $data };
   }
+  my $it = BSE::Util::Iterate->new;
   return 
     (
      %extras,
@@ -525,12 +527,9 @@ sub baseActs {
          return escape_html($text);
        }
      },
-     DevHelp::Tags->make_iterator2
-     ( \&iter_kids_of, 'ofchild', 'children_of' ), 
-     DevHelp::Tags->make_iterator2
-     ( \&iter_all_kids_of, 'ofallkid', 'allkids_of' ), 
-     DevHelp::Tags->make_iterator2
-     ( \&iter_inlines, 'inline', 'inlines' ),
+     $it->make_iterator( \&iter_kids_of, 'ofchild', 'children_of' ), 
+     $it->make_iterator( \&iter_all_kids_of, 'ofallkid', 'allkids_of' ), 
+     $it->make_iterator( \&iter_inlines, 'inline', 'inlines' ),
      gimage => 
      sub {
        my ($name, $align, $rest) = split ' ', $_[0], 3;

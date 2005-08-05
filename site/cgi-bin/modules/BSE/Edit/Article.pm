@@ -1333,7 +1333,7 @@ sub make_link {
   my ($self, $article) = @_;
 
   if ($article->is_dynamic) {
-    return "/cgi-bin/page.pl?id=$article->{id}&title=".escape_uri($article->{title});
+    return "/cgi-bin/page.pl?page=$article->{id}&title=".escape_uri($article->{title});
   }
 
   my $article_uri = $self->link_path($article);

@@ -436,6 +436,7 @@ site/templates/user/unsuball_base.tmpl
 site/templates/user/unsubone_base.tmpl
 site/templates/user/userpage_base.tmpl
 site/templates/xbase.tmpl
+site/util/bseaddimages.pl
 site/util/gen.pl
 site/util/initial.pl
 site/util/loaddata.pl

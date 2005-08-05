@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 18;
+use Test::More tests => 20;
 
 sub template_test($$$$;$);
 
@@ -74,6 +74,20 @@ OUT
   template_test("<:include doesnt/exist optional:>", "", "optional include", \%acts);
   template_test("<:include doesnt/exist:>", "** cannot find include doesnt/exist in path **", "failed include", \%acts);
   template_test("x<:include included.include:>z", "xyz", "include", \%acts);
+
+  template_test <<IN, <<OUT, "nested in undefined if", \%acts;
+<:if Unknown:><:if Eq "1" "1":>Equal<:or Eq:>Not Equal<:eif Eq:><:or Unknown:>false unknown<:eif Unknown:>
+IN
+<:if Unknown:>Equal<:or Unknown:>false unknown<:eif Unknown:>
+OUT
+  template_test <<IN, <<OUT, "nested in undefined switch case", \%acts;
+<:switch:>
+<:case ifUnknown:><:if Eq 1 1:>Equal<:or Eq:>Unequal<:eif Eq:>
+<:endswitch:>
+IN
+<:switch:><:case ifUnknown:>Equal
+<:endswitch:>
+OUT
 }
 
 sub template_test ($$$$;$) {
