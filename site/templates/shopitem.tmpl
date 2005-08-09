@@ -31,7 +31,7 @@
 <:iterator end stepcats:>
 </ul></font>
 <:or StepCats:><:eif StepCats:>
-<:if Product retailPrice:>
+<:if Or [product retailPrice] [cfg shop free_products]:>
 <form name="ff" method="POST" action="/cgi-bin/shop.pl">
               
 <:if Options:>
@@ -68,7 +68,7 @@
     </tr>
   </table>
 </form>
-<:or Product:><br>
+<:or Or:><br>
 <br>
 <table border="0" cellspacing="0" cellpadding="1" bgcolor="#CCCCCC">
   <tr>
@@ -100,8 +100,7 @@
     </td>
   </tr>
 </table>
-<font face="Arial, Helvetica, sans-serif"><b><font size="4"> </font></b></font><:eif 
-Product:> 
+<font face="Arial, Helvetica, sans-serif"><b><font size="4"> </font></b></font><:eif Or:> 
 <p><br>
   <a href="/shop/index.html"><img src="/images/store/browse_more.gif" width="133" height="21" border="0"></a>
 </p><br>

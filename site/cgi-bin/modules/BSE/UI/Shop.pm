@@ -415,7 +415,13 @@ sub req_order {
   $req->session->{order_info} = \%values;
   $req->session->{order_info_confirmed} = 1;
 
-  return BSE::Template->get_refresh("$ENV{SCRIPT_NAME}?a_show_payment=1", $req->cfg);
+  # skip payment page if nothing to pay
+  if ($values{total} == 0) {
+    return $class->req_payment($req);
+  }
+  else {
+    return BSE::Template->get_refresh("$ENV{SCRIPT_NAME}?a_show_payment=1", $req->cfg);
+  }
 }
 
 sub req_show_payment {
@@ -489,56 +495,64 @@ sub req_payment {
   my $order_values = $req->session->{order_info}
     or return $class->req_checkout($req, "You need to enter order information first");
 
-
   my $cgi = $req->cgi;
   my $cfg = $req->cfg;
   my $session = $req->session;
 
-  my @pay_types = payment_types($cfg);
-  my @payment_types = map $_->{id}, grep $_->{enabled}, @pay_types;
-  my %pay_types = map { $_->{id} => $_ } @pay_types;
-  my %types_by_name = map { $_->{name} => $_->{id} } @pay_types;
-  @payment_types or @payment_types = ( PAYMENT_CALLME );
-  @payment_types = sort { $a <=> $b } @payment_types;
-  my %payment_types = map { $_=> 1 } @payment_types;
-
-  my $paymentType = $cgi->param('paymentType');
-  defined $paymentType or $paymentType = $payment_types[0];
-  $payment_types{$paymentType}
-    or return $class->req_show_payment($req, { paymentType => "Invalid payment type" } , 1);
-
-  my @required;
-  push @required, @{$pay_types{$paymentType}{require}};
-
-  my %fields = BSE::TB::Order->valid_payment_fields($cfg);
-  my %rules = BSE::TB::Order->valid_payment_rules($cfg);
-  for my $field (@required) {
-    if (exists $fields{$field}) {
-      $fields{$field}{required} = 1;
+  my $paymentType;
+  if ($order_values->{total} != 0) {
+    my @pay_types = payment_types($cfg);
+    my @payment_types = map $_->{id}, grep $_->{enabled}, @pay_types;
+    my %pay_types = map { $_->{id} => $_ } @pay_types;
+    my %types_by_name = map { $_->{name} => $_->{id} } @pay_types;
+    @payment_types or @payment_types = ( PAYMENT_CALLME );
+    @payment_types = sort { $a <=> $b } @payment_types;
+    my %payment_types = map { $_=> 1 } @payment_types;
+    
+    $paymentType = $cgi->param('paymentType');
+    defined $paymentType or $paymentType = $payment_types[0];
+    $payment_types{$paymentType}
+      or return $class->req_show_payment($req, { paymentType => "Invalid payment type" } , 1);
+    
+    my @required;
+    push @required, @{$pay_types{$paymentType}{require}};
+    
+    my %fields = BSE::TB::Order->valid_payment_fields($cfg);
+    my %rules = BSE::TB::Order->valid_payment_rules($cfg);
+    for my $field (@required) {
+      if (exists $fields{$field}) {
+	$fields{$field}{required} = 1;
+      }
+      else {
+	$fields{$field} = { description => $field, required=> 1 };
+      }
     }
-    else {
-      $fields{$field} = { description => $field, required=> 1 };
+    
+    my %errors;
+    dh_validate($cgi, \%errors, { rules => \%rules, fields=>\%fields },
+		$cfg, 'Shop Order Validation');
+    keys %errors
+      and return $class->req_show_payment($req, \%errors);
+
+    for my $field (@required) {
+      unless ($nostore{$field}) {
+	($order_values->{$field}) = $cgi->param($field);
+      }
     }
+
+  }
+  else {
+    $paymentType = -1;
   }
 
-  my %errors;
-  dh_validate($cgi, \%errors, { rules => \%rules, fields=>\%fields },
-	      $cfg, 'Shop Order Validation');
-  keys %errors
-    and return $class->req_show_payment($req, \%errors);
-
-  my @products;
-  my @items = $class->_build_items($req, \@products);
-  
-  for my $field (@required) {
-    unless ($nostore{$field}) {
-      ($order_values->{$field}) = $cgi->param($field);
-    }
-  }
+  $order_values->{paymentType} = $paymentType;
 
   $order_values->{filled} = 0;
   $order_values->{paidFor} = 0;
 
+  my @products;
+  my @items = $class->_build_items($req, \@products);
+  
   my $cust_class = custom_class($req->cfg);
   eval {
     my %custom = %{$session->{custom}};
@@ -557,8 +571,6 @@ sub req_payment {
   for my $col (@columns) {
     defined $order_values->{$col} or $order_values->{$col} = '';
   }
-
-  $order_values->{paymentType} = $paymentType;
 
   my @data = @{$order_values}{@columns};
   shift @data;
@@ -593,6 +605,7 @@ sub req_payment {
       my $sub = $product->subscription;
       $item->{max_lapsed} = $sub->{max_lapsed} if $sub;
     }
+    defined $item->{session_id} or $item->{session_id} = 0;
     my @data = @{$item}{@item_cols};
     
     shift @data;
@@ -645,6 +658,7 @@ sub req_payment {
       $order->{ccStatusText}  = $result->{error};
       $order->{ccTranId}      = '';
       $order->save;
+      my %errors;
       $errors{cardNumber} = $result->{error};
       $session->{order_work} = $order->{id};
       return $class->req_show_payment($req, \%errors);
@@ -725,6 +739,7 @@ sub req_orderdone {
   my %acts;
   %acts =
     (
+     $req->dyn_user_tags(),
      $cust_class->purchase_actions(\%acts, \@items, \@products, 
 				   $session->{custom}, $cfg),
      BSE::Util::Tags->static(\%acts, $cfg),

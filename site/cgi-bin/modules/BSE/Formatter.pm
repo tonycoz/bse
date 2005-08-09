@@ -156,6 +156,7 @@ sub doclink {
     $url = $cfg->entryErr('site', 'url') . $url
       unless $url =~ /^\w+:/;
   }
+  $url = escape_html($url);
 
   unless ($title) {
     $title = escape_html($art->{title});

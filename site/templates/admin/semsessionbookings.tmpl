@@ -1,0 +1,30 @@
+<:wrap admin/xbase.tmpl title=>"Seminar [seminar title] - Bookings":>
+<h1>Seminar <:seminar title:> - Bookings</h1>
+<:ifMessage:>
+<p><b><:message:></b></p>
+<:or:><:eif:> 
+<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> 
+| <a href="<:script:>?id=<:seminar id:>">Edit seminar</a> |
+  <a href="<:script:>?id=<:seminar id:>&amp;_t=semsessions">Session list</a> |
+</p>
+
+<table>
+  <tr>
+    <th>Logon</th>
+    <th>Name</th>
+    <th>Email</th>
+  </tr>
+<:if Bookedusers:>
+<:iterator begin bookedusers:>
+  <tr>
+    <td><a href="/cgi-bin/admin/siteusers.pl?a_edit=1&amp;id=<:bookeduser id:>"><:bookeduser userId:></a></td>
+    <td><:bookeduser name1:> <:bookeduser name2:></td>
+    <td><a href="mailto:<:bookeduser email:>"><:bookeduser email:></a></td>
+  </tr>
+<:iterator end bookedusers:>
+<:or Bookedusers:>
+  <tr>
+    <td colspan="3">There is no-one booked for this session</td>
+  </tr>
+<:eif Bookedusers:>
+</table>

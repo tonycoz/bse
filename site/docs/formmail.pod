@@ -229,6 +229,14 @@ I<fieldname>_description - a display name for the field.
 
 =item *
 
+I<fieldname>_default - the default value for the field.  For field
+with keys and display values, such as selects, this should be the key.
+For multiple select fields like checkboxes or multi-selects this
+should be the keys of the items to be selected separated by
+semi-colons (;).
+
+=item *
+
 I<fieldname>_rules - a semi-colon separated list of validation rules
 for the field.  See L<DevHelp::Validate> for a list of built-in rules,
 some common ones are C<email>, I<phone>, I<weburl>, I<date>.  You can

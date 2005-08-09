@@ -309,6 +309,7 @@ site/templates/admin/regenerror.tmpl
 site/templates/admin/reports/list.tmpl
 site/templates/admin/reports/prompt.tmpl
 site/templates/admin/reports/show1.tmpl
+site/templates/admin/semsessionbookings.tmpl
 site/templates/admin/semsessiondel.tmpl
 site/templates/admin/semsessionedit.tmpl
 site/templates/admin/semsessionrollcall.tmpl

@@ -22,6 +22,7 @@ sub article_actions {
      a_delsemsession => 'req_delsemsession',
      a_takesessionrole => 'req_takesessionrole',
      a_takesessionrolesave => 'req_takesessionrolesave',
+     a_semsessionbookings => 'req_semsessionbookings',
     );
 }
 
@@ -588,6 +589,27 @@ sub req_takesessionrolesave {
   $session->save;
 
   return $self->refresh($article, $cgi, undef, "Roll saved");
+}
+
+sub req_semsessionbookings {
+  my ($self, $req, $article, $articles, $errors) = @_;
+
+  my $cgi = $req->cgi;
+  my $msg;
+  my $session = _get_session($req, $article, \$msg)
+    or return $self->edit_form($req, $article, $articles, $msg);
+
+  my @roll_call = $session->roll_call_entries;
+  my %acts;
+  my $it = BSE::Util::Iterate->new;
+  %acts =
+    (
+     $self->low_edit_tags(\%acts, $req, $article, $articles, undef, $errors),
+     $it->make_iterator(undef, 'bookeduser', 'bookedusers', \@roll_call),
+     session=>[ \&tag_hash, $session ],
+    );
+
+  return $req->dyn_response('admin/semsessionbookings', \%acts);
 }
 
 sub base_template_dirs {

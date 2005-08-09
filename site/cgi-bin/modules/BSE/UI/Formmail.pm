@@ -82,7 +82,7 @@ sub _get_form {
     $cfg->entry("formmail", "field_config", '');
   my %std_cfg_names = map { $_ => 1 } 
     qw(required rules description required_error range_error mindatemsg 
-       maxdatemsg);
+       maxdatemsg default);
   my @extra_cfg_names = grep /\S/ && !exists $std_cfg_names{$_}, 
     split /,/, $extra_cfg_names;
   my $user = $req->siteuser;
@@ -90,7 +90,7 @@ sub _get_form {
     my $field = $fields->{$name};
     $field->{name} = $name;
 
-    for my $cfg_name (qw/htmltype type width height size maxlength/, 
+    for my $cfg_name (qw/htmltype type width height size maxlength default/, 
 		      @extra_cfg_names) {
       my $value = $cfg->entry($valid_section, "${name}_${cfg_name}");
       defined $value and $field->{$cfg_name} = $value;
@@ -160,6 +160,7 @@ sub tag_values_select {
   my %labels = map @$_, @{$field->{values}};
 
   my ($value) = $cgi->param($field->{name});
+  defined $value or $value = $field->{default};
   my @extras;
   if (defined $value) {
     push @extras, -default => $value;
@@ -173,10 +174,13 @@ sub tag_values_select {
 }
 
 sub tag_ifValueSet {
-  my ($cgi, $rcurrent_field, $rcurrent_value) = @_;
+  my ($cgi, $rcurrent_field, $rcurrent_value, $errors) = @_;
 
   return 0 unless $$rcurrent_field && $$rcurrent_value;
   my @values = $cgi->param($$rcurrent_field->{name});
+  if (!$errors and !@values) {
+    @values = split /;/, $$rcurrent_field->{default};
+  }
   return scalar(grep $_ eq $$rcurrent_value->{id}, @values);
 }
 
@@ -221,7 +225,7 @@ sub req_show {
      values_select => 
      [ \&tag_values_select, $form, $req->cgi, \$current_field ],
      ifValueSet => 
-     [ \&tag_ifValueSet, $req->cgi, \$current_field, \$current_value ],
+     [ \&tag_ifValueSet, $req->cgi, \$current_field, \$current_value, $errors ],
      formcfg => [ \&tag_formcfg, $req->cfg, $form ],
     );
 

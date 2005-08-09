@@ -1450,6 +1450,7 @@ sub save_new {
 
   # we now have an id - generate the links
 
+  $article->update_dynamic($self->{cfg});
   my $cgi_uri = $self->{cfg}->entry('uri', 'cgi', '/cgi-bin');
   $article->setAdmin("$cgi_uri/admin/admin.pl?id=$article->{id}");
   $article->setLink($self->make_link($article));
