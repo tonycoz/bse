@@ -10,6 +10,43 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_27
+
+=over
+
+=item *
+
+the article link column has been expanded to 255 characters
+
+=item *
+
+children are no longer always dynamic if their parent is.  They must
+now either inherit access controls or have the force_dynamic flag set
+in the article or in the config file to become dynamic (but see below.)
+
+=item *
+
+added the "Descendants inherit Always Dynamic" flag.  If this and the
+"Always dynamic" flag is set for an article then all descendants will
+be dynamic.
+
+=item *
+
+the doclink[] and popdoclink[] body text tags now include a HTML title
+attribute in the <a ...> tag.
+
+=item *
+
+children are now correctly regenerated when their dynamic parent is
+saved.
+
+=item *
+
+when an article turns from static to dynamic the static content is now
+removed.
+
+=back
+
 =head2 0.15_26
 
 =over

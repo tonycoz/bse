@@ -137,15 +137,9 @@ sub update_dynamic {
 
   $dynamic or $dynamic = $self->{force_dynamic};
 
-  unless ($dynamic) {
-    my @groups = $self->group_ids;
-    @groups and $dynamic = 1;
-  }
+  $dynamic or $dynamic = $self->is_access_controlled;
 
-  unless ($dynamic) {
-    my $parent = $self->parent;
-    $parent and $dynamic = $parent->is_dynamic;
-  }
+  $dynamic or $dynamic = $self->force_dynamic_inherited;
 
   $self->{cached_dynamic} = $dynamic;
 }
@@ -197,6 +191,32 @@ sub is_access_controlled {
     or return 0;
 
   return $parent->is_access_controlled;
+}
+
+sub force_dynamic_inherited {
+  my ($self) = @_;
+
+  my $parent = $self->parent
+    or return 0;
+
+  $parent->{force_dynamic} && $parent->{flags} =~ /F/
+    and return 1;
+  
+  return $parent->force_dynamic_inherited;
+}
+
+sub link_to_filename {
+  my ($self, $cfg, $link) = @_;
+
+  defined $link or $link = $self->{link};
+
+  my $filename = $link;
+  $filename =~ s!/\w*$!!;
+  $filename =~ s{^\w+://[\w.-]+(?::\d+)?}{};
+  $filename = $Constants::CONTENTBASE . $filename;
+  $filename =~ s!//+!/!;
+  
+  return $filename;
 }
 
 1;

@@ -331,7 +331,7 @@ sub static {
 use constant DEBUG_GET_PARMS => 0;
 
 sub get_parms {
-  my ($class, $args, $acts, $templater) = @_;
+  my ($class, $args, $acts, $templater, $keep_unknown) = @_;
 
   my $orig = $args;
 
@@ -364,7 +364,12 @@ sub get_parms {
 	  print STDERR "  Available functions: ", join(",", sort keys %$acts),"\n";
 	  
 	}
-	die "ENOIMPL '$func $subargs' in '$orig'\n";
+	if ($keep_unknown) {
+	  push @out, [ $func, $subargs ];
+	}
+	else {
+	  die "ENOIMPL '$func $subargs' in '$orig'\n";
+	}
       }
     }
     elsif ($args =~ s/^\s*\"((?:[^\"\\]|\\[\\\"]|\\)*)\"\s*//) {
@@ -386,6 +391,5 @@ sub get_parms {
 
   @out;
 }
-
 
 1;

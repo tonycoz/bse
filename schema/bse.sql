@@ -32,7 +32,7 @@ CREATE TABLE article (
   -- if this is blank then no page is generated
   -- this is combined with the base of the site to get the file
   -- written to during generation
-  link varchar(64) not null,
+  link varchar(255) not null,
   admin varchar(64) not null,
 
   -- if there are more child articles than this, display links/summaries

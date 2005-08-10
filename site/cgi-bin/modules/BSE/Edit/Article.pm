@@ -1580,7 +1580,7 @@ sub save {
   }
 
   $article->{listed} = $cgi->param('listed')
-    if defined $cgi->param('listed') && 
+   if defined $cgi->param('listed') && 
       $req->user_can('edit_field_edit_listed', $article);
   $article->{release} = sql_date($cgi->param('release'))
     if defined $cgi->param('release') && 
@@ -1622,6 +1622,7 @@ sub save {
     }
   }
 
+  my $old_link = $article->{link};
   # this need to go last
   $article->update_dynamic($self->{cfg});
   if ($article->{link} && 
@@ -1632,10 +1633,14 @@ sub save {
 
   $article->save();
 
-  # if we changed dynamic status, we need to update it for the kids too
+  # fix the kids too
   my @extra_regen;
-  if ($article->is_dynamic != $old_dynamic) {
-    @extra_regen = $self->update_child_dynamic($article, $articles, $req);
+  @extra_regen = $self->update_child_dynamic($article, $articles, $req);
+  
+  if ($article->is_dynamic || $old_dynamic) {
+    if (!$old_dynamic and $old_link) {
+      unlink $article->link_to_filename($self->{cfg}, $old_link);
+    }
   }
 
   use Util 'generate_article';
@@ -1643,7 +1648,7 @@ sub save {
     generate_article($articles, $article);
     for my $regen_id (@extra_regen) {
       my $regen = $articles->getByPkey($regen_id);
-      Util::generate_low($articles, $article, $self->{cfg});
+      Util::generate_low($articles, $regen, $self->{cfg});
     }
   }
 
@@ -1659,6 +1664,7 @@ sub update_child_dynamic {
   while (@stack) {
     my $workart = pop @stack;
     my $old_dynamic = $workart->is_dynamic; # before update
+    my $old_link = $workart->{link};
     $workart->update_dynamic($cfg);
     if ($old_dynamic != $workart->is_dynamic) {
       # update the link
@@ -1668,6 +1674,9 @@ sub update_child_dynamic {
 
 	my $uri = $editor->make_link($workart);
 	$workart->setLink($uri);
+
+	$old_dynamic 
+	  or unlink $workart->link_to_filename($cfg, $old_link);
       }
 
       # save dynamic cache change and link if that changed

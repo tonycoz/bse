@@ -163,8 +163,9 @@ sub doclink {
   }
 
   $target = $target ? qq! target="$target"! : '';
+  my $title_attrib = escape_html($art->{title});
   
-  return qq!<a href="$url"$target>$title</a>!;
+  return qq!<a href="$url" title="$title_attrib"$target>$title</a>!;
 }
 
 sub replace {

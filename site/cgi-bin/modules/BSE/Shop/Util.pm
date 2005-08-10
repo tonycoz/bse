@@ -55,7 +55,7 @@ sub shop_cart_tags {
        my $value = $cart->[$item_index]{$_[0]};
        defined($value) or $value = $cart_prods->[$item_index]{$_[0]};
        defined($value) or $value = '';
-       $value;
+       escape_html($value);
      },
      extended =>
      sub { 

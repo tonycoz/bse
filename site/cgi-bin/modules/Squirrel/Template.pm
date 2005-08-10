@@ -218,6 +218,7 @@ sub with {
 sub cond {
   my ($self, $name, $args, $acts, $start, $true, $else, $false, $endif) = @_;
 
+  defined $args or $args = '';
   print STDERR "cond $name $args\n" if DEBUG;
 
   my $result =
@@ -236,7 +237,8 @@ sub cond {
 	print STDERR " not found\n" if DEBUG > 1;
 	$true = $self->replace_template($true, $acts) if length $true;
 	$false = $self->replace_template($false, $acts) if length $false;
-	return "$start$true$else$false$endif";
+	length $args and $args = " " . $args;
+	return "$start$args:>$true$else$false$endif";
       }
     };
   if ($@) {
@@ -244,7 +246,8 @@ sub cond {
     if ($msg =~ /^ENOIMPL\b/) {
       $true = $self->replace_template($true, $acts) if length $true;
       $false = $self->replace_template($false, $acts) if length $false;
-      return "$start$true$else$false$endif";
+      length $args and $args = " " . $args;
+      return "$start$args:>$true$else$false$endif";
     }
     print STDERR "Eval error in cond: $msg\n";
     $msg =~ s/([<>&])/"&#".ord($1).";"/ge;
@@ -465,14 +468,14 @@ sub replace_template {
 
   # conditionals
   my $nesting = 0; # prevents loops if result is an if statement
-  1 while $template =~ s/(<:\s*if\s+(\w+)(?:\s+(.*?))?\s*:>)
+  1 while $template =~ s/(<:\s*if\s+(\w+))(?:\s+(.*?))?\s*:>
                           (.*?)
                          (<:\s*or\s+\2\s*:>)
                           (.*?)
                          (<:\s*eif\s+\2\s*:>)/
                         $self->cond($2, $3, $acts, $1, $4, $5, $6, $7) /sgex
 			  && ++$nesting < 5;
-  $template =~ s/(<:\s*if([A-Z]\w*)(?:\s+(.*?))?\s*:>)
+  $template =~ s/(<:\s*if([A-Z]\w*))(?:\s+(.*?))?\s*:>
                   (.*?)
                  (<:\s*or\s*:>)
                   (.*?)

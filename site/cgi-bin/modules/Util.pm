@@ -48,11 +48,7 @@ sub generate_low {
     }
   }
   else {
-    $outname = $article->{link};
-    $outname =~ s!/\w*$!!;
-    $outname =~ s{^\w+://[\w.-]+(?::\d+)?}{};
-    $outname = $CONTENTBASE . $outname;
-    $outname =~ s!//+!/!;
+    $outname = $article->link_to_filename($cfg);
   }
 
   my $genname = $article->{generator};
