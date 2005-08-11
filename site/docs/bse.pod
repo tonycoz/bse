@@ -10,6 +10,51 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_28
+
+=over
+
+=item *
+
+deleting an article now deletes the generated page or cached page,
+depending on the article type.
+
+=item *
+
+changing an article from dynamic to static now deletes the cached
+page. (going the other way deletes since 0.15_27.)
+
+=item *
+
+deleting an article with files attached now deletes the file records
+and file content.
+
+=item *
+
+code processing the deletion of an article has been slightly
+reorganized. (moved from the edit code to the article object code)
+
+=item *
+
+code processing the deletion of an article file has been slightly
+reorganized. (moved from the edit code to the article file code)
+
+=item *
+
+the done template for fmail.pl can now iterate over the selected
+values as the email template does.
+
+=item *
+
+added site/docs/dynamic.(pod|html), which documents BSE's dynamic page
+generation.
+
+=item *
+
+documented [template types] bse.cfg section
+
+=back
+
 =head2 0.15_27
 
 =over

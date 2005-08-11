@@ -1,0 +1,265 @@
+=head1 NAME
+
+dynamic.pod - dynamic article generation for BSE.
+
+=head1 SYNOPSIS
+
+The 0.15 series of BSE from 0.15_19 on, stable around 0.15_28, added
+the ability for articles to be generated upon presentation to the
+user.
+
+=head1 MAKING ARTICLES DYNAMIC
+
+There are four ways an article can be set to be dynamically generated:
+
+=over
+
+=item *
+
+an article that has any sort of user access controls on it is
+generated dynamically.
+
+=item *
+
+an article with the B<Always dynamic> checkbox checked will be
+generated dynamically.
+
+=item *
+
+an article with any ancestor that has the B<Always dynamic> and
+B<Descendants inherit Always Dynamic> flags set.
+
+=item *
+
+if the C<all_dynamic> flag is set in the [basic] section of
+C<bse.cfg>.
+
+=back
+
+=head2 Access controls
+
+BSE 0.15_21 added the ability to restrict siteuser access to articles
+based on their membership in a group.  Articles inherit these access
+controls from their parent articles if they have the B<Inherit Parent
+groups> flag set.
+
+If an article has an group requirements, either set on the article
+itself or inherited from an ancestor article, then that article will
+be generated dynamically.
+
+=head2 Always Dynamic flag
+
+If you set the B<Always dynamic> flag on an article then that article
+is generated dynamically.
+
+=head2 Inherited Always Dynamic flag
+
+If you set the B<Always dynamic> and B<Descendants inherit Always
+Dynamic> flags on an article then that article and all of its
+descendants (not stepchildren) will be generated dynamically.
+
+=head2 Via bse.cfg
+
+If you set the C<all_dynamic> key in the C<[basic]> section of
+C<bse.cfg> to a non-zero value then all articles will be generated
+automatically.
+
+Note: you will need to perform web server configuration to point
+requests for C<http://your.site/> at
+C<http://your.site/cgi-bin/page.pl?id=1>, and similarly for the RSS
+article, otherwise the user will not see generated content for these
+articles.  See L<Fixed Links> below.
+
+=head1 PROCESSING OF DYNAMIC ARTICLES
+
+Dynamic articles are processing in 2 stages:
+
+=over
+
+=item 1.
+
+static tag replacement - at this point all of the normal static page
+tags are replaced.  The resulting template is saved to the dynamic cache.
+
+=item 2.
+
+dynamic tag replacement - tags specific to dynamic generation are
+replaced at this point, and the article is sent to the user.
+
+=back
+
+=head2 Static tag replacement
+
+This is the same as tag replacement for a static page, except:
+
+=over
+
+=item *
+
+the page is stored in the dynamic cache instead of in the web server
+document tree.
+
+=item *
+
+the ifDynamic tag is true.
+
+=back
+
+Depending on configuration, this can be done either during normal
+site/article regeneration or just prior to page.pl displaying the
+page.  See L<Just in time processing>.
+
+=head2 Dynamic tag replacement
+
+Dynamic tags are replaced and the page presented to the user.
+
+The content type sent to the browser is based on the original template
+of the article, so you can set a key to give your template a different
+type from text/html but setting it in the C<[template types]> section
+of bse.cfg.
+
+This is done by the page.pl script.
+
+=head2 Just in time processing
+
+Normally when you regenerate a dynamically generated article BSE will
+perform the first pass immediately and save that to the dynamic cache.
+If your site is large and you do a full site regen this can be very
+time consuming.
+
+If you set C<jit_dynamic_regen> in C<[basic]> in bse.cfg, then
+attempting to regenerate the page (including the regen normally done
+on saving an article) will instead simply delete the pregenerated page
+from the dynamic cache.
+
+Then when the user attempts to display the page, C<page.pl> will
+notice the missing page, pregenerate it and store it in the cache, and
+then proceed to normal dynamic page processing.
+
+This means for large sites that you're only generating the pages that
+users are actually looking at.
+
+Note that if a large percentage of your site is looked at in a day
+you're probably better off not using this option, since it will
+increase the load on your web server instead of reducing it.
+
+If your web server normally suffers from high peak-time loads, you
+should probably not use this, since it moves most page processing to
+peak-time.
+
+=head1 TAGS
+
+All normal dynamic tags are available during dynamic tag processing,
+including:
+
+=over
+
+=item *
+
+script - value of SCRIPT_NAME (CGI variable) - name of the current script
+
+=item *
+
+cgi I<fieldname> - submitted CGI parameters
+
+=item *
+
+old I<fieldname> I<default-func> I<default-args> - access to submited
+CGI parameteres with defaults.
+
+=item *
+
+dynreplace I<source> I<regexp> I<replacement> - replace regular
+expression.
+
+=item *
+
+dyntoday
+
+=item *
+
+dyntoday "I<dateformat>" - formatted current date
+
+=item *
+
+dynreport I<reportname> I<template> I<arg1> ... - dynamic report
+embedding
+
+=back
+
+The following tags are available on all user side dynamic pages
+(search page, shop pages, etc):
+
+=over
+
+=item *
+
+user I<field> - access to information from the currently logged on siteuser
+
+=item *
+
+ifUser - test if there is a currently logged on siteuser
+
+=item *
+
+ifUserCanSee I<which> - test if the user has access to the given
+article.  Note: I<which> must refer to a dynamic article tag (of which
+there aren't many yet), or an article by number.
+
+=back
+
+The following tags can be used on dynamically generated article pages
+(as per page.pl):
+
+=over
+
+=item *
+
+dynarticle I<fieldname> - access to information from the current article.
+
+=back
+
+There are no dynamic tags specific to catalogs, products or seminars
+at this point.
+
+=head1 TRAPS
+
+=head2 Two Pass Generation
+
+Since dynamic pages are generated in two passes a single tag cannot
+rely upon tags from the two separate passes.
+
+For example:
+
+  if Or [ifUser] [ifAdmin]
+
+won't work because ifUser is a dynamic tag and ifAdmin is a static
+tag.
+
+=head2 Fixed Links
+
+Some articles, like article 1, the home page, and article 3 the main
+shop article have protected links, by having an entry in the
+C<[protect link]> section of C<bse.cfg>.
+
+If these articles become dynamic by any of the mechanisms listed in
+L<MAKING ARTICLES DYNAMIC> then links to these articles will be
+broken.
+
+For all articles except the home page article you can remove these
+entries, and your site will work again.
+
+The home page article will need extra web server configuration, you
+will need to add a rewrite rule to redirect C<http://your.site/> to
+C<http://your.site/cgi-bin/page.pl?id=1> or whatever other tool your
+web server provides with the same functionality.
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=head1 REVISION
+
+$Revision$
+
+=cut

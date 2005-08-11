@@ -1641,6 +1641,9 @@ sub save {
     if (!$old_dynamic and $old_link) {
       unlink $article->link_to_filename($self->{cfg}, $old_link);
     }
+    elsif (!$article->is_dynamic) {
+      unlink $article->cached_filename($self->{cfg});
+    }
   }
 
   use Util 'generate_article';
@@ -1677,6 +1680,8 @@ sub update_child_dynamic {
 
 	$old_dynamic 
 	  or unlink $workart->link_to_filename($cfg, $old_link);
+	$self->is_dynamic
+	  or unlink $workart->cached_filename($cfg);
       }
 
       # save dynamic cache change and link if that changed
@@ -2712,17 +2717,7 @@ sub filedel {
     my ($file) = grep $_->{id} == $fileid, @files;
 
     if ($file) {
-      my $downloadPath = $req->cfg->entryErr('paths', 'downloads');
-      my $filename = $downloadPath . "/" . $file->{filename};
-      my $debug_del = $req->cfg->entryBool('debug', 'file_unlink', 0);
-      if ($debug_del) {
-	unlink $filename
-	  or print STDERR "Error deleting $filename: $!\n";
-      }
-      else {
-	unlink $filename;
-      }
-      $file->remove();
+      $file->remove($req->cfg);
     }
   }
 
@@ -2795,23 +2790,9 @@ sub remove {
     return $self->edit_form($req, $article, $articles, $why_not);
   }
 
-  require Images;
-  my @images = Images->getBy(articleId=>$article->{id});
-  my $imagedir = $self->{cfg}->entry('paths', 'images', $Constants::IMAGEDIR);
-  for my $image (@images) {
-    unlink("$imagedir/$image->{image}");
-    $image->remove();
-  }
-  
-  # remove any step(child|parent) links
-  require OtherParents;
-  my @steprels = OtherParents->anylinks($article->{id});
-  for my $link (@steprels) {
-    $link->remove();
-  }
-  
   my $parentid = $article->{parentid};
-  $article->remove;
+  $article->remove($req->cfg);
+
   my $url = $req->cgi->param('r');
   unless ($url) {
     my $urlbase = admin_base_url($req->cfg);

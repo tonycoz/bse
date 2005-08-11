@@ -242,10 +242,10 @@ BSE::Admin::StepParents->del($parent, $parent);
 for my $kid (reverse @kids) {
   my $name = $kid->{title};
   my $kidid = $kid->{id};
-  $kid->remove();
+  $kid->remove($cfg);
   ok(1, "removing kid $name ($kidid)");
 }
-$parent->remove();
+$parent->remove($cfg);
 ok(1, "removed parent");
 
 my $display_order;

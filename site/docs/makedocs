@@ -20,6 +20,7 @@ my @targets =
    'shopadmin.html',
    'TODO.html',
    'config.html',
+   'dynamic.html',
    'secure.html',
    'gen.html',
    'upgrade_mysql.html',

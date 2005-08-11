@@ -10,6 +10,9 @@
 " "<br/>" g :>
   <:case Eq [field htmltype] "password":>
   ****************
+  <:case ifMatch [field htmltype] "^(select|multiselect|check|radio)$" |x :>
+<:iterator begin values:><:value name:><:iterator separator values:><br />
+<:iterator end values:>
   <:case default:>
   <:field value:>
   <:endswitch:>

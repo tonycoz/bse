@@ -37,8 +37,7 @@ sub generate_low {
   my $outname;
   if ($article->is_dynamic) {
     my $debug_jit = $cfg->entry('debug', 'jit_dynamic_regen');
-    my $dynamic_path = $cfg->entryVar('paths', 'dynamic_cache');
-    $outname = $dynamic_path . "/" . $article->{id} . ".html";
+    $outname = $article->cached_filename($cfg);
     if ($article->{flags} !~ /R/ && 
 	$cfg->entry('basic', 'jit_dynamic_pregen')) {
       $debug_jit and print STDERR "JIT: $article->{id} - deleting $outname\n";

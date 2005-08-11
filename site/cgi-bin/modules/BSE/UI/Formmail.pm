@@ -327,6 +327,24 @@ sub req_send {
   return BSE::Template->get_refresh($url, $cfg);
 }
 
+sub iter_done_values {
+  my ($form, $rcurrent_field, $req, $args, $acts, $name, $templater) = @_;
+
+  my $field = _get_field($form, $rcurrent_field, $args, $acts, $templater)
+    or return;
+  
+  my $array_values = $req->session->{formmail_array}
+    or return;
+
+  $field->{values}
+    or return map +{ id => $_, name => $_ }, @{$array_values->{$field->{name}}};
+
+  my %poss_values = map { $_->[0] => $_->[1] } @{$field->{values}};
+
+  return map +{ id => $_, name => $poss_values{$_} },
+    @{$array_values->{$field->{name}}};
+}
+
 sub req_done {
   my ($class, $req) = @_;
 
@@ -349,13 +367,16 @@ sub req_done {
     $field->{value} = $values->{$field->{name}};
   }
   my $it = BSE::Util::Iterate->new;
+  my $current_field;
   my %acts;
   %acts =
     (
      $req->dyn_user_tags(),
-     $it->make_iterator(undef, 'field', 'fields', $form->{fields}),
+     $it->make_iterator(undef, 'field', 'fields', $form->{fields},
+		       undef, undef, \$current_field),
+     $it->make_iterator([ \&iter_done_values, $form, \$current_field, $req ],
+			'value', 'values', undef, undef, 'nocache'),
      id => $form->{id},
-     value => [ \&tag_hash, $values ],
      formcfg => [ \&tag_formcfg, $req->cfg, $form ],
     );
 

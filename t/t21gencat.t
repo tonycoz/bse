@@ -246,15 +246,15 @@ BSE::Admin::StepParents->del($parent, $stepkid);
 BSE::Admin::StepParents->del($parent, $stepprod);
 for my $kid (reverse @prods, $stepprod) {
   my $name = $kid->{title};
-  $kid->remove();
+  $kid->remove($cfg);
   ok(1, "removing product $name");
 }
 for my $kid (reverse @kids, $stepkid) {
   my $name = $kid->{title};
-  $kid->remove();
+  $kid->remove($cfg);
   ok(1, "removing kid $name");
 }
-$parent->remove();
+$parent->remove($cfg);
 ok(1, "removed parent");
 
 my $display_order;

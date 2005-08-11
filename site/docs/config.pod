@@ -1266,6 +1266,11 @@ group.
 
 =back
 
+=head2 [template types]
+
+Each key is a template name, the value is the content type to be used
+when displaying the template dynamically.
+
 =head2 [inpho]
 
 This is used to configure the DevHelp::Payments::Inpho module.

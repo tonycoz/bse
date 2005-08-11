@@ -343,6 +343,25 @@ present the value captured from the user.
 
 =item *
 
+iterator begin values ... iterator end values
+
+On the query template - iterates over all of the possible values of
+the current field.  See the I<fieldname>_values configuration entry
+above.
+
+On the email and done templates - iterates over the selected values of
+the current fields.
+
+Use the C<value> tag to get the value information.
+
+=item *
+
+value I<valueinfo> - access information about a possible or selected
+value, as set by the values iterator.  Possible values for
+I<valueinfo> include C<id> and C<name>.
+
+=item *
+
 formcfg I<configkey>
 
 =item *

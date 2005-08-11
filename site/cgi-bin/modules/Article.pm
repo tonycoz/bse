@@ -208,6 +208,8 @@ sub force_dynamic_inherited {
 sub link_to_filename {
   my ($self, $cfg, $link) = @_;
 
+  $cfg or confess "No \$cfg supplied to ", ref $self, "->link_to_filename";
+
   defined $link or $link = $self->{link};
 
   my $filename = $link;
@@ -217,6 +219,50 @@ sub link_to_filename {
   $filename =~ s!//+!/!;
   
   return $filename;
+}
+
+sub cached_filename {
+  my ($self, $cfg) = @_;
+
+  $cfg or confess "No \$cfg supplied to ", ref $self, "->cached_filename";
+
+  my $dynamic_path = $cfg->entryVar('paths', 'dynamic_cache');
+  return $dynamic_path . "/" . $self->{id} . ".html";
+}
+
+sub remove {
+  my ($self, $cfg) = @_;
+
+  $cfg or confess "No \$cfg supplied to ", ref $self, "->remove";
+
+  require Images;
+  my @images = Images->getBy(articleId=>$self->{id});
+  my $imagedir = $cfg->entry('paths', 'images', $Constants::IMAGEDIR);
+  for my $image (@images) {
+    unlink("$imagedir/$image->{image}");
+    $image->remove();
+  }
+
+  for my $file ($self->files) {
+    $file->remove($cfg);
+  }
+  
+  # remove any step(child|parent) links
+  require OtherParents;
+  my @steprels = OtherParents->anylinks($self->{id});
+  for my $link (@steprels) {
+    $link->remove();
+  }
+
+  # remove the static page
+  if ($self->is_dynamic) {
+    unlink $self->cached_filename($cfg);
+  }
+  else {
+    unlink $self->link_to_filename($cfg);
+  }
+  
+  $self->SUPER::remove();
 }
 
 1;

@@ -195,6 +195,8 @@ site/docs/bugs.html
 site/docs/bugs.pod
 site/docs/config.html
 site/docs/config.pod
+site/docs/dynamic.html
+site/docs/dynamic.pod
 site/docs/formmail.html
 site/docs/formmail.pod
 site/docs/future_plans.html
