@@ -212,6 +212,8 @@ sub link_to_filename {
 
   defined $link or $link = $self->{link};
 
+  length $link or return;
+
   my $filename = $link;
   $filename =~ s!/\w*$!!;
   $filename =~ s{^\w+://[\w.-]+(?::\d+)?}{};

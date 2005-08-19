@@ -10,6 +10,51 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_29
+
+=over
+
+=item *
+
+improved mod_perl compatibility - note: you cannot run more than one
+instance of BSE under mod_perl, and most scripts shouldn't be expected
+to work.
+
+=item *
+
+added page.fcgi, a FastCGI version of page.pl.  See dynamic.pod for
+information on configuring this.
+
+=item *
+
+added BSE::Handler::Page, a mod_perl handler for page.pl.  This should
+have lower initial request times than using page.pl under
+Apache::Registry.
+
+=item *
+
+we no longer attempt to regenerate articles with an empty link
+
+=item *
+
+poplink[], link[], doclink[], popdoclink[] now have the class
+attribute set based on the type of link.  By default this class is the
+same as the name of the tag, but can be configured in [body class].
+
+=item *
+
+body text generated HTML now has the class of generated p tags set
+based on the [body class] config section.  By default no class is set.
+
+=item *
+
+added formlink[] and popformlink[] tags to link to fmail.pl forms.
+You can set the title attribute in the config file for the form to set
+the default text.  The class attribute for these can be configured in
+[body class].
+
+=back
+
 =head2 0.15_28
 
 =over

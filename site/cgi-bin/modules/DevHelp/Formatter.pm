@@ -143,7 +143,14 @@ sub _make_html {
 }
 
 sub _fix_spanned {
-  my ($start, $end, $text) = @_;
+  my ($self, $start, $end, $text, $type) = @_;
+
+  if ($type) {
+    my $class = $self->tag_class($type);
+    if ($class) {
+      $start =~ s/>$/ class="$class">/;
+    }
+  }
 
   $text =~ s!(\n(?:[ \r]*\n)+)!$end$1$start!g;
 
@@ -153,46 +160,48 @@ sub _fix_spanned {
 sub replace_char {
   my ($self, $rpart) = @_;
   $$rpart =~ s#(acronym|abbr|dfn)\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#
-    _fix_spanned(qq/<$1 class="$3" title="$2">/, "</$1>", $4)#egi
+    $self->_fix_spanned(qq/<$1 class="$3" title="$2">/, "</$1>", $4)#egi
     and return 1;
   $$rpart =~ s#(acronym|abbr|dfn)\[([^|\]\[]+)\|([^\]\[]+)\]#
-    _fix_spanned(qq/<$1 title="$2">/, "</$1>", $3)#egi
+    $self->_fix_spanned(qq/<$1 title="$2">/, "</$1>", $3)#egi
     and return 1;
   $$rpart =~ s#(acronym|abbr|dfn)\[\|([^\]\[]+)\]#
-    _fix_spanned("<$1>", "</$1>", $2)#egi
+    $self->_fix_spanned("<$1>", "</$1>", $2)#egi
     and return 1;
   $$rpart =~ s#(acronym|abbr|dfn)\[([^\]\[]+)\]#
-    _fix_spanned("<$1>", "</$1>", $2)#egi
+    $self->_fix_spanned("<$1>", "</$1>", $2)#egi
     and return 1;
   $$rpart =~ s#bdo\[([^|\]\[]+)\|([^\]\[]+)\]#
-    _fix_spanned(qq/<bdo dir="$1">/, "</bdo>", $2)#egi
+    $self->_fix_spanned(qq/<bdo dir="$1">/, "</bdo>", $2)#egi
     and return 1;
   $$rpart =~ s#(strong|em|samp|code|var|sub|sup|kbd|q|b|i|tt)\[([^|\]\[]+)\|([^\]\[]+)\]#
-    _fix_spanned(qq/<$1 class="$2">/, "</$1>", $3)#egi
+    $self->_fix_spanned(qq/<$1 class="$2">/, "</$1>", $3)#egi
     and return 1;
   $$rpart =~ s#(strong|em|samp|code|var|sub|sup|kbd|q|b|i|tt)\[\|([^\]\[]+)\]#
-    _fix_spanned("<$1>", "</$1>", $2)#egi
+    $self->_fix_spanned("<$1>", "</$1>", $2)#egi
     and return 1;
   $$rpart =~ s#(strong|em|samp|code|var|sub|sup|kbd|q|b|i|tt)\[([^\]\[]+)\]#
-    _fix_spanned("<$1>", "</$1>", $2)#egi
+    $self->_fix_spanned("<$1>", "</$1>", $2)#egi
     and return 1;
   $$rpart =~ s#poplink\[([^|\]\[]+)\|([^\]\[]+)\]#
-    _fix_spanned(qq/<a href="$1" target="_blank">/, "</a>", $2)#eig
+    $self->_fix_spanned(qq/<a href="$1" target="_blank">/, "</a>", $2, 'poplink')#eig
     and return 1;
-  $$rpart =~ s#poplink\[([^|\]\[]+)\]#<a href="$1" target="_blank">$1</a>#ig
+  $$rpart =~ s#poplink\[([^|\]\[]+)\]#
+    $self->_fix_spanned(qq/<a href="$1" target="_blank">/, "</a>", $1, 'poplink')#ieg
     and return 1;
   $$rpart =~ s#link\[([^|\]\[]+)\|([^\]\[]+)\]#
-    _fix_spanned(qq/<a href="$1">/, "</a>", $2)#eig
+    $self->_fix_spanned(qq/<a href="$1">/, "</a>", $2, 'link')#eig
     and return 1;
-  $$rpart =~ s#link\[([^|\]\[]+)\]#<a href="$1">$1</a>#ig
+  $$rpart =~ s#link\[([^|\]\[]+)\]#
+    $self->_fix_spanned(qq/<a href="$1">/, "</a>", $1, 'link')#ieg
     and return 1;
   $$rpart =~ s#font\[([^|\]\[]+)\|([^\]\[]+)\]#
-    _fix_spanned(qq/<font size="$1">/, "</font>", $2)#egi
+    $self->_fix_spanned(qq/<font size="$1">/, "</font>", $2)#egi
     and return 1;
   $$rpart =~ s#anchor\[([^|\]\[]*)\]#<a name="$1"></a>#ig
     and return 1;
   $$rpart =~ s#fontcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#
-    _fix_spanned(qq/<font size="$1" color="$2">/, "</font>", $3)#egi
+    $self->_fix_spanned(qq/<font size="$1" color="$2">/, "</font>", $3)#egi
     and return 1;
   $$rpart =~ s!(?<=\W)\[([^\]\[]+)\]!&#91;$1&#93;!g
     and return 1;
@@ -242,13 +251,13 @@ sub format {
 	$part =~ s#pre\[([^\]\[]+)\]#<pre>$1</pre>#ig
 	  and next TRY;
 	$part =~ s#h([1-6])\[([^\[\]\|]+)\|([^\[\]]+)\](?:\r?\n)?#
-	  _fix_spanned(qq/\n\n<h$1 class="$2">/, "</h$1>\n\n", $3)#ieg
+	  $self->_fix_spanned(qq/\n\n<h$1 class="$2">/, "</h$1>\n\n", $3)#ieg
 	  and next TRY;
 	$part =~ s#\n*h([1-6])\[\|([^\[\]]+)\]\n*#
-	  _fix_spanned("\n\n<h$1>", "</h$1>\n\n", $2)#ieg
+	  $self->_fix_spanned("\n\n<h$1>", "</h$1>\n\n", $2)#ieg
 	  and next TRY;
 	$part =~ s#\n*h([1-6])\[([^\[\]]+)\]\n*#
-	  _fix_spanned("\n\n<h$1>", "</h$1>\n\n", $2)#ieg
+	  $self->_fix_spanned("\n\n<h$1>", "</h$1>\n\n", $2)#ieg
 	  and next TRY;
 	$part =~ s#align\[([^|\]\[]+)\|([^\]\[]+)\]#<div align="$1">$2</div>#ig
 	  and next TRY;
@@ -272,10 +281,10 @@ sub format {
 	$part =~ s#image\[([^\]\[]+)\]# $self->image($1) #ige
 	    and next TRY;
 	$part =~ s#class\[([^\]\[\|]+)\|([^\]\[]+)\]#
-	  _fix_spanned(qq/<span class="$1">/, "</span>", $2)#eig
+	  $self->_fix_spanned(qq/<span class="$1">/, "</span>", $2)#eig
 	  and next TRY;
 	$part =~ s#style\[([^\]\[\|]+)\|([^\]\[]+)\]#
-	  _fix_spanned(qq/<span style="$1">/, "</span>", $2)#eig
+	  $self->_fix_spanned(qq/<span style="$1">/, "</span>", $2)#eig
 	  and next TRY;
 	$part =~ s#(div|address|blockquote)\[\n*([^\[\]\|]+)\|\n*([^\[\]]+?)\n*\]#<$1 class="$2">$3</$1>#ig
 	  and next TRY;
@@ -307,6 +316,9 @@ sub format {
       $part =~ s#(<p><span style="([^"<>]+)">(.*?)</span></p>)#
         my ($one, $two, $three)= ($1, $2, $3); 
         $3 =~ /<span/ ? $one : qq!<p style="$two">$three</p>!#ge;
+      if (my $p_class = $self->tag_class('p')) {
+	$part =~ s!(<p(?: style="[^"<>]+")?)>!$1 class="$p_class">!g;
+      }
       #$part =~ s!\n!<br />!g;
       $out .= $part;
     }
@@ -482,6 +494,11 @@ sub escape {
   else {
     return escape_html($html);
   }
+}
+
+# for subclasses to override
+sub tag_class {
+  return;
 }
 
 1;

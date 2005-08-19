@@ -56,7 +56,7 @@ sub tie_it {
 # 	if $rest{$field};
 #     }
 #     $cookie = join ';', @out;
-    print "Set-Cookie: ", $cookie,"\n";
+    BSE::Session->send_cookie($cookie);
     print STDERR "Sent cookie: $cookie\n" if $debug;
   }
   $saved = $session;
@@ -70,8 +70,7 @@ sub tie_it {
 sub change_cookie {
   my ($self, $session, $cfg, $sessionid, $newsession) = @_;
 
-  print "Set-Cookie: ",
-    $self->make_cookie($cfg, 'sessionid', $sessionid),"\n";
+  BSE::Session->send_cookie($self->make_cookie($cfg, 'sessionid', $sessionid));
   my $dh = BSE::DB->single;
   eval {
     tie %$newsession, $SESSION_CLASS, $sessionid,
@@ -106,6 +105,19 @@ sub make_cookie {
 # fixed it
 END {
   untie %$saved;
+}
+
+sub send_cookie {
+  my ($class, $cookie) = @_;
+
+  if (exists $ENV{GATEWAY_INTERFACE}
+      && $ENV{GATEWAY_INTERFACE} =~ /^CGI-Perl\//) {
+    my $r = Apache->request or die;
+    $r->header_out('Set-Cookie' => "$cookie");
+  }
+  else {
+    print "Set-Cookie: $cookie\n";
+  }
 }
 
 1;

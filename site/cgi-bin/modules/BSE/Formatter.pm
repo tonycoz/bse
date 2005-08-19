@@ -139,7 +139,7 @@ sub _get_article {
 }
 
 sub doclink {
-  my ($self, $id, $title, $target) = @_;
+  my ($self, $id, $title, $target, $type) = @_;
 
   my $error;
   my $art = $self->_get_article($id, \$error)
@@ -164,8 +164,15 @@ sub doclink {
 
   $target = $target ? qq! target="$target"! : '';
   my $title_attrib = escape_html($art->{title});
+  my $class_text = '';
+  if ($type) {
+    my $class = $self->tag_class($type);
+    if ($class) {
+      $class_text = qq/ class="$class"/; 
+    }
+  }
   
-  return qq!<a href="$url" title="$title_attrib"$target>$title</a>!;
+  return qq!<a href="$url" title="$title_attrib"$target$class_text>$title</a>!;
 }
 
 sub replace {
@@ -173,16 +180,48 @@ sub replace {
 
   $$rpart =~ s#gimage\[([^\]\[]+)\]# $self->gimage($1) #ige
     and return 1;
-  $$rpart =~ s#popdoclink\[(\w+)\|([^\]\[]+)\]# $self->doclink($1, $2, "_blank") #ige
+  $$rpart =~ s#popdoclink\[(\w+)\|([^\]\[]+)\]# $self->doclink($1, $2, "_blank", 'popdoclink') #ige
     and return 1;
-  $$rpart =~ s#popdoclink\[(\w+)\]# $self->doclink($1, undef, "_blank") #ige
+  $$rpart =~ s#popdoclink\[(\w+)\]# $self->doclink($1, undef, "_blank", 'popdoclink') #ige
     and return 1;
-  $$rpart =~ s#doclink\[(\w+)\|([^\]\[]+)\]# $self->doclink($1, $2) #ige
+  $$rpart =~ s#doclink\[(\w+)\|([^\]\[]+)\]# $self->doclink($1, $2, undef, 'doclink') #ige
     and return 1;
-  $$rpart =~ s#doclink\[(\w+)\]# $self->doclink($1) #ige
+  $$rpart =~ s#doclink\[(\w+)\]# $self->doclink($1,  undef, undef, 'doclink') #ige
+    and return 1;
+
+  $$rpart =~ s#popformlink\[(\w+)\|([^\]\[]+)\]#
+    $self->formlink($1, 'popformlink', $2, '_blank') #ige
+    and return 1;
+  $$rpart =~ s#popformlink\[(\w+)\]#
+    $self->formlink($1, 'popformlink', undef, '_blank') #ige
+    and return 1;
+  $$rpart =~ s#formlink\[(\w+)\|([^\]\[]+)\]#
+    $self->formlink($1, 'formlink', $2) #ige
+    and return 1;
+  $$rpart =~ s#formlink\[(\w+)\]# $self->formlink($1, 'formlink', undef) #ige
     and return 1;
 
   return $self->SUPER::replace($rpart);
+}
+
+sub formlink {
+  my ($self, $id, $type, $text, $target) = @_;
+
+  my $title = escape_html($self->{gen}{cfg}->entry("$id form", 'title', "Send us a comment"));
+  $text ||= $title;
+
+  my $extras = '';
+  if ($type) {
+    my $class = $self->tag_class($type);
+    if ($class) {
+      $extras .= qq/ class="$class"/;
+    }
+  }
+  if ($target) {
+    $extras .= qq/ target="$target"/;
+  }
+
+  return qq!<a href="/cgi-bin/fmail.pl?form=$id" title="$title"$extras>$text</a>!;
 }
 
 sub remove_doclink {
@@ -193,6 +232,12 @@ sub remove_doclink {
     or return $error;
 
   return $art->{title};
+}
+
+sub remove_formlink {
+  my ($self, $id) = @_;
+
+  return $self->{gen}{cfg}->entry("$id form", 'title', "Send us a comment");
 }
 
 sub remove {
@@ -208,7 +253,24 @@ sub remove {
     and return 1;
   $$rpart =~ s#doclink\[(\w+)\]# $self->remove_doclink($1) #ige
     and return 1;
+
+  $$rpart =~ s#popformlink\[(\w+)\|([^\]\[]*)\]#$2#ig
+    and return 1;
+  $$rpart =~ s#popformlink\[(\w+)\]# $self->remove_formlink($1) #ige
+    and return 1;
+  $$rpart =~ s#formlink\[(\w+)\|([^\]\[]*)\]#$2#ig
+    and return 1;
+  $$rpart =~ s#formlink\[(\w+)\]# $self->remove_formlink($1) #ig
+    and return 1;
   
+}
+
+sub tag_class {
+  my ($self, $type) = @_;
+
+  my $default = $type eq 'p' ? '' : $type;
+
+  return $self->{gen}{cfg}->entry('body class', $type, $default);
 }
 
 1;

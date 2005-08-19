@@ -1678,9 +1678,9 @@ sub update_child_dynamic {
 	my $uri = $editor->make_link($workart);
 	$workart->setLink($uri);
 
-	$old_dynamic 
-	  or unlink $workart->link_to_filename($cfg, $old_link);
-	$self->is_dynamic
+	!$old_dynamic && $old_link
+	  and unlink $workart->link_to_filename($cfg, $old_link);
+	$workart->is_dynamic
 	  or unlink $workart->cached_filename($cfg);
       }
 

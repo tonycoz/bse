@@ -1271,6 +1271,25 @@ group.
 Each key is a template name, the value is the content type to be used
 when displaying the template dynamically.
 
+=head2 [body class]
+
+This section defines CSS class names for BSE's body text link tags.
+The key is the tag name, the value is the CSS class to be used.
+
+By default the class used is the same as the name of the tag, but you
+can switch this off by adding an entry setting the class to the empty
+string, for example:
+
+  ; no class attribute for any of the links
+  [body class]
+  link=
+  poplink=
+  doclink=
+  popdoclink=
+
+You can set p here too to set the class for paragraphs generated as
+body text.  By default no class is set.
+
 =head2 [inpho]
 
 This is used to configure the DevHelp::Payments::Inpho module.

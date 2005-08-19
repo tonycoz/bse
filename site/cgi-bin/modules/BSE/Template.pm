@@ -169,7 +169,7 @@ sub output_result {
       && $ENV{GATEWAY_INTERFACE} =~ /^CGI-Perl\//) {
     require Apache;
     my $r = Apache->request or die;
-    $r->send_cgi_header(join("\n", @{$result->{headers}})."\n");
+    $r->send_cgi_header(join("\n", @{$result->{headers}})."\n\n");
   }
   else {
     print "$_\n" for @{$result->{headers}};

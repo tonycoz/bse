@@ -47,7 +47,8 @@ sub generate_low {
     }
   }
   else {
-    $outname = $article->link_to_filename($cfg);
+    $outname = $article->link_to_filename($cfg)
+      or return; # no output for this article 
   }
 
   my $genname = $article->{generator};

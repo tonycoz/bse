@@ -42,10 +42,15 @@ parameters, but may do so in the future.
 sub new {
   my ($class, %opts) = @_;
 
-  #my $file = _find_cfg(MAIN_CFG)
-  #  or _load_error("Cannot find config file ".MAIN_CFG);
-  my $file = _find_cfg(MAIN_CFG) || _find_cfg(MAIN_CFG, ".")
-    or return bless { config => {} }, $class;
+  my $file;
+  if ($opts{path}) {
+    $file = _find_cfg(MAIN_CFG, $opts{path});
+  }
+
+  unless ($file) {
+    $file = _find_cfg(MAIN_CFG) || _find_cfg(MAIN_CFG, ".")
+      or return bless { config => {} }, $class;
+  }
 
   return $class->_load_cfg($file);
 }

@@ -74,6 +74,8 @@ site/cgi-bin/modules/BSE/EmailRequests.pm
 site/cgi-bin/modules/BSE/Formatter.pm
 site/cgi-bin/modules/BSE/Generate/Seminar.pm
 # site/cgi-bin/modules/BSE/FileEditor.pm
+site/cgi-bin/modules/BSE/Handler/Base.pm
+site/cgi-bin/modules/BSE/Handler/Page.pm
 site/cgi-bin/modules/BSE/Mail.pm
 site/cgi-bin/modules/BSE/Mail/SMTP.pm
 site/cgi-bin/modules/BSE/Mail/Sendmail.pm
@@ -171,6 +173,7 @@ site/cgi-bin/modules/Squirrel/Row.pm
 site/cgi-bin/modules/Squirrel/Table.pm
 site/cgi-bin/modules/Squirrel/Template.pm
 site/cgi-bin/modules/Util.pm
+site/cgi-bin/page.fcgi
 site/cgi-bin/page.pl
 site/cgi-bin/printable.pl
 site/cgi-bin/search.pl

@@ -6,13 +6,12 @@ use BSE::Cfg;
 use DevHelp::HTML;
 
 sub new {
-  my ($class) = @_;
+  my ($class, %opts) = @_;
 
-  my $self =
-    bless {
-	   cfg => BSE::Cfg->new,
-	   cgi => CGI->new,
-	  }, $class;
+  $opts{cfg} ||= BSE::Cfg->new;
+  $opts{cgi} ||= CGI->new;
+
+  my $self = bless \%opts, $class;
   my %session;
   BSE::Session->tie_it(\%session, $self->{cfg});
   $self->{session} = \%session;

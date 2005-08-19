@@ -254,6 +254,90 @@ will need to add a rewrite rule to redirect C<http://your.site/> to
 C<http://your.site/cgi-bin/page.pl?id=1> or whatever other tool your
 web server provides with the same functionality.
 
+=head1 Persistent page.pl
+
+There are 2 ways to run page.pl as persistent servers, to reduce
+startup cost:
+
+=over
+
+=item *
+
+run page.pl using Apache::Registry under mod_perl
+
+=item *
+
+run page.fcgi under FastCGI
+
+=item *
+
+set BSE::Handler::Page as a mod_perl handler for page.pl
+
+=back
+
+=head2 page.pl and Apache::Registry
+
+This has the severe limitation that you can only run one page.pl per
+Apache server, due to limitations in BSE.
+
+To configure Apache to run page.pl via mod_perl, add the following to
+your virtual host configuration:
+
+  PerlModule Apache::Registry
+  <Location /cgi-bin/page.pl>
+    SetHandler perl-script
+    PerlHandler Apache::Registry
+    Options ExecCGI
+  </Location>
+
+=head2 page.fcgi and FastCGI
+
+You will need to configure Apache to use mod_fastcgi.
+
+First, Apache needs to be configured to use FastCGI, you may need to
+install it from source, then configure it:
+
+  LoadModule fastcgi_module /usr/lib/apache/1.3/mod_fastcgi.so
+
+Then configure your vhosts cgi-bin directory to run .fcgi scripts with
+fastcgi:
+
+  <Directory /var/www/httpd/bsetest/cgi-bin/>
+    AllowOverride All
+    AddHandler fastcgi-script fcgi
+  </Directory>
+
+Check this works with:
+
+  http://your.site/cgi-bin/page.fcgi?page=1
+
+Then setup a rewrite rule:
+
+  RewriteRule ^/cgi-bin/page.pl(.*) /cgi-bin/page.fcgi$1 [PT]
+
+=head2 BSE::Handler::Page
+
+This sets a native mod_perl hander to process page.pl requests:
+
+First, let perl know where the BSE libraries are:
+
+  <Perl>
+    use lib '/yourpath/cgi-bin/modules';
+  </Perl>
+
+Now load the module, and set it as the handler for page.pl:
+
+  PerlModule BSE::Handler::Page;
+  <Location /cgi-bin/page.pl>
+    PerlSetVar BSEConfig /var/www/httpd/bsetest/cgi-bin/
+    SetHandler perl-script
+    PerlHandler BSE::Handler::Page
+    Options ExecCGI
+  </Location>
+
+The PerlSetVar line should set BSEConfig to the directory containing
+your bse.cfg file, not to the file itself.
+
 =head1 AUTHOR
 
 Tony Cook <tony@develop-help.com>

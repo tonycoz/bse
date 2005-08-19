@@ -1,6 +1,6 @@
 <html>
 <head>
-<title><:ifArticle pageTitle:><:article pageTitle:><:or:><:article title:><:eif:> - <:siteName:></title>
+<title><:switch:><:case ifEq [param title] "FORMTITLE":><:formcfg title:><:case article pageTitle:><:article pageTitle:><:case default:><:article title:><:endswitch:> - <:siteName:></title>
 <meta name="ROBOTS" content="ALL">
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <meta http-equiv="Expires" content="Thu, 01 Jan 1970 00:00:00 GMT">

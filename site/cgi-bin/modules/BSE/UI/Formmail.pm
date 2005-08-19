@@ -45,6 +45,7 @@ my %form_defs =
    crypt_signing_id => $Constants::SHOP_SIGNING_ID,
    crypt_content_type => 0,
    autofill => 1,
+   title => 'Send us a comment',
   );
 
 sub _get_form {
