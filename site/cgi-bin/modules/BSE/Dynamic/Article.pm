@@ -21,6 +21,8 @@ sub generate {
      type => BSE::Template->get_type($self->{req}->cfg, $article->{template}),
     };
 
+  %acts = (); # hopefully break circular refs
+
   my @headers = "Content-Length: ".length $result->{content};
   $result->{headers} = \@headers;
 

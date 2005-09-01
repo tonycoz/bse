@@ -46,6 +46,13 @@ my %form_defs =
    crypt_content_type => 0,
    autofill => 1,
    title => 'Send us a comment',
+   send_email => 1,
+   sql=>'',
+   sql_params => undef,
+   sql_dsn => undef,
+   sql_options => '',
+   sql_user => undef,
+   sql_password => undef,
   );
 
 sub _get_form {
@@ -249,6 +256,83 @@ sub iter_cgi_values {
   return map +{ id => $_, name => $poss_values{$_} }, @{$field->{value_array}};
 }
 
+sub _send_to_db {
+  my ($form, $user, $errors) = @_;
+
+  my $dbh;
+  my $conn_dbh;
+  
+  if ($form->{sql_dsn}) {
+    my %options = split /[,=]/, $form->{sql_options};
+    if ($conn_dbh = DBI->connect($form->{sql_dsn}, $form->{sql_user},
+				 $form->{sql_password}, \%options)) {
+      $dbh = $conn_dbh;
+    }
+    else {
+      print STDERR "Error connecting to the database for $form->{id}: ", DBI->errstr,"\n";
+      $errors->{_database} =
+	"Error connecting to the database.  Please contact the webmaster.";
+      return;
+    }
+  }
+  else {
+    $dbh = BSE::DB->single->dbh;
+  }
+
+  my @params;
+  if ($form->{sql_params}) {
+    my %names = map { $form->{fields}[$_]{name} => $_ } 0 .. $#{$form->{fields}};
+    for my $param (split /,/, $form->{sql_params}) {
+      if ($param =~ /^\{(\w+)\}$/) {
+	if ($user && defined $user->{$1}) {
+	  push @params, $user->{$1};
+	}
+	else {
+	  push @params, '';
+	}
+      }
+      else {
+	if (exists $names{$param}
+	    && defined $form->{fields}[$names{$param}]{value}) {
+	  push @params, $form->{fields}[$names{$param}]{value};
+	}
+	else {
+	  print STDERR "Unknown sql_param field $param\n";
+	  push @params, '';
+	}
+      }
+    }
+  }
+  else {
+    # assume they want everything
+    @params = map $_->{value}, @{$form->{fields}};
+  }
+
+  my $sth = $dbh->prepare($form->{sql});
+  unless ($sth) {
+    print STDERR "Cannot prepare $form->{id} SQL: ",$dbh->errstr,"\n";
+    $conn_dbh->disconnect if $conn_dbh;
+    $errors->{_database} =
+      "Error preparing SQL for execution.  Please contact the webmaster.";
+    return;
+  }
+  
+  unless ($sth->execute(@params)) {
+    print STDERR "Cannot execute $form->{id} SQL: ", $dbh->errstr,"\n";
+    for my $index (0..$#params) {
+      print STDERR " $index: $params[$index]\n";
+    }
+    $errors->{_database} =
+      "Error executing SQL.  Please contact the webmaster.";
+    return;
+  }
+  $sth->finish; # just in case
+  undef $sth;
+  $conn_dbh->disconnect if $conn_dbh;
+
+  return 1;
+}
+
 sub req_send {
   my ($class, $req) = @_;
 
@@ -280,50 +364,57 @@ sub req_send {
     $field->{value_array} = $array_values{$name} = \@values;
   }
 
-  # send an email
   my $user = $req->siteuser;
-  my $it = BSE::Util::Iterate->new;
-  my %acts;
-  my $current_field;
-  %acts =
-    (
-     BSE::Util::Tags->static(\%acts, $cfg),
-     ifUser=>!!$user,
-     user => $user ? [ \&tag_hash, $user ] : '',
-     value => [ \&tag_hash, \%values ],
-     $it->make_iterator(undef, 'field', 'fields', $form->{fields}, 
-			undef, undef, \$current_field),
-     $it->make_iterator([ \&iter_cgi_values, $form, \$current_field ],
-			'value', 'values', undef, undef, 'nocache'),
-     id => $form->{id},
-     formcfg => [ \&tag_formcfg, $req->cfg, $form ],
-     remote_addr => escape_html($ENV{REMOTE_ADDR}),
-    );
-
-  require BSE::Mail;
-  my $mailer = BSE::Mail->new(cfg=>$cfg);
-  my $content = BSE::Template->get_page($form->{mail}, $cfg, \%acts);
-  my @headers;
-  if ($form->{encrypt}) {
-    $content = $class->_encrypt($cfg, $form, $content);
-    push @headers, "Content-Type: application/pgp; format=text; x-action=encrypt\n"
-      if $form->{crypt_content_type};
-  }
-  unless ($mailer->send(to=>$form->{email}, from=>$form->{email},
-			subject=>$form->{subject}, body=>$content,
-			headers => join('', @headers))) {
-    print STDERR "Error sending mail: ", $mailer->errstr, "\n";
-    $errors{_mail} = $mailer->{errstr};
-    return $class->req_show($req, \%errors);
+  if ($form->{sql}) {
+    _send_to_db($form, $user, \%errors)
+      or return $class->req_show($req, \%errors);
   }
 
+  if ($form->{send_email}) {
+    # send an email
+    my $it = BSE::Util::Iterate->new;
+    my %acts;
+    my $current_field;
+    %acts =
+      (
+       BSE::Util::Tags->static(\%acts, $cfg),
+       ifUser=>!!$user,
+       user => $user ? [ \&tag_hash, $user ] : '',
+       value => [ \&tag_hash, \%values ],
+       $it->make_iterator(undef, 'field', 'fields', $form->{fields}, 
+			  undef, undef, \$current_field),
+       $it->make_iterator([ \&iter_cgi_values, $form, \$current_field ],
+			  'value', 'values', undef, undef, 'nocache'),
+       id => $form->{id},
+       formcfg => [ \&tag_formcfg, $req->cfg, $form ],
+       remote_addr => escape_html($ENV{REMOTE_ADDR}),
+      );
+
+    require BSE::Mail;
+    my $mailer = BSE::Mail->new(cfg=>$cfg);
+    my $content = BSE::Template->get_page($form->{mail}, $cfg, \%acts);
+    my @headers;
+    if ($form->{encrypt}) {
+      $content = $class->_encrypt($cfg, $form, $content);
+      push @headers, "Content-Type: application/pgp; format=text; x-action=encrypt\n"
+	if $form->{crypt_content_type};
+    }
+    unless ($mailer->send(to=>$form->{email}, from=>$form->{email},
+			  subject=>$form->{subject}, body=>$content,
+			  headers => join('', @headers))) {
+      print STDERR "Error sending mail: ", $mailer->errstr, "\n";
+      $errors{_mail} = $mailer->{errstr};
+      return $class->req_show($req, \%errors);
+    }
+  }
+  
   # make them available to the a_sent handler
   my $session = $req->session;
   $session->{formmail} = \%values;
   $session->{formmail_array} = \%array_values;
   $session->{formmail_done} = time;
 
-  my $url = $ENV{SCRIPT} . "?a_done=1&form=$form->{id}&t=".$session->{formmail_done};
+  my $url = $ENV{SCRIPT_NAME} . "?a_done=1&form=$form->{id}&t=".$session->{formmail_done};
 
   return BSE::Template->get_refresh($url, $cfg);
 }

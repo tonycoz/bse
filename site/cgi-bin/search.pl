@@ -219,6 +219,8 @@ my %acts;
 
 BSE::Template->show_page('search', $cfg, \%acts);
 
+undef $req;
+
 sub getSearchResult {
   my ($words, $section, $date, $terms) = @_;
 

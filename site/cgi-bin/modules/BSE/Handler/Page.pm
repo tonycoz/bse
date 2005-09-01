@@ -7,6 +7,10 @@ use SiteUsers;
 use BSE::CfgInfo;
 use BSE::TB::SiteUserGroups;
 use BSE::Util::DynamicTags;
+use BSE::Dynamic::Article;
+use BSE::Dynamic::Product;
+use BSE::Dynamic::Catalog;
+use BSE::Dynamic::Seminar;
 
 sub handler {
   my ($r) = @_;

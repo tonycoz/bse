@@ -6,8 +6,6 @@ use BSE::DB;
 
 require $SESSION_REQUIRE;
 
-my $saved;
-
 sub tie_it {
   my ($self, $session, $cfg) = @_;
   
@@ -59,7 +57,6 @@ sub tie_it {
     BSE::Session->send_cookie($cookie);
     print STDERR "Sent cookie: $cookie\n" if $debug;
   }
-  $saved = $session;
 
   if ($cfg->entry('debug', 'dump_session')) {
     require Data::Dumper;
@@ -99,12 +96,6 @@ sub make_cookie {
   }
   
   return CGI::Cookie->new(%opts);
-}
-
-# this shouldn't be necessary, but it stopped working elsewhere and this
-# fixed it
-END {
-  untie %$saved;
 }
 
 sub send_cookie {

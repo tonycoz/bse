@@ -58,7 +58,11 @@ sub generate_low {
   my %acts;
   %acts = $self -> baseActs($articles, \%acts, $article, $embedded);
 
-  return BSE::Template->replace($template, $self->{cfg}, \%acts);
+  my $page = BSE::Template->replace($template, $self->{cfg}, \%acts);
+
+  %acts = (); # try to destroy any circular refs
+
+  return $page;
 }
 
 sub tag_title {

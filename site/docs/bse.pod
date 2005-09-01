@@ -10,6 +10,31 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_30
+
+=over
+
+=item *
+
+stop BSE::Session from keeping a reference to the session hash so it
+can be cleaned up properly.
+
+=item *
+
+parent validation for catalogs now correctly uses eq instead of ==
+when testing the generator type.
+
+=item *
+
+the apache page handler now preloads more modules.
+
+=item *
+
+fmail.pl can now be configured to send form data to a database table
+as well as or instead of sending an email.
+
+=back
+
 =head2 0.15_29
 
 =over

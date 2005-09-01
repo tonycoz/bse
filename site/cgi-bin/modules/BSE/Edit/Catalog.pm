@@ -46,7 +46,7 @@ sub validate_parent {
   my $shopid = $self->{cfg}->entryErr('articles', 'shop');
   unless ($parent && 
 	  ($parent->{id} == $shopid 
-	   || $parent->{generator} == 'Generate::Catalog')) {
+	   || $parent->{generator} eq 'Generate::Catalog')) {
     $$rmsg = "Catalogs must be in the shop";
     return;
   }

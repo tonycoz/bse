@@ -16,6 +16,7 @@ sub handler {
   my $result = $class->dispatch($req);
 
   BSE::Template->output_result($req, $result);
+  undef $req;
 }
 
 1;
