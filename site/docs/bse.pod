@@ -23,6 +23,10 @@ articles at a given level.
 
 apply Adrian's set_errors_to_from patch
 
+=item *
+
+handle div/blockquote/address blocks a bit better.
+
 =back
 
 =head2 0.15_30

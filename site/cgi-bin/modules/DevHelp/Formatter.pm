@@ -286,25 +286,25 @@ sub format {
 	$part =~ s#style\[([^\]\[\|]+)\|([^\]\[]+)\]#
 	  $self->_fix_spanned(qq/<span style="$1">/, "</span>", $2)#eig
 	  and next TRY;
-	$part =~ s#(div|address|blockquote)\[\n*([^\[\]\|]+)\|\n*([^\[\]]+?)\n*\]#<$1 class="$2">$3</$1>#ig
+	$part =~ s#(div|address|blockquote)\[\n*([^\[\]\|]+)\|\n*([^\[\]]+?)\n*\]#\n\n<$1 class="$2">$3</$1>\n\n#ig
 	  and next TRY;
-	$part =~ s#(div|address|blockquote)\[\n*\|([^\[\]]+?)\n*]#<$1>$2</$1>#ig
+	$part =~ s#(div|address|blockquote)\[\n*\|([^\[\]]+?)\n*]#\n\n<$1>$2</$1>\n\n#ig
 	  and next TRY;
-	$part =~ s#(div|address|blockquote)\[\n*([^\[\]]+?)\n*]#<$1>$2</$1>#ig
+	$part =~ s#(div|address|blockquote)\[\n*([^\[\]]+?)\n*]#\n\n<$1>$2</$1>\n\n#ig
 	  and next TRY;
 	last;
       }
       $part =~ s/^\s+|\s+\z//g; # avoid spurious leading/trailing <p>
       $part =~ s!(\n([ \r]*\n)*)!$1 eq "\n" ? "<br />\n" : "</p>\n<p>"!eg;
       $part = "<p>$part</p>";
-      $part =~ s/<p>(<div [^>]*>)/$1<p>/g;
-      $part =~ s!</div></p>!</p></div>!g;
-      $part =~ s/<p>(<blockquote>)/$1<p>/g;
-      $part =~ s/<p>(<blockquote [^>]*>)/$1<p>/g;
-      $part =~ s!</blockquote></p>!</p></blockquote>!g;
-      $part =~ s/<p>(<address>)/$1<p>/g;
-      $part =~ s/<p>(<address [^>]*>)/$1<p>/g;
-      $part =~ s!</address></p>!</p></address>!g;
+      1 while $part =~ s/<p>(<div(?: [^>]*)?>)/$1<p>/g;
+      1 while $part =~ s!</div></p>!</p></div>!g;
+      1 while $part =~ s/<p>(<blockquote>)/$1<p>/g;
+      1 while $part =~ s/<p>(<blockquote [^>]*>)/$1<p>/g;
+      1 while $part =~ s!</blockquote></p>!</p></blockquote>!g;
+      1 while $part =~ s/<p>(<address>)/$1<p>/g;
+      1 while $part =~ s/<p>(<address [^>]*>)/$1<p>/g;
+      1 while $part =~ s!</address></p>!</p></address>!g;
       $part =~ s!<p>(<hr[^>]*>)</p>!$1!g;
       $part =~ s!<p>(<(?:table|ol|ul|center|h[1-6])[^>]*>)!$1!g;
       $part =~ s!(</(?:table|ol|ul|center|h[1-6])>)</p>!$1!g;
