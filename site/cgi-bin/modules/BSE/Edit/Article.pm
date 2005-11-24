@@ -1231,9 +1231,12 @@ sub add_form {
   $article{generator} = $self->generator;
 
   my ($values, $labels) = $self->possible_parents(\%article, $articles, $req);
-  @$values
-    or return $self->edit_sections($req, $articles, 
-		"You can't add children to any article at that level");
+  unless (@$values) {
+    require BSE::Edit::Site;
+    my $site = BSE::Edit::Site->new(cfg=>$req->cfg, db=> BSE::DB->single);
+    return $site->edit_sections($req, $articles, 
+				"You can't add children to any article at that level");
+  }
 
   return $self->low_edit_form($req, \%article, $articles, $msg, $errors);
 }
