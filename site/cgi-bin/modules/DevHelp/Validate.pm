@@ -5,12 +5,6 @@ use vars qw(@EXPORT_OK @ISA);
 @EXPORT_OK = qw(dh_validate dh_validate_hash dh_fieldnames dh_configure_fields);
 @ISA = qw(Exporter);
 
-sub new {
-  my ($class, %opts) = @_;
-
-  return bless \%opts, $class;
-}
-
 my %built_ins =
   (
    email => 
@@ -152,27 +146,15 @@ my %built_ins =
    },
   );
 
-sub dh_validate {
-  my ($cgi, $errors, $validation, $cfg, $section) = @_;
+sub new {
+  my ($class, %opts) = @_;
 
-  return DevHelp::Validate::CGI->new(cfg=>$cfg, cgi=>$cgi, section=>$section)
-    ->validate($errors, $validation);
-}
+  my $self = bless \%opts, $class;
 
-sub dh_validate_hash {
-  my ($hash, $errors, $validation, $cfg, $section) = @_;
+  # configure validation
+  my $fields = $self->{fields};
+  my $rules = $self->{rules} || {};
 
-  return DevHelp::Validate::Hash->new(cfg=>$cfg, hash=>$hash, section=>$section)
-    ->validate($errors, $validation);
-}
-
-sub validate {
-  my ($self, $errors, $validation) = @_;
-
-  my $rules = $validation->{rules};
-  my $fields = $validation->{fields};
-  my $optional = $validation->{optional};
-  
   my %cfg_rules;
   _get_cfg_fields(\%cfg_rules, $self->{cfg}, $self->{section}, $fields)
     if $self->{cfg} && $self->{section};
@@ -224,8 +206,36 @@ sub validate {
 
     $cfg_fields->{$field} = $dest if keys %$dest;
   }
+
+  $self->{cfg_fields} = $cfg_fields;
+  $self->{cfg_rules} = $cfg_rules{rules};
+
+  return $self;
+}
+
+sub dh_validate {
+  my ($cgi, $errors, $validation, $cfg, $section) = @_;
+
+  return DevHelp::Validate::CGI->new(cfg=>$cfg, section=>$section, fields=>$validation->{fields}, rules=>$validation->{rules}, optional=>$validation->{optional})
+    ->validate($cgi, $errors);
+}
+
+sub dh_validate_hash {
+  my ($hash, $errors, $validation, $cfg, $section) = @_;
+
+  return DevHelp::Validate::Hash->new(cfg=>$cfg, section=>$section, fields=>$validation->{fields}, rules=>$validation->{rules}, optional=>$validation->{optional})
+    ->validate($hash, $errors);
+}
+
+sub _validate {
+  my ($self, $errors) = @_;
+
+  my $cfg_fields = $self->{cfg_fields};
+  my $cfg_rules = $self->{cfg_rules};
+  my $optional = $self->{optional};
+  
   for my $field ( keys %$cfg_fields ) {
-    $self->validate_field($field, $cfg_fields->{$field}, $cfg_rules{rules}, 
+    $self->validate_field($field, $cfg_fields->{$field}, $cfg_rules, 
 			  $optional, $errors);
   }
   
@@ -571,6 +581,14 @@ sub param {
   $self->{cgi}->param($field);
 }
 
+sub validate {
+  my ($self, $cgi, $errors) = @_;
+  
+  $self->{cgi} = $cgi;
+  
+  return $self->_validate($errors);
+}
+
 package DevHelp::Validate::Hash;
 use vars qw(@ISA);
 @ISA = qw(DevHelp::Validate);
@@ -587,6 +605,14 @@ sub param {
   }
 
   return $value;
+}
+
+sub validate {
+  my ($self, $hash, $errors) = @_;
+
+  $self->{hash} = $hash;
+
+  return $self->_validate($errors);
 }
 
 1;

@@ -27,6 +27,10 @@ apply Adrian's set_errors_to_from patch
 
 handle div/blockquote/address blocks a bit better.
 
+=item *
+
+ported the OO validation changes across
+
 =back
 
 =head2 0.15_30
