@@ -19,6 +19,10 @@ Maybe I'll add some other bits here.
 prevent a 500 error when the user doesn't have access to create
 articles at a given level.
 
+=item *
+
+apply Adrian's set_errors_to_from patch
+
 =back
 
 =head2 0.15_30

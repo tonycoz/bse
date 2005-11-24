@@ -13,6 +13,8 @@ sub new {
 sub send {
   my ($self, %args) = @_;
   
+  my $cfg = $self->{cfg};
+
   for (qw/to from subject body/) {
     $args{$_}
       or return $self->_error("$_ argument missing");
@@ -30,8 +32,10 @@ sub send {
   if ($args{bcc}) {
     $args{headers} = "Bcc: $args{bcc}\n".$args{headers};
   }
+  if ($cfg->entry('mail', 'set_errors_to_from', 1)) {
+    $args{headers} = "Errors-To: $args{from}\n" . $args{headers};
+  }
 
-  my $cfg = $self->{cfg};
   my $sendmail = $cfg->entry('mail', 'sendmail') || '/usr/lib/sendmail';
   my $opts = $cfg->entry('mail', 'sendmail_opts') || '-t -oi';
   # redirect to /dev/null so we don't keep stdout open in a CGI

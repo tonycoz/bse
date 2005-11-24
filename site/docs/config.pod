@@ -273,6 +273,11 @@ The options supplied to sendmail.  Default: -t -oi
 You may want to add the -odq option to this if you want mail queued
 rather than sent immediately.
 
+=item set_errors_to_from
+
+If true, we add an Errors-To header set to the same as the From
+header.  Default: true.
+
 =back
 
 =head2 [children of I<id>]
