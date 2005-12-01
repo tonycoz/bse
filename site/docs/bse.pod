@@ -31,6 +31,11 @@ handle div/blockquote/address blocks a bit better.
 
 ported the OO validation changes across
 
+=item *
+
+allow image[...|padding] to format padding as padding when there's no
+spaces in padding.
+
 =back
 
 =head2 0.15_30

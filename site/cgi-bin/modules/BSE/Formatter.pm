@@ -35,11 +35,11 @@ sub _image {
       . qq! border="0"!;
   $text .= qq! align="$align"! if $align && $align ne 'center';
   if ($style) {
-    if ($style =~ /^\w+$/) {
-      $text .= qq! class="$style"!;
-    }
-    elsif ($style =~ /^\d/) {
+    if ($style =~ /^\d/) {
       $text .= qq! style="padding: $style"!;
+    }
+    elsif ($style =~ /^\w+$/) {
+      $text .= qq! class="$style"!;
     }
     else {
       $text .= qq! style="$style"!;
