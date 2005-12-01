@@ -42,6 +42,10 @@ have bse_I<permission> permission non-rights checks (eg. checking for
 no children on edit_delete_article) do the same checks as for
 I<permission>
 
+=item *
+
+added some debugging output to the ifUserCan tag handler
+
 =back
 
 =head2 0.15_30

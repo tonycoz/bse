@@ -704,6 +704,11 @@ STDERR.
 If non-zero then information about jit_dynamic_regen is sent to
 STDERR.
 
+=item ifUserCan
+
+If non-zero then the ifUserCan tag will output some trace information
+to STDERR.
+
 =back
 
 =head2 [uri]

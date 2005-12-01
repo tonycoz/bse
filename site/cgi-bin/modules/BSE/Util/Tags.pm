@@ -631,9 +631,14 @@ my %dummy_site_article =
 sub tag_if_user_can {
   my ($req, $rperms, $args, $acts, $funcname, $templater) = @_;
 
+  my $debug = $req->cfg->entry('debug', 'ifUserCan', 0);
+  $debug 
+    and print STDERR "Handling ifUserCan $args:\n";
   my @checks = split /,/, $args;
   for my $check (@checks) {
     my ($perm, $artname) = split /:/, $check, 2;
+    $debug 
+      and print STDERR "  Perm: '$perm'\n";
     my $article;
     if ($artname) {
       if ($artname =~ /^\[/) {
