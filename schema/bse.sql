@@ -84,6 +84,9 @@ CREATE TABLE article (
   cached_dynamic integer not null default 0,
   inherit_siteuser_rights integer not null default 1,
 
+  metaDescription varchar(255) default '' not null,
+  metaKeywords varchar(255) default '' not null,
+
   PRIMARY KEY (id),
 
   -- if we keep id in the indexes MySQL will sometimes be able to

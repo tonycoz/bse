@@ -7,7 +7,7 @@ WEBBASE=/home/httpd/html/bse
 
 help:
 	@echo make dist - build the tar.gz file and copy to distribution directory
-	@echo make archive - build the tar.gz (in the parent directory)
+	@echo make 'archive - build the tar.gz (in the parent directory)'
 	@echo make clean - delete generated files
 	@echo make distdir - build distribution directory
 	@echo make docs - build documentation

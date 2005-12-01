@@ -19,7 +19,7 @@
 <:ifNew:><:or:>
 <:if Or [iadminuser_count] [iadmingroup_count]:>
       <form action="/cgi-bin/admin/adminusers.pl" name="access">
-  <input type=hidden name=id value="<: article id:>" />
+  <input type="hidden" name="id" value="<: article id:>" />
   <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
   <tr>
     <td>
@@ -27,18 +27,18 @@
           <tr>
             <th nowrap="nowrap">
 
-        <font size=2>Manage access:</font>
+        <font size="2">Manage access:</font>
         </th>
             <td bgcolor="#FFFFFF">
-              <select name=adminid>
+              <select name="adminid">
 <:iterator begin adminusers:>
-<option value=<:iadminuser id:>>User <:iadminuser logon:>
-<:iterator end adminusers:>
+<option value="<:iadminuser id:>">User <:iadminuser logon:>
+</option><:iterator end adminusers:>
 <:iterator begin admingroups:>
-<option value=<:iadmingroup id:>>Group <:iadmingroup name:>
-<:iterator end admingroups:>
+<option value="<:iadmingroup id:>">Group <:iadmingroup name:>
+</option><:iterator end admingroups:>
               </select>
-              <input type=submit name="a_showobjectart" value="Manage" />
+              <input type="submit" name="a_showobjectart" value="Manage" />
       </td>
             <td bgcolor="#FFFFFF"><:help access manage:>
         </td>
@@ -115,14 +115,28 @@
           <tr>
             <th nowrap="nowrap" align="left" bgcolor="#FFFFFF">Page title:</th>
             <td width="100%" bgcolor="#FFFFFF">
-              <:ifFieldPerm pageTitle:><input type="text" name="pageTitle" value='<:old pageTitle article pageTitle:>' size="60" maxlength="255" tabindex="7" /> (alternate title)<:or:><:article pageTitle:><:eif:>
+              <:ifFieldPerm pageTitle:><input type="text" name="pageTitle" value='<:old pageTitle article pageTitle:>' size="60" maxlength="255" /> (alternate title)<:or:><:article pageTitle:><:eif:>
             </td>
            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help edit pageTitle:> <:error_img pageTitle:></td>
           </tr>
           <tr>
+            <th nowrap="nowrap" align="left" bgcolor="#FFFFFF">Meta description:</th>
+            <td width="100%" bgcolor="#FFFFFF">
+              <:ifFieldPerm metaDescription:><input type="text" name="metaDescription" value='<:old metaDescription article metaDescription:>' size="60" maxlength="255" /><:or:><:article metaDescription:><:eif:>
+            </td>
+           <td nowrap="nowrap" bgcolor="#FFFFFF"><:help edit metaDescription:> <:error_img metaDescription:></td>
+          </tr>
+          <tr>
+            <th nowrap="nowrap" align="left" bgcolor="#FFFFFF">Meta keywords:</th>
+            <td width="100%" bgcolor="#FFFFFF">
+              <:ifFieldPerm metaKeywords:><input type="text" name="metaKeywords" value='<:old metaKeywords article metaKeywords:>' size="60" maxlength="255" /> (comma separated)<:or:><:article metaKeywords:><:eif:>
+            </td>
+           <td nowrap="nowrap" bgcolor="#FFFFFF"><:help edit metaKeywords:> <:error_img metaKeywords:></td>
+          </tr>
+  		  <tr>
             <th nowrap="nowrap" align="left" bgcolor="#FFFFFF">Author name:</th>
             <td width="100%" bgcolor="#FFFFFF" >
-              <:if FieldPerm author:><input type="text" name="author" value='<:ifCfg editor auto_author:><:old author adminuser name:><:or:><:old author:><:eif:>' size="40" maxlength="255" tabindex="7" /><:or FieldPerm:><:article author:><:eif FieldPerm:>
+              <:if FieldPerm author:><input type="text" name="author" value='<:ifCfg editor auto_author:><:old author adminuser name:><:or:><:old author:><:eif:>' size="40" maxlength="255" /><:or FieldPerm:><:article author:><:eif FieldPerm:>
             </td>
             <td nowrap="nowrap" bgcolor="#FFFFFF" ><:help edit author:> <:error_img author:></td>
           </tr>
@@ -178,7 +192,7 @@
               <:ifFieldPerm thumbImage:>
               <input type="file" name="thumbnail" /><:or:><:eif:>
               <:ifArticle thumbImage:><img src="/images/<:article thumbImage:>"> 
-              <:if FieldPerm thumbImage:><input type=checkbox name="remove_thumb" />
+              <:if FieldPerm thumbImage:><input type="checkbox" name="remove_thumb" />
             Remove<:or FieldPerm:><:eif FieldPerm:><:or:><:eif:></td>
             <td valign="top" nowrap="nowrap" bgcolor="#FFFFFF"><:help edit thumb:> <:error_img
             thumbImage:></td>
@@ -204,9 +218,9 @@
                         <td><:file displayName:></td>
                         <td align="center"><:kb file sizeInBytes:></td>
                         <td><:file contentType:></td>
-                        <td align=center><:ifFile download:>Yes<:or:>No<:eif:></td>
-                        <td align=center><:ifFile forSale:>Yes<:or:>No<:eif:></td>
-                        <td align=center><:ifFile requireUser:>Yes<:or:>No<:eif:></td>
+                        <td align="center"><:ifFile download:>Yes<:or:>No<:eif:></td>
+                        <td align="center"><:ifFile forSale:>Yes<:or:>No<:eif:></td>
+                        <td align="center"><:ifFile requireUser:>Yes<:or:>No<:eif:></td>
                       </tr>
                       <:iterator end files:> 
                     </table>
@@ -245,9 +259,9 @@
 </table>
 
   <p><: ifNew :>
-    <input type="submit" name="save" value="  Add New <: articleType:>  " />
+    <input type="submit" name="save" value="Add New <: articleType:>" />
    <:or:>
-  <:if UserCan edit_save:article:><input type="submit" name="save" value="  Update <: articleType:>  " /><:or UserCan:><:eif UserCan:>
+  <:if UserCan edit_save:article:><input type="submit" name="save" value="Update <: articleType:>" /><:or UserCan:><:eif UserCan:>
    <:eif:></p>
   </form>
 <:if children:> <:ifEq [article id] [cfg articles shop]:> 

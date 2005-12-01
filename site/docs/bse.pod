@@ -46,6 +46,24 @@ I<permission>
 
 added some debugging output to the ifUserCan tag handler
 
+=item *
+
+patch from Adrian Oldham: add metaDescription and metaKeywords article
+fields.
+
+=item *
+
+patch from Adrian Oldham: fix quotes around template tag attributes,
+and valueless tags.
+
+=item *
+
+update t/t20gen.t and t/t21gencat.t to allow for the new fields
+
+=item *
+
+fix shell syntax problem in Makefile
+
 =back
 
 =head2 0.15_30

@@ -21,26 +21,26 @@
   <h2>Product Details</h2>
 <:ifNew:><:or:><:if Or [iadminuser_count] [iadmingroup_count]:>
       <form action="/cgi-bin/admin/adminusers.pl">
-  <input type=hidden name=id value="<: article id:>">
+  <input type="hidden" name="id" value="<: article id:>" />
   <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
   <tr>
     <td>
         <table cellpadding="6" cellspacing="1" border="0" width="100%">
           <tr>
-            <th nowrap>
+            <th nowrap="nowrap">
 
-        <font size=2>Manage access:</font>
+        <font size="2">Manage access:</font>
         </th>
             <td bgcolor="#FFFFFF">
-              <select name=adminid>
+              <select name="adminid">
 <:iterator begin adminusers:>
-<option value=<:iadminuser id:>>User <:iadminuser logon:>
-<:iterator end adminusers:>
+<option value="<:iadminuser id:>">User <:iadminuser logon:>
+</option><:iterator end adminusers:>
 <:iterator begin admingroups:>
-<option value=<:iadmingroup id:>>Group <:iadmingroup name:>
-<:iterator end admingroups:>
+<option value="<:iadmingroup id:>">Group <:iadmingroup name:>
+</option><:iterator end admingroups:>
               </select>
-              <input type=submit name="a_showobjectart" value="Manage">
+              <input type="submit" name="a_showobjectart" value="Manage" />
       </td>
             <td bgcolor="#FFFFFF"><:help access manage:>
         </td>
@@ -64,129 +64,140 @@
             <th align="left" bgcolor="#FFFFFF">Catalog:</th>
             <td bgcolor="#FFFFFF">
 <:ifFieldPerm parentid:><select name="parentid"><:list:></select><:or:><:parent title:> (<:parent id:>)<:eif:></td>
-            <td nowrap bgcolor="#FFFFFF"><:help product catalog:> <:error_img
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help product catalog:> <:error_img
               parentid:></td>
           </tr>
 		  <tr> 
             <th align="left" bgcolor="#FFFFFF">Title*:</th>
             <td bgcolor="#FFFFFF"><:ifFieldPerm title:><input type="text" name="title" value="<:old title default title:>" size="60"><:or:><:product title:><:eif:> </td>
-            <td nowrap bgcolor="#FFFFFF"><:help product title:> <:error_img title:></td>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help product title:> <:error_img title:></td>
           </tr>
           <tr> 
-            <th nowrap align="left" bgcolor="#FFFFFF">Summary*:</th>
-            <td nowrap bgcolor="#FFFFFF"><:ifFieldPerm summary:><input type="text" name="summary" value="<:old summary default summary:>" size=60><:or:><:product summary:><:eif:> </td>
-            <td nowrap bgcolor="#FFFFFF"><:help product summary:> <:error_img
+            <th nowrap="nowrap" align="left" bgcolor="#FFFFFF">Summary*:</th>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:ifFieldPerm summary:><input type="text" name="summary" value="<:old summary default summary:>" size=60><:or:><:product summary:><:eif:> </td>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help product summary:> <:error_img
             summary:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF" valign="top"> Body:</th>
             <td bgcolor="#FFFFFF"> 
-              <:ifFieldPerm body:><textarea name=body rows=15 cols=60 wrap=virtual><:old body default body:></textarea><:or:><:bodytext product body:><:eif:>
+              <:ifFieldPerm body:><textarea name="body" rows="15" cols="60" wrap="virtual"><:old body default body:></textarea><:or:><:bodytext product body:><:eif:>
             </td>
-            <td nowrap bgcolor="#FFFFFF" valign="top"><:help body body:> <:error_img
+            <td nowrap="nowrap" bgcolor="#FFFFFF" valign="top"><:help body body:> <:error_img
             body:></td>
           </tr>
 		  <tr> 
-            <th nowrap align="left" bgcolor="#FFFFFF">Template:</th>
-            <td nowrap bgcolor="#FFFFFF"><:ifFieldPerm template:><:templates:><:or:><:product template:><:eif:></td>
-            <td nowrap bgcolor="#FFFFFF"><:help product template:> <:error_img
+            <th nowrap="nowrap" align="left" bgcolor="#FFFFFF">Template:</th>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:ifFieldPerm template:><:templates:><:or:><:product template:><:eif:></td>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help product template:> <:error_img
             template:></td>
           </tr>
 		  <tr> 
-            <th nowrap bgcolor="#FFFFFF" align="left">List article:</th>
+            <th nowrap="nowrap" bgcolor="#FFFFFF" align="left">List article:</th>
             <td bgcolor="#FFFFFF" width="100%"> <:if FieldPerm listed:><:list listed:><:or FieldPerm:><:if Article listed:><:ifEq [article listed] "1":>Yes<:or:>In Sections, but not menu<:eif:><:or Article:>No<:eif Article:><:eif FieldPerm:> </td>
             <td bgcolor="#FFFFFF"><:help edit listed:> <:error_img listed:></td>
           </tr>
 		  <tr>
-            <th nowrap bgcolor="#FFFFFF" align="left">Flags:</th>
+            <th nowrap="nowrap" bgcolor="#FFFFFF" align="left">Flags:</th>
             <td bgcolor="#FFFFFF" width="100%"><:iterator begin flags:><:if FieldPerm flags:>
-              <input type=checkbox name=flags value="<:flag id:>" <:ifFlagSet [flag id]:>checked<:or:>
-              <:eif:>><:or FieldPerm:><:ifFlagSet [flag id]:>Yes<:or:>No<:eif:>
+              <input type="checkbox" name="flags" value="<:flag id:>" <:ifFlagSet [flag id]:>checked<:or:>
+              <:eif:> /><:or FieldPerm:><:ifFlagSet [flag id]:>Yes<:or:>No<:eif:>
               <:eif FieldPerm:><:flag desc:><:iterator separator flags:><br /><:iterator end flags:></td>
             <td bgcolor="#FFFFFF"><:help edit flags:> <:error_img flags:></td>
           </tr>
           <tr>
             <th nowrap="nowrap" align="left" bgcolor="#FFFFFF">Page title:</th>
             <td width="100%" bgcolor="#FFFFFF">
-              <:ifFieldPerm pageTitle:><input type="text" name="pageTitle" value='<:old pageTitle article pageTitle:>' size="60" maxlength="255" tabindex="7" /> (alternate title)<:or:><:article pageTitle:><:eif:>
+              <:ifFieldPerm pageTitle:><input type="text" name="pageTitle" value='<:old pageTitle article pageTitle:>' size="60" maxlength="255" /> (alternate title)<:or:><:article pageTitle:><:eif:>
             </td>
            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help edit pageTitle:> <:error_img pageTitle:></td>
           </tr>
           <tr>
+            <th nowrap="nowrap" align="left" bgcolor="#FFFFFF">Meta description:</th>
+            <td width="100%" bgcolor="#FFFFFF">
+              <:ifFieldPerm metaDescription:><input type="text" name="metaDescription" value='<:old metaDescription article metaDescription:>' size="60" maxlength="255" /><:or:><:article metaDescription:><:eif:>
+            </td>
+           <td nowrap="nowrap" bgcolor="#FFFFFF"><:help edit metaDescription:> <:error_img metaDescription:></td>
+          </tr>
+          <tr>
+            <th nowrap="nowrap" align="left" bgcolor="#FFFFFF">Meta keywords:</th>
+            <td width="100%" bgcolor="#FFFFFF">
+              <:ifFieldPerm metaKeywords:><input type="text" name="metaKeywords" value='<:old metaKeywords article metaKeywords:>' size="60" maxlength="255" /> (comma separated)<:or:><:article metaKeywords:><:eif:>
+            </td>
+           <td nowrap="nowrap" bgcolor="#FFFFFF"><:help edit metaKeywords:> <:error_img metaKeywords:></td>
+          </tr>
+          <tr>
             <th nowrap="nowrap" align="left" bgcolor="#FFFFFF">Author name:</th>
             <td width="100%" bgcolor="#FFFFFF" >
-              <:if FieldPerm author:><input type="text" name="author" value='<:ifCfg editor auto_author:><:old author adminuser name:><:or:><:old author:><:eif:>' size="40" maxlength="255" tabindex="7" /><:or FieldPerm:><:article author:><:eif FieldPerm:>
+              <:if FieldPerm author:><input type="text" name="author" value='<:ifCfg editor auto_author:><:old author adminuser name:><:or:><:old author:><:eif:>' size="40" maxlength="255" /><:or FieldPerm:><:article author:><:eif FieldPerm:>
             </td>
             <td nowrap="nowrap" bgcolor="#FFFFFF" ><:help edit author:> <:error_img author:></td>
           </tr>
           <tr> 
-            <th nowrap align="left" bgcolor="#FFFFFF">Lead time:</th>
-            <td nowrap bgcolor="#FFFFFF"> 
+            <th nowrap="nowrap" align="left" bgcolor="#FFFFFF">Lead time:</th>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"> 
               <:ifFieldPerm leadTime:>
-              <input type="text" name="leadTime" value="<:old leadTime default leadTime:>" size=5><:or:><:product leadTime:><:eif:>
+              <input type="text" name="leadTime" value="<:old leadTime default leadTime:>" size="5" /><:or:><:product leadTime:><:eif:>
               days</td>
-            <td nowrap bgcolor="#FFFFFF"><:help product leadtime:> <:error_img
-            leadTime:></td>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help product leadtime:> <:error_img leadTime:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF"><:cfg "product fields" retailPrice "Retail price":>:</th>
             <td bgcolor="#FFFFFF">$ 
-              <:ifFieldPerm retailPrice:><input type="text" name="retailPrice" value="<:old retailPrice money default retailPrice:>" size=7>
+              <:ifFieldPerm retailPrice:><input type="text" name="retailPrice" value="<:old retailPrice money default retailPrice:>" size="7" />
               (0.00)<:or:><:money product retailPrice:><:eif:> </td>
-            <td nowrap bgcolor="#FFFFFF"><:help product retail:> <:error_img retailPrice:></td>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help product retail:> <:error_img retailPrice:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF">Wholesale price:</th>
             <td bgcolor="#FFFFFF">$ 
-              <:ifFieldPerm wholesalePrice:><input type="text" name="wholesalePrice" value="<:old wholesalePrice money default wholesalePrice:>" size=7>
+              <:ifFieldPerm wholesalePrice:><input type="text" name="wholesalePrice" value="<:old wholesalePrice money default wholesalePrice:>" size="7" />
               (0.00)<:or:><:money product wholesalePrice:><:eif:></td>
-            <td nowrap bgcolor="#FFFFFF"><:help product wholesale:> <:error_img wholesalePrice:></td>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help product wholesale:> <:error_img wholesalePrice:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF">GST:</th>
             <td bgcolor="#FFFFFF">$ 
-              <:ifFieldPerm gst:><input type="text" name="gst" value="<:old gst money default gst:>" size=7>
+              <:ifFieldPerm gst:><input type="text" name="gst" value="<:old gst money default gst:>" size="7" />
               (0.00)<:or:><:money product gst:><:eif:></td>
-            <td nowrap bgcolor="#FFFFFF"><:help product gst:> <:error_img gst:></td>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help product gst:> <:error_img gst:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF">Release date:</th>
             <td bgcolor="#FFFFFF"> 
-              <:ifFieldPerm release:><input type="text" name="release" value="<:old release date "%d/%m/%Y" default release:>" size=11>
+              <:ifFieldPerm release:><input type="text" name="release" value="<:old release date "%d/%m/%Y" default release:>" size="11" />
               (dd/mm/yyyy)<:or:><:date "%d/%m/%Y" product release:><:eif:></td>
-            <td nowrap bgcolor="#FFFFFF"><:help product release:> <:error_img
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help product release:> <:error_img
             release:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF">Expiry date:</th>
             <td bgcolor="#FFFFFF"> 
-              <:ifFieldPerm expire:><input type="text" name="expire" value="<:old expire date "%d/%m/%Y" default expire:>" size=11>
+              <:ifFieldPerm expire:><input type="text" name="expire" value="<:old expire date "%d/%m/%Y" default expire:>" size="11" />
               (dd/mm/yyyy)<:or:><:date "%d/%m/%Y" product expire:><:eif:></td>
-            <td nowrap bgcolor="#FFFFFF"><:help product expire:> <:error_img
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help product expire:> <:error_img
             expire:></td>
           </tr>
           <tr> 
-            <th nowrap align="left" bgcolor="#FFFFFF">Summary length:</th>
-            <td nowrap bgcolor="#FFFFFF"> 
-              <:ifFieldPerm summaryLength:><input type="text" name="summaryLength" size="10" maxlength="10" value="<:old summaryLength default summaryLength:>"><:or:><:product summaryLength:><:eif:>
+            <th nowrap="nowrap" align="left" bgcolor="#FFFFFF">Summary length:</th>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"> 
+              <:ifFieldPerm summaryLength:><input type="text" name="summaryLength" size="10" maxlength="10" value="<:old summaryLength default summaryLength:>" /><:or:><:product summaryLength:><:eif:>
             </td>
-            <td nowrap bgcolor="#FFFFFF"><:help product summary:> <:error_img
-            summaryLength:></td>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help product summary:> <:error_img summaryLength:></td>
           </tr>
           <tr> 
-            <th nowrap align="left" bgcolor="#FFFFFF">Display threshold:</th>
-            <td nowrap bgcolor="#FFFFFF"> 
-              <:ifFieldPerm threshold:><input type="text" name="threshold" size=10 maxlength=10 value="<:old threshold default threshold:>"><:or:><:product threshold:><:eif:>
+            <th nowrap="nowrap" align="left" bgcolor="#FFFFFF">Display threshold:</th>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"> 
+              <:ifFieldPerm threshold:><input type="text" name="threshold" size="10" maxlength="10" value="<:old threshold default threshold:>" /><:or:><:product threshold:><:eif:>
             </td>
-            <td nowrap bgcolor="#FFFFFF"><:help product threshold:> <:error_img
-            threshold:></td>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help product threshold:> <:error_img threshold:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" nowrap align="left"> Keywords: </th>
+            <th bgcolor="#FFFFFF" nowrap="nowrap" align="left"> Keywords: </th>
             <td bgcolor="#FFFFFF" width="100%"> 
-              <:ifFieldPerm keyword:><input type="text" name="keyword" maxlength="255" size="60" value="<: old keyword default keyword :>"><:or:><: article threshold :><:eif:>
+              <:ifFieldPerm keyword:><input type="text" name="keyword" maxlength="255" size="60" value="<: old keyword default keyword :>" /><:or:><: article threshold :><:eif:>
               (comma separated) </td>
-            <td nowrap bgcolor="#FFFFFF"><:help catalog keywords:> <:error_img keyword:></td>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help catalog keywords:> <:error_img keyword:></td>
           </tr>
           <tr> 
             <th nowrap="nowrap" bgcolor="#FFFFFF" align="left">Always Dynamic:</th>
@@ -198,25 +209,25 @@
           <tr> 
             <th align="left" bgcolor="#FFFFFF">Options:</th>
             <td bgcolor="#FFFFFF"> 
-              <:ifFieldPerm options:><input type="text" name="options" value="<:old options default options:>" size=30>
+              <:ifFieldPerm options:><input type="text" name="options" value="<:old options default options:>" size="30" />
               (<:alloptions:>)<:or:><:product options:><:eif:> </td>
             <td bgcolor="#FFFFFF"><:help product options:> <:error_img options:></td>
           </tr>
 <:include admin/product_custom.tmpl optional:>
           <tr> 
-            <th nowrap align="left" bgcolor="#FFFFFF" valign="top">Thumbnail image:</th>
-            <td nowrap bgcolor="#FFFFFF"> 
-              <:ifFieldPerm thumbImage:><input type="file" name="thumbnail"><:or:><:eif:>
+            <th nowrap="nowrap" align="left" bgcolor="#FFFFFF" valign="top">Thumbnail image:</th>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"> 
+              <:ifFieldPerm thumbImage:><input type="file" name="thumbnail" /><:or:><:eif:>
               <:ifProduct thumbImage:><img src="/images/<:product thumbImage:>"> 
-              <:if FieldPerm thumbImage:><input type=checkbox name="remove_thumb">
+              <:if FieldPerm thumbImage:><input type="checkbox" name="remove_thumb" />
               Remove<:or FieldPerm:><:eif FieldPerm:><:or:><:eif:> </td>
-            <td nowrap bgcolor="#FFFFFF" valign="top"><:help product thumb:> <:error_img
+            <td nowrap="nowrap" bgcolor="#FFFFFF" valign="top"><:help product thumb:> <:error_img
             thumbImage:></td>
           </tr>
 		  <:if Article id:>
           <tr> 
-            <th nowrap align="left" bgcolor="#FFFFFF" valign="top"><a name="files"></a>Files:</th>
-            <td nowrap bgcolor="#FFFFFF"> <:if Files:> 
+            <th nowrap="nowrap" align="left" bgcolor="#FFFFFF" valign="top"><a name="files"></a>Files:</th>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"> <:if Files:> 
               <table cellpadding="0" cellspacing="0" border="0" bgcolor="#333333">
                 <tr> 
                   <td> 
@@ -234,9 +245,9 @@
                         <td><:file displayName:></td>
                         <td align="center"><:kb file sizeInBytes:></td>
                         <td><:file contentType:></td>
-                        <td align=center><:ifFile download:>Yes<:or:>No<:eif:></td>
-                        <td align=center><:ifFile forSale:>Yes<:or:>No<:eif:></td>
-                        <td align=center><:ifFile requireUser:>Yes<:or:>No<:eif:></td>
+                        <td align="center"><:ifFile download:>Yes<:or:>No<:eif:></td>
+                        <td align="center"><:ifFile forSale:>Yes<:or:>No<:eif:></td>
+                        <td align="center"><:ifFile requireUser:>Yes<:or:>No<:eif:></td>
                       </tr>
                       <:iterator end files:> 
                     </table>
@@ -248,11 +259,11 @@
               <:or Files:>
               <p>No files are attached to this article. <a href="<:script:>?filelist=1&id=<:article id:>"><b>Manage Files</b></a></p><:eif Files:>
             </td>
-            <td nowrap bgcolor="#FFFFFF" valign="top"><:help product 
+            <td nowrap="nowrap" bgcolor="#FFFFFF" valign="top"><:help product 
               files:> <:error_img files:></td>
           </tr>
           <tr> 
-            <th valign="top" nowrap bgcolor="#FFFFFF" align="left"> Images: 
+            <th valign="top" nowrap="nowrap" bgcolor="#FFFFFF" align="left"> Images: 
             </th>
             <td align="center" bgcolor="#FFFFFF"> <:if Images:> <:iterator begin 
               images:> <img src="/images/<: image image :>" alt="<:image alt :>" width= 
@@ -268,8 +279,8 @@
           </tr>
 		  <:or Article:><:eif Article:>
           <tr> 
-            <th nowrap align="left" bgcolor="#FFFFFF">Purchase subscribes to:</th>
-            <td nowrap bgcolor="#FFFFFF"> 
+            <th nowrap="nowrap" align="left" bgcolor="#FFFFFF">Purchase subscribes to:</th>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"> 
 	      <select name="subscription_id">
                 <option value="-1"<:ifEq [old subscription_id] "-1":> selected="selected"<:or:><:eif:>>(nothing)</option>
 <:iterator begin subscriptions:>
@@ -277,22 +288,22 @@
 <:iterator end subscriptions:>
 	      </select> for <input type="text" name="subscription_period" value="<:ifEq [old subscription_period] "":><:default subscription_period:><:or:><:old subscription_period:><:eif:>" size="3" /><:error_img subscription_period:> months.
             </td>
-            <td nowrap bgcolor="#FFFFFF"><:help product subscription_id:></td>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help product subscription_id:></td>
           </tr>
           <tr> 
-            <th nowrap align="left" bgcolor="#FFFFFF">Can be used to:</th>
-            <td nowrap bgcolor="#FFFFFF"> 
+            <th nowrap="nowrap" align="left" bgcolor="#FFFFFF">Can be used to:</th>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"> 
 	      <select name="subscription_usage">
                 <option value="3"<:ifEq [old subscription_usage] "3":> selected="selected"<:or:><:eif:>>Start or renew a subscription</option>
                 <option value="1"<:ifEq [old subscription_usage] "1":> selected="selected"<:or:><:eif:>>Start a subscription only</option>
                 <option value="2"<:ifEq [old subscription_usage] "2":> selected="selected"<:or:><:eif:>>Renew a subscription only</option>
 	      </select>
             </td>
-            <td nowrap bgcolor="#FFFFFF"><:help product subscription_usage:></td>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help product subscription_usage:></td>
           </tr>
           <tr> 
-            <th nowrap align="left" bgcolor="#FFFFFF">User must be subscribed to:</th>
-            <td nowrap bgcolor="#FFFFFF"> 
+            <th nowrap="nowrap" align="left" bgcolor="#FFFFFF">User must be subscribed to:</th>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"> 
 	      <select name="subscription_required">
                 <option value="-1"<:ifEq [old subscription_required] "-1":> selected="selected"<:or:><:eif:>>(nothing)</option>
 <:iterator begin subscriptions:>
@@ -300,7 +311,7 @@
 <:iterator end subscriptions:>
 	      </select> to purchase this product
             </td>
-            <td nowrap bgcolor="#FFFFFF"><:help product subscription_id:></td>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help product subscription_id:></td>
           </tr>
         </table>
       </td>
@@ -310,7 +321,7 @@
       included in an order.</font></p>
   <:if UserCan edit_save:article:>
   <p>
-    <:ifNew:><input type=submit name="save" value="Add Product"><:or:><input type=submit name="save" value="Update Product"><:eif:>
+    <:ifNew:><input type="submit" name="save" value="Add Product" /><:or:><input type="submit" name="save" value="Update Product" /><:eif:>
   </p><:or UserCan:><:eif UserCan:>
 </form>
 

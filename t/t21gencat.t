@@ -273,6 +273,7 @@ sub add_article {
      lastModifiedBy=>'t21gencat', created=>sql_datetime(time),
      createdBy=>'t21gencat', author=>'', pageTitle=>'',
      cached_dynamic => 0, force_dynamic=>0, inherit_siteuser_rights => 1,
+     metaDescription => '',  metaKeywords => '',
     );
   for my $key (%defaults) {
     unless (exists $parms{$key}) {

@@ -52,6 +52,8 @@ my @prebuilt =
     force_dynamic => 0,
     cached_dynamic => 0,
     inherit_siteuser_rights => 1,
+    metaDescription=>'',
+    metaKeywords=>'',
    },
    {
     # the invisible subsection for what's hot
@@ -86,6 +88,8 @@ my @prebuilt =
     force_dynamic => 0,
     cached_dynamic => 0,
     inherit_siteuser_rights => 1,
+    metaDescription=>'',
+    metaKeywords=>'',
    },
    {
     id=>3,
@@ -119,6 +123,8 @@ my @prebuilt =
     force_dynamic => 0,
     cached_dynamic => 0,
     inherit_siteuser_rights => 1,
+    metaDescription=>'',
+    metaKeywords=>'',
    },
    {
     id=>4,
@@ -152,6 +158,8 @@ my @prebuilt =
     force_dynamic => 0,
     cached_dynamic => 0,
     inherit_siteuser_rights => 1,
+    metaDescription=>'',
+    metaKeywords=>'',
    },
    {
     id=>5,
@@ -185,6 +193,8 @@ my @prebuilt =
     force_dynamic => 0,
     cached_dynamic => 0,
     inherit_siteuser_rights => 1,
+    metaDescription=>'',
+    metaKeywords=>'',
    },
    {
     id=>6,
@@ -448,6 +458,8 @@ EOS
     force_dynamic => 0,
     cached_dynamic => 0,
     inherit_siteuser_rights => 1,
+    metaDescription=>'',
+    metaKeywords=>'',
    },
    {
     id=>7,
@@ -485,6 +497,8 @@ EOS
     force_dynamic => 0,
     cached_dynamic => 0,
     inherit_siteuser_rights => 1,
+    metaDescription=>'',
+    metaKeywords=>'',
    },
    {
     id=>8,
@@ -522,6 +536,8 @@ EOS
     force_dynamic => 0,
     cached_dynamic => 0,
     inherit_siteuser_rights => 1,
+    metaDescription=>'',
+    metaKeywords=>'',
    },
   );
 

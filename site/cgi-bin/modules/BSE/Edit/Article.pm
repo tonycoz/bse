@@ -1418,9 +1418,16 @@ sub save_new {
   $data{createdBy} = $user ? $user->{logon} : '';
   $data{lastModifiedBy} = $user ? $user->{logon} : '';
   $data{created} =  now_sqldatetime();
+# end adrian
+
   $data{force_dynamic} = 0;
   $data{cached_dynamic} = 0;
   $data{inherit_siteuser_rights} = 1;
+
+# Added by adrian
+  $data{metaDescription} = '' unless defined $data{metaDescription};
+  $data{metaKeywords} = '' unless defined $data{metaKeywords};
+# end adrian
 
   $self->fill_new_data($req, \%data, $articles);
   for my $col (qw(titleImage imagePos template keyword)) {
