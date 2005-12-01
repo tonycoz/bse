@@ -9,7 +9,7 @@ my @checks =
      edit_field_edit_summary
      edit_add_child
      );
-my %checks = map { $_=> 1 } @checks;  
+my %checks = map { $_=> $_, "bse_$_" => $_ } @checks;  
 
 sub new {
   my ($class, $cfg) = @_;
@@ -282,7 +282,7 @@ sub user_has_perm {
   }
 
   if ($checks{$action}) {
-    my $method = "check_$action";
+    my $method = "check_$checks{$action}";
     $self->$method($user, $article, $action, $rmsg)
       or return;
   }

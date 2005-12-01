@@ -36,6 +36,12 @@ ported the OO validation changes across
 allow image[...|padding] to format padding as padding when there's no
 spaces in padding.
 
+=item *
+
+have bse_I<permission> permission non-rights checks (eg. checking for
+no children on edit_delete_article) do the same checks as for
+I<permission>
+
 =back
 
 =head2 0.15_30
