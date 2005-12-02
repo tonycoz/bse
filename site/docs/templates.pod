@@ -1712,6 +1712,38 @@ contents, if 2 then the article is only listed in article contents.
 When the article was last modified.  Currently only used for display
 in search results.
 
+=item lastModifiedBy
+
+Set the the current admin user logon if access_control is enabled in the cfg.
+
+=item created
+
+Set to the current date time when a new article is created.
+
+=item createdBy
+
+Set to the current admin user logon if access_control is enabled in
+the cfg.
+
+=item author
+
+A user definable field for attributing the article author.
+
+=item pageTitle
+
+An alternate article title which can be used to make search engine
+baited oage titles.
+
+=item metaDescription
+
+Article metadata description, used as metadata in the generated HTML
+output.
+
+=item metaKeywords
+
+Article metadata keywords, used as metadata in the generated HTML
+output.
+
 =back
 
 The following attributes are unlikely to be used in a page:
@@ -1730,6 +1762,20 @@ images into the body as specified by this tag.
 =item template
 
 The template used to format the article.
+
+=item flags
+
+Flags which can be checked by code or template tags to control behaviours 
+specific the the article.
+
+=item force_dynamic
+
+Forces a page to be displayed dynamically with page.pl regardless of
+access control.
+
+=item inherit_siteuser_rights
+
+Controls whether the article inherits its parents access controls.
 
 =back
 

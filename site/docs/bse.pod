@@ -68,6 +68,19 @@ fix shell syntax problem in Makefile
 
 implement popimage[] tag.
 
+=item *
+
+patch from Adrian Oldham: add missing documentation for article fields
+in Generate::Article.
+
+=item *
+
+word-wrap some lines added by above
+
+=item *
+
+copy same field documentation to templates.pod
+
 =back
 
 =head2 0.15_30
