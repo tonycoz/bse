@@ -1300,6 +1300,32 @@ string, for example:
 You can set p here too to set the class for paragraphs generated as
 body text.  By default no class is set.
 
+=head2 [popimage]
+
+Controls the behaviour of the window displayed by the popimage[] body
+text tag.  If the Javascript for this has been customized then this
+may not apply.
+
+=over
+
+=item extrawidth
+
+=item extraheight
+
+Extra width and height for the window beyond the size of the image.
+Default: no extra width or height.
+
+=item popmiddle
+
+If set to non-zero popimage[] will attempt to centre the popup within
+the current window.  Default: 0.
+
+=back
+
+=over
+
+=back
+
 =head2 [inpho]
 
 This is used to configure the DevHelp::Payments::Inpho module.

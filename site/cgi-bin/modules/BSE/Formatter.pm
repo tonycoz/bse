@@ -5,6 +5,8 @@ use Carp 'confess';
 
 use base 'DevHelp::Formatter';
 
+my $pop_nameid = 'AAAAAA';
+
 sub new {
   my ($class, $gen, $acts, $articles, $abs_urls, $rauto_images, $images, $templater) = @_;
 
@@ -175,6 +177,104 @@ sub doclink {
   return qq!<a href="$url" title="$title_attrib"$target$class_text>$title</a>!;
 }
 
+sub popimage {
+  my ($self, $args) = @_;
+
+  my $image_id;
+  my ($image1_name, $image2_name, $align, $style) = split /\|/, $args;
+
+  my $style_tag = '';
+  if ($style =~ /^\d/) {
+    $style_tag = qq! style="padding: $style"!;
+  }
+  elsif ($style =~ /^\w+$/) {
+    $style_tag = qq! class="$style"!;
+  }
+  else {
+    $style_tag = qq! style="$style"!;
+  }
+
+  # work out the content inside the link
+  my $inside;
+  my $images = $self->{images};
+  if ($image1_name =~ /^\w+$/) {
+    my $image1;
+    if ($image1_name =~ /^\d+$/) {
+      if ($image1_name >= 1 && $image1_name <= @$images) {
+	$image1 = $images->[$image1_name - 1];
+      }
+      else {
+	return '';
+      }
+    }
+    else {
+      ($image1) = grep $_->{name} && lc $_->{name} eq lc $image1_name,
+	@$images;
+    }
+
+    $inside = qq!<img src="/images/$image1->{image}" !
+      . qq!width="$image1->{width}" height="$image1->{height}"! 
+	. qq! alt="! . escape_html($image1->{alt})
+	  .qq!" border="0"!;
+    $inside .= qq! align="$align"! if $align && $align ne 'center';
+    $inside .= $style_tag;
+    $image_id = 'popimage_' . $pop_nameid++;
+
+    $inside .= qq! name="$image_id" />!;
+  }
+  else {
+    $inside = $image1_name;
+    $image_id = '';
+  }
+
+  # resolve the second image
+  my $image2;
+  if ($image2_name =~ /^\d+$/) {
+    if ($image2_name >= 1 and $image2_name < @$images) {
+      $image2 = $images->[$image2_name - 1];
+    }
+    else {
+      return '';
+    }
+  }
+  elsif ($image2_name =~ /^\w+$/) {
+    ($image2) = grep $_->{name} && lc $_->{name} eq lc $image2_name,
+      @$images
+	or return '';
+  }
+  else {
+    return "** Unknown image2 $image2_name **";
+  }
+
+  my $href = '/cgi-bin/image.pl?id=' . $image2->{articleId} 
+    . '&amp;imid=' . $image2->{id};
+  my $popup_url = "/images/" . $image2->{image};
+  my $javascript = 
+    "return bse_popup_image($image2->{articleId}, $image2->{id}, "
+      . "$image2->{width}, $image2->{height}, '$image_id', '$popup_url')";
+  my $link_start = qq!<a href="$href" onclick="$javascript" target="bse_image">!;
+  my $link_end = "</a>";
+
+  if ($image_id) {
+    if ($align eq 'center') {
+      $link_start = qq!<div align="center">! . $link_start;
+      $link_end .= '</div>';
+    }
+  }
+  else {
+    if ($align) {
+      $link_start = qq!<div align="$align"$style_tag>! . $link_start;
+      $link_end .= "</div>";
+    }
+    elsif ($style_tag) {
+      $link_start = "<div$style_tag>".$link_start;
+      $link_end .= "</div>";
+    }
+  }
+
+  return $self->_fix_spanned($link_start, $link_end, $inside);
+}
+
 sub replace {
   my ($self, $rpart) = @_;
 
@@ -199,6 +299,8 @@ sub replace {
     $self->formlink($1, 'formlink', $2) #ige
     and return 1;
   $$rpart =~ s#formlink\[(\w+)\]# $self->formlink($1, 'formlink', undef) #ige
+    and return 1;
+  $$rpart =~ s#popimage\[([^\[\]]+)\]# $self->popimage($1) #ige
     and return 1;
 
   return $self->SUPER::replace($rpart);
@@ -240,6 +342,26 @@ sub remove_formlink {
   return $self->{gen}{cfg}->entry("$id form", 'title', "Send us a comment");
 }
 
+sub remove_popimage {
+  my ($self, $args) = @_;
+
+  my ($image1, $image2, $align, $style) = split /\|/, $args;
+
+  my $images = $self->{images};
+  if ($image1 =~ /^\d+$/) { # image index
+    if ($image1 >= 1 and $image1 <= @$images) {
+      return $images->[$image1-1]{alt};
+    }
+  }
+  elsif ($image1 =~ /^\w+$/) { # image name
+    my ($image) = grep $_->{name} eq $image1, @$images;
+    return $image ? $image->{alt} : '';
+  }
+  else {
+    return $image1;
+  }
+}
+
 sub remove {
   my ($self, $rpart) = @_;
 
@@ -260,7 +382,9 @@ sub remove {
     and return 1;
   $$rpart =~ s#formlink\[(\w+)\|([^\]\[]*)\]#$2#ig
     and return 1;
-  $$rpart =~ s#formlink\[(\w+)\]# $self->remove_formlink($1) #ig
+  $$rpart =~ s#formlink\[(\w+)\]# $self->remove_formlink($1) #ige
+    and return 1;
+  $$rpart =~ s#popimage\[([^\[\]]+)\]# $self->remove_popimage($1) #ige
     and return 1;
   
 }

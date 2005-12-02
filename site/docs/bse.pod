@@ -64,6 +64,10 @@ update t/t20gen.t and t/t21gencat.t to allow for the new fields
 
 fix shell syntax problem in Makefile
 
+=item *
+
+implement popimage[] tag.
+
 =back
 
 =head2 0.15_30
