@@ -406,6 +406,14 @@ sub iter_inlines {
   map Articles->getByPkey($_), @ids;
 }
 
+sub admin_tags {
+  my ($self) = @_;
+
+  $self->{admin} or return;
+
+  return BSE::Util::Tags->secure($self->{request});
+}
+
 sub baseActs {
   my ($self, $articles, $acts, $article, $embedded) = @_;
 
@@ -432,6 +440,7 @@ sub baseActs {
      %extras,
 
      custom_class($cfg)->base_tags($articles, $acts, $article, $embedded, $cfg),
+     $self->admin_tags(),
      BSE::Util::Tags->static($acts, $self->{cfg}),
      # for embedding the content from children and other sources
      ifEmbedded=> sub { $embedded },

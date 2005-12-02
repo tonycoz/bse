@@ -81,6 +81,11 @@ word-wrap some lines added by above
 
 copy same field documentation to templates.pod
 
+=item *
+
+enable admin security tags when pages are displayed in admin mode
+(ie. by admin.pl)
+
 =back
 
 =head2 0.15_30

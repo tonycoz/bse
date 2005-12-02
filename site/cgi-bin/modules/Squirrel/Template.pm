@@ -277,7 +277,7 @@ sub include {
 
   defined $options or $options = '';
   
-  # print STDERR "Including $name\n";
+  print STDERR "Including $name\n" if DEBUG;
 
   my $filename = $self->find_template($name);
   unless ($filename) {
@@ -287,7 +287,7 @@ sub include {
     return "** cannot find include $name in path **";
   }
 
-  # print STDERR "Found $filename\n";
+  print STDERR "Found $filename\n" if DEBUG;
 
   open INCLUDE, "< $filename"
     or return "** cannot open $filename : $! **";

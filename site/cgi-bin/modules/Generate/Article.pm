@@ -977,7 +977,8 @@ Set to the current date time when a new article is created.
 
 =item createdBy
 
-Set to the current admin user logon if access_control is enabled in the cfg.
+Set to the current admin user logon if access_control is enabled in
+the cfg.
 
 =item author
 
@@ -985,15 +986,18 @@ A user definable field for attributing the article author.
 
 =item pageTitle
 
-An alternate article title which can be used to make search engine baited oage titles.
+An alternate article title which can be used to make search engine
+baited oage titles.
 
 =item metaDescription
 
-Article metadata description, used as metadata in the generated HTML output.
+Article metadata description, used as metadata in the generated HTML
+output.
 
 =item metaKeywords
 
-Article metadata keywords, used as metadata in the generated HTML output.
+Article metadata keywords, used as metadata in the generated HTML
+output.
 
 =back
 
