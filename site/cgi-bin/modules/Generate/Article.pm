@@ -485,7 +485,10 @@ HTML
      },
      imagen => 
      sub {
-       my ($name, $align, $rest) = split ' ', $_[0], 3;
+       my ($arg, $acts, $funcname, $templater) = @_;
+       my ($name, $align, @rest) =
+	 DevHelp::Tags->get_parms($arg, $acts, $templater);
+       my $rest = "@rest";
 
        my ($im) = grep lc $name eq lc $_->{name}, @images
 	 or return '';

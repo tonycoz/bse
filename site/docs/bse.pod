@@ -18,6 +18,10 @@ Maybe I'll add some other bits here.
 
 added gimages iterator
 
+=item *
+
+you can now use the [tag parms] syntax in the imagen tag 
+
 =back
 
 =head2 0.15_31
