@@ -22,6 +22,11 @@ added gimages iterator
 
 you can now use the [tag parms] syntax in the imagen tag 
 
+=item *
+
+check user has access to an article before allowing file
+downloads. (#531)
+
 =back
 
 =head2 0.15_31

@@ -1089,6 +1089,27 @@ sub download_file {
     and return $self->show_logon($req,
 			  $msgs->('downloadforsale',
 				  "This file can only be downloaded as part of an order"));
+
+  # check the user has access to this file (RT#531)
+  require Articles;
+  my $article = Articles->getByPkey($file->{articleId})
+    or return $self->show_logon($req,
+				$msgs->('downloadarticle',
+					"Could not load article for file"));
+  if ($article->is_dynamic && !$req->siteuser_has_access($article)) {
+    if ($req->siteuser) {
+      return $self->userpage($req, $msgs->('downloadnoaccess',
+					   "You do not have access to this article"));
+    }
+    else {
+      my $cfg = $req->cfg;
+      my $refresh = "/cgi-bin/user.pl?file=$fileid";
+      my $logon =
+	$cfg->entry('site', 'url') . "/cgi-bin/user.pl?show_logon=1&r=".escape_uri($refresh)."&message=You+need+to+logon+download+this+file";
+      refresh_to($logon);
+      return;
+    }
+  }
   
   my $filebase = $cfg->entryVar('paths', 'downloads');
   open FILE, "< $filebase/$file->{filename}"
