@@ -406,6 +406,27 @@ sub iter_inlines {
   map Articles->getByPkey($_), @ids;
 }
 
+sub iter_gimages {
+  my ($self, $args) = @_;
+
+  unless ($self->{gimages}) {
+    require Images;
+    my @gimages = Images->getBy(articleId => -1);
+    my %gimages = map { $_->{name} => $_ } @gimages;
+    $self->{gimages} = \%gimages;
+  }
+
+  my @gimages = 
+    sort { $a->{name} cmp $b->{name} } values %{$self->{gimages}};
+  if ($args =~ m!^named\s+/([^/]+)/$!) {
+    my $re = $1;
+    return grep $_->{name} =~ /$re/i, @gimages;
+  }
+  else {
+    return @gimages;
+  }
+}
+
 sub admin_tags {
   my ($self) = @_;
 
@@ -548,6 +569,7 @@ sub baseActs {
 
        $self->_format_image($im, $align, $rest);
      },
+     $it->make_iterator( [ \&iter_gimages, $self ], 'gimagei', 'gimages'),
     );
 }
 
