@@ -636,10 +636,15 @@ $SHOP_SIGNING_ID.
 
 Path to the GnuPG program.  Default: $SHOP_GPG
 
-=item passphrase
+=item crypt_passphrase
 
 Passphrase of the key used to sign the email.  Default:
 $SHOP_PASSPHRASE.
+
+=item show_card_type
+
+If true, request the card type when requesting credit card
+information.  Default: False.
 
 =back
 

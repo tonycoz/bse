@@ -37,6 +37,11 @@ configuration file.
 the credit card owner and type were not being stored in the order
 record. (#533)
 
+=item *
+
+optionally request the card type when requesting credit card
+information.
+
 =back
 
 =head2 0.15_31
