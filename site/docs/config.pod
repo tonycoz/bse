@@ -622,6 +622,25 @@ The name of a class to load to process credit card transactions online.
 Currently this can be either DevHelp::Payments::Test or
 DevHelp::Payments::Inpho.
 
+=item crypt_module
+
+Name of the encryption module to use.  Default: $SHOP_CRYPTO.
+
+=item crypt_signing_id
+
+Id of the key to sign the order email with.  If this is non-empty then
+the email is signed even if [basic].sign is false.  Default:
+$SHOP_SIGNING_ID.
+
+=item crypt_gpg
+
+Path to the GnuPG program.  Default: $SHOP_GPG
+
+=item passphrase
+
+Passphrase of the key used to sign the email.  Default:
+$SHOP_PASSPHRASE.
+
 =back
 
 =head2 [Shop Order Validation]

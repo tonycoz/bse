@@ -534,9 +534,10 @@ sub req_payment {
     keys %errors
       and return $class->req_show_payment($req, \%errors);
 
-    for my $field (@required) {
+    for my $field (keys %fields) {
       unless ($nostore{$field}) {
-	($order_values->{$field}) = $cgi->param($field);
+	my $target = $field_map{$field} || $field;
+	($order_values->{$target}) = $cgi->param($field);
       }
     }
 
@@ -901,12 +902,15 @@ sub _send_order {
   my $cfg = $req->cfg;
   my $cgi = $req->cgi;
 
-  my $crypto_class = $Constants::SHOP_CRYPTO;
-  my $signing_id = $Constants::SHOP_SIGNING_ID;
-  my $pgp = $Constants::SHOP_PGP;
-  my $pgpe = $Constants::SHOP_PGPE;
-  my $gpg = $Constants::SHOP_GPG;
-  my $passphrase = $Constants::SHOP_PASSPHRASE;
+  my $crypto_class = $cfg->entry('shop', 'crypt_module',
+				 $Constants::SHOP_CRYPTO);
+  my $signing_id = $cfg->entry('shop', 'crypt_signing_id',
+			       $Constants::SHOP_SIGNING_ID);
+  my $pgp = $cfg->entry('shop', 'crypt_pgp', $Constants::SHOP_PGP);
+  my $pgpe = $cfg->entry('shop', 'crypt_pgpe', $Constants::SHOP_PGPE);
+  my $gpg = $cfg->entry('shop', 'crypt_gpg', $Constants::SHOP_GPG);
+  my $passphrase = $cfg->entry('shop', 'crypt_passphrase', 
+			       $Constants::SHOP_PASSPHRASE);
   my $from = $cfg->entry('shop', 'from', $Constants::SHOP_FROM);
   my $toName = $cfg->entry('shop', 'to_name', $Constants::SHOP_TO_NAME);
   my $toEmail = $cfg->entry('shop', 'to_email', $Constants::SHOP_TO_EMAIL);

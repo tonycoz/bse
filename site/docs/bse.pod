@@ -27,6 +27,16 @@ you can now use the [tag parms] syntax in the imagen tag
 check user has access to an article before allowing file
 downloads. (#531)
 
+=item *
+
+shop emailed order encryption options can now all be set in the
+configuration file.
+
+=item *
+
+the credit card owner and type were not being stored in the order
+record. (#533)
+
 =back
 
 =head2 0.15_31
