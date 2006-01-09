@@ -68,6 +68,15 @@ C<r> parameter or its default.
 You can also configure which referer header values are permitted in
 bse.cfg.  See L<config/[affiliate]> for more information.
 
+If [affiliate].set_cookie is set then it is used as the name of a
+cookie to set to the affiliate id.
+
+If [affiliate].other_cookies is set then it is used as a comma
+separated list of cookie names to be set from parameters passed to
+this target.  eg. if other_cookies is set to alpha, and an alpha
+paremeter is assed to this target, then the alpha cookie is set to
+that value.
+
 =cut
 
 sub req_set {
@@ -119,6 +128,8 @@ sub req_set {
   my $baseurl = $cfg->entryVar('site', 'url');
   my $securl = $cfg->entryVar('site', 'secureurl');
   
+  my @other_cookies = split /,/, $cfg->entry('affiliate', 'other_cookies', '');
+
   if ($baseurl eq $securl) {
     $result = BSE::Template->get_refresh($url, $cfg);
   }
@@ -145,6 +156,14 @@ sub req_set {
     my $setter = $onbase ? $securl : $baseurl;
     $setter .= "$ENV{SCRIPT_NAME}?a_set2=1&id=".escape_uri($id);
     $setter .= "&r=".escape_uri($url);
+    if (@other_cookies) {
+      for my $cookie_name (@other_cookies) {
+	my ($value) = $cgi->param($cookie_name);
+	if (defined $value && $value =~ /^\w+$/) {
+	  $setter .= "&$cookie_name=" . escape_uri($value);
+	}
+      }
+    }
     $result = BSE::Template->get_refresh($setter, $cfg);
   }
 
@@ -152,6 +171,15 @@ sub req_set {
   if ($set_cookie) {
     my $cookie = BSE::Session->make_cookie($cfg, $set_cookie => $id);
     push @{$result->{headers}}, "Set-Cookie: $cookie";
+  }
+  if (@other_cookies) {
+    for my $cookie_name (@other_cookies) {
+      my ($value) = $cgi->param($cookie_name);
+      if (defined $value && $value =~ /^\w+$/) {
+	my $cookie = BSE::Session->make_cookie($cfg, $cookie_name => $value);
+	push @{$result->{headers}}, "Set-Cookie: $cookie";
+      }
+    }
   }
 
   return $result;
@@ -193,6 +221,17 @@ sub req_set2 {
   if ($set_cookie) {
     my $cookie = BSE::Session->make_cookie($cfg, $set_cookie => $id);
     push @{$result->{headers}}, "Set-Cookie: $cookie";
+  }
+
+  my @other_cookies = split /,/, $cfg->entry('affiliate', 'other_cookies', '');
+  if (@other_cookies) {
+    for my $cookie_name (@other_cookies) {
+      my ($value) = $cgi->param($cookie_name);
+      if (defined $value && $value =~ /^\w+$/) {
+	my $cookie = BSE::Session->make_cookie($cfg, $cookie_name => $value);
+	push @{$result->{headers}}, "Set-Cookie: $cookie";
+      }
+    }
   }
 
   return $result;

@@ -1030,6 +1030,22 @@ affiliate page to be displayed for the given member.
 If this is set then affiliate.pl will set the named cookie to the
 affiliate id.
 
+=item other_cookies
+
+This is a comma-separated list of other cookies that should be set by
+the a_set target.  The values for the cookies should be passed to the
+a_set target.  For example with:
+
+  [affiliate]
+  other_cookies=alpha,beta
+
+if the url:
+
+  http://your.site.com/cgi-bin/affiliate.pl?a_set=1&id=someid&alpha=1&beta=2&gamme=3
+
+is accessed, then the cookie alpha is set to "1", beta is set to "2".
+The cookie gamma will not be set since it's not listed.
+
 =item linkbaseurl
 
 Used as the link base URL for the afflink.tmpl side bar template when

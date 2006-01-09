@@ -42,6 +42,11 @@ record. (#533)
 optionally request the card type when requesting credit card
 information.
 
+=item *
+
+the affiliate.pl a_set action now allows you to configure extra
+cookies to be set.
+
 =back
 
 =head2 0.15_31
