@@ -1,0 +1,136 @@
+=head1 NAME
+
+DevHelp::Payments - documents the payments interface for payments modules.
+
+=head1 SYNOPSIS
+
+  my $cfg = DevHelp::Cfg->new(...);
+  # or: my $cfg = BSE::Cfg->new(...);
+  my $payments = DevHelp::Payments::Example->new($cfg);
+  my $result = $payments->payment(orderno => $orderno,
+                                  amount => $amount_in_cents,
+                                  cardnumber => $card_number,
+                                  expirydate => $expiry_date,
+                                  ... maybe others ...);
+  if ($result->{success}) {
+    print "Payment done, receipt: $result->{receipt}\n";
+  }
+  else {
+    print "Payment failed: $result->{error}\n";
+  }
+
+=head1 DESCRIPTION
+
+This file describes the interface to DevHelp::Payments modules.
+
+These modules are currently used by BSE and Nport and maybe by other
+projects in the future.
+
+=over
+
+=item new
+
+Parameters:
+
+=over
+
+=item *
+
+unnamed BSE::Cfg or DevHelp::Cfg object that provides the entry()
+method.
+
+=back
+
+  my $object = DevHelp::Payments::Example->new($cfg);
+
+Should return the payments object.
+
+Should die on configuration problems.
+
+=item payment
+
+Perform a payment.
+
+Accepts named parameters:
+
+=over
+
+=item *
+
+orderno - value identifying the order.  Should be fairly short.
+Should be passed to the payment provider.  Required.
+
+=item *
+
+amount - the amount of the transaction in cents.  Must be non-zero.
+Required.
+
+=item *
+
+cardnumber - the credit card number.  Required.
+
+=item *
+
+expirydate - the credit card expiry date in the format C<YYYYMM>.
+Other formats may be accepted but the YYYYMM format must be accepted.
+Required.
+
+=item *
+
+cvv - card verification value.  Optional.
+
+=item *
+
+ipaddress - IP Address of the requestor.  Required by some providers.
+
+=item *
+
+currency - currency as an international money symbol, such as AUD, or
+USD.  If supplied and your provider doesn't support the given symbol,
+payment() should fail.  Optional.
+
+=back
+
+payment() returns a hash reference, possible members are:
+
+=over
+
+=item *
+
+success - if non-zero the payment was successful.  Required.
+
+=item *
+
+error - if the payments was non successful, a textual reason.
+Required for failed transactions.
+
+=item *
+
+statuscode - the numberic code from the provider for a failure.
+Required for failed transactions.  For local errors set to -1.
+
+=item *
+
+receipt - the transaction receipt code.  Required for successful
+transactions.
+
+=item *
+
+transactionid - a transaction identifier.  Optional for successful
+transactions.
+
+=back
+
+=back
+
+Other methods may be added in the future.
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=head1 REVISION
+
+$Revision$
+
+=cut

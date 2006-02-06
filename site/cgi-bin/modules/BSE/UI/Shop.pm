@@ -630,48 +630,57 @@ sub req_payment {
   $order->{ccOnline} = 0;
   
   my $ccprocessor = $cfg->entry('shop', 'cardprocessor');
-  if ($paymentType == PAYMENT_CC && $ccprocessor) {
-    my $cc_class = credit_card_class($cfg);
-
-    $order->{ccOnline} = 1;
-
+  if ($paymentType == PAYMENT_CC) {
     my $ccNumber = $cgi->param('cardNumber');
     my $ccExpiry = $cgi->param('cardExpiry');
-    $ccExpiry =~ m!^(\d+)\D(\d+)$! or die;
-    my ($month, $year) = ($1, $2);
-    $year > 2000 or $year += 2000;
-    my $expiry = sprintf("%04d%02d", $year, $month);
-    my $verify = $cgi->param('cardVerify');
-    defined $verify or $verify = '';
-    my $result = $cc_class->payment(orderno=>$order->{id},
-				    amount => $order->{total},
-				    cardnumber => $ccNumber,
-				    expirydate => $expiry,
-				    cvv => $verify,
-				    ipaddress => $ENV{REMOTE_ADDR});
-    unless ($result->{success}) {
-      use Data::Dumper;
-      print STDERR Dumper($result);
-      # failed, back to payments
-      $order->{ccSuccess}     = 0;
-      $order->{ccStatus}      = $result->{statuscode};
-      $order->{ccStatus2}     = 0;
-      $order->{ccStatusText}  = $result->{error};
-      $order->{ccTranId}      = '';
-      $order->save;
-      my %errors;
-      $errors{cardNumber} = $result->{error};
-      $session->{order_work} = $order->{id};
-      return $class->req_show_payment($req, \%errors);
+    
+    if ($ccprocessor) {
+      my $cc_class = credit_card_class($cfg);
+      
+      $order->{ccOnline} = 1;
+      
+      $ccExpiry =~ m!^(\d+)\D(\d+)$! or die;
+      my ($month, $year) = ($1, $2);
+      $year > 2000 or $year += 2000;
+      my $expiry = sprintf("%04d%02d", $year, $month);
+      my $verify = $cgi->param('cardVerify');
+      defined $verify or $verify = '';
+      my $result = $cc_class->payment(orderno=>$order->{id},
+				      amount => $order->{total},
+				      cardnumber => $ccNumber,
+				      expirydate => $expiry,
+				      cvv => $verify,
+				      ipaddress => $ENV{REMOTE_ADDR});
+      unless ($result->{success}) {
+	use Data::Dumper;
+	print STDERR Dumper($result);
+	# failed, back to payments
+	$order->{ccSuccess}     = 0;
+	$order->{ccStatus}      = $result->{statuscode};
+	$order->{ccStatus2}     = 0;
+	$order->{ccStatusText}  = $result->{error};
+	$order->{ccTranId}      = '';
+	$order->save;
+	my %errors;
+	$errors{cardNumber} = $result->{error};
+	$session->{order_work} = $order->{id};
+	return $class->req_show_payment($req, \%errors);
+      }
+      
+      $order->{ccSuccess}	    = 1;
+      $order->{ccReceipt}	    = $result->{receipt};
+      $order->{ccStatus}	    = 0;
+      $order->{ccStatus2}	    = 0;
+      $order->{ccStatusText}  = '';
+      $order->{ccTranId}	    = $result->{transactionid};
+      defined $order->{ccTranId} or $order->{ccTranId} = '';
+      $order->{paidFor}	    = 1;
     }
-
-    $order->{ccSuccess}	    = 1;
-    $order->{ccReceipt}	    = $result->{receipt};
-    $order->{ccStatus}	    = 0;
-    $order->{ccStatus2}	    = 0;
-    $order->{ccStatusText}  = '';
-    $order->{ccTranId}	    = $result->{transactionid};
-    $order->{paidFor}	    = 1;
+    else {
+      $ccNumber =~ tr/0-9//cd;
+      $order->{ccNumberHash} = md5_hex($ccNumber);
+      $order->{ccExpiryHash} = md5_hex($ccExpiry);
+    }
   }
 
   # order complete

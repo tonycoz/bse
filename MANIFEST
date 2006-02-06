@@ -146,7 +146,9 @@ site/cgi-bin/modules/DevHelp/FileUpload.pm
 site/cgi-bin/modules/DevHelp/Formatter.pm
 site/cgi-bin/modules/DevHelp/HTML.pm
 site/cgi-bin/modules/DevHelp/LoaderData.pm
+site/cgi-bin/modules/DevHelp/Payments.pod
 site/cgi-bin/modules/DevHelp/Payments/Inpho.pm
+site/cgi-bin/modules/DevHelp/Payments/SecurePayXML.pm
 site/cgi-bin/modules/DevHelp/Payments/Test.pm
 site/cgi-bin/modules/DevHelp/Report.pm
 site/cgi-bin/modules/DevHelp/Tags.pm
@@ -455,6 +457,7 @@ t/t011dhdates.t		Tests DevHelp::Date
 t/t050format.t	DevHelp::Formatter tests
 t/t060parms.t
 t/t070sqldates.t	Test SQL date tools
+t/t080escape.t
 t/t10edit.t
 t/t20gen.t
 t/t21gencat.t	Tests catalog generation

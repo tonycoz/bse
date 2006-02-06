@@ -89,6 +89,24 @@ I assume you know how to use a text editor, and have a basic knowledge
 of how directories work, and know enough perl to be able to edit
 constants.
 
+If you want to use the SecurePayXML payment module you will also need:
+
+=over
+
+=item *
+
+XML::Simple
+
+=item *
+
+LWP aka libwww-perl
+
+=item *
+
+Crypt::SSLeay
+
+=back
+
 =head1 PLANNING
 
 You need to know:
