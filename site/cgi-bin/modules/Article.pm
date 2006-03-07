@@ -32,9 +32,8 @@ sub step_parents {
 sub visible_step_parents {
   my ($self) = @_;
 
-  use BSE::Util::SQL qw/now_datetime/;
-  my $now = now_datetime();
-  grep $_->{release} le $now && $now le $_->{expire}, $self->step_parents;
+  my $now = now_sqldate();
+  Articles->getSpecial('visibleStepParents', $self->{id}, $now);
 }
 
 sub stepkids {

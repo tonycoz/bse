@@ -244,7 +244,7 @@ sub baseActs {
   if (UNIVERSAL::isa($article, 'Article')) {
     @stepkids	  = $article->visible_stepkids;
     @allkids	  = $article->all_visible_kids;
-    @stepparents  = $article->step_parents;
+    @stepparents  = $article->visible_step_parents;
   }
   my $allkids_index;
   # separate these so the closures can see %acts

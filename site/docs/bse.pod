@@ -32,6 +32,10 @@ add SecurePay XML credit card driver
 
 briefly document the credit card driver interface.
 
+=item *
+
+the stepparents iterator now only lists "visible" articles.
+
 =back
 
 =head2 0.15_32
