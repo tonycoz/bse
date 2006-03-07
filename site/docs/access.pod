@@ -619,6 +619,18 @@ The user can regenerate the whole site.
 
 =back
 
+=head2 Site users
+
+=over
+
+=item *
+
+bse_siteuser_export
+
+The user can use the userlist.pl script (Download member list)
+
+=back
+
 =head1 AUTHOR
 
 Tony Cook <tony@develop-help.com>

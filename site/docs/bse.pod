@@ -36,6 +36,21 @@ briefly document the credit card driver interface.
 
 the stepparents iterator now only lists "visible" articles.
 
+=item *
+
+userlist.pl now does logon and access checks - make sure
+bse_siteuser_dump is allowed for appropriate users.
+
+=item *
+
+userlist.pl now replaces newlines in the member data with spaces to
+prevent problems importing the data.
+
+=item *
+
+changed userlist.pl to check for bse_siteuser_export instead of
+bse_siteuser_dump.
+
 =back
 
 =head2 0.15_32
