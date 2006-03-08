@@ -51,6 +51,12 @@ prevent problems importing the data.
 changed userlist.pl to check for bse_siteuser_export instead of
 bse_siteuser_dump.
 
+=item *
+
+userlist.pl can now dump a range of logons, specified with minlogon
+and maxlogon.  If the field is missing or empty then the range
+includes the first or last by logon as appropriate.
+
 =back
 
 =head2 0.15_32
