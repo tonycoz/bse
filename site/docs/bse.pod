@@ -57,6 +57,11 @@ userlist.pl can now dump a range of logons, specified with minlogon
 and maxlogon.  If the field is missing or empty then the range
 includes the first or last by logon as appropriate.
 
+=item *
+
+added periodic API to DevHelp::Payments::SecurePayXML.  This API isn't
+used by BSE.
+
 =back
 
 =head2 0.15_32

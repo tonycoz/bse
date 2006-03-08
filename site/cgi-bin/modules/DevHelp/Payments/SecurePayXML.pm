@@ -20,10 +20,15 @@ sub new {
 			     "https://www.securepay.com.au/test/payment");
   my $liveurl =  $cfg->entry('securepay xml', 'url',
 			     "https://www.securepay.com.au/xmlapi/payment");
+  my $periodictesturl =  $cfg->entry('securepay xml', 'periodictesturl', 
+			     "https://www.securepay.com.au/test/periodic");
+  my $periodicliveurl =  $cfg->entry('securepay xml', 'url',
+			     "https://www.securepay.com.au/xmlapi/periodic");
   my $timeout = $cfg->entry('securepay xml', 'timeout');
   my $testpassword = $cfg->entry('securepay xml', 'testpassword');
   my $livepassword = $cfg->entry('securepay xml', 'password');
   my $poprefix = $cfg->entry('securepay xml', 'prefix', '');
+  my $periodic_prefix = $cfg->entry('securepay xml', 'periodic_prefix', '');
   if ($debug) {
     print STDERR "SecurePay XML Config:\n",
       "  test: $test\n  url: $testurl - $liveurl\n  merchantid: $testmerchantid - $livemerchantid\n  timeout:",
@@ -37,6 +42,8 @@ sub new {
 		testmerchantid => $testmerchantid,
 		liveurl => $liveurl,
 		testurl => $testurl,
+		periodicliveurl => $periodicliveurl,
+		periodictesturl => $periodictesturl,
 		timeout => $timeout,
 		testpassword => $testpassword,
 		livepassword => $livepassword,
@@ -44,7 +51,156 @@ sub new {
 		debug => $debug,
 		result_code => $result_code,
 		paranoid => $cfg->entry('securepay xml', 'paranoid', 1),
+		periodic_prefix => $periodic_prefix,
 	       }, $class;
+}
+
+sub _escape_xml {
+  my ($text) = @_;
+
+  $text =~ s/([<>&])/"&#".ord($1).";"/ge;
+
+  return $text;
+}
+
+sub _request {
+  my ($self, $tags, $template, $result, $xml_out) = @_;
+
+  my $url = $self->{test} ? $self->{testurl} : $self->{liveurl};
+
+  return $self->_request_low($tags, $template, $result, $xml_out, $url);
+}
+
+sub _request_periodic {
+  my ($self, $tags, $template, $result, $xml_out) = @_;
+
+  my $url = $self->{test} ? $self->{periodictesturl} : $self->{periodicliveurl};
+
+  return $self->_request_low($tags, $template, $result, $xml_out, $url);
+}
+
+sub _request_low {
+  my ($self, $tags, $template, $result, $xml_out, $url) = @_;
+
+  # set some standard tags
+  if ($self->{test}) {
+    $tags->{merchantid} = $self->{testmerchantid};
+    $tags->{password} = $self->{testpassword};
+  }
+  else {
+    $tags->{merchantid} = $self->{livemerchantid};
+    $tags->{password} = $self->{livepassword};
+  }
+
+  # get timezone and convert to minutes
+  my $tz_hour_min = strftime("%z", localtime);
+  my $tz_offset;
+  if (my ($tz_sign, $tz_hours, $tz_min) = 
+      $tz_hour_min =~ /^([+-])(\d\d)(\d\d)$/) {
+    my $min = $tz_hours * 60 + $tz_min;
+    $tz_offset = $tz_sign . sprintf("%03d", $min);
+  }
+  else {
+    print STDERR "Could not parse $tz_hour_min for timezone offset, assuming zero\n" 
+      if $self->{debug};
+    $tz_offset = '+000';
+  }
+  $tags->{timestamp} = strftime("%Y%d%m%H%M%S000000", localtime) . $tz_offset;
+  $tags->{timeout} = $self->{timeout} || 60;
+
+  # md5_hex returns a 32 char str, max is meant to be 30
+  my $message_id = md5_hex(++$sequence . time(), $$);
+  substr($message_id, 30) = '';
+  $tags->{messageid} = $message_id;
+
+  my $xml = $template;
+  eval {
+    $xml =~ s/<:(\w+):>/exists $tags->{$1} ? $tags->{$1} : die "Key $1 not found" /ge;
+  };
+  if ($@) {
+    $$result =
+      {
+       success => 0,
+       error => 'Internal error: '. $@,
+       statuscode => -1,
+      };
+    return;
+  }
+
+  my $ua = LWP::UserAgent->new;
+  my $http_request = HTTP::Request->new(POST => $url);
+
+  if ($self->{debug}) {
+    print STDERR "Raw request: $xml\n";
+    print STDERR "Url: $url\n";
+  }
+
+  $http_request->content($xml);
+  my $response = $ua->request($http_request);
+  unless ($response->is_success) {
+    $$result =
+      {
+       success => 0,
+       error => 'Communications error: ' . $response->status_line,
+       statuscode => -1,
+      };
+    return;
+  }
+  my $result_content = $response->decoded_content;
+
+  if ($self->{debug}) {
+    print STDERR "Raw response: $result_content\n";
+  }
+
+  my $tree;
+  eval {
+    $tree = XMLin($result_content);
+  };
+  if ($@) {
+    $$result =
+      {
+       success => 0,
+       error => "Response parsing error: ".$@,
+       statuscode => -1 
+      };
+    return;
+  }
+
+  if ($self->{debug}) {
+    require Data::Dumper;
+    Data::Dumper->import();
+    print STDERR "Response parsed: ",Dumper($tree);
+  }
+
+  my $paranoid = $self->{paranoid};
+  
+  if ($paranoid) {
+    # check the message id
+    my $infotag = $tree->{MessageInfo};
+    unless ($infotag) {
+      $$result =
+	{ 
+	 success => 0, 
+	 error=>'MessageInfo element not found', 
+	 statuscode => -1
+	};
+      return;
+    }
+      
+    unless ($infotag->{messageID} eq $message_id) {
+      $$result =
+	{ 
+	 sucess => 0, 
+	 error=>"MessageID doesn't match", 
+	 statuscode=> -1 
+	};
+      return;
+    }
+  }
+
+  $$xml_out = $tree;
+
+  return 1;
 }
 
 my $payment_template = <<'XML';
@@ -109,24 +265,6 @@ sub payment {
     $args{expirydate} = sprintf("%02d/%02d", $2, $1 %100);
   }
 
-  # get timezone and convert to minutes
-  my $tz_hour_min = strftime("%z", localtime);
-  my $tz_offset;
-  if (my ($tz_sign, $tz_hours, $tz_min) = 
-      $tz_hour_min =~ /^([+-])(\d\d)(\d\d)$/) {
-    my $min = $tz_hours * 60 + $tz_min;
-    $tz_offset = $tz_sign . sprintf("%03d", $min);
-  }
-  else {
-    print STDERR "Could not parse $tz_hour_min for timezone offset, assuming zero\n" 
-      if $debug;
-    $tz_offset = '+000';
-  }
-
-  # md5_hex returns a 32 char str, max is meant to be 30
-  my $message_id = md5_hex(++$sequence . $orderno . time(), $$);
-  substr($message_id, 30) = '';
-
   # yet another templating system, if we ever need something more
   # sophisticated than this here switch to Squirrel::Template
   my %replace =
@@ -135,28 +273,13 @@ sub payment {
      amount => $amount,
      orderno => $orderno,
      cardnumber => $args{cardnumber},
-     messageid => $message_id,
-     timestamp => strftime("%Y%d%m%H%M%S000000", localtime) . $tz_offset,
-     timeout => $self->{timeout} || 60,
      currency => $args{currency} || 'AUD',
      cvvtag => '',
     );
   
-  my $url;
-  if ($self->{test}) {
-    $replace{merchantid} = $self->{testmerchantid};
-    $replace{password} = $self->{testpassword};
-    $url = $self->{testurl};
-  }
-  else {
-    $replace{merchantid} = $self->{livemerchantid};
-    $replace{password} = $self->{livepassword};
-    $url = $self->{liveurl};
-  }
-
   # XML escape all of these
   for my $value (values %replace) {
-    $value =~ s/([<>&])/"&#".ord($1).";"/ge;
+    $value = _escape_xml($value);
   }
 
   # but not these
@@ -164,62 +287,11 @@ sub payment {
     $replace{cvvtag} = "<cvv>$args{cvv}</cvv>";
   }
 
-  my $xml = $payment_template;
-  eval {
-    $xml =~ s/<:(\w+):>/exists $replace{$1} ? $replace{$1} : die "Key $1 not found" /ge;
-  };
-  if ($@) {
-    return
-      {
-       success => 0,
-       error => 'Internal error: '. $@,
-       statuscode => -1,
-      };
-  }
-
-  my $ua = LWP::UserAgent->new;
-  my $http_request = HTTP::Request->new(POST => $url);
-
-  $http_request->content($xml);
-  my $response = $ua->request($http_request);
-  unless ($response->is_success) {
-    return
-      {
-       success => 0,
-       error => 'Communications error: ' . $response->status_line,
-       statuscode => -1,
-      };
-  }
-  my $result_content = $response->decoded_content;
-
   my $tree;
-  eval {
-    $tree = XMLin($result_content);
-  };
-  $@ and
-    return { success => 0,
-	     error => "Response parsing error: ".$@,
-	     statuscode => -1 };
+  my $result; # set to a result hashref on failure
 
-  if ($debug) {
-    print STDERR "Raw response: $result_content\n";
-
-    require Data::Dumper;
-    Data::Dumper->import();
-    print STDERR "Response parsed: ",Dumper($tree);
-  }
-
-  my $paranoid = $self->{paranoid};
-  
-  if ($paranoid) {
-    # check the message id
-    my $infotag = $tree->{MessageInfo}
-      or return { success => 0, error=>'MessageInfo element not found', statuscode => -1 };
-
-    $infotag->{messageID} eq $message_id
-      or return { sucess => 0, error=>"MessageID doesn't match", 
-		  statuscode=> -1 };
-  }
+  $self->_request(\%replace, $payment_template, \$result, \$tree)
+    or return $result;
 
   my $status_ele = $tree->{Status}
     or return { success => 0, error => 'Response missing Status element', statuscode => -1 };
@@ -258,6 +330,303 @@ sub payment {
   }
 }
 
+my $add_template = <<'XML';
+<?xml version="1.0" encoding="UTF-8"?>
+<SecurePayMessage>
+  <MessageInfo>
+    <messageID><:messageid:></messageID>
+    <messageTimestamp><:timestamp:></messageTimestamp>
+    <timeoutValue><:timeout:></timeoutValue>
+    <apiVersion>spxml-3.0</apiVersion>
+  </MessageInfo>
+  <MerchantInfo>
+    <merchantID><:merchantid:></merchantID>
+    <password><:password:></password>
+  </MerchantInfo>
+  <RequestType>Periodic</RequestType>
+  <Periodic>
+    <PeriodicList count="1">
+      <PeriodicItem ID="1">
+        <actionType>add</actionType>
+        <clientID><:clientid:></clientID>
+        <CreditCardInfo>
+          <cardNumber><:cardnumber:></cardNumber>
+          <expiryDate><:expirydate:></expiryDate>
+<:cvvtag:>
+        </CreditCardInfo>
+        <amount>1000</amount>
+        <periodicType>4</periodicType>
+      </PeriodicItem>
+    </PeriodicList>
+  </Periodic>
+</SecurePayMessage>
+XML
+
+sub add_payment {
+  my ($self, %args) = @_;
+
+  for my $name (qw/clientid cardnumber expirydate/) {
+    defined $args{$name}
+      or confess "Missing $name argument";
+  }
+
+  my $clientid = $self->{periodic_prefix} . $args{clientid} . 'x' . time();
+
+  my %replace =
+    (
+     clientid => _escape_xml($clientid),
+     expirydate => $args{expirydate},
+     cardnumber => $args{cardnumber},
+     currency => $args{currency} || 'AUD',
+     cvvtag => '',
+    );
+
+  if ($args{cvv}) {
+    $replace{cvvtag} = "<cvv>$args{cvv}</cvv>";
+  }
+
+  my $result;
+  my $tree;
+  $self->_request_periodic(\%replace, $add_template, \$result, \$tree)
+    or return $result;
+
+  my $status_ele = $tree->{Status}
+    or return { success => 0, error => 'Response missing Status element', statuscode => -1 };
+  if ($status_ele->{statusCode} != 0) {
+    return {
+	    success => 0,
+	    error => $status_ele->{statusDescription},
+	    statuscode => $status_ele->{statusCode}
+	   };
+  }
+
+  my $periodic_ele = $tree->{Periodic}
+    or return 
+      {
+       success => 0,
+       error => 'Response missing Periodic element',
+       statuscode => -1,
+      };
+  my $list_ele = $periodic_ele->{PeriodicList}
+    or return 
+      {
+       success => 0,
+       error => 'Response missing PeriodicList element',
+       statuscode => -1,
+      };
+  my $item_ele = $list_ele->{PeriodicItem}
+    or return 
+      {
+       success => 0,
+       error => 'Response missing PeriodicItem element',
+       statuscode => -1,
+      };
+  if (lc($item_ele->{successful}) eq 'yes') {
+    return
+      {
+       success => 1,
+       paymentid => $clientid,
+       statuscode => $item_ele->{responseCode} || '',
+       error => $item_ele->{responseText} || '',
+      };
+  }
+  else {
+    return
+      {
+       success => 0,
+       statuscode => $item_ele->{responseCode} || '',
+       error => $item_ele->{responseText} || '',
+      };
+  }
+}
+
+my $trigger_template = <<'XML';
+<?xml version="1.0" encoding="UTF-8"?>
+<SecurePayMessage>
+  <MessageInfo>
+    <messageID><:messageid:></messageID>
+    <messageTimestamp><:timestamp:></messageTimestamp>
+    <timeoutValue><:timeout:></timeoutValue>
+    <apiVersion>spxml-3.0</apiVersion>
+  </MessageInfo>
+  <MerchantInfo>
+    <merchantID><:merchantid:></merchantID>
+    <password><:password:></password>
+  </MerchantInfo>
+  <RequestType>Periodic</RequestType>
+  <Periodic>
+    <PeriodicList count="1">
+      <PeriodicItem ID="1">
+        <actionType>trigger</actionType>
+        <clientID><:clientid:></clientID>
+        <amount><:amount:></amount>
+      </PeriodicItem>
+    </PeriodicList>
+  </Periodic>
+</SecurePayMessage>
+XML
+
+sub make_payment {
+  my ($self, %args) = @_;
+
+  for my $name (qw/paymentid amount/) {
+    defined $args{$name}
+      or confess "Missing $name argument";
+  }
+
+  my %replace =
+    (
+     clientid => _escape_xml($args{paymentid}),
+     amount => _escape_xml($args{amount}),
+     currency => $args{currency} || 'AUD',
+    );
+
+  my $result;
+  my $tree;
+  $self->_request_periodic(\%replace, $trigger_template, \$result, \$tree)
+    or return $result;
+
+  my $status_ele = $tree->{Status}
+    or return { success => 0, error => 'Response missing Status element', statuscode => -1 };
+  if ($status_ele->{statusCode} != 0) {
+    return {
+	    success => 0,
+	    error => $status_ele->{statusDescription},
+	    statuscode => $status_ele->{statusCode}
+	   };
+  }
+
+  my $periodic_ele = $tree->{Periodic}
+    or return 
+      {
+       success => 0,
+       error => 'Response missing Periodic element',
+       statuscode => -1,
+      };
+  my $list_ele = $periodic_ele->{PeriodicList}
+    or return 
+      {
+       success => 0,
+       error => 'Response missing PeriodicList element',
+       statuscode => -1,
+      };
+  my $item_ele = $list_ele->{PeriodicItem}
+    or return 
+      {
+       success => 0,
+       error => 'Response missing PeriodicItem element',
+       statuscode => -1,
+      };
+  if (lc($item_ele->{successful}) eq 'yes') {
+    return
+      {
+       success => 1,
+       receipt => $item_ele->{txnID},
+       statuscode => $item_ele->{responseCode} || '',
+       error => $item_ele->{responseText} || '',
+      };
+  }
+  else {
+    return
+      {
+       success => 0,
+       statuscode => $item_ele->{responseCode} || '',
+       error => $item_ele->{responseText} || '',
+      };
+  }
+}
+
+my $delete_template = <<'XML';
+<?xml version="1.0" encoding="UTF-8"?>
+<SecurePayMessage>
+  <MessageInfo>
+    <messageID><:messageid:></messageID>
+    <messageTimestamp><:timestamp:></messageTimestamp>
+    <timeoutValue><:timeout:></timeoutValue>
+    <apiVersion>spxml-3.0</apiVersion>
+  </MessageInfo>
+  <MerchantInfo>
+    <merchantID><:merchantid:></merchantID>
+    <password><:password:></password>
+  </MerchantInfo>
+  <RequestType>Periodic</RequestType>
+  <Periodic>
+    <PeriodicList count="1">
+      <PeriodicItem ID="1">
+        <actionType>delete</actionType>
+        <clientID><:clientid:></clientID>
+      </PeriodicItem>
+    </PeriodicList>
+  </Periodic>
+</SecurePayMessage>
+XML
+
+sub delete_payment {
+  my ($self, %args) = @_;
+
+  for my $name (qw/paymentid/) {
+    defined $args{$name}
+      or confess "Missing $name argument";
+  }
+
+  my %replace =
+    (
+     clientid => _escape_xml($args{paymentid}),
+    );
+
+  my $result;
+  my $tree;
+  $self->_request_periodic(\%replace, $delete_template, \$result, \$tree)
+    or return $result;
+
+  my $status_ele = $tree->{Status}
+    or return { success => 0, error => 'Response missing Status element', statuscode => -1 };
+  if ($status_ele->{statusCode} != 0) {
+    return {
+	    success => 0,
+	    error => $status_ele->{statusDescription},
+	    statuscode => $status_ele->{statusCode}
+	   };
+  }
+
+  my $periodic_ele = $tree->{Periodic}
+    or return 
+      {
+       success => 0,
+       error => 'Response missing Periodic element',
+       statuscode => -1,
+      };
+  my $list_ele = $periodic_ele->{PeriodicList}
+    or return 
+      {
+       success => 0,
+       error => 'Response missing PeriodicList element',
+       statuscode => -1,
+      };
+  my $item_ele = $list_ele->{PeriodicItem}
+    or return 
+      {
+       success => 0,
+       error => 'Response missing PeriodicItem element',
+       statuscode => -1,
+      };
+  if (lc($item_ele->{successful}) eq 'yes') {
+    return
+      {
+       success => 1,
+       statuscode => $item_ele->{responseCode} || '',
+       error => $item_ele->{responseText} || '',
+      };
+  }
+  else {
+    return
+      {
+       success => 0,
+       statuscode => $item_ele->{responseCode} || '',
+       error => $item_ele->{responseText} || '',
+      };
+  }
+}
 
 1;
 
