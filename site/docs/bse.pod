@@ -66,6 +66,11 @@ used by BSE.
 
 modified userlist.pl so it can search for id or userId (logon)
 
+=item *
+
+changed the attributes of the dummy user for subscriptions (from
+Adrian Oldham)
+
 =back
 
 =head2 0.15_32

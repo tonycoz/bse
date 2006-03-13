@@ -453,12 +453,13 @@ EOS
 sub _dummy_user {
   my %user;
   $user{id} = 0;
-  $user{userId} = "demo";
-  $user{email} = 'someone@somewhere.com';
-  $user{name1} = "Some";
-  $user{name2} = "One";
+  $user{userId} = "username";
+  $user{password} = "p455w0rd";
+  $user{email} = 'dummy@example.com';
+  $user{name1} = "Firstname";
+  $user{name2} = "Lastname";
   $user{confirmSecret} = "X" x 32;
-
+  
   \%user;
 }
 
