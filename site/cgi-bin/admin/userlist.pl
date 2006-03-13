@@ -11,9 +11,10 @@ my $req = BSE::Request->new;
 if (BSE::Permissions->check_logon($req)) {
   if ($req->user_can('bse_siteuser_export')) {
     my $cgi = $req->cgi;
-    my $min_logon = $cgi->param('minlogon');
-    my $max_logon = $cgi->param('maxlogon');
-    do_dump($min_logon, $max_logon);
+    my $field = $cgi->param('field');
+    my $min = $cgi->param('min');
+    my $max = $cgi->param('max');
+    do_dump($field, $min, $max);
   }
   else {
     refresh_to($req->url('menu', { m => 'Access denied' }));
@@ -24,25 +25,28 @@ else {
 }
 
 sub do_dump {
-  my ($min, $max) = @_;
+  my ($field, $min, $max) = @_;
 
   my $dh = single BSE::DB;
+
+  $field ||= 'id';
+  grep $_ eq $field, qw/id userId/ or $field = 'id';
 
   my $sql;
   my @parms;
   if (defined $min and length $min) {
     if (defined $max and length $max) {
-      $sql = 'select * from site_users where userId >= ? and userId < ?';
+      $sql = "select * from site_users where $field >= ? and $field <= ?";
       @parms = ( $min, $max );
     }
     else {
-      $sql = 'select * from site_users where userId >= ?';
+      $sql = "select * from site_users where $field >= ?";
       @parms = ( $min );
     }
   }
   else {
     if (defined $max and length $max) {
-      $sql = 'select * from site_users where userId <= ?';
+      $sql = "select * from site_users where $field <= ?";
       @parms = ( $max );
     }
     else {

@@ -62,6 +62,10 @@ includes the first or last by logon as appropriate.
 added periodic API to DevHelp::Payments::SecurePayXML.  This API isn't
 used by BSE.
 
+=item *
+
+modified userlist.pl so it can search for id or userId (logon)
+
 =back
 
 =head2 0.15_32
