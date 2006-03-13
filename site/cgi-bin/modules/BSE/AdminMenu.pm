@@ -34,9 +34,9 @@ sub req_menu {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->admin(undef, $req->cfg),
      BSE::Util::Tags->basic(undef, $req->cgi, $req->cfg),
      BSE::Util::Tags->secure($req),
+     BSE::Util::Tags->admin(undef, $req->cfg),
      message => $msg,
     );
 

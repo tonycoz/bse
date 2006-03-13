@@ -71,6 +71,10 @@ modified userlist.pl so it can search for id or userId (logon)
 changed the attributes of the dummy user for subscriptions (from
 Adrian Oldham)
 
+=item *
+
+menu.pl was using the wrong help icon
+
 =back
 
 =head2 0.15_32
