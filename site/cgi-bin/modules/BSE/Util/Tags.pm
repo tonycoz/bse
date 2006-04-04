@@ -268,6 +268,10 @@ sub static {
      $it->make_iterator(\&DevHelp::Tags::iter_get_repeat, 'strepeat', 'strepeats'),
      report => [ \&tag_report, $cfg ],
      
+     # the following is so you can embed a report in another report, since
+     # report conflicts with a tag name used within reports
+     subreport => [ \&tag_report, $cfg ],
+
      _format => 
      sub {
        my ($value, $fmt) = @_;

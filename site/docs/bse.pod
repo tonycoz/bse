@@ -75,6 +75,12 @@ Adrian Oldham)
 
 menu.pl was using the wrong help icon
 
+=item *
+
+the report tag used by BSE itself conflicts with the report
+informational tag used in reports themselves.  Added the subreport tag
+so you can embed reports into other reports in the context of BSE.
+
 =back
 
 =head2 0.15_32
