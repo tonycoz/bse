@@ -52,12 +52,38 @@ if (@results) {
   my $articles_end = $articles_start + $results_per_page-1;
   $articles_end = $#results if $articles_end >= @results;
 
-  for my $id (@results[$articles_start..$articles_end]) {
-    my $article = Articles->getByPkey($id)
-      or die "Cannot retrieve article $id\n";
-    push(@articles, $article);
+  if ($cfg->entry('search', 'keep_inaccessible')) {
+    for my $id (@results[$articles_start..$articles_end]) {
+      my $article = Articles->getByPkey($id)
+	or die "Cannot retrieve article $id\n";
+      push(@articles, $article);
+    }
+  }
+  else {
+    my %remove; # used later to remove the inaccessible from @results;
+    # we need to check accessiblity on each article
+    my $index = 0;
+    my $seen = 0;
+    while ($index < @results && $seen <= $articles_end) {
+      my $id = $results[$index];
+      my $article = Articles->getByPkey($id)
+	or die "Cannot retrieve article $id\n";
+      if ($req->siteuser_has_access($article)) {
+	if ($seen >= $articles_start) {
+	  push @articles, $article;
+	}
+	++$seen;
+      }
+      else {
+	$remove{$id} = 1;
+      }
+      ++$index;
+    }
+    @results = grep !$remove{$_}, @results;
   }
 }
+
+$page_count = int((@results + $results_per_page - 1)/$results_per_page);
 
 # make an array of hashes (to preserve order)
 my %excluded;

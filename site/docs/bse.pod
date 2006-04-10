@@ -10,6 +10,43 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_34
+
+=over
+
+=item *
+
+added dynamic iterators, listed each here as iterator name/item name.
+
+Global: dynlevel1s/dynlevel1, dynlevel2s/dynlevel2,
+dynlevel3s/dynlevel3, dynallkids_of/dynofallkid,
+dynchildren_of/dynofchild.
+
+Article pages: dynallkids/dynallkid, dynchildren/dynchild,
+dynstepparents/dynstepparent.
+
+=item *
+
+added cgi-bin/admin/bse_modules.pl script to check that modules used
+by BSE are installed.  This should probably be removed once BSE is
+installed and running.
+
+=item *
+
+search results now only include accessible articles by default.
+
+=item *
+
+the product tag no long warns when you attempt to use an undef (NULL)
+value from the product.
+
+=item *
+
+removed method=post from some display forms used to simply display
+data.
+
+=back
+
 =head2 0.15_33
 
 =over

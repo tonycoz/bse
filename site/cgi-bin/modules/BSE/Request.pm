@@ -15,6 +15,10 @@ sub new {
   my %session;
   BSE::Session->tie_it(\%session, $self->{cfg});
   $self->{session} = \%session;
+  $self->{cache_stats} = $self->{cfg}->entry('debug', 'cache_stats', 0);
+  if ($self->{cache_stats}) {
+    @{$self}{qw/siteuser_calls siteuser_cached has_access_cached has_access_total/} = ( 0, 0, 0, 0 );
+  }
 
   $self;
 }
@@ -183,22 +187,33 @@ sub response {
 sub siteuser {
   my ($req) = @_;
 
+  ++$req->{siteuser_calls};
+  if (exists $req->{_siteuser}) {
+    ++$req->{siteuser_cached};
+    return $req->{_siteuser};
+  }
+
   my $cfg = $req->cfg;
   my $session = $req->session;
   require SiteUsers;
   if ($cfg->entryBool('custom', 'user_auth')) {
     require BSE::CfgInfo;
     my $custom = BSE::CfgInfo::custom_class($cfg);
-    
+
     return $custom->siteuser_auth($session, $req->cgi, $cfg);
   }
   else {
+    $req->{_siteuser} = undef;
+
     my $userid = $session->{userid}
       or return;
     my $user = SiteUsers->getBy(userId=>$userid)
       or return;
     $user->{disabled}
       and return;
+
+    $req->{_siteuser} = $user;
+
     return $user;
   }
 }
@@ -269,7 +284,7 @@ sub _have_group_access {
   return 0;
 }
 
-sub siteuser_has_access {
+sub _siteuser_has_access {
   my ($req, $article, $user, $default, $membership) = @_;
 
   defined $default or $default = 1;
@@ -310,15 +325,44 @@ sub siteuser_has_access {
   }
 }
 
+sub siteuser_has_access {
+  my ($req, $article, $user, $default, $membership) = @_;
+
+  $user ||= $req->siteuser;
+
+  ++$req->{has_access_total};
+  if ($req->{_siteuser} && $user && $user->{id} == $req->{_siteuser}{id}
+      && exists $req->{_access_cache}{$article->{id}}) {
+    ++$req->{has_access_cached};
+    return $req->{_access_cache}{$article->{id}};
+  }
+
+  my $result = $req->_siteuser_has_access($article, $user, $default, $membership);
+
+  if ($user && $req->{_siteuser} && $user->{id} == $req->{_siteuser}{id}) {
+    $req->{_access_cache}{$article->{id}} = $result;
+  }
+
+  return $result;
+}
+
 sub dyn_user_tags {
   my ($self) = @_;
 
   require BSE::Util::DynamicTags;
-  return BSE::Util::DynamicTags->tags($self);
+  return BSE::Util::DynamicTags->new($self)->tags;
 }
 
 sub DESTROY {
   my ($self) = @_;
+
+  if ($self->{cache_stats}) {
+    print STDERR "Siteuser cache: $self->{siteuser_calls} Total, $self->{siteuser_cached} Cached\n"
+      if $self->{siteuser_calls};
+    print STDERR "Access cache: $self->{has_access_total} Total, $self->{has_access_cached} Cached\n"
+      if $self->{has_access_total};
+  }
+
   if ($self->{session}) {
     undef $self->{session};
   }

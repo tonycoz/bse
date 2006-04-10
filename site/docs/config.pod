@@ -519,6 +519,11 @@ the result will be:
 If this is true then partial matches will be highlight in search
 result excerpts.  Default: True
 
+=item keep_inaccessible
+
+If this is true then resulting articles that can't be accessed by the
+user are listed in the search results.  Default: false.
+
 =back
 
 =head2 [shop]

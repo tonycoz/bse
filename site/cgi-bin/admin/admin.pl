@@ -39,7 +39,7 @@ if ($req->check_admin_logon()) {
       $dyn_gen_class = "BSE::Dynamic::".$dyn_gen_class;
       (my $dyn_gen_file = $dyn_gen_class . ".pm") =~ s!::!/!g;
       require $dyn_gen_file;
-      my $dyn_gen = $dyn_gen_class->new($req);
+      my $dyn_gen = $dyn_gen_class->new($req, admin => 1);
       $article = $dyn_gen->get_real_article($article);
       my $result = $dyn_gen->generate($article, $content);
       BSE::Template->output_result($req, $result);

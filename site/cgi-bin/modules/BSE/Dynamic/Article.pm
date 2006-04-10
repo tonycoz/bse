@@ -3,11 +3,16 @@ use strict;
 use BSE::Util::Tags qw(tag_hash);
 use BSE::Template;
 use DevHelp::HTML;
+use base qw(BSE::Util::DynamicTags);
 
 sub new {
-  my ($class, $req) = @_;
+  my ($class, $req, %opts) = @_;
 
-  return bless { req=> $req }, $class;
+  my $self = $class->SUPER::new($req, %opts);
+
+  ++$self->{admin} if $opts{admin};
+
+  return $self;
 }
 
 sub generate {
@@ -35,9 +40,75 @@ sub tags {
   $self->{req}->set_article(dynarticle => $article);
   return
     (
+     $self->SUPER::tags(),
      dynarticle => [ \&tag_hash, $article ],
-     $self->{req}->dyn_user_tags(),
+     ifAncestor => [ tag_ifAncestor => $self, $article ],
+     $self->dyn_iterator('dynallkids', 'dynallkid', $article),
+     $self->dyn_iterator('dynchildren', 'dynchild', $article),
+     $self->dyn_iterator('dynstepparents', 'dynstepparent', $article),
     );
+}
+
+sub iter_dynallkids {
+  my ($self, $article, $args) = @_;
+
+  my $result = $self->get_cached('dynallkids');
+  $result
+    and return $result;
+  $result = [ grep $self->{req}->siteuser_has_access($_), 
+	      $article->all_visible_kids ];
+  $self->set_cached(dynallkids => $result);
+
+  return $result;
+}
+
+sub iter_dynchildren {
+  my ($self, $article, $args) = @_;
+
+  my $result = $self->get_cached('dynchildren');
+  $result
+    and return $result;
+
+  $result = [ grep $self->{req}->siteuser_has_access($_), 
+	      Articles->listedChildren($article->{id}) ];
+  $self->set_cached(dynchildren => $result);
+
+  return $result;
+}
+
+sub iter_dynstepparents {
+  my ($self, $article, $args) = @_;
+
+  my $result = $self->get_cached('dynstepparents');
+  $result
+    and return $result;
+
+  $result = [ grep $self->{req}->siteuser_has_access($_), 
+	      $article->visible_step_parents ];
+  $self->set_cached(dynstepparents => $result);
+
+  return $result;
+}
+
+sub tag_ifAncestor {
+  my ($self, $article, $arg) = @_;
+
+  unless ($arg =~ /^\d+$/) {
+    my $art = $self->{req}->get_article($arg)
+      or return 0;
+    $arg = $art->{id};
+  }
+
+  return 1 if $article->{id} == $arg;
+
+  while ($article->{parentid} != -1) {
+    $article->{parentid} == $arg
+      and return 1;
+
+    $article = $article->parent;
+  }
+
+  return 0;
 }
 
 sub get_real_article {

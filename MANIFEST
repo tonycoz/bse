@@ -16,7 +16,7 @@ site/cgi-bin/admin/add.pl
 site/cgi-bin/admin/admin.pl
 site/cgi-bin/admin/admin_seminar.pl
 site/cgi-bin/admin/adminusers.pl
-site/cgi-bin/affiliate.pl
+site/cgi-bin/admin/bse_modules.pl
 site/cgi-bin/admin/changepw.pl
 site/cgi-bin/admin/datadump.pl
 site/cgi-bin/admin/generate.pl
@@ -32,6 +32,7 @@ site/cgi-bin/admin/siteusers.pl
 site/cgi-bin/admin/subadmin.pl
 site/cgi-bin/admin/subs.pl
 site/cgi-bin/admin/userlist.pl
+site/cgi-bin/affiliate.pl
 site/cgi-bin/bse.cfg
 site/cgi-bin/fmail.pl
 site/cgi-bin/image.pl

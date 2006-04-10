@@ -7,6 +7,7 @@ use base qw(Generate::Article);
 use Constants qw(:shop $CGI_URI $ADMIN_URI);
 use Carp qw(confess);
 use DevHelp::HTML;
+use BSE::Util::Tags qw(tag_hash);
 
 sub edit_link {
   my ($self, $id) = @_;
@@ -60,7 +61,7 @@ sub baseActs {
   return
     (
      $self->SUPER::baseActs($articles, $acts, $product, $embedded),
-     product=> sub { escape_html($product->{$_[0]}) },
+     product=> [ \&tag_hash, $product ],
      admin => [ tag_admin => $self, $product, 'product', $embedded ],
      iterate_options_reset => sub { $option_index = -1 },
      iterate_options => sub { ++$option_index < @options },

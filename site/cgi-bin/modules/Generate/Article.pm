@@ -440,6 +440,7 @@ HTML
      sub {
        my ($arg, $acts, $name, $templater) = @_;
        unless ($arg =~ /^\d+$/) {
+	 $acts->{$arg} or die "ENOIMPL\n";
 	 $arg = $acts->{$arg} && $templater->perform($acts, $arg, 'id')
 	   or return;
        }
@@ -533,6 +534,7 @@ HTML
     $acts{url} =
       sub {
         my $value = $oldurl->(@_);
+	return $value if $value =~ /^<:/; # handle "can't do it"
         unless ($value =~ /^\w+:/) {
           # put in the base site url
           $value = $urlbase . $value;

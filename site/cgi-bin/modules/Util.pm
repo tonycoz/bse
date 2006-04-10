@@ -135,6 +135,7 @@ sub generate_shop {
     $acts{url} =
       sub {
         my $value = $oldurl->(@_);
+	$value =~ /^<:/ and return $value;
         unless ($value =~ /^\w+:/) {
           # put in the base site url
           $value = $cfg->entryErr('site', 'url').$value;
@@ -187,6 +188,7 @@ sub generate_extras {
     $acts{url} =
       sub {
 	my $value = $oldurl->(@_);
+	$value =~ /^<:/ and return $value;
 	unless ($value =~ /^\w+:/) {
 	  # put in the base site url
 	  $value = $cfg->entryErr('site', 'url').$value;
@@ -235,6 +237,7 @@ sub generate_extras {
       $acts{url} =
 	sub {
 	  my $value = $oldurl->(@_);
+	  $value =~ /^<:/ and return $value;
 	  unless ($value =~ /^\w+:/) {
 	    # put in the base site url
 	    $value = $cfg->entryErr('site', 'url').$value;

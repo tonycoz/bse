@@ -87,6 +87,57 @@ function bse_popup_image (article_id, image_id, width, height, tag_id, image_url
                 <td><img src="/images/trans_pixel.gif" width="1" height="1" alt="spacer"></td>
               </tr>
             </table>
+<:if Dynamic:>
+	<:iterator begin dynlevel1s:>
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr> 
+                <td> 
+                  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                    <:if Ancestor dynlevel1:>
+                    <tr> 
+                      <td height="19" width="100%" nowrap bgcolor="#999999">&nbsp;<a href="<:url dynlevel1:>"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#FFFFFF"><:dynlevel1
+                        title:></font></b></a> </td>
+                    </tr>
+                    <:or Ancestor:>
+                    <tr> 
+                      <td height="19" width="100%" nowrap bgcolor="#CCCCCC">&nbsp;<a href="<:url dynlevel1:>"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:dynlevel1 
+                        title:></font></b></a> </td>
+                    </tr>
+                    <:eif Ancestor:>
+                  </table>
+                </td>
+              </tr>
+              <:if Ancestor dynlevel1:>
+               <tr> 
+                <td>
+                 <:if Dynlevel2s:> 
+                  <table width="100%" border="0" cellspacing="0" cellpadding="3">
+                    <:iterator begin dynlevel2s:>
+                    <:ifAncestor dynlevel2:>
+                     <tr> 
+                      <td bgcolor="#FFFFFF"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><a href="<:url dynlevel2:>"><:dynlevel2 title:></a></font> 
+                        </td>
+                     </tr>
+                     <:or:>
+                     <tr> 
+                      <td bgcolor="#EEEEEE"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><a href="<:url dynlevel2:>"><:dynlevel2 title:></a></font> 
+                        </td>
+                     </tr>
+                     <:eif:>
+                        <:iterator end dynlevel2s:>
+                  </table>
+            <:or Dynlevel2s:> 
+            <:eif Dynlevel2s:>
+                </td>
+              </tr>
+<:or Ancestor:>
+<:eif Ancestor:>
+              <tr> 
+                <td><img src="/images/trans_pixel.gif" width="1" height="1" alt="spacer"></td>
+              </tr>
+            </table>
+        <:iterator end dynlevel1s:>
+<:or Dynamic:>
             <:iterator begin level1:>  
             <table width="100%" border="0" cellspacing="0" cellpadding="0">
               <tr> 
@@ -136,6 +187,7 @@ function bse_popup_image (article_id, image_id, width, height, tag_id, image_url
               </tr>
             </table>
 <:iterator separator level1:><:iterator end level1:> 
+<:eif Dynamic:>
             <:embed 5:> </td>
         </tr>
       </table>

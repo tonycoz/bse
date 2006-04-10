@@ -19,10 +19,10 @@
 <!-- This form is not used when you have the nopassword option enabled -->
 <p><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Please use the URL from your confirmation email to access your
 details and subscription information.</font></p>
-<div align="center"><form action="/cgi-bin/user.pl" method="post"><input type="submit" name="show_register" value="Register" class="user-buttons" /></form></div>
+<div align="center"><form action="/cgi-bin/user.pl"><input type="submit" name="show_register" value="Register" class="user-buttons" /></form></div>
 <:or Cfg:><:if Dynamic:>
 <:if User:>
-<form action="/cgi-bin/user.pl" method="post">
+<form action="/cgi-bin/user.pl">
 <table><tr><td align="left"><input type="submit" name="userpage" value="User profile" class="user-buttons" /></td><td align="right"><input type="submit" name="logoff" value="Logoff" class="user-buttons" /></td></tr></table></form>
 <:or User:>
 <form action="/cgi-bin/user.pl" method="post">
@@ -46,7 +46,7 @@ if (start != -1) {
   userid = cookies.substring(start, end);
 }
 if (userid != '') {
-  document.write('<form action="/cgi-bin/user.pl" method="post">');
+  document.write('<form action="/cgi-bin/user.pl">');
   document.write('<table><tr><td align="left"><input type="submit" name="userpage" value="User profile" class="user-buttons" /></td><td align="right"><input type="submit" name="logoff" value="Logoff" class="user-buttons" /></td></tr></table></form>');
 }
 else {

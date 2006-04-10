@@ -4,13 +4,13 @@
   <table border="0" cellspacing="0" cellpadding="0">
     <tr> 
       <td> 
-        <form name="yourorders" method="post" action="<:script:>">
+        <form name="yourorders" action="<:script:>">
           <input type="submit" name="Submit" value="View your account" class="user-buttons" />
           <input type="hidden" name="userpage" value="1" />
         </form>
       </td>
       <:ifCfg shop enabled:><td> 
-        <form name="ff" method="post" action="/cgi-bin/shop.pl">
+        <form name="ff" action="/cgi-bin/shop.pl">
           <input type="submit" name="cart" value="View shopping cart" class="user-buttons" />
         </form>
       </td><:or:><:eif:>

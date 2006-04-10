@@ -30,7 +30,16 @@
   title</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=date&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
   date</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&reverse=1&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">reverse 
   order</a></font></p>
-<:or Children:><:eif Children:><:or:><:eif:><:if UnderThreshold:><:iterator begin 
+<:or Children:><:eif Children:><:or:><:eif:>
+<:if Dynamic:>
+<:iterator begin dynchildren:> 
+<p><:thumbnail dynchild:> <a href="<:url dynchild:>"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><:dynchild 
+  title:></font></b></a><br>
+  <:if Child summaryLength:><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:summary:></font><:or 
+  Child:><:eif Child:></p>
+<:iterator separator dynchildren:><:iterator end dynchildren:>
+<:or Dynamic:>
+<:if UnderThreshold:><:iterator begin 
 children:><:ifAdmin:> 
 <hr noshade size="1">
 <:or:><:eif:><:movekid:><:embed child:><:iterator separator children:><br>
@@ -39,7 +48,7 @@ children:><:ifAdmin:>
   title:></font></b></a><:movekid:><br>
   <:if Child summaryLength:><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:summary:></font><:or 
   Child:><:eif Child:></p>
-<:iterator separator children:><:iterator end children:><:eif UnderThreshold:><:eif 
+<:iterator separator children:><:iterator end children:><:eif UnderThreshold:><:eif Dynamic:><:eif 
 Embedded:> <br>
 <:if Files:> <br>
 <table border="0" cellspacing="0" cellpadding="0">
