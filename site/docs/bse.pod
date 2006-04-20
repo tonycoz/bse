@@ -10,6 +10,21 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_35
+
+=over
+
+=item *
+
+in some cases the Articles module wasn't being loaded as needed
+
+=item *
+
+access checks are no longer done on iterators when an article is
+displayed in admin mode.
+
+=back
+
 =head2 0.15_34
 
 =over

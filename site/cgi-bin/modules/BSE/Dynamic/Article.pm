@@ -55,8 +55,7 @@ sub iter_dynallkids {
   my $result = $self->get_cached('dynallkids');
   $result
     and return $result;
-  $result = [ grep $self->{req}->siteuser_has_access($_), 
-	      $article->all_visible_kids ];
+  $result = $self->access_filter($article->all_visible_kids);
   $self->set_cached(dynallkids => $result);
 
   return $result;
@@ -69,8 +68,7 @@ sub iter_dynchildren {
   $result
     and return $result;
 
-  $result = [ grep $self->{req}->siteuser_has_access($_), 
-	      Articles->listedChildren($article->{id}) ];
+  $result = $self->access_filter(Articles->listedChildren($article->{id}));
   $self->set_cached(dynchildren => $result);
 
   return $result;
@@ -83,8 +81,7 @@ sub iter_dynstepparents {
   $result
     and return $result;
 
-  $result = [ grep $self->{req}->siteuser_has_access($_), 
-	      $article->visible_step_parents ];
+  $result = $self->access_filter($article->visible_step_parents);
   $self->set_cached(dynstepparents => $result);
 
   return $result;

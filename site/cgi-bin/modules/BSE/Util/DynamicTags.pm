@@ -61,6 +61,7 @@ sub tag_ifUserCanSee {
 
   my $article;
   if ($args =~ /^\d+$/) {
+    require Articles;
     $article = Articles->getByPkey($args);
   }
   else {
@@ -68,6 +69,9 @@ sub tag_ifUserCanSee {
   }
   $article
     or return 0;
+
+  $req->cfg->entry('basic', 'admin_sees_all', 1)
+    and return 1;
 
   $req->siteuser_has_access($article);
 }
@@ -89,8 +93,7 @@ sub iter_dynlevel1s {
     and return $result;
 
   require Articles;
-  $result = [ grep $self->{req}->siteuser_has_access($_), 
-	      Articles->listedChildren(-1) ];
+  $result = $self->access_filter(Articles->listedChildren(-1));
   $self->set_cached(dynlevel1 => $result);
 
   return $result;
@@ -108,8 +111,7 @@ sub iter_dynlevel2s {
     and return $cached->[1];
 
   require Articles;
-  my $result = [ grep $req->siteuser_has_access($_), 
-		 Articles->listedChildren($parent->{id}) ];
+  my $result = $self->access_filter(Articles->listedChildren($parent->{id}));
   $self->set_cached(dynlevel2 => [ $parent->{id}, $result ]);
 
   return $result;
@@ -127,8 +129,7 @@ sub iter_dynlevel3s {
     and return $cached->[1];
 
   require Articles;
-  my $result = [ grep $req->siteuser_has_access($_), 
-		 Articles->listedChildren($parent->{id}) ];
+  my $result = $self->access_filter( Articles->listedChildren($parent->{id}));
   $self->set_cached(dynlevel3 => [ $parent->{id}, $result ]);
 
   return $result;
@@ -144,8 +145,9 @@ sub iter_dynallkids_of {
     }
   }
   @ids = grep defined && /^\d+$|^-1$/, @ids;
-  return [ grep $self->{req}->siteuser_has_access($_), 
-	   map Articles->all_visible_kids($_), @ids ];
+
+  require Articles;
+  return $self->access_filter(map Articles->all_visible_kids($_), @ids);
 }
 
 sub iter_dynchildren_of {
@@ -158,8 +160,22 @@ sub iter_dynchildren_of {
     }
   }
   @ids = grep defined && /^\d+$|^-1$/, @ids;
-  return [ grep $self->{req}->siteuser_has_access($_), 
-	   map Articles->listedChildren($_), @ids ];
+
+  require Articles;
+  return $self->access_filter( map Articles->listedChildren($_), @ids);
+}
+
+sub access_filter {
+  my ($self, @articles) = @_;
+
+  my $req = $self->{req};
+
+  my $admin_sees_all = $req->cfg->entry('basic', 'admin_sees_all', 1);
+
+  $admin_sees_all && $self->{admin} and 
+    return \@articles;
+
+  return [ grep $req->siteuser_has_access($_), @articles ];
 }
 
 sub _dyn_iterate_reset {
