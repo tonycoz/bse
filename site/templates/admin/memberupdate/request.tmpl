@@ -1,0 +1,29 @@
+<:wrap admin/xbase.tmpl title=>"Update Member Data":>
+<h1>Update Member Data</h1>
+<:ifMessage:>
+<p><b><:message:></b></p>
+<:or:><:eif:> 
+<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> 
+|</p>
+<form action="<:script:>" method="post" enctype="multipart/form-data" name="updatememberdata">
+<:ifCgi r:><input type="hidden" name="r" value="<:cgi r:>" /><:or:><:eif:>
+<table>
+  <tr>
+    <th>Update Type:</th>
+    <td><select name="importspec">
+<option value="">(select an import specification)</option>
+<:iterator begin importspecs:>
+<option value="<:importspec name:>" <:ifEq [old importspec] [importspec name]:>selected="selected"<:or:><:eif:>><:importspec description:> (<:importspec name:>)</option>
+<:iterator end importspecs:>
+        </select></td>
+    <td><:error_img importspec:></td>
+  </tr>
+  <tr>
+    <th>File:</th>
+    <td><input type="file" name="file" /></td>
+    <td><:error_img file:></td>
+  <tr>
+    <td colspan="3"><input type="submit" name="a_preview" value="Preview Import" /><input type="submit" name="a_import" value="Do Import" /></td>
+  </tr>
+</table>
+</form>

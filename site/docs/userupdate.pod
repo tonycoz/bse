@@ -1,0 +1,53 @@
+=head1 NAME
+
+userupdate.pod - configuring userupdate.pl
+
+=head1 DESCRIPTION
+
+This is pretty simple at base:
+
+=over
+
+=item *
+
+add an entry to [siteuser updates] with the key as the identifier of
+the update and the value as the description.
+
+=item *
+
+add a section [siteuser update I<identifier>] with a key of C<fields>
+which contains a semi-colon separated list of fields to import.
+
+This section can also contain validation rules and data for each of
+the fields.
+
+=back
+
+Some simple examples:
+
+  [siteuser updates]
+  custom1=Import custom1 by userId
+  custom12=Import custom1/2 by id
+  email=Import new email addresses
+
+  [siteuser update custom1]
+  fields=userId;customStr1
+
+  [siteuser update custom12]
+  customstr1_description=MicroSim Status
+  customstr2_description=Correlation code
+  customstr2_required=1
+  fields=id;customStr1;customStr2
+
+  [siteuser update email]
+  fields=id;email
+
+Note that only one of id and userId can appear in the list and one of
+them must appear in the list.
+
+The email address is validated and checked against the blacklist.  If
+the user has subscriptions and their email address changes a
+confirmation email is sent to the user.
+
+=cut
+

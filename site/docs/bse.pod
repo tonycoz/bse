@@ -33,6 +33,10 @@ rules are set for a field.
 prevent undefined value warnings from validation when no rules are set
 for a field.
 
+=item *
+
+add userupdate.pl for uploading member updates as text files
+
 =back
 
 =head2 0.15_34

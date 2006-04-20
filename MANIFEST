@@ -32,6 +32,7 @@ site/cgi-bin/admin/siteusers.pl
 site/cgi-bin/admin/subadmin.pl
 site/cgi-bin/admin/subs.pl
 site/cgi-bin/admin/userlist.pl
+site/cgi-bin/admin/userupdate.pl
 site/cgi-bin/affiliate.pl
 site/cgi-bin/bse.cfg
 site/cgi-bin/fmail.pl
@@ -128,6 +129,7 @@ site/cgi-bin/modules/BSE/UI/Image.pm
 site/cgi-bin/modules/BSE/UI/Page.pm
 site/cgi-bin/modules/BSE/UI/Shop.pm
 site/cgi-bin/modules/BSE/UI/SiteuserCommon.pm
+site/cgi-bin/modules/BSE/UI/SiteUserUpdate.pm
 site/cgi-bin/modules/BSE/UI/SubAdmin.pm
 site/cgi-bin/modules/BSE/UserReg.pm
 site/cgi-bin/modules/BSE/Util/DynSort.pm
@@ -222,6 +224,8 @@ site/docs/templates.pod
 site/docs/thumbnails.html
 site/docs/thumbnails.pod
 site/docs/upgrade_mysql.html
+site/docs/userupdate.html
+site/docs/userupdate.pod
 site/htdocs/a/.htaccess
 site/htdocs/admin/advanced.html
 site/htdocs/admin/help/access.html
@@ -297,6 +301,9 @@ site/templates/admin/filelist.tmpl
 site/templates/admin/grouplist.tmpl
 site/templates/admin/helpicon.tmpl	Help icon template for admin templates
 site/templates/admin/logon.tmpl
+site/templates/admin/memberupdate/import.tmpl
+site/templates/admin/memberupdate/preview.tmpl
+site/templates/admin/memberupdate/request.tmpl
 site/templates/admin/menu.tmpl
 site/templates/admin/menu_adv.tmpl
 # site/templates/admin/menu_custom.tmpl

@@ -1,0 +1,19 @@
+<:wrap admin/xbase.tmpl title=>"Member Data Update":>
+<h1>Member Data Update</h1>
+<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> 
+|</p>
+
+<p><:line_count:> lines with <:line_error_count:> error lines and <:line_good_count:> good lines.</p>
+
+<table>
+<tr><:iterator begin fields:>
+<th><:field description:></th>
+<:iterator end fields:></tr>
+<:iterator begin lines:>
+<tr>
+<:iterator begin fields:>
+<td><:line [field name]:><:line_error [field name] [line_index]:></td>
+<:iterator end fields:>
+</tr>
+<:iterator end lines:>
+</table>

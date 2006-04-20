@@ -31,6 +31,7 @@ my @targets =
    'future_plans.html',
    'thumbnails.html',
    'formmail.html',
+   'userupdate.html',
   );
 
 my @exts = qw(.pod .pm .pl);
