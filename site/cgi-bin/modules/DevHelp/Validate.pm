@@ -532,7 +532,7 @@ sub dh_configure_fields {
 
     # but we add rules
     if ($dest->{rules}) {
-      my $rules = $src->{rules};
+      my $rules = $src->{rules} || '';
 
       # make a copy of the rules array if it's supplied that way so
       # we don't modify someone else's data

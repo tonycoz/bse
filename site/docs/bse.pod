@@ -28,6 +28,11 @@ displayed in admin mode.
 prevent undefined value warnings from fmail.pl when no validation
 rules are set for a field.
 
+=item *
+
+prevent undefined value warnings from validation when no rules are set
+for a field.
+
 =back
 
 =head2 0.15_34
