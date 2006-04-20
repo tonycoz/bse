@@ -23,6 +23,11 @@ in some cases the Articles module wasn't being loaded as needed
 access checks are no longer done on iterators when an article is
 displayed in admin mode.
 
+=item *
+
+prevent undefined value warnings from fmail.pl when no validation
+rules are set for a field.
+
 =back
 
 =head2 0.15_34

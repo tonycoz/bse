@@ -186,7 +186,7 @@ sub tag_ifValueSet {
 
   return 0 unless $$rcurrent_field && $$rcurrent_value;
   my @values = $cgi->param($$rcurrent_field->{name});
-  if (!$errors and !@values) {
+  if (!$errors and !@values and defined $$rcurrent_field->{default}) {
     @values = split /;/, $$rcurrent_field->{default};
   }
   return scalar(grep $_ eq $$rcurrent_value->{id}, @values);
