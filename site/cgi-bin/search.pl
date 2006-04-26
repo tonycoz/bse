@@ -53,9 +53,9 @@ if (@results) {
   $articles_end = $#results if $articles_end >= @results;
 
   if ($cfg->entry('search', 'keep_inaccessible')) {
-    for my $id (@results[$articles_start..$articles_end]) {
-      my $article = Articles->getByPkey($id)
-	or die "Cannot retrieve article $id\n";
+    for my $entry (@results[$articles_start..$articles_end]) {
+      my $article = Articles->getByPkey($entry->[0])
+	or die "Cannot retrieve article $entry->[0]\n";
       push(@articles, $article);
     }
   }
@@ -65,7 +65,7 @@ if (@results) {
     my $index = 0;
     my $seen = 0;
     while ($index < @results && $seen <= $articles_end) {
-      my $id = $results[$index];
+      my $id = $results[$index][0];
       my $article = Articles->getByPkey($id)
 	or die "Cannot retrieve article $id\n";
       if ($req->siteuser_has_access($article)) {
@@ -79,7 +79,7 @@ if (@results) {
       }
       ++$index;
     }
-    @results = grep !$remove{$_}, @results;
+    @results = grep !$remove{$_->[0]}, @results;
   }
 }
 
@@ -99,6 +99,13 @@ unshift(@sections, { ""=>$SEARCH_ALL });
 my %sections = map { %$_ } @sections;
 # now a list of values ( in the correct order
 @sections = map { keys %$_ } @sections;
+
+my %scores = map @$_, @results;
+
+my $max_score = 0;
+for my $score (values %scores) {
+  $score > $max_score and $max_score = $score;
+}
 
 my $page_num_iter = 0;
 
@@ -161,7 +168,12 @@ my %acts;
    },
    result => 
    sub { 
-     return escape_html($articles[$article_index]{$_[0]});
+     my $arg = shift;
+     my $art = $articles[$article_index];
+     if ($arg eq 'score') {
+       return sprintf("%.1f", 100.0 * $scores{$art->{id}} / $max_score);
+     }
+     return escape_html($art->{$arg});
    },
    date =>
    sub {
@@ -247,6 +259,44 @@ BSE::Template->show_page('search', $cfg, \%acts);
 
 undef $req;
 
+sub get_term_matches {
+  my ($term, $allow_wc) = @_;
+
+  my $sth;
+  if ($SEARCH_AUTO_WILDCARD && $allow_wc) {
+    $sth = $dh->stmt('searchIndexWC');
+    $sth->execute($term."%")
+      or die "Could not execute search: ",$sth->errstr;
+  }
+  else {
+    $sth = $dh->stmt('searchIndex');
+    $sth->execute($term)
+      or die "Could not execute search: ",$sth->errstr;
+  }
+  
+  my %matches;
+  while (my $row = $sth->fetchrow_arrayref) {
+    # skip any results that contain spaces if our term doesn't
+    # contain spaces.  This loses wildcard matches which hit
+    # phrase entries
+    next if $term !~ /\s/ && $row->[0] =~ /\s/;
+    my @ids = split ' ', $row->[1];
+    my @scores = split ' ', $row->[3];
+    if ($section) {
+      # only for the section requested
+      my @sections = split ' ', $row->[2];
+      my @keep = grep { $sections[$_] == $section && $ids[$_] } 0..$#sections;
+      @ids = @ids[@keep];
+      @scores = @scores[@keep];
+    }
+    for my $index (0 .. $#ids) {
+      $matches{$ids[$index]} += $scores[$index];
+    }
+  }
+
+  return map [ $_, $matches{$_} ], keys %matches;
+}
+
 sub getSearchResult {
   my ($words, $section, $date, $terms) = @_;
 
@@ -254,27 +304,43 @@ sub getSearchResult {
   #$words = lc $words;
   $words =~ s/^\s+|\s+$//g;
 
-  # array of [ term, unquoted ]
+  # array of [ term, unquoted, required, weight ]
   my @terms;
-  my $found = 1;
-  while ($found) {
-    $found = 0;
-    if ($words =~ /\G\s*"([^"]+)"/gc
+  my @exclude;
+  while (1) {
+    if ($words =~ /\G\s*-"([^"]+)"/gc
+	|| $words =~ /\G\s*-'([^\']+)'/gc) {
+      push @exclude, [ $1, 0 ];
+    }
+    elsif ($words =~ /\G\s*\+"([^"]+)"/gc
+	|| $words =~ /\G\s*\+'([^\']+)'/gc) {
+      push @terms, [ $1, 0, 1, 1 ];
+    }
+    elsif ($words =~ /\G\s*"([^"]+)"/gc
 	|| $words =~ /\G\s*'([^']+)'/gc) {
-      push(@terms, [ $1, 0 ]);
-      $found = 1;
+      push(@terms, [ $1, 0, 0, 1 ]);
+    }
+    elsif ($words =~ /\G\s*-(\S+)/gc) {
+      push @exclude, [ $1, 1 ];
+    }
+    elsif ($words =~ /\G\s*\+(\S+)/gc) {
+      push(@terms, [ $1, 1, 1, 1 ]);
     }
     elsif ($words =~ /\G\s*(\S+)/gc) {
-      push(@terms, [ $1, 1 ]);
-      $found = 1;
+      push(@terms, [ $1, 1, 0, 1 ]);
+    }
+    else {
+      last;
     }
   }
+  
+  @terms or return;
 
   # if the user entered a plain multi-word phrase
-  if ($words !~ /["']/ && $words =~ /\s/) {
+  if ($words !~ /["'+-]/ && $words =~ /\s/) {
     # treat it as if they entered it in quotes as well
     # giving articles with that phrase an extra score
-    push(@terms, [ $words, 0 ]);
+    push(@terms, [ $words, 0, 0, 0.1 ]);
   }
 
   # disable wildcarding for short terms
@@ -285,40 +351,36 @@ sub getSearchResult {
   }
 
   my %scores;
-  my $sth;
   my %terms;
-  for my $term (@terms) {
-    if ($SEARCH_AUTO_WILDCARD && $term->[1]) {
-      $sth = $dh->stmt('searchIndexWC');
-      $sth->execute($term->[0]."%")
-	or die "Could not execute search: ",$sth->errstr;
-	
+  for my $term (grep !$_->[2], @terms) {
+    my @matches = get_term_matches($term->[0], $term->[1]);
+    for my $match (@matches) {
+      $scores{$match->[0]} += $match->[1] * $term->[3];
     }
-    else {
-      $sth = $dh->stmt('searchIndex');
-      $sth->execute($term->[0])
-	or die "Could not execute search: ",$sth->errstr;
-    }
-
-    while (my $row = $sth->fetchrow_arrayref) {
-      # skip any results that contain spaces if our term doesn't
-      # contain spaces.  This loses wildcard matches which hit
-      # phrase entries
-      next if $term->[0] !~ /\s/ && $row->[0] =~ /\s/;
-      my @ids = split ' ', $row->[1];
-      my @scores = split ' ', $row->[3];
-      if ($section) {
-	# only for the section requested
-	my @sections = split ' ', $row->[2];
-	my @keep = grep { $sections[$_] == $section && $ids[$_] } 0..$#sections;
-	@ids = @ids[@keep];
-	@scores = @scores[@keep];
+  }
+  my @required = grep $_->[2], @terms;
+  my %delete; # has of id to 1
+  if (@required) {
+    my %match_required;
+    for my $term (@required) {
+      my @matches = get_term_matches($term->[0], $term->[1]);
+      for my $match (@matches) {
+	$scores{$match->[0]} += $match->[1];
+	++$match_required{$match->[0]};
       }
-      for my $index (0..$#ids) {
-	$scores{$ids[$index]} += $scores[$index];
+    }
+    for my $id (keys %scores) {
+      if (!$match_required{$id} || $match_required{$id} != @required) {
+	++$delete{$id};
       }
     }
   }
+  for my $term (@exclude) {
+    my @matches = get_term_matches($term->[0], $term->[1]);
+    ++$delete{$_->[0]} for @matches;
+  }
+
+  delete @scores{keys %delete};
 
   return () if !keys %scores;
 
@@ -355,7 +417,7 @@ sub getSearchResult {
 	last SWITCH;
 	};
   }
-  $sth = $dh->{dbh}->prepare($sql)
+  my $sth = $dh->{dbh}->prepare($sql)
     or die "Error preparing $sql: ",$dh->{dbh}->errstr;
 
   $sth->execute()
@@ -369,7 +431,7 @@ sub getSearchResult {
 
   @$terms = map $_->[0], @terms;
 
-  return @ids;
+  return map [ $_, $scores{$_} ], @ids;
 }
 
 sub _sql_date {
