@@ -10,6 +10,35 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_36
+
+=over
+
+=item *
+
+add search scores to the result tag
+
+=item *
+
+add the ability to require terms to match for a search
+
+=item *
+
+add the ability to exclude results that match a term
+
+=item *
+
+add bonuses to scores for results where the term matches more than one
+field.
+
+=item *
+
+searching and indexing processing have been moved into configurable
+modules, so we can add other search engines (a swish-e engine would be
+nice)
+
+=back
+
 =head2 0.15_35
 
 =over
