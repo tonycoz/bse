@@ -37,6 +37,10 @@ searching and indexing processing have been moved into configurable
 modules, so we can add other search engines (a swish-e engine would be
 nice)
 
+=item *
+
+bump to 0.15_36 for release
+
 =back
 
 =head2 0.15_35
