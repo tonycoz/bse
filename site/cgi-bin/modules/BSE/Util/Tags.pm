@@ -825,7 +825,7 @@ sub tag_report {
   my $reports = BSE::Report->new($cfg);
   my $report = $reports->load($rep_name, undef, BSE::DB->single);
   $report
-    or return "** could not load report $rep_name **";
+    or return "** could not load report '$rep_name' **";
 
   # this will get embedded and normal tag replacement will then
   # operate on it, no need to include basic/static tags
@@ -841,7 +841,7 @@ sub tag_report {
     and return "** error in $tag_name: $msg **";
 
   if (!defined $template or $template eq '-') {
-    $template = $reports->show_template($rep_name) || 'admin/reports/show';
+    $template = $reports->show_template($rep_name) || 'admin/reports/show1';
   }
 
   my $html = BSE::Template->get_source($template, $cfg);

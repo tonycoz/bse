@@ -27,6 +27,10 @@ sort articles with the same search score by title
 accept an r parameter for fmail.pl form submission to refresh to a
 page other than the default done page.
 
+=item *
+
+fix the default template name for the embedded report tags.
+
 =back
 
 =head2 0.15_36
