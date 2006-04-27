@@ -23,6 +23,7 @@ my $cgi = $req->cgi;
 my $words = $cgi->param('q');
 my $section = $cgi->param('s');
 my $date = $cgi->param('d');
+my $match_all = $cgi->param('match_all');
 $section = '' if !defined $section;
 $date = 'ar' if ! defined $date;
 my @results;
@@ -30,7 +31,7 @@ my @terms; # terms as parsed by the search engine
 my $case_sensitive;
 if (defined $words && length $words) {
   $case_sensitive = $words ne lc $words;
-  @results = getSearchResult($words, $section, $date, \@terms);
+  @results = getSearchResult($words, $section, $date, \@terms, $match_all);
 }
 else { 
   $words = ''; # so we don't return junk for the form default
@@ -258,13 +259,13 @@ BSE::Template->show_page('search', $cfg, \%acts);
 undef $req;
 
 sub getSearchResult {
-  my ($words, $section, $date, $terms) = @_;
+  my ($words, $section, $date, $terms, $match_all) = @_;
 
   my $searcher_class = $cfg->entry('search', 'searcher', 'BSE::Search::BSE');
   (my $searcher_file = $searcher_class . '.pm') =~ s!::!/!g;;
   require $searcher_file;
   my $searcher = $searcher_class->new(cfg => $cfg);
-  return $searcher->search($words, $section, $date, $terms, $req);
+  return $searcher->search($words, $section, $date, $terms, $match_all, $req);
 }
 
 

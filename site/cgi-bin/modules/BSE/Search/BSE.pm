@@ -51,7 +51,7 @@ sub get_term_matches {
 }
 
 sub search {
-  my ($self, $words, $section, $date, $terms, $req) = @_;
+  my ($self, $words, $section, $date, $terms, $match_all, $req) = @_;
 
   # canonical form
   $words =~ s/^\s+|\s+$//g;
@@ -87,6 +87,12 @@ sub search {
   }
   
   @terms or return;
+
+  if ($match_all) {
+    for my $term (@terms) {
+      $term->[2] = 1;
+    }
+  }
 
   # if the user entered a plain multi-word phrase
   if ($words !~ /["'+-]/ && $words =~ /\s/) {
@@ -169,6 +175,8 @@ sub search {
 	last SWITCH;
 	};
   }
+
+  $sql .= " order by title";
 
   my $dh = BSE::DB->single;
 

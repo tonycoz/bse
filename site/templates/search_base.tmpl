@@ -40,8 +40,12 @@
           <option value="e7" <:dateSelected e7:>>Archived within last 7 days</option>
           <option value="e30" <:dateSelected e30:>>Archived within last 30 days</option>
           <option value="ae" <:dateSelected ae:>>Archives</option>
-        </select>
+        </select></font>
       </td>
+    </tr>
+    <tr>
+      <td colspan="2"></td>
+      <td><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><input type="checkbox" name="match_all" value="1" <:ifCgi match_all:>checked="checked"<:or:><:eif:> /><b> Match all terms</b></font></td>
     </tr>
   </table>
 </form>
