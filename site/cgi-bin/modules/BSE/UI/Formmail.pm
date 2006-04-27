@@ -407,15 +407,18 @@ sub req_send {
       return $class->req_show($req, \%errors);
     }
   }
-  
-  # make them available to the a_sent handler
-  my $session = $req->session;
-  $session->{formmail} = \%values;
-  $session->{formmail_array} = \%array_values;
-  $session->{formmail_done} = time;
 
-  my $url = $ENV{SCRIPT_NAME} . "?a_done=1&form=$form->{id}&t=".$session->{formmail_done};
-
+  my $url = $cgi->param('r');
+  if (!$url) {
+    # make them available to the a_sent handler
+    my $session = $req->session;
+    $session->{formmail} = \%values;
+    $session->{formmail_array} = \%array_values;
+    $session->{formmail_done} = time;
+    
+    $url = $ENV{SCRIPT_NAME} . "?a_done=1&form=$form->{id}&t=".$session->{formmail_done};
+  }
+    
   return BSE::Template->get_refresh($url, $cfg);
 }
 

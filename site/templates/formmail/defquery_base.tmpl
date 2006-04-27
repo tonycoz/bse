@@ -1,6 +1,7 @@
 <:wrap base.tmpl title=>"FORMTITLE":>
 <form action="<:script:>" method="post">
 <input type="hidden" name="form" value="<:id:>" />
+<:ifCgi r:><input type="hidden" name="r" value="<:cgi r:>" /><:or:><:eif:>
 <:ifMsg:><p><b><:msg:></b></p><:or:><:eif:>
 <table>
 <:iterator begin fields:>

@@ -22,6 +22,11 @@ add match all option to searching
 
 sort articles with the same search score by title
 
+=item *
+
+accept an r parameter for fmail.pl form submission to refresh to a
+page other than the default done page.
+
 =back
 
 =head2 0.15_36
