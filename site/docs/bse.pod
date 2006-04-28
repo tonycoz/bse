@@ -53,6 +53,10 @@ added filelink[] body text tag
 
 removed some old commented code from Generate.pm
 
+=item *
+
+bump to 0.15_37
+
 =back
 
 =head2 0.15_36
