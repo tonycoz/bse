@@ -131,8 +131,10 @@ sub static {
        $value = decode_entities($value);
        require Generate;
        my $gen = Generate->new(cfg=>$cfg);
-       return $gen->format_body($acts, 'Articles', $value, 'tr',
-				1, 0, $templater);
+       return $gen->format_body(acts => $acts, 
+				articles => 'Articles', 
+				text => $value, 
+				templater => $templater);
      },
      nobodytext => [\&tag_nobodytext, $cfg ],
      ifEq =>

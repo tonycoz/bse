@@ -2593,6 +2593,8 @@ sub fileadd {
       $file{$col} = $cgi->param($col);
     }
   }
+
+  my %errors;
   
   $file{forSale} = 0 + exists $file{forSale};
   $file{articleId} = $article->{id};
@@ -2604,14 +2606,10 @@ sub fileadd {
   # build a filename
   my $file = $cgi->param('file');
   unless ($file) {
-    return $self->edit_form($req, $article, $articles,
-			   "Enter or select the name of a file on your machine",
-			  { file => 'Please enter a filename' });
+    $errors{file} = 'Please enter a filename';
   }
-  if (-z $file) {
-    return $self->edit_form($req, $article, $articles,
-			   "File is empty",
-			   { file => 'File is empty' });
+  if ($file && -z $file) {
+    $errors{file} = 'File is empty';
   }
 
   unless ($file{contentType}) {
@@ -2629,6 +2627,20 @@ sub fileadd {
       $file{contentType} = $type;
     }
   }
+
+  defined $file{name} or $file{name} = '';
+  if (length $file{name} && $file{name} !~/^\w+$/) {
+    $errors{name} = "Identifier must be a single word";
+  }
+  if (!$errors{name} && length $file{name}) {
+    my @files = $article->files;
+    if (grep lc $_->{name} eq lc $file{name}, @files) {
+      $errors{name} = "Duplicate file identifier $file{name}";
+    }
+  }
+
+  keys %errors
+    and return $self->edit_form($req, $article, $articles, undef, \%errors);
   
   my $basename = '';
   my $workfile = $file;
@@ -2746,22 +2758,35 @@ sub filesave {
   my @files = $article->files;
 
   my $cgi = $req->cgi;
+  my %seen_name;
   for my $file (@files) {
     if (defined $cgi->param("description_$file->{id}")) {
       $file->{description} = $cgi->param("description_$file->{id}");
-      if (my $type = $cgi->param("contentType_$file->{id}")) {
+      if (defined(my $type = $cgi->param("contentType_$file->{id}"))) {
 	$file->{contentType} = $type;
       }
-      if (my $notes = $cgi->param("notes_$file->{id}")) {
+      if (defined(my $notes = $cgi->param("notes_$file->{id}"))) {
 	$file->{notes} = $notes;
       }
+      my $name = $cgi->param("name_$file->{id}");
+      defined $name or $name = $file->{name};
+      if (length $name && $name !~ /^\w+$/) {
+	return $self->edit_form($req, $article, $articles,
+				"Invalid file identifier $name");
+      }
+      if (length $name && $seen_name{lc $name}++) {
+	return $self->edit_form($req, $article, $articles,
+				"Duplicate file identifier $name");
+      }
+      $file->{name} = $name;
       $file->{download} = 0 + defined $cgi->param("download_$file->{id}");
       $file->{forSale} = 0 + defined $cgi->param("forSale_$file->{id}");
       $file->{requireUser} = 0 + defined $cgi->param("requireUser_$file->{id}");
-      $file->save;
     }
   }
-
+  for my $file (@files) {
+    $file->save;
+  }
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 

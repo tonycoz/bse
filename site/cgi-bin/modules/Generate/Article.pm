@@ -331,9 +331,15 @@ sub baseActs {
      # transform the article or response body (entities, images)
      body=>sub {
        my ($args, $acts, $funcname, $templater) = @_;
-       return $self->format_body($acts, $articles, $article->{body},
-				 $article->{imagePos}, $abs_urls,
-				 !$had_image_tags, $templater, @images);
+       return $self->format_body(acts => $acts, 
+				 article => $articles, 
+				 text => $article->{body},
+				 imagepos => $article->{imagePos}, 
+				 abs_urls => $abs_urls,
+				 auto_images => !$had_image_tags, 
+				 templater => $templater, 
+				 images => \@images,
+				 files => \@files);
      },
 
      # used to display a navigation path of parent sections

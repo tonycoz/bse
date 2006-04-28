@@ -48,6 +48,12 @@
             <td nowrap="nowrap" bgcolor="#FFFFFF"><:help file content_type:> <:error_img contentType:></td>
           </tr>
           <tr> 
+            <th bgcolor="#FFFFFF" align="left">Identifier:</th>
+            <td bgcolor="#FFFFFF"> 
+              <input type="text" name="name" value="<:old name:>" /> </td>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help file name:> <:error_img name:></td>
+          </tr>
+          <tr> 
             <th bgcolor="#FFFFFF" align="left">Treat as download:</th>
             <td bgcolor="#FFFFFF"> 
               <input type="checkbox" name="download" value="1" />
@@ -98,7 +104,7 @@
           </tr>
           <: iterator begin files :> 
           <tr bgcolor="#FFFFFF"> 
-            <td nowrap="nowrap"> <:file displayName:></td>
+            <td nowrap="nowrap" rowspan="2"> <:file displayName:></td>
             <td valign="top"> 
               <:ifUserCan edit_files_save:article:><input name="description_<:file id:>" type="text" value="<: file description :>" size="35" />
               <:or:><: file description :><:eif:>
@@ -107,9 +113,15 @@
                <:ifUserCan edit_files_save:article:><input name="contentType_<:file id:>" type="text" value="<: file contentType :>" size="20" />
                <:or:><: file contentType :><:eif:>
             </td>
-            <td valign="top" rowspan="2">
+            <td valign="top" rowspan="3">
               <:ifUserCan edit_files_save:article:><textarea name="notes_<:file id:>" cols="40" rows="5"><:file notes:></textarea><:or:><:replace [file notes] "
 " "<br />" :><:eif:>
+            </td>
+          </tr>
+          <tr>
+            <td valign="top" colspan="2" nowrap="nowrap" bgcolor="#FFFFFF"> 
+               Identfier: <:ifUserCan edit_files_save:article:><input name="name_<:file id:>" type="text" value="<: file name :>" size="20" />
+               <:or:><: file name :><:eif:>
             </td>
           </tr>
           <tr bgcolor="#FFFFFF"> 
@@ -131,7 +143,7 @@
           </tr>
           <: iterator separator files :> 
           <tr bgcolor="#FFFFFF"> 
-            <td colspan="3">&nbsp;</td>
+            <td colspan="4">&nbsp;</td>
           </tr>
           <: iterator end files :> 
 <:ifUserCan edit_files_save:article:>

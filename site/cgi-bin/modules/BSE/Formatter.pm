@@ -8,20 +8,30 @@ use base 'DevHelp::Formatter';
 my $pop_nameid = 'AAAAAA';
 
 sub new {
-  my ($class, $gen, $acts, $articles, $abs_urls, $rauto_images, $images, $templater) = @_;
+  my $class = shift;
+
+  my (%opts) = 
+    ( 
+     images => [], 
+     files => [],
+     abs_urls => 0, 
+     acts => {}, 
+     @_
+    );
 
   my $self = $class->SUPER::new;
 
-  $self->{gen} = $gen;
-  $self->{acts} = $acts;
-  $self->{articles} = $articles;
-  $self->{abs_urls} = $abs_urls;
-  $self->{auto_images} = $rauto_images;
-  $self->{images} = $images;
-  $self->{templater} = $templater;
-  #$self->{level} = $level;
+  $self->{gen} = $opts{gen};
+  $self->{acts} = $opts{acts};
+  $self->{articles} = $opts{articles};
+  $self->{abs_urls} = $opts{abs_urls};
+  my $dummy;
+  $self->{auto_images} = $opts{auto_images} || \$dummy;
+  $self->{images} = $opts{images};
+  $self->{files} = $opts{files};
+  $self->{templater} = $opts{templater};
 
-  my $cfg = $gen->{cfg};
+  my $cfg = $self->{gen}->{cfg};
   if ($cfg->entry('html', 'mbcs', 0)) {
     $self->{conservative_escape} = 1;
   }
@@ -275,6 +285,23 @@ sub popimage {
   return $self->_fix_spanned($link_start, $link_end, $inside);
 }
 
+sub filelink {
+  my ($self, $fileid, $text) = @_;
+
+  my ($file) = grep $_->{name} eq $fileid, @{$self->{files}}
+    or return "** unknown file $fileid **";
+
+  my $title = defined $text ? $text : $file->{displayName};
+  if ($file->{forSale}) {
+    return escape_html($title);
+  }
+  else {
+    my $url = "/cgi-bin/user.pl?download_file=1&file=$file->{id}";
+    return qq!<a href="! . escape_html($url) . qq!">! .
+      escape_html($title) . "</a>";
+  }
+}
+
 sub replace {
   my ($self, $rpart) = @_;
 
@@ -300,6 +327,10 @@ sub replace {
     and return 1;
   $$rpart =~ s#formlink\[(\w+)\]# $self->formlink($1, 'formlink', undef) #ige
     and return 1;
+  $$rpart =~ s#filelink\[\s*(\w+)\s*\|([^\]\[]+)\]# $self->filelink($1, $2) #ige
+      and return 1;
+  $$rpart =~ s#filelink\[\s*(\w+)\s*\]# $self->filelink($1) #ige
+      and return 1;
   $$rpart =~ s#popimage\[([^\[\]]+)\]# $self->popimage($1) #ige
     and return 1;
 
@@ -362,6 +393,15 @@ sub remove_popimage {
   }
 }
 
+sub remove_filelink {
+  my ($self, $fileid, $text) = @_;
+
+  my ($file) = grep $_->{name} eq $fileid, @{$self->{files}}
+    or return "** unknown file $fileid **";
+
+  return defined $text ? $text : $file->{displayName};
+}
+
 sub remove {
   my ($self, $rpart) = @_;
 
@@ -380,6 +420,12 @@ sub remove {
     and return 1;
   $$rpart =~ s#popformlink\[(\w+)\]# $self->remove_formlink($1) #ige
     and return 1;
+
+  $$rpart =~ s#filelink\[\s*(\w+)\s*\|([^\]\[]+)\]# $self->remove_filelink($1, $2) #ige
+      and return 1;
+  $$rpart =~ s#filelink\[\s*(\w+)\s*\]# $self->remove_filelink($1) #ige
+      and return 1;
+
   $$rpart =~ s#formlink\[(\w+)\|([^\]\[]*)\]#$2#ig
     and return 1;
   $$rpart =~ s#formlink\[(\w+)\]# $self->remove_formlink($1) #ige

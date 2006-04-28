@@ -31,6 +31,28 @@ page other than the default done page.
 
 fix the default template name for the embedded report tags.
 
+=item *
+
+added dynamic tag ifUserMemberOf which checks if the current user is a
+member of the named group.  Supply a leading * to name query groups.
+
+=item *
+
+added a name or identifier field to the article_files table, and
+administration tools to manage it.
+
+=item *
+
+re-worked the formatting API for easier extension
+
+=item *
+
+added filelink[] body text tag
+
+=item *
+
+removed some old commented code from Generate.pm
+
 =back
 
 =head2 0.15_36

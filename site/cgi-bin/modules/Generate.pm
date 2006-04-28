@@ -13,6 +13,11 @@ my $excerptSize = 300;
 
 sub new {
   my ($class, %opts) = @_;
+  unless ($opts{cfg}) {
+    require Carp;
+    Carp->import('confess');
+    confess("cfg missing on generator->new call");
+  }
   $opts{maxdepth} = $EMBED_MAX_DEPTH unless exists $opts{maxdepth};
   $opts{depth} = 0 unless $opts{depth};
   return bless \%opts, $class;
@@ -56,7 +61,8 @@ sub summarize {
 
   # the formatter now adds <p></p> around the text, but we don't
   # want that here
-  my $result = $self->format_body({}, $articles, $text, 'tr', 1, 0);
+  my $result = $self->format_body(articles => $articles, 
+				  text => $text);
   $result =~ s!<p>|</p>!!g;
 
   return $result;
@@ -81,85 +87,6 @@ sub adjust_for_html {
 
   return $pos;
 }
-
-# sub _make_hr {
-#   my ($width, $height) = @_;
-#   my $tag = "<hr";
-#   $tag .= qq!width="$width"! if length $width;
-#   $tag .= qq!height="$height"! if length $height;
-#   $tag .= " />";
-#   return $tag;
-# }
-
-# # produces a table, possibly with options for the <table> and <tr> tags
-# sub _make_table {
-#   my ($options, $text) = @_;
-#   my $tag = "<table";
-#   my $cellend = '';
-#   my $cellstart = '';
-#   if ($options =~ /=/) {
-#     $tag .= " " . $options;
-#   }
-#   elsif ($options =~ /\S/) {
-#     $options =~ s/\s+$//;
-#     my ($width, $bg, $pad, $fontsz, $fontface) = split /\|/, $options;
-#     for ($width, $bg, $pad, $fontsz, $fontface) {
-#       $_ = '' unless defined;
-#     }
-#     $tag .= qq! width="$width"! if length $width;
-#     $tag .= qq! bgcolor="$bg"! if length $bg;
-#     $tag .= qq! cellpadding="$pad"! if length $pad;
-#     if (length $fontsz || length $fontface) {
-#       $cellstart = qq!<font!;
-#       $cellstart .= qq! size="$fontsz"! if length $fontsz;
-#       $cellstart .= qq! face="$fontface"! if length $fontface;
-#       $cellstart .= qq!>!;
-#       $cellend = "</font>";
-#     }
-#   }
-#   $tag .= ">";
-#   my @rows = split '\n', $text;
-#   my $maxwidth = 0;
-#   for my $row (@rows) {
-#     my ($opts, @cols) = split /\|/, $row;
-#     $tag .= "<tr";
-#     if ($opts =~ /=/) {
-#       $tag .= " ".$opts;
-#     }
-#     $tag .= "><td>$cellstart".join("$cellend</td><td>$cellstart", @cols)
-#       ."$cellend</td></tr>";
-#   }
-#   $tag .= "</table>";
-#   return $tag;
-# }
-
-# # make a UL
-# sub _format_bullets {
-#   my ($text) = @_;
-
-#   $text =~ s/^\s+|\s+$//g;
-#   my @points = split /(?:\r?\n)?\*\*\s*/, $text;
-#   shift @points if @points and $points[0] eq '';
-#   return '' unless @points;
-#   for my $point (@points) {
-#     $point =~ s!\n$!<br /><br />!;
-#   }
-#   return "<ul><li>".join("<li>", @points)."</ul>";
-# }
-
-# # make a OL
-# sub _format_ol {
-#   my ($text) = @_;
-#   $text =~ s/^\s+|\s+$//g;
-#   my @points = split /(?:\r?\n)?##\s*/, $text;
-#   shift @points if @points and $points[0] eq '';
-#   return '' unless @points;
-#   for my $point (@points) {
-#     #print STDERR  "point: ",unpack("H*", $point),"\n";
-#     $point =~ s!\n$!<br /><br />!;
-#   }
-#   return "<ol><li>".join("<li>", @points)."</ol>";
-# }
 
 # raw html - this has some limitations
 # the input text has already been escaped, so we need to unescape it
@@ -279,21 +206,45 @@ sub _make_img {
 
 # replace markup, insert img tags
 sub format_body {
-  my ($self, $acts, $articles, $body, $imagePos, $abs_urls, 
-      $auto_images, $templater, @images)  = @_;
+  my $self = shift;
+  my (%opts) =
+    (
+     abs_urls => 0, 
+     imagepos => 'tr', 
+     auto_images => 1,
+     images => [], 
+     files => [],
+     acts => {}, 
+     @_
+    );
+
+  my $acts = $opts{acts};
+  my $articles = $opts{articles};
+  my $body = $opts{text};
+  my $imagePos = $opts{imagepos};
+  my $abs_urls = $opts{abs_urls};
+  my $auto_images = $opts{auto_images};
+  my $templater = $opts{templater};
+  my $images = $opts{images};
+  my $files = $opts{files};
 
   return substr($body, 6) if $body =~ /^<html>/i;
 
   require BSE::Formatter;
 
-  my $formatter = BSE::Formatter->new($self, $acts, $articles,
-				      $abs_urls, \$auto_images,
-				      \@images, $templater);
+  my $formatter = BSE::Formatter->new(gen => $self, 
+				      acts => $acts, 
+				      articles => $articles,
+				      abs_urls => $abs_urls, 
+				      auto_images => \$auto_images,
+				      images => $images, 
+				      files => $files,
+				      templater => $templater);
 
   $body = $formatter->format($body);
 
   # we don't format named images
-  @images = grep $_->{name} eq '', @images;
+  my @images = grep $_->{name} eq '', @$images;
   if ($auto_images && @images) {
     # the first image simply goes where we're told to put it
     # the imagePos is [tb][rl] (top|bottom)(right|left)
@@ -748,8 +699,9 @@ sub remove_block {
 
   require BSE::Formatter;
 
-  my $formatter = BSE::Formatter->new($self, $acts, $articles,
-				      1, \0, []);
+  my $formatter = BSE::Formatter->new(gen => $self, 
+				      acts => $acts, 
+				      article => $articles);
 
   $$body = $formatter->remove_format($$body);
 }

@@ -119,9 +119,9 @@ EOS
    'select * from other_parents where childId = ? or parentId = ?',
 
    addArticleFile =>
-   'insert into article_files values (null,?,?,?,?,?,?,?,?,?,?,?,?)',
+   'insert into article_files values (null,?,?,?,?,?,?,?,?,?,?,?,?,?)',
    replaceArticleFile =>
-   'replace article_files values (?,?,?,?,?,?,?,?,?,?,?,?,?)',
+   'replace article_files values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
    deleteArticleFile => 'delete from article_files where id = ?',
    getArticleFileByArticleId =>
    'select * from article_files where articleId = ? order by displayOrder desc',
@@ -470,6 +470,7 @@ SQL
    replaceSiteUserGroup => 'replace bse_siteuser_groups values(?,?)',
    deleteSiteUserGroup => 'delete from bse_siteuser_groups where id = ?',
    getSiteUserGroupByPkey => 'select * from bse_siteuser_groups where id = ?',
+   getSiteUserGroupByName => 'select * from bse_siteuser_groups where name = ?',
    siteuserGroupMemberIds => <<SQL,
 select siteuser_id as "id" 
 from bse_siteuser_membership 

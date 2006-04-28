@@ -25,6 +25,7 @@ sub tags {
      $self->dyn_iterator('dynchildren_of', 'dynofchild'),
      url => [ tag_url => $self ],
      ifAncestor => 0,
+     ifUserMemberOf => [ tag_ifUserMemberOf => $self ],
     );
 }
 
@@ -74,6 +75,29 @@ sub tag_ifUserCanSee {
     and return 1;
 
   $req->siteuser_has_access($article);
+}
+
+sub tag_ifUserMemberOf {
+  my ($self, $args, $acts, $func, $templater) = @_;
+
+  my $req = $self->{req};
+
+  my $user = $req->siteuser
+    or return 0; # no user, no group
+
+  my ($name) = DevHelp::Tags->get_parms($args, $acts, $templater);
+
+  $name
+    or return 0; # no group name
+  
+  require BSE::TB::SiteUserGroups;
+  my $group = BSE::TB::SiteUserGroups->getByName($req->cfg, $name);
+  unless ($group) {
+    print STDERR "Unknown group name '$name' in ifUserMemberOf\n";
+    return 0;
+  }
+
+  return $group->contains_user($user);
 }
 
 sub tag_url {

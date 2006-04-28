@@ -33,7 +33,42 @@ sub getQueryGroup {
   my $sql = $cfg->entry(SECT_QUERY_GROUP_PREFIX.$name, 'sql')
     or return;
 
-  return { id => $id, name => $name, sql=>$sql };
+  return bless { id => $id, name => "*$name", sql=>$sql }, 
+    "BSE::TB::SiteUserQueryGroup";
+}
+
+sub getByName {
+  my ($class, $cfg, $name) = @_;
+
+  if ($name =~ /^\*/) {
+    $name = substr($name, 1);
+
+    my %q_groups = map lc, reverse $cfg->entries(SECT_QUERY_GROUPS);
+    if ($q_groups{lc $name}) {
+      return $class->getQueryGroup($cfg, -$q_groups{lc $name})
+	or return;
+    }
+    else {
+      return;
+    }
+  }
+  else {
+    return $class->getBy(name => $name);
+  }
+}
+
+package BSE::TB::SiteUserQueryGroup;
+
+sub contains_user {
+  my ($self, $user) = @_;
+
+  my $id = ref $user ? $user->{id} : $user;
+
+  my $rows = BSE::DB->single->dbh->selectall_arrayref($self->{sql}, { MaxRows=>1 }, $id);
+  $rows && @$rows
+    and return 1;
+  
+  return 0;
 }
 
 1;

@@ -395,6 +395,9 @@ create table article_files (
   -- more descriptive stuff
   notes text not null default '',
 
+  -- identifier for the file for use with filelink[]
+  name varchar(80) not null default '',
+
   primary key (id)
 );
 

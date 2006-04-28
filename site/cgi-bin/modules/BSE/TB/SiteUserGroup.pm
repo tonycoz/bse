@@ -68,4 +68,15 @@ sub remove_member {
   BSE::DB->single->run(siteuserGroupDeleteMember => $self->{id}, $id);
 }
 
+sub contains_user {
+  my ($self, $user) = @_;
+
+  my $user_id = ref $user ? $user->{id} : $user;
+
+  my @membership = BSE::DB->single->query(siteuserMemberOfGroup => 
+					  $user_id, $self->{id});
+
+  return scalar @membership;
+}
+
 1;
