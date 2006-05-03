@@ -1,0 +1,53 @@
+=head1 NAME
+
+siteusers.pod - BSE's member system
+
+=head1 SYNOPSIS
+
+This file will be used to document anything not worth it's own file.
+Maybe I'll even document some of the older stuff here.
+
+=head1 REGISTRATION NOTIFICATION
+
+You can configure BSE to send notification emails by setting
+notify_register in [site users] in bse.cfg or an included config file:
+
+  [site users]
+  notify_register=1
+
+By default this is sent to the email address configured in [shop].from
+or in $SHOP_FROM in Constants.pm.  You can configure a separate email
+address instead:
+
+  [site users]
+  notify_register=1
+  notify_register_email=tellme@example.com
+
+The template used to build the email content is:
+
+  admin/registeremail.tmpl
+
+The following tags are available:
+
+=over
+
+=item *
+
+standard dynamic tags
+
+=item *
+
+C<user> I<field> - replaced with the given field from the newly
+registered user.  This is not HTML escaped by default.
+
+=back
+
+=head1 REVISION
+
+$Revision$
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=cut

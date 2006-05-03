@@ -24,6 +24,11 @@ fixed
 add registration notifications emails feature, enable by setting [site
 users].notify_register to some true value (like 1)
 
+=item *
+
+added site/docs/siteusers.pod with a more introductory documentation
+of the registration emails.
+
 =back
 
 =head2 0.15_37

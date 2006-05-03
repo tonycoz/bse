@@ -32,6 +32,7 @@ my @targets =
    'thumbnails.html',
    'formmail.html',
    'userupdate.html',
+   'siteusers.html',
   );
 
 my @exts = qw(.pod .pm .pl);
