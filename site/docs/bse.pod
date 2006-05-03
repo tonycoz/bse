@@ -29,6 +29,10 @@ users].notify_register to some true value (like 1)
 added site/docs/siteusers.pod with a more introductory documentation
 of the registration emails.
 
+=item *
+
+bump to 0.15_38
+
 =back
 
 =head2 0.15_37
