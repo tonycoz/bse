@@ -19,6 +19,11 @@ Maybe I'll add some other bits here.
 remove comment about fixed tiff.c in thumbnails.pod, this has been
 fixed
 
+=item *
+
+add registration notifications emails feature, enable by setting [site
+users].notify_register to some true value (like 1)
+
 =back
 
 =head2 0.15_37

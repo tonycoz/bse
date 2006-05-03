@@ -54,6 +54,7 @@ site/cgi-bin/modules/BSE/Arrows.pm
 site/cgi-bin/modules/BSE/Cfg.pm
 site/cgi-bin/modules/BSE/CfgInfo.pm
 site/cgi-bin/modules/BSE/ChangePW.pm
+site/cgi-bin/modules/BSE/ComposeMail.pm
 site/cgi-bin/modules/BSE/Custom.pm
 site/cgi-bin/modules/BSE/CustomBase.pm
 site/cgi-bin/modules/BSE/DB.pm
@@ -325,6 +326,7 @@ site/templates/admin/order_list_unfilled.tmpl
 site/templates/admin/product_detail.tmpl
 site/templates/admin/product_list.tmpl
 site/templates/admin/regenerror.tmpl
+site/templates/admin/registeremail.tmpl
 site/templates/admin/reports/list.tmpl
 site/templates/admin/reports/prompt.tmpl
 site/templates/admin/reports/show1.tmpl

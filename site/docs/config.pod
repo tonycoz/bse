@@ -932,6 +932,31 @@ page.  This is controlled by the user/options_base.tmpl template.
 If set to zero then users cannot register themselves.  Default: true,
 allowing users to register themselves.
 
+=item notify_register
+
+If true then an email is sent when a new user registers on your site.
+The email address sent to is the first set of [site
+users].notify_register_email, [shop].from or $SHOP_FROM from
+Constants.pm
+
+No email is sent if a new user is created from the administration user
+interface.
+
+See also: notify_register_email, notify_register_subject.
+
+=item notify_register_email
+
+The email to sent the registration notification too.  See
+notify_register above.
+
+=item notify_register_subject
+
+The subject of the notification email sent when a new user registers.
+Any {I<field>} is replaced with the given field from the registered
+user.  See notify_register above.
+
+Default: New user {userId} registered
+
 =back
 
 =head2 [payment type names]

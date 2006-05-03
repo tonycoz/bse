@@ -2,7 +2,7 @@ package BSE::UserReg;
 use strict;
 use base qw(BSE::UI::SiteuserCommon);
 use SiteUsers;
-use BSE::Util::Tags qw(tag_error_img tag_hash);
+use BSE::Util::Tags qw(tag_error_img tag_hash tag_hash_plain);
 use BSE::Template;
 use Constants qw($SHOP_FROM);
 use BSE::Message;
@@ -795,6 +795,10 @@ sub register {
 
     my $custom = custom_class($cfg);
     $custom->siteusers_changed($cfg);
+
+    if ($cfg->entry('site users', 'notify_register', 0)) {
+      $self->_notify_registration($req, $user);
+    }
   }
   else {
     $self->show_register($req, $msgs->(regdberr=> "Database error $@"));
@@ -1573,6 +1577,43 @@ sub req_image {
     print $data;
   }
   close IMAGE;
+}
+
+sub _notify_registration {
+  my ($self, $req, $user) = @_;
+
+  my $cfg = $req->cfg;
+
+  my $email = $cfg->entry('site users', 'notify_register_email', 
+			  $Constants::SHOP_FROM);
+  $email ||= $cfg->entry('shop', 'from');
+  unless ($email) {
+    print STDERR "No email configured for notify_register, set [site users].notify_register_email\n";
+    return;
+  }
+  print STDERR "email $email\n";
+
+  my $subject = $cfg->entry('site users', 'notify_register_subject',
+			    "New user {userId} registered");
+
+  $subject =~ s/\{(\w+)\}/defined $user->{$1} ? $user->{$1} : "** $1 unknown **"/ge;
+  $subject =~ tr/ -~//cd;
+  substr($subject, 80) = '...' if length $subject > 80;
+  
+  my %acts;
+  %acts =
+    (
+     $req->dyn_user_tags(),
+     user => [ \&tag_hash_plain, $user ],
+    );
+
+  require BSE::ComposeMail;
+  my $mailer = BSE::ComposeMail->new(cfg => $cfg);
+  $mailer->send(template => 'admin/registeremail',
+		acts => \%acts,
+		to => $email,
+		from => $email,
+		subject => $subject);
 }
 
 1;
