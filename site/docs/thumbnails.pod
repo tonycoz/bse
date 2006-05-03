@@ -46,11 +46,6 @@ install Imager, as root:
 
 =back
 
-If you have problems with the tiff tests for Imager, you will need to
-either disable tiff support in Imager, or use the following tiff.c:
-
-  http://www.develop-help.com/imager/src/tiff.c
-
 Once you have Imager installed, add the following to bse.cfg (or
 bse-local.cfg):
 
