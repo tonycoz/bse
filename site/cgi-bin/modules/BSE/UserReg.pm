@@ -577,12 +577,12 @@ sub saveopts {
     $subs = $self->_save_subs($user, $session, $cfg, $cgi);
   }
   if ($nopassword) {
-    return $self->send_conf_request($session, $cgi, $cfg, $user)
+    return $self->send_conf_request($req, $user)
       if $newemail;
   }
   else {
     $subs = () = $user->subscriptions unless defined $subs;
-    return $self->send_conf_request($session, $cgi, $cfg, $user)
+    return $self->send_conf_request($req, $user)
       if $subs && !$user->{confirmed};
   }
 
@@ -785,10 +785,10 @@ sub register {
     $session->{userid} = $user->{userId} unless $nopassword;
     my $subs = $self->_save_subs($user, $session, $cfg, $cgi);
     if ($nopassword) {
-      return $self->send_conf_request($session, $cgi, $cfg, $user);
+      return $self->send_conf_request($req, $user);
     }
     elsif ($subs) {
-      return if $self->send_conf_request($session, $cgi, $cfg, $user, 1);
+      return if $self->send_conf_request($req, $user, 1);
     }
     
     _got_user_refresh($session, $cgi, $cfg);
@@ -1209,7 +1209,7 @@ sub lost_password {
   my %acts;
   %acts = 
     (
-     BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
+     $req->dyn_user_tags(),
      user => sub { CGI::escapeHTML($user->{$_[0]}) },
     );
   BSE::Template->show_page('user/lostemailsent', $cfg, \%acts);
@@ -1229,7 +1229,7 @@ sub subinfo {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
+     $req->dyn_user_tags(),
      subscription=>sub { CGI::escapeHTML($sub->{$_[0]}) },
     );
   BSE::Template->show_page('user/subdetail', $cfg, \%acts);
@@ -1245,7 +1245,7 @@ sub nopassword {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
+     $req->dyn_user_tags(),
     );
   BSE::Template->show_page('user/nopassword', $cfg, \%acts);
 }
@@ -1266,7 +1266,7 @@ sub blacklist {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
+     $req->dyn_user_tags(),
      email => sub { CGI::escapeHTML($email) },
     );
   require BSE::EmailBlacklist;
@@ -1320,7 +1320,7 @@ sub confirm {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
+     $req->dyn_user_tags(),
      user=>sub { CGI::escapeHTML($user->{$_[0]}) },
     );
   BSE::Template->show_page('user/confirmed', $cfg, \%acts);
@@ -1345,7 +1345,11 @@ sub _generic_email {
 
 # returns non-zero iff a page was generated
 sub send_conf_request {
-  my ($self, $session, $cgi, $cfg, $user, $suppress_success) = @_;
+  my ($self, $req, $user, $suppress_success) = @_;
+
+  my $cfg = $req->cfg;
+  my $cgi = $req->cgi;
+  my $session = $req->session;
 
   my $nopassword = $cfg->entryBool('site users', 'nopassword', 0);
 
@@ -1358,7 +1362,7 @@ sub send_conf_request {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
+     $req->dyn_user_tags(),
      user=>sub { CGI::escapeHTML($user->{$_[0]}) },
     );
   
@@ -1480,7 +1484,7 @@ sub unsub {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
+     $req->dyn_user_tags(),
      user => sub { CGI::escapeHTML($user->{$_[0]}) },
     );
   my $subid = $cgi->param('s');

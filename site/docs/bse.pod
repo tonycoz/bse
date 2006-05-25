@@ -20,6 +20,10 @@ added bse_timeout.pl test script.  This can be used to test if a
 hosting provider sets time limits on requests.  This script should be
 removed in production.
 
+=item *
+
+fix dynamic tags on some user.pl generated pages
+
 =back
 
 =head2 0.15_38
