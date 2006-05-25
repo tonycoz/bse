@@ -8,14 +8,14 @@
     <td bgcolor="#999999" colspan="2" height="1"><img src="/images/trans_pixel.gif" width="24" height="1" border="0"></td>
   </tr>
 </table>
-<form name="search" method="GET" action="/cgi-bin/search.pl">
+<form name="search" id="search" method="GET" action="/cgi-bin/search.pl">
   <table width="100%" border="0" cellspacing="0" cellpadding="0">
     <tr> 
       <td width="70"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"> 
         <b>Keywords: </b></font></td>
       <td width="10">&nbsp;&nbsp; </td>
       <td width="100%"> 
-        <input type="text" name="q" size="45" value="<:terms:>">
+        <input type="text" name="q" id="q" size="45" value="<:terms:>">
         &nbsp; 
         <input type="submit" accesskey="s" value="Search" name="submit">
       </td>
@@ -48,46 +48,29 @@
       <td><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><input type="checkbox" name="match_all" value="1" <:ifCgi match_all:>checked="checked"<:or:><:eif:> /><b> Match all terms</b></font></td>
     </tr>
   </table>
+<:ifCfg basic ajax:>
+<script>
+new Form.Element.Observer($('q'), 1.5, 
+   function(term) {
+     var f = $('search');
+     var par = 'embed=1&q=' + encodeURIComponent(f.elements['q'].value); //term.value;// + encodeURIComponent(f.elements['q'].value);
+     //for (var name in document.search.elements) {
+     //  par = par + name + '=' + document.
+     //}
+     par = par + '&d=' + encodeURIComponent(f.elements['d'].value);
+     par = par + '&s=' + encodeURIComponent(f.elements['s'].value);
+     var updater = new Ajax.Updater(
+       'results',
+       '/cgi-bin/search.pl',
+       {
+	method: 'get',
+	parameters: par,
+        asynchronous: true
+       });
+   });
+</script>
+<:or:><:eif:>
 </form>
-<:if Search:> <: if Results:>
-<p> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> <:count:> <:if 
-  Multiple:>documents<:or Multiple:>document<:eif Multiple:> matched your search 
-  requirements:</font></p>
-<: iterator begin results:> 
-<dl> 
-  <dt> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> <b> <:resultSeq:>.
-    </b></font> <:ifUserCanSee result:><a href="<:articleurl:>"><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b><:result 
-    title:></b></font></a> <:or:><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b><:result 
-    title:></b></font><:eif:>
-  <dd> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> <:excerpt:></font> 
-    <br>
-    <font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#808080"> 
-    Last modified on: <:date result lastModified:> Score: <:result score:>%</font><:if Keywords:><br>
-    <font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#808080"> 
-    Keywords: <:keywords:></font><:or Keywords:><:eif Keywords:><:if Author:><br>
-    <font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#808080"> 
-    Author: <:author:></font><:or Author:><:eif Author:><:if PageTitle:><br>
-    <font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#808080"> 
-    Page title: <:PageTitle:></font><:or PageTitle:><:eif PageTitle:>
-<:if Matchfiles:><:iterator begin matchfiles:>
-<p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b>File match:</b> <:matchfile description:> - <:matchfile displayName:><br />
-<:dynreplace [matchfile notes] "
-" "<br />":></font></p>
-<:iterator end matchfiles:><:or Matchfiles:><:eif Matchfiles:>
-</dl>
-<: iterator separator results:> <: iterator end results:> 
-<hr noshade size="1" width="100%">
-<font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Result Pages: | <:iterator 
-begin pages:> <:if CurrentPage:> <b><:page:></b> | <:or CurrentPage:> <a href="<:pageurl:>"><b><:page:></b></a> 
-| <:eif CurrentPage:> <:iterator separator pages:> <:iterator end pages:></font> 
-<:or Results:> 
-<p> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> No documents 
-  were found that matched your search requirements.</font></p>
-<: eif Results:> <:or Search:> 
-<p> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> All lower case 
-  will search case insensitively, if an upper case character is present in a word 
-  then that word will be searched case sensitively. Results are returned if any 
-  one of the words is found in the document. You can group words using single 
-  or double quotes to find things like "search engine". </font></p>
-<p>&nbsp;</p>
-<:eif Search:>
+<div id="results">
+<:include include/search_results.tmpl:>
+</div>

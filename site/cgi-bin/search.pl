@@ -244,7 +244,8 @@ my %acts;
      return ++$page_num_iter <= $page_count;
    },
    page => sub { $page_num_iter },
-   ifCurrentPage => sub { $page_num_iter == $page_number },
+   ifCurrentSearchPage => 
+   sub { $page_num_iter == $page_number },
    pageurl => 
    sub {
      $ENV{SCRIPT_NAME} . "?q=" . escape_uri($words) . 
@@ -254,7 +255,8 @@ my %acts;
    },
   );
 
-BSE::Template->show_page('search', $cfg, \%acts);
+my $template = $cgi->param('embed') ? 'include/search_results' : 'search';
+BSE::Template->show_page($template, $cfg, \%acts);
 
 undef $req;
 

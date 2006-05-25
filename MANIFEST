@@ -16,6 +16,7 @@ site/cgi-bin/admin/add.pl
 site/cgi-bin/admin/admin.pl
 site/cgi-bin/admin/admin_seminar.pl
 site/cgi-bin/admin/adminusers.pl
+site/cgi-bin/admin/bse_timeout.pl
 site/cgi-bin/admin/bse_modules.pl
 site/cgi-bin/admin/changepw.pl
 site/cgi-bin/admin/datadump.pl
@@ -276,6 +277,7 @@ site/htdocs/images/titles/the_shop.gif
 site/htdocs/images/titles/your_site.gif
 site/htdocs/images/trans_pixel.gif
 site/htdocs/js/date.js
+site/htdocs/js/prototype.js
 site/htdocs/js/validate.js
 #  site/htdocs/shop created by the Makefile
 site/templates/1/shop_multicat.tmpl
@@ -404,6 +406,7 @@ site/templates/htmlemail/basic.tmpl
 site/templates/image.tmpl
 site/templates/include/rssitems.tmpl
 site/templates/include/rsslinks.tmpl
+site/templates/include/search_results.tmpl
 site/templates/index.tmpl
 site/templates/index2.tmpl
 site/templates/interest/askagain_base.tmpl

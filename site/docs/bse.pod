@@ -28,6 +28,17 @@ fix dynamic tags on some user.pl generated pages
 
 doclink[] tag was causing a 500 error.
 
+=item *
+
+the ifCurrentPage tag on the search results templae is not
+ifCurrentSearchPage, due to a conflict with ifCurrentPage on article
+templates.
+
+=item *
+
+basic ajax support on the search page.  This has some known problems.
+To enable set [basic].ajax to 1.  This is experimental.
+
 =back
 
 =head2 0.15_38

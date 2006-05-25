@@ -1,0 +1,43 @@
+<:if Search:>
+<: if Results:>
+<p> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> <:count:> <:if 
+  Multiple:>documents<:or Multiple:>document<:eif Multiple:> matched your search 
+  requirements:</font></p>
+<: iterator begin results:> 
+<dl> 
+  <dt> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> <b> <:resultSeq:>.
+    </b></font> <:ifUserCanSee result:><a href="<:articleurl:>"><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b><:result 
+    title:></b></font></a> <:or:><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b><:result 
+    title:></b></font><:eif:>
+  <dd> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> <:excerpt:></font> 
+    <br>
+    <font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#808080"> 
+    Last modified on: <:date result lastModified:> Score: <:result score:>%</font><:if Keywords:><br>
+    <font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#808080"> 
+    Keywords: <:keywords:></font><:or Keywords:><:eif Keywords:><:if Author:><br>
+    <font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#808080"> 
+    Author: <:author:></font><:or Author:><:eif Author:><:if PageTitle:><br>
+    <font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#808080"> 
+    Page title: <:PageTitle:></font><:or PageTitle:><:eif PageTitle:>
+<:if Matchfiles:><:iterator begin matchfiles:>
+<p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b>File match:</b> <:matchfile description:> - <:matchfile displayName:><br />
+<:dynreplace [matchfile notes] "
+" "<br />":></font></p>
+<:iterator end matchfiles:><:or Matchfiles:><:eif Matchfiles:>
+</dl>
+<: iterator separator results:> <: iterator end results:> 
+<hr noshade size="1" width="100%">
+<font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Result Pages: | <:iterator 
+begin pages:> <:if CurrentSearchPage:> <b><:page:></b> | <:or CurrentSearchPage:> <a href="<:pageurl:>"><b><:page:></b></a> 
+| <:eif CurrentSearchPage:> <:iterator separator pages:> <:iterator end pages:></font> 
+<:or Results:> 
+<p> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> No documents 
+  were found that matched your search requirements.</font></p>
+<: eif Results:> <:or Search:> 
+<p> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> All lower case 
+  will search case insensitively, if an upper case character is present in a word 
+  then that word will be searched case sensitively. Results are returned if any 
+  one of the words is found in the document. You can group words using single 
+  or double quotes to find things like "search engine". </font></p>
+<p>&nbsp;</p>
+<:eif Search:>
