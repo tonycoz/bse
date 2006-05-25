@@ -26,7 +26,7 @@ fix dynamic tags on some user.pl generated pages
 
 =item *
 
-add simple regression test for doclink[] body tag
+doclink[] tag was causing a 500 error.
 
 =back
 
