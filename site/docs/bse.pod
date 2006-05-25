@@ -10,7 +10,7 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
-=head2 0.15_29
+=head2 0.15_39
 
 =over
 
@@ -55,6 +55,10 @@ customization of search result term highlighting
 
 added I<fieldname>_matched field to the matchfile tag to be able to
 detect if a given file field matched the search terms.
+
+=item *
+
+bump to 0.15_39
 
 =back
 
