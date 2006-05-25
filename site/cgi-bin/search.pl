@@ -106,6 +106,16 @@ for my $score (values %scores) {
   $score > $max_score and $max_score = $score;
 }
 
+my %highlight_prefix;
+my %highlight_suffix;
+for my $type (qw(keyword author pageTitle file_displayName 
+                 file_description file_notes)) {
+  $highlight_prefix{$type} = 
+    $cfg->entry('search highlight', "${type}_prefix", "<b>");
+  $highlight_suffix{$type} = 
+    $cfg->entry('search highlight', "${type}_suffix", "</b>");
+}
+
 my $page_num_iter = 0;
 
 my $article_index = -1;
@@ -114,10 +124,13 @@ my $excerpt;
 my $keywords;
 my $author;
 my $pageTitle;
-my $words_re_str = '\b('.join('|', map quotemeta, @terms).')\b';
+my $words_re_str = '\b('.join('|', map quotemeta, @terms).')';
+my $highlight_partial = $cfg->entryBool('search', 'highlight_partial', 1);
+$words_re_str .= '\b' unless $highlight_partial;
 my $words_re = qr/$words_re_str/i;
 my @files;
 my $file_index;
+my $current_result;
 my %acts;
 %acts =
   (
@@ -127,32 +140,40 @@ my %acts;
      ++$result_seq;
      ++$article_index;
      if ($article_index < @articles) {
+       $current_result = $articles[$article_index];
        my $found = 0;
-       $excerpt = excerpt($articles[$article_index], \$found, @terms);
+       $excerpt = excerpt($current_result, \$found, \@terms);
 
        # match against the keywords
-       $keywords = $articles[$article_index]{keyword};
-       $keywords =~ s!$words_re!<b>$1</b>!g or $keywords = '';
+       $keywords = $current_result->{keyword};
+       $keywords =~ s!$words_re!$highlight_prefix{keyword}$1$highlight_suffix{keyword}!g or $keywords = '';
 
        # match against the author
-       $author = $articles[$article_index]{author};
-       $author =~ s!$words_re!<b>$1</b>!g or $author = '';
+       $author = $current_result->{author};
+       $author =~ s!$words_re!$highlight_prefix{author}$1$highlight_suffix{author}!g 
+	 or $author = '';
 
        # match against the pageTitle
-       $pageTitle = $articles[$article_index]{pageTitle};
-       $pageTitle =~ s!$words_re!<b>$1</b>!g or $pageTitle = '';
-       $req->set_article(result => $articles[$article_index]);
+       $pageTitle = $current_result->{pageTitle};
+       $pageTitle =~ s!$words_re!$highlight_prefix{pageTitle}$1$highlight_suffix{pageTitle}!g 
+	 or $pageTitle = '';
+       $req->set_article(result => $current_result);
 
        # match files
        @files = ();
-       for my $file ($articles[$article_index]->files) {
+       for my $file ($current_result->files) {
 	 my $found;
 	 my %fileout;
 	 for my $field (qw(displayName description notes)) {
+           my $prefix = $highlight_prefix{"file_$field"};
+           my $suffix = $highlight_suffix{"file_$field"};
+	   $fileout{$field. "_matched"} = $file->{$field} =~ /$words_re/;
 	   ++$found if ($fileout{$field} = $file->{$field}) 
-	     =~ s!$words_re!<b>$1</b>!g;
+	     =~ s!$words_re!$prefix$1$suffix!g;
 	 }
 	 if ($found) {
+	   $fileout{notes_excerpt} = 
+	     excerpt($current_result, \$found, \@terms, 'file_notes', $file->{notes});
 	   push @files, [ \%fileout, $file  ];
 	 }
        }
@@ -168,11 +189,10 @@ my %acts;
    result => 
    sub { 
      my $arg = shift;
-     my $art = $articles[$article_index];
      if ($arg eq 'score') {
-       return sprintf("%.1f", 100.0 * $scores{$art->{id}} / $max_score);
+       return sprintf("%.1f", 100.0 * $scores{$current_result->{id}} / $max_score);
      }
-     return escape_html($art->{$arg});
+     return escape_html($current_result->{$arg});
    },
    date =>
    sub {
@@ -253,12 +273,32 @@ my %acts;
 	 "&amp;d=" . escape_uri($date) .
 	   "&amp;page=".$page_num_iter;
    },
+   highlight_result => [ \&tag_highlight_result, \$current_result, $cfg ],
   );
 
 my $template = $cgi->param('embed') ? 'include/search_results' : 'search';
 BSE::Template->show_page($template, $cfg, \%acts);
 
 undef $req;
+
+sub tag_highlight_result {
+  my ($rcurrent_result, $cfg, $arg) = @_;
+
+  $$rcurrent_result 
+    or return "** highlight_result must be in results iterator **";
+
+  my $text = $$rcurrent_result->{$arg};
+  defined $text or return '';
+
+  $text = escape_html($text);
+
+  my $prefix = $cfg->entry('search highlight', "${arg}_prefix", "<b>");
+  my $suffix = $cfg->entry('search highlight', "${arg}_suffix", "<b>");
+
+  $text =~ s/$words_re/$prefix$1$suffix/g;
+
+  $text;
+}
 
 sub getSearchResult {
   my ($words, $section, $date, $terms, $match_all) = @_;
@@ -270,11 +310,10 @@ sub getSearchResult {
   return $searcher->search($words, $section, $date, $terms, $match_all, $req);
 }
 
-
 my %gens;
 
 sub excerpt {
-  my ($article, $found, @terms) = @_;
+  my ($article, $found, $terms, $type, $text) = @_;
 
   my $generator = $article->{generator};
 
@@ -285,7 +324,7 @@ sub excerpt {
 
   $gens{$generator} ||= $generator->new(admin=>$admin, cfg=>$cfg, top=>$article);
 
-  return $gens{$generator}->excerpt($article, $found, $case_sensitive, @terms);
+  return $gens{$generator}->excerpt($article, $found, $case_sensitive, $terms, $type, $text);
 }
 
 __END__

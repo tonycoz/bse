@@ -39,6 +39,23 @@ templates.
 basic ajax support on the search page.  This has some known problems.
 To enable set [basic].ajax to 1.  This is experimental.
 
+=item *
+
+ability to highlight any result article field with highlight_result tag.
+
+=item *
+
+excerpting of search result file notes
+
+=item *
+
+customization of search result term highlighting
+
+=item *
+
+added I<fieldname>_matched field to the matchfile tag to be able to
+detect if a given file field matched the search terms.
+
 =back
 
 =head2 0.15_38

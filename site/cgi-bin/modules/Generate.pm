@@ -525,19 +525,19 @@ sub baseActs {
 }
 
 sub find_terms {
-  my ($body, $case_sensitive, @terms) = @_;
+  my ($body, $case_sensitive, $terms) = @_;
   
   # locate the terms
   my @found;
   if ($case_sensitive) {
-    for my $term (@terms) {
+    for my $term (@$terms) {
       if ($$body =~ /^(.*?)\Q$term/s) {
 	push(@found, [ length($1), $term ]);
       }
     }
   }
   else {
-    for my $term (@terms) {
+    for my $term (@$terms) {
       if ($$body =~ /^(.*?)\Q$term/is) {
 	push(@found, [ length($1), $term ]);
       }
@@ -561,20 +561,24 @@ sub _cleanup_table {
 
 # produce a nice excerpt for a found article
 sub excerpt {
-  my ($self, $article, $found, $case_sensitive, @terms) = @_;
+  my ($self, $article, $found, $case_sensitive, $terms, $type, $body) = @_;
 
-  my $body = $article->{body};
-
-  # we remove any formatting tags here, otherwise we get wierd table
-  # rubbish or other formatting in the excerpt.
-  $self->remove_block('Articles', [], \$body);
-  1 while $body =~ s/[bi]\[([^\]\[]+)\]/$1/g;
-
+  if (!$body) {
+    $body = $article->{body};
+    
+    # we remove any formatting tags here, otherwise we get wierd table
+    # rubbish or other formatting in the excerpt.
+    $self->remove_block('Articles', [], \$body);
+    1 while $body =~ s/[bi]\[([^\]\[]+)\]/$1/g;
+  }
+    
   $body = escape_html($body);
 
-  my @found = find_terms(\$body, $case_sensitive, @terms);
+  $type ||= 'body';
 
-  my @reterms = @terms;
+  my @found = find_terms(\$body, $case_sensitive, $terms);
+
+  my @reterms = @$terms;
   for (@reterms) {
     tr/ / /s;
     $_ = quotemeta;
@@ -585,7 +589,7 @@ sub excerpt {
   my $re_str = join("|", reverse sort @reterms);
   my $re;
   my $cfg = $self->{cfg};
-  if ($cfg->entryBool('basic', 'highlight_partial', 1)) {
+  if ($cfg->entryBool('search', 'highlight_partial', 1)) {
     $re = $case_sensitive ? qr/\b($re_str)/ : qr/\b($re_str)/i;
   }
   else {
@@ -620,6 +624,10 @@ sub excerpt {
     }
   }
 
+  my $highlight_prefix = 
+    $cfg->entry('search highlight', "${type}_prefix", "<b>");
+  my $highlight_suffix =
+    $cfg->entry('search highlight', "${type}_suffix", "</b>");
   my $termSize = $excerptSize / @found;
   my $result = '';
   for my $term (@found) {
@@ -640,7 +648,7 @@ sub excerpt {
     }
     $result .= $part;
   }
-  $result =~ s{$re}{<b>$1</b>}ig;
+  $result =~ s{$re}{$highlight_prefix$1$highlight_suffix}ig;
   $$found = 1;
 
   return $result;
@@ -650,47 +658,6 @@ sub visible {
   return 1;
 }
 
-# # removes any html tags from the supplied text
-# sub _strip_html {
-#   my ($text) = @_;
-
-#   if ($HAVE_HTML_PARSER) {
-#     my $out = '';
-#     # don't forget that require is smart
-#     require "HTML/Parser.pm";
-
-#     # this may need to detect and skip <script></script> and stylesheets
-#     my $ignore_text = 0; # non-zero in a <script></script> or <style></style>
-#     my $start_h = 
-#       sub {
-# 	++$ignore_text if $_[0] eq 'script' or $_[0] eq 'style';
-# 	if ($_[0] eq 'img' && $_[1]{alt} && !$ignore_text) {
-# 	  $out .= $_[1]{alt};
-# 	}
-#       };
-#     my $end_h = 
-#       sub {
-# 	--$ignore_text if $_[0] eq 'script' or $_[0] eq 'style';
-#       };
-#     my $text_h = 
-#       sub { 
-# 	$out .= $_[0] unless $ignore_text
-#       };
-#     my $p = HTML::Parser->new( text_h  => [ $text_h,  "dtext" ],
-#                                start_h => [ $start_h, "tagname, attr" ],
-#                                end_h   => [ $end_h,   "tagname" ]);
-#     $p->parse($text);
-#     $p->eof();
-
-#     $text = $out;
-#   }
-#   else {
-#     # this won't work for some HTML, but it's a fallback
-#     $text =~ s/<[^>]*>//g;
-#   }
-
-#   return $text;
-# }
 
 # make whatever text $body points at safe for summarizing by removing most
 # block level formatting

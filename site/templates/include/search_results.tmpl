@@ -6,8 +6,8 @@
 <: iterator begin results:> 
 <dl> 
   <dt> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> <b> <:resultSeq:>.
-    </b></font> <:ifUserCanSee result:><a href="<:articleurl:>"><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b><:result 
-    title:></b></font></a> <:or:><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b><:result 
+    </b></font> <:ifUserCanSee result:><a href="<:articleurl:>"><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b><:highlight_result 
+    title:></b></font></a> <:or:><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b><:highlight_result 
     title:></b></font><:eif:>
   <dd> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> <:excerpt:></font> 
     <br>
@@ -18,11 +18,10 @@
     <font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#808080"> 
     Author: <:author:></font><:or Author:><:eif Author:><:if PageTitle:><br>
     <font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#808080"> 
-    Page title: <:PageTitle:></font><:or PageTitle:><:eif PageTitle:>
+    Page title: <:pageTitle:></font><:or PageTitle:><:eif PageTitle:>
 <:if Matchfiles:><:iterator begin matchfiles:>
-<p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b>File match:</b> <:matchfile description:> - <:matchfile displayName:><br />
-<:dynreplace [matchfile notes] "
-" "<br />":></font></p>
+<p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b>File match:</b> <:matchfile description:><:ifMatchfile displayName_matched:> - <:matchfile displayName:><:or:><:eif:><:ifMatchfile notes_matched:><br />
+<:matchfile notes_excerpt:></font><:or:><:eif:></p>
 <:iterator end matchfiles:><:or Matchfiles:><:eif Matchfiles:>
 </dl>
 <: iterator separator results:> <: iterator end results:> 

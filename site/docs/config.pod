@@ -526,6 +526,26 @@ user are listed in the search results.  Default: false.
 
 =back
 
+=head2 [search highlight]
+
+Sets the prefix and suffix used for highlighting matches for different
+fields.
+
+These are used by the highlight_result, excerpt, pageTitle, author,
+keywords and matchFile tags.
+
+Each field has a prefix and suffix entry.  The key is
+I<fieldname>_prefix or I<fieldname>_suffix.  For file fields this is
+file_I<fieldname}_prefix and file_I<fieldname}_suffix.
+
+The default prefix is <b>.  The default suffix is </b>.
+
+For example you can do:
+
+  [search highlight]
+  body_prefix=<span class="searchfound">
+  body_suffix=</span>
+
 =head2 [shop]
 
 =over
