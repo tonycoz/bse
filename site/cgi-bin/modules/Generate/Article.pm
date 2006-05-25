@@ -339,7 +339,8 @@ sub baseActs {
 				 auto_images => !$had_image_tags, 
 				 templater => $templater, 
 				 images => \@images,
-				 files => \@files);
+				 files => \@files,
+				 articles => $articles);
      },
 
      # used to display a navigation path of parent sections

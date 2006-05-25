@@ -701,7 +701,8 @@ sub remove_block {
 
   my $formatter = BSE::Formatter->new(gen => $self, 
 				      acts => $acts, 
-				      article => $articles);
+				      article => $articles,
+				      articles => $articles);
 
   $$body = $formatter->remove_format($$body);
 }

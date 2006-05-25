@@ -24,6 +24,10 @@ removed in production.
 
 fix dynamic tags on some user.pl generated pages
 
+=item *
+
+add simple regression test for doclink[] body tag
+
 =back
 
 =head2 0.15_38

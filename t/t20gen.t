@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>70;
+use Test::More tests=>73;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
@@ -15,7 +15,7 @@ require BSE::Util::SQL;
 BSE::Util::SQL->import(qw/sql_datetime/);
 sub template_test($$$$);
 
-my $parent = add_article(title=>'Parent', body=>'parent article',
+my $parent = add_article(title=>'Parent', body=>'parent article doclink[shop|foo]',
 			lastModified => '2004-09-23 06:00:00');
 ok($parent, "create section");
 my @kids;
@@ -236,6 +236,12 @@ id title
 Report: Test report
 id title
 $parent->{id} Parent
+EXPECTED
+
+template_test "body", $parent, <<'TEMPLATE', <<EXPECTED;
+<:body:>
+TEMPLATE
+<p>parent article <a href="http://bsetestshop.develop-help.com/shop/index.html" title="The Shop" class="doclink">foo</a></p>
 EXPECTED
 
 BSE::Admin::StepParents->del($parent, $parent);
