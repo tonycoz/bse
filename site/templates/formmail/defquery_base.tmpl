@@ -1,5 +1,5 @@
 <:wrap base.tmpl title=>"FORMTITLE":>
-<form action="<:script:>" method="post">
+<form action="<:script:>" method="post" <:ifFormHasFileFields:>enctype="multipart/form-data"<:or:><:eif:>>
 <input type="hidden" name="form" value="<:id:>" />
 <:ifCgi r:><input type="hidden" name="r" value="<:cgi r:>" /><:or:><:eif:>
 <:ifMsg:><p><b><:msg:></b></p><:or:><:eif:>
@@ -33,6 +33,8 @@
   <:iterator separator values:>
   <br />
   <:iterator end values:>
+  <:case Eq [field htmltype] "file":>
+  <input type="file" name="<:field name:>" value="" />
   <:case default:>
   <input type="text" name="<:field name:>" value="<:old [field name] field default:>" <:ifField width:>size="<:field width:>" <:or:><:eif:><:ifField maxlength:>maxlength="<:field maxlength:>"<:or:><:eif:> />
   <:endswitch:>

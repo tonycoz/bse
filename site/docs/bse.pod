@@ -18,6 +18,25 @@ Maybe I'll add some other bits here.
 
 correct the closing search highlight to </b> instead of <b>
 
+=item *
+
+forms will now process file upload fields and send the files as
+attachments to the email.  The attachments are not encrypted if the
+form has encryption enabled.  Upload fields are not supportted for
+sending to the database.
+
+=item *
+
+forms now only have 3 encryption settings, encrypt, crypt_passphrase
+and crypt_signing_id.  All other values are now set from the BSE shop
+defaults.
+
+=item *
+
+form emails now use BSE::ComposeMail, which will be extended to
+support HTML emails one day.  BSE::ComposeMail was extended to support
+encryption and attachments.
+
 =back
 
 =head2 0.15_39

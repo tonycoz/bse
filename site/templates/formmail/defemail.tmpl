@@ -11,5 +11,5 @@ Email: <:user email:>
 <:ifField values:><:iterator begin values
 :>  <:value id:>: <:value name:>
 <:iterator end values
-:><:or:>  <:field value:>
+:><:or:>  <:field value:> <:if Eq [field htmltype] "file":>(attached file)<:or Eq:><:eif Eq:>
 <:eif:><:iterator end fields:>

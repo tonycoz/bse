@@ -419,4 +419,10 @@ sub group_ids {
   map $_->{id}, BSE::DB->query(siteuserGroupsForUser => $self->{id});
 }
 
+sub allow_html_email {
+  my ($self) = @_;
+
+  !$self->{textOnlyMail};
+}
+
 1;

@@ -165,26 +165,6 @@ See L<ENCRYPTION> for more information.
 
 =item *
 
-crypt_class - the encryption class to use.  Default: value of
-$SHOP_CRYPTO from Constants.pm.  eg. Squirrel::GPG
-
-Note that the only encryption module that undergoes any testing is
-Squirrel::GPG.
-
-=item *
-
-crypt_gpg - the name of the gpg binary to use.  Default: value of
-$SHOP_GPG from Constants.pm.  Only used with the Squirrel::GPG module.
-eq. gpg
-
-=item *
-
-crypt_pgp - the name of the pgpe binary to use.  Default: value of
-$SHOP_PGP from Constants.pm.  Only used with the Squirrel::PGP5 and
-Squirrel::PGP6 modules.  eg. pgp
-
-=item *
-
 crypt_passphrase - the passphrase to the private key specified by
 crypt_signing_id.  Only required if the encrypted email is to be
 signed.  Default: $SHOP_PASSPHRASE from Constants.pm
@@ -193,12 +173,6 @@ signed.  Default: $SHOP_PASSPHRASE from Constants.pm
 
 crypt_signing_id - the key id to sign the encrypted message with.
 Default: $SHOP_SIGNING_ID from Constants.pm.  eg. 564EB128
-
-=item *
-
-crypt_content_type - if this is non-zero then the content type of the
-email will be set to a content type that will let some mail clients
-recognize the message as an encrypted message.
 
 =item *
 
@@ -298,7 +272,11 @@ also configure extra rules, with some limits.
 
 I<fieldname>_htmltype - used by the default query form to choose how
 to display the field.  Values accepted are "textarea", "password",
-"text", "select", "multiselect", "radio", "check".
+"text", "select", "multiselect", "radio", "check", "file".
+
+If this is set to "file" then this will be treated as a file upload.
+
+Forms with file upload fields cannot be logged to the database.
 
 =item *
 
@@ -342,6 +320,17 @@ values:
   prefix=None selected
   prefix1=One
   prefix2=Two
+
+=item *
+
+I<fieldname>_maxfilesize - if the field has htmltype set to "file"
+then this is used to validate the size of the uploaded file.
+
+=item *
+
+I<fieldname>_filetoobigmsg - if an uploaded file exceeds
+I<fieldname>_maxfilesize then this message is returned as the field
+error.  %s is replaced with the field description.
 
 =back
 
@@ -392,6 +381,9 @@ C<description> and so.
 
 On the mail and done templates I<fieldinfo> can also be C<value> to
 present the value captured from the user.
+
+For file fields I<fieldinfo> can also be C<url> (for the in-message
+cid:... URL) or C<type> for the MIME content type of the file.
 
 =item *
 
@@ -469,6 +461,9 @@ user I<userfield> - access to the user's SiteUser record.
 
 From release 0.15_08 of BSE the emails sent to the configured form
 address can be encrypted and optionally signed.
+
+Warning: only the text content of the form email is encrypted,
+attached uploaded file will not be encrypted.
 
 IT IS VERY IMPORTANT TO TEST A FORM IF ENCRYPTION IS ENABLED.  TEST
 ALL CHANGES TO THE ENCRYPTION CONFIGURATION.
@@ -602,6 +597,8 @@ Or send the data to some other database:
   sql_user=database_user
   sql_password=database_password
   sql_options=AutoCommit=1
+
+Forms with file upload fields cannot be logged to the database.
 
 =head1 AUTHOR
 

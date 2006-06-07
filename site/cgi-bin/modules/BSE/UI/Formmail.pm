@@ -37,13 +37,13 @@ my %form_defs =
    require_logon => 0,
    logon_message => "You must logon for this form",
    encrypt => 0,
-   crypt_class => $Constants::SHOP_CRYPTO,
-   crypt_gpg => $Constants::SHOP_GPG,
-   crypt_pgpe => $Constants::SHOP_PGPE,
-   crypt_pgp => $Constants::SHOP_PGP,
+#   crypt_class => $Constants::SHOP_CRYPTO,
+#   crypt_gpg => $Constants::SHOP_GPG,
+#   crypt_pgpe => $Constants::SHOP_PGPE,
+#   crypt_pgp => $Constants::SHOP_PGP,
    crypt_passphrase => $Constants::SHOP_PASSPHRASE,
    crypt_signing_id => $Constants::SHOP_SIGNING_ID,
-   crypt_content_type => 0,
+#   crypt_content_type => 0,
    autofill => 1,
    title => 'Send us a comment',
    send_email => 1,
@@ -83,6 +83,8 @@ sub _get_form {
       { description => "\u$form_field" };
   }
 
+  my $has_file_fields = 0;
+
   my $valid_section = "$id formmail validation";
   $form{validation_section} = $valid_section;
   my $fields = dh_configure_fields(\%fields, $cfg, $valid_section);
@@ -90,7 +92,7 @@ sub _get_form {
     $cfg->entry("formmail", "field_config", '');
   my %std_cfg_names = map { $_ => 1 } 
     qw(required rules description required_error range_error mindatemsg 
-       maxdatemsg default);
+       maxdatemsg default maxfilesize filetoobigmsg);
   my @extra_cfg_names = grep /\S/ && !exists $std_cfg_names{$_}, 
     split /,/, $extra_cfg_names;
   my $user = $req->siteuser;
@@ -98,8 +100,8 @@ sub _get_form {
     my $field = $fields->{$name};
     $field->{name} = $name;
 
-    for my $cfg_name (qw/htmltype type width height size maxlength default/, 
-		      @extra_cfg_names) {
+    for my $cfg_name (qw/htmltype type width height size maxlength default
+                         maxfilesize filetoobigmsg/, @extra_cfg_names) {
       my $value = $cfg->entry($valid_section, "${name}_${cfg_name}");
       defined $value and $field->{$cfg_name} = $value;
     }
@@ -107,11 +109,17 @@ sub _get_form {
     if ($form{autofill} && $user && exists $user->{$name}) {
       $field->{default} = $user->{$name};
     }
+    
+    if ($field->{htmltype} && $field->{htmltype} eq 'file') {
+      $has_file_fields = 1;
+      $field->{filetoobigmsg} = 'File %s too large';
+    }
   }
 
   $form{validation} = $fields;
   $form{fields} = [ @$fields{@names} ];
   $form{id} = $id;
+  $form{has_file_fields} = $has_file_fields;
 
   \%form;
 }
@@ -235,6 +243,7 @@ sub req_show {
      ifValueSet => 
      [ \&tag_ifValueSet, $req->cgi, \$current_field, \$current_value, $errors ],
      formcfg => [ \&tag_formcfg, $req->cfg, $form ],
+     ifFormHasFileFields => $form->{has_file_fields},
     );
 
   return $req->response($form->{query}, \%acts);
@@ -258,6 +267,11 @@ sub iter_cgi_values {
 
 sub _send_to_db {
   my ($form, $user, $errors) = @_;
+
+  if ($form->{has_file_fields}) {
+    $errors->{_database} = "Forms with file fields cannot be saved to the database";
+    return;
+  }
 
   my $dbh;
   my $conn_dbh;
@@ -333,6 +347,70 @@ sub _send_to_db {
   return 1;
 }
 
+sub _send_to_mail {
+  my ($class, $form, $user, $values, $errors, $req) = @_;
+
+  my $cfg = $req->cfg;
+
+  # send an email
+  my $it = BSE::Util::Iterate->new;
+  my %acts;
+  my $current_field;
+  %acts =
+    (
+     BSE::Util::Tags->static(\%acts, $cfg),
+     ifUser=>!!$user,
+     user => $user ? [ \&tag_hash, $user ] : '',
+     value => [ \&tag_hash, $values ],
+     $it->make_iterator(undef, 'field', 'fields', $form->{fields}, 
+			undef, undef, \$current_field),
+     $it->make_iterator([ \&iter_cgi_values, $form, \$current_field ],
+			'value', 'values', undef, undef, 'nocache'),
+     id => $form->{id},
+     formcfg => [ \&tag_formcfg, $req->cfg, $form ],
+     remote_addr => escape_html($ENV{REMOTE_ADDR}),
+    );
+  
+  require BSE::ComposeMail;
+  my $mailer = BSE::ComposeMail->new(cfg=>$cfg);
+  $mailer->start(to => $form->{email},
+		 from => $form->{email},
+		 subject=>$form->{subject},
+		 template => $form->{mail},
+		 acts => \%acts);
+  if ($form->{encrypt}) {
+    $mailer->encrypt_body(passphrase => $form->{crypt_passphrase},
+			  signing_id => $form->{crypt_signing_id});
+  }
+  if ($form->{has_file_fields}) {
+    my $seq = 1;
+    for my $field (grep $_->{htmltype} && $_->{htmltype} eq 'file'
+		   && $_->{value}, @{$form->{fields}}) {
+      my $display = $field->{value};
+      $display =~ s!.*[/\\:]!!;
+      $display ||= 'unknown_' . $seq++;
+      my $type = $field->{type} || 'application/octet-stream';
+
+      my $url = $mailer->attach(disposition => 'attachment',
+			      display => $display,
+			      type => $type,
+			      fh => $field->{fh});
+      unless ($url) {
+	$errors->{_mail} = $mailer->errstr;
+	return;
+      }
+      $field->{url} = $url;
+    }
+  }
+  unless ($mailer->done()) {
+    print STDERR "Error sending mail: ", $mailer->errstr, "\n";
+    $errors->{_mail} = $mailer->errstr;
+    return;
+  }
+
+  return 1;
+}
+
 sub req_send {
   my ($class, $req) = @_;
 
@@ -351,6 +429,25 @@ sub req_send {
   my %errors;
   dh_validate($cgi, \%errors, \%form, $cfg, $form->{validation_section});
 
+  if ($form->{has_file_fields}) {
+    # validate the file sizes
+    for my $field (grep $_->{htmltype} && $_->{htmltype} eq 'file', 
+		   @{$form->{fields}}) {
+      my $name = $field->{name};
+      # presumably required is being handled by the validation above
+      my $filename = $cgi->param($name);
+      my $fh = $cgi->upload($name);
+      if ($filename && $fh) {
+	if ($field->{maxfilesize} && -s $fh > $field->{maxfilesize}) {
+	  ($errors{$name} = $field->{filetoobigmsg})
+	    =~ s/%s/$field->{description}/;
+	}
+	$field->{fh} = $fh;
+	$field->{type} = $cgi->uploadInfo($filename)->{'Content-Type'};
+      }
+    }
+  }
+
   keys %errors
     and return $class->req_show($req, \%errors);
 
@@ -359,7 +456,8 @@ sub req_send {
   my %array_values;
   for my $field (@{$form->{fields}}) {
     my $name = $field->{name};
-    my @values = $cgi->param($name);
+    # prevent GLOBs in the values, since these end up in the session
+    my @values = map $_.'', $cgi->param($name);
     $field->{value} = $values{$name} = "@values";
     $field->{value_array} = $array_values{$name} = \@values;
   }
@@ -371,41 +469,8 @@ sub req_send {
   }
 
   if ($form->{send_email}) {
-    # send an email
-    my $it = BSE::Util::Iterate->new;
-    my %acts;
-    my $current_field;
-    %acts =
-      (
-       BSE::Util::Tags->static(\%acts, $cfg),
-       ifUser=>!!$user,
-       user => $user ? [ \&tag_hash, $user ] : '',
-       value => [ \&tag_hash, \%values ],
-       $it->make_iterator(undef, 'field', 'fields', $form->{fields}, 
-			  undef, undef, \$current_field),
-       $it->make_iterator([ \&iter_cgi_values, $form, \$current_field ],
-			  'value', 'values', undef, undef, 'nocache'),
-       id => $form->{id},
-       formcfg => [ \&tag_formcfg, $req->cfg, $form ],
-       remote_addr => escape_html($ENV{REMOTE_ADDR}),
-      );
-
-    require BSE::Mail;
-    my $mailer = BSE::Mail->new(cfg=>$cfg);
-    my $content = BSE::Template->get_page($form->{mail}, $cfg, \%acts);
-    my @headers;
-    if ($form->{encrypt}) {
-      $content = $class->_encrypt($cfg, $form, $content);
-      push @headers, "Content-Type: application/pgp; format=text; x-action=encrypt\n"
-	if $form->{crypt_content_type};
-    }
-    unless ($mailer->send(to=>$form->{email}, from=>$form->{email},
-			  subject=>$form->{subject}, body=>$content,
-			  headers => join('', @headers))) {
-      print STDERR "Error sending mail: ", $mailer->errstr, "\n";
-      $errors{_mail} = $mailer->{errstr};
-      return $class->req_show($req, \%errors);
-    }
+    $class->_send_to_mail($form, $user, \%values, \%errors, $req)
+      or $class->req_show($req, \%errors);
   }
 
   my $url = $cgi->param('r');
@@ -476,30 +541,6 @@ sub req_done {
     );
 
   return $req->response($form->{done}, \%acts);
-}
-
-sub _encrypt {
-  my ($class, $cfg, $form, $content) = @_;
-
-  (my $class_file = $form->{crypt_class}.".pm") =~ s!::!/!g;
-  require $class_file;
-  my $encryptor = $form->{crypt_class}->new;
-  my %opts =
-    (
-     passphrase => $form->{crypt_passphrase},
-     stripwarn => 1,
-     debug => $cfg->entry('debug', 'mail_encryption', 0),
-     sign => !!$form->{crypt_signing_id},
-     secretkeyid => $form->{crypt_signing_id},
-     pgp => $form->{crypt_pgp},
-     pgpe => $form->{crypt_pgpe},
-     gpg => $form->{crypt_gpg},
-    );
-
-  my $result = $encryptor->encrypt($form->{email}, $content, %opts)
-    or die "Cannot encrypt ",$encryptor->error;
-
-  $result;
 }
 
 sub _refresh_logon {

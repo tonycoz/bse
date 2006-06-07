@@ -29,13 +29,27 @@ sub send {
     and return $self->_error("headers starts with whitespace");
 
   my $cfg = $self->{cfg};
+
+  my $subject = $args{subject};
+  my $to = $args{to};
+  if ($cfg->entry('basic', 'test', 0)) {
+    my $test_address = $cfg->entry('mail', 'test_address');
+    if ($test_address) {
+      $subject = "[bse test] $subject";
+      $to = $test_address;
+    }
+    else {
+      return $self->_error("BSE in test mode but mail.test_address not set");
+    }
+  }
+
   my $server = $cfg->entryErr('mail', 'smtp_server');
   my $helo = $cfg->entryErr('mail', 'helo');
   my $smtp = Net::SMTP->new($server, Hello=>$helo)
     or return $self->_error("Cannot connect to mail server: $!");
   $smtp->mail($args{from})
     or return $self->_error("mail command failed: ".$smtp->message);
-  $smtp->to($args{to})
+  $smtp->to($to)
     or return $self->_error("RCPT command failed: ".$smtp->message);
   if ($args{bcc}) {
     $smtp->to($args{bcc})
@@ -43,9 +57,9 @@ sub send {
   }
   $smtp->data()
     or return $self->_error("DATA command failed: ".$smtp->message);
-  $smtp->datasend("To: $args{to}\n");
+  $smtp->datasend("To: $to\n");
   $smtp->datasend("From: $args{from}\n");
-  $smtp->datasend("Subject: $args{subject}\n");
+  $smtp->datasend("Subject: $subject\n");
   $smtp->datasend($args{headers}) if $args{headers};
   $smtp->datasend("\n");
   $smtp->datasend($args{body});
