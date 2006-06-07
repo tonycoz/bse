@@ -293,7 +293,7 @@ sub tag_highlight_result {
   $text = escape_html($text);
 
   my $prefix = $cfg->entry('search highlight', "${arg}_prefix", "<b>");
-  my $suffix = $cfg->entry('search highlight', "${arg}_suffix", "<b>");
+  my $suffix = $cfg->entry('search highlight', "${arg}_suffix", "</b>");
 
   $text =~ s/$words_re/$prefix$1$suffix/g;
 

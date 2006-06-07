@@ -10,6 +10,16 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_40
+
+=over
+
+=item *
+
+correct the closing search highlight to </b> instead of <b>
+
+=back
+
 =head2 0.15_39
 
 =over
