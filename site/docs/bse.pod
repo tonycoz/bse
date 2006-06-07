@@ -37,6 +37,10 @@ form emails now use BSE::ComposeMail, which will be extended to
 support HTML emails one day.  BSE::ComposeMail was extended to support
 encryption and attachments.
 
+=item *
+
+bump to 0.15_40
+
 =back
 
 =head2 0.15_39
