@@ -137,6 +137,29 @@ function bse_popup_image (article_id, image_id, width, height, tag_id, image_url
               </tr>
             </table>
         <:iterator end dynlevel1s:>
+<:if Cfg shop sidebar_cart:>
+<table width="100%" border="0" class="sidebar_cart">
+<:if Dyncart:>
+<tr>
+  <th>Product</th><th>Units</th><th>Price</th><th>Ext.</th></tr>
+</tr>
+<:iterator begin dyncart:>
+<tr>
+  <td><a href="<:url dyncartitem:>"><:dynreplace [dyncartitem title] (.{15}).* $1...:></a></td>
+  <td class="cartunits"><:dyncartitem units:></td>
+  <td class="cartprice"><:money dyncartitem retailPrice:></td>
+  <td class="cartprice"><:money dyncartitem extended:></td>
+</tr>
+<:iterator end dyncart:>
+<tr>
+  <td colspan="3">Subtotal (<:dyncarttotalunits:> items):</td>
+  <td class="cartprice"><:money dyncarttotalcost:></td>
+</tr>
+<:or Dyncart:>
+<tr><td class="emptycart">Your cart is empty</td></tr>
+<:eif Dyncart:>
+</table>
+<:or Cfg:><:eif Cfg:>
 <:or Dynamic:>
             <:iterator begin level1:>  
             <table width="100%" border="0" cellspacing="0" cellpadding="0">

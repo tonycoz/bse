@@ -23,7 +23,10 @@ sub tags {
      $self->dyn_iterator('dynlevel3s', 'dynlevel3'),
      $self->dyn_iterator('dynallkids_of', 'dynofallkid'),
      $self->dyn_iterator('dynchildren_of', 'dynofchild'),
+     $self->dyn_iterator('dyncart', 'dyncartitem'),
      url => [ tag_url => $self ],
+     dyncarttotalcost => [ tag_dyncarttotal => $self, 'total_cost' ],
+     dyncarttotalunits => [ tag_dyncarttotal => $self, 'total_units' ],
      ifAncestor => 0,
      ifUserMemberOf => [ tag_ifUserMemberOf => $self ],
     );
@@ -189,6 +192,24 @@ sub iter_dynchildren_of {
   return $self->access_filter( map Articles->listedChildren($_), @ids);
 }
 
+sub iter_dyncart {
+  my ($self, $unused, $args) = @_;
+
+  my $cart = $self->_cart
+    or return [];
+
+  return $cart->{cart};
+}
+
+sub tag_dyncarttotal {
+  my ($self, $field, $args) = @_;
+
+  my $cart = $self->_cart
+    or return 0;
+
+  return $cart->{$field};
+}
+
 sub access_filter {
   my ($self, @articles) = @_;
 
@@ -323,6 +344,42 @@ sub set_cached {
   my ($self, $id, $value) = @_;
 
   $self->{_cache}{$id} = $value;
+}
+
+sub _cart {
+  my ($self) = @_;
+
+  my $dyncart = $self->get_cached('cart');
+  $dyncart and return $dyncart;
+
+  my $cart = $self->{req}->session->{cart}
+    or return { cart => [], total_cost => 0, total_units => 0 };
+
+  my @cart;
+  my $total_cost = 0;
+  my $total_units = 0;
+  for my $item (@$cart) {
+    require Products;
+    my $product = Products->getByPkey($item->{productId});
+    my $extended = $product->{retailPrice} * $item->{units};
+    push @cart,
+      {
+       ( map { $_ => $product->{$_} } $product->columns ),
+       %$item,
+       extended => $extended,
+      };
+    $total_cost += $extended;
+    $total_units += $item->{units};
+  }
+  my $result = 
+    {
+     cart => \@cart,
+     total_cost => $total_cost,
+     total_units => $total_units,
+    };
+  $self->set_cached(cart => $result);
+
+  return $result;
 }
 
 1;

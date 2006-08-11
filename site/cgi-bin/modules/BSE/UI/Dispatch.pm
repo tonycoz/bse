@@ -24,7 +24,7 @@ sub dispatch {
     for my $check (keys %$actions) {
       if ($cgi->param("a_$check") || $cgi->param("a_$check.x")) {
 	$action = $check;
-      last;
+	last;
       }
     }
   }

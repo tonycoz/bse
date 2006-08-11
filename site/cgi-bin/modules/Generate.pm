@@ -508,8 +508,13 @@ sub baseActs {
          return escape_html($text);
        }
      },
-     $it->make_iterator( \&iter_kids_of, 'ofchild', 'children_of' ), 
+     $it->make_iterator( \&iter_kids_of, 'ofchild', 'children_of', 
+			 undef, undef, 'nocache' ), 
      $it->make_iterator( \&iter_all_kids_of, 'ofallkid', 'allkids_of' ), 
+     $it->make_iterator( \&iter_all_kids_of, 'ofallkid2', 'allkids_of2', 
+			 undef, undef, 'nocache' ), 
+     $it->make_iterator( \&iter_all_kids_of, 'ofallkid3', 'allkids_of3',
+			 undef, undef, 'nocache' ), 
      $it->make_iterator( \&iter_inlines, 'inline', 'inlines' ),
      gimage => 
      sub {

@@ -30,6 +30,10 @@ modify the shop add action to add items to the cart rather than
 replacing them.  So if product A is in the cart at 10 units and it
 added with 1 unit it will become 11 units instead of 1.
 
+=item *
+
+add tags to display the cart on any dynamic page
+
 =back
 
 =head2 0.15_40

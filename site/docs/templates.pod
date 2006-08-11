@@ -743,6 +743,69 @@ This is meant to be used as the value="" parameter in input tags.
 Returns the I<index>th CGI value named I<field>.  If that doesn't
 exist then tag I<func> is called with I<args> and returns that value.
 
+=item user I<field>
+
+A field from the currently logged in user if any.
+
+=item ifUser
+
+Test if there is a user logged on.
+
+=item ifUserCanSee I<which>
+
+Check if the currently logged on user can see the given article.
+
+=item iterator ... dynlevel1s
+
+=item dynlevel1 I<field>
+
+Iterate over visible level 1 articles.
+
+=item iterator ... dynlevel2s
+
+=item dynlevel2 I<field>
+
+Iterate over visible level 2 articles that are children of the current
+dynlevel1.
+
+=item iterator ... dynlevel3s
+
+=item dynlevel3 I<field>
+
+Iterate over visible level 3 articles that are children of the current
+dynlevel2.
+
+=item iterator ... dynallkids_of
+
+=item dynofallkid I<field>
+
+Iterate over visible children and stepchildren of the given articles.
+
+=item iterator ... dynchildren_of
+
+=item dynofchild I<field>
+
+Iterate over visible direct children of the given articles.
+
+=item iterator ... dyncart
+
+=item dyncartitem I<field>
+
+Iterate over the user's shopping cart.  dyncartitem fields include
+units, options, extended and all product fields.
+
+=item dyncarttotalcost
+
+Total cost off all items in the user's shopping cart, in cents.
+
+=item dyncarttotalunits
+
+Total number of items in the user's shopping cart.
+
+=item ifUserMemberOf I<groupname>
+
+Test if the given user is a member of a given user group.
+
 =back
 
 =head2 Base tags

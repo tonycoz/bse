@@ -9,3 +9,6 @@ textarea {  font-family: "MS Sans Serif", Verdana, sans-serif; font-size: 12px}
 .useroptions th { font-family: Verdana, Arial, Helvetica, sans-serif; font-size: x-small; font-weight: bold; white-space: nowrap; text-align: left }
 .useroptions td { font-family: Verdana, Arial, Helvetica, sans-serif; font-size: x-small }
 .useroptions .thead { font-family: Verdana, Arial, Helvetica, sans-serif; font-size: large; font-weight: bold; white-space: nowrap; text-align: center }
+.sidebar_cart { font-family: sans-serif; font-size: 9px }
+.cartunits { text-align: right }
+.cartprice { text-align: right }
