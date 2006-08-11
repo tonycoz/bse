@@ -112,7 +112,7 @@ sub _get_form {
     
     if ($field->{htmltype} && $field->{htmltype} eq 'file') {
       $has_file_fields = 1;
-      $field->{filetoobigmsg} = 'File %s too large';
+      $field->{filetoobigmsg} ||= 'File %s too large';
     }
   }
 
