@@ -22,6 +22,7 @@ use constant PAYMENT_CALLME => 2;
 my %actions =
   (
    add => 1,
+   addmultiple => 1,
    cart => 1,
    checkout => 1,
    checkupdate => 1,
@@ -112,135 +113,118 @@ sub req_add {
   $addid ||= '';
   my $quantity = $cgi->param('quantity');
   $quantity ||= 1;
-  my $product;
-  if ($addid) {
-    $product = BSE::TB::Seminars->getByPkey($addid);
-    $product ||= Products->getByPkey($addid);
-  }
-  $product or 
-    return $class->req_cart($req, "Cannot find product $addid"); # oops
 
-  # collect the product options
-  my @options;
-  my @opt_names = split /,/, $product->{options};
-  my @not_def;
-  for my $name (@opt_names) {
-    my $value = $cgi->param($name);
-    push @options, $value;
-    unless (defined $value) {
-      push @not_def, $name;
-    }
+  my $error;
+  my $refresh_logon;
+  my ($product, $options, $extras)
+    = $class->_validate_add($req, $addid, $quantity, \$error, \$refresh_logon);
+  if ($refresh_logon) {
+    return $class->_refresh_logon($req, @$refresh_logon);
   }
-  @not_def
-    and return $class->req_cart($req, "Some product options (@not_def) not supplied");
-  my $options = join(",", @options);
-  
-  # the product must be non-expired and listed
-  (my $comp_release = $product->{release}) =~ s/ .*//;
-  (my $comp_expire = $product->{expire}) =~ s/ .*//;
-  my $today = now_sqldate();
-  $comp_release le $today
-    or return $class->req_cart($req, "Product has not been released yet");
-  $today le $comp_expire
-    or return $class->req_cart($req, "Product has expired");
-  $product->{listed} or return $class->req_cart($req, "Product not available");
-  
-  # used to refresh if a logon is needed
-  my $securlbase = $req->cfg->entryVar('site', 'secureurl');
-  my $r = $securlbase . $ENV{SCRIPT_NAME} . "?add=1&id=$addid";
-  for my $opt_index (0..$#opt_names) {
-    $r .= "&$opt_names[$opt_index]=".escape_uri($options[$opt_index]);
-  }
-  
-  my $user = $req->siteuser;
-  # need to be logged on if it has any subs
-  if ($product->{subscription_id} != -1) {
-    if ($user) {
-      my $sub = $product->subscription;
-      if ($product->is_renew_sub_only) {
-	unless ($user->subscribed_to_grace($sub)) {
-	  return $class->req_cart($req, "This product can only be used to renew your subscription to $sub->{title} and you are not subscribed nor within the renewal grace period");
-	}
-      }
-      elsif ($product->is_start_sub_only) {
-	if ($user->subscribed_to_grace($sub)) {
-	  return $class->req_cart($req, "This product can only be used to start your subscription to $sub->{title} and you are already subscribed or within the grace period");
-	}
-      }
-    }
-    else {
-      return $class->_refresh_logon
-	($req, "You must be logged on to add this product to your cart", 
-	 'prodlogon', $r);
-    }
-  }
-  if ($product->{subscription_required} != -1) {
-    my $sub = $product->subscription_required;
-    if ($user) {
-      unless ($user->subscribed_to($sub)) {
-	return $class->req_cart($req, "You must be subscribed to $sub->{title} to purchase this product");
-	return;
-      }
-    }
-    else {
-      # we want to refresh back to adding the item to the cart if possible
-      return $class->_refresh_logon
-	($req, "You must be logged on and subscribed to $sub->{title} to add this product to your cart",
-	 'prodlogonsub', $r);
-    }
-  }
-
-  # we need a natural integer quantity
-  $quantity =~ /^\d+$/
-    or return $class->req_cart($req, "Invalid quantity");
-
-  my %extras;
-  if ($product->isa('BSE::TB::Seminar')) {
-    # you must be logged on to add a seminar
-    unless ($user) {
-      return $class->_refresh_logon
-	($req, "You must be logged on to add seminars to your cart", 
-	 'seminarlogon', $r);
-    }
-
-    # get and validate the session
-    my $session_id = $cgi->param('session_id');
-    defined $session_id
-      or return $class->req_cart($req, "Please select a session when adding a seminar");
-    $session_id =~ /^\d+$/
-      or return $class->req_cart($req, "Invalid session_id supplied");
-    require BSE::TB::SeminarSessions;
-    my $session = BSE::TB::SeminarSessions->getByPkey($session_id)
-      or return $class->req_cart($req, "Unknown session id supplied");
-    $session->{seminar_id} == $addid
-      or return $class->req_cart($req, "Session not for this seminar");
-
-    # check if the user is already booked for this session
-    grep($_ == $session_id, $user->seminar_sessions_booked($addid))
-      and return $class->req_cart($req, "You are already booked for this session");
-
-    $extras{session_id} = $session_id;
-  }
+  elsif ($error) {
+    return $class->req_cart($req, $error);
+  }    
 
   $req->session->{cart} ||= [];
   my @cart = @{$req->session->{cart}};
  
-  # if this is is already present, replace it
-  @cart = grep { $_->{productId} ne $addid || $_->{options} ne $options } 
-    @cart;
-  push @cart, 
-    { 
-     productId => $addid, 
-     units => $quantity, 
-     price=>$product->{retailPrice},
-     options=>$options,
-     %extras,
-    };
+  my $found;
+  for my $item (@cart) {
+    $item->{productId} eq $addid && $item->{options} eq $options
+      or next;
+
+    ++$found;
+    $item->{units} += $quantity;
+    last;
+  }
+  unless ($found) {
+    push @cart, 
+      { 
+       productId => $addid, 
+       units => $quantity, 
+       price=>$product->{retailPrice},
+       options=>$options,
+       %$extras,
+      };
+  }
 
   $req->session->{cart} = \@cart;
   $req->session->{order_info_confirmed} = 0;
   
   return $class->req_cart($req);
+}
+
+sub req_addmultiple {
+  my ($class, $req) = @_;
+
+  my $cgi = $req->cgi;
+  my @qty_keys = map /^qty(\d+)/, $cgi->param;
+
+  my @messages;
+  my %additions;
+  for my $addid (@qty_keys) {
+    my $quantity = $cgi->param("qty$addid");
+    defined $quantity && $quantity =~ /^\s*\d+\s*$/
+      or next;
+
+    my $error;
+    my $refresh_logon;
+    my ($product, $options, $extras) =
+      $class->_validate_add($req, $addid, $quantity, \$error, \$refresh_logon);
+    if ($refresh_logon) {
+      return $class->_refresh_logon($req, @$refresh_logon);
+    }
+    elsif ($error) {
+      return $class->req_cart($req, $error);
+    }
+    if ($product->{options}) {
+      push @messages, "$product->{title} has options, you need to use the product page to add this product";
+      next;
+    }
+    $additions{$addid} = 
+      { 
+       id => $product->{id},
+       product => $product, 
+       extras => $extras,
+       quantity => $quantity,
+      };
+  }
+  
+  if (keys %additions) {
+    $req->session->{cart} ||= [];
+    my @cart = @{$req->session->{cart}};
+
+    for my $item (@cart) {
+      $item->{options} eq '' or next;
+
+      my $addition = delete $additions{$item->{productId}}
+	or next;
+
+      $item->{units} += $addition->{quantity};
+    }
+    for my $addition (values %additions) {
+      $addition->{quantity} > 0 or next;
+      my $product = $addition->{product};
+      push @cart, 
+	{ 
+	 productId => $product->{id},
+	 units => $addition->{quantity}, 
+	 price=>$product->{retailPrice},
+	 options=>'',
+	 %{$addition->{extras}},
+	};
+    }
+    
+    $req->session->{cart} = \@cart;
+    $req->session->{order_info_confirmed} = 0;
+  }
+
+  if (@messages) {
+    return $class->req_cart($req, join("\n", @messages));
+  }
+  else {
+    return $class->req_cart($req);
+  }
 }
 
 sub req_checkout {
@@ -1267,6 +1251,154 @@ sub req_location {
        content=>"Missing or invalid location_id",
       };
   }
+}
+
+sub _validate_add {
+  my ($class, $req, $addid, $quantity, $error, $refresh_logon) = @_;
+
+  my $product;
+  if ($addid) {
+    $product = BSE::TB::Seminars->getByPkey($addid);
+    $product ||= Products->getByPkey($addid);
+  }
+  unless ($product) {
+    $$error = "Cannot find product $addid";
+    return;
+  }
+
+  # collect the product options
+  my @options;
+  my @opt_names = split /,/, $product->{options};
+  my @not_def;
+  my $cgi = $req->cgi;
+  for my $name (@opt_names) {
+    my $value = $cgi->param($name);
+    push @options, $value;
+    unless (defined $value) {
+      push @not_def, $name;
+    }
+  }
+  if (@not_def) {
+    $$error = "Some product options (@not_def) not supplied";
+    return;
+  }
+  my $options = join(",", @options);
+  
+  # the product must be non-expired and listed
+  (my $comp_release = $product->{release}) =~ s/ .*//;
+  (my $comp_expire = $product->{expire}) =~ s/ .*//;
+  my $today = now_sqldate();
+  unless ($comp_release le $today) {
+    $$error = "Product $product->{title} has not been released yet";
+    return;
+  }
+  unless ($today le $comp_expire) {
+    $$error = "Product $product->{title} has expired";
+    return;
+  }
+  unless ($product->{listed}) {
+    $$error = "Product $product->{title} not available";
+    return;
+  }
+  
+  # used to refresh if a logon is needed
+  my $securlbase = $req->cfg->entryVar('site', 'secureurl');
+  my $r = $securlbase . $ENV{SCRIPT_NAME} . "?add=1&id=$addid";
+  for my $opt_index (0..$#opt_names) {
+    $r .= "&$opt_names[$opt_index]=".escape_uri($options[$opt_index]);
+  }
+  
+  my $user = $req->siteuser;
+  # need to be logged on if it has any subs
+  if ($product->{subscription_id} != -1) {
+    if ($user) {
+      my $sub = $product->subscription;
+      if ($product->is_renew_sub_only) {
+	unless ($user->subscribed_to_grace($sub)) {
+	  $$error = "The product $product->{title} can only be used to renew your subscription to $sub->{title} and you are not subscribed nor within the renewal grace period";
+	  return;
+	}
+      }
+      elsif ($product->is_start_sub_only) {
+	if ($user->subscribed_to_grace($sub)) {
+	  $$error = "The product $product->{title} can only be used to start your subscription to $sub->{title} and you are already subscribed or within the grace period";
+	  return;
+	}
+      }
+    }
+    else {
+      $$refresh_logon = 
+	[  "You must be logged on to add this product to your cart", 
+	   'prodlogon', $r ];
+      return;
+    }
+  }
+  if ($product->{subscription_required} != -1) {
+    my $sub = $product->subscription_required;
+    if ($user) {
+      unless ($user->subscribed_to($sub)) {
+	$$error = "You must be subscribed to $sub->{title} to purchase this product";
+	return;
+      }
+    }
+    else {
+      # we want to refresh back to adding the item to the cart if possible
+      $$refresh_logon = 
+	[ "You must be logged on and subscribed to $sub->{title} to add this product to your cart",
+	 'prodlogonsub', $r ];
+      return;
+    }
+  }
+
+  # we need a natural integer quantity
+  unless ($quantity =~ /^\d+$/) {
+    $$error = "Invalid quantity";
+    return;
+  }
+
+  my %extras;
+  if ($product->isa('BSE::TB::Seminar')) {
+    # you must be logged on to add a seminar
+    unless ($user) {
+      $$refresh_logon = 
+	[ "You must be logged on to add seminars to your cart", 
+	  'seminarlogon', $r ];
+      return;
+    }
+
+    # get and validate the session
+    my $session_id = $cgi->param('session_id');
+    unless (defined $session_id) {
+      $$error = "Please select a session when adding a seminar";
+      return;
+    }
+    
+    unless ($session_id =~ /^\d+$/) {
+      $$error = "Invalid session_id supplied";
+      return;
+    }
+      
+    require BSE::TB::SeminarSessions;
+    my $session = BSE::TB::SeminarSessions->getByPkey($session_id);
+    unless ($session) {
+      $$error = "Unknown session id supplied";
+      return;
+    }
+    unless ($session->{seminar_id} == $addid) {
+      $$error = "Session not for this seminar";
+      return;
+    }
+
+    # check if the user is already booked for this session
+    if (grep($_ == $session_id, $user->seminar_sessions_booked($addid))) {
+      $$error = "You are already booked for this session";
+      return;
+    }
+
+    $extras{session_id} = $session_id;
+  }
+
+  return ( $product, $options, \%extras );
 }
 
 1;
