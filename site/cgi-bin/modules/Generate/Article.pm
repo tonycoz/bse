@@ -230,8 +230,9 @@ sub baseActs {
   my @iter_images;
   my $image_index = -1;
   my $had_image_tags = 0;
-  my @files = sort { $b->{displayOrder} <=> $a->{displayOrder} }
+  my @all_files = sort { $b->{displayOrder} <=> $a->{displayOrder} }
     ArticleFiles->getBy(articleId=>$article->{id});
+  my @files = grep !$_->{hide_from_list}, @all_files;
   
   my $blank = qq!<img src="$IMAGES_URI/trans_pixel.gif"  width="17" height="13" border="0" align="absbottom" alt="" />!;
 
@@ -339,7 +340,7 @@ sub baseActs {
 				 auto_images => !$had_image_tags, 
 				 templater => $templater, 
 				 images => \@images,
-				 files => \@files,
+				 files => \@all_files,
 				 articles => $articles);
      },
 
@@ -895,6 +896,75 @@ Iterates over the files attached to the article, setting the file tag.
 =item file I<field>
 
 Information from the current file in the files iterator.
+
+The file fields are:
+
+=over
+
+=item *
+
+id - identifier for this file
+
+=item *
+
+articleId - article this file belongs to
+
+=item *
+
+displayName - the filename of the file as displayed
+
+=item *
+
+filename - filename of the file as stored on disk,
+
+=item *
+
+sizeInBytes - size of the file in bytes.
+
+=item *
+
+description - the entered description of the file
+
+=item *
+
+contentType - the MIME content type of the file
+
+=item *
+
+displayOrder - number used to control the listing order.
+
+=item *
+
+forSale - non-zero if the file needs to be paid for to be downloaded.
+
+=item *
+
+download - if this is non-zero BSE will attempt to make the browser
+download the file rather than display it.
+
+=item *
+
+whenUploaded - date/time when the file was uploaded.
+
+=item *
+
+requireUser - if non-zero the user must be logged on to download this
+file.
+
+=item *
+
+notes - longer descriptive text.
+
+=item *
+
+name - identifier for the file for filelink[]
+
+=item *
+
+hide_from_list - if non-zero the file won't be listed by the files
+iterator, but will still be available to filelink[].
+
+=back
 
 =back
 

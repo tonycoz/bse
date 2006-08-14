@@ -34,6 +34,17 @@ added with 1 unit it will become 11 units instead of 1.
 
 add tags to display the cart on any dynamic page
 
+=item *
+
+files now have a flag to hide them from the files iterator.  This will
+require a change to the admin/filelist.tmpl template in custom
+template sets.
+
+=item *
+
+fixed a repeated "the" in the message from attempting to delete the
+store.
+
 =back
 
 =head2 0.15_40

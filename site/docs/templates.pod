@@ -31,7 +31,7 @@ iteration - repeat a section of text for each element of a list
 =back
 
 There are also the <:wrap ... :> and <:embed ... :> tags, which are
-described under L<WRAPPING> and L<Embedding tags> respectively.
+described under L</WRAPPING> and L</Embedding tags> respectively.
 
 =head2 Data tags
 
@@ -286,8 +286,8 @@ data problem.
 
 =head2 Embedding tags
 
-To embed the current child article (within an C<E<lt>:iterator begin
-... endE<gt>:> block), use:
+To embed the current child article (within an C<<E<lt>:iterator begin
+... endE<gt>:>> block), use:
 
   <:embed child:>
 
@@ -472,7 +472,7 @@ choice if it's present.
 
 Tags are documented without the <: and :>.
 
-If a tag is documented as C<iterator ...I<name>> then it's an iterator
+If a tag is documented as C<<iterator ...I<name> >> then it's an iterator
 tag and can be used:
 
   <:iterator begin I<name>:>
@@ -1234,6 +1234,75 @@ Iterates over the files attached to the article, setting the file tag.
 =item file I<field>
 
 Information from the current file in the files iterator.
+
+The file fields are:
+
+=over
+
+=item *
+
+id - identifier for this file
+
+=item *
+
+articleId - article this file belongs to
+
+=item *
+
+displayName - the filename of the file as displayed
+
+=item *
+
+filename - filename of the file as stored on disk,
+
+=item *
+
+sizeInBytes - size of the file in bytes.
+
+=item *
+
+description - the entered description of the file
+
+=item *
+
+contentType - the MIME content type of the file
+
+=item *
+
+displayOrder - number used to control the listing order.
+
+=item *
+
+forSale - non-zero if the file needs to be paid for to be downloaded.
+
+=item *
+
+download - if this is non-zero BSE will attempt to make the browser
+download the file rather than display it.
+
+=item *
+
+whenUploaded - date/time when the file was uploaded.
+
+=item *
+
+requireUser - if non-zero the user must be logged on to download this
+file.
+
+=item *
+
+notes - longer descriptive text.
+
+=item *
+
+name - identifier for the file for filelink[]
+
+=item *
+
+hide_from_list - if non-zero the file won't be listed by the files
+iterator, but will still be available to filelink[].
+
+=back
 
 =back
 

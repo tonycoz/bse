@@ -2596,10 +2596,11 @@ sub fileadd {
 
   my %errors;
   
-  $file{forSale} = 0 + exists $file{forSale};
-  $file{articleId} = $article->{id};
-  $file{download} = 0 + exists $file{download};
-  $file{requireUser} = 0 + exists $file{requireUser};
+  $file{forSale}	= 0 + exists $file{forSale};
+  $file{articleId}	= $article->{id};
+  $file{download}	= 0 + exists $file{download};
+  $file{requireUser}	= 0 + exists $file{requireUser};
+  $file{hide_from_list} = 0 + exists $file{hide_from_list};
 
   my $downloadPath = $self->{cfg}->entryVar('paths', 'downloads');
 
@@ -2760,15 +2761,16 @@ sub filesave {
   my $cgi = $req->cgi;
   my %seen_name;
   for my $file (@files) {
-    if (defined $cgi->param("description_$file->{id}")) {
-      $file->{description} = $cgi->param("description_$file->{id}");
-      if (defined(my $type = $cgi->param("contentType_$file->{id}"))) {
+    my $id = $file->{id};
+    if (defined $cgi->param("description_$id")) {
+      $file->{description} = $cgi->param("description_$id");
+      if (defined(my $type = $cgi->param("contentType_$id"))) {
 	$file->{contentType} = $type;
       }
-      if (defined(my $notes = $cgi->param("notes_$file->{id}"))) {
+      if (defined(my $notes = $cgi->param("notes_$id"))) {
 	$file->{notes} = $notes;
       }
-      my $name = $cgi->param("name_$file->{id}");
+      my $name = $cgi->param("name_$id");
       defined $name or $name = $file->{name};
       if (length $name && $name !~ /^\w+$/) {
 	return $self->edit_form($req, $article, $articles,
@@ -2778,10 +2780,11 @@ sub filesave {
 	return $self->edit_form($req, $article, $articles,
 				"Duplicate file identifier $name");
       }
-      $file->{name} = $name;
-      $file->{download} = 0 + defined $cgi->param("download_$file->{id}");
-      $file->{forSale} = 0 + defined $cgi->param("forSale_$file->{id}");
-      $file->{requireUser} = 0 + defined $cgi->param("requireUser_$file->{id}");
+      $file->{name}	      = $name;
+      $file->{download}	      = 0 + defined $cgi->param("download_$id");
+      $file->{forSale}	      = 0 + defined $cgi->param("forSale_$id");
+      $file->{requireUser}    = 0 + defined $cgi->param("requireUser_$id");
+      $file->{hide_from_list} = 0 + defined $cgi->param("hide_from_list_$id");
     }
   }
   for my $file (@files) {
@@ -2810,7 +2813,7 @@ sub can_remove {
     return;
   }
   if ($article->{id} == $Constants::SHOPID) {
-    $$rmsg = "Sorry, these pages are essential to the store - they cannot be deleted - you may want to hide the the store instead.";
+    $$rmsg = "Sorry, these pages are essential to the store - they cannot be deleted - you may want to hide the store instead.";
     return;
   }
 

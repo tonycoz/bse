@@ -9,7 +9,7 @@ use Carp 'confess';
 sub columns {
   return qw/id articleId displayName filename sizeInBytes description 
             contentType displayOrder forSale download whenUploaded
-            requireUser notes name/;
+            requireUser notes name hide_from_list/;
 }
 
 sub remove {

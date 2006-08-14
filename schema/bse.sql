@@ -398,6 +398,8 @@ create table article_files (
   -- identifier for the file for use with filelink[]
   name varchar(80) not null default '',
 
+  hide_from_list integer not null default 0,
+
   primary key (id)
 );
 
