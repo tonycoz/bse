@@ -49,6 +49,10 @@ store.
 
 added dynmoveallkid tag for use on dynamic pages.
 
+=item *
+
+bump to 0.15_41
+
 =back
 
 =head2 0.15_40
