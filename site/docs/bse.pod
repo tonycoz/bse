@@ -45,6 +45,10 @@ template sets.
 fixed a repeated "the" in the message from attempting to delete the
 store.
 
+=item *
+
+added dynmoveallkid tag for use on dynamic pages.
+
 =back
 
 =head2 0.15_40

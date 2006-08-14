@@ -24,7 +24,23 @@
 </table>
 <:if Article body:> 
 <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font></p>
-<:or Article:><:eif Article:><:if Embedded:><:or Embedded:><:ifAdmin:><:if Allkids:> 
+<:or Article:><:eif Article:><:if Embedded:><:or Embedded:>
+<:if Dynamic:>
+<:ifAdmin:><:if Allkids:> 
+<p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Reorder child articles: 
+  <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&sort=title&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
+  title</a> | <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&sort=date&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
+  date</a> | <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&reverse=1&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">reverse 
+  order</a></font></p>
+<:or Allkids:><:eif Allkids:><:or:><:eif:>
+<:iterator begin dynallkids:> 
+<p><:thumbnail dynallkid:> <a href="<:url dynallkid:>"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><:dynallkid 
+  title:></font></b></a> <:dynmoveallkid:><br>
+  <:if Dynallkid summaryLength:><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:summary 
+  dynallkid:></font><:or Dynallkid:><:eif Dynallkid:></p>
+<:iterator separator dynallkids:><:iterator end dynallkids:>
+<:or Dynamic:>
+<:ifAdmin:><:if Allkids:> 
 <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Reorder child articles: 
   <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&sort=title&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
   title</a> | <a href="/cgi-bin/admin/reorder.pl?stepparent=<:article id:>&sort=date&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
@@ -39,8 +55,9 @@ begin allkids:><:ifAdmin:>
   title:></font></b></a> <:movestepkid:><br>
   <:if Allkid summaryLength:><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:summary 
   allkid:></font><:or Allkid:><:eif Allkid:></p>
-<:iterator separator allkids:><:iterator end allkids:><:eif UnderThreshold:> <:if 
-Stepparents:> 
+<:iterator separator allkids:><:iterator end allkids:><:eif UnderThreshold:> 
+<:eif Dynamic:>
+<:if Stepparents:> 
 <p><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">The following 
   other related sections may be of interest:</font></p>
 <ul>
