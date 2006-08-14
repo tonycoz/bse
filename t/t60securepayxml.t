@@ -26,7 +26,7 @@ ok($payment, 'make payment object');
 my %req =
   (
    cardnumber => '4242424242424242',
-   expirydate => '200605',
+   expirydate => '200612',
    amount => 1000,
    orderno => time,
   );
@@ -53,7 +53,7 @@ ok($result->{error}, "got an error: $result->{error}");
 my %add =
   (
    clientid => 'AAAA',
-   expirydate => '05/06',
+   expirydate => '12/06',
    cardnumber => '4242424242424242',
   );
 $result = $payment->add_payment(%add);
