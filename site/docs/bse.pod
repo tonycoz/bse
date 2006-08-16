@@ -20,6 +20,14 @@ reload the article earlier when updating dynamic status on
 descendants.  The cached dynamic status was being lost when the
 article was reloaded later.
 
+=item *
+
+the shop now refreshes to the cart display instead of displaying the
+cart in the same request.  The change in add adding to the quantities
+in the cart meant that a reload by the client would modify the cart.
+
+The refresh location can be overridden with the r parameter.
+
 =back
 
 =head2 0.15_41

@@ -150,8 +150,12 @@ sub req_add {
 
   $req->session->{cart} = \@cart;
   $req->session->{order_info_confirmed} = 0;
-  
-  return $class->req_cart($req);
+
+  my $refresh = $cgi->param('r');
+  unless ($refresh) {
+    $refresh = $ENV{SCRIPT_NAME};
+  }
+  return BSE::Template->get_refresh($refresh, $req->cfg);
 }
 
 sub req_addmultiple {
@@ -219,12 +223,19 @@ sub req_addmultiple {
     $req->session->{order_info_confirmed} = 0;
   }
 
+  my $refresh = $cgi->param('r');
+  unless ($refresh) {
+    $refresh = $ENV{SCRIPT_NAME};
+  }
   if (@messages) {
-    return $class->req_cart($req, join("\n", @messages));
+    my $sep = $refresh =~ /\?/ ? '&' : '?';
+    
+    for my $message (@messages) {
+      $refresh .= $sep . "m=" . escape_uri($message);
+      $sep = '&';
+    }
   }
-  else {
-    return $class->req_cart($req);
-  }
+  return BSE::Template->get_refresh($refresh, $req->cfg);
 }
 
 sub req_checkout {
