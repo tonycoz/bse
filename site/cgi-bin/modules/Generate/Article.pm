@@ -454,7 +454,7 @@ HTML
        }
        scalar grep $_->{id} == $arg, @ancestors, $article;
      },
-     
+     ifStepAncestor => [ \&tag_ifStepAncestor, $article ],
      # access to images, if any
      iterate_images_reset => 
      sub { 
@@ -551,6 +551,17 @@ HTML
       };
   }
   return %acts;
+}
+
+sub tag_ifStepAncestor {
+  my ($article, $arg, $acts, $name, $templater) = @_;
+
+  unless ($arg =~ /^\d+$/) {
+    $acts->{$arg} or die "ENOIMPL\n";
+    $arg = $acts->{$arg} && $templater->perform($acts, $arg, 'id')
+      or return;
+  }
+  return $article->{id} == $arg || $article->is_step_ancestor($arg);
 }
 
 sub tag_ifDynamic {

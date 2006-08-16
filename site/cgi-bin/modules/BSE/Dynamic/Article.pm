@@ -45,6 +45,7 @@ sub tags {
      $self->SUPER::tags(),
      dynarticle => [ \&tag_hash, $article ],
      ifAncestor => [ tag_ifAncestor => $self, $article ],
+     ifStepAncestor => [ tag_ifStepAncestor => $self, $article ],
      $self->dyn_iterator('dynallkids', 'dynallkid', $article,
 			 \$allkid_index, \$allkid_data),
      $self->dyn_iterator('dynchildren', 'dynchild', $article),
@@ -112,6 +113,20 @@ sub tag_ifAncestor {
   }
 
   return 0;
+}
+
+sub tag_ifStepAncestor {
+  my ($self, $article, $arg) = @_;
+
+  unless ($arg =~ /^\d+$/) {
+    my $art = $self->{req}->get_article($arg)
+      or return 0;
+    $arg = $art->{id};
+  }
+
+  return 1 if $article->{id} == $arg;
+
+  return $article->is_step_ancestor($arg);
 }
 
 sub tag_dynmove {

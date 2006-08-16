@@ -267,4 +267,44 @@ sub remove {
   $self->SUPER::remove();
 }
 
+sub all_parents {
+  my ($self) = @_;
+
+  my @result = $self->step_parents;
+  if ($self->{parentid} > 0 && !grep $_->{id} eq $self->{parentid}, @result) {
+    push @result, $self->parent;
+  }
+
+  return @result;
+}
+
+sub is_step_ancestor {
+  my ($self, $other, $max) = @_;
+
+  my $other_id = ref $other ? $other->{id} : $other;
+  my %seen;
+
+  $max ||= 10;
+
+  # early exit if possible
+  return 1 if $self->{parentid} == $other_id;
+
+  my @all_parents = $self->all_parents;
+  return 1 if grep $_->{id} == $other_id, @all_parents;
+  my @work = map [ 0, $_], grep !$seen{$_}++, @all_parents;
+  while (@work) {
+    my $entry = shift @work;
+    my ($level, $workart) = @$entry;
+
+    $level++;
+    if ($level < $max) {
+      @all_parents = $workart->all_parents;
+      return 1 if grep $_->{id} == $other_id, @all_parents;
+      push @work, map [ $level, $_ ], grep !$seen{$_}++, @all_parents;
+    }
+  }
+
+  return 0;
+}
+
 1;

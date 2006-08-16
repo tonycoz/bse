@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>73;
+use Test::More tests=>82;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
@@ -243,6 +243,36 @@ template_test "body", $parent, <<'TEMPLATE', <<EXPECTED;
 TEMPLATE
 <p>parent article <a href="http://bsetestshop.develop-help.com/shop/index.html" title="The Shop" class="doclink">foo</a></p>
 EXPECTED
+
+# not actually generation tests, but chekcs that the is_step_ancestor works
+ok($kids[0]->is_step_ancestor($parent->{id}),
+   "is_step_ancestor - check normal parent");
+ok($parent->is_step_ancestor($parent->{id}),
+   "is_step_ancestor - check step parent");
+ok(!$parent->is_step_ancestor($kids[0]),
+   "is_step_ancestor - failure check");
+
+# and test the static tag
+template_test "ifStepAncestor 1", $parent, <<'TEMPLATE', <<EXPECTED;
+<:ifStepAncestor article:>Good<:or:>bad<:eif:>
+<:ifStepAncestor 3:>Bad<:or:>Good<:eif:>
+TEMPLATE
+Good
+Good
+EXPECTED
+
+template_test "ifStepAncestor 2", $kids[0], <<TEMPLATE, <<EXPECTED;
+<:ifStepAncestor parent:>Good<:or:>bad<:eif:>
+<:ifStepAncestor article:>Good<:or:>Bad<:eif:>
+<:ifStepAncestor $kids[2]{id}:>Bad<:or:>Good<:eif:>
+TEMPLATE
+Good
+Good
+Good
+EXPECTED
+
+############################################################
+# Cleanup
 
 BSE::Admin::StepParents->del($parent, $parent);
 for my $kid (reverse @kids) {

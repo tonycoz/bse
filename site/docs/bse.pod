@@ -34,6 +34,17 @@ the catalog url tag override wasn't passing through "null"
 replacements correctly, producing multiple site URLs at the front of
 url tags that were finally processed at dynamic replacement time.
 
+=item *
+
+implement a ifStepAncestor tag which checks if a given article or
+article id is the current article or a step/normal ancestor of the
+current article.  This is limited to searching to 10 levels of
+ancestry.
+
+Note: if you have many step parent links on your site then this tag
+can be very slow, since a large number of articles will be loaded
+searching for stepparents.
+
 =back
 
 =head2 0.15_41
