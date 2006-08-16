@@ -1678,13 +1678,13 @@ sub update_child_dynamic {
     my $workart = pop @stack;
     my $old_dynamic = $workart->is_dynamic; # before update
     my $old_link = $workart->{link};
+    my $editor;
+    ($editor, $workart) = $self->article_class($workart, $articles, $cfg);
+
     $workart->update_dynamic($cfg);
     if ($old_dynamic != $workart->is_dynamic) {
       # update the link
       if ($article->{link} && !$cfg->entry('protect link', $workart->{id})) {
-	my $editor;
-	($editor, $workart) = $self->article_class($workart, $articles, $cfg);
-
 	my $uri = $editor->make_link($workart);
 	$workart->setLink($uri);
 
