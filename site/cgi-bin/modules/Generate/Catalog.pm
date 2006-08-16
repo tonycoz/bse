@@ -218,6 +218,7 @@ HTML
   $acts{url} =
     sub {
       my $value = $oldurl->(@_);
+      return $value if $value =~ /^<:/; # handle "can't do it"
       unless ($value =~ /^\w+:/) {
         # put in the base site url
         $value = $urlbase . $value;

@@ -28,6 +28,12 @@ in the cart meant that a reload by the client would modify the cart.
 
 The refresh location can be overridden with the r parameter.
 
+=item *
+
+the catalog url tag override wasn't passing through "null"
+replacements correctly, producing multiple site URLs at the front of
+url tags that were finally processed at dynamic replacement time.
+
 =back
 
 =head2 0.15_41
