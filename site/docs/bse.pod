@@ -45,6 +45,10 @@ Note: if you have many step parent links on your site then this tag
 can be very slow, since a large number of articles will be loaded
 searching for stepparents.
 
+=item *
+
+bump to 0.15_42
+
 =back
 
 =head2 0.15_41
