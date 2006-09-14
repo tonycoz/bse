@@ -561,6 +561,7 @@ sub tag_ifStepAncestor {
     $arg = $acts->{$arg} && $templater->perform($acts, $arg, 'id')
       or return;
   }
+  return 0 if $article->{id} < 0;
   return $article->{id} == $arg || $article->is_step_ancestor($arg);
 }
 
