@@ -44,6 +44,10 @@ adding an item to an empty cart now causing the current session cookie
 to be set on the non-secure side as well, to ensure that the cart
 state is in sync on both secure and non-secure URLs
 
+=item *
+
+bump to 0.15_44
+
 =back
 
 =head2 0.15_43
