@@ -23,6 +23,11 @@ don't HTML encode values by default in emails sent by fmail.pl
 don't call article methods for the ifStepAncestor tag when working
 with a fake article.
 
+=item *
+
+added addsingle\d+ target to shop.pl to allowing individual items from
+the catalog page.
+
 =back
 
 =head2 0.15_42

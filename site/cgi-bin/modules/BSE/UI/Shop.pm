@@ -66,6 +66,9 @@ sub other_action {
     if ($key =~ /^delete_(\d+)(?:\.x)?$/) {
       return ( remove_item => $1 );
     }
+    elsif ($key =~ /^(?:a_)?addsingle(\d+)(?:\.x)?$/) {
+      return ( addsingle => $1 );
+    }
   }
 
   return;
@@ -113,6 +116,60 @@ sub req_add {
   $addid ||= '';
   my $quantity = $cgi->param('quantity');
   $quantity ||= 1;
+
+  my $error;
+  my $refresh_logon;
+  my ($product, $options, $extras)
+    = $class->_validate_add($req, $addid, $quantity, \$error, \$refresh_logon);
+  if ($refresh_logon) {
+    return $class->_refresh_logon($req, @$refresh_logon);
+  }
+  elsif ($error) {
+    return $class->req_cart($req, $error);
+  }    
+
+  $req->session->{cart} ||= [];
+  my @cart = @{$req->session->{cart}};
+ 
+  my $found;
+  for my $item (@cart) {
+    $item->{productId} eq $addid && $item->{options} eq $options
+      or next;
+
+    ++$found;
+    $item->{units} += $quantity;
+    last;
+  }
+  unless ($found) {
+    push @cart, 
+      { 
+       productId => $addid, 
+       units => $quantity, 
+       price=>$product->{retailPrice},
+       options=>$options,
+       %$extras,
+      };
+  }
+
+  $req->session->{cart} = \@cart;
+  $req->session->{order_info_confirmed} = 0;
+
+  my $refresh = $cgi->param('r');
+  unless ($refresh) {
+    $refresh = $ENV{SCRIPT_NAME};
+  }
+  return BSE::Template->get_refresh($refresh, $req->cfg);
+}
+
+sub req_addsingle {
+  my ($class, $req, $addid) = @_;
+
+  my $cgi = $req->cgi;
+
+  $addid ||= '';
+  my $quantity = $cgi->param("qty$addid");
+  defined $quantity && $quantity =~ /\S/
+    or $quantity = 1;
 
   my $error;
   my $refresh_logon;
@@ -1362,7 +1419,7 @@ sub _validate_add {
   }
 
   # we need a natural integer quantity
-  unless ($quantity =~ /^\d+$/) {
+  unless ($quantity =~ /^\d+$/ && $quantity > 0) {
     $$error = "Invalid quantity";
     return;
   }

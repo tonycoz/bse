@@ -50,7 +50,7 @@
 <:if Allprod retailPrice:>
             <td align="right"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>$<:money allprod retailPrice:></b></font></td>
 <:ifAnd [cfg shop order_from_catalog] [ifEq [allprod options] ""]:>
-<td><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><input type="text" name="qty<:allprod id:>" size="4" /></font></td>
+<td nowrap="nowrap"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><input type="text" name="qty<:allprod id:>" size="4" /><input type="image" src="/images/store/quick_add.gif" alt="+" name="a_addsingle<:allprod id:>" /></font></td>
 <:or:><:eif:>
 <:or Allprod:>
             <td align="center"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#999999"><b>TBA</b></font></td>
