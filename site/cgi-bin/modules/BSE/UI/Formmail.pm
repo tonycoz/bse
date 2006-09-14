@@ -1,7 +1,7 @@
 package BSE::UI::Formmail;
 use strict;
 use base qw(BSE::UI::Dispatch);
-use BSE::Util::Tags qw(tag_hash tag_error_img);
+use BSE::Util::Tags qw(tag_hash tag_hash_plain tag_error_img);
 use DevHelp::HTML qw(:default popup_menu);
 use DevHelp::Validate qw(dh_validate dh_configure_fields);
 use BSE::Util::Iterate;
@@ -347,28 +347,39 @@ sub _send_to_db {
   return 1;
 }
 
+sub tag_formcfg_plain {
+  my ($cfg, $form, $args, $acts, $templater) = @_;
+
+  my ($key, $def) = DevHelp::Tags->get_parms($args, $acts, $templater);
+
+  defined $def or $def = '';
+  defined $key or return '** key argument missing from formcfg tag **';
+
+  $cfg->entry($form->{section}, $key, $def);
+}
+
 sub _send_to_mail {
   my ($class, $form, $user, $values, $errors, $req) = @_;
 
   my $cfg = $req->cfg;
 
   # send an email
-  my $it = BSE::Util::Iterate->new;
+  my $it = DevHelp::Tags::Iterate->new;
   my %acts;
   my $current_field;
   %acts =
     (
      BSE::Util::Tags->static(\%acts, $cfg),
      ifUser=>!!$user,
-     user => $user ? [ \&tag_hash, $user ] : '',
-     value => [ \&tag_hash, $values ],
+     user => $user ? [ \&tag_hash_plain, $user ] : '',
+     value => [ \&tag_hash_plain, $values ],
      $it->make_iterator(undef, 'field', 'fields', $form->{fields}, 
 			undef, undef, \$current_field),
      $it->make_iterator([ \&iter_cgi_values, $form, \$current_field ],
 			'value', 'values', undef, undef, 'nocache'),
      id => $form->{id},
-     formcfg => [ \&tag_formcfg, $req->cfg, $form ],
-     remote_addr => escape_html($ENV{REMOTE_ADDR}),
+     formcfg => [ \&tag_formcfg_plain, $req->cfg, $form ],
+     remote_addr => $ENV{REMOTE_ADDR},
     );
   
   require BSE::ComposeMail;
