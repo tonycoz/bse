@@ -123,8 +123,12 @@ sub generate_shop {
      'checkoutpay',
     );
   require 'Generate/Article.pm';
-  my $shop = $articles->getByPkey($SHOPID);
   my $cfg = BSE::Cfg->new;
+  my $shop_base = $articles->getByPkey($SHOPID);
+  my $shop = { map { $_ => $shop_base->{$_} } $shop_base->columns };
+  $shop->{link} =~ /^\w+:/
+    or $shop->{link} = $cfg->entryErr('site', 'url') . $shop->{link};
+  $shop->{id} = -10; # some random negative number
   my $gen = Generate::Article->new(cfg=>$cfg, top=>$shop, force_dynamic => 1);
   for my $name (@pages) {
     my %acts;

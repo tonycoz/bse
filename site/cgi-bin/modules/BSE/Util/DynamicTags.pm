@@ -109,7 +109,15 @@ sub tag_url {
   my $item = $self->{admin} ? 'admin' : 'link';
   my $article = $self->{req}->get_article($name)
     or return "** unknown article $name **";
-  return escape_html($article->{$item});
+
+  my $value = $article->{$item};
+
+  # we don't know our context, so always produce absolute URLs
+  if ($value !~ /^\w+:/) {
+    $value = $self->{req}->cfg->entryErr('site', 'url') . $value;
+  }
+
+  return escape_html($value);
 }
 
 sub iter_dynlevel1s {
@@ -362,11 +370,14 @@ sub _cart {
     require Products;
     my $product = Products->getByPkey($item->{productId});
     my $extended = $product->{retailPrice} * $item->{units};
+    my $link = $product->{link};
+    $link =~ /^\w+:/ or $link = $self->{req}->cfg->entryErr('site', 'url');
     push @cart,
       {
        ( map { $_ => $product->{$_} } $product->columns ),
        %$item,
        extended => $extended,
+       link => $link,
       };
     $total_cost += $extended;
     $total_units += $item->{units};

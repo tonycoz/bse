@@ -340,8 +340,17 @@ sub replace {
 sub formlink {
   my ($self, $id, $type, $text, $target) = @_;
 
-  my $title = escape_html($self->{gen}{cfg}->entry("$id form", 'title', "Send us a comment"));
+  my $cfg = $self->{gen}{cfg};
+  my $section = "$id form";
+  my $title = escape_html($cfg->entry($section, 'title', "Send us a comment"));
   $text ||= $title;
+  my $secure = $cfg->entry($section, 'secure', 0);
+  my $abs_url = $self->{abs_urls} || $secure;
+
+  my $prefix = '';
+  if ($abs_url) {
+    $prefix = $cfg->entryVar('site', $secure ? 'secureurl' : 'url');
+  }
 
   my $extras = '';
   if ($type) {
@@ -354,7 +363,7 @@ sub formlink {
     $extras .= qq/ target="$target"/;
   }
 
-  return qq!<a href="/cgi-bin/fmail.pl?form=$id" title="$title"$extras>$text</a>!;
+  return qq!<a href="$prefix/cgi-bin/fmail.pl?form=$id" title="$title"$extras>$text</a>!;
 }
 
 sub remove_doclink {

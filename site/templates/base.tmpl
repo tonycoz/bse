@@ -145,7 +145,7 @@ function bse_popup_image (article_id, image_id, width, height, tag_id, image_url
 </tr>
 <:iterator begin dyncart:>
 <tr>
-  <td><a href="<:url dyncartitem:>"><:dynreplace [dyncartitem title] (.{15}).* $1...:></a></td>
+  <td><a href="<:dyncartitem link:>"><:dynreplace [dyncartitem title] (.{15}).* $1...:></a></td>
   <td class="cartunits"><:dyncartitem units:></td>
   <td class="cartprice"><:money dyncartitem retailPrice:></td>
   <td class="cartprice"><:money dyncartitem extended:></td>

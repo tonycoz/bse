@@ -53,6 +53,7 @@ sub tags {
      dynmoveallkid => 
      [ tag_dynmove => $self, \$allkid_index, \$allkid_data, 
        "stepparent=$article->{id}" ],
+     url => [ tag_url => $self, $article ],
     );
 }
 
@@ -158,6 +159,22 @@ sub tag_dynmove {
   }
 
   return make_arrows($self->{req}->cfg, $down_url, $up_url, $refresh_to, $img_prefix);
+}
+
+sub tag_url {
+  my ($self, $article, $name, $acts, $func, $templater) = @_;
+
+  my $item = $self->{admin} ? 'admin' : 'link';
+  my $article = $self->{req}->get_article($name)
+    or return "** unknown article $name **";
+
+  my $value = $article->{$item};
+
+  if ($article->{$item} =~ /^\w+:/ && $value !~ /^\w+:/) {
+    $value = $self->{req}->cfg->entryErr('site', 'url') . $value;
+  }
+  
+  return escape_html($value);
 }
 
 sub get_real_article {

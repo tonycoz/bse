@@ -10,6 +10,36 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_44
+
+=over
+
+=item *
+
+various changes to make URLs more context sensitive:
+
+=over
+
+=item *
+
+the link fields for dyncart and the normal cart page are now always
+generated as absolute URLs
+
+=item *
+
+the shop base pages are now always pregenerated as if the shop article
+had an absolute URL, even when it doesn't.
+
+=item *
+
+the dynamic version of the url tag will now generate absolute URLs
+when there is no article context and use the article link to decide
+whether to generate absolute URLs in article context.
+
+=back
+
+=back
+
 =head2 0.15_43
 
 =over
