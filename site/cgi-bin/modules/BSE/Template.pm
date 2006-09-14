@@ -112,6 +112,16 @@ sub get_refresh {
 		#qq/Expires: Thu, 01 Jan 1970 00:00:00 GMT/
 	      ],
     };
+
+  return
+    {
+     content => '',
+     headers => [ 
+		 "Location: $url",
+		 "Status: 302"
+		],
+    };
+
 }
 
 sub template_dirs {

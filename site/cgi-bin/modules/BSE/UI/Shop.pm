@@ -130,6 +130,7 @@ sub req_add {
 
   $req->session->{cart} ||= [];
   my @cart = @{$req->session->{cart}};
+  my $started_empty = @cart == 0;
  
   my $found;
   for my $item (@cart) {
@@ -158,7 +159,8 @@ sub req_add {
   unless ($refresh) {
     $refresh = $ENV{SCRIPT_NAME};
   }
-  return BSE::Template->get_refresh($refresh, $req->cfg);
+
+  return _add_refresh($refresh, $req, $started_empty);
 }
 
 sub req_addsingle {
@@ -184,6 +186,7 @@ sub req_addsingle {
 
   $req->session->{cart} ||= [];
   my @cart = @{$req->session->{cart}};
+  my $started_empty = @cart == 0;
  
   my $found;
   for my $item (@cart) {
@@ -212,7 +215,7 @@ sub req_addsingle {
   unless ($refresh) {
     $refresh = $ENV{SCRIPT_NAME};
   }
-  return BSE::Template->get_refresh($refresh, $req->cfg);
+  return _add_refresh($refresh, $req, $started_empty);
 }
 
 sub req_addmultiple {
@@ -251,10 +254,11 @@ sub req_addmultiple {
       };
   }
   
+  my $started_empty = 0;
   if (keys %additions) {
     $req->session->{cart} ||= [];
     my @cart = @{$req->session->{cart}};
-
+    $started_empty = @cart == 0;
     for my $item (@cart) {
       $item->{options} eq '' or next;
 
@@ -292,7 +296,7 @@ sub req_addmultiple {
       $sep = '&';
     }
   }
-  return BSE::Template->get_refresh($refresh, $req->cfg);
+  return _add_refresh($refresh, $req, $started_empty);
 }
 
 sub req_checkout {
@@ -838,12 +842,6 @@ sub req_orderdone {
        $items[$item_index]{units} * $items[$item_index]{$what};
      },
      order => sub { escape_html($order->{$_[0]}) },
-     money =>
-     sub {
-       my ($func, $args) = split ' ', $_[0], 2;
-       $acts{$func} || return "<: money $_[0] :>";
-       return sprintf("%.02f", $acts{$func}->($args)/100);
-     },
      _format =>
      sub {
        my ($value, $fmt) = @_;
@@ -1467,6 +1465,54 @@ sub _validate_add {
   }
 
   return ( $product, $options, \%extras );
+}
+
+sub _add_refresh {
+  my ($refresh, $req, $started_empty) = @_;
+
+  my $cfg = $req->cfg;
+  if ($started_empty) {
+    my $base_url = $cfg->entryVar('site', 'url');
+    my $secure_url = $cfg->entryVar('site', 'secureurl');
+    if ($base_url ne $secure_url) {
+      my $debug = $cfg->entryBool('debug', 'logon_cookies', 0);
+
+      # magical refresh time
+      # which host are we on?
+      # first get info about the 2 possible hosts
+      my ($baseprot, $basehost, $baseport) = 
+	$base_url =~ m!^(\w+)://([\w.-]+)(?::(\d+))?!;
+      $baseport ||= $baseprot eq 'http' ? 80 : 443;
+      print STDERR "Base: prot: $baseprot  Host: $basehost  Port: $baseport\n"
+	if $debug;
+      
+      #my ($secprot, $sechost, $secport) = 
+      #  $securl =~ m!^(\w+)://([\w.-]+)(?::(\d+))?!;
+
+      my $onbase = 1;
+      # get info about the current host
+      my $port = $ENV{SERVER_PORT} || 80;
+      my $ishttps = exists $ENV{HTTPS} || exists $ENV{SSL_CIPHER};
+      print STDERR "\$ishttps: $ishttps\n" if $debug;
+      my $protocol = $ishttps ? 'https' : 'http';
+
+      if (lc $ENV{SERVER_NA152ME} ne lc $basehost
+	  || lc $protocol ne $baseprot
+	  || $baseport != $port) {
+	print STDERR "not on base host ('$ENV{SERVER_NAME}' cmp '$basehost' '$protocol cmp '$baseprot'  $baseport cmp $port\n" if $debug;
+	$onbase = 0;
+      }
+      my $url = $onbase ? $secure_url : $base_url;
+      my $finalbase = $onbase ? $base_url : $secure_url;
+      $refresh = $finalbase . $refresh unless $refresh =~ /^\w+:/;
+      print STDERR "Heading to $url to setcookie\n" if $debug;
+      $url .= "/cgi-bin/user.pl?setcookie=".$req->session->{_session_id};
+      $url .= "&r=".CGI::escape($refresh);
+      return BSE::Template->get_refresh($url, $cfg);
+    }
+  }
+
+  return BSE::Template->get_refresh($refresh, $cfg);
 }
 
 1;

@@ -38,6 +38,12 @@ whether to generate absolute URLs in article context.
 
 =back
 
+=item *
+
+adding an item to an empty cart now causing the current session cookie
+to be set on the non-secure side as well, to ensure that the cart
+state is in sync on both secure and non-secure URLs
+
 =back
 
 =head2 0.15_43
