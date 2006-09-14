@@ -28,6 +28,10 @@ with a fake article.
 added addsingle\d+ target to shop.pl to allowing individual items from
 the catalog page.
 
+=item *
+
+bump to 0.15_43
+
 =back
 
 =head2 0.15_42
