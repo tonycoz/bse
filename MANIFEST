@@ -191,6 +191,8 @@ site/cgi-bin/search.pl
 site/cgi-bin/shop.pl
 site/cgi-bin/user.pl
 site/data/stopwords.txt
+site/data/db/sql_statements.pkey
+site/data/db/sql_statements.data
 site/docs/BSE::UI::Affiliate.html
 site/docs/Generate.html
 site/docs/Generate::Article.html
@@ -322,6 +324,8 @@ site/templates/admin/locations/add.tmpl
 site/templates/admin/locations/delete.tmpl
 site/templates/admin/locations/edit.tmpl
 site/templates/admin/locations/list.tmpl
+site/templates/admin/locations/view.tmpl
+site/templates/admin/locations/view_sessions.tmpl
 site/templates/admin/order_detail.tmpl
 site/templates/admin/order_list.tmpl
 site/templates/admin/order_list_filled.tmpl
@@ -372,6 +376,8 @@ site/templates/admin/users/groupedit.tmpl
 site/templates/admin/users/grouplist.tmpl
 site/templates/admin/users/groupmembers.tmpl
 site/templates/admin/users/list.tmpl
+site/templates/admin/users/view.tmpl
+site/templates/admin/users/view_bookings.tmpl
 site/templates/admin/xbase.tmpl
 site/templates/affiliate.tmpl
 site/templates/base.tmpl

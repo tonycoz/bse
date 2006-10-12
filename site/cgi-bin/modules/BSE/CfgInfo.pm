@@ -4,7 +4,7 @@ use strict;
 use vars qw(@ISA @EXPORT_OK);
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(custom_class admin_base_url cfg_image_dir credit_card_class);
+@EXPORT_OK = qw(custom_class admin_base_url cfg_image_dir credit_card_class product_options);
 
 =head1 NAME
 
@@ -87,6 +87,30 @@ sub credit_card_class {
   require $file;
 
   return $class->new($cfg);
+}
+
+sub product_options {
+  my ($cfg) = @_;
+
+  my %options = %Constants::SHOP_PRODUCT_OPTS;
+
+  my %cfg_opts = $cfg->entriesCS('shop product options');
+  for my $option (keys %cfg_opts) {
+    my ($option_desc, @values) = split /;/, $cfg_opts{$option};
+    my %value_labels;
+    for my $value (@values) {
+      $value_labels{$value} = $cfg->entry("shop product option $option",
+					  $value, $value);
+    }
+    $options{$option} =
+      {
+       desc => $option_desc,
+       values => \@values,
+       labels => \%value_labels,
+      };
+  }
+
+  \%options;
 }
 
 1;

@@ -678,7 +678,9 @@ sub req_payment {
       require BSE::TB::SeminarSessions;
       my $session = BSE::TB::SeminarSessions->getByPkey($item->{session_id});
       eval {
-	$session->add_attendee($user, 0);
+	$session->add_attendee($user, 
+			       instructions => $order->{instructions},
+			       options => $item->{options});
       };
     }
   }
@@ -814,7 +816,8 @@ sub req_orderdone {
      sub { 
        if (++$item_index < @items) {
 	 $option_index = -1;
-	 @options = cart_item_opts($items[$item_index], 
+	 @options = cart_item_opts($req, 
+				   $items[$item_index], 
 				   $products[$item_index]);
 	 undef $sem_session;
 	 undef $location;

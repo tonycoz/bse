@@ -23,7 +23,9 @@
       <td><:ilocation street1:> <:ilocation street2:></td>
       <td><:ilocation suburb:></td>
       <td align="center"><:ifIlocation disabled:>Disabled<:or:><:eif:></td>
-      <td><:ifUserCan bse_location_edit:><a href="<:script:>?a_locedit=1&amp;id=<:ilocation id:>">Edit</a><:or:><:eif:> <:ifAnd [ifRemovable] [ifUserCan bse_location_delete]:><a href="<:script:>?a_locdelask=1&amp;id=<:ilocation id:>">Delete</a><:or:><:eif:></td>
+      <td><:ifUserCan bse_location_edit:><a href="<:script:>?a_locedit=1&amp;id=<:ilocation id:>">Edit</a><:or:><:eif:> 
+<:ifUserCan bse_location_view:><a href="<:script:>?a_locview=1&amp;id=<:ilocation id:>">View</a> <a href="<:script:>?a_locview=1&amp;id=<:ilocation id:>&amp;_t=sessions">Sessions</a><:or:><:eif:> 
+<:ifAnd [ifRemovable] [ifUserCan bse_location_delete]:><a href="<:script:>?a_locdelask=1&amp;id=<:ilocation id:>">Delete</a><:or:><:eif:></td>
     </tr>
 <:iterator end locations:>
 <:or Locations:>

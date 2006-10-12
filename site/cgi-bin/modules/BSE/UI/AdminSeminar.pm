@@ -6,8 +6,9 @@ use BSE::Util::DynSort qw(sorter tag_sorthelp);
 use BSE::Template;
 use BSE::Util::Iterate;
 use BSE::TB::Locations;
-use DevHelp::HTML;
+use DevHelp::HTML qw(:default popup_menu);
 use constant SECT_LOCATION_VALIDATION => "BSE Location Validation";
+use BSE::CfgInfo 'product_options';
 
 my %rights =
   (
@@ -16,6 +17,7 @@ my %rights =
    locadd => 'bse_location_add',
    locedit => 'bse_location_edit',
    locsave => 'bse_location_edit',
+   locview => 'bse_location_view',
    locdelask => 'bse_location_delete',
    locdelete => 'bse_location_delete',
 #    detail => 'bse_subscr_detail',
@@ -155,6 +157,8 @@ sub _loc_show_common {
   my %fields = BSE::TB::Location->valid_fields();
   my $cfg_fields = $req->configure_fields(\%fields, SECT_LOCATION_VALIDATION);
 
+  my $it = BSE::Util::Iterate->new;
+
   my %acts;
   %acts =
     (
@@ -166,9 +170,22 @@ sub _loc_show_common {
      error_img => [ \&tag_error_img, $req->cfg, $errors ],
      location => [ \&tag_hash, $location ],
      field => [ \&tag_field, $cfg_fields ],
+     $it->make_iterator([ \&iter_locsessions, $location ],
+			'session', 'sessions'),
     );
 
+  my $t = $req->cgi->param('_t');
+  if ($t && $t =~ /^\w+$/) {
+    $template .= "_$t";
+  }
+
   return $req->dyn_response($template, \%acts);
+}
+
+sub iter_locsessions {
+  my ($location) = @_;
+
+  $location->sessions_detail;
 }
 
 sub req_locedit {
@@ -217,6 +234,12 @@ sub req_locsave {
 				   "Location $location->{description} saved");
 
   return BSE::Template->get_refresh($r, $req->cfg);
+}
+
+sub req_locview {
+  my ($class, $req, $errors) = @_;
+
+  return $class->_loc_show_common($req, $errors, 'admin/locations/view');
 }
 
 sub req_locdelask {
@@ -326,6 +349,12 @@ sub req_addattendsession {
       ($req, { seminar_id => "Unknown seminar_id" });
   my $msg = $req->message($errors);
 
+  my $avail_options = product_options($req->cfg);
+
+  my @sem_options = map +{ id => $_, %{$avail_options->{$_}} },
+    split /,/, $seminar->{options};
+  my $current_option;
+
   my @sessions = $seminar->session_info;
   my %user_booked = map { $_=>1 } 
     $siteuser->seminar_sessions_booked($seminar_id);
@@ -344,9 +373,31 @@ sub req_addattendsession {
      message => $msg,
      error_img => [ \&tag_error_img, $req->cfg, $errors ],
      $it->make_iterator(undef, 'session', 'sessions', \@sessions),
+     $it->make_iterator(undef, 'option', 'options', \@sem_options, 
+			undef, undef, \$current_option),
+     option_popup => [ \&tag_option_popup, $req->cgi, \$current_option ],
     );
   
   return $req->dyn_response('admin/addattendee2.tmpl', \%acts);
+}
+
+sub tag_option_popup {
+  my ($cgi, $roption) = @_;
+
+  $$roption 
+    or return '** popup_option not in options iterator **';
+
+  my $option = $$roption;
+
+  my @extras;
+  if ($cgi->param($option->{id})) {
+    push @extras, -default => $cgi->param($option->{id});
+  }
+
+  return popup_menu(-name => $option->{id},
+		    -values => $option->{values},
+		    -labels => $option->{labels},
+		    @extras);
 }
 
 sub req_addattendsave {
@@ -389,8 +440,30 @@ sub req_addattendsave {
     or return $class->req_addattendsession
       ($req, { session_id => "Unknown session_id" });
 
+  # accumulate the options
+  my %errors;
+  my @options;
+  for my $opt_name (split /,/, $seminar->{options}) {
+    my $value = $cgi->param($opt_name);
+    defined $value
+      or return $class->req_addattendsession
+	($req, { opt_name => "Missing value for $opt_name" });
+    
+    push @options, $value;
+  }
+
+  my %more;
+  for my $name (qw/customer_instructions support_notes roll_present/) {
+    my $value = $cgi->param($name);
+    $value and $more{$name} = $value;
+  }
+  $more{roll_present} ||= 0;
+
   eval {
-    $session->add_attendee($siteuser, 1);
+    $session->add_attendee($siteuser, 
+			   %more,
+			   options => join(',', @options)
+			  );
   };
   if ($@) {
     if ($@ =~ /duplicate/i) {

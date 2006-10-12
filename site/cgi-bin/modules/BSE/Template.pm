@@ -101,6 +101,16 @@ sub get_response {
 sub get_refresh {
   my ($class, $url, $cfg) = @_;
 
+
+  return
+    {
+     content => '',
+     headers => [ 
+		 "Location: $url",
+		 "Status: 302"
+		],
+    };
+
   # the commented out headers were meant to help Opera, but they didn't
   return
     {
@@ -112,16 +122,6 @@ sub get_refresh {
 		#qq/Expires: Thu, 01 Jan 1970 00:00:00 GMT/
 	      ],
     };
-
-  return
-    {
-     content => '',
-     headers => [ 
-		 "Location: $url",
-		 "Status: 302"
-		],
-    };
-
 }
 
 sub template_dirs {

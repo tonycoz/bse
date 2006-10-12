@@ -1,0 +1,38 @@
+--
+name: bse_siteuserSeminarBookingsDetail
+sql_statement: <<SQL
+select ar.*, pr.*, se.*, ss.*, sb.*,
+      lo.description as loc_description,
+      lo.room as loc_room,
+      lo.street1 as loc_street1,
+      lo.street2 as loc_street2,
+      lo.suburb as loc_suburb,
+      lo.state as loc_state,
+      lo.country as loc_country,
+      lo.postcode as loc_postcode,
+      lo.public_notes as loc_public_notes,
+      lo.bookings_name as loc_bookings_name,
+      lo.bookings_phone as loc_bookings_phone,
+      lo.bookings_fax as loc_bookings_fax,
+      lo.bookings_url as loc_bookings_url
+  from article ar, product pr, bse_seminars se, bse_seminar_sessions ss,
+       bse_locations lo, bse_seminar_bookings sb
+  where sb.siteuser_id = ?
+    and sb.session_id = ss.id
+    and ss.seminar_id = ar.id
+    and ss.seminar_id = pr.articleId
+    and ss.seminar_id = se.seminar_id
+    and ss.location_id = lo.id
+SQL
+
+name: bse_locationSessionDetail
+sql_statement: <<SQL
+select ar.*, pr.*, se.*, ss.*,
+   ss.id as session_id
+  from article ar, product pr, bse_seminars se, bse_seminar_sessions ss
+  where ss.location_id = ?
+    and ss.seminar_id = ar.id
+    and ss.seminar_id = pr.articleId
+    and ss.seminar_id = se.seminar_id
+  order by ss.when_at desc
+SQL

@@ -752,6 +752,10 @@ create table bse_seminar_bookings (
   siteuser_id integer not null,
   roll_present integer not null default 0,
 
+  options varchar(255) not null default '',
+  customer_instructions text not null default '',
+  support_notes text not null default '',
+
   primary key(session_id, siteuser_id),
   index (siteuser_id)
 );

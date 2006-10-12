@@ -6,6 +6,7 @@ use HTML::Entities;
 use BSE::Template;
 use BSE::Util::Iterate;
 use DevHelp::HTML;
+use BSE::CfgInfo 'product_options';
 
 my %money_fields =
   (
@@ -66,6 +67,8 @@ sub tag_hash_mbcs {
 sub low_edit_tags {
   my ($self, $acts, $req, $article, $articles, $msg, $errors) = @_;
 
+  my $product_opts = product_options($req->cfg);
+
   my $cfg = $req->cfg;
   my $mbcs = $cfg->entry('html', 'mbcs', 0);
   my $tag_hash = $mbcs ? \&tag_hash_mbcs : \&hash_tag;
@@ -75,7 +78,7 @@ sub low_edit_tags {
      product => [ $tag_hash, $article ],
      $self->SUPER::low_edit_tags($acts, $req, $article, $articles, $msg,
 				$errors),
-     alloptions => join(",", sort keys %Constants::SHOP_PRODUCT_OPTS),
+     alloptions => join(",", sort keys %$product_opts),
      $it->make_iterator
      ([ \&iter_subs, $req ], 'subscription', 'subscriptions'),
     );
@@ -123,9 +126,11 @@ sub _validate_common {
       $errors->{$col} = "$money_fields{$col} invalid";
     }
   }
-  
+
   if (defined $data->{options}) {
-    my @bad_opts =grep !$Constants::SHOP_PRODUCT_OPTS{$_}, 
+    my $avail_options = product_options($self->{cfg});
+  
+    my @bad_opts = grep !$avail_options->{$_}, 
       split /,/, $data->{options};
     if (@bad_opts) {
       $errors->{options} = "Bad product options '". join(",", @bad_opts)."' entered";

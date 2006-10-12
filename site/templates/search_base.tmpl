@@ -48,7 +48,7 @@
       <td><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><input type="checkbox" name="match_all" value="1" <:ifCgi match_all:>checked="checked"<:or:><:eif:> /><b> Match all terms</b></font></td>
     </tr>
   </table>
-<:ifCfg basic ajax:>
+<:if Ajax:>
 <script>
 new Form.Element.Observer($('q'), 1.5, 
    function(term) {
@@ -69,7 +69,7 @@ new Form.Element.Observer($('q'), 1.5,
        });
    });
 </script>
-<:or:><:eif:>
+<:or Ajax:><:eif Ajax:>
 </form>
 <div id="results">
 <:include include/search_results.tmpl:>

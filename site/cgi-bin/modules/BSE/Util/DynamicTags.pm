@@ -371,7 +371,8 @@ sub _cart {
     my $product = Products->getByPkey($item->{productId});
     my $extended = $product->{retailPrice} * $item->{units};
     my $link = $product->{link};
-    $link =~ /^\w+:/ or $link = $self->{req}->cfg->entryErr('site', 'url');
+    $link =~ /^\w+:/ 
+      or $link = $self->{req}->cfg->entryErr('site', 'url') . $link;
     push @cart,
       {
        ( map { $_ => $product->{$_} } $product->columns ),

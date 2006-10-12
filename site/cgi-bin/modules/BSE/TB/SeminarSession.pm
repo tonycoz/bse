@@ -69,13 +69,30 @@ sub set_roll_present {
   BSE::DB->run(updateSessionRollPresent => $present, $self->{id}, $userid);
 }
 
-sub add_attendee {
-  my ($self, $user, $present) = @_;
+my @attendee_attributes = 
+  qw/roll_present options customer_instructions support_notes/;
+my %attendee_defaults =
+  (
+   roll_present => 0,
+   options => '',
+   customer_instructions => '',
+   support_notes => '',
+  );
 
-  $present ||= 0;
+sub add_attendee {
+  my ($self, $user, %attr) = @_;
+
+  my %work_attr = %attendee_defaults;
+  for my $key (keys %attr) {
+    exists $work_attr{$key} or 
+      Carp::confess("Unknown attendee attribute '$key'");
+    $work_attr{$key} = $attr{$key};
+  }
+
   my $user_id = ref $user ? $user->{id} : $user;
 
-  BSE::DB->run(seminarSessionBookUser => $self->{id}, $user_id, $present);
+  BSE::DB->run(seminarSessionBookUser => $self->{id}, $user_id, 
+	       @work_attr{@attendee_attributes});
 }
 
 1;

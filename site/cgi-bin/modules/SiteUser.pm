@@ -425,4 +425,10 @@ sub allow_html_email {
   !$self->{textOnlyMail};
 }
 
+sub seminar_bookings_detail {
+  my ($self) = @_;
+
+  BSE::DB->query(bse_siteuserSeminarBookingsDetail => $self->{id});
+}
+
 1;

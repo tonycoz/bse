@@ -3,8 +3,9 @@
 <p>
 | <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |
 <a href="/cgi-bin/admin/siteusers.pl">Site Members</a> |
-<a href="mailto:<:siteuser email:>">Email</a>
-| <a href="/cgi-bin/admin/siteusers.pl?a_edit=1&amp;id=<:siteuser id:>">Edit User</a> |</p>
+<a href="mailto:<:siteuser email:>">Email</a> |
+<:ifUserCan bse_members_user_edit:><a href="/cgi-bin/admin/siteusers.pl?a_edit=1&amp;id=<:siteuser id:>">Edit User</a> |<:or:><:eif:>
+<a href="/cgi-bin/admin/siteusers.pl?a_view=1&amp;id=<:siteuser id:>">User Details</a> |</p>
 
 <:ifMessage:>
 <p><b><:message:></b></p>

@@ -63,4 +63,10 @@ sub is_removable {
   return 1; # this will change
 }
 
+sub sessions_detail {
+  my ($self) = @_;
+
+  BSE::DB->query(bse_locationSessionDetail => $self->{id});
+}
+
 1;

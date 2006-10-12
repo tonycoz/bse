@@ -1,0 +1,33 @@
+<:wrap admin/xbase.tmpl title=>"Site Member Seminar Bookings":>
+<h1>Site Member Seminar Bookings</h1>
+<p>
+| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |
+<a href="/cgi-bin/admin/siteusers.pl">Site Members</a> |
+<a href="mailto:<:siteuser email:>">Email</a> |
+<:ifUserCan bse_members_user_edit:><a href="/cgi-bin/admin/siteusers.pl?a_edit=1&amp;id=<:siteuser id:>">Edit User</a> |<:or:><:eif:>
+<a href="/cgi-bin/admin/siteusers.pl?a_view=1&amp;id=<:siteuser id:>">User Details</a> |
+<a href="/cgi-bin/admin/siteusers.pl?a_view=1&amp;id=<:siteuser id:>&amp;_t=orders">Orders</a> |</p>
+
+<:ifMessage:>
+<p><b><:message:></b></p>
+<:or:><:eif:> 
+
+      <table border=0 cellpadding="6" cellspacing="1" width="100%">
+        <tr bgcolor="#FFFFFF"> 
+          <th>Id</th>
+          <th width="50%">Seminar</th>
+          <th width="50%">Location</th>
+          <th>Time</th>
+          <th>Date</th>
+        </tr>
+        <:iterator begin bookings:> 
+        <tr bgcolor="#FFFFFF"> 
+          <td align="center" nowrap><a href="/cgi-bin/admin/add.pl?id=<:booking seminar_id:>"><:booking 
+            seminar_id:></a></td>
+          <td><:booking title:></td>
+          <td><a href="/cgi-bin/admin/admin_seminar.pl?a_locview=1&amp;id=<:booking location_id:>"><:booking loc_description:></a></td>
+          <td nowrap="nowrap"><:date "%I:%M %p" booking when_at:></td>
+          <td nowrap="nowrap"><:date booking when_at:></td>
+        </tr>
+        <:iterator end bookings:> 
+      </table>

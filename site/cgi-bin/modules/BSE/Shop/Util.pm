@@ -36,7 +36,8 @@ sub shop_cart_tags {
      sub { 
        if (++$item_index < @$cart) {
 	 $option_index = -1;
-	 @options = cart_item_opts($cart->[$item_index], 
+	 @options = cart_item_opts($req,
+				   $cart->[$item_index], 
 				   $cart_prods->[$item_index]);
 	 undef $sem_session;
 	 undef $location;
@@ -120,13 +121,15 @@ sub tag_location {
 }
 
 sub cart_item_opts {
-  my ($cart_item, $product) = @_;
+  my ($req, $cart_item, $product) = @_;
+
+  my $avail_options = product_options($req->cfg);
 
   my @options = ();
   my @values = split /,/, $cart_item->{options};
   my @ids = split /,/, $product->{options};
   for my $opt_index (0 .. $#ids) {
-    my $entry = $SHOP_PRODUCT_OPTS{$ids[$opt_index]};
+    my $entry = $avail_options->{$ids[$opt_index]};
     my $option = {
 		  id=>$ids[$opt_index],
 		  value=>$values[$opt_index],

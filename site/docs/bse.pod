@@ -10,6 +10,45 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_45
+
+Note: you need to cd to the util directory and run:
+
+  perl loaddata.pl ../data/db
+
+from this release onwards.
+
+=over
+
+=item *
+
+partial implementation of non-shop seminar booking (database changes,
+modifying the shop to fill in the new booking fields)
+
+=item *
+
+partial implementation of Seminar Administration (access checks, extra
+fields on the booking form, view member detail, display of booked
+seminars for a user)
+
+=item *
+
+added view location target (a_locview) to admin_seminar.pl
+
+=item *
+
+added session list for a given location (available to all location
+displays, including edit, view, implemented as a_locview with
+_t=sessions)
+
+=item *
+
+new shop product options can now be configured in bse.cfg, so you
+don't need to touch bse.cfg.  I'll document this later, see
+modules/BSE/CfgInfo.pm to see the code that does the work
+
+=back
+
 =head2 0.15_44
 
 =over

@@ -203,6 +203,8 @@ sub tag_admin {
 sub baseActs {
   my ($self, $articles, $acts, $article, $embedded) = @_;
 
+  my $cfg = $self->{cfg} || BSE::Cfg->new;
+
   # used to generate the list (or not) of children to this article
   my $child_index = -1;
   my @children = $articles->listedChildren($article->{id});
@@ -238,6 +240,9 @@ sub baseActs {
 
   my $top = $self->{top} || $article;
   my $abs_urls = $self->abs_urls($article);
+
+  my $dynamic = $self->{force_dynamic}
+    || (UNIVERSAL::isa($top, 'Article') ? $top->is_dynamic : 0);
 
   my @stepkids;
   my @allkids;
@@ -531,13 +536,12 @@ HTML
      BSE::Util::Tags->make_iterator(\@allkids, 'allkid', 'allkids', \$allkids_index),
      BSE::Util::Tags->make_iterator(\@stepparents, 'stepparent', 'stepparents'),
      top => [ \&tag_top, $self, $article ],
-     ifDynamic => [ \&tag_ifDynamic, $self, $top ],
+     ifDynamic => $dynamic,
      ifAccessControlled => [ \&tag_ifAccessControlled, $article ],
     );
 
   if ($abs_urls) {
     my $oldurl = $acts{url};
-    my $cfg = $self->{cfg} || BSE::Cfg->new;
     my $urlbase = $cfg->entryErr('site', 'url');
     $acts{url} =
       sub {
@@ -550,6 +554,11 @@ HTML
         return $value;
       };
   }
+  if ($dynamic && $cfg->entry('basic', 'ajax', 0)) {
+    # make sure the ajax tags are left until we do dynamic replacement
+    delete @acts{qw/ajax ifAjax/};
+  }
+
   return %acts;
 }
 

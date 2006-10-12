@@ -24,6 +24,7 @@ use BSE::Request;
 use BSE::WebUtil 'refresh_to_admin';
 use DevHelp::HTML;
 use BSE::Arrows;
+use BSE::CfgInfo 'product_options';
 
 my $req = BSE::Request->new;
 my $cfg = $req->cfg;
@@ -365,6 +366,7 @@ sub product_form {
 #    @images = $imageEditor->images()
 #      if $product->{id};
   my $image_index;
+  my $avail_options = product_options($cfg);
 
   my $blank = qq!<img src="$IMAGES_URI/trans_pixel.gif" width="17" height="13" border="0" align="absbottom" />!;
 
@@ -389,7 +391,7 @@ sub product_form {
      ifImage => sub { $product->{imageName} },
      hiddenNote => sub { $product->{listed} ? "&nbsp;" : "Hidden" },
      alloptions => 
-     sub { CGI::escapeHTML(join(',', sort keys %SHOP_PRODUCT_OPTS)) },
+     sub { CGI::escapeHTML(join(',', sort keys %$avail_options)) },
      templates => 
      sub {
        return CGI::popup_menu(-name=>'template', -values=>\@templates,
@@ -601,11 +603,13 @@ sub order_list_incomplete {
 sub cart_item_opts {
   my ($cart_item, $product) = @_;
 
+  my $avail_options = product_options($cfg);
+
   my @options = ();
   my @values = split /,/, $cart_item->{options};
   my @ids = split /,/, $product->{options};
   for my $opt_index (0 .. $#ids) {
-    my $entry = $SHOP_PRODUCT_OPTS{$ids[$opt_index]};
+    my $entry = $avail_options->{$ids[$opt_index]};
     my $option = {
 		  id=>$ids[$opt_index],
 		  value=>$values[$opt_index],

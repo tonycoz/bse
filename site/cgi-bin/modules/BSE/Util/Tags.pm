@@ -274,6 +274,9 @@ sub static {
      # report conflicts with a tag name used within reports
      subreport => [ \&tag_report, $cfg ],
 
+     ajax => '',
+     ifAjax => 0,
+
      _format => 
      sub {
        my ($value, $fmt) = @_;
@@ -428,6 +431,8 @@ sub basic {
      dynreplace => \&tag_replace,
      dyntoday => \&tag_today,
      dynreport => [ \&tag_report, $cfg ],
+     ajax => [ \&tag_ajax, $cfg ],
+     ifAjax => [ \&tag_ifAjax, $cfg ],
     );
 }
 
@@ -853,6 +858,67 @@ sub tag_report {
   }
 
   return BSE::Template->replace($html, $cfg, \%acts);
+}
+
+sub _if_ajax {
+  my ($cfg) = @_;
+
+  return
+    unless $cfg->entry('basic', 'ajax', 0);
+
+  return 1
+    if $cfg->entry('basic', 'allajax', 0);
+
+  my $ua = $ENV{HTTP_USER_AGENT};
+
+  my %fail_entries = $cfg->entries('nonajax user agents');
+  for my $re (values %fail_entries) {
+    return
+      if $ua =~ /$re/;
+  }
+
+  my %entries = $cfg->entries('ajax user agents');
+  for my $re (values %entries) {
+    return 1
+      if $ua =~ /$re/;
+  }
+
+  return;
+}
+
+sub tag_ifAjax {
+  my ($cfg) = @_;
+
+  return _if_ajax($cfg) ? 1 : 0;
+}
+
+sub tag_ajax {
+  my ($cfg, $args, $acts, $tag_name, $templater) = @_;
+
+  return '' unless _if_ajax($cfg);
+  
+  my ($name, $arg_rest) = split ' ', $args, 2;
+ 
+  my $defn = $cfg->entry('ajax definitions', $name)
+    or return "** unknown ajax definition $name **";
+  my ($type, $rest) = split ':', $defn, 2;
+
+  if ($type eq 'inline') {
+    # just replace $1, $2, etc in the rest of the text
+    my @args = DevHelp::Tags->get_parms($arg_rest, $acts, $templater);
+    my $macro = $rest;
+    eval {
+      $macro =~ s/(\$([1-9\$]))/
+	$2 eq '$' ? '$' : $2 <= @args 
+         ? die "** not enough parameters for ajax definition $name **\n" : $args[$1-1]/xge;
+    };
+    $@ and return $@;
+
+    return $macro;
+  }
+  else {
+    return "** invalid type $type for ajax definition $name **";
+  }
 }
 
 1;

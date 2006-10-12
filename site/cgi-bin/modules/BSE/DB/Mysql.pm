@@ -448,7 +448,7 @@ SQL
 select * from bse_seminar_bookings where session_id = ?
 SQL
    seminarSessionBookUser => <<SQL,
-insert bse_seminar_bookings values(?,?,?)
+insert bse_seminar_bookings values(?,?,?,?,?,?)
 SQL
    seminarSessionRollCallEntries => <<SQL,
 select bo.roll_present, su.id, su.userId, su.name1, su.name2, su.email

@@ -1,6 +1,6 @@
 package BSE::AdminSiteUsers;
 use strict;
-use base qw(BSE::UI::SiteuserCommon);
+use base qw(BSE::UI::AdminDispatch BSE::UI::SiteuserCommon);
 use BSE::Util::Tags qw(tag_error_img tag_hash);
 use DevHelp::HTML;
 use SiteUsers;
@@ -13,42 +13,34 @@ use constant SITEUSER_GROUP_SECT => 'BSE Siteuser groups validation';
 
 my %actions =
   (
-   list=>1,
-   edit=>1,
-   save=>1,
-   addform=>1,
-   add=>1,
-   grouplist=>1,
-   addgroupform=>1,
-   addgroup => 1,
-   editgroup=>1,
-   savegroup => 1,
-   deletegroupform =>1,
-   deletegroup=>1,
-   groupmemberform => 1,
-   savegroupmembers => 1,
+   list		     => 'bse_members_user_list',
+   edit		     => 'bse_members_user_edit',
+   save		     => 'bse_members_user_edit',
+   addform	     => 'bse_members_user_add',
+   add		     => 'bse_members_user_add',
+   view              => 'bse_members_user_view',
+   grouplist	     => 'bse_members_group_list',
+   addgroupform	     => 'bse_members_group_add',
+   addgroup	     => 'bse_members_group_add',
+   editgroup	     => 'bse_members_group_edit',
+   savegroup	     => 'bse_members_group_edit',
+   deletegroupform   => 'bse_members_group_delete',
+   deletegroup	     => 'bse_members_group_delete',
+   groupmemberform   => 'bse_members_user_edit',
+   savegroupmembers  => 'bse_members_user_edit',
   );
 
 my @donttouch = qw(id userId password email confirmed confirmSecret waitingForConfirmation flags affiliate_name previousLogon); # flags is saved separately
 my %donttouch = map { $_, $_ } @donttouch;
 
-sub dispatch {
-  my ($class, $req) = @_;
+sub default_action { 'list' }
 
-  $req->check_admin_logon()
-    or return BSE::Template->get_refresh($req->url('logon'), $req->cfg);
+sub actions {
+  \%actions
+}
 
-  my $cgi = $req->cgi;
-  my $action;
-  for my $check (keys %actions) {
-    if ($cgi->param("a_$check")) {
-      $action = $check;
-      last;
-    }
-  }
-  $action ||= 'list';
-  my $method = "req_$action";
-  $class->$method($req);
+sub rights {
+  \%actions
 }
 
 sub flags {
@@ -175,6 +167,18 @@ sub tag_ifUserMember {
 sub req_edit {
   my ($class, $req, $msg, $errors) = @_;
 
+  $class->_display_user($req, $msg, $errors, 'admin/users/edit');
+}
+
+sub req_view {
+  my ($class, $req, $msg, $errors) = @_;
+
+  $class->_display_user($req, $msg, $errors, 'admin/users/view');
+}
+
+sub _display_user {
+  my ($class, $req, $msg, $errors, $template) = @_;
+
   my $cgi = $req->cgi;
   my $id = $cgi->param('id');
   defined $id
@@ -231,13 +235,20 @@ sub req_edit {
      $it->make_iterator(\&iter_groups, 'group', 'groups', 
 			undef, undef, undef, \$current_group),
      ifMember => [ \&tag_ifUserMember, $siteuser, \$current_group ],
+     $it->make_iterator([ \&iter_seminar_bookings, $siteuser],
+			'booking', 'bookings'),
     );  
 
-  my $template = 'admin/users/edit';
   my $t = $req->cgi->param('_t');
   $template .= "_$t" if defined($t) && $t =~ /^\w+$/;
 
   return BSE::Template->get_response($template, $req->cfg, \%acts);
+}
+
+sub iter_seminar_bookings {
+  my ($siteuser) = @_;
+
+  return $siteuser->seminar_bookings_detail;
 }
 
 sub req_save {

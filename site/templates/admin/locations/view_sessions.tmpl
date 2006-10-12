@@ -1,0 +1,35 @@
+<:wrap admin/xbase.tmpl title=>"View Location Sessions":>
+<h1>View Location Sessions: <:location description:></h1>
+<p>
+| <a href="/cgi-bin/admin/menu.pl">Admin menu</a>
+<:if UserCan bse_location_list :>
+| <a href="<:script:>?a_loclist=1">List Locations</a><:or UserCan:><:eif UserCan:>
+| <a href="<:script:>?a_locview=1&amp;id=<:location id:>">Location Detail</a> |</p>
+<:ifMessage:>
+<p><b><:message:></b></p>
+<:or:><:eif:> 
+
+<table>
+  <tr>
+   <th>Seminar</th>
+   <th>Date</th>
+   <th>Time</th>
+   <th></th>
+  </tr>
+<:if Sessions:>
+<:iterator begin sessions:>
+  <tr>
+   <td><a href="/cgi-bin/admin/add.pl?id=<:session seminar_id:>"><:session title:></a></td>
+   <td><:date session when_at:></td>
+   <td><:date "%I:%M %P" session when_at:></td>
+   <td>
+     <a href="/cgi-bin/admin/add.pl?a_semsessionbookings=1&amp;id=<:session seminar_id:>&amp;session_id=<:session session_id:>">Bookings</a>
+   </td>
+  </tr>
+<:iterator end sessions:>
+<:or Sessions:>
+  <tr>
+    <td colspan="4" align="center">No Sessions at this location</td>
+  </tr>
+<:eif Sessions:>
+</table>

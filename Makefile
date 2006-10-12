@@ -1,4 +1,4 @@
-VERSION=0.15_44
+VERSION=0.15_45
 DISTNAME=bse-$(VERSION)
 DISTBUILD=$(DISTNAME)
 DISTTAR=../$(DISTNAME).tar
@@ -94,10 +94,12 @@ site/cgi-bin/modules/BSE/Version.pm: Makefile
 testinst: distdir
 	perl localinst.perl $(DISTBUILD)
 	perl -MExtUtils::Command -e rm_rf $(DISTBUILD)
+	cd `perl -lne 'do { print $$1; exit; } if /^base_dir\s*=\s*(.*)/' test.cfg`/util ; perl loaddata.pl ../data/db
 
 testfiles: distdir
 	perl localinst.perl $(DISTBUILD) leavedb
 	perl -MExtUtils::Command -e rm_rf $(DISTBUILD)
+	cd `perl -lne 'do { print $$1; exit; } if /^base_dir\s*=\s*(.*)/' test.cfg`/util ; perl loaddata.pl ../data/db
 
 test: testinst
 	perl -MTest::Harness=runtests -Isite/cgi-bin/modules -It -e 'runtests glob q!t/*.t!'

@@ -9,8 +9,10 @@ require Exporter;
 sub refresh_to {
   my ($where) = @_;
 
-  print "Content-Type: text/html\n";
-  print qq!Refresh: 0; url=$where\n\n<html></html>\n!;
+  #print "Content-Type: text/html\n";
+  #print qq!Refresh: 0; url=$where\n\n<html></html>\n!;
+  print "Status: 302\n";
+  print "Location: $where\n\n";
 }
 
 sub refresh_to_admin {
