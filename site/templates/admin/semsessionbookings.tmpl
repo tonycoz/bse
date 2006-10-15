@@ -20,6 +20,10 @@
     <td><a href="/cgi-bin/admin/siteusers.pl?a_edit=1&amp;id=<:bookeduser id:>"><:bookeduser userId:></a></td>
     <td><:bookeduser name1:> <:bookeduser name2:></td>
     <td><a href="mailto:<:bookeduser email:>"><:bookeduser email:></a></td>
+    <td>
+      <a href="/cgi-bin/admin/admin_seminar.pl?a_cancelbookingconfirm=1&amp;session_id=<:session id:>&amp;siteuser_id=<:bookeduser id:>">Cancel Booking</a>
+      <a href="/cgi-bin/admin/admin_seminar.pl?a_editbooking=1&amp;session_id=<:session id:>&amp;siteuser_id=<:bookeduser id:>">Edit</a>
+    </td>
   </tr>
 <:iterator end bookedusers:>
 <:or Bookedusers:>

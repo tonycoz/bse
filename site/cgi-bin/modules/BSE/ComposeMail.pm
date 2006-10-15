@@ -12,10 +12,49 @@ BSE::ComposeMail - compose mail for BSE
 =head1 SYNOPSIS
 
   # make an object
-  my $mailer = BSE::ComposeMail->new($cfg);
+  my $mailer = BSE::ComposeMail->new(cfg => $cfg);
 
   # simple stuff
-  $mailer->send(to=>$  
+  # to can either be an email (assumed to be a sysadmin email)
+  # or a member object (used to determine text or text and html)
+  # but this text vs mixed is unimplemented for now
+  $mailer->send(to       => $member_object,
+                subject  => $subject,
+                template => $template,
+                acts     => \%acts,
+                # from   => $from,
+                # html_template => $html_template # def $template."_html"
+                ) or die $mailer->errstr;
+
+  # more complex
+  $mailer->start( ... parameters as above ...);
+
+  # attach a file
+  my $cidurl = $mailer->attach(file => $filename,
+                               # disposition => 'attachment',
+                               # display     => $filename,
+                               # type        => 'application/octet-stream'
+                               ) or die $mailer->errstr;
+  # display required unless disposition set to other than "attachment"
+  my $cidurl2 = $mailer->attach(fh => $fh,
+                                display => $display_filename,
+                                ...);
+  my $cidurl3 = $mailer->attach(data => $data,
+                                display => $display_filename,
+                                ...);
+
+  # encrypt and sign
+  $mailer->encrypt_body(signing_id => $id,
+                        passphrase => $passphrase);
+
+  # encrypt unsigned
+  $mailer->encrypt_body(signing_id => '');
+
+  # encrypt signed based on the [shop].crypt_signing_id
+  $mailer->encrypt_body();
+
+  # and send it
+  $mailer->done() or die $mailer->errstr;
 
 =cut
 

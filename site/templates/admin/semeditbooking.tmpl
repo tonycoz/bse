@@ -1,0 +1,54 @@
+<:wrap admin/xbase.tmpl title=>"Edit Seminar Booking":>
+<h1>Edit Seminar Booking</h1>
+<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | </p>
+<:ifMessage:>
+<p><b><:message:></b></p>
+<:or:><:eif:>
+<form action="<:script:>" method="post">
+<input type="hidden" name="a_savebooking" value="1" />
+<input type="hidden" name="session_id" value="<:session id:>" />
+<input type="hidden" name="siteuser_id" value="<:siteuser id:>" />
+<:ifCgi r:><input type="hidden" name="r" value="<:cgi r:>" /><:or:><:eif:>
+<table>
+  <tr>
+    <th>Seminar:</th>
+    <td><a href="<:seminar link:>"><:seminar title:></a></td>
+  </tr>
+  <tr>
+    <th>User:</th>
+    <td><a href="/cgi-bin/admin/siteusers.pl?id=<:siteuser id:>&amp;a_view=1"><:siteuser userId:></a> ( <:siteuser name1:> <:siteuser name2:> )</td>
+  </tr>
+  <tr>
+    <th>Location:</th>
+    <td><a href="/cgi-bin/admin/admin_seminar.pl?a_locview=1&amp;<:location id:>"><:location description:></a></td>
+  </tr>
+  <tr>
+    <th>Date:</th>
+    <td><:date session when_at:></td>
+  </tr>
+  <tr>
+    <th>Time:</th>
+    <td><:date "%I:%M %P" session when_at:></td>
+  </tr>
+<:iterator begin options:>
+  <tr>
+   <th><:option desc:></th>
+   <td><:option_popup:></td>
+   <td></td>
+  </tr>
+<:iterator end options:>
+  <tr>
+   <th>Customer<br />Instructions:</th>
+   <td><textarea name="customer_instructions" cols="70" rows="10" /><:old customer_instructions booking customer_instructions:></textarea></td>
+   <td><:error_img customer_instructions:></td>
+  </tr>
+  <tr>
+   <th>Support<br />Notes:</th>
+   <td><textarea name="support_notes" cols="70" rows="10" /><:old support_notes booking support_notes:></textarea></td>
+   <td><:error_img support_notes:></td>
+  </tr>
+  <tr>
+    <td colspan="3"><input type="submit" name="a_savebooking" value="Save Booking" /></td>
+  </tr>
+</table>
+</form>

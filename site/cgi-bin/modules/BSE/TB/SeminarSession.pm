@@ -21,6 +21,14 @@ sub is_removable {
   return $self->{when_at} gt now_sqldatetime();
 }
 
+sub seminar {
+  my ($self) = @_;
+
+  require BSE::TB::Seminars;
+
+  return BSE::TB::Seminars->getByPkey($self->{seminar_id});
+}
+
 sub location {
   my ($self) = @_;
   
@@ -93,6 +101,49 @@ sub add_attendee {
 
   BSE::DB->run(seminarSessionBookUser => $self->{id}, $user_id, 
 	       @work_attr{@attendee_attributes});
+}
+
+sub get_booking {
+  my ($self, $user) = @_;
+
+  my $siteuser_id = ref $user ? $user->{id} : $user;
+
+  my @result = BSE::DB->query
+    (bse_getSessionBookingForUser => $self->{id}, $siteuser_id)
+    or return;
+
+  return $result[0];
+}
+
+sub remove_booking {
+  my ($self, $user) = @_;
+
+  my $siteuser_id = ref $user ? $user->{id} : $user;
+
+  my $result = BSE::DB->run
+    (bse_cancelSessionBookingForUser => $self->{id}, $siteuser_id);
+  $result
+    or die "No such booking\n";
+}
+
+sub update_booking {
+  my ($self, $user, %attr) = @_;
+
+  my $have_all = !grep !exists$attr{$_}, @attendee_attributes;
+  unless ($have_all) {
+    my $old_booking = $self->get_booking($user)
+      or die "No such booking\n";
+    %attr = ( %$old_booking, %attr );
+  }
+  
+  my $siteuser_id = ref $user ? $user->{id} : $user;
+
+  BSE::DB->run(bse_updateSessionBookingForUser =>
+	       @attr{@attendee_attributes},
+	       $self->{id}, $siteuser_id) 
+      or die "No such booking\n";
+
+  return 1;
 }
 
 1;

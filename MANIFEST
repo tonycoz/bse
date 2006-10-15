@@ -309,6 +309,7 @@ site/templates/admin/edit_seminar.tmpl
 site/templates/admin/edit_semsessions.tmpl
 site/templates/admin/edit_semsessadd.tmpl
 site/templates/admin/edit_steps.tmpl
+site/templates/admin/error.tmpl
 site/templates/admin/filelist.tmpl
 site/templates/admin/grouplist.tmpl
 site/templates/admin/helpicon.tmpl	Help icon template for admin templates
@@ -339,6 +340,8 @@ site/templates/admin/registeremail.tmpl
 site/templates/admin/reports/list.tmpl
 site/templates/admin/reports/prompt.tmpl
 site/templates/admin/reports/show1.tmpl
+site/templates/admin/semcancelbooking.tmpl
+site/templates/admin/semeditbooking.tmpl
 site/templates/admin/semsessionbookings.tmpl
 site/templates/admin/semsessiondel.tmpl
 site/templates/admin/semsessionedit.tmpl
@@ -442,6 +445,9 @@ site/templates/sidebar/logon.tmpl
 site/templates/test/children.tmpl
 site/templates/test/testrep.tmpl
 site/templates/textemail/basic.tmpl
+site/templates/user/admin_book_seminar.tmpl
+site/templates/user/admin_edit_seminar.tmpl
+site/templates/user/admin_unbook_seminar.tmpl
 site/templates/user/alreadyblacklisted_base.tmpl
 site/templates/user/base_orderdetail.tmpl
 site/templates/user/blacklistdone_base.tmpl

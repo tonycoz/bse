@@ -36,3 +36,23 @@ select ar.*, pr.*, se.*, ss.*,
     and ss.seminar_id = se.seminar_id
   order by ss.when_at desc
 SQL
+
+name: bse_getSessionBookingForUser
+sql_statement: <<SQL
+select * from bse_seminar_bookings
+  where session_id = ? and siteuser_id = ?
+SQL
+
+name: bse_cancelSessionBookingForUser
+sql_statement: <<SQL
+delete from bse_seminar_bookings
+  where session_id = ? and siteuser_id = ?
+SQL
+
+name: bse_updateSessionBookingForUser
+sql_statement: <<SQL
+update bse_seminar_bookings
+  set roll_present = ?, options = ?, customer_instructions = ?, 
+    support_notes = ?
+  where session_id = ? and siteuser_id = ?
+SQL

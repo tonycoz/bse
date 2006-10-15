@@ -65,6 +65,10 @@ sub action_prefix {
 sub error {
   my ($class, $req, $errors, $template) = @_;
 
+  unless (ref $errors) {
+    $errors = { error => $errors };
+  }
+
   my $msg = $req->message($errors);
 
   $template ||= 'error';

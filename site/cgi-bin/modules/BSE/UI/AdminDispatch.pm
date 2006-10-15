@@ -74,4 +74,12 @@ sub check_action {
   return 1;
 }
 
+sub error {
+  my ($class, $req, $errors, $template) = @_;
+
+  $template ||= 'admin/error';
+
+  return $class->SUPER::error($req, $errors, $template);
+}
+
 1;

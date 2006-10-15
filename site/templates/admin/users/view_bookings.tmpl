@@ -28,6 +28,10 @@
           <td><a href="/cgi-bin/admin/admin_seminar.pl?a_locview=1&amp;id=<:booking location_id:>"><:booking loc_description:></a></td>
           <td nowrap="nowrap"><:date "%I:%M %p" booking when_at:></td>
           <td nowrap="nowrap"><:date booking when_at:></td>
+          <td nowrap="nowrap">
+            <a href="/cgi-bin/admin/admin_seminar.pl?a_cancelbookingconfirm=1&amp;session_id=<:booking session_id:>&amp;siteuser_id=<:siteuser id:>">Cancel</a>
+            <a href="/cgi-bin/admin/admin_seminar.pl?a_editbooking=1&amp;session_id=<:booking session_id:>&amp;siteuser_id=<:siteuser id:>">Edit</a>
+          </td>
         </tr>
         <:iterator end bookings:> 
       </table>

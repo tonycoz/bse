@@ -1,7 +1,7 @@
 package BSE::UI::AdminSeminar;
 use strict;
 use base qw(BSE::UI::AdminDispatch);
-use BSE::Util::Tags qw(tag_hash tag_error_img);
+use BSE::Util::Tags qw(tag_hash tag_error_img tag_hash_plain);
 use BSE::Util::DynSort qw(sorter tag_sorthelp);
 use BSE::Template;
 use BSE::Util::Iterate;
@@ -12,19 +12,23 @@ use BSE::CfgInfo 'product_options';
 
 my %rights =
   (
-   loclist => 'bse_location_list',
-   locaddform => 'bse_location_add',
-   locadd => 'bse_location_add',
-   locedit => 'bse_location_edit',
-   locsave => 'bse_location_edit',
-   locview => 'bse_location_view',
-   locdelask => 'bse_location_delete',
-   locdelete => 'bse_location_delete',
-#    detail => 'bse_subscr_detail',
-#    update => 'bse_subscr_update',
-   addattendseminar => 'bse_session_addattendee',
-   addattendsession => 'bse_session_addattendee',
-   addattendsave => 'bse_session_addattendee',
+   loclist		 => 'bse_location_list',
+   locaddform		 => 'bse_location_add',
+   locadd		 => 'bse_location_add',
+   locedit		 => 'bse_location_edit',
+   locsave		 => 'bse_location_edit',
+   locview		 => 'bse_location_view',
+   locdelask		 => 'bse_location_delete',
+   locdelete		 => 'bse_location_delete',
+   #    detail		 => 'bse_subscr_detail',
+   #    update		 => 'bse_subscr_update',
+   addattendseminar	 => 'bse_session_booking_add',
+   addattendsession	 => 'bse_session_booking_add',
+   addattendsave	 => 'bse_session_booking_add',
+   cancelbookingconfirm	 => 'bse_session_booking_cancel',
+   cancelbooking	 => 'bse_session_booking_cancel',
+   editbooking   	 => 'bse_session_booking_edit',
+   savebooking	         => 'bse_session_booking_edit',
   );
 
 sub actions { \%rights }
@@ -349,10 +353,7 @@ sub req_addattendsession {
       ($req, { seminar_id => "Unknown seminar_id" });
   my $msg = $req->message($errors);
 
-  my $avail_options = product_options($req->cfg);
-
-  my @sem_options = map +{ id => $_, %{$avail_options->{$_}} },
-    split /,/, $seminar->{options};
+  my @sem_options = _get_sem_options($req->cfg, $seminar);
   my $current_option;
 
   my @sessions = $seminar->session_info;
@@ -390,8 +391,10 @@ sub tag_option_popup {
   my $option = $$roption;
 
   my @extras;
-  if ($cgi->param($option->{id})) {
-    push @extras, -default => $cgi->param($option->{id});
+  my $value = $cgi->param($option->{id});
+  defined $value or $value = $option->{value};
+  if ($value) {
+    push @extras, -default => $value;
   }
 
   return popup_menu(-name => $option->{id},
@@ -458,12 +461,10 @@ sub req_addattendsave {
     $value and $more{$name} = $value;
   }
   $more{roll_present} ||= 0;
+  $more{options}      = join(',', @options);
 
   eval {
-    $session->add_attendee($siteuser, 
-			   %more,
-			   options => join(',', @options)
-			  );
+    $session->add_attendee($siteuser, %more);
   };
   if ($@) {
     if ($@ =~ /duplicate/i) {
@@ -472,13 +473,315 @@ sub req_addattendsave {
     }
   }
 
+  require BSE::ComposeMail;
+  my $cfg = $req->cfg;
+  my $mailer = BSE::ComposeMail->new(cfg => $cfg);
+  my $subject = $cfg->entry('seminars', 'booked_notify_subject',
+			    'You have been booked for seminar');
+  my @sem_options = _get_sem_options($cfg, $seminar, @options);
+  my $it = DevHelp::Tags::Iterate->new;
+  my %acts;
+  %acts =
+    (
+     BSE::Util::Tags->static(undef, $cfg),
+     siteuser => [ \&tag_hash_plain, $siteuser ],
+     seminar  => [ \&tag_hash_plain, $seminar  ],
+     session  => [ \&tag_hash_plain, $session  ],
+     booking  => [ \&tag_hash_plain, \%more    ],
+     location => [ \&tag_hash_plain, $session->location ],
+     $it->make_iterator(undef, 'option', 'options', \@sem_options),
+    );
+
+  unless ($mailer->send(to	  => $siteuser,
+			subject	  => $subject,
+			template  => 'user/admin_book_seminar',
+			acts	  => \%acts)) {
+    return $class->req_addattendsession
+	($req, { _email => "The user has been booked, but there was an error seding the email notification:".$mailer->errstr });
+  }
+
+  
   my $r = $cgi->param('r');
   unless ($r) {
     $r = "/cgi-bin/admin/siteusers.pl?a_edit=1&id=" . $siteuser->{id};
   }
-  print STDERR "refresh $r\n";
 
   return BSE::Template->get_refresh($r, $req->cfg);
+}
+
+sub req_cancelbookingconfirm {
+  my ($class, $req, $message) = @_;
+
+  my $cgi = $req->cgi;
+
+  my $session_id = $cgi->param('session_id');
+  defined $session_id && $session_id =~ /^\d+$/
+    or return $class->error($req, 'Invalid session_id parameter');
+  require BSE::TB::SeminarSessions;
+  my $session = BSE::TB::SeminarSessions->getByPkey($session_id)
+    or return $class->error($req, 'Unknown session_id value');
+
+  my $siteuser_id = $cgi->param('siteuser_id');
+  defined $siteuser_id && $siteuser_id =~ /\d+$/
+    or return $class->error($req, 'Invalid siteuser_id parameter');
+
+  require SiteUsers;
+  my $siteuser = SiteUsers->getByPkey($siteuser_id)
+    or return $class->error($req, 'Unknown siteuser_id value');
+
+  my $booking = $session->get_booking($siteuser)
+    or return $class->error($req, "$siteuser->{userId} is not booked for this session");
+
+  my $seminar = $session->seminar;
+  my @sem_options = _get_sem_options($req->cfg, $seminar, 
+				     split /,/, $session->{options});
+
+  defined $message or $message = '';
+  $message = escape_html($message);
+
+  my $it = BSE::Util::Iterate->new;
+  my %acts;
+  %acts =
+    (
+     BSE::Util::Tags->basic(\%acts, $req->cgi, $req->cfg),
+     BSE::Util::Tags->admin(\%acts, $req->cfg),
+     BSE::Util::Tags->secure($req),
+     siteuser => [ \&tag_hash, $siteuser ],
+     session  => [ \&tag_hash, $session  ],
+     seminar  => [ \&tag_hash, $seminar ],
+     location => [ \&tag_hash, $session->location ],
+     booking  => [ \&tag_hash, $booking  ],
+     message  => $message,
+     $it->make_iterator(undef, 'option', 'options', \@sem_options),
+    );
+
+  return $req->dyn_response('admin/semcancelbooking', \%acts);
+}
+
+sub req_cancelbooking {
+  my ($class, $req) = @_;
+
+  my $cgi = $req->cgi;
+
+  my $session_id = $cgi->param('session_id');
+  defined $session_id && $session_id =~ /^\d+$/
+    or return $class->error($req, 'Invalid session_id parameter');
+  require BSE::TB::SeminarSessions;
+  my $session = BSE::TB::SeminarSessions->getByPkey($session_id)
+    or return $class->error($req, 'Unknown session_id value');
+
+  my $siteuser_id = $cgi->param('siteuser_id');
+  defined $siteuser_id && $siteuser_id =~ /\d+$/
+    or return $class->error($req, 'Invalid siteuser_id parameter');
+
+  require SiteUsers;
+  my $siteuser = SiteUsers->getByPkey($siteuser_id)
+    or return $class->error($req, 'Unknown siteuser_id value');
+
+  my $booking = $session->get_booking($siteuser)
+    or return $class->error($req, "$siteuser->{userId} is not booked for this session");
+
+  my @options = split /,/, $booking->{options};
+  local $SIG{__DIE__};
+  eval {
+    $session->remove_booking($siteuser);
+  };
+  $@ and return $class->req_cancelbookingconfirm
+    ($req, "Could not remove booking $@");
+
+  my $seminar = $session->seminar;
+
+  my @sem_options = _get_sem_options($req->cfg, $seminar, @options);
+
+  require BSE::ComposeMail;
+  my $cfg = $req->cfg;
+  my $mailer = BSE::ComposeMail->new(cfg => $cfg);
+  my $subject = $cfg->entry('seminars', 'unbooked_notify_subject',
+			    'Your seminar booking has been cancelled');
+  my $it = DevHelp::Tags::Iterate->new;
+  my %acts;
+  %acts =
+    (
+     BSE::Util::Tags->static(undef, $cfg),
+     siteuser => [ \&tag_hash_plain, $siteuser ],
+     seminar  => [ \&tag_hash_plain, $seminar  ],
+     session  => [ \&tag_hash_plain, $session  ],
+     booking  => [ \&tag_hash_plain, $booking  ],
+     location => [ \&tag_hash_plain, $session->location ],
+     $it->make_iterator(undef, 'option', 'options', \@sem_options),
+    );
+
+  unless ($mailer->send(to	  => $siteuser,
+			subject	  => $subject,
+			template  => 'user/admin_unbook_seminar',
+			acts	  => \%acts)) {
+    return $class->req_cancelbookingconfirm
+      ($req, "The user booking was cancelled, but there was an error sending the email notification:".$mailer->errstr );
+  }
+
+  my $r = $cgi->param('r');
+  unless ($r) {
+    $r = '/cgi-bin/admin/siteusers.pl?a_view=1&id='.$siteuser->{id};
+  }
+  $r .= $r =~ /\?/ ? '&' : '?';
+  $r .= "m=Booking+cancelled";
+
+  return BSE::Template->get_refresh($r, $req->cfg);
+}
+
+sub req_editbooking {
+  my ($class, $req, $errors) = @_;
+
+  my $cgi = $req->cgi;
+
+  my $session_id = $cgi->param('session_id');
+  defined $session_id && $session_id =~ /^\d+$/
+    or return $class->error($req, 'Invalid session_id parameter');
+  require BSE::TB::SeminarSessions;
+  my $session = BSE::TB::SeminarSessions->getByPkey($session_id)
+    or return $class->error($req, 'Unknown session_id value');
+
+  my $siteuser_id = $cgi->param('siteuser_id');
+  defined $siteuser_id && $siteuser_id =~ /\d+$/
+    or return $class->error($req, 'Invalid siteuser_id parameter');
+
+  require SiteUsers;
+  my $siteuser = SiteUsers->getByPkey($siteuser_id)
+    or return $class->error($req, 'Unknown siteuser_id value');
+
+  my $booking = $session->get_booking($siteuser)
+    or return $class->error($req, "$siteuser->{userId} is not booked for this session");
+
+  my $message = $req->message($errors);
+
+  my $seminar = $session->seminar;
+  my @sem_options = _get_sem_options($req->cfg, $seminar, 
+				     split /,/,  $booking->{options});
+    
+  my $current_option;
+  my $it = BSE::Util::Iterate->new;
+  my %acts;
+  %acts =
+    (
+     BSE::Util::Tags->basic(\%acts, $req->cgi, $req->cfg),
+     BSE::Util::Tags->admin(\%acts, $req->cfg),
+     BSE::Util::Tags->secure($req),
+     siteuser => [ \&tag_hash, $siteuser ],
+     session  => [ \&tag_hash, $session  ],
+     seminar  => [ \&tag_hash, $seminar ],
+     location => [ \&tag_hash, $session->location ],
+     booking  => [ \&tag_hash, $booking  ],
+     message  => $message,
+     error_img => [ \&tag_error_img, $req->cfg, $errors ],
+     $it->make_iterator(undef, 'option', 'options', \@sem_options, 
+			undef, undef, \$current_option),
+     option_popup => [ \&tag_option_popup, $req->cgi, \$current_option ],
+    );
+
+  return $req->dyn_response('admin/semeditbooking', \%acts);
+}
+
+sub req_savebooking {
+  my ($class, $req, $message) = @_;
+
+  my $cgi = $req->cgi;
+
+  my $session_id = $cgi->param('session_id');
+  defined $session_id && $session_id =~ /^\d+$/
+    or return $class->error($req, 'Invalid session_id parameter');
+  require BSE::TB::SeminarSessions;
+  my $session = BSE::TB::SeminarSessions->getByPkey($session_id)
+    or return $class->error($req, 'Unknown session_id value');
+
+  my $siteuser_id = $cgi->param('siteuser_id');
+  defined $siteuser_id && $siteuser_id =~ /\d+$/
+    or return $class->error($req, 'Invalid siteuser_id parameter');
+
+  require SiteUsers;
+  my $siteuser = SiteUsers->getByPkey($siteuser_id)
+    or return $class->error($req, 'Unknown siteuser_id value');
+
+  my $booking = $session->get_booking($siteuser)
+    or return $class->error($req, "$siteuser->{userId} is not booked for this session");
+
+  my %attr = %$booking;
+  delete @attr{qw/siteuser_id session_id/};
+
+  for my $name (keys %attr) {
+    my $value = $cgi->param($name);
+    defined $value and $attr{$name} = $value;
+  }
+  my $seminar = $session->seminar;
+  my @options;
+  for my $name (split /,/, $seminar->{options}) {
+    push @options, ($cgi->param($name))[0];
+  }
+  $attr{options} = join ',', @options;
+
+  eval {
+    $session->update_booking($siteuser, %attr);
+  };
+  $@
+    and return $class->req_editbooking($req, { error => $@ });
+
+  my @sem_options = _get_sem_options($req->cfg, $seminar, @options);
+
+  require BSE::ComposeMail;
+  my $cfg = $req->cfg;
+  my $mailer = BSE::ComposeMail->new(cfg => $cfg);
+  my $subject = $cfg->entry('seminars', 'edit_notify_subject',
+			    'Your seminar booking has been changed');
+  my $it = DevHelp::Tags::Iterate->new;
+  my %acts;
+  %acts =
+    (
+     BSE::Util::Tags->static(undef, $cfg),
+     siteuser => [ \&tag_hash_plain, $siteuser ],
+     seminar  => [ \&tag_hash_plain, $seminar  ],
+     session  => [ \&tag_hash_plain, $session  ],
+     booking  => [ \&tag_hash_plain, $booking  ],
+     location => [ \&tag_hash_plain, $session->location ],
+     $it->make_iterator(undef, 'option', 'options', \@sem_options),
+    );
+
+  unless ($mailer->send(to	  => $siteuser,
+			subject	  => $subject,
+			template  => 'user/admin_edit_seminar',
+			acts	  => \%acts)) {
+    return $class->req_editbooking
+      ($req, _email => "The user booking was changed, but there was an error sending the email notification:".$mailer->errstr );
+  }
+
+  my $r = $cgi->param('r');
+  unless ($r) {
+    $r = '/cgi-bin/admin/siteusers.pl?a_view=1&id='.$siteuser->{id};
+  }
+  $r .= $r =~ /\?/ ? '&' : '?';
+  $r .= "m=Booking+updated";
+
+  return BSE::Template->get_refresh($r, $req->cfg);
+}
+
+sub _get_sem_options {
+  my ($cfg, $seminar, @values) = @_;
+
+  my $avail_options = product_options($cfg);
+  my @opt_names = split /,/, $seminar->{options};
+  push @values, '' while @values < @opt_names;
+  my %values;
+  @values{@opt_names} = @values;
+
+  my @sem_options = map 
+    +{ 
+      id => $_, 
+      %{$avail_options->{$_}},
+      value => $values{$_},
+     }, @opt_names;
+  for my $option (@sem_options) {
+    $option->{display} = $option->{labels}{$option->{value}};
+  }
+
+  return @sem_options;
 }
 
 1;
