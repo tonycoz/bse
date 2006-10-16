@@ -351,7 +351,7 @@ sub get_parms {
 	            \s*\]\s*//x) {
       my ($func, $subargs) = ($1, $2);
       $subargs = '' unless defined $subargs;
-      if ($acts->{$func}) {
+      if (exists $acts->{$func}) {
 	print STDERR "  Evaluating [$func $subargs]\n" if DEBUG_GET_PARMS;
 	my $value = $templater->perform($acts, $func, $subargs);
 	print STDERR "    Result '$value'\n" if DEBUG_GET_PARMS;

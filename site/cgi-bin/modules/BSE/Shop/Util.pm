@@ -8,7 +8,7 @@ use vars qw(@ISA @EXPORT_OK);
 use Constants qw/:shop/;
 use BSE::Util::SQL qw(now_sqldate);
 use BSE::Util::Tags;
-use BSE::CfgInfo qw(custom_class);
+use BSE::CfgInfo qw(custom_class product_options);
 use Carp 'confess';
 use DevHelp::HTML qw(escape_html);
 

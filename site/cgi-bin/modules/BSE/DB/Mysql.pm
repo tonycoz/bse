@@ -447,11 +447,12 @@ SQL
    seminarSessionBookedIds => <<SQL,
 select * from bse_seminar_bookings where session_id = ?
 SQL
-   seminarSessionBookUser => <<SQL,
-insert bse_seminar_bookings values(?,?,?,?,?,?)
+   addSeminarBooking => <<SQL,
+insert bse_seminar_bookings values(null,?,?,?,?,?,?)
 SQL
    seminarSessionRollCallEntries => <<SQL,
-select bo.roll_present, su.id, su.userId, su.name1, su.name2, su.email
+select bo.roll_present, su.id, su.userId, su.name1, su.name2, su.email,
+    bo.id as booking_id
   from bse_seminar_bookings bo, site_users su
 where bo.session_id = ? and bo.siteuser_id = su.id
 SQL

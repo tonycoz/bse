@@ -748,6 +748,7 @@ create table bse_seminar_sessions (
 
 drop table if exists bse_seminar_bookings;
 create table bse_seminar_bookings (
+  id integer not null auto_increment primary key,
   session_id integer not null,
   siteuser_id integer not null,
   roll_present integer not null default 0,
@@ -756,7 +757,7 @@ create table bse_seminar_bookings (
   customer_instructions text not null default '',
   support_notes text not null default '',
 
-  primary key(session_id, siteuser_id),
+  unique(session_id, siteuser_id),
   index (siteuser_id)
 );
 

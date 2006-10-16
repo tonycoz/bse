@@ -6,8 +6,7 @@
 <:or:><:eif:>
 <form action="<:script:>" method="post">
 <input type="hidden" name="a_savebooking" value="1" />
-<input type="hidden" name="session_id" value="<:session id:>" />
-<input type="hidden" name="siteuser_id" value="<:siteuser id:>" />
+<input type="hidden" name="id" value="<:booking id:>" />
 <:ifCgi r:><input type="hidden" name="r" value="<:cgi r:>" /><:or:><:eif:>
 <table>
   <tr>
@@ -15,20 +14,8 @@
     <td><a href="<:seminar link:>"><:seminar title:></a></td>
   </tr>
   <tr>
-    <th>User:</th>
-    <td><a href="/cgi-bin/admin/siteusers.pl?id=<:siteuser id:>&amp;a_view=1"><:siteuser userId:></a> ( <:siteuser name1:> <:siteuser name2:> )</td>
-  </tr>
-  <tr>
-    <th>Location:</th>
-    <td><a href="/cgi-bin/admin/admin_seminar.pl?a_locview=1&amp;<:location id:>"><:location description:></a></td>
-  </tr>
-  <tr>
-    <th>Date:</th>
-    <td><:date session when_at:></td>
-  </tr>
-  <tr>
-    <th>Time:</th>
-    <td><:date "%I:%M %P" session when_at:></td>
+    <th>Session:</th>
+    <td><:session_popup:></td>
   </tr>
 <:iterator begin options:>
   <tr>

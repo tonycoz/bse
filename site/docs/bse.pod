@@ -10,6 +10,47 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_47
+
+You will need to drop or manually alter the bse_seminar_bookings table
+for this release.
+
+=over
+
+=item *
+
+the bse_seminar_bookings schema has changed in a way incompatible with
+the update tool.  Previously it was just a relation with some extra
+attributes, it's now treated as a first class table.
+
+=item *
+
+a new session can now be selected when the admin edits a user's
+seminar booking.
+
+=item *
+
+the siteuser tag in the emails sent when the admin adds/edits/cancels
+a booking is now the user tag, for consistency with older emails.
+
+=item *
+
+there was a bug in handling some types of tag definitions in [...]
+lists
+
+=item *
+
+the parameters passed to the a_cancelbookingconfirm, a_cancelbooking,
+a_editbooking and a_savebooking targets in admin_seminar.pl have
+changed.  These now take an id parameter to identify the booking.
+
+=item *
+
+the purchase process was broken by the config file product options
+changes, fixed.
+
+=back
+
 =head2 0.15_46
 
 =over
@@ -18,6 +59,14 @@ Maybe I'll add some other bits here.
 
 send a booking notification email to the user when the admin books
 them for a session.
+
+=item *
+
+an admin user can now cancel bookings.  An email is sent to the member.
+
+=item *
+
+an admin user can now edit bookings.  An email is sent to the member.
 
 =back
 

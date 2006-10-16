@@ -99,7 +99,8 @@ sub add_attendee {
 
   my $user_id = ref $user ? $user->{id} : $user;
 
-  BSE::DB->run(seminarSessionBookUser => $self->{id}, $user_id, 
+  require BSE::TB::SeminarBookings;
+  BSE::TB::SeminarBookings->add($self->{id}, $user_id, 
 	       @work_attr{@attendee_attributes});
 }
 
@@ -108,9 +109,9 @@ sub get_booking {
 
   my $siteuser_id = ref $user ? $user->{id} : $user;
 
-  my @result = BSE::DB->query
-    (bse_getSessionBookingForUser => $self->{id}, $siteuser_id)
-    or return;
+  require BSE::TB::SeminarBookings;
+  my @result = BSE::TB::SeminarBookings->
+    getBy(session_id => $self->{id}, siteuser_id => $siteuser_id);
 
   return $result[0];
 }

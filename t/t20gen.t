@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>82;
+use Test::More tests=>85;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
@@ -269,6 +269,12 @@ TEMPLATE
 Good
 Good
 Good
+EXPECTED
+
+template_test "ifAnd dynamic cfg ajax", $parent, <<TEMPLATE, <<EXPECTED;
+<:ifAnd [ifDynamic] [cfg basic ajax]:>1<:or:>0<:eif:>
+TEMPLATE
+0
 EXPECTED
 
 ############################################################

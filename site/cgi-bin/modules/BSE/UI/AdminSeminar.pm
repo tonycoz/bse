@@ -9,6 +9,7 @@ use BSE::TB::Locations;
 use DevHelp::HTML qw(:default popup_menu);
 use constant SECT_LOCATION_VALIDATION => "BSE Location Validation";
 use BSE::CfgInfo 'product_options';
+use DevHelp::Date qw(dh_strftime_sql_datetime);
 
 my %rights =
   (
@@ -471,6 +472,10 @@ sub req_addattendsave {
       return $class->req_addattendsession
 	($req, { session_id => "User already booked for this session" });
     }
+    else {
+      return $class->req_addattendsession
+	($req, { _error => $@ });
+    }
   }
 
   require BSE::ComposeMail;
@@ -484,7 +489,7 @@ sub req_addattendsave {
   %acts =
     (
      BSE::Util::Tags->static(undef, $cfg),
-     siteuser => [ \&tag_hash_plain, $siteuser ],
+     user     => [ \&tag_hash_plain, $siteuser ],
      seminar  => [ \&tag_hash_plain, $seminar  ],
      session  => [ \&tag_hash_plain, $session  ],
      booking  => [ \&tag_hash_plain, \%more    ],
@@ -514,23 +519,16 @@ sub req_cancelbookingconfirm {
 
   my $cgi = $req->cgi;
 
-  my $session_id = $cgi->param('session_id');
-  defined $session_id && $session_id =~ /^\d+$/
-    or return $class->error($req, 'Invalid session_id parameter');
-  require BSE::TB::SeminarSessions;
-  my $session = BSE::TB::SeminarSessions->getByPkey($session_id)
-    or return $class->error($req, 'Unknown session_id value');
+  my $id = $cgi->param('id');
+  defined $id && $id =~ /^\d+$/
+    or return $class->error($req, "id parameter invalid");
 
-  my $siteuser_id = $cgi->param('siteuser_id');
-  defined $siteuser_id && $siteuser_id =~ /\d+$/
-    or return $class->error($req, 'Invalid siteuser_id parameter');
+  require BSE::TB::SeminarBookings;
+  my $booking = BSE::TB::SeminarBookings->getByPkey($id)
+    or return $class->error($req, "booking $id not found");
 
-  require SiteUsers;
-  my $siteuser = SiteUsers->getByPkey($siteuser_id)
-    or return $class->error($req, 'Unknown siteuser_id value');
-
-  my $booking = $session->get_booking($siteuser)
-    or return $class->error($req, "$siteuser->{userId} is not booked for this session");
+  my $session = $booking->session;
+  my $siteuser = $booking->siteuser;
 
   my $seminar = $session->seminar;
   my @sem_options = _get_sem_options($req->cfg, $seminar, 
@@ -563,23 +561,16 @@ sub req_cancelbooking {
 
   my $cgi = $req->cgi;
 
-  my $session_id = $cgi->param('session_id');
-  defined $session_id && $session_id =~ /^\d+$/
-    or return $class->error($req, 'Invalid session_id parameter');
-  require BSE::TB::SeminarSessions;
-  my $session = BSE::TB::SeminarSessions->getByPkey($session_id)
-    or return $class->error($req, 'Unknown session_id value');
+  my $id = $cgi->param('id');
+  defined $id && $id =~ /^\d+$/
+    or return $class->error($req, "id parameter invalid");
 
-  my $siteuser_id = $cgi->param('siteuser_id');
-  defined $siteuser_id && $siteuser_id =~ /\d+$/
-    or return $class->error($req, 'Invalid siteuser_id parameter');
+  require BSE::TB::SeminarBookings;
+  my $booking = BSE::TB::SeminarBookings->getByPkey($id)
+    or return $class->error($req, "booking $id not found");
 
-  require SiteUsers;
-  my $siteuser = SiteUsers->getByPkey($siteuser_id)
-    or return $class->error($req, 'Unknown siteuser_id value');
-
-  my $booking = $session->get_booking($siteuser)
-    or return $class->error($req, "$siteuser->{userId} is not booked for this session");
+  my $session = $booking->session;
+  my $siteuser = $booking->siteuser;
 
   my @options = split /,/, $booking->{options};
   local $SIG{__DIE__};
@@ -603,7 +594,7 @@ sub req_cancelbooking {
   %acts =
     (
      BSE::Util::Tags->static(undef, $cfg),
-     siteuser => [ \&tag_hash_plain, $siteuser ],
+     user     => [ \&tag_hash_plain, $siteuser ],
      seminar  => [ \&tag_hash_plain, $seminar  ],
      session  => [ \&tag_hash_plain, $session  ],
      booking  => [ \&tag_hash_plain, $booking  ],
@@ -634,29 +625,25 @@ sub req_editbooking {
 
   my $cgi = $req->cgi;
 
-  my $session_id = $cgi->param('session_id');
-  defined $session_id && $session_id =~ /^\d+$/
-    or return $class->error($req, 'Invalid session_id parameter');
-  require BSE::TB::SeminarSessions;
-  my $session = BSE::TB::SeminarSessions->getByPkey($session_id)
-    or return $class->error($req, 'Unknown session_id value');
+  my $id = $cgi->param('id');
+  defined $id && $id =~ /^\d+$/
+    or return $class->error($req, "id parameter invalid");
 
-  my $siteuser_id = $cgi->param('siteuser_id');
-  defined $siteuser_id && $siteuser_id =~ /\d+$/
-    or return $class->error($req, 'Invalid siteuser_id parameter');
+  require BSE::TB::SeminarBookings;
+  my $booking = BSE::TB::SeminarBookings->getByPkey($id)
+    or return $class->error($req, "booking $id not found");
 
-  require SiteUsers;
-  my $siteuser = SiteUsers->getByPkey($siteuser_id)
-    or return $class->error($req, 'Unknown siteuser_id value');
+  my $session = $booking->session;
 
-  my $booking = $session->get_booking($siteuser)
-    or return $class->error($req, "$siteuser->{userId} is not booked for this session");
+  my $siteuser = $booking->siteuser;
 
   my $message = $req->message($errors);
 
   my $seminar = $session->seminar;
   my @sem_options = _get_sem_options($req->cfg, $seminar, 
 				     split /,/,  $booking->{options});
+  my @unbooked = $seminar->get_unbooked_by_user($siteuser);
+  @unbooked = sort { $b->{when_at} cmp $a->{when_at} } ( @unbooked, $session );
     
   my $current_option;
   my $it = BSE::Util::Iterate->new;
@@ -676,6 +663,8 @@ sub req_editbooking {
      $it->make_iterator(undef, 'option', 'options', \@sem_options, 
 			undef, undef, \$current_option),
      option_popup => [ \&tag_option_popup, $req->cgi, \$current_option ],
+     $it->make_iterator(undef, 'isession', 'sessions', \@unbooked),
+     session_popup => [ \&tag_session_popup, $booking, $req->cgi, \@unbooked ],
     );
 
   return $req->dyn_response('admin/semeditbooking', \%acts);
@@ -686,46 +675,37 @@ sub req_savebooking {
 
   my $cgi = $req->cgi;
 
-  my $session_id = $cgi->param('session_id');
-  defined $session_id && $session_id =~ /^\d+$/
-    or return $class->error($req, 'Invalid session_id parameter');
-  require BSE::TB::SeminarSessions;
-  my $session = BSE::TB::SeminarSessions->getByPkey($session_id)
-    or return $class->error($req, 'Unknown session_id value');
+  my $id = $cgi->param('id');
+  defined $id && $id =~ /^\d+$/
+    or return $class->error($req, "id parameter invalid");
 
-  my $siteuser_id = $cgi->param('siteuser_id');
-  defined $siteuser_id && $siteuser_id =~ /\d+$/
-    or return $class->error($req, 'Invalid siteuser_id parameter');
+  require BSE::TB::SeminarBookings;
+  my $booking = BSE::TB::SeminarBookings->getByPkey($id)
+    or return $class->error($req, "booking $id not found");
 
-  require SiteUsers;
-  my $siteuser = SiteUsers->getByPkey($siteuser_id)
-    or return $class->error($req, 'Unknown siteuser_id value');
-
-  my $booking = $session->get_booking($siteuser)
-    or return $class->error($req, "$siteuser->{userId} is not booked for this session");
-
-  my %attr = %$booking;
-  delete @attr{qw/siteuser_id session_id/};
-
-  for my $name (keys %attr) {
+  my @cols = $booking->columns;
+  shift @cols;
+  for my $name (@cols) {
     my $value = $cgi->param($name);
-    defined $value and $attr{$name} = $value;
+    defined $value and $booking->set($name => $value);
   }
-  my $seminar = $session->seminar;
+  my $seminar = $booking->session->seminar;
   my @options;
   for my $name (split /,/, $seminar->{options}) {
     push @options, ($cgi->param($name))[0];
   }
-  $attr{options} = join ',', @options;
+  $booking->{options} = join ',', @options;
 
   eval {
-    $session->update_booking($siteuser, %attr);
+    $booking->save;
   };
   $@
     and return $class->req_editbooking($req, { error => $@ });
 
   my @sem_options = _get_sem_options($req->cfg, $seminar, @options);
 
+  my $session = $booking->session;
+  my $siteuser = $booking->siteuser;
   require BSE::ComposeMail;
   my $cfg = $req->cfg;
   my $mailer = BSE::ComposeMail->new(cfg => $cfg);
@@ -736,7 +716,7 @@ sub req_savebooking {
   %acts =
     (
      BSE::Util::Tags->static(undef, $cfg),
-     siteuser => [ \&tag_hash_plain, $siteuser ],
+     user     => [ \&tag_hash_plain, $siteuser ],
      seminar  => [ \&tag_hash_plain, $seminar  ],
      session  => [ \&tag_hash_plain, $session  ],
      booking  => [ \&tag_hash_plain, $booking  ],
@@ -782,6 +762,37 @@ sub _get_sem_options {
   }
 
   return @sem_options;
+}
+
+sub tag_session_popup {
+  my ($booking, $cgi, $unbooked) = @_;
+
+  my $default = $cgi->param('session_id');
+  defined $default or $default = $booking->{session_id};
+  my %locations;
+  for my $session (@$unbooked) {
+    unless ($locations{$session->{location_id}}) {
+      $locations{$session->{location_id}} = $session->location;
+    }
+  }
+
+  return popup_menu
+    (-name => 'session_id',
+     -values => [ map $_->{id}, @$unbooked ],
+     -labels => 
+     { map 
+       { $_->{id} => 
+	   _session_desc($_, $locations{$_->{location_id}}) 
+	 } @$unbooked 
+     },
+     -default => $default);
+}
+
+sub _session_desc {
+  my ($session, $location) = @_;
+
+  $location->{description} . ' ' . 
+    dh_strftime_sql_datetime("%H:%M %d %b %Y", $session->{when_at});
 }
 
 1;

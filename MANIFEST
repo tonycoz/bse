@@ -116,6 +116,8 @@ site/cgi-bin/modules/BSE/TB/Orders.pm
 site/cgi-bin/modules/BSE/TB/OrderItem.pm
 site/cgi-bin/modules/BSE/TB/OrderItems.pm
 site/cgi-bin/modules/BSE/TB/Seminar.pm
+site/cgi-bin/modules/BSE/TB/SeminarBooking.pm
+site/cgi-bin/modules/BSE/TB/SeminarBookings.pm
 site/cgi-bin/modules/BSE/TB/SeminarSession.pm
 site/cgi-bin/modules/BSE/TB/SeminarSessions.pm
 site/cgi-bin/modules/BSE/TB/Seminars.pm

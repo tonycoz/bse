@@ -1002,7 +1002,8 @@ sub _send_order {
      sub { 
        if (++$item_index < @$items) {
 	 $option_index = -1;
-	 @options = cart_item_opts($items->[$item_index], 
+	 @options = cart_item_opts($req,
+				   $items->[$item_index], 
 				   $products->[$item_index]);
 	 return 1;
        }

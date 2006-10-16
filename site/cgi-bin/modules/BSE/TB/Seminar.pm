@@ -73,4 +73,12 @@ sub future_location_sessions {
     (futureSeminarLocation => $self->{id}, $location->{id}, now_sqldatetime());
 }
 
+sub get_unbooked_by_user {
+  my ($self, $user) = @_;
+
+  require BSE::TB::SeminarSessions;
+  BSE::TB::SeminarSessions->getSpecial(sessionsUnbookedByUser => 
+				       $user->{id}, $self->{id});
+}
+
 1;
