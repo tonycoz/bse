@@ -664,7 +664,8 @@ sub req_editbooking {
 			undef, undef, \$current_option),
      option_popup => [ \&tag_option_popup, $req->cgi, \$current_option ],
      $it->make_iterator(undef, 'isession', 'sessions', \@unbooked),
-     session_popup => [ \&tag_session_popup, $booking, $req->cgi, \@unbooked ],
+     session_popup => 
+     [ \&tag_session_popup, $req->cfg, $booking, $req->cgi, \@unbooked ],
     );
 
   return $req->dyn_response('admin/semeditbooking', \%acts);
@@ -765,7 +766,7 @@ sub _get_sem_options {
 }
 
 sub tag_session_popup {
-  my ($booking, $cgi, $unbooked) = @_;
+  my ($cfg, $booking, $cgi, $unbooked) = @_;
 
   my $default = $cgi->param('session_id');
   defined $default or $default = $booking->{session_id};
@@ -776,23 +777,25 @@ sub tag_session_popup {
     }
   }
 
+  my $date_fmt = $cfg->entry('seminars', 'popup_date_format', 
+			     "%I:%M %p %d %b %Y");
   return popup_menu
     (-name => 'session_id',
      -values => [ map $_->{id}, @$unbooked ],
      -labels => 
      { map 
        { $_->{id} => 
-	   _session_desc($_, $locations{$_->{location_id}}) 
+	   _session_desc($_, $locations{$_->{location_id}}, $date_fmt) 
 	 } @$unbooked 
      },
      -default => $default);
 }
 
 sub _session_desc {
-  my ($session, $location) = @_;
+  my ($session, $location, $date_fmt) = @_;
 
   $location->{description} . ' ' . 
-    dh_strftime_sql_datetime("%H:%M %d %b %Y", $session->{when_at});
+    dh_strftime_sql_datetime($date_fmt, $session->{when_at});
 }
 
 1;

@@ -162,7 +162,7 @@ sub tag_dynmove {
 }
 
 sub tag_url {
-  my ($self, $article, $name, $acts, $func, $templater) = @_;
+  my ($self, $top, $name, $acts, $func, $templater) = @_;
 
   my $item = $self->{admin} ? 'admin' : 'link';
   my $article = $self->{req}->get_article($name)
@@ -170,7 +170,7 @@ sub tag_url {
 
   my $value = $article->{$item};
 
-  if ($article->{$item} =~ /^\w+:/ && $value !~ /^\w+:/) {
+  if ($top->{$item} =~ /^\w+:/ && $value !~ /^\w+:/) {
     $value = $self->{req}->cfg->entryErr('site', 'url') . $value;
   }
   
