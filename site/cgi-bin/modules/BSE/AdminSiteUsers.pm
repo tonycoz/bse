@@ -69,8 +69,12 @@ sub req_list {
   my @users = SiteUsers->all;
   my $id = $cgi->param('id');
   defined $id or $id = '';
+  my $search_done = 0;
+  my %search_fields;
   if ($id =~ /^\d+$/) {
+    $search_fields{id} = $id;
     @users = grep $_->{id} == $id, @users;
+    ++$search_done;
   }
   else {
     my %fields;
@@ -82,6 +86,8 @@ sub req_list {
       }
     }
     if (keys %fields) {
+      %search_fields = %fields;
+      ++$search_done;
       my $name = delete $fields{name};
       if (defined $name) {
 	@users = grep "$_->{name1} $_->{name2}" =~ /\Q$name/i, @users;
@@ -96,6 +102,9 @@ sub req_list {
     sorter(data=>\@users, cgi=>$cgi, sortby=>'userId', session=>$req->session,
 	   name=>'siteusers', fields=> { id => {numeric => 1 } });
   my $it = BSE::Util::Iterate->new;
+
+  my $search_param =
+    join('&', map { "$_=".escape_uri($search_fields{$_}) } keys %search_fields);
 			    
   my %acts;
   %acts =
@@ -110,6 +119,8 @@ sub req_list {
      sortby=>$sortby,
      reverse=>$reverse,
      sorthelp => [ \&tag_sorthelp, $sortby, $reverse ],
+     ifSearchDone => $search_done,
+     search_param => $search_param,
     );
 
   return $req->dyn_response('admin/users/list', \%acts);

@@ -903,6 +903,8 @@ sub tag_ajax {
     or return "** unknown ajax definition $name **";
   my ($type, $rest) = split ':', $defn, 2;
 
+  defined $arg_rest or $arg_rest = '';
+
   if ($type eq 'inline') {
     # just replace $1, $2, etc in the rest of the text
     my @args = DevHelp::Tags->get_parms($arg_rest, $acts, $templater);

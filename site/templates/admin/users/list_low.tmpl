@@ -1,9 +1,11 @@
+<:ifAjax:><table cellpadding="3" border="0" cellspacing="1" width="100%"><:or:><:eif:>
           <:if Siteusers:> <: iterator begin siteusers :> 
           <tr bgcolor="#FFFFFF"> 
-	    <td align="center" nowrap="nowrap">  <:if Or [ifUserCan bse_members_user_edit] [ifUserCan bse_members_user_view]:><a href="<:script:>?<:ifUserCan bse_members_user_edit:>a_edit<:or:>a_view<:eif:>=1&id=<:siteuser id:>"><:siteuser id:></a><:or Or:><:siteuser id:><:eif Or:></td>
-            <td nowrap> <:if Or [ifUserCan bse_members_user_edit] [ifUserCan bse_members_user_view]:><a href="<:script:>?<:ifUserCan bse_members_user_edit:>a_edit<:or:>a_view<:eif:>=1&id=<:siteuser id:>"><:siteuser userId:></a><:or Or:><:siteuser userId:><:eif Or:></td>
-            <td valign="top"><:siteuser name1:></td>
-            <td valign="top"><:siteuser name2:></td>
+	    <td width="5%" align="center" nowrap="nowrap">  <:if Or [ifUserCan bse_members_user_edit] [ifUserCan bse_members_user_view]:><a href="<:script:>?<:ifUserCan bse_members_user_edit:>a_edit<:or:>a_view<:eif:>=1&id=<:siteuser id:>"><:siteuser id:></a><:or Or:><:siteuser id:><:eif Or:></td>
+            <td nowrap width="20%"> <:if Or [ifUserCan bse_members_user_edit] [ifUserCan bse_members_user_view]:><a href="<:script:>?<:ifUserCan bse_members_user_edit:>a_edit<:or:>a_view<:eif:>=1&id=<:siteuser id:>"><:siteuser userId:></a><:or Or:><:siteuser userId:><:eif Or:></td>
+            <td valign="top" width="33%"><:siteuser name1:></td>
+            <td valign="top" width="33%"><:siteuser name2:></td>
+	    <td>&nbsp;</td>
           </tr>
           <: iterator end siteusers :> 
           <:or Siteusers:> 
@@ -11,3 +13,11 @@
             <td colspan="4" align="center">Your system has no users.</td>
           </tr>
           <:eif Siteusers:> 
+</table>
+<p>Page <:siteusers_pagenum:> of <:siteusers_pagecount:>
+<:ifFirstSiteusersPage:>&lt;&lt;&lt;&lt; &lt;&lt;<:or:><a href="<:script:>?s=<:sortby:>&amp;r=<:reverse:>&amp;p=1&amp;pp=<:siteusers_perpage:>&amp;<:search_param:>">&lt;&lt;&lt;&lt;</a> <a href="<:script:>?s=<:sortby:>&amp;r=<:reverse:>&amp;p=<:prevSiteusersPage:>&amp;pp=<:siteusers_perpage:>&amp;<:search_param:>">&lt;&lt;</a><:eif:>
+<:iterator begin repeats [siteusers_pagecount]:>
+<:if Eq [repeat value] [siteusers_pagenum]:><:repeat value:><:or Eq:><a href="<:script:>?s=<:sortby:>&amp;r=<:reverse:>&amp;p=<:repeat value:>&amp;pp=<:siteusers_perpage:>&amp;<:search_param:>"><:repeat value:></a><:eif Eq:>
+<:iterator end repeats:>
+<:ifLastSiteusersPage:>&gt;&gt; &gt;&gt;&gt;&gt;<:or:><a href="<:script:>?s=<:sortby:>&amp;r=<:reverse:>&amp;p=<:nextSiteusersPage:>&amp;pp=<:siteusers_perpage:>&amp;<:search_param:>">&gt;&gt;</a> <a href="<:script:>?s=<:sortby:>&amp;r=<:reverse:>&amp;p=<:siteusers_pagecount:>&amp;pp=<:siteusers_perpage:>&amp;<:search_param:>">&gt;&gt;&gt;&gt;</a><:eif:>
+</p>

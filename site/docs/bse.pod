@@ -19,6 +19,18 @@ Maybe I'll add some other bits here.
 the location display in the shop code only accepted single digit
 location ids.
 
+=item *
+
+added search functionality for the siteusers list.
+
+=item *
+
+added rough ajax support to the site users search
+
+=item *
+
+stopped an undefined value warning from the ajax tag
+
 =back
 
 =head2 0.15_48

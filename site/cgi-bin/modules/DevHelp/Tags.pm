@@ -337,6 +337,7 @@ sub get_parms {
 
   print STDERR "** Entered get_parms -$args-\n" if DEBUG_GET_PARMS;
   my @out;
+  defined $args or Carp::cluck("undefined \$args");
   while (length $args) {
     if ($args =~ s/^\s*\[\s*(\w+)
 	                (

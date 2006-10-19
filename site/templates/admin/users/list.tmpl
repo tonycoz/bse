@@ -4,38 +4,34 @@
 | <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | <a href="<:script:>?a_grouplist=1">Groups</a> |
 <:if UserCan siteuser_add :>
 <a href="<:script:>?a_addform=1">Add Member</a> |<:or UserCan:><:eif UserCan:>
+</p>
 <:ifMessage:>
 <p><b><:message:></b></p>
 <:or:><:eif:> 
 
-<p>Page <:siteusers_pagenum:> of <:siteusers_pagecount:>
-<:ifFirstSiteusersPage:>&lt;&lt;&lt;&lt; &lt;&lt;<:or:><a href="<:script:>?s=<:sortby:>&r=<:reverse:>&p=1&pp=<:siteusers_perpage:>">&lt;&lt;&lt;&lt;</a> <a href="<:script:>?s=<:sortby:>&r=<:reverse:>&p=<:prevSiteusersPage:>&pp=<:siteusers_perpage:>">&lt;&lt;</a><:eif:>
-<:iterator begin repeats [siteusers_pagecount]:>
-<:if Eq [repeat value] [siteusers_pagenum]:><:repeat value:><:or Eq:><a href="<:script:>?s=<:sortby:>&r=<:reverse:>&p=<:repeat value:>&pp=<:siteusers_perpage:>"><:repeat value:></a><:eif Eq:>
-<:iterator end repeats:>
-<:ifLastSiteusersPage:>&gt;&gt; &gt;&gt;&gt;&gt;<:or:><a href="<:script:>?s=<:sortby:>&r=<:reverse:>&p=<:nextSiteusersPage:>&pp=<:siteusers_perpage:>">&gt;&gt;</a> <a href="<:script:>?s=<:sortby:>&r=<:reverse:>&p=<:siteusers_pagecount:>&pp=<:siteusers_perpage:>">&gt;&gt;&gt;&gt;</a><:eif:>
-</p>
 <form method="get" action="<:script:>" id="search">
-        <table cellpadding="2" border="0" cellspacing="1">
-          <tr> 
-            <th bgcolor="#FFFFFF" nowrap> <a href="<:script:>?<:sorthelp id:>&p=<:siteusers_pagenum:>&pp=<:siteusers_perpage:>">Id</a></th>
-            <th bgcolor="#FFFFFF" nowrap> <a href="<:script:>?<:sorthelp userId:>&p=<:siteusers_pagenum:>&pp=<:siteusers_perpage:>">Logon</a></th>
-            <th bgcolor="#FFFFFF" nowrap> <a href="<:script:>?<:sorthelp name1:>&p=<:siteusers_pagenum:>&pp=<:siteusers_perpage:>">First Name</a></th>
-            <th bgcolor="#FFFFFF" nowrap> <a href="<:script:>?<:sorthelp name2:>&p=<:siteusers_pagenum:>&pp=<:siteusers_perpage:>">Last Name</a></th>
+        <table cellpadding="3" border="0" cellspacing="1" width="100%">
+  <tr>
+            <th bgcolor="#FFFFFF" nowrap> <a href="<:script:>?<:sorthelp id:>&amp;p=<:siteusers_pagenum:>&amp;pp=<:siteusers_perpage:>&amp;<:search_param:>">Id</a></th>
+            <th bgcolor="#FFFFFF" nowrap> <a href="<:script:>?<:sorthelp userId:>&amp;p=<:siteusers_pagenum:>&amp;pp=<:siteusers_perpage:>&amp;<:search_param:>">Logon</a></th>
+            <th bgcolor="#FFFFFF" nowrap> <a href="<:script:>?<:sorthelp name1:>&amp;p=<:siteusers_pagenum:>&amp;pp=<:siteusers_perpage:>&amp;<:search_param:>">First Name</a></th>
+            <th bgcolor="#FFFFFF" nowrap> <a href="<:script:>?<:sorthelp name2:>&amp;p=<:siteusers_pagenum:>&amp;pp=<:siteusers_perpage:>&amp;<:search_param:>">Last Name</a></th>
+	    <th>&nbsp;</th>
           </tr>
           <tr class="inline_form">
-            <td><input type="text" name="id" size="4" id="id" value="<:cgi id:>" class="inline" /></td>
-            <td><input type="text" name="userId" size="10" id="userId" value="<:cgi userId:>" class="inline" /></td>
-            <td><input type="text" name="name1" size="20" id="name1" value="<:cgi name1:>" class="inline" /></td>
-            <td><input type="text" name="name2" size="20" id="name2" value="<:cgi name2:>" class="inline" /></td>
+            <td width="5%" align="center"><input type="text" name="id" size="6" id="id" value="<:cgi id:>" class="inline" /></td>
+            <td width="20%"><input type="text" name="userId" size="20" id="userId" value="<:cgi userId:>" class="inline" /></td>
+            <td width="33%"><input type="text" name="name1" size="40" id="name1" value="<:cgi name1:>" class="inline" /></td>
+            <td width="33%"><input type="text" name="name2" size="40" id="name2" value="<:cgi name2:>" class="inline" /></td>
 	    <td><input type="submit" value="Filter" /></td>
           </tr>
-<div id="results">
+          <tr> 
+<:ifAjax:></table><div id="results"><:or:><:eif:>
 <:include admin/users/list_low.tmpl:>
 </div>
-        </table>
-</form>
-<:if And "0" [ifAjax]:>
+<:ifAjax:></form><:or:><:eif:>
+
+<:if Ajax:>
 <script>
 function do_search () {
      var f = $('search');
@@ -52,25 +48,25 @@ function do_search () {
         asynchronous: true
        });
 }
-new Form.Element.Observer($('id'), 1.5, 
+new Form.Element.Observer($('id'), 0.5, 
    function(term) {
      do_search();
    }
 );
-new Form.Element.Observer($('userId'), 1.5, 
+new Form.Element.Observer($('userId'), 0.5, 
    function(term) {
      do_search();
    }
 );
-new Form.Element.Observer($('name1'), 1.5, 
+new Form.Element.Observer($('name1'), 0.5, 
    function(term) {
      do_search();
    }
 );
-new Form.Element.Observer($('name2'), 1.5, 
+new Form.Element.Observer($('name2'), 0.5, 
    function(term) {
      do_search();
    }
 );
 </script>
-<:or And:><:eif And:>
+<:or Ajax:><:eif Ajax:>
