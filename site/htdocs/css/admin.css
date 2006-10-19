@@ -19,3 +19,6 @@ th {  font-size: 10px; font-weight: bold; background-color: #999999; color: #FFF
 h3 {  font-size: 14px}
 h4 {  font-size: 12px}
 .version { font-size: 10px }
+input.inline { border-style: none; }
+tr.inline_form { background-color: #8080C0 }
+ 

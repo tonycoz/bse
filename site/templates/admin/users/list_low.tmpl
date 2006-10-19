@@ -1,0 +1,13 @@
+          <:if Siteusers:> <: iterator begin siteusers :> 
+          <tr bgcolor="#FFFFFF"> 
+	    <td align="center" nowrap="nowrap">  <:if Or [ifUserCan bse_members_user_edit] [ifUserCan bse_members_user_view]:><a href="<:script:>?<:ifUserCan bse_members_user_edit:>a_edit<:or:>a_view<:eif:>=1&id=<:siteuser id:>"><:siteuser id:></a><:or Or:><:siteuser id:><:eif Or:></td>
+            <td nowrap> <:if Or [ifUserCan bse_members_user_edit] [ifUserCan bse_members_user_view]:><a href="<:script:>?<:ifUserCan bse_members_user_edit:>a_edit<:or:>a_view<:eif:>=1&id=<:siteuser id:>"><:siteuser userId:></a><:or Or:><:siteuser userId:><:eif Or:></td>
+            <td valign="top"><:siteuser name1:></td>
+            <td valign="top"><:siteuser name2:></td>
+          </tr>
+          <: iterator end siteusers :> 
+          <:or Siteusers:> 
+          <tr bgcolor="#FFFFFF"> 
+            <td colspan="4" align="center">Your system has no users.</td>
+          </tr>
+          <:eif Siteusers:> 

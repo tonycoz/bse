@@ -54,6 +54,8 @@ sub flags {
     sort { lc($flags{$a}) cmp lc($flags{$b}) } @valid;
 }
 
+my %nosearch = map { $_ => 1 } qw/id password confirmSecret/;
+
 sub req_list {
   my ($class, $req, $msg) = @_;
   
@@ -65,6 +67,31 @@ sub req_list {
     $msg = join("<br />", map escape_html($_), $cgi->param('m'));
   }
   my @users = SiteUsers->all;
+  my $id = $cgi->param('id');
+  defined $id or $id = '';
+  if ($id =~ /^\d+$/) {
+    @users = grep $_->{id} == $id, @users;
+  }
+  else {
+    my %fields;
+    my @cols = grep !$nosearch{$_}, SiteUser->columns;
+    for my $col (@cols, 'name') {
+      my $value = $cgi->param($col);
+      if (defined $value && $value =~ /\S/) {
+	$fields{$col} = $value;
+      }
+    }
+    if (keys %fields) {
+      my $name = delete $fields{name};
+      if (defined $name) {
+	@users = grep "$_->{name1} $_->{name2}" =~ /\Q$name/i, @users;
+      }
+      for my $col (keys %fields) {
+	my $value_re = qr/\Q$fields{$col}/i;
+	@users = grep $_->{$col} =~ /$value_re/, @users;
+      }
+    }
+  }
   my ($sortby, $reverse) =
     sorter(data=>\@users, cgi=>$cgi, sortby=>'userId', session=>$req->session,
 	   name=>'siteusers', fields=> { id => {numeric => 1 } });
@@ -73,7 +100,7 @@ sub req_list {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(undef, $req->cgi, $req->cfg),
+     BSE::Util::Tags->basic(undef, $cgi, $req->cfg),
      BSE::Util::Tags->secure($req),
      BSE::Util::Tags->admin(undef, $req->cfg),
      message => $msg,
@@ -85,11 +112,7 @@ sub req_list {
      sorthelp => [ \&tag_sorthelp, $sortby, $reverse ],
     );
 
-  my $template = 'admin/users/list';
-  my $t = $req->cgi->param('_t');
-  $template .= "_$t" if defined($t) && $t =~ /^\w+$/;
-
-  return BSE::Template->get_response($template, $req->cfg, \%acts);
+  return $req->dyn_response('admin/users/list', \%acts);
 }
 
 sub tag_if_required {

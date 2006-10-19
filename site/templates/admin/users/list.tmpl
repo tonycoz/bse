@@ -15,31 +15,62 @@
 <:iterator end repeats:>
 <:ifLastSiteusersPage:>&gt;&gt; &gt;&gt;&gt;&gt;<:or:><a href="<:script:>?s=<:sortby:>&r=<:reverse:>&p=<:nextSiteusersPage:>&pp=<:siteusers_perpage:>">&gt;&gt;</a> <a href="<:script:>?s=<:sortby:>&r=<:reverse:>&p=<:siteusers_pagecount:>&pp=<:siteusers_perpage:>">&gt;&gt;&gt;&gt;</a><:eif:>
 </p>
-<form method="post" action="<:script:>">
-<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
-    <tr>
-      <td>
-        <table cellpadding="6" border="0" cellspacing="1">
+<form method="get" action="<:script:>" id="search">
+        <table cellpadding="2" border="0" cellspacing="1">
           <tr> 
+            <th bgcolor="#FFFFFF" nowrap> <a href="<:script:>?<:sorthelp id:>&p=<:siteusers_pagenum:>&pp=<:siteusers_perpage:>">Id</a></th>
             <th bgcolor="#FFFFFF" nowrap> <a href="<:script:>?<:sorthelp userId:>&p=<:siteusers_pagenum:>&pp=<:siteusers_perpage:>">Logon</a></th>
             <th bgcolor="#FFFFFF" nowrap> <a href="<:script:>?<:sorthelp name1:>&p=<:siteusers_pagenum:>&pp=<:siteusers_perpage:>">First Name</a></th>
             <th bgcolor="#FFFFFF" nowrap> <a href="<:script:>?<:sorthelp name2:>&p=<:siteusers_pagenum:>&pp=<:siteusers_perpage:>">Last Name</a></th>
           </tr>
-          <:if Siteusers:> <: iterator begin siteusers :> 
-          <tr bgcolor="#FFFFFF"> 
-            <td nowrap> <a href="<:script:>?a_edit=1&id=<:siteuser id:>"><:siteuser userId:></a></td>
-            <td valign="top"><:siteuser name1:></td>
-            <td valign="top"><:siteuser name2:></td>
+          <tr class="inline_form">
+            <td><input type="text" name="id" size="4" id="id" value="<:cgi id:>" class="inline" /></td>
+            <td><input type="text" name="userId" size="10" id="userId" value="<:cgi userId:>" class="inline" /></td>
+            <td><input type="text" name="name1" size="20" id="name1" value="<:cgi name1:>" class="inline" /></td>
+            <td><input type="text" name="name2" size="20" id="name2" value="<:cgi name2:>" class="inline" /></td>
+	    <td><input type="submit" value="Filter" /></td>
           </tr>
-          <: iterator end siteusers :> 
-          <:or Siteusers:> 
-          <tr bgcolor="#FFFFFF"> 
-            <td colspan="4" align="center">Your system has no users.</td>
-          </tr>
-          <:eif Siteusers:> 
+<div id="results">
+<:include admin/users/list_low.tmpl:>
+</div>
         </table>
-</td>
-</tr>
-</table>
 </form>
-
+<:if And "0" [ifAjax]:>
+<script>
+function do_search () {
+     var f = $('search');
+     var par = '_t=low&id=' + encodeURIComponent(f.elements['id'].value);
+     par = par + '&userId=' + encodeURIComponent(f.elements['userId'].value);
+     par = par + '&name1=' + encodeURIComponent(f.elements['name1'].value);
+     par = par + '&name2=' + encodeURIComponent(f.elements['name2'].value);
+     var updater = new Ajax.Updater(
+       'results',
+       '/cgi-bin/admin/siteusers.pl',
+       {
+	method: 'get',
+	parameters: par,
+        asynchronous: true
+       });
+}
+new Form.Element.Observer($('id'), 1.5, 
+   function(term) {
+     do_search();
+   }
+);
+new Form.Element.Observer($('userId'), 1.5, 
+   function(term) {
+     do_search();
+   }
+);
+new Form.Element.Observer($('name1'), 1.5, 
+   function(term) {
+     do_search();
+   }
+);
+new Form.Element.Observer($('name2'), 1.5, 
+   function(term) {
+     do_search();
+   }
+);
+</script>
+<:or And:><:eif And:>
