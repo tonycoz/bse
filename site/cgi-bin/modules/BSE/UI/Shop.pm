@@ -1303,7 +1303,7 @@ sub req_location {
   my $cgi = $req->cgi;
   my $location_id = $cgi->param('location_id');
   my $location;
-  if (defined $location_id && $location_id =~ /^\d$/) {
+  if (defined $location_id && $location_id =~ /^\d+$/) {
     $location = BSE::TB::Locations->getByPkey($location_id);
     my %acts;
     %acts =

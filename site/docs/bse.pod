@@ -10,6 +10,17 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_49
+
+=over
+
+=item *
+
+the location display in the shop code only accepted single digit
+location ids.
+
+=back
+
 =head2 0.15_48
 
 =over
