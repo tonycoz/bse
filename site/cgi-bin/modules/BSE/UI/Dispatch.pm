@@ -2,43 +2,55 @@ package BSE::UI::Dispatch;
 use strict;
 use Carp 'confess';
 
+sub new {
+  my ($class, %opts) = @_;
+
+  bless \%opts, $class;
+}
+
 sub dispatch {
-  my ($class, $req) = @_;
+  my ($self, $req) = @_;
 
   my $result;
-  $class->check_secure($req, \$result)
+  $self->check_secure($req, \$result)
     or return $result;
 
-  my $actions = $class->actions;
+  my $actions = $self->actions;
 
-  my $prefix = $class->action_prefix;
+  my $prefix = $self->action_prefix;
   my $cgi = $req->cgi;
   my $action;
-  for my $check (keys %$actions) {
-    if ($cgi->param("$prefix$check") || $cgi->param("$prefix$check.x")) {
-      $action = $check;
-      last;
-    }
+  if (ref $self) {
+    $action = $self->action;
+    $actions->{$action} or undef $action;
   }
-  if (!$action && $prefix ne 'a_') {
+  unless ($action) {
     for my $check (keys %$actions) {
-      if ($cgi->param("a_$check") || $cgi->param("a_$check.x")) {
+      if ($cgi->param("$prefix$check") || $cgi->param("$prefix$check.x")) {
 	$action = $check;
 	last;
+      }
+    }
+    if (!$action && $prefix ne 'a_') {
+      for my $check (keys %$actions) {
+	if ($cgi->param("a_$check") || $cgi->param("a_$check.x")) {
+	  $action = $check;
+	  last;
+	}
       }
     }
   }
   my @extras;
   unless ($action) {
-    ($action, @extras) = $class->other_action($cgi);
+    ($action, @extras) = $self->other_action($cgi);
   }
-  $action ||= $class->default_action;
+  $action ||= $self->default_action;
 
-  $class->check_action($req, $action, \$result)
+  $self->check_action($req, $action, \$result)
     or return $result;
 
   my $method = "req_$action";
-  $class->$method($req, @extras);
+  $self->$method($req, @extras);
 }
 
 sub check_secure {
@@ -84,6 +96,14 @@ sub error {
     );
 
   return $req->response($template, \%acts);
+}
+
+sub controller_id {
+  $_[0]{controller_id};
+}
+
+sub action {
+  $_[0]{action};
 }
 
 1;

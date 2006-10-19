@@ -112,6 +112,7 @@ sub get_booking {
   require BSE::TB::SeminarBookings;
   my @result = BSE::TB::SeminarBookings->
     getBy(session_id => $self->{id}, siteuser_id => $siteuser_id);
+  @result or return;
 
   return $result[0];
 }

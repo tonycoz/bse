@@ -35,6 +35,12 @@ sub session_info {
   BSE::DB->query(seminarSessionInfo => $self->{id});
 }
 
+sub session_info_unbooked {
+  my ($self, $user) = @_;
+
+  BSE::DB->query(seminarSessionInfoUnbooked => $user->{id}, $self->{id});
+}
+
 sub future_session_info {
   my ($self) = @_;
 

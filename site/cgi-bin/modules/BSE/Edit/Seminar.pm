@@ -2,7 +2,7 @@ package BSE::Edit::Seminar;
 use strict;
 use base 'BSE::Edit::Product';
 use BSE::TB::Seminars;
-use BSE::Util::Tags qw(tag_hash tag_hash_mbcs);
+use BSE::Util::Tags qw(tag_hash tag_hash_mbcs tag_hash_plain);
 use BSE::Util::SQL qw(now_sqldatetime);
 use DevHelp::Date qw(dh_parse_date_sql dh_parse_time_sql);
 use constant SECT_SEMSESSION_VALIDATION => 'BSE Seminar Session Validation';
@@ -459,7 +459,7 @@ sub req_delsemsession {
   my $other_session;
   if ($other_session_id) {
     if ($other_session_id != -1) {
-      $other_session = BSE::TB::SeminarSession->getByPkey($other_session_id);
+      $other_session = BSE::TB::SeminarSessions->getByPkey($other_session_id);
       if (!$other_session 
 	  || $other_session->{seminar_id} != $article->{id}
 	  || $other_session->{id} == $session->{id}) {

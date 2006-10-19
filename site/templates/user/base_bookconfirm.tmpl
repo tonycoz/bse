@@ -1,0 +1,32 @@
+<:wrap base.tmpl title=>"Confirm Booking":>
+<h1>Confirm Booking</h1>
+<form action="<:script:>/user/book" method="post" name="book">
+<input type="hidden" name="id" value="<:seminar id:>" />
+<input type="hidden" name="session_id" value="<:session id:>" />
+<:iterator begin options:>
+<input type="hidden" name="<:option id:>" value="<:option value:>" />
+<:iterator end options:>
+
+<table>
+  <tr>
+    <th>Seminar:</th>
+    <td><:seminar title:></td>
+  </tr>
+  <tr>
+    <th>Session:</th>
+    <td><:location description:> <:date "%H:%M %d/%m/%Y" session when_at:></td>
+  </tr>
+<:iterator begin options:>
+  <tr>
+   <th><:option desc:></th>
+   <td><:option display:></td>
+  </tr>
+<:iterator end options:>
+  <tr>
+   <th>Customer<br />Instructions:</th>
+   <td><textarea name="customer_instructions" cols="70" rows="10" readonly="readonly"/><:old customer_instructions:></textarea></td>
+  </tr>
+  <tr>
+    <td colspan="2"><input type="submit" value="Book Session &gt;&gt;" /></td>
+  </tr>
+</table>

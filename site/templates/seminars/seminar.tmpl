@@ -1,4 +1,4 @@
- <:wrap base.tmpl:> <:embed start:><:admin:>
+<:wrap base.tmpl:> <:embed start:><:admin:>
 <script>
 function show_location(locationid) {
   window.open('/cgi-bin/shop.pl?a_location=1&amp;location_id='+locationid, 
@@ -39,8 +39,8 @@ function show_location(locationid) {
 <:iterator end stepcats:>
 </ul></font>
 <:or StepCats:><:eif StepCats:>
-<:if Product retailPrice:>
-<form name="ff" method="POST" action="/cgi-bin/shop.pl">
+<:if Or [seminar retailPrice] [cfg seminars free_bookings 1]:>
+<form name="ff" action="<:ifSeminar retailPrice:>/cgi-bin/shop.pl<:or:>/cgi-bin/nuser.pl/user/bookconfirm<:eif:>">
 <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Select a seminar session to attend:</font></p>              
      <:if Cfg seminar locations:>
        <:iterator begin locations:>
@@ -63,6 +63,12 @@ function show_location(locationid) {
 </tr>
 </table>
   <:or Options:><:eif Options:>
+<:if Eq [seminar retailPrice] "0":>
+<p>
+         <font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b>Special Instructions:</b></font><br />
+         <textarea name="customer_instructions" cols="70" rows="10"></textarea>
+      </p>
+<:or Eq:><:eif Eq:>      
   <:ifProduct leadTime:> 
    
   <p><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FE7F00">Usually ships in:</font><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"> <:seminar leadTime:> <:if Eq [product leadTime] "1":>day<:or Eq:>days<:eif Eq:></font></b>
@@ -71,6 +77,7 @@ function show_location(locationid) {
 
 <table border="0" cellspacing="0" cellpadding="0">
     <tr valign="middle" align="center"> 
+<:if Seminar retailPrice:>
       <td bgcolor="#666666"> 
         <table width="100%" border="0" cellspacing="1" cellpadding="4" height="30">
           <tr valign="middle" align="center"> 
@@ -81,16 +88,22 @@ function show_location(locationid) {
           </tr>
         </table>
       </td>
+<:or Seminar:><:eif Seminar:>
       <td nowrap> &nbsp; 
         <input type="hidden" name="id" value="<:seminar id:>">
+<:if Seminar retailPrice:>
         <input type="hidden" name="quantity" value="1">
         <input type="submit" name="add" value="Add to cart">
         <input type="submit" name="cart" value="View cart">
+<:or Seminar:>
+        <input type="submit" name="book" value="Book this seminar" />
+<:eif Seminar:>
       </td>
     </tr>
   </table>
 </form>
-<:or Product:><br>
+<:or Or:>
+<br>
 <br>
 <table border="0" cellspacing="0" cellpadding="1" bgcolor="#CCCCCC">
   <tr>
@@ -123,7 +136,7 @@ function show_location(locationid) {
   </tr>
 </table>
 <font face="Arial, Helvetica, sans-serif"><b><font size="4"> </font></b></font><:eif 
-Product:> 
+Or:> 
 <p><br>
   <a href="/shop/index.html"><img src="/images/store/browse_more.gif" width="133" height="21" border="0"></a>
 </p><br>

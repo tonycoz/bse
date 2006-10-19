@@ -30,6 +30,49 @@ the session_popup tag on the edit booking page now uses a different
 date format.  This can also be configured with
 [seminars].popup_date_format
 
+=item *
+
+BSE::Edit::Seminar wasn't importing tag_hash_plain, this caused some
+errors in emails sent when cancelling a session for example.
+
+=item *
+
+deleting a seminar session was calling a class method on the wrong
+class.
+
+=item *
+
+the admin logon form target now accept the t template selection option
+
+=item *
+
+the t paremeter is now recognized for the addattendee1 and
+addattendee2 templates
+
+=item *
+
+a new user side action dispatching mechanism is in place, all new user
+side functionality will be going via cgi-bin/nuser.pl.  This splits
+the requests it takes into 2 parts, one is a controller id and the
+second is the action to take on that controller.  These can either be
+supplied as part of the path if your web server supports PATH_INFO or
+in parameters.  Eg. to use the bookseminar target of the user
+controller you can either request:
+
+ /cgi-bin/nuser.pl/user/bookseminar?id=50
+
+or
+
+  /cgi-bin/nuser.pl?_p=user&a_bookseminar=1&id=50
+
+=item *
+
+a user can now book seminar sessions without going via the shop if
+they're free.  The script is /cgi-bin/nuser.pl/user - if your server
+doesn't support PATH_INFO then you can use /cgi-bin/nuser.pl and set
+_p to user.  The targets under this script are: bookseminar,
+bookconfirm, book, and bookcomplete.
+
 =back
 
 =head2 0.15_47

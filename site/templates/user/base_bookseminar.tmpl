@@ -1,0 +1,39 @@
+<:wrap base.tmpl title=>"Book Seminar Session":>
+<h1>Book Seminar Session</h1>
+<:ifMessage:>
+<p><b><:message:></b></p>
+<:or:><:eif:> 
+<!-- leave this as get, since submitting it just displays a new page -->
+<form action="<:script:>/user/bookconfirm" method="get" name="bookconfirm">
+<input type="hidden" name="id" value="<:seminar id:>" />
+<table>
+  <tr>
+    <th>Seminar:</th>
+    <td><:seminar title:></td>
+  </tr>
+  <tr>
+    <th>Session:</th>
+    <td><select name="session_id">
+<option value="">(select a session)</option>
+<:iterator begin sessions:>
+<option value="<:session session_id:>" <:ifEq [old session_id] [session session_id]:>selected="selected"<:or:><:eif:>><:session description:> <:date "%H:%M %d/%m/%Y" session when_at:></option>
+<:iterator end sessions:>
+        </select></td>
+    <td><:error_img session_id:></td>
+  </tr>
+<:iterator begin options:>
+  <tr>
+   <th><:option desc:></th>
+   <td><:option_popup:></td>
+   <td></td>
+  </tr>
+<:iterator end options:>
+  <tr>
+   <th>Customer<br />Instructions:</th>
+   <td><textarea name="customer_instructions" cols="70" rows="10"><:old customer_instructions:></textarea></td>
+   <td><:error_img customer_instructions:></td>
+  </tr>
+  <tr>
+    <td colspan="3"><input type="submit" value="Book Session &gt;&gt;" /></td>
+  </tr>
+</table>

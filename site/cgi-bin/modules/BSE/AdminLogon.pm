@@ -54,7 +54,7 @@ sub req_logon_form {
      error_img => [ \&tag_error_img, $req->cfg, $errors ],
     );
 
-  return BSE::Template->get_response('admin/logon', $req->cfg, \%acts);
+  return $req->dyn_response('admin/logon', \%acts);
 }
 
 sub req_logon {

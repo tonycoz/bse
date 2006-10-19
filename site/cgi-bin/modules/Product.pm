@@ -53,4 +53,35 @@ sub is_start_sub_only {
   $self->{subscription_usage} == SUBUSAGE_START_ONLY;
 }
 
+sub _get_prod_options {
+  my ($product, $cfg, @values) = @_;
+
+  require BSE::CfgInfo;
+  my $avail_options = BSE::CfgInfo::product_options($cfg);
+  my @opt_names = split /,/, $product->{options};
+  push @values, '' while @values < @opt_names;
+  my %values;
+  @values{@opt_names} = @values;
+
+  my @sem_options = map 
+    +{ 
+      id => $_, 
+      %{$avail_options->{$_}},
+      value => $values{$_},
+     }, @opt_names;
+  for my $option (@sem_options) {
+    $option->{display} = $option->{labels}{$option->{value}};
+  }
+
+  return @sem_options;
+}
+
+sub option_descs {
+  my ($self, $cfg, $rvalues) = @_;
+
+  $rvalues or $rvalues = [ ];
+
+  return $self->_get_prod_options($cfg, @$rvalues);
+}
+
 1;

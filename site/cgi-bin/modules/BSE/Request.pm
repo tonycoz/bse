@@ -169,6 +169,7 @@ sub dyn_response {
 
   my $base_template = $template;
   my $t = $req->cgi->param('t');
+  $t or $t = $req->cgi->param('_t');
   if ($t && $t =~ /^\w+$/) {
     $template .= "_$t";
   }
@@ -393,6 +394,12 @@ sub get_article {
     or return;
 
   $article;
+}
+
+sub text {
+  my ($self, $id, $default) = @_;
+
+  $default;
 }
 
 1;

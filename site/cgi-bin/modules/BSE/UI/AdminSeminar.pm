@@ -179,11 +179,6 @@ sub _loc_show_common {
 			'session', 'sessions'),
     );
 
-  my $t = $req->cgi->param('_t');
-  if ($t && $t =~ /^\w+$/) {
-    $template .= "_$t";
-  }
-
   return $req->dyn_response($template, \%acts);
 }
 
@@ -324,7 +319,7 @@ sub req_addattendseminar {
      error_img => [ \&tag_error_img, $req->cfg, $errors ],
     );
   
-  return $req->dyn_response('admin/addattendee1.tmpl', \%acts);
+  return $req->dyn_response('admin/addattendee1', \%acts);
 }
 
 sub req_addattendsession {
@@ -380,7 +375,7 @@ sub req_addattendsession {
      option_popup => [ \&tag_option_popup, $req->cgi, \$current_option ],
     );
   
-  return $req->dyn_response('admin/addattendee2.tmpl', \%acts);
+  return $req->dyn_response('admin/addattendee2', \%acts);
 }
 
 sub tag_option_popup {
@@ -746,23 +741,7 @@ sub req_savebooking {
 sub _get_sem_options {
   my ($cfg, $seminar, @values) = @_;
 
-  my $avail_options = product_options($cfg);
-  my @opt_names = split /,/, $seminar->{options};
-  push @values, '' while @values < @opt_names;
-  my %values;
-  @values{@opt_names} = @values;
-
-  my @sem_options = map 
-    +{ 
-      id => $_, 
-      %{$avail_options->{$_}},
-      value => $values{$_},
-     }, @opt_names;
-  for my $option (@sem_options) {
-    $option->{display} = $option->{labels}{$option->{value}};
-  }
-
-  return @sem_options;
+  $seminar->option_descs($cfg, \@values);
 }
 
 sub tag_session_popup {

@@ -134,11 +134,13 @@ site/cgi-bin/modules/BSE/UI/Affiliate.pm
 site/cgi-bin/modules/BSE/UI/Dispatch.pm
 site/cgi-bin/modules/BSE/UI/Formmail.pm
 site/cgi-bin/modules/BSE/UI/Image.pm
+site/cgi-bin/modules/BSE/UI/NUser.pm
 site/cgi-bin/modules/BSE/UI/Page.pm
 site/cgi-bin/modules/BSE/UI/Shop.pm
 site/cgi-bin/modules/BSE/UI/SiteuserCommon.pm
 site/cgi-bin/modules/BSE/UI/SiteUserUpdate.pm
 site/cgi-bin/modules/BSE/UI/SubAdmin.pm
+site/cgi-bin/modules/BSE/UI/User.pm
 site/cgi-bin/modules/BSE/UserReg.pm
 site/cgi-bin/modules/BSE/Util/DynSort.pm
 site/cgi-bin/modules/BSE/Util/DynamicTags.pm
@@ -186,6 +188,8 @@ site/cgi-bin/modules/Squirrel/Row.pm
 site/cgi-bin/modules/Squirrel/Table.pm
 site/cgi-bin/modules/Squirrel/Template.pm
 site/cgi-bin/modules/Util.pm
+site/cgi-bin/nuser.fcgi
+site/cgi-bin/nuser.pl
 site/cgi-bin/page.fcgi
 site/cgi-bin/page.pl
 site/cgi-bin/printable.pl
@@ -383,6 +387,7 @@ site/templates/admin/users/groupmembers.tmpl
 site/templates/admin/users/list.tmpl
 site/templates/admin/users/view.tmpl
 site/templates/admin/users/view_bookings.tmpl
+site/templates/admin/user_book_seminar.tmpl
 site/templates/admin/xbase.tmpl
 site/templates/affiliate.tmpl
 site/templates/base.tmpl
@@ -452,6 +457,9 @@ site/templates/user/admin_edit_seminar.tmpl
 site/templates/user/admin_unbook_seminar.tmpl
 site/templates/user/alreadyblacklisted_base.tmpl
 site/templates/user/base_orderdetail.tmpl
+site/templates/user/base_bookcomplete.tmpl
+site/templates/user/base_bookconfirm.tmpl
+site/templates/user/base_bookseminar.tmpl
 site/templates/user/blacklistdone_base.tmpl
 site/templates/user/cantunsub_base.tmpl
 site/templates/user/confirmed_base.tmpl
