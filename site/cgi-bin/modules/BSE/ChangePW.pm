@@ -1,8 +1,8 @@
 package BSE::ChangePW;
 use strict;
 use BSE::Util::Tags qw(tag_error_img);
-use BSE::Permissions;
 use DevHelp::HTML;
+use base 'BSE::UI::AdminDispatch';
 
 my %actions =
   (
@@ -10,20 +10,16 @@ my %actions =
    change=>1
   );
 
-sub dispatch {
-  my ($class, $req) = @_;
+sub actions {
+  \%actions;
+}
 
-  my $cgi = $req->cgi;
-  my $action;
-  for my $check (keys %actions) {
-    if ($cgi->param("a_$check")) {
-      $action = $check;
-      last;
-    }
-  }
-  $action ||= 'form';
-  my $method = "req_$action";
-  $class->$method($req);
+sub rights {
+  +{}
+}
+
+sub default_action {
+  'form';
 }
 
 sub req_form {
@@ -49,9 +45,7 @@ sub req_form {
      error_img => [ \&tag_error_img, $req->cfg, $errors ],
     );
 
-  my $template = 'admin/changepw';
-
-  return BSE::Template->get_response($template, $req->cfg, \%acts);
+  return $req->dyn_response('admin/changepw', \%acts);
 }
 
 sub req_change {

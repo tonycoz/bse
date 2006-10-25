@@ -640,6 +640,7 @@ create table admin_groups (
   name varchar(80) not null,
   description varchar(255) not null,
   perm_map varchar(255) not null,
+  template_set varchar(80) not null default '',
   primary key (base_id),
   unique (name)
 );

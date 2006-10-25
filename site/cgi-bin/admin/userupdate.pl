@@ -6,7 +6,6 @@ use FindBin;
 use lib "$FindBin::Bin/../modules";
 use BSE::DB;
 use BSE::Request;
-use BSE::Template;
 use Carp 'confess';
 use BSE::UI::SiteUserUpdate;
 
@@ -15,4 +14,4 @@ $SIG{__DIE__} = sub { confess $@ };
 my $req = BSE::Request->new;
 
 my $result = BSE::UI::SiteUserUpdate->dispatch($req);
-BSE::Template->output_result($req, $result);
+$req->output_result($result);

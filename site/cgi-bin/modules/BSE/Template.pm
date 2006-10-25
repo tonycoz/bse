@@ -4,12 +4,21 @@ use Squirrel::Template;
 use Carp 'confess';
 
 sub get_page {
-  my ($class, $template, $cfg, $acts, $base_template) = @_;
+  my ($class, $template, $cfg, $acts, $base_template, $rsets) = @_;
 
-  my @dirs = $class->template_dirs($cfg);
+  my @conf_dirs = $class->template_dirs($cfg);
   my $file = $cfg->entry('templates', $template) || $template;
   $file =~ /\.\w+$/ or $file .= ".tmpl";
-
+  my @dirs;
+  if ($rsets && @$rsets) {
+    for my $set (@$rsets) {
+      push @dirs, map "$_/$set", @conf_dirs;
+    }
+    push @dirs, @conf_dirs;
+  }
+  else {
+    @dirs = @conf_dirs;
+  }
   
   my $obj = Squirrel::Template->new(template_dir => \@dirs);
 
@@ -86,12 +95,13 @@ sub show_literal {
 }
 
 sub get_response {
-  my ($class, $template, $cfg, $acts, $base_template) = @_;
+  my ($class, $template, $cfg, $acts, $base_template, $rsets) = @_;
 
   my $result =
     {
      type => $class->get_type($cfg, $template),
-     content => scalar($class->get_page($template, $cfg, $acts, $base_template)),
+     content => scalar($class->get_page($template, $cfg, $acts, 
+					$base_template, $rsets)),
     };
   push @{$result->{headers}}, "Content-Length: ".length($result->{content});
 
@@ -169,6 +179,9 @@ sub get_source {
 
 sub output_result {
   my ($class, $req, $result) = @_;
+
+  $result 
+    or return;
 
   select STDOUT;
   $| = 1;

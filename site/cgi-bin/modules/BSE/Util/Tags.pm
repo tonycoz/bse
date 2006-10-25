@@ -289,6 +289,9 @@ sub static {
        elsif ($fmt eq 'x') {
 	 return escape_xml(unescape_html($value));
        }
+       elsif ($fmt eq 'z') {
+	 return unescape_html($value);
+       }
        return $value;
      },
     );  

@@ -2,8 +2,9 @@ package BSE::AdminUsers;
 use strict;
 use BSE::Util::Tags qw/tag_error_img/;
 use BSE::Permissions;
-use DevHelp::HTML;
+use DevHelp::HTML qw(:default popup_menu);
 use BSE::CfgInfo qw(admin_base_url);
+use BSE::Template;
 
 my %actions =
   (
@@ -157,7 +158,7 @@ sub req_users {
 
   my %acts;
   %acts = $class->common_tags($req, $msg, $errors);
-  return BSE::Template->get_response('admin/userlist', $req->cfg, \%acts);
+  return $req->dyn_response('admin/userlist', \%acts);
 }
 
 sub req_adduserform {
@@ -168,7 +169,7 @@ sub req_adduserform {
 
   my %acts;
   %acts = $class->common_tags($req, $msg, $errors);
-  return BSE::Template->get_response('admin/adduser', $req->cfg, \%acts);
+  return $req->dyn_response('admin/adduser', \%acts);
 }
 
 sub req_groups {
@@ -177,16 +178,20 @@ sub req_groups {
   my %acts;
   %acts = $class->common_tags($req, $msg, $errors);
 
-  return BSE::Template->get_response('admin/grouplist', $req->cfg, \%acts);
+  return $req->dyn_response('admin/grouplist', \%acts);
 }
 
 sub req_addgroupform {
   my ($class, $req, $msg, $errors) = @_;
 
   my %acts;
-  %acts = $class->common_tags($req, $msg, $errors);
+  %acts =
+    (
+     $class->common_tags($req, $msg, $errors),
+     template_set_popup => [ \&tag_template_set_popup, $req, undef ],
+    );
 
-  return BSE::Template->get_response('admin/addgroup', $req->cfg, \%acts);
+  return $req->dyn_response('admin/addgroup', \%acts);
 }
 
 sub refresh {
@@ -283,17 +288,27 @@ sub req_addgroup {
   defined $name && length $name
     or $errors{name} = 'No name supplied';
   $description = '' unless defined $description;
+  require BSE::TB::AdminGroups;
+  my %valid_sets = map { $_ => 1 } 
+    BSE::TB::AdminGroups->group_template_set_values($req->cfg);
+  my $template_set = $cgi->param('template_set');
+  defined $template_set or $template_set = '';
+  exists $valid_sets{$template_set}
+    or $errors{template_set} = 
+      $req->text(bse_invalid_group_template_set =>
+		 'Please select a valid template_set');
+					  
   keys %errors
     and return $class->req_addgroupform($req, undef, \%errors);
-  require BSE::TB::AdminGroups;
   my $old = BSE::TB::AdminGroups->getBy(name=>$name)
     and return $class->req_addgroupform($req, "Group '$name' already exists");
   my %group =
     (
-     type => 'g',
-     name => $name, 
-     description => $description,
-     perm_map => '',
+     type	   => 'g',
+     name	   => $name, 
+     description   => $description,
+     template_set  => $template_set,
+     perm_map	   => '',
     );
   my @cols = BSE::TB::AdminGroup->columns;
   shift @cols;
@@ -332,6 +347,20 @@ sub tag_if_gperm_set {
   substr($obj->{perm_map}, $id, 1);
 }
 
+sub tag_template_set_popup {
+  my ($req, $group) = @_;
+
+  my $set = $group ? $group->{template_set} : '';
+  require BSE::TB::AdminGroups;
+  my @values = BSE::TB::AdminGroups->group_template_set_values($req->cfg);
+  my %labels = BSE::TB::AdminGroups->group_template_set_labels($req);
+
+  popup_menu(-name => 'template_set',
+	     -values => \@values,
+	     -labels => \%labels,
+	     -default => $set);
+}
+
 sub showuser_tags {
   my ($class, $req, $user, $msg, $errors) = @_;
 
@@ -365,11 +394,7 @@ sub req_showuser {
      $class->showuser_tags($req, $user, $msg, $errors),
     );
 
-  my $template = 'admin/showuser';
-  my $t = $cgi->param('_t');
-  $template .= "_$t" if $t && $t =~ /^\w+$/;
-
-  return BSE::Template->get_response($template, $req->cfg, \%acts);
+  return $req->dyn_response('admin/showuser', \%acts);
 }
 
 sub iter_get_kids {
@@ -513,11 +538,7 @@ sub req_showuserart {
      $class->article_tags($req, $user, $article),
     );
 
-  my $template = 'admin/showuserart';
-  my $t = $cgi->param('_t');
-  $template .= "_$t" if $t && $t =~ /^\w+$/;
-
-  return BSE::Template->get_response($template, $req->cfg, \%acts);
+  return $req->dyn_response('admin/showuserart', \%acts);
 }
 
 sub req_showgroupart {
@@ -543,11 +564,7 @@ sub req_showgroupart {
      $class->article_tags($req, $group, $article),
     );
 
-  my $template = 'admin/showgroupart';
-  my $t = $cgi->param('_t');
-  $template .= "_$t" if $t && $t =~ /^\w+$/;
-
-  return BSE::Template->get_response($template, $req->cfg, \%acts);
+  return $req->dyn_response('admin/showgroupart', \%acts);
 }
 
 sub req_showobjectart {
@@ -601,6 +618,7 @@ sub showgroup_tags {
      ([ \&iter_get_gperms, $req->cfg ], 'gperm', 'gperms' ),
      ifGperm_set =>
      [ \&tag_if_gperm_set, $group ],
+     template_set_popup => [ \&tag_template_set_popup, $req, $group ],
     );
 }
 
@@ -620,11 +638,7 @@ sub req_showgroup {
      $class->showgroup_tags($req, $group, $msg, $errors),
     );
 
-  my $template = 'admin/showgroup';
-  my $t = $cgi->param('_t');
-  $template .= "_$t" if $t && $t =~ /^\w+$/;
-
-  return BSE::Template->get_response($template, $req->cfg, \%acts);
+  return $req->dyn_response('admin/showgroup', \%acts);
 }
 
 sub req_saveuser {
@@ -755,19 +769,32 @@ sub req_savegroup {
     or return $class->req_groups($req, "Group id $groupid not found");
   my $description = $cgi->param('description');
   my $name = $cgi->param('name');
-  $group->{description} = $description if defined $description;
-  if (defined $name) {
-    length $name
-      or return $class->req_showgroup($req, undef, { name => 'No name supplied' });
+  my %valid_sets = map { $_ => 1 } 
+    BSE::TB::AdminGroups->group_template_set_values($req->cfg);
+  my %errors;
 
-    if (lc $name ne lc $group->{name}) {
-      require BSE::TB::AdminGroups;
-      my $old = BSE::TB::AdminGroups->getBy(name=>$name)
-	and return $class->req_showgroup($req, undef, 
-					 { name => "Group '$name' already exists" });
-      $group->{name} = $name;
+  my $template_set = $cgi->param('template_set');
+  if (defined $template_set and !exists $valid_sets{$template_set}) {
+    $errors{template_set} = "Invalid template set";
+  }
+  
+  if (defined $name) {
+    if (length $name) {
+      if (lc $name ne lc $group->{name}) {
+	require BSE::TB::AdminGroups;
+	my $old = BSE::TB::AdminGroups->getBy(name=>$name);
+	if ($old) {
+	  $errors{name} = "Group '$name' already exists";
+	}
+      }
+    }
+    else {
+      $errors{name} = 'No name supplied';
     }
   }
+
+  keys %errors
+    and return $class->req_showgroup($req, undef, \%errors);
 
   if ($cgi->param('savegperms') && $req->user_can("admin_group_save_gperms")) {
     my $perms = '';
@@ -780,6 +807,11 @@ sub req_savegroup {
     }
     $group->{perm_map} = $perms;
   }
+
+  defined $name and $group->{name} = $name;
+  defined $template_set and $group->{template_set} = $template_set;
+  defined $description and $group->{description} = $description;
+
   $group->save;
 
   if ($cgi->param('saveusers') && $req->user_can("admin_group_save_users")) {

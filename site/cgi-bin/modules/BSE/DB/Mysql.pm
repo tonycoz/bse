@@ -267,8 +267,8 @@ SQL
 select bs.*, gr.* from admin_base bs, admin_groups gr
   where bs.id = gr.base_id and bs.id = ?
 SQL
-   addAdminGroup => 'insert into admin_groups values(?,?,?,?)',
-   replaceAdminGroup => 'replace into admin_groups values(?,?,?,?)',
+   addAdminGroup => 'insert into admin_groups values(?,?,?,?,?)',
+   replaceAdminGroup => 'replace into admin_groups values(?,?,?,?,?)',
    deleteAdminGroup => 'delete from admin_groups where base_id = ?',
    groupUsers => 'select * from admin_membership where group_id = ?',
    'AdminGroups.userPermissionGroups' => <<SQL,

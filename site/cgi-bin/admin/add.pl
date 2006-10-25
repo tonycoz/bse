@@ -8,7 +8,6 @@ use Articles;
 use Article;
 use BSE::DB;
 use BSE::Request;
-use BSE::Template;
 use BSE::Edit::Base;
 use Carp qw'verbose';
 use Carp 'confess';
@@ -65,20 +64,7 @@ else {
   $result = $obj->noarticle_dispatch($req, $articles);
 }
 
-$| = 1;
-push @{$result->{headers}}, "Content-Type: $result->{type}";
-push @{$result->{headers}}, $req->extra_headers;
-if (exists $ENV{GATEWAY_INTERFACE}
-    && $ENV{GATEWAY_INTERFACE} =~ /^CGI-Perl\//) {
-  require Apache;
-  my $r = Apache->request or die;
-  $r->send_cgi_header(join("\n", @{$result->{headers}})."\n");
-}
-else {
-  print "$_\n" for @{$result->{headers}};
-  print "\n";
-}
-print $result->{content};
+$req->output_result($result);
 
 sub get_class {
   my ($class, $cfg) = @_;

@@ -10,6 +10,7 @@ use BSE::Util::SQL qw/now_datetime/;
 use BSE::SubscriptionTypes;
 use BSE::CfgInfo qw(custom_class);
 use constant SITEUSER_GROUP_SECT => 'BSE Siteuser groups validation';
+use BSE::Template;
 
 my %actions =
   (
@@ -273,10 +274,7 @@ sub _display_user {
 			'booking', 'bookings'),
     );  
 
-  my $t = $req->cgi->param('_t');
-  $template .= "_$t" if defined($t) && $t =~ /^\w+$/;
-
-  return BSE::Template->get_response($template, $req->cfg, \%acts);
+  return $req->dyn_response($template, \%acts);
 }
 
 sub iter_seminar_bookings {
@@ -525,11 +523,7 @@ sub req_addform {
      [ \&tag_if_subscribed_register, $cgi, $req->cfg, \@subs, \$sub_index ],
     );  
 
-  my $template = 'admin/users/add';
-  my $t = $req->cgi->param('_t');
-  $template .= "_$t" if defined($t) && $t =~ /^\w+$/;
-
-  return BSE::Template->get_response($template, $req->cfg, \%acts);
+  return $req->dyn_response('admin/users/add', \%acts);
 }
 
 sub req_add {
@@ -787,7 +781,7 @@ sub req_grouplist {
      $it->make_iterator(undef, 'group', 'groups', \@groups),
     );
 
-  return $req->response('admin/users/grouplist', \%acts);
+  return $req->dyn_response('admin/users/grouplist', \%acts);
 }
 
 sub req_addgroupform {
@@ -806,7 +800,7 @@ sub req_addgroupform {
      error_img => [ \&tag_error_img, $req->cfg, $errors ],
     );
 
-  return $req->response('admin/users/groupadd', \%acts);
+  return $req->dyn_response('admin/users/groupadd', \%acts);
 }
 
 sub req_addgroup {
@@ -889,7 +883,7 @@ sub _common_group {
      group => [ \&tag_hash, $group ],
     );
 
-  return $req->response($template, \%acts);
+  return $req->dyn_response($template, \%acts);
 }
 
 sub req_deletegroupform {
@@ -951,7 +945,7 @@ sub req_groupmemberform {
      ifMember => [ \&tag_ifMember, \$user, \%members ],
     );
 
-  return $req->response('admin/users/groupmembers', \%acts);
+  return $req->dyn_response('admin/users/groupmembers', \%acts);
 }
 
 sub req_savegroupmembers {

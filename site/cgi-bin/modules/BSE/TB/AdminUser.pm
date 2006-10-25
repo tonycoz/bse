@@ -19,5 +19,13 @@ sub remove {
   $self->SUPER::remove();
 }
 
+sub groups {
+  my ($self) = @_;
+
+  require BSE::TB::AdminGroups;
+
+  BSE::TB::AdminGroups->getSpecial(forUser => $self->{id});
+}
+
 1;
 

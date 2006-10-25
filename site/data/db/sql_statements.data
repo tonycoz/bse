@@ -85,3 +85,10 @@ select ss.*, lo.*, ss.id as session_id
 where ss.seminar_id = ? and sb.siteuser_id is null and lo.id = ss.location_id
 SQL
 
+name: AdminGroups.forUser
+sql_statement: <<SQL
+select ab.*, ag.*
+  from admin_base ab, admin_groups ag, admin_membership am
+where am.user_id = ? and am.group_id = ab.id and ab.id = ag.base_id
+SQL
+

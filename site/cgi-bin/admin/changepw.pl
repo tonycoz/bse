@@ -25,4 +25,4 @@ else {
   $result = BSE::Template->get_refresh($req->url('logon'), $req->cfg);
 }
 
-BSE::Template->output_result($req, $result);
+$req->output_result($result);

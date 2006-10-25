@@ -22,9 +22,6 @@
 
 <form method="POST" action="<:script:>">
 
-  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
-    <tr> 
-      <td> 
         <table cellpadding="6" border="0" cellspacing="1">
           <tr> 
             <th bgcolor="#FFFFFF" align="left">Name: </th>
@@ -41,14 +38,18 @@
             <td bgcolor="#FFFFFF"><:help addgroup description:> </td>
           </tr>
           <tr> 
+            <th bgcolor="#FFFFFF" align="left">Template Set: </th>
+            <td bgcolor="#FFFFFF"> 
+              <:template_set_popup:>
+            </td>
+            <td bgcolor="#FFFFFF"><:help addgroup description:> </td>
+          </tr>
+          <tr> 
             <td bgcolor="#FFFFFF" colspan="3" align="right"> 
               <input type="submit" name="a_addgroup" value="  Add Group  " />
             </td>
           </tr>
         </table>
-      </td>
-    </tr>
-  </table>
 </form>
   
 <p><font size="-1">BSE Release <:release:></font></p>

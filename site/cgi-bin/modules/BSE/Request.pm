@@ -77,6 +77,16 @@ sub check_admin_logon {
   return BSE::Permissions->check_logon($self);
 }
 
+sub template_sets {
+  my ($self) = @_;
+
+  return () unless $self->access_control;
+
+  my $user = $self->user
+    or return;
+
+  return grep $_ ne '', map $_->{template_set}, $user->groups;
+}
 
 my $site_article = 
   { 
@@ -167,15 +177,23 @@ sub message {
 sub dyn_response {
   my ($req, $template, $acts) = @_;
 
+  my @search = $template;
   my $base_template = $template;
   my $t = $req->cgi->param('t');
   $t or $t = $req->cgi->param('_t');
   if ($t && $t =~ /^\w+$/) {
     $template .= "_$t";
+    unshift @search, $template;
+  }
+
+  require BSE::Template;
+  my @sets;
+  if ($template =~ m!^admin/!) {
+    @sets = $req->template_sets;
   }
 
   return BSE::Template->get_response($template, $req->cfg, $acts,
-				     $base_template);
+				     $base_template, \@sets);
 }
 
 sub response {

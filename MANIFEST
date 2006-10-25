@@ -129,7 +129,10 @@ site/cgi-bin/modules/BSE/TB/Subscriptions.pm
 site/cgi-bin/modules/BSE/Template.pm
 site/cgi-bin/modules/BSE/Thumb/Imager.pm
 site/cgi-bin/modules/BSE/UI/AdminDispatch.pm
+site/cgi-bin/modules/BSE/UI/AdminNewsletter.pm
+site/cgi-bin/modules/BSE/UI/AdminReport.pm
 site/cgi-bin/modules/BSE/UI/AdminSeminar.pm
+site/cgi-bin/modules/BSE/UI/AdminShop.pm
 site/cgi-bin/modules/BSE/UI/Affiliate.pm
 site/cgi-bin/modules/BSE/UI/Dispatch.pm
 site/cgi-bin/modules/BSE/UI/Formmail.pm

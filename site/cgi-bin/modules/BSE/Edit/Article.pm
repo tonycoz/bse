@@ -1185,7 +1185,7 @@ sub low_edit_form {
   my $template = $article->{id} ? 
     $self->edit_template($article, $cgi) : $self->add_template($article, $cgi);
 
-  return BSE::Template->get_response($template, $request->cfg, \%acts);
+  return $request->dyn_response($template, \%acts);
 }
 
 sub edit_form {
@@ -2130,7 +2130,7 @@ sub show_images {
   %acts = $self->low_edit_tags(\%acts, $req, $article, $articles, $msg, $errors);
   my $template = 'admin/article_img';
 
-  return BSE::Template->get_response($template, $req->cfg, \%acts);
+  return $req->dyn_response($template, \%acts);
 }
 
 sub save_image_changes {

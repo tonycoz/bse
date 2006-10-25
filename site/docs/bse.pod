@@ -10,6 +10,47 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_50
+
+This release involves some large potentially destabilizing changes,
+especially in newsletter administration, shop administration and the
+reports script.
+
+=over
+
+=item *
+
+a template set can now be selected for admin groups, the list of
+template sets is configured via:
+
+   [admin group template sets]
+   setid=set description
+
+a template set is a subdirectory of the local and normal template
+directories.
+
+=item *
+
+modified BSE::Request::dyn_response() to supply any template sets set
+by the admin user's groups as part of the search path for templates,
+this means that an admin user will use templates from those
+subdirectories before the main directories if they're in the right
+group.
+
+=item *
+
+modified nearly all admin code to do display via dyn_response() so
+that they use the new template sets (and support _t for that matter)
+
+The exceptions are dynamic output, like the newletter progress display
+and some embedding like in the shop admin catalog tree.
+
+=item *
+
+added a formatting code z, that un-html escapes the provided value.
+
+=back
+
 =head2 0.15_49
 
 =over
