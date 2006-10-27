@@ -33,6 +33,7 @@ sub edit_template {
   my $t = $cgi->param('_t');
   if ($t && $t =~ /^\w+$/) {
     $base = $t;
+    $cgi->delete('_t');
   }
   return $self->{cfg}->entry('admin templates', $base, 
 			     "admin/edit_$base");
@@ -541,7 +542,7 @@ sub req_delsemsession {
   }
 
   if ($other_session) {
-    $session->replace_with($other_session_id);
+    $session->replace_with($other_session);
   }
   else {
     $session->cancel;

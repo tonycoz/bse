@@ -10,6 +10,30 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_51
+
+There are additions to [pregenerate] in bse.cfg in this release.
+
+=over
+
+=item *
+
+the bookings/booking iterator has been added to the userpage, this can
+be used to list bookings for the current user.
+
+=item *
+
+the article edit pages had doubled _t suffixes, but it fell back to
+the original names, simply causing noise in the error log.
+
+=item *
+
+nuser.pl/user has the following new targets: bookinglist,
+bookingdetail, cancelbookingconfirm, cancelbooking, editbooking,
+savebooking.  This implements Member Seminar Management for AZA.
+
+=back
+
 =head2 0.15_50
 
 This release involves some large potentially destabilizing changes,

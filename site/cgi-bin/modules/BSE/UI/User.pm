@@ -4,6 +4,8 @@ use base 'BSE::UI::Dispatch';
 use BSE::Util::Tags qw(tag_hash tag_error_img tag_hash_plain);
 use DevHelp::HTML qw(:default popup_menu);
 use BSE::Util::Iterate;
+use BSE::Util::SQL qw/now_datetime/;
+use DevHelp::Date qw(dh_strftime_sql_datetime);
 
 my %actions =
   (
@@ -11,10 +13,16 @@ my %actions =
    bookconfirm => 1,
    book => 1,
    bookcomplete => 1,
+   bookinglist => 1,
+   bookingdetail => 1,
+   cancelbookingconfirm => 1,
+   cancelbooking => 1,
+   editbooking => 1,
+   savebooking => 1,
   );
 
 sub default_action {
-  'error';
+  'bookinglist';
 }
 
 sub actions {
@@ -56,26 +64,10 @@ sub req_bookseminar {
      $it->make_iterator(undef, 'session', 'sessions', \@sessions),
      $it->make_iterator(undef, 'option', 'options', \@options, 
 			undef, undef, \$current_option),
-     option_popup => [ \&tag_option_popup, \$current_option ],
+     option_popup => [ \&tag_option_popup, $cgi, \$current_option ],
     );
 
   return $req->dyn_response('user/bookseminar', \%acts);
-}
-
-sub tag_option_popup {
-  my ($roption) = @_;
-
-  $$roption 
-    or return '** popup_option not in options iterator **';
-
-  my $option = $$roption;
-
-  my $value = $option->{value} || $option->{values}[0];
-
-  return popup_menu(-name => $option->{id},
-		    -values => $option->{values},
-		    -labels => $option->{labels},
-		    -default => $value);
 }
 
 sub req_bookconfirm {
@@ -182,7 +174,6 @@ sub req_book {
   if ($cfg->entry('seminars', 'notify_user_booking', 1)) {
     my $email = $cfg->entry('seminar', 'notify_user_booking_email')
       || $cfg->entry('shop', 'from', $Constants::SHOP_FROM);
-    my $from = $cfg->entry('shop', 'from', $Constants::SHOP_FROM);
     my $subject = $cfg->entry('seminar', 'notify_user_booking_subject',
 			      'A user has booked a seminar session');
     my @sem_options = $seminar->option_descs($cfg, \@opt_values);
@@ -200,7 +191,6 @@ sub req_book {
     require BSE::ComposeMail;
     my $mailer = BSE::ComposeMail->new(cfg => $cfg);
     unless ($mailer->send(to	   => $email,
-			  from     => $from,
 			  subject  => $subject,
 			  template => 'admin/user_book_seminar',
 			  acts	   => \%acts)) {
@@ -240,7 +230,7 @@ sub req_bookcomplete {
   my @opt_values = split /,/, $booking->{options};
   my @options = $seminar->option_descs($req->cfg, \@opt_values);
   my %acts;
-  my $message = $req->message();
+  my $message ||= $req->message();
   my $it = BSE::Util::Iterate->new;
   %acts =
     (
@@ -254,6 +244,331 @@ sub req_bookcomplete {
     );
 
   return $req->dyn_response('user/bookcomplete', \%acts);
+}
+
+sub req_bookinglist {
+  my ($class, $req, $message) = @_;
+
+  my @bookings = $req->siteuser->seminar_bookings_detail;
+  my $now = now_datetime;
+  for my $booking (@bookings) {
+    $booking->{past} = $booking->{when_at} lt $now ? 1 : 0;
+  }
+  my $show_past = $req->cgi->param('show_past');
+  unless ($show_past) {
+    @bookings = grep !$_->{past}, @bookings;
+  }
+
+  $message ||= $req->message;
+
+  my $it = BSE::Util::Iterate->new;
+  my %acts;
+  %acts =
+    (
+     $req->dyn_user_tags(),
+     $it->make_iterator(undef, 'booking', 'bookings', \@bookings),
+     message => escape_html($message),
+    );
+
+  return $req->dyn_response('user/bookinglist', \%acts);
+}
+
+sub _show_booking {
+  my ($class, $req, $template, $errors) = @_;
+
+  my $cgi = $req->cgi;
+
+  my $id = $cgi->param('id');
+  defined $id && $id =~ /^\d+$/
+    or return $class->req_bookinglist($req, "id parameter invalid");
+
+  require BSE::TB::SeminarBookings;
+  my $booking = BSE::TB::SeminarBookings->getByPkey($id);
+  $booking && $booking->{siteuser_id} == $req->siteuser->{id}
+    or return $class->req_bookinglist($req, "booking $id not found");
+
+  my $session = $booking->session;
+
+  my $seminar = $session->seminar;
+  my @sem_options = 
+    $seminar->option_descs($req->cfg, [ split /,/, $booking->{options} ]);
+
+  my $message = $req->message($errors);
+  $message = escape_html($message);
+
+  my $it = BSE::Util::Iterate->new;
+  my %acts;
+  %acts =
+    (
+     $req->dyn_user_tags(),
+     session  => [ \&tag_hash, $session  ],
+     seminar  => [ \&tag_hash, $seminar ],
+     location => [ \&tag_hash, $session->location ],
+     booking  => [ \&tag_hash, $booking  ],
+     message  => $message,
+     $it->make_iterator(undef, 'option', 'options', \@sem_options),
+    );
+
+  return $req->dyn_response($template, \%acts);
+}
+
+sub req_bookingdetail {
+  my ($class, $req) = @_;
+
+  return $class->_show_booking($req, 'user/bookingdetail');
+}
+
+sub req_cancelbookingconfirm {
+  my ($class, $req, $message) = @_;
+
+  return $class->_show_booking($req, 'user/cancelbooking', $message);
+}
+
+sub req_cancelbooking {
+  my ($class, $req) = @_;
+
+  my $cgi = $req->cgi;
+
+  my $id = $cgi->param('id');
+  defined $id && $id =~ /^\d+$/
+    or return $class->req_bookinglist($req, "id parameter invalid");
+
+  my $siteuser = $req->siteuser;
+
+  require BSE::TB::SeminarBookings;
+  my $booking = BSE::TB::SeminarBookings->getByPkey($id);
+  $booking && $booking->{siteuser_id} == $siteuser->{id}
+    or return $class->req_bookinglist($req, "booking $id not found");
+
+  my $session = $booking->session;
+
+  $session->{when_at} gt now_datetime
+    or return $class->req_bookinglist($req, "You cannot modify past bookings");
+
+  my @options = split /,/, $booking->{options};
+  local $SIG{__DIE__};
+  eval {
+    $session->remove_booking($siteuser);
+  };
+  $@ and return $class->req_cancelbookingconfirm
+    ($req, "Could not remove booking $@");
+
+  my $seminar = $session->seminar;
+
+  my @sem_options = $seminar->option_descs($req->cfg, \@options);
+
+  require BSE::ComposeMail;
+  my $cfg = $req->cfg;
+  my $it = DevHelp::Tags::Iterate->new;
+  my %acts;
+  %acts =
+    (
+     BSE::Util::Tags->static(undef, $cfg),
+     user     => [ \&tag_hash_plain, $siteuser ],
+     seminar  => [ \&tag_hash_plain, $seminar  ],
+     session  => [ \&tag_hash_plain, $session  ],
+     booking  => [ \&tag_hash_plain, $booking  ],
+     location => [ \&tag_hash_plain, $session->location ],
+     $it->make_iterator(undef, 'option', 'options', \@sem_options),
+    );
+
+  my $mailer = BSE::ComposeMail->new(cfg => $cfg);
+  if ($cfg->entry('seminars', 'notify_user_cancel', 1)) {
+    my $email = $cfg->entry('seminar', 'notify_user_cancel_email')
+      || $cfg->entry('shop', 'from', $Constants::SHOP_FROM);
+    my $from = $cfg->entry('shop', 'from', $Constants::SHOP_FROM);
+    my $subject = $cfg->entry('seminar', 'notify_user_cancel_subject',
+			      'A user has cancelled their booking');
+    unless ($mailer->send(to        => $email,
+			  subject   => $subject,
+			  template  => 'admin/user_unbook_seminar',
+			  acts      => \%acts)) {
+      return $class->req_cancelbookingconfirm
+	($req, "The user booking was cancelled, but there was an error sending the email notification:".$mailer->errstr );
+    }
+  }
+  my $subject = $cfg->entry('seminars', 'unbooked_notify_subject',
+			    'Seminar booking cancellation confirmation');
+  unless ($mailer->send(to	  => $siteuser,
+			subject	  => $subject,
+			template  => 'user/email_unbook_seminar',
+			acts	  => \%acts)) {
+    return $class->req_cancelbookingconfirm
+      ($req, "The user booking was cancelled, but there was an error sending the email notification:".$mailer->errstr );
+  }
+
+  my $r = $cgi->param('r');
+  unless ($r) {
+    $r = '/cgi-bin/nuser.pl/user/bookinglist';
+  }
+  $r .= $r =~ /\?/ ? '&' : '?';
+  $r .= "m=Booking+cancelled";
+
+  return BSE::Template->get_refresh($r, $req->cfg);
+}
+
+sub req_editbooking {
+  my ($class, $req, $errors) = @_;
+
+  my $cgi = $req->cgi;
+
+  my $id = $cgi->param('id');
+  defined $id && $id =~ /^\d+$/
+    or return $class->req_bookinglist($req, "id parameter invalid");
+
+  my $siteuser = $req->siteuser;
+
+  require BSE::TB::SeminarBookings;
+  my $booking = BSE::TB::SeminarBookings->getByPkey($id);
+
+  $booking && $booking->{siteuser_id} == $siteuser->{id}
+    or return $class->req_bookinglist($req, "booking $id not found");
+
+  my $session = $booking->session;
+
+  my $now = now_datetime;
+  $session->{when_at} gt $now
+    or return $class->req_bookinglist($req, "You cannot modify past bookings");
+
+  my $message = $req->message($errors);
+
+  my $seminar = $session->seminar;
+  my @sem_options = 
+    $seminar->option_descs($req->cfg, [ split /,/,  $booking->{options} ]);
+  my @unbooked = $seminar->get_unbooked_by_user($siteuser);
+  @unbooked = 
+    sort { $b->{when_at} cmp $a->{when_at} } 
+      grep $_->{when_at} gt $now, ( @unbooked, $session );
+    
+  my $current_option;
+  my $it = BSE::Util::Iterate->new;
+  my %acts;
+  %acts =
+    (
+     $req->dyn_user_tags(),
+     session  => [ \&tag_hash, $session  ],
+     seminar  => [ \&tag_hash, $seminar ],
+     location => [ \&tag_hash, $session->location ],
+     booking  => [ \&tag_hash, $booking  ],
+     message  => escape_html($message),
+     error_img => [ \&tag_error_img, $req->cfg, $errors ],
+     $it->make_iterator(undef, 'option', 'options', \@sem_options, 
+			undef, undef, \$current_option),
+     option_popup => [ \&tag_option_popup, $req->cgi, \$current_option ],
+     $it->make_iterator(undef, 'isession', 'sessions', \@unbooked),
+     session_popup => 
+     [ \&tag_session_popup, $req->cfg, $booking, $req->cgi, \@unbooked ],
+    );
+
+  return $req->dyn_response('user/editbooking', \%acts);
+}
+
+sub req_savebooking {
+  my ($self, $req, $message) = @_;
+
+  my $cgi = $req->cgi;
+
+  my $id = $cgi->param('id');
+  defined $id && $id =~ /^\d+$/
+    or return $self->req_bookinglist($req, "id parameter invalid");
+
+  my $siteuser = $req->siteuser;
+
+  require BSE::TB::SeminarBookings;
+  my $booking = BSE::TB::SeminarBookings->getByPkey($id);
+  $booking && $booking->{siteuser_id} == $siteuser->{id}
+    or return $self->req_bookinglist($req, "booking $id not found");
+
+  my $old_session = $booking->session;
+  $old_session->{when_at} gt now_datetime
+    or return $self->req_bookinglist($req, "You cannot modify past bookings");
+
+  my @cols = qw/customer_instructions/;
+  for my $name (@cols) {
+    my $value = $cgi->param($name);
+    defined $value and $booking->set($name => $value);
+  }
+  my %errors;
+  my $session_id = $cgi->param('session_id');
+  if (defined $session_id && $session_id != $booking->{session_id}) {
+    my $new_session = BSE::TB::SeminarSessions->getByPkey($session_id);
+    if ($old_session->{seminar_id} != $new_session->{seminar_id}) {
+      $errors{session_id} = "Invalid session";
+    }
+    elsif ($new_session->{when_at} lt now_datetime) {
+      $errors{session_id} = "That session is now in the past, sorry";
+    }
+    else {
+      $booking->{session_id} = $new_session->{id};
+    }
+  }
+  keys %errors
+    and return $self->req_editbooking($req, \%errors);
+
+  my $seminar = $booking->session->seminar;
+  my @options;
+  for my $name (split /,/, $seminar->{options}) {
+    push @options, ($cgi->param($name))[0];
+  }
+  $booking->{options} = join ',', @options;
+
+  eval {
+    $booking->save;
+  };
+  $@
+    and return $self->req_editbooking($req, { error => $@ });
+
+  my @sem_options = $seminar->option_descs($req->cfg, \@options);
+
+  my $session = $booking->session;
+  require BSE::ComposeMail;
+  my $cfg = $req->cfg;
+  my $mailer = BSE::ComposeMail->new(cfg => $cfg);
+  my $it = DevHelp::Tags::Iterate->new;
+  my %acts;
+  %acts =
+    (
+     BSE::Util::Tags->static(undef, $cfg),
+     user     => [ \&tag_hash_plain, $siteuser ],
+     seminar  => [ \&tag_hash_plain, $seminar  ],
+     session  => [ \&tag_hash_plain, $session  ],
+     booking  => [ \&tag_hash_plain, $booking  ],
+     location => [ \&tag_hash_plain, $session->location ],
+     $it->make_iterator(undef, 'option', 'options', \@sem_options),
+    );
+
+  if ($cfg->entry('seminars', 'notify_user_edit', 1)) {
+    my $email = $cfg->entry('seminar', 'notify_user_edit_email')
+      || $cfg->entry('shop', 'from', $Constants::SHOP_FROM);
+    my $subject = $cfg->entry('seminar', 'notify_user_edit_subject',
+			      'A user has edited their booking');
+    unless ($mailer->send(to        => $email,
+			  subject   => $subject,
+			  template  => 'admin/user_edit_seminar',
+			  acts      => \%acts)) {
+      return $self->req_editbooking
+	($req, "Your booking was changed, but there was an error sending the email notification:".$mailer->errstr );
+    }
+  }
+
+  my $subject = $cfg->entry('seminars', 'edit_notify_subject',
+			    'Your seminar booking has been changed');
+  unless ($mailer->send(to	  => $siteuser,
+			subject	  => $subject,
+			template  => 'user/email_edit_seminar',
+			acts	  => \%acts)) {
+    return $self->req_editbooking
+      ($req, _email => "Your booking was changed, but there was an error sending the email notification:".$mailer->errstr );
+  }
+
+  my $r = $cgi->param('r');
+  unless ($r) {
+    $r = '/cgi-bin/nuser.pl/user/bookinglist'
+  }
+  $r .= $r =~ /\?/ ? '&' : '?';
+  $r .= "m=Booking+updated";
+
+  return BSE::Template->get_refresh($r, $req->cfg);
 }
 
 sub check_action {
@@ -291,5 +606,60 @@ sub check_action {
 
   return 1;
 }
+
+sub tag_option_popup {
+  my ($cgi, $roption) = @_;
+
+  $$roption 
+    or return '** popup_option not in options iterator **';
+
+  my $option = $$roption;
+
+  my @extras;
+  my $value = $cgi->param($option->{id});
+  defined $value or $value = $option->{value};
+  if ($value) {
+    push @extras, -default => $value;
+  }
+
+  return popup_menu(-name => $option->{id},
+		    -values => $option->{values},
+		    -labels => $option->{labels},
+		    @extras);
+}
+
+sub tag_session_popup {
+  my ($cfg, $booking, $cgi, $unbooked) = @_;
+
+  my $default = $cgi->param('session_id');
+  defined $default or $default = $booking->{session_id};
+  my %locations;
+  for my $session (@$unbooked) {
+    unless ($locations{$session->{location_id}}) {
+      $locations{$session->{location_id}} = $session->location;
+    }
+  }
+
+  my $date_fmt = $cfg->entry('seminars', 'popup_date_format', 
+			     "%I:%M %p %d %b %Y");
+  return popup_menu
+    (-name => 'session_id',
+     -values => [ map $_->{id}, @$unbooked ],
+     -labels => 
+     { map 
+       { $_->{id} => 
+	   _session_desc($_, $locations{$_->{location_id}}, $date_fmt) 
+	 } @$unbooked 
+     },
+     -default => $default);
+}
+
+sub _session_desc {
+  my ($session, $location, $date_fmt) = @_;
+
+  $location->{description} . ' ' . 
+    dh_strftime_sql_datetime($date_fmt, $session->{when_at});
+}
+
 
 1;

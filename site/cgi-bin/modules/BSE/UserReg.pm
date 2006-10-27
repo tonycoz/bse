@@ -811,6 +811,12 @@ sub iter_usersubs {
   $user->subscribed_services;
 }
 
+sub iter_sembookings {
+  my ($user) = @_;
+
+  $user->seminar_bookings_detail;
+}
+
 sub userpage {
   my ($self, $req, $message) = @_;
 
@@ -885,6 +891,8 @@ sub userpage {
      },
      $it->make_iterator([ \&iter_usersubs, $user ], 
 			'subscription', 'subscriptions'),
+     $it->make_iterator([ \&iter_sembookings, $user ],
+			'booking', 'bookings'),
     );
   my $base_template = 'user/userpage';
   my $template = $base_template;

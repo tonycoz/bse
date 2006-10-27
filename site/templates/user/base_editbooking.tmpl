@@ -1,0 +1,34 @@
+<:wrap base.tmpl title=>"Edit Seminar Booking":>
+<h1>Edit Seminar Booking</h1>
+<:ifMessage:>
+<p><b><:message:></b></p>
+<:or:><:eif:> 
+<form action="/cgi-bin/nuser.pl/user/savebooking" method="post">
+<input type="hidden" name="id" value="<:booking id:>" />
+<:ifCgi r:><input type="hidden" name="r" value="<:cgi r:>" /><:or:><:eif:>
+<table>
+  <tr>
+    <th>Seminar:</th>
+    <td><a href="<:seminar link:>"><:seminar title:></a></td>
+  </tr>
+  <tr>
+    <th>Session:</th>
+    <td><:session_popup:></td>
+  </tr>
+<:iterator begin options:>
+  <tr>
+   <th><:option desc:></th>
+   <td><:option_popup:></td>
+   <td></td>
+  </tr>
+<:iterator end options:>
+  <tr>
+   <th>Customer<br />Instructions:</th>
+   <td><textarea name="customer_instructions" cols="70" rows="10" /><:old customer_instructions booking customer_instructions:></textarea></td>
+   <td><:error_img customer_instructions:></td>
+  </tr>
+  <tr>
+    <td colspan="3"><input type="submit" value="Save Booking" /></td>
+  </tr>
+</table>
+</form>

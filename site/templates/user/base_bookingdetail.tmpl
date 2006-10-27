@@ -1,0 +1,30 @@
+<:wrap base.tmpl title=>"Seminar Booking Details":>
+<h1>Seminar Booking Details</h1>
+<:ifMessage:>
+<p><b><:message:></b></p>
+<:or:><:eif:> 
+<table>
+  <tr>
+    <th>Seminar:</th>
+    <td><a href="<:seminar link:>"><:seminar title:></a></td>
+  </tr>
+  <tr>
+    <th>Location:</th>
+    <td><a href="/cgi-bin/shop.pl?a_location=1&amp;location_id=<:location id:>"><:location description:></a>
+<:ifLocation room:><br />Room: <:location room:><:or:><:eif:>
+<:ifLocation street1:><br /><:location street1:><:or:><:eif:>
+<:ifLocation street2:><br />Room: <:location street2:><:or:><:eif:>
+<br /><:location suburb:> <:location state:> <:location postcode:>
+<:ifLocation country:><br /><:location country:><:or:><:eif:>
+<:ifLocation public_notes:><textarea readonly="readonly" style="border-style: none" cols="60" rows="20"><:location public_notes:></textarea><:or:><:eif:>
+</td>
+  </tr>
+  <tr>
+    <th>Date:</th>
+    <td><:date session when_at:></td>
+  </tr>
+  <tr>
+    <th>Time:</th>
+    <td><:date "%I:%M %P" session when_at:></td>
+  </tr>
+</table>

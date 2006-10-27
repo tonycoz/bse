@@ -1,0 +1,32 @@
+<:wrap base.tmpl title=>"Booked Seminars":>
+<h1>Booked Seminars</h1>
+<:ifMessage:>
+<p><b><:message:></b></p>
+<:or:><:eif:> 
+
+      <table border=0 cellpadding="6" cellspacing="1" width="100%">
+        <tr bgcolor="#FFFFFF"> 
+          <th width="50%">Seminar</th>
+          <th width="50%">Location</th>
+          <th>Time</th>
+          <th>Date</th>
+        </tr>
+<:if Bookings:>
+        <:iterator begin bookings:> 
+        <tr bgcolor="#FFFFFF"> 
+          <td><a href="<:booking link:>"><:booking title:></a></td>
+          <td><a href="/cgi-bin/shop.pl?a_location=1&amp;location_id=<:booking location_id:>"><:booking loc_description:></a></td>
+          <td nowrap="nowrap"><:date "%I:%M %p" booking when_at:></td>
+          <td nowrap="nowrap"><:date booking when_at:></td>
+          <td nowrap="nowrap">
+            <a href="/cgi-bin/nuser.pl/user/cancelbookingconfirm?id=<:booking booking_id:>">Cancel</a>
+            <a href="/cgi-bin/nuser.pl/user/editbooking?id=<:booking booking_id:>">Edit</a>
+          </td>
+        </tr>
+        <:iterator end bookings:> 
+<:or Bookings:>
+        <tr>
+          <td colspan="5" align="center">No bookings found</td>
+        </tr>
+<:eif Bookings:>
+      </table>

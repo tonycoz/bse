@@ -392,6 +392,8 @@ site/templates/admin/users/list_low.tmpl
 site/templates/admin/users/view.tmpl
 site/templates/admin/users/view_bookings.tmpl
 site/templates/admin/user_book_seminar.tmpl
+site/templates/admin/user_edit_seminar.tmpl
+site/templates/admin/user_unbook_seminar.tmpl
 site/templates/admin/xbase.tmpl
 site/templates/affiliate.tmpl
 site/templates/base.tmpl
@@ -460,10 +462,14 @@ site/templates/user/admin_book_seminar.tmpl
 site/templates/user/admin_edit_seminar.tmpl
 site/templates/user/admin_unbook_seminar.tmpl
 site/templates/user/alreadyblacklisted_base.tmpl
-site/templates/user/base_orderdetail.tmpl
+site/templates/user/base_bookingdetail.tmpl
+site/templates/user/base_bookinglist.tmpl
 site/templates/user/base_bookcomplete.tmpl
 site/templates/user/base_bookconfirm.tmpl
 site/templates/user/base_bookseminar.tmpl
+site/templates/user/base_cancelbooking.tmpl
+site/templates/user/base_editbooking.tmpl
+site/templates/user/base_orderdetail.tmpl
 site/templates/user/blacklistdone_base.tmpl
 site/templates/user/cantunsub_base.tmpl
 site/templates/user/confirmed_base.tmpl
@@ -472,6 +478,8 @@ site/templates/user/confsent_nop_base.tmpl
 site/templates/user/email_conferror_base.tmpl
 site/templates/user/email_confirm.tmpl
 site/templates/user/email_confirm_nop.tmpl
+site/templates/user/email_edit_seminar.tmpl
+site/templates/user/email_unbook_seminar.tmpl
 site/templates/user/logon_base.tmpl
 site/templates/user/lostemailsent_base.tmpl
 site/templates/user/lostpassword_base.tmpl
