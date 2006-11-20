@@ -1455,6 +1455,18 @@ The password to supply to test requests.
 
 =back
 
+=head2 [custom]
+
+This section controls whether some custom class methods are called:
+
+=over
+
+=item saveopts
+
+If this is non-zero then siteuser_saveopts is called.
+
+=back
+
 =head1 AUTHOR
 
 Tony Cook <tony@develop-help.com>

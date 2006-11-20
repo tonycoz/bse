@@ -485,11 +485,53 @@ sub _cleanup_table {
   return join(' ', @lines);
 }
 
+my %ms_entities =
+  (
+   34 => 'quot',
+   60 => 'lt',
+   62 => 'gt',
+   38 => 'amp',
+   128 => '#x20ac',
+   130 => '#x201a',
+   131 => '#x192',
+   132 => '#x201e',
+   133 => '#x2026',
+   134 => '#x2020',
+   135 => '#x2021',
+   136 => '#x2c6',
+   137 => '#x2030',
+   138 => '#x160',
+   139 => '#x2039',
+   140 => '#x152',
+   142 => '#x17D',
+   145 => 'lsquo',
+   146 => 'rsquo',
+   147 => 'ldquo',
+   148 => 'rdquo',
+   149 => '#x2022',
+   150 => 'ndash',
+   151 => 'mdash',
+   152 => '#x2dc',
+   153 => 'trade',
+   154 => '#x161',
+   155 => '#x203a',
+   156 => '#x153',
+   158 => '#x17e',
+   159 => '#x178',
+  );
+
 sub escape {
   my ($self, $html) = @_;
 
   if ($self->{conservative_escape}) {
     return escape_html($html, '<>&"');
+  }
+  elsif ($self->{msentify}) {
+    $html =~ s{([<>&\"\x80-\x9F])}
+      { $ms_entities{ord $1} ? "&$ms_entities{ord $1};" 
+             : "** unknown code ".ord($1). " **"; }ge;
+
+    return $html;
   }
   else {
     return escape_html($html);

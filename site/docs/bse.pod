@@ -10,6 +10,25 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_52
+
+=over
+
+=item *
+
+added a custom hook to the saveopts target in user.pl.  You need to
+set [custom].saveopts=1 for this hook to be called.
+
+=item *
+
+various minor hacks to try and get utf8 output in some cases.
+
+=item *
+
+undefined <:param name:> tags are now returned as empty strings
+
+=back
+
 =head2 0.15_51
 
 There are additions to [pregenerate] in bse.cfg in this release.

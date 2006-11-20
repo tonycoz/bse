@@ -9,6 +9,7 @@ use DevHelp::HTML qw(:default popup_menu);
 use BSE::Arrows;
 use BSE::CfgInfo qw(custom_class admin_base_url cfg_image_dir);
 use BSE::Util::Iterate;
+use BSE::Template;
 
 sub article_dispatch {
   my ($self, $req, $article, $articles) = @_;
@@ -732,7 +733,7 @@ sub tag_movechild {
 }
 
 sub tag_edit_link {
-  my ($article, $args, $acts, $funcname, $templater) = @_;
+  my ($cfg, $article, $args, $acts, $funcname, $templater) = @_;
   my ($which, $name) = split / /, $args, 2;
   $name ||= 'Edit';
   my $gen_class;
@@ -740,7 +741,7 @@ sub tag_edit_link {
       && ($gen_class = $templater->perform($acts, $which, 'generator'))) {
     eval "use $gen_class";
     unless ($@) {
-      my $gen = $gen_class->new(top => $article);
+      my $gen = $gen_class->new(top => $article, cfg => $cfg);
       my $link = $gen->edit_link($templater->perform($acts, $which, 'id'));
       return qq!<a href="$link">$name</a>!;
     }
@@ -1124,7 +1125,7 @@ sub low_edit_tags {
      (\&iter_admin_users, 'iadminuser', 'adminusers'),
      DevHelp::Tags->make_iterator2
      (\&iter_admin_groups, 'iadmingroup', 'admingroups'),
-     edit => [ \&tag_edit_link, $article ],
+     edit => [ \&tag_edit_link, $cfg, $article ],
      error => [ $tag_hash, $errors ],
      error_img => [ \&tag_error_img, $cfg, $errors ],
      ifFieldPerm => [ \&tag_if_field_perm, $request, $article ],
@@ -1164,7 +1165,6 @@ sub edit_template {
   my $t = $cgi->param('_t');
   if ($t && $t =~ /^\w+$/) {
     $base = $t;
-    $cgi->delete('_t');
   }
   return $self->{cfg}->entry('admin templates', $base, 
 			     "admin/edit_$base");
@@ -1186,7 +1186,7 @@ sub low_edit_form {
   my $template = $article->{id} ? 
     $self->edit_template($article, $cgi) : $self->add_template($article, $cgi);
 
-  return $request->dyn_response($template, \%acts);
+  return $request->response($template, \%acts);
 }
 
 sub edit_form {

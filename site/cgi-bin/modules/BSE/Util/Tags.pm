@@ -78,8 +78,8 @@ sub static {
      date =>
      sub {
        my ($arg, $acts, $name, $templater) = @_;
-       my ($fmt, $func, $args) = 
-	 $arg =~ m/(?:\"([^\"]+)\"\s+)?(\S+)(?:\s+(\S+.*))?/;
+       my ($quote, $fmt, $func, $args) = 
+	 $arg =~ m/(?:([\"\'])([^\"\']+)\1\s+)?(\S+)(?:\s+(\S+.*))?/;
        $fmt = "%d-%b-%Y" unless defined $fmt;
        require 'POSIX.pm';
        exists $acts->{$func}
@@ -291,6 +291,13 @@ sub static {
        }
        elsif ($fmt eq 'z') {
 	 return unescape_html($value);
+       }
+       elsif ($fmt eq 'c') {
+	 my $workset = $cfg->entry('html', 'charset', 'iso-8859-1');
+	 require Encode;
+	 my $work = unescape_html($value);
+	 Encode::from_to($work, 'utf8', $workset);
+	 return $work;
        }
        return $value;
      },

@@ -20,6 +20,15 @@ sub new {
     @{$self}{qw/siteuser_calls siteuser_cached has_access_cached has_access_total/} = ( 0, 0, 0, 0 );
   }
 
+  if ($self->cfg->entry('html', 'utf8decodeall')) {
+    $self->_encode_utf8();
+  }
+  elsif ($self->cfg->entry('html', 'ajaxcharset', 0)
+      && (() = $self->cgi->param('_'))) {
+    # convert the values of each parameter from UTF8 to iso-8859-1
+    $self->_convert_utf8_cgi_to_charset();
+  }
+
   $self;
 }
 
@@ -199,7 +208,14 @@ sub dyn_response {
 sub response {
   my ($req, $template, $acts) = @_;
 
-  return BSE::Template->get_response($template, $req->cfg, $acts);
+  require BSE::Template;
+  my @sets;
+  if ($template =~ m!^admin/!) {
+    @sets = $req->template_sets;
+  }
+
+  return BSE::Template->get_response($template, $req->cfg, $acts, 
+				     $template, \@sets);
 }
 
 # get the current site user if one is logged on
@@ -418,6 +434,51 @@ sub text {
   my ($self, $id, $default) = @_;
 
   $default;
+}
+
+sub _convert_utf8_cgi_to_charset {
+  my ($self) = @_;
+
+  require Encode;
+  my $cgi = $self->cgi;
+  my $workset = $self->cfg->entry('html', 'charset', 'iso-8859-1');
+  my $decoded = $self->cfg->entry('html', 'cgi_decoded', 1);
+  
+  # avoids param decoding the data
+  $cgi->charset($workset);
+
+  print STDERR "Converting parameters from UTF8 to $workset\n"
+    if $self->cfg->entry('debug', 'convert_charset');
+
+  if ($decoded) {
+    # CGI.pm has already converted it from utf8 to perl's internal encoding
+    # so we just need to encode to the working encoding
+    # I don't see a reliable way to detect this without configuring it
+    for my $name ($cgi->param) {
+      my @values = map Encode::encode($workset, $_), $cgi->param($name);
+
+      $cgi->param($name => @values);
+    }
+  }
+  else {
+    for my $name ($cgi->param) {
+      my @values = $cgi->param($name);
+      Encode::from_to($_, $workset, 'utf8') for @values;
+      $cgi->param($name => @values);
+    }
+  }
+}
+
+sub _encode_utf8 {
+  my ($self) = @_;
+
+  my $cgi = $self->cgi;
+
+  require Encode;
+  for my $name ($cgi->param) {
+    my @values = map Encode::encode('utf8', $_), $cgi->param($name);
+    $cgi->param($name => @values);
+  }
 }
 
 1;

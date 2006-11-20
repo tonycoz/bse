@@ -193,6 +193,10 @@ Defines extra tags for use on any page.
 
 Called when a change is made to the site users table.
 
+=item $self->siteuser_save($user, $req)
+
+Called at the beginning of the save_opts() action.
+
 =back
 
 =cut

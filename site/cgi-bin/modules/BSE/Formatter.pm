@@ -35,6 +35,9 @@ sub new {
   if ($cfg->entry('html', 'mbcs', 0)) {
     $self->{conservative_escape} = 1;
   }
+  elsif ($cfg->entry('html', 'msentify', 0)) {
+    $self->{msentify} = 1;
+  }
 
   $self;
 }

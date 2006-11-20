@@ -483,6 +483,17 @@ sub saveopts {
 
   my $user = $self->_get_user($req)
     or return;
+
+  if ($cfg->entry('custom', 'saveopts')) {
+    my $custom = custom_class($cfg);
+    eval {
+      $custom->siteuser_saveopts($user, $req);
+    };
+    if ($@) {
+      return $self->show_opts($req, $@);
+    }
+  }
+
   my $nopassword = $cfg->entryBool('site users', 'nopassword', 0);
   my %errors;
   my $newpass;

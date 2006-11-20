@@ -22,6 +22,9 @@ BSE::CfgInfo - functions that return information derived from configuration
   use BSE::CfgInfo 'credit_card_class';
   my $class = credit_card_class($cfg);
 
+  use BSE::CfgInfo 'product_options';
+  my $options = product_options($cfg);
+
 =head1 DESCRIPTION
 
 This module contains functions which examine the BSE configuration and
@@ -29,7 +32,9 @@ return information useful at the application level.
 
 =over
 
-=item admin_base_url($cfg)
+=item custom_class
+
+Returns an object of the class of the configured custom class.
 
 =cut
 
@@ -48,6 +53,10 @@ sub custom_class {
 
   return $class->new(cfg=>$cfg);
 }
+
+=item admin_base_url($cfg)
+
+=cut
 
 sub admin_base_url {
   my ($cfg) = @_;
@@ -72,6 +81,12 @@ sub cfg_image_dir {
   $cfg->entry('paths', 'images', $Constants::IMAGEDIR);
 }
 
+=item credit_card_class
+
+Loads the configured credit card class and instantiates it.
+
+=cut
+
 sub credit_card_class {
   my ($cfg) = @_;
 
@@ -88,6 +103,30 @@ sub credit_card_class {
 
   return $class->new($cfg);
 }
+
+=item product_options
+
+Returns a hashref of product options, where the key is the option id,
+the values are each a hashref with the following keys:
+
+=over
+
+=item *
+
+desc - description of the option
+
+=item *
+
+values - array ref of possible values for the option
+
+=item *
+
+labels - hashref of labels for the different values.  This is always
+filled out with the labels defaulting to the values.
+
+=back
+
+=cut
 
 sub product_options {
   my ($cfg) = @_;

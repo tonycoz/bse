@@ -33,7 +33,6 @@ sub edit_template {
   my $t = $cgi->param('_t');
   if ($t && $t =~ /^\w+$/) {
     $base = $t;
-    $cgi->delete('_t');
   }
   return $self->{cfg}->entry('admin templates', $base, 
 			     "admin/edit_$base");

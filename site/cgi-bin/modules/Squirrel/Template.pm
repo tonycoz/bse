@@ -351,7 +351,7 @@ sub switch {
 sub tag_param {
   my ($params, $arg) = @_;
 
-  exists $params->{$arg} or return "<:param $arg:>";
+  exists $params->{$arg} or return "";
 
   $params->{$arg};
 }
