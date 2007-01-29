@@ -36,6 +36,11 @@ improve messages for bad image names
 avoid infinite redirects on the admin side when the configured admin
 base URL doesn't match the name the server reports
 
+=item *
+
+modification to the session summary lists (date/location display) for
+seminars (from Adrian)
+
 =back
 
 =head2 0.15_52

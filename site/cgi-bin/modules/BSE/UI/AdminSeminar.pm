@@ -773,8 +773,8 @@ sub tag_session_popup {
 sub _session_desc {
   my ($session, $location, $date_fmt) = @_;
 
-  $location->{description} . ' ' . 
-    dh_strftime_sql_datetime($date_fmt, $session->{when_at});
+  dh_strftime_sql_datetime($date_fmt, $session->{when_at}) . ' - ' .
+    $location->{description};
 }
 
 1;
