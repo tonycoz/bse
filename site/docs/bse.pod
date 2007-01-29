@@ -10,6 +10,25 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_53
+
+=over
+
+=item *
+
+work around an ExtUtils::Manifest bug
+
+=item *
+
+add extra ofchild iterators (variation on patch from Adrian)
+
+=item *
+
+allow the archive flag on the send form to override the newsletter's
+setting
+
+=back
+
 =head2 0.15_52
 
 =over

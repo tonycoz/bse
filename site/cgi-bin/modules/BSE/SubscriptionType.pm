@@ -369,8 +369,7 @@ sub send {
   my %article;
   $sub->_send($cfg, $opts, $callback, \@recipients, \%article);
 
-  if (exists $opts->{archive} && $opts->{archive}
-      || $sub->{archive}) {
+  if (exists $opts->{archive} ? $opts->{archive} : $sub->{archive}) {
     $callback->('general', undef, "Archiving article");
     require 'Articles.pm';
     $article{template} = $opts->{article_template} || $sub->{article_template};
