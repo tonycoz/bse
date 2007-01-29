@@ -50,6 +50,10 @@ the order detail display was incorrectly displaying the order date
 tags using the cgi or config values weren't displaying correctly on
 the error page.
 
+=item *
+
+fill in more user fields for test newsletters (patch from Adrian)
+
 =back
 
 =head2 0.15_52

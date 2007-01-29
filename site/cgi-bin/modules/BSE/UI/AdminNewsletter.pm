@@ -652,9 +652,11 @@ sub req_send_test {
     (
      (map { $_ => '' } SiteUser->columns),
      id => 999,
-     userId => 'xxxx',
+     userId => 'username',
+     password => 'p455w0rd',
      email => $testemail,
      name1 => $testname,
+     name2 => 'Lastname',
      confirmSecret => 'TESTTESTTESTTESTTESTTESTTESTTEST',
      textOnlyMail => (defined $testtextonly ? 1 : 0 ),
     );
