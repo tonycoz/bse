@@ -44,11 +44,14 @@ $(DISTTGZ): distdir
 
 #	tar czf $(DISTFILE) -C .. bse --exclude '*~' --exclude '*,v' --exclude 'pod2html-*cache'
 
+# recent ExtUtils::Manifest don't copy the executable bit, fix that here
+
 distdir: docs dbinfo version
 	-perl -MExtUtils::Command -e rm_rf $(DISTBUILD)
 	perl -MExtUtils::Manifest=manicopy,maniread -e "manicopy(maniread(), '$(DISTBUILD)')"
 	mkdir $(DISTBUILD)/site/htdocs/shop
 	find $(DISTBUILD) -type f | xargs chmod u+w
+	for i in `cat MANIFEST` ; do if [ -x $$i ] ; then chmod a+x $(DISTBUILD)/$$i ; fi ; done
 
 clean:
 	-perl -MExtUtils::Command -e rm_f site/htdocs/index.html site/htdocs/shop/*.html site/htdocs/a/*.html
