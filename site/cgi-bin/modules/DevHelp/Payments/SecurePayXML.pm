@@ -4,7 +4,7 @@ use Carp 'confess';
 use Digest::MD5 qw(md5_hex);
 use POSIX qw(strftime);
 use LWP::UserAgent;
-use XML::Parser;
+use XML::Simple;
 
 my $sequence = 0;
 
@@ -152,10 +152,9 @@ sub _request_low {
     print STDERR "Raw response: $result_content\n";
   }
 
-  my $toptree;
+  my $tree;
   eval {
-    my $parser = XML::Parser->new(Style => 'Tree');
-    $toptree = $parser->parse($result_content);
+    $tree = XMLin($result_content);
   };
   if ($@) {
     $$result =
@@ -170,25 +169,14 @@ sub _request_low {
   if ($self->{debug}) {
     require Data::Dumper;
     Data::Dumper->import();
-    print STDERR "Response parsed: ",Dumper($toptree);
+    print STDERR "Response parsed: ",Dumper($tree);
   }
 
   my $paranoid = $self->{paranoid};
-
-  if ($paranoid && $toptree->[0] ne 'SecurePayMessage') {
-    $$result = 
-      {
-       success => 0,
-       error => 'Root element not SecurePayMessage',
-       statuscode => -1,
-      };
-  }
-
-  my $tree = $toptree->[1];
   
   if ($paranoid) {
     # check the message id
-    my $infotag = _find_element($tree, 'MessageInfo');
+    my $infotag = $tree->{MessageInfo};
     unless ($infotag) {
       $$result =
 	{ 
@@ -198,15 +186,12 @@ sub _request_low {
 	};
       return;
     }
-    
-    # extract the message id
-    my $parse_message_id = _find_value($infotag, 'messageID');
-    
-    unless ($parse_message_id && $parse_message_id eq $message_id) {
+      
+    unless ($infotag->{messageID} eq $message_id) {
       $$result =
 	{ 
 	 sucess => 0, 
-	 error=>"messageID doesn't match", 
+	 error=>"MessageID doesn't match", 
 	 statuscode=> -1 
 	};
       return;
@@ -249,46 +234,6 @@ my $payment_template = <<'XML';
   </Payment>
 </SecurePayMessage>
 XML
-
-sub _find_element {
-  my ($tree, $tag) = @_;
-
-  my $index = 1;
-  while ($index < @$tree) {
-    if ($tree->[$index] eq $tag) {
-      return $tree->[$index+1];
-    }
-    ++$index;
-  }
-
-  return;
-}
-
-# extract the plain text value of an element
-# returns () if not found or if the element isn't a plain value
-sub _find_value {
-  my ($tree, $tag) = @_;
-
-  my $element = _find_element($tree, $tag)
-    or return;
-  @$element == 3 && $element->[1] == 0
-    or return;
-
-  return $element->[1];
-}
-
-# returns status code, status description as a list
-sub _extract_status {
-  my ($tree) = @_;
-  
-  my $status = _find_element($tree, 'Status')
-    or return;
-
-  return (
-	  scalar(_find_value($status, 'statusCode')),
-	  scalar(_find_value($status, 'statusDescription'))
-	 );
-}
 
 sub payment {
   my ($self, %args) = @_;
@@ -348,39 +293,39 @@ sub payment {
   $self->_request(\%replace, $payment_template, \$result, \$tree)
     or return $result;
 
-  my ($status_code, $status_desc) = _extract_status($tree)
+  my $status_ele = $tree->{Status}
     or return { success => 0, error => 'Response missing Status element', statuscode => -1 };
-  if ($status_code != 0) {
+  if ($status_ele->{statusCode} != 0) {
     return {
 	    success => 0,
-	    error => $status_desc,
-	    statuscode => $status_code
+	    error => $status_ele->{statusDescription},
+	    statuscode => $status_ele->{statusCode}
 	   };
   }
 
-  my $payment_ele = _find_element($tree, 'Payment')
+  my $payment_ele = $tree->{Payment}
     or return { success => 0, error => 'Response missing Payment element', statuscode => -1 };
-  my $txnlist_ele = _find_element($payment_ele, 'TxnList')
+  my $txnlist_ele = $payment_ele->{TxnList}
     or return { success =>0, error => 'Response missiog TxnList element', statuscode => -1 };
-  $txnlist_ele->[0]{count} == 1
+  $txnlist_ele->{count} == 1
     or return { success => 0, error => 'Response has more or less than 1 transaction', statuscode => -1 };
-  my $txn_ele = _find_element($txnlist_ele,, 'Txn')
+  my $txn_ele = $txnlist_ele->{Txn}
     or return { success => 0, error => 'Response missing Txn element', statuscode => -1 };
-  if (_find_value($txn_ele, 'approved') eq 'Yes') {
+  if ($txn_ele->{approved} eq 'Yes') {
     return
       {
        success => 1,
-       statuscode => scalar(_find_value($txn_ele, 'responseCode')),
-       error => scalar(_find_value($txn_ele, 'responseText')),
-       receipt => scalar(_find_value($txn_ele, 'txnID')),
+       statuscode => $txn_ele->{responseCode},
+       error => $txn_ele->{responseText},
+       receipt => $txn_ele->{txnID},
       };
   }
   else {
     return
       {
        success => 0,
-       statuscode => scalar(_find_value($txn_ele, 'responseCode')),
-       error => scalar(_find_value($txn_ele, 'responseText')),
+       statuscode => $txn_ele->{responseCode},
+       error => $txn_ele->{responseText},
       };
   }
 }

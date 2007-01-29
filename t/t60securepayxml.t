@@ -26,14 +26,15 @@ ok($payment, 'make payment object');
 my %req =
   (
    cardnumber => '4242424242424242',
-   expirydate => '200612',
+   expirydate => '200703',
    amount => 1000,
    orderno => time,
   );
 
 my $result = $payment->payment(%req);
 ok($result, "got some sort of result");
-ok($result->{success}, "successful!");
+ok($result->{success}, "successful!")
+  or print "# $result->{error}\n";
 ok($result->{receipt}, "got a receipt: $result->{receipt}");
 
 my %req_bad = 
@@ -53,11 +54,12 @@ ok($result->{error}, "got an error: $result->{error}");
 my %add =
   (
    clientid => 'AAAA',
-   expirydate => '12/06',
+   expirydate => '03/07',
    cardnumber => '4242424242424242',
   );
 $result = $payment->add_payment(%add);
-ok($result, "got some sort of result");
+ok($result, "got some sort of result")
+  or print "# $result->{error}\n";
 ok($result->{success}, "successful!")
   or print "# failed add_payment: ",$result->{error}, "\n";
 print "# payment id: $result->{paymentid}\n";
