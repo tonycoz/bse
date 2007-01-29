@@ -54,6 +54,11 @@ the error page.
 
 fill in more user fields for test newsletters (patch from Adrian)
 
+=item *
+
+correctly fill in old alt/url/name values on a failed save of image
+properties
+
 =back
 
 =head2 0.15_52

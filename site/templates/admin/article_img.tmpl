@@ -111,7 +111,7 @@
           <td rowspan="3" align="center" valign="center" bgcolor="#FFFFFF"><a href="#" onclick="window.open('/images/<:image image:>', 'fullimage', 'width=<:arithmetic [image width]+20:>,height=<:arithmetic [image height]+30:>,location=no,status=no,menubar=no,scrollbars=yes'); return 0;"><:thumbimage 150 150:></a></th>
 	    <th>Alt text:</th>
             <td valign="top" bgcolor="#FFFFFF"> 
-              <:ifUserCan edit_images_save:article:><input type="text" name="alt" value="<: image alt :>" size="32" /><:or:><: image alt :><:eif:>
+              <:ifUserCan edit_images_save:article:><input type="text" name="alt" value="<: oldi alt [image_index] image alt :>" size="32" /><:or:><: image alt :><:eif:>
             </td>
             <td valign="top" nowrap="nowrap" rowspan="3" bgcolor="#FFFFFF"> 
               <:ifUserCan edit_images_delete:article:><b><a href="<:script:>?id=<:article id:>&removeimg_<: image id :>=1&_t=img" onClick="return window.confirm('Are you sure you want to delete this Image')">Delete</a></b><:or:><:eif:></td>
@@ -126,7 +126,7 @@
           <tr>
 	    <th>Identifier:</th>
             <td valign="top" nowrap="nowrap"  bgcolor="#FFFFFF"colspan="1"> 
-              <:ifUserCan edit_images_save:article:><input type="text" name="name<:image_index:>" value="<: image name :>" size="32" /> <:error_img [concatenate "name" [image_index] ]:><:or:><: image name :><:eif:>
+              <:ifUserCan edit_images_save:article:><input type="text" name="name<:image_index:>" value="<: oldi [concatenate name [image_index]] 0 image name :>" size="32" /> <:error_img [concatenate "name" [image_index] ]:><:or:><: image name :><:eif:>
             </td>
         </tr>
 <:iterator end images:>          
@@ -148,13 +148,13 @@
           </tr>
           <tr bgcolor="#FFFFFF"> 
             <td valign="top"> 
-              <:ifUserCan edit_images_save:article:><input type="text" name="alt" value="<: image alt :>" size="32" /><:or:><: image alt :><:eif:>
+              <:ifUserCan edit_images_save:article:><input type="text" name="alt" value="<: oldi alt [image_index] image alt :>" size="32" /><:or:><: image alt :><:eif:>
             </td>
             <td valign="top" width="50%"> 
-              <:ifUserCan edit_images_save:article:><input type="text" name="url" value="<: image url :>" size="32" /><:or:><: image url :><:eif:>
+              <:ifUserCan edit_images_save:article:><input type="text" name="url" value="<: oldi url [image_index] image url :>" size="32" /><:or:><: image url :><:eif:>
             </td>
             <td valign="top" nowrap="nowrap"> 
-              <:ifUserCan edit_images_save:article:><input type="text" name="name<:image_index:>" value="<: image name :>" size="32" /> <:error_img [concatenate "name" [image_index] ]:><:or:><: image name :><:eif:>
+              <:ifUserCan edit_images_save:article:><input type="text" name="name<:image_index:>" value="<: oldi [concatenate name [image_index]] 0 image name :>" size="32" /> <:error_img [concatenate "name" [image_index] ]:><:or:><: image name :><:eif:>
             </td>
             <td valign="bottom" nowrap="nowrap"> 
               <:ifUserCan edit_images_delete:article:><b><a href="<:script:>?id=<:article id:>&removeimg_<: image id :>=1&_t=img" onClick="return window.confirm('Are you sure you want to delete this Image')">Delete</a></b><:or:><:eif:></td>
