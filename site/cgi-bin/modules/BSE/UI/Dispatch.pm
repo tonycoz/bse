@@ -89,7 +89,7 @@ sub error {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $req->cgi. $req->cfg),
+     BSE::Util::Tags->basic(\%acts, $req->cgi, $req->cfg),
      error_img => [ \&tag_error_img, $req->cfg, $errors ],
      msg => $msg,
      error => $msg, # so we can use the original error.tmpl

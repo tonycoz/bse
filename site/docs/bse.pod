@@ -45,6 +45,11 @@ seminars (from Adrian)
 
 the order detail display was incorrectly displaying the order date
 
+=item *
+
+tags using the cgi or config values weren't displaying correctly on
+the error page.
+
 =back
 
 =head2 0.15_52
