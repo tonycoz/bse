@@ -20,13 +20,19 @@ sub check_secure {
 
   return 1 if $curr_host eq $host && $curr_proto eq $protocol;
 
+  if ($req->cgi->param('did_admin_url_dispatch')) {
+    $$rresult = $class->error($req, "Your admin URL '$securl' is probably misconfigured, we did a redirect to the admin URL and is still isn't correct - we appear to be on '$curr_proto://$curr_host'");
+    return;
+  }
+
   print STDERR "User is coming to use via a non-secure URL\n";
   print STDERR "curr host  >$curr_host< secure_host >$host<\n";
   print STDERR "curr proto >$curr_proto< secure_proto >$protocol<\n";
 
   # refresh back to the secure URL
   my $target = ($ENV{SCRIPT_NAME} =~ /(\w+)\.pl$/)[0] or die;
-  my $url = $req->url($target => { $class->default_action => 1 });
+  my $action = $class->action_prefix . $class->default_action;
+  my $url = $req->url($target => { $action => 1, did_admin_url_dispatch => 1 });
   $$rresult = BSE::Template->get_refresh($url, $req->cfg);
 
   return;
