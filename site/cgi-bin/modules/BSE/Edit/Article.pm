@@ -2182,11 +2182,11 @@ sub save_image_changes {
       if ($name ne '') {
 	if ($name =~ /^[a-z_]\w*$/i) {
 	  if ($used{lc $name}++) {
-	    $errors{"name$index"} = 'Image name must be empty or alphanumeric and unique to the article';
+	    $errors{"name$index"} = 'Image name must be unique to the article';
 	  }
 	}
 	else {
-	  $errors{"name$index"} = 'Image name must be unique to the article';
+	  $errors{"name$index"} = 'Image name must be empty or alphanumeric and unique to the article';
 	}
       }
       unless ($errors{"name$index"}) {

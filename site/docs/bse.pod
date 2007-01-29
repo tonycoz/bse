@@ -27,6 +27,10 @@ add extra ofchild iterators (variation on patch from Adrian)
 allow the archive flag on the send form to override the newsletter's
 setting
 
+=item *
+
+improve messages for bad image names
+
 =back
 
 =head2 0.15_52
