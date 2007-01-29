@@ -41,6 +41,10 @@ base URL doesn't match the name the server reports
 modification to the session summary lists (date/location display) for
 seminars (from Adrian)
 
+=item *
+
+the order detail display was incorrectly displaying the order date
+
 =back
 
 =head2 0.15_52

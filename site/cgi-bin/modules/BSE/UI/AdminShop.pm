@@ -643,11 +643,11 @@ sub req_order_detail {
 #	 my ($func, $args) = split ' ', $_[0], 2;
 #	 return sprintf("%.2f", $acts{$func}->($args)/100.0)
 #       },
-       date =>
-       sub {
-	 my ($func, $args) = split ' ', $_[0], 2;
-	 return display_date($acts{$func}->($args));
-       },
+#       date =>
+#       sub {
+#	 my ($func, $args) = split ' ', $_[0], 2;
+#	 return display_date($acts{$func}->($args));
+#       },
        extension =>
        sub {
 	 sprintf("%.2f", $lines[$line_index]{units} * $lines[$line_index]{$_[0]}/100.0)
