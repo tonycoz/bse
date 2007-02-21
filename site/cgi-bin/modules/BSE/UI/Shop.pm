@@ -612,6 +612,7 @@ sub req_payment {
   
   my $cust_class = custom_class($req->cfg);
   eval {
+    local $SIG{__DIE__};
     my %custom = %{$session->{custom}};
     $cust_class->order_save($cgi, $order_values, \@items, \@products, 
 			    \%custom, $cfg);
@@ -864,6 +865,7 @@ sub req_orderdone {
      #ifSubscribingTo => [ \&tag_ifSubscribingTo, \%subscribing_to ],
      session => [ \&tag_session, \$item, \$sem_session ],
      location => [ \&tag_location, \$item, \$location ],
+     msg => '',
     );
   for my $type (@pay_types) {
     my $id = $type->{id};
@@ -1256,6 +1258,7 @@ sub _fillout_order {
 
   # if it sets shipping cost it must also update the total
   eval {
+    local $SIG{__DIE__};
     my %custom = %{$session->{custom}};
     $cust_class->order_save($cgi, $values, $items, $items, 
 			    \%custom, $cfg);

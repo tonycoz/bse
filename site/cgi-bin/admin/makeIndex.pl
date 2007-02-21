@@ -31,6 +31,9 @@ my %scores =
    file_displayName => 2,
    file_description=>2,
    file_notes => 1,
+   summary => 0,
+   description => 0,
+   product_code => 0,
   );
 
 for my $name (keys %scores) {
@@ -89,6 +92,8 @@ sub makeIndex {
     next unless $gen->visible($article) or $do_search{$sectionid};
     
     next if $dont_search{$sectionid};
+
+    $article = $gen->get_real_article($article);
     
     my %fields;
     for my $field (sort { $scores{$b} <=> $scores{$a} } keys %scores) {

@@ -98,6 +98,12 @@ sub visible {
   return $article->{listed};
 }
 
+sub get_real_article {
+  my ($self, $article) = @_;
+
+  return Products->getByPkey($article->{id});
+}
+
 1;
 
 __END__

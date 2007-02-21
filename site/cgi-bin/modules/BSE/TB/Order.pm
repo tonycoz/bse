@@ -24,7 +24,7 @@ sub columns {
            delivMobile billMobile
            ccOnline ccSuccess ccReceipt ccStatus ccStatusText
            ccStatus2 ccTranId complete delivOrganization billOrganization
-           delivStreet2 billStreet2/;
+           delivStreet2 billStreet2 purchase_order/;
 }
 
 =item siteuser
@@ -122,6 +122,7 @@ sub valid_fields {
      billMobile => { description => 'Billing Mobile Number',
 		     rules=>'phone' },
      instructions => { description => 'Instructions' },
+     purchase_order => { description => 'Purchase Order No' },
     );
 
   for my $field (keys %fields) {

@@ -271,10 +271,17 @@ sub _fill_product_data {
       or $src->{leadTime} = 0;
     $data->{leadTime} = $src->{leadTime};
   }
-  if (exists $src->{summary} && length $src->{summary}) {
+  if (exists $src->{description} && length $src->{description}) {
     if ($data->{id}) {
-      if ($req->user_can('edit_field_edit_summary', $data)) {
-	$data->{summary} = $src->{summary};
+      if ($req->user_can('edit_field_edit_description', $data)) {
+	$data->{description} = $src->{description};
+      }
+    }
+  }
+  if (exists $src->{product_code} && length $src->{product_code}) {
+    if ($data->{id}) {
+      if ($req->user_can('edit_field_edit_product_code', $data)) {
+	$data->{product_code} = $src->{product_code};
       }
     }
   }

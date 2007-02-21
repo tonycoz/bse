@@ -49,4 +49,10 @@ sub iter_location_sessions {
   $seminar->future_location_sessions($$rlocation);
 }
 
+sub get_real_article {
+  my ($self, $article) = @_;
+
+  return BSE::TB::Seminars->getByPkey($article->{id});
+}
+
 1;

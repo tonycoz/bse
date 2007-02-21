@@ -5,8 +5,6 @@ use strict;
 my @checks =
   qw(
      edit_delete_article
-     edit_field_edit_title
-     edit_field_edit_summary
      edit_add_child
      );
 my %checks = map { $_=> $_, "bse_$_" => $_ } @checks;  
@@ -424,28 +422,6 @@ sub check_edit_delete_article {
   }
   if (_is_product_and_in_use($article)) {
     $$rmsg = "There are orders for this product.  It cannot be deleted.";
-    return;
-  }
-
-  return 1;
-}
-
-sub check_edit_field_edit_title {
-  my ($self, $user, $article, $action, $rmsg) = @_;
-
-  if (_is_product_and_in_use($article)) {
-    $$rmsg = "There are orders for this product.  The title cannot be changed.";
-    return;
-  }
-
-  return 1;
-}
-
-sub check_edit_field_edit_summary {
-  my ($self, $user, $article, $action, $rmsg) = @_;
-  
-  if (_is_product_and_in_use($article)) {
-    $$rmsg = "There are orders for this product.  The summary cannot be changed.";
     return;
   }
 

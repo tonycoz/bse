@@ -150,12 +150,12 @@ sub search {
   SWITCH: for ($date) {
     $_ eq 'ar' # been released
       && do {
-	$sql .= " and $now between release and expire";
+	$sql .= " and $now between \"release\" and expire";
 	last SWITCH;
       };
     /^r(\d+)$/ # released in last N days
       && do {
-	$sql .= " and release > "._sql_date(time - $oneday * $1);
+	$sql .= " and \"release\" > "._sql_date(time - $oneday * $1);
 	last SWITCH;
       };
     /^e(\d+)$/ # expired in last N days

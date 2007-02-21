@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>85;
+use Test::More tests=>88;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
@@ -275,6 +275,12 @@ template_test "ifAnd dynamic cfg ajax", $parent, <<TEMPLATE, <<EXPECTED;
 <:ifAnd [ifDynamic] [cfg basic ajax]:>1<:or:>0<:eif:>
 TEMPLATE
 0
+EXPECTED
+
+template_test "replace complex re", $parent, <<'TEMPLATE', <<EXPECTED;
+<:replace "test&amp;test 01234567890123456789" ((?:&[^;]*;|[^&]){16}).* $1...:>
+TEMPLATE
+test&amp;test 012345...
 EXPECTED
 
 ############################################################

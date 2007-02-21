@@ -218,7 +218,8 @@ sub create_clauses {
   for my $col (@cols) {
     my $sql = $col->{field} . " " . $col->{type};
     $sql .= $col->{null} ? ' null' : ' not null';
-    if ($col->{default} ne 'NULL') {
+    if ($col->{default} ne 'NULL' &&
+	($col->{type} =~ /char/i || $col->{default} =~ /\d/)) {
       $sql .= " default ";
       if ($col->{default} =~ /^\d+$/) {
 	$sql .= $col->{default};

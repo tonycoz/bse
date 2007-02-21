@@ -188,6 +188,16 @@ sub output_result {
   push @{$result->{headers}}, "Content-Type: $result->{type}"
     if $result->{type};
   push @{$result->{headers}}, $req->extra_headers;
+  my $add_cache_control = 1;
+  for my $header (@{$result->{headers}}) {
+    if ($header =~ /^cache-control:/i) {
+      $add_cache_control = 0;
+      last;
+    }
+  }
+  if ($add_cache_control) {
+    push @{$result->{headers}}, "Cache-Control: no-cache";
+  }
   if (exists $ENV{GATEWAY_INTERFACE}
       && $ENV{GATEWAY_INTERFACE} =~ /^CGI-Perl\//) {
     require Apache;

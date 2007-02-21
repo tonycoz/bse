@@ -243,6 +243,10 @@ from BSE::CustomBase.  Default: BSE::Custom.
 If this is true, then pre-generation for dynamic pages will be delayed
 until the page is displayed to a user.  Default: off.
 
+=item staticajax
+
+If true, the ifAjax and ajax tags will be active for static pages.
+
 =back
 
 =head2 [mail]
@@ -802,15 +806,19 @@ default scores for each field in the articles.
 
 The default scores are:
 
-  Field   Score
-  -----   -----
-  title     5
-  body      3
-  keyword   4
-
-A special key C<file_description> can be used here to set the score
-for indexing downloadable file descriptions, which aren't indexed by
-default.  A good value is probably 2 or 1.
+  Field           Score  Notes
+  -----           -----  -----
+  title             5
+  body              3
+  keyword           4
+  pageTitle         5
+  author            4
+  summary           0
+  description       0    Products only
+  product_code      0    Products only
+  file_displayName  2    displayName for files
+  file_description  2    description for files
+  file_notes        1    notes for files
 
 =head2 [article flags]
 

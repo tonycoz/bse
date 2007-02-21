@@ -719,6 +719,12 @@ sub _format_image {
   }
 }
 
+sub get_real_article {
+  my ($self, $article) = @_;
+
+  return $article;
+}
+
 1;
 
 __END__

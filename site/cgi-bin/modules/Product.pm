@@ -12,9 +12,9 @@ use constant SUBUSAGE_EITHER => 3;
 
 sub columns {
   return ($_[0]->SUPER::columns(), 
-	  qw/articleId summary leadTime retailPrice wholesalePrice gst options
+	  qw/articleId description leadTime retailPrice wholesalePrice gst options
              subscription_id subscription_period subscription_usage
-             subscription_required/ );
+             subscription_required product_code/ );
 }
 
 sub bases {

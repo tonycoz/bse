@@ -10,6 +10,68 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.15_54
+
+=over
+
+=item *
+
+orders now have a purchase_order field.
+
+=item *
+
+products now have a product_code field.  This is transferred to order
+items when they are ordered.
+
+=item *
+
+added a summary field to articles.  The old product summary field is
+now known as description, though the in database name of the column
+hasn't changed.
+
+=item *
+
+search indexing of the product_code, summary and description fields
+are controllable by the config file, as for the indexable article
+fields.
+
+=item *
+
+the ajax tags can be enabled for static pages 
+
+=item *
+
+we now set ansi_quote mode when connecting to a mysql database, so we
+can use portal identifier quoting in queries.
+
+=item *
+
+the handling of column defaults has changed for upgrade_mysql.pl to
+deal with some mysql 5 issues.  Be aware of this and backup your
+database before upgrading.
+
+=item *
+
+the product title and description (previously summary) fields are now
+editable on products that have been ordered previously
+
+=item *
+
+most dynamic output now has a "Cache-Control: no-cache" header, which
+should prevent caching by over-zealous UAs.
+
+=item *
+
+added new targets to cgi-bin/admin/add.pl to support ajax.
+
+=item *
+
+parsing of [] constructs in tags has changed to require spaces around
+subsidiary [].  If you have strings containing [] characters as
+arguments you will need to add "" around them.
+
+=back
+
 =head2 0.15_53
 
 =over

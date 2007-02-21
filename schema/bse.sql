@@ -21,8 +21,8 @@ CREATE TABLE article (
 
   -- position of first image for this article
   imagePos char(2) not null,
-  release datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
-  expire datetime DEFAULT '9999-12-31 23:59:59' NOT NULL,
+  `release` datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+  expire datetime DEFAULT '2999-12-31 23:59:59' NOT NULL,
   keyword varchar(255) not null default '',
 
   -- the template in $TMPLDIR used to generate this as HTML
@@ -87,6 +87,9 @@ CREATE TABLE article (
   metaDescription varchar(255) default '' not null,
   metaKeywords varchar(255) default '' not null,
 
+  -- x just so we don't get a name issue with product
+  summaryx varchar(255) default '' not null,
+
   PRIMARY KEY (id),
 
   -- if we keep id in the indexes MySQL will sometimes be able to
@@ -95,7 +98,7 @@ CREATE TABLE article (
   -- Unfortunately MySQL can only do this on fixed-width columns
   -- other databases may not need the id in the index, and may also be
   -- able to handle the variable length columns in the index
-  INDEX article_date_index (release,expire, id),
+  INDEX article_date_index (`release`,expire, id),
   INDEX article_displayOrder_index (displayOrder),
   INDEX article_parentId_index (parentId),
   INDEX article_level_index (level, id)
@@ -167,6 +170,8 @@ create table product (
   subscription_period integer not null default 0,
   subscription_usage integer not null default 3,
   subscription_required integer not null default -1,
+
+  product_code varchar(80) not null,
   
   primary key(articleId)
 );
@@ -284,6 +289,8 @@ create table orders (
   delivStreet2 varchar(127) not null default '',
   billStreet2 varchar(127) not null default '',
 
+  purchase_order varchar(80) not null default '',
+
   primary key (id),
   index order_cchash(ccNumberHash),
   index order_userId(userId, orderDate)
@@ -329,6 +336,8 @@ create table order_item (
   -- session for a seminar
   session_id integer not null default -1,
 
+  product_code varchar(80) not null default '',
+
   primary key (id),
   index order_item_order(orderId, id)
 );
@@ -345,7 +354,7 @@ create table other_parents (
   -- order as seen from the child
   childDisplayOrder integer not null,
 
-  release datetime default '0000-00-00 00:00:00' not null,
+  `release` datetime default '0000-00-00 00:00:00' not null,
   expire datetime default '9999-12-31 23:59:59' not null,
 
   primary key(id),

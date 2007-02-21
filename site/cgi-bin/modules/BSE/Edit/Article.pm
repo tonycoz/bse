@@ -11,11 +11,31 @@ use BSE::CfgInfo qw(custom_class admin_base_url cfg_image_dir);
 use BSE::Util::Iterate;
 use BSE::Template;
 
+sub not_logged_on {
+  my ($self, $req) = @_;
+
+  if (() = $req->cgi->param('_')) {
+    # this check doesn't seem to work on IE:
+    # $ENV{HTTP_X_REQUESTED_WITH} =~ /XMLHttpRequest/) {
+    # AJAX/Prototype request
+    return
+      {
+       content => 'Access Forbidden: login timed out',
+       headers => [
+		   "Status: 403", # forbidden
+		  ],
+      };
+  }
+  else {
+    BSE::Template->get_refresh($req->url('logon'), $req->cfg);
+  }
+}
+
 sub article_dispatch {
   my ($self, $req, $article, $articles) = @_;
 
   BSE::Permissions->check_logon($req)
-    or return BSE::Template->get_refresh($req->url('logon'), $req->cfg);
+    or return $self->not_logged_on($self);
 
   my $cgi = $req->cgi;
   my $action;
@@ -83,6 +103,9 @@ sub article_actions {
      hide => 'hide',
      unhide => 'unhide',
      a_thumb => 'req_thumb',
+     a_ajax_get => 'req_ajax_get',
+     a_ajax_save_body => 'req_ajax_save_body',
+     a_ajax_set => 'req_ajax_set',
     );
 }
 
@@ -2962,6 +2985,163 @@ sub validate_image_name {
   my ($self, $name, $rmsg) = @_;
 
   1; # no extra validation
+}
+
+sub req_ajax_get {
+  my ($self, $req, $article, $articles, @extras) = @_;
+
+  my $field_name = $req->cgi->param('field');
+  unless ($field_name && exists $article->{$field_name}) {
+    print STDERR "req_ajax_get: missing or invalid field parameter\n";
+    return {
+	    contant => 'Invalid or missing field name',
+	    headers => [
+			"Status: 187" # bad request
+		       ],
+	   };
+  }
+
+  my $value = $article->{$field_name};
+  defined $value or $value = '';
+
+  my $charset = $req->cfg->entry('html', 'charset', 'iso-8859-1');
+  
+  # re-encode to utf8
+  require Encode;
+  Encode::from_to($value, $charset, 'utf8');
+
+  # make some content
+  return
+    {
+     content => $value,
+     type => 'text/plain; charset=utf-8',
+    };
+}
+
+sub req_ajax_save_body {
+   my ($self, $req, $article, $articles, @extras) = @_;
+
+   my $cfg = $req->cfg;
+   my $cgi = $req->cgi;
+
+   $cgi->charset('utf-8');
+
+   # newer versions of CGI.pm will decode the content as UTF8 if we
+   # do the above
+   my $body = $cgi->param('body');
+
+   my $charset = $req->cfg->entry('html', 'charset', 'iso-8859-1');
+  
+   # convert it to our working charset
+   # any characters that don't convert are replaced by some 
+   # substitution character, not defined by the documentation
+   require Encode;
+   $body = Encode::encode($charset, $body);
+
+   $article->{body} = $body;
+   $article->{lastModified} = now_sqldatetime();
+   my $user = $req->getuser;
+   $article->{lastModifiedBy} = $user ? $user->{logon} : '';
+   $article->save;
+
+   my @extra_regen;
+   @extra_regen = $self->update_child_dynamic($article, $articles, $req);
+
+   if ($Constants::AUTO_GENERATE) {
+     require Util;
+     Util::generate_article($articles, $article);
+     for my $regen_id (@extra_regen) {
+       my $regen = $articles->getByPkey($regen_id);
+       Util::generate_low($articles, $regen, $self->{cfg});
+     }
+   }
+ 
+   # we need the formatted body as the result
+   my $genname = $article->{generator};
+   eval "use $genname";
+   $@ and die "Error on use $genname: $@";
+   my $gen = $genname->new(article => $articles, cfg => $cfg, top => $article);
+   my %acts;
+   %acts = $gen->baseActs($articles, \%acts, $article, 0);
+   my $template = "<:body:>";
+   my $formatted = BSE::Template->replace($template, $req->cfg, \%acts);
+
+   return
+     {
+      content => $formatted,
+      type => BSE::Template->html_type($cfg),
+     };
+}
+
+my %settable_fields = qw(title keyword author pageTitle);
+  
+
+sub req_ajax_set {
+   my ($self, $req, $article, $articles, @extras) = @_;
+
+   my $cfg = $req->cfg;
+   my $cgi = $req->cgi;
+
+   my $field = $cgi->param('field');
+
+   unless ($field && $settable_fields{$field}) {
+    return {
+	    contant => 'Invalid or missing field name',
+	    headers => [
+			"Status: 187" # bad request
+		       ],
+	   };
+   }
+
+   $cgi->charset('utf-8');
+
+   # newer versions of CGI.pm will decode the content as UTF8 if we
+   # do the above
+   my $value = $cgi->param('value');
+
+   # hack - validate it if it's the title
+   if ($field eq 'title') {
+     if ($value !~ /\S/) {
+       return {
+	       contant => 'Invalid or missing field name',
+	       headers => [
+			   "Status: 187" # bad request
+			  ],
+	      };
+     }
+   }
+
+   my $charset = $req->cfg->entry('html', 'charset', 'iso-8859-1');
+  
+   # convert it to our working charset
+   # any characters that don't convert are replaced by some 
+   # substitution character, not defined by the documentation
+   require Encode;
+   $value = Encode::encode($charset, $value);
+
+   $article->{$field} = $value;
+   $article->{lastModified} = now_sqldatetime();
+   my $user = $req->getuser;
+   $article->{lastModifiedBy} = $user ? $user->{logon} : '';
+   $article->save;
+
+   my @extra_regen;
+   @extra_regen = $self->update_child_dynamic($article, $articles, $req);
+
+   if ($Constants::AUTO_GENERATE) {
+     require Util;
+     Util::generate_article($articles, $article);
+     for my $regen_id (@extra_regen) {
+       my $regen = $articles->getByPkey($regen_id);
+       Util::generate_low($articles, $regen, $self->{cfg});
+     }
+   }
+ 
+   return
+     {
+      content => $value,
+      type => BSE::Template->html_type($cfg),
+     };
 }
 
 1;

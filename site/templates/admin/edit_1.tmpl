@@ -80,6 +80,14 @@
             <:or:><:default title:><:eif:></td>
             <td nowrap="nowrap" bgcolor="#FFFFFF"><:help edit title:> <:error_img title:></td>
           </tr>
+          <tr> 
+            <th nowrap="nowrap" bgcolor="#FFFFFF" align="left">Summary: 
+            </th>
+            <td bgcolor="#FFFFFF" width="100%"> 
+            <:ifFieldPerm summary:><input type="text" name="summary" maxlength="<:cfg fields summary_size 255:>" size="64" value="<: old summary default summary :>" />
+            <:or:><:default summary:><:eif:></td>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help edit summary:> <:error_img summary:></td>
+          </tr>
           <:if Cfg image title:><tr> 
             <th nowrap="nowrap" bgcolor="#FFFFFF" align="left">Title image:</th>
             <td bgcolor="#FFFFFF" width="100%"><:ifFieldPerm titleImage:><:titleImages:> (upload this to 

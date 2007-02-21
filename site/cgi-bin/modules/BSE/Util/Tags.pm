@@ -71,6 +71,7 @@ sub tag_adminbase {
 sub static {
   my ($class, $acts, $cfg) = @_;
 
+  my $static_ajax = $cfg->entry('basic', 'staticajax', 0);
   require BSE::Util::Iterate;
   my $it = BSE::Util::Iterate->new;
   return
@@ -274,8 +275,17 @@ sub static {
      # report conflicts with a tag name used within reports
      subreport => [ \&tag_report, $cfg ],
 
-     ajax => '',
-     ifAjax => 0,
+     (
+      $static_ajax 
+      ? (
+	 ajax => [ \&tag_ajax, $cfg ],
+	 ifAjax => 1,
+	)
+      : (
+	 ajax => '',
+	 ifAjax => 0,
+	)
+      ),
 
      _format => 
      sub {
@@ -441,7 +451,7 @@ sub basic {
      dynreplace => \&tag_replace,
      dyntoday => \&tag_today,
      dynreport => [ \&tag_report, $cfg ],
-     ajax => [ \&tag_ajax, $cfg ],
+     ajax => [ \&tag_ajax_dynamic, $cfg ],
      ifAjax => [ \&tag_ifAjax, $cfg ],
     );
 }
@@ -902,11 +912,17 @@ sub tag_ifAjax {
   return _if_ajax($cfg) ? 1 : 0;
 }
 
-sub tag_ajax {
+sub tag_ajax_dynamic {
   my ($cfg, $args, $acts, $tag_name, $templater) = @_;
 
   return '' unless _if_ajax($cfg);
-  
+
+  return tag_ajax($cfg, $args, $acts, $tag_name, $templater);
+}
+
+sub tag_ajax {
+  my ($cfg, $args, $acts, $tag_name, $templater) = @_;
+
   my ($name, $arg_rest) = split ' ', $args, 2;
  
   my $defn = $cfg->entry('ajax definitions', $name)
