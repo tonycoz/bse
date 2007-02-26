@@ -500,10 +500,12 @@ site/templates/user/userpage_base.tmpl
 site/templates/xbase.tmpl
 site/util/bseaddimages.pl
 site/util/gen.pl
+site/util/getpcode.pl	Example code
 site/util/initial.pl
 site/util/loaddata.pl
 site/util/mysql.str
 site/util/upgrade_mysql.pl
+site/util/update_title_summary.pl
 t/BSE/Test.pm
 t/t00smoke.t	makes a request to most of the scripts
 t/t010template.t	Tests Squirrel::Template

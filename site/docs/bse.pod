@@ -35,6 +35,21 @@ order data
 
 display the order_save modified total on the payment page
 
+=item *
+
+added SQL to replace order items (used by update_title_summary.pl)
+
+=item *
+
+Example script: getpcode.pl - extracts a product code from the body of
+a product and sets the products product_code.
+
+=item *
+
+Example script: update_title_summary.pl - updates old order items with
+the title and description (previously summary) from their associated
+products.
+
 =back
 
 =head2 0.15_54
