@@ -88,7 +88,7 @@ CREATE TABLE article (
   metaKeywords varchar(255) default '' not null,
 
   -- x just so we don't get a name issue with product
-  summaryx varchar(255) default '' not null,
+  summaryx text default '' not null,
 
   PRIMARY KEY (id),
 
