@@ -82,6 +82,13 @@ if (@results) {
   }
 }
 
+for my $article (@articles) {
+  my $generator = $article->{generator};
+  eval "use $generator";
+  my $gen = $generator->new(top=>$article, cfg=>$cfg);
+  $article = $gen->get_real_article($article);
+}
+
 $page_count = int((@results + $results_per_page - 1)/$results_per_page);
 
 # make an array of hashes (to preserve order)
@@ -109,7 +116,7 @@ for my $score (values %scores) {
 my %highlight_prefix;
 my %highlight_suffix;
 for my $type (qw(keyword author pageTitle file_displayName 
-                 file_description file_notes)) {
+                 file_description file_notes summary description product_code)) {
   $highlight_prefix{$type} = 
     $cfg->entry('search highlight', "${type}_prefix", "<b>");
   $highlight_suffix{$type} = 
@@ -121,9 +128,7 @@ my $page_num_iter = 0;
 my $article_index = -1;
 my $result_seq = ($page_number-1) * $results_per_page;
 my $excerpt;
-my $keywords;
-my $author;
-my $pageTitle;
+my %match_tags;
 my $words_re_str = '\b('.join('|', map quotemeta, @terms).')';
 my $highlight_partial = $cfg->entryBool('search', 'highlight_partial', 1);
 $words_re_str .= '\b' unless $highlight_partial;
@@ -144,20 +149,15 @@ my %acts;
        my $found = 0;
        $excerpt = excerpt($current_result, \$found, \@terms);
 
-       # match against the keywords
-       $keywords = $current_result->{keyword};
-       $keywords =~ s!$words_re!$highlight_prefix{keyword}$1$highlight_suffix{keyword}!g or $keywords = '';
-
-       # match against the author
-       $author = $current_result->{author};
-       $author =~ s!$words_re!$highlight_prefix{author}$1$highlight_suffix{author}!g 
-	 or $author = '';
-
-       # match against the pageTitle
-       $pageTitle = $current_result->{pageTitle};
-       $pageTitle =~ s!$words_re!$highlight_prefix{pageTitle}$1$highlight_suffix{pageTitle}!g 
-	 or $pageTitle = '';
        $req->set_article(result => $current_result);
+
+       for my $field (qw/pageTitle summary keyword description author product_code/) {
+	 my $value = $current_result->{$field};
+	 defined $value or $value = '';
+	 $value =~ s!$words_re!$highlight_prefix{$field}$1$highlight_suffix{$field}!g 
+	   or $value = '';
+	 $match_tags{$field} = $value;
+       }
 
        # match files
        @files = ();
@@ -207,18 +207,13 @@ my %acts;
      --$month;
      return strftime('%d-%b-%Y', 0, 0, 0, $day, $month, $year, 0, 0);
    },
-   keywords => 
-   sub { 
-     $keywords
-   },
-   author => 
-   sub { 
-     $author
-   },
-   pageTitle => 
-   sub { 
-     $pageTitle
-   },
+   keywords     => sub { $match_tags{keyword} },
+   author       => sub { $match_tags{author} },
+   pageTitle    => sub { $match_tags{pageTitle} },
+   match_summary => sub { $match_tags{summary} },
+   description  => sub { $match_tags{description} },
+   product_code => sub { $match_tags{product_code} },
+   
    ifMatchfiles => sub { @files },
    matchfile_count => sub { @files },
    iterate_matchfiles_reset => sub { $file_index = -1 },
