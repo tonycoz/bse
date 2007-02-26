@@ -523,6 +523,7 @@ sub req_show_payment {
      checkedPayment => [ \&tag_checkedPayment, $payment, \%types_by_name ],
      ifPayments => [ \&tag_ifPayments, \@payment_types, \%types_by_name ],
      error_img => [ \&tag_error_img, $cfg, $errors ],
+     total => $order_values->{total},
     );
   for my $type (@pay_types) {
     my $id = $type->{id};
@@ -610,18 +611,6 @@ sub req_payment {
   my @products;
   my @items = $class->_build_items($req, \@products);
   
-  my $cust_class = custom_class($req->cfg);
-  eval {
-    local $SIG{__DIE__};
-    my %custom = %{$session->{custom}};
-    $cust_class->order_save($cgi, $order_values, \@items, \@products, 
-			    \%custom, $cfg);
-    $session->{custom} = \%custom;
-  };
-  if ($@) {
-    return $class->req_checkout($req, $@, 1);
-  }
-
   my @columns = BSE::TB::Order->columns;
   my %columns; 
   @columns{@columns} = @columns;

@@ -26,6 +26,15 @@ include highlight keywords for product field search matches
 
 transfer the description instead of the summary to the line items
 
+=item *
+
+the order_save() custom callback was being called twice on the same
+order data
+
+=item *
+
+display the order_save modified total on the payment page
+
 =back
 
 =head2 0.15_54
