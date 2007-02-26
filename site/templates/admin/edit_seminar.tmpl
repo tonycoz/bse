@@ -74,10 +74,16 @@
             <td nowrap="nowrap" bgcolor="#FFFFFF"><:help product title:> <:error_img title:></td>
           </tr>
           <tr> 
-            <th nowrap="nowrap" align="left" bgcolor="#FFFFFF">Summary*:</th>
+            <th nowrap="nowrap" align="left" bgcolor="#FFFFFF">Summary:</th>
             <td nowrap="nowrap" bgcolor="#FFFFFF"><:ifFieldPerm summary:><input type="text" name="summary" value="<:old summary default summary:>" size="60" /><:or:><:seminar summary:><:eif:> </td>
             <td nowrap="nowrap" bgcolor="#FFFFFF"><:help product summary:> <:error_img
             summary:></td>
+          </tr>
+          <tr> 
+            <th nowrap="nowrap" align="left" bgcolor="#FFFFFF">Description:</th>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:ifFieldPerm description:><input type="text" name="description" value="<:old description default description:>" size="60" /><:or:><:seminar description:><:eif:> </td>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help product description:> <:error_img
+            description:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF" valign="top"> Body:</th>

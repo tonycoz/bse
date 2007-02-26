@@ -22,6 +22,10 @@ change the article summary to text instead of varchar().
 
 include highlight keywords for product field search matches
 
+=item *
+
+transfer the description instead of the summary to the line items
+
 =back
 
 =head2 0.15_54
