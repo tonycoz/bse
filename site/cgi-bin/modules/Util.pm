@@ -95,6 +95,7 @@ sub generate_search {
   @article{qw(id parentid title titleImage displayOrder link level listed)} =
     (-1, -1, $SEARCH_TITLE, $SEARCH_TITLE_IMAGE, 0, $CGI_URI."/search.pl", 0, 1);
 
+  $article{link} = $cfg->entryErr('site', 'url') . $article{link};
   require 'Generate/Article.pm';
   my $gen = Generate::Article->new(cfg=>$cfg, top => \%article, 
 				   force_dynamic => 1);
