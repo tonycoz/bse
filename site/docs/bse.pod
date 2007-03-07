@@ -18,6 +18,11 @@ Maybe I'll add some other bits here.
 
 generate the search base page using absolute urls
 
+=item *
+
+the images iterator will no longer prevent automatic image insertion
+by itself, there must be an actual image tag replaced.
+
 =back
 
 =head2 0.15_55

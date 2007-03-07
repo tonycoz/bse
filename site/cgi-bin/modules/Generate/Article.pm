@@ -480,7 +480,7 @@ HTML
        }
      },
      iterate_images => 
-     sub { $had_image_tags = 1; ++$image_index < @iter_images },
+     sub { ++$image_index < @iter_images },
      image =>
      sub {
        my ($which, $align, $rest) = split ' ', $_[0], 3;
