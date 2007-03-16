@@ -161,6 +161,7 @@ template_test "cases", $top, <<'TEMPLATE', <<EXPECTED;
 <:ucfirst "aBc123 xyz":>
 <:capitalize "alpha beta gamma":>
 <:capitalize "'one day, but don't', 'we know'":>
+<:capitalize "IBM stock soars":>
 TEMPLATE
 abc123 xyz
 ABC123 XYZ
@@ -168,6 +169,7 @@ abC123 XYZ
 ABc123 xyz
 Alpha Beta Gamma
 'One Day, But Don't', 'We Know'
+Ibm Stock Soars
 EXPECTED
 
 template_test "arithmetic", $top, <<'TEMPLATE', <<EXPECTED;

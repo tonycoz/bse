@@ -263,6 +263,7 @@ sub static {
        my ($arg, $acts, $name, $templater) = @_;
        my @items = DevHelp::Tags->get_parms($arg, $acts, $templater);
        my $out = join '', @items;
+       $out = lc $out; # start all lowercase
        $out =~ s/(^'?|\W'|[^'\w])(\w)/$1\U$2/g;
        $out;
      },

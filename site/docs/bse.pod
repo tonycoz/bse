@@ -23,6 +23,10 @@ generate the search base page using absolute urls
 the images iterator will no longer prevent automatic image insertion
 by itself, there must be an actual image tag replaced.
 
+=item *
+
+the capitalize tag now lowercases anything it doesn't uppercase
+
 =back
 
 =head2 0.15_55
