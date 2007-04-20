@@ -22,7 +22,8 @@ sub dispatch {
   my $action;
   if (ref $self) {
     $action = $self->action;
-    $actions->{$action} or undef $action;
+    defined $action && $actions->{$action} 
+      or undef $action;
   }
   unless ($action) {
     for my $check (keys %$actions) {

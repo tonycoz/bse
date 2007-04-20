@@ -176,6 +176,23 @@ The value of the charset keyword when outputting HTML from a script.
 Set to the empty string to suppress the charset keyword.  Default:
 iso-8859-1.
 
+=item redirect_links
+
+If this is a non-zero number, then all but mailto links are redirected
+to C<nuser.pl/redirect> so you can display a diclaimer.  If this
+contained alphabetics it's treated as a comma separated list of url
+schemes that should be handled via C<nuser.pl/redirect>.  If 0 or not
+present, no redirection is done.
+
+The redirect URL includes a hash of the url, title and the redirect
+salt to prevent using this mechanism by external sites for cookie
+stealing attacks.
+
+=item redirect_salt
+
+The salt used in generating the has for redirect_links.  Default: an
+empty string.
+
 =back
 
 =head2 [basic]

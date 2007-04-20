@@ -157,6 +157,12 @@ sub _fix_spanned {
   "$start$text$end";
 }
 
+sub link {
+  my ($self, $url, $text) = @_;
+
+  $self->_fix_spanned(qq/<a href="$url">/, "</a>", $text, 'link')
+}
+
 sub replace_char {
   my ($self, $rpart) = @_;
   $$rpart =~ s#(acronym|abbr|dfn)\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#
@@ -190,10 +196,10 @@ sub replace_char {
     $self->_fix_spanned(qq/<a href="$1" target="_blank">/, "</a>", $1, 'poplink')#ieg
     and return 1;
   $$rpart =~ s#link\[([^|\]\[]+)\|([^\]\[]+)\]#
-    $self->_fix_spanned(qq/<a href="$1">/, "</a>", $2, 'link')#eig
+    $self->link($1, $2)#eig
     and return 1;
   $$rpart =~ s#link\[([^|\]\[]+)\]#
-    $self->_fix_spanned(qq/<a href="$1">/, "</a>", $1, 'link')#ieg
+    $self->link($1, $1)#ieg
     and return 1;
   $$rpart =~ s#font\[([^|\]\[]+)\|([^\]\[]+)\]#
     $self->_fix_spanned(qq/<font size="$1">/, "</font>", $2)#egi

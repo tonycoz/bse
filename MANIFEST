@@ -139,6 +139,7 @@ site/cgi-bin/modules/BSE/UI/Formmail.pm
 site/cgi-bin/modules/BSE/UI/Image.pm
 site/cgi-bin/modules/BSE/UI/NUser.pm
 site/cgi-bin/modules/BSE/UI/Page.pm
+site/cgi-bin/modules/BSE/UI/Redirect.pm
 site/cgi-bin/modules/BSE/UI/Shop.pm
 site/cgi-bin/modules/BSE/UI/SiteuserCommon.pm
 site/cgi-bin/modules/BSE/UI/SiteUserUpdate.pm
@@ -470,6 +471,7 @@ site/templates/user/base_bookseminar.tmpl
 site/templates/user/base_cancelbooking.tmpl
 site/templates/user/base_editbooking.tmpl
 site/templates/user/base_orderdetail.tmpl
+site/templates/user/base_redirect.tmpl
 site/templates/user/blacklistdone_base.tmpl
 site/templates/user/cantunsub_base.tmpl
 site/templates/user/confirmed_base.tmpl

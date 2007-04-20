@@ -18,7 +18,7 @@ dist: cleantree $(DISTTGZ)
 	cp $(DISTTGZ) $(WEBBASE)/dists/
 	cp site/docs/bse.html $(WEBBASE)/relnotes/bse-$(VERSION).html
 	cp site/docs/*.html $(WEBBASE)/docs
-	cvs tag r`echo $(VERSION) | tr . _`
+	svn cp . http://svn.develop-help.com/devsvn/bse/tags/bse-$(VERSION)
 
 # make sure everything is committed
 cleantree:
@@ -26,10 +26,7 @@ cleantree:
 	  then echo '***' The debugger is still enabled ; \
 	  exit 1; \
 	fi
-	if cvs status 2>/dev/null | grep -q '^\?\|Locally Modified' ; \
-          then echo '***' The tree has modified or unadded files ; \
-          exit 1 ; \
-        fi
+	test -z "`svn status`" || ( echo "Uncommitted files in the tree"; exit 1 )
 
 archive: $(DISTTGZ)
 
