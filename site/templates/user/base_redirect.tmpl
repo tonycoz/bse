@@ -2,6 +2,12 @@
 
 <p align="center">You're leaving our site, anything you see from now
 on is somebody else's problem.<p>
-
-<p align="center"><a href="<:url:>"><:text:></a></p>
-
+<form action="/cgi-bin/nuser.pl/redirect">
+<:ifEq [url] [text]:><:or:><p align="center"><:text:></p><:eif:>
+<p align="center"><:url:></p>
+<input type="hidden" name="url" value="<:url:>" />
+<input type="hidden" name="urlhash" value="<:urlhash:>" />
+<input type="hidden" name="referer" value="<:referer:>" />
+<input type="hidden" name="referhash" value="<:referhash:>" />
+<p><input type="submit" name="a_doit" value="Proceed" /><input type="submit" name="a_cancel" value="Cancel" /></p>
+</form>

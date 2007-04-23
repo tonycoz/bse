@@ -145,12 +145,13 @@ sub link {
   # formatter converted & to &amp; but we want them as & so they undergo
   # uri conversion correctly
   $url = unescape_html($url);
+  $text = unescape_html($text);
   my $redir_hash = substr(md5_hex($url, $text, $self->{redirect_salt}), 0, 16);
 
   my $new_url = '/cgi-bin/nuser.pl/redirect?url='
     . escape_uri($url) . "&amp;h=$redir_hash";
   if ($url ne $text) {
-    $new_url .= '&amp;t=' . escape_uri($text);
+    $new_url .= '&amp;title=' . escape_uri($text);
   }
 
   return $self->SUPER::link($new_url, $text);
