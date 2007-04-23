@@ -32,7 +32,7 @@
           <tr> 
             <th bgcolor="#FFFFFF" align="left">Email: </th>
             <td bgcolor="#FFFFFF"> 
-              <input type="text" name="email" value="<:old email siteuser email:>" size="60" />
+              <input type="text" name="email" value="<:old email siteuser email:>" size="60" /> (<:ifSiteuser confirmed:>confirmed<:or:><:if UserCan bse_members_confirm:><a href="<:script:>?a_view=1&amp;id=<:siteuser id:>&amp;_t=confirm&amp;r=<:script:>%3Fa_edit=1%26id=<:siteuser id:>">unconfirmed</a><:or UserCan:>unconfirmed<:eif UserCan:><:eif:>)
             </td>
             <td bgcolor="#FFFFFF"><:help editsiteuser email:>  <:error_img email:></td>
           </tr>

@@ -37,6 +37,14 @@ disclaimer page.  See [html].redirect_links in L<config.pod>.
 filelink[] tags weren't being replaced correctly in search results
 excerpts
 
+=item *
+
+added the ability to confirm user email addresses from the admin side.
+This requires that the user have the C<bse_members_confirm> right and
+access control must be enabled.  Note that confirming a user's email
+address may result in them receiving subscriptions from your site - if
+they haven't given permission you may be in violation of the spam act.
+
 =back
 
 =head2 0.15_55

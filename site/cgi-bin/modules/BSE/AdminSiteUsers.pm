@@ -29,6 +29,7 @@ my %actions =
    deletegroup	     => 'bse_members_group_delete',
    groupmemberform   => 'bse_members_user_edit',
    savegroupmembers  => 'bse_members_user_edit',
+   confirm           => 'bse_members_confirm',
   );
 
 my @donttouch = qw(id userId password email confirmed confirmSecret waitingForConfirmation flags affiliate_name previousLogon); # flags is saved separately
@@ -976,6 +977,31 @@ sub req_savegroupmembers {
   unless ($r) {
     $r = $req->url('siteusers', { a_grouplist => 1, m => "Membership saved" });
   }
+  return BSE::Template->get_refresh($r, $req->cfg);
+}
+
+sub req_confirm {
+  my ($class, $req) = @_;
+
+  $ENV{REMOTE_USER} || $req->getuser
+    or return $class->error($req, 
+			   { error => "You must be authenticated to use this function.  Either enable access control or setup .htpasswd." });
+
+  my $cgi = $req->cgi;
+  my $id = $cgi->param('id');
+  defined $id
+    or return $class->req_list($req, "No site user id supplied");
+  my $siteuser = SiteUsers->getByPkey($id)
+    or return $class->req_list($req, "No such site user found");
+
+  $siteuser->{confirmed} = 1;
+  $siteuser->save;
+
+  my $r = $cgi->param('r');
+  unless ($r) {
+    $r = $req->url('siteusers', { list => 1, m => "User confirmed" });
+  }
+
   return BSE::Template->get_refresh($r, $req->cfg);
 }
 
