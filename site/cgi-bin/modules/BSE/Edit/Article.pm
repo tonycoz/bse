@@ -35,7 +35,7 @@ sub article_dispatch {
   my ($self, $req, $article, $articles) = @_;
 
   BSE::Permissions->check_logon($req)
-    or return $self->not_logged_on($self);
+    or return $self->not_logged_on($req);
 
   my $cgi = $req->cgi;
   my $action;

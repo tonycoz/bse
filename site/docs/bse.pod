@@ -53,6 +53,10 @@ correctly unescape the link text for use on the redirect page
 
 allow the redirect page to work as a form
 
+=item *
+
+fix handling of the user not being logged on for add.pl
+
 =back
 
 =head2 0.15_55
