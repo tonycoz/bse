@@ -75,14 +75,14 @@ sub logon {
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
   my $userid = $cgi->param('userid')
     or return $self->show_logon($req, 
-				$msgs->(needlogon=>"Please enter a logon name"));
+				$msgs->(needlogon=>"Please enter your username"));
   my $password = $cgi->param('password')
     or return $self->show_logon($req,
 				$msgs->(needpass=>"Please enter your password"));
   my $user = SiteUsers->getBy(userId => $userid);
   unless ($user && $user->{password} eq $password) {
     return $self->show_logon($req,
-			     $msgs->(baduserpass=>"Invalid user or password"));
+			     $msgs->(baduserpass=>"Invalid username or password"));
   }
   if ($user->{disabled}) {
     return $self->show_logon($req,
@@ -688,7 +688,7 @@ sub register {
       $errors{confirmemail} = $msgs->(regnoconfemail => "Please enter a confirmation email address");
     }
     elsif ($email ne $confemail) {
-      $errors{confirmemail} = $msgs->(regbadconfemail => "Confirmation email should match the Email Address");
+      $errors{confirmemail} = $msgs->(regbadconfemail => "Confirmation email must match the email address");
     }
     my $user = SiteUsers->getBy(userId=>$email);
     if ($user) {
@@ -703,12 +703,12 @@ sub register {
     my $min_pass_length = $cfg->entry('basic', 'minpassword') || 4;
     my $userid = $cgi->param('userid');
     if (!defined $userid || length $userid == 0) {
-      $errors{userid} = $msgs->(reguser=>"Please enter a userid");
+      $errors{userid} = $msgs->(reguser=>"Please enter your username");
     }
     my $pass = $cgi->param('password');
     my $pass2 = $cgi->param('confirm_password');
     if (!defined $pass || length $pass == 0) {
-      $errors{password} = $msgs->(regpass=>"Please enter a password");
+      $errors{password} = $msgs->(regpass=>"Please enter your password");
     }
     elsif (length $pass < $min_pass_length) {
       $errors{password} = $msgs->(regpasslen=>"The password must be at least $min_pass_length characters");
@@ -734,7 +734,7 @@ sub register {
 	}
       }
       $errors{userid} = $msgs->(regexists=>
-				"Sorry, user $userid already exists",
+				"Sorry, username $userid already exists",
 				$userid);
     }
     $user{userId} = $userid;
@@ -1023,7 +1023,7 @@ sub download {
   require BSE::TB::Orders;
   my $order = BSE::TB::Orders->getByPkey($orderid)
     or return _refresh_userpage($cfg, $msgs->('nosuchorder',
-					"No such orderd $orderid", $orderid));
+					"No such order $orderid", $orderid));
   unless (length $order->{userId}
 	  && $order->{userId} eq $user->{userId}) {
     return _refresh_userpage($cfg, $msgs->("notyourorder",
@@ -1195,12 +1195,12 @@ sub lost_password {
   defined $userid && length $userid
     or return $self->show_lost_password($req,
 					$msgs->(lostnouserid=>
-						"Please enter a logon id"));
+						"Please enter your username"));
   
   my $user = SiteUsers->getBy(userId=>$userid)
     or return $self->show_lost_password($req,
 					$msgs->(lostnosuch=>
-						"No such userid", $userid));
+						"Unknown username supplied", $userid));
 
   require 'BSE/Mail.pm';
 
@@ -1316,14 +1316,14 @@ sub confirm {
 				$msgs->(confnosecret=>"No secret supplied for confirmation"));
   my $userid = $cgi->param('u')
     or return $self->show_logon($req,
-				$msgs->(confnouser=>"No user supplied for confirmation"));
+				$msgs->(confnouser=>"No user id supplied for confirmation"));
   if ($userid + 0 != $userid || $userid < 1) {
     return $self->show_logon($req,
-			     $msgs->(confbaduser=>"Invalid or unknown user supplied for confirmation"));
+			     $msgs->(confbaduser=>"Invalid or unknown user id supplied for confirmation"));
   }
   my $user = SiteUsers->getByPkey($userid)
     or return $self->show_logon($req,
-			     $msgs->(confbaduser=>"Invalid or unknown user supplied for confirmation"));
+			     $msgs->(confbaduser=>"Invalid or unknown user id supplied for confirmation"));
   unless ($secret eq $user->{confirmSecret}) {
     return $self->show_logon($req, 
 			     $msgs->(confbadsecret=>"Sorry, the confirmation secret does not match"));
@@ -1362,7 +1362,7 @@ sub _generic_email {
   $checkemail;
 }
 
-# returns non-zero iff a page was generated
+# returns non-zero if a page was generated
 sub send_conf_request {
   my ($self, $req, $user, $suppress_success) = @_;
 
@@ -1490,11 +1490,11 @@ sub unsub {
 				$msgs->(unsubnouser=>"No user supplied for unsubscribe"));
   if ($userid + 0 != $userid || $userid < 1) {
     return $self->show_logon($req,
-			     $msgs->(unsubbaduser=>"Invalid or unknown user supplied for unsubscribe"));
+			     $msgs->(unsubbaduser=>"Invalid or unknown username supplied for unsubscribe"));
   }
   my $user = SiteUsers->getByPkey($userid)
     or return $self->show_logon($req,
-			     $msgs->(unsubbaduser=>"Invalid or unknown user supplied for unsubscribe"));
+			     $msgs->(unsubbaduser=>"Invalid or unknown username supplied for unsubscribe"));
   unless ($secret eq $user->{confirmSecret}) {
     return $self->show_logon($req, 
 			     $msgs->(unsubbadsecret=>"Sorry, the ubsubscribe secret does not match"));
