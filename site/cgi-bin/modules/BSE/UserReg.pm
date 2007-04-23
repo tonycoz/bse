@@ -1225,9 +1225,11 @@ sub lost_password {
 					$msgs->(lostmailerror=>
 						"Email error:".$mail->errstr,
 						$mail->errstr));
+  $message = $message ? escape_html($message) : $req->message;
   my %acts;
   %acts = 
     (
+     message => $message,
      $req->dyn_user_tags(),
      user => sub { CGI::escapeHTML($user->{$_[0]}) },
     );
