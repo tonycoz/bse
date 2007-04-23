@@ -577,7 +577,8 @@ sub excerpt {
     
     # we remove any formatting tags here, otherwise we get wierd table
     # rubbish or other formatting in the excerpt.
-    $self->remove_block('Articles', [], \$body);
+    my @files = $article->files;
+    $self->remove_block('Articles', [], \$body, \@files);
     1 while $body =~ s/[bi]\[([^\]\[]+)\]/$1/g;
   }
     
@@ -671,14 +672,17 @@ sub visible {
 # make whatever text $body points at safe for summarizing by removing most
 # block level formatting
 sub remove_block {
-  my ($self, $articles, $acts, $body) = @_;
+  my ($self, $articles, $acts, $body, $files) = @_;
 
   require BSE::Formatter;
+
+  $files ||= [];
 
   my $formatter = BSE::Formatter->new(gen => $self, 
 				      acts => $acts, 
 				      article => $articles,
-				      articles => $articles);
+				      articles => $articles,
+				      files => $files);
 
   $$body = $formatter->remove_format($$body);
 }

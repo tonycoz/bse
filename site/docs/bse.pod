@@ -32,6 +32,11 @@ the capitalize tag now lowercases anything it doesn't uppercase
 the link[] body text tag can now be configured to redirect via a
 disclaimer page.  See [html].redirect_links in L<config.pod>.
 
+=item *
+
+filelink[] tags weren't being replaced correctly in search results
+excerpts
+
 =back
 
 =head2 0.15_55
