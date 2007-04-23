@@ -138,7 +138,7 @@ sub link {
       return $self->SUPER::link($url, $text);
     }
   }
-  elsif (!$self->{redirect_links} || $url =~ /^mailto:/) {
+  elsif (!$self->{redirect_links} || $url =~ /^mailto:/ || $url =~ /^\#/) {
     return $self->SUPER::link($url, $text);
   }
 
