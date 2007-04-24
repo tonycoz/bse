@@ -3,8 +3,8 @@
 <p align="center">You're leaving our site, anything you see from now
 on is somebody else's problem.<p>
 <form action="/cgi-bin/nuser.pl/redirect">
-<:ifEq [url] [text]:><:or:><p align="center"><:text:></p><:eif:>
-<p align="center"><:url:></p>
+<:ifMatch [text] [targeturl]:><:or:><p align="center"><:text:></p><:eif:>
+<p align="center"><:targeturl:></p>
 <input type="hidden" name="targeturl" value="<:targeturl:>" />
 <input type="hidden" name="urlhash" value="<:urlhash:>" />
 <input type="hidden" name="referer" value="<:referer:>" />
