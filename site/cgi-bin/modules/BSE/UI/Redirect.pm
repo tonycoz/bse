@@ -37,7 +37,7 @@ sub req_redir {
   my %acts =
     (
      $req->dyn_user_tags(),
-     url => escape_html($url),
+     targeturl => escape_html($url),
      text => escape_html($text),
      referer => escape_html($referer),
      urlhash => $url_hash,
@@ -52,7 +52,7 @@ sub req_doit {
   my ($class, $req) = @_;
 
   my $cgi = $req->cgi;
-  my $url = $cgi->param('url');
+  my $url = $cgi->param('targeturl');
   my $hash = $cgi->param('urlhash');
   my $salt = $req->cfg->entry('html', 'redirect_salt', '');
   my $gen_hash = substr(md5_hex($url, $salt), 0, 16);
