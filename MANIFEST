@@ -90,6 +90,8 @@ site/cgi-bin/modules/BSE/NLFilter/SQL.pm
 site/cgi-bin/modules/BSE/Permissions.pm
 site/cgi-bin/modules/BSE/Report.pm
 site/cgi-bin/modules/BSE/Request.pm
+site/cgi-bin/modules/BSE/Request/Base.pm
+site/cgi-bin/modules/BSE/Request/Test.pm
 site/cgi-bin/modules/BSE/Search/Base.pm
 site/cgi-bin/modules/BSE/Search/BSE.pm
 site/cgi-bin/modules/BSE/Session.pm

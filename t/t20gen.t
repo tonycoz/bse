@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>88;
+use Test::More tests=>94;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
@@ -14,6 +14,7 @@ require Articles;
 require BSE::Util::SQL;
 BSE::Util::SQL->import(qw/sql_datetime/);
 sub template_test($$$$);
+sub dyn_template_test($$$$);
 
 my $parent = add_article(title=>'Parent', body=>'parent article doclink[shop|foo]',
 			lastModified => '2004-09-23 06:00:00');
@@ -51,6 +52,16 @@ ofallkid title:>
 TEMPLATE
 Parent
 Three
+Two
+One
+
+EXPECTED
+
+template_test "allkids_of filtered", $top, <<TEMPLATE, <<EXPECTED;
+<:iterator begin allkids_of $parent->{id} filter: [title] =~ /o/i :><:
+ofallkid title:>
+<:iterator end allkids_of:>
+TEMPLATE
 Two
 One
 
@@ -286,6 +297,23 @@ test&amp;test 012345...
 EXPECTED
 
 ############################################################
+# dynamic stuff
+require BSE::Dynamic::Article;
+require BSE::Request::Test;
+my $req = BSE::Request::Test->new(cfg => $cfg);
+my $gen = BSE::Dynamic::Article->new($req);
+
+dyn_template_test "dynallkidsof", $parent, <<TEMPLATE, <<EXPECTED;
+<:iterator begin dynallkids_of $parent->{id} filter: [title] =~ /o/i :><:
+dynofallkid title:>
+<:iterator end dynallkids_of:>
+TEMPLATE
+Two
+One
+
+EXPECTED
+
+############################################################
 # Cleanup
 
 BSE::Admin::StepParents->del($parent, $parent);
@@ -315,6 +343,7 @@ sub add_article {
      createdBy=>'t20gen', author=>'', pageTitle=>'',
      cached_dynamic => 0, force_dynamic=>0, inherit_siteuser_rights => 1,
      metaDescription => '',  metaKeywords => '',
+     summary => '',
     );
   for my $key (%defaults) {
     unless (exists $parms{$key}) {
@@ -361,4 +390,52 @@ sub template_test($$$$) {
      skip "$tag: couldn't gen content", 1 unless $content;
      is($content, $expected, "$tag: comparing");
    }
+}
+
+sub dyn_template_test($$$$) {
+  my ($tag, $article, $template, $expected) = @_;
+
+  #diag "Template >$template<";
+  my $gen = 
+    eval {
+      my $gen_class = $article->{generator};
+      $gen_class =~ s/.*\W//;
+      $gen_class = "BSE::Dynamic::".$gen_class;
+      (my $filename = $gen_class) =~ s!::!/!g;
+      $filename .= ".pm";
+      require $filename;
+      $gen_class->new($req);
+    };
+  ok($gen, "$tag: created generator $article->{generator}");
+  diag $@ unless $gen;
+
+  # get the template - always regen it
+  my $work_template = _generate_dyn_template($article, $template);
+
+  my $result;
+ SKIP: {
+    skip "$tag: couldn't make generator", 1 unless $gen;
+    eval {
+      $result =
+	$gen->generate($article, $work_template);
+    };
+    ok($result, "$tag: generate content");
+    diag $@ unless $result;
+  }
+ SKIP: {
+     skip "$tag: couldn't gen content", 1 unless $result;
+     is($result->{content}, $expected, "$tag: comparing");
+   }
+}
+
+sub _generate_dyn_template {
+  my ($article, $template) = @_;
+
+  my $articles = 'Articles';
+  my $genname = $article->{generator};
+  eval "use $genname";
+  $@ && die $@;
+  my $gen = $genname->new(articles=>$articles, cfg=>$cfg, top=>$article);
+
+  return $gen->generate_low($template, $article, $articles, 0);
 }

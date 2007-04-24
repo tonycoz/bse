@@ -457,7 +457,7 @@ sub replace_template {
   }
 
   # more general iterators
-  $template =~ s/(<:\s*(iterator|with)\s+begin\s+(\w+)(?:\s+([^:]*))?\s*:>
+  $template =~ s/(<:\s*(iterator|with)\s+begin\s+(\w+)(?:\s+(.*?))?\s*:>
                   (.*?)
 		    (?: 
 		     <:\s*\2\s+separator\s+\3\s*:>

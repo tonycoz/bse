@@ -331,8 +331,48 @@ sub iter_kids_of {
   map Articles->listedChildren($_), @ids;
 }
 
+my $cols_re; # cache for below
+
+sub _get_filter {
+  my ($self, $rargs) = @_;
+
+  if ($$rargs =~ s/filter:\s+(.*)\z//s) {
+    my $expr = $1;
+    my $orig_expr = $expr;
+    unless ($cols_re) {
+      my $cols_expr = '(' . join('|', Article->columns) . ')';
+      $cols_re = qr/\[$cols_expr\]/;
+    }
+    $expr =~ s/$cols_re/\$article->{$1}/g;
+    $expr =~ s/ARTICLE/\$article/g;
+    #print STDERR "Expr $expr\n";
+    my $filter;
+    $filter = eval 'sub { my $article = shift; '.$expr.'; }';
+    if ($@) {
+      print STDERR "** Failed to compile filter expression >>$expr<< built from >>$orig_expr<<\n";
+      return;
+    }
+
+    return $filter;
+  }
+  else {
+    return;
+  }
+}
+
+sub _do_filter {
+  my ($self, $filter, @articles) = @_;
+
+  $filter
+    or return @articles;
+
+  return grep $filter->($_), @articles;
+}
+
 sub iter_all_kids_of {
-  my ($args, $acts, $name, $templater) = @_;
+  my ($self, $args, $acts, $name, $templater) = @_;
+
+  my $filter = $self->_get_filter(\$args);
 
   my @ids = map { split } DevHelp::Tags->get_parms($args, $acts, $templater);
   for my $id (@ids) {
@@ -341,7 +381,8 @@ sub iter_all_kids_of {
     }
   }
   @ids = grep /^\d+$|^-1$/, @ids;
-  map Articles->all_visible_kids($_), @ids;
+
+  $self->_do_filter($filter, map Articles->all_visible_kids($_), @ids);
 }
 
 sub iter_inlines {
@@ -514,10 +555,10 @@ sub baseActs {
 			 undef, undef, 'nocache' ),
      $it->make_iterator( \&iter_kids_of, 'ofchild3', 'children_of3',
                          undef, undef, 'nocache' ),
-     $it->make_iterator( \&iter_all_kids_of, 'ofallkid', 'allkids_of' ), 
-     $it->make_iterator( \&iter_all_kids_of, 'ofallkid2', 'allkids_of2', 
+     $it->make_iterator( [ iter_all_kids_of => $self ], 'ofallkid', 'allkids_of' ), 
+     $it->make_iterator( [ iter_all_kids_of => $self ], 'ofallkid2', 'allkids_of2', 
 			 undef, undef, 'nocache' ), 
-     $it->make_iterator( \&iter_all_kids_of, 'ofallkid3', 'allkids_of3',
+     $it->make_iterator( [ iter_all_kids_of => $self ], 'ofallkid3', 'allkids_of3',
 			 undef, undef, 'nocache' ), 
      $it->make_iterator( \&iter_inlines, 'inline', 'inlines' ),
      gimage => 

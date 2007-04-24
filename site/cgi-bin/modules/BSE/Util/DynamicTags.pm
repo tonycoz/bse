@@ -231,12 +231,53 @@ sub access_filter {
   return [ grep $req->siteuser_has_access($_), @articles ];
 }
 
+my $cols_re; # cache for below
+
+sub _get_filter {
+  my ($self, $rargs) = @_;
+
+  if ($$rargs =~ s/filter:\s+(.*)\z//s) {
+    my $expr = $1;
+    my $orig_expr = $expr;
+    unless ($cols_re) {
+      my $cols_expr = '(' . join('|', Article->columns) . ')';
+      $cols_re = qr/\[$cols_expr\]/;
+    }
+    $expr =~ s/$cols_re/\$article->{$1}/g;
+    $expr =~ s/ARTICLE/\$article/g;
+    #print STDERR "Expr $expr\n";
+    my $filter;
+    $filter = eval 'sub { my $article = shift; '.$expr.'; }';
+    if ($@) {
+      print STDERR "** Failed to compile filter expression >>$expr<< built from >>$orig_expr<<\n";
+      return;
+    }
+
+    return $filter;
+  }
+  else {
+    return;
+  }
+}
+
+sub _do_filter {
+  my ($self, $filter, $articles) = @_;
+
+  $filter
+    or return $articles;
+
+  return [ grep $filter->($_), @$articles ];
+}
+
 sub _dyn_iterate_reset {
   my ($self, $rdata, $rindex, $plural, $context, $args, $acts, $name, 
       $templater) = @_;
 
   my $method = "iter_$plural";
-  $$rdata = $self->$method($context, $args, $acts, $templater);
+  my $filter = $self->_get_filter(\$args);
+  $$rdata = $self->
+    _do_filter($filter, $self->$method($context, $args, $acts, $templater));
+  
   $$rindex = -1;
 
   1;

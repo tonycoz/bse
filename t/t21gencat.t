@@ -274,6 +274,7 @@ sub add_article {
      createdBy=>'t21gencat', author=>'', pageTitle=>'',
      cached_dynamic => 0, force_dynamic=>0, inherit_siteuser_rights => 1,
      metaDescription => '',  metaKeywords => '',
+     summary => '',
     );
   for my $key (%defaults) {
     unless (exists $parms{$key}) {
@@ -315,7 +316,7 @@ sub add_product {
 		     generator=>'Generate::Product', 
 		     _single => 'Product',
 		     _aggregate => 'Products',
-		     summary => $parms{title} || '',
+		     description => $parms{title} || '',
 		     leadTime=> 0,
 		     gst => int($parms{retailPrice} / 11),
 		     options => '',
@@ -323,6 +324,7 @@ sub add_product {
 		     subscription_period => 0,
 		     subscription_usage => 3,
 		     subscription_required => -1,
+		     product_code => '',
 		     %parms);
 }
 

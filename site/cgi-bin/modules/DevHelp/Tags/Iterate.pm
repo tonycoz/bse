@@ -86,6 +86,23 @@ sub _iter_if_last {
   $$rindex == $#$rdata;
 }
 
+sub _get_values {
+  my ($code, $args, $acts, $name, $templater) = @_;
+
+  my @args;
+  if (ref $code eq 'ARRAY') {
+    ($code, @args) = @$code;
+  }
+  
+  if (ref $code) {
+    return $code->(@args, $args, $acts, $name, $templater);
+  }
+  else {
+    my $object = shift @args;
+    return $object->$code(@args, $args, $acts, $name, $templater);
+  }
+}
+
 sub make_paged_iterator {
   my ($self, $single, $plural, $rdata, $rindex, $cgi, $pagename,
       $perpage_parm, $save, $get, $rstore) = @_;
@@ -194,12 +211,7 @@ sub _iter_reset {
       $args, $acts, $name, $templater) = @_;
 
   if (!$$loaded && !@$rdata && $code || $args || $nocache) {
-    my ($sub, @args) = $code;
-
-    if (ref $code eq 'ARRAY') {
-      ($sub, @args) = @$code;
-    }
-    @$rdata = $sub->(@args, $args, $acts, $name, $templater);
+    @$rdata = _get_values($code, $args, $acts, $name, $templater);
     ++$$loaded unless $args;
   }
 
@@ -220,12 +232,7 @@ sub _iter_count {
       $args, $acts, $name, $templater) = @_;
 
   if (!$$loaded && !@$rdata && $code || $args || $nocache) {
-    my ($sub, @args) = $code;
-
-    if (ref $code eq 'ARRAY') {
-      ($sub, @args) = @$code;
-    }
-    @$rdata = $sub->(@args, $args, $acts, $name, $templater);
+    @$rdata = _get_values($code, $args, $acts, $name, $templater);
     ++$$loaded unless $args;
   }
 

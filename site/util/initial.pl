@@ -54,6 +54,7 @@ my @prebuilt =
     inherit_siteuser_rights => 1,
     metaDescription=>'',
     metaKeywords=>'',
+    summary => '',
    },
    {
     # the invisible subsection for what's hot
@@ -90,6 +91,7 @@ my @prebuilt =
     inherit_siteuser_rights => 1,
     metaDescription=>'',
     metaKeywords=>'',
+    summary => '',
    },
    {
     id=>3,
@@ -125,6 +127,7 @@ my @prebuilt =
     inherit_siteuser_rights => 1,
     metaDescription=>'',
     metaKeywords=>'',
+    summary => '',
    },
    {
     id=>4,
@@ -160,6 +163,7 @@ my @prebuilt =
     inherit_siteuser_rights => 1,
     metaDescription=>'',
     metaKeywords=>'',
+    summary => '',
    },
    {
     id=>5,
@@ -195,6 +199,7 @@ my @prebuilt =
     inherit_siteuser_rights => 1,
     metaDescription=>'',
     metaKeywords=>'',
+    summary => '',
    },
    {
     id=>6,
@@ -460,6 +465,7 @@ EOS
     inherit_siteuser_rights => 1,
     metaDescription=>'',
     metaKeywords=>'',
+    summary => '',
    },
    {
     id=>7,
@@ -499,6 +505,7 @@ EOS
     inherit_siteuser_rights => 1,
     metaDescription=>'',
     metaKeywords=>'',
+    summary => '',
    },
    {
     id=>8,
@@ -538,6 +545,7 @@ EOS
     inherit_siteuser_rights => 1,
     metaDescription=>'',
     metaKeywords=>'',
+    summary => '',
    },
   );
 

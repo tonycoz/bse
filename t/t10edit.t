@@ -4,7 +4,7 @@ use BSE::Test qw(base_url make_ua fetch_ok skip check_form post_ok ok
                  check_content);
 #use WWW::Mechanize;
 ++$|;
-print "1..21\n";
+print "1..19\n";
 my $baseurl = base_url;
 my $ua = make_ua;
 
@@ -27,14 +27,10 @@ check_form($ua->{content},
 $ua->field(title=>'Test Article');
 $ua->field(body=>'This is a test body');
 ok($ua->click('save'), 'submit modified edit form');
-ok($ua->{res}->headers_as_string =~ /Refresh:\s+0\s*;\s+url=(\"?)([^\"\'\n\r;]+)(\1)/,
-   "got refresh");
-my $url = $2;
-print "# $url\n";
-ok($ua->get($url), "check admin mode url");
+# should redirect to admin mode page
 check_content($ua->{content}, "admin mode", 
   	   qr!
-  	   <title>Test\ Article\ -\ Test\ Server</title>
+  	   <title>Test\ Server\ -\ Test\ Article</title>
   	   .*
   	   This\ is\ a\ test\ body
   	   !xsm);

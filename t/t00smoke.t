@@ -9,7 +9,7 @@ ok($baseurl =~ /^http:/, "basic check of base url");
 my $ua = make_ua;
 fetch_ok($ua, "admin menu - check the site exists at all", "$baseurl/admin/", "Admin");
 fetch_ok($ua, "generate all", "$baseurl/cgi-bin/admin/generate.pl",
-	"html", "Refresh: 0; .*/admin/");
+	"html", "Title: BSE - Administration Centre");
 fetch_ok($ua, "generate all verbose", 
 	 "$baseurl/cgi-bin/admin/generate.pl?progress=1",
 	 "Regenerating your site.*Return to admin menu");
@@ -20,7 +20,7 @@ fetch_ok($ua, "shop cart", "$baseurl/cgi-bin/shop.pl",
 fetch_ok($ua, "shop cart checkout no items", "$baseurl/cgi-bin/shop.pl",
 	 "Shopping Cart Items");
 fetch_ok($ua, "build search index", "$baseurl/cgi-bin/admin/makeIndex.pl",
-	 "html", "Refresh: 0; .*/admin/");
+	 "html", "Title: BSE - Administration Centre");
 fetch_ok($ua, "advanced search form", "$baseurl/cgi-bin/search.pl",
 	 "All\\s+lower\\s+case");
 fetch_ok($ua, "failed search", "$baseurl/cgi-bin/search.pl?q=blargle",
@@ -57,7 +57,7 @@ fetch_ok($ua, "reports", "$baseurl/cgi-bin/admin/report.pl",
 	 qr/Reports/);
 # does a refresh unless the user is logged on
 fetch_ok($ua, "changepw", "$baseurl/cgi-bin/admin/changepw.pl",
-	 qr!Change Password|<html></html>!i);
+	 qr!Change Password|Security not enabled!i);
 fetch_ok($ua, "printable", "$baseurl/cgi-bin/printable.pl?id=5",
 	 qr!sidebar\s+subsection!i);
 fetch_ok($ua, "printable error", "$baseurl/cgi-bin/printable.pl?id=5&template=foo",
@@ -66,9 +66,9 @@ fetch_ok($ua, "siteusers", "$baseurl/cgi-bin/admin/siteusers.pl",
 	 qr!Admin Site Members!i);
 
 fetch_ok($ua, "reorder", "$baseurl/cgi-bin/admin/reorder.pl",
-	"html", "Refresh: 0; .*/menu\.pl");
+	"html", "Title: BSE - Administration Centre");
 
 fetch_ok($ua, 'fmail', "$baseurl/cgi-bin/fmail.pl",
 	 qr!name="form"!);
-fetch_ok($ua, 'page.pl?page=1', "$baseurl/cgi-bin/page.pl?id=1",
+fetch_ok($ua, 'page.pl?page=1', "$baseurl/cgi-bin/page.pl?page=1",
 	 qr!welcome\s+to\stest\s+server!i);

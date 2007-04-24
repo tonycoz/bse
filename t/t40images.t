@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test qw(make_ua base_url fetch_ok follow_ok click_ok follow_refresh_ok);
-use Test::More tests => 122;
+use Test::More tests => 106;
 
 my $base_url = base_url;
 my $ua = make_ua;
@@ -16,9 +16,7 @@ ok($ua->form("edit"), "select edit form");
 $ua->field(title => "Images test article");
 $ua->field(body => "ONE((image[test]))\n\nTWO\{\{image[2]\}\}");
 
-click_ok($ua, "add the article", "save", undef, qr/Refresh/);
-
-follow_refresh_ok($ua, "refresh to article display");
+click_ok($ua, "add the article", "save", qr/Images test article/);
 
 ok($ua->form("edit"), "select edit form");
 
@@ -38,9 +36,7 @@ $file->content($image_content[0]);
 $ua->field(name => 'test');
 $ua->field(altIn => 'one');
 
-click_ok($ua, "add an image", 'addimg', undef, qr/Refresh/);
-
-follow_refresh_ok($ua, "refresh back to image wizard", "Page Lev1 Image Wizard");
+click_ok($ua, "add an image", 'addimg', qr/New image added/);
 
 ok($ua->form('add'), "add form again");
 
@@ -50,10 +46,7 @@ $file->filename("t101.jpg");
 $file->content($image_content[1]);
 $ua->field(altIn => 'two');
 
-click_ok($ua, "add second image", "addimg", undef, qr/Refresh/);
-
-follow_refresh_ok($ua, "refresh back to image wizard", 
-		  "Page Lev1 Image Wizard");
+click_ok($ua, "add second image", "addimg", qr/New image added/);
 
 follow_ok($ua, "back to editor", "Edit article", "Edit Page Lev1");
 
@@ -141,9 +134,7 @@ $file->content(imageg());
 $ua->field(altIn => 'three');
 $ua->field(name => $global_name);
 
-click_ok($ua, "add a global image", 'addimg', undef, qr/Refresh/);
-
-follow_refresh_ok($ua, "refresh back to image wizard", "Global Image Wizard");
+click_ok($ua, "add a global image", 'addimg', qr/New image added/);
 
 # back to the article
 print "# edit url $edit_url\n";
@@ -153,8 +144,7 @@ fetch_ok($ua, "back to edit", $edit_url, qr/Edit Page Lev1/);
 ok($ua->form("edit"), "select edit form");
 $ua->field(body =>"ONE((image[test]))\n\nTWO\{\{image[2]\}\}\n\nTHREE<<gimage[$global_name]>>");
 
-click_ok($ua, "save the new body", "save", undef, qr/Refresh/);
-follow_refresh_ok($ua, "refresh back to edit");
+click_ok($ua, "save the new body", "save", undef, qr/Title: BSE - Edit Page Lev1/);
 follow_ok($ua, "to display", "See article", qr/Images test article/);
 print "# on page ",$ua->uri,"\n";
 my ($g_html) = $ua->content =~ /THREE&lt;&lt;(.*?)&gt;&gt;/;
@@ -184,8 +174,7 @@ click_ok($ua, "edit page", undef, qr/Edit Page Lev1/);
 follow_ok($ua, "image manager", "Manage Images", qr/Page Lev1 Image Wizard/);
 
 for my $im_index (0 .. 1) {
-  follow_ok($ua, "delete image $im_index", "Delete", undef, qr/Refresh/);
-  follow_refresh_ok($ua, "back to display");
+  follow_ok($ua, "delete image $im_index", "Delete", qr/Image removed/);
 
   # make sure the file was deleted
   $ua->_push_page_stack();
@@ -206,8 +195,7 @@ my @links = grep $_->text eq 'Delete', @$links;
 print "# link #", scalar(@links), "\n";
 follow_ok($ua, "delete global image", 
 	  { n=>scalar(@links), text=>"Delete" }, 
-	  undef, qr/Refresh/);
-follow_refresh_ok($ua, "back to display");
+	  qr/Image removed/);
 
 # make sure the file was deleted
 $ua->_push_page_stack();
