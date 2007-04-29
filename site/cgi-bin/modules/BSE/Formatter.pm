@@ -321,7 +321,7 @@ sub popimage {
 }
 
 sub filelink {
-  my ($self, $fileid, $text) = @_;
+  my ($self, $fileid, $text, $type) = @_;
 
   my ($file) = grep $_->{name} eq $fileid, @{$self->{files}}
     or return "** unknown file $fileid **";
@@ -331,8 +331,16 @@ sub filelink {
     return escape_html($title);
   }
   else {
+    my $title_attrib = "Filename: " . escape_html($file->{displayName});
+    my $class_text = '';
+    if ($type) {
+      my $class = $self->tag_class($type);
+      if ($class) {
+        $class_text = qq/ class="$class"/; 
+      }
+    }
     my $url = "/cgi-bin/user.pl?download_file=1&file=$file->{id}";
-    return qq!<a href="! . escape_html($url) . qq!">! .
+    return qq!<a href="! . escape_html($url) . qq!" title="$title_attrib"$class_text>! .
       escape_html($title) . "</a>";
   }
 }
@@ -362,9 +370,9 @@ sub replace {
     and return 1;
   $$rpart =~ s#formlink\[(\w+)\]# $self->formlink($1, 'formlink', undef) #ige
     and return 1;
-  $$rpart =~ s#filelink\[\s*(\w+)\s*\|([^\]\[]+)\]# $self->filelink($1, $2) #ige
+  $$rpart =~ s#filelink\[\s*(\w+)\s*\|([^\]\[]+)\]# $self->filelink($1, $2, 'filelink') #ige
       and return 1;
-  $$rpart =~ s#filelink\[\s*(\w+)\s*\]# $self->filelink($1) #ige
+  $$rpart =~ s#filelink\[\s*(\w+)\s*\]# $self->filelink($1, undef, 'filelink') #ige
       and return 1;
   $$rpart =~ s#popimage\[([^\[\]]+)\]# $self->popimage($1) #ige
     and return 1;
