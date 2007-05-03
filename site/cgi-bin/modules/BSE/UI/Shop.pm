@@ -91,7 +91,7 @@ sub req_cart {
   $cust_class->enter_cart(\@cart, \@cart_prods, \%custom_state, $req->cfg); 
   $msg = '' unless defined $msg;
   $msg = escape_html($msg);
-
+  
   my %acts;
   %acts =
     (
@@ -104,7 +104,13 @@ sub req_cart {
   $req->session->{custom} = \%custom_state;
   $req->session->{order_info_confirmed} = 0;
 
-  return $req->response('cart', \%acts);
+  # intended to ajax enable the shop cart with partial templates
+  my $template = 'cart';
+  my $embed = $req->cgi->param('embed');
+  if (defined $embed and $embed =~ /^\w+$/) {
+    $template = "include/cart_$embed";
+  }
+  return $req->response($template, \%acts);
 }
 
 sub req_add {
