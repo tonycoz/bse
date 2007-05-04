@@ -2994,7 +2994,7 @@ sub req_ajax_get {
   unless ($field_name && exists $article->{$field_name}) {
     print STDERR "req_ajax_get: missing or invalid field parameter\n";
     return {
-	    contant => 'Invalid or missing field name',
+	    content => 'Invalid or missing field name',
 	    headers => [
 			"Status: 187" # bad request
 		       ],
@@ -3086,7 +3086,7 @@ sub req_ajax_set {
 
    unless ($field && $settable_fields{$field}) {
     return {
-	    contant => 'Invalid or missing field name',
+	    content => 'Invalid or missing field name',
 	    headers => [
 			"Status: 187" # bad request
 		       ],
@@ -3103,7 +3103,7 @@ sub req_ajax_set {
    if ($field eq 'title') {
      if ($value !~ /\S/) {
        return {
-	       contant => 'Invalid or missing field name',
+	       content => 'Invelid or missing field name',
 	       headers => [
 			   "Status: 187" # bad request
 			  ],

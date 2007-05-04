@@ -1498,7 +1498,7 @@ sub _add_refresh {
       print STDERR "\$ishttps: $ishttps\n" if $debug;
       my $protocol = $ishttps ? 'https' : 'http';
 
-      if (lc $ENV{SERVER_NA152ME} ne lc $basehost
+      if (lc $ENV{SERVER_NAME} ne lc $basehost
 	  || lc $protocol ne $baseprot
 	  || $baseport != $port) {
 	print STDERR "not on base host ('$ENV{SERVER_NAME}' cmp '$basehost' '$protocol cmp '$baseprot'  $baseport cmp $port\n" if $debug;
