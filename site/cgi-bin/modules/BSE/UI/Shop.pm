@@ -1473,7 +1473,8 @@ sub _add_refresh {
   my ($refresh, $req, $started_empty) = @_;
 
   my $cfg = $req->cfg;
-  if ($started_empty) {
+  my $cookie_domain = $cfg->entry('basic', 'cookie_domain');
+  if ($started_empty && !$cookie_domain) {
     my $base_url = $cfg->entryVar('site', 'url');
     my $secure_url = $cfg->entryVar('site', 'secureurl');
     if ($base_url ne $secure_url) {

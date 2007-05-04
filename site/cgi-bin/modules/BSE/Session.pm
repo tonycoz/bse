@@ -82,8 +82,6 @@ sub make_cookie {
   my ($self, $cfg, $name, $value, $lifetime) = @_;
 
   $lifetime ||= $cfg->entry('basic', 'cookie_lifetime') || '+3h';
-  my $domain = $ENV{HTTP_HOST};
-  $domain =~ s/:\d+$//;
   my %opts =
     (
      -name => $name,
@@ -91,6 +89,9 @@ sub make_cookie {
      -path=> '/',
      -expires=>$lifetime,
     );
+  my $domain = $ENV{HTTP_HOST};
+  $domain =~ s/:\d+$//;
+  $domain = $cfg->entry('basic', 'cookie_domain', $domain);
   if ($domain !~ /^\d+\.\d+\.\d+\.\d+$/) {
     $opts{"-domain"} = $domain;
   }
