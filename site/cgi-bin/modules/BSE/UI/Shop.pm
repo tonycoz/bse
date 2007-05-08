@@ -166,6 +166,11 @@ sub req_add {
     $refresh = $ENV{SCRIPT_NAME};
   }
 
+  # speed for ajax
+  if ($refresh eq 'ajaxcart') {
+    return $class->req_cart($req);
+  }
+
   return _add_refresh($refresh, $req, $started_empty);
 }
 
@@ -221,6 +226,12 @@ sub req_addsingle {
   unless ($refresh) {
     $refresh = $ENV{SCRIPT_NAME};
   }
+
+  # speed for ajax
+  if ($refresh eq 'ajaxcart') {
+    return $class->req_cart($req);
+  }
+
   return _add_refresh($refresh, $req, $started_empty);
 }
 
@@ -302,6 +313,12 @@ sub req_addmultiple {
       $sep = '&';
     }
   }
+
+  # speed for ajax
+  if ($refresh eq 'ajaxcart') {
+    return $class->req_cart($req);
+  }
+
   return _add_refresh($refresh, $req, $started_empty);
 }
 
