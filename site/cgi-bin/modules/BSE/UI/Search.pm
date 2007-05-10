@@ -276,7 +276,7 @@ sub req_search {
      },
      highlight_result =>
      [ \&tag_highlight_result, \$current_result, $cfg, $words_re ],
-     admin => $admin,
+     admin_search => $admin,
     );
   
   my $template = $cgi->param('embed') ? 'include/search_results' : 'search';
