@@ -14,9 +14,9 @@ use BSE::Template;
 sub not_logged_on {
   my ($self, $req) = @_;
 
-  if (() = $req->cgi->param('_')) {
-    # this check doesn't seem to work on IE:
-    # $ENV{HTTP_X_REQUESTED_WITH} =~ /XMLHttpRequest/) {
+  if (() = $req->cgi->param('_') ||
+     (defined $ENV{HTTP_X_REQUESTED_WITH}
+      && $ENV{HTTP_X_REQUESTED_WITH} =~ /XMLHttpRequest/)) {
     # AJAX/Prototype request
     return
       {
