@@ -142,6 +142,7 @@ site/cgi-bin/modules/BSE/UI/Image.pm
 site/cgi-bin/modules/BSE/UI/NUser.pm
 site/cgi-bin/modules/BSE/UI/Page.pm
 site/cgi-bin/modules/BSE/UI/Redirect.pm
+site/cgi-bin/modules/BSE/UI/Search.pm
 site/cgi-bin/modules/BSE/UI/Shop.pm
 site/cgi-bin/modules/BSE/UI/SiteuserCommon.pm
 site/cgi-bin/modules/BSE/UI/SiteUserUpdate.pm
@@ -200,6 +201,8 @@ site/cgi-bin/page.fcgi
 site/cgi-bin/page.pl
 site/cgi-bin/printable.pl
 site/cgi-bin/search.pl
+site/cgi-bin/search.fcgi
+site/cgi-bin/shop.fcgi
 site/cgi-bin/shop.pl
 site/cgi-bin/user.pl
 site/data/stopwords.txt
