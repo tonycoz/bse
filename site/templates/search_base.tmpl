@@ -8,7 +8,7 @@
     <td bgcolor="#999999" colspan="2" height="1"><img src="/images/trans_pixel.gif" width="24" height="1" border="0"></td>
   </tr>
 </table>
-<form id="search_form" name="search" method="GET" action="/cgi-bin/search.pl">
+<form id="search_form" name="search" method="get" action="/cgi-bin/search.pl">
   <table width="100%" border="0" cellspacing="0" cellpadding="0">
     <tr> 
       <td width="70"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"> 
@@ -53,15 +53,18 @@
 <script type="text/javascript" language="javascript">
 //<![CDATA[
 function do_search() {
-  $('search_form').request({
-    parameters: { embed: '1'},
-    onComplete: function(transport) {
-      $('search_results').innerHTML = transport.responseText;
-    }
-  });
+  var query = $('q').value;
+  if (query != 'Enter search terms' && query != '') {
+    $('search_form').request({
+      parameters: { embed: '1'},
+      onComplete: function(transport) { 
+        $('search_results').innerHTML = transport.responseText;
+      }
+    });
+  }
   return false;
 }
-new Form.Element.Observer($('q'), 1.5, do_search);
+new Form.Observer($('search_form'), 1.5, do_search);
 $('search_submit').onclick = do_search;
 $('q').onfocus =
   function() {
