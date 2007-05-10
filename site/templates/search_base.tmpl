@@ -8,7 +8,7 @@
     <td bgcolor="#999999" colspan="2" height="1"><img src="/images/trans_pixel.gif" width="24" height="1" border="0"></td>
   </tr>
 </table>
-<form name="search" id="search" method="GET" action="/cgi-bin/search.pl">
+<form id="search_form" name="search" method="GET" action="/cgi-bin/search.pl">
   <table width="100%" border="0" cellspacing="0" cellpadding="0">
     <tr> 
       <td width="70"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"> 
@@ -17,7 +17,7 @@
       <td width="100%"> 
         <input type="text" name="q" id="q" size="45" value="<:terms:>">
         &nbsp; 
-        <input type="submit" accesskey="s" value="Search" name="submit">
+        <input type="submit" id="search_submit" accesskey="s" value="Search" name="submit">
       </td>
     </tr>
     <tr> 
@@ -48,29 +48,36 @@
       <td><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><input type="checkbox" name="match_all" value="1" <:ifCgi match_all:>checked="checked"<:or:><:eif:> /><b> Match all terms</b></font></td>
     </tr>
   </table>
+</form>
 <:if Ajax:>
-<script>
-new Form.Element.Observer($('q'), 1.5, 
-   function(term) {
-     var f = $('search');
-     var par = 'embed=1&q=' + encodeURIComponent(f.elements['q'].value); //term.value;// + encodeURIComponent(f.elements['q'].value);
-     //for (var name in document.search.elements) {
-     //  par = par + name + '=' + document.
-     //}
-     par = par + '&d=' + encodeURIComponent(f.elements['d'].value);
-     par = par + '&s=' + encodeURIComponent(f.elements['s'].value);
-     var updater = new Ajax.Updater(
-       'results',
-       '/cgi-bin/search.pl',
-       {
-	method: 'get',
-	parameters: par,
-        asynchronous: true
-       });
-   });
+<script type="text/javascript" language="javascript">
+//<![CDATA[
+function do_search() {
+  $('search_form').request({
+    parameters: { embed: '1'},
+    onComplete: function(transport) {
+      $('search_results').innerHTML = transport.responseText;
+    }
+  });
+  return false;
+}
+new Form.Element.Observer($('q'), 1.5, do_search);
+$('search_submit').onclick = do_search;
+$('q').onfocus =
+  function() {
+    if ($('q').value == 'Enter search terms') {
+      $('q').value = '';
+    };
+  }
+$('q').onblur =
+  function() {
+    if ($('q').value == '') {
+      $('q').value = 'Enter search terms';
+    };
+  }
+//]]>
 </script>
 <:or Ajax:><:eif Ajax:>
-</form>
-<div id="results">
+<div id="search_results">
 <:include include/search_results.tmpl:>
 </div>
