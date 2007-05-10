@@ -85,7 +85,7 @@ sub gimage {
   my ($name, $align, $url, $style) = split /\|/, $args, 4;
   my $im = $self->{gen}->get_gimage($name);
   if ($im) {
-    $self->_image($im, $align, $url);
+    $self->_image($im, $align, $url, $style);
   }
   else {
     return '';
