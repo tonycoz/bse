@@ -92,8 +92,8 @@ sub generate_search {
   # build a dummy article
   use Constants qw($SEARCH_TITLE $SEARCH_TITLE_IMAGE $CGI_URI);
   my %article = map { $_, '' } Article->columns;
-  @article{qw(id parentid title titleImage displayOrder link level listed)} =
-    (-1, -1, $SEARCH_TITLE, $SEARCH_TITLE_IMAGE, 0, $CGI_URI."/search.pl", 0, 1);
+  @article{qw(id parentid title titleImage displayOrder link level listed force_dynamic)} =
+    (-1, -1, $SEARCH_TITLE, $SEARCH_TITLE_IMAGE, 0, $CGI_URI."/search.pl", 0, 1, 1);
 
   $article{link} = $cfg->entryErr('site', 'url') . $article{link};
   require 'Generate/Article.pm';
