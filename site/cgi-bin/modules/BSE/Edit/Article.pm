@@ -2525,7 +2525,7 @@ my %types =
    vcf  text/x-vcard
    vcs  text/x-vcalendar
    xml  text/xml
-   zsh  text/x-script.zsh
+   zsh  text/plain
    bmp  image/bmp 
    gif  image/gif
    jp2  image/jpeg2000
@@ -2536,13 +2536,13 @@ my %types =
    png  image/png
    tif  image/tiff
    tiff image/tiff
-   Z    application/x-compress
    dcr  application/x-director
    dir  application/x-director
    doc  application/msword
    dxr  application/x-director
    eps  application/postscript
    fla  application/x-shockwave-flash
+   flv  application/x-shockwave-flash
    gz   application/gzip
    hqx  application/mac-binhex40
    js   application/x-javascript
@@ -2557,6 +2557,7 @@ my %types =
    tar  application/x-tar
    tgz  application/gzip
    xls  application/ms-excel
+   Z    application/x-compress
    zip  application/zip
    asf  video/x-ms-asf
    avi  video/avi
@@ -2567,6 +2568,7 @@ my %types =
    mpeg video/mpeg
    mpg  video/mpeg
    wmv  video/x-ms-wmv
+   3gp  video/3gpp
    aa   audio/audible
    aif  audio/aiff
    aiff audio/aiff
@@ -2580,7 +2582,6 @@ my %types =
    swa  audio/mp3
    wav  audio/wav
    wma  audio/x-ms-wma
-   3gp  audio/3gpp
    )
   );
 
