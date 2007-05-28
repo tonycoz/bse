@@ -76,12 +76,14 @@ sub thumb_data {
     return;
   }
 
+  
   my $out;
   if ($use_orig) {
     $out = $im;
   }
   else {
-    $out = $im->scale(xpixels => $width, ypixels=>$height);
+    my $qtype = $Imager::VERSION >= 0.54 ? 'mixing' : 'normal';
+    $out = $im->scale(xpixels => $width, ypixels=>$height, qtype => $qtype);
   }
 
   my $type = 'jpeg';
