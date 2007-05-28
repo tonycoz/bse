@@ -108,7 +108,7 @@
           </tr>
 <:iterator begin images:>
 	<tr>
-          <td rowspan="4" align="center" valign="center" bgcolor="#FFFFFF"><a href="#" onclick="window.open('/images/<:image image:>', 'fullimage', 'width=<:arithmetic [image width]+20:>,height=<:arithmetic [image height] + 30:>,location=no,status=no,menubar=no,scrollbars=yes'); return 0;"><:thumbimage 150 150:></a></th>
+          <td rowspan="4" align="center" valign="center" bgcolor="#FFFFFF"><a href="#" onclick="window.open('/images/<:image image:>', 'fullimage', 'width=<:arithmetic [image width]+20:>,height=<:arithmetic [image height] + 30:>,location=no,status=no,menubar=no,scrollbars=yes'); return false;"><:thumbimage 150 150:></a></th>
 	    <th>Alt text:</th>
             <td valign="top" bgcolor="#FFFFFF"> 
               <:ifUserCan edit_images_save:article:><input type="text" name="alt<:image id:>" value="<: oldi [concatenate alt [image id] ] 0 image alt :>" size="32" /><:or:><: image alt :><:eif:>
