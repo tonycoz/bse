@@ -2184,7 +2184,8 @@ sub save_image_changes {
   my %changes;
   my %errors;
   my %names;
-  my @delete;
+  my @old_images;
+  my @new_images;
   for my $image (@images) {
     my $id = $image->{id};
 
@@ -2242,11 +2243,12 @@ sub save_image_changes {
 	  require Image::Size;
 	  my ($width, $height, $type) = Image::Size::imgsize($full_filename);
 	  if ($width) {
+	    push @old_images, $image->{image};
+	    push @new_images, $image_name;
+
 	    $changes{$id}{image} = $image_name;
 	    $changes{$id}{width} = $width;
 	    $changes{$id}{height} = $height;
-
-	    push @delete, $image->{image};
 	  }
 	  else {
 	    $errors{"image$id"} = $type;
@@ -2270,9 +2272,13 @@ sub save_image_changes {
       }
     }
   }
-  keys %errors
-    and return $self->edit_form($req, $article, $articles, undef,
-				\%errors);
+  if (keys %errors) {
+    # remove files that won't be stored because validation failed
+    unlink map "$image_dir/$_", @new_images;
+
+    return $self->edit_form($req, $article, $articles, undef,
+			    \%errors);
+  }
   if (keys %changes) {
     for my $image (@images) {
       my $id = $image->{id};
@@ -2286,7 +2292,7 @@ sub save_image_changes {
     }
 
     # delete any image files that were replaced
-    unlink map "$image_dir/$_", @delete;
+    unlink map "$image_dir/$_", @old_images;
     
     use Util 'generate_article';
     generate_article($articles, $article) if $Constants::AUTO_GENERATE;
@@ -2952,9 +2958,13 @@ sub filesave {
 			   "You don't have access to save file information for this article");
   my @files = $article->files;
 
+  my $download_path = $self->{cfg}->entryVar('paths', 'downloads');
+
   my $cgi = $req->cgi;
   my %names;
   my %errors;
+  my @old_files;
+  my @new_files;
   for my $file (@files) {
     my $id = $file->{id};
     my $desc = $cgi->param("description_$id");
@@ -2986,6 +2996,49 @@ sub filesave {
       $file->{requireUser}    = 0 + defined $cgi->param("requireUser_$id");
       $file->{hide_from_list} = 0 + defined $cgi->param("hide_from_list_$id");
     }
+
+    my $filex = $cgi->param("file_$id");
+    my $in_fh = $cgi->upload("file_$id");
+    if (defined $filex && length $filex) {
+      if ($in_fh) {
+	if (-s $in_fh) {
+	  require DevHelp::FileUpload;
+	  my $msg;
+	  my ($file_name, $out_fh) = DevHelp::FileUpload->make_img_filename
+	    ($download_path, $filex . '', \$msg);
+	  if ($file_name) {
+	    {
+	      local $/ = \8192;
+	      my $data;
+	      while ($data = <$in_fh>) {
+		print $out_fh $data;
+	      }
+	      close $out_fh;
+	    }
+	    my $display_name = $filex;
+	    $display_name =~ s!.*[\\:/]!!;
+	    $display_name =~ s/[^\w._-]+/_/g;
+	    my $full_name = "$download_path/$file_name";
+	    push @old_files, $file->{filename};
+	    push @new_files, $file_name;
+
+	    $file->{filename} = $file_name;
+	    $file->{sizeInBytes} = -s $full_name;
+	    $file->{whenUploaded} = now_datetime();
+	    $file->{displayName} = $display_name;
+	  }
+	  else {
+	    $errors{"file_$id"} = $msg;
+	  }
+	}
+	else {
+	  $errors{"file_$id"} = "File is empty";
+	}
+      }
+      else {
+	$errors{"file_$id"} = "No file data received";
+      }
+    }
   }
   for my $name (keys %names) {
     if (@{$names{$name}} > 1) {
@@ -2994,11 +3047,19 @@ sub filesave {
       }
     }
   }
-  keys %errors
-    and return $self->edit_form($req, $article, $articles, undef, \%errors);
+  if (keys %errors) {
+    # remove the uploaded replacements
+    unlink map "$download_path/$_", @new_files;
+
+    return $self->edit_form($req, $article, $articles, undef, \%errors);
+  }
   for my $file (@files) {
     $file->save;
   }
+
+  # remove the replaced files
+  unlink map "$download_path/$_", @old_files;
+
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
