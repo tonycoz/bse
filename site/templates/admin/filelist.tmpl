@@ -111,23 +111,26 @@
           </tr>
           <: iterator begin files :> 
           <tr bgcolor="#FFFFFF"> 
-            <td nowrap="nowrap" rowspan="2"> <:file displayName:></td>
+            <td nowrap="nowrap"  rowspan="2"> <:file displayName:><:ifUserCan edit_files_save:article:>
+            <br /><input type="file" name="file_<:file id:>" /><:error_img [concatenate file_ [file id]:>
+<:or:><:eif:>
+</td>
             <td valign="top"> 
-              <:ifUserCan edit_files_save:article:><input name="description_<:file id:>" type="text" value="<: file description :>" size="35" />
+              <:ifUserCan edit_files_save:article:><input name="description_<:file id:>" type="text" value="<: oldi [concatenate description_ [file id]] 0 file description :>" size="35" />
               <:or:><: file description :><:eif:>
             </td>
             <td valign="top"> 
-               <:ifUserCan edit_files_save:article:><input name="contentType_<:file id:>" type="text" value="<: file contentType :>" size="20" />
+               <:ifUserCan edit_files_save:article:><input name="contentType_<:file id:>" type="text" value="<: oldi [concatenate contentType_ [file id]] 0 file contentType :>" size="20" />
                <:or:><: file contentType :><:eif:>
             </td>
             <td valign="top" rowspan="3">
-              <:ifUserCan edit_files_save:article:><textarea name="notes_<:file id:>" cols="40" rows="5"><:file notes:></textarea><:or:><:replace [file notes] "
+              <:ifUserCan edit_files_save:article:><textarea name="notes_<:file id:>" cols="40" rows="5"><:oldi [concatenate notes_ [file id]] 0 file notes:></textarea><:or:><:replace [file notes] "
 " "<br />" :><:eif:>
             </td>
           </tr>
           <tr>
             <td valign="top" colspan="2" nowrap="nowrap" bgcolor="#FFFFFF"> 
-               Identfier: <:ifUserCan edit_files_save:article:><input name="name_<:file id:>" type="text" value="<: file name :>" size="20" />
+               Identfier: <:ifUserCan edit_files_save:article:><input name="name_<:file id:>" type="text" value="<: oldi [concatenate name_ [file id]] 0 file name :>" size="20" /><:error_img [concatenate name_ [file id]]:>
                <:or:><: file name :><:eif:>
             </td>
           </tr>

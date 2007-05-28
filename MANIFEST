@@ -328,6 +328,7 @@ site/templates/admin/error.tmpl
 site/templates/admin/filelist.tmpl
 site/templates/admin/grouplist.tmpl
 site/templates/admin/helpicon.tmpl	Help icon template for admin templates
+site/templates/admin/image_edit.tmpl	Edit a single image
 site/templates/admin/logon.tmpl
 site/templates/admin/memberupdate/import.tmpl
 site/templates/admin/memberupdate/preview.tmpl

@@ -89,6 +89,8 @@ sub article_actions {
      save_stepparents => 'save_stepparents',
      artimg => 'save_image_changes',
      addimg => 'add_image',
+     a_edit_image => 'req_edit_image',
+     a_save_image => 'req_save_image',
      remove => 'remove',
      showimages => 'show_images',
      process => 'save_image_changes',
@@ -2164,6 +2166,8 @@ sub save_image_changes {
     or return $self->edit_form($req, $article, $articles,
 				 "You don't have access to save image information for this article");
 
+  my $image_dir = cfg_image_dir($req->cfg);
+
   my $cgi = $req->cgi;
   my $image_pos = $cgi->param('imagePos');
   if ($image_pos 
@@ -2177,64 +2181,116 @@ sub save_image_changes {
   @images or
     return $self->refresh($article, $cgi, undef, 'No images to save information for');
 
-  my $changed;
-  my @alt = $cgi->param('alt');
-  if (@alt) {
-    ++$changed;
-    for my $index (0..$#images) {
-      $index < @alt or last;
-      $images[$index]{alt} = $alt[$index];
-    }
-  }
-  my @urls = $cgi->param('url');
-  if (@urls) {
-    ++$changed;
-    for my $index (0..$#images) {
-      $index < @urls or next;
-      $images[$index]{url} = $urls[$index];
-    }
-  }
+  my %changes;
   my %errors;
-  my @names = map scalar($cgi->param('name'.$_)), 0..$#images;
-  if (@names) {
-    # make sure there aren't any dups
-    my %used;
-    my $index = 0;
-    for my $name (@names) {
-      defined $name or $name = '';
-      if ($name ne '') {
-	if ($name =~ /^[a-z_]\w*$/i) {
-	  if ($used{lc $name}++) {
-	    $errors{"name$index"} = 'Image name must be unique to the article';
+  my %names;
+  my @delete;
+  for my $image (@images) {
+    my $id = $image->{id};
+
+    my $alt = $cgi->param("alt$id");
+    if ($alt ne $image->{alt}) {
+      $changes{$id}{alt} = $alt;
+    }
+
+    my $url = $cgi->param("url$id");
+    if (defined $url && $url ne $image->{url}) {
+      $changes{$id}{url} = $url;
+    }
+
+    my $name = $cgi->param("name$id");
+    if (defined $name && $name ne $image->{name}) {
+      if ($name =~ /^[a-z_]\w*$/i) {
+	my $msg;
+	if ($self->validate_image_name($name, \$msg)) {
+	  # check for duplicates after the loop
+	  push @{$names{lc $name}}, $image->{id}
+	    if length $name;
+	  $changes{$id}{name} = $name;
+	}
+	else {
+	  $errors{"name$id"} = $msg;
+	}
+      }
+      else {
+	$errors{"name$id"} = 'Image name must be empty or alphanumeric and unique to the article';
+      }
+    }
+    else {
+      push @{$names{lc $image->{name}}}, $image->{id}
+	if length $image->{name};
+    }
+
+    my $filename = $cgi->param("image$id");
+    if (defined $filename && length $filename) {
+      my $in_fh = $cgi->upload("image$id");
+      if ($in_fh) {
+	# work out where to put it
+	require DevHelp::FileUpload;
+	my $msg;
+	my ($image_name, $out_fh) = DevHelp::FileUpload->make_img_filename
+	  ($image_dir, $filename . '', \$msg);
+	if ($image_name) {
+	  local $/ = \8192;
+	  my $data;
+	  while ($data = <$in_fh>) {
+	    print $out_fh $data;
+	  }
+	  close $out_fh;
+
+	  my $full_filename = "$image_dir/$image_name";
+	  require Image::Size;
+	  my ($width, $height, $type) = Image::Size::imgsize($full_filename);
+	  if ($width) {
+	    $changes{$id}{image} = $image_name;
+	    $changes{$id}{width} = $width;
+	    $changes{$id}{height} = $height;
+
+	    push @delete, $image->{image};
+	  }
+	  else {
+	    $errors{"image$id"} = $type;
 	  }
 	}
 	else {
-	  $errors{"name$index"} = 'Image name must be empty or alphanumeric and unique to the article';
+	  $errors{"image$id"} = $msg;
 	}
       }
-      unless ($errors{"name$index"}) {
-	my $msg;
-	$self->validate_image_name($name, \$msg)
-	  or $errors{"name$index"} = $msg;
+      else {
+	# problem uploading
+	$errors{"image$id"} = "No image file received";
       }
-      
-      ++$index;
+    }
+  }
+  # look for duplicate names
+  for my $name (keys %names) {
+    if (@{$names{$name}} > 1) {
+      for my $id (@{$names{$name}}) {
+	$errors{"name$id"} = 'Image name must be unique to the article';
+      }
     }
   }
   keys %errors
     and return $self->edit_form($req, $article, $articles, undef,
 				\%errors);
-  for my $index (0..$#images) {
-    $images[$index]{name} = $names[$index];
-  }
-  if ($changed) {
+  if (keys %changes) {
     for my $image (@images) {
+      my $id = $image->{id};
+      $changes{$id}
+	or next;
+
+      for my $field (keys %{$changes{$id}}) {
+	$image->{$field} = $changes{$id}{$field};
+      }
       $image->save;
     }
-  }
 
-  use Util 'generate_article';
-  generate_article($articles, $article) if $Constants::AUTO_GENERATE;
+    # delete any image files that were replaced
+    unlink map "$image_dir/$_", @delete;
+    
+    use Util 'generate_article';
+    generate_article($articles, $article) if $Constants::AUTO_GENERATE;
+  }
 
   return $self->refresh($article, $cgi, undef, 'Image information saved');
 }
@@ -2486,6 +2542,119 @@ sub req_thumb {
 	};
     }
   }
+}
+
+sub req_edit_image {
+  my ($self, $req, $article, $articles, $errors) = @_;
+
+  my $cgi = $req->cgi;
+
+  my $id = $cgi->param('image_id');
+
+  my ($image) = grep $_->{id} == $id, $article->images
+    or return $self->edit_form($req, $article, $articles,
+			       "No such image");
+  $req->user_can(edit_images_save => $article)
+    or return $self->edit_form($req, $article, $articles,
+			       "You don't have access to save image information for this article");
+
+  my %acts;
+  %acts =
+    (
+     $self->low_edit_tags(\%acts, $req, $article, $articles, undef,
+			  $errors),
+     eimage => [ \&tag_hash, $image ],
+     error_img => [ \&tag_error_image, $req->cfg, $errors ],
+    );
+
+  return $req->response('admin/image_edit', \%acts);
+}
+
+sub req_save_image {
+  my ($self, $req, $article, $articles) = @_;
+  
+  my $cgi = $req->cgi;
+
+  my $id = $cgi->param('image_id');
+
+  my @images = $article->images;
+  my ($image) = grep $_->{id} == $id, @images
+    or return $self->edit_form($req, $article, $articles,
+			       "No such image");
+  $req->user_can(edit_images_save => $article)
+    or return $self->edit_form($req, $article, $articles,
+			       "You don't have access to save image information for this article");
+
+  my $image_dir = cfg_image_dir($req->cfg);
+
+  my %errors;
+  my $delete_file;
+  my $alt = $cgi->param('alt');
+  defined $alt and $image->{alt} = $alt;
+  my $url = $cgi->param('url');
+  defined $url and $image->{url} = $url;
+  my @other_images = grep $_->{id} != $id, @images;
+  my $name = $cgi->param('name');
+  if (defined $name) {
+    if (length $name) {
+      if ($name !~ /^[a-z_]\w*$/i) {
+	$errors{name} = 'Image name must be empty or alphanumeric and unique to the article';
+      }
+      elsif (grep $name eq $_->{name}, @other_images) {
+	$errors{name} = 'Image name must be unique to the article';
+      }
+      else {
+	$image->{name} = $name;
+      }
+    }
+  }
+  my $filename = $cgi->param('image');
+  if (defined $filename && length $filename) {
+    my $in_fh = $cgi->upload('image');
+    if ($in_fh) {
+      require DevHelp::FileUpload;
+      my $msg;
+      my ($image_name, $out_fh) = DevHelp::FileUpload->make_img_filename
+	($image_dir, $filename . '', \$msg);
+      if ($image_name) {
+	{
+	  local $/ = \8192;
+	  my $data;
+	  while ($data = <$in_fh>) {
+	    print $out_fh $data;
+	  }
+	  close $out_fh;
+	}
+
+	my $full_filename = "$image_dir/$image_name";
+	require Image::Size;
+	my ($width, $height, $type) = Image::Size::imgsize($full_filename);
+	if ($width) {
+	  $delete_file = $image->{image};
+	  $image->{image} = $image_name;
+	  $image->{width} = $width;
+	  $image->{height} = $height;
+	}
+	else {
+	  $errors{image} = $type;
+	}
+      }
+      else {
+	$errors{image} = $msg;
+      }
+    }
+    else {
+      $errors{image} = "No image file received";
+    }
+  }
+  keys %errors
+    and return $self->req_edit_image($req, $article, $articles, \%errors);
+
+  $image->save;
+  unlink "$image_dir/$delete_file"
+    if $delete_file;
+
+  return $self->refresh($article, $cgi, undef, 'Image saved');
 }
 
 sub get_article {
@@ -2784,34 +2953,49 @@ sub filesave {
   my @files = $article->files;
 
   my $cgi = $req->cgi;
-  my %seen_name;
+  my %names;
+  my %errors;
   for my $file (@files) {
     my $id = $file->{id};
-    if (defined $cgi->param("description_$id")) {
-      $file->{description} = $cgi->param("description_$id");
-      if (defined(my $type = $cgi->param("contentType_$id"))) {
-	$file->{contentType} = $type;
+    my $desc = $cgi->param("description_$id");
+    defined $desc and $file->{description} = $desc;
+    my $type = $cgi->param("contentType_$id");
+    defined $type and $file->{contentType} = $type;
+    my $notes = $cgi->param("notes_$id");
+    defined $notes and $file->{notes} = $notes;
+    my $name = $cgi->param("name_$id");
+    if (defined $name) {
+      $file->{name} = $name;
+      if (length $name) {
+	if ($name =~ /^\w+$/) {
+	  push @{$names{$name}}, $id
+	    if length $name;
+	}
+	else {
+	  $errors{"name_$id"} = "Invalid file identifier $name";
+	}
       }
-      if (defined(my $notes = $cgi->param("notes_$id"))) {
-	$file->{notes} = $notes;
-      }
-      my $name = $cgi->param("name_$id");
-      defined $name or $name = $file->{name};
-      if (length $name && $name !~ /^\w+$/) {
-	return $self->edit_form($req, $article, $articles,
-				"Invalid file identifier $name");
-      }
-      if (length $name && $seen_name{lc $name}++) {
-	return $self->edit_form($req, $article, $articles,
-				"Duplicate file identifier $name");
-      }
-      $file->{name}	      = $name;
+    }
+    else {
+      push @{$names{$file->{name}}}, $id
+	if length $file->{name};
+    }
+    if ($cgi->param('save_file_flags')) {
       $file->{download}	      = 0 + defined $cgi->param("download_$id");
       $file->{forSale}	      = 0 + defined $cgi->param("forSale_$id");
       $file->{requireUser}    = 0 + defined $cgi->param("requireUser_$id");
       $file->{hide_from_list} = 0 + defined $cgi->param("hide_from_list_$id");
     }
   }
+  for my $name (keys %names) {
+    if (@{$names{$name}} > 1) {
+      for my $id (@{$names{$name}}) {
+	$errors{"name_$id"} = 'File identifier must be unique to the article';
+      }
+    }
+  }
+  keys %errors
+    and return $self->edit_form($req, $article, $articles, undef, \%errors);
   for my $file (@files) {
     $file->save;
   }
