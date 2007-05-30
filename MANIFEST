@@ -326,6 +326,7 @@ site/templates/admin/edit_semsessadd.tmpl
 site/templates/admin/edit_steps.tmpl
 site/templates/admin/error.tmpl
 site/templates/admin/filelist.tmpl
+site/templates/admin/file_edit.tmpl
 site/templates/admin/grouplist.tmpl
 site/templates/admin/helpicon.tmpl	Help icon template for admin templates
 site/templates/admin/image_edit.tmpl	Edit a single image

@@ -102,6 +102,8 @@ sub article_actions {
      fileswap => 'fileswap',
      filedel => 'filedel',
      filesave => 'filesave',
+     a_edit_file => 'req_edit_file',
+     a_save_file => 'req_save_file',
      hide => 'hide',
      unhide => 'unhide',
      a_thumb => 'req_thumb',
@@ -2978,8 +2980,7 @@ sub filesave {
       $file->{name} = $name;
       if (length $name) {
 	if ($name =~ /^\w+$/) {
-	  push @{$names{$name}}, $id
-	    if length $name;
+	  push @{$names{$name}}, $id;
 	}
 	else {
 	  $errors{"name_$id"} = "Invalid file identifier $name";
@@ -3056,6 +3057,150 @@ sub filesave {
   for my $file (@files) {
     $file->save;
   }
+
+  # remove the replaced files
+  unlink map "$download_path/$_", @old_files;
+
+  use Util 'generate_article';
+  generate_article($articles, $article) if $Constants::AUTO_GENERATE;
+
+  $self->_refresh_filelist($req, $article, 'File information saved');
+}
+
+sub tag_old_checked {
+  my ($errors, $cgi, $file, $key) = @_;
+
+  return $errors ? $cgi->param($key) : $file->{$key};
+}
+
+sub req_edit_file {
+  my ($self, $req, $article, $articles, $errors) = @_;
+
+  my $cgi = $req->cgi;
+
+  my $id = $cgi->param('file_id');
+
+  my ($file) = grep $_->{id} == $id, $article->files
+    or return $self->edit_form($req, $article, $articles,
+			       "No such file");
+  $req->user_can(edit_files_save => $article)
+    or return $self->edit_form($req, $article, $articles,
+			       "You don't have access to save file information for this article");
+
+  my %acts;
+  %acts =
+    (
+     $self->low_edit_tags(\%acts, $req, $article, $articles, undef,
+			  $errors),
+     efile => [ \&tag_hash, $file ],
+     error_img => [ \&tag_error_img, $req->cfg, $errors ],
+     ifOldChecked =>
+     [ \&tag_old_checked, $errors, $cgi, $file ],
+    );
+
+  return $req->response('admin/file_edit', \%acts);
+}
+
+sub req_save_file {
+  my ($self, $req, $article, $articles) = @_;
+
+  my $cgi = $req->cgi;
+
+  my @files = $article->files;
+  
+  my $id = $cgi->param('file_id');
+
+  my ($file) = grep $_->{id} == $id, @files
+    or return $self->edit_form($req, $article, $articles,
+			       "No such file");
+  $req->user_can(edit_files_save => $article)
+    or return $self->edit_form($req, $article, $articles,
+			       "You don't have access to save file information for this article");
+  my @other_files = grep $_->{id} != $id, @files;
+
+  my $download_path = $self->{cfg}->entryVar('paths', 'downloads');
+
+  my %errors;
+  my $desc = $cgi->param("description");
+  defined $desc and $file->{description} = $desc;
+  my $type = $cgi->param("contentType");
+  defined $type and $file->{contentType} = $type;
+  my $notes = $cgi->param("notes");
+  defined $notes and $file->{notes} = $notes;
+  my $name = $cgi->param("name");
+  if (defined $name) {
+    $file->{name} = $name;
+    if (length $name) {
+      if ($name =~ /^\w+$/) {
+	if (grep lc $name eq lc $_->{name}, @other_files) {
+	  $errors{name} = 'File identifier must be unique to the article';
+	}
+      }
+      else {
+	$errors{name} = "Invalid file identifier $name";
+      }
+    }
+  }
+
+  if ($cgi->param('save_file_flags')) {
+    $file->{download}	    = 0 + defined $cgi->param("download");
+    $file->{forSale}	    = 0 + defined $cgi->param("forSale");
+    $file->{requireUser}    = 0 + defined $cgi->param("requireUser");
+    $file->{hide_from_list} = 0 + defined $cgi->param("hide_from_list");
+  }
+  
+  my @old_files;
+  my @new_files;
+  my $filex = $cgi->param("file");
+  my $in_fh = $cgi->upload("file");
+  if (defined $filex && length $filex) {
+    if ($in_fh) {
+      if (-s $in_fh) {
+	require DevHelp::FileUpload;
+	my $msg;
+	my ($file_name, $out_fh) = DevHelp::FileUpload->make_img_filename
+	  ($download_path, $filex . '', \$msg);
+	if ($file_name) {
+	  {
+	    local $/ = \8192;
+	    my $data;
+	    while ($data = <$in_fh>) {
+	      print $out_fh $data;
+	    }
+	    close $out_fh;
+	  }
+	  my $display_name = $filex;
+	  $display_name =~ s!.*[\\:/]!!;
+	  $display_name =~ s/[^\w._-]+/_/g;
+	  my $full_name = "$download_path/$file_name";
+	  push @old_files, $file->{filename};
+	  push @new_files, $file_name;
+	  
+	  $file->{filename} = $file_name;
+	  $file->{sizeInBytes} = -s $full_name;
+	  $file->{whenUploaded} = now_datetime();
+	  $file->{displayName} = $display_name;
+	}
+	else {
+	  $errors{"file"} = $msg;
+	}
+      }
+      else {
+	$errors{"file"} = "File is empty";
+      }
+    }
+    else {
+      $errors{"file"} = "No file data received";
+    }
+  }
+
+  if (keys %errors) {
+    # remove the uploaded replacements
+    unlink map "$download_path/$_", @new_files;
+
+    return $self->req_edit_file($req, $article, $articles, \%errors);
+  }
+  $file->save;
 
   # remove the replaced files
   unlink map "$download_path/$_", @old_files;
