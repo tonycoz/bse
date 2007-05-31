@@ -76,6 +76,8 @@ site/cgi-bin/modules/BSE/EmailBlacklist.pm
 site/cgi-bin/modules/BSE/EmailRequest.pm
 site/cgi-bin/modules/BSE/EmailRequests.pm
 site/cgi-bin/modules/BSE/Formatter.pm
+site/cgi-bin/modules/BSE/Formatter/Article.pm
+site/cgi-bin/modules/BSE/Formatter/Subscription.pm
 site/cgi-bin/modules/BSE/Generate/Seminar.pm
 # site/cgi-bin/modules/BSE/FileEditor.pm
 site/cgi-bin/modules/BSE/Handler/Base.pm

@@ -204,6 +204,11 @@ sub _make_img {
   return $text;
 }
 
+sub formatter_class {
+  require BSE::Formatter::Article;
+  return 'BSE::Formatter::Article'
+}
+
 # replace markup, insert img tags
 sub format_body {
   my $self = shift;
@@ -230,16 +235,16 @@ sub format_body {
 
   return substr($body, 6) if $body =~ /^<html>/i;
 
-  require BSE::Formatter;
+  my $formatter_class = $self->formatter_class;
 
-  my $formatter = BSE::Formatter->new(gen => $self, 
-				      acts => $acts, 
-				      articles => $articles,
-				      abs_urls => $abs_urls, 
-				      auto_images => \$auto_images,
-				      images => $images, 
-				      files => $files,
-				      templater => $templater);
+  my $formatter = $formatter_class->new(gen => $self, 
+					acts => $acts, 
+					articles => $articles,
+					abs_urls => $abs_urls, 
+					auto_images => \$auto_images,
+					images => $images, 
+					files => $files,
+					templater => $templater);
 
   $body = $formatter->format($body);
 
@@ -715,11 +720,11 @@ sub visible {
 sub remove_block {
   my ($self, $articles, $acts, $body, $files) = @_;
 
-  require BSE::Formatter;
+  my $formatter_class = $self->formatter_class;
 
   $files ||= [];
 
-  my $formatter = BSE::Formatter->new(gen => $self, 
+  my $formatter = $formatter_class->new(gen => $self, 
 				      acts => $acts, 
 				      article => $articles,
 				      articles => $articles,

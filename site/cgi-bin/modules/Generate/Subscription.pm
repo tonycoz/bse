@@ -37,5 +37,10 @@ sub abs_urls {
   1;
 }
 
+sub formatter_class {
+  require BSE::Formatter::Subscription;
+  return 'BSE::Formatter::Subscription'
+}
+
 1;
 
