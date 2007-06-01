@@ -524,7 +524,7 @@ sub dh_configure_fields {
     my $dest = $cfg_fields->{$field} || {};
 
     # the config overrides the software supplied fields
-    for my $override (qw(description required required_error range_error mindatemsg maxdatemsg htmltype type width height size)) {
+    for my $override (qw(description required required_error range_error mindatemsg maxdatemsg htmltype type width height size maxlength)) {
       if (defined $src->{$override} && !defined $dest->{$override}) {
 	$dest->{$override} = $src->{$override};
       }
