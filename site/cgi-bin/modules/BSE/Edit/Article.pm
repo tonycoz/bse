@@ -2559,7 +2559,7 @@ sub req_edit_image {
 
   my $id = $cgi->param('image_id');
 
-  my ($image) = grep $_->{id} == $id, $article->images
+  my ($image) = grep $_->{id} == $id, $self->get_images($article)
     or return $self->edit_form($req, $article, $articles,
 			       "No such image");
   $req->user_can(edit_images_save => $article)
@@ -2572,7 +2572,7 @@ sub req_edit_image {
      $self->low_edit_tags(\%acts, $req, $article, $articles, undef,
 			  $errors),
      eimage => [ \&tag_hash, $image ],
-     error_img => [ \&tag_error_image, $req->cfg, $errors ],
+     error_img => [ \&tag_error_img, $req->cfg, $errors ],
     );
 
   return $req->response('admin/image_edit', \%acts);
@@ -2585,7 +2585,7 @@ sub req_save_image {
 
   my $id = $cgi->param('image_id');
 
-  my @images = $article->images;
+  my @images = $self->get_images($article);
   my ($image) = grep $_->{id} == $id, @images
     or return $self->edit_form($req, $article, $articles,
 			       "No such image");

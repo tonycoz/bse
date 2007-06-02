@@ -25,7 +25,8 @@ sub edit_sections {
 }
 
 my @site_actions =
-  qw(edit artimg process addimg removeimg moveimgup moveimgdown a_thumb);
+  qw(edit artimg process addimg removeimg moveimgup moveimgdown a_thumb
+     a_edit_image a_save_image);
 
 sub article_actions {
   my ($self) = @_;
