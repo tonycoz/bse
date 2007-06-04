@@ -108,6 +108,11 @@ sub req_show {
   keys %errors
     and return $class->req_prompt($req, '', \%errors);
   
+  my %show_opts;
+  my $sort = $req->cgi->param('sort');
+  if (defined $sort && $sort =~ /^\d+$/) {
+    $show_opts{sort} = $sort;
+  }
   my $msg;
   my %acts;
   %acts =
@@ -115,7 +120,7 @@ sub req_show {
      BSE::Util::Tags->basic(\%acts, $req->cgi, $req->cfg),
      BSE::Util::Tags->admin(\%acts, $req->cfg),
      BSE::Util::Tags->secure($req),
-     $reports->show_tags($repname, BSE::DB->single, \$msg, @params),
+     $reports->show_tags2($repname, BSE::DB->single, \$msg, \@params, %show_opts),
     );
 
   $msg

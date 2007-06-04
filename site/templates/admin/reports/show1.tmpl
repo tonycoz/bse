@@ -2,14 +2,21 @@
 <h1>Report: <:report name:></h1>
 <p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | <a href="/cgi-bin/admin/report.pl">Reports List</a> | <:ifReport has_params:><a href="/cgi-bin/admin/report.pl?s_prompt=1&r=<:report id:>">Arguments</a> | <:or:><:eif:></p>
 
+<:if Sort_select others:>
+<form action="<:script:>">
+  <:repparams hidden:>
+  <input type="hidden" name="r" value="<:report id:>" />
+  <:sort_select select:><input type="submit" name="a_show" value="Re-order" />
+</form>
+<:or Sort_select:><:eif Sort_select:>
   <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
   <tr>
     <td>
 <table cellpadding="6" cellspacing="1" border="0" >
   <tr>
     <:iterator begin level1_names:>
-    <th>
-      <:level1_name name:>
+    <th <:ifSort - sortable:>onclick="window.location='<:sort - url:>'"<:or:><:eif:>>
+      <:sort:>
     </th>
     <:iterator end level1_names:>
     <:if Report has_level1_links:><th>(links)</th><:or Report:><:eif Report:>

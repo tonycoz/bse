@@ -1,7 +1,7 @@
 package DevHelp::Report;
 use strict;
 use DevHelp::Tags;
-use DevHelp::HTML qw(escape_html popup_menu);
+use DevHelp::HTML qw(escape_html popup_menu escape_uri);
 
 sub new {
   my ($class, $cfg, $section) = @_;
@@ -72,7 +72,7 @@ sub prompt_tags {
     (
      DevHelp::Tags->make_iterator2(undef, 'field', 'fields', $report->{params}),
      report => [ \&tag_hash, $report ],
-     
+     DevHelp::Tags->make_iterator2(undef, 'sort', 'sorts', $report->{sorts}),
     );
 }
 
@@ -155,6 +155,31 @@ sub _load {
     ++$sql_index;
   }
   $report{sql} = \@sql;
+
+  my @sorts;
+  my $sort_index = 1;
+  while (my $sort = $cfg->entry($repsect, "sort$sort_index")) {
+    my ($column, $label, $sql_frag);
+    unless (($column, $label, $sql_frag) = split /;/, $sort
+	    and $sql_frag) {
+      print STDERR "** Invalid sort entry sort$sort_index=$sort in $repsect\n";
+      last;
+    }
+    my $dir = '';
+    if ($column =~ s/^([+-])//) {
+      $dir = $1;
+    }
+    push @sorts, 
+      { 
+       id => $sort_index,
+       column => $column, 
+       label => $label, 
+       sql_frag => $sql_frag,
+       dir => $dir,
+      };
+    ++$sort_index;
+  }
+  $report{sorts} = \@sorts;
 
   my @breaks;
   my $break_index = 1;
@@ -403,24 +428,160 @@ sub tag_levelN_sum {
   $sum;
 }
 
+sub url {
+  my ($self, $report, %opts) = @_;
+
+  my $base = $ENV{SCRIPT_NAME};
+  my %args = $self->url_show_args;
+  $args{r} = $report->{id};
+  if ($opts{sort}) {
+    $args{sort} = $opts{sort};
+  }
+  if ($opts{params}) {
+    my $index = 1;
+    for my $value (@{$opts{params}}) {
+      $args{"p$index"} = $value;
+      ++$index;
+    }
+  }
+
+  $base . '?' . join '&amp;', map { "$_=" . escape_uri($args{$_}) } keys %args;
+}
+
+sub tag_sort {
+  my ($self, $report, $sort, $params, $titles, $name_index, $arg) = @_;
+
+  my ($col, $field, $rest) = split ' ', $arg;
+  if (!defined $col || $col eq '-' || $col =~ /^\s*$/) {
+    if ($$name_index >= 0 && $$name_index < @$titles) {
+      $col = $titles->[$$name_index];
+    }
+    else {
+      return '** sort - ... only available inside level1_names **';
+    }
+  }
+  my $other_sort;
+  my $want_dir = '+';
+  if (lc $col eq lc $sort->{column}) {
+    $want_dir = $sort->{dir} eq '+' ? '-' : '+';
+  }
+  ($other_sort) = grep lc $_->{column} eq lc $col && $_->{dir} eq $want_dir, 
+    $report->sorts;
+  my $new_sort = $other_sort || $sort;
+  my $url = $self->url($report, sort => $new_sort->{id}, params => $params);
+  if (!defined($field) || $field =~ /^\s*$/) {
+    if (grep lc $_->{column} eq lc $col, $report->sorts) {
+      return qq!<a href="$url">$col</a>!;
+    }
+    else {
+      return $col;
+    }
+  }
+  elsif ($field eq 'url') {
+    return $url;
+  }
+  elsif ($field eq 'current') {
+    return lc $sort->{column} == lc $col;
+  }
+  elsif ($field eq 'currentdir') {
+    return $sort->{id} == $new_sort && $sort->{dir} eq '+';
+  }
+  elsif ($field eq 'sortable') {
+    return (grep lc $_->{column} eq lc $col, $report->sorts) != 0;
+  }
+  else {
+    return "** unknown report sort parameter $field **";
+  }
+}
+
+sub tag_sort_select {
+  my ($self, $report, $sort, $args) = @_;
+
+  my ($action, $rest) = split ' ', $args;
+  
+  if ($action eq 'others') {
+    return scalar(grep $_->{dir} eq '', $report->sorts);
+  }
+  elsif ($action eq 'select') {
+    my @sorts = $report->sorts;
+    my %opts = 
+      (
+       -name => 'sort',
+       -labels => { map { $_->{id} => $_->{label} } @sorts },
+       -values => [ map $_->{id}, @sorts ],
+      );
+    $opts{'-default'} = $sort->{id};
+    if ($rest) {
+      $opts{'-id'} = $rest;
+    }
+    return popup_menu(%opts);
+  }
+  else {
+    return "** unknown argument '$args' to sort_select **";
+  }
+}
+
+sub param_prefix {
+  'p'
+}
+
+sub tag_repparams {
+  my ($self, $report, $params, $args) = @_;
+
+  my $prefix = $self->param_prefix;
+  defined $args or $args = '';
+  if ($args eq 'hidden') {
+    return join "\n", 
+      map { 
+	qq!<input type="hidden" name="$prefix! . ($_+1)
+	  . qq!" value="! . escape_html($params->[$_]) . '" />' 
+	} 0 .. $#$params;
+  }
+  elsif ($args eq 'url') {
+    return join "&amp;", 
+      map $prefix . $_+1 . '=' . escape_uri($params->[$_]),
+	  0 .. $#$params;
+  }
+  else {
+    return "** unknown repparams argument $args **";
+  }
+}
+
 sub show_tags {
   my ($self, $repid, $db, $rmsg, @params) = @_;
 
+  $self->show_tags2($repid, $db, $rmsg, \@params);
+}
+
+sub show_tags2 {
+  my ($self, $repid, $db, $rmsg, $params, %opts) = @_;
+
+  my $prefix = $opts{tag_prefix} || '';
   # build up result sets
   my $dbh = $db->dbh;
   my $report = $self->_load($repid, undef, $db);
   if ($report->{debug}) {
-    print STDERR "Params: @params\n";
+    print STDERR "Params: @$params\n";
+  }
+  my @sorts = $report->sorts;
+  my $sort;
+  if (@sorts) {
+    my $sort_id = $opts{sort} || 1;
+    ($sort) = grep $_->{id} == $sort_id, @sorts;
   }
   my @results;
   for my $sql (@{$report->{sql}}) {
     my %result;
-    my $sth = $dbh->prepare($sql->{sql});
+    my $query = $sql->{sql};
+    if ($sort) {
+      $query .=  " " . $sort->{sql_frag};
+    }
+    my $sth = $dbh->prepare($query);
     unless ($sth) {
       $$rmsg = "Error preparing $sql->{sql}: ".$dbh->errstr;
       return;
     }
-    my @sqlp = @params[ map $_-1, @{$sql->{params}} ];
+    my @sqlp = @{$params}[ map $_-1, @{$sql->{params}} ];
     $report->{debug} and print STDERR "sql params: @sqlp\n";
     unless ($sth->execute(@sqlp)) {
       $$rmsg = "Error executing $sql->{sql}: ".$dbh->errstr;
@@ -459,27 +620,28 @@ sub show_tags {
 # 			     };
 # 		    } ;
   my $level1_row;
+  my $level1_name_index;
   my %tags =
     (
      DevHelp::Tags->make_iterator2
-     (undef, 'level1', 'level1', $work[0], \$index[0], undef, \$level1_row),
+     (undef, $prefix.'level1', $prefix.'level1', $work[0], \$index[0], undef, \$level1_row),
      DevHelp::Tags->make_iterator2
      ([ \&iter_levelN_cols, 0, \@results, $work[0], \$index[0] ], 
-      'level1_col', 'level1_cols', undef, undef, 'NoCache'),
+      $prefix.'level1_col', $prefix.'level1_cols', undef, undef, 'NoCache'),
      DevHelp::Tags->make_iterator2
-     (undef, 'level1_name', 'level1_names', 
-      [ map +{ 'name' => $_ }, @{$results[0]{titles}} ]),
+     (undef, $prefix.'level1_name', $prefix.'level1_names', 
+      [ map +{ 'name' => $_ }, @{$results[0]{titles}} ], \$level1_name_index),
      DevHelp::Tags->make_iterator2
      ([ \&iter_levelN_links, 0, $report->{sql}[0]{links}, $work[0], 
 	\$index[0] ], 
-      'level1_link', 'level1_links', undef, undef, 'NoCache'),
-     level1_byname => [ \&tag_levelN_col, \$level1_row ],
-     level1_sum => 
+      $prefix.'level1_link', $prefix.'level1_links', undef, undef, 'NoCache'),
+     "${prefix}level1_byname" => [ \&tag_levelN_col, \$level1_row ],
+     "${prefix}level1_sum" => 
      [ \&tag_levelN_sum, $results[0]{rows}, $results[0]{names_hash} ],
-     report => [ \&tag_hash, $report ],
+     "${prefix}report" => [ \&tag_hash, $report ],
     );
   for my $level (1 .. $#results) {
-    my $name = "level" . ($level + 1);
+    my $name = "${prefix}level" . ($level + 1);
     my %work_tags =
       DevHelp::Tags->make_iterator2
 	  ([ \&iter_levelN, $report, \@results, \@work, $level, 
@@ -487,6 +649,9 @@ sub show_tags {
 	   $name, $name, $work[$level], \$index[$level], 'NoCache');
     @tags{keys %work_tags} = values %work_tags;
   }
+  $tags{"${prefix}sort"} = [ tag_sort => $self, $report, $sort, $params, $results[0]{titles}, \$level1_name_index ];
+  $tags{"${prefix}sort_select"} = [ tag_sort_select => $self, $report, $sort ];
+  $tags{"${prefix}repparams"} = [ tag_repparams => $self, $report, $params ];
 
   %tags;
 }
@@ -656,6 +821,10 @@ package DevHelp::Report::Report;
 
 sub param_count {
   scalar @{$_[0]{params}};
+}
+
+sub sorts {
+  return @{$_[0]{sorts}};
 }
 
 1;

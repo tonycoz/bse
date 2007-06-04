@@ -55,4 +55,8 @@ sub report_accessible {
   return;
 }
 
+sub url_show_args {
+  s_show => 1
+}
+
 1;

@@ -16,6 +16,18 @@
 <td bgcolor="#FFFFFF"><:field html:></td>
 </tr>
 <:iterator end fields:>
+<:if Sort_count:>
+<tr>
+  <th>Sort order</th>
+  <td bgcolor="#FFFFFF">
+<select name="sort">
+<:iterator begin sorts:>
+<option value="<:sort id:>"><:sort label:></option>
+<:iterator end sorts:>
+</select>
+</td>
+</tr>
+<:or Sort_count:><:eif Sort_count:>
 <tr><td colspan="2" align="right" bgcolor="#FFFFFF"><input type="submit" name="s_show" value="Display" /></td></tr>
 </table>
     </td>
