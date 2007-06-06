@@ -327,13 +327,14 @@ sub validate_params {
 
     my $value = $cgi->param($name);
     if (defined $value) {
-      $param->{type} =~ /^([a-z]+)$/;
-      my $typebase = $1;
-      $typebase = $validators{$typebase} if exists $validators{$typebase};
-      my $method = "_validate_$typebase";
-
-      $self->$method($name, $value, $param, $repid, $db, $errors)
-	if $self->can($method);
+      if ($param->{type} =~ /^([a-z]+)/) {
+	my $typebase = $1;
+	$typebase = $validators{$typebase} if exists $validators{$typebase};
+	my $method = "_validate_$typebase";
+	
+	$self->$method($name, $value, $param, $repid, $db, $errors)
+	  if $self->can($method);
+      }
     }
     else {
       $errors->{$name} = "No value supplied for $param->{label}";
@@ -680,6 +681,7 @@ sub iter_levelN_cols {
   for my $entry (0..$#$names) {
     my %value;
     $value{value} = $row->{$names->[$entry]};
+    defined $value{value} or $value{value} = '';
     $value{name} = $names->[$entry];
     $value{title} = $results->[$level]{titles}[$entry];
     push @result, \%value;
