@@ -280,7 +280,7 @@ sub req_search {
     );
   
   my $template = $cgi->param('embed') ? 'include/search_results' : 'search';
-  my $result = $req->response($template, \%acts);
+  my $result = $req->dyn_response($template, \%acts);
   %acts = (); # remove any circular refs
 
   return $result;
