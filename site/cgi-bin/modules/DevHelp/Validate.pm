@@ -259,6 +259,16 @@ sub validate_field {
     }
   }
 
+  if (defined $info->{maxlength}) {
+    for my $testdata (@data) {
+      if (length $testdata > $info->{maxlength}) {
+	$errors->{$field} = _make_error($field, $info, $rule,
+					    q!$n too long!);
+	return;
+      }
+    }
+  }
+
   my $rule_names = $info->{rules};
   defined $rule_names or $rule_names = '';
   $rule_names = [ split /;/, $rule_names ] unless ref $rule_names;
@@ -373,7 +383,7 @@ sub validate_field {
 	  my $workdate = sprintf("%04d-%02d-%02d", $year, $month, $day);
 	  if ($rule->{mindate}) {
 	    my $mindate = DevHelp::Date::dh_parse_date_sql($rule->{mindate});
-	    if ($workdate le $mindate) {
+	    if ($workdate lt $mindate) {
 	      $errors->{$field} = 
 		_make_error($field, $info, $rule,
 			    $info->{mindatemsg} || $rule->{mindatemsg} || '$n is too early');
@@ -381,7 +391,7 @@ sub validate_field {
 	  }
 	  if (!$errors->{$field} && $rule->{maxdate}) {
 	    my $maxdate = DevHelp::Date::dh_parse_date_sql($rule->{maxdate});
-	    if ($workdate ge $maxdate) {
+	    if ($workdate gt $maxdate) {
 	      $errors->{$field} = 
 		_make_error($field, $info, $rule,
 			    $info->{mindatemsg} || $rule->{maxdatemsg} || '$n is too late');
