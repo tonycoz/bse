@@ -262,8 +262,8 @@ sub validate_field {
   if (defined $info->{maxlength}) {
     for my $testdata (@data) {
       if (length $testdata > $info->{maxlength}) {
-	$errors->{$field} = _make_error($field, $info, $rule,
-					    q!$n too long!);
+	$errors->{$field} = _make_error($field, $info, {},
+					q!$n too long!);
 	return;
       }
     }
