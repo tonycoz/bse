@@ -45,16 +45,28 @@ sub make_iterator {
   }
 }
 
+sub _get_iter_data {
+  my ($code, $args, $acts, $name, $templater) = @_;
+
+  my ($sub, @args) = $code;
+  if (ref $code eq 'ARRAY') {
+    ($sub, @args) = @$code;
+  }
+  if (ref $sub) {
+    return $sub->(@args, $args, $acts, $name, $templater);
+  }
+  else {
+    my $obj = shift @args;
+    return $obj->$sub(@args, $args, $acts, $name, $templater);
+  }
+}
+
 sub _iter_reset {
   my ($rdata, $rindex, $code, $loaded, $nocache, $rrow, $args, $acts, $name, $templater) = @_;
 
   if (!$$loaded && !@$rdata && $code || $args || $nocache) {
-    my ($sub, @args) = $code;
+    @$rdata = _get_iter_data($code, $args, $acts, $name, $templater);
 
-    if (ref $code eq 'ARRAY') {
-      ($sub, @args) = @$code;
-    }
-    @$rdata = $sub->(@args, $args, $acts, $name, $templater);
     ++$$loaded unless $args;
   }
 
@@ -87,12 +99,7 @@ sub _iter_count {
   my ($rdata, $code, $loaded, $nocache, $args, $acts, $func, $templater) = @_;
 
   if (!$$loaded && !@$rdata && $code || $args || $nocache) {
-    my ($sub, @args) = $code;
-
-    if (ref $code eq 'ARRAY') {
-      ($sub, @args) = @$code;
-    }
-    @$rdata = $sub->(@args, $args, $acts, $func, $templater);
+    @$rdata = _get_iter_data($code, $args, $acts, $func, $templater);
     ++$$loaded unless $args;
   }
 

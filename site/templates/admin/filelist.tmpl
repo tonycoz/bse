@@ -1,5 +1,5 @@
 <:wrap admin/xbase.tmpl title=>"File Wizard":>
-<h1>File Wizard</h1>
+<h1><:ifEq [article id] "-1":>Global<:or:><: articleType :><:eif:> File Wizard</h1>
 <:ifMessage:>
 <p><b><:message:></b></p>
 <:or:><:eif:>
@@ -60,6 +60,7 @@
             </td>
             <td nowrap="nowrap" bgcolor="#FFFFFF"><:help file download:> <:error_img download:></td>
           </tr>
+<:if Eq [article id] -1:><:or Eq:>
           <tr> 
             <th bgcolor="#FFFFFF" align="left">Require payment:</th>
             <td bgcolor="#FFFFFF"> 
@@ -67,6 +68,7 @@
             </td>
             <td nowrap="nowrap" bgcolor="#FFFFFF"><:help file forSale:> <:error_img forSale:></td>
           </tr>
+<:eif Eq:>
           <tr> 
             <th bgcolor="#FFFFFF" align="left">Require login:</th>
             <td bgcolor="#FFFFFF"> 
@@ -141,8 +143,9 @@
                 <tr bgcolor="#FFFFFF"> 
                   <td valign="top" align="center" nowrap="nowrap"> <:if UserCan edit_files_save:article:><input type="checkbox" name="download_<:file id:>"
                     <:ifFile download:> checked<:or:><:eif:> /><:or UserCan:><img src="/images/admin/<:ifFile download:>checked.gif<:or:>unchecked.gif<:eif:>" width="16" height="16" /><:eif UserCan:>Download&nbsp;&nbsp;&nbsp;</td>
+<:if Eq [article id] -1:><:or Eq:>
                   <td valign="top" align="center" nowrap="nowrap"> <:if UserCan edit_files_save:article:><input type="checkbox" name="forSale_<:file id:>"
-                    <:ifFile forSale:> checked<:or:><:eif:> /><:or UserCan:><img src="/images/admin/<:ifFile forSale:>checked.gif<:or:>unchecked.gif<:eif:>" width="16" height="16" /><:eif UserCan:>Require payment&nbsp;&nbsp;&nbsp;</td>
+                    <:ifFile forSale:> checked<:or:><:eif:> /><:or UserCan:><img src="/images/admin/<:ifFile forSale:>checked.gif<:or:>unchecked.gif<:eif:>" width="16" height="16" /><:eif UserCan:>Require payment&nbsp;&nbsp;&nbsp;</td><:eif Eq:>
                   <td valign="top" align="center" nowrap="nowrap"> <:if UserCan edit_files_save:article:><input type="checkbox" name="requireUser_<:file id:>"
                     <:ifFile requireUser:> checked<:or:><:eif:> /><:or UserCan:><img src="/images/admin/<:ifFile requireUser:>checked.gif<:or:>unchecked.gif<:eif:>" width="16" height="16" /><:eif UserCan:>Require login 
                     &nbsp;&nbsp;&nbsp;</td>
@@ -171,7 +174,7 @@
 <:or:><:eif:>
           <:or Files:> 
           <tr bgcolor="#FFFFFF"> 
-            <td colspan="3" align="center">No files are attached to this article</td>
+            <td colspan="3" align="center"><:if Eq [article id] "-1":>There are no global files.<:or Eq:>No files are attached to this article<:eif Eq:></td>
           </tr>
           <:eif Files:> 
         </table>

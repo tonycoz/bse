@@ -696,7 +696,13 @@ sub tag_stepparent_possibles {
 }
 
 sub iter_files {
-  my ($article) = @_;
+  my ($self, $article) = @_;
+
+  return $self->get_files($article);
+}
+
+sub get_files {
+  my ($self, $article) = @_;
 
   return unless $article->{id} && $article->{id} > 0;
 
@@ -1145,7 +1151,7 @@ sub low_edit_tags {
      [ \&tag_stepparent_possibles, $cgi, $request, $article, $articles, 
        \@stepparent_targs, \@stepparentpossibles, ],
      DevHelp::Tags->make_iterator2
-     ([ \&iter_files, $article ], 'file', 'files', \@files, \$file_index ),
+     ([ iter_files => $self, $article ], 'file', 'files', \@files, \$file_index ),
      movefiles => 
      [ \&tag_movefiles, $self, $request, $article, \@files, \$file_index ],
      DevHelp::Tags->make_iterator2
@@ -2832,11 +2838,14 @@ sub fileadd {
   }
 
   defined $file{name} or $file{name} = '';
-  if (length $file{name} && $file{name} !~/^\w+$/) {
+  if ($article->{id} == -1 && $file{name} eq '') {
+    $errors{name} = 'Identifier is required for global files';
+  }
+  if (!$errors{name} && length $file{name} && $file{name} !~/^\w+$/) {
     $errors{name} = "Identifier must be a single word";
   }
   if (!$errors{name} && length $file{name}) {
-    my @files = $article->files;
+    my @files = $self->get_files($article);
     if (grep lc $_->{name} eq lc $file{name}, @files) {
       $errors{name} = "Duplicate file identifier $file{name}";
     }
@@ -2908,7 +2917,7 @@ sub fileswap {
   my $id2 = $cgi->param('file2');
 
   if ($id1 && $id2) {
-    my @files = $article->files;
+    my @files = $self->get_files($article);
     
     my ($file1) = grep $_->{id} == $id1, @files;
     my ($file2) = grep $_->{id} == $id2, @files;
@@ -2937,7 +2946,7 @@ sub filedel {
   my $cgi = $req->cgi;
   my $fileid = $cgi->param('file');
   if ($fileid) {
-    my @files = $article->files;
+    my @files = $self->get_files($article);
 
     my ($file) = grep $_->{id} == $fileid, @files;
 
@@ -2958,7 +2967,7 @@ sub filesave {
   $req->user_can('edit_files_save', $article)
     or return $self->edit_form($req, $article, $articles,
 			   "You don't have access to save file information for this article");
-  my @files = $article->files;
+  my @files = $self->get_files($article);
 
   my $download_path = $self->{cfg}->entryVar('paths', 'downloads');
 
@@ -2985,6 +2994,9 @@ sub filesave {
 	else {
 	  $errors{"name_$id"} = "Invalid file identifier $name";
 	}
+      }
+      elsif ($article->{id} == -1) {
+	$errors{"name_$id"} = "Identifier is required for global files";
       }
     }
     else {
@@ -3080,7 +3092,7 @@ sub req_edit_file {
 
   my $id = $cgi->param('file_id');
 
-  my ($file) = grep $_->{id} == $id, $article->files
+  my ($file) = grep $_->{id} == $id, $self->get_files($article)
     or return $self->edit_form($req, $article, $articles,
 			       "No such file");
   $req->user_can(edit_files_save => $article)
@@ -3106,7 +3118,7 @@ sub req_save_file {
 
   my $cgi = $req->cgi;
 
-  my @files = $article->files;
+  my @files = $self->get_files($article);
   
   my $id = $cgi->param('file_id');
 
@@ -3139,6 +3151,10 @@ sub req_save_file {
       else {
 	$errors{name} = "Invalid file identifier $name";
       }
+    }
+    if (!$errors{name} && $article->{id} == -1) {
+      length $name
+	or $errors{name} = "Identifier is required for global files";
     }
   }
 

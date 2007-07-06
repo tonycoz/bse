@@ -291,11 +291,8 @@ sub popimage {
   return $self->_fix_spanned($link_start, $link_end, $inside);
 }
 
-sub filelink {
-  my ($self, $fileid, $text, $type) = @_;
-
-  my ($file) = grep $_->{name} eq $fileid, @{$self->{files}}
-    or return "** unknown file $fileid **";
+sub _file {
+  my ($self, $file, $text, $type) = @_;
 
   my $title = defined $text ? $text : $file->{displayName};
   if ($file->{forSale}) {
@@ -314,6 +311,27 @@ sub filelink {
     return qq!<a href="! . escape_html($url) . qq!" title="$title_attrib"$class_text>! .
       escape_html($title) . "</a>";
   }
+}
+
+sub filelink {
+  my ($self, $fileid, $text, $type) = @_;
+
+  my ($file) = grep $_->{name} eq $fileid, @{$self->{files}}
+    or return "** unknown file $fileid **";
+
+  return $self->_file($file, $text, $type);
+}
+
+sub gfilelink {
+  my ($self, $fileid, $text, $type) = @_;
+
+  unless ($self->{gfiles}) {
+    $self->{gfiles} = [ Articles->global_files ];
+  }
+  my ($file) = grep $_->{name} eq $fileid, @{$self->{gfiles}}
+    or return "** unknown file $fileid **";
+
+  return $self->_file($file, $text, $type);
 }
 
 sub replace {
@@ -341,6 +359,10 @@ sub replace {
     and return 1;
   $$rpart =~ s#formlink\[(\w+)\]# $self->formlink($1, 'formlink', undef) #ige
     and return 1;
+  $$rpart =~ s#gfilelink\[\s*(\w+)\s*\|([^\]\[]+)\]# $self->gfilelink($1, $2, 'gfilelink') #ige
+      and return 1;
+  $$rpart =~ s#gfilelink\[\s*(\w+)\s*\]# $self->gfilelink($1, undef, 'gfilelink') #ige
+      and return 1;
   $$rpart =~ s#filelink\[\s*(\w+)\s*\|([^\]\[]+)\]# $self->filelink($1, $2, 'filelink') #ige
       and return 1;
   $$rpart =~ s#filelink\[\s*(\w+)\s*\]# $self->filelink($1, undef, 'filelink') #ige

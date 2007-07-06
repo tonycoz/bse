@@ -424,6 +424,26 @@ sub iter_gimages {
   }
 }
 
+sub iter_gfiles {
+  my ($self, $args) = @_;
+
+  unless ($self->{gfiles}) {
+    my @gfiles = Articles->global_files;
+    my %gfiles = map { $_->{name} => $_ } @gfiles;
+    $self->{gfiles} = \%gfiles;
+  }
+
+  my @gfiles = 
+    sort { $a->{name} cmp $b->{name} } values %{$self->{gfiles}};
+  if ($args =~ m!^named\s+/([^/]+)/$!) {
+    my $re = $1;
+    return grep $_->{name} =~ /$re/i, @gfiles;
+  }
+  else {
+    return @gfiles;
+  }
+}
+
 sub admin_tags {
   my ($self) = @_;
 
@@ -576,6 +596,17 @@ sub baseActs {
        $self->_format_image($im, $align, $rest);
      },
      $it->make_iterator( [ \&iter_gimages, $self ], 'gimagei', 'gimages'),
+     gfile => 
+     sub {
+       my ($name, $field) = split ' ', $_[0], 3;
+
+       my $file = $self->get_gfile($name)
+	 or return '';
+
+       $self->_format_file($file, $field);
+     },
+     $it->make_iterator( [ \&iter_gfiles, $self ], 'gfilei', 'gfiles'),
+     
     );
 }
 
@@ -746,6 +777,18 @@ sub get_gimage {
   return $self->{gimages}{$name};
 }
 
+sub get_gfile {
+  my ($self, $name) = @_;
+
+  unless ($self->{gfiles}) {
+    my @gfiles = Articles->global_files;
+    my %gfiles = map { $_->{name} => $_ } @gfiles;
+    $self->{gfiles} = \%gfiles;
+  }
+
+  return $self->{gfiles}{$name};
+}
+
 sub _format_image {
   my ($self, $im, $align, $rest) = @_;
 
@@ -765,6 +808,26 @@ sub _format_image {
     if ($im->{url}) {
       $html = qq!<a href="$im->{url}">$html</a>!;
     }
+    return $html;
+  }
+}
+
+sub _format_file {
+  my ($self, $file, $field) = @_;
+
+  defined $field or $field = '';
+
+  if ($field && exists $file->{$field}) {
+    return escape_html($file->{$field});
+  }
+  else {
+    my $url = "/cgi-bin/user.pl?download_file=1&file=$file->{id}";
+    my $eurl = escape_html($url);
+    if ($field eq 'url') {
+      return $url;
+    }
+    my $class = $file->{download} ? "file_download" : "file_inline";
+    my $html = qq!<a class="$class" href="$eurl">! . escape_html($file->{displayName}) . '</a>';
     return $html;
   }
 }

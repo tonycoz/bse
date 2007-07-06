@@ -26,7 +26,8 @@ sub edit_sections {
 
 my @site_actions =
   qw(edit artimg process addimg removeimg moveimgup moveimgdown a_thumb
-     a_edit_image a_save_image);
+     a_edit_image a_save_image filelist fileadd fileswap filedel 
+     filesave a_edit_file a_save_file);
 
 sub article_actions {
   my ($self) = @_;
@@ -44,6 +45,12 @@ sub get_images {
   require Images;
 
   Images->getBy(articleId => -1);
+}
+
+sub get_files {
+  my ($self, $article) = @_;
+
+  Articles->global_files;
 }
 
 sub validate_image_name {

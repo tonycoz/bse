@@ -82,5 +82,11 @@ sub all_visible_kids {
   return @kids{ sort { $order{$b} <=> $order{$a} } keys %kids };
 }
 
+sub global_files {
+  my ($self) = @_;
+
+  require ArticleFiles;
+  return ArticleFiles->getBy(articleId => -1);
+}
 
 1;
