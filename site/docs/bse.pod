@@ -57,6 +57,85 @@ allow the redirect page to work as a form
 
 fix handling of the user not being logged on for add.pl
 
+=item *
+
+more consistent terminology in error messages (adriann)
+
+=item *
+
+made the message tag available on the lostemailsent template (adriann)
+
+=item *
+
+test updates to handle the change in the way we do browser redirects
+
+=item *
+
+some article iterators now allow their results to be filtered:
+allkids_of, allkids_of2, allkids_of3, all dynamic article iterators.
+
+=item *
+
+split BSE::Request into a base and live version, and added a test
+derived class.
+
+=item *
+
+filelink[] markup now includes a class and title attribute (adriann)
+
+=item *
+
+the shop cart action now accepts an embed parameter to specify an
+alternate template, this can be used for ajax, though there's no
+template support provided in the base template set (adriann)
+
+=item *
+
+fixed some typos in error messages
+
+=item *
+
+add the [basic].cookie_domain configuration parameter
+
+=item *
+
+better speed for ajax implementations (not in the base template set),
+including a fast CGI version of the shop script.
+
+=item *
+
+updated the embedded copy of prototype.js
+
+=item *
+
+the search template was being generated as a static template, changed
+to generate as a dynamic template.
+
+=item *
+
+fast CGI version of the search script
+
+=item *
+
+the style parameter was being ignored for the gimage[] body text tag
+
+=item *
+
+use the faster scaling parameter in Imager for thumbnails, if
+available
+
+=item *
+
+allow uploading replacement files for article images and files
+
+=item *
+
+you can now specify sort orders for (un-embedded) reports
+
+=item *
+
+added support for global files (just like we have global images)
+
 =back
 
 =head2 0.15_55
