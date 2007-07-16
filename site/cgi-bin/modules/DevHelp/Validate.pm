@@ -22,6 +22,12 @@ my %built_ins =
     match => qr/\d(?:\D*\d){3}/,
     error => '$n is not a valid post code',
    },
+   # international post code
+   dh_int_postcode =>
+   {
+    match => qr/[\w-]{4}/,
+    error => '$n is not a valid post code',
+   },
    url =>
    {
     match => qr!^\w+://[\w-]+(?:\.[\w-]+)+(?::\d+)?!,
