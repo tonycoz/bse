@@ -206,6 +206,14 @@ CGI.pm for the -expires parameter.  Typically you want a plus ('+'), a
 number, and a time character (s - seconds, m - minutes, h - hours, d -
 days, M - months).  Default: +3h
 
+=item cookie_domain
+
+This overrides the domain value set for cookies.  This is useful if
+you allow the site to run under both example.com and www.example.com,
+if you set cookie_domain to example.com then a user visiting
+www.example.com will still have their cookies when they visit
+example.com.
+
 =item minpassword
 
 Minimum password length in characters.  Default: 4.
