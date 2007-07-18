@@ -1072,6 +1072,7 @@ sub _send_order {
     unless ($noencrypt) {
       $acts{cardNumber} = $cgi->param('cardNumber');
       $acts{cardExpiry} = $cgi->param('cardExpiry');
+      $acts{cardVerify} = $cgi->param('cardVerify');
     }
     my $ordertext = BSE::Template->get_page('mailorder', $cfg, \%acts);
     
