@@ -649,7 +649,7 @@ sub req_payment {
   if ($session->{order_work}) {
     $order = BSE::TB::Orders->getByPkey($session->{order_work});
   }
-  if ($order) {
+  if ($order && !$order->{complete}) {
     print STDERR "Recycling order $order->{id}\n";
 
     my @allbutid = @columns;
@@ -657,6 +657,10 @@ sub req_payment {
     @{$order}{@allbutid} = @data;
 
     $order->clear_items;
+    delete $session->{order_work};
+    eval {
+      tied(%$session)->save;
+    };
   }
   else {
     $order = BSE::TB::Orders->add(@data)
