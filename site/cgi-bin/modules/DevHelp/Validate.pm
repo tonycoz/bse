@@ -25,7 +25,7 @@ my %built_ins =
    # international post code
    dh_int_postcode =>
    {
-    match => qr/[\w-]{4}/,
+    match => qr/[\w-](?:[^\w-]*[\w-]){3}/,
     error => '$n is not a valid post code',
    },
    url =>
