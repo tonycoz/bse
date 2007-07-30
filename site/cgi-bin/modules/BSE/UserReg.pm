@@ -432,7 +432,7 @@ sub req_show_opts {
     and ++$partial_logon;
 
   if ($partial_logon) {
-    $cfg->param('t' => undef);
+    $cgi->param('t' => undef);
   }
 
   unless ($user) {
