@@ -199,6 +199,8 @@ sub new {
       $rules = ref $rules ? [ @$rules ] : [ split /;/, $rules ];
 
       push @$rules, split /;/, $dest->{rules};
+
+      $dest->{rules} = $rules;
     }
     elsif ($src->{rules}) {
       $dest->{rules} = $src->{rules};
