@@ -130,7 +130,7 @@ sub req_logon {
 		      fields => \%fields,
 		      rules => \%rules,
 		      section => 'site user validation');
-  _validate_affiliate_name($cfg, $user->{affiliate_name}, \%errors, $msgs);
+  _validate_affiliate_name($cfg, $user->{affiliate_name}, \%errors, $msgs, $user);
   if (keys %errors) {
     delete $session->{userid};
     $session->{partial_logon} = $user->{userId};
