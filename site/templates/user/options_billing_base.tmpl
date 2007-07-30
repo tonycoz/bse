@@ -1,6 +1,7 @@
 <:wrap base.tmpl:>
 <div align=center class="useroptions"> 
 <:if Cfg "site users" nopassword:><:or Cfg:>
+<:if Partial_logon:><:or Partial_logon:>
   <table border="0" cellspacing="0" cellpadding="0">
     <tr> 
       <td> 
@@ -17,12 +18,15 @@
     </tr>
   </table>
   <br />
+<:eif Partial_logon:>
 <:eif Cfg:>
   <table width="250">
     <tr> 
       <th colspan="2" height="20" class="thead"> 
         <p>User Options - Billing</p>
       </th>
+    </tr>
+<:if Partial_logon:><:or Partial_logon:>
     <tr> 
       <td colspan="2" align="center"> 
         <p><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Hello <:ifUser name1:><:user name1:> <:user name2:><:or:><:user 
@@ -33,6 +37,7 @@
         </p>
         </td>
     </tr>
+<:eif Partial_logon:>
     <:if Message:> 
     <tr> 
       <td colspan="2" align="center"> 
