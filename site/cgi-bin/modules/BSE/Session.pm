@@ -84,6 +84,7 @@ sub make_cookie {
   my ($self, $cfg, $name, $value, $lifetime) = @_;
 
   $lifetime ||= $cfg->entry('basic', 'cookie_lifetime') || '+3h';
+  $name = $cfg->entry('cookie names', $name, $name);
   my %opts =
     (
      -name => $name,
