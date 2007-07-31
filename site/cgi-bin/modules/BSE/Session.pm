@@ -8,7 +8,8 @@ require $SESSION_REQUIRE;
 
 sub tie_it {
   my ($self, $session, $cfg) = @_;
-  
+
+  my $cookie_name = $cfg->entry('basic', 'cookie_name', 'sessionid');
   my $lifetime = $cfg->entry('basic', 'cookie_lifetime') || '+3h';
   my $debug = $cfg->entry('debug', 'cookies');
   my %cookies = fetch CGI::Cookie;
@@ -17,7 +18,7 @@ sub tie_it {
     print STDERR "Received cookies: ", Data::Dumper::Dumper(\%cookies);
   }
   my $sessionid;
-  $sessionid = $cookies{sessionid}->value if exists $cookies{sessionid};
+  $sessionid = $cookies{$cookie_name}->value if exists $cookies{$cookie_name};
 
   my $dh = BSE::DB->single;
   eval {
@@ -39,7 +40,7 @@ sub tie_it {
   }
   unless ($sessionid) {
   # save the new sessionid
-    my $cookie = $self->make_cookie($cfg, sessionid => $session->{_session_id});
+    my $cookie = $self->make_cookie($cfg, $cookie_name => $session->{_session_id});
 # from trying to debug Opera cookie issues
 #     my ($value, @rest) = split ';', $cookie;
 #     my @out = $value;
@@ -67,7 +68,8 @@ sub tie_it {
 sub change_cookie {
   my ($self, $session, $cfg, $sessionid, $newsession) = @_;
 
-  BSE::Session->send_cookie($self->make_cookie($cfg, 'sessionid', $sessionid));
+  my $cookie_name = $cfg->entry('basic', 'cookie_name', 'sessionid');
+  BSE::Session->send_cookie($self->make_cookie($cfg, $cookie_name, $sessionid));
   my $dh = BSE::DB->single;
   eval {
     tie %$newsession, $SESSION_CLASS, $sessionid,

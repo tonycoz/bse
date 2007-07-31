@@ -214,6 +214,13 @@ if you set cookie_domain to example.com then a user visiting
 www.example.com will still have their cookies when they visit
 example.com.
 
+=item cookie_name
+
+This overrides the cookie name used to store the session id.  Default:
+sessionid.  This is useful when you have 2 sites under the same
+top-level domain, and helps disambiguate the cookie returned by the
+browser.
+
 =item minpassword
 
 Minimum password length in characters.  Default: 4.
