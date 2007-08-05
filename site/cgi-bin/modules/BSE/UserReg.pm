@@ -300,11 +300,11 @@ sub req_show_register {
   my $nopassword = $cfg->entryBool('site users', 'nopassword', 0);
   unless ($user_register) {
     if ($nopassword) {
-      return $self->show_lost_password($req,
+      return $self->req_show_lost_password($req,
 				       "Registration disabled");
     }
     else {
-      return $self->show_logon($req,
+      return $self->req_show_logon($req,
 			       "Registration disabled");
     }
   }
@@ -1299,7 +1299,7 @@ sub req_show_lost_password {
   BSE::Template->show_page('user/lostpassword', $cfg, \%acts);
 }
 
-sub lost_password {
+sub req_lost_password {
   my ($self, $req, $message) = @_;
 
   my $cfg = $req->cfg;
