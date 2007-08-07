@@ -117,7 +117,7 @@ sub get_refresh {
      content => '',
      headers => [ 
 		 "Location: $url",
-		 "Status: 302"
+		 "Status: 303"
 		],
     };
 

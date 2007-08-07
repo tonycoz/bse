@@ -11,7 +11,7 @@ sub refresh_to {
 
   #print "Content-Type: text/html\n";
   #print qq!Refresh: 0; url=$where\n\n<html></html>\n!;
-  print "Status: 302\n";
+  print "Status: 303\n";
   print "Location: $where\n\n";
 }
 
