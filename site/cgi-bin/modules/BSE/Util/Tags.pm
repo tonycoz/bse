@@ -37,11 +37,15 @@ sub _get_parms {
 }
 
 sub iter_cfgsection {
-  my ($cfg, $args) = @_;
+  my ($cfg, $args, $acts, $tag_name, $templater) = @_;
 
-  $args =~ s/^\s*\"([^\"]+)\"\s*//
+  my $sort_filter = '';
+  if ($args =~ s/((?:sort|filter)=.*)//s) {
+    $sort_filter = $1;
+  }
+
+  my ($section) = DevHelp::Tags->get_parms($args, $acts, $templater)
     or return;
-  my $section = $1;
 
   my %entries = $cfg->entries($section);
   my @entries = map +{ key => $_, value => $entries{$_} }, keys %entries;
@@ -58,7 +62,7 @@ sub iter_cfgsection {
 
   require BSE::Sort;
 
-  return BSE::Sort::bse_sort(\%types, $args, @entries);
+  return BSE::Sort::bse_sort(\%types, $sort_filter, @entries);
 }
 
 sub tag_adminbase {
