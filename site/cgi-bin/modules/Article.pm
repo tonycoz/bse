@@ -15,7 +15,7 @@ sub columns {
     customInt1 customInt2 customInt3 customInt4 
     lastModifiedBy created createdBy author pageTitle
     force_dynamic cached_dynamic inherit_siteuser_rights
-    metaDescription metaKeywords summary menu/;
+    metaDescription metaKeywords summary menu titleAlias/;
 }
 
 sub numeric {

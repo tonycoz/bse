@@ -1529,6 +1529,28 @@ For example:
 
 =back
 
+=head2 [title alias]
+
+Enable the "titleAlias" article field and set which level it will be available.
+
+=over
+
+=item levelI<level>
+
+Where I<level> is the article "level" for which the "titleAlias" field should be enabled.  To enable
+set the value to non-zero.
+
+For example:
+
+  [title alias]
+  level1=1
+
+The "titleAlias" can be used as an alternate "short" title for the given article, especially useful
+for space critical iterated menus.  A template conditional can be used to display the "titleAlias" 
+in place of the article "title" when appropriate.
+
+=back
+
 =head1 AUTHOR
 
 Tony Cook <tony@develop-help.com>

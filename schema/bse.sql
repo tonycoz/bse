@@ -94,6 +94,8 @@ CREATE TABLE article (
   -- filter menu value in allkids_of iterators
   menu smallint(5) not null default 0,
   
+  titleAlias varchar(60) not null default '',
+  
   PRIMARY KEY (id),
 
   -- if we keep id in the indexes MySQL will sometimes be able to

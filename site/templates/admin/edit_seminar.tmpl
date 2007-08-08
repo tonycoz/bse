@@ -73,6 +73,13 @@
             <td bgcolor="#FFFFFF"><:ifFieldPerm title:><input type="text" name="title" value="<:old title default title:>" size="60" /><:or:><:seminar title:><:eif:> </td>
             <td nowrap="nowrap" bgcolor="#FFFFFF"><:help product title:> <:error_img title:></td>
           </tr>
+          <:if Cfg "title alias" [concatenate level [article level]]:><tr>
+            <th nowrap="nowrap" bgcolor="#FFFFFF" align="left">Alias:</th>
+            <td bgcolor="#FFFFFF" width="100%">
+              <:if FieldPerm titleAlias:><input type="text" name="titleAlias" maxlength="<:cfg fields alias_size 60:>" size="60" value="<:old titleAlias article titleAlias:>" /><:or FieldPerm:><:article titleAlias:><:eif FieldPerm:>
+            </td>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help edit titleAlias:> <:error_img titleAlias:></td>
+          </tr><:or Cfg:><:eif Cfg:>
           <tr> 
             <th nowrap="nowrap" align="left" bgcolor="#FFFFFF">Summary:</th>
             <td nowrap="nowrap" bgcolor="#FFFFFF"><:ifFieldPerm summary:><input type="text" name="summary" value="<:old summary default summary:>" size="60" /><:or:><:seminar summary:><:eif:> </td>

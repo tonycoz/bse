@@ -84,6 +84,13 @@
             </td>
             <td nowrap="nowrap" bgcolor="#FFFFFF"><:help catalog title:> <:error_img title:></td>
           </tr>
+          <:if Cfg "title alias" [concatenate level [article level]]:><tr>
+            <th nowrap="nowrap" bgcolor="#FFFFFF" align="left">Alias:</th>
+            <td bgcolor="#FFFFFF" width="100%">
+              <:if FieldPerm titleAlias:><input type="text" name="titleAlias" maxlength="<:cfg fields alias_size 60:>" size="60" value="<:old titleAlias article titleAlias:>" /><:or FieldPerm:><:article titleAlias:><:eif FieldPerm:>
+            </td>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help edit titleAlias:> <:error_img titleAlias:></td>
+          </tr><:or Cfg:><:eif Cfg:>
           <tr> 
             <th valign="top" bgcolor="#FFFFFF" nowrap="nowrap" align="left"> Body:</th>
             <td bgcolor="#FFFFFF" width="100%"> 
