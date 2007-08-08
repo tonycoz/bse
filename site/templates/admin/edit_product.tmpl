@@ -108,10 +108,10 @@
           <:if Cfgsection [concatenate level [article level] " menus"]:><tr> 
             <th nowrap="nowrap" bgcolor="#FFFFFF" align="left">Menu:</th>
             <td bgcolor="#FFFFFF" width="100%"> 
-              <select name="menu" id="menu">
+              <:if FieldPerm menu:><select name="menu" id="menu">
                 <:iterator begin cfgsection [concatenate level [article level] " menus"] sort=key:><option value="<:cfgentry key:>"<:if Eq [old menu] [cfgentry key]:> selected="selected"<:or Eq:><:eif Eq:>><:cfgentry value:></option><:iterator separator cfgsection:>
                 <:iterator end cfgsection:>
-              </select>
+              </select><:or FieldPerm:><:article menu:><:eif FieldPerm:>
             </td>
             <td nowrap="nowrap" bgcolor="#FFFFFF"><:help article menu:> <:error_img menu:></td>
           </tr><:or Cfgsection:><:eif Cfgsection:>
