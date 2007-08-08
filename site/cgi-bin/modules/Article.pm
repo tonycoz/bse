@@ -15,12 +15,12 @@ sub columns {
     customInt1 customInt2 customInt3 customInt4 
     lastModifiedBy created createdBy author pageTitle
     force_dynamic cached_dynamic inherit_siteuser_rights
-    metaDescription metaKeywords summary/;
+    metaDescription metaKeywords summary menu/;
 }
 
 sub numeric {
   qw(id listed parentid threshold summaryLength level 
-     customInt1 customInt2 customInt3 customInt4);
+     customInt1 customInt2 customInt3 customInt4 menu);
 }
 
 sub step_parents {

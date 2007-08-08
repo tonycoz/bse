@@ -90,6 +90,10 @@ CREATE TABLE article (
   -- x just so we don't get a name issue with product
   summaryx text default '' not null,
 
+  -- added by adrian
+  -- filter menu value in allkids_of iterators
+  menu smallint(5) not null default 0,
+  
   PRIMARY KEY (id),
 
   -- if we keep id in the indexes MySQL will sometimes be able to

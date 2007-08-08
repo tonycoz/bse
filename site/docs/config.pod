@@ -1507,6 +1507,28 @@ If this is non-zero then siteuser_saveopts is called.
 
 =back
 
+=head2 [levelI<level> menus]
+
+Where I<level> is the article level at which the defined menu options will be available.
+Configure each menu value and description as I<key> and I<value>.
+
+=over
+
+For example:
+
+  [level1 menus]
+  0=Default
+  1=Sidebar
+  2=Footer
+
+To create a menus using such values, use the "allkids_of" iterator "filter" option.
+
+For example:
+
+  <:iterator begin allkids_of -1 filter: [menu] == 2 :>
+
+=back
+
 =head1 AUTHOR
 
 Tony Cook <tony@develop-help.com>

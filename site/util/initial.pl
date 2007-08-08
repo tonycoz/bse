@@ -55,6 +55,7 @@ my @prebuilt =
     metaDescription=>'',
     metaKeywords=>'',
     summary => '',
+    menu => 0,
    },
    {
     # the invisible subsection for what's hot
@@ -92,6 +93,7 @@ my @prebuilt =
     metaDescription=>'',
     metaKeywords=>'',
     summary => '',
+    menu => 0,
    },
    {
     id=>3,
@@ -128,6 +130,7 @@ my @prebuilt =
     metaDescription=>'',
     metaKeywords=>'',
     summary => '',
+    menu => 0,
    },
    {
     id=>4,
@@ -164,6 +167,7 @@ my @prebuilt =
     metaDescription=>'',
     metaKeywords=>'',
     summary => '',
+    menu => 0,
    },
    {
     id=>5,
@@ -200,6 +204,7 @@ my @prebuilt =
     metaDescription=>'',
     metaKeywords=>'',
     summary => '',
+    menu => 0,
    },
    {
     id=>6,
@@ -466,6 +471,7 @@ EOS
     metaDescription=>'',
     metaKeywords=>'',
     summary => '',
+    menu => 0,
    },
    {
     id=>7,
@@ -506,6 +512,7 @@ EOS
     metaDescription=>'',
     metaKeywords=>'',
     summary => '',
+    menu => 0,
    },
    {
     id=>8,
@@ -546,6 +553,7 @@ EOS
     metaDescription=>'',
     metaKeywords=>'',
     summary => '',
+    menu => 0,
    },
   );
 
