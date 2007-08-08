@@ -5,7 +5,7 @@ use strict;
 my $db = 'bsebuilder';
 my $un = 'bsebuilder';
 my $pw = 'bsebuilder';
-my $dist = "/home/tony/dev/bse/base/bse/schema/bse.sql";
+my $dist = "schema/bse.sql";
 
 my $dbh = DBI->connect("dbi:mysql:$db", $un, $pw)
   or die "Cannot connect to db: ",DBI->errstr;
