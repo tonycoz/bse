@@ -704,7 +704,7 @@ sub tag_if_user_can {
 	  }
 	  else {
 	    print STDERR "Unknown article name $artname\n";
-	    return;
+	    die "ENOIMPL: Unknown article name\n";
 	  }
 	}
       }

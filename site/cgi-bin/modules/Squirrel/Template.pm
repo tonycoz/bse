@@ -4,7 +4,7 @@ use strict;
 use Carp qw/cluck confess/;
 use constant DEBUG => 0;
 
-$VERSION="0.08";
+$VERSION="0.09";
 
 sub new {
   my ($class, %opts) = @_;
@@ -125,10 +125,10 @@ sub perform {
 sub iterator {
   my ($self, $name, $args, $input, $sep, $acts, $orig) = @_;
 
-  print STDERR "iterator $name $args\n" if DEBUG;
-
   $args = '' unless defined $args;
   $sep = '' unless defined $sep;
+
+  print STDERR "iterator $name $args\n" if DEBUG;
 
   if (my $entry = $acts->{"iterate_$name"}) {
     $args =~ s/^\s+|\s+$//g;
@@ -244,6 +244,7 @@ sub cond {
   if ($@) {
     my $msg = $@;
     if ($msg =~ /^ENOIMPL\b/) {
+      print STDERR "Cond ENOIMPL\n" if DEBUG;
       $true = $self->replace_template($true, $acts) if length $true;
       $false = $self->replace_template($false, $acts) if length $false;
       length $args and $args = " " . $args;
@@ -293,6 +294,11 @@ sub include {
     or return "** cannot open $filename : $! **";
   my $data = do { local $/; <INCLUDE> };
   close INCLUDE;
+  print STDERR "Included $filename >>$data<<\n"
+      if DEBUG;
+
+  $data = "<!-- included $filename -->$data<!-- endinclude $filename -->"
+      if DEBUG;
 
   return $data;
 }
@@ -440,6 +446,9 @@ sub replace_template {
 	       && ++$loops < 10;
   }
 
+  print STDERR "Template text post include:\n---$template---\n"
+    if DEBUG;
+
   # the basic iterator
   if ($iter && 
       (my ($before, $row, $after) =
@@ -506,7 +515,9 @@ sub replace_template {
 sub show_page {
   my ($self, $base, $page, $acts, $iter, $alt) = @_;
 
-  print STDERR "** show_page\n" if DEBUG;
+  print STDERR ">> show_page\n" if DEBUG;
+  print STDERR "  page $page\n" if DEBUG && $page;
+  print STDERR "  base $base\n" if DEBUG && $base;
 
   $acts ||= {};
 
@@ -527,7 +538,10 @@ sub show_page {
   my $template = do { local $/; <TMPLT> };
   close TMPLT;
 
-  return $self->replace_template($template, $acts, $iter);
+  my $result = $self->replace_template($template, $acts, $iter);
+  print STDERR "<< show_page\n" if DEBUG;
+
+  return $result;
 }
 
 1;

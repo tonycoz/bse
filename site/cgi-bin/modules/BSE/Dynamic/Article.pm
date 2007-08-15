@@ -18,7 +18,13 @@ sub new {
 sub generate {
   my ($self, $article, $template) = @_;
 
-  my %acts = $self->tags($article);
+  my %acts;
+  if ($self->{admin}) {
+    %acts = ( $self->tags($article), BSE::Util::Tags->secure($self->{req}) );
+  }
+  else {
+    %acts = $self->tags($article);
+  }
 
   my $result =
     {
