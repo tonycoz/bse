@@ -3,6 +3,7 @@ use strict;
 use vars qw(@ISA);
 use Generate::Article;
 @ISA = qw(Generate::Article);
+use DevHelp::HTML;
 
 sub set_user {
   my ($self, $user) = @_;
@@ -18,12 +19,24 @@ sub set_sub {
   $self->{sub} = $sub;
 }
 
+sub tag_ifUser {
+  my ($user, $args) = @_;
+
+  $user or return '';
+  $args or return 1;
+
+  my $value = $user->{$args};
+  defined $value or return '';
+
+  return escape_html($value);
+}
+
 sub baseActs {
   my ($self, $articles, $acts, $article, $embedded) = @_;
   return 
     (
      $self->SUPER::baseActs($articles, $acts, $article, $embedded),
-     ifUser => sub { $self->{user} },
+     ifUser => [ \&tag_ifUser, $self->{user} ],
      user =>
      sub {
        $self->{user} or return '';

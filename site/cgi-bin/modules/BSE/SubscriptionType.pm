@@ -227,7 +227,13 @@ sub _text_format_low {
     (
      BSE::Util::Tags->static(\%acts, $cfg),
      article=>sub { $article->{$_[0]} },
-     ifUser => sub { $user },
+     ifUser => 
+     sub { 
+       my ($args) = @_;
+       $user or return '';
+       defined $user->{$args} or return '';
+       $user->{$args};
+     },
      user =>
      sub {
        $user or return '';
