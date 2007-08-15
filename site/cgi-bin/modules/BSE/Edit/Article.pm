@@ -10,6 +10,7 @@ use BSE::Arrows;
 use BSE::CfgInfo qw(custom_class admin_base_url cfg_image_dir);
 use BSE::Util::Iterate;
 use BSE::Template;
+use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
 sub not_logged_on {
   my ($self, $req) = @_;
@@ -2784,6 +2785,26 @@ sub filelist {
   return BSE::Template->get_response($template, $req->cfg, \%acts);
 }
 
+my %file_fields =
+  (
+   file => 
+   {
+    maxlength => MAX_FILE_DISPLAYNAME_LENGTH,
+    description => 'Filename'
+   },
+   description =>
+   {
+    rules => 'dh_one_line',
+    maxlength => 255,
+    description => 'Description',
+   },
+   name =>
+   {
+    description => 'Identifier',
+    maxlength => 80,
+   },
+  );
+
 sub fileadd {
   my ($self, $req, $article, $articles) = @_;
 
@@ -2804,6 +2825,10 @@ sub fileadd {
 
   my %errors;
   
+  $req->validate(errors => \%errors,
+		 fields => \%file_fields,
+		 section => $article->{id} == -1 ? 'Global File Validation' : 'Article File Validation');
+
   $file{forSale}	= 0 + exists $file{forSale};
   $file{articleId}	= $article->{id};
   $file{download}	= 0 + exists $file{download};
@@ -2861,14 +2886,22 @@ sub fileadd {
   $workfile =~ /([ \w.-]+)$/ and $basename = $1;
   $basename =~ tr/ /_/;
 
-  my $filename = time. '_'. $basename;
+  # if the user supplies a really long filename, it can overflow the 
+  # filename field
+
+  my $work_filename = $basename;
+  if (length $work_filename > 60) {
+    $work_filename = substr($work_filename, -60);
+  }
+
+  my $filename = time. '_'. $work_filename;
 
   # for the sysopen() constants
   use Fcntl;
 
   # loop until we have a unique filename
   my $counter="";
-  $filename = time. '_' . $counter . '_' . $basename 
+  $filename = time. '_' . $counter . '_' . $work_filename 
     until sysopen( OUTPUT, "$downloadPath/$filename", 
 		   O_WRONLY| O_CREAT| O_EXCL)
       || ++$counter > 100;
@@ -3013,43 +3046,48 @@ sub filesave {
     my $filex = $cgi->param("file_$id");
     my $in_fh = $cgi->upload("file_$id");
     if (defined $filex && length $filex) {
-      if ($in_fh) {
-	if (-s $in_fh) {
-	  require DevHelp::FileUpload;
-	  my $msg;
-	  my ($file_name, $out_fh) = DevHelp::FileUpload->make_img_filename
-	    ($download_path, $filex . '', \$msg);
-	  if ($file_name) {
-	    {
-	      local $/ = \8192;
-	      my $data;
-	      while ($data = <$in_fh>) {
-		print $out_fh $data;
+      if (length $filex <= MAX_FILE_DISPLAYNAME_LENGTH) {
+	if ($in_fh) {
+	  if (-s $in_fh) {
+	    require DevHelp::FileUpload;
+	    my $msg;
+	    my ($file_name, $out_fh) = DevHelp::FileUpload->make_img_filename
+	      ($download_path, $filex . '', \$msg);
+	    if ($file_name) {
+	      {
+		local $/ = \8192;
+		my $data;
+		while ($data = <$in_fh>) {
+		  print $out_fh $data;
+		}
+		close $out_fh;
 	      }
-	      close $out_fh;
+	      my $display_name = $filex;
+	      $display_name =~ s!.*[\\:/]!!;
+	      $display_name =~ s/[^\w._-]+/_/g;
+	      my $full_name = "$download_path/$file_name";
+	      push @old_files, $file->{filename};
+	      push @new_files, $file_name;
+	      
+	      $file->{filename} = $file_name;
+	      $file->{sizeInBytes} = -s $full_name;
+	      $file->{whenUploaded} = now_datetime();
+	      $file->{displayName} = $display_name;
 	    }
-	    my $display_name = $filex;
-	    $display_name =~ s!.*[\\:/]!!;
-	    $display_name =~ s/[^\w._-]+/_/g;
-	    my $full_name = "$download_path/$file_name";
-	    push @old_files, $file->{filename};
-	    push @new_files, $file_name;
-
-	    $file->{filename} = $file_name;
-	    $file->{sizeInBytes} = -s $full_name;
-	    $file->{whenUploaded} = now_datetime();
-	    $file->{displayName} = $display_name;
+	    else {
+	      $errors{"file_$id"} = $msg;
+	    }
 	  }
 	  else {
-	    $errors{"file_$id"} = $msg;
+	    $errors{"file_$id"} = "File is empty";
 	  }
 	}
 	else {
-	  $errors{"file_$id"} = "File is empty";
+	  $errors{"file_$id"} = "No file data received";
 	}
       }
       else {
-	$errors{"file_$id"} = "No file data received";
+	$errors{"file_$id"} = "Filename too long";
       }
     }
   }
@@ -3133,6 +3171,11 @@ sub req_save_file {
   my $download_path = $self->{cfg}->entryVar('paths', 'downloads');
 
   my %errors;
+
+  $req->validate(errors => \%errors,
+		 fields => \%file_fields,
+		 section => $article->{id} == -1 ? 'Global File Validation' : 'Article File Validation');
+
   my $desc = $cgi->param("description");
   defined $desc and $file->{description} = $desc;
   my $type = $cgi->param("contentType");

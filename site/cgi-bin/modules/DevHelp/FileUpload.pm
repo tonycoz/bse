@@ -59,6 +59,10 @@ sub make_img_filename {
   my $basename = '';
   $name =~ /([\w.-]+)$/ and $basename = $1;
 
+  if (length $basename > 60) {
+    $basename = substr($basename, -60);
+  }
+
   my $filename = time . '_' . $basename;
 
   my $fh;

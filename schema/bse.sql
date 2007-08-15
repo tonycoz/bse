@@ -377,7 +377,7 @@ create table article_files (
   articleId integer not null,
 
   -- the name of the file as displayed
-  displayName varchar(80) not null default '',
+  displayName varchar(255) not null default '',
 
   -- the filename as stored in the repository
   filename varchar(80) not null default '',

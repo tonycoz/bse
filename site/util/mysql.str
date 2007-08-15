@@ -70,6 +70,8 @@ Column inherit_siteuser_rights;int(11);NO;1;
 Column metaDescription;varchar(255);NO;;
 Column metaKeywords;varchar(255);NO;;
 Column summaryx;text;NO;;
+Column menu;smallint(5);NO;0;
+Column titleAlias;varchar(60);NO;;
 Index PRIMARY;1;[id]
 Index article_date_index;0;[release;expire;id]
 Index article_displayOrder_index;0;[displayOrder]
@@ -78,7 +80,7 @@ Index article_parentId_index;0;[parentid]
 Table article_files
 Column id;int(11);NO;NULL;auto_increment
 Column articleId;int(11);NO;;
-Column displayName;varchar(80);NO;;
+Column displayName;varchar(255);NO;;
 Column filename;varchar(80);NO;;
 Column sizeInBytes;int(11);NO;;
 Column description;varchar(255);NO;;
