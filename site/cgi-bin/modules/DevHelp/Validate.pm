@@ -184,7 +184,7 @@ sub new {
     my $dest = $cfg_fields->{$field} || {};
 
     # the config overrides the software supplied fields
-    for my $override (qw(description required required_error)) {
+    for my $override (qw(description required required_error maxlength range_error mindatemsg maxdatemsg)) {
       if (defined $src->{$override} && !defined $dest->{$override}) {
 	$dest->{$override} = $src->{$override};
       }
