@@ -45,10 +45,26 @@ sub new {
   $self;
 }
 
+sub image_url {
+  my ($self, $im) = @_;
+
+  my $url = "/images/$im->{image}";
+  if ($self->{abs_urls}) {
+    # yes, this is an ugly hack
+    my $which = $self->{gen}{top} && $self->{gen}{top}{link} =~ /^\w+:/
+      ? 'secureurl' : 'url';
+    $url = $self->{gen}{cfg}->entryVar('site', $which) . $url;
+  }
+
+  return $url;
+}
+
 sub _image {
   my ($self, $im, $align, $url, $style) = @_;
 
-  my $text = qq!<img src="/images/$im->{image}" width="$im->{width}"!
+  my $image_url = $self->image_url($im);
+
+  my $text = qq!<img src="$image_url" width="$im->{width}"!
     . qq! height="$im->{height}" alt="! . escape_html($im->{alt}).'"'
       . qq! border="0"!;
   $text .= qq! align="$align"! if $align && $align ne 'center';
