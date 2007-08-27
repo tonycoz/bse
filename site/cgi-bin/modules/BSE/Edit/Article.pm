@@ -2210,7 +2210,7 @@ sub save_image_changes {
 
     my $name = $cgi->param("name$id");
     if (defined $name && $name ne $image->{name}) {
-      if ($name eq '') {
+      if ($name eq '' && $article->{id} > 0) {
 	$changes{$id}{name} = '';
       }
       elsif ($name =~ /^[a-z_]\w*$/i) {
