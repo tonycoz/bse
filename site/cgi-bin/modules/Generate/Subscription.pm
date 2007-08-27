@@ -55,5 +55,11 @@ sub formatter_class {
   return 'BSE::Formatter::Subscription'
 }
 
+sub image_url {
+  my ($self, $im) = @_;
+
+  $self->{cfg}->entryVar('site', 'url') . $self->SUPER::image_url($im);
+}
+
 1;
 

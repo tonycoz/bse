@@ -283,7 +283,8 @@ sub format_body {
       my $pos = $self->adjust_for_html($body, $incr);
       
       # assuming 5.005_03 would make this simpler, but <sigh>
-      my $img = qq!<img src="/images/$image->{image}"!
+      my $image_url = $self->image_url($image);
+      my $img = qq!<img src="$image_url"!
 	.qq! width="$image->{width}" height="$image->{height}" border="0"!
 	  .qq! alt="$image->{alt}" align="$align" hspace="10" vspace="10" />!;
       if ($image->{url}) {
@@ -789,6 +790,12 @@ sub get_gfile {
   return $self->{gfiles}{$name};
 }
 
+sub image_url {
+  my ($self, $im) = @_;
+
+  "/images/$im->{image}";
+}
+
 sub _format_image {
   my ($self, $im, $align, $rest) = @_;
 
@@ -796,7 +803,8 @@ sub _format_image {
     return escape_html($im->{$align});
   }
   else {
-    my $html = qq!<img src="/images/$im->{image}" width="$im->{width}"!
+    my $image_url = $self->image_url($im);
+    my $html = qq!<img src="$image_url" width="$im->{width}"!
       . qq! height="$im->{height}" alt="! . escape_html($im->{alt})
 	     . qq!"!;
     $html .= qq! align="$align"! if $align && $align ne '-';

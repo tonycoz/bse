@@ -48,15 +48,7 @@ sub new {
 sub image_url {
   my ($self, $im) = @_;
 
-  my $url = "/images/$im->{image}";
-  if ($self->{abs_urls}) {
-    # yes, this is an ugly hack
-    my $which = $self->{gen}{top} && $self->{gen}{top}{link} =~ /^\w+:/
-      ? 'secureurl' : 'url';
-    $url = $self->{gen}{cfg}->entryVar('site', $which) . $url;
-  }
-
-  return $url;
+  "/images/$im->{image}"
 }
 
 sub _image {
