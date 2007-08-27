@@ -2210,8 +2210,13 @@ sub save_image_changes {
 
     my $name = $cgi->param("name$id");
     if (defined $name && $name ne $image->{name}) {
-      if ($name eq '' && $article->{id} > 0) {
-	$changes{$id}{name} = '';
+      if ($name eq '') {
+	if ($article->{id} > 0) {
+	  $changes{$id}{name} = '';
+	}
+	else {
+	  $errors{"name$id"} = "Identifiers are required for global images";
+	}
       }
       elsif ($name =~ /^[a-z_]\w*$/i) {
 	my $msg;
@@ -2626,7 +2631,12 @@ sub req_save_image {
       }
     }
     else {
-      $image->{name} = '';
+      if ($article->{id} == -1) {
+	$errors{name} = "Identifiers are required for global images";
+      }
+      else {
+	$image->{name} = '';
+      }
     }
   }
   my $filename = $cgi->param('image');
