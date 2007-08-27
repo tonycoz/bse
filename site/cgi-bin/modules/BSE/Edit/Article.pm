@@ -2210,7 +2210,10 @@ sub save_image_changes {
 
     my $name = $cgi->param("name$id");
     if (defined $name && $name ne $image->{name}) {
-      if ($name =~ /^[a-z_]\w*$/i) {
+      if ($name eq '') {
+	$changes{$id}{name} = '';
+      }
+      elsif ($name =~ /^[a-z_]\w*$/i) {
 	my $msg;
 	if ($self->validate_image_name($name, \$msg)) {
 	  # check for duplicates after the loop
@@ -2621,6 +2624,9 @@ sub req_save_image {
       else {
 	$image->{name} = $name;
       }
+    }
+    else {
+      $image->{name} = '';
     }
   }
   my $filename = $cgi->param('image');
