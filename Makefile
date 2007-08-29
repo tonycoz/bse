@@ -90,6 +90,9 @@ site/cgi-bin/modules/BSE/Version.pm: Makefile
 	echo  >>site/cgi-bin/modules/BSE/Version.pm
 	echo '1;' >>site/cgi-bin/modules/BSE/Version.pm
 
+svnversion:
+	perl site/util/bse_mksvnversion.pl $(VERSION) site/cgi-bin/modules/BSE/Version.pm
+
 # this is very rough
 testinst: distdir
 	perl localinst.perl $(DISTBUILD)
