@@ -225,7 +225,7 @@ sub baseActs {
   my @work_crumbs; # set by the crumbs iterator
 
   my $parent = $articles->getByPkey($article->{parentid});
-  my $section = $crumbs[0];
+  my $section = @crumbs ? $crumbs[0] : $article;
 
   my @images = Images->getBy('articleId', $article->{id});
   my @unnamed_images = grep $_->{name} eq '', @images;
