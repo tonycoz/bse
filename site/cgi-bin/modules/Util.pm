@@ -93,7 +93,7 @@ sub generate_search {
   use Constants qw($SEARCH_TITLE $SEARCH_TITLE_IMAGE $CGI_URI);
   my %article = map { $_, '' } Article->columns;
   @article{qw(id parentid title titleImage displayOrder link level listed force_dynamic)} =
-    (-1, -1, $SEARCH_TITLE, $SEARCH_TITLE_IMAGE, 0, $CGI_URI."/search.pl", 0, 1, 1);
+    (-4, -1, $SEARCH_TITLE, $SEARCH_TITLE_IMAGE, 0, $CGI_URI."/search.pl", 0, 1, 1);
 
   $article{link} = $cfg->entryErr('site', 'url') . $article{link};
   require 'Generate/Article.pm';
@@ -129,7 +129,7 @@ sub generate_shop {
   my $shop = { map { $_ => $shop_base->{$_} } $shop_base->columns };
   $shop->{link} =~ /^\w+:/
     or $shop->{link} = $cfg->entryErr('site', 'url') . $shop->{link};
-  $shop->{id} = -10; # some random negative number
+  $shop->{id} = -3; # some random negative number
   my $gen = Generate::Article->new(cfg=>$cfg, top=>$shop, force_dynamic => 1);
   for my $name (@pages) {
     my %acts;
