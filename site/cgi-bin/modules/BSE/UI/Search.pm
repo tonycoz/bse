@@ -24,10 +24,10 @@ sub req_search {
   my ($class, $req) = @_;
 
   my $cfg = $req->cfg;
-  
-  my $results_per_page = 10;
-  
+    
   my $cgi = $req->cgi;
+  my $results_per_page = int($cgi->param('pp') || 10);
+  $results_per_page >= 1 or $results_per_page = 10;
   my $words = $cgi->param('q');
   my $section = $cgi->param('s');
   my $date = $cgi->param('d');
