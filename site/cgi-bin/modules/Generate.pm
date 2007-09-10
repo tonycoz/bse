@@ -8,6 +8,7 @@ use DevHelp::HTML;
 use BSE::Util::Tags;
 use BSE::CfgInfo qw(custom_class);
 use BSE::Util::Iterate;
+use base 'BSE::ThumbLow';
 
 my $excerptSize = 300;
 
@@ -826,51 +827,6 @@ sub _format_image {
     $html .= qq! />!;
     if ($im->{url}) {
       $html = qq!<a href="$im->{url}">$html</a>!;
-    }
-    return $html;
-  }
-}
-
-sub thumb_base_url {
-  '/cgi-bin/thumb.pl';
-}
-
-sub _thumbimage_low {
-  my ($self, $geo_id, $im, $field, $cfg) = @_;
-
-  $geo_id =~ /^[\w,]+$/
-    or return "** invalid geometry id **";
-
-  my $geometry = $cfg->entry('thumb geometries', $geo_id)
-    or return "** cannot find thumb geometry $geo_id**";
-
-  my $thumbs_class = $cfg->entry('editor', 'thumbs_class')
-    or return '** no thumbnail engine configured **';
-
-  (my $thumbs_file = $thumbs_class . ".pm") =~ s!::!/!g;
-  require $thumbs_file;
-  my $thumbs = $thumbs_class->new($cfg);
-
-  my $error;
-  $thumbs->validate_geometry($geometry, \$error)
-    or return "** invalid geometry string: $error **";
-
-  my %im = map { $_ => $im->{$_} } $im->columns;
-  my $base = $self->thumb_base_url;
-  $im{image} = "$base?g=$geo_id&page=$im->{articleId}&image=$im->{id}";
-  
-  @im{qw/width height/} = 
-    $thumbs->thumb_dimensions_sized($geometry, @$im{qw/width height/});
-
-  if ($field) {
-    my $value = $im{$field};
-    defined $value or $value = '';
-    return escape_html($value);
-  }
-  else {
-    my $html = '<img src="' . escape_html($im{image}) . '" alt="' . escape_html($im{alt}) . qq!" width="$im{width}" height="$im{height}" border="0" />!;
-    if ($im{url}) {
-      $html = '<a href="' . escape_html($im{url}) . '">' . $html . "</a>";
     }
     return $html;
   }

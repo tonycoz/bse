@@ -2,6 +2,7 @@ package BSE::Util::DynamicTags;
 use strict;
 use BSE::Util::Tags;
 use DevHelp::HTML;
+use base 'BSE::ThumbLow';
 
 sub new {
   my ($class, $req) = @_;
@@ -29,6 +30,7 @@ sub tags {
      dyncarttotalunits => [ tag_dyncarttotal => $self, 'total_units' ],
      ifAncestor => 0,
      ifUserMemberOf => [ tag_ifUserMemberOf => $self ],
+     dthumbimage => [ tag_dthumbimage => $self ],
     );
 }
 
@@ -435,4 +437,93 @@ sub _cart {
   return $result;
 }
 
+sub tag_dthumbimage {
+  my ($self, $args) = @_;
+
+  my ($article_id, $geometry, $image_tags, $field) = split ' ', $args;
+  
+  my $article;
+  if ($article_id =~ /^\d+$/) {
+    require Articles;
+    $article = Articles->getByPkey($args);
+  }
+  else {
+    $article = $self->{req}->get_article($article_id);
+  }
+  $article
+    or return '';
+
+  my @images = $article->images;
+  my $im;
+  for my $tag (split /,/, $image_tags) {
+    if ($tag =~ m!^/(.*)/$!) {
+      my $re = $1;
+      ($im) = grep $_->{name} =~ /$re/i, @images
+	and last;
+    }
+    elsif ($tag =~ /^\d+$/) {
+      if ($tag >= 1 && $tag <= @images) {
+	$im = $images[$tag-1];
+	last;
+      }
+    }
+    elsif ($tag =~ /^[^\W\d]\w*$/) {
+      ($im) = grep $_->{name} eq $tag, @images
+	and last;
+    }
+  }
+  $im
+    or return '';
+  
+  return $self->_thumbimage_low($geometry, $im, $field, $self->{req}->cfg);
+}
+
 1;
+
+=head1 NAME
+
+BSE::Util::DynamicTags - basic dynamic page tags
+
+=head1 REFERENCE
+
+=over
+
+=item dthumbimage article geometry image field
+
+=item dthumbimage article geometry image
+
+Similar to thumbimage/gthumbimage, this allows you to retrieve images
+from a given article, which article can either be a number or a named
+article in the current context.
+
+geometry and field are as for the static thumbimage tag.
+
+image is a comma separated list of match operators, eg:
+
+  <:dthumbimage result search search,/^display_$/,1 :>
+
+on a search page will display either the image with an id of search,
+the first image found with an identifier starting with "display_" or
+the first image of the article.
+
+Possible match operators are:
+
+=over
+
+=item *
+
+/regexp/ - a regular expression matched against the image identifier
+
+=item *
+
+index - a numeric image index, where 1 is the first image
+
+=item *
+
+identifier - a literal image identifier
+
+=back
+
+=back
+
+=cut

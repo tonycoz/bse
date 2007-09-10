@@ -332,7 +332,7 @@ sub tag_arithmetic {
   }
   
   my $not_found;
-  $arg =~ s/(\[\s*(\w+)(\s+\S[^\[\]]*)?\s*\])/
+  $arg =~ s/(\[\s*([^\W\d]\w*)(\s+\S[^\[\]]*)?\s*\])/
     exists $acts->{$2} ? $templater->perform($acts, $2, $3) 
       : (++$not_found, $1)/ge;
 

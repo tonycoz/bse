@@ -471,10 +471,22 @@ sub remove_filelink {
   return defined $text ? $text : $file->{displayName};
 }
 
+sub remove_gfilelink {
+  my ($self, $fileid, $text, $type) = @_;
+
+  unless ($self->{gfiles}) {
+    $self->{gfiles} = [ Articles->global_files ];
+  }
+  my ($file) = grep $_->{name} eq $fileid, @{$self->{gfiles}}
+    or return "** unknown file $fileid **";
+
+  return defined $text ? $text : $file->{displayName};
+}
+
 sub remove {
   my ($self, $rpart) = @_;
 
-  $$rpart =~ s#g?thumbimage\[([^\]\[|])\|([^\]\[|])\]##g
+  $$rpart =~ s#g?thumbimage\[([^\]\[|]+)\|([^\]\[|]+)\]##g
     and return 1;
   $$rpart =~ s#gimage\[([^\]\[]+)\]##ig
     and return 1;
@@ -491,6 +503,11 @@ sub remove {
     and return 1;
   $$rpart =~ s#popformlink\[(\w+)\]# $self->remove_formlink($1) #ige
     and return 1;
+
+  $$rpart =~ s#gfilelink\[\s*(\w+)\s*\|([^\]\[]+)\]# $self->remove_gfilelink($1, $2) #ige
+      and return 1;
+  $$rpart =~ s#gfilelink\[\s*(\w+)\s*\]# $self->remove_gfilelink($1) #ige
+      and return 1;
 
   $$rpart =~ s#filelink\[\s*(\w+)\s*\|([^\]\[]+)\]# $self->remove_filelink($1, $2) #ige
       and return 1;

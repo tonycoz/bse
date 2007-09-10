@@ -1571,7 +1571,7 @@ in place of the article "title" when appropriate.
 
 Each key represents a geometry identifier for use by the thumbimage[],
 gthumbimage[] body text tags and the <:thumbimage ...:>, <:gthumbimage
-...:> template tags.
+...:>, <:dthumbimage ...:> template tags.
 
 The key is the geometry identifier, the value is the geometry string
 as follows.
@@ -1626,6 +1626,14 @@ longer dimension will be cropped to fit.
 The fill if present is: fill(color) where color is a color recognized
 by the underlying graphics implementation.  This should be at least
 hex web colors without the #, eg fill(FF0000) will fill with red.
+
+=head2 [thumb classes]
+
+Each key represents a geometry identifier for use by the thumbimage[],
+gthumbimage[] body text tags and the <:thumbimage ...:>, <:gthumbimage
+...:>, <:dthumbimage ...:> template tags.
+
+The value is used as the class for the generated img tag.
 
 =head1 AUTHOR
 
