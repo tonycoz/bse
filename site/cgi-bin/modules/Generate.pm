@@ -462,6 +462,51 @@ sub tag_gthumbimage {
   return $self->do_gthumbimage($geometry_id, $id, $field, $$rcurrent);
 }
 
+sub tag_sthumbimage {
+  my ($self, $args, $acts, $name, $templater) = @_;
+
+  my ($article_id, $geometry, $image_tags, $field) = split ' ', $args;
+  
+  my $article;
+  if ($article_id =~ /^\d+$/) {
+    require Articles;
+    $article = Articles->getByPkey($args);
+  }
+  else {
+    $acts->{$article_id}
+      or return "** no tag $article_id **";
+    my $id = $templater->perform($acts, $article_id, "id");
+    $article = Articles->getByPkey($id)
+      or return "** article $article_id/$id not found **";
+  }
+  $article
+    or return '';
+
+  my @images = $article->images;
+  my $im;
+  for my $tag (split /,/, $image_tags) {
+    if ($tag =~ m!^/(.*)/$!) {
+      my $re = $1;
+      ($im) = grep $_->{name} =~ /$re/i, @images
+	and last;
+    }
+    elsif ($tag =~ /^\d+$/) {
+      if ($tag >= 1 && $tag <= @images) {
+	$im = $images[$tag-1];
+	last;
+      }
+    }
+    elsif ($tag =~ /^[^\W\d]\w*$/) {
+      ($im) = grep $_->{name} eq $tag, @images
+	and last;
+    }
+  }
+  $im
+    or return '';
+  
+  return $self->_thumbimage_low($geometry, $im, $field, $self->{cfg});
+}
+
 sub baseActs {
   my ($self, $articles, $acts, $article, $embedded) = @_;
 
@@ -620,6 +665,7 @@ sub baseActs {
      },
      $it->make_iterator( [ \&iter_gfiles, $self ], 'gfilei', 'gfiles'),
      gthumbimage => [ tag_gthumbimage => $self, \$current_gimage ],
+     sthumbimage => [ tag_sthumbimage => $self ],
     );
 }
 
