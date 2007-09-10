@@ -96,6 +96,17 @@ values of [paths].downloads
 Pregenerated dynamic article pages are stored here.  This must be
 defined if you site contains any dynamicly generated pages.
 
+=item scalecache
+
+The directory where cached versions of scaled thumbnails are stored.
+Defaults to image_dir/scaled.  This must be in the document tree.  If
+you set this you should also set scalecacheurl.
+
+=item scalecacheurl
+
+The URL to the directory represented by scalecache.  Defaults to
+/images/scaled.
+
 =back
 
 =head2 [extensions]
@@ -278,6 +289,11 @@ until the page is displayed to a user.  Default: off.
 =item staticajax
 
 If true, the ifAjax and ajax tags will be active for static pages.
+
+=item cache_thumbnails
+
+If set to zero the results of the thumbimage/gthumbimage body/template
+tags will not be cached.  Default: 1 (caching is enabled).
 
 =back
 
@@ -1550,6 +1566,66 @@ for space critical iterated menus.  A template conditional can be used to displa
 in place of the article "title" when appropriate.
 
 =back
+
+=head2 [thumb geometries]
+
+Each key represents a geometry identifier for use by the thumbimage[],
+gthumbimage[] body text tags and the <:thumbimage ...:>, <:gthumbimage
+...:> template tags.
+
+The key is the geometry identifier, the value is the geometry string
+as follows.
+
+The geometry string consists of:
+
+=over
+
+=item *
+
+dimensions
+
+=item *
+
+crop flag - if present
+
+=item *
+
+optional fill
+
+=back
+
+The dimensions can be in any of the following forms:
+
+=over
+
+=item *
+
+<width>x<height> - the desired maximum width and height. eg 200x150
+
+=item *
+
+<width>x - the desired width, with the height calculated
+proportionally based on the source image size
+
+=item *
+
+x<height> - the designed height, with the width calculated
+proportionally based on the source image size.
+
+=item *
+
+<size> - the desired maximum size in both directions. so "200" is
+equivalent to "200x200"
+
+=back
+
+The crop flag is a single letter "c", if present then the image should
+be scaled so the smaller dimension matches the requested size, and the
+longer dimension will be cropped to fit.
+
+The fill if present is: fill(color) where color is a color recognized
+by the underlying graphics implementation.  This should be at least
+hex web colors without the #, eg fill(FF0000) will fill with red.
 
 =head1 AUTHOR
 

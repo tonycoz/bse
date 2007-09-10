@@ -453,6 +453,14 @@ sub admin_tags {
   return BSE::Util::Tags->secure($self->{request});
 }
 
+sub tag_gthumbimage {
+  my ($self, $rcurrent, $args) = @_;
+
+  my ($geometry_id, $id, $field) = split ' ', $args;
+
+  return $self->do_gthumbimage($geometry_id, $id, $field, $$rcurrent);
+}
+
 sub baseActs {
   my ($self, $articles, $acts, $article, $embedded) = @_;
 
@@ -473,6 +481,8 @@ sub baseActs {
     my $data = $cfg->entryVar('extra tags', $key);
     $extras{$key} = sub { $data };
   }
+
+  my $current_gimage;
   my $it = BSE::Util::Iterate->new;
   return 
     (
@@ -596,7 +606,8 @@ sub baseActs {
 
        $self->_format_image($im, $align, $rest);
      },
-     $it->make_iterator( [ \&iter_gimages, $self ], 'gimagei', 'gimages'),
+     $it->make_iterator( [ \&iter_gimages, $self ], 'gimagei', 'gimages', 
+			 undef, undef, undef, \$current_gimage),
      gfile => 
      sub {
        my ($name, $field) = split ' ', $_[0], 3;
@@ -607,7 +618,7 @@ sub baseActs {
        $self->_format_file($file, $field);
      },
      $it->make_iterator( [ \&iter_gfiles, $self ], 'gfilei', 'gfiles'),
-     
+     gthumbimage => [ tag_gthumbimage => $self, \$current_gimage ],
     );
 }
 
@@ -818,6 +829,69 @@ sub _format_image {
     }
     return $html;
   }
+}
+
+sub thumb_base_url {
+  '/cgi-bin/thumb.pl';
+}
+
+sub _thumbimage_low {
+  my ($self, $geo_id, $im, $field, $cfg) = @_;
+
+  $geo_id =~ /^[\w,]+$/
+    or return "** invalid geometry id **";
+
+  my $geometry = $cfg->entry('thumb geometries', $geo_id)
+    or return "** cannot find thumb geometry $geo_id**";
+
+  my $thumbs_class = $cfg->entry('editor', 'thumbs_class')
+    or return '** no thumbnail engine configured **';
+
+  (my $thumbs_file = $thumbs_class . ".pm") =~ s!::!/!g;
+  require $thumbs_file;
+  my $thumbs = $thumbs_class->new($cfg);
+
+  my $error;
+  $thumbs->validate_geometry($geometry, \$error)
+    or return "** invalid geometry string: $error **";
+
+  my %im = map { $_ => $im->{$_} } $im->columns;
+  my $base = $self->thumb_base_url;
+  $im{image} = "$base?g=$geo_id&page=$im->{articleId}&image=$im->{id}";
+  
+  @im{qw/width height/} = 
+    $thumbs->thumb_dimensions_sized($geometry, @$im{qw/width height/});
+
+  if ($field) {
+    my $value = $im{$field};
+    defined $value or $value = '';
+    return escape_html($value);
+  }
+  else {
+    my $html = '<img src="' . escape_html($im{image}) . '" alt="' . escape_html($im{alt}) . qq!" width="$im{width}" height="$im{height}" border="0" />!;
+    if ($im{url}) {
+      $html = '<a href="' . escape_html($im{url}) . '">' . $html . "</a>";
+    }
+    return $html;
+  }
+}
+
+# note: this is called by BSE::Formatter::thumbimage(), update that if
+# this is changed
+sub do_gthumbimage {
+  my ($self, $geo_id, $image_id, $field, $current) = @_;
+
+  my $im;
+  if ($image_id eq '-' && $current) {
+    $im = $current;
+  }
+  else {
+    $im = $self->get_gimage($image_id);
+  }
+  $im
+    or return '** unknown global image id **';
+
+  return $self->_thumbimage_low($geo_id, $im, $field, $self->{cfg});
 }
 
 sub _format_file {

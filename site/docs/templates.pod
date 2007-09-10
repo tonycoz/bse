@@ -1212,6 +1212,20 @@ name matches the regular expression.
 
 Conditional tag, true if the article has any unnamed images.
 
+=item thumbimage I<geometry> I<image>
+
+=item thumbimage I<geometry> I<image> I<field>
+
+=item gthumbimage I<geometry> I<image>
+
+=item gthumbimage I<geometry> I<image> I<field>
+
+Inserts a thumbnailed version of the given image, or a field from the
+image if the I<field> parameter is supplied.
+
+I<image> can either be an image name, '-' for the current image in the
+images or gimages iterator or an image number for thumbimage.
+
 =item ifDynamic
 
 Tests if the article is dynamically generated.

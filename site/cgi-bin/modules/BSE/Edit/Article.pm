@@ -1002,33 +1002,17 @@ sub tag_thumbimage {
   my $filename = "$imagedir/$$current_image->{image}";
   -e $filename or return "** image file missing **";
 
-  my ($max_width, $max_height, $max_pixels) = split ' ', $args;
-  defined $max_width && $max_width eq '-' and undef $max_width;
-  defined $max_height && $max_height eq '-' and undef $max_height;
-  defined $max_pixels && $max_pixels eq '-' and undef $max_pixels;
+  my $geometry = $cfg->entry('thumb geometries', $args, '200x200');
 
-  my ($use_orig, $width, $height) = $thumbs_obj->thumb_dimensions
-    ($filename, $$current_image, $max_width, $max_height, $max_pixels);
+  my $image = $$current_image;
+  my ($width, $height) = $thumbs_obj->thumb_dimensions_sized
+    ($geometry, @$image{qw/width height/});
 
 
   my ($uri, $alt);
-  if ($use_orig) {
-    $alt = $$current_image->{alt};
-    $uri = "/images/$$current_image->{image}";
-  }
-  elsif ($width) {
-    $alt = "thumbnail of ".$$current_image->{alt};
-    $uri = "$ENV{SCRIPT_NAME}?a_thumb=1&id=$$current_image->{articleId}&im=$$current_image->{id}&w=$width&h=$height";
-  }
-  else {
-    # link to the default thumbnail
-    $uri = $cfg->entry('editor', 'default_thumbnail', '/images/admin/nothumb.png');
-    $width = $cfg->entry('editor', 'default_thumbnail_width', 100);
-    $height = $cfg->entry('editor', 'default_thumbnail_height', 100);
-    $alt = $cfg->entry('editor', 'default_thumbnail_alt', 
-		       "no thumbnail available");
-  }
-  
+  $alt = "thumbnail of ".$$current_image->{alt};
+  $uri = "$ENV{SCRIPT_NAME}?a_thumb=1&id=$$current_image->{articleId}&im=$$current_image->{id}&w=$width&h=$height";
+
   $alt = escape_html($alt);
   $uri = escape_html($uri);
   return qq!<img src="$uri" width="$width" height="$height" alt="$alt" border="0" />!;
@@ -2519,14 +2503,18 @@ sub req_thumb {
   my $thumb_obj = $self->_get_thumbs_class();
   my ($data, $type);
   if ($image && $thumb_obj) {
-    my $width = $cgi->param('w');
-    my $height = $cgi->param('h');
-    my $pixels = $cgi->param('p');
+    my $geometry_id = $cgi->param('g');
+    defined $geometry_id or $geometry_id = 'editor';
+    my $geometry = $cfg->entry('thumb geometries', $geometry_id, '200x200');
     my $imagedir = $cfg->entry('paths', 'images', $Constants::IMAGEDIR);
     
-    ($type, $data) = $thumb_obj->
-      thumb_data("$imagedir/$image->{image}", $image, $width, $height, 
-		 $pixels);
+    my $error;
+    ($data, $type) = $thumb_obj->
+      thumb_data("$imagedir/$image->{image}", $geometry, \$error)
+	or return [
+		   type => 'text/plain',
+		   content => 'Error: '.$error
+		  ];
   }
 
   if ($type && $data) {

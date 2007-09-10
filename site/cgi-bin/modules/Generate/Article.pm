@@ -200,6 +200,14 @@ sub tag_admin {
   return BSE::Template->get_page($template, $cfg, \%acts);
 }
 
+sub tag_thumbimage {
+  my ($self, $rcurrent, $images, $args) = @_;
+
+  my ($geometry_id, $id, $field) = split ' ', $args;
+
+  return $self->do_thumbimage($geometry_id, $id, $field, $images, $$rcurrent);
+}
+
 sub baseActs {
   my ($self, $articles, $acts, $article, $embedded) = @_;
 
@@ -253,6 +261,7 @@ sub baseActs {
     @stepparents  = $article->visible_step_parents;
   }
   my $allkids_index;
+  my $current_image;
   # separate these so the closures can see %acts
   my %acts =
     (
@@ -478,9 +487,18 @@ HTML
        else {
 	 @iter_images = @unnamed_images;
        }
+       $current_image = undef;
      },
      iterate_images => 
-     sub { ++$image_index < @iter_images },
+     sub { 
+       if (++$image_index < @iter_images) {
+	 $current_image = $iter_images[$image_index];
+       }
+       else {
+	 $current_image = undef;
+       }
+       $current_image;
+     },
      image =>
      sub {
        my ($which, $align, $rest) = split ' ', $_[0], 3;
@@ -492,7 +510,7 @@ HTML
 	 $im = $images[$which-1];
        }
        else {
-	 $im = $iter_images[$image_index];
+	 $im = $current_image;
        }
 
        return $self->_format_image($im, $align, $rest);
@@ -531,6 +549,7 @@ HTML
        }
      },
      image_index => sub { $image_index },
+     thumbimage => [ tag_thumbimage => $self, \$current_image, \@images ],
      BSE::Util::Tags->make_iterator(\@files, 'file', 'files'),
      BSE::Util::Tags->make_iterator(\@stepkids, 'stepkid', 'stepkids'),
      BSE::Util::Tags->make_iterator(\@allkids, 'allkid', 'allkids', \$allkids_index),
@@ -603,6 +622,30 @@ sub tag_ifAccessControlled {
 
   return UNIVERSAL::isa($article, 'Article') ? 
     $article->is_access_controlled : 0;
+}
+
+# note: this is called by BSE::Formatter::thumbimage(), update that if
+# this is changed
+sub do_thumbimage {
+  my ($self, $geo_id, $image_id, $field, $images, $rcurrent) = @_;
+
+  my $im;
+  if ($image_id eq '-' && $rcurrent) {
+    $im = $rcurrent
+      or return "** No current image in images iterator **"
+  }
+  elsif ($image_id =~ /^\d+$/) {
+    $image_id >= 1 || $image_id <= @$images
+      or return "** Out of range image index **";
+
+    $im = $images->[$image_id-1];
+  }
+  elsif ($image_id =~ /^[^\W\d]\w*$/) {
+    ($im) = grep $_->{name} eq $image_id, @$images
+      or return "** Unknown images identifier $image_id **";
+  }
+
+  return $self->_thumbimage_low($geo_id, $im, $field, $self->{cfg});
 }
 
 sub generate {

@@ -149,6 +149,7 @@ site/cgi-bin/modules/BSE/UI/Shop.pm
 site/cgi-bin/modules/BSE/UI/SiteuserCommon.pm
 site/cgi-bin/modules/BSE/UI/SiteUserUpdate.pm
 site/cgi-bin/modules/BSE/UI/SubAdmin.pm
+site/cgi-bin/modules/BSE/UI/Thumb.pm
 site/cgi-bin/modules/BSE/UI/User.pm
 site/cgi-bin/modules/BSE/UserReg.pm
 site/cgi-bin/modules/BSE/Util/DynSort.pm
@@ -206,6 +207,8 @@ site/cgi-bin/search.pl
 site/cgi-bin/search.fcgi
 site/cgi-bin/shop.fcgi
 site/cgi-bin/shop.pl
+site/cgi-bin/thumb.fcgi
+site/cgi-bin/thumb.pl
 site/cgi-bin/user.pl
 site/data/stopwords.txt
 site/data/db/sql_statements.pkey
@@ -421,6 +424,7 @@ site/templates/common/default.tmpl
 site/templates/common/defsteps.tmpl
 site/templates/common/downloads.tmpl
 site/templates/common/embedded_subsect.tmpl
+site/templates/common/gallery.tmpl
 site/templates/common/news_item.tmpl
 site/templates/common/rssbase.tmpl
 site/templates/common/sidebar.tmpl

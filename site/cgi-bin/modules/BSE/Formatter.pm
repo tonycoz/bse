@@ -342,9 +342,25 @@ sub gfilelink {
   return $self->_file($file, $text, $type);
 }
 
+sub thumbimage {
+  my ($self, $geo_id, $image_id) = @_;
+
+  return $self->{gen}->do_thumbimage($geo_id, $image_id, '', $self->{images});
+}
+
+sub gthumbimage {
+  my ($self, $geo_id, $image_id) = @_;
+
+  return $self->{gen}->do_gthumbimage($geo_id, $image_id, '');
+}
+
 sub replace {
   my ($self, $rpart) = @_;
 
+  $$rpart =~ s#gthumbimage\[([^\]\[|]+)\|([^\]\[|]+)\]# $self->gthumbimage($1, $2) #ge
+    and return 1;
+  $$rpart =~ s#thumbimage\[([^\]\[|]+)\|([^\]\[|]+)\]# $self->thumbimage($1, $2) #ge
+    and return 1;
   $$rpart =~ s#gimage\[([^\]\[]+)\]# $self->gimage($1) #ige
     and return 1;
   $$rpart =~ s#popdoclink\[(\w+)\|([^\]\[]+)\]# $self->doclink($1, $2, "_blank", 'popdoclink') #ige
@@ -458,6 +474,8 @@ sub remove_filelink {
 sub remove {
   my ($self, $rpart) = @_;
 
+  $$rpart =~ s#g?thumbimage\[([^\]\[|])\|([^\]\[|])\]##g
+    and return 1;
   $$rpart =~ s#gimage\[([^\]\[]+)\]##ig
     and return 1;
   $$rpart =~ s#popdoclink\[(\w+)\|([^\]\[]*)\]#$2#ig

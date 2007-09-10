@@ -4,11 +4,13 @@
 use strict;
 use FindBin;
 use CGI::Carp 'fatalsToBrowser';
-#use Carp 'verbose'; # remove the 'verbose' in production
+use Carp 'verbose'; # remove the 'verbose' in production
 use lib "$FindBin::Bin/../modules";
 use Articles;
 use BSE::Request;
 use BSE::WebUtil 'refresh_to_admin';
+
+$SIG{__DIE__} = sub { confess @_ };
 
 my $req = BSE::Request->new;
 my $cfg = $req->cfg;
