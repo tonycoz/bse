@@ -436,6 +436,8 @@ HTML
        my $html = '';
        return '' unless $self->{admin};
        return '' unless @allkids > 1;
+       defined $allkids_index && $allkids_index >= 0 && $allkids_index < @allkids
+	 or return '** movestepkid must be inside iterator allkids **';
        my ($img_prefix, $urladd) = 
 	 DevHelp::Tags->get_parms($arg, $acts, $templater);
        $img_prefix = '' unless defined $img_prefix;
