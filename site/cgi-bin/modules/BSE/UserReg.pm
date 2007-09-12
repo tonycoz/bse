@@ -121,8 +121,6 @@ sub req_logon {
 
   my %fields = $user->valid_fields($cfg);
   my %rules = $user->valid_rules($cfg);
-  use Data::Dumper;
-  print STDERR Dumper \%fields;
 
   my %errors;
   $req->validate_hash(data => $user,
