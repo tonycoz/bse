@@ -324,6 +324,7 @@ sub switch {
 
     print STDERR "  testing $func $args\n" if DEBUG;
 
+    local $SIG{__DIE__};
     my $result = 
       eval {
 	if (exists $acts->{"if$func"}) {
