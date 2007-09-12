@@ -221,9 +221,9 @@ sub cond {
   defined $args or $args = '';
   print STDERR "cond $name $args\n" if DEBUG;
 
+  local $SIG{__DIE__};
   my $result =
     eval {
-      local $SIG{__DIE__};
       if (exists $acts->{"if$name"}) {
 	print STDERR " found cond if$name\n" if DEBUG > 1;
 	my $cond = $self->low_perform($acts, "if$name", $args, '');
