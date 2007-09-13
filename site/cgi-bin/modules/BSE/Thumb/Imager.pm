@@ -390,8 +390,6 @@ sub _do_filter {
   $work = $work->convert(preset => 'rgb')
     if $work->getchannels < 3;
 
-  use Data::Dumper;
-  print STDERR "filter ", Dumper $filter;
   $work->filter(%$filter)
     or die $work->errstr;
 
