@@ -36,7 +36,7 @@ sub _parse_scale {
       return;
     }
   }
-  if ($geometry =~ s/^,fill\(([^,]+)\)//) {
+  if ($geometry =~ s/^,fill:([^,]+)//) {
     $geo{fill} = $1;
     if (!$geo{width} || !$geo{height}) {
       $$error = "scale:Both dimensions must be supplied for fill";
@@ -92,6 +92,38 @@ sub _parse_roundcorners {
   \%geo;
 }
 
+sub _parse_mirror {
+  my ($text, $error) = @_;
+
+  my %mirror =
+    (
+     action => 'mirror',
+     height => '30%',
+     bg => '000000',
+     bgalpha => 255,
+     opacity => '40%',
+    );
+
+  if ($text =~ s/^height:([\d.]+%?)//) {
+    $mirror{height} = $1;
+  }
+  if ($text =~ s/^bg:([^,]+),?//) {
+    $mirror{bg} = $1;
+  }
+  if ($text =~ s/^bgalpha:(\d+),?//) {
+    $mirror{bgalpha} = $1;
+  }
+  if ($text =~ s/^opacity:([\d.]+%?),?//) {
+    $mirror{opacity} = $1;
+  }
+  if (length $text) {
+    $$error = "unexpected junk in mirror: $text";
+    return;
+  }
+
+  \%mirror;
+}
+
 sub _parse_geometry {
   my ($geometry, $error) = @_;
 
@@ -106,6 +138,11 @@ sub _parse_geometry {
       my $round = _parse_roundcorners($1, $error)
 	or return;
       push @geo, $round;
+    }
+    elsif ($geometry =~ s/^mirror\(([^\)]*)\)//) {
+      my $mirror = _parse_mirror($1, $error)
+	or return;
+      push @geo, $mirror;
     }
     else {
       $$error = "Unexpected junk at the end of the geometry $geometry";
@@ -170,6 +207,9 @@ sub thumb_dimensions_sized {
 	$req_alpha = 1;
       }
     }
+    elsif ($geo->{action} eq 'mirror') {
+      $height = int($height + $height * _percent($geo->{height}));
+    }
   }
   
   return ($width, $height, $req_alpha);
@@ -208,18 +248,7 @@ sub _do_roundcorners {
   require Imager::Fill;
   my $fill = Imager::Fill->new(image => $src);
   
-  # paste the rects, it should be faster
-  # this will write some pixels multiple times if radii are different
-  #$out->paste(left => $geo->{tl}, top => 0, src => $src,
-#	      src_minx => $geo->{tl}, src_maxx => $width - $geo->{tr},
-#	      height => _max($geo->{tl}, $geo->{tr}));
-#  $out->paste(left => 0, top => $geo->{tl}, src => $src,
-#	      src_miny => $geo->{tl}, src_maxy => $height - $geo->{bl},
-#	      width => _max($geo->{tl}, $geo->{bl}));
-#  my $right_width = _max($geo->{tr}, $geo->{br});
-#  $out->paste(left => $width - $right_width, top => $geo->{tr}, src => $src,
-#	      src_minx => $width - $right_width, 
-  $out->paste(src => $src);
+  $out = $src->copy;
   if ($geo->{tl}) {
     $out->box(filled => 1, color => $bg, xmax => $geo->{tl}-1, ymax => $geo->{tl}-1);
     $out->arc(aa => 1, fill => $fill, r => $geo->{tl},
@@ -248,6 +277,14 @@ sub _do_roundcorners {
   }
 
   return $out;
+}
+
+sub _do_mirror {
+  my ($work, $mirror) = @_;
+
+  if ($work->getchannels < 3) {
+    $work = $work->convert(preset => 'rgb');
+  }
 }
 
 sub thumb_data {
@@ -311,9 +348,14 @@ sub thumb_data {
 		       img => $scaled);
       }
       $work = $result;
+      use Data::Dumper;
+      print STDERR "w ", $work->getwidth, " h ", $work->getheight, " ", Dumper $geo;
     }
     elsif ($geo->{action} eq 'roundcorners') {
       $work = _do_roundcorners($work, $geo);
+    }
+    elsif ($geo->{action} eq 'mirror') {
+      $work = _do_mirror($work, $geo);
     }
   }
 
@@ -330,6 +372,15 @@ sub thumb_data {
   }
 
   return ( $data, "image/$type" );
+}
+
+sub _percent {
+  my ($num) = @_;
+
+  if ($num =~ s/%$//) {
+    $num /= 100.0;
+  }
+  $num;
 }
 
 1;
