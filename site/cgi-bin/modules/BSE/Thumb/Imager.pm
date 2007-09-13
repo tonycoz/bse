@@ -102,6 +102,9 @@ sub _parse_mirror {
      bg => '000000',
      bgalpha => 255,
      opacity => '40%',
+     srcx => 'x',
+     srcy => 'y',
+     horizon => '0',
     );
 
   if ($text =~ s/^height:([\d.]+%?),//) {
@@ -116,6 +119,16 @@ sub _parse_mirror {
   if ($text =~ s/^opacity:([\d.]+%?),?//) {
     $mirror{opacity} = $1;
   }
+  if ($text =~ s/^horizon:([\d.]+%?),?//) {
+    $mirror{horizon} = $1;
+  }
+  if ($text =~ s/^srcx:([^,]+),?//) {
+    $mirror{srcx} = $1;
+  }
+  if ($text =~ s/^srcy:([([^,]+),?//) {
+    $mirror{srcy} = $1;
+  }
+  
   if (length $text) {
     $$error = "unexpected junk in mirror: $text";
     return;
@@ -259,12 +272,8 @@ sub thumb_dimensions_sized {
       }
     }
     elsif ($geo->{action} eq 'mirror') {
-      if ($geo->{height} =~ /%$/) {
-	$height = int($height + $height * _percent($geo->{height}));
-      }
-      else {
-	$height += int($geo->{height});
-      }
+      $height += _percent_of($geo->{height}, $height)
+	+ _percent_of($geo->{horizon}, $height);
 	
       if ($geo->{bgalpha} != 255) {
 	$req_alpha = 1;
@@ -346,12 +355,9 @@ sub _do_mirror {
   }
   my $oldheight = $work->getheight();
   my $height = $oldheight;
-  if ($mirror->{height} =~ /%$/) {
-    $height = int($oldheight * ( 1 + _percent($mirror->{height}) ));
-  }
-  else {
-    $height += int($mirror->{height});
-  }
+  my $gap = int(_percent_of($mirror->{horizon}, $oldheight));
+  my $add_height = int(_percent_of($mirror->{height}, $oldheight));
+  $height += $gap + $add_height;
 
   my $out = Imager->new(xsize => $work->getwidth, ysize => $height,
 			channels => $work->getchannels);
@@ -372,15 +378,16 @@ sub _do_mirror {
        opacity => _percent($mirror->{opacity})
       },
       rpnexpr => <<EOS,
-x y getp1 red 
-x y getp1 green 
-x y getp1 blue 
-x y getp1 alpha opacity h y - h / * * rgba
+$mirror->{srcx} !srcx
+$mirror->{srcy} !srcy
+\@srcx \@srcy getp1 !p
+\@p red \@p green \@p blue 
+\@p alpha opacity h y - h / * * rgba
 EOS
      },
      $work
     ) or die Imager->errstr;
-  $out->rubthrough(src => $work, ty => $oldheight);
+  $out->rubthrough(src => $work, ty => $oldheight + $gap);
 
   $out;
 }
@@ -511,6 +518,17 @@ sub _percent {
     $num /= 100.0;
   }
   $num;
+}
+
+sub _percent_of {
+  my ($num, $base) = @_;
+
+  if ($num =~ s/%$//) {
+    return $base * $num / 100.0;
+  }
+  else {
+    return $num;
+  }
 }
 
 sub _bgcolor {
