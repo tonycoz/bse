@@ -226,9 +226,6 @@ sub _max {
 sub _do_roundcorners {
   my ($src, $geo) = @_;
 
-  use Data::Dumper;
-  print STDERR "geo ", Dumper($geo);
-
   if ($src->getchannels == 1 || $src->getchannels == 2) {
     $src = $src->convert(preset => 'rgb');
   }
@@ -348,8 +345,6 @@ sub thumb_data {
 		       img => $scaled);
       }
       $work = $result;
-      use Data::Dumper;
-      print STDERR "w ", $work->getwidth, " h ", $work->getheight, " ", Dumper $geo;
     }
     elsif ($geo->{action} eq 'roundcorners') {
       $work = _do_roundcorners($work, $geo);
