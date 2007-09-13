@@ -258,7 +258,13 @@ sub thumb_dimensions_sized {
       }
     }
     elsif ($geo->{action} eq 'mirror') {
-      $height = int($height + $height * _percent($geo->{height}));
+      if ($geo->{height} =~ /%$/) {
+	$height = int($height + $height * _percent($geo->{height}));
+      }
+      else {
+	$height += int($geo->{height});
+      }
+	
       if ($geo->{bgalpha} != 255) {
 	$req_alpha = 1;
       }
@@ -338,7 +344,13 @@ sub _do_mirror {
     $work = $work->convert(preset => 'addalpha');
   }
   my $oldheight = $work->getheight();
-  my $height = int($oldheight * ( 1 + _percent($mirror->{height}) ));
+  my $height = $oldheight;
+  if ($mirror->{height} =~ /%$/) {
+    $height = int($oldheight * ( 1 + _percent($mirror->{height}) ));
+  }
+  else {
+    $height += int($mirror->{height});
+  }
 
   my $out = Imager->new(xsize => $work->getwidth, ysize => $height,
 			channels => $work->getchannels);
