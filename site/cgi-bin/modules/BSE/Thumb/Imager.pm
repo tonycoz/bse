@@ -226,7 +226,8 @@ sub thumb_dimensions_sized {
     if ($geo->{action} eq 'scale') {
       if ($geo->{fill}) {
 	# fill always produces an image the right size
-	return @$geo{qw/width height/};
+	($width, $height) = @$geo{qw/width height/};
+	next;
       }
       
       if ($geo->{crop}) {
