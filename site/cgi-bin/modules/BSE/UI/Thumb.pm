@@ -33,12 +33,21 @@ sub dispatch {
   my $image_dir = cfg_image_dir($cfg);
   
   my $cache_dir = $cfg->entry('paths', 'scalecache', "$image_dir/scaled");
-  my $cache_url = $cfg->entry('paths', 'scalecacheurl', '/images/scaled');
+  my $cache_base_url = $cfg->entry('paths', 'scalecacheurl', '/images/scaled');
+
+  my ($width, $height, $req_alpha) = 
+    $thumbs->thumb_dimensions_sized($geometry, @$image{qw/width height/});
   
   my $cache_name = "$cache_dir/$geometry_id-$image->{image}";
+  my $cache_url = "$cache_base_url/$geometry_id-$image->{image}";
+
+  if ($req_alpha && $cache_name !~ /\.png$/i) {
+    $cache_name .= ".png";
+    $cache_url .= ".png";
+  }
 
   my $image_refresh =
-    BSE::Template->get_refresh("$cache_url/$geometry_id-$image->{image}");
+    BSE::Template->get_refresh($cache_url);
   if ($do_cache) {
     -e $cache_name
       and return $image_refresh;
