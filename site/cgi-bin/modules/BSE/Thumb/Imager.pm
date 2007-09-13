@@ -104,7 +104,7 @@ sub _parse_mirror {
      opacity => '40%',
     );
 
-  if ($text =~ s/^height:([\d.]+%?)//) {
+  if ($text =~ s/^height:([\d.]+%?),//) {
     $mirror{height} = $1;
   }
   if ($text =~ s/^bg:([^,]+),?//) {
@@ -122,6 +122,43 @@ sub _parse_mirror {
   }
 
   \%mirror;
+}
+
+sub _parse_sepia {
+  my ($text, $error) = @_;
+
+  my %sepia =
+    (
+     action => 'sepia',
+     color => '000000',
+    );
+  if ($text =~ s/^([^,]+),?//) {
+    $sepia{color} = $1;
+  }
+  if (length $text) {
+    $$error = "unexpected junk in mirror: $text";
+    return;
+  }
+  \%sepia;
+}
+
+sub _parse_filter {
+  my ($text, $error) = @_;
+
+  unless ($text =~ s/^(\w+),?//) {
+    $$error = "filter: no filter name";
+    return;
+  }
+  my %filter =
+    (
+     action => 'filter',
+     type => $1
+    );
+  while ($text =~ s/^(\w+):([^,]+),?//) {
+    $filter{$1} = $2;
+  }
+
+  \%filter;
 }
 
 sub _parse_geometry {
@@ -143,6 +180,19 @@ sub _parse_geometry {
       my $mirror = _parse_mirror($1, $error)
 	or return;
       push @geo, $mirror;
+    }
+    elsif ($geometry =~ s/^grey\(\)//) {
+      push @geo, { action => 'grey' };
+    }
+    elsif ($geometry =~ s/^sepia\(([^\)]*)\)//) {
+      my $sepia = _parse_sepia($1, $error)
+	or return;
+      push @geo, $sepia;
+    }
+    elsif ($geometry =~ s/^filter\(([^\)]*)\)//) {
+      my $filter = _parse_filter($1, $error)
+	or return;
+      push @geo, $filter;
     }
     else {
       $$error = "Unexpected junk at the end of the geometry $geometry";
@@ -209,9 +259,12 @@ sub thumb_dimensions_sized {
     }
     elsif ($geo->{action} eq 'mirror') {
       $height = int($height + $height * _percent($geo->{height}));
+      if ($geo->{bgalpha} != 255) {
+	$req_alpha = 1;
+      }
     }
   }
-  
+
   return ($width, $height, $req_alpha);
 }
 
@@ -230,8 +283,7 @@ sub _do_roundcorners {
     $src = $src->convert(preset => 'rgb');
   }
 
-  my $bg = Imager::Color->new($geo->{bg});
-  $bg->set(($bg->rgba)[0..2], $geo->{bgalpha});
+  my $bg = _bgcolor($geo);
   my $channels = $src->getchannels;
   if ($geo->{bgalpha} != 255 && $channels != 4) {
     $channels = 4;
@@ -282,6 +334,68 @@ sub _do_mirror {
   if ($work->getchannels < 3) {
     $work = $work->convert(preset => 'rgb');
   }
+  if ($mirror->{bgalpha} != 255) {
+    $work = $work->convert(preset => 'addalpha');
+  }
+  my $oldheight = $work->getheight();
+  my $height = int($oldheight * ( 1 + _percent($mirror->{height}) ));
+
+  my $out = Imager->new(xsize => $work->getwidth, ysize => $height,
+			channels => $work->getchannels);
+  my $bg = _bgcolor($mirror);
+  $out->box(filled => 1, color => $bg);
+
+  $out->rubthrough(src => $work);
+
+  $work->flip(dir => 'v');
+
+  $work = $work->crop(bottom => $height - $work->getheight);
+  $work = Imager::transform2
+    (
+     {
+      channels => $work->getchannels,
+      constants =>
+      {
+       opacity => _percent($mirror->{opacity})
+      },
+      rpnexpr => <<EOS,
+x y getp1 red 
+x y getp1 green 
+x y getp1 blue 
+x y getp1 alpha opacity h y - h / * * rgba
+EOS
+     },
+     $work
+    ) or die Imager->errstr;
+  $out->rubthrough(src => $work, ty => $oldheight);
+
+  $out;
+}
+
+sub _do_sepia {
+  my ($work, $sepia) = @_;
+
+  require Imager::Filter::Sepia;
+  $work = $work->convert(preset => 'rgb')
+    if $work->getchannels < 3;
+  my $color = Imager::Color->new($sepia->{color});
+  $work->filter(type => 'sepia', tone => $color);
+
+  $work;
+}
+
+sub _do_filter {
+  my ($work, $filter) = @_;
+
+  $work = $work->convert(preset => 'rgb')
+    if $work->getchannels < 3;
+
+  use Data::Dumper;
+  print STDERR "filter ", Dumper $filter;
+  $work->filter(%$filter)
+    or die $work->errstr;
+
+  $work;
 }
 
 sub thumb_data {
@@ -352,12 +466,22 @@ sub thumb_data {
     elsif ($geo->{action} eq 'mirror') {
       $work = _do_mirror($work, $geo);
     }
+    elsif ($geo->{action} eq 'grey') {
+      $work = $work->convert(preset => 'grey');
+      print STDERR "channels ", $work->getchannels, "\n";
+    }
+    elsif ($geo->{action} eq 'sepia') {
+      $work = _do_sepia($work, $geo);
+    }
+    elsif ($geo->{action} eq 'filter') {
+      $work = _do_filter($work, $geo);
+    }
   }
 
   my $data;
   my $type = $src->tags(name => 'i_format');
 
-  if ($work->getchannels == 4) {
+  if ($work->getchannels == 4 || $work->getchannels == 2) {
     $type = 'png';
   }
   
@@ -376,6 +500,15 @@ sub _percent {
     $num /= 100.0;
   }
   $num;
+}
+
+sub _bgcolor {
+  my ($spec) = @_;
+
+  my $bg = Imager::Color->new($spec->{bg});
+  $bg->set(($bg->rgba)[0..2], $spec->{bgalpha});
+
+  $bg;
 }
 
 1;
