@@ -262,9 +262,9 @@ sub thumb_dimensions_sized {
 	  $width = $width * $geo->{height} / $height;
 	  $height = $geo->{height};
 	}
-	$width = int($width);
-	$height = int($height);
       }
+      $width = int($width);
+      $height = int($height);
     }
     elsif ($geo->{action} eq 'roundcorners') {
       if ($geo->{bgalpha} != 255) {
@@ -274,6 +274,7 @@ sub thumb_dimensions_sized {
     elsif ($geo->{action} eq 'mirror') {
       $height += _percent_of($geo->{height}, $height)
 	+ _percent_of($geo->{horizon}, $height);
+      $height = int($height);
 	
       if ($geo->{bgalpha} != 255) {
 	$req_alpha = 1;
