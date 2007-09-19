@@ -12,8 +12,8 @@ my $user;
 my $password;
 Getopt::Long::Configure('bundling');
 GetOptions("v:i", \$verbose,
-	   "u", \$user,
-	   "p", \$password);
+	   "u=s", \$user,
+	   "p=s", \$password);
 ++$verbose if defined $verbose && !$verbose;
 
 # should be 3 options - base url, article number, input file
@@ -43,12 +43,11 @@ if ($user) {
 			 [ 
 			  logon => $user,
 			  password => $password,
-			  a_logon => 1
+			  a_logon => 1,
+			  _service => 1,
 			 ]);
   # we should see a refresh header on success
-  unless ($result->header("Refresh")) {
-    die "Could not logon\n";
-  }
+  service_result("Error logging on", $result);
 }
 
 # check we have a valid article
@@ -68,7 +67,7 @@ while (<>) {
   my $imdata = do { local $/; <IMG> };
   close IMG;
 
-  print STDERR "Adding $filename / $alt\n" if $verbose;
+  print STDERR "Adding $filename / $alt" if $verbose;
   # make a request
   my $req = POST "$base_url/cgi-bin/admin/add.pl",
      [
@@ -79,20 +78,35 @@ while (<>) {
       name=> '',
       addimg => 1,
       level => 1,
+      _service => 1,
      ],
      Content_Type => 'form-data';
   #print "Req", $req->as_string,"\n";
   my $result = $ua->request($req);
 
-  # should refresh on success
-  unless ($result->header("refresh")) {
-    print $result->content;
-    die "Could not add image\n";
-  }
+  my $serv_resp = service_result("\nError adding image", $result);
+  print " - added as image $serv_resp->{image}\n" if $verbose;
 }
 
 sub usage {
   die <<EOS
 Usage: $0 [-u user] [-p password] [-v verbosity] baseurl article id sources
 EOS
+}
+
+sub service_result {
+  my ($what, $http_result) = @_;
+
+  $http_result->is_success
+    or die "$what - http error: ", $http_result->status_line, "\n";
+
+  my %result;
+  my $content = $http_result->decoded_content;
+  while ($content =~ s/^(\w+): *(.*)\n//) {
+    $result{lc $1} = $2;
+  }
+  $result{result} eq 'success'
+    or die "$what - service failure: ", $result{error}, "\n";
+
+  \%result;
 }

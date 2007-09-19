@@ -57,6 +57,50 @@ sub req_logon_form {
   return $req->dyn_response('admin/logon', \%acts);
 }
 
+sub _service_error {
+  my ($self, $req, $error, $errors) = @_;
+
+  if ($req->cgi->param('_service')) {
+    my $body = '';
+    $body .= "Result: failure\n";
+    if ($errors) {
+      for my $field (keys %$errors) {
+	my $text = $error->{$field};
+	$text =~ tr/\n/ /;
+	$body .= "Field-Error: $field - $text\n";
+      }
+      my $text = join ('/', values %$error);
+      $text =~ tr/\n/ /;
+      $body .= "Error: $text\n";
+    }
+    else {
+      $body .= "Error: $error\n";
+    }
+    return
+      {
+       type => 'text/plain',
+       content => $body,
+      };
+  }
+  else {
+    return $self->req_logon_form($req, $error, $errors);
+  }
+}
+
+sub _service_success {
+  my ($self, $results) = @_;
+
+  my $body = "Result: success\n";
+  for my $field (keys %$results) {
+    $body .= "$field: $results->{$field}\n";
+  }
+  return
+    {
+     type => 'text/plain',
+     content => $body,
+    };
+}
+
 sub req_logon {
   my ($class, $req) = @_;
 
@@ -70,19 +114,24 @@ sub req_logon {
   defined $password && length $password
     or $errors{password} = "Please enter your password";
   %errors
-    and return $class->req_logon_form($req, undef, \%errors);
+    and return $class->_service_error($req, undef, \%errors);
   require BSE::TB::AdminUsers;
   my $user = BSE::TB::AdminUsers->getBy(logon=>$logon);
   $user && $user->{password} eq $password
-    or return $class->req_logon_form($req, "Invalid logon or password");
+    or return $class->_service_error($req, "Invalid logon or password");
   $req->session->{adminuserid} = $user->{id};
 
-  my $r = $cgi->param('r');
-  unless ($r) {
-    $r = admin_base_url($req->cfg) . "/cgi-bin/admin/menu.pl";
+  if ($cgi->param('_service')) {
+    return $class->_service_success({});
   }
-
-  return BSE::Template->get_refresh($r, $req->cfg);
+  else {
+    my $r = $cgi->param('r');
+    unless ($r) {
+      $r = admin_base_url($req->cfg) . "/cgi-bin/admin/menu.pl";
+    }
+    
+    return BSE::Template->get_refresh($r, $req->cfg);
+  }
 }
 
 sub req_logoff {

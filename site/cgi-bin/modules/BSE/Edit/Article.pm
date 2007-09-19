@@ -2302,12 +2302,56 @@ sub save_image_changes {
   return $self->refresh($article, $cgi, undef, 'Image information saved');
 }
 
+sub _service_error {
+  my ($self, $req, $article, $articles, $error) = @_;
+
+  if ($req->cgi->param('_service')) {
+    my $body = '';
+    $body .= "Result: failure\n";
+    if (ref $error) {
+      for my $field (keys %$error) {
+	my $text = $error->{$field};
+	$text =~ tr/\n/ /;
+	$body .= "Field-Error: $field - $text\n";
+      }
+      my $text = join ('/', values %$error);
+      $text =~ tr/\n/ /;
+      $body .= "Error: $text\n";
+    }
+    else {
+      $body .= "Error: $error\n";
+    }
+    return
+      {
+       type => 'text/plain',
+       content => $body,
+      };
+  }
+  else {
+    return $self->edit_form($req, $article, $articles, $error);
+  }
+}
+
+sub _service_success {
+  my ($self, $results) = @_;
+
+  my $body = "Result: success\n";
+  for my $field (keys %$results) {
+    $body .= "$field: $results->{$field}\n";
+  }
+  return
+    {
+     type => 'text/plain',
+     content => $body,
+    };
+}
+
 sub add_image {
   my ($self, $req, $article, $articles) = @_;
 
   $req->user_can(edit_images_add => $article)
-    or return $self->edit_form($req, $article, $articles,
-				 "You don't have access to add new images to this article");
+    or return $self->_service_error($req, $article, $articles,
+				    "You don't have access to add new images to this article");
 
   my $cgi = $req->cgi;
 
@@ -2349,7 +2393,7 @@ sub add_image {
     $errors{image} = 'Please enter an image filename';
   }
   if ($msg || keys %errors) {
-    return $self->edit_form($req, $article, $articles, $msg, \%errors);
+    return $self->_service_error($req, $article, $articles, $msg, \%errors);
   }
 
   my $imagename = $image;
@@ -2414,7 +2458,17 @@ sub add_image {
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
-  return $self->refresh($article, $cgi, undef, 'New image added');
+  if ($cgi->param('_service')) {
+    return $self->_service_success
+      (
+       {
+	image => $imageobj->{id},
+       },
+      );
+  }
+  else {
+    return $self->refresh($article, $cgi, undef, 'New image added');
+  }
 }
 
 # remove an image
@@ -2505,7 +2559,7 @@ sub req_thumb {
   if ($image && $thumb_obj) {
     my $geometry_id = $cgi->param('g');
     defined $geometry_id or $geometry_id = 'editor';
-    my $geometry = $cfg->entry('thumb geometries', $geometry_id, '200x200');
+    my $geometry = $cfg->entry('thumb geometries', $geometry_id, 'scale(200x200)');
     my $imagedir = $cfg->entry('paths', 'images', $Constants::IMAGEDIR);
     
     my $error;
