@@ -369,7 +369,7 @@ sub _do_mirror {
 
   $work->flip(dir => 'v');
 
-  $work = $work->crop(bottom => $height - $work->getheight);
+  $work = $work->crop(bottom => $add_height);
   $work = Imager::transform2
     (
      {
