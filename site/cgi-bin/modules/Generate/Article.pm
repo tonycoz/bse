@@ -693,7 +693,7 @@ sub tag_top {
   my $value = $top->{$args};
   defined $value or $value = '';
 
-  $value;
+  escape_html($value);
 }
 
 1;
