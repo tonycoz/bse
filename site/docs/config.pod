@@ -281,7 +281,7 @@ The name of the custom class for your site.  This is currently only
 used for article editing customizations.  This class should derive
 from BSE::CustomBase.  Default: BSE::Custom.
 
-=item jit_dynamic_regen
+=item jit_dynamic_pregen
 
 If this is true, then pre-generation for dynamic pages will be delayed
 until the page is displayed to a user.  Default: off.
