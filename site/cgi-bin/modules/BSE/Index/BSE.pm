@@ -34,7 +34,7 @@ sub start_index {
   my %stopwords;
   @stopwords{@stopwords} = (1) x @stopwords;
   close STOP;
-
+  $self->{weights} = {};
 
   return 1;
 }
@@ -42,8 +42,7 @@ sub start_index {
 sub process_article {
   my ($self, $article, $section, $indexas, $fields) = @_;
 
-  my %weights;
-
+  $self->{weights}{$indexas} ||= {};
   for my $field (sort { $self->{scores}{$b} <=> $self->{scores}{$a} }
 		 keys %$fields) {
     my $text = $fields->{$field};
@@ -57,7 +56,7 @@ sub process_article {
       
       for my $word (@words) {
 	if ($self->{stopwords}{lc $word}) {
-	  $self->process($indexas, $section->{id}, $score, \%weights, \%seen,
+	  $self->process($indexas, $section->{id}, $score, $self->{weights}{$indexas}, \%seen,
 			 @buffer) if @buffer;
 	  @buffer = ();
 	}
@@ -65,7 +64,7 @@ sub process_article {
 	  push(@buffer, $word);
 	}
       }
-      $self->process($indexas, $section->{id}, $score, \%weights, \%seen,
+      $self->process($indexas, $section->{id}, $score, $self->{weights}{$indexas}, \%seen,
 		     @buffer) if @buffer;
     }
   }
