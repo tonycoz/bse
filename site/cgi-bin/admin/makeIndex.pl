@@ -16,7 +16,7 @@ if ($in_cgi) {
 my $cfg = BSE::Cfg->new;
 my $urlbase = $cfg->entryVar('site', 'url');
 
-my $articles = Articles->new;
+my $articles = 'Articles';
 
 # scores depending on where the term appears
 # these may need some tuning
@@ -71,11 +71,12 @@ sub makeIndex {
   my %do_search;
   @dont_search{@SEARCH_EXCLUDE} = @SEARCH_EXCLUDE;
   @do_search{@SEARCH_INCLUDE} = @SEARCH_INCLUDE;
-  INDEX: until ($articles->EOF) {
+  my @ids = $articles->allids;
+ INDEX: for my $id (@ids) {
     my @files;
     my $got_files;
     # find the section
-    my $article = $articles->getNext;
+    my $article = $articles->getByPkey($id);
     next unless ($article->{listed} || $article->{flags} =~ /I/);
     next if $article->{flags} =~ /[CN]/;
     my $section = $article;
