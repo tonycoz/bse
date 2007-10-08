@@ -1449,7 +1449,7 @@ sub save_new {
 # end adrian
 
   $self->fill_new_data($req, \%data, $articles);
-  for my $col (qw(titleImage imagePos template keyword)) {
+  for my $col (qw(titleImage imagePos template keyword menu titleAlias)) {
     defined $data{$col} 
       or $data{$col} = $self->default_value($req, \%data, $col);
   }
@@ -3415,6 +3415,8 @@ my %defaults =
    body => '<maximum of 64Kb>',
    force_dynamic => 0,
    inherit_siteuser_rights => 1,
+   menu => 0,
+   titleAlias => '',
   );
 
 sub default_value {
