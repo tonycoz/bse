@@ -26,7 +26,7 @@ unless ($req->check_admin_logon()) {
 my $id = $cgi->param('id');
 my $direction = $cgi->param('d');
 
-my $articles = Articles->new;
+my $articles = 'Articles';
   
 my $article;
 if (defined $cgi->param('stepchild')) {
