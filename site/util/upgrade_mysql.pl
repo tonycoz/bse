@@ -120,7 +120,8 @@ for my $table (sort keys %tables) {
       $col->{field} eq $ccol->{field}
 	or die "Field name mismatch old: $ccol->{field} new: $col->{field}\n";
       
-      if ($col->{type} ne $ccol->{type} || $col->{default} ne $ccol->{default}) {
+      if ($col->{type} ne $ccol->{type} || $col->{default} ne $ccol->{default}
+	 || $col->{null} ne $ccol->{null}) {
 	print "fixing type or default for $col->{field}\n" if $verbose;
 	if ($verbose > 1) {
 	  print "old type: $ccol->{type}  new type: $col->{type}\n"
@@ -217,7 +218,7 @@ sub create_clauses {
   my @results;
   for my $col (@cols) {
     my $sql = $col->{field} . " " . $col->{type};
-    $sql .= $col->{null} ? ' null' : ' not null';
+    $sql .= $col->{null} eq 'YES' ? ' null' : ' not null';
     if ($col->{default} ne 'NULL' &&
 	($col->{type} =~ /char/i || $col->{default} =~ /\d/)) {
       $sql .= " default ";
