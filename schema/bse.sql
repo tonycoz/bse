@@ -93,7 +93,8 @@ CREATE TABLE article (
   -- added by adrian
   -- filter menu value in allkids_of iterators
   menu smallint(5) not null default 0,
-  
+
+  -- short title for menus  
   titleAlias varchar(60) not null default '',
   
   PRIMARY KEY (id),
