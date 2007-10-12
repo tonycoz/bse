@@ -105,28 +105,17 @@ sub _parse_mirror {
      srcx => 'x',
      srcy => 'y',
      horizon => '0',
+     perspective => 0,
+     perspectiveangle => '0',
     );
 
-  if ($text =~ s/^height:([\d.]+%?),//) {
-    $mirror{height} = $1;
-  }
-  if ($text =~ s/^bg:([^,]+),?//) {
-    $mirror{bg} = $1;
-  }
-  if ($text =~ s/^bgalpha:(\d+),?//) {
-    $mirror{bgalpha} = $1;
-  }
-  if ($text =~ s/^opacity:([\d.]+%?),?//) {
-    $mirror{opacity} = $1;
-  }
-  if ($text =~ s/^horizon:([\d.]+%?),?//) {
-    $mirror{horizon} = $1;
-  }
-  if ($text =~ s/^srcx:([^,]+),?//) {
-    $mirror{srcx} = $1;
-  }
-  if ($text =~ s/^srcy:([([^,]+),?//) {
-    $mirror{srcy} = $1;
+  while ($text =~ s/^(\w+):([^,]+),?//) {
+    unless (exists $mirror{$1}) {
+      $$error = "Unknown mirror parameter $1";
+      return;
+    }
+      
+    $mirror{$1} = $2;
   }
   
   if (length $text) {
@@ -354,6 +343,9 @@ sub _do_mirror {
   if ($mirror->{bgalpha} != 255) {
     $work = $work->convert(preset => 'addalpha');
   }
+
+  my $bg = _bgcolor($mirror);
+
   my $oldheight = $work->getheight();
   my $height = $oldheight;
   my $gap = int(_percent_of($mirror->{horizon}, $oldheight));
@@ -362,18 +354,25 @@ sub _do_mirror {
 
   my $out = Imager->new(xsize => $work->getwidth, ysize => $height,
 			channels => $work->getchannels);
-  my $bg = _bgcolor($mirror);
   $out->box(filled => 1, color => $bg);
 
-  $out->rubthrough(src => $work);
+  if ($work->getchannels == 4) {
+    $out->rubthrough(src => $work)
+      or print STDERR $out->errstr, "\n";
+  }
+  else {
+    $out->paste(src => $work)
+      or print STDERR $out->errstr, "\n";
+  }
 
   $work->flip(dir => 'v');
 
   $work = $work->crop(bottom => $add_height);
+  
   $work = Imager::transform2
     (
      {
-      channels => $work->getchannels,
+      channels => 4,
       constants =>
       {
        opacity => _percent($mirror->{opacity})
@@ -389,6 +388,25 @@ EOS
      $work
     ) or die Imager->errstr;
   $out->rubthrough(src => $work, ty => $oldheight + $gap);
+
+  if ($mirror->{perspective}) {
+    require Imager::Matrix2d;
+    my $old_width = $out->getwidth;
+    my $p = abs($mirror->{perspective});
+    my $new_width = $old_width / (1 + $p * $old_width) + 1;
+    my $angle = sin($mirror->{perspectiveangle} * 3.1415926 / 180);
+    my $persp = bless [ 1, 0, 0, 
+			-$angle, 1, 0,
+			-abs($p), 0, 1 ], 'Imager::Matrix2d';
+    $out->flip(dir => 'v');
+    $mirror->{perspective} < 0 and $out->flip(dir => 'h');
+    my $temp = $out->matrix_transform(matrix=> $persp, back=>$bg, xsize => $new_width)
+      or print STDERR "failed", $work->errstr, "\n";
+    $out = $temp;
+    $mirror->{perspective} < 0 and $out->flip(dir => 'h');
+    $out->flip(dir => 'v');
+  }
+
 
   $out;
 }
