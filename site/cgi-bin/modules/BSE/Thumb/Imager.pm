@@ -138,7 +138,7 @@ sub _parse_sepia {
     $sepia{color} = $1;
   }
   if (length $text) {
-    $$error = "unexpected junk in mirror: $text";
+    $$error = "unexpected junk in sepia: $text";
     return;
   }
   \%sepia;
@@ -264,6 +264,10 @@ sub thumb_dimensions_sized {
       $height += _percent_of($geo->{height}, $height)
 	+ _percent_of($geo->{horizon}, $height);
       $height = int($height);
+      if ($geo->{perspective}) {
+	my $p = abs($geo->{perspective});
+	$width = $width / (1 + $p * $width) + 1;
+      }
 	
       if ($geo->{bgalpha} != 255) {
 	$req_alpha = 1;
