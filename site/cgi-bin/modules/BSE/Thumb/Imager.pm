@@ -266,7 +266,7 @@ sub thumb_dimensions_sized {
       $height = int($height);
       if ($geo->{perspective}) {
 	my $p = abs($geo->{perspective});
-	$width = $width / (1 + $p * $width) + 1;
+	$width = int($width / (1 + $p * $width) + 1);
       }
 	
       if ($geo->{bgalpha} != 255) {
