@@ -28,11 +28,15 @@ sub _thumbimage_low {
 
   my %im = map { $_ => $im->{$_} } $im->columns;
   my $base = $self->thumb_base_url;
-  $im{image} = "$base?g=$geo_id&page=$im->{articleId}&image=$im->{id}";
-  
-  @im{qw/width height/} = 
+
+  @im{qw/width height alpha/} = 
     $thumbs->thumb_dimensions_sized($geometry, @$im{qw/width height/});
 
+  $im{image} = "$base?g=$geo_id&page=$im->{articleId}&image=$im->{id}";
+  # hack for IE6
+  $im{alpha} 
+    and $im{image} .= '&alpha-trans.png';
+  
   if ($field) {
     my $value = $im{$field};
     defined $value or $value = '';
