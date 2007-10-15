@@ -647,8 +647,15 @@ sub baseActs {
      sub {
        my ($name, $align, $rest) = split ' ', $_[0], 3;
 
-       my $im = $self->get_gimage($name)
-	 or return '';
+       my $im;
+       if ($name eq '-') {
+	 $im = $current_gimage
+	   or return '';
+       }
+       else {
+	 $im = $self->get_gimage($name)
+	   or return '';
+       }
 
        $self->_format_image($im, $align, $rest);
      },
