@@ -163,6 +163,22 @@ sub _parse_filter {
   \%filter;
 }
 
+sub _parse_conv {
+  my ($text, $error) = @_;
+
+  my @coef =  split /,/, $text;
+  unless (@coef) {
+    $$error = "No coefficients";
+    return;
+  }
+  return
+    {
+     action => 'filter',
+     type => 'conv',
+     coef => \@coef,
+    };
+}
+
 sub _parse_geometry {
   my ($geometry, $error) = @_;
 
@@ -195,6 +211,11 @@ sub _parse_geometry {
       my $filter = _parse_filter($1, $error)
 	or return;
       push @geo, $filter;
+    }
+    elsif ($geometry =~ s/^conv\(([^\)]*)\)//) {
+      my $conv = _parse_conv($1, $error)
+	or return;
+      push @geo, $conv;
     }
     else {
       $$error = "Unexpected junk at the end of the geometry $geometry";
