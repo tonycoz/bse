@@ -29,13 +29,19 @@ sub _thumbimage_low {
   my %im = map { $_ => $im->{$_} } $im->columns;
   my $base = $self->thumb_base_url;
 
-  @im{qw/width height alpha/} = 
+  @im{qw/width height alpha original/} = 
     $thumbs->thumb_dimensions_sized($geometry, @$im{qw/width height/});
 
-  $im{image} = "$base?g=$geo_id&page=$im->{articleId}&image=$im->{id}";
-  # hack for IE6
-  $im{alpha} 
-    and $im{image} .= '&alpha-trans.png';
+  if ($im{original}) {
+    $im{image} = "/images/" . $im->{image};
+  }
+  else {
+    $im{image} = "$base?g=$geo_id&page=$im->{articleId}&image=$im->{id}";
+
+    # hack for IE6
+    $im{alpha} 
+      and $im{image} .= '&alpha-trans.png';
+  }
   
   if ($field) {
     my $value = $im{$field};

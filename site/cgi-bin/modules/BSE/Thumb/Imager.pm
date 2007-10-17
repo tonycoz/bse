@@ -244,37 +244,42 @@ sub thumb_dimensions_sized {
     or return;
 
   my $req_alpha = 0;
+  my $use_original = 1;
 
   for my $geo (@$geolist) {
+    my $can_original = 0;
     if ($geo->{action} eq 'scale') {
       if ($geo->{fill}) {
 	# fill always produces an image the right size
+	$can_original = $geo->{width} == $width && $geo->{height} == $height;
 	($width, $height) = @$geo{qw/width height/};
-	next;
-      }
-      
-      if ($geo->{crop}) {
-	my $width_scale = $geo->{width} / $width;
-	my $height_scale = $geo->{height} / $height;
-	my $scale = $width_scale < $height_scale ? $height_scale : $width_scale;
-	
-	$width *= $scale;
-	$height *= $scale;
-	$width > $geo->{width} and $width = $geo->{width};
-	$height > $geo->{height} and $height = $geo->{height};
       }
       else {
-	if ($geo->{width} && $width > $geo->{width}) {
-	  $height = $height * $geo->{width} / $width;
-	  $width = $geo->{width};
+	if ($geo->{crop}) {
+	  my $width_scale = $geo->{width} / $width;
+	  my $height_scale = $geo->{height} / $height;
+	  my $scale = $width_scale < $height_scale ? $height_scale : $width_scale;
+	  
+	  $width *= $scale;
+	  $height *= $scale;
+	  $width > $geo->{width} and $width = $geo->{width};
+	  $height > $geo->{height} and $height = $geo->{height};
 	}
-	if ($geo->{height} && $height > $geo->{height}) {
-	  $width = $width * $geo->{height} / $height;
-	  $height = $geo->{height};
+	else {
+	  my ($start_width, $start_height) = ($width, $height);
+	  if ($geo->{width} && $width > $geo->{width}) {
+	    $height = $height * $geo->{width} / $width;
+	    $width = $geo->{width};
+	  }
+	  if ($geo->{height} && $height > $geo->{height}) {
+	    $width = $width * $geo->{height} / $height;
+	    $height = $geo->{height};
+	  }
+	  $can_original = $start_width == $width && $start_height == $height;
 	}
+	$width = int($width);
+	$height = int($height);
       }
-      $width = int($width);
-      $height = int($height);
     }
     elsif ($geo->{action} eq 'roundcorners') {
       if ($geo->{bgalpha} != 255) {
@@ -294,9 +299,11 @@ sub thumb_dimensions_sized {
 	$req_alpha = 1;
       }
     }
+
+    $use_original &&= $can_original;
   }
 
-  return ($width, $height, $req_alpha);
+  return ($width, $height, $req_alpha, $use_original);
 }
 
 sub _min {
