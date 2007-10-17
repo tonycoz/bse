@@ -256,6 +256,7 @@ sub thumb_dimensions_sized {
       }
       else {
 	if ($geo->{crop}) {
+	  my ($start_width, $start_height) = ($width, $height);
 	  my $width_scale = $geo->{width} / $width;
 	  my $height_scale = $geo->{height} / $height;
 	  my $scale = $width_scale < $height_scale ? $height_scale : $width_scale;
@@ -264,6 +265,7 @@ sub thumb_dimensions_sized {
 	  $height *= $scale;
 	  $width > $geo->{width} and $width = $geo->{width};
 	  $height > $geo->{height} and $height = $geo->{height};
+	  $can_original = $start_width == $width && $start_height == $height && $scale == 1;
 	}
 	else {
 	  my ($start_width, $start_height) = ($width, $height);
