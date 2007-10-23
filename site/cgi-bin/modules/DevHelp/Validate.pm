@@ -467,7 +467,7 @@ sub validate_field {
 sub _make_error {
   my ($field, $info, $rule, $message) = @_;
 
-  $message ||= $rule->{error} || 'Validation error on field $n';
+  $message = $rule->{error} || $message || 'Validation error on field $n';
 
   my $name = $info->{description} || $field;
   $message =~ s/\$n/$name/g;
