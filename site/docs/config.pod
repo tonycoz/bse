@@ -262,6 +262,12 @@ without modifying the name of the HTML file.  Default: False.
 If this is true then the user/group/permissions database is used to
 control access to the system.  Default: False.
 
+=item access_filter_steps
+
+If this is true, then the drop-down lists of possible stepparents and
+stepchildren on the article edit pages are filtered for access control.
+Default: False.
+
 =item server_auth
 
 Set this to non-zero to enable authentication via server

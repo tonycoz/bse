@@ -53,6 +53,16 @@ select ar.* from article ar, other_parents op
      and date_format(?, '%Y%m%d') between date_format(op.release, '%Y%m%d') and date_format(op.expire, '%Y%m%d') and listed <> 0
 EOS
    'Articles.ids'=>'select id from article',
+   articlePossibleStepparents => <<EOS,
+select a.id, a.title from article a
+where a.id not in (select parentId from other_parents where childId = ?) 
+      and a.id <> ?;
+EOS
+   articlePossibleStepchildren => <<EOS,
+select a.id, a.title from article a 
+where a.id not in (select childId from other_parents where parentId = ?) 
+      and a.id <> ?;
+EOS
 
    Images => 'select * from image',
    replaceImage =>

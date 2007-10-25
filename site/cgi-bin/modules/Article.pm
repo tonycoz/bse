@@ -307,4 +307,16 @@ sub is_step_ancestor {
   return 0;
 }
 
+sub possible_stepparents {
+  my $self = shift;
+
+  return BSE::DB->query(articlePossibleStepparents => $self->{id}, $self->{id});
+}
+
+sub possible_stepchildren {
+  my $self = shift;
+
+  return BSE::DB->query(articlePossibleStepchildren => $self->{id}, $self->{id});
+}
+
 1;
