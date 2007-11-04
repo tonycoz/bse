@@ -179,6 +179,47 @@ sub _parse_conv {
     };
 }
 
+sub _parse_border {
+  my ($text, $error) = @_;
+
+  my %border =
+    (
+     action => 'border',
+     bg => '000000',
+     bgalpha => 255,
+     width => '2',
+    );
+
+  while ($text =~ s/^(\w+):([^,]+),?//) {
+    unless (exists $border{$1}) {
+      $$error = "Unknown border parameter $1";
+      return;
+    }
+      
+    $border{$1} = $2;
+  }
+
+  # parse out the border
+  my @widths = split ' ', $border{width};
+  if (@widths == 1) {
+    $border{top} = $border{bottom} = $border{left} = 
+      $border{right} = $widths[0];
+  }
+  elsif (@widths == 2) {
+    $border{left} = $border{right} = $widths[0];
+    $border{top} = $border{bottom} = $widths[1];
+  }
+  elsif (@widths == 4) {
+    @border{qw/left right top bottom/} = @widths;
+  }
+  else {
+    $$error = 'border(width:...) only accepts 1,2,4 widths';
+    return;
+  }
+
+  \%border;
+}
+
 sub _parse_geometry {
   my ($geometry, $error) = @_;
 
@@ -216,6 +257,11 @@ sub _parse_geometry {
       my $conv = _parse_conv($1, $error)
 	or return;
       push @geo, $conv;
+    }
+    elsif ($geometry =~ s/^border\(([^\)]*)\)//) {
+      my $border = _parse_border($1, $error)
+	or return;
+      push @geo, $border;
     }
     else {
       $$error = "Unexpected junk at the end of the geometry $geometry";
@@ -300,6 +346,13 @@ sub thumb_dimensions_sized {
       if ($geo->{bgalpha} != 255) {
 	$req_alpha = 1;
       }
+    }
+    elsif ($geo->{action} eq 'border') {
+      $height += _percent_of_rounded($geo->{top}, $height) 
+	+ _percent_of($geo->{bottom}, $height);
+      $width += _percent_of($geo->{left}, $width) 
+	+ _percent_of_rounded($geo->{right}, $width);
+      $geo->{bgalpha} != 255 and $req_alpha = 1;
     }
 
     $use_original &&= $can_original;
@@ -469,6 +522,39 @@ sub _do_filter {
   $work;
 }
 
+sub _do_border {
+  my ($work, $border) = @_;
+
+  $work = $work->convert(preset => 'rgb')
+    if $work->getchannels < 3;
+  my $channels = $work->getchannels;
+  $border->{bgalpha} != 255 and $channels = 4;
+  my $left = _percent_of_rounded($border->{left}, $work->getwidth);
+  my $right = _percent_of_rounded($border->{right}, $work->getwidth);
+  my $top = _percent_of_rounded($border->{top}, $work->getheight);
+  my $bottom = _percent_of_rounded($border->{bottom}, $work->getheight);
+
+  my $bg = _bgcolor($border);
+  my $out = Imager->new(xsize => $left + $right + $work->getwidth,
+			ysize => $top + $bottom + $work->getheight,
+			channels => $channels);
+  
+  # draw the borders
+  my %box = ( filled => 1, color => $bg );
+  $top 
+    and $out->box(%box, ymax => $top-1);
+  $bottom
+    and $out->box(%box, ymin => $out->getheight() - $bottom);
+  $left
+    and $out->box(%box, xmax => $left-1);
+  $right
+    and $out->box(%box, xmin => $out->getwidth() - $right);
+
+  $out->paste(src => $work, left => $left, top => $top);
+
+  return $out;
+}
+
 sub thumb_data {
   my ($self, $filename, $geometry, $error) = @_;
 
@@ -547,6 +633,9 @@ sub thumb_data {
     elsif ($geo->{action} eq 'filter') {
       $work = _do_filter($work, $geo);
     }
+    elsif ($geo->{action} eq 'border') {
+      $work = _do_border($work, $geo);
+    }
   }
 
   my $data;
@@ -582,6 +671,12 @@ sub _percent_of {
   else {
     return $num;
   }
+}
+
+sub _percent_of_rounded {
+  my ($num, $base) = @_;
+
+  return sprintf("%.0f", _percent_of($num, $base));
 }
 
 sub _bgcolor {
