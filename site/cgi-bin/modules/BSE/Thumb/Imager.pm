@@ -392,10 +392,10 @@ sub thumb_dimensions_sized {
       my $angle = $geo->{angle} * PI / 180;
       my $cos = cos($angle);
       my $sin = sin($angle);
-      my $new_width = ceil(_max($width * $cos + $height * $sin,
-				$width * $cos - $height * $sin));
-      my $new_height = ceil(_max($width * -$sin + $height * $cos,
-				 $width * -$sin - $height * $cos));
+      my $new_width = ceil(_max(abs($width * $cos + $height * $sin),
+				abs($width * $cos - $height * $sin)));
+      my $new_height = ceil(_max(abs($width * -$sin + $height * $cos),
+				 abs($width * -$sin - $height * $cos)));
       $width = $new_width;
       $height = $new_height;
 
