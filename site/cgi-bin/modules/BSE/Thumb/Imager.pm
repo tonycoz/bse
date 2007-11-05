@@ -1,6 +1,9 @@
 package BSE::Thumb::Imager;
 use strict;
-#use blib '/home/tony/dev/imager/maint/Imager/';
+use POSIX qw(ceil);
+use blib '/home/tony/dev/imager/svn/Imager/';
+
+use constant PI => 3.14159265358979;
 
 sub new {
   my ($class, $cfg) = @_;
@@ -220,6 +223,33 @@ sub _parse_border {
   \%border;
 }
 
+sub _parse_rotate {
+  my ($text, $error) = @_;
+
+  my %rotate =
+    (
+     action => 'rotate',
+     bg => '000000',
+     bgalpha => 0,
+     angle => 90,
+    );
+
+  while ($text =~ s/^(\w+):([^,]+),?//) {
+    unless (exists $rotate{$1}) {
+      $$error = "Unknown rotate parameter $1";
+      return;
+    }
+      
+    $rotate{$1} = $2;
+  }
+
+  if ($rotate{angle} >= 360) {
+    $rotate{angle} %= 360;
+  }
+
+  \%rotate;
+}
+
 sub _parse_geometry {
   my ($geometry, $error) = @_;
 
@@ -262,6 +292,11 @@ sub _parse_geometry {
       my $border = _parse_border($1, $error)
 	or return;
       push @geo, $border;
+    }
+    elsif ($geometry =~ s/^rotate\(([^\)]*)\)//) {
+      my $rotate = _parse_rotate($1, $error)
+	or return;
+      push @geo, $rotate;
     }
     else {
       $$error = "Unexpected junk at the end of the geometry $geometry";
@@ -352,6 +387,19 @@ sub thumb_dimensions_sized {
 	+ _percent_of($geo->{bottom}, $height);
       $width += _percent_of($geo->{left}, $width) 
 	+ _percent_of_rounded($geo->{right}, $width);
+      $geo->{bgalpha} != 255 and $req_alpha = 1;
+    }
+    elsif ($geo->{action} eq 'rotate') {
+      my $angle = $geo->{angle} * PI / 180;
+      my $cos = cos($angle);
+      my $sin = sin($angle);
+      my $new_width = ceil(_max($width * $cos + $height * $sin,
+				$width * $cos - $height * $sin));
+      my $new_height = ceil(_max($width * -$sin + $height * $cos,
+				 $width * -$sin - $height * $cos));
+      $width = $new_width;
+      $height = $new_height;
+
       $geo->{bgalpha} != 255 and $req_alpha = 1;
     }
 
@@ -555,6 +603,23 @@ sub _do_border {
   return $out;
 }
 
+sub _do_rotate {
+  my ($work, $rotate) = @_;
+
+  $work = $work->convert(preset => 'rgb')
+    if $work->getchannels < 3;
+
+  $work = $work->convert(preset => 'addalpha')
+    if $rotate->{bgalpha} != 255;
+
+  my $bg = _bgcolor($rotate);
+
+  my $out = $work->rotate(degrees => $rotate->{angle}, back => $bg)
+    or print STDERR "rotation error: ", $work->errstr, "\n";
+
+  $out;
+}
+
 sub thumb_data {
   my ($self, $filename, $geometry, $error) = @_;
 
@@ -635,6 +700,9 @@ sub thumb_data {
     }
     elsif ($geo->{action} eq 'border') {
       $work = _do_border($work, $geo);
+    }
+    elsif ($geo->{action} eq 'rotate') {
+      $work = _do_rotate($work, $geo);
     }
   }
 
