@@ -1,6 +1,7 @@
 package BSE::Thumb::Imager;
 use strict;
 use POSIX qw(ceil);
+use blib '/home/tony/dev/imager/svn/Imager';
 
 use constant PI => 3.14159265358979;
 
@@ -343,6 +344,8 @@ sub thumb_dimensions_sized {
 	  
 	  $width *= $scale;
 	  $height *= $scale;
+	  $width = int($width);
+	  $height = int($height);
 	  $width > $geo->{width} and $width = $geo->{width};
 	  $height > $geo->{height} and $height = $geo->{height};
 	  $can_original = $start_width == $width && $start_height == $height && $scale == 1;
@@ -357,10 +360,10 @@ sub thumb_dimensions_sized {
 	    $width = $width * $geo->{height} / $height;
 	    $height = $geo->{height};
 	  }
+	  $width = int($width+0.5);
+	  $height = int($height+0.5);
 	  $can_original = $start_width == $width && $start_height == $height;
 	}
-	$width = int($width);
-	$height = int($height);
       }
     }
     elsif ($geo->{action} eq 'roundcorners') {
