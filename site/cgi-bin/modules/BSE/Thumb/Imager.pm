@@ -1,7 +1,7 @@
 package BSE::Thumb::Imager;
 use strict;
 use POSIX qw(ceil);
-use blib '/home/tony/dev/imager/svn/Imager';
+#use blib '/home/tony/dev/imager/svn/Imager';
 
 use constant PI => 3.14159265358979;
 
