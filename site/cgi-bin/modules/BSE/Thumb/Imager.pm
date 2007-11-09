@@ -13,6 +13,7 @@ my %handlers =
    conv => 'BSE::Thumb::Imager::Conv',
    border => 'BSE::Thumb::Imager::Border',
    rotate => 'BSE::Thumb::Imager::Rotate',
+   perspective => 'BSE::Thumb::Imager::Perspective',
   );
 
 sub new {
@@ -785,5 +786,75 @@ sub do {
 
   $out;
 }
+
+package BSE::Thumb::Imager::Perspective;
+use vars qw(@ISA);
+@ISA = 'BSE::Thumb::Imager::Handler';
+
+sub new {
+  my ($class, $text, $error) = @_;
+
+  my %perspective =
+    (
+     bg => '000000',
+     bgalpha => 255,
+     perspective => 0,
+     perspectiveangle => '0',
+    );
+
+  unless ($text =~ s/^(-?[\d.]+),//) {
+    $$error = "perspective: no perspective amount";
+    return;
+  }
+  $perspective{perspective} = $1;
+  $class->_build($text, 'perspective', \%perspective, $error)
+    or return;
+
+  bless \%perspective, $class;
+}
+
+sub size {
+  my ($geo, $width, $height) = @_;
+
+  if ($geo->{perspective}) {
+    my $p = abs($geo->{perspective});
+    $width = int($width / (1 + $p * $width) + 1);
+  }
+
+  return ( $width, $height, $geo->{bgalpha} != 255 );
+}
+
+sub do {
+  my ($mirror, $work) = @_;
+
+  if ($work->getchannels < 3) {
+    $work = $work->convert(preset => 'rgb');
+  }
+  if ($mirror->{bgalpha} != 255) {
+    $work = $work->convert(preset => 'addalpha');
+  }
+
+  my $bg = $mirror->_bgcolor;
+
+  require Imager::Matrix2d;
+  my $old_width = $work->getwidth;
+  my $p = abs($mirror->{perspective});
+  my $new_width = $old_width / (1 + $p * $old_width) + 1;
+  my $angle = sin($mirror->{perspectiveangle} * 3.1415926 / 180);
+  my $persp = bless [ 1, 0, 0, 
+		      -$angle, 1, 0,
+		      -abs($p), 0, 1 ], 'Imager::Matrix2d';
+  $work->flip(dir => 'v');
+  $mirror->{perspective} < 0 and $work->flip(dir => 'h');
+  my $temp = $work->matrix_transform(matrix=> $persp, back=>$bg, xsize => $new_width)
+    or print STDERR "failed", $work->errstr, "\n";
+  $work = $temp;
+  $mirror->{perspective} < 0 and $work->flip(dir => 'h');
+  $work->flip(dir => 'v');
+
+  $work;
+}
+
+
 
 1;
