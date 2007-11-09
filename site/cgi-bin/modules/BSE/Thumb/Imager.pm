@@ -1,5 +1,6 @@
 package BSE::Thumb::Imager;
 use strict;
+use constant CFG_SECTION => 'imager thumb driver';
 #use blib '/home/tony/dev/imager/svn/Imager';
 
 my %handlers =
@@ -95,6 +96,11 @@ sub thumb_data {
   my $geolist = $self->_parse_geometry($geometry, $error)
     or return;
 
+  my $blib = $self->{cfg}->entry(CFG_SECTION, 'blib');
+  if ($blib) {
+    require blib;
+    blib->import(split /,/, $blib);
+  }
   require Imager;
   my $src = Imager->new;
   unless ($src->read(file => $filename)) {
@@ -978,9 +984,6 @@ sub do {
   if ($work->getchannels < 3) {
     $work = $work->convert(preset => 'rgb');
   }
-  if ($self->{bgalpha} != 255) {
-    $work = $work->convert(preset => 'addalpha');
-  }
 
   my $bg = $self->_bgcolor;
 
@@ -993,11 +996,17 @@ sub do {
 
   $width < $want_width and $width = $want_width;
   $height < $want_height and $height = $want_height;
+  my $out_channels = $self->{bgalpha} != 255 ? 4 : 3;
   my $out = Imager->new(xsize => $width, ysize => $height, 
-			channels => $work->getchannels);
+			channels => $out_channels);
   $out->box(filled => 1, color => $bg);
 
-  $out->paste(src => $work, left => $want_xpos, top => $want_ypos);
+  if ($work->getchannels == 3) {
+    $out->paste(src => $work, left => $want_xpos, top => $want_ypos);
+  }
+  else {
+    $out->rubthrough(src => $work, tx => $want_xpos, ty => $want_ypos);
+  }
 
   $out;
 }
