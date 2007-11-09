@@ -1,9 +1,19 @@
 package BSE::Thumb::Imager;
 use strict;
-use POSIX qw(ceil);
 #use blib '/home/tony/dev/imager/svn/Imager';
 
-use constant PI => 3.14159265358979;
+my %handlers =
+  (
+   # default handlers
+   scale => 'BSE::Thumb::Imager::Scale',
+   roundcorners => 'BSE::Thumb::Imager::RoundCorners',
+   mirror => 'BSE::Thumb::Imager::Mirror',
+   sepia => 'BSE::Thumb::Imager::Sepia',
+   filter => 'BSE::Thumb::Imager::Filter',
+   conv => 'BSE::Thumb::Imager::Conv',
+   border => 'BSE::Thumb::Imager::Border',
+   rotate => 'BSE::Thumb::Imager::Rotate',
+  );
 
 sub new {
   my ($class, $cfg) = @_;
@@ -11,10 +21,185 @@ sub new {
   return bless { cfg => $cfg }, $class;
 }
 
-sub _parse_scale {
-  my ($geometry, $error) = @_;
+sub _handler {
+  my ($self, $op) = @_;
 
-  my %geo = ( action => 'scale' );
+  $handlers{$op};
+}
+
+sub _parse_geometry {
+  my ($self, $geometry, $error) = @_;
+
+  my @geo;
+  while (length $geometry) {
+    if ($geometry =~ s/^(\w+)\(([^\)]+)\)//) {
+      my ($op, $args) = ( $1, $2 );
+      my $handler_class = $self->_handler($op);
+      unless ($handler_class) {
+	$$error = "Unknown operator $op";
+	return;
+      }
+      my $geo = $handler_class->new($args, $error)
+	or return;
+
+      push @geo, $geo;
+    }
+    else {
+      $$error = "Unexpected junk at the end of the geometry $geometry";
+      return;
+    }
+    $geometry =~ s/^,//;
+  }
+
+  return \@geo;
+}
+
+sub validate_geometry {
+  my ($self, $geometry, $rerror) = @_;
+
+  $self->_parse_geometry($geometry, $rerror)
+    or return;
+
+  return 1;
+}
+
+sub thumb_dimensions_sized {
+  my ($self, $geometry, $width, $height) = @_;
+
+  my $error;
+  my $geolist = $self->_parse_geometry($geometry, \$error)
+    or return;
+
+  my $req_alpha = 0;
+  my $use_original = 1;
+
+  for my $geo (@$geolist) {
+    my ($can_original, $this_alpha);
+
+    ($width, $height, $this_alpha, $can_original)
+      = $geo->size($width, $height);
+
+    $req_alpha ||= $req_alpha;
+    $use_original &&= $can_original;
+  }
+
+  return ($width, $height, $req_alpha, $use_original);
+}
+
+sub thumb_data {
+  my ($self, $filename, $geometry, $error) = @_;
+
+  my $geolist = $self->_parse_geometry($geometry, $error)
+    or return;
+
+  require Imager;
+  my $src = Imager->new;
+  unless ($src->read(file => $filename)) {
+    $$error = "Cannot read image $filename: ".$src->errstr;
+    return;
+  }
+
+  my $work = $src;
+  for my $geo (@$geolist) {
+    $work = $geo->do($work);
+  }
+
+  my $data;
+  my $type = $src->tags(name => 'i_format');
+
+  if ($work->getchannels == 4 || $work->getchannels == 2) {
+    $type = 'png';
+  }
+  
+  unless ($work->write(data => \$data, type => $type)) {
+    $$error = "cannot write image ".$work->errstr;
+    return;
+  }
+
+  return ( $data, "image/$type" );
+}
+
+package BSE::Thumb::Imager::Handler;
+
+sub new {
+  my ($class, $geometry, $error) = @_;
+
+  $$error = "$class needs to define a new method";
+
+  return;
+}
+
+# parse key:foo,key2:foo2 string
+sub _build {
+  my ($class, $text, $op, $base, $error) = @_;
+
+  while ($text =~ s/^(\w+):([^,]+),?//) {
+    unless (exists $base->{$1}) {
+      $$error = "Unknown $op parameter $1";
+      return;
+    }
+      
+    $base->{$1} = $2;
+  }
+
+  if (length $text) {
+    $$error = "unexpected junk in op: $text";
+    return;
+  }
+  
+  $base;
+}
+
+sub size {
+  my ($self, $width, $height) = @_;
+
+  return ( $width, $height );
+}
+
+sub _bgcolor {
+  my ($spec) = @_;
+
+  my $bg = Imager::Color->new($spec->{bg});
+  $bg->set(($bg->rgba)[0..2], $spec->{bgalpha});
+
+  $bg;
+}
+
+sub _percent {
+  my ($self, $num) = @_;
+
+  if ($num =~ s/%$//) {
+    $num /= 100.0;
+  }
+  $num;
+}
+
+sub _percent_of {
+  my ($self, $num, $base) = @_;
+
+  if ($num =~ s/%$//) {
+    return $base * $num / 100.0;
+  }
+  else {
+    return $num;
+  }
+}
+
+sub _percent_of_rounded {
+  my ($self, $num, $base) = @_;
+
+  return sprintf("%.0f", $self->_percent_of($num, $base));
+}
+
+
+package BSE::Thumb::Imager::Scale;
+use vars qw(@ISA);
+@ISA = 'BSE::Thumb::Imager::Handler';
+
+sub new {
+  my ($class, $geometry, $error) = @_;
+
+  my %geo;
   if ($geometry =~ s/^(\d+)x(\d+)//) {
     @geo{qw(width height)} = ( $1, $2 );
   }
@@ -47,15 +232,113 @@ sub _parse_scale {
     }
   }
 
-  return \%geo;
+  return bless \%geo, $class;
 }
 
-sub _parse_roundcorners {
-  my ($text, $error) = @_;
+sub size {
+  my ($geo, $width, $height, $alpha) = @_;
+
+  my $can_original;
+  if ($geo->{fill}) {
+    # fill always produces an image the right size
+    $can_original = $geo->{width} == $width && $geo->{height} == $height;
+    ($width, $height) = @$geo{qw/width height/};
+  }
+  else {
+    if ($geo->{crop}) {
+      my ($start_width, $start_height) = ($width, $height);
+      my $width_scale = $geo->{width} / $width;
+      my $height_scale = $geo->{height} / $height;
+      my $scale = $width_scale < $height_scale ? $height_scale : $width_scale;
+      $scale >= 1 and $scale = 1;
+      
+      $width *= $scale;
+      $height *= $scale;
+      $width = int($width);
+      $height = int($height);
+      $width > $geo->{width} and $width = $geo->{width};
+      $height > $geo->{height} and $height = $geo->{height};
+      $can_original = $start_width == $width && $start_height == $height && $scale == 1;
+    }
+    else {
+      my ($start_width, $start_height) = ($width, $height);
+      if ($geo->{width} && $width > $geo->{width}) {
+	$height = $height * $geo->{width} / $width;
+	$width = $geo->{width};
+      }
+      if ($geo->{height} && $height > $geo->{height}) {
+	$width = $width * $geo->{height} / $height;
+	$height = $geo->{height};
+      }
+      $width = int($width+0.5);
+      $height = int($height+0.5);
+      $can_original = $start_width == $width && $start_height == $height;
+    }
+  }
+
+  return ($width, $height, 0, $can_original);
+}
+
+sub do {
+  my ($geo, $work) = @_;
+
+  my $scaled = $work;
+  if ($geo->{crop}) {
+    my $width_scale = $geo->{width} / $work->getwidth;
+    my $height_scale = $geo->{height} / $work->getheight;
+    my $scale = $width_scale < $height_scale ? $height_scale : $width_scale;
+    if ($scale < 1.0) {
+      $scaled = $work->scale(scalefactor => $scale, qtype=>'mixing');
+    }
+    my $width = $scaled->getwidth;
+    if ($width > $geo->{width}) {
+      $scaled = $scaled->crop(left => ($width-$geo->{width})/2, width => $geo->{width});
+    }
+    my $height = $scaled->getheight;
+    if ($height > $geo->{height}) {
+      $scaled = $scaled->crop(top => ($height - $geo->{height}) / 2,
+			      height => $geo->{height});
+    }
+  }
+  else {
+    my $width = $work->getwidth;
+    my $height = $work->getheight;
+    if ($geo->{width} && $width > $geo->{width}) {
+      $height = $height * $geo->{width} / $width;
+      $width = $geo->{width};
+    }
+    if ($geo->{height} && $height > $geo->{height}) {
+      $width = $width * $geo->{height} / $height;
+      $height = $geo->{height};
+    }
+    $width = int($width);
+    $height = int($height);
+    $scaled = $work->scale(xpixels => $width, ypixels => $height, 
+			   qtype => 'mixing');
+  }
+  
+  my $result = $scaled;
+  if ($geo->{fill} && 
+      ($scaled->getwidth < $geo->{width} || $scaled->getheight < $geo->{height})) {
+    $result = Imager->new(xsize => $geo->{width}, ysize => $geo->{height});
+    $result->box(color => $geo->{fill}, filled => 1);
+    $result->paste(left => ($geo->{width} - $scaled->getwidth) / 2,
+		   top => ($geo->{height} - $scaled->getheight) / 2 ,
+		   img => $scaled);
+  }
+
+  return $result;
+}
+
+package BSE::Thumb::Imager::RoundCorners;
+use vars qw(@ISA);
+@ISA = 'BSE::Thumb::Imager::Handler';
+
+sub new {
+  my ($class, $text, $error) = @_;
 
   my %geo = 
     ( 
-     action => 'roundcorners',
      tl => 10,
      tr => 10,
      bl => 10,
@@ -91,342 +374,24 @@ sub _parse_roundcorners {
     $$error = "unexpected junk in roundcorners: $text";
     return;
   }
-
-  \%geo;
-}
-
-sub _parse_mirror {
-  my ($text, $error) = @_;
-
-  my %mirror =
-    (
-     action => 'mirror',
-     height => '30%',
-     bg => '000000',
-     bgalpha => 255,
-     opacity => '40%',
-     srcx => 'x',
-     srcy => 'y',
-     horizon => '0',
-     perspective => 0,
-     perspectiveangle => '0',
-    );
-
-  while ($text =~ s/^(\w+):([^,]+),?//) {
-    unless (exists $mirror{$1}) {
-      $$error = "Unknown mirror parameter $1";
-      return;
-    }
       
-    $mirror{$1} = $2;
-  }
-  
-  if (length $text) {
-    $$error = "unexpected junk in mirror: $text";
-    return;
-  }
-
-  \%mirror;
+      bless \%geo, $class;
 }
 
-sub _parse_sepia {
-  my ($text, $error) = @_;
+sub size {
+  my ($self, $width, $height) = @_;
 
-  my %sepia =
-    (
-     action => 'sepia',
-     color => '000000',
-    );
-  if ($text =~ s/^([^,]+),?//) {
-    $sepia{color} = $1;
-  }
-  if (length $text) {
-    $$error = "unexpected junk in sepia: $text";
-    return;
-  }
-  \%sepia;
+  return ( $width, $height, $self->{bgalpha} != 255 );
 }
 
-sub _parse_filter {
-  my ($text, $error) = @_;
-
-  unless ($text =~ s/^(\w+),?//) {
-    $$error = "filter: no filter name";
-    return;
-  }
-  my %filter =
-    (
-     action => 'filter',
-     type => $1
-    );
-  while ($text =~ s/^(\w+):([^,]+),?//) {
-    $filter{$1} = $2;
-  }
-
-  \%filter;
-}
-
-sub _parse_conv {
-  my ($text, $error) = @_;
-
-  my @coef =  split /,/, $text;
-  unless (@coef) {
-    $$error = "No coefficients";
-    return;
-  }
-  return
-    {
-     action => 'filter',
-     type => 'conv',
-     coef => \@coef,
-    };
-}
-
-sub _parse_border {
-  my ($text, $error) = @_;
-
-  my %border =
-    (
-     action => 'border',
-     bg => '000000',
-     bgalpha => 255,
-     width => '2',
-    );
-
-  while ($text =~ s/^(\w+):([^,]+),?//) {
-    unless (exists $border{$1}) {
-      $$error = "Unknown border parameter $1";
-      return;
-    }
-      
-    $border{$1} = $2;
-  }
-
-  # parse out the border
-  my @widths = split ' ', $border{width};
-  if (@widths == 1) {
-    $border{top} = $border{bottom} = $border{left} = 
-      $border{right} = $widths[0];
-  }
-  elsif (@widths == 2) {
-    $border{left} = $border{right} = $widths[0];
-    $border{top} = $border{bottom} = $widths[1];
-  }
-  elsif (@widths == 4) {
-    @border{qw/left right top bottom/} = @widths;
-  }
-  else {
-    $$error = 'border(width:...) only accepts 1,2,4 widths';
-    return;
-  }
-
-  \%border;
-}
-
-sub _parse_rotate {
-  my ($text, $error) = @_;
-
-  my %rotate =
-    (
-     action => 'rotate',
-     bg => '000000',
-     bgalpha => 0,
-     angle => 90,
-    );
-
-  while ($text =~ s/^(\w+):([^,]+),?//) {
-    unless (exists $rotate{$1}) {
-      $$error = "Unknown rotate parameter $1";
-      return;
-    }
-      
-    $rotate{$1} = $2;
-  }
-
-  if ($rotate{angle} >= 360) {
-    $rotate{angle} %= 360;
-  }
-
-  \%rotate;
-}
-
-sub _parse_geometry {
-  my ($geometry, $error) = @_;
-
-  my @geo;
-  while (length $geometry) {
-    if ($geometry =~ s/^scale\(([^\)]+)\)//) {
-      my $scale = _parse_scale($1, $error)
-	or return;
-      push @geo, $scale;
-    }
-    elsif ($geometry =~ s/^roundcorners\(([^\)]*)\)//) {
-      my $round = _parse_roundcorners($1, $error)
-	or return;
-      push @geo, $round;
-    }
-    elsif ($geometry =~ s/^mirror\(([^\)]*)\)//) {
-      my $mirror = _parse_mirror($1, $error)
-	or return;
-      push @geo, $mirror;
-    }
-    elsif ($geometry =~ s/^grey\(\)//) {
-      push @geo, { action => 'grey' };
-    }
-    elsif ($geometry =~ s/^sepia\(([^\)]*)\)//) {
-      my $sepia = _parse_sepia($1, $error)
-	or return;
-      push @geo, $sepia;
-    }
-    elsif ($geometry =~ s/^filter\(([^\)]*)\)//) {
-      my $filter = _parse_filter($1, $error)
-	or return;
-      push @geo, $filter;
-    }
-    elsif ($geometry =~ s/^conv\(([^\)]*)\)//) {
-      my $conv = _parse_conv($1, $error)
-	or return;
-      push @geo, $conv;
-    }
-    elsif ($geometry =~ s/^border\(([^\)]*)\)//) {
-      my $border = _parse_border($1, $error)
-	or return;
-      push @geo, $border;
-    }
-    elsif ($geometry =~ s/^rotate\(([^\)]*)\)//) {
-      my $rotate = _parse_rotate($1, $error)
-	or return;
-      push @geo, $rotate;
-    }
-    else {
-      $$error = "Unexpected junk at the end of the geometry $geometry";
-      return;
-    }
-    $geometry =~ s/^,//;
-  }
-
-  return \@geo;
-}
-
-sub validate_geometry {
-  my ($self, $geometry, $rerror) = @_;
-
-  _parse_geometry($geometry, $rerror)
-    or return;
-
-  return 1;
-}
-
-sub thumb_dimensions_sized {
-  my ($self, $geometry, $width, $height) = @_;
-
-  my $error;
-  my $geolist = _parse_geometry($geometry, \$error)
-    or return;
-
-  my $req_alpha = 0;
-  my $use_original = 1;
-
-  for my $geo (@$geolist) {
-    my $can_original = 0;
-    if ($geo->{action} eq 'scale') {
-      if ($geo->{fill}) {
-	# fill always produces an image the right size
-	$can_original = $geo->{width} == $width && $geo->{height} == $height;
-	($width, $height) = @$geo{qw/width height/};
-      }
-      else {
-	if ($geo->{crop}) {
-	  my ($start_width, $start_height) = ($width, $height);
-	  my $width_scale = $geo->{width} / $width;
-	  my $height_scale = $geo->{height} / $height;
-	  my $scale = $width_scale < $height_scale ? $height_scale : $width_scale;
-	  
-	  $width *= $scale;
-	  $height *= $scale;
-	  $width = int($width);
-	  $height = int($height);
-	  $width > $geo->{width} and $width = $geo->{width};
-	  $height > $geo->{height} and $height = $geo->{height};
-	  $can_original = $start_width == $width && $start_height == $height && $scale == 1;
-	}
-	else {
-	  my ($start_width, $start_height) = ($width, $height);
-	  if ($geo->{width} && $width > $geo->{width}) {
-	    $height = $height * $geo->{width} / $width;
-	    $width = $geo->{width};
-	  }
-	  if ($geo->{height} && $height > $geo->{height}) {
-	    $width = $width * $geo->{height} / $height;
-	    $height = $geo->{height};
-	  }
-	  $width = int($width+0.5);
-	  $height = int($height+0.5);
-	  $can_original = $start_width == $width && $start_height == $height;
-	}
-      }
-    }
-    elsif ($geo->{action} eq 'roundcorners') {
-      if ($geo->{bgalpha} != 255) {
-	$req_alpha = 1;
-      }
-    }
-    elsif ($geo->{action} eq 'mirror') {
-      $height += _percent_of($geo->{height}, $height)
-	+ _percent_of($geo->{horizon}, $height);
-      $height = int($height);
-      if ($geo->{perspective}) {
-	my $p = abs($geo->{perspective});
-	$width = int($width / (1 + $p * $width) + 1);
-      }
-	
-      if ($geo->{bgalpha} != 255) {
-	$req_alpha = 1;
-      }
-    }
-    elsif ($geo->{action} eq 'border') {
-      $height += _percent_of_rounded($geo->{top}, $height) 
-	+ _percent_of($geo->{bottom}, $height);
-      $width += _percent_of($geo->{left}, $width) 
-	+ _percent_of_rounded($geo->{right}, $width);
-      $geo->{bgalpha} != 255 and $req_alpha = 1;
-    }
-    elsif ($geo->{action} eq 'rotate') {
-      my $angle = $geo->{angle} * PI / 180;
-      my $cos = cos($angle);
-      my $sin = sin($angle);
-      my $new_width = ceil(_max(abs($width * $cos + $height * $sin),
-				abs($width * $cos - $height * $sin)));
-      my $new_height = ceil(_max(abs($width * -$sin + $height * $cos),
-				 abs($width * -$sin - $height * $cos)));
-      $width = $new_width;
-      $height = $new_height;
-
-      $geo->{bgalpha} != 255 and $req_alpha = 1;
-    }
-
-    $use_original &&= $can_original;
-  }
-
-  return ($width, $height, $req_alpha, $use_original);
-}
-
-sub _min {
-  $_[0] < $_[1] ? $_[0] : $_[1];
-}
-
-sub _max {
-  $_[0] > $_[1] ? $_[0] : $_[1];
-}
-
-sub _do_roundcorners {
-  my ($src, $geo) = @_;
+sub do {
+  my ($geo, $src) = @_;
 
   if ($src->getchannels == 1 || $src->getchannels == 2) {
     $src = $src->convert(preset => 'rgb');
   }
 
-  my $bg = _bgcolor($geo);
+  my $bg = $geo->_bgcolor;
   my $channels = $src->getchannels;
   if ($geo->{bgalpha} != 255 && $channels != 4) {
     $channels = 4;
@@ -471,8 +436,48 @@ sub _do_roundcorners {
   return $out;
 }
 
-sub _do_mirror {
-  my ($work, $mirror) = @_;
+package BSE::Thumb::Imager::Mirror;
+use vars qw(@ISA);
+@ISA = 'BSE::Thumb::Imager::Handler';
+
+sub new {
+  my ($class, $text, $error) = @_;
+
+  my %mirror =
+    (
+     height => '30%',
+     bg => '000000',
+     bgalpha => 255,
+     opacity => '40%',
+     srcx => 'x',
+     srcy => 'y',
+     horizon => '0',
+     perspective => 0,
+     perspectiveangle => '0',
+    );
+
+  $class->_build($text, 'mirror', \%mirror, $error)
+    or return;
+
+  bless \%mirror, $class;
+}
+
+sub size {
+  my ($geo, $width, $height) = @_;
+
+  $height += $geo->_percent_of($geo->{height}, $height)
+    + $geo->_percent_of($geo->{horizon}, $height);
+  $height = int($height);
+  if ($geo->{perspective}) {
+    my $p = abs($geo->{perspective});
+    $width = int($width / (1 + $p * $width) + 1);
+  }
+
+  return ( $width, $height, $geo->{bgalpha} != 255 );
+}
+
+sub do {
+  my ($mirror, $work) = @_;
 
   if ($work->getchannels < 3) {
     $work = $work->convert(preset => 'rgb');
@@ -481,12 +486,12 @@ sub _do_mirror {
     $work = $work->convert(preset => 'addalpha');
   }
 
-  my $bg = _bgcolor($mirror);
+  my $bg = $mirror->_bgcolor;
 
   my $oldheight = $work->getheight();
   my $height = $oldheight;
-  my $gap = int(_percent_of($mirror->{horizon}, $oldheight));
-  my $add_height = int(_percent_of($mirror->{height}, $oldheight));
+  my $gap = int($mirror->_percent_of($mirror->{horizon}, $oldheight));
+  my $add_height = int($mirror->_percent_of($mirror->{height}, $oldheight));
   $height += $gap + $add_height;
 
   my $out = Imager->new(xsize => $work->getwidth, ysize => $height,
@@ -512,7 +517,7 @@ sub _do_mirror {
       channels => 4,
       constants =>
       {
-       opacity => _percent($mirror->{opacity})
+       opacity => $mirror->_percent($mirror->{opacity})
       },
       rpnexpr => <<EOS,
 $mirror->{srcx} !srcx
@@ -548,8 +553,28 @@ EOS
   $out;
 }
 
-sub _do_sepia {
-  my ($work, $sepia) = @_;
+package BSE::Thumb::Imager::Sepia;
+use vars qw(@ISA);
+@ISA = 'BSE::Thumb::Imager::Handler';
+
+sub new {
+  my ($class, $text, $error) = @_;
+
+  my %sepia =
+    (
+     color => '000000',
+    );
+
+  $class->_build($text, 'sepia', \%sepia, $error)
+    or return;
+
+  bless \%sepia, $class;
+}
+
+# use base's size()
+
+sub do {
+  my ($sepia, $work) = @_;
 
   require Imager::Filter::Sepia;
   $work = $work->convert(preset => 'rgb')
@@ -560,8 +585,32 @@ sub _do_sepia {
   $work;
 }
 
-sub _do_filter {
-  my ($work, $filter) = @_;
+package BSE::Thumb::Imager::Filter;
+use vars qw(@ISA);
+@ISA = 'BSE::Thumb::Imager::Handler';
+
+sub new {
+  my ($class, $text, $error) = @_;
+
+  unless ($text =~ s/^(\w+),?//) {
+    $$error = "filter: no filter name";
+    return;
+  }
+  my %filter =
+    (
+     type => $1
+    );
+
+  $class->_build($text, 'filter', \%filter, $error)
+    or return;
+
+  bless \%filter, $class;
+}
+
+# fall through to base size()
+
+sub do {
+  my ($filter, $work) = @_;
 
   $work = $work->convert(preset => 'rgb')
     if $work->getchannels < 3;
@@ -572,19 +621,90 @@ sub _do_filter {
   $work;
 }
 
-sub _do_border {
-  my ($work, $border) = @_;
+package BSE::Thumb::Imager::Conv;
+use vars qw(@ISA);
+@ISA = 'BSE::Thumb::Imager::Filter';
+
+sub new {
+  my ($class, $text, $error) = @_;
+
+  my @coef =  split /,/, $text;
+  unless (@coef) {
+    $$error = "No coefficients";
+    return;
+  }
+  return
+    bless 
+      {
+       type => 'conv',
+       coef => \@coef,
+      }, $class;
+}
+
+# fall through to base size(), do()
+
+package BSE::Thumb::Imager::Border;
+use vars qw(@ISA);
+@ISA = 'BSE::Thumb::Imager::Handler';
+
+sub new {
+  my ($class, $text, $error) = @_;
+
+  my %border =
+    (
+     bg => '000000',
+     bgalpha => 255,
+     width => '2',
+    );
+
+  $class->_build($text, 'border', \%border, $error)
+    or return;
+
+  # parse out the border
+  my @widths = split ' ', $border{width};
+  if (@widths == 1) {
+    $border{top} = $border{bottom} = $border{left} = 
+      $border{right} = $widths[0];
+  }
+  elsif (@widths == 2) {
+    $border{left} = $border{right} = $widths[0];
+    $border{top} = $border{bottom} = $widths[1];
+  }
+  elsif (@widths == 4) {
+    @border{qw/left right top bottom/} = @widths;
+  }
+  else {
+    $$error = 'border(width:...) only accepts 1,2,4 widths';
+    return;
+  }
+
+  bless \%border, $class;
+}
+
+sub size {
+  my ($geo, $width, $height) = @_;
+
+  $height += $geo->_percent_of_rounded($geo->{top}, $height) 
+    + $geo->_percent_of($geo->{bottom}, $height);
+  $width += $geo->_percent_of($geo->{left}, $width) 
+    + $geo->_percent_of_rounded($geo->{right}, $width);
+
+  return ( $width, $height, $geo->{bgalpha} != 255 );
+}
+
+sub do {
+  my ($border, $work) = @_;
 
   $work = $work->convert(preset => 'rgb')
     if $work->getchannels < 3;
   my $channels = $work->getchannels;
   $border->{bgalpha} != 255 and $channels = 4;
-  my $left = _percent_of_rounded($border->{left}, $work->getwidth);
-  my $right = _percent_of_rounded($border->{right}, $work->getwidth);
-  my $top = _percent_of_rounded($border->{top}, $work->getheight);
-  my $bottom = _percent_of_rounded($border->{bottom}, $work->getheight);
+  my $left = $border->_percent_of_rounded($border->{left}, $work->getwidth);
+  my $right = $border->_percent_of_rounded($border->{right}, $work->getwidth);
+  my $top = $border->_percent_of_rounded($border->{top}, $work->getheight);
+  my $bottom = $border->_percent_of_rounded($border->{bottom}, $work->getheight);
 
-  my $bg = _bgcolor($border);
+  my $bg = $border->_bgcolor;
   my $out = Imager->new(xsize => $left + $right + $work->getwidth,
 			ysize => $top + $bottom + $work->getheight,
 			channels => $channels);
@@ -605,8 +725,52 @@ sub _do_border {
   return $out;
 }
 
-sub _do_rotate {
-  my ($work, $rotate) = @_;
+package BSE::Thumb::Imager::Rotate;
+use vars qw(@ISA);
+@ISA = 'BSE::Thumb::Imager::Handler';
+
+use List::Util qw(max);
+use constant PI => 3.14159265358979;
+use POSIX qw(ceil);
+
+sub new {
+  my ($class, $text, $error) = @_;
+
+  my %rotate =
+    (
+     bg => '000000',
+     bgalpha => 0,
+     angle => 90,
+    );
+
+  $class->_build($text, 'rotate', \%rotate, $error)
+    or return;
+
+  if ($rotate{angle} >= 360) {
+    $rotate{angle} %= 360;
+  }
+
+  bless \%rotate, $class;
+}
+
+sub size {
+  my ($geo, $width, $height) = @_;
+
+  my $angle = $geo->{angle} * PI / 180;
+  my $cos = cos($angle);
+  my $sin = sin($angle);
+  my $new_width = ceil(max(abs($width * $cos + $height * $sin),
+			   abs($width * $cos - $height * $sin)));
+  my $new_height = ceil(max(abs($width * -$sin + $height * $cos),
+			    abs($width * -$sin - $height * $cos)));
+  $width = $new_width;
+  $height = $new_height;
+  
+  return ($width, $height, $geo->{bgalpha});
+}
+
+sub do {
+  my ($rotate, $work) = @_;
 
   $work = $work->convert(preset => 'rgb')
     if $work->getchannels < 3;
@@ -614,148 +778,12 @@ sub _do_rotate {
   $work = $work->convert(preset => 'addalpha')
     if $rotate->{bgalpha} != 255;
 
-  my $bg = _bgcolor($rotate);
+  my $bg = $rotate->_bgcolor;
 
   my $out = $work->rotate(degrees => $rotate->{angle}, back => $bg)
     or print STDERR "rotation error: ", $work->errstr, "\n";
 
   $out;
-}
-
-sub thumb_data {
-  my ($self, $filename, $geometry, $error) = @_;
-
-  my $geolist = _parse_geometry($geometry, $error)
-    or return;
-
-  require Imager;
-  my $src = Imager->new;
-  unless ($src->read(file => $filename)) {
-    $$error = "Cannot read image $filename: ".$src->errstr;
-    return;
-  }
-
-  my $work = $src;
-  for my $geo (@$geolist) {
-    if ($geo->{action} eq 'scale') {
-      my $scaled = $work;
-      if ($geo->{crop}) {
-	my $width_scale = $geo->{width} / $work->getwidth;
-	my $height_scale = $geo->{height} / $work->getheight;
-	my $scale = $width_scale < $height_scale ? $height_scale : $width_scale;
-	if ($scale < 1.0) {
-	  $scaled = $work->scale(scalefactor => $scale, qtype=>'mixing');
-	}
-	my $width = $scaled->getwidth;
-	if ($width > $geo->{width}) {
-	  $scaled = $scaled->crop(left => ($width-$geo->{width})/2, width => $geo->{width});
-	}
-	my $height = $scaled->getheight;
-	if ($height > $geo->{height}) {
-	  $scaled = $scaled->crop(top => ($height - $geo->{height}) / 2,
-				  height => $geo->{height});
-	}
-      }
-      else {
-	my $width = $work->getwidth;
-	my $height = $work->getheight;
-	if ($geo->{width} && $width > $geo->{width}) {
-	  $height = $height * $geo->{width} / $width;
-	  $width = $geo->{width};
-	}
-	if ($geo->{height} && $height > $geo->{height}) {
-	  $width = $width * $geo->{height} / $height;
-	  $height = $geo->{height};
-	}
-	$width = int($width);
-	$height = int($height);
-	$scaled = $work->scale(xpixels => $width, ypixels => $height, 
-			       qtype => 'mixing');
-      }
-      
-      my $result = $scaled;
-      if ($geo->{fill} && 
-	  ($scaled->getwidth < $geo->{width} || $scaled->getheight < $geo->{height})) {
-	$result = Imager->new(xsize => $geo->{width}, ysize => $geo->{height});
-	$result->box(color => $geo->{fill}, filled => 1);
-	$result->paste(left => ($geo->{width} - $scaled->getwidth) / 2,
-		       top => ($geo->{height} - $scaled->getheight) / 2 ,
-		       img => $scaled);
-      }
-      $work = $result;
-    }
-    elsif ($geo->{action} eq 'roundcorners') {
-      $work = _do_roundcorners($work, $geo);
-    }
-    elsif ($geo->{action} eq 'mirror') {
-      $work = _do_mirror($work, $geo);
-    }
-    elsif ($geo->{action} eq 'grey') {
-      $work = $work->convert(preset => 'grey');
-      print STDERR "channels ", $work->getchannels, "\n";
-    }
-    elsif ($geo->{action} eq 'sepia') {
-      $work = _do_sepia($work, $geo);
-    }
-    elsif ($geo->{action} eq 'filter') {
-      $work = _do_filter($work, $geo);
-    }
-    elsif ($geo->{action} eq 'border') {
-      $work = _do_border($work, $geo);
-    }
-    elsif ($geo->{action} eq 'rotate') {
-      $work = _do_rotate($work, $geo);
-    }
-  }
-
-  my $data;
-  my $type = $src->tags(name => 'i_format');
-
-  if ($work->getchannels == 4 || $work->getchannels == 2) {
-    $type = 'png';
-  }
-  
-  unless ($work->write(data => \$data, type => $type)) {
-    $$error = "cannot write image ".$work->errstr;
-    return;
-  }
-
-  return ( $data, "image/$type" );
-}
-
-sub _percent {
-  my ($num) = @_;
-
-  if ($num =~ s/%$//) {
-    $num /= 100.0;
-  }
-  $num;
-}
-
-sub _percent_of {
-  my ($num, $base) = @_;
-
-  if ($num =~ s/%$//) {
-    return $base * $num / 100.0;
-  }
-  else {
-    return $num;
-  }
-}
-
-sub _percent_of_rounded {
-  my ($num, $base) = @_;
-
-  return sprintf("%.0f", _percent_of($num, $base));
-}
-
-sub _bgcolor {
-  my ($spec) = @_;
-
-  my $bg = Imager::Color->new($spec->{bg});
-  $bg->set(($bg->rgba)[0..2], $spec->{bgalpha});
-
-  $bg;
 }
 
 1;
