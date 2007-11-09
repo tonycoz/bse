@@ -9,11 +9,13 @@ my %handlers =
    roundcorners => 'BSE::Thumb::Imager::RoundCorners',
    mirror => 'BSE::Thumb::Imager::Mirror',
    sepia => 'BSE::Thumb::Imager::Sepia',
+   grey => 'BSE::Thumb::Imager::Grey',
    filter => 'BSE::Thumb::Imager::Filter',
    conv => 'BSE::Thumb::Imager::Conv',
    border => 'BSE::Thumb::Imager::Border',
    rotate => 'BSE::Thumb::Imager::Rotate',
    perspective => 'BSE::Thumb::Imager::Perspective',
+   canvas => 'BSE::Thumb::Imager::Canvas',
   );
 
 sub new {
@@ -586,6 +588,29 @@ sub do {
   $work;
 }
 
+package BSE::Thumb::Imager::Grey;
+use vars qw(@ISA);
+@ISA = 'BSE::Thumb::Imager::Handler';
+
+sub new {
+  my ($class, $text, $error) = @_;
+
+  unless ($text eq '') {
+    $$error = "grey takes no parameters";
+    return;
+  }
+
+  bless {}, $class;
+}
+
+# use base's size()
+
+sub do {
+  my ($self, $work) = @_;
+
+  $work->convert(preset => 'grey');
+}
+
 package BSE::Thumb::Imager::Filter;
 use vars qw(@ISA);
 @ISA = 'BSE::Thumb::Imager::Handler';
@@ -855,6 +880,126 @@ sub do {
   $work;
 }
 
+package BSE::Thumb::Imager::Canvas;
+use vars qw(@ISA);
+@ISA = 'BSE::Thumb::Imager::Handler';
 
+sub new {
+  my ($class, $text, $error) = @_;
+
+  my %canvas =
+    (
+     bg => '000000',
+     bgalpha => 255,
+     xpos => '50%',
+     ypos => '50%',
+    );
+
+  my ($width, $height);
+  my $dim_re = qr/\d+%|\+?\d+/;
+  if ($text =~ s/^($dim_re)x($dim_re)//) {
+    ($width, $height) = ( $1, $2 );
+  }
+  elsif ($text =~ s/^x($dim_re)//) {
+    $height = $1;
+  }
+  elsif ($text =~ s/^($dim_re)x//) {
+    $width = $1;
+  }
+  elsif ($text =~ s/^($dim_re)//) {
+    $width = $height = $1;
+  }
+  else {
+    $$error = "canvas: No leading dimension";
+    return;
+  }
+  if (length $text && $text !~ s/^,//) {
+    $$error = "canvas: missing comma $text";
+    return;
+  }
+  
+  $class->_build($text, 'canvas', \%canvas, $error)
+    or return;
+
+  @canvas{qw/width height/} = ($width, $height);
+
+  bless \%canvas, $class;
+}
+
+sub _calc_dim {
+  my ($self, $base, $spec) = @_;
+
+  if ($spec =~ /\%$/) {
+    return $self->_percent_of_rounded($spec, $base);
+  }
+  elsif ($spec =~ /^\+\d+$/) {
+    return $base + $spec;
+  }
+  else {
+    return $spec;
+  }
+}
+
+sub _calc_pos {
+  my ($self, $spec, $base, $max) = @_;
+
+  if ($spec =~ /%$/) {
+    $base >= $max and return 0;
+    return $self->_percent_of_rounded($spec, $max-$base);
+  }
+  else {
+    return $spec;
+  }
+}
+
+sub size {
+  my ($self, $width, $height) = @_;
+
+  my $want_width = $self->_calc_dim($width, $self->{width});
+  my $want_height = $self->_calc_dim($height, $self->{height});
+  my $want_xpos = $self->_calc_pos($self->{xpos}, $width, $want_width);
+  my $want_ypos = $self->_calc_pos($self->{ypos}, $height, $want_height);
+
+  if ($width == $want_width && $height == $want_height
+      && $want_xpos == 0 && $want_ypos == 0) {
+    # original image
+    return ( $width, $height, 0, 1 );
+  }
+
+  $width < $want_width and $width = $want_width;
+  $height < $want_height and $height = $want_height;
+
+  return ( $width, $height, $self->{bgalpha} != 255 );
+}
+
+sub do {
+  my ($self, $work) = @_;
+
+  if ($work->getchannels < 3) {
+    $work = $work->convert(preset => 'rgb');
+  }
+  if ($self->{bgalpha} != 255) {
+    $work = $work->convert(preset => 'addalpha');
+  }
+
+  my $bg = $self->_bgcolor;
+
+  my $width = $work->getwidth;
+  my $height = $work->getheight;
+  my $want_width = $self->_calc_dim($width, $self->{width});
+  my $want_height = $self->_calc_dim($height, $self->{height});
+  my $want_xpos = $self->_calc_pos($self->{xpos}, $width, $want_width);
+  my $want_ypos = $self->_calc_pos($self->{ypos}, $height, $want_height);
+
+  $width < $want_width and $width = $want_width;
+  $height < $want_height and $height = $want_height;
+  my $out = Imager->new(xsize => $width, ysize => $height, 
+			channels => $work->getchannels);
+  $out->box(filled => 1, color => $bg);
+
+  $out->paste(src => $work, left => $want_xpos, top => $want_ypos);
+
+  $out;
+}
 
 1;
