@@ -1062,8 +1062,8 @@ sub do {
       or die "Cannot load $self->{bgfile}: ", $bg->errstr;
     $bg->getchannels >= 3 or $bg = $bg->convert(preset => 'rgb');
     if ($self->{bgtile}) {
-      my $xpos = $self->_calc_dim($want_width, $self->{bgxpos});
-      my $ypos = $self->_calc_dim($want_height, $self->{bgypos});
+      my $xpos = $self->_calc_pos($self->{bgxpos}, $bg->getwidth, $want_width);
+      my $ypos = $self->_calc_pos($self->{bgypos}, $bg->getheight, $want_height);
       my %opts = ( xmin => $xpos, ymin => $ypos );
       if ($self->{bgrepeat} eq 'x' || $self->{bgrepeat} eq 'none') {
 	$opts{ymax} = $ypos + $bg->getheight() - 1;
