@@ -931,6 +931,10 @@ sub new {
      bgalpha => 255,
      bgfile => '',
      bgtile => 0,
+     bgrepeat => 'both',
+     bgxpos => 0,
+     bgypos => 0,
+     bgrotate => 0,
      bggrad => '',
      gradtype => 'linear',
      gradrepeat => 'none',
@@ -977,6 +981,8 @@ sub new {
   if ($canvas{bggrad}) {
     $canvas{bggrad} = $thumb->find_file_or_die($canvas{bggrad});
   }
+  grep $_ eq $canvas{bgrepeat}, qw/none x y both/
+    or die "canvas: Invalid bgrepeat $canvas{bgrepeat}";
 
   bless \%canvas, $class;
 }
@@ -1056,7 +1062,26 @@ sub do {
       or die "Cannot load $self->{bgfile}: ", $bg->errstr;
     $bg->getchannels >= 3 or $bg = $bg->convert(preset => 'rgb');
     if ($self->{bgtile}) {
-      $out->box(fill => { image => $bg });
+      my $xpos = $self->_calc_dim($want_width, $self->{bgxpos});
+      my $ypos = $self->_calc_dim($want_height, $self->{bgypos});
+      my %opts = ( xmin => $xpos, ymin => $ypos );
+      if ($self->{bgrepeat} eq 'x' || $self->{bgrepeat} eq 'none') {
+	$opts{ymax} = $ypos + $bg->getheight() - 1;
+      }
+      if ($self->{bgrepeat} eq 'y' || $self->{bgrepeat} eq 'none') {
+	$opts{xmax} = $xpos + $bg->getwidth() - 1;
+      }
+      my $matrix;
+      if ($xpos || $ypos) {
+	require Imager::Matrix2d;
+	$matrix = Imager::Matrix2d->translate(x => -$xpos, y => -$ypos);
+      }
+      if ($self->{bgrotate}) {
+	require Imager::Matrix2d;
+	$matrix ||= Imager::Matrix2d->identity;
+	$matrix *= Imager::Matrix2d->rotate(degrees => $self->{bgrotate});
+      }
+      $out->box(fill => { image => $bg, matrix => $matrix }, %opts);
     }
     else {
       if ($bg->getwidth != $want_width || $bg->getheight != $want_height) {
