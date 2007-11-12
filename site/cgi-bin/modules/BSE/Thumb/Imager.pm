@@ -1,7 +1,7 @@
 package BSE::Thumb::Imager;
 use strict;
 use constant CFG_SECTION => 'imager thumb driver';
-#use blib '/home/tony/dev/imager/svn/Imager';
+use Config;
 
 my %handlers =
   (
@@ -43,7 +43,7 @@ sub _parse_geometry {
 	$$error = "Unknown operator $op";
 	return;
       }
-      my $geo = $handler_class->new($args, $error)
+      my $geo = $handler_class->new($args, $error, $self)
 	or return;
 
       push @geo, $geo;
@@ -120,12 +120,44 @@ sub thumb_data {
     $type = 'png';
   }
   
-  unless ($work->write(data => \$data, type => $type)) {
+  unless ($work->write(data => \$data, type => $type, jpegquality => 90)) {
     $$error = "cannot write image ".$work->errstr;
     return;
   }
 
   return ( $data, "image/$type" );
+}
+
+sub _incs {
+  my $self = shift;
+
+  split $Config{path_sep}, $self->{cfg}->entry(CFG_SECTION, 'include', '');
+}
+
+sub find_file {
+  my ($self, $filename) = @_;
+
+  if ($filename =~ q!^/! && -e $filename) {
+    return $filename;
+  }
+
+  my @incs = $self->_incs;
+
+  for my $dir (@incs) {
+    -e "$dir/$filename"
+      and return "$dir/$filename";
+  }
+
+  return;
+}
+
+sub find_file_or_die {
+  my ($self, $filename) = @_;
+
+  my $result = $self->find_file($filename)
+    or die "Cannot find $filename";
+
+  return $result;
 }
 
 package BSE::Thumb::Imager::Handler;
@@ -891,12 +923,21 @@ use vars qw(@ISA);
 @ISA = 'BSE::Thumb::Imager::Handler';
 
 sub new {
-  my ($class, $text, $error) = @_;
+  my ($class, $text, $error, $thumb) = @_;
 
   my %canvas =
     (
      bg => '000000',
      bgalpha => 255,
+     bgfile => '',
+     bgtile => 0,
+     bggrad => '',
+     gradtype => 'linear',
+     gradrepeat => 'none',
+     gradx1 => '0%',
+     grady1 => '0%',
+     gradx2 => '100%',
+     grady2 => '100%',
      xpos => '50%',
      ypos => '50%',
     );
@@ -928,6 +969,14 @@ sub new {
     or return;
 
   @canvas{qw/width height/} = ($width, $height);
+
+  if ($canvas{bgfile}) {
+    $canvas{bgfile} = $thumb->find_file_or_die($canvas{bgfile});
+  }
+
+  if ($canvas{bggrad}) {
+    $canvas{bggrad} = $thumb->find_file_or_die($canvas{bggrad});
+  }
 
   bless \%canvas, $class;
 }
@@ -1000,6 +1049,46 @@ sub do {
   my $out = Imager->new(xsize => $width, ysize => $height, 
 			channels => $out_channels);
   $out->box(filled => 1, color => $bg);
+
+  if ($self->{bgfile}) {
+    my $bg = Imager->new;
+    $bg->read(file => $self->{bgfile})
+      or die "Cannot load $self->{bgfile}: ", $bg->errstr;
+    $bg->getchannels >= 3 or $bg = $bg->convert(preset => 'rgb');
+    if ($self->{bgtile}) {
+      $out->box(fill => { image => $bg });
+    }
+    else {
+      if ($bg->getwidth != $want_width || $bg->getheight != $want_height) {
+	$bg = $bg->scale(xpixels => $want_width, ypixels => $want_height,
+			 qtype => 'mixing', type => 'nonprop');
+      }
+      if ($bg->getchannels == 3) {
+	$out->paste(src => $bg);
+      }
+      else {
+	$out->rubthrough(src => $bg);
+      }
+    }
+  }
+  if ($self->{bggrad}) {
+    require Imager::Fountain;
+    my $grad = Imager::Fountain->read(gimp => $self->{bggrad})
+      or die "Cannot load $self->{bggrad}: ", Imager->errstr;
+
+    my $x1 = $self->_calc_dim($want_width, $self->{gradx1});
+    my $y1 = $self->_calc_dim($want_height, $self->{grady1});
+    my $x2 = $self->_calc_dim($want_width, $self->{gradx2});
+    my $y2 = $self->_calc_dim($want_height, $self->{grady2});
+
+    print STDERR "x1 $x1 y1 $y1 x2 $x2 y2 $x2\n";
+    $out->box(fill => { fountain => $self->{gradtype},
+			combine => 'normal',
+			segments => $grad,
+			repeat => $self->{gradrepeat},
+			xa => $x1, ya => $y1, xb => $x2, yb => $y2 })
+      or die "Cannot do gradient: ", $out->errstr;
+  }
 
   if ($work->getchannels == 3) {
     $out->paste(src => $work, left => $want_xpos, top => $want_ypos);
