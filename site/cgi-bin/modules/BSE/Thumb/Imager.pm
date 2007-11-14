@@ -1016,16 +1016,12 @@ sub _calc_pos {
 sub size {
   my ($self, $width, $height) = @_;
 
-  my $want_width = $self->_calc_dim($width, $self->{width});
-  my $want_height = $self->_calc_dim($height, $self->{height});
+  my $want_width = defined $self->{width} ?
+    $self->_calc_dim($width, $self->{width}) : $width;
+  my $want_height = defined $self->{height} ? 
+    $self->_calc_dim($height, $self->{height}) : $height;
   my $want_xpos = $self->_calc_pos($self->{xpos}, $width, $want_width);
   my $want_ypos = $self->_calc_pos($self->{ypos}, $height, $want_height);
-
-  if ($width == $want_width && $height == $want_height
-      && $want_xpos == 0 && $want_ypos == 0) {
-    # original image
-    return ( $width, $height, 0, 1 );
-  }
 
   $width < $want_width and $width = $want_width;
   $height < $want_height and $height = $want_height;
@@ -1039,7 +1035,7 @@ sub do {
   if ($work->getchannels < 3) {
     $work = $work->convert(preset => 'rgb');
   }
-  if ($work->{bgalpha} != 255 && $work->getchannels != 4) {
+  if ($self->{bgalpha} != 255 && $work->getchannels != 4) {
     $work = $work->convert(preset => 'addalpha');
   }
 
@@ -1047,11 +1043,13 @@ sub do {
 
   my $width = $work->getwidth;
   my $height = $work->getheight;
-  my $want_width = $self->_calc_dim($width, $self->{width});
-  my $want_height = $self->_calc_dim($height, $self->{height});
+  my $want_width = defined $self->{width} ? 
+    $self->_calc_dim($width, $self->{width}) : $width;
+  my $want_height = defined $self->{height} ? 
+    $self->_calc_dim($height, $self->{height}) : $height;
   my $want_xpos = $self->_calc_pos($self->{xpos}, $width, $want_width);
   my $want_ypos = $self->_calc_pos($self->{ypos}, $height, $want_height);
-
+  
   $width < $want_width and $width = $want_width;
   $height < $want_height and $height = $want_height;
   my $out_channels = $self->{bgalpha} != 255 ? 4 : 3;
