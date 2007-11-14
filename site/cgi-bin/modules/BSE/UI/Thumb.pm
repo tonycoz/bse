@@ -35,15 +35,22 @@ sub dispatch {
   my $cache_dir = $cfg->entry('paths', 'scalecache', "$image_dir/scaled");
   my $cache_base_url = $cfg->entry('paths', 'scalecacheurl', '/images/scaled');
 
-  my ($width, $height, $req_alpha) = 
-    $thumbs->thumb_dimensions_sized($geometry, @$image{qw/width height/});
+  my ($start_type) = $image->{image} =~ /\.(\w+)$/;
+  $start_type ||= 'png';
+
+  my ($width, $height, $type) = 
+    $thumbs->thumb_dimensions_sized($geometry, @$image{qw/width height/}, $start_type);
   
   my $cache_name = "$cache_dir/$geometry_id-$image->{image}";
   my $cache_url = "$cache_base_url/$geometry_id-$image->{image}";
 
-  if ($req_alpha && $cache_name !~ /\.png$/i) {
-    $cache_name .= ".png";
-    $cache_url .= ".png";
+  if ($type eq 'jpeg' && $cache_name !~ /\.jpe?g$/i) {
+    $cache_name .= ".jpg";
+    $cache_url .= ".jpg";
+  }
+  elsif ($cache_name !~ /\.$type$/i) {
+    $cache_name .= ".$type";
+    $cache_url .= ".$type";
   }
 
   my $image_refresh =
@@ -57,7 +64,7 @@ sub dispatch {
   -e $filename 
     or return $class->error($req, "image file missing");
   
-  my ($data, $type) = $thumbs->thumb_data($filename, $geometry, \$error)
+  (my $data, $type) = $thumbs->thumb_data($filename, $geometry, \$error)
     or return $class->error($req, $error);
 
   my $image_result =

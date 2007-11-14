@@ -17,6 +17,7 @@ my %handlers =
    rotate => 'BSE::Thumb::Imager::Rotate',
    perspective => 'BSE::Thumb::Imager::Perspective',
    canvas => 'BSE::Thumb::Imager::Canvas',
+   format => 'BSE::Thumb::Imager::Format',
   );
 
 sub new {
@@ -68,26 +69,25 @@ sub validate_geometry {
 }
 
 sub thumb_dimensions_sized {
-  my ($self, $geometry, $width, $height) = @_;
+  my ($self, $geometry, $width, $height, $type) = @_;
 
   my $error;
   my $geolist = $self->_parse_geometry($geometry, \$error)
     or return;
 
-  my $req_alpha = 0;
   my $use_original = 1;
 
   for my $geo (@$geolist) {
-    my ($can_original, $this_alpha);
+    my ($can_original, $new_type);
 
-    ($width, $height, $this_alpha, $can_original)
+    ($width, $height, $new_type, $can_original)
       = $geo->size($width, $height);
 
-    $req_alpha ||= $req_alpha;
+    $new_type and $type = $new_type;
     $use_original &&= $can_original;
   }
 
-  return ($width, $height, $req_alpha, $use_original);
+  return ($width, $height, $type, $use_original);
 }
 
 sub thumb_data {
@@ -108,19 +108,41 @@ sub thumb_data {
     return;
   }
 
+  my $jpeg_quality = $self->{cfg}->entry(CFG_SECTION, 'jpegquality', 90);
+  my %write_opts =
+    ( 
+     jpegquality => $jpeg_quality,
+     make_colors => 'mediancut',
+     translate => 'errdiff',
+     gifquant => 'gen',
+    );
+
   my $work = $src;
   for my $geo (@$geolist) {
-    $work = $geo->do($work);
+    $work = $geo->do($work, \%write_opts);
   }
-
-  my $data;
-  my $type = $src->tags(name => 'i_format');
 
   if ($work->getchannels == 4 || $work->getchannels == 2) {
-    $type = 'png';
+    $write_opts{type} ||= 'png';
   }
-  
-  unless ($work->write(data => \$data, type => $type, jpegquality => 90)) {
+  $write_opts{type} ||= $src->tags(name => 'i_format');
+
+  my $type = $write_opts{type};
+
+  if ($type eq 'jpeg' &&
+      ($work->getchannels == 2 || $work->getchannels == 4)) {
+    my $tmp = Imager->new(xsize => $work->getwidth, ysize => $work->getheight,
+			  channels => $work->getchannels() - 1);
+    $tmp->box(filled => 1, color => $write_opts{bgcolor});
+    $tmp->rubthrough(src => $work);
+    $work = $tmp;
+  }
+
+  use Data::Dumper;
+  print STDERR Dumper \%write_opts;
+  my $data;
+  $work = $work->to_rgb8;
+  unless ($work->write(data => \$data, %write_opts)) {
     $$error = "cannot write image ".$work->errstr;
     return;
   }
@@ -422,7 +444,7 @@ sub new {
 sub size {
   my ($self, $width, $height) = @_;
 
-  return ( $width, $height, $self->{bgalpha} != 255 );
+  return ( $width, $height, $self->{bgalpha} != 255 && 'png' );
 }
 
 sub do {
@@ -514,7 +536,7 @@ sub size {
     $width = int($width / (1 + $p * $width) + 1);
   }
 
-  return ( $width, $height, $geo->{bgalpha} != 255 );
+  return ( $width, $height, $geo->{bgalpha} != 255 && 'png' );
 }
 
 sub do {
@@ -753,7 +775,7 @@ sub size {
   $width += $geo->_percent_of($geo->{left}, $width) 
     + $geo->_percent_of_rounded($geo->{right}, $width);
 
-  return ( $width, $height, $geo->{bgalpha} != 255 );
+  return ( $width, $height, $geo->{bgalpha} != 255 && 'png' );
 }
 
 sub do {
@@ -830,7 +852,7 @@ sub size {
   $width = $new_width;
   $height = $new_height;
   
-  return ($width, $height, $geo->{bgalpha});
+  return ($width, $height, $geo->{bgalpha} != 255 && 'png');
 }
 
 sub do {
@@ -884,7 +906,7 @@ sub size {
     $width = int($width / (1 + $p * $width) + 1);
   }
 
-  return ( $width, $height, $geo->{bgalpha} != 255 );
+  return ( $width, $height, $geo->{bgalpha} != 255 && 'png' );
 }
 
 sub do {
@@ -1026,7 +1048,7 @@ sub size {
   $width < $want_width and $width = $want_width;
   $height < $want_height and $height = $want_height;
 
-  return ( $width, $height, $self->{bgalpha} != 255 );
+  return ( $width, $height, $self->{bgalpha} != 255 && 'png' );
 }
 
 sub do {
@@ -1047,11 +1069,13 @@ sub do {
     $self->_calc_dim($width, $self->{width}) : $width;
   my $want_height = defined $self->{height} ? 
     $self->_calc_dim($height, $self->{height}) : $height;
+  $width > $want_width and $want_width = $width;
+  $height > $want_height and $want_height = $height;
   my $want_xpos = $self->_calc_pos($self->{xpos}, $width, $want_width);
   my $want_ypos = $self->_calc_pos($self->{ypos}, $height, $want_height);
+
+  ($width, $height) = ($want_width, $want_height);
   
-  $width < $want_width and $width = $want_width;
-  $height < $want_height and $height = $want_height;
   my $out_channels = $self->{bgalpha} != 255 ? 4 : 3;
   my $out = Imager->new(xsize => $width, ysize => $height, 
 			channels => $out_channels);
@@ -1132,6 +1156,56 @@ sub do {
   }
 
   $out;
+}
+
+package BSE::Thumb::Imager::Format;
+use vars qw(@ISA);
+@ISA = 'BSE::Thumb::Imager::Handler';
+
+sub new {
+  my ($class, $text, $error, $thumb) = @_;
+
+  my %format =
+    (
+     jpegquality => 90,
+     gif_interlace => 0,
+     transp => 'threshold',
+     tr_threshold => 127,
+     tr_errdiff => 'floyd',
+     make_colors => 'mediancut',
+     translate => 'closest',
+     errdiff => 'floyd',
+     bgcolor => '000000',
+    );
+
+  unless ($text =~ s/^(png|jpeg|gif|tiff|pnm|sgi)(?:,|$)//) {
+    $$error = "Missing or invalid format code from format";
+    return;
+  }
+  my $format = $1;
+
+  $class->_build($text, 'format', \%format, $error)
+    or return;
+
+  $format{type} = $format;
+
+  bless \%format, $class;
+}
+
+sub size {
+  my ($self, $width, $height) = @_;
+
+  return ( $width, $height, $self->{type} );
+}
+
+sub do {
+  my ($self, $work, $write_opts) = @_;
+
+  for my $key (keys %$self) {
+    $write_opts->{$key} = $self->{$key};
+  }
+  
+  $work;
 }
 
 1;

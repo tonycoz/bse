@@ -29,7 +29,7 @@ sub _thumbimage_low {
   my %im = map { $_ => $im->{$_} } $im->columns;
   my $base = $self->thumb_base_url;
 
-  @im{qw/width height alpha original/} = 
+  @im{qw/width height type original/} = 
     $thumbs->thumb_dimensions_sized($geometry, @$im{qw/width height/});
 
   if ($im{original}) {
@@ -39,7 +39,7 @@ sub _thumbimage_low {
     $im{image} = "$base?g=$geo_id&page=$im->{articleId}&image=$im->{id}";
 
     # hack for IE6
-    $im{alpha} 
+    $im{type} eq 'png'
       and $im{image} .= '&alpha-trans.png';
   }
   
