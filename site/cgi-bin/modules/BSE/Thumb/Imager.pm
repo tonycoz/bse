@@ -687,8 +687,14 @@ sub new {
      type => $1
     );
 
-  $class->_build($text, 'filter', \%filter, $error)
-    or return;
+  while ($text =~ s/^(\w+):([^,]+),?//) {
+    $filter{$1} = $2;
+  }
+
+  if (length $text) {
+    $$error = "unexpected junk in filter: $text";
+    return;
+  }
 
   bless \%filter, $class;
 }
@@ -1209,3 +1215,433 @@ sub do {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+BSE::Thumb::Imager - thumbnail driver using Imager
+
+=head1 SYNOPSIS
+
+ # bse.cfg
+ [editor]
+ thumbs_class=BSE::Thumb::Imager
+
+ [imager thumb driver]
+ include=path1:path2:path3
+ blib=/path/to/imager/src
+ jpegquality=90
+
+ [thumb geometries]
+ geometryname1=operator1(arguments),operator2(arguments)
+
+=head1 DESCRIPTION
+
+BSE::Thumb::Imager implement's BSE thumbnail interface.  This is used
+to implement the various thumbnail tags in the system.
+
+=head1 CONFIGURATION
+
+The following configuration can be set in the [imager thumb driver]
+section:
+
+=over
+
+=item *
+
+include - a colon separated list of directories to search for files
+used by the different operators.  Default: none.
+
+=item *
+
+blib - if set this will act as a C< use blib 'path'; > for the
+supplied path.  Without this your normal Imager installation will be
+used.
+
+=item *
+
+jpegquality - the default jpegquality, from 50 to 100.
+
+=back
+
+=head1 OPERATORS
+
+=head2 scale
+
+Syntax: scale(I<size>[c][,fill:I<color>])
+
+I<size> is one of the following forms:
+
+=over
+
+=item *
+
+I<width>xI<height> - the maximum width and height of the new image.
+
+=item *
+
+I<width>x - the maximum width of the image.
+
+=item *
+
+xI<height> - the maximum height of the image.
+
+=item *
+
+I<size> - equivalent to I<size>xI<size>
+
+=back
+
+If the C<c> flag is present the image is scaled the smallest amount
+needed to fit one dimension into the provided size.  The other
+dimension is then cropped to fit.
+
+If the C<fill:> parameter is present then the provided color is used
+to fill out the image to the full size specified.
+
+scale() will never scale an image larger.
+
+eg.
+
+  scale(100x100)
+  scale(100x100,fill:red)
+
+=head2 roundcorners
+
+Syntax: roundcorners([radius:I<radii>][bg:I<color>][bgalpha:I<alpha>])
+
+radius (or radii) supplies 1, 2 or 4 values as radii for the corner
+rounding:
+
+=over
+
+=item *
+
+if a single radius is supplied, it is the radius for all 4 corners.
+
+=item *
+
+if 2 values are supplied, the first is the radius of the top 2 corners
+and the second the radius of the bottom 2 corners.
+
+=item *
+
+if 4 values are supplied they are the radii for the corners as
+follows: top left, top right, bottom left, bottom right.
+
+=back
+
+The bg and bgalpha colors are the background color behind the corners.
+
+eg.
+  roundcorners(radius:20,bg:FF0000,bgalpha:0)
+
+=head2 mirror
+
+Syntax: mirror(parameters...)
+
+The follow parameters are available:
+
+=over
+
+=item *
+
+height - the height of the mirrored section, either in pixels or as a
+percentage.  Default: 30%.
+
+=item *
+
+bg, bgalpha - the background color and alpha.  Default: '000000', 255.
+
+=item *
+
+opacity - the maximum opacity of the mirrored image.  Default: 40%.
+
+=item *
+
+srcx, srcy - transform2() RPN code to calculate the source pixel
+position.  Defaults to 'x' and 'y' respectively.
+
+=item *
+
+horizon - distance between the original image and the mirrored image.
+Default: 0.
+
+=item *
+
+perspective, perspectiveangle - see the perspective() operator.
+
+=back
+
+eg.
+
+  mirror(height:50,horizon:20,bgalpha:0,opacity:40%)
+
+=head2 sepia
+
+Syntax: sepia([color:I<color>])
+
+Requires that Imager::Filter::Sepia be installed.
+
+Only one parameter is accepted, I<color>, which controls the color of
+the output.
+
+eg.
+
+  sepia()
+
+=head2 grey
+
+Syntax: grey()
+
+Converts the image to greyscale.
+
+eg.
+
+  grey()
+
+=head2 filter
+
+Syntax: filter(I<name>,parameters...)
+
+A rough interface to Imager's filter mechanism.
+
+Any parameters supplied to Imager's filter() function.
+
+  filter(gaussian,stddev:2.0)
+
+=head2 conv
+
+Access to Imager's conv filter
+
+Syntax: conv(coefficient,coefficient,...)
+
+eg.
+
+  conv(1,2,1)
+  conv(-0.5,2,-0.5)
+
+=head2 border
+
+Adds a border to the image (making it larger).
+
+Syntax: border([width:I<widths>][,bg:I<color>][,bgalpha:I<alpha>])
+
+The width parameter is 1 to 4 border widths which can be in pixels or
+percentages:
+
+=over
+
+=item *
+
+1 width is the width for all 4 sides
+
+=item *
+
+if there are 2 widths the first is the left and right widths and the
+second the top and bottom widths.
+
+=item *
+
+if there are 4 widths they are the left, right, top and bottom widths.
+
+=back
+
+C<bg> and C<bgalpha> control the border color.
+
+=head2 rotate
+
+Rotate the image.
+
+Syntax: rotate([angle:I<angle>][,bg:I<color>][,bgalpha:I<alpha>])
+
+Parameters:
+
+=over
+
+=item *
+
+angle - angle of rotation in degrees.  Positive angles are clockwise.
+
+=item *
+
+bg, bgalpha - the color of the "canvas" exposed by the rotation.
+Default: '000000', 0 (ie. transparent black)
+
+=back
+
+=head2 perspective
+
+Performs a perspective transformation on the image.
+
+Syntax: perspective(I<amount>[,perspectiveangle:I<angle>][,bg:I<color>][,bgalpha:I<alpha>])
+
+The I<amount> is a small number controlling the perspective effect,
+this should typically be abs(I<amount) < 0.01.  If this is negative
+the perspective effect is applied from the right side of the image.
+
+Perspective angle adds an extra shear effect.
+
+bg, bgcolor control the color of the exposed "canvas".
+
+=head2 canvas
+
+Place the image within another image, controlling the background.
+
+Syntax: canvas(I<size>,parameters...)
+
+I<size> can be one of the following:
+
+=over
+
+=item *
+
+I<width>xI<height> - image size
+
+=item *
+
+I<width>x - image will be I<width> wide, and the height from the
+original image.
+
+=item *
+
+xI<height> - the image will be I<height> high, and the width from the
+original image.
+
+=item *
+
+I<size> - equivlent to I<size>xI<size>.
+
+=back
+
+Each of the above dimensions can be a number of pixels or a percentage
+of the original image size.  If either dimension is smaller than the
+original image size it it increased to match.
+
+The following other parameters can be supplied:
+
+=over
+
+=item *
+
+bg:I<color>, bgalpha:I<alpha> - controls the background color of the
+canvas.  This may be overwritten by the bgfile and bggrad.  Default:
+'000000', 255.
+
+=item *
+
+bgfile:I<filename> - an image file to use as a background.  The
+behaviour of this is controlled by other parameters.
+
+=item *
+
+bgtile:I<flag> - if this is non-zero then the bgfile image is tiled
+over the background, as controlled by bgrepeat, bgxpos, bgypos,
+bgrotate.  If this is zero, the default, the bgfile image is scaled
+non-proportionally to fit the canvas.
+
+=item *
+
+bgrepeat - controls tiling of the bgfile image, if bgtile is non-zero.
+This can be 'none' for no repeats, 'x' for repeating only
+horizontally, 'y' for repeating only vertically, or 'both' to repeat
+in both directions, the default.
+
+=item *
+
+bgxpos, bgypos - the top left corner of the bgfile tiling.  Either
+value can be a percentage.  Default: 0, 0.
+
+=item *
+
+bgrotate - the angle of rotation of the bgfile image when tiling.
+This only works well when bgrepeat is 'both'.
+
+=item *
+
+bggrad - the name of a GIMP gradient file to draw over the bgfile and
+the bg background.  See the fountain filter in Imager::Filters for
+more information.
+
+=item *
+
+gradtype - the type of gradient to draw.  This can be linear,
+bilinear, radial, radial_square, revolution, conical.
+
+=item *
+
+gradrepeat - how the gradient should repeat outside the range of
+pixels defined by (gradx1, grady1) - (gradx2, grady2).  Options
+include none, sawtooth, triangle, saw_both, tri_both.
+
+=item *
+
+gradx1, grady1, gradx2, grady2 - defines the interval on the image
+specifying the direction and position of the gradient.  These can be
+in pixels or a percentage of the width/height of the canvas.  Default:
+0, 0, 100%, 100%.
+
+=item *
+
+xpos, ypos - the position of the original image on the canvas.  This can be in pixels or a percentage.  Default: 50%, 50%.
+
+=back
+
+=head2 format
+
+Controls the format of the output file.
+
+Syntax: format(I<type>,[write-parameters])
+
+I<type> can be any one of png, jpeg, gif, tiff, pnm, sgi, but will
+typically be one of the first 3.
+
+Possible write parameters include:
+
+=over
+
+=item *
+
+jpegquality - output quality for jpeg files.  Default: 90.
+
+=item *
+
+gif_interlace - set to 1 to produce interlaced GIFs.
+
+=item *
+
+transp - control transparency handle for GIF.  Default: threshold.
+
+=item *
+
+tr_threshold - threshold for whether a pixel should be treated as
+transparent for GIF images.
+
+=item *
+
+tr_errdiff - the type of error diffusion to perform on the alpha
+channel for GIF images.
+
+=item *
+
+make_colors - how to build the color table for GIF images.
+
+=item *
+
+translate - how to translate the colors to the color table for GIF
+images.
+
+=item *
+
+errdiff - the type of error diffustion to perform if translate is
+errdiff.
+
+=item *
+
+bgcolor - the background color to overlay on if the source image has
+an alpha channel and the output format is jpeg.
+
+=back
+
+=cut
