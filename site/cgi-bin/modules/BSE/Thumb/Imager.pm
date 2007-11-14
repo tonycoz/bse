@@ -1478,7 +1478,7 @@ Performs a perspective transformation on the image.
 Syntax: perspective(I<amount>[,perspectiveangle:I<angle>][,bg:I<color>][,bgalpha:I<alpha>])
 
 The I<amount> is a small number controlling the perspective effect,
-this should typically be abs(I<amount) < 0.01.  If this is negative
+this should typically be abs(I<amount>) < 0.01.  If this is negative
 the perspective effect is applied from the right side of the image.
 
 Perspective angle adds an extra shear effect.
