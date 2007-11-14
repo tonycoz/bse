@@ -404,8 +404,8 @@ sub new {
     ( 
      tl => 10,
      tr => 10,
-     bl => 10,
      br => 10,
+     bl => 10,
      bg => 'FFFFFF',
      bgalpha => '255'
     );
@@ -417,10 +417,10 @@ sub new {
     }
     elsif (@radii == 2) {
       $geo{tl} = $geo{tr} = $radii[0];
-      $geo{bl} = $geo{br} = $radii[1];
+      $geo{br} = $geo{bl} = $radii[1];
     }
     elsif (@radii == 4) {
-      @geo{qw/tl tr bl br/} = @radii;
+      @geo{qw/tl tr br bl/} = @radii;
     }
     else {
       $$error = 'roundcorners(radius:...) only accepts 1,2,4 radii';
@@ -759,11 +759,11 @@ sub new {
       $border{right} = $widths[0];
   }
   elsif (@widths == 2) {
-    $border{left} = $border{right} = $widths[0];
-    $border{top} = $border{bottom} = $widths[1];
+    $border{top} = $border{bottom} = $widths[0];
+    $border{left} = $border{right} = $widths[1];
   }
   elsif (@widths == 4) {
-    @border{qw/left right top bottom/} = @widths;
+    @border{qw/top right bottom left/} = @widths;
   }
   else {
     $$error = 'border(width:...) only accepts 1,2,4 widths';
@@ -791,10 +791,10 @@ sub do {
     if $work->getchannels < 3;
   my $channels = $work->getchannels;
   $border->{bgalpha} != 255 and $channels = 4;
-  my $left = $border->_percent_of_rounded($border->{left}, $work->getwidth);
-  my $right = $border->_percent_of_rounded($border->{right}, $work->getwidth);
   my $top = $border->_percent_of_rounded($border->{top}, $work->getheight);
+  my $right = $border->_percent_of_rounded($border->{right}, $work->getwidth);
   my $bottom = $border->_percent_of_rounded($border->{bottom}, $work->getheight);
+  my $left = $border->_percent_of_rounded($border->{left}, $work->getwidth);
 
   my $bg = $border->_bgcolor;
   my $out = Imager->new(xsize => $left + $right + $work->getwidth,
@@ -1328,7 +1328,7 @@ and the second the radius of the bottom 2 corners.
 =item *
 
 if 4 values are supplied they are the radii for the corners as
-follows: top left, top right, bottom left, bottom right.
+follows: top left, top right, bottom right, bottom left.
 
 =back
 
@@ -1439,12 +1439,12 @@ percentages:
 
 =item *
 
-if there are 2 widths the first is the left and right widths and the
-second the top and bottom widths.
+if there are 2 widths the first is the top and bottom widths and the
+second is the left and right widths.
 
 =item *
 
-if there are 4 widths they are the left, right, top and bottom widths.
+if there are 4 widths they are the top, right, bottom and left widths.
 
 =back
 
