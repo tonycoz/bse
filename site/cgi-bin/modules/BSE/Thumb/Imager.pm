@@ -1005,7 +1005,7 @@ sub _calc_pos {
   my ($self, $spec, $base, $max) = @_;
 
   if ($spec =~ /%$/) {
-    $base >= $max and return 0;
+    #$base >= $max and return 0;
     return $self->_percent_of_rounded($spec, $max-$base);
   }
   else {
@@ -1038,6 +1038,9 @@ sub do {
 
   if ($work->getchannels < 3) {
     $work = $work->convert(preset => 'rgb');
+  }
+  if ($work->{bgalpha} != 255 && $work->getchannels != 4) {
+    $work = $work->convert(preset => 'addalpha');
   }
 
   my $bg = $self->_bgcolor;
@@ -1081,12 +1084,20 @@ sub do {
 	$matrix ||= Imager::Matrix2d->identity;
 	$matrix *= Imager::Matrix2d->rotate(degrees => $self->{bgrotate});
       }
-      $out->box(fill => { image => $bg, matrix => $matrix }, %opts);
+      $bg->getchannels == $out->getchannels
+	or $bg = $bg->convert(preset => 'addalpha');
+      $out->box(fill => { image => $bg, matrix => $matrix, combine => 'normal' }, %opts);
     }
     else {
       if ($bg->getwidth != $want_width || $bg->getheight != $want_height) {
 	$bg = $bg->scale(xpixels => $want_width, ypixels => $want_height,
 			 qtype => 'mixing', type => 'nonprop');
+      }
+      if ($bg->getchannels < 3) {
+	$bg = $bg->convert(preset => 'rgb');
+      }
+      if ($bg->getchannels != $out->getchannels) {
+	$bg = $bg->convert(preset => 'addalpha');
       }
       if ($bg->getchannels == 3) {
 	$out->paste(src => $bg);
