@@ -1257,8 +1257,14 @@ sub do {
     or die "Cannot read overlay file: ", $over->errstr;
 
   if ($self->{scale}) {
-    $over = $over->scale(xpixels => $work->getwidth, 
-			 ypixels => $work->getheight,
+    my $scale_width = $work->getwidth;
+    my $scale_height = $work->getwidth;
+    if ($self->{scale} =~ /%$/) {
+      $scale_width = $self->_percent_of_rounded($self->{scale}, $scale_width);
+      $scale_height = $self->_percent_of_rounded($self->{scale}, $scale_height);
+    }
+    $over = $over->scale(xpixels => $scale_width, 
+			 ypixels => $scale_height,
 			 type => 'min', qtype => 'mixing');
   }
 
@@ -1739,7 +1745,8 @@ I<overlay-image> is the image file to overlay the input image.
 =item *
 
 scale - if true then the overlay image will be scaled proportionally
-to the size of the working image.  Default: not scaled.
+to the size of the working image.  If scale ends in '%' this is
+treated as a percentage of the work image size.  Default: not scaled.
 
 =item *
 
