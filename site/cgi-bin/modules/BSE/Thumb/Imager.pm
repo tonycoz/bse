@@ -18,6 +18,7 @@ my %handlers =
    perspective => 'BSE::Thumb::Imager::Perspective',
    canvas => 'BSE::Thumb::Imager::Canvas',
    format => 'BSE::Thumb::Imager::Format',
+   overlay => 'BSE::Thumb::Imager::Overlay',
   );
 
 sub new {
@@ -138,8 +139,6 @@ sub thumb_data {
     $work = $tmp;
   }
 
-  use Data::Dumper;
-  print STDERR Dumper \%write_opts;
   my $data;
   $work = $work->to_rgb8;
   unless ($work->write(data => \$data, %write_opts)) {
@@ -173,11 +172,14 @@ sub find_file {
   return;
 }
 
-sub find_file_or_die {
-  my ($self, $filename) = @_;
+sub find_file_or_error {
+  my ($self, $filename, $error) = @_;
 
-  my $result = $self->find_file($filename)
-    or die "Cannot find $filename";
+  my $result = $self->find_file($filename);
+  unless ($result) {
+    $$error = "Cannot find $filename";
+    return;
+  }
 
   return $result;
 }
@@ -254,6 +256,31 @@ sub _percent_of_rounded {
   return sprintf("%.0f", $self->_percent_of($num, $base));
 }
 
+sub _calc_dim {
+  my ($self, $base, $spec) = @_;
+
+  if ($spec =~ /\%$/) {
+    return $self->_percent_of_rounded($spec, $base);
+  }
+  elsif ($spec =~ /^\+\d+$/) {
+    return $base + $spec;
+  }
+  else {
+    return $spec;
+  }
+}
+
+sub _calc_pos {
+  my ($self, $spec, $base, $max) = @_;
+
+  if ($spec =~ /%$/) {
+    #$base >= $max and return 0;
+    return $self->_percent_of_rounded($spec, $max-$base);
+  }
+  else {
+    return $spec;
+  }
+}
 
 package BSE::Thumb::Imager::Scale;
 use vars qw(@ISA);
@@ -1003,42 +1030,18 @@ sub new {
   @canvas{qw/width height/} = ($width, $height);
 
   if ($canvas{bgfile}) {
-    $canvas{bgfile} = $thumb->find_file_or_die($canvas{bgfile});
+    $canvas{bgfile} = $thumb->find_file_or_error($canvas{bgfile}, $error)
+      or return;
   }
 
   if ($canvas{bggrad}) {
-    $canvas{bggrad} = $thumb->find_file_or_die($canvas{bggrad});
+    $canvas{bggrad} = $thumb->find_file_or_error($canvas{bggrad}, $error)
+      or return;
   }
   grep $_ eq $canvas{bgrepeat}, qw/none x y both/
     or die "canvas: Invalid bgrepeat $canvas{bgrepeat}";
 
   bless \%canvas, $class;
-}
-
-sub _calc_dim {
-  my ($self, $base, $spec) = @_;
-
-  if ($spec =~ /\%$/) {
-    return $self->_percent_of_rounded($spec, $base);
-  }
-  elsif ($spec =~ /^\+\d+$/) {
-    return $base + $spec;
-  }
-  else {
-    return $spec;
-  }
-}
-
-sub _calc_pos {
-  my ($self, $spec, $base, $max) = @_;
-
-  if ($spec =~ /%$/) {
-    #$base >= $max and return 0;
-    return $self->_percent_of_rounded($spec, $max-$base);
-  }
-  else {
-    return $spec;
-  }
 }
 
 sub size {
@@ -1211,6 +1214,85 @@ sub do {
     $write_opts->{$key} = $self->{$key};
   }
   
+  $work;
+}
+
+package BSE::Thumb::Imager::Overlay;
+use vars qw(@ISA);
+@ISA = 'BSE::Thumb::Imager::Handler';
+
+sub new {
+  my ($class, $text, $error, $thumb) = @_;
+
+  my %overlay =
+    (
+     scale => 0,
+     alphascale => 1,
+     xpos => '50%',
+     ypos => '50%',
+    );
+
+  unless ($text =~ s!^([^,]+),!!) {
+    $$error = "overlay: missing overlay filename";
+    return;
+  }
+  my $file = $1;
+
+  $class->_build($text, 'overlay', \%overlay, $error)
+    or return;
+
+  $overlay{file} = $thumb->find_file_or_error($file, $error)
+    or return;
+
+  return bless \%overlay, $class;
+}
+
+# call base size()
+
+sub do {
+  my ($self, $work) = @_;
+
+  my $over = Imager->new;
+  $over->read(file => $self->{file})
+    or die "Cannot read overlay file: ", $over->errstr;
+
+  if ($self->{scale}) {
+    $over = $over->scale(xpixels => $work->getwidth, 
+			 ypixels => $work->getheight,
+			 type => 'min', qtype => 'mixing');
+  }
+
+  if ($over->getchannels != 2 && $over->getchannels != 4) {
+    $over = $over->convert(preset => 'addalpha');
+  }
+
+  if ($self->{alphascale} != 1) {
+    my @matrix;
+    my @baserow = ( 0 ) x $over->getchannels;
+    for my $row ( 0 .. $over->getchannels() - 2) {
+      my @row = @baserow;
+      $row[$row] = 1;
+      push @matrix, \@row;
+    }
+    my @row = @baserow;
+    $row[-1] = $self->{alphascale};
+    push @matrix, \@row;
+    $over = $over->convert(matrix => \@matrix);
+  }
+
+  my $xpos = $self->_calc_pos($self->{xpos}, $over->getwidth, 
+			      $work->getwidth);
+  my $ypos = $self->_calc_pos($self->{ypos}, $over->getheight, 
+			      $work->getheight);
+
+  if ($work->getchannels <= 2 && $over->getchannels > 2) {
+    $work = $work->convert(preset => 'rgb');
+  }
+  elsif ($work->getchannels > 2 && $over->getchannels <= 2) {
+    $over = $over->convert(preset => 'rgb');
+  }
+  $work->rubthrough(src => $over, tx => $xpos, ty => $ypos);
+
   $work;
 }
 
@@ -1641,6 +1723,34 @@ errdiff.
 
 bgcolor - the background color to overlay on if the source image has
 an alpha channel and the output format is jpeg.
+
+=back
+
+=head2 overlay
+
+Overlay another image over the input image.
+
+Syntax: overlay(I<overlay-image>,I<parameters>)
+
+I<overlay-image> is the image file to overlay the input image.
+
+=over
+
+=item *
+
+scale - if true then the overlay image will be scaled proportionally
+to the size of the working image.  Default: not scaled.
+
+=item *
+
+alphascale - the alpha channel of the source image is multiplied by
+this value.  This can be used to reduce the effect of an existing
+opaque image.  Default: 1 (no scaling).
+
+=item *
+
+xpos, ypos - the position of the overlay within the working image.
+This can be in pixels or a percentage.
 
 =back
 
