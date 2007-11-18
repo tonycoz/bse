@@ -957,11 +957,12 @@ sub do {
   require Imager::Matrix2d;
   my $old_width = $work->getwidth;
   my $p = abs($mirror->{perspective});
+  $p /= $work->getwidth / 200;
   my $new_width = $old_width / (1 + $p * $old_width) + 1;
   my $angle = sin($mirror->{perspectiveangle} * 3.1415926 / 180);
   my $persp = bless [ 1, 0, 0, 
 		      -$angle, 1, 0,
-		      -abs($p), 0, 1 ], 'Imager::Matrix2d';
+		      -$p, 0, 1 ], 'Imager::Matrix2d';
   $work->flip(dir => 'v');
   $mirror->{perspective} < 0 and $work->flip(dir => 'h');
   my $temp = $work->matrix_transform(matrix=> $persp, back=>$bg, xsize => $new_width)
