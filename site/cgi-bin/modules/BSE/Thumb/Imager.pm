@@ -77,6 +77,10 @@ sub thumb_dimensions_sized {
     or return;
 
   my $use_original = 1;
+  my $debug = $self->{cfg}->entry(CFG_SECTION, 'debug', 0);
+
+  print STDERR "Start: ($width, $height, $type, $use_original)\n"
+    if $debug;
 
   for my $geo (@$geolist) {
     my ($can_original, $new_type);
@@ -86,6 +90,12 @@ sub thumb_dimensions_sized {
 
     $new_type and $type = $new_type;
     $use_original &&= $can_original;
+
+    if ($debug) {
+      my $class = ref $geo;
+      $class =~ s/.*:://;
+      print STDERR "$class: ($width, $height, $type, ", $use_original || 0, ")\n";
+    }
   }
 
   return ($width, $height, $type, $use_original);
@@ -937,6 +947,8 @@ sub size {
 
   if ($geo->{perspective}) {
     my $p = abs($geo->{perspective});
+    # scale p on image width
+    $p /= $width / 200;
     $width = int($width / (1 + $p * $width) + 1);
   }
 
