@@ -570,6 +570,8 @@ sub size {
   $height = int($height);
   if ($geo->{perspective}) {
     my $p = abs($geo->{perspective});
+    # scale p on image width
+    $p /= $width / 200;
     $width = int($width / (1 + $p * $width) + 1);
   }
 
