@@ -131,9 +131,13 @@ sub _parent_popup {
 
   my %valid_types = map { $_ => 1 } _valid_archive_types($req);
   my $shopid = $req->cfg->entryErr('articles', 'shop');
-  my @all = grep($req->user_can('edit_add_child', $_)
-		 || ($sub && $sub->{parentId} == $_->{id}),
-		 Articles->all());
+  my @all = Articles->query([qw/id title generator/],
+			   [ [ '<>', 'id', $shopid ] ]);
+  if ($req->cfg->entry('basic', 'access_filter_parents', 0)) {
+    @all = grep($req->user_can('edit_add_child', $_->{id})
+		|| ($sub && $sub->{parentId} == $_->{id}),
+		 @all);
+  }
   @all = 
     grep 
     {

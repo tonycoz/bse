@@ -2,6 +2,7 @@ package BSE::DB::Mysql;
 use strict;
 use DBI;
 use vars qw/@ISA/;
+use Carp 'confess';
 @ISA = qw(BSE::DB);
 
 use vars qw($VERSION);

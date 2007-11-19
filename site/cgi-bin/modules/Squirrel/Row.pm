@@ -88,6 +88,11 @@ sub bases {
   return {};
 }
 
+sub db_columns {
+  my $class = shift;
+  return $class->columns; # the same by default
+}
+
 sub save {
   my $self = shift;
   my %saved;

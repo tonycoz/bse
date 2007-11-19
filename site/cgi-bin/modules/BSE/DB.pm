@@ -48,6 +48,53 @@ sub dbh {
   $_[0]{dbh};
 }
 
+sub _query_expr {
+  my ($args, $map, $table_name, $op, @terms) = @_;
+
+  if (lc $op eq 'and' || lc $op eq 'or') {
+    return '(' . join (" $op ", map _query_expr($args, $map, $table_name, @$_), @terms) . ')';
+  }
+  else {
+    my ($column, $value) = @terms;
+    my $db_col = $map->{$column}
+      or confess "No column '$column' in $table_name";
+    push @$args, $value;
+    return "$db_col $op ?";
+  }
+}
+
+sub generate_query {
+  my ($self, $table, $columns, $query) = @_;
+
+  my $row_class = $table->rowClass;
+  my %trans;
+  @trans{$row_class->columns} = $row_class->db_columns;
+
+  my $table_name = $table->table;
+
+  my @out_columns = map 
+    {; $trans{$_} or confess "No column '$_' in $table_name" } @$columns;
+  my $sql = 'select ' . join(',', @out_columns) . ' from ' . $table_name;
+  my @args;
+  if ($query) {
+    $sql .= ' where ' . _query_expr(\@args, \%trans, $table_name, 'and', @$query,);
+  }
+
+  print STDERR "generated sql >$sql<\n";
+  my $sth = $self->{dbh}->prepare($sql)
+    or confess "Cannot prepare >$sql<: ", $self->{dbh}->errstr;
+  $sth->execute(@args)
+    or confess "Cannot execute >$sql< @args : ", $sth->errstr;
+  my @rows;
+  while (my $row = $sth->fetchrow_arrayref) {
+    my %row;
+    @row{@$columns} = @$row;
+    push @rows, \%row;
+  }
+
+  return @rows;
+}
+
 1;
 
 __END__

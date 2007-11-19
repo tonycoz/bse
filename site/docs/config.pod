@@ -268,6 +268,12 @@ If this is true, then the drop-down lists of possible stepparents and
 stepchildren on the article edit pages are filtered for access control.
 Default: False.
 
+=item access_filter_parents
+
+If this is true, then the drop-down lists of possible parents on the
+newsletter edit pages are filtered for access control.
+Default: False.
+
 =item server_auth
 
 Set this to non-zero to enable authentication via server

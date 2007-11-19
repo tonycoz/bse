@@ -264,6 +264,12 @@ sub all {
   return @{$self->{order}};
 }
 
+sub query {
+  my ($self, $columns, $query, $opts) = @_;
+
+  $dh->generate_query($self, $columns, $query, $opts);
+}
+
 1;
 
 __END__
