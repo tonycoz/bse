@@ -19,6 +19,7 @@ my %handlers =
    canvas => 'BSE::Thumb::Imager::Canvas',
    format => 'BSE::Thumb::Imager::Format',
    overlay => 'BSE::Thumb::Imager::Overlay',
+   dropshadow => 'BSE::Thumb::Imager::DropShadow',
   );
 
 sub new {
@@ -38,7 +39,7 @@ sub _parse_geometry {
 
   my @geo;
   while (length $geometry) {
-    if ($geometry =~ s/^(\w+)\(([^\)]+)\)//) {
+    if ($geometry =~ s/^(\w+)\(([^\)]*)\)//) {
       my ($op, $args) = ( $1, $2 );
       my $handler_class = $self->_handler($op);
       unless ($handler_class) {
@@ -1318,6 +1319,111 @@ sub do {
   $work;
 }
 
+package BSE::Thumb::Imager::DropShadow;
+use vars qw(@ISA);
+@ISA = 'BSE::Thumb::Imager::Handler';
+
+sub new {
+  my ($class, $text, $error, $thumb) = @_;
+
+  my %shadow = 
+    (
+     color => '202020',
+     xoffset => '5%',
+     yoffset => '5%',
+     blur => '5%',
+     alphascale => '50%',
+     bgalpha => 0,
+     bg => 'FFFFFF',
+    );
+
+  $class->_build($text, 'dropshadow', \%shadow, $error)
+    or return;
+
+  return bless \%shadow, $class;
+}
+
+sub size {
+  my ($self, $width, $height) = @_;
+
+  my $blur = $self->_percent_of_rounded($self->{blur}, ($width + $height)/2);
+  my $xoff = $self->_percent_of_rounded($self->{xoffset}, $width);
+  my $yoff = $self->_percent_of_rounded($self->{yoffset}, $height);
+
+  my $width = $width + $blur * 2;
+  abs($xoff) > $blur and $width += abs($xoff) - $blur;
+  my $height = $height + $blur * 2;
+  abs($yoff) > $blur and $height += abs($yoff) - $blur;
+
+  return ( $width, $height, $self->{bgalpha} != 255 && 'png' );
+}
+
+
+sub do {
+  my ($self, $work) = @_;
+
+  my $color = Imager::Color->new($self->{color});
+  my $alphascale = $self->_percent($self->{alphascale});
+  my $blur = $self->_percent_of_rounded($self->{blur}, ($work->getwidth + $work->getheight)/2);
+  my $xoff = $self->_percent_of_rounded($self->{xoffset}, $work->getwidth);
+  my $yoff = $self->_percent_of_rounded($self->{yoffset}, $work->getheight);
+  if ($work->getchannels < 3) {
+    $work = $work->convert(preset => 'rgb');
+  }
+  my $shadow_base;
+  if ($work->getchannels == 3) {
+    $shadow_base = Imager->new(xsize => $work->getwidth, 
+			       ysize => $work->getheight, 
+			       channels => 1);
+    $shadow_base->box(filled => 1, color => 'ffffff');
+    $work = $work->convert(preset => 'addalpha');
+  }
+  else {
+    $shadow_base = $work->convert(preset => 'alpha');
+  }
+  
+  # make it colour, with an alpha
+  my ($r, $g, $b) = $color->rgba;
+  $shadow_base = $shadow_base->convert(matrix => [ [ 0, $r/255 ],
+						   [ 0, $g/255 ],
+						   [ 0, $b/255 ],
+						   [ $alphascale, 0 ] ]);
+  my $width = $shadow_base->getwidth + $blur * 2;
+  abs($xoff) > $blur and $width += abs($xoff) - $blur;
+  my $height = $shadow_base->getheight + $blur * 2;
+  abs($yoff) > $blur and $height += abs($yoff) - $blur;
+  my $out = Imager->new(channels => $work->getchannels, 
+			xsize => $width,
+			ysize => $height);
+  if ($self->{bgalpha}) {
+    my $bg = $self->_bgcolor;
+    $out->box(filled => 1, color => $bg);
+  }
+  my ($sx, $sy) = ( $blur, $blur );
+  if ($xoff > 0) {
+    $sx = $blur > $xoff ? $blur : $xoff;
+  }
+  else {
+    $sx = $blur;
+  }
+  if ($yoff > 0) {
+    $sy = $blur > $yoff ? $blur : $yoff;
+  }
+  else {
+    $sy = $blur;
+  }
+  $out->rubthrough(src => $shadow_base, tx => $sx, ty => $sy);
+  $out->filter(type => 'gaussian', stddev => $blur/2);
+
+  my ($ox, $oy) = ( $sx - $xoff, $sy - $yoff );
+  #$xoff < 0 and $ox -= $xoff;
+  #$yoff < 0 and $oy -= $yoff;
+
+  $out->rubthrough(src => $work, tx => $ox, ty => $oy);
+
+  return $out;
+}
+
 1;
 
 __END__
@@ -1774,6 +1880,43 @@ opaque image.  Default: 1 (no scaling).
 
 xpos, ypos - the position of the overlay within the working image.
 This can be in pixels or a percentage.
+
+=back
+
+=head2 dropshadow
+
+Add a drop shadow.
+
+Syntax: dropshadow(I<parameters...>)
+
+The following parameters are understood:
+
+=over
+
+=item *
+
+color - the color of the shadow.  Default: 202020
+
+=item *
+
+xoffset, yoffset - the offset of the shadow from the original image,
+either in pixels or as a percentage.  Default: 5%, 5%
+
+=item *
+
+blur - the blur radius, either in pixels or as a percentages of the
+average of the width and height. Default:  5%
+
+=item *
+
+alphascale - the scaling of the original image's alpha channel as
+applied to the shadow before blurring.  This can be a percentage or a
+simple decimal.  Numbers over one can be used to "harden" a partly
+transparent image's shadow.  Default: 50%
+
+=item *
+
+bgalpha, bg - the output image background.  Default FFFFFF, 0.
 
 =back
 
