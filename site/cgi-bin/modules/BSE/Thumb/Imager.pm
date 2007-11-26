@@ -1381,16 +1381,23 @@ sub do {
   else {
     $shadow_base = $work->convert(preset => 'alpha');
   }
+
+  my $shadow_work = Imager->new(xsize => $shadow_base->getwidth + $blur * 2,
+				ysize => $shadow_base->getheight + $blur * 2,
+				channels => 1);
+  $shadow_work->paste(src => $shadow_base, left => $blur, top => $blur);
+  $shadow_work->filter(type => 'gaussian', stddev => $blur/2);
+  
   
   # make it colour, with an alpha
   my ($r, $g, $b) = $color->rgba;
-  $shadow_base = $shadow_base->convert(matrix => [ [ 0, $r/255 ],
+  $shadow_base = $shadow_work->convert(matrix => [ [ 0, $r/255 ],
 						   [ 0, $g/255 ],
 						   [ 0, $b/255 ],
 						   [ $alphascale, 0 ] ]);
-  my $width = $shadow_base->getwidth + $blur * 2;
+  my $width = $work->getwidth + $blur * 2;
   abs($xoff) > $blur and $width += abs($xoff) - $blur;
-  my $height = $shadow_base->getheight + $blur * 2;
+  my $height = $work->getheight + $blur * 2;
   abs($yoff) > $blur and $height += abs($yoff) - $blur;
   my $out = Imager->new(channels => $work->getchannels, 
 			xsize => $width,
@@ -1412,8 +1419,7 @@ sub do {
   else {
     $sy = $blur;
   }
-  $out->rubthrough(src => $shadow_base, tx => $sx, ty => $sy);
-  $out->filter(type => 'gaussian', stddev => $blur/2);
+  $out->rubthrough(src => $shadow_base, tx => $sx-$blur, ty => $sy-$blur);
 
   my ($ox, $oy) = ( $sx - $xoff, $sy - $yoff );
   #$xoff < 0 and $ox -= $xoff;
