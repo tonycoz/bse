@@ -3594,7 +3594,7 @@ sub req_ajax_set {
    my $cfg = $req->cfg;
    my $cgi = $req->cgi;
 
-   my $field = Encode::decode(utf8 => $cgi->param('field'));
+   my $field = $cgi->param('field');
 
    unless ($field && $settable_fields{$field}) {
     return {
@@ -3607,7 +3607,7 @@ sub req_ajax_set {
 
    require Encode;
    # ajax always sends in UTF-8
-   my $value = $cgi->param('value');
+   my $value = Encode::decode(utf8 => $cgi->param('value'));
 
    # hack - validate it if it's the title
    if ($field eq 'title') {
