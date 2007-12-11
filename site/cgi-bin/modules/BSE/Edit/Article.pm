@@ -3594,7 +3594,7 @@ sub req_ajax_set {
    my $cfg = $req->cfg;
    my $cgi = $req->cgi;
 
-   my $field = $cgi->param('field');
+   my $field = Encode::decode(utf8 => $cgi->param('field'));
 
    unless ($field && $settable_fields{$field}) {
     return {
@@ -3605,10 +3605,8 @@ sub req_ajax_set {
 	   };
    }
 
-   $cgi->charset('utf-8');
-
-   # newer versions of CGI.pm will decode the content as UTF8 if we
-   # do the above
+   require Encode;
+   # ajax always sends in UTF-8
    my $value = $cgi->param('value');
 
    # hack - validate it if it's the title
@@ -3628,7 +3626,6 @@ sub req_ajax_set {
    # convert it to our working charset
    # any characters that don't convert are replaced by some 
    # substitution character, not defined by the documentation
-   require Encode;
    $value = Encode::encode($charset, $value);
 
    $article->{$field} = $value;
