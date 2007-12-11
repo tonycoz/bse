@@ -3539,18 +3539,15 @@ sub req_ajax_save_body {
    my $cfg = $req->cfg;
    my $cgi = $req->cgi;
 
-   $cgi->charset('utf-8');
-
-   # newer versions of CGI.pm will decode the content as UTF8 if we
-   # do the above
-   my $body = $cgi->param('body');
+   require Encode;
+   # ajax always sends in UTF-8
+   my $body = Encode::decode(utf8 => $cgi->param('body'));
 
    my $charset = $req->cfg->entry('html', 'charset', 'iso-8859-1');
   
    # convert it to our working charset
    # any characters that don't convert are replaced by some 
    # substitution character, not defined by the documentation
-   require Encode;
    $body = Encode::encode($charset, $body);
 
    $article->{body} = $body;
