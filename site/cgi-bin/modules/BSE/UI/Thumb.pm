@@ -55,6 +55,7 @@ sub dispatch {
 
   my $image_refresh =
     BSE::Template->get_refresh($cache_url);
+  push @{$image_refresh->{headers}}, "Cache-Control: max-age=3600";
   if ($do_cache) {
     -e $cache_name
       and return $image_refresh;
