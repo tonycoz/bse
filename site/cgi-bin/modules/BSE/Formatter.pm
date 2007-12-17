@@ -302,7 +302,7 @@ sub popimage {
 sub _file {
   my ($self, $file, $text, $type) = @_;
 
-  my $title = defined $text ? $text : $file->{displayName};
+  my $title = defined $text ? $text : escape_html($file->{displayName});
   if ($file->{forSale}) {
     return escape_html($title);
   }
@@ -317,7 +317,7 @@ sub _file {
     }
     my $url = "/cgi-bin/user.pl?download_file=1&file=$file->{id}";
     return qq!<a href="! . escape_html($url) . qq!" title="$title_attrib"$class_text>! .
-      escape_html($title) . "</a>";
+      $title . "</a>";
   }
 }
 
