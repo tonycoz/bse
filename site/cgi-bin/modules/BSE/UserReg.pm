@@ -1180,6 +1180,7 @@ sub req_download {
     print "Content-Type: application/octet-stream\r\n";
   }
   else {
+    print qq/Content-Disposition: inline; filename=$file->{displayName}\r\n/;
     print "Content-Type: $file->{contentType}\r\n";
   }
   print "\r\n";
@@ -1262,6 +1263,7 @@ sub req_download_file {
     print "Content-Type: application/octet-stream\r\n";
   }
   else {
+    print qq/Content-Disposition: inline; filename=$file->{displayName}\r\n/;
     print "Content-Type: $file->{contentType}\r\n";
   }
   print "\r\n";
