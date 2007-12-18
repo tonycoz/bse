@@ -38,7 +38,7 @@ Column thumbImage;varchar(64);NO;;
 Column thumbWidth;int(11);NO;;
 Column thumbHeight;int(11);NO;;
 Column imagePos;char(2);NO;;
-Column release;datetime;NO;0000-00-00 00:00:00;
+Column release;datetime;NO;1990-01-01 00:00:00;
 Column expire;datetime;NO;2999-12-31 23:59:59;
 Column keyword;varchar(255);NO;;
 Column template;varchar(127);NO;;

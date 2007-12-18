@@ -21,7 +21,7 @@ CREATE TABLE article (
 
   -- position of first image for this article
   imagePos char(2) not null,
-  `release` datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+  `release` datetime DEFAULT '1990-01-01 00:00:00' NOT NULL,
   expire datetime DEFAULT '2999-12-31 23:59:59' NOT NULL,
   keyword varchar(255) not null default '',
 

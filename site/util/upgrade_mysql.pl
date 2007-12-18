@@ -163,7 +163,7 @@ for my $table (sort keys %tables) {
     my $sql = "alter table $table add ";
     $sql .= $index->{unique} ? "unique " : "index ";
     $sql .= $name . " ";
-    $sql .= "(" . join(",", @{$index->{cols}}) . ")";
+    $sql .= "(" . join(",", map("`$_`", @{$index->{cols}})) . ")";
 
     run_sql($sql)
       or die "Cannot add index $name: $DBI::errstr\n";
@@ -217,7 +217,7 @@ sub create_clauses {
 
   my @results;
   for my $col (@cols) {
-    my $sql = $col->{field} . " " . $col->{type};
+    my $sql = "`" . $col->{field} . "` " . $col->{type};
     $sql .= $col->{null} eq 'YES' ? ' null' : ' not null';
     if ($col->{default} ne 'NULL' &&
 	($col->{type} =~ /char/i || $col->{default} =~ /\d/)) {
