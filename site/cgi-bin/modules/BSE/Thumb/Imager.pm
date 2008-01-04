@@ -1350,9 +1350,9 @@ sub size {
   my $xoff = $self->_percent_of_rounded($self->{xoffset}, $width);
   my $yoff = $self->_percent_of_rounded($self->{yoffset}, $height);
 
-  my $width = $width + $blur * 2;
+  $width = $width + $blur * 2;
   abs($xoff) > $blur and $width += abs($xoff) - $blur;
-  my $height = $height + $blur * 2;
+  $height = $height + $blur * 2;
   abs($yoff) > $blur and $height += abs($yoff) - $blur;
 
   return ( $width, $height, $self->{bgalpha} != 255 && 'png' );
