@@ -7,7 +7,7 @@ use Carp 'confess';
 
 use vars qw($VERSION);
 
-use Constants 0.1 qw/$DSN $UN $PW/;
+use Constants 0.1 qw/$DSN $UN $PW $DBOPTS/;
 
 use Carp;
 
@@ -533,7 +533,7 @@ sub _single
   warn "Incorrect number of parameters passed to DatabaseHandle::single\n" unless @_ == 0;
   
   unless ( defined $self ) {
-    my $dbh = DBI->connect_cached( $DSN, $UN, $PW)
+    my $dbh = DBI->connect_cached( $DSN, $UN, $PW, $DBOPTS)
       or die "Cannot connect to database: $DBI::errstr";
     
     # this might fail, but I don't care
