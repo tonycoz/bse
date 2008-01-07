@@ -263,6 +263,8 @@ create table orders (
   billFacsimile varchar(80) not null default '',
   billEmail varchar(255) not null default '',
 
+  -- numeric id of the user who created this order, should correspond 
+  -- to the user name in userId, -1 if user was not logged on
   siteuser_id integer,
   affiliate_code varchar(40) not null default '',
 

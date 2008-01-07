@@ -197,6 +197,10 @@ Called when a change is made to the site users table.
 
 Called at the beginning of the save_opts() action.
 
+=item send_session_cookie($cookie_name, $session, $sessionid)
+
+Called whenever the session cookie is set.
+
 =back
 
 =cut
