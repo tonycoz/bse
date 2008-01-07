@@ -17,6 +17,10 @@ sub single {
   $DBCLASS->_single();
 }
 
+sub startup {
+  $DBCLASS->_startup();
+}
+
 sub query {
   my ($self, $name, @args) = @_;
 

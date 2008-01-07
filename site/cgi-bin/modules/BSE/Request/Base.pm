@@ -7,6 +7,8 @@ use DevHelp::HTML;
 sub new {
   my ($class, %opts) = @_;
 
+  BSE::DB->startup();
+
   $opts{cfg} ||= BSE::Cfg->new;
   $opts{cgi} ||= $class->_make_cgi;
 

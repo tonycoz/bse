@@ -5,7 +5,7 @@ use vars qw/@ISA/;
 use Carp 'confess';
 @ISA = qw(BSE::DB);
 
-use vars qw($VERSION);
+use vars qw($VERSION $MAX_CONNECTION_AGE);
 
 use Constants 0.1 qw/$DSN $UN $PW $DBOPTS/;
 
@@ -14,6 +14,8 @@ use Carp;
 my $self;
 
 $VERSION = 1.01;
+
+$MAX_CONNECTION_AGE = 1200;
 
 my %statements =
   (
@@ -527,19 +529,42 @@ delete from bse_article_groups where group_id = ?
 SQL
   );
 
+# called when we start working on a new request, mysql seems to have
+# problems with old connections sometimes, or so it seems, so
+# disconnect occasionally (only matters for fastcgi, mod_perl)
+sub _startup {
+  my $class = shift;
+
+  if ($self) {
+    my $age = time() - $self->{birth};
+    if ($age > $MAX_CONNECTION_AGE) {
+      $self->{dbh}->disconnect;
+      $self->{dbh} = $class->_connect;
+      $self->{birth} = time();
+    }
+  }
+}
+
+sub _connect {
+  my $dbh = DBI->connect( $DSN, $UN, $PW, $DBOPTS)
+      or die "Cannot connect to database: $DBI::errstr";
+    
+  # this might fail, but I don't care
+  $dbh->do("set session sql_mode='ansi_quotes'");
+
+  return $dbh;
+}
+
 sub _single
 {
   my $class = shift;
+
   warn "Incorrect number of parameters passed to DatabaseHandle::single\n" unless @_ == 0;
   
   unless ( defined $self ) {
-    my $dbh = DBI->connect_cached( $DSN, $UN, $PW, $DBOPTS)
-      or die "Cannot connect to database: $DBI::errstr";
-    
-    # this might fail, but I don't care
-    $dbh->do("set session sql_mode='ansi_quotes'");
+    my $dbh = $class->_connect;
 
-    $self = bless { dbh => $dbh }, $class;
+    $self = bless { dbh => $dbh, birth => time() }, $class;
   }
   $self;
 }
