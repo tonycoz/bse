@@ -542,6 +542,13 @@ sub _startup {
       $self->{dbh} = $class->_connect;
       $self->{birth} = time();
     }
+    else {
+      unless ($self->{dbh}->ping) {
+	print STDERR "Database connection lost - reconnecting\n";
+	$self->{dbh} = $class->_connect;
+	$self->{birth} = time();
+      }
+    }
   }
 }
 

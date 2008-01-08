@@ -106,6 +106,7 @@ sub getByPkey {
     else {
       $result = undef;
     }
+    $sth->finish;
   }
   $query_cache{$key} = $result if $cache_queries;
 
