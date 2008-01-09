@@ -1,6 +1,6 @@
-#!/usr/bin/perl -w 
+#!/usr/bin/perl -w
 # -d:ptkdb
-BEGIN { $ENV{DISPLAY} = '192.168.32.245:0.0' }
+BEGIN { $ENV{DISPLAY} = '192.168.32.51:0.0' }
 use strict;
 use FindBin;
 use lib "$FindBin::Bin/../modules";

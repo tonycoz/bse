@@ -1,13 +1,50 @@
 package BSE::Session;
 use strict;
-use Constants qw(:session);
 use CGI::Cookie;
 use BSE::DB;
+use BSE::CfgInfo qw/custom_class/;
 
-require $SESSION_REQUIRE;
+sub _session_require {
+  my ($cfg) = @_;
+
+  my $class = _session_class($cfg);
+  $class =~ s!::!/!g;
+
+  return "$class.pm";
+}
+
+sub _session_class {
+  my ($cfg) = @_;
+
+  eval { require Constants; };
+
+  my $default = $Constants::SESSION_CLASS || 'Apache::Session::MySQL';
+
+  return $cfg->entry('basic', 'session_class', $default);
+}
+
+sub _send_session_cookie {
+  my ($self, $session, $cfg) = @_;
+
+  my $debug = $cfg->entry('debug', 'cookies');
+
+  my $cookie_name = $cfg->entry('basic', 'cookie_name', 'sessionid');
+  my $cookie = $self->make_cookie($cfg, $cookie_name => $session->{_session_id});
+  BSE::Session->send_cookie($cookie);
+
+  print STDERR "Sent cookie: $cookie\n" if $debug;
+
+  my $custom = custom_class($cfg);
+  if ($custom->can('send_session_cookie')) {
+    $custom->send_session_cookie($cookie_name, $session, $session->{_session_id}, $cfg);
+  }
+}
 
 sub tie_it {
   my ($self, $session, $cfg) = @_;
+
+  my $require = _session_require($cfg);
+  require $require;
 
   my $cookie_name = $cfg->entry('basic', 'cookie_name', 'sessionid');
   my $lifetime = $cfg->entry('basic', 'cookie_lifetime') || '+3h';
@@ -22,7 +59,7 @@ sub tie_it {
 
   my $dh = BSE::DB->single;
   eval {
-    tie %$session, $SESSION_CLASS, $sessionid,
+    tie %$session, _session_class($cfg), $sessionid,
     {
      Handle=>$dh->{dbh},
      LockHandle=>$dh->{dbh}
@@ -32,31 +69,15 @@ sub tie_it {
   if ($@ && $@ =~ /Object does not exist/) {
     # try again
     undef $sessionid;
-    tie %$session, $SESSION_CLASS, $sessionid,
+    tie %$session, _session_class($cfg), $sessionid,
     {
      Handle=>$dh->{dbh},
      LockHandle=>$dh->{dbh}
     };
   }
   unless ($sessionid) {
-  # save the new sessionid
-    my $cookie = $self->make_cookie($cfg, $cookie_name => $session->{_session_id});
-# from trying to debug Opera cookie issues
-#     my ($value, @rest) = split ';', $cookie;
-#     my @out = $value;
-#     my %rest;
-#     for my $entry (@rest) {
-#       my ($key) = $entry =~ /^\s*(\w+)=/
-# 	or next;
-#       $rest{$key} = $entry;
-#     }
-#     for my $field (qw/expires path domain/) {
-#       push @out, $rest{$field}
-# 	if $rest{$field};
-#     }
-#     $cookie = join ';', @out;
-    BSE::Session->send_cookie($cookie);
-    print STDERR "Sent cookie: $cookie\n" if $debug;
+    # save the new sessionid
+    $self->_send_session_cookie($session, $cfg);
   }
 
   if ($cfg->entry('debug', 'dump_session')) {
@@ -68,16 +89,18 @@ sub tie_it {
 sub change_cookie {
   my ($self, $session, $cfg, $sessionid, $newsession) = @_;
 
-  my $cookie_name = $cfg->entry('basic', 'cookie_name', 'sessionid');
-  BSE::Session->send_cookie($self->make_cookie($cfg, $cookie_name, $sessionid));
+  #my $cookie_name = $cfg->entry('basic', 'cookie_name', 'sessionid');
+  #BSE::Session->send_cookie($self->make_cookie($cfg, $cookie_name, $sessionid));
   my $dh = BSE::DB->single;
   eval {
-    tie %$newsession, $SESSION_CLASS, $sessionid,
+    tie %$newsession, _session_class($cfg), $sessionid,
     {
      Handle=>$dh->{dbh},
      LockHandle=>$dh->{dbh}
     };
   };
+
+  $self->_send_session_cookie($newsession, $cfg);
 }
 
 sub make_cookie {

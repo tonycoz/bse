@@ -139,6 +139,10 @@ sub req_logon {
   $user->{previousLogon} = $user->{lastLogon};
   $user->{lastLogon} = now_datetime;
   $user->save;
+  my $custom = custom_class($cfg);
+  if ($custom->can('siteuser_login')) {
+    $custom->siteuser_login($session->{_session_id}, $session->{userid}, $cfg);
+  }
   print "Set-Cookie: ",BSE::Session->
     make_cookie($cfg, userid=>$user->{userId}),"\n";
 
@@ -261,6 +265,11 @@ sub req_logoff {
   $session->{cart} = [];
   print "Set-Cookie: ",BSE::Session->
     make_cookie($cfg, userid=>''),"\n";
+
+  my $custom = custom_class($cfg);
+  if ($custom->can('siteuser_logout')) {
+    $custom->siteuser_logout($session->{_session_id}, $cfg);
+  }
 
   _got_user_refresh($session, $cgi, $cfg);
 }
@@ -695,6 +704,12 @@ sub req_saveopts {
     $session->{userid} = $user->{userId};
     delete $session->{partial_logon};
     $user->save;
+
+    my $custom = custom_class($cfg);
+    if ($custom->can('siteuser_login')) {
+      $custom->siteuser_login($session->{_session_id}, $session->{userid});
+    }
+
     print "Set-Cookie: ",BSE::Session->
       make_cookie($cfg, userid=>$user->{userId}),"\n";
     
@@ -905,7 +920,14 @@ sub req_register {
   if ($user) {
     print "Set-Cookie: ",BSE::Session->
       make_cookie($cfg, userid=>$user->{userId}),"\n";
-    $session->{userid} = $user->{userId} unless $nopassword;
+    unless ($nopassword) {
+      $session->{userid} = $user->{userId};
+      my $custom = custom_class($cfg);
+      if ($custom->can('siteuser_login')) {
+	$custom->siteuser_login($session->{_session_id}, $session->{userid});
+      }
+    }
+
     my $subs = $self->_save_subs($user, $session, $cfg, $cgi);
     if ($nopassword) {
       return $self->send_conf_request($req, $user);
