@@ -407,6 +407,7 @@ sub req_save {
   $user->{flags} = join('', grep exists $flags{$_}, $cgi->param('flags'))
     if $cgi->param('saveFlags');
 
+  my $custom = custom_class($cfg);
   $user->{textOnlyMail} = 0 
     if $cgi->param('saveTextOnlyMail') && !defined $cgi->param('textOnlyMail');
   $user->{keepAddress} = 0 
@@ -428,9 +429,13 @@ sub req_save {
 	or next;
       if ($member_of{$id} and !$new_ids{$id}) {
 	$group->remove_member($user->{id});
+	$custom->can('group_remove_member')
+	  and $custom->group_remove_member($group, $user->{id}, $cfg);
       }
       elsif (!$member_of{$id} and $new_ids{$id}) {
 	$group->add_member($user->{id});
+	$custom->can('group_add_member')
+	  and $custom->group_add_member($group, $user->{id}, $cfg);
       }
     }
   }
@@ -439,8 +444,9 @@ sub req_save {
     $class->save_subs($req, $user);
   }
 
-  my $custom = custom_class($cfg);
   $custom->siteusers_changed($cfg);
+  $custom->can('siteuser_edit')
+    and $custom->siteuser_edit($user, 'admin', $cfg);
 
   my @msgs;
 
@@ -670,6 +676,8 @@ sub req_add {
     
     my $custom = custom_class($cfg);
     $custom->siteusers_changed($cfg);
+    $custom->can('siteuser_add')
+      and $custom->siteuser_add($user, 'admin', $cfg);
 
     my $r = $cgi->param('r');
     unless ($r) {
@@ -962,14 +970,20 @@ sub req_savegroupmembers {
   my %set_ids = map { $_ => 1 } $cgi->param('is_member');
   my %all_ids = map { $_ => 1 } SiteUsers->all_ids;
 
+  my $custom = custom_class($req->cfg);
+
   for my $id (@to_be_set) {
     next unless $all_ids{$id};
 
     if ($set_ids{$id} && !$current_ids{$id}) {
       $group->add_member($id);
+	$custom->can('group_add_member')
+	  and $custom->group_add_member($group, $id, $req->cfg);
     }
     elsif (!$set_ids{$id} && $current_ids{$id}) {
       $group->remove_member($id);
+      $custom->can('group_remove_member')
+	and $custom->group_remove_member($group, $id, $req->cfg);
     }
   }
 

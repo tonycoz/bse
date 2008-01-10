@@ -9,6 +9,7 @@ use DevHelp::HTML;
 use DevHelp::Validate;
 use BSE::Util::Secure qw/make_secret/;
 use BSE::SubscribedUsers;
+use BSE::CfgInfo qw(custom_class);
 
 my %rights =
   (
@@ -187,8 +188,12 @@ sub req_import {
   # any subs we'll need to email a new confirmation message
   my ($class, $req) = @_;
 
+
   my $cgi = $req->cgi;
   my $cfg = $req->cfg;
+
+  my $custom = custom_class($cfg);
+
   my %errors;
   my $filename = $cgi->param('file');
   my $fh;
@@ -267,6 +272,8 @@ sub req_import {
       }
     }
     $user->save;
+    $custom->can('siteuser_edit')
+      and $custom->siteuser_edit($user, 'import', $cfg);
   }
 
   my @iter_fields = 

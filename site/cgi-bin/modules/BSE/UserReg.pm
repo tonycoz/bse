@@ -574,8 +574,8 @@ sub req_saveopts {
       or return;
   }
 
+  my $custom = custom_class($cfg);
   if ($cfg->entry('custom', 'saveopts')) {
-    my $custom = custom_class($cfg);
     eval {
       $custom->siteuser_saveopts($user, $req);
     };
@@ -688,6 +688,10 @@ sub req_saveopts {
   if ($cgi->param('saveSubscriptions')) {
     $subs = $self->_save_subs($user, $session, $cfg, $cgi);
   }
+
+  $custom->can('siteuser_edit')
+    and $custom->siteuser_edit($user, 'user', $cfg);
+
   if ($nopassword) {
     return $self->send_conf_request($req, $user)
       if $newemail;
@@ -698,6 +702,7 @@ sub req_saveopts {
       if $subs && !$user->{confirmed};
   }
 
+
   if ($partial_logon) {
     $user->{previousLogon} = $user->{lastLogon};
     $user->{lastLogon} = now_datetime;
@@ -707,7 +712,7 @@ sub req_saveopts {
 
     my $custom = custom_class($cfg);
     if ($custom->can('siteuser_login')) {
-      $custom->siteuser_login($session->{_session_id}, $session->{userid});
+      $custom->siteuser_login($session->{_session_id}, $session->{userid}, $cfg);
     }
 
     print "Set-Cookie: ",BSE::Session->
@@ -730,7 +735,6 @@ sub req_saveopts {
     }
   }
 
-  my $custom = custom_class($cfg);
   $custom->siteusers_changed($cfg);
 
   refresh_to($url);
@@ -918,13 +922,17 @@ sub req_register {
     $user = SiteUsers->add(@user{@cols});
   };
   if ($user) {
+    my $custom = custom_class($cfg);
+    $custom->can('siteuser_add')
+      and $custom->siteuser_add($user, 'user', $cfg);
+
     print "Set-Cookie: ",BSE::Session->
       make_cookie($cfg, userid=>$user->{userId}),"\n";
     unless ($nopassword) {
       $session->{userid} = $user->{userId};
       my $custom = custom_class($cfg);
       if ($custom->can('siteuser_login')) {
-	$custom->siteuser_login($session->{_session_id}, $session->{userid});
+	$custom->siteuser_login($session->{_session_id}, $session->{userid}, $cfg);
       }
     }
 
@@ -938,7 +946,6 @@ sub req_register {
     
     _got_user_refresh($session, $cgi, $cfg);
 
-    my $custom = custom_class($cfg);
     $custom->siteusers_changed($cfg);
 
     if ($cfg->entry('site users', 'notify_register', 0)) {

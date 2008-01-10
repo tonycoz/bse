@@ -201,6 +201,27 @@ Called at the beginning of the save_opts() action.
 
 Called whenever the session cookie is set.
 
+=item siteuser_add($user, $who, $cfg)
+
+Called when a new user is created.  $user is the user object, $who is
+'user' for registration, 'admin' for added by the admin.
+
+=item siteuser_edit($user, $who, $cfg)
+
+Called when changes to a user are saved.  $user is the user object,
+$who is 'user' for user saving options, 'admin' for changes made by
+the admin, or 'import' if a file of users was imported.
+
+=item group_add_member($group, $user_id, $cfg)
+
+Called when a user is added to a group.  $group is the group object,
+$user_id is the numeric id of the user.
+
+=item group_remove_member($group, $user_id, $cfg)
+
+Called when a user is removed from a group.  $group is the group
+object, $user_id is the numeric id of the user.
+
 =back
 
 =cut

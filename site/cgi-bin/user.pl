@@ -7,7 +7,9 @@ use lib "$FindBin::Bin/modules";
 use Constants;
 use BSE::UserReg;
 use BSE::Request;
+use Carp 'confess';
 
+$SIG{__DIE__} = sub { confess $@ };
 
 my $req = BSE::Request->new;
 BSE::UserReg->dispatch($req);
