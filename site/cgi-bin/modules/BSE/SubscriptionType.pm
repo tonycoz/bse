@@ -45,6 +45,7 @@ sub _build_article {
   $article->{id} = -5;
 
   $article->{threshold} = 1;
+  $article->{inherit_siteuser_rights} = 1;
 #    $article->{titleImage} = '';
 #    $article->{thumbImage} = '';
 #    $article->{thumbWidth} = $article->{thumbHeight} = 0;
