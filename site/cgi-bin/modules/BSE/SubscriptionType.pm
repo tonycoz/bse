@@ -44,8 +44,25 @@ sub _build_article {
   $article->{generator} = 'Generate::Subscription';
   $article->{id} = -5;
 
-  $article->{threshold} = 1;
+  $article->{threshold} = $parent->{threshold};
   $article->{inherit_siteuser_rights} = 1;
+  $article->{summaryLength} = $parent->{summaryLength};
+  $article->{created} = now_datetime;
+  $article->{inherit_siteuser_rights} = 1;
+  $article->{force_dynamic} = 0;
+  $article->{cached_dynamic} = 0;
+  $article->{menu} = 0;
+  
+  # for field value neatness
+  $article->{customDate1} = undef;
+  $article->{customDate2} = undef;
+  $article->{customStr1} = undef;
+  $article->{customStr2} = undef;
+  $article->{customInt1} = undef;
+  $article->{customInt2} = undef;
+  $article->{customInt3} = undef;
+  $article->{customInt4} = undef;
+
 #    $article->{titleImage} = '';
 #    $article->{thumbImage} = '';
 #    $article->{thumbWidth} = $article->{thumbHeight} = 0;
