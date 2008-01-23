@@ -10,10 +10,32 @@ sub dispatch {
 
   my $cgi = $req->cgi;
   my $id = $cgi->param('page');
-  $id && $id =~ /^\d+$/
-    or return $class->error($req, "required page parameter not present or invalid");
-  my $article = Articles->getByPkey($id)
-    or return $class->error($req, "unknown article id $id");
+  my $article;
+  my $prefix = $req->cfg->entry('article', 'alias_prefix', '');
+  my @more_headers;
+  if ($id) {
+    $id && $id =~ /^\d+$/
+      or return $class->error($req, "page parameter not valid");
+    $article = Articles->getByPkey($id)
+      or return $class->error($req, "unknown article id $id");
+  }
+  elsif (my $alias = $cgi->param('alias')) {
+    $article = Articles->getBy(linkAlias => $alias)
+      or return $class->error($req, "Unknown article alias '$alias'");
+  }
+  elsif ($ENV{REDIRECT_URL} && $ENV{SCRIPT_URL} =~ m(^\Q$prefix\E/)) {
+    (my $url = $ENV{SCRIPT_URL}) =~ s(^\Q$prefix\E/)();
+    my ($alias) = $url =~ /^([a-zA-Z0-9_]+)/
+      or return $class->error($req, "Missing document $ENV{SCRIPT_URL}");
+
+    $article = Articles->getBy(linkAlias => $alias)
+      or return $class->error($req, "unknown article alias '$alias'");
+
+    # have the client treat this as successful, though an error is
+    # still written to the Apache error log
+    push @more_headers, "Status: 200";
+  }
+  $id = $article->{id};
 
   # get the dynamic generate for this article type
   my $gen_class = $article->{generator};
@@ -68,7 +90,13 @@ sub dispatch {
     $template = $class->_generate_pregen($req, $article, $srcname);
   }
 
-  return $gen->generate($article, $template);
+  my $result = $gen->generate($article, $template);
+
+  if (@more_headers) {
+    push @{$result->{headers}}, @more_headers;
+  }
+
+  return $result;
 }
 
 # returns an error page

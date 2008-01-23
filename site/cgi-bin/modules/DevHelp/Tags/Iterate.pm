@@ -31,17 +31,22 @@ sub _iter_iterate {
   return;
 }
 
+sub item {
+  my ($self, $entry, $args) = @_;
+
+  my $value = $entry->{$args};
+  defined $value or return '';
+
+  return $self->escape($value);
+}
+
 sub _iter_item {
   my ($self, $rdata, $rindex, $single, $plural, $args) = @_;
 
   $$rindex >= 0 && $$rindex < @$rdata
     or return "** $single should only be used inside iterator $plural **";
 
-  my $value = $rdata->[$$rindex]{$args};
-
-  defined $value or return '';
-
-  return $self->escape($value);
+  return $self->item($rdata->[$$rindex], $args);
 }
 
 sub _iter_number_paged {

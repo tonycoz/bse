@@ -4,7 +4,7 @@ use HTML::Entities;
 use DevHelp::Tags;
 use DevHelp::HTML qw(:default escape_xml);
 use vars qw(@EXPORT_OK @ISA);
-@EXPORT_OK = qw(tag_error_img tag_hash tag_hash_plain tag_hash_mbcs);
+@EXPORT_OK = qw(tag_error_img tag_hash tag_hash_plain tag_hash_mbcs tag_article);
 @ISA = qw(Exporter);
 require Exporter;
 
@@ -952,6 +952,25 @@ sub tag_ajax {
   else {
     return "** invalid type $type for ajax definition $name **";
   }
+}
+
+sub tag_article {
+  my ($article, $cfg, $args) = @_;
+
+  my $value;
+  if ($args eq 'link'
+     && ref($article) ne 'HASH') {
+    $value = $article->link($cfg);
+  }
+  else {
+    $value = $article->{$args};
+    defined $value or $value = '';
+    if ($value =~ /\cJ/ && $value =~ /\cM/) {
+      $value =~ tr/\cM//d;
+    }
+  }
+
+  return escape_html($value);
 }
 
 1;

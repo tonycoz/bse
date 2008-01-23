@@ -7,12 +7,13 @@ use Images;
 use vars qw(@ISA);
 use Generate;
 use Util qw(generate_button);
-use BSE::Util::Tags;
+use BSE::Util::Tags qw(tag_article);
 use ArticleFiles;
 @ISA = qw/Generate/;
 use DevHelp::HTML;
 use BSE::Arrows;
 use Carp 'confess';
+use BSE::Util::Iterate;
 
 my $excerptSize = 300;
 
@@ -73,9 +74,9 @@ sub tag_title {
   exists $acts->{$which} 
     or return "** no such object $which **";
 
-  my $title = $acts->{$which}->('title');
+  my $title = $templater->perform($acts, $which, 'title');
   my $imagename = $which eq 'article' ? $article->{titleImage} : 
-    $acts->{$which}->('titleImage');
+    $templater->perform($acts, $which, 'titleImage');
   $imagename and
     return qq!<img src="/images/titles/$imagename"!
       .qq! border="0" alt="$title" />! ;
@@ -84,7 +85,7 @@ sub tag_title {
     ($im) = grep lc $_->{name} eq 'bse_title', @$images;
   }
   else {
-    my $id = $acts->{$which}->('id');
+    my $id = $templater->perform($acts, $which, 'id');
     require Images;
     my @images = Images->getBy(articleId=>$id);
     ($im) = grep lc $_->{name} eq 'bse_title', @$images;
@@ -152,16 +153,6 @@ HTML
   return $html;
 }
 
-sub tag_article {
-  my ($article, $arg) = @_;
-
-  $arg or return '';
-  $article or return '';
-  defined $article->{$arg} or return '';
-
-  return escape_html($article->{$arg});
-}
-
 sub abs_urls {
   my ($self, $article) = @_;
 
@@ -191,8 +182,8 @@ sub tag_admin {
      BSE::Util::Tags->static(\%acts, $cfg),
      BSE::Util::Tags->admin(\%acts, $cfg),
      BSE::Util::Tags->secure($self->{request}),
-     article => [ \&tag_article, $article ],
-     parent => [ \&tag_article, $parent ],
+     article => [ \&tag_article, $article, $cfg ],
+     parent => [ \&tag_article, $parent, $cfg ],
      ifParent => $parent,
      ifEmbedded => $embedded,
     );
@@ -262,11 +253,12 @@ sub baseActs {
   }
   my $allkids_index;
   my $current_image;
+  my $art_it = BSE::Util::Iterate::Article->new(cfg =>$cfg);
   # separate these so the closures can see %acts
   my %acts =
     (
      $self->SUPER::baseActs($articles, $acts, $article, $embedded),
-     article=>sub { escape_html($article->{$_[0]}) },
+     article=>[ \&tag_article, $article, $cfg ],
      ifTitleImage => 
      sub { 
        my $which = shift || 'article';
@@ -330,10 +322,10 @@ sub baseActs {
      },
      child =>
      sub {
-       return escape_html($children[$child_index]{$_[0]});
+       return tag_article($children[$child_index], $cfg, $_[0]);
      },
 
-     section=>sub { escape_html($section->{$_[0]}) },
+     section=> [ \&tag_article, $section, $cfg ],
 
      # these are mostly obsolete, use moveUp and moveDown instead
      # where possible
@@ -378,11 +370,11 @@ sub baseActs {
      crumbs =>
      sub {
        # obsolete me
-       return escape_html($work_crumbs[$crumb_index]{$_[0]});
+       return tag_article($work_crumbs[$crumb_index], $cfg, $_[0]);
      },
      crumb =>
      sub {
-       return escape_html($work_crumbs[$crumb_index]{$_[0]});
+       return tag_article($work_crumbs[$crumb_index], $cfg, $_[0]);
      },
      ifCrumbs =>
      sub {
@@ -401,7 +393,7 @@ sub baseActs {
      # access to parent
      ifParent => sub { $parent },
      parent =>
-     sub { return $parent && escape_html($parent->{$_[0]}) },
+     sub { return $parent && tag_article($parent, $cfg, $_[0]) },
      # for rearranging order in admin mode
      moveDown=>
      sub {
@@ -554,9 +546,9 @@ HTML
      thumbimage => [ tag_thumbimage => $self, \$current_image, \@images ],
      BSE::Util::Tags->make_iterator(\@files, 'file', 'files'),
      BSE::Util::Tags->make_iterator(\@stepkids, 'stepkid', 'stepkids'),
-     BSE::Util::Tags->make_iterator(\@allkids, 'allkid', 'allkids', \$allkids_index),
-     BSE::Util::Tags->make_iterator(\@stepparents, 'stepparent', 'stepparents'),
-     top => [ \&tag_top, $self, $article ],
+     $art_it->make_iterator(undef, 'allkid', 'allkids', \@allkids, \$allkids_index),
+     $art_it->make_iterator(undef, 'stepparent', 'stepparents', \@stepparents),
+     top => [ \&tag_article, $cfg, $self->{top} || $article ],
      ifDynamic => $dynamic,
      ifAccessControlled => [ \&tag_ifAccessControlled, $article ],
     );
@@ -683,17 +675,6 @@ sub tag_movekid {
   }
 
   return make_arrows($self->{cfg}, $down_url, $up_url, $refreshto, $img_prefix);
-}
-
-sub tag_top {
-  my ($self, $article, $args) = @_;
-
-  my $top = $self->{top} || $article;
-
-  my $value = $top->{$args};
-  defined $value or $value = '';
-
-  escape_html($value);
 }
 
 1;

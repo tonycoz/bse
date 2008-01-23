@@ -72,7 +72,9 @@ Column metaKeywords;varchar(255);NO;;
 Column summaryx;text;NO;;
 Column menu;smallint(5);NO;0;
 Column titleAlias;varchar(60);NO;;
+Column linkAlias;varchar(255);NO;;
 Index PRIMARY;1;[id]
+Index article_alias;0;[linkAlias]
 Index article_date_index;0;[release;expire;id]
 Index article_displayOrder_index;0;[displayOrder]
 Index article_level_index;0;[level;id]

@@ -96,6 +96,9 @@ CREATE TABLE article (
 
   -- short title for menus  
   titleAlias varchar(60) not null default '',
+
+  -- alias used to generate links
+  linkAlias varchar(255) not null default '',
   
   PRIMARY KEY (id),
 
@@ -108,7 +111,8 @@ CREATE TABLE article (
   INDEX article_date_index (`release`,expire, id),
   INDEX article_displayOrder_index (displayOrder),
   INDEX article_parentId_index (parentId),
-  INDEX article_level_index (level, id)
+  INDEX article_level_index (level, id),
+  INDEX article_alias(linkAlias)
 );
 
 #

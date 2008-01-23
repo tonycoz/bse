@@ -5,7 +5,7 @@ use Constants qw($IMAGEDIR $LOCAL_FORMAT $BODY_EMBED
                  $EMBED_MAX_DEPTH $HAVE_HTML_PARSER);
 use DevHelp::Tags;
 use DevHelp::HTML;
-use BSE::Util::Tags;
+use BSE::Util::Tags qw(tag_article);
 use BSE::CfgInfo qw(custom_class);
 use BSE::Util::Iterate;
 use base 'BSE::ThumbLow';
@@ -304,7 +304,7 @@ sub format_body {
 
 sub embed {
   my ($self, $article, $articles, $template) = @_;
-  
+
   if (defined $template && $template =~ /\$/) {
     $template =~ s/\$/$article->{template}/;
   }
@@ -472,12 +472,14 @@ sub tag_sthumbimage {
     require Articles;
     $article = Articles->getByPkey($args);
   }
-  else {
-    $acts->{$article_id}
-      or return "** no tag $article_id **";
+  elsif ($acts->{$article_id}) {
     my $id = $templater->perform($acts, $article_id, "id");
     $article = Articles->getByPkey($id)
       or return "** article $article_id/$id not found **";
+  }
+  else {
+    ($article) = Articles->getBy(linkAlias => $article_id)
+      or return "** no article $article_id found **";
   }
   $article
     or return '';
@@ -530,6 +532,7 @@ sub baseActs {
 
   my $current_gimage;
   my $it = BSE::Util::Iterate->new;
+  my $art_it = BSE::Util::Iterate::Article->new(cfg => $cfg);
   return 
     (
      %extras,
@@ -579,7 +582,7 @@ sub baseActs {
        }
      },
      level1 => sub {
-       return escape_html($sections[$section_index]{$_[0]});
+       return tag_article($sections[$section_index], $cfg, $_[0]);
      },
 
      # used to generate a list of subsections for the side-menu
@@ -594,7 +597,7 @@ sub baseActs {
        return 0;
      },
      level2 => sub {
-       return escape_html($subsections[$subsect_index]{$_[0]});
+       return tag_article($subsections[$subsect_index], $cfg, $_[0]);
      },
      ifLevel2 => 
      sub {
@@ -605,7 +608,9 @@ sub baseActs {
      iterate_level3 => sub {
        return ++$level3_index < @level3;
      },
-     level3 => sub { escape_html($level3[$level3_index]{$_[0]}) },
+     level3 => sub { 
+       tag_article($level3[$level3_index], $cfg, $_[0])
+     },
      ifLevel3 => sub { scalar @level3 },
 
      # generate an admin or link url, depending on admin state
@@ -631,18 +636,18 @@ sub baseActs {
          return escape_html($text);
        }
      },
-     $it->make_iterator( \&iter_kids_of, 'ofchild', 'children_of', 
+     $art_it->make_iterator( \&iter_kids_of, 'ofchild', 'children_of', 
 			 undef, undef, 'nocache' ), 
-     $it->make_iterator( \&iter_kids_of, 'ofchild2', 'children_of2',
+     $art_it->make_iterator( \&iter_kids_of, 'ofchild2', 'children_of2',
 			 undef, undef, 'nocache' ),
-     $it->make_iterator( \&iter_kids_of, 'ofchild3', 'children_of3',
+     $art_it->make_iterator( \&iter_kids_of, 'ofchild3', 'children_of3',
                          undef, undef, 'nocache' ),
-     $it->make_iterator( [ iter_all_kids_of => $self ], 'ofallkid', 'allkids_of' ), 
-     $it->make_iterator( [ iter_all_kids_of => $self ], 'ofallkid2', 'allkids_of2', 
+     $art_it->make_iterator( [ iter_all_kids_of => $self ], 'ofallkid', 'allkids_of' ), 
+     $art_it->make_iterator( [ iter_all_kids_of => $self ], 'ofallkid2', 'allkids_of2', 
 			 undef, undef, 'nocache' ), 
-     $it->make_iterator( [ iter_all_kids_of => $self ], 'ofallkid3', 'allkids_of3',
+     $art_it->make_iterator( [ iter_all_kids_of => $self ], 'ofallkid3', 'allkids_of3',
 			 undef, undef, 'nocache' ), 
-     $it->make_iterator( \&iter_inlines, 'inline', 'inlines' ),
+     $art_it->make_iterator( \&iter_inlines, 'inline', 'inlines' ),
      gimage => 
      sub {
        my ($name, $align, $rest) = split ' ', $_[0], 3;

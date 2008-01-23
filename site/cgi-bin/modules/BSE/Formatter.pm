@@ -142,20 +142,25 @@ sub _get_article {
   my $cfg = $self->{gen}->{cfg}
     or confess "cfg not set in acts";
   my $dispid;
+  my $art;
   if ($id =~ /^\d+$/) {
     $dispid = $id;
+    $art = $self->{articles}->getByPkey($id);
   }
-  else {
+  elsif (my $work = $cfg->entry('articles', $id)) {
     # try to find it in the config
-    my $work = $cfg->entry('articles', $id);
-    unless ($work) {
-      $$error = "&#42;&#42; No article name '".escape_html($id)."' in the [articles] section of bse.cfg &#42;&#42;";
-      return;
-    }
     $dispid = "$id ($work)";
     $id = $work;
+    $art = $self->{articles}->getByPkey($id);
   }
-  my $art = $self->{articles}->getByPkey($id);
+  else {
+    ($art) = $self->{articles}->getBy(linkAlias => $id);
+    unless ($art) {
+      $$error = "&#42;&#42; No article name '".escape_html($id)."' found &#42;&#42;";
+      return;
+    }
+  }
+
   unless ($art) {
     $$error = "&#42;&#42; Cannot find article id $dispid &#42;&#42;";
     return;
@@ -176,8 +181,7 @@ sub doclink {
 
   # make the URL absolute if necessary
   my $admin = $self->{gen}{admin};
-  my $link = $admin ? 'admin' : 'link';
-  my $url = $art->{$link};
+  my $url = $admin ? $art->{admin} : $art->link($self->{gen}{cfg});
   if ($self->{abs_urls}) {
     $url = $cfg->entryErr('site', 'url') . $url
       unless $url =~ /^\w+:/;

@@ -119,6 +119,14 @@
             <td bgcolor="#FFFFFF" width="100%"> <:if FieldPerm listed:><:list listed:><:or FieldPerm:><:if Article listed:><:ifEq [article listed] "1":>Yes<:or:>In Sections, but not menu<:eif:><:or Article:>No<:eif Article:><:eif FieldPerm:> </td>
             <td nowrap="nowrap" bgcolor="#FFFFFF"><:help catalog list:> <:error_img listed:></td>
           </tr>
+          <tr> 
+            <th nowrap bgcolor="#FFFFFF" align="left">Link alias: 
+            </th>
+            <td bgcolor="#FFFFFF" width="100%"> 
+            <:ifFieldPerm linkAlias:><input type="text" name="linkAlias" maxlength="<:cfg fields linkAlias_size 255:>" size="40" value="<: old linkAlias article linkAlias :>">
+            <:or:><:default linkAlias:><:eif:></td>
+            <td nowrap bgcolor="#FFFFFF"><:help edit linkAlias:> <:error_img linkAlias:></td>
+          </tr>
 		  <tr>
             <th nowrap="nowrap" bgcolor="#FFFFFF" align="left">Flags:</th>
             <td bgcolor="#FFFFFF" width="100%"><:iterator begin flags:><:if FieldPerm flags:>

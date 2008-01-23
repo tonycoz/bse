@@ -1,6 +1,6 @@
 package BSE::Dynamic::Article;
 use strict;
-use BSE::Util::Tags qw(tag_hash);
+use BSE::Util::Tags qw(tag_article);
 use BSE::Template;
 use DevHelp::HTML;
 use base qw(BSE::Util::DynamicTags);
@@ -49,13 +49,13 @@ sub tags {
   return
     (
      $self->SUPER::tags(),
-     dynarticle => [ \&tag_hash, $article ],
+     dynarticle => [ \&tag_article, $self->{req}->cfg, $article ],
      ifAncestor => [ tag_ifAncestor => $self, $article ],
      ifStepAncestor => [ tag_ifStepAncestor => $self, $article ],
-     $self->dyn_iterator('dynallkids', 'dynallkid', $article,
+     $self->dyn_article_iterator('dynallkids', 'dynallkid', $article,
 			 \$allkid_index, \$allkid_data),
-     $self->dyn_iterator('dynchildren', 'dynchild', $article),
-     $self->dyn_iterator('dynstepparents', 'dynstepparent', $article),
+     $self->dyn_article_iterator('dynchildren', 'dynchild', $article),
+     $self->dyn_article_iterator('dynstepparents', 'dynstepparent', $article),
      dynmoveallkid => 
      [ tag_dynmove => $self, \$allkid_index, \$allkid_data, 
        "stepparent=$article->{id}" ],
@@ -174,7 +174,7 @@ sub tag_url {
   my $article = $self->{req}->get_article($name)
     or return "** unknown article $name **";
 
-  my $value = $article->{$item};
+  my $value = $item eq 'link' ? $article->link($self->{req}->cfg) : $article->{$item};
 
   if ($top->{$item} =~ /^\w+:/ && $value !~ /^\w+:/) {
     $value = $self->{req}->cfg->entryErr('site', 'url') . $value;

@@ -15,7 +15,7 @@ sub columns {
     customInt1 customInt2 customInt3 customInt4 
     lastModifiedBy created createdBy author pageTitle
     force_dynamic cached_dynamic inherit_siteuser_rights
-    metaDescription metaKeywords summary menu titleAlias/;
+    metaDescription metaKeywords summary menu titleAlias linkAlias/;
 }
 
 sub numeric {
@@ -317,6 +317,20 @@ sub possible_stepchildren {
   my $self = shift;
 
   return BSE::DB->query(articlePossibleStepchildren => $self->{id}, $self->{id});
+}
+
+sub link {
+  my ($self, $cfg) = @_;
+
+  if ($self->{linkAlias} && $cfg->entry('basic', 'use_alias', 1)) {
+    my $prefix = $cfg->entry('basic', 'alias_prefix', '');
+    my $title = $self->{title};
+    $title =~ tr/a-zA-Z0-9/_/cs;
+    return $prefix . '/' . $self->{linkAlias} . '/' . $title;
+  }
+  else {
+    return $self->{link};
+  }
 }
 
 1;

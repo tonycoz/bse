@@ -3,7 +3,7 @@ use strict;
 use base 'Generate::Product';
 use BSE::TB::Seminars;
 use DevHelp::HTML;
-use BSE::Util::Tags qw(tag_hash);
+use BSE::Util::Tags qw(tag_article);
 use BSE::Util::Iterate;
 
 sub baseActs {
@@ -17,7 +17,7 @@ sub baseActs {
   return
     (
      $self->SUPER::baseActs($articles, $acts, $seminar, $embedded),
-     seminar => [ \&tag_hash, $seminar ],
+     seminar => [ \&tag_article, $self->{cfg}, $seminar ],
      admin => [ tag_admin => $self, $seminar, 'seminar', $embedded ],
      $it->make_iterator([ \&iter_sessions, $seminar ], 'session', 'sessions'),
      $it->make_iterator

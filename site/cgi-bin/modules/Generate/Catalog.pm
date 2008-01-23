@@ -131,12 +131,14 @@ sub generate_low {
   my $catalog_index = -1;
   my $allcat_index;
   my $it = BSE::Util::Iterate->new;
+  my $cfg = $self->{cfg};
+  my $art_it = BSE::Util::Iterate::Article->new(cfg => $cfg);
   my %acts;
   %acts =
     (
      $self->baseActs($articles, \%acts, $article, $embedded),
-     article => sub { escape_html($article->{$_[0]}) },
-     $it->make_iterator(undef, 'product', 'products', \@products, 
+     #article => sub { escape_html($article->{$_[0]}) },
+     $art_it->make_iterator(undef, 'product', 'products', \@products, 
 			\$product_index),
      admin => [ tag_admin => $self, $article, 'catalog', $embedded ],
      # for rearranging order in admin mode
@@ -203,13 +205,13 @@ HTML
        return make_arrows($self->{cfg}, $down_url, $up_url, $refreshto, $img_prefix);
      },
      ifAnyProds => scalar(@allprods),
-     $it->make_iterator(undef, 'stepprod', 'stepprods', \@stepprods,
+     $art_it->make_iterator(undef, 'stepprod', 'stepprods', \@stepprods,
 			\$stepprod_index),
      ifStepProds => sub { @stepprods },
-     $it->make_iterator(undef, 'catalog', 'catalogs', \@subcats, 
+     $art_it->make_iterator(undef, 'catalog', 'catalogs', \@subcats, 
 			\$catalog_index),
      ifSubcats => sub { @subcats },
-     $it->make_iterator(undef, 'allcat', 'allcats', \@allcats, \$allcat_index),
+     $art_it->make_iterator(undef, 'allcat', 'allcats', \@allcats, \$allcat_index),
      moveallcat => 
      [ \&tag_moveallcat, $self, \@allcats, \$allcat_index, $article ],
     );

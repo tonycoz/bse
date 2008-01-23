@@ -1,6 +1,6 @@
 package BSE::Util::DynamicTags;
 use strict;
-use BSE::Util::Tags;
+use BSE::Util::Tags qw(tag_article);
 use DevHelp::HTML;
 use base 'BSE::ThumbLow';
 
@@ -19,11 +19,11 @@ sub tags {
      user => [ \&tag_user, $req ],
      ifUser => [ \&tag_ifUser, $req ],
      ifUserCanSee => [ \&tag_ifUserCanSee, $req ],
-     $self->dyn_iterator('dynlevel1s', 'dynlevel1'),
-     $self->dyn_iterator('dynlevel2s', 'dynlevel2'),
-     $self->dyn_iterator('dynlevel3s', 'dynlevel3'),
-     $self->dyn_iterator('dynallkids_of', 'dynofallkid'),
-     $self->dyn_iterator('dynchildren_of', 'dynofchild'),
+     $self->dyn_article_iterator('dynlevel1s', 'dynlevel1'),
+     $self->dyn_article_iterator('dynlevel2s', 'dynlevel2'),
+     $self->dyn_article_iterator('dynlevel3s', 'dynlevel3'),
+     $self->dyn_article_iterator('dynallkids_of', 'dynofallkid'),
+     $self->dyn_article_iterator('dynchildren_of', 'dynofchild'),
      $self->dyn_iterator('dyncart', 'dyncartitem'),
      url => [ tag_url => $self ],
      dyncarttotalcost => [ tag_dyncarttotal => $self, 'total_cost' ],
@@ -112,7 +112,13 @@ sub tag_url {
   my $article = $self->{req}->get_article($name)
     or return "** unknown article $name **";
 
-  my $value = $article->{$item};
+  my $value;
+  if ($item eq 'link' and ref $article ne 'HASH') {
+    $value = $article->link;
+  }
+  else {
+    $value = $article->{$item};
+  }
 
   # we don't know our context, so always produce absolute URLs
   if ($value !~ /^\w+:/) {
@@ -314,6 +320,19 @@ sub _dyn_item {
   return escape_html($value);
 }
 
+sub _dyn_article {
+  my ($self, $rdata, $rindex, $single, $plural, $args) = @_;
+
+  if ($$rindex < 0 || $$rindex >= @$$rdata) {
+    return "** $single only usable inside iterator $plural **";
+  }
+
+  my $item = $$rdata->[$$rindex]
+    or return '';
+
+  return tag_article($item, $self->{req}->cfg, $args);
+}
+
 sub _dyn_index {
   my ($self, $rindex, $rdata, $single) = @_;
 
@@ -372,6 +391,35 @@ sub dyn_iterator {
      [ _dyn_iterate => $self, $rdata, $rindex, $single, $context ],
      $single => 
      [ _dyn_item => $self, $rdata, $rindex, $single, $plural ],
+     "${single}_index" =>
+     [ _dyn_index => $self, $rindex, $rdata, $single ],
+     "${single}_number" =>
+     [ _dyn_number => $self, $rindex, $rdata ],
+     "${single}_count" =>
+     [ _dyn_count => $self, $rindex, $rdata, $plural, $context ],
+     "if\u$plural" =>
+     [ _dyn_count => $self, $rindex, $rdata, $plural, $context ],
+     "ifLast\u$single" => [ _dyn_if_last => $self, $rindex, $rdata ],
+     "ifFirst\u$single" => [ _dyn_if_first => $self, $rindex, $rdata ],
+    );
+}
+
+sub dyn_article_iterator {
+  my ($self, $plural, $single, $context, $rindex, $rdata) = @_;
+
+  my $method = $plural;
+  my $index;
+  defined $rindex or $rindex = \$index;
+  my $data;
+  defined $rdata or $rdata = \$data;
+  return
+    (
+     "iterate_${plural}_reset" =>
+     [ _dyn_iterate_reset => $self, $rdata, $rindex, $plural, $context ],
+     "iterate_$plural" =>
+     [ _dyn_iterate => $self, $rdata, $rindex, $single, $context ],
+     $single => 
+     [ _dyn_article => $self, $rdata, $rindex, $single, $plural ],
      "${single}_index" =>
      [ _dyn_index => $self, $rindex, $rdata, $single ],
      "${single}_number" =>

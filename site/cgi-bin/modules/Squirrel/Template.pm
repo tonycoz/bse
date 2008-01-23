@@ -244,7 +244,7 @@ sub cond {
     };
   if ($@) {
     my $msg = $@;
-    if ($msg =~ /^ENOIMPL\b/) {
+    if ($msg =~ /\bENOIMPL\b/) {
       print STDERR "Cond ENOIMPL\n" if DEBUG;
       $true = $self->replace_template($true, $acts) if length $true;
       $false = $self->replace_template($false, $acts) if length $false;

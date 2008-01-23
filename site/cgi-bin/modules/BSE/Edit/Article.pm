@@ -1294,13 +1294,25 @@ sub _validate_common {
   if (exists $data->{template} && $data->{template} =~ /\.\./) {
     $errors->{template} = "Please only select templates from the list provided";
   }
-  
+  if (exists $data->{linkAlias} 
+      && length $data->{linkAlias}) {
+    unless ($data->{linkAlias} =~ /\A[a-zA-Z0-9-]+\z/
+	    && $data->{linkAlias} =~ /[A-Za-z]/) {
+      $errors->{linkAlias} = "Link alias must contain only alphanumerics and contain at least one letter";
+    }
+  }
 }
 
 sub validate {
   my ($self, $data, $articles, $errors) = @_;
 
   $self->_validate_common($data, $articles, $errors);
+  if (!$errors->{linkAlias} && defined $data->{linkAlias} && length $data->{linkAlias}) {
+    my $other = $articles->getBy(linkAlias => $data->{linkAlias});
+    $other
+      and $errors->{linkAlias} =
+	"Duplicate link alias - already used by article $other->{id}";
+  }
   custom_class($self->{cfg})
     ->article_validate($data, undef, $self->typename, $errors);
 
@@ -1316,6 +1328,15 @@ sub validate_old {
 
   if (exists $data->{release} && !valid_date($data->{release})) {
     $errors->{release} = "Invalid release date";
+  }
+
+  if (!$errors->{linkAlias} 
+      && defined $data->{linkAlias} 
+      && length $data->{linkAlias} 
+      && $data->{linkAlias} ne $article->{linkAlias}) {
+    my $other = $articles->getBy(linkAlias => $data->{linkAlias});
+    $other
+      and $errors->{linkAlias} = "Duplicate link alias - already used by article $other->{id}";
   }
 
   return !keys %$errors;
@@ -1454,7 +1475,7 @@ sub save_new {
 # end adrian
 
   $self->fill_new_data($req, \%data, $articles);
-  for my $col (qw(titleImage imagePos template keyword menu titleAlias)) {
+  for my $col (qw(titleImage imagePos template keyword menu titleAlias linkAlias)) {
     defined $data{$col} 
       or $data{$col} = $self->default_value($req, \%data, $col);
   }
@@ -3422,6 +3443,7 @@ my %defaults =
    inherit_siteuser_rights => 1,
    menu => 0,
    titleAlias => '',
+   linkAlias => '',
   );
 
 sub default_value {

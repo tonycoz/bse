@@ -7,7 +7,7 @@ use base qw(Generate::Article);
 use Constants qw(:shop $CGI_URI $ADMIN_URI);
 use Carp qw(confess);
 use DevHelp::HTML;
-use BSE::Util::Tags qw(tag_hash);
+use BSE::Util::Tags qw(tag_article);
 use BSE::CfgInfo 'product_options';
 
 sub edit_link {
@@ -63,7 +63,7 @@ sub baseActs {
   return
     (
      $self->SUPER::baseActs($articles, $acts, $product, $embedded),
-     product=> [ \&tag_hash, $product ],
+     product=> [ \&tag_article, $self->{cfg}, $product ],
      admin => [ tag_admin => $self, $product, 'product', $embedded ],
      iterate_options_reset => sub { $option_index = -1 },
      iterate_options => sub { ++$option_index < @options },
@@ -88,7 +88,7 @@ sub baseActs {
      ifOptions => sub { @options },
      iterate_stepcats_reset => sub { $stepcat_index = -1 },
      iterate_stepcats => sub { ++$stepcat_index < @stepcats },
-     stepcat => sub { escape_html($stepcats[$stepcat_index]{$_[0]}) },
+     stepcat => sub { tag_article($stepcats[$stepcat_index], $self->{cfg}, $_[0]) },
      ifStepCats => sub { @stepcats },
     );
 }

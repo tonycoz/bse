@@ -35,4 +35,25 @@ sub make_paged_iterator {
      [ \&_paged_get, $session, $name ], $rstore);
 }
 
+package BSE::Util::Iterate::Article;
+use vars qw(@ISA);
+@ISA = 'BSE::Util::Iterate';
+use Carp qw(confess);
+use BSE::Util::Tags qw(tag_article);
+
+sub new {
+  my ($class, %opts) = @_;
+
+  $opts{cfg}
+    or confess "cfg option mission\n";
+
+  return $class->SUPER::new(%opts);
+}
+
+sub item {
+  my ($self, $item, $args) = @_;
+
+  return tag_article($item, $args);
+}
+
 1;

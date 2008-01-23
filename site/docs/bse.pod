@@ -16,6 +16,37 @@ Maybe I'll add some other bits here.
 
 =item *
 
+check the freshness of the database connection on each request for
+fcgi
+
+=item *
+
+added hooks to process login, logout, sending session cookies.
+
+=item *
+
+articles created by the newletter tool are now more consistent with
+articles created using the article editor.
+
+=item *
+
+added a default favicon.ico
+
+=item *
+
+release is a reserved word in mysql 5.0, quote it appropriately
+
+=item *
+
+include filename information in the content disposition when
+downloading a file for display inline.
+
+=item *
+
+avoid double HTML-escaping the displayed filename for filelink
+
+=item *
+
 add dthumbimage tag, see BSE::Util::DynamicTags for documentation
 
 =item *
