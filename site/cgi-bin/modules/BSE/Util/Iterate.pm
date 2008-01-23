@@ -53,7 +53,7 @@ sub new {
 sub item {
   my ($self, $item, $args) = @_;
 
-  return tag_article($item, $args);
+  return tag_article($item, $self->{cfg}, $args);
 }
 
 1;
