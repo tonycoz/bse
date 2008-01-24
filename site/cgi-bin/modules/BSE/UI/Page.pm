@@ -23,7 +23,8 @@ sub dispatch {
     $article = Articles->getBy(linkAlias => $alias)
       or return $class->error($req, "Unknown article alias '$alias'");
 
-    unless ($article->is_dynamic) {
+    if (!$article->is_dynamic 
+	&& $req->cfg->entry('basic', 'alias_static_redirect', 1)) {
       require BSE::Template;
       return BSE::Template->get_refresh($article->{link}, $req->cfg);
     }
@@ -36,7 +37,8 @@ sub dispatch {
     $article = Articles->getBy(linkAlias => $alias)
       or return $class->error($req, "Unknown article alias '$alias'");
 
-    unless ($article->is_dynamic) {
+    if (!$article->is_dynamic 
+	&& $req->cfg->entry('basic', 'alias_static_redirect', 1)) {
       require BSE::Template;
       return BSE::Template->get_refresh($article->{link}, $req->cfg);
     }
