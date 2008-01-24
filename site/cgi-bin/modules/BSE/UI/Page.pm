@@ -9,9 +9,10 @@ sub dispatch {
   my ($class, $req) = @_;
 
   my $cgi = $req->cgi;
+  my $cfg = $req->cfg;
   my $id = $cgi->param('page');
   my $article;
-  my $prefix = $req->cfg->entry('basic', 'alias_prefix', '');
+  my $prefix = $cfg->entry('basic', 'alias_prefix', '');
   my @more_headers;
   if ($id) {
     $id && $id =~ /^\d+$/
@@ -22,12 +23,6 @@ sub dispatch {
   elsif (my $alias = $cgi->param('alias')) {
     $article = Articles->getBy(linkAlias => $alias)
       or return $class->error($req, "Unknown article alias '$alias'");
-
-    if (!$article->is_dynamic 
-	&& $req->cfg->entry('basic', 'alias_static_redirect', 1)) {
-      require BSE::Template;
-      return BSE::Template->get_refresh($article->{link}, $req->cfg);
-    }
   }
   elsif ($ENV{REDIRECT_URL} && $ENV{SCRIPT_URL} =~ m(^\Q$prefix\E/)) {
     (my $url = $ENV{SCRIPT_URL}) =~ s(^\Q$prefix\E/)();
@@ -37,17 +32,31 @@ sub dispatch {
     $article = Articles->getBy(linkAlias => $alias)
       or return $class->error($req, "Unknown article alias '$alias'");
 
-    if (!$article->is_dynamic 
-	&& $req->cfg->entry('basic', 'alias_static_redirect', 1)) {
-      require BSE::Template;
-      return BSE::Template->get_refresh($article->{link}, $req->cfg);
-    }
-
     # have the client treat this as successful, though an error is
     # still written to the Apache error log
     push @more_headers, "Status: 200";
   }
   $id = $article->{id};
+
+  if (!$article->is_dynamic 
+      && $cfg->entry('basic', 'alias_static_redirect', 1)) {
+    require BSE::Template;
+    return BSE::Template->get_refresh($article->{link}, $cfg);
+  }
+
+  if ($cfg->entry('basic', 'alias_use_static', 1)
+      && !$article->is_dynamic
+      && -r (my $file = $article->link_to_filename($cfg))) {
+    if (open DOC, "< $file") {
+      my $content = do { local $/; <DOC> };
+      close DOC;
+      return
+	{
+	 content => $content,
+	 type => BSE::Template->get_type($cfg, $article->{template})
+	};
+    }
+  }
 
   # get the dynamic generate for this article type
   my $gen_class = $article->{generator};
@@ -64,8 +73,6 @@ sub dispatch {
 
   $article->is_dynamic
     or print STDERR "** page.pl called for non-dynamic article $id\n";
-
-  my $cfg = $req->cfg;
 
   unless ($req->siteuser_has_access($article)) {
     if ($req->siteuser) {
