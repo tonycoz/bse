@@ -11,7 +11,7 @@ sub dispatch {
   my $cgi = $req->cgi;
   my $id = $cgi->param('page');
   my $article;
-  my $prefix = $req->cfg->entry('article', 'alias_prefix', '');
+  my $prefix = $req->cfg->entry('basic', 'alias_prefix', '');
   my @more_headers;
   if ($id) {
     $id && $id =~ /^\d+$/
@@ -22,6 +22,11 @@ sub dispatch {
   elsif (my $alias = $cgi->param('alias')) {
     $article = Articles->getBy(linkAlias => $alias)
       or return $class->error($req, "Unknown article alias '$alias'");
+
+    unless ($article->is_dynamic) {
+      require BSE::Template;
+      return BSE::Template->get_refresh($article->{link}, $req->cfg);
+    }
   }
   elsif ($ENV{REDIRECT_URL} && $ENV{SCRIPT_URL} =~ m(^\Q$prefix\E/)) {
     (my $url = $ENV{SCRIPT_URL}) =~ s(^\Q$prefix\E/)();
@@ -29,7 +34,12 @@ sub dispatch {
       or return $class->error($req, "Missing document $ENV{SCRIPT_URL}");
 
     $article = Articles->getBy(linkAlias => $alias)
-      or return $class->error($req, "unknown article alias '$alias'");
+      or return $class->error($req, "Unknown article alias '$alias'");
+
+    unless ($article->is_dynamic) {
+      require BSE::Template;
+      return BSE::Template->get_refresh($article->{link}, $req->cfg);
+    }
 
     # have the client treat this as successful, though an error is
     # still written to the Apache error log

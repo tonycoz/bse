@@ -324,9 +324,13 @@ sub link {
 
   if ($self->{linkAlias} && $cfg->entry('basic', 'use_alias', 1)) {
     my $prefix = $cfg->entry('basic', 'alias_prefix', '');
-    my $title = $self->{title};
-    $title =~ tr/a-zA-Z0-9/_/cs;
-    return $prefix . '/' . $self->{linkAlias} . '/' . $title;
+    my $link = $prefix . '/' . $self->{linkAlias};
+    if ($cfg->entry('basic', 'alias_suffix', 1)) {
+      my $title = $self->{title};
+      $title =~ tr/a-zA-Z0-9/_/cs;
+      $link .= '/' . $title;
+    }
+    return $link;
   }
   else {
     return $self->{link};

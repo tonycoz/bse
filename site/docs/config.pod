@@ -307,6 +307,23 @@ If true, the ifAjax and ajax tags will be active for static pages.
 If set to zero the results of the thumbimage/gthumbimage body/template
 tags will not be cached.  Default: 1 (caching is enabled).
 
+=item alias_prefix
+
+The prefix applied to articles that use a linkAlias url.  This should
+start with a /.
+
+=item use_alias
+
+If this is non-zero then an article with linkAlias set will use an
+alias url instead of the "real" url.  You will need to configure a
+RewriteRule or ErrorDocument to page.pl to direct the user to the
+correct URL.  Default: 1.
+
+=item alias_suffix
+
+If this is non-zero then the title is cleaned up (all but
+alphanumerics removed) and appended to the alias URL generated.
+
 =back
 
 =head2 [mail]
