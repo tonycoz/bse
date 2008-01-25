@@ -20,6 +20,8 @@ sub check_secure {
 
   return 1 if $curr_host eq $host && $curr_proto eq $protocol;
 
+  return 1 unless $req->cfg->entry('site', 'securl_redirect', 1);
+
   if ($req->cgi->param('did_admin_url_dispatch')) {
     $$rresult = $class->error($req, "Your admin URL '$securl' is probably misconfigured, we did a redirect to the admin URL and is still isn't correct - we appear to be on '$curr_proto://$curr_host'");
     return;
