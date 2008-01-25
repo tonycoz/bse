@@ -1094,6 +1094,7 @@ sub _send_order {
 	 sign=> $sign,
 	 passphrase=> $passphrase,
 	 stripwarn=>1,
+	 fastcgi => $req->is_fastcgi,
 	 debug=>$debug,
 	);
       
@@ -1101,10 +1102,12 @@ sub _send_order {
       $opts{pgp} = $pgp if $pgp;
       $opts{gpg} = $gpg if $gpg;
       $opts{pgpe} = $pgpe if $pgpe;
-      my $recip = "$toName $toEmail";
+      my $recip = "$toName <$toEmail>";
 
-      $send_text = $encrypter->encrypt($recip, $ordertext, %opts )
-	or die "Cannot encrypt ", $encrypter->error;
+      unless ($send_text = $encrypter->encrypt($recip, $ordertext, %opts )) {
+	print STDERR "Cannot encrypt email: ", $encrypter->error;
+	exit 1;
+      }
     }
     $mailer->send(to=>$toEmail, from=>$from, subject=>'New Order '.$order->{id},
 		  body=>$send_text)

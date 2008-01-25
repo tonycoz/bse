@@ -1,5 +1,7 @@
 package Squirrel::GPG;
 use strict;
+use IO::File;
+use POSIX ();
 
 sub new {
   return bless {}, $_[0];
@@ -12,7 +14,16 @@ sub error {
 sub encrypt {
   my ($self, $recips, $data, %opts) = @_;
 
-  return $self->_encrypt($recips, $data, %opts);
+  return $self->_encrypt($recips, $data, %opts)
+    unless $opts{fastcgi};
+
+  #print STDERR "setting up for fastcgi\n";
+  $FCGI::global_request->Detach();
+  my @result = $self->_encrypt($recips, $data, %opts);
+  $FCGI::global_request->Attach();
+  #print STDERR "fastcgi handles should be restored\n";
+
+  return wantarray ? @result : $result[0];
 }
 
 sub _encrypt {
@@ -60,14 +71,15 @@ sub _encrypt {
       print PGP $opts{passphrase}, "\n" if $opts{sign};
       print PGP $data;
       close PGP
-	or do { print "*ERROR* $?/$!\n"; exit 1; };
+	or do { print "*ERROR* $?/$!\n"; POSIX::_exit(1); };
     }
     else {
+      ++$|;
       print "*ERROR* $!\n";
-      exit 1;
+      POSIX::_exit(1);
     }
 
-    exit 0; # finish the child
+    POSIX::_exit(0); # finish the child
   }
 
   # ... and back in the parent process

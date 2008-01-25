@@ -11,6 +11,7 @@ sub new {
 
   $opts{cfg} ||= BSE::Cfg->new;
   $opts{cgi} ||= $class->_make_cgi;
+  $opts{fastcgi} ||= 0;
 
   my $self = bless \%opts, $class;
   if ($self->cfg->entry('html', 'utf8decodeall')) {
@@ -41,6 +42,10 @@ sub session {
   $_[0]{session} or die "Session has been deleted already\n";
 
   return $_[0]{session};
+}
+
+sub is_fastcgi {
+  $_[0]{fastcgi};
 }
 
 sub end_request {

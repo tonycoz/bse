@@ -16,7 +16,8 @@ my $cfg = BSE::Cfg->new; # only do this once
 $SIG{__DIE__} = sub { confess $@ };
 
 while(my $cgi = CGI::Fast->new) {
-  my $req = BSE::Request->new(cfg=>$cfg, cgi=>$cgi);
+  my $req = BSE::Request->new(cfg=>$cfg, cgi=>$cgi, 
+			      fastcgi => $FCGI::global_request->IsFastCGI);
 
   my $result = BSE::UI::Shop->dispatch($req);
 
