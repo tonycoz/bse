@@ -12,6 +12,12 @@ sub error {
 sub encrypt {
   my ($self, $recips, $data, %opts) = @_;
 
+  return $self->_encrypt($recips, $data, %opts);
+}
+
+sub _encrypt {
+  my ($self, $recips, $data, %opts) = @_;
+
   my @recips = ref $recips ? @$recips : ( $recips );
   my $cmd = $opts{gpg} || 'gpg';
   $cmd .= ' ';
