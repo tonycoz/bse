@@ -114,7 +114,7 @@ sub tag_url {
 
   my $value;
   if ($item eq 'link' and ref $article ne 'HASH') {
-    $value = $article->link;
+    $value = $article->link($self->{req}->cfg);
   }
   else {
     $value = $article->{$item};

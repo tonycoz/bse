@@ -322,6 +322,9 @@ sub possible_stepchildren {
 sub link {
   my ($self, $cfg) = @_;
 
+  $cfg
+    or confess "article link() called without config object\n";
+
   if ($self->{linkAlias} && $cfg->entry('basic', 'use_alias', 1)) {
     my $prefix = $cfg->entry('basic', 'alias_prefix', '');
     my $link = $prefix . '/' . $self->{linkAlias};
