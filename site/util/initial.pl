@@ -578,6 +578,7 @@ my $sql = 'insert into article values('.join(',', ('?') x @columns).')';
 my $sth = $dbh->prepare($sql)
   or die "Cannot prepare $sql: ",$dbh->errstr;
 for my $art (@prebuilt) {
+  defined $art->{linkAlias} or $art->{linkAlias} = '';
   $sth->execute(@$art{@columns})
     or die "Cannot insert row into article: ",$sth->errstr;
 }
