@@ -548,7 +548,7 @@ HTML
      BSE::Util::Tags->make_iterator(\@stepkids, 'stepkid', 'stepkids'),
      $art_it->make_iterator(undef, 'allkid', 'allkids', \@allkids, \$allkids_index),
      $art_it->make_iterator(undef, 'stepparent', 'stepparents', \@stepparents),
-     top => [ \&tag_article, $cfg, $self->{top} || $article ],
+     top => [ \&tag_article, $self->{top} || $article, $cfg ],
      ifDynamic => $dynamic,
      ifAccessControlled => [ \&tag_ifAccessControlled, $article ],
     );

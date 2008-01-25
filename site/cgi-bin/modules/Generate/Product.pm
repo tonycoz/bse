@@ -63,7 +63,7 @@ sub baseActs {
   return
     (
      $self->SUPER::baseActs($articles, $acts, $product, $embedded),
-     product=> [ \&tag_article, $self->{cfg}, $product ],
+     product=> [ \&tag_article, $product, $self->{cfg} ],
      admin => [ tag_admin => $self, $product, 'product', $embedded ],
      iterate_options_reset => sub { $option_index = -1 },
      iterate_options => sub { ++$option_index < @options },

@@ -17,7 +17,7 @@ sub baseActs {
   return
     (
      $self->SUPER::baseActs($articles, $acts, $seminar, $embedded),
-     seminar => [ \&tag_article, $self->{cfg}, $seminar ],
+     seminar => [ \&tag_article, $seminar, $self->{cfg} ],
      admin => [ tag_admin => $self, $seminar, 'seminar', $embedded ],
      $it->make_iterator([ \&iter_sessions, $seminar ], 'session', 'sessions'),
      $it->make_iterator

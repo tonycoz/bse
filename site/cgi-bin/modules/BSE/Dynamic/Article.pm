@@ -49,7 +49,7 @@ sub tags {
   return
     (
      $self->SUPER::tags(),
-     dynarticle => [ \&tag_article, $self->{req}->cfg, $article ],
+     dynarticle => [ \&tag_article, $article, $self->{req}->cfg ],
      ifAncestor => [ tag_ifAncestor => $self, $article ],
      ifStepAncestor => [ tag_ifStepAncestor => $self, $article ],
      $self->dyn_article_iterator('dynallkids', 'dynallkid', $article,
