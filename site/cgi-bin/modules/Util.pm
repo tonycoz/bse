@@ -181,45 +181,17 @@ sub generate_extras {
     }
   }
   close EXTRAS;
-  use Generate;
-  require BSE::Template;
-  my $gen = Generate->new(cfg=>$cfg);
-  for my $row (@extras) {
-    my ($in, $out) = @$row;
-    $callback->("$in to $out") if $callback;
-    my %acts;
-    %acts = $gen->baseActs($articles, \%acts);
-    my $oldurl = $acts{url};
-    $acts{url} =
-      sub {
-	my $value = $oldurl->(@_);
-	$value =~ /^<:/ and return $value;
-	unless ($value =~ /^\w+:/) {
-	  # put in the base site url
-	  $value = $cfg->entryErr('site', 'url').$value;
-	}
-	return $value;
-      };
-    my $content = BSE::Template->get_page($in, $cfg, \%acts);
-    my $outname = $CONTENTBASE . $out . ".work";
-    my $finalname = $CONTENTBASE . $out;
-    open OUT, "> $outname"
-      or die "Cannot open $outname for write: $!";
-    print OUT $content
-      or die "Cannot write content to $outname: $!";
-    close OUT 
-      or die "Cannot close $outname: $!";
-    unlink $finalname;
-    rename $outname, $finalname
-      or die "Cannot rename $outname to $finalname: $!";
-  }
 
-  # more extras
   my %entries = $cfg->entries('pregenerate');
+  for my $extra (@extras) {
+    my ($in, $out) = @$extra;
+    $entries{$out} = 'extras,' . $in;
+  }
   if (keys %entries) {
     require 'Generate/Article.pm';
     for my $out (keys %entries) {
       my ($presets, $input) = split ',', $entries{$out}, 2;
+      my $section = "$presets settings";
       $callback->("$input to $out with $presets") if $callback;
       my %article = map { $_, '' } Article->columns;
       $article{displayOrder} = 1;
@@ -227,13 +199,15 @@ sub generate_extras {
       $article{parentid} = -1;
       $article{link} = $cfg->entryErr('site', 'url');
       for my $field (Article->columns) {
-	if ($cfg->entry("$presets settings", $field)) {
-	  $article{$field} = $cfg->entryVar("$presets settings", $field);
+	if ($cfg->entry($section, $field)) {
+	  $article{$field} = $cfg->entryVar($section, $field);
 	}
       }
       # by default all of these are handled as dynamic, but it can be 
       # overidden, eg. the error template
-      my $dynamic = $cfg->entry("$presets settings", 'dynamic', 1);
+      my $is_extras = $presets eq 'extras';
+      my $dynamic = $cfg->entry($section, 'dynamic', !$is_extras);
+      my $outpath = $cfg->entry($section, 'content', $is_extras) ? $CONTENTBASE : $template_dir;
       my %acts;
       my $gen = Generate::Article->new(cfg=>$cfg, top=>\%article, 
 				       force_dynamic => $dynamic);
@@ -250,8 +224,8 @@ sub generate_extras {
 	  return $value;
 	};
       my $content = BSE::Template->get_page($input, $cfg, \%acts);
-      my $outname = $template_dir .'/'.$out.'.work';
-      my $finalname = $template_dir . '/'. $out;
+      my $finalname = $outpath . '/'. $out;
+      my $outname = $finalname . '.work';
       open OUT, "> $outname"
 	or die "Cannot open $outname for write: $!";
       print OUT $content
