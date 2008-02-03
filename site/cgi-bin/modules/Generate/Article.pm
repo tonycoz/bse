@@ -597,7 +597,7 @@ sub tag_ifDynamic {
 }
 
 sub tag_ifAccessControlled {
-  my ($article, $arg, $acts, $templater) = @_;
+  my ($article, $arg, $acts, $funcname, $templater) = @_;
 
   if ($arg) {
     if ($acts->{$arg}) {
