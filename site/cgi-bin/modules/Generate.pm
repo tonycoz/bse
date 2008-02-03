@@ -326,7 +326,9 @@ sub embed {
 }
 
 sub iter_kids_of {
-  my ($args, $acts, $name, $templater) = @_;
+  my ($self, $args, $acts, $name, $templater) = @_;
+
+  my $filter = $self->_get_filter(\$args);
 
   my @ids = map { split } DevHelp::Tags->get_parms($args, $acts, $templater);
   for my $id (@ids) {
@@ -335,7 +337,7 @@ sub iter_kids_of {
     }
   }
   @ids = grep /^\d+$|^-1$/, @ids;
-  map Articles->listedChildren($_), @ids;
+  $self->_do_filter(map Articles->listedChildren($_), @ids);
 }
 
 my $cols_re; # cache for below
@@ -636,11 +638,11 @@ sub baseActs {
          return escape_html($text);
        }
      },
-     $art_it->make_iterator( \&iter_kids_of, 'ofchild', 'children_of', 
+     $art_it->make_iterator( [ iter_kids_of => $self ], 'ofchild', 'children_of', 
 			 undef, undef, 'nocache' ), 
-     $art_it->make_iterator( \&iter_kids_of, 'ofchild2', 'children_of2',
+     $art_it->make_iterator( [ iter_kids_of => $self ], 'ofchild2', 'children_of2',
 			 undef, undef, 'nocache' ),
-     $art_it->make_iterator( \&iter_kids_of, 'ofchild3', 'children_of3',
+     $art_it->make_iterator( [ iter_kids_of => $self ], 'ofchild3', 'children_of3',
                          undef, undef, 'nocache' ),
      $art_it->make_iterator( [ iter_all_kids_of => $self ], 'ofallkid', 'allkids_of' ), 
      $art_it->make_iterator( [ iter_all_kids_of => $self ], 'ofallkid2', 'allkids_of2', 
