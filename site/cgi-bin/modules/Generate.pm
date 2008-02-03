@@ -337,7 +337,7 @@ sub iter_kids_of {
     }
   }
   @ids = grep /^\d+$|^-1$/, @ids;
-  $self->_do_filter(map Articles->listedChildren($_), @ids);
+  $self->_do_filter($filter, map Articles->listedChildren($_), @ids);
 }
 
 my $cols_re; # cache for below
