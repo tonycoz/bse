@@ -895,6 +895,7 @@ sub _if_ajax {
     if $cfg->entry('basic', 'allajax', 0);
 
   my $ua = $ENV{HTTP_USER_AGENT};
+  defined $ua or $ua = ''; # some clients don't send a UA
 
   my %fail_entries = $cfg->entries('nonajax user agents');
   for my $re (values %fail_entries) {

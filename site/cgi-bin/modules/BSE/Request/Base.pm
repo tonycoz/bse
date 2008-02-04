@@ -3,6 +3,7 @@ use strict;
 use CGI ();
 use BSE::Cfg;
 use DevHelp::HTML;
+use Carp qw(cluck);
 
 sub new {
   my ($class, %opts) = @_;
@@ -326,6 +327,12 @@ sub _siteuser_has_access {
 
   defined $default or $default = 1;
   defined $membership or $membership = {};
+
+  unless ($article) {
+    # this shouldn't happen
+    cluck("_siteuser_has_access() called without an article parameter!");
+    return 0;
+  }
 
   my @group_ids = $article->group_ids;
   if ($article->{inherit_siteuser_rights}

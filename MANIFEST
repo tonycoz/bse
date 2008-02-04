@@ -444,6 +444,7 @@ site/templates/formmail/defquery_base.tmpl
 site/templates/helpicon.tmpl	Help icon for user templates
 site/templates/htmlemail/basic.tmpl
 site/templates/image.tmpl
+site/templates/include/cart_sidebar.tmpl
 site/templates/include/rssitems.tmpl
 site/templates/include/rsslinks.tmpl
 site/templates/include/search_results.tmpl
