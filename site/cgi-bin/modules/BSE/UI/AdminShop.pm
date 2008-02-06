@@ -94,7 +94,14 @@ sub embedded_catalog {
      sub {
        return ++$list_index < @list;
      },
-     product => sub { escape_html($list[$list_index]{$_[0]}) },
+     product => 
+     sub { 
+       $list_index >= 0 && $list_index < @list
+	 or return '** outside products iterator **';
+       my $value = $list[$list_index]{$_[0]};
+       defined $value or return;
+       return escape_html($value)
+     },
      ifProducts => sub { @list },
      iterate_subcats_reset =>
      sub {

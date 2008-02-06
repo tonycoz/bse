@@ -30,7 +30,6 @@ sub low_perform {
     if (ref $action) {
       if (ref $action eq 'CODE') {
 	$value = $action->($args, $acts, $func, $self);
-	defined $value or return $orig;
       }
       elsif (ref $action eq 'ARRAY') {
 	my ($code, @params) = @$action;
@@ -115,6 +114,7 @@ sub perform {
 
   unless (defined $value) {
     cluck "** undefined value returned by $func $args **";
+    $value = '';
   }
 
   print STDERR "  < perform\n" if DEBUG > 1;
