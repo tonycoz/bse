@@ -1007,7 +1007,7 @@ sub tag_thumbimage {
   my $filename = "$imagedir/$$current_image->{image}";
   -e $filename or return "** image file missing **";
 
-  my $geometry = $cfg->entry('thumb geometries', $args, '200x200');
+  my $geometry = $cfg->entry('thumb geometries', $args, 'scale(200x200)');
 
   my $image = $$current_image;
   my ($width, $height) = $thumbs_obj->thumb_dimensions_sized
