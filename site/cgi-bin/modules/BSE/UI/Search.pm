@@ -8,7 +8,7 @@ use Carp;
 use BSE::Cfg;
 use BSE::Template;
 use DevHelp::HTML qw':default popup_menu';
-use BSE::Util::Tags;
+use BSE::Util::Tags qw(tag_article);
 use BSE::Request;
 
 my %actions =
@@ -198,7 +198,7 @@ sub req_search {
        if ($arg eq 'score') {
 	 return sprintf("%.1f", 100.0 * $scores{$current_result->{id}} / $max_score);
        }
-       return escape_html($current_result->{$arg});
+       return tag_article($current_result, $cfg, $arg);
      },
      date =>
      sub {
@@ -247,8 +247,7 @@ sub req_search {
      },
      articleurl => 
      sub {
-       my $field = $admin ? 'admin' : 'link';
-       return $articles[$article_index]{$field};
+       return $admin ? $current_result->{admin} : $current_result->link($cfg);
      },
      count => sub { scalar @results },
      multiple => sub { @results != 1 },
