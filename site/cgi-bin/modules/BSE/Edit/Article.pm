@@ -3045,6 +3045,8 @@ sub fileadd {
   $file{sizeInBytes} = -s $file;
   $file{displayOrder} = time;
   $file{whenUploaded} = now_datetime();
+  $file{storage}        = 'local';
+  $file{src}            = '';
 
   require ArticleFiles;
   my $fileobj = ArticleFiles->add(@file{@cols});
