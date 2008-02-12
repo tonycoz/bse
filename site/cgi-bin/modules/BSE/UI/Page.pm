@@ -36,6 +36,18 @@ sub dispatch {
     # still written to the Apache error log
     push @more_headers, "Status: 200";
   }
+  else {
+    if ($cfg->entry('debug', 'nopage')) {
+      print STDERR "Request to page.pl with no page or alias - ";
+      if ($ENV{HTTP_REFERER}) {
+	print STDERR "Referer $ENV{HTTP_REFERER}\n";
+      }
+      else {
+	print STDERR "No referer\n";
+      }
+    }
+    return $class->error($req, "No page or page alias specified for display");
+  }
   $id = $article->{id};
 
   if (!$article->is_dynamic 
