@@ -48,6 +48,7 @@ my @base_check =
     {
      'Imager' => 0.44,
      'Log::Agent' => 0,
+     'Net::Amazon::S3' => 0,
     },
    },
    {
