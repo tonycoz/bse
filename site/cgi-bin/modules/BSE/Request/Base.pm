@@ -171,7 +171,6 @@ sub message {
   if ($errors and keys %$errors) {
     my @fields = $req->cgi->param;
     my %work = %$errors;
-    my @lines;
     for my $field (@fields) {
       if (my $entry = delete $work{$field}) {
 	push @lines, ref($entry) ? grep $_, @$entry : $entry;
