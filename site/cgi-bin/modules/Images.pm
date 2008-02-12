@@ -9,4 +9,8 @@ sub rowClass {
   return 'Image';
 }
 
+sub image_storages {
+  return map [ $_->{image}, $_->{storage}, $_ ], Images->all;
+}
+
 1;

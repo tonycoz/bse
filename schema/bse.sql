@@ -143,6 +143,8 @@ CREATE TABLE image (
   url varchar(255),
   displayOrder integer not null default 0,
   name varchar(255) default '' not null,
+  storage varchar(20) not null default 'local',
+  src varchar(255) not null default '',
 
   PRIMARY KEY (id)
 );
@@ -421,6 +423,9 @@ create table article_files (
   name varchar(80) not null default '',
 
   hide_from_list integer not null default 0,
+
+  storage varchar(20) not null default 'local',
+  src varchar(255) not null default '',
 
   primary key (id)
 );

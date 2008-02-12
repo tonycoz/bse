@@ -33,7 +33,7 @@
           <td nowrap><a href="/cgi-bin/admin/add.pl?id=<:product id:>">Edit</a> 
             <:if Product listed:> <a href="/cgi-bin/admin/add.pl?hide=1&id=<:product id:>&r=<:cfg site url:><:script:>">Hide</a> 
             <:or Product:> <a href="/cgi-bin/admin/add.pl?unhide=1&id=<:product id:>&r=<:cfg site url:><:script:>">Show</a> 
-            <:eif Product:> <:move:> </td>
+            <:eif Product:> <:move:> x<:product customStr1:>y</td>
           <td><:hiddenNote:></td>
         </tr>
         <:iterator end products:> 

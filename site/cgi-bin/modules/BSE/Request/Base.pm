@@ -153,10 +153,21 @@ sub output_result {
   BSE::Template->output_result($req, $result);
 }
 
+sub flash {
+  my ($self, @msg) = @_;
+
+  my $msg = "@msg";
+  my @flash;
+  @flash = @{$self->session->{flash}} if $self->session->{flash};
+  push @flash, $msg;
+  $self->session->{flash} = \@flash;
+}
+
 sub message {
   my ($req, $errors) = @_;
 
   my $msg = '';
+  my @lines;
   if ($errors and keys %$errors) {
     my @fields = $req->cgi->param;
     my %work = %$errors;
@@ -176,8 +187,12 @@ sub message {
     }
     my %seen;
     @lines = grep !$seen{$_}++, @lines; # don't need duplicates
-    $msg = join "<br />", map escape_html($_), @lines;
   }
+  if ($req->session->{flash}) {
+    push @lines, @{$req->session->{flash}};
+    delete $req->session->{flash};
+  }
+  $msg = join "<br />", map escape_html($_), @lines;
   if (!$msg && $req->cgi->param('m')) {
     $msg = join(' ', $req->cgi->param('m'));
     $msg = escape_html($msg);

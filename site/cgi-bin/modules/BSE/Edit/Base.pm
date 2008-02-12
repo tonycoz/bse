@@ -5,7 +5,14 @@ use strict;
 sub new {
   my ($class, %parms) = @_;
 
+  $parms{cfg}
+    or die "Missing cfg parameter";
+
   return bless \%parms, $class;
+}
+
+sub cfg {
+  $_[0]{cfg}
 }
 
 sub article_class_id {

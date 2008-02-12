@@ -176,35 +176,6 @@ sub _body_embed {
   return $text;
 }
 
-sub _make_img {
-  my ($args, $imagePos, $images) = @_;
-
-  my ($index, $align, $url) = split /\|/, $args, 3;
-  my $text = '';
-  if ($index >=1 && $index <= @$images) {
-# I considered this
-#      if (!$align) {
-#        $align = $$imagePos =~ /r/ ? 'right' : 'left';
-#        $$imagePos =~ tr/rl/lr/; # I wonder
-#      }
-    my $im = $images->[$index-1];
-    $text = qq!<img src="/images/$im->{image}" width="$im->{width}"!
-      . qq! height="$im->{height}" alt="! . escape_html($im->{alt}).'"'
-	. qq! border="0"!;
-    $text .= qq! align="$align"! if $align && $align ne 'center';
-    $text .= qq! />!;
-    $text = qq!<div align="center">$text</div>!
-      if $align && $align eq 'center';
-    if (!$url && $im->{url}) {
-      $url = $im->{url};
-    }
-    if ($url) {
-      $text = qq!<a href="! . escape_html($url) . qq!">$text</a>!;
-    }
-  }
-  return $text;
-}
-
 sub formatter_class {
   require BSE::Formatter::Article;
   return 'BSE::Formatter::Article'
@@ -865,14 +836,20 @@ sub get_gfile {
 sub image_url {
   my ($self, $im) = @_;
 
-  "/images/$im->{image}";
+  $im->{src} || "/images/$im->{image}";
 }
 
 sub _format_image {
   my ($self, $im, $align, $rest) = @_;
 
   if ($align && exists $im->{$align}) {
-    return escape_html($im->{$align});
+    if ($align eq 'src') {
+      my $src = $self->image_url($im);
+      return escape_html($im);
+    }
+    else {
+      return escape_html($im->{$align});
+    }
   }
   else {
     my $image_url = $self->image_url($im);

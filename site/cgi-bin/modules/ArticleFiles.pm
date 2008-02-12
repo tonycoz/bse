@@ -9,4 +9,9 @@ sub rowClass {
   return 'ArticleFile';
 }
 
+sub file_storages {
+  my $self = shift;
+  return map [ $_->{filename}, $_->{storage}, $_ ], $self->all;
+}
+
 1;

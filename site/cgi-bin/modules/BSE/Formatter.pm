@@ -48,13 +48,13 @@ sub new {
 sub image_url {
   my ($self, $im) = @_;
 
-  "/images/$im->{image}"
+  $im->{src} || "/images/$im->{image}"
 }
 
 sub _image {
   my ($self, $im, $align, $url, $style) = @_;
 
-  my $image_url = $self->image_url($im);
+  my $image_url = escape_html($self->image_url($im));
 
   my $text = qq!<img src="$image_url" width="$im->{width}"!
     . qq! height="$im->{height}" alt="! . escape_html($im->{alt}).'"'

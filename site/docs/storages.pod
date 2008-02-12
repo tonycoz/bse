@@ -1,0 +1,297 @@
+=head1 NAME
+
+storages.pod - external image and file stores
+
+=head1 SYNOPSIS
+
+  [storages]
+  images=istore1,istore2
+  files=fstore1,fstore2
+
+  [storage istore1]
+  class=BSE::Storage::AmazonS3
+  baseurl=http://.../images/
+  keyid=...
+  accesskey=...
+  bucket=...
+  prefix=images/
+  description=Images on Amazon S3
+
+  [storage istore2]
+  class=BSE::Storage::FTP
+  baseurl=http://.../images/
+  host=ftphost
+  user=ftpuser
+  password=ftppassword
+  cwd=/public_html/images
+  chmod=644
+  description=Images on Somehost
+
+=head1 DESCRIPTION
+
+BSE allows you to have images and file served from a remote server.
+This can be useful:
+
+=over
+
+=item *
+
+to reduce bandwidth usage on your dynamic server
+
+=item *
+
+to reduce CPU load - though this shouldn't be significant from
+file/image transfers in any case
+
+=back
+
+=head1 FILE STORAGE
+
+Unlike images, files attached to images can be limited to either
+require that a user be logged in, that the file be available only on
+purchase or access limited by the user's access rights in the article
+or it's parents.
+
+Hence, if a file is marked for sale, user required, or the article it
+belongs to is access controlled, the files cannot be stored remotely.
+
+Also the marking of files for download, the display name and
+specifying the content type is only supported by the Amazon S3
+storage.
+
+=head1 CONFIGURATION
+
+Each type of file has a list of stores where their associated files
+can be stored, which is set in the [storages] section of the config
+file as a comma delimited list of tokens.
+
+A "local" storage for the given file type is added to the end of that
+list.  This storage has no configuration.
+
+Each of these tokens then refers to another configuration section
+C<[storage >I<token>C<]> with the definition for that store.
+
+Each storage section B<must> have a C<class> token which defines the
+storage class.
+
+Other common tokens include:
+
+=over
+
+=item *
+
+description - the description of the storage as displayed in drop down
+lists.
+
+=item *
+
+baseurl - the base url the image filename is appended to to obtain the
+final file source url.
+
+=item *
+
+cond - a perl expression, if the users chooses (Auto) from the
+storages drop down then the first storage when cond evals to a true
+value will be used.  If none are true the local storage is used.  This
+expression is ignored if the user selects a particular storage.
+
+=back
+
+=head1 STORAGE CLASSES
+
+=head2 BSE::Storage::AmazonS3
+
+This stores the files on Amazon's Simple Storage Service.
+
+This storage supports storing content types and dispositions, so
+supports BSE's distinction between retrieving files for download or
+for inline display.
+
+=over
+
+=item *
+
+keyid - "Your Access Key ID" from the AWS Access Identifiers page.
+Required.
+
+=item *
+
+accesskey - " Your Secret Access Key" from the AWS Access Identifiers
+page.  Required.
+
+=item *
+
+bucket - the name of the S3 bucket to store the files in.  Required.
+
+=item *
+
+prefix - the prefix applied to filenames stored in this bucket.  This
+combined with the bucket must be unique amongst the storages you
+create.  Required.
+
+=back
+
+The bse_s3.pl tool can be used for basic setup.
+
+To create the bucket associated with a storage:
+
+  perl bse_s3.pl istore1 create
+
+To delete the bucket associated with a storage:
+
+  perl bse_s3.pl istore1 create
+
+The bucket must be empty before doing this.
+
+To list all buckets for the account associated with a storage:
+
+  perl bse_s3.pl istore1 listbuckets
+
+=head2 BSE::Storage::FTP
+
+This storage transfers files to an FTP server.
+
+Without complex apache setup this storage is only useful for images,
+since it doesn't support BSE's distinction between inline and
+attachment for files.
+
+=over
+
+=item *
+
+host - the ftp host to transfer the files to.  Required.
+
+=item *
+
+user - the FTP user.  Required.
+
+=item *
+
+password - the FTP password.  Required.
+
+=item *
+
+cwd - the storage will change to this directory before
+uploading/removing files.  Required.
+
+=item *
+
+chmod - if set then any files uploaded will be chmod to the given
+mask.  Optional but recommended that this be set to 644.
+
+=back
+
+=head1 MAINTENANCE
+
+The bse_storage.pl can be use for simple maintenance tasks.
+
+=head2 Synchronization
+
+If you've manually removed or added files to the storage or updated
+the storage field in the C<image> or C<article_files> tables you can
+resynchronize the storage state to the database.
+
+  perl bse_storage.pl sync
+
+To see what differences were found run with the -v option:
+
+  perl bse_storage.pl -v sync
+
+This will also update the file src for each file found to be out of
+sync.
+
+For example, if you want to force all images to be stored on the
+storage C<s3_images> you would do the following in SQL:
+
+  update image set storage='s3_images';
+
+then run:
+
+  perl bse_storage.pl -v sync
+
+and you might see:
+
+  Type files
+    Storage S3 Files (s3_files)
+  Type images
+    Storage S3 Images (s3_images)
+      11 missing - transferring:
+      1180071938_kscdisplay.png
+      1180071915_209_yonge.jpg
+      1180328212_t105gray-perturb.gif
+      1180743047_test.jpg
+      1180745768_t50out.gif
+      1188193066_foo.png
+      1189397083_dnangel_01_1280.jpg
+      1189411047_dnangel_18_1024.jpg
+      1195003780_anzscin2.jpg
+      1195002521_1194062541_anzscin2.png
+      1202278171_result.png
+    Storage FTP Images (ftp_images)
+
+or to bulk remove files from the storage:
+
+  update image set storage='local';
+
+  Type files
+    Storage S3 Files (s3_files)
+  Type images
+    Storage S3 Images (s3_images)
+      12 extra files found, removing:
+        1180071915_209_yonge.jpg
+        1180071938_kscdisplay.png
+        1180328212_t105gray-perturb.gif
+        1180743047_test.jpg
+        1180745768_t50out.gif
+        1188193066_foo.png
+        1189397083_dnangel_01_1280.jpg
+        1189411047_dnangel_18_1024.jpg
+        1195002521_1194062541_anzscin2.png
+        1195003780_anzscin2.jpg
+        1202278171_result.png
+        1202437879_t101.jpg
+    Storage FTP Images (ftp_images)
+
+=head2 Storage Contents
+
+You can see what files are stored in which storages with the list command:
+
+  perl bse_storage.pl list
+
+=head2 URL Updates
+
+If you reconfigure the base URL for a storage you can do:
+
+  perl bse_storage.pl fixsrc
+
+to update the stored URL for every file.
+
+This should also be done when updating to a version of BSE with
+storages to fix the src for images.
+
+=head1 CNAME and S3
+
+To avoid sending your users to
+http://I<bucket>.s3.amazonaws.com/... for your data you can create a
+CNAME named for your bucket that points at I<bucket>.s3.amazonaws.com.
+
+eg. given a base site name of http://bsetest.develop-help.com we
+create a bucket called "images.bsetest.develop-help.com" and create a
+CNAME like so:
+
+; in the develop-help.com zone file
+images.bsetest  IN      CNAME   images.bsetest.develop-help.com.s3.amazonaws.com.
+
+We can then set the baseurl using that name:
+
+  baseurl=http://images.bsetest.develop-help.com/images/
+  prefix=images/
+
+For more information see "Virtual Hosting of Buckets" under "Using the
+REST API" in the Amazone Simple Storage Service Developer Guide.
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=cut

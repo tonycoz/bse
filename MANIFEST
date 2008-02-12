@@ -56,6 +56,7 @@ site/cgi-bin/modules/BSE/Cfg.pm
 site/cgi-bin/modules/BSE/CfgInfo.pm
 site/cgi-bin/modules/BSE/ChangePW.pm
 site/cgi-bin/modules/BSE/ComposeMail.pm
+site/cgi-bin/modules/BSE/Util/ContentType.pm
 site/cgi-bin/modules/BSE/Custom.pm
 site/cgi-bin/modules/BSE/CustomBase.pm
 site/cgi-bin/modules/BSE/DB.pm
@@ -99,6 +100,15 @@ site/cgi-bin/modules/BSE/Search/BSE.pm
 site/cgi-bin/modules/BSE/Session.pm
 site/cgi-bin/modules/BSE/Shop/Util.pm
 site/cgi-bin/modules/BSE/Sort.pm
+site/cgi-bin/modules/BSE/Storage/AmazonS3.pm
+site/cgi-bin/modules/BSE/Storage/Base.pm
+site/cgi-bin/modules/BSE/Storage/LocalBase.pm
+site/cgi-bin/modules/BSE/Storage/LocalFiles.pm
+site/cgi-bin/modules/BSE/Storage/LocalImages.pm
+site/cgi-bin/modules/BSE/Storage/FTP.pm
+site/cgi-bin/modules/BSE/StorageMgr/Base.pm
+site/cgi-bin/modules/BSE/StorageMgr/Files.pm
+site/cgi-bin/modules/BSE/StorageMgr/Images.pm
 site/cgi-bin/modules/BSE/SubscribedUser.pm
 site/cgi-bin/modules/BSE/SubscribedUsers.pm
 site/cgi-bin/modules/BSE/SubscriptionType.pm
@@ -247,9 +257,11 @@ site/docs/secure.pod
 site/docs/shop.html
 site/docs/siteusers.html
 site/docs/siteusers.pod
+site/docs/shopadmin.html
 site/docs/standard.html
 site/docs/standard.pod
-site/docs/shopadmin.html
+site/docs/storages.html
+site/docs/storages.pod
 site/docs/templates.html
 site/docs/templates.pod
 site/docs/thumbnails.html
@@ -518,6 +530,8 @@ site/templates/user/unsubone_base.tmpl
 site/templates/user/userpage_base.tmpl
 site/templates/xbase.tmpl
 site/util/bseaddimages.pl
+site/util/bse_s3.pl
+site/util/bse_storage.pl
 site/util/gen.pl
 site/util/getpcode.pl	Example code
 site/util/initial.pl

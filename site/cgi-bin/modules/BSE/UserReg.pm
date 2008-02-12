@@ -1256,9 +1256,10 @@ sub req_download_file {
 				  "This file can only be downloaded as part of an order"));
 
   # check the user has access to this file (RT#531)
+  my $article;
   if ($file->{articleId} != -1) {
     require Articles;
-    my $article = Articles->getByPkey($file->{articleId})
+    $article = Articles->getByPkey($file->{articleId})
       or return $self->req_show_logon($req,
 				  $msgs->('downloadarticle',
 					  "Could not load article for file"));
@@ -1276,6 +1277,15 @@ sub req_download_file {
 	return;
       }
     }
+  }
+
+  # this this file is on an external storage, and qualifies for
+  # external storage send the user to get it from there
+  if ($file->{src} && $file->{storage} ne 'local'
+      && !$file->{forSale} && !$file->{requireUser}
+      && (!$article || !$article->is_access_controlled)) {
+    refresh_to($file->{src});
+    return;
   }
   
   my $filebase = $cfg->entryVar('paths', 'downloads');

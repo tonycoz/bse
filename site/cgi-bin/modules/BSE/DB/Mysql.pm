@@ -70,8 +70,8 @@ EOS
 
    Images => 'select * from image',
    replaceImage =>
-     'replace image values (?,?,?,?,?,?,?,?,?)',
-   addImage => 'insert image values(null, ?, ?, ?, ?, ?, ?, ?, ?)',
+     'replace image values (?,?,?,?,?,?,?,?,?,?,?)',
+   addImage => 'insert image values(null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
    deleteImage => 'delete from image where id = ?',
    getImageByArticleId => 'select * from image where articleId = ? order by displayOrder',
    getImageByPkey => 'select * from image where id = ?',
@@ -134,10 +134,11 @@ EOS
    'OtherParents.anylinks' => 
    'select * from other_parents where childId = ? or parentId = ?',
 
+   ArticleFiles => 'select * from article_files',
    addArticleFile =>
-   'insert into article_files values (null,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+   'insert into article_files values (null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
    replaceArticleFile =>
-   'replace article_files values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+   'replace article_files values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
    deleteArticleFile => 'delete from article_files where id = ?',
    getArticleFileByArticleId =>
    'select * from article_files where articleId = ? order by displayOrder desc',

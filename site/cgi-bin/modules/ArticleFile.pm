@@ -9,7 +9,7 @@ use Carp 'confess';
 sub columns {
   return qw/id articleId displayName filename sizeInBytes description 
             contentType displayOrder forSale download whenUploaded
-            requireUser notes name hide_from_list/;
+            requireUser notes name hide_from_list storage src/;
 }
 
 sub remove {
@@ -29,6 +29,13 @@ sub remove {
   }
   
   $self->SUPER::remove();
+}
+
+sub article {
+  my $self = shift;
+  require Articles;
+
+  return Articles->getByPkey($self->{articleId});
 }
 
 1;

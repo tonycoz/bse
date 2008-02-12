@@ -81,6 +81,18 @@
             <td nowrap="nowrap"><:help file hide_from_list:> <:error_img hide_from_list:></td>
           </tr>
           <tr> 
+            <th align="left">Storage:</th>
+            <td> 
+<select name="storage">
+<option value="">(Auto)</option>
+<:iterator begin file_stores:>
+<option value="<:file_store name:>" <:ifEq [efile storage] [file_store name]:>selected="selected"<:or:><:eif:>><:file_store description:></option>
+<:iterator end file_stores:>
+</select>
+            </td>
+            <td nowrap="nowrap"><:help file hide_from_list:> <:error_img hide_from_list:></td>
+          </tr>
+          <tr> 
             <td colspan="3" align="right"> 
               <input type="submit" name="a_save_file" value="Save File" />
             </td>

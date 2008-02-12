@@ -6,7 +6,8 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 
 sub columns {
-  return qw/id articleId image alt width height url displayOrder name/;
+  return qw/id articleId image alt width height url displayOrder name
+            storage src/;
 }
 
 1;

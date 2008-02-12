@@ -84,6 +84,19 @@
             <td nowrap="nowrap" bgcolor="#FFFFFF"><:help file hide_from_list:> <:error_img hide_from_list:></td>
           </tr>
           <tr> 
+            <th bgcolor="#FFFFFF" align="left">Storage:</th>
+            <td bgcolor="#FFFFFF"> 
+<select name="storage">
+<option value="">(Auto)</option>
+<:iterator begin file_stores:>
+<option value="<:file_store name:>"><:file_store description:></option>
+<:iterator end file_stores:>
+</select>
+
+            </td>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help file hide_from_list:> <:error_img hide_from_list:></td>
+          </tr>
+          <tr> 
             <td bgcolor="#FFFFFF" colspan="3" align="right"> 
               <input type="submit" name="fileadd" value="Add File" />
             </td>
@@ -132,9 +145,16 @@
             </td>
           </tr>
           <tr>
-            <td valign="top" colspan="2" nowrap="nowrap" bgcolor="#FFFFFF"> 
+            <td valign="top" nowrap="nowrap" bgcolor="#FFFFFF"> 
                Identifier: <:ifUserCan edit_files_save:article:><input name="name_<:file id:>" type="text" value="<: oldi [concatenate name_ [file id]] 0 file name :>" size="20" /><:error_img [concatenate name_ [file id]]:>
                <:or:><: file name :><:eif:>
+            </td>
+            <td valign="top" nowrap="nowrap" bgcolor="#FFFFFF"> 
+               Storage: <:ifUserCan edit_files_save:article:><select name="storage_<:file id:>"><option value="">(Auto)</option>
+<:iterator begin file_stores:>
+<option value="<:file_store name:>" <:ifEq [oldi [concatenate storage_ [file id] ] 0 file storage] [file_store name]:>selected="selected"<:or:><:eif:>><:file_store description:></option>
+<:iterator end file_stores:></select><:error_img [concatenate storage_ [file id]]:>
+               <:or:><: file storage :><:eif:>
             </td>
           </tr>
           <tr bgcolor="#FFFFFF"> 

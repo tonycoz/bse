@@ -95,6 +95,8 @@ Column requireUser;int(11);NO;0;
 Column notes;text;NO;;
 Column name;varchar(80);NO;;
 Column hide_from_list;int(11);NO;0;
+Column storage;varchar(20);NO;local;
+Column src;varchar(255);NO;;
 Index PRIMARY;1;[id]
 Table bse_article_groups
 Column article_id;int(11);NO;;
@@ -204,6 +206,8 @@ Column height;smallint(5) unsigned;YES;NULL;
 Column url;varchar(255);YES;NULL;
 Column displayOrder;int(11);NO;0;
 Column name;varchar(255);NO;;
+Column storage;varchar(20);NO;local;
+Column src;varchar(255);NO;;
 Index PRIMARY;1;[id]
 Table order_item
 Column id;int(11);NO;NULL;auto_increment

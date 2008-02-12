@@ -10,6 +10,7 @@ use BSE::Arrows;
 use BSE::CfgInfo qw(custom_class admin_base_url cfg_image_dir);
 use BSE::Util::Iterate;
 use BSE::Template;
+use BSE::Util::ContentType qw(content_type);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
 sub not_logged_on {
@@ -1029,16 +1030,7 @@ sub low_edit_tags {
   my $cgi = $request->cgi;
   my $show_full = $cgi->param('f_showfull');
   $msg ||= join "\n", map escape_html($_), $cgi->param('message'), $cgi->param('m');
-  $msg ||= '';
-  $errors ||= {};
-  if (keys %$errors && !$msg) {
-    # try to get the errors in the same order as the table
-    my @cols = $self->table_object($articles)->rowClass->columns;
-    my %work = %$errors;
-    my @out = grep defined, delete @work{@cols};
-
-    $msg = join "<br>", @out, values %work;
-  }
+  $msg ||= $request->message($errors);
   my $parent;
   if ($article->{id}) {
     if ($article->{parentid} > 0) {
@@ -1162,8 +1154,38 @@ sub low_edit_tags {
      $it->make_iterator([ \&iter_groups, $request ], 
 			'group', 'groups', \@groups, undef, undef,
 			\$current_group),
+     $it->make_iterator([ iter_image_stores => $self], 
+			'image_store', 'image_stores'),
+     $it->make_iterator([ iter_file_stores => $self], 
+			'file_store', 'file_stores'),
      ifGroupRequired => [ \&tag_ifGroupRequired, $article, \$current_group ],
     );
+}
+
+sub iter_image_stores {
+  my ($self) = @_;
+
+  my $mgr = $self->_image_manager;
+
+  return map +{ name => $_->name, description => $_->description },
+    $mgr->all_stores;
+}
+
+sub _file_manager {
+  my ($self) = @_;
+
+  require BSE::StorageMgr::Files;
+
+  return BSE::StorageMgr::Files->new(cfg => $self->cfg);
+}
+
+sub iter_file_stores {
+  my ($self) = @_;
+
+  my $mgr = $self->_file_manager;
+
+  return map +{ name => $_->name, description => $_->description },
+    $mgr->all_stores;
 }
 
 sub iter_groups {
@@ -2203,7 +2225,7 @@ sub save_image_changes {
   my %changes;
   my %errors;
   my %names;
-  my @old_images;
+  my %old_images;
   my @new_images;
   for my $image (@images) {
     my $id = $image->{id};
@@ -2270,10 +2292,16 @@ sub save_image_changes {
 	  require Image::Size;
 	  my ($width, $height, $type) = Image::Size::imgsize($full_filename);
 	  if ($width) {
-	    push @old_images, $image->{image};
+	    $old_images{$id} = 
+	      { 
+	       image => $image->{image}, 
+	       storage => $image->{storage}
+	      };
 	    push @new_images, $image_name;
 
 	    $changes{$id}{image} = $image_name;
+	    $changes{$id}{storage} = 'local';
+	    $changes{$id}{src} = "/images/$image_name";
 	    $changes{$id}{width} = $width;
 	    $changes{$id}{height} = $height;
 	  }
@@ -2306,26 +2334,56 @@ sub save_image_changes {
     return $self->edit_form($req, $article, $articles, undef,
 			    \%errors);
   }
-  if (keys %changes) {
-    for my $image (@images) {
-      my $id = $image->{id};
-      $changes{$id}
-	or next;
 
-      for my $field (keys %{$changes{$id}}) {
-	$image->{$field} = $changes{$id}{$field};
+  my $mgr = $self->_image_manager($req->cfg);
+  $req->flash('Image information saved');
+  my $changes_found = 0;
+  my $auto_store = $cgi->param('auto_storage');
+  for my $image (@images) {
+    my $id = $image->{id};
+
+    if ($changes{$id}) {
+      my $changes = $changes{$id};
+      ++$changes_found;
+      
+      for my $field (keys %$changes) {
+	$image->{$field} = $changes->{$field};
       }
       $image->save;
     }
 
-    # delete any image files that were replaced
-    unlink map "$image_dir/$_", @old_images;
-    
+    my $old_storage = $image->{storage};
+    my $new_storage = $auto_store ? '' : $cgi->param("storage$id");
+    defined $new_storage or $new_storage = $image->{storage};
+    $new_storage = $mgr->select_store($image->{image}, $new_storage, $image);
+    if ($new_storage ne $old_storage) {
+      eval {
+	$image->{src} = $mgr->store($image->{image}, $new_storage, $image);
+	$image->{storage} = $new_storage;
+	$image->save;
+      };
+      
+      if ($old_storage ne 'local') {
+	$mgr->unstore($image->{image}, $old_storage);
+      }
+    }
+  }
+
+  # delete any image files that were replaced
+  for my $old_image (values %old_images) {
+    my ($image, $storage) = @$old_image{qw/image storage/};
+    if ($storage ne 'local') {
+      $mgr->unstore($image->{image}, $storage);
+    }
+    unlink "$image_dir/$image";
+  }
+  
+  if ($changes_found) {
     use Util 'generate_article';
     generate_article($articles, $article) if $Constants::AUTO_GENERATE;
   }
-
-  return $self->refresh($article, $cgi, undef, 'Image information saved');
+    
+  return $self->refresh($article, $cgi);
 }
 
 sub _service_error {
@@ -2475,11 +2533,32 @@ sub add_image {
      url => $url,
      displayOrder=>time,
      name => $imageref,
+     storage => 'local',
+     src => '/images/' . $filename,
     );
   require Images;
   my @cols = Image->columns;
   shift @cols;
   my $imageobj = Images->add(@image{@cols});
+
+  my $storage = $cgi->param('storage');
+  defined $storage or $storage = 'local';
+  my $image_manager = $self->_image_manager($req->cfg);
+  local $SIG{__DIE__};
+  eval {
+    my $src;
+    $storage = $image_manager->select_store($filename, $storage, $imageobj);
+    $src = $image_manager->store($filename, $storage, $imageobj);
+      
+    if ($src) {
+      $imageobj->{src} = $src;
+      $imageobj->{storage} = $storage;
+      $imageobj->save;
+    }
+  };
+  if ($@) {
+    $req->flash($@);
+  }
 
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
@@ -2497,6 +2576,14 @@ sub add_image {
   }
 }
 
+sub _image_manager {
+  my ($self) = @_;
+
+  require BSE::StorageMgr::Images;
+
+  return BSE::StorageMgr::Images->new(cfg => $self->cfg);
+}
+
 # remove an image
 sub remove_img {
   my ($self, $req, $article, $articles, $imageid) = @_;
@@ -2510,6 +2597,12 @@ sub remove_img {
   my @images = $self->get_images($article);
   my ($image) = grep $_->{id} == $imageid, @images
     or return $self->show_images($req, $article, $articles, "No such image");
+
+  if ($image->{storage} ne 'local') {
+    my $mgr = $self->_image_manager($req->cfg);
+    $mgr->unstore($image->{image}, $image->{storage});
+  }
+
   my $imagedir = cfg_image_dir($req->cfg);
   unlink "$imagedir$image->{image}";
   $image->remove;
@@ -2678,6 +2771,8 @@ sub req_save_image {
 
   my $image_dir = cfg_image_dir($req->cfg);
 
+  my $old_storage = $image->{storage};
+
   my %errors;
   my $delete_file;
   my $alt = $cgi->param('alt');
@@ -2733,6 +2828,8 @@ sub req_save_image {
 	  $image->{image} = $image_name;
 	  $image->{width} = $width;
 	  $image->{height} = $height;
+	  $image->{storage} = 'local'; # not on the remote store yet
+	  $image->{src} = '/images/' . $image_name;
 	}
 	else {
 	  $errors{image} = $type;
@@ -2749,11 +2846,39 @@ sub req_save_image {
   keys %errors
     and return $self->req_edit_image($req, $article, $articles, \%errors);
 
+  my $new_storage = $cgi->param('storage');
+  defined $new_storage or $new_storage = $image->{storage};
   $image->save;
-  unlink "$image_dir/$delete_file"
-    if $delete_file;
+  my $mgr = $self->_image_manager($req->cfg);
+  if ($delete_file) {
+    if ($old_storage ne 'local') {
+      $mgr->unstore($delete_file, $old_storage);
+    }
+    unlink "$image_dir/$delete_file";
+  }
+  $req->flash("Image saved");
+  eval {
+    $new_storage = 
+      $mgr->select_store($image->{image}, $new_storage);
+    if ($image->{storage} ne $new_storage) {
+      # handles both new images (which sets storage to local) and changing
+      # the storage for old images
+      my $old_storage = $image->{storage};
+      my $src = $mgr->store($image->{image}, $new_storage, $image);
+      $image->{src} = $src;
+      $image->{storage} = $new_storage;
+      $image->save;
+    }
+  };
+  $@ and $req->flash("There was a problem adding it to the new storage: $@");
+  if ($image->{storage} ne $old_storage && $old_storage ne 'local') {
+    eval {
+      $mgr->unstore($image->{image}, $old_storage);
+    };
+    $@ and $req->flash("There was a problem removing if from the old storage: $@");
+  }
 
-  return $self->refresh($article, $cgi, undef, 'Image saved');
+  return $self->refresh($article, $cgi);
 }
 
 sub get_article {
@@ -2767,91 +2892,6 @@ sub table_object {
 
   $articles;
 }
-
-my %types =
-  (
-   qw(
-   bash text/plain
-   css  text/css
-   csv  text/plain
-   diff text/plain
-   htm  text/html
-   html text/html
-   ics  text/calendar
-   patch text/plain
-   pl   text/plain
-   pm   text/plain
-   pod  text/plain
-   py   text/plain
-   sgm  text/sgml
-   sgml text/sgml
-   sh   text/plain
-   tcsh text/plain
-   text text/plain
-   tsv  text/tab-separated-values
-   txt  text/plain
-   vcf  text/x-vcard
-   vcs  text/x-vcalendar
-   xml  text/xml
-   zsh  text/plain
-   bmp  image/bmp 
-   gif  image/gif
-   jp2  image/jpeg2000
-   jpeg image/jpeg
-   jpg  image/jpeg   
-   pct  image/pict 
-   pict image/pict
-   png  image/png
-   tif  image/tiff
-   tiff image/tiff
-   dcr  application/x-director
-   dir  application/x-director
-   doc  application/msword
-   dxr  application/x-director
-   eps  application/postscript
-   fla  application/x-shockwave-flash
-   flv  application/x-shockwave-flash
-   gz   application/gzip
-   hqx  application/mac-binhex40
-   js   application/x-javascript
-   lzh  application/x-lzh
-   pdf  application/pdf
-   pps  application/ms-powerpoint
-   ppt  application/ms-powerpoint
-   ps   application/postscript
-   rtf  application/rtf
-   sit  application/x-stuffit
-   swf  application/x-shockwave-flash
-   tar  application/x-tar
-   tgz  application/gzip
-   xls  application/ms-excel
-   Z    application/x-compress
-   zip  application/zip
-   asf  video/x-ms-asf
-   avi  video/avi
-   flc  video/flc
-   moov video/quicktime
-   mov  video/quicktime
-   mp4  video/mp4
-   mpeg video/mpeg
-   mpg  video/mpeg
-   wmv  video/x-ms-wmv
-   3gp  video/3gpp
-   aa   audio/audible
-   aif  audio/aiff
-   aiff audio/aiff
-   m4a  audio/m4a
-   mid  audio/midi
-   mp2  audio/x-mpeg
-   mp3  audio/x-mpeg
-   ra   audio/x-realaudio
-   ram  audio/x-pn-realaudio
-   rm   audio/vnd.rm-realmedia
-   swa  audio/mp3
-   wav  audio/wav
-   wma  audio/x-ms-wma
-   )
-  );
 
 sub _refresh_filelist {
   my ($self, $req, $article, $msg) = @_;
@@ -2935,14 +2975,7 @@ sub fileadd {
       $file{contentType} = "application/octet-stream";
     }
     unless ($file{contentType}) {
-      my $ext = lc $1;
-      my $type = $types{$ext};
-      unless ($type) {
-	$type = $self->{cfg}->entry('extensions', $ext)
-	  || $self->{cfg}->entry('extensions', ".$ext")
-	    || "application/octet-stream";
-      }
-      $file{contentType} = $type;
+      $file{contentType} = content_type($self->cfg, $file);
     }
   }
 
@@ -3016,10 +3049,32 @@ sub fileadd {
   require ArticleFiles;
   my $fileobj = ArticleFiles->add(@file{@cols});
 
+  $req->flash("New file added");
+
+  my $storage = $cgi->param('storage');
+  defined $storage or $storage = 'local';
+  my $file_manager = $self->_file_manager($req->cfg);
+
+  local $SIG{__DIE__};
+  eval {
+    my $src;
+    $storage = $self->_select_filestore($req, $file_manager, $storage, $fileobj);
+    $src = $file_manager->store($filename, $storage, $fileobj);
+      
+    if ($src) {
+      $fileobj->{src} = $src;
+      $fileobj->{storage} = $storage;
+      $fileobj->save;
+    }
+  };
+  if ($@) {
+    $req->flash($@);
+  }
+
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
-  $self->_refresh_filelist($req, $article, 'New file added');
+  $self->_refresh_filelist($req, $article);
 }
 
 sub fileswap {
@@ -3068,6 +3123,11 @@ sub filedel {
     my ($file) = grep $_->{id} == $fileid, @files;
 
     if ($file) {
+      if ($file->{storage} ne 'local') {
+	my $mgr = $self->_file_manager;
+	$mgr->unstore($self->{filename}, $self->{storage});
+      }
+
       $file->remove($req->cfg);
     }
   }
@@ -3076,6 +3136,25 @@ sub filedel {
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
   $self->_refresh_filelist($req, $article, 'File deleted');
+}
+
+# only some files can be stored remotely
+sub _select_filestore {
+  my ($self, $req, $mgr, $storage, $file) = @_;
+
+  my $store = $mgr->select_store($file->{filename}, $storage, $file);
+  if ($store ne 'local') {
+    if ($file->{forSale} || $file->{requireUser}) {
+      $store = 'local';
+      $req->flash("For sale or user required files can only be stored locally");
+    }
+    elsif ($file->{articleId} != -1 && $file->article->is_access_controlled) {
+      $store = 'local';
+      $req->flash("Files for access controlled articles can only be stored locally");
+    }
+  }
+
+  return $store;
 }
 
 sub filesave {
@@ -3093,12 +3172,16 @@ sub filesave {
   my %errors;
   my @old_files;
   my @new_files;
+  my %store_anyway;
   for my $file (@files) {
     my $id = $file->{id};
     my $desc = $cgi->param("description_$id");
     defined $desc and $file->{description} = $desc;
     my $type = $cgi->param("contentType_$id");
-    defined $type and $file->{contentType} = $type;
+    if (defined $type and $type ne $file->{contentType}) {
+      ++$store_anyway{$id};
+      $file->{contentType} = $type;
+    }
     my $notes = $cgi->param("notes_$id");
     defined $notes and $file->{notes} = $notes;
     my $name = $cgi->param("name_$id");
@@ -3121,7 +3204,11 @@ sub filesave {
 	if length $file->{name};
     }
     if ($cgi->param('save_file_flags')) {
-      $file->{download}	      = 0 + defined $cgi->param("download_$id");
+      my $download = 0 + defined $cgi->param("download_$id");
+      if ($download != $file->{download}) {
+	++$store_anyway{$file->{id}};
+	$file->{download}	      = $download;
+      }
       $file->{forSale}	      = 0 + defined $cgi->param("forSale_$id");
       $file->{requireUser}    = 0 + defined $cgi->param("requireUser_$id");
       $file->{hide_from_list} = 0 + defined $cgi->param("hide_from_list_$id");
@@ -3150,10 +3237,11 @@ sub filesave {
 	      $display_name =~ s!.*[\\:/]!!;
 	      $display_name =~ s/[^\w._-]+/_/g;
 	      my $full_name = "$download_path/$file_name";
-	      push @old_files, $file->{filename};
+	      push @old_files, [ $file->{filename}, $file->{storage} ];
 	      push @new_files, $file_name;
 	      
 	      $file->{filename} = $file_name;
+	      $file->{storage} = 'local';
 	      $file->{sizeInBytes} = -s $full_name;
 	      $file->{whenUploaded} = now_datetime();
 	      $file->{displayName} = $display_name;
@@ -3188,17 +3276,47 @@ sub filesave {
 
     return $self->edit_form($req, $article, $articles, undef, \%errors);
   }
+  $req->flash('File information saved');
+  my $mgr = $self->_file_manager;
   for my $file (@files) {
     $file->save;
+
+    my $storage = $cgi->param("storage_$file->{id}");
+    defined $storage or $storage = 'local';
+    $storage = $self->_select_filestore($req, $mgr, $storage, $file);
+    if ($storage ne $file->{storage} || $store_anyway{$file->{id}}) {
+      my $old_storage = $file->{storage};
+      eval {
+	$file->{src} = $mgr->store($file->{filename}, $storage, $file);
+	$file->{storage} = $storage;
+	$file->save;
+
+	if ($old_storage ne $storage) {
+	  $mgr->unstore($file->{filename}, $old_storage);
+	}
+      };
+      $@
+	and $req->flash("Could not move $file->{displayName} to $storage: $@");
+    }
   }
 
   # remove the replaced files
-  unlink map "$download_path/$_", @old_files;
+  for my $file (@old_files) {
+    my ($filename, $storage) = @$file;
+
+    eval {
+      $mgr->unstore($filename, $storage);
+    };
+    $@
+      and $req->flash("Error removing $filename from $storage: $@");
+
+    unlink "$download_path/$filename";
+  }
 
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
-  $self->_refresh_filelist($req, $article, 'File information saved');
+  $self->_refresh_filelist($req, $article);
 }
 
 sub tag_old_checked {
@@ -3260,10 +3378,14 @@ sub req_save_file {
 		 fields => \%file_fields,
 		 section => $article->{id} == -1 ? 'Global File Validation' : 'Article File Validation');
 
+  my $store_anyway = 0;
   my $desc = $cgi->param("description");
   defined $desc and $file->{description} = $desc;
   my $type = $cgi->param("contentType");
-  defined $type and $file->{contentType} = $type;
+  if (defined $type && $file->{contentType} ne $type) {
+    ++$store_anyway;
+    $file->{contentType} = $type;
+  }
   my $notes = $cgi->param("notes");
   defined $notes and $file->{notes} = $notes;
   my $name = $cgi->param("name");
@@ -3286,13 +3408,17 @@ sub req_save_file {
   }
 
   if ($cgi->param('save_file_flags')) {
-    $file->{download}	    = 0 + defined $cgi->param("download");
+    my $download = 0 + defined $cgi->param("download");
+    if ($download ne $file->{download}) {
+      ++$store_anyway;
+      $file->{download}	    = $download;
+    }
     $file->{forSale}	    = 0 + defined $cgi->param("forSale");
     $file->{requireUser}    = 0 + defined $cgi->param("requireUser");
     $file->{hide_from_list} = 0 + defined $cgi->param("hide_from_list");
   }
   
-  my @old_files;
+  my @old_file;
   my @new_files;
   my $filex = $cgi->param("file");
   my $in_fh = $cgi->upload("file");
@@ -3316,13 +3442,14 @@ sub req_save_file {
 	  $display_name =~ s!.*[\\:/]!!;
 	  $display_name =~ s/[^\w._-]+/_/g;
 	  my $full_name = "$download_path/$file_name";
-	  push @old_files, $file->{filename};
+	  @old_file = ( $file->{filename}, $file->{storage} );
 	  push @new_files, $file_name;
 	  
 	  $file->{filename} = $file_name;
 	  $file->{sizeInBytes} = -s $full_name;
 	  $file->{whenUploaded} = now_datetime();
 	  $file->{displayName} = $display_name;
+	  $file->{storage} = 'local';
 	}
 	else {
 	  $errors{"file"} = $msg;
@@ -3345,13 +3472,36 @@ sub req_save_file {
   }
   $file->save;
 
+  $req->flash('File information saved');
+  my $mgr = $self->_file_manager;
+
+  my $storage = $cgi->param('storage');
+  defined $storage or $storage = $file->{storage};
+  $storage = $self->_select_filestore($req, $mgr, $storage, $file);
+  if ($storage ne $file->{storage} || $store_anyway) {
+    my $old_storage = $file->{storage};
+    eval {
+      $file->{src} = $mgr->store($file->{filename}, $storage, $file);
+      $file->{storage} = $storage;
+      $file->save;
+
+      $mgr->unstore($file->{filename}, $old_storage)
+	if $old_storage ne $storage;
+    };
+    $@
+      and $req->flash("Could not move $file->{displayName} to $storage: $@");
+  }
+
   # remove the replaced files
-  unlink map "$download_path/$_", @old_files;
+  if (my ($old_name, $old_storage) = @old_file) {
+    $mgr->unstore($old_name, $old_storage);
+    unlink "$download_path/$old_name";
+  }
 
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
-  $self->_refresh_filelist($req, $article, 'File information saved');
+  $self->_refresh_filelist($req, $article);
 }
 
 sub can_remove {

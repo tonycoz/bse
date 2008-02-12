@@ -92,7 +92,9 @@ sub tag_title {
   }
 
   if ($im) {
-    return qq!<img src="/images/$im->{image}" width="$im->{width}"!
+    my $src = $im->{src} || "/images/$im->{image}";
+    $src = escape_html($src);
+    return qq!<img src="$src" width="$im->{width}"!
       . qq! height="$im->{height}" alt="$title" />!;
   }
   else {

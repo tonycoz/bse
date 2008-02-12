@@ -6,7 +6,7 @@
 <p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | 
 <a href="<:article admin:>">See article</a> | 
 <a href="/cgi-bin/admin/add.pl?id=<:article id:>">Edit Article</a> |
-<a href="/cgi-bin/admin/add.pl?id=<:article id:>">Images</a> |
+<a href="/cgi-bin/admin/add.pl?id=<:article id:>&amp;_t=img">Images</a> |
 </p>
 
 <form action="/cgi-bin/admin/add.pl" method="post" enctype="multipart/form-data">
@@ -34,6 +34,18 @@
     <td><input type="text" name="name" value="<:old name eimage name:>" /></td>
     <td nowrap="nowrap"><:help image name:> <:error_img name:></td>
   </tr>
+  <tr> 
+    <th align="left">Storage:</th>
+            <td> 
+<select name="storage">
+<option value="">(Auto)</option>
+<:iterator begin image_stores:>
+<option value="<:image_store name:>" <:ifEq [old storage eimage storage] [image_store name]:>selected="selected"<:or:><:eif:>><:image_store description:></option>
+<:iterator end image_stores:>
+</select>
+            </td>
+            <td nowrap="nowrap"><:help image name:> <:error_img name:></td>
+          </tr>
   <tr> 
     <td colspan="3" align="right">
       <input type="submit" name="a_save_image" value="Save Image" />
