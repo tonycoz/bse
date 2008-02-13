@@ -10,9 +10,28 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
-=head2 0.15_57
+=head2 0.16
 
 =over
+
+you can now configure BSE to have users fetch files from Amazon S3 or
+any service accessible by FTP.
+
+=item *
+
+added link aliases to articles, which are used to generate cleaner
+URLs if present.
+
+=item *
+
+extras.txt now uses the pregeneration processing, and you can
+configure a pregeneration setting section to store relative to the
+content directory instead of the template directory.
+
+=item *
+
+shop.fcgi was failing to encrypt emails, due to conflicts between
+fastcgi and stdin/out
 
 =item *
 
