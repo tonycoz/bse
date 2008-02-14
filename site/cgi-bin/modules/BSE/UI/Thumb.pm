@@ -3,6 +3,7 @@ use strict;
 use base 'BSE::UI::Dispatch'; # for error
 use Images;
 use BSE::CfgInfo qw(cfg_image_dir);
+use BSE::Util::Thumb;
 
 sub dispatch {
   my ($class, $req) = @_;
@@ -40,61 +41,59 @@ sub dispatch {
 
   my ($width, $height, $type) = 
     $thumbs->thumb_dimensions_sized($geometry, @$image{qw/width height/}, $start_type);
-  
-  my $cache_name = "$cache_dir/$geometry_id-$image->{image}";
-  my $cache_url = "$cache_base_url/$geometry_id-$image->{image}";
 
-  if ($type eq 'jpeg' && $cache_name !~ /\.jpe?g$/i) {
-    $cache_name .= ".jpg";
-    $cache_url .= ".jpg";
-  }
-  elsif ($cache_name !~ /\.$type$/i) {
-    $cache_name .= ".$type";
-    $cache_url .= ".$type";
-  }
-
-  my $image_refresh =
-    BSE::Template->get_refresh($cache_url);
-  push @{$image_refresh->{headers}}, "Cache-Control: max-age=3600";
   if ($do_cache) {
-    -e $cache_name
-      and return $image_refresh;
-  }
-    
-  my $filename = "$image_dir/$image->{image}";
-  -e $filename 
-    or return $class->error($req, "image file missing");
-  
-  (my $data, $type) = $thumbs->thumb_data($filename, $geometry, \$error)
-    or return $class->error($req, $error);
-
-  my $image_result =
-    {
-     content => $data,
-     type => $type,
-     headers => [
-		 "Content-Length: ".length($data),
-		 "Cache-Control: max-age=3600",
-		],
+    my ($cache_url, $cache_name, $basename, $data );
+    eval {
+      ($cache_url, $cache_name, $basename, $data ) = 
+	BSE::Util::Thumb->generate_thumb($cfg, $image, $geometry_id, $thumbs);
     };
 
-  # just return the image if we aren't caching
-  $do_cache
-    or return $image_result;
-  
-  if (open IMAGE, "> $cache_name") {
-    binmode IMAGE;
-    print IMAGE $data;
-    close IMAGE;
+    $@
+      and return $class->error($req, $@);
 
-    # redirect to the image
-    return $image_refresh;
+    if ($cache_url) {
+      my $image_refresh =
+	BSE::Template->get_refresh($cache_url);
+      push @{$image_refresh->{headers}}, "Cache-Control: max-age=3600";
+      return $image_refresh;
+    }
+    elsif ($data) {
+      # couldn't save the data for some reason, send it back anyway
+      return
+	{
+	 content => $data,
+	 type => $type,
+	 headers => [
+		     "Content-Length: ".length($data),
+		     "Cache-Control: max-age=3600",
+		    ],
+	};
+    }
+    else {
+      $class->error($req, "Unexpected result trying to get cached image");
+    }
   }
   else {
-    warn "Could not create scaled image cache file $cache_name: $!\n";
-    return $image_result;
-  }
+    # not caching, just generate it
 
+    my $filename = "$image_dir/$image->{image}";
+    -e $filename 
+      or return $class->error($req, "image file missing");
+    
+    (my $data, $type) = $thumbs->thumb_data($filename, $geometry, \$error)
+      or return $class->error($req, $error);
+    
+    return
+      {
+       content => $data,
+       type => $type,
+       headers => [
+		   "Content-Length: ".length($data),
+		   "Cache-Control: max-age=3600",
+		  ],
+      };
+  }
 }
 
 1;

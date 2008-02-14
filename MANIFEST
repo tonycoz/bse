@@ -56,7 +56,6 @@ site/cgi-bin/modules/BSE/Cfg.pm
 site/cgi-bin/modules/BSE/CfgInfo.pm
 site/cgi-bin/modules/BSE/ChangePW.pm
 site/cgi-bin/modules/BSE/ComposeMail.pm
-site/cgi-bin/modules/BSE/Util/ContentType.pm
 site/cgi-bin/modules/BSE/Custom.pm
 site/cgi-bin/modules/BSE/CustomBase.pm
 site/cgi-bin/modules/BSE/DB.pm
@@ -163,12 +162,14 @@ site/cgi-bin/modules/BSE/UI/SubAdmin.pm
 site/cgi-bin/modules/BSE/UI/Thumb.pm
 site/cgi-bin/modules/BSE/UI/User.pm
 site/cgi-bin/modules/BSE/UserReg.pm
+site/cgi-bin/modules/BSE/Util/ContentType.pm
 site/cgi-bin/modules/BSE/Util/DynSort.pm
 site/cgi-bin/modules/BSE/Util/DynamicTags.pm
 site/cgi-bin/modules/BSE/Util/Iterate.pm
 site/cgi-bin/modules/BSE/Util/SQL.pm
 site/cgi-bin/modules/BSE/Util/Secure.pm
 site/cgi-bin/modules/BSE/Util/Tags.pm
+site/cgi-bin/modules/BSE/Util/Thumb.pm
 site/cgi-bin/modules/BSE/Util/Valid.pm
 site/cgi-bin/modules/BSE/Validate.pm
 site/cgi-bin/modules/BSE/Version.pm

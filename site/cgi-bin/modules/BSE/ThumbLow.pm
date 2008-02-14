@@ -7,7 +7,7 @@ sub thumb_base_url {
 }
 
 sub _thumbimage_low {
-  my ($self, $geo_id, $im, $field, $cfg) = @_;
+  my ($self, $geo_id, $im, $field, $cfg, $static) = @_;
 
   $geo_id =~ /^[\w,]+$/
     or return "** invalid geometry id **";
@@ -17,6 +17,8 @@ sub _thumbimage_low {
 
   my $thumbs_class = $cfg->entry('editor', 'thumbs_class')
     or return '** no thumbnail engine configured **';
+
+  $static ||= 0;
 
   (my $thumbs_file = $thumbs_class . ".pm") =~ s!::!/!g;
   require $thumbs_file;
@@ -32,16 +34,23 @@ sub _thumbimage_low {
   @im{qw/width height type original/} = 
     $thumbs->thumb_dimensions_sized($geometry, @$im{qw/width height/});
 
+  my $do_cache = $cfg->entry('basic', 'cache_thumbnails', 1);
+  $im{image} = '';
   if ($im{original}) {
-    $im{image} = "/images/" . $im->{image};
+    $im{image} = $im->{src};
   }
-  else {
+  elsif ($static && $do_cache) {
+    require BSE::Util::Thumb;
+    ($im{image}) = BSE::Util::Thumb->generate_thumb($cfg, $im, $geo_id, $thumbs);
+  }
+  unless ($im{image}) {
     $im{image} = "$base?g=$geo_id&page=$im->{articleId}&image=$im->{id}";
 
     # hack for IE6
     $im{type} eq 'png'
       and $im{image} .= '&alpha-trans.png';
   }
+  $im{src} = $im{image};
   
   if ($field) {
     my $value = $im{$field};
@@ -50,7 +59,7 @@ sub _thumbimage_low {
   }
   else {
     my $class = $cfg->entry('thumb classes', $geo_id);
-    my $html = '<img src="' . escape_html($im{image}) . '" alt="' . escape_html($im{alt}) . qq!" width="$im{width}" height="$im{height}" border="0"!;
+    my $html = '<img src="' . escape_html($im{src}) . '" alt="' . escape_html($im{alt}) . qq!" width="$im{width}" height="$im{height}" border="0"!;
     if ($class) {
       $html .= qq! class="$class"!;
     }

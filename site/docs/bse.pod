@@ -10,6 +10,17 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
+=head2 0.16_01
+
+=over
+
+=item *
+
+static pages now generate and link directly to their cachec thumbnail
+images instead of linking to thumb.pl.
+
+=back
+
 =head2 0.16
 
 =over

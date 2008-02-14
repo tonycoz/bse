@@ -145,7 +145,9 @@ sub _generate_pregen {
   my $genname = $article->{generator};
   eval "use $genname";
   $@ && die $@;
-  my $gen = $genname->new(articles=>$articles, cfg=>$req->cfg, top=>$article);
+  my $gen = $genname->new(articles=>$articles, cfg=>$req->cfg, 
+			  top=>$article,
+			 dynamic => 1);
 
   my $content = $gen->generate($article, $articles);
 

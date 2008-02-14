@@ -427,6 +427,16 @@ sub admin_tags {
   return BSE::Util::Tags->secure($self->{request});
 }
 
+sub _sthumbimage_low {
+  my ($self, $geometry, $im, $field) = @_;
+
+  my $static = $self->{cfg}->entry('basic', 'static_thumbnails', 1);
+  $self->{admin} and $static = 0;
+  $self->{dynamic} and $static = 0;
+
+  return $self->_thumbimage_low($geometry, $im, $field, $self->{cfg}, $static);
+}
+
 sub tag_gthumbimage {
   my ($self, $rcurrent, $args) = @_;
 
@@ -479,7 +489,7 @@ sub tag_sthumbimage {
   $im
     or return '';
   
-  return $self->_thumbimage_low($geometry, $im, $field, $self->{cfg});
+  return $self->_sthumbimage_low($geometry, $im, $field);
 }
 
 sub baseActs {
@@ -884,7 +894,7 @@ sub do_gthumbimage {
   $im
     or return '** unknown global image id **';
 
-  return $self->_thumbimage_low($geo_id, $im, $field, $self->{cfg});
+  return $self->_sthumbimage_low($geo_id, $im, $field);
 }
 
 sub _format_file {

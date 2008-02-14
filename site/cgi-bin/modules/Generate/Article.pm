@@ -641,7 +641,7 @@ sub do_thumbimage {
       or return "** Unknown images identifier $image_id **";
   }
 
-  return $self->_thumbimage_low($geo_id, $im, $field, $self->{cfg});
+  return $self->_sthumbimage_low($geo_id, $im, $field);
 }
 
 sub generate {
