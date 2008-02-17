@@ -3127,7 +3127,7 @@ sub filedel {
     if ($file) {
       if ($file->{storage} ne 'local') {
 	my $mgr = $self->_file_manager;
-	$mgr->unstore($self->{filename}, $self->{storage});
+	$mgr->unstore($file->{filename}, $file->{storage});
       }
 
       $file->remove($req->cfg);
