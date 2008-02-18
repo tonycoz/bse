@@ -24,7 +24,7 @@ my %stores =
   );
 
 my $action = shift;
-defined $action || $action = '';
+defined $action or $action = '';
 
 if ($action eq 'list') {
   for my $type (sort keys %stores) {
