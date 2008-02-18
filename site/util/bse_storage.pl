@@ -24,6 +24,7 @@ my %stores =
   );
 
 my $action = shift;
+defined $action || $action = '';
 
 if ($action eq 'list') {
   for my $type (sort keys %stores) {
@@ -61,5 +62,7 @@ Commands:
   list - list the files stored on each non-local storage
   sync - synchronize the files stored to the storages selected in 
          their records
+  fixsrc - update the src value for each image/file (recommended on 
+           upgrade)
 EOS
 }
