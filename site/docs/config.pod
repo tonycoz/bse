@@ -47,6 +47,17 @@ If this is true then C<secureurl> is used as the base URL for
 accessing the administrative functions of your site, otherwise C<url>
 is used as the base URL.  Default: false (C<url>'s value is used)
 
+=item forward_from
+
+Configure the IP address of one or more front-end proxies.  This can
+be a regular expression except that C<.> is translated to C<\.> and
+C<*> is tranlated to C<.*> to give more glob() like matching.
+
+If the reqesting host matches then admin site URL matching is done
+against HTTP_X_FORWARDED_SERVER instead of SERVER_NAME.
+
+Default: no front-end server configured.
+
 =back
 
 =head2 [paths]

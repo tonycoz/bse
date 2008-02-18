@@ -15,6 +15,15 @@ sub check_secure {
   $host = lc $host;
 
   my $curr_host = lc $ENV{SERVER_NAME};
+  my $forward_from = $req->cfg->entry('site', 'forward_from');
+  if ($forward_from) {
+    $forward_from =~ s/\./\\./g;
+    $forward_from =~ s/\*/.*/g;
+    if ($ENV{REMOTE_ADDR} =~ /^(?:$forward_from)$/
+	&& $ENV{HTTP_X_FORWARDED_SERVER}) {
+      $curr_host = $ENV{HTTP_X_FORWARDED_SERVER};
+    }
+  }
   my $curr_https = exists $ENV{HTTPS} || exists $ENV{SSL_CIPHER};
   my $curr_proto = $curr_https ? 'https' : 'http';
 
