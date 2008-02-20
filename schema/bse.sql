@@ -816,3 +816,10 @@ create table sql_statements (
   sql_statement text not null
 );
 
+drop table if exists bse_wishlist;
+create table bse_wishlist (
+  user_id integer not null,
+  product_id integer not null,
+  display_order integer not null,
+  primary key(user_id, product_id)
+);

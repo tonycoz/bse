@@ -1,0 +1,16 @@
+<:wrap base.tmpl:> 
+<p><:ifWuser 
+  name1:><:wuser name1:><:or:><:wuser userId:><:eif:>'s Wishlist</p>
+<:if Uwishlist:>
+<table>
+<:iterator begin uwishlist:>
+<tr>
+  <td><:dthumbimage uwishlistentry search search,1:></td>
+  <td><a href="<:url uwishlistentry:>"><:uwishlistentry title:></a></td>
+</tr>
+<:iterator end uwishlist:>
+</table>
+<:or Uwishlist:>
+<p><:ifWuser 
+  name1:><:wuser name1:><:or:><:wuser userId:><:eif:>'s wishlist is empty.</p>
+<:eif Uwishlist:>

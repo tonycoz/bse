@@ -1,0 +1,10 @@
+<:if Dynamic:><:if User:>
+<:if Wishlist:>
+<div class="sidewishlist">
+<div class="sidewishlisthead"><a href="/cgi-bin/user.pl?_t=wishlist">Your Wishlist</a></div>
+<:iterator begin wishlist:>
+<div class="sidewishlistitem"><a href="<:url wishlistentry:>"><:wishlistentry title:></a></div>
+<:iterator end wishlist:>
+</div>
+<:or Wishlist:><:eif Wishlist:>
+<:or User:><:eif User:><:or Dynamic:><:eif Dynamic:>

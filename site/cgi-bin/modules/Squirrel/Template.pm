@@ -105,7 +105,7 @@ sub perform {
 
   if ($@) {
     my $msg = $@;
-    $msg =~ /^ENOIMPL\b/
+    $msg =~ /\bENOIMPL\b/
       and return $orig;
     print STDERR "Eval error in perform: $msg\n";
     $msg =~ s/([<>&])/"&#".ord($1).";"/ge;

@@ -115,6 +115,12 @@ sub siteuser_auth {
   return;
 }
 
+sub can_user_see_wishlist {
+  my ($self, $wishlist_user, $current_user, $req) = @_;
+
+  1;
+}
+
 1;
 
 =head1 NAME

@@ -162,8 +162,9 @@ sub set {
   return $value;
 }
 
+use vars '$AUTOLOAD';
+
 sub AUTOLOAD {
-  use vars '$AUTOLOAD';
   (my $calledName = $AUTOLOAD) =~ s/^.*:://;
   for ($calledName) {
     /^set(.+)$/ && exists($_[0]->{lcfirst $1})

@@ -107,6 +107,30 @@ select ar.*, pr.* from article ar, product pr, order_item oi
   where oi.orderId = ? and oi.productId = ar.id and ar.id = pr.articleId
 SQL
    deleteProduct => 'delete from product where articleId = ?',
+   'Products.userWishlist' => <<SQL,
+select ar.*, pr.* from article ar, product pr, bse_wishlist wi
+  where wi.user_id = ? and wi.product_id = ar.id and ar.id = pr.articleId
+order by wi.display_order desc
+SQL
+   bse_userWishlistOrder => <<SQL,
+select product_id, display_order
+from bse_wishlist
+where user_id = ?
+order by display_order desc
+SQL
+   bse_userWishlistReorder => <<SQL,
+update bse_wishlist
+  set display_order = ?
+where user_id = ? and product_id = ?
+SQL
+   bse_addToWishlist => <<SQL,
+insert into bse_wishlist(user_id, product_id, display_order)
+  values(?, ?, ?)
+SQL
+   bse_removeFromWishlist => <<SQL,
+delete from bse_wishlist where user_id = ? and product_id = ?
+SQL
+
    Orders => 'select * from orders',
    getOrderByPkey => 'select * from orders where id = ?',
    getOrderItemByOrderId => 'select * from order_item where orderId = ?',

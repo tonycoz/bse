@@ -431,4 +431,110 @@ sub seminar_bookings_detail {
   BSE::DB->query(bse_siteuserSeminarBookingsDetail => $self->{id});
 }
 
+sub wishlist {
+  my $self = shift;
+  require Products;
+  return Products->getSpecial(userWishlist => $self->{id});
+}
+
+sub wishlist_order {
+  my $self = shift;
+  return BSE::DB->query(bse_userWishlistOrder => $self->{id});
+}
+
+sub product_in_wishlist {
+  my ($self, $product) = @_;
+
+  grep $_->{product_id} == $product->{id}, $self->wishlist_order;
+}
+
+sub add_to_wishlist {
+  my ($self, $product) = @_;
+
+  return 
+    eval {
+      BSE::DB->run(bse_addToWishlist => $self->{id}, $product->{id}, time());
+      1;
+    };
+}
+
+sub remove_from_wishlist {
+  my ($self, $product) = @_;
+
+  BSE::DB->run(bse_removeFromWishlist => $self->{id}, $product->{id});
+}
+
+sub _set_wishlist_order {
+  my ($self, $product_id, $display_order) = @_;
+
+  print STDERR "_set_wishlist_order($product_id, $display_order)\n";
+
+  BSE::DB->run(bse_userWishlistReorder => $display_order, $self->{id}, $product_id);
+}
+
+sub _find_in_wishlist {
+  my ($self, $product_id) = @_;
+
+  my @order = $self->wishlist_order;
+
+  my ($index) = grep $order[$_]{product_id} == $product_id, 0 .. $#order
+    or return;
+
+  return \@order, $index;
+}
+
+sub move_to_wishlist_top {
+  my ($self, $product) = @_;
+
+  my ($order, $move_index) = $self->_find_in_wishlist($product->{id})
+    or return;
+  $move_index > 0
+    or return; # nothing to do
+
+  my $top_order = $order->[0]{display_order};
+  for my $index (0 .. $move_index-1) {
+    $self->_set_wishlist_order($order->[$index]{product_id}, $order->[$index+1]{display_order});
+  }
+  $self->_set_wishlist_order($product->{id}, $top_order);
+}
+
+sub move_to_wishlist_bottom {
+  my ($self, $product) = @_;
+
+  my ($order, $move_index) = $self->_find_in_wishlist($product->{id})
+    or return;
+  $move_index < $#$order
+    or return; # nothing to do
+
+  my $bottom_order = $order->[-1]{display_order};
+  for my $index (reverse($move_index+1 .. $#$order)) {
+    $self->_set_wishlist_order($order->[$index]{product_id}, $order->[$index-1]{display_order});
+  }
+  $self->_set_wishlist_order($product->{id}, $bottom_order);
+}
+
+sub move_down_wishlist {
+  my ($self, $product) = @_;
+
+  my ($order, $index) = $self->_find_in_wishlist($product->{id})
+    or return;
+  $index < $#$order
+    or return; # nothing to do
+
+  $self->_set_wishlist_order($product->{id}, $order->[$index+1]{display_order});
+  $self->_set_wishlist_order($order->[$index+1]{product_id}, $order->[$index]{display_order});
+}
+
+sub move_up_wishlist {
+  my ($self, $product) = @_;
+
+  my ($order, $index) = $self->_find_in_wishlist($product->{id})
+    or return;
+  $index > 0
+    or return; # nothing to do
+
+  $self->_set_wishlist_order($product->{id}, $order->[$index-1]{display_order});
+  $self->_set_wishlist_order($order->[$index-1]{product_id}, $order->[$index]{display_order});
+}
+
 1;

@@ -25,6 +25,7 @@ sub tags {
      $self->dyn_article_iterator('dynallkids_of', 'dynofallkid'),
      $self->dyn_article_iterator('dynchildren_of', 'dynofchild'),
      $self->dyn_iterator('dyncart', 'dyncartitem'),
+     $self->dyn_article_iterator('wishlist', 'wishlistentry', $req),
      url => [ tag_url => $self ],
      dyncarttotalcost => [ tag_dyncarttotal => $self, 'total_cost' ],
      dyncarttotalunits => [ tag_dyncarttotal => $self, 'total_units' ],
@@ -224,6 +225,14 @@ sub tag_dyncarttotal {
     or return 0;
 
   return $cart->{$field};
+}
+
+sub iter_wishlist {
+  my ($self, $req) = @_;
+
+  my $user = $req->siteuser
+    or return [];
+  return [ $user->wishlist ];
 }
 
 sub access_filter {

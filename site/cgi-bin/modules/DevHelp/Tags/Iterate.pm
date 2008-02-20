@@ -12,6 +12,9 @@ sub escape {
   return $_[1];
 }
 
+sub next_item {
+}
+
 sub _iter_reset_paged {
   my ($self, $rdata, $rindex, $rstore) = @_;
 
@@ -22,11 +25,15 @@ sub _iter_reset_paged {
 }
 
 sub _iter_iterate {
-  my ($self, $rdata, $rindex, $rstore) = @_;
+  my ($self, $rdata, $rindex, $rstore, $single) = @_;
 
   if (++$$rindex < @$rdata) {
     $$rstore = $rdata->[$$rindex] if $rstore;
+    $self->next_item($rdata->[$$rindex], $single, $rdata, $$rindex);
     return 1;
+  }
+  else {
+    $self->next_item(undef, $single);
   }
   return;
 }
@@ -174,7 +181,7 @@ sub make_paged_iterator {
      "iterate_${plural}_reset" => 
      [ _iter_reset_paged=>$self, \@data, $rindex, $rstore ],
      "iterate_${plural}" =>
-     [ _iter_iterate=>$self, \@data, $rindex, $rstore ],
+     [ _iter_iterate=>$self, \@data, $rindex, $rstore, $single ],
      $single => [ _iter_item => $self, \@data, $rindex, $single, $plural ],
      "if\u$plural" => scalar(@data),
      "${single}_index" => [ _iter_index=>$self, $rindex ],
@@ -257,7 +264,7 @@ sub make_iterator {
      "iterate_${plural}_reset" => 
      [ _iter_reset=>$self, $rdata, $rindex, $code, \$loaded, $nocache, $rstore ],
      "iterate_${plural}" =>
-     [ _iter_iterate=>$self, $rdata, $rindex, $rstore ],
+     [ _iter_iterate=>$self, $rdata, $rindex, $rstore, $single ],
      $single => 
      [ _iter_item=>$self, $rdata, $rindex, $single, $plural ],
      "${single}_index" => [ _iter_index=>$self, $rindex ],

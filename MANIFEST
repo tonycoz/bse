@@ -461,6 +461,7 @@ site/templates/include/cart_sidebar.tmpl
 site/templates/include/rssitems.tmpl
 site/templates/include/rsslinks.tmpl
 site/templates/include/search_results.tmpl
+site/templates/include/usermenu.tmpl
 site/templates/index.tmpl
 site/templates/index2.tmpl
 site/templates/interest/askagain_base.tmpl
@@ -486,6 +487,7 @@ site/templates/shop_sect.tmpl
 site/templates/shopitem.tmpl
 site/templates/sidebar/afflink.tmpl
 site/templates/sidebar/logon.tmpl
+site/templates/sidebar/wishlist.tmpl
 site/templates/test/children.tmpl
 site/templates/test/testrep.tmpl
 site/templates/textemail/basic.tmpl
@@ -502,6 +504,8 @@ site/templates/user/base_cancelbooking.tmpl
 site/templates/user/base_editbooking.tmpl
 site/templates/user/base_orderdetail.tmpl
 site/templates/user/base_redirect.tmpl
+site/templates/user/base_userpage_wishlist.tmpl
+site/templates/user/base_wishlist.tmpl
 site/templates/user/blacklistdone_base.tmpl
 site/templates/user/cantunsub_base.tmpl
 site/templates/user/confirmed_base.tmpl

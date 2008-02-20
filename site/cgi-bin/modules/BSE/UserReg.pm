@@ -41,6 +41,13 @@ my %actions =
    nopassword => 'nopassword',
    image => 'req_image',
    orderdetail => 'req_orderdetail',
+   wishlistadd => 'req_wishlistadd',
+   wishlistdel => 'req_wishlistdel',
+   wishlistup => 'req_wishlistup',
+   wishlistdown => 'req_wishlistdown',
+   wishlisttop => 'req_wishlisttop',
+   wishlistbottom => 'req_wishlistbottom',
+   wishlist => 'req_wishlist',
   );
 
 sub actions { \%actions }
@@ -976,6 +983,13 @@ sub req_userpage {
   my $cgi = $req->cgi;
   my $session = $req->session;
 
+  if ($message) {
+    $message = escape_html($message);
+  }
+  else {
+    $message = $req->message;
+  }
+
   my $user = $self->_get_user($req, 'userpage')
     or return;
   require BSE::TB::Orders;
@@ -998,7 +1012,7 @@ sub req_userpage {
   %acts =
     (
      $req->dyn_user_tags(),
-     message => sub { CGI::escapeHTML($message) },
+     message => $message,
      BSE::Util::Tags->make_iterator(\@orders, 'order', 'orders', 
 				    \$order_index),
      BSE::Util::Tags->
@@ -1757,6 +1771,188 @@ sub req_image {
     print $data;
   }
   close IMAGE;
+}
+
+sub _refresh_wishlist {
+  my ($self, $req, $msg) = @_;
+
+  my $url = $req->cgi->param('r');
+  unless ($url) {
+    $url = '/cgi-bin/user.pl?_t=wishlist';
+  }
+
+  if ($url eq 'ajaxwishlist') {
+    return $self->req_userpage($req, $msg);
+  }
+  else {
+    $req->flash($msg);
+    refresh_to($url);
+  }
+}
+
+sub _wishlist_product {
+  my ($self, $req) = @_;
+
+  my $product_id = $req->cgi->param('product_id');
+  defined $product_id && $product_id =~ /^\d+$/
+    or return $self->req_userpage($req, "Missing or invalid product id");
+  require Products;
+  my $product = Products->getByPkey($product_id)
+    or return $self->req_userpage($req, "Unknown product id");
+
+  return $product;
+}
+
+sub req_wishlistadd {
+  my ($self, $req) = @_;
+
+  my $user = $self->_get_user($req, 'a_wishlistadd')
+    or return;
+  my $product = $self->_wishlist_product($req)
+    or return;
+  if ($user->product_in_wishlist($product)) {
+    return $self->_refresh_wishlist($req, "Product $product->{title} is already in your wishlist");
+  }
+
+  eval {
+    local $SIG{__DIE__};
+    $user->add_to_wishlist($product);
+  };
+  $@
+    and return $self->req_userpage($req, $@);
+
+  $self->_refresh_wishlist($req, "Product $product->{title} added to your wishlist");
+}
+
+sub req_wishlistdel {
+  my ($self, $req) = @_;
+
+  my $user = $self->_get_user($req, 'a_wishlistdel')
+    or return;
+
+  my $product = $self->_wishlist_product($req)
+    or return;
+
+  unless ($user->product_in_wishlist($product)) {
+    return $self->_refresh_wishlist($req, "Product $product->{title} is not in your wishlist");
+  }
+
+  eval {
+    local $SIG{__DIE__};
+    $user->remove_from_wishlist($product);
+  };
+  $@
+    and return $self->req_userpage($req, $@);
+
+  $self->_refresh_wishlist($req, "Product $product->{title} removed from your wishlist");
+}
+
+sub _wishlist_move {
+  my ($self, $req, $method) = @_;
+
+  my $user = $self->_get_user($req, $method)
+    or return;
+
+  my $product = $self->_wishlist_product($req)
+    or return;
+
+  unless ($user->product_in_wishlist($product)) {
+    return $self->_refresh_wishlist($req, "Product $product->{title} is not in your wishlist");
+  }
+
+  eval {
+    local $SIG{__DIE__};
+    $user->$method($product);
+  };
+  $@
+    and return $self->req_userpage($req, $@);
+
+  $self->_refresh_wishlist($req);
+}
+
+sub req_wishlisttop {
+  my ($self, $req) = @_;
+
+  return $self->_wishlist_move($req, 'move_to_wishlist_top');
+}
+
+sub req_wishlistbottom {
+  my ($self, $req) = @_;
+
+  return $self->_wishlist_move($req, 'move_to_wishlist_bottom');
+}
+
+sub req_wishlistup {
+  my ($self, $req) = @_;
+
+  return $self->_wishlist_move($req, 'move_up_wishlist');
+}
+
+sub req_wishlistdown {
+  my ($self, $req) = @_;
+
+  return $self->_wishlist_move($req, 'move_down_wishlist');
+}
+
+=item req_wishlist
+
+=target a_wishlist
+
+Display a given user's wishlist.
+
+Parameters:
+
+=over
+
+=item *
+
+user - user logon of the user to display the wishlist for
+
+=back
+
+Template: user/wishlist.tmpl
+
+Tags:
+
+
+
+=cut
+
+sub req_wishlist {
+  my ($self, $req) = @_;
+
+  my $user_id = $req->cgi->param('user');
+
+  defined $user_id && length $user_id
+    or return $self->error($req, "Invalid or missing user id");
+
+  my $custom = custom_class($req->cfg);
+
+  my $user = SiteUsers->getBy(userId => $user_id);
+
+  my $curr_user = $req->siteuser;
+
+  $custom->can_user_see_wishlist($user, $curr_user, $req)
+    or return $self->error($req, "Sorry, you cannot see $user_id's wishlist");
+
+  my @wishlist = $user->wishlist;
+
+  my %acts;
+  my $it = BSE::Util::Iterate::Article->new(req => $req);
+  %acts =
+    (
+     $req->dyn_user_tags(),
+     $it->make_iterator(undef, 'uwishlistentry', 'uwishlist', \@wishlist),
+     wuser => [ \&tag_hash, $user ],
+    );
+
+  my $template = 'user/wishlist';
+  my $t = $req->cgi->param('_t');
+  if ($t && $t =~ /^\w+$/ && $t ne 'base') {
+    $template .= "_$t";
+  }
+
+  BSE::Template->show_page($template, $req->cfg, \%acts);
 }
 
 sub _notify_registration {

@@ -44,6 +44,10 @@ use BSE::Util::Tags qw(tag_article);
 sub new {
   my ($class, %opts) = @_;
 
+  if ($opts{req}) {
+    $opts{cfg} = $opts{req}->cfg;
+  }
+
   $opts{cfg}
     or confess "cfg option mission\n";
 
@@ -54,6 +58,14 @@ sub item {
   my ($self, $item, $args) = @_;
 
   return tag_article($item, $self->{cfg}, $args);
+}
+
+sub next_item {
+  my ($self, $article, $name) = @_;
+
+  if ($self->{req}) {
+    $self->{req}->set_article($name => $article);
+  }
 }
 
 1;

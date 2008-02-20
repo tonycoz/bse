@@ -1,0 +1,20 @@
+<:wrap base.tmpl:> 
+<:include include/usermenu.tmpl:>
+<p><:ifUser 
+  name1:><:user name1:><:or:><:user userId:><:eif:>'s Wishlist</p>
+<:if Wishlist:>
+<table>
+<:iterator begin wishlist:>
+<tr>
+  <td><:dthumbimage wishlistentry search search,1:></td>
+  <td><a href="<:url wishlistentry:>"><:wishlistentry title:></a></td>
+  <td><a href="<:script:>?a_wishlistdel=1&amp;product_id=<:wishlistentry id:>">Remove</a>
+      <:ifFirstWishlistentry:><:or:><a href="<:script:>?a_wishlistup=1&amp;product_id=<:wishlistentry id:>">Up</a> <a href="<:script:>?a_wishlisttop=1&amp;product_id=<:wishlistentry id:>">Top</a><:eif:>
+      <:ifLastWishlistentry:><:or:><a href="<:script:>?a_wishlistdown=1&amp;product_id=<:wishlistentry id:>">Down</a> <a href="<:script:>?a_wishlistbottom=1&amp;product_id=<:wishlistentry id:>">Bottom</a><:eif:>
+  </td>
+</tr>
+<:iterator end wishlist:>
+</table>
+<:or Wishlist:>
+<p>Your wishlist is empty.</p>
+<:eif Wishlist:>

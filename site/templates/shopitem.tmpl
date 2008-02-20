@@ -68,6 +68,14 @@
     </tr>
   </table>
 </form>
+<:if Dynamic:><:if User:><:if InWishlist:>
+<p><a href="/cgi-bin/user.pl?a_wishlistdel=1&amp;product_id=<:product id:>&amp;r=<:url article |U:>">Remove from my wishlist</a></p>
+<:or InWishlist:>
+<p><a href="/cgi-bin/user.pl?a_wishlistadd=1&amp;product_id=<:product id:>&amp;r=<:url product |U:>">Add to my wishlist</a></p>
+<:eif InWishlist:>
+<:or User:><:eif User:><:or Dynamic:>
+<p><a href="/cgi-bin/user.pl?a_wishlistadd=1&amp;product_id=<:product id:>&amp;r=<:url product |U:>">Add to my wishlist</a></p>
+<:eif Dynamic:>
 <:or Or:><br>
 <br>
 <table border="0" cellspacing="0" cellpadding="1" bgcolor="#CCCCCC">

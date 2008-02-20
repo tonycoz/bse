@@ -1,4 +1,5 @@
 <:wrap base.tmpl:> 
+<:include include/usermenu.tmpl:>
 <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Hello <:ifUser 
   name1:><:user name1:><:or:><:user userId:><:eif:>, this section contains your 
   personal account details. From here you can <:ifCfg subscriptions enabled:> manage 
@@ -29,12 +30,8 @@
   </table>
   <br>
    
+<:if Message:><p class="message"><:message:></p> <:or Message:><:eif Message:> 
   <table width="100%" cellpadding="0" cellspacing="1">
-	<:if Message:> 
-    <tr> 
-      <th  align="center"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:message:></font></b></th>
-    </tr>
-    <:or Message:><:eif Message:> 
     <tr> 
       <th align="center" height="20"><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Your 
         Account</font></th>

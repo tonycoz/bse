@@ -298,6 +298,9 @@ sub static {
        if ($fmt eq 'u') {
 	 return escape_uri($value);
        }
+       elsif ($fmt eq 'U') {
+	 return escape_uri(unescape_html($value));
+       }
        elsif ($fmt eq 'h') {
 	 return escape_html($value);
        }
