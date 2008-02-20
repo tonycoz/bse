@@ -9,6 +9,7 @@ use DevHelp::Date qw(dh_strftime_sql_datetime);
 
 my %actions =
   (
+   info => 1,
    bookseminar => 1,
    bookconfirm => 1,
    book => 1,
@@ -19,14 +20,113 @@ my %actions =
    cancelbooking => 1,
    editbooking => 1,
    savebooking => 1,
+   wishlistadd => 1,
+   wishlistdel => 1,
+   wishlistup => 1,
+   wishlistdown => 1,
+   wishlisttop => 1,
+   wishlistbottom => 1,
+   wishlist => 1,
   );
 
 sub default_action {
-  'bookinglist';
+  'info';
 }
 
 sub actions {
   \%actions;
+}
+
+sub req_info {
+  my ($self, $req) = @_;
+
+  my $user = $req->siteuser;
+
+  my $cfg = $req->cfg;
+  my $cgi = $req->cgi;
+
+  require BSE::TB::Orders;
+  my @orders = sort { $b->{orderDate} cmp $a->{orderDate}
+			|| $b->{id} <=> $a->{id} }
+    BSE::TB::Orders->getBy(userId=>$user->{userId});
+
+  my $must_be_paid = $cfg->entryBool('downloads', 'must_be_paid', 0);
+  my $must_be_filled = $cfg->entryBool('downloads', 'must_be_filled', 0);
+
+  my $it = BSE::Util::Iterate->new;
+  my $order_index;
+  my $item_index;
+  my @items;
+  my %acts;
+  my $product;
+  my @files;
+  my $file_index;
+  my $message = $req->message();
+  %acts =
+    (
+     $req->dyn_user_tags,
+     message => $message,
+     BSE::Util::Tags->make_iterator(\@orders, 'order', 'orders', 
+				    \$order_index),
+     BSE::Util::Tags->
+     make_dependent_iterator(\$order_index,
+			     sub {
+			       require BSE::TB::OrderItems;
+			       @items = BSE::TB::OrderItems->
+				 getBy(orderId=>$orders[$_[0]]{id});
+			     },
+			     'item', 'items', \$item_index),
+     BSE::Util::Tags->
+     make_dependent_iterator(\$order_index,
+			     sub {
+			       @files = BSE::DB->query
+				 (orderFiles=>$orders[$_[0]]{id});
+			     },
+			     'orderfile', 'orderfiles', \$file_index),
+     product =>
+     sub {
+       require Products;
+       $product = Products->getByPkey($items[$item_index]{productId})
+	 unless $product && $product->{id} == $items[$item_index]{productId};
+       CGI::escapeHTML($product->{$_[0]});
+     },
+     BSE::Util::Tags->
+     make_multidependent_iterator
+     ([ \$item_index, \$order_index],
+      sub {
+	require 'ArticleFiles.pm';
+	@files = sort { $b->{displayOrder} <=> $a->{displayOrder} }
+	  ArticleFiles->getBy(articleId=>$items[$item_index]{productId});
+      },
+      'prodfile', 'prodfiles', \$file_index),
+     ifFileAvail =>
+     sub {
+       if ($file_index >= 0 && $file_index < @files) {
+	 return 1 if !$files[$file_index]{forSale};
+       }
+       return 0 if $must_be_paid && !$orders[$order_index]{paidFor};
+       return 0 if $must_be_filled && !$orders[$order_index]{filled};
+       return 1;
+     },
+     $it->make_iterator([ \&iter_usersubs, $user ], 
+			'subscription', 'subscriptions'),
+     $it->make_iterator([ \&iter_sembookings, $user ],
+			'booking', 'bookings'),
+    );
+
+  return $req->dyn_response('user/userpage', \%acts);
+}
+
+sub iter_usersubs {
+  my ($user) = @_;
+
+  $user->subscribed_services;
+}
+
+sub iter_sembookings {
+  my ($user) = @_;
+
+  $user->seminar_bookings_detail;
 }
 
 sub req_bookseminar {
@@ -661,5 +761,131 @@ sub _session_desc {
     dh_strftime_sql_datetime($date_fmt, $session->{when_at});
 }
 
+sub _refresh_wishlist {
+  my ($self, $req, $msg) = @_;
+
+  my $url = $req->cgi->param('r');
+  unless ($url) {
+    $url = $req->user_url(nuser => userpage => _t => 'wishlist');
+  }
+
+  if ($url eq 'ajaxwishlist') {
+    return $self->req_info($req, $msg);
+  }
+  else {
+    $req->flash($msg);
+    return BSE::Template->get_refresh($url, $req->cfg);
+  }
+}
+
+sub _wishlist_product {
+  my ($self, $req, $rresult) = @_;
+
+  my $product_id = $req->cgi->param('product_id');
+  unless (defined $product_id && $product_id =~ /^\d+$/) {
+    $$rresult = $self->req_userpage($req, "Missing or invalid product id");
+    return;
+  }
+  require Products;
+  my $product = Products->getByPkey($product_id);
+  unless ($product) {
+    $$rresult = $self->req_userpage($req, "Unknown product id");
+    return;
+  }
+
+  return $product;
+}
+
+sub req_wishlistadd {
+  my ($self, $req) = @_;
+
+  my $user = $req->siteuser;
+
+  my $result;
+  my $product = $self->_wishlist_product($req, \$result)
+    or return $result;
+  if ($user->product_in_wishlist($product)) {
+    return $self->_refresh_wishlist($req, "Product $product->{title} is already in your wishlist");
+  }
+
+  eval {
+    local $SIG{__DIE__};
+    $user->add_to_wishlist($product);
+  };
+  $@
+    and return $self->_refresh_wishlist($req, $@);
+
+  return $self->_refresh_wishlist($req, "Product $product->{title} added to your wishlist");
+}
+
+sub req_wishlistdel {
+  my ($self, $req) = @_;
+
+  my $user = $req->siteuser;
+
+  my $result;
+  my $product = $self->_wishlist_product($req, \$result)
+    or return $result;
+
+  unless ($user->product_in_wishlist($product)) {
+    return $self->_refresh_wishlist($req, "Product $product->{title} is not in your wishlist");
+  }
+
+  eval {
+    local $SIG{__DIE__};
+    $user->remove_from_wishlist($product);
+  };
+  $@
+    and return $self->_refresh_wishlist($req, $@);
+
+  return $self->_refresh_wishlist($req, "Product $product->{title} removed from your wishlist");
+}
+
+sub _wishlist_move {
+  my ($self, $req, $method) = @_;
+
+  my $user = $req->siteuser;
+
+  my $result;
+  my $product = $self->_wishlist_product($req, \$result)
+    or return $result;
+
+  unless ($user->product_in_wishlist($product)) {
+    return $self->_refresh_wishlist($req, "Product $product->{title} is not in your wishlist");
+  }
+
+  eval {
+    local $SIG{__DIE__};
+    $user->$method($product);
+  };
+  $@
+    and return $self->_refresh_wishlist($req, $@);
+
+  return $self->_refresh_wishlist($req);
+}
+
+sub req_wishlisttop {
+  my ($self, $req) = @_;
+
+  return $self->_wishlist_move($req, 'move_to_wishlist_top');
+}
+
+sub req_wishlistbottom {
+  my ($self, $req) = @_;
+
+  return $self->_wishlist_move($req, 'move_to_wishlist_bottom');
+}
+
+sub req_wishlistup {
+  my ($self, $req) = @_;
+
+  return $self->_wishlist_move($req, 'move_up_wishlist');
+}
+
+sub req_wishlistdown {
+  my ($self, $req) = @_;
+
+  return $self->_wishlist_move($req, 'move_down_wishlist');
+}
 
 1;

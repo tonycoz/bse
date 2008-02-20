@@ -32,6 +32,7 @@ sub tags {
      ifAncestor => 0,
      ifUserMemberOf => [ tag_ifUserMemberOf => $self ],
      dthumbimage => [ tag_dthumbimage => $self ],
+     dyntarget => [ tag_dyntarget => $self ],
     );
 }
 
@@ -104,6 +105,16 @@ sub tag_ifUserMemberOf {
   }
 
   return $group->contains_user($user);
+}
+
+sub tag_dyntarget {
+  my ($self, $args, $acts, $func, $templater) = @_;
+
+  my $req = $self->{req};
+
+  my ($script, $target, @options) = DevHelp::Tags->get_parms($args, $acts, $templater);
+
+  return escape_html($req->user_url($script, $target, @options));
 }
 
 sub tag_url {

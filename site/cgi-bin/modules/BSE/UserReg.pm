@@ -41,12 +41,6 @@ my %actions =
    nopassword => 'nopassword',
    image => 'req_image',
    orderdetail => 'req_orderdetail',
-   wishlistadd => 'req_wishlistadd',
-   wishlistdel => 'req_wishlistdel',
-   wishlistup => 'req_wishlistup',
-   wishlistdown => 'req_wishlistdown',
-   wishlisttop => 'req_wishlisttop',
-   wishlistbottom => 'req_wishlistbottom',
    wishlist => 'req_wishlist',
   );
 
@@ -1773,125 +1767,41 @@ sub req_image {
   close IMAGE;
 }
 
-sub _refresh_wishlist {
-  my ($self, $req, $msg) = @_;
+sub _notify_registration {
+  my ($self, $req, $user) = @_;
 
-  my $url = $req->cgi->param('r');
-  unless ($url) {
-    $url = '/cgi-bin/user.pl?_t=wishlist';
+  my $cfg = $req->cfg;
+
+  my $email = $cfg->entry('site users', 'notify_register_email', 
+			  $Constants::SHOP_FROM);
+  $email ||= $cfg->entry('shop', 'from');
+  unless ($email) {
+    print STDERR "No email configured for notify_register, set [site users].notify_register_email\n";
+    return;
   }
+  print STDERR "email $email\n";
 
-  if ($url eq 'ajaxwishlist') {
-    return $self->req_userpage($req, $msg);
-  }
-  else {
-    $req->flash($msg);
-    refresh_to($url);
-  }
-}
+  my $subject = $cfg->entry('site users', 'notify_register_subject',
+			    "New user {userId} registered");
 
-sub _wishlist_product {
-  my ($self, $req) = @_;
+  $subject =~ s/\{(\w+)\}/defined $user->{$1} ? $user->{$1} : "** $1 unknown **"/ge;
+  $subject =~ tr/ -~//cd;
+  substr($subject, 80) = '...' if length $subject > 80;
+  
+  my %acts;
+  %acts =
+    (
+     $req->dyn_user_tags(),
+     user => [ \&tag_hash_plain, $user ],
+    );
 
-  my $product_id = $req->cgi->param('product_id');
-  defined $product_id && $product_id =~ /^\d+$/
-    or return $self->req_userpage($req, "Missing or invalid product id");
-  require Products;
-  my $product = Products->getByPkey($product_id)
-    or return $self->req_userpage($req, "Unknown product id");
-
-  return $product;
-}
-
-sub req_wishlistadd {
-  my ($self, $req) = @_;
-
-  my $user = $self->_get_user($req, 'a_wishlistadd')
-    or return;
-  my $product = $self->_wishlist_product($req)
-    or return;
-  if ($user->product_in_wishlist($product)) {
-    return $self->_refresh_wishlist($req, "Product $product->{title} is already in your wishlist");
-  }
-
-  eval {
-    local $SIG{__DIE__};
-    $user->add_to_wishlist($product);
-  };
-  $@
-    and return $self->req_userpage($req, $@);
-
-  $self->_refresh_wishlist($req, "Product $product->{title} added to your wishlist");
-}
-
-sub req_wishlistdel {
-  my ($self, $req) = @_;
-
-  my $user = $self->_get_user($req, 'a_wishlistdel')
-    or return;
-
-  my $product = $self->_wishlist_product($req)
-    or return;
-
-  unless ($user->product_in_wishlist($product)) {
-    return $self->_refresh_wishlist($req, "Product $product->{title} is not in your wishlist");
-  }
-
-  eval {
-    local $SIG{__DIE__};
-    $user->remove_from_wishlist($product);
-  };
-  $@
-    and return $self->req_userpage($req, $@);
-
-  $self->_refresh_wishlist($req, "Product $product->{title} removed from your wishlist");
-}
-
-sub _wishlist_move {
-  my ($self, $req, $method) = @_;
-
-  my $user = $self->_get_user($req, $method)
-    or return;
-
-  my $product = $self->_wishlist_product($req)
-    or return;
-
-  unless ($user->product_in_wishlist($product)) {
-    return $self->_refresh_wishlist($req, "Product $product->{title} is not in your wishlist");
-  }
-
-  eval {
-    local $SIG{__DIE__};
-    $user->$method($product);
-  };
-  $@
-    and return $self->req_userpage($req, $@);
-
-  $self->_refresh_wishlist($req);
-}
-
-sub req_wishlisttop {
-  my ($self, $req) = @_;
-
-  return $self->_wishlist_move($req, 'move_to_wishlist_top');
-}
-
-sub req_wishlistbottom {
-  my ($self, $req) = @_;
-
-  return $self->_wishlist_move($req, 'move_to_wishlist_bottom');
-}
-
-sub req_wishlistup {
-  my ($self, $req) = @_;
-
-  return $self->_wishlist_move($req, 'move_up_wishlist');
-}
-
-sub req_wishlistdown {
-  my ($self, $req) = @_;
-
-  return $self->_wishlist_move($req, 'move_down_wishlist');
+  require BSE::ComposeMail;
+  my $mailer = BSE::ComposeMail->new(cfg => $cfg);
+  $mailer->send(template => 'admin/registeremail',
+		acts => \%acts,
+		to => $email,
+		from => $email,
+		subject => $subject);
 }
 
 =item req_wishlist
@@ -1913,8 +1823,6 @@ user - user logon of the user to display the wishlist for
 Template: user/wishlist.tmpl
 
 Tags:
-
-
 
 =cut
 
@@ -1953,43 +1861,6 @@ sub req_wishlist {
   }
 
   BSE::Template->show_page($template, $req->cfg, \%acts);
-}
-
-sub _notify_registration {
-  my ($self, $req, $user) = @_;
-
-  my $cfg = $req->cfg;
-
-  my $email = $cfg->entry('site users', 'notify_register_email', 
-			  $Constants::SHOP_FROM);
-  $email ||= $cfg->entry('shop', 'from');
-  unless ($email) {
-    print STDERR "No email configured for notify_register, set [site users].notify_register_email\n";
-    return;
-  }
-  print STDERR "email $email\n";
-
-  my $subject = $cfg->entry('site users', 'notify_register_subject',
-			    "New user {userId} registered");
-
-  $subject =~ s/\{(\w+)\}/defined $user->{$1} ? $user->{$1} : "** $1 unknown **"/ge;
-  $subject =~ tr/ -~//cd;
-  substr($subject, 80) = '...' if length $subject > 80;
-  
-  my %acts;
-  %acts =
-    (
-     $req->dyn_user_tags(),
-     user => [ \&tag_hash_plain, $user ],
-    );
-
-  require BSE::ComposeMail;
-  my $mailer = BSE::ComposeMail->new(cfg => $cfg);
-  $mailer->send(template => 'admin/registeremail',
-		acts => \%acts,
-		to => $email,
-		from => $email,
-		subject => $subject);
 }
 
 1;

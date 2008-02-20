@@ -504,4 +504,29 @@ sub _encode_utf8 {
   }
 }
 
+sub user_url {
+  my ($req, $script, $target, @options) = @_;
+
+  my $cfg = $req->cfg;
+  my $base = $script eq 'shop' ? $cfg->entryVar('site', 'secureurl') : '';
+  my $template;
+  if ($script eq 'nuser') {
+    $template = "/cgi-bin/nuser.pl/user/TARGET";
+  }
+  else {
+    $template = "$base/cgi-bin/$script.pl?a_TARGET=1";
+  }
+  $template =~ s/TARGET/$target/;
+  if (@options) {
+    $template .= $template =~ /\?/ ? '&' : '?';
+    my @entries;
+    while (my ($key, $value) = splice(@options, 0, 2)) {
+      push @entries, "$key=" . escape_uri($value);
+    }
+    $template .= join '&', @entries;
+  }
+
+  return $template;
+}
+
 1;
