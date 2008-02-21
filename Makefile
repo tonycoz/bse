@@ -11,6 +11,7 @@ help:
 	@echo make clean - delete generated files
 	@echo make distdir - build distribution directory
 	@echo make docs - build documentation
+	@echo make testup - upgrade an installation
 
 # this target needs to be modified so that the output directory includes
 # the release number
@@ -99,10 +100,10 @@ testinst: distdir
 	perl -MExtUtils::Command -e rm_rf $(DISTBUILD)
 	cd `perl -lne 'do { print $$1; exit; } if /^base_dir\s*=\s*(.*)/' test.cfg`/util ; perl loaddata.pl ../data/db
 
-testfiles: distdir
+testup: distdir
 	perl localinst.perl $(DISTBUILD) leavedb
 	perl -MExtUtils::Command -e rm_rf $(DISTBUILD)
-	cd `perl -lne 'do { print $$1; exit; } if /^base_dir\s*=\s*(.*)/' test.cfg`/util ; perl loaddata.pl ../data/db
+	cd `perl -lne 'do { print $$1; exit; } if /^base_dir\s*=\s*(.*)/' test.cfg`/util ; perl upgrade_mysql.pl -b ; perl loaddata.pl ../data/db
 
 test: testinst
 	perl -MTest::Harness=runtests -Isite/cgi-bin/modules -It -e 'runtests glob q!t/*.t!'
