@@ -510,13 +510,25 @@ sub user_url {
   my $cfg = $req->cfg;
   my $base = $script eq 'shop' ? $cfg->entryVar('site', 'secureurl') : '';
   my $template;
-  if ($script eq 'nuser') {
-    $template = "/cgi-bin/nuser.pl/user/TARGET";
+  if ($target) {
+    if ($script eq 'nuser') {
+      $template = "/cgi-bin/nuser.pl/user/TARGET";
+    }
+    else {
+      $template = "$base/cgi-bin/$script.pl?a_TARGET=1";
+    }
+    $template = $cfg->entry('targets', $script, $template);
+    $template =~ s/TARGET/$target/;
   }
   else {
-    $template = "$base/cgi-bin/$script.pl?a_TARGET=1";
+    if ($script eq 'nuser') {
+      $template = "/cgi-bin/nuser.pl/user";
+    }
+    else {
+      $template = "$base/cgi-bin/$script.pl";
+    }
+    $template = $cfg->entry('targets', $script.'_n', $template);
   }
-  $template =~ s/TARGET/$target/;
   if (@options) {
     $template .= $template =~ /\?/ ? '&' : '?';
     my @entries;

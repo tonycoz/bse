@@ -163,7 +163,7 @@ sub req_add {
 
   my $refresh = $cgi->param('r');
   unless ($refresh) {
-    $refresh = $ENV{SCRIPT_NAME};
+    $refresh = $req->user_url(shop => 'cart');
   }
 
   # speed for ajax
@@ -224,7 +224,7 @@ sub req_addsingle {
 
   my $refresh = $cgi->param('r');
   unless ($refresh) {
-    $refresh = $ENV{SCRIPT_NAME};
+    $refresh = $req->user_url(shop => 'cart');
   }
 
   # speed for ajax
@@ -303,7 +303,7 @@ sub req_addmultiple {
 
   my $refresh = $cgi->param('r');
   unless ($refresh) {
-    $refresh = $ENV{SCRIPT_NAME};
+    $refresh = $req->user_url(shop => 'cart');
   }
   if (@messages) {
     my $sep = $refresh =~ /\?/ ? '&' : '?';
@@ -436,7 +436,7 @@ sub req_remove_item {
   $req->session->{cart} = \@cart;
   $req->session->{order_info_confirmed} = 0;
 
-  return BSE::Template->get_refresh($ENV{SCRIPT_NAME}, $req->cfg);
+  return BSE::Template->get_refresh($req->user_url(shop => 'cart'), $req->cfg);
 }
 
 
@@ -499,7 +499,7 @@ sub req_order {
     return $class->req_payment($req);
   }
   else {
-    return BSE::Template->get_refresh("$ENV{SCRIPT_NAME}?a_show_payment=1", $req->cfg);
+    return BSE::Template->get_refresh($req->user_url(shop => 'show_payment'), $req->cfg);
   }
 }
 
@@ -773,7 +773,7 @@ sub req_payment {
   # empty the cart ready for the next order
   delete @{$session}{qw/order_info order_info_confirmed cart order_work/};
 
-  return BSE::Template->get_refresh("$ENV{SCRIPT_NAME}?a_orderdone=1", $req->cfg);
+  return BSE::Template->get_refresh($req->user_url(shop => 'orderdone'), $req->cfg);
 }
 
 sub req_orderdone {
