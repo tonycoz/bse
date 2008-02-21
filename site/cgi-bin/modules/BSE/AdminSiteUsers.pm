@@ -300,23 +300,20 @@ sub req_save {
   my %errors;
   my $nopassword = $req->cfg->entry('site users', 'nopassword', 0);
   my @cols = grep !$donttouch{$_}, SiteUser->columns;
-  for my $col (@cols) {
+  my $custom = custom_class($cfg);
+  my @required = $custom->siteuser_edit_required($req, $user);
+  for my $col (@required) {
     my $value = $cgi->param($col);
-    if ($cfg->entryBool('site users', "require_$col")) {
-      if (defined $value && $value eq '') {
-	my $disp = $cfg->entry('site users', "display_$col", "\u$col");
-	$errors{$col} = "$disp is a required field";
-      }
+    if (defined $value && $value eq '') {
+      my $disp = $cfg->entry('site users', "display_$col", "\u$col");
+      $errors{$col} = "$disp is a required field";
     }
   }
 
   my $saveemail;
   my $email = $cgi->param('email');
-  if (defined $email && $email ne $user->{email}) {
-    if (!$email) {
-      $errors{email} = "Email is a required field";
-    }
-    elsif ($email !~ /.\@./) {
+  if (defined $email && $email ne $user->{email} && $email ne '') {
+    if ($email !~ /.\@./) {
       $errors{email} = "Email is invalid";
     }
     unless ($errors{email}) {
@@ -545,6 +542,9 @@ sub req_add {
   for my $field (@cols) {
     $user{$field} = '';
   }
+
+  my $custom = custom_class($cfg);
+  my @required = $custom->siteuser_add_required($req);
 
   my $nopassword = $cfg->entryBool('site users', 'nopassword', 0);
   my %errors;

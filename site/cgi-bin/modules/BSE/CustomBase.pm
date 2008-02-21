@@ -121,6 +121,34 @@ sub can_user_see_wishlist {
   1;
 }
 
+my @dont_touch = 
+  qw(id userId password confirmed confirmSecret waitingForConfirmation flags affiliate_name previousLogon);
+my %dont_touch = map { $_ => 1 } @dont_touch;
+  
+sub siteuser_required {
+  my ($self, $req) = @_;
+
+  require SiteUsers;
+  my $cfg = $req->cfg;
+  my @required = qw(email);
+  push @required, grep $cfg->entry('site users', "require_$_", 0),
+    grep !$dont_touch{$_}, SiteUsers->columns;
+
+  return @required;
+}
+
+sub siteuser_add_required {
+  my ($self, $req) = @_;
+
+  return $self->siteuser_required($req);
+}
+
+sub siteuser_edit_required {
+  my ($self, $req, $user) = @_;
+
+  return $self->siteuser_required($req);
+}
+
 1;
 
 =head1 NAME

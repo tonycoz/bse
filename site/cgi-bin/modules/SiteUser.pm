@@ -23,7 +23,8 @@ sub columns {
             customStr1 customStr2 customStr3
             affiliate_name delivMobile billMobile
             delivStreet2 billStreet2
-            billOrganization/;
+            billOrganization
+            customInt1 customInt2/;
 }
 
 sub valid_fields {

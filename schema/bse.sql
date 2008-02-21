@@ -584,6 +584,9 @@ create table site_users (
 
   billOrganization varchar(127) not null default '',
 
+  customInt1 integer,
+  customInt2 integer,
+
   primary key (id),
   unique (userId),
   index (affiliate_name)

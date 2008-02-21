@@ -402,6 +402,8 @@ Column billMobile;varchar(80);NO;;
 Column delivStreet2;varchar(127);NO;;
 Column billStreet2;varchar(127);NO;;
 Column billOrganization;varchar(127);NO;;
+Column customInt1;int(11);YES;NULL;
+Column customInt2;int(11);YES;NULL;
 Index PRIMARY;1;[id]
 Index affiliate_name;0;[affiliate_name]
 Index userId;1;[userId]
