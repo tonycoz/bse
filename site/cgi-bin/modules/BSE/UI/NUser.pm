@@ -15,6 +15,7 @@ sub dispatch {
     $rest = join '/', @rest;
   }
 
+  $controller_id ||= $req->cfg->entry('nuser controllers', 'default');
   $controller_id
     or return $class->error($req, "No controller found in path");
 
