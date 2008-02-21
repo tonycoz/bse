@@ -765,6 +765,7 @@ sub _refresh_wishlist {
   my ($self, $req, $msg) = @_;
 
   my $url = $req->cgi->param('r');
+  print STDERR "url $url\n" if $url;
   unless ($url) {
     $url = $req->user_url(nuser => userpage => _t => 'wishlist');
   }

@@ -18,9 +18,14 @@ sub low_perform {
   my ($self, $acts, $func, $args, $orig) = @_;
 
   $args = '' unless defined $args;
+  $orig = '' unless defined $orig;
+
+  DEBUG and print STDERR ">low_perform(..., $func, '$args', '$orig')\n";
+
   my $fmt;
-  if ($acts->{_format} && $args =~ s/\|(\S+)\s*$//) {
+  if ($acts->{_format} && $args =~ s/\|(\S+)$//) {
     $fmt = $1;
+    DEBUG and print STDERR "Format <$fmt>\n";
   }
 
   if (exists $acts->{$func}) {
@@ -461,7 +466,7 @@ sub replace_template {
             (.*)/sx)) {
     until ($iter->EOF) {
       my $temp = $row;
-      $temp =~ s/(<:\s*(\w+)(?:\s+([^:]*?))\s*:>)/ $self->perform($acts, $2, $3, $1) /egx;
+      $temp =~ s/(<:\s*(\w+)(?:\s+([^:]*?)):>)/ $self->perform($acts, $2, $3, $1) /egx;
       $before .= $temp;
     }
     $template = $before . $after;
@@ -500,7 +505,7 @@ sub replace_template {
 			   $self->switch($1, $acts)/segx
 			     && ++$nesting < 5;
 
-  $template =~ s/(<:\s*(\w+)(?:\s+(.*?))?\s*:>)/ 
+  $template =~ s/(<:\s*(\w+)(?:\s+(.*?\s*(?:\|\S+)?))?:>)/ 
     $self->perform($acts, $2, $3, $1) /segx;
 
   # replace any wrap parameters

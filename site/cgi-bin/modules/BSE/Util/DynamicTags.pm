@@ -114,6 +114,10 @@ sub tag_dyntarget {
 
   my ($script, $target, @options) = DevHelp::Tags->get_parms($args, $acts, $templater);
 
+  for my $option (@options) {
+    $option = unescape_html($option);
+  }
+
   return escape_html($req->user_url($script, $target, @options));
 }
 

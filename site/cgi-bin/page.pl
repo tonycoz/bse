@@ -14,6 +14,6 @@ $SIG{__DIE__} = sub { confess $@ };
 
 my $req = BSE::Request->new;
 
-my $result = BSE::UI::Page->dispatch($req);
+my $result = BSE::UI::Page->new->dispatch($req);
 
 BSE::Template->output_result($req, $result);
