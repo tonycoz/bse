@@ -65,9 +65,9 @@ IN
   template_test($switch2, "ONE", "switch without ignored", \%acts, "both");
 
   template_test(<<IN, <<OUT, "unimplemented switch", \%acts, "both");
-<:switch:><:case Eq [strref] "XYZ":>FAIL<:case Eq [unknown] "ABC":><:endswitch:>
+<foo><:strref bar |h:></foo><:switch:><:case Eq [strref] "XYZ":>FAIL<:case Eq [unknown] "ABC":><:endswitch:>
 IN
-<:switch:><:case Eq [unknown] "ABC":><:endswitch:>
+<foo>ABC</foo><:switch:><:case Eq [unknown] "ABC":><:endswitch:>
 OUT
 
   template_test("<:with begin upper:>Alpha<:with end upper:>", "ALPHA", "with", \%acts);

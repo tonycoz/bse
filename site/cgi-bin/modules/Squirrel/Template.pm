@@ -505,7 +505,7 @@ sub replace_template {
 			   $self->switch($1, $acts)/segx
 			     && ++$nesting < 5;
 
-  $template =~ s/(<:\s*(\w+)(?:\s+(.*?\s*(?:\|\S+)?))?:>)/ 
+  $template =~ s/(<:\s*(\w+)(?:\s+(.*?\s*(?:\|\S+?)?))?:>)/ 
     $self->perform($acts, $2, $3, $1) /segx;
 
   # replace any wrap parameters
