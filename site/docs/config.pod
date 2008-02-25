@@ -1682,6 +1682,35 @@ gthumbimage[] body text tags and the <:thumbimage ...:>, <:gthumbimage
 
 The value is used as the class for the generated img tag.
 
+=head2 [targets]
+
+Each value represents a handler or script name for the <:dyntarget
+I<script> I<target> ...:> tag.
+
+Each key has a TARGET version and a no-TARGET version, with the key
+suffixed with C<_n>.
+
+The default C<nuser> target is C</cgi-bin/nuser.pl/user/TARGET>.  The
+default no-target C<nuser> is C</cgi-bin/nuser.pl/user>.
+
+For other targets the default is
+C</cgi-bin/>I<script>C<.pl?a_TARGET=1> and
+C</cgi-bin/>I<script>C<.pl>.
+
+The string C<TARGET> is replaced with the target specified in the
+dyntarget tag.
+
+This, along with dyntarget is intended to allow a more "Web 2.0" type
+of access to BSE.  eg. you might set:
+
+  [targets]
+  shop=/xshop/TARGET
+  shop_x=/xshop/
+
+and have a rewrite rule:
+
+  RewriteRule ^/xshop/(.*)$ /cgi-bin/nuser.pl/shop/$1 [PT]
+
 =head1 AUTHOR
 
 Tony Cook <tony@develop-help.com>
