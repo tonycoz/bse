@@ -3,6 +3,7 @@ use strict;
 use BSE::Util::Tags qw(tag_article);
 use DevHelp::HTML;
 use base 'BSE::ThumbLow';
+use BSE::CfgInfo qw(custom_class);
 
 sub new {
   my ($class, $req) = @_;
@@ -33,7 +34,29 @@ sub tags {
      ifUserMemberOf => [ tag_ifUserMemberOf => $self ],
      dthumbimage => [ tag_dthumbimage => $self ],
      dyntarget => [ tag_dyntarget => $self ],
+     $self->_custom_tags,
     );
+}
+
+sub _custom_tags {
+  my ($self) = @_;
+
+  $self->cfg->entry('custom', 'dynamic_tags')
+    or return;
+
+  return custom_class($self->cfg)->dynamic_tags($self->req);
+}
+
+sub cfg {
+  return $_[0]{req}->cfg;
+}
+
+sub cgi {
+  return $_[0]{req}->cgi;
+}
+
+sub req {
+  return $_[0]{req};
 }
 
 sub tag_ifUser {
