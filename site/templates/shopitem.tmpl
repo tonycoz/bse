@@ -74,7 +74,7 @@
 <p><a href="<:dyntarget nuser wishlistadd product_id [dynarticle id] r [url dynarticle] :>">Add to my wishlist</a></p>
 <:eif InWishlist:>
 <:or User:><:eif User:><:or Dynamic:>
-<p><a href="/cgi-bin/user.pl?a_wishlistadd=1&amp;product_id=<:product id:>&amp;r=<:url product |U:>">Add to my wishlist</a></p>
+<p><a href="/cgi-bin/nuser.pl/user?a_wishlistadd=1&amp;product_id=<:product id:>&amp;r=<:url product |U:>">Add to my wishlist</a></p>
 <:eif Dynamic:>
 <:or Or:><br>
 <br>
