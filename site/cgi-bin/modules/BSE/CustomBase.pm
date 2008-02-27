@@ -132,7 +132,7 @@ sub siteuser_required {
   my $cfg = $req->cfg;
   my @required = qw(email);
   push @required, grep $cfg->entry('site users', "require_$_", 0),
-    grep !$dont_touch{$_}, SiteUsers->columns;
+    grep !$dont_touch{$_}, SiteUser->columns;
 
   return @required;
 }
