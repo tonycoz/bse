@@ -2,6 +2,10 @@ package BSE::UI::NUser;
 use strict;
 use base 'BSE::UI::Dispatch';
 
+sub controller_section {
+  'nuser controllers';
+}
+
 sub dispatch {
   my ($class, $req) = @_;
 
@@ -15,15 +19,21 @@ sub dispatch {
     $rest = join '/', @rest;
   }
 
-  $controller_id ||= $req->cfg->entry('nuser controllers', 'default');
+  my $section = $class->controller_section;
+  $controller_id ||= $req->cfg->entry($section, 'default');
   $controller_id
     or return $class->error($req, "No controller found in path");
 
   my $controller_class = 
-    $req->cfg->entry('nuser controllers', $controller_id)
+    $req->cfg->entry($section, $controller_id)
       or return $class->error($req, "No class found for controller $controller_id");
+
   (my $controller_file = $controller_class . ".pm") =~ s!::!/!g;
   eval {
+    local @INC = @INC;
+    my $local_inc = $req->cfg->entry('paths', 'libraries');
+    unshift @INC, $local_inc if $local_inc;
+
     require $controller_file;
   };
   if ($@) {

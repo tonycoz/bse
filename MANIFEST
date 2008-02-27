@@ -26,6 +26,7 @@ site/cgi-bin/admin/logon.pl
 site/cgi-bin/admin/makeIndex.pl
 site/cgi-bin/admin/menu.pl
 site/cgi-bin/admin/move.pl
+site/cgi-bin/admin/nadmin.pl
 site/cgi-bin/admin/reorder.pl
 site/cgi-bin/admin/report.pl
 site/cgi-bin/admin/shopadmin.pl
@@ -151,6 +152,7 @@ site/cgi-bin/modules/BSE/UI/Affiliate.pm
 site/cgi-bin/modules/BSE/UI/Dispatch.pm
 site/cgi-bin/modules/BSE/UI/Formmail.pm
 site/cgi-bin/modules/BSE/UI/Image.pm
+site/cgi-bin/modules/BSE/UI/NAdmin.pm
 site/cgi-bin/modules/BSE/UI/NUser.pm
 site/cgi-bin/modules/BSE/UI/Page.pm
 site/cgi-bin/modules/BSE/UI/Redirect.pm

@@ -50,6 +50,8 @@ sub dispatch {
   $self->check_action($req, $action, \$result)
     or return $result;
 
+  ref $self and $self->{action} = $action;
+
   my $method = "req_$action";
   $self->$method($req, @extras);
 }
@@ -105,6 +107,10 @@ sub controller_id {
 
 sub action {
   $_[0]{action};
+}
+
+sub rest {
+  $_[0]{rest};
 }
 
 1;

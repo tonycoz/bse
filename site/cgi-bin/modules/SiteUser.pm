@@ -32,7 +32,7 @@ sub valid_fields {
 
   my %fields =
     (
-     email => { rules=>'email;required', description=>'Email Address',
+     email => { rules=>'email', description=>'Email Address',
 		maxlen => 255},
      name1 => { description=>'First Name', rules=>"dh_one_line", maxlen=>127 },
      name2 => { description=>'Surname', rules=>"dh_one_line", maxlen=>127 },
@@ -102,13 +102,6 @@ sub valid_fields {
       { description => "Administrator Notes" };
     $fields{disabled} =
       { description => "User Disabled", type=>"boolean" };
-  }
-
-  for my $field_name (keys %fields) {
-    $fields{$field_name}{required} ||= $cfg->entry("site users", "require_$field_name", 0);
-    if (my $desc = $cfg->entry("site users", "display_$field_name")) {
-      $fields{$field_name}{description} = $desc;
-    }
   }
 
   return %fields;

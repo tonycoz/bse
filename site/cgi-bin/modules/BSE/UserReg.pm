@@ -121,6 +121,11 @@ sub req_logon {
   }
 
   my %fields = $user->valid_fields($cfg);
+  my $custom = custom_class($cfg);
+  
+  for my $field ($custom->siteuser_edit_required($req, $user)) {
+    $fields{$field}{required} = 1;
+  }
   my %rules = $user->valid_rules($cfg);
 
   my %errors;
@@ -140,7 +145,7 @@ sub req_logon {
   $user->{previousLogon} = $user->{lastLogon};
   $user->{lastLogon} = now_datetime;
   $user->save;
-  my $custom = custom_class($cfg);
+
   if ($custom->can('siteuser_login')) {
     $custom->siteuser_login($session->{_session_id}, $session->{userid}, $cfg);
   }
@@ -1804,6 +1809,14 @@ sub _notify_registration {
 		subject => $subject);
 }
 
+sub error {
+  my ($self, $req, $error) = @_;
+
+  my $result = $self->SUPER::error($req, $error);
+
+  BSE::Template->output_result($req, $result);
+}
+
 =item req_wishlist
 
 =target a_wishlist
@@ -1836,12 +1849,13 @@ sub req_wishlist {
 
   my $custom = custom_class($req->cfg);
 
-  my $user = SiteUsers->getBy(userId => $user_id);
+  my $user = SiteUsers->getBy(userId => $user_id)
+    or return $self->error($req, "No such user $user_id");
 
   my $curr_user = $req->siteuser;
 
   $custom->can_user_see_wishlist($user, $curr_user, $req)
-    or return $self->error($req, "Sorry, you cannot see $user_id's wishlist");
+    or return $self->error($req, "Sorry, you cannot see ${user_id}'s wishlist");
 
   my @wishlist = $user->wishlist;
 

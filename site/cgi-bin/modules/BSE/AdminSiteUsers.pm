@@ -228,19 +228,8 @@ sub _display_user {
   if ($msg) {
     $msg = escape_html($msg);
   }
-  elsif ($cgi->param('m')) {
-    $msg = join("<br />", map escape_html($_), $cgi->param('m'));
-  }
   else {
-    if (keys %$errors) {
-      my %work = %$errors;
-      my @msgs = grep defined, delete @work{$cgi->param()};
-      push @msgs, values %work;
-      $msg = join "<br />", map escape_html($_), @msgs;
-    }
-    else {
-      $msg = '';
-    }
+    $msg = $req->message($errors);
   }
 
   my @subs = grep $_->{visible}, BSE::SubscriptionTypes->all;
@@ -404,7 +393,6 @@ sub req_save {
   $user->{flags} = join('', grep exists $flags{$_}, $cgi->param('flags'))
     if $cgi->param('saveFlags');
 
-  my $custom = custom_class($cfg);
   $user->{textOnlyMail} = 0 
     if $cgi->param('saveTextOnlyMail') && !defined $cgi->param('textOnlyMail');
   $user->{keepAddress} = 0 
@@ -549,8 +537,7 @@ sub req_add {
   my $nopassword = $cfg->entryBool('site users', 'nopassword', 0);
   my %errors;
   my $email = $cgi->param('email');
-  if (!defined $email or !length $email) {
-    $errors{email} = "Please enter an email address";
+  if (!defined $email) { # required check done later
     $email = ''; # prevent undefined value warnings later
   }
   elsif ($email !~ /.\@./) {
@@ -674,7 +661,6 @@ sub req_add {
       }
     }
     
-    my $custom = custom_class($cfg);
     $custom->siteusers_changed($cfg);
     $custom->can('siteuser_add')
       and $custom->siteuser_add($user, 'admin', $cfg);

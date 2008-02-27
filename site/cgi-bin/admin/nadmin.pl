@@ -6,12 +6,15 @@ use FindBin;
 use lib "$FindBin::Bin/../modules";
 use BSE::DB;
 use BSE::Request;
+use BSE::Template;
 use Carp 'confess';
-use BSE::AdminSiteUsers;
+use BSE::UI::NAdmin;
 
 $SIG{__DIE__} = sub { confess $@ };
 
 my $req = BSE::Request->new;
 
-my $result = BSE::AdminSiteUsers->dispatch($req);
-$req->output_result($result);
+my $result = BSE::UI::NAdmin->dispatch($req);
+
+BSE::Template->output_result($req, $result);
+

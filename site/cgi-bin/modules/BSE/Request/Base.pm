@@ -201,12 +201,13 @@ sub message {
 }
 
 sub dyn_response {
-  my ($req, $template, $acts) = @_;
+  my ($req, $template, $acts, $modifier) = @_;
 
   my @search = $template;
   my $base_template = $template;
   my $t = $req->cgi->param('t');
   $t or $t = $req->cgi->param('_t');
+  $t or $t = $modifier;
   if ($t && $t =~ /^\w+$/) {
     $template .= "_$t";
     unshift @search, $template;
