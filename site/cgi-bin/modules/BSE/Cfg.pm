@@ -330,7 +330,7 @@ sub _load_cfg {
   my $path = $file;
   $path =~ s![^\\/:]+$!!;
   for my $include (@raw_includes) {
-    my $full = $include =~ m!^(?:\w:)[/\\]! ? $include : "$path$include";
+    my $full = $include =~ m!^(?:\w:)?[/\\]! ? $include : "$path$include";
     if (-e $full) {
       if (-d $full) {
 	# scan the directory
