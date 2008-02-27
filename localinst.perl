@@ -82,7 +82,6 @@ close CON;
 # first load values from the test.cfg file
 my $conffile = BSE::Test::test_conffile();
 my %conf;
-$conf{site}{name} = "Test Server";
 $conf{site}{url} = BSE::Test::base_url();
 $conf{site}{secureurl} = BSE::Test::base_securl();
 my $uploads = "$instbase/uploads";
