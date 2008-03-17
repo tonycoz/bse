@@ -295,6 +295,7 @@ sub _get_filter {
     my $expr = $1;
     my $orig_expr = $expr;
     unless ($cols_re) {
+      require Articles;
       my $cols_expr = '(' . join('|', Article->columns) . ')';
       $cols_re = qr/\[$cols_expr\]/;
     }
