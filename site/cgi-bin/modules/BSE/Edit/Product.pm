@@ -173,7 +173,7 @@ sub validate {
   my $ok = $self->SUPER::validate($data, $articles, $errors);
   $self->_validate_common($data, $articles, $errors);
 
-  for my $field (qw(title summary body)) {
+  for my $field (qw(title description body)) {
     unless ($data->{$field} =~ /\S/) {
       $errors->{$field} = "No $field entered";
     }
