@@ -706,7 +706,7 @@ sub tag_if_user_can {
 	    $article = $templater->perform($acts, $artname, 'id');
 	  }
 	  else {
-	    print STDERR "Unknown article name $artname\n";
+	    #print STDERR "Unknown article name $artname\n";
 	    die "ENOIMPL: Unknown article name\n";
 	  }
 	}
