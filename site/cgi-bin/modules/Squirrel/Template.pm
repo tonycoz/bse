@@ -347,8 +347,10 @@ sub switch {
       };
     if ($@) {
       my $msg = $@;
-      $msg =~ /^ENOIMPL\b/
-	and return "<:XswitchX:>$case".join("", @cases)."<:XendswitchX:>";
+      if ($msg =~ /^ENOIMPL\b/) {
+	s/^<:case\s/<:XcaseX / for $case, @cases;
+	return "<:XswitchX:>$case".join("", @cases)."<:XendswitchX:>";
+      }
 
       print STDERR "Eval error in cond: $msg\n";
       $msg =~ s/([<>&])/"&#".ord($1).";"/ge;
@@ -506,6 +508,7 @@ sub replace_template {
 			     && ++$nesting < 5;
   $template =~ s/<:XswitchX:>/<:switch:>/g;
   $template =~ s/<:XendswitchX:>/<:endswitch:>/g;
+  $template =~ s/<:XcaseX /<:case /g;
 
   $template =~ s/(<:\s*(\w+)(?:\s+(.*?\s*(?:\|\S+?)?))?:>)/ 
     $self->perform($acts, $2, $3, $1) /segx;
