@@ -909,7 +909,7 @@ sub _format_file {
     my $url = "/cgi-bin/user.pl?download_file=1&file=$file->{id}";
     my $eurl = escape_html($url);
     if ($field eq 'url') {
-      return $url;
+      return $eurl;
     }
     my $class = $file->{download} ? "file_download" : "file_inline";
     my $html = qq!<a class="$class" href="$eurl">! . escape_html($file->{displayName}) . '</a>';
