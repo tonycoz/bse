@@ -100,7 +100,12 @@ sub static {
        my $result = 
 	 eval {
 	   require Date::Format;
-	   return Date::Format::strftime($fmt, $sec, $min, $hour, $day, $month, $year, -1, -1, 0);
+	   my @when = ( $sec, $min, $hour, $day, $month, $year, -1, -1, 0 );
+	   if ($year < 7000) {
+	     # fix the day of week
+	     @when = localtime mktime(@when);
+	   }
+	   return Date::Format::strftime($fmt, @when);
 	 };
        defined $result
 	 and return $result;
