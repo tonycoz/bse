@@ -86,7 +86,6 @@ sub static {
        my ($quote, $fmt, $func, $args) = 
 	 $arg =~ m/(?:([\"\'])([^\"\']+)\1\s+)?(\S+)(?:\s+(\S+.*))?/;
        $fmt = "%d-%b-%Y" unless defined $fmt;
-       require 'POSIX.pm';
        exists $acts->{$func}
 	 or return "<:date $_[0]:>";
        my $date = $templater->perform($acts, $func, $args)
@@ -98,6 +97,14 @@ sub static {
        --$month;
        # passing the isdst as 0 seems to provide a more accurate result than
        # -1 on glibc.
+       my $result = 
+	 eval {
+	   require Date::Format;
+	   return Date::Format::strftime($fmt, $sec, $min, $hour, $day, $month, $year, -1, -1, 0);
+	 };
+       defined $result
+	 and return $result;
+       require POSIX;
        return POSIX::strftime($fmt, $sec, $min, $hour, $day, $month, $year, -1, -1, 0);
        # the following breaks some of our defaults
 #        # pass the time through mktime() since the perl strftime()
