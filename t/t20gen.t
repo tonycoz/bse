@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>97;
+use Test::More tests=>100;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
@@ -211,6 +211,23 @@ use POSIX;
 template_test "today", $parent, <<'TEMPLATE', strftime("%Y-%m-%d %d-%b-%Y\n", localtime);
 <:today "%Y-%m-%d":> <:today:>
 TEMPLATE
+
+SKIP:
+{
+  eval {
+    require Date::Format;
+  };
+
+  $@
+    and skip("No Date::Format", 3);
+
+  my $today = Date::Format::strftime("%a %o %B %Y", [ localtime ]);
+  template_test "date/today w/Date::Format", $parent, <<'TEMPLATE', <<EXPECTED;
+<:date "%A %o %B %Y" article lastModified:> <:today "%a %o %B %Y":>
+TEMPLATE
+Thursday 23rd September 2004 $today
+EXPECTED
+}
 
 template_test "strepeats", $parent, <<'TEMPLATE', <<EXPECTED;
 <:iterator begin strepeats [arithmetic 1+1]:><:strepeat index:> <:strepeat value:>
