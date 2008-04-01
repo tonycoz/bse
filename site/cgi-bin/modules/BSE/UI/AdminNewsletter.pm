@@ -443,6 +443,9 @@ sub req_html_preview {
 
 sub _dummy_user {
   my %user;
+  require SiteUsers;
+  my @cols = SiteUser->columns;
+  @user{@cols} = ('') x @cols;
   $user{id} = 0;
   $user{userId} = "username";
   $user{password} = "p455w0rd";
