@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>94;
+use Test::More tests=>97;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
@@ -207,6 +207,11 @@ TEMPLATE
 Thu 23/09/2004
 EXPECTED
 
+use POSIX;
+template_test "today", $parent, <<'TEMPLATE', strftime("%Y-%m-%d %d-%b-%Y\n", localtime);
+<:today "%Y-%m-%d":> <:today:>
+TEMPLATE
+
 template_test "strepeats", $parent, <<'TEMPLATE', <<EXPECTED;
 <:iterator begin strepeats [arithmetic 1+1]:><:strepeat index:> <:strepeat value:>
 <:iterator end strepeats:>
@@ -343,7 +348,7 @@ sub add_article {
      createdBy=>'t20gen', author=>'', pageTitle=>'',
      cached_dynamic => 0, force_dynamic=>0, inherit_siteuser_rights => 1,
      metaDescription => '',  metaKeywords => '',
-     summary => '',
+     summary => '', menu => '', titleAlias => '', linkAlias => '',
     );
   for my $key (%defaults) {
     unless (exists $parms{$key}) {

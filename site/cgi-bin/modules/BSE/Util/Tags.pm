@@ -36,6 +36,27 @@ sub _get_parms {
   @out;
 }
 
+sub bse_strftime {
+  my ($cfg, $fmt, $sec, $min, $hour, $day, $month, $year, $wday, $yday, $isdst) = @_;
+
+  my $result = 
+    eval {
+      require Date::Format;
+      my @when = ( $sec, $min, $hour, $day, $month, $year, $wday, $wday, $isdst );
+      if ($year < 7000) {
+	# fix the day of week
+	@when = localtime mktime(@when);
+      }
+      return Date::Format::strftime($fmt, @when);
+    };
+  defined $result
+    and return $result;
+
+  require POSIX;
+  return POSIX::strftime($fmt, $sec, $min, $hour, $day, $month, $year, $wday, $wday, $isdst);
+}
+
+
 sub iter_cfgsection {
   my ($cfg, $args, $acts, $tag_name, $templater) = @_;
 
@@ -97,27 +118,9 @@ sub static {
        --$month;
        # passing the isdst as 0 seems to provide a more accurate result than
        # -1 on glibc.
-       my $result = 
-	 eval {
-	   require Date::Format;
-	   my @when = ( $sec, $min, $hour, $day, $month, $year, -1, -1, 0 );
-	   if ($year < 7000) {
-	     # fix the day of week
-	     @when = localtime mktime(@when);
-	   }
-	   return Date::Format::strftime($fmt, @when);
-	 };
-       defined $result
-	 and return $result;
-       require POSIX;
-       return POSIX::strftime($fmt, $sec, $min, $hour, $day, $month, $year, -1, -1, 0);
-       # the following breaks some of our defaults
-#        # pass the time through mktime() since the perl strftime()
-#        # doesn't actually do it.
-#        my $time = POSIX::mktime($sec, $min, $hour, $day, $month, $year);
-#        return POSIX::strftime($fmt, localtime $time);
+       return bse_strftime($cfg, $fmt, $sec, $min, $hour, $day, $month, $year, -1, -1, 0);
      },
-     today => \&tag_today,
+     today => [ \&tag_today, $cfg ],
      money =>
      sub {
        my ($arg, $acts, $name, $templater) = @_;
@@ -469,7 +472,7 @@ sub basic {
      oldi => [ \&tag_oldi, $cgi ],
      $it->make_iterator(\&DevHelp::Tags::iter_get_repeat, 'repeat', 'repeats'),
      dynreplace => \&tag_replace,
-     dyntoday => \&tag_today,
+     dyntoday => [ \&tag_today, $cfg ],
      dynreport => [ \&tag_report, $cfg ],
      ajax => [ \&tag_ajax_dynamic, $cfg ],
      ifAjax => [ \&tag_ifAjax, $cfg ],
@@ -851,13 +854,13 @@ sub tag_hash_plain {
 }
 
 sub tag_today {
-  my ($args) = @_;
+  my ($cfg, $args) = @_;
 
   $args =~ s/^"(.+)"$/$1/;
 
   $args ||= "%d-%b-%Y";
 
-  return POSIX::strftime($args, localtime);
+  return bse_strftime($cfg, $args, localtime);
 }
 
 sub tag_report {
