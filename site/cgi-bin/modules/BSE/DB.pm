@@ -84,7 +84,7 @@ sub generate_query {
     $sql .= ' where ' . _query_expr(\@args, \%trans, $table_name, 'and', @$query,);
   }
 
-  print STDERR "generated sql >$sql<\n";
+  #print STDERR "generated sql >$sql<\n";
   my $sth = $self->{dbh}->prepare($sql)
     or confess "Cannot prepare >$sql<: ", $self->{dbh}->errstr;
   $sth->execute(@args)
