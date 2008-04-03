@@ -6,17 +6,17 @@ sub thumb_base_url {
   '/cgi-bin/thumb.pl';
 }
 
-sub _thumbimage_low {
-  my ($self, $geo_id, $im, $field, $cfg, $static) = @_;
+sub _make_thumb_hash {
+  my ($self, $geo_id, $im, $cfg, $static) = @_;
 
   $geo_id =~ /^[\w,]+$/
-    or return "** invalid geometry id **";
+    or return ( undef, "** invalid geometry id **" );
 
   my $geometry = $cfg->entry('thumb geometries', $geo_id)
-    or return "** cannot find thumb geometry $geo_id**";
+    or return ( undef, "** cannot find thumb geometry $geo_id**" );
 
   my $thumbs_class = $cfg->entry('editor', 'thumbs_class')
-    or return '** no thumbnail engine configured **';
+    or return ( undef, '** no thumbnail engine configured **' );
 
   $static ||= 0;
 
@@ -26,7 +26,7 @@ sub _thumbimage_low {
 
   my $error;
   $thumbs->validate_geometry($geometry, \$error)
-    or return "** invalid geometry string: $error **";
+    or return ( undef, "** invalid geometry string: $error **" );
 
   my %im = map { $_ => $im->{$_} } $im->columns;
   my $base = $self->thumb_base_url;
@@ -47,25 +47,34 @@ sub _thumbimage_low {
     $im{image} = "$base?g=$geo_id&page=$im->{articleId}&image=$im->{id}";
 
     # hack for IE6
-    $im{type} eq 'png'
+    defined $im{type} && $im{type} eq 'png'
       and $im{image} .= '&alpha-trans.png';
   }
   $im{src} = $im{image};
+
+  return \%im;
+}
+
+sub _thumbimage_low {
+  my ($self, $geo_id, $im, $field, $cfg, $static) = @_;
+
+  my ($imwork, $error) = 
+    $self->_make_thumb_hash($geo_id, $im, $cfg, $static);
   
   if ($field) {
-    my $value = $im{$field};
+    my $value = $imwork->{$field};
     defined $value or $value = '';
     return escape_html($value);
   }
   else {
     my $class = $cfg->entry('thumb classes', $geo_id);
-    my $html = '<img src="' . escape_html($im{src}) . '" alt="' . escape_html($im{alt}) . qq!" width="$im{width}" height="$im{height}" border="0"!;
+    my $html = '<img src="' . escape_html($imwork->{src}) . '" alt="' . escape_html($imwork->{alt}) . qq!" width="$imwork->{width}" height="$imwork->{height}" border="0"!;
     if ($class) {
       $html .= qq! class="$class"!;
     }
     $html .= ' />';
-    if ($im{url}) {
-      $html = '<a href="' . escape_html($im{url}) . '">' . $html . "</a>";
+    if ($imwork->{url}) {
+      $html = '<a href="' . escape_html($imwork->{url}) . '">' . $html . "</a>";
     }
     return $html;
   }

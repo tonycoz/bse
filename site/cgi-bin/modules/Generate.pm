@@ -24,6 +24,10 @@ sub new {
   return bless \%opts, $class;
 }
 
+sub cfg {
+  $_[0]{cfg};
+}
+
 # replace commonly used characters
 # like MS dumb-quotes
 # unfortunately some browsers^W^Wnetscape don't support the entities yet <sigh>
@@ -427,14 +431,67 @@ sub admin_tags {
   return BSE::Util::Tags->secure($self->{request});
 }
 
-sub _sthumbimage_low {
-  my ($self, $geometry, $im, $field) = @_;
+sub _static_images {
+  my ($self) = @_;
 
   my $static = $self->{cfg}->entry('basic', 'static_thumbnails', 1);
   $self->{admin} and $static = 0;
   $self->{dynamic} and $static = 0;
 
-  return $self->_thumbimage_low($geometry, $im, $field, $self->{cfg}, $static);
+  return $static;
+}
+
+# implements popimage and gpopimage
+sub do_popimage_low {
+  my ($self, $im, $class) = @_;
+
+  my $cfg = $self->cfg;
+
+  defined $class
+    or $class = $cfg->entry('basic', 'default_popupimage', 'popup');
+
+  my $section = "popimage class $class";
+  my $html = $cfg->entry
+    ($section, 'html',
+     '<a href="{outline_src}" rel="lightbox[id]" target="_blank"><img src="{inline_src}" alt="{inline_alt}" width="{inline_width}" height="{inline_height}" border="0" /></a>');
+  my $inline_geo = $cfg->entry($section, 'inline', 'editor');
+  my $outline_geo = $cfg->entry($section, 'outline');
+
+  my $msg;
+  my $inline_im;
+  ($inline_im, $msg) = $self->_make_thumb_hash($inline_geo, $im, $cfg, $self->_static_images);
+  $inline_im
+    or return $msg;
+
+  my $outline_im;
+  if ($outline_geo) {
+    ($outline_im, $msg) = $self->_make_thumb_hash($outline_geo, $im, $cfg, $self->_static_images);
+  }
+  else {
+    $outline_im = $im;
+  }
+  my %replace;
+  $replace{"inline_$_"} = escape_html($inline_im->{$_}) for $im->columns;
+  $replace{"outline_$_"} = escape_html($outline_im->{$_}) for $im->columns;
+
+  $html =~ s/\{((?:in|out)line_\w+)\}/exists $replace{$1} ? $replace{$1} : "** unknown key $1 **"/ge;
+
+  return $html;
+}
+
+sub do_gpopimage {
+  my ($self, $image_id, $class) = @_;
+
+  my $im = $self->get_gimage($image_id)
+    or return "* Unknown global image '$image_id' *";
+
+  return $self->do_popimage_low($im, $class);
+}
+
+sub _sthumbimage_low {
+  my ($self, $geometry, $im, $field) = @_;
+
+  return $self->_thumbimage_low($geometry, $im, $field, $self->{cfg}, $self->_static_images);
 }
 
 sub tag_gthumbimage {
