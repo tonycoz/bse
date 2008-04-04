@@ -504,7 +504,7 @@ sub do {
 			channels => $channels);
 
   require Imager::Fill;
-  my $fill = Imager::Fill->new(image => $src);
+  my $fill = Imager::Fill->new(image => $src, combine => 'normal');
   
   $out = $src->copy;
   if ($geo->{tl}) {
