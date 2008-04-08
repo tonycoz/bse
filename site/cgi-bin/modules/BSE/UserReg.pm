@@ -147,7 +147,8 @@ sub req_logon {
   $user->save;
 
   if ($custom->can('siteuser_login')) {
-    $custom->siteuser_login($session->{_session_id}, $session->{userid}, $cfg);
+    $custom->siteuser_login($session->{_session_id}, $session->{userid}, 
+			    $cfg, $session);
   }
   print "Set-Cookie: ",BSE::Session->
     make_cookie($cfg, userid=>$user->{userId}),"\n";
