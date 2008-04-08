@@ -322,6 +322,22 @@ sub req_addmultiple {
   return _add_refresh($refresh, $req, $started_empty);
 }
 
+sub tag_ifUser {
+  my ($user, $args) = @_;
+
+  if ($args) {
+    if ($user) {
+      return defined $user->{$args} && $user->{$args};
+    }
+    else {
+      return 0;
+    }
+  }
+  else {
+    return defined $user;
+  }
+}
+
 sub req_checkout {
   my ($class, $req, $message, $olddata) = @_;
 
@@ -399,7 +415,7 @@ sub req_checkout {
      },
      $cust_class->checkout_actions(\%acts, \@cart, \@cart_prods, 
 				   \%custom_state, $req->cgi, $cfg),
-     ifUser => defined $user,
+     ifUser => [ \&tag_ifUser, $user ],
      user => $user ? [ \&tag_hash, $user ] : '',
      affiliate_code => escape_html($affiliate_code),
      error_img => [ \&tag_error_img, $cfg, $errors ],
