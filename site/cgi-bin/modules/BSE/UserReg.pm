@@ -1371,6 +1371,13 @@ sub req_lost_password {
 					$msgs->(lostnosuch=>
 						"Unknown username supplied", $userid));
 
+  my $custom = custom_class($cfg);
+  my $email_user = $user;
+  if ($custom->can('send_user_email_to')) {
+    eval {
+      $email_user = $custom->send_user_email_to($user, $cfg);
+    };
+  }
   require 'BSE/Mail.pm';
 
   my $mail = BSE::Mail->new(cfg=>$cfg);
@@ -1381,6 +1388,7 @@ sub req_lost_password {
      user => sub { $user->{$_[0]} },
      host => sub { $ENV{REMOTE_ADDR} },
      site => sub { $cfg->entryErr('site', 'url') },
+     emailuser => [ \&tag_hash_plain, $email_user ],
     );
   my $body = BSE::Template->get_page('user/lostpwdemail', $cfg, \%mailacts);
   my $from = $cfg->entry('confirmations', 'from') || 
@@ -1388,7 +1396,7 @@ sub req_lost_password {
   my $nopassword = $cfg->entryBool('site users', 'nopassword', 0);
   my $subject = $cfg->entry('basic', 'lostpasswordsubject') 
     || ($nopassword ? "Your options" : "Your password");
-  $mail->send(from=>$from, to=>$user->{email}, subject=>$subject,
+  $mail->send(from=>$from, to=>$email_user->{email}, subject=>$subject,
 	      body=>$body)
     or return $self->req_show_lost_password($req,
 					$msgs->(lostmailerror=>
@@ -1401,6 +1409,7 @@ sub req_lost_password {
      message => $message,
      $req->dyn_user_tags(),
      user => sub { CGI::escapeHTML($user->{$_[0]}) },
+     emailuser => [ \&tag_hash, $email_user ],
     );
   BSE::Template->show_page('user/lostemailsent', $cfg, \%acts);
 }
