@@ -552,6 +552,7 @@ HTML
      $art_it->make_iterator(undef, 'stepparent', 'stepparents', \@stepparents),
      top => [ \&tag_article, $self->{top} || $article, $cfg ],
      ifDynamic => $dynamic,
+     ifStatic => !$dynamic,
      ifAccessControlled => [ \&tag_ifAccessControlled, $article ],
     );
 
