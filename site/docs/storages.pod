@@ -59,6 +59,23 @@ Also the marking of files for download, the display name and
 specifying the content type is only supported by the Amazon S3
 storage.
 
+=head1 THUMBNAIL STORAGE
+
+There is no individual control over which thumbnails are stored where
+for storing thumbnails beyond what the cond configuration supplies.
+
+Since the URLs for thumbnails are not stored in the database you need
+to make sure the contents of the thumbnail cache and the S3 or FTP
+storage are kept in sync.
+
+As thumbnail files are created they will be stored in the appropriate
+store.  Since there's no interactive deletion of thumbnails only a
+bse_storage sync will remove them from the storage.
+
+If you choose to stop using a storage, set cond to 0 and perform a
+sync before removing it from the configuration so that any files
+currently stored will be removed.
+
 =head1 CONFIGURATION
 
 Each type of file has a list of stores where their associated files
