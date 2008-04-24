@@ -17,14 +17,16 @@ my $mysql = BSE::Test::mysql_name;
 #    system "cp $instbase/cgi-bin/modules/Constants.pm $instbase/Constants.pm"
 #  }
 
-system("rm -rf $instbase/cgi-bin")
-  and die "Cannot remove cgi-bin";
-system "rm -rf $instbase/data"
-  and die "Cannot remove data";
+#system("rm -rf $instbase/cgi-bin")
+#  and die "Cannot remove cgi-bin";
+#system "rm -rf $instbase/data"
+#  and die "Cannot remove data";
 #system "rm -f $instbase/htdocs/{*.html,a/*.html,shop/*.html,images/*.jpg}"
 #  and die "Cannot remove htdocs";
 
-system "cp -rf $dist/site/cgi-bin $instbase"
+-d "$instbase/cgi-bin" or mkdir "$instbase/cgi-bin"
+  or die "Cannot create $instbase/cgi-bin: $!";
+system "cp -rf $dist/site/cgi-bin/* $instbase/cgi-bin"
   and die "Cannot copy cgi-bin";
 
 my $perl = BSE::Test::test_perl();
