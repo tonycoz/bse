@@ -1,4 +1,4 @@
-package BSE::Storage::LocalImages;
+package BSE::Storage::LocalThumbs;
 use strict;
 use BSE::Storage::LocalBase;
 our @ISA = qw(BSE::Storage::LocalBase);

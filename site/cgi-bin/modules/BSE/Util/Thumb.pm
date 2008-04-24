@@ -2,6 +2,7 @@ package BSE::Util::Thumb;
 use strict;
 use Images;
 use BSE::CfgInfo qw(cfg_image_dir);
+use BSE::StorageMgr::Thumbs;
 
 # returns a list of $url, $filename, $basename
 sub generate_thumb {
@@ -35,7 +36,12 @@ sub generate_thumb {
   my $cache_name = "$cache_dir/$basename";
   my $cache_url = "$cache_base_url/$basename";
 
-  unless (-e $cache_name) {
+  my $storage = BSE::StorageMgr::Thumbs->new(cfg => $cfg);
+
+  if (-e $cache_name) {
+    $cache_url = $storage->url($basename);
+  }
+  else {
     my $image_filename = "$image_dir/$image->{image}";
     unless (-e $image_filename) {
       warn "Image file $image_filename missing\n";
@@ -51,6 +57,8 @@ sub generate_thumb {
       binmode IMAGE;
       print IMAGE $data;
       close IMAGE;
+
+      $cache_url = $storage->store($basename);
     }
     else {
       warn "Could not create scaled image cache file $cache_name: $!\n";

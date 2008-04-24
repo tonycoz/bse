@@ -105,10 +105,12 @@ site/cgi-bin/modules/BSE/Storage/Base.pm
 site/cgi-bin/modules/BSE/Storage/LocalBase.pm
 site/cgi-bin/modules/BSE/Storage/LocalFiles.pm
 site/cgi-bin/modules/BSE/Storage/LocalImages.pm
+site/cgi-bin/modules/BSE/Storage/LocalThumbs.pm
 site/cgi-bin/modules/BSE/Storage/FTP.pm
 site/cgi-bin/modules/BSE/StorageMgr/Base.pm
 site/cgi-bin/modules/BSE/StorageMgr/Files.pm
 site/cgi-bin/modules/BSE/StorageMgr/Images.pm
+site/cgi-bin/modules/BSE/StorageMgr/Thumbs.pm
 site/cgi-bin/modules/BSE/SubscribedUser.pm
 site/cgi-bin/modules/BSE/SubscribedUsers.pm
 site/cgi-bin/modules/BSE/SubscriptionType.pm

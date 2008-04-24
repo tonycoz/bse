@@ -74,13 +74,17 @@ sub local_store {
 sub pathname {
   my ($self, $filename) = @_;
 
-  return $self->filebase . $filename;
+  my $dir = $self->filebase;
+  $dir =~ m![/\\]$! or $dir .= '/';
+
+  return $dir . $filename;
 }
 
 sub sync {
   my ($self, %opts) = @_;
 
   my $print = $opts{print};
+  my $noaction = $opts{noaction};
 
   my @all_files = $self->files;
   for my $store (grep $_->name ne 'local', $self->all_stores) {
@@ -99,25 +103,30 @@ sub sync {
       $print
 	and $print->("  ", scalar(@missing_files), " missing - transferring:");
       for my $file (@missing_files) {
-	print "    $file->[0]\n";
-	my $src = $self->store(@$file);
-	$self->set_src($file->[2], $src);
+	$print and $print->("    $file->[0]");
+	unless ($noaction) {
+	  my $src = $self->store(@$file);
+	  $self->set_src($file->[2], $src);
+	}
       }
     }
     if (@extra_files) {
       $print and
 	$print->("  ", scalar(@extra_files), " extra files found, removing:");
       for my $file (@extra_files) {
-	$print
-	  and $print->("    $file");
-	$self->unstore($file, $name);
+	$print and $print->("    $file");
+	unless ($noaction) {
+	  $self->unstore($file, $name);
+	}
       }
     }
   }
 
-  my $local_store = $self->local_store;
-  for my $file (grep $_->[1] eq 'local', @all_files) {
-    $self->set_src($file->[2], $local_store->url($file->[0], $file->[2]));
+  unless ($noaction) {
+    my $local_store = $self->local_store;
+    for my $file (grep $_->[1] eq 'local', @all_files) {
+      $self->set_src($file->[2], $local_store->url($file->[0], $file->[2]));
+    }
   }
 }
 
@@ -128,6 +137,14 @@ sub fixsrc {
     my $store = $self->_find_store($file->[1]);
     $self->set_src($file->[2], $store->url($file->[0]));
   }
+}
+
+sub url {
+  my ($self, $basename, $key, $object) = @_;
+
+  $key = $self->select_store($basename, $key, $object);
+  my $store = $self->_find_store($key);
+  return $store->url($basename);
 }
 
 sub _load_stores {
@@ -171,7 +188,7 @@ sub _find_store {
   $self->{loaded} or $self->_load_stores;
 
   my $store = $self->{stores}{$key} 
-    or die "Unknown store $key\n";
+    or confess "Unknown store $key\n";
 
   return $store;
 }

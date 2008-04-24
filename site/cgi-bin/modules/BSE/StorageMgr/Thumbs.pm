@@ -10,7 +10,7 @@ sub filebase {
   my ($self) = @_;
 
   my $image_dir = cfg_image_dir($self->cfg);
-  my $cache_dir = $self->cfg->entry('paths', 'scalecache', "$image_dir/scaled");
+  return $self->cfg->entry('paths', 'scalecache', "$image_dir/scaled");
 }
 
 sub local_class {
@@ -21,35 +21,62 @@ sub type {
   'thumbs';
 }
 
+sub _make_object {
+  my ($self, $filename) = @_;
+
+  my ($geo_id, $basefile) = split /-/, $filename, 2;
+
+  return bless 
+    {
+     geo => $geo_id,
+     basefile => $basefile,
+     image => $filename,
+    }, 'BSE::StorageMgr::Thumbs::Object';
+}
+
 sub files {
   my ($self) = @_;
 
   my $dir = $self->filebase;
   if (opendir THUMBS, $dir) {
-    my @files = grep /^\w+-\.(png|gif|jpe?g)$/, readdir THUMBS;
+    my @files = grep /^\w+-.+\.(png|gif|jpe?g)$/, readdir THUMBS;
     closedir THUMBS;
 
     return map 
       {
-	my ($geo_id, $basefile) = split /-/, $_, 2;
-	my $obj = bless 
-	  {
-	   geo => $geo_id,
-	   basefile => $basefile,
-	   image => $_,
-	  }, 'BSE::StorageMgr::Thumbs::Object';
+	my $obj = $self->_make_object($_);
 	my $store = $self->select_store($_, '', $obj);
 	
-	+{
-	  $_,
-	  $store,
-	  $obj
-	 }
+	[
+	 $_,
+	 $store,
+	 $obj
+	]
       } @files;
   }
   else {
     return;
   }
+}
+
+sub store {
+  my ($self, $filename, $key, $object) = @_;
+
+  defined $key or $key = '';
+  $object ||= $self->_make_object($filename);
+  $key = $self->select_store($filename, $key, $object);
+
+  return $self->SUPER::store($filename, $key, $object);
+}
+
+sub url {
+  my ($self, $filename, $key, $object) = @_;
+
+  defined $key or $key = '';
+  $object ||= $self->_make_object($filename);
+  $key = $self->select_store($filename, $key, $object);
+
+  return $self->SUPER::url($filename, $key, $object);
 }
 
 sub metadata {
