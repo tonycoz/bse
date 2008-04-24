@@ -177,3 +177,59 @@ sub _find_store {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+BSE::StorageMgr::Base - base for storage manages.
+
+=head1 ABSTRACT METHODS
+
+The following methods need to be implemented by concrete storage
+manager classes:
+
+=over
+
+=item $mgr->filebase
+
+The base directory files are stored in.
+
+=item $mgr->files
+
+A list of files managed.  This should return a list of array refs,
+each contains:
+
+=over
+
+=item *
+
+filename
+
+=item *
+
+storage
+
+=item *
+
+object
+
+=back
+
+=item $mgr->local_class
+
+The class representing the local storage.
+
+=item $mgr->type
+
+The key in [storages] for this file type.
+
+=item $mgr->metadata
+
+Returns HTTP meta data for the file.
+
+=item $mgr->set_src($object, $src)
+
+=back
+
+=cut
