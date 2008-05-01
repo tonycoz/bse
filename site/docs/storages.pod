@@ -305,7 +305,7 @@ We can then set the baseurl using that name:
   prefix=images/
 
 For more information see "Virtual Hosting of Buckets" under "Using the
-REST API" in the Amazone Simple Storage Service Developer Guide.
+REST API" in the Amazon Simple Storage Service Developer Guide.
 
 =head1 AUTHOR
 
