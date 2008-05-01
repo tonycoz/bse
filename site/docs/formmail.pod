@@ -231,6 +231,18 @@ should be treated as a comma or equal sign delimited hash initializer:
 
   sql_options=AutoCommit=1
 
+=item *
+
+spam_check_field - if non-empty then this form field is checked, if
+the value for this field is not present, or is non-empty then the
+actions defined for the form are silently ignored.  Default: None.
+
+=item *
+
+log_spam_check_fail - if true then a message is written to STDERR -
+typically ending up in the server error log - when the checks
+described under spam_check_field fail.  Default: true.
+
 =back
 
 You can also configure information used for validation and available

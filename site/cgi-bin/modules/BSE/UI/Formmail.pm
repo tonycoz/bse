@@ -53,6 +53,8 @@ my %form_defs =
    sql_options => '',
    sql_user => undef,
    sql_password => undef,
+   spam_check_field => undef,
+   log_spam_check_fail => 1,
   );
 
 sub _get_form {
@@ -473,15 +475,29 @@ sub req_send {
     $field->{value_array} = $array_values{$name} = \@values;
   }
 
-  my $user = $req->siteuser;
-  if ($form->{sql}) {
-    _send_to_db($form, $user, \%errors)
-      or return $class->req_show($req, \%errors);
+  # spammer check field
+  my $do_send = 1;
+  if ($form->{spam_check_field}) {
+    my $value = $cgi->param($form->{spam_check_field});
+    if (!defined $value || $value ne '') {
+      if ($form->{log_spam_check_fail}) {
+	print STDERR "Possible spam fmail request from $ENV{REMOTE_ADDR}\n";
+      }
+      $do_send = 0;
+    }
   }
 
-  if ($form->{send_email}) {
-    $class->_send_to_mail($form, $user, \%values, \%errors, $req)
-      or $class->req_show($req, \%errors);
+  if ($do_send) {
+    my $user = $req->siteuser;
+    if ($form->{sql}) {
+      _send_to_db($form, $user, \%errors)
+	or return $class->req_show($req, \%errors);
+    }
+    
+    if ($form->{send_email}) {
+      $class->_send_to_mail($form, $user, \%values, \%errors, $req)
+	or $class->req_show($req, \%errors);
+    }
   }
 
   my $url = $cgi->param('r');
