@@ -9,6 +9,13 @@ sub thumb_base_url {
 sub _make_thumb_hash {
   my ($self, $geo_id, $im, $cfg, $static) = @_;
 
+  my $debug = $cfg->entry('debug', 'thumbnails', 0);
+
+  $static ||= 0;
+
+  $debug
+    and print STDERR "_make_thumb_hash(..., $geo_id, $im->{src}, ..., $static)\n";
+
   $geo_id =~ /^[\w,]+$/
     or return ( undef, "** invalid geometry id **" );
 
@@ -18,11 +25,12 @@ sub _make_thumb_hash {
   my $thumbs_class = $cfg->entry('editor', 'thumbs_class')
     or return ( undef, '** no thumbnail engine configured **' );
 
-  $static ||= 0;
-
   (my $thumbs_file = $thumbs_class . ".pm") =~ s!::!/!g;
   require $thumbs_file;
   my $thumbs = $thumbs_class->new($cfg);
+
+  $debug
+    and print STDERR "  Thumb class $thumbs_class\n";
 
   my $error;
   $thumbs->validate_geometry($geometry, \$error)
@@ -37,11 +45,15 @@ sub _make_thumb_hash {
   my $do_cache = $cfg->entry('basic', 'cache_thumbnails', 1);
   $im{image} = '';
   if ($im{original}) {
+    $debug
+      and print STDERR "  Using original\n";
     $im{image} = $im->{src};
   }
   elsif ($static && $do_cache) {
     require BSE::Util::Thumb;
     ($im{image}) = BSE::Util::Thumb->generate_thumb($cfg, $im, $geo_id, $thumbs);
+    $debug
+      and print STDERR "  Generated $im{image}\n";
   }
   unless ($im{image}) {
     $im{image} = "$base?g=$geo_id&page=$im->{articleId}&image=$im->{id}";
@@ -49,6 +61,9 @@ sub _make_thumb_hash {
     # hack for IE6
     defined $im{type} && $im{type} eq 'png'
       and $im{image} .= '&alpha-trans.png';
+
+    $debug
+      and print STDERR "  Defaulting to dynamic thumb url $im{image}\n";
   }
   $im{src} = $im{image};
 
