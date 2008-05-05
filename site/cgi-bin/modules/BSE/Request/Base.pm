@@ -28,7 +28,13 @@ sub new {
 }
 
 sub _make_cgi {
-  CGI->new;
+  my $q = CGI->new;
+  my $error = $q->cgi_error;
+  if ($error) {
+    print STDERR "CGI ERROR: $error\n";
+  }
+
+  return $q;
 }
 
 sub cgi {
