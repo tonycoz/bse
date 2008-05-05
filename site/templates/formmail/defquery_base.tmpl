@@ -1,6 +1,7 @@
 <:wrap base.tmpl title=>"FORMTITLE":>
 <form action="<:script:>" method="post" <:ifFormHasFileFields:>enctype="multipart/form-data"<:or:><:eif:>>
 <input type="hidden" name="form" value="<:id:>" />
+<:ifFormcfg spam_check_field:><input type="hidden" name="<:formcfg spam_check_field:>" value="" /><:or:><:eif:>
 <:ifCgi r:><input type="hidden" name="r" value="<:cgi r:>" /><:or:><:eif:>
 <:ifMsg:><p><b><:msg:></b></p><:or:><:eif:>
 <table>
