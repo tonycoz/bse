@@ -1251,10 +1251,23 @@ sub req_download_file {
   my $fileid = $cgi->param('file')
     or return $self->req_show_logon($req, 
 			 $msgs->('nofileid', "No file id supplied"));
-  require 'ArticleFiles.pm';
-  my $file = ArticleFiles->getByPkey($fileid)
-    or return $self->req_show_logon($req,
-			 $msgs->('nosuchfile', "No such download"));
+  require ArticleFiles;
+  my $file;
+  my $article_id = $cgi->param('page');
+  if ($article_id) {
+    require Articles;
+    my $article = Articles->getByPkey($article_id)
+      or return $self->req_show_logon($req,
+				      $msgs->('nosucharticle', "No such article"));
+    ($file) = grep $_->{name} eq $fileid, $article->files
+      or return $self->req_show_logon($req,
+				      $msgs->('nosuchfile', "No such download"));
+  }
+  else {
+    $file = ArticleFiles->getByPkey($fileid)
+      or return $self->req_show_logon($req,
+				      $msgs->('nosuchfile', "No such download"));
+  }
   $cfg->entryBool('downloads', 'require_logon', 0) && !$user
     and return $self->req_show_logon($req,
 			  $msgs->('downloadlogonall', 
