@@ -1253,21 +1253,26 @@ sub req_download_file {
 			 $msgs->('nofileid', "No file id supplied"));
   require ArticleFiles;
   my $file;
+  my $article;
   my $article_id = $cgi->param('page');
   if ($article_id) {
     require Articles;
-    my $article = Articles->getByPkey($article_id)
-      or return $self->req_show_logon($req,
-				      $msgs->('nosucharticle', "No such article"));
-    ($file) = grep $_->{name} eq $fileid, $article->files
-      or return $self->req_show_logon($req,
-				      $msgs->('nosuchfile', "No such download"));
+    if ($article_id == -1) {
+      ($file) = grep $_->{name} eq $fileid, Articles->global_files;
+    }
+    else {
+      $article = Articles->getByPkey($article_id)
+	or return $self->req_show_logon($req,
+					$msgs->('nosucharticle', "No such article"));
+      ($file) = grep $_->{name} eq $fileid, $article->files;
+    }
   }
   else {
-    $file = ArticleFiles->getByPkey($fileid)
-      or return $self->req_show_logon($req,
-				      $msgs->('nosuchfile', "No such download"));
+    $file = ArticleFiles->getByPkey($fileid);
   }
+  $file
+    or return $self->req_show_logon($req,
+				      $msgs->('nosuchfile', "No such download"));
   $cfg->entryBool('downloads', 'require_logon', 0) && !$user
     and return $self->req_show_logon($req,
 			  $msgs->('downloadlogonall', 
@@ -1283,10 +1288,9 @@ sub req_download_file {
 				  "This file can only be downloaded as part of an order"));
 
   # check the user has access to this file (RT#531)
-  my $article;
   if ($file->{articleId} != -1) {
     require Articles;
-    $article = Articles->getByPkey($file->{articleId})
+    $article ||= Articles->getByPkey($file->{articleId})
       or return $self->req_show_logon($req,
 				  $msgs->('downloadarticle',
 					  "Could not load article for file"));
