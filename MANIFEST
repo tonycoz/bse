@@ -163,6 +163,7 @@ site/cgi-bin/modules/BSE/UI/Shop.pm
 site/cgi-bin/modules/BSE/UI/SiteuserCommon.pm
 site/cgi-bin/modules/BSE/UI/SiteUserUpdate.pm
 site/cgi-bin/modules/BSE/UI/SubAdmin.pm
+site/cgi-bin/modules/BSE/UI/Tellafriend.pm
 site/cgi-bin/modules/BSE/UI/Thumb.pm
 site/cgi-bin/modules/BSE/UI/User.pm
 site/cgi-bin/modules/BSE/UserReg.pm
@@ -454,6 +455,8 @@ site/templates/custom/order_detail_payment.include
 # site/templates/custom/payment_type.include
 site/templates/custom/payment_type_email.include
 site/templates/error_base.tmpl
+site/templates/email/email.css
+site/templates/email/base.tmpl
 site/templates/extras.txt
 site/templates/formmail/defdone_base.tmpl
 site/templates/formmail/defemail.tmpl
@@ -492,6 +495,10 @@ site/templates/shopitem.tmpl
 site/templates/sidebar/afflink.tmpl
 site/templates/sidebar/logon.tmpl
 site/templates/sidebar/wishlist.tmpl
+site/templates/tellafriend/base_done.tmpl
+site/templates/tellafriend/base_form.tmpl
+site/templates/tellafriend/email.tmpl
+site/templates/tellafriend/email_html.tmpl
 site/templates/test/children.tmpl
 site/templates/test/testrep.tmpl
 site/templates/textemail/basic.tmpl

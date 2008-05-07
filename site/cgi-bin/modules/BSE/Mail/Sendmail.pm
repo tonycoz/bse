@@ -48,13 +48,20 @@ sub send {
       return $self->_error("BSE in test mode but mail.test_address not set");
     }
   }
+  if ($args{to_name} && $args{to_name} =~ /^[\w ]+$/) {
+    $to = "$args{to_name} <$to>";
+  }
+  my $from = $args{from};
+  if ($args{from_name} && $args{from_name} =~  /^[\w ]+$/) {
+    $from = "$args{from_name} <$from>";
+  }
   my $sendmail = $cfg->entry('mail', 'sendmail') || '/usr/lib/sendmail';
   my $opts = $cfg->entry('mail', 'sendmail_opts') || '-t -oi';
   # redirect to /dev/null so we don't keep stdout open in a CGI
   open MAIL, "| $sendmail $opts >/dev/null"
     or return $self->_error("Cannot open pipe to sendmail");
   print MAIL <<EOS;
-From: $args{from}
+From: $from
 To: $to
 Subject: $subject
 $args{headers}

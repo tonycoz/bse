@@ -1,0 +1,38 @@
+<:wrap base.tmpl title => "Tell a friend":>
+<p>Notify your friend about <a href="<:tarticle link:>"><:tarticle title:></a></p>
+<:ifMessage:><div class="message"><:message:></div><:or:><:eif:>
+<form action="<:dyntarget tellafriend:>" method="post">
+<input type="hidden" name="page" value="<:tarticle id:>" />
+<input type="hidden" name="key" value="<:secret:>" />
+<input type="hidden" name="key2" value="" />
+<table>
+  <tr>
+    <th>From Name:</th>
+    <td><input type="text" name="from_name" value="<:old from_name:>" maxlength="60" size="40" /></td>
+    <td><:error_img from_name:></td>
+  </tr>
+  <tr>
+    <th>From Email:</th>
+    <td><input type="text" name="from_email" value="<:old from_email:>" maxlength="130" size="60" /></td>
+    <td><:error_img from_email:></td>
+  </tr>
+  <tr>
+    <th>To Name:</th>
+    <td><input type="text" name="to_name" value="<:old to_name:>" maxlength="60" size="40" /></td>
+    <td><:error_img to_name:></td>
+  </tr>
+  <tr>
+    <th>To Email:</th>
+    <td><input type="text" name="to_email" value="<:old to_email:>" maxlength="130" size="60" /></td>
+    <td><:error_img to_email:></td>
+  </tr>
+  <tr>
+    <th>Note:</th>
+    <td><input type="text" name="note" value="<:old note:>" maxlength="60" size="40" /></td>
+    <td><:error_img note:></td>
+  </tr>
+  <tr>
+    <td colspan="2" class="submit"><input type="submit" name="a_send" value="Notify your friend" /></td>
+  </tr>
+</table>
+</form>

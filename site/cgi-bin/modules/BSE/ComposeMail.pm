@@ -89,17 +89,25 @@ sub start {
 
   $self->{html_template} = $opts{html_template}
     || "$self->{template}_html";
+  
+  $self->{extra_mail_args} = {};
+  for my $arg (qw(to_name from_name)) {
+    defined $opts{$arg}
+      and $self->{extra_mail_args}{$arg} = $opts{$arg};
+  }
 
   $self->{content} = '';
   $self->{type} = '';
-  if (ref $self->{to}) {
-    # being sent to a site user, use their setting
-    $self->{allow_html} = $self->{to}->allow_html_email;
-    $self->{to} = $self->{to}{email};
-  }
-  else {
-    $self->{allow_html} = 
-      $self->{cfg}->entry('mail', 'html_system_email', 0);
+  unless (defined $self->{allow_html}) {
+    if (ref $self->{to}) {
+      # being sent to a site user, use their setting
+      $self->{allow_html} = $self->{to}->allow_html_email;
+      $self->{to} = $self->{to}{email};
+    }
+    else {
+      $self->{allow_html} = 
+	$self->{cfg}->entry('mail', 'html_system_email', 0);
+    }
   }
   
   delete $self->{baseid};
@@ -204,23 +212,15 @@ sub encrypt_body {
   $self->{passphrase} = $opts{passphrase};
 }
 
-sub done {
-  my ($self) = @_;
+sub _build_internal {
+  my ($self, $content, $text_type, $headers) = @_;
 
-  my %acts = %{$self->{acts}}; # at some point we'll add extra tags here
-
-  my $content = BSE::Template->get_page($self->{template}, $self->{cfg}, \%acts);
-  my $text_type = 'text/plain';
-  if ($self->{encrypt}) {
-    $content = $self->_encrypt($content, \$text_type);
-  }
-  my @headers;
   my $message;
   if (@{$self->{attachments}}) {
 
     my $boundary = $self->{baseid}."boundary";
-    push @headers, "MIME-Version: 1.0";
-    push @headers, qq!Content-Type: multipart/mixed; boundary="$boundary"!;
+    push @$headers, "MIME-Version: 1.0";
+    push @$headers, qq!Content-Type: multipart/mixed; boundary="$boundary"!;
 
     $message = <<EOS;
 --$boundary
@@ -288,19 +288,135 @@ EOS
     $message .= "--$boundary--\n";
   }
   else {
-    push @headers, 
+    push @$headers, 
       "Content-Type: $text_type",
 	"MIME-Version: 1.0";
     $message = $content;
   }
 
+  return $message;
+}
+
+sub _build_mime_lite {
+  my ($self, $text_content, $html_content, $headers) = @_;
+  
+  require MIME::Lite;
+
+  $text_content .= "\n" unless $text_content =~ /\n$/;
+  $html_content .= "\n" unless $html_content =~ /\n$/;
+
+  my $msg = MIME::Lite->new
+    (
+     From => $self->{from},
+     "Errors-To:" => $self->{from},
+     Subject => $self->{subject},
+     Type => 'multipart/alternative',
+    );
+  my $text_part = $msg->attach(Type => 'text/plain',
+			       Data => [ $text_content ]);
+  my $html_part = $msg->attach(Type => 'multipart/related');
+  $html_part->attach(Type => 'text/html',
+		     Data => $html_content);
+
+  for my $attachment (@{$self->{attachments}}) {
+    my $data;
+    if ($attachment->{file}) {
+      if (open DATA, "< $attachment->{file}") {
+	binmode DATA;
+	$data = do { local $/; <DATA> };
+	close DATA;
+      }
+      else {
+	$self->{errstr} = "Could not open attachment $attachment->{file}: $!";
+	return;
+      }
+    }
+    elsif ($attachment->{fh}) {
+      my $fh = $attachment->{fh};
+      binmode $fh;
+      $data = do { local $/; <$fh> };
+    }
+    elsif ($attachment->{data}) {
+      $data = $attachment->{data};
+    }
+    else {
+      confess "Internal error: attachment with no file/fh/data";
+    }
+    my %opts =
+      (
+       Type => $attachment->{type},
+       Data => $data,
+       Id   => "<$attachment->{id}>" # <> required by RFC
+      );
+    if ($attachment->{disposition} eq 'attachment' || $attachment->{display}) {
+      $opts{Filename} = $attachment->{display};
+    }
+    $html_part->attach(%opts);
+  }
+
+  my $header_str = $msg->header_as_string;
+  for my $header (split /\n/, $header_str) {
+    my ($key, $value) = $header =~ /^([^:]+): *(.*)/
+      or next;
+    # the mailer adds these in later
+    unless ($key =~ /^(from|to|subject)$/i) {
+      push @$headers, $header;
+    }
+  }
+
+  return $msg->body_as_string;
+}
+
+sub extra_headers {
+  my ($self) = @_;
+
+  my $section = $self->{header_section} || "mail headers for $self->{template}";
+  my @headers;
+  my %extras = $self->{cfg}->entriesCS($section);
+  for my $key (keys %extras) {
+    (my $head_key = $key) =~ s/_/-/g;
+    push @headers, "$head_key: $extras{$key}";
+  }
+  
+  return @headers;
+}
+
+sub done {
+  my ($self) = @_;
+
+  my %acts = 
+    (
+     %{$self->{acts}},
+     resource => [ tag_resource => $self ],
+    ); # 
+
+  my $message;
+  my @headers;
+  my $content = BSE::Template->
+    get_page($self->{template}, $self->{cfg}, \%acts);
+  if (!$self->{allow_html} || $self->{encrypt} || 
+      !BSE::Template->find_source($self->{html_template}, $self->{cfg})) {
+    my $text_type = 'text/plain';
+    if ($self->{encrypt}) {
+      $content = $self->_encrypt($content, \$text_type);
+    }
+    $message = $self->_build_internal($content, $text_type, \@headers);
+  }
+  else {
+    my $html_content = BSE::Template->
+      get_page($self->{html_template}, $self->{cfg}, \%acts);
+    $message = $self->_build_mime_lite($content, $html_content, \@headers);
+  }
+  push @headers, $self->extra_headers;
   my $mailer = BSE::Mail->new(cfg => $self->{cfg});
   my $headers = join "", map "$_\n", @headers;
+  my %extras;
   if ($mailer->send(to => $self->{to},
 		    from => $self->{from},
 		    subject => $self->{subject},
 		    body => $message,
-		    headers => $headers)) {
+		    headers => $headers,
+		    %{$self->{extra_mail_args}})) {
     return 1;
   }
   else {
@@ -355,5 +471,46 @@ sub errstr {
   $_[0]{errstr};
 }
 
+sub tag_resource {
+  my ($self, $args) = @_;
+
+  defined $args and $args =~ /^\w+$/
+    or return "** invalid resource id $args **";
+
+  if ($self->{resource}{$args}) {
+    return $self->{resource}{$args};
+  }
+
+  my $res_entry = $self->{cfg}->entry('mail resources', $args)
+    or return "** No resource $args found **";
+  my ($filename, $type, $inline) = split /,/, $res_entry;
+
+  unless ($type) {
+    if ($filename =~ /\.(gif|png|jpg)$/i) {
+      $type = lc $1 eq 'jpg' ? 'image/jpeg' : 'image/' . lc $1;
+    }
+    else {
+      $type = 'application/octet-stream';
+    }
+  }
+  if (!defined $inline) {
+    $inline = $type =~ m!^image/!;
+  }
+
+  my $abs_filename = BSE::Template->find_source($filename, $self->{cfg})
+    or return "** file $filename for resource $args not found **";
+
+  (my $display = $filename) =~ s/.*[\/\\]//;
+
+  my $url = $self->attach(file => $abs_filename,
+			  display => $display,
+			  type => $type,
+			  inline => $inline)
+    or return "** could not attach $args: $self->{errstr} **";
+
+  $self->{resource}{$args} = $url;
+
+  return $url;
+}
 
 1;

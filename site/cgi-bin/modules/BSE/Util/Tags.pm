@@ -4,7 +4,7 @@ use HTML::Entities;
 use DevHelp::Tags;
 use DevHelp::HTML qw(:default escape_xml);
 use vars qw(@EXPORT_OK @ISA);
-@EXPORT_OK = qw(tag_error_img tag_hash tag_hash_plain tag_hash_mbcs tag_article);
+@EXPORT_OK = qw(tag_error_img tag_hash tag_hash_plain tag_hash_mbcs tag_article tag_article_plain);
 @ISA = qw(Exporter);
 require Exporter;
 
@@ -979,6 +979,12 @@ sub tag_ajax {
 sub tag_article {
   my ($article, $cfg, $args) = @_;
 
+  return escape_html(tag_article_plain($article, $cfg, $args));
+}
+
+sub tag_article_plain {
+  my ($article, $cfg, $args) = @_;
+
   my $value;
   if ($args eq 'link'
      && ref($article) ne 'HASH') {
@@ -992,7 +998,7 @@ sub tag_article {
     }
   }
 
-  return escape_html($value);
+  return $value;
 }
 
 1;

@@ -1,0 +1,13 @@
+<:wrap email/base.tmpl:>
+<p>Hi <:to_name:>,</p>
+
+<p><a href="mailto:<:from_email |h:>"><:from_name |h:></a> has asked
+us to notify you about one of our articles.</p>
+
+<p><a href="<:link |h:>"><:tarticle title |h:></a></p>
+
+<:ifNote:><p>Note: <:note:></p><:or:><:eif:>
+
+<div class="ipaddress">Sender's IP Address: <:sender_ip:></div>
+
+

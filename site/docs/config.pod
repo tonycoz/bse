@@ -382,6 +382,12 @@ rather than sent immediately.
 If true, we add an Errors-To header set to the same as the From
 header.  Default: true.
 
+=item html_system_email
+
+If non-zero then emails sent via the compose mail system that aren't
+being sent to a member record, will be sent as HTML, if the HTML
+template is available.
+
 =back
 
 =head2 [children of I<id>]
@@ -1747,6 +1753,23 @@ The outline image geometry.  If no value is supplied then the original
 image values are used.
 
 =back
+
+=head2 [mail resources]
+
+Each key is the identifier of a file that can be attached to
+BSE::ComposeMail emails.  The value is comma separated filename,
+content type, inline status.
+
+The files are searched for through the template search mechanism, so
+the filename can be relative to either the master or local templates
+directories.
+
+If the content type is not supplied, if the filename end in gif, png
+or jpg the appropriate content type is used, otherwise
+application/octet-stream.
+
+If the inline status is not supplied then images are considered
+inline, and other files arent.
 
 =head1 AUTHOR
 

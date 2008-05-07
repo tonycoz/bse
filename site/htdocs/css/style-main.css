@@ -1,5 +1,7 @@
-body {  text-decoration: none; font-family: Verdana, Arial, Helvetica, sans-serif; }
+body, td, th {  text-decoration: none; font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 12px; }
 a {  text-decoration: none}
+.title { font-weight: bold; font-size: 14px; padding-left: 1.5em; }
+.tryadvanced {  font-size: 8px; }
 a:hover {  text-decoration: underline; color: #FF7F00}
 select {  font-family: "MS Sans Serif", Verdana, sans-serif; font-size: 12px}
 input {  font-family: "MS Sans Serif", Verdana, sans-serif; font-size: 12px}
@@ -22,4 +24,21 @@ textarea {  font-family: "MS Sans Serif", Verdana, sans-serif; font-size: 12px}
 .usermenu a:hover { color: #000000; text-decoration: none; }
 .usermenu a:before { content: " <" }
 .usermenu a:after { content: "> " }
+.message { 
+  color: #F00;
+  text-align: center; 
+  padding: 5px 0 5px 0;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  background-color: #FEE;
+  width: 40em;
+}
 
+.copyright { font-size: 6px; text-align: right; }
+
+form th { text-align: right; }
+form td.submit { text-align: right; }
+
+#nav td { background-color: #CCCCCC }
+#nav a:link, #nav a:visited { font-weight: bold; padding-left: 0.5em; }
+#nav table table a:link { padding-left: 1em; }
