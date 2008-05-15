@@ -17,13 +17,13 @@ sub _make_thumb_hash {
     and print STDERR "_make_thumb_hash(..., $geo_id, $im->{src}, ..., $static)\n";
 
   $geo_id =~ /^[\w,]+$/
-    or return ( undef, "** invalid geometry id **" );
+    or return ( undef, "* invalid geometry id *" );
 
   my $geometry = $cfg->entry('thumb geometries', $geo_id)
-    or return ( undef, "** cannot find thumb geometry $geo_id**" );
+    or return ( undef, "* cannot find thumb geometry $geo_id *" );
 
   my $thumbs_class = $cfg->entry('editor', 'thumbs_class')
-    or return ( undef, '** no thumbnail engine configured **' );
+    or return ( undef, '* no thumbnail engine configured *' );
 
   (my $thumbs_file = $thumbs_class . ".pm") =~ s!::!/!g;
   require $thumbs_file;
@@ -34,7 +34,7 @@ sub _make_thumb_hash {
 
   my $error;
   $thumbs->validate_geometry($geometry, \$error)
-    or return ( undef, "** invalid geometry string: $error **" );
+    or return ( undef, "* invalid geometry string: $error *" );
 
   my %im = map { $_ => $im->{$_} } $im->columns;
   my $base = $self->thumb_base_url;
@@ -79,6 +79,9 @@ sub _thumbimage_low {
 
   my ($imwork, $error) = 
     $self->_make_thumb_hash($geo_id, $im, $cfg, $static);
+
+  $imwork
+    or return escape_html($error);
   
   if ($field) {
     my $value = $imwork->{$field};
