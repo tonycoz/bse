@@ -58,9 +58,13 @@ sub _make_thumb_hash {
   unless ($im{image}) {
     $im{image} = "$base?g=$geo_id&page=$im->{articleId}&image=$im->{id}";
 
-    # hack for IE6
-    defined $im{type} && $im{type} eq 'png'
-      and $im{image} .= '&alpha-trans.png';
+    if (defined $im{type}) {
+      $im{image} .= "&type.$im{type}";
+    }
+    else {
+      $im{image} .= "&" . $im->{image};
+    }
+
 
     $debug
       and print STDERR "  Defaulting to dynamic thumb url $im{image}\n";
