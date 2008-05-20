@@ -502,27 +502,31 @@ sub tag_gthumbimage {
   return $self->do_gthumbimage($geometry_id, $id, $field, $$rcurrent);
 }
 
-sub tag_sthumbimage {
-  my ($self, $args, $acts, $name, $templater) = @_;
+sub _find_image {
+  my ($self, $acts, $templater, $article_id, $image_tags, $msg) = @_;
 
-  my ($article_id, $geometry, $image_tags, $field) = split ' ', $args;
-  
   my $article;
   if ($article_id =~ /^\d+$/) {
     require Articles;
-    $article = Articles->getByPkey($args);
+    $article = Articles->getByPkey($article_id);
   }
   elsif ($acts->{$article_id}) {
     my $id = $templater->perform($acts, $article_id, "id");
-    $article = Articles->getByPkey($id)
-      or return "** article $article_id/$id not found **";
+    $article = Articles->getByPkey($id);
+    unless ($article) {
+      $$msg = "* article $article_id/$id not found *";
+      return;
+    }
   }
   else {
-    ($article) = Articles->getBy(linkAlias => $article_id)
-      or return "** no article $article_id found **";
+    ($article) = Articles->getBy(linkAlias => $article_id);
+    unless ($article) {
+      $$msg = "* no article $article_id found *";
+      return;
+    }
   }
   $article
-    or return '';
+    or return;
 
   my @images = $article->images;
   my $im;
@@ -543,10 +547,32 @@ sub tag_sthumbimage {
 	and last;
     }
   }
-  $im
-    or return '';
+
+  return $im;
+}
+
+sub tag_sthumbimage {
+  my ($self, $args, $acts, $name, $templater) = @_;
+
+  my ($article_id, $geometry, $image_tags, $field) = split ' ', $args;
+
+  my $msg;
+  my $im = $self->_find_image($acts, $templater, $article_id, $image_tags, \$msg)
+    or return $msg;
   
   return $self->_sthumbimage_low($geometry, $im, $field);
+}
+
+sub tag_simage {
+  my ($self, $args, $acts, $name, $templater) = @_;
+
+  my ($article_id, $image_tags, $field, $rest) = split ' ', $args, 4;
+
+  my $msg;
+  my $im = $self->_find_image($acts, $templater, $article_id, $image_tags, \$msg)
+    or return $msg;
+
+  return $self->_format_image($im, $field, $rest);
 }
 
 sub baseActs {
@@ -718,6 +744,7 @@ sub baseActs {
      $it->make_iterator( [ \&iter_gfiles, $self ], 'gfilei', 'gfiles'),
      gthumbimage => [ tag_gthumbimage => $self, \$current_gimage ],
      sthumbimage => [ tag_sthumbimage => $self ],
+     simage => [ tag_simage => $self ],
     );
 }
 
