@@ -114,8 +114,6 @@ sub _format_ol {
 sub _format_lists {
   my ($text) = @_;
 
-  print STDERR "_format_lists:>>$text<<\n";
-
   my $out = '';
 
   while (length $text) {
