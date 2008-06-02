@@ -265,7 +265,7 @@ sub format {
 	$part =~ s#\n*h([1-6])\[([^\[\]]+)\]\n*#
 	  $self->_fix_spanned("\n\n<h$1>", "</h$1>\n\n", $2)#ieg
 	  and next TRY;
-	$part =~ s#align\[([^|\]\[]+)\|([^\]\[]+)\]#<div align="$1">$2</div>#ig
+	$part =~ s#align\[([^|\]\[]+)\|([^\]\[]+)\]#\n\n<div align="$1">$2</div>\n\n#ig
 	  and next TRY;
 	$part =~ s#hr\[([^|\]\[]*)\|([^\]\[]*)\]#_make_hr($1, $2)#ieg
 	  and next TRY;
@@ -276,7 +276,17 @@ sub format {
 	$part =~ s#table\[([^\]\[]+)\|([^\]\[|]+)\]#_make_table($1, "|$2")#ieg
 	  and next TRY;
 	#print STDERR "step: ",unpack("H*", $part),"\n$part\n";
-	$part =~ s#(?:^|\n+|\G)((?: *(?:\*\*|\#\#|\%\%)[^\n]+(?:\n|$)\n?[^\S\n]*)+)\n?#"\n\n"._format_lists($1)."\n\n"#eg
+	$part =~ s!(?:^|\n+|\G)
+                   ( # capture
+                     (?: # an item
+                       \ *   # maybe some spaces
+                       (?:\*\*|\#\#|\%\%) # marker
+                       [^\n]+  # some non-newline text
+                       (?:\n|$)\n? # with one or two line endings
+                       [^\S\n]* # and any extra non-newline whitespace
+                     )
+                     + # one or more times
+                   )\n?!"\n\n"._format_lists($1)."\n\n"!egx
 	  and next TRY;
 	$part =~ s#indent\[([^\]\[]+)\]#<ul>$1</ul>#ig
 	  and next TRY;
