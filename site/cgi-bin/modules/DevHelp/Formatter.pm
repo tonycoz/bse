@@ -114,16 +114,18 @@ sub _format_ol {
 sub _format_lists {
   my ($text) = @_;
 
+  print STDERR "_format_lists:>>$text<<\n";
+
   my $out = '';
 
   while (length $text) {
-    if ($text =~ s!^((?: *\#\#[^\n]+(?:\n|$)\n?[^\S\n]*)+)\n?!!) {
+    if ($text =~ s(^((?: *\#\#[^\n]+(?:\n(?!\*\*|\#\#|\%\%)[^\n]+)*(?:\n|$)\n?[^\S\n]*)+)\n?)()) {
       $out .= _format_ol($1);
     }
-    elsif ($text =~ s#^((?: *\*\*[^\n]+(?:\n|$)\n?[^\S\n]*)+)\n?##) {
+    elsif ($text =~ s(^((?: *\*\*[^\n]+(?:\n(?!\*\*|\#\#|\%\%)[^\n]+)*(?:\n|$)\n?[^\S\n]*)+)\n?)()) {
       $out .= _format_bullets($1);
     }
-    elsif ($text =~ s!^((?: *%%[^\n]+(?:\n|$)\n?[^\S\n]*)+)\n?!!) {
+    elsif ($text =~ s(^((?: *%%[^\n]+(?:\n(?!\*\*|\#\#|\%\%)[^\n]+)*(?:\n|$)\n?[^\S\n]*)+)\n?)()) {
       $out .= _format_ol($1, 'a', '%%');
     }
     else {
@@ -276,17 +278,17 @@ sub format {
 	$part =~ s#table\[([^\]\[]+)\|([^\]\[|]+)\]#_make_table($1, "|$2")#ieg
 	  and next TRY;
 	#print STDERR "step: ",unpack("H*", $part),"\n$part\n";
-	$part =~ s!(?:^|\n+|\G)
+	$part =~ s((?:^|\n+|\G)
                    ( # capture
                      (?: # an item
                        \ *   # maybe some spaces
                        (?:\*\*|\#\#|\%\%) # marker
-                       [^\n]+  # some non-newline text
+                       [^\n]+(?:\n(?!\*\*|\#\#|\%\%)[^\n]+)*  # some non-newline text
                        (?:\n|$)\n? # with one or two line endings
                        [^\S\n]* # and any extra non-newline whitespace
                      )
                      + # one or more times
-                   )\n?!"\n\n"._format_lists($1)."\n\n"!egx
+                   )(\n|$)?)("\n\n"._format_lists($1)."\n\n")egx
 	  and next TRY;
 	$part =~ s#indent\[([^\]\[]+)\]#<ul>$1</ul>#ig
 	  and next TRY;
