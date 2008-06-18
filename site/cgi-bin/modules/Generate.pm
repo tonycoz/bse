@@ -713,6 +713,10 @@ sub baseActs {
 			 undef, undef, 'nocache' ), 
      $art_it->make_iterator( [ iter_all_kids_of => $self ], 'ofallkid3', 'allkids_of3',
 			 undef, undef, 'nocache' ), 
+     $art_it->make_iterator( [ iter_all_kids_of => $self ], 'ofallkid4', 'allkids_of4',
+			 undef, undef, 'nocache' ), 
+     $art_it->make_iterator( [ iter_all_kids_of => $self ], 'ofallkid5', 'allkids_of5',
+			 undef, undef, 'nocache' ), 
      $art_it->make_iterator( \&iter_inlines, 'inline', 'inlines' ),
      gimage => 
      sub {
