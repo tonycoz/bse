@@ -658,7 +658,7 @@ sub do_thumbimage {
   my ($self, $geo_id, $image_id, $field, $images, $current) = @_;
 
   my $im;
-  if ($image_id eq '-' && $rcurrent) {
+  if ($image_id eq '-' && $current) {
     $im = $current
       or return "** No current image in images iterator **"
   }
