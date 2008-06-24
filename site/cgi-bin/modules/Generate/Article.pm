@@ -655,11 +655,11 @@ sub do_popimage {
 # note: this is called by BSE::Formatter::thumbimage(), update that if
 # this is changed
 sub do_thumbimage {
-  my ($self, $geo_id, $image_id, $field, $images, $rcurrent) = @_;
+  my ($self, $geo_id, $image_id, $field, $images, $current) = @_;
 
   my $im;
   if ($image_id eq '-' && $rcurrent) {
-    $im = $$rcurrent
+    $im = $current
       or return "** No current image in images iterator **"
   }
   else {
