@@ -485,7 +485,7 @@ HTML
      },
      ifStepAncestor => [ \&tag_ifStepAncestor, $article ],
      # access to images, if any
-     $it->make_iterator([ iter_images => $self ], 'image', 'images', \@iter_images, \$image_index, 'nocache', \$current_image),
+     $it->make_iterator([ iter_images => $self, $images ], 'image', 'images', \@iter_images, \$image_index, 'nocache', \$current_image),
      # override the generated image tag
      image =>
      sub {
