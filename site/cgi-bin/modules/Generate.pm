@@ -942,8 +942,7 @@ sub _format_image {
 
   if ($align && exists $im->{$align}) {
     if ($align eq 'src') {
-      my $src = $self->image_url($im);
-      return escape_html($im);
+      return escape_html($self->image_url($im));
     }
     else {
       return escape_html($im->{$align});
