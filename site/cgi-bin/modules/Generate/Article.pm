@@ -201,6 +201,24 @@ sub tag_thumbimage {
   return $self->do_thumbimage($geometry_id, $id, $field, $images, $$rcurrent);
 }
 
+sub iter_images {
+  my ($self, $images, $arg) = @_;
+
+  if ($arg eq 'all') {
+    return @$images;
+  }
+  elsif ($arg eq 'named') {
+    return grep $_->{name} ne '', @$images;
+  }
+  elsif ($arg =~ m!^named\s+/([^/]+)/$!) {
+    my $re = $1;
+    return grep $_->{name} =~ /$re/i, @$images;
+  }
+  else {
+    return grep $_->{name} eq '', @$images;
+  }
+}
+
 sub baseActs {
   my ($self, $articles, $acts, $article, $embedded) = @_;
 
@@ -256,6 +274,7 @@ sub baseActs {
   my $allkids_index;
   my $current_image;
   my $art_it = BSE::Util::Iterate::Article->new(cfg =>$cfg);
+  my $it = BSE::Util::Iterate->new;
   # separate these so the closures can see %acts
   my %acts =
     (
@@ -466,35 +485,8 @@ HTML
      },
      ifStepAncestor => [ \&tag_ifStepAncestor, $article ],
      # access to images, if any
-     iterate_images_reset => 
-     sub { 
-       my ($arg) = @_;
-       $image_index = -1;
-       if ($arg eq 'all') {
-	 @iter_images = @images;
-       }
-       elsif ($arg eq 'named') {
-	 @iter_images = grep $_->{name} ne '', @images;
-       }
-       elsif ($arg =~ m!^named\s+/([^/]+)/$!) {
-	 my $re = $1;
-	 @iter_images = grep $_->{name} =~ /$re/i, @images;
-       }
-       else {
-	 @iter_images = @unnamed_images;
-       }
-       $current_image = undef;
-     },
-     iterate_images => 
-     sub { 
-       if (++$image_index < @iter_images) {
-	 $current_image = $iter_images[$image_index];
-       }
-       else {
-	 $current_image = undef;
-       }
-       $current_image;
-     },
+     $it->make_iterator([ iter_images => $self ], 'image', 'images', \@iter_images, \$image_index, 'nocache', \$current_image),
+     # override the generated image tag
      image =>
      sub {
        my ($which, $align, $rest) = split ' ', $_[0], 3;
@@ -524,27 +516,6 @@ HTML
        $self->_format_image($im, $align, $rest);
      },
      ifImage => sub { $_[0] >= 1 && $_[0] <= @images },
-     ifImages => 
-     sub {
-       my ($arg) = @_;
-       if ($arg eq 'all' or $arg eq '') {
-	 return @images;
-       }
-       elsif ($arg eq 'named') {
-	 return grep $_->{name} ne '', @images;
-       }
-       elsif ($arg =~ m!^named\s+/([^/]+)/$!) {
-	 my $re = $1;
-	 return grep $_->{name} =~ /$re/i, @images;
-       }
-       elsif ($arg eq 'unnamed') {
-	 return @unnamed_images;
-       }
-       else {
-	 return 0;
-       }
-     },
-     image_index => sub { $image_index },
      thumbimage => [ tag_thumbimage => $self, \$current_image, \@images ],
      BSE::Util::Tags->make_iterator(\@files, 'file', 'files'),
      BSE::Util::Tags->make_iterator(\@stepkids, 'stepkid', 'stepkids'),
