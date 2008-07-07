@@ -92,6 +92,14 @@
             <td nowrap="nowrap" bgcolor="#FFFFFF"><:help edit titleAlias:> <:error_img titleAlias:></td>
           </tr><:or Cfg:><:eif Cfg:>
           <tr> 
+            <th nowrap="nowrap" bgcolor="#FFFFFF" align="left">Summary: 
+            </th>
+            <td bgcolor="#FFFFFF" width="100%"> 
+            <:ifFieldPerm summary:><input type="text" name="summary" maxlength="<:cfg fields summary_size 255:>" size="64" value="<: old summary default summary :>" />
+            <:or:><:default summary:><:eif:></td>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help edit summary:> <:error_img summary:></td>
+          </tr>
+          <tr> 
             <th valign="top" bgcolor="#FFFFFF" nowrap="nowrap" align="left"> Body:</th>
             <td bgcolor="#FFFFFF" width="100%"> 
               <:ifFieldPerm body:><textarea name="body" rows="10" cols="60" wrap="virtual"><: old body default body :></textarea><:or:><:bodytext article body:><:eif:>
