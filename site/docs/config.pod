@@ -347,6 +347,11 @@ alphanumerics removed) and appended to the alias URL generated.
 This is the default popup image class for the popimage[] and
 gpopimage[] tags.  Default: popup.
 
+=item warn_obsolete
+
+Some obsolete tags will warn to stderr if this is non-zero.  Default:
+don't warn.
+
 =back
 
 =head2 [mail]

@@ -219,6 +219,74 @@ sub iter_images {
   }
 }
 
+=item filen name
+
+=item filen name field
+
+Reference an article attached file by name.
+
+C<filen name> will display a link to the file.
+
+C<<filen name I<field> >> will display the given field from the file
+record.  A I<field> of C<url> will be a URL to the file.
+
+If the file identifier given doesn't exist for the current article the
+empty string is returned, allowing use as ifFilen.
+
+The result is unspecified if the I<field> specified isn't one of the
+image record field names and isn't C<url>.
+
+=cut
+
+sub tag_filen {
+  my ($self, $files, $arg, $acts, $funcname, $templater) = @_;
+
+  my ($name, $field, @rest) = 
+    DevHelp::Tags->get_parms($arg, $acts, $templater);
+
+  length $name
+    or return '* name cannot be an empty string *';
+
+  my ($file) = grep $_->{name} eq $name, @$files
+    or return '';
+
+  return $self->_format_file($file, $field);
+}
+
+=item iterator: crumbs/crumb
+
+Iterators over the ancestor tree from the article parent to the root.
+
+Parameters include:
+
+=over
+
+=item *
+
+showtop - the top level article is included even if unlisted
+
+=item *
+
+listedonly - only listed articles in the tree are included
+
+=back
+
+The default depends on the value of $Constants::UNLISTED_LEVEL1_IN_CRUMBS.
+
+=cut
+
+sub iter_crumbs {
+  my ($self, $crumbs, $args) = @_;
+
+  $args ||= $UNLISTED_LEVEL1_IN_CRUMBS ? 'showtop' : 'listedonly';
+  if ($args eq 'showtop') {
+    return @$crumbs;
+  }
+  else {
+    return grep $_->{listed}, @$crumbs;
+  }
+}
+
 sub baseActs {
   my ($self, $articles, $acts, $article, $embedded) = @_;
 
@@ -240,8 +308,9 @@ sub baseActs {
     unshift(@crumbs, $crumb) if $crumb->{listed} == 1 || $crumb->{level} == 1;
     $temp = $crumb;
   }
-  my $crumb_index = -1;
-  my @work_crumbs; # set by the crumbs iterator
+  #my $crumb_index = -1;
+  #my @work_crumbs; # set by the crumbs iterator
+  my $current_crumb;
 
   my $parent = $articles->getByPkey($article->{parentid});
   my $section = @crumbs ? $crumbs[0] : $article;
@@ -372,45 +441,17 @@ sub baseActs {
      },
 
      # used to display a navigation path of parent sections
-     iterate_crumbs_reset => 
-     sub {
-       my $args = $_[0];
-       $args ||= $UNLISTED_LEVEL1_IN_CRUMBS ? 'showtop' : 'listedonly';
-       if ($args eq 'showtop') {
-	 @work_crumbs = @crumbs;
-       }
-       else {
-	 @work_crumbs = grep $_->{listed}, @crumbs;
-       }
-       $crumb_index = -1;
-     },
-     iterate_crumbs =>
-     sub {
-       return ++$crumb_index < @work_crumbs;
-     },
+     $art_it->make_iterator([ iter_crumbs => $self, \@crumbs ],
+			    'crumb', 'crumbs', undef, undef,
+			    'nocache', \$current_crumb),
      crumbs =>
      sub {
-       # obsolete me
-       return tag_article($work_crumbs[$crumb_index], $cfg, $_[0]);
+       # this is obsolete
+       $cfg->entry('basic', 'warn_obsolete', 0)
+	 and print STDERR "* crumbs tag obsolete *\n";
+       return tag_article($current_crumb, $cfg, $_[0]);
      },
-     crumb =>
-     sub {
-       return tag_article($work_crumbs[$crumb_index], $cfg, $_[0]);
-     },
-     ifCrumbs =>
-     sub {
-       my $args = $_[0];
-       $args ||= $UNLISTED_LEVEL1_IN_CRUMBS ? 'showtop' : 'listedonly';
-
-       my @temp;
-       if ($args eq 'showtop') {
-	 return scalar @crumbs;
-       }
-       else {
-	 return scalar grep $_->{listed}, @crumbs;
-       }
-     },
-
+     
      # access to parent
      ifParent => sub { $parent },
      parent =>
@@ -518,6 +559,7 @@ HTML
      ifImage => sub { $_[0] >= 1 && $_[0] <= @images },
      thumbimage => [ tag_thumbimage => $self, \$current_image, \@images ],
      BSE::Util::Tags->make_iterator(\@files, 'file', 'files'),
+     filen => [ tag_filen => $self, \@files ],
      BSE::Util::Tags->make_iterator(\@stepkids, 'stepkid', 'stepkids'),
      $art_it->make_iterator(undef, 'allkid', 'allkids', \@allkids, \$allkids_index),
      $art_it->make_iterator(undef, 'stepparent', 'stepparents', \@stepparents),
