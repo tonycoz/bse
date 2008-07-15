@@ -195,4 +195,20 @@ sub admin_mode {
   $self->{admin};
 }
 
+sub _find_articles {
+  my ($self, $article_id) = @_;
+
+  my $article = $self->{req}->get_article('dynarticle');
+  if ($article_id eq 'children') {
+    return $article->all_visible_kids;
+  }
+  elsif ($article_id eq 'parent') {
+    my $parent = $article->parent;
+    $parent
+      and return $parent;
+  }
+
+  return $self->SUPER::_find_articles($article_id);
+}
+
 1;

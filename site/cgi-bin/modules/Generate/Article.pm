@@ -719,6 +719,23 @@ sub tag_movekid {
   return make_arrows($self->{cfg}, $down_url, $up_url, $refreshto, $img_prefix);
 }
 
+sub _find_articles {
+  my ($self, $article_id, $article, @rest) = @_;
+
+  if ($article_id eq 'article') {
+    return $article;
+  }
+  elsif ($article_id eq 'children') {
+    return $article->all_visible_kids;
+  }
+  elsif ($article_id eq 'parent') {
+    return $article->parent;
+  }
+  else {
+    return $self->SUPER::_find_articles($article_id, $article, @rest);
+  }
+}
+
 1;
 
 __END__

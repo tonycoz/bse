@@ -3,6 +3,7 @@ use strict;
 use BSE::Util::Tags qw(tag_article);
 use DevHelp::HTML;
 use base 'BSE::ThumbLow';
+use base 'BSE::TagFormats';
 use BSE::CfgInfo qw(custom_class);
 
 sub new {
@@ -34,6 +35,9 @@ sub tags {
      ifUserMemberOf => [ tag_ifUserMemberOf => $self ],
      dthumbimage => [ tag_dthumbimage => $self ],
      dyntarget => [ tag_dyntarget => $self ],
+     $self->dyn_iterator('dynvimages', 'dynvimage'),
+     dynvimage => [ tag_dynvimage => $self ],
+     dynvthumbimage => [ tag_dynvthumbimage => $self ],
      $self->_custom_tags,
     );
 }
@@ -263,6 +267,122 @@ sub tag_dyncarttotal {
     or return 0;
 
   return $cart->{$field};
+}
+
+=item iterator dynvimages
+
+A dynamic version of the vimages iterator.
+
+Items are vimage (which acts like other image tags) and dynvthumbimage.
+
+=cut
+
+sub iter_dynvimages {
+  my ($self, $context, $args, $acts, $templater) = @_;
+
+  my $re;
+  my $num;
+  if ($args =~ s!\s+named\s+/([^/]+)/$!!) {
+    $re = $1;
+  }
+  elsif ($args =~ s!\s+numbered\s+(\d+)$!!) {
+    $num = $1;
+  }
+  my @ids = map { split /[, ]/ } 
+    DevHelp::Tags->get_parms($args, $acts, $templater);
+  my @images;
+  for my $article_id (@ids) {
+    my @articles = $self->_find_articles($article_id);
+    for my $article (@articles) {
+      my @aimages = $article->images;
+      if (defined $re) {
+	push @images, grep /$re/, @aimages;
+      }
+      elsif (defined $num) {
+	if ($num >= 0 && $num <= @aimages) {
+	  push @images, $aimages[$num-1];
+	}
+      }
+      else {
+	push @images, @aimages;
+      }
+    }
+  }
+
+  return \@images;
+}
+
+=item dynvimage field
+
+=item dynvimage 
+
+Item for iterator dynvimages
+
+=cut
+
+sub tag_dynvimage {
+  my ($self, $args) = @_;
+
+  my $im = $self->{req}->get_article('dynvimage')
+    or return '** not in dynvimages iterator **';
+
+  my ($align, $rest) = split ' ', $args, 2;
+
+  return $self->_format_image($im, $align, $rest);
+}
+
+=item dynvthumbimage geometry field
+
+=item dynvthumbimage geometry
+
+Thumbnail of the current vimage.
+
+=cut
+
+sub tag_dynvthumbimage {
+  my ($self, $args) = @_;
+
+  my $im = $self->{req}->get_article('dynvimage')
+    or return '** not in dynvimages iterator **';
+
+  my ($geo, $field) = split ' ', $args;
+
+  return $self->_thumbimage_low($geo, $im, $field, $self->{req}->cfg);
+}
+
+sub _find_articles {
+  my ($self, $article_id) = @_;
+
+  if ($article_id =~ /^\d+$/) {
+    my $result = Articles->getByPkey($article_id);
+    $result or print STDERR "** Unknown article id $article_id **\n";
+    return $result ? $result : ();
+  }
+  elsif ($article_id =~ /^alias\((\w+)\)$/) {
+    my $result = Articles->getBy(linkAlias => $1);
+    $result or print STDERR "** Unknown article alias $article_id **\n";
+    return $result ? $result : ();
+  }
+  elsif ($article_id =~ /^childrenof\((.*)\)$/) {
+    my $id = $1;
+    if ($id eq '-1') {
+      return Articles->all_visible_kids(-1);
+    }
+    else {
+      my @parents = $self->_find_articles($id)
+	or return;
+      return map $_->all_visible_kids, @parents
+    }
+  }
+  else {
+    my $article = $self->{req}->get_article($article_id);
+    $article
+      and return $article;
+  }
+
+  print STDERR "** Unknown article identifier $article_id **\n";
+
+  return;
 }
 
 sub iter_wishlist {

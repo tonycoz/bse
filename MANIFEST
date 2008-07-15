@@ -142,6 +142,7 @@ site/cgi-bin/modules/BSE/TB/SiteUserGroups.pm
 site/cgi-bin/modules/BSE/TB/Subscription.pm
 site/cgi-bin/modules/BSE/TB/Subscription/Calc.pm
 site/cgi-bin/modules/BSE/TB/Subscriptions.pm
+site/cgi-bin/modules/BSE/TagFormats.pm
 site/cgi-bin/modules/BSE/Template.pm
 site/cgi-bin/modules/BSE/Thumb/Imager.pm
 site/cgi-bin/modules/BSE/ThumbLow.pm

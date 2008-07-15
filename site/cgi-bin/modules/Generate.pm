@@ -9,6 +9,7 @@ use BSE::Util::Tags qw(tag_article);
 use BSE::CfgInfo qw(custom_class);
 use BSE::Util::Iterate;
 use base 'BSE::ThumbLow';
+use base 'BSE::TagFormats';
 
 my $excerptSize = 300;
 
@@ -575,6 +576,173 @@ sub tag_simage {
   return $self->_format_image($im, $field, $rest);
 }
 
+=item iterator vimages I<articles> I<filter>
+
+=item iterator vimages I<articles>
+
+Iterates over the images belonging to the articles specified.
+
+I<articles> can be any of:
+
+=over
+
+=item *
+
+article - the current article
+
+=item *
+
+children - all visible children (including stepkids) of the current
+article
+
+=item *
+
+parent - the parent of the current article
+
+=item *
+
+I<number> - a numeric article id, such as C<10>.
+
+=item *
+
+alias(I<alias>) - a link alias of an article
+
+=item *
+
+childrenof(I<articles>) - an articles that are children of
+I<articles>.  I<articles> can be any normal article spec, so
+C<childrenof(childrenof(-1))> is valid.
+
+=item *
+
+I<tagname> - a tag name referring to an article.
+
+=back
+
+I<filter> can be missing, or either of:
+
+=over
+
+=item *
+
+named /I<regexp>/ - images with names matching the given regular
+expression
+
+=item *
+
+numbered I<number> - images with the given index.
+
+=back
+
+Items for this iterator are vimage and vthumbimage.
+
+=cut
+
+sub iter_vimages {
+  my ($self, $article, $args, $acts, $name, $templater) = @_;
+
+  my $re;
+  my $num;
+  if ($args =~ s!\s+named\s+/([^/]+)/$!!) {
+    $re = $1;
+  }
+  elsif ($args =~ s!\s+numbered\s+(\d+)$!!) {
+    $num = $1;
+  }
+  my @args = DevHelp::Tags->get_parms($args, $acts, $templater);
+  my @images;
+  for my $article_id (map { split /[, ]/ } @args) {
+    my @articles = $self->_find_articles($article_id, $article, $acts, $name, $templater);
+    for my $article (@articles) {
+      my @aimages = $article->images;
+      if (defined $re) {
+	push @images, grep /$re/, @aimages;
+      }
+      elsif (defined $num) {
+	if ($num >= 0 && $num <= @aimages) {
+	  push @images, $aimages[$num-1];
+	}
+      }
+      else {
+	push @images, @aimages;
+      }
+    }
+  }
+
+  return @images;
+}
+
+=item vimage field
+
+=item vimage
+
+Retrieve the given field from the current vimage, or display the image.
+
+=cut
+
+sub tag_vimage {
+  my ($self, $rvimage, $args) = @_;
+
+  $$rvimage or return '** no current vimage **';
+
+  my ($field, $rest) = split ' ', $args, 2;
+
+  return $self->_format_image($$rvimage, $field, $rest);
+}
+
+=item vthumbimage geometry field
+
+=item vthumbimage geometry
+
+Retrieve the given field from the thumbnail of the current vimage or
+display the thumbnail.
+
+=cut
+
+sub tag_vthumbimage {
+  my ($self, $rvimage, $args) = @_;
+
+  $$rvimage or return '** no current vimage **';
+  my ($geo, $field) = split ' ', $args;
+
+  return $self->_sthumbimage_low($geo, $$rvimage, $field);
+}
+
+sub _find_articles {
+  my ($self, $article_id, $article, $acts, $name, $templater) = @_;
+
+  if ($article_id =~ /^\d+$/) {
+    my $result = Articles->getByPkey($article_id);
+    $result or print STDERR "** Unknown article id $article_id **\n";
+    return $result ? $result : ();
+  }
+  elsif ($article_id =~ /^alias\((\w+)\)$/) {
+    my $result = Articles->getBy(linkAlias => $1);
+    $result or print STDERR "** Unknown article alias $article_id **\n";
+    return $result ? $result : ();
+  }
+  elsif ($article_id =~ /^childrenof\((.*)\)$/) {
+    my $id = $1;
+    if ($id eq '-1') {
+      return Articles->all_visible_kids(-1);
+    }
+    else {
+      my @parents = $self->_find_articles($id)
+	or return;
+      return map $_->all_visible_kids, @parents;
+    }
+  }
+  elsif ($acts->{$article_id}) {
+    my $id = $templater->perform($acts, $article_id, 'id');
+    if ($id && $id =~ /^\d+$/) {
+      return Articles->getByPkey($id);
+    }
+  }
+  print STDERR "** Unknown article identifier $article_id **\n";
+
+  return;
+}
+
 sub baseActs {
   my ($self, $articles, $acts, $article, $embedded) = @_;
 
@@ -597,6 +765,7 @@ sub baseActs {
   }
 
   my $current_gimage;
+  my $current_vimage;
   my $it = BSE::Util::Iterate->new;
   my $art_it = BSE::Util::Iterate::Article->new(cfg => $cfg);
   return 
@@ -749,6 +918,9 @@ sub baseActs {
      gthumbimage => [ tag_gthumbimage => $self, \$current_gimage ],
      sthumbimage => [ tag_sthumbimage => $self ],
      simage => [ tag_simage => $self ],
+     $it->make_iterator( [ iter_vimages => $self, $article ], 'vimage', 'vimages', undef, undef, undef, \$current_vimage),
+     vimage => [ tag_vimage => $self, \$current_vimage ],
+     vthumbimage => [ tag_vthumbimage => $self, \$current_vimage ],
     );
 }
 
@@ -931,41 +1103,6 @@ sub get_gfile {
   return $self->{gfiles}{$name};
 }
 
-sub image_url {
-  my ($self, $im) = @_;
-
-  $im->{src} || "/images/$im->{image}";
-}
-
-sub _format_image {
-  my ($self, $im, $align, $rest) = @_;
-
-  if ($align && exists $im->{$align}) {
-    if ($align eq 'src') {
-      return escape_html($self->image_url($im));
-    }
-    else {
-      return escape_html($im->{$align});
-    }
-  }
-  else {
-    my $image_url = $self->image_url($im);
-    my $html = qq!<img src="$image_url" width="$im->{width}"!
-      . qq! height="$im->{height}" alt="! . escape_html($im->{alt})
-	     . qq!"!;
-    $html .= qq! align="$align"! if $align && $align ne '-';
-    unless (defined($rest) && $rest =~ /\bborder=/i) {
-      $html .= ' border="0"';
-    }
-    $html .= " $rest" if defined $rest;
-    $html .= qq! />!;
-    if ($im->{url}) {
-      $html = qq!<a href="$im->{url}">$html</a>!;
-    }
-    return $html;
-  }
-}
-
 # note: this is called by BSE::Formatter::thumbimage(), update that if
 # this is changed
 sub do_gthumbimage {
@@ -982,26 +1119,6 @@ sub do_gthumbimage {
     or return '** unknown global image id **';
 
   return $self->_sthumbimage_low($geo_id, $im, $field);
-}
-
-sub _format_file {
-  my ($self, $file, $field) = @_;
-
-  defined $field or $field = '';
-
-  if ($field && exists $file->{$field}) {
-    return escape_html($file->{$field});
-  }
-  else {
-    my $url = "/cgi-bin/user.pl?download_file=1&file=$file->{id}";
-    my $eurl = escape_html($url);
-    if ($field eq 'url') {
-      return $eurl;
-    }
-    my $class = $file->{download} ? "file_download" : "file_inline";
-    my $html = qq!<a class="$class" href="$eurl">! . escape_html($file->{displayName}) . '</a>';
-    return $html;
-  }
 }
 
 sub get_real_article {
