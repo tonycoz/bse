@@ -619,6 +619,8 @@ I<tagname> - a tag name referring to an article.
 
 =back
 
+I<articles> has [] replacement done before parsing.
+
 I<filter> can be missing, or either of:
 
 =over
@@ -656,7 +658,7 @@ sub iter_vimages {
     for my $article (@articles) {
       my @aimages = $article->images;
       if (defined $re) {
-	push @images, grep /$re/, @aimages;
+	push @images, grep $_->{name} =~ /$re/, @aimages;
       }
       elsif (defined $num) {
 	if ($num >= 0 && $num <= @aimages) {

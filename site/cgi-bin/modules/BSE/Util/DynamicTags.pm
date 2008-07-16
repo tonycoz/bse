@@ -296,7 +296,7 @@ sub iter_dynvimages {
     for my $article (@articles) {
       my @aimages = $article->images;
       if (defined $re) {
-	push @images, grep /$re/, @aimages;
+	push @images, grep $_->{name} =~ /$re/, @aimages;
       }
       elsif (defined $num) {
 	if ($num >= 0 && $num <= @aimages) {
