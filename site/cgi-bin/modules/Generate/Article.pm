@@ -342,7 +342,7 @@ sub baseActs {
   }
   my $allkids_index;
   my $current_image;
-  my $art_it = BSE::Util::Iterate::Article->new(cfg =>$cfg);
+  my $art_it = BSE::Util::Iterate::Article->new(cfg =>$cfg, admin => $self->{admin}, top => $self->{top});
   my $it = BSE::Util::Iterate->new;
   # separate these so the closures can see %acts
   my %acts =

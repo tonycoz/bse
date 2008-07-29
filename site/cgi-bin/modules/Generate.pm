@@ -302,10 +302,11 @@ sub embed {
 }
 
 sub iter_kids_of {
-  my ($self, $args, $acts, $name, $templater) = @_;
+  my ($self, $state, $args, $acts, $name, $templater) = @_;
 
   my $filter = $self->_get_filter(\$args);
 
+  $state->{parentid} = undef;
   my @ids = map { split } DevHelp::Tags->get_parms($args, $acts, $templater);
   for my $id (@ids) {
     unless ($id =~ /^\d+$|^-1$/) {
@@ -313,6 +314,9 @@ sub iter_kids_of {
     }
   }
   @ids = grep /^\d+$|^-1$/, @ids;
+  if (@ids == 1) {
+    $state->{parentid} = $ids[0];
+  }
   $self->_do_filter($filter, map Articles->listedChildren($_), @ids);
 }
 
@@ -355,10 +359,11 @@ sub _do_filter {
 }
 
 sub iter_all_kids_of {
-  my ($self, $args, $acts, $name, $templater) = @_;
+  my ($self, $state, $args, $acts, $name, $templater) = @_;
 
   my $filter = $self->_get_filter(\$args);
 
+  $state->{parentid} = undef;
   my @ids = map { split } DevHelp::Tags->get_parms($args, $acts, $templater);
   for my $id (@ids) {
     unless ($id =~ /^\d+$|^-1$/) {
@@ -366,7 +371,8 @@ sub iter_all_kids_of {
     }
   }
   @ids = grep /^\d+$|^-1$/, @ids;
-
+  @ids == 1 and $state->{parentid} = $ids[0];
+    
   $self->_do_filter($filter, map Articles->all_visible_kids($_), @ids);
 }
 
@@ -769,7 +775,9 @@ sub baseActs {
   my $current_gimage;
   my $current_vimage;
   my $it = BSE::Util::Iterate->new;
-  my $art_it = BSE::Util::Iterate::Article->new(cfg => $cfg);
+  my $art_it = BSE::Util::Iterate::Article->new(cfg => $cfg,
+						admin => $self->{admin},
+						top => $self->{top});
   return 
     (
      %extras,
@@ -873,21 +881,45 @@ sub baseActs {
          return escape_html($text);
        }
      },
-     $art_it->make_iterator( [ iter_kids_of => $self ], 'ofchild', 'children_of', 
-			 undef, undef, 'nocache' ), 
-     $art_it->make_iterator( [ iter_kids_of => $self ], 'ofchild2', 'children_of2',
-			 undef, undef, 'nocache' ),
-     $art_it->make_iterator( [ iter_kids_of => $self ], 'ofchild3', 'children_of3',
-                         undef, undef, 'nocache' ),
-     $art_it->make_iterator( [ iter_all_kids_of => $self ], 'ofallkid', 'allkids_of' ), 
-     $art_it->make_iterator( [ iter_all_kids_of => $self ], 'ofallkid2', 'allkids_of2', 
-			 undef, undef, 'nocache' ), 
-     $art_it->make_iterator( [ iter_all_kids_of => $self ], 'ofallkid3', 'allkids_of3',
-			 undef, undef, 'nocache' ), 
-     $art_it->make_iterator( [ iter_all_kids_of => $self ], 'ofallkid4', 'allkids_of4',
-			 undef, undef, 'nocache' ), 
-     $art_it->make_iterator( [ iter_all_kids_of => $self ], 'ofallkid5', 'allkids_of5',
-			 undef, undef, 'nocache' ), 
+     $art_it->make( code => [ iter_kids_of => $self ],
+		    single => 'ofchild',
+		    plural => 'children_of', 
+		    nocache => 1,
+		    state => 1 ), 
+     $art_it->make( code => [ iter_kids_of => $self ],
+		    single => 'ofchild2',
+		    plural => 'children_of2',
+		    nocache => 1,
+		    state => 1 ),
+     $art_it->make( code => [ iter_kids_of => $self ],
+		    single => 'ofchild3',
+		    plural => 'children_of3',
+		    nocache => 1,
+		    state => 1 ),
+     $art_it->make( code => [ iter_all_kids_of => $self ], 
+		    single => 'ofallkid',
+		    plural => 'allkids_of',
+		    state => 1 ), 
+     $art_it->make( code => [ iter_all_kids_of => $self ],
+		    single => 'ofallkid2', 
+		    plural => 'allkids_of2', 
+		    nocache => 1,
+		    state => 1 ), 
+     $art_it->make( code => [ iter_all_kids_of => $self ],
+		    single => 'ofallkid3',
+		    plural => 'allkids_of3',
+		    nocache => 1,
+		    state => 1 ), 
+     $art_it->make( code => [ iter_all_kids_of => $self ],
+		    single => 'ofallkid4',
+		    plural => 'allkids_of4',
+		    nocache => 1,
+		    state => 1 ), 
+     $art_it->make( code => [ iter_all_kids_of => $self ],
+		    single => 'ofallkid5',
+		    plural => 'allkids_of5',
+		    nocache => 1,
+		    state => 1 ), 
      $art_it->make_iterator( \&iter_inlines, 'inline', 'inlines' ),
      gimage => 
      sub {
