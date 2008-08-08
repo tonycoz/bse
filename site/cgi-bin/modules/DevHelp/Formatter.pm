@@ -215,6 +215,41 @@ sub replace_char {
   return 0;
 }
 
+sub _tag_with_attrs {
+  my ($self, $tag, $extra) = @_;
+
+  my $out = "<$tag";
+  my @classes;
+  while ($extra) {
+    if ($extra =~ s/^\#(\w+)(?:\s+|$)//) {
+      $out .= qq! id="$1"!;
+    }
+    elsif ($extra =~ s/^([a-z]\w+)(?:\s+|$)//i) {
+      push @classes, $1;
+    }
+    elsif ($extra =~ s/^((?:[a-z][\w-]*: .*?;\s*)+)//) {
+      $out .= qq! style="$1"!;
+    }
+    else {
+      print STDERR "** don't understand $extra from $tag **\n";
+      last;
+    }
+  }
+  if (@classes) {
+    $out .= qq! class="@classes"!;
+  }
+  $out .= '>';
+
+  return $out;
+}
+
+sub _blocktag {
+  my ($self, $tag, $attrs, $text) = @_;
+
+  return  $self->_fix_spanned
+    ("\n\n" . $self->_tag_with_attrs($tag, $attrs), "</$tag>\n\n", $text)
+}
+
 sub format {
   my ($self, $body) = @_;
 
@@ -257,13 +292,13 @@ sub format {
 	$part =~ s#pre\[([^\]\[]+)\]#<pre>$1</pre>#ig
 	  and next TRY;
 	$part =~ s#h([1-6])\[([^\[\]\|]+)\|([^\[\]]+)\](?:\r?\n)?#
-	  $self->_fix_spanned(qq/\n\n<h$1 class="$2">/, "</h$1>\n\n", $3)#ieg
+  	    $self->_blocktag("h$1", $2, $3)#ieg
 	  and next TRY;
 	$part =~ s#\n*h([1-6])\[\|([^\[\]]+)\]\n*#
-	  $self->_fix_spanned("\n\n<h$1>", "</h$1>\n\n", $2)#ieg
+	  $self->_blocktag("h$1", '', $2)#ieg
 	  and next TRY;
 	$part =~ s#\n*h([1-6])\[([^\[\]]+)\]\n*#
-	  $self->_fix_spanned("\n\n<h$1>", "</h$1>\n\n", $2)#ieg
+	  $self->_blocktag("h$1", '', $2)#ieg
 	  and next TRY;
 	$part =~ s#align\[([^|\]\[]+)\|([^\]\[]+)\]#\n\n<div align="$1">$2</div>\n\n#ig
 	  and next TRY;
@@ -302,7 +337,7 @@ sub format {
 	$part =~ s#style\[([^\]\[\|]+)\|([^\]\[]+)\]#
 	  $self->_fix_spanned(qq/<span style="$1">/, "</span>", $2)#eig
 	  and next TRY;
-	$part =~ s#(div|address|blockquote)\[\n*([^\[\]\|]+)\|\n*([^\[\]]+?)\n*\]#\n\n<$1 class="$2">$3</$1>\n\n#ig
+	$part =~ s#(div|address|blockquote)\[\n*([^\[\]\|]+)\|\n*([^\[\]]+?)\n*\]#"\n\n" . $self->_tag_with_attrs($1, $2) . "$3</$1>\n\n"#eig
 	  and next TRY;
 	$part =~ s#(div|address|blockquote)\[\n*\|([^\[\]]+?)\n*]#\n\n<$1>$2</$1>\n\n#ig
 	  and next TRY;

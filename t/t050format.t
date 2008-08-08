@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 64;
+use Test::More tests => 71;
 
 sub format_test($$$;$);
 sub noformat_test($$$;$);
@@ -259,6 +259,22 @@ EOS
 <div class="someclass"><h1>foo</h1>
 <p>bar</p>
 <h2>quux</h2></div>
+EOS
+
+  format_test "h1[#foo|test]", q!<h1 id="foo">test</h1>!, 'h1#id';
+  format_test "h1[#foo bar|test]", q!<h1 id="foo" class="bar">test</h1>!, 'h1#id class';
+  format_test "h1[#foo bar quux|test]", q!<h1 id="foo" class="bar quux">test</h1>!, 'h1#id class class';
+  format_test "h1[text-align: center;|test]", q!<h1 style="text-align: center;">test</h1>!, 'h1 styled';
+  format_test "h1[#foo text-align: center;|test]", q!<h1 id="foo" style="text-align: center;">test</h1>!, 'h1 styled, id';
+
+  format_test "div[text-align: center;|test\n\ntest2]", <<EOS, 'div styled', 'out';
+<div style="text-align: center;"><p>test</p>
+<p>test2</p></div>
+EOS
+
+  format_test "div[#foo|test\n\ntest2]", <<EOS, 'div #id', 'out';
+<div id="foo"><p>test</p>
+<p>test2</p></div>
 EOS
 
   # remove_format() tests

@@ -251,6 +251,31 @@ images.</dt>
 
 </dl>
 
+<dl>
+<dd>h1[<i>class</i>|<i>text</i>]</dd>
+<dd>h1[#<i>id</i>|<i>text</i>]</dd>
+<dd>h1[<i>style-definition</i>|<i>text</i>]</dd>
+<dd>h1[|<i>text</i>]
+<dd>h1[<i>text</i>]
+<dd>... similarly for h2...h6 ...</dd>
+<dt>Produces a heading tag.</dt>
+
+<dt><code>h1[top|My Heading]</code> will produce a heading with
+class="top" in the opening tag.</dt>
+
+<dt><code>h1[#myhead|My Heading]</code> will produce a heading with
+id="myhead" in the opening tag.</dt>
+
+<dt><code>h1[#myhead top|My Heading]</code> will produce a heading
+with id="myhead" class="top" in the opening tag.</dt>
+
+<dt><code>h1[#myhead text-align: center;|My heading]</code> will
+produce a heading with id="myhead" style="text-align: center;" in the
+opening tag.</dt>
+
+</dl>
+
+
 </div>
 
 </body></html>
