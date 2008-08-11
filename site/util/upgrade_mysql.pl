@@ -109,6 +109,7 @@ for my $table (sort keys %tables) {
     my @ccols = get_result("describe $table");
     @ccols <= @$cols
       or die "The $table table is bigger in your database";
+    my @alters;
     for my $i (0..$#ccols) {
       my $col = $cols->[$i];
       my $ccol = $ccols[$i];
@@ -116,30 +117,37 @@ for my $table (sort keys %tables) {
 	$ccol->{type} = "varbinary($1)";
       }
       defined $ccol->{default} or $ccol->{default} = 'NULL';
+      if ($col->{type} eq 'timestamp') {
+	$col->{default} = $ccol->{default} = 'current_timestamp';
+      }
       
       $col->{field} eq $ccol->{field}
 	or die "Field name mismatch old: $ccol->{field} new: $col->{field}\n";
-      
-      if ($col->{type} ne $ccol->{type} || $col->{default} ne $ccol->{default}
-	 || $col->{null} ne $ccol->{null}) {
+
+      if ($col->{null} ne $ccol->{null}
+	  || $col->{type} ne $ccol->{type} 
+	  || $col->{default} ne $ccol->{default}) {
 	print "fixing type or default for $col->{field}\n" if $verbose;
 	if ($verbose > 1) {
+	  print "old null: $ccol->{null}  new null: $col->{null}\n"
+	    if $ccol->{null} ne $col->{null};
 	  print "old type: $ccol->{type}  new type: $col->{type}\n"
 	    if $ccol->{type} ne $col->{type};
 	  print "old default: $ccol->{default}  new default: $col->{default}\n"
 	    if $ccol->{default} ne $col->{default};
 	}
-	my $sql = "alter table $table modify ".create_clauses($col);
-	run_sql($sql)
-	  or die "Cannot fix $col->{field} type/default: $DBI::errstr\n";
+	push @alters, ' modify ' . create_clauses($col);
       }
     }
     for my $i (@ccols .. $#$cols) {
       my $col = $cols->[$i];
       print "Adding column $col->{field}\n" if $verbose;
-      my $sql = "alter table $table add ".create_clauses($col);
+      push @alters, 'add ' . create_clauses($col);
+    }
+    if (@alters) {
+      my $sql = "alter table $table ".join(', ', @alters);
       run_sql($sql)
-	or die "Cannot add column $col->{field}: $DBI::errstr\n";
+	or die "Cannot run $sql (column type/default/null): $DBI::errstr\n";
     }
   }
 
