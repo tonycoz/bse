@@ -243,6 +243,12 @@ log_spam_check_fail - if true then a message is written to STDERR -
 typically ending up in the server error log - when the checks
 described under spam_check_field fail.  Default: true.
 
+=item *
+
+email_select - a semi-colon separated field name and configuration
+section to select an alternate email address from.  Default: the email
+value or it's default is used.  See L</ALTERNATE EMAIL ADDRESSES>.
+
 =back
 
 You can also configure information used for validation and available
@@ -311,7 +317,7 @@ I<fieldname>_values - either the name of another configuration file
 section containing possible field values as keys and descriptions as
 values, or a semi-colon separated list of possible values.  For example:
 
-  [someform form]
+  [someform formmail validation]
   ; shows as alpha, beta, gamma, selecting alpha returns a value of alpha
   ; beta as beta, gamma as gamma
   foo_values=alpha;beta;gamma
@@ -616,6 +622,24 @@ Or send the data to some other database:
   sql_options=AutoCommit=1
 
 Forms with file upload fields cannot be logged to the database.
+
+=head1 ALTERNATE EMAIL ADDRESSES
+
+You can specify alternate email addresses for the email sent by a form
+with the email_select value:
+
+  [someform form]
+  email_select=state;someform emails
+  email=national@example.com
+  
+  [someform formmail validation]
+  state_htmltype=select
+  state_values=nsw=NSW;qld=Qld;nt=NT
+
+  [someform emails]
+  nsw=nsw@example.com
+  qld=qld@example.com
+  ; nt uses default and goes to national address
 
 =head1 AUTHOR
 

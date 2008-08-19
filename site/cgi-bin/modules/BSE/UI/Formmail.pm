@@ -55,6 +55,7 @@ my %form_defs =
    sql_password => undef,
    spam_check_field => undef,
    log_spam_check_fail => 1,
+   email_select => undef,
   );
 
 sub _get_form {
@@ -383,10 +384,20 @@ sub _send_to_mail {
      formcfg => [ \&tag_formcfg_plain, $req->cfg, $form ],
      remote_addr => $ENV{REMOTE_ADDR},
     );
+
+  my $to_email = $form->{email};
+  if ($form->{email_select}
+      && $form->{email_select} =~ /^(\w+);(.+)$/) {
+    my ($field_name, $section) = ( $1, $2 );
+    my ($field) = grep $_->{name} eq $field_name, @{$form->{fields}};
+    if ($field && $cfg->entry($section, $field->{value})) {
+      $to_email = $cfg->entry($section, $field->{value});
+    }
+  }
   
   require BSE::ComposeMail;
   my $mailer = BSE::ComposeMail->new(cfg=>$cfg);
-  $mailer->start(to => $form->{email},
+  $mailer->start(to => $to_email,
 		 from => $form->{email},
 		 subject=>$form->{subject},
 		 template => $form->{mail},
