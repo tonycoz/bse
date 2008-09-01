@@ -919,13 +919,13 @@ sub tag_default {
     else {
       my $value = $article->{$args};
       defined $value or $value = '';
-      return escape_html($value);
+      return escape_html($value, '<>&"');
     }
   }
   else {
     my $value = $self->default_value($req, $article, $col);
     defined $value or $value = '';
-    return escape_html($value);
+    return escape_html($value, '<>&"');
   }
 }
 
