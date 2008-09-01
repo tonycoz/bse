@@ -47,7 +47,8 @@ if ($req->check_admin_logon()) {
       BSE::Template->output_result($req, $result);
     }
     else {
-      print "Content-Type: text/html\n\n";
+      my $type = BSE::Template->html_type($req->cfg);
+      print "Content-Type: $type\n\n";
       print $generator->generate($article, $articles);
     }
   }
