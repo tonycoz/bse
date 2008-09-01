@@ -20,6 +20,7 @@ my %handlers =
    format => 'BSE::Thumb::Imager::Format',
    overlay => 'BSE::Thumb::Imager::Overlay',
    dropshadow => 'BSE::Thumb::Imager::DropShadow',
+   randomcrop => 'BSE::Thumb::Imager::RandomCrop',
   );
 
 sub new {
@@ -31,7 +32,13 @@ sub new {
 sub _handler {
   my ($self, $op) = @_;
 
-  $handlers{$op};
+  my $class = $handlers{$op};
+  unless ($class->can('new')) {
+    (my $file = $class . '.pm') =~ s{::}{/}g;
+    require $file;
+  }
+
+  return $class;
 }
 
 sub _parse_geometry {

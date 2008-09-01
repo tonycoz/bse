@@ -87,6 +87,7 @@ SQL
    Products=> 'select article.*, product.* from article, product where id = articleId',
    addProduct => 'insert product values(?,?,?,?,?,?,?,?,?,?,?,?)',
    getProductByPkey => 'select article.*, product.* from article, product where id=? and articleId = id',
+   getProductByProduct_code => 'select article.*, product.* from article, product where product_code=? and articleId = id',
    replaceProduct => 'replace product values(?,?,?,?,?,?,?,?,?,?,?,?)',
    'Products.stepProducts' => <<EOS,
 select ar.*, pr.* from article ar, product pr, other_parents op

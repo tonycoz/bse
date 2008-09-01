@@ -47,6 +47,7 @@ site/cgi-bin/modules/Article.pm
 site/cgi-bin/modules/ArticleFile.pm
 site/cgi-bin/modules/ArticleFiles.pm
 site/cgi-bin/modules/Articles.pm
+site/cgi-bin/modules/BSE/API.pm
 site/cgi-bin/modules/BSE/Admin/StepParents.pm
 site/cgi-bin/modules/BSE/AdminLogon.pm
 site/cgi-bin/modules/BSE/AdminMenu.pm
@@ -145,6 +146,7 @@ site/cgi-bin/modules/BSE/TB/Subscriptions.pm
 site/cgi-bin/modules/BSE/TagFormats.pm
 site/cgi-bin/modules/BSE/Template.pm
 site/cgi-bin/modules/BSE/Thumb/Imager.pm
+site/cgi-bin/modules/BSE/Thumb/Imager/RandomCrop.pm
 site/cgi-bin/modules/BSE/ThumbLow.pm
 site/cgi-bin/modules/BSE/UI/AdminDispatch.pm
 site/cgi-bin/modules/BSE/UI/AdminNewsletter.pm
