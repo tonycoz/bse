@@ -463,7 +463,7 @@ sub get_article {
 sub text {
   my ($self, $id, $default) = @_;
 
-  $default;
+  return $self->cfg->entry('messages', $id, $default);
 }
 
 sub _convert_utf8_cgi_to_charset {

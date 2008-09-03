@@ -19,6 +19,8 @@ use constant PAYMENT_CC => 0;
 use constant PAYMENT_CHEQUE => 1;
 use constant PAYMENT_CALLME => 2;
 
+use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
+
 my %actions =
   (
    add => 1,
@@ -144,12 +146,12 @@ sub req_add {
   }
   elsif ($error) {
     return $class->req_cart($req, $error);
-  }    
+  }
 
   $req->session->{cart} ||= [];
   my @cart = @{$req->session->{cart}};
   my $started_empty = @cart == 0;
- 
+
   my $found;
   for my $item (@cart) {
     $item->{productId} eq $product->{id} && $item->{options} eq $options
@@ -160,6 +162,10 @@ sub req_add {
     last;
   }
   unless ($found) {
+    my $cart_limit = $req->cfg->entry('shop', 'cart_entry_limit');
+    if (defined $cart_limit && @cart >= $cart_limit) {
+      return $class->req_cart($req, $req->text('shop/cartfull', MSG_SHOP_CART_FULL));
+    }
     push @cart, 
       { 
        productId => $product->{id}, 
@@ -221,6 +227,10 @@ sub req_addsingle {
     last;
   }
   unless ($found) {
+    my $cart_limit = $req->cfg->entry('shop', 'cart_entry_limit');
+    if (defined $cart_limit && @cart >= $cart_limit) {
+      return $class->req_cart($req, $req->text('shop/cartfull', MSG_SHOP_CART_FULL));
+    }
     push @cart, 
       { 
        productId => $addid, 
@@ -296,9 +306,20 @@ sub req_addmultiple {
 
       $item->{units} += $addition->{quantity};
     }
-    for my $addition (values %additions) {
-      $addition->{quantity} > 0 or next;
+
+    my $cart_limit = $req->cfg->entry('shop', 'cart_entry_limit');
+
+    my @additions = grep $_->{quantity} > 0, values %additions;
+
+    my $error;
+    for my $addition (@additions) {
       my $product = $addition->{product};
+
+      if (defined $cart_limit && @cart >= $cart_limit) {
+	$error = $req->text('shop/cartfull', MSG_SHOP_CART_FULL);
+	last;
+      }
+
       push @cart, 
 	{ 
 	 productId => $product->{id},
@@ -311,6 +332,8 @@ sub req_addmultiple {
     
     $req->session->{cart} = \@cart;
     $req->session->{order_info_confirmed} = 0;
+    $error
+      and return $class->req_cart($req, $error);
   }
 
   my $refresh = $cgi->param('r');

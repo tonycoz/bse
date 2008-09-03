@@ -786,6 +786,12 @@ $SHOP_PASSPHRASE.
 If true, request the card type when requesting credit card
 information.  Default: False.
 
+=item cart_entry_limit
+
+Maximum number of entries in the cart.  This limits the number of
+distinct products (with options) in the cart, not the total
+quantities.  Default: Unlimited.
+
 =back
 
 =head2 [Shop Order Validation]
