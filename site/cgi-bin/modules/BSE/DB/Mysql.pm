@@ -426,6 +426,11 @@ select ar.*, pr.*, se.*
   from article ar, product pr, bse_seminars se
   where id = ? and ar.id = pr.articleId and ar.id = se.seminar_id
 SQL
+   getSeminarByProduct_code => <<SQL,
+select ar.*, pr.*, se.*
+  from article ar, product pr, bse_seminars se
+  where product_code = ? and ar.id = pr.articleId and ar.id = se.seminar_id
+SQL
    'Locations.seminarFuture' => <<SQL,
 select distinct lo.*
   from bse_locations lo, bse_seminar_sessions ss

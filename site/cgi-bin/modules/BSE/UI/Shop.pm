@@ -118,15 +118,27 @@ sub req_add {
 
   my $cgi = $req->cgi;
 
-  my $addid = $cgi->param('id');
-  $addid ||= '';
   my $quantity = $cgi->param('quantity');
   $quantity ||= 1;
 
   my $error;
   my $refresh_logon;
-  my ($product, $options, $extras)
-    = $class->_validate_add($req, $addid, $quantity, \$error, \$refresh_logon);
+  my ($product, $options, $extras);
+  my $addid = $cgi->param('id');
+  if (defined $addid) {
+    ($product, $options, $extras)
+      = $class->_validate_add_by_id($req, $addid, $quantity, \$error, \$refresh_logon);
+  }
+  else {
+    my $code = $cgi->param('code');
+    if (defined $code) {
+      ($product, $options, $extras)
+	= $class->_validate_add_by_code($req, $code, $quantity, \$error, \$refresh_logon);
+    }
+    else {
+      return $class->req_cart($req, "No product id or code supplied");
+    }
+  }
   if ($refresh_logon) {
     return $class->_refresh_logon($req, @$refresh_logon);
   }
@@ -140,7 +152,7 @@ sub req_add {
  
   my $found;
   for my $item (@cart) {
-    $item->{productId} eq $addid && $item->{options} eq $options
+    $item->{productId} eq $product->{id} && $item->{options} eq $options
       or next;
 
     ++$found;
@@ -150,7 +162,7 @@ sub req_add {
   unless ($found) {
     push @cart, 
       { 
-       productId => $addid, 
+       productId => $product->{id}, 
        units => $quantity, 
        price=>$product->{retailPrice},
        options=>$options,
@@ -187,7 +199,7 @@ sub req_addsingle {
   my $error;
   my $refresh_logon;
   my ($product, $options, $extras)
-    = $class->_validate_add($req, $addid, $quantity, \$error, \$refresh_logon);
+    = $class->_validate_add_by_id($req, $addid, $quantity, \$error, \$refresh_logon);
   if ($refresh_logon) {
     return $class->_refresh_logon($req, @$refresh_logon);
   }
@@ -251,7 +263,7 @@ sub req_addmultiple {
     my $error;
     my $refresh_logon;
     my ($product, $options, $extras) =
-      $class->_validate_add($req, $addid, $quantity, \$error, \$refresh_logon);
+      $class->_validate_add_by_id($req, $addid, $quantity, \$error, \$refresh_logon);
     if ($refresh_logon) {
       return $class->_refresh_logon($req, @$refresh_logon);
     }
@@ -1362,7 +1374,7 @@ sub req_location {
   }
 }
 
-sub _validate_add {
+sub _validate_add_by_id {
   my ($class, $req, $addid, $quantity, $error, $refresh_logon) = @_;
 
   my $product;
@@ -1374,6 +1386,28 @@ sub _validate_add {
     $$error = "Cannot find product $addid";
     return;
   }
+
+  return $class->_validate_add($req, $product, $quantity, $error, $refresh_logon);
+}
+
+sub _validate_add_by_code {
+  my ($class, $req, $code, $quantity, $error, $refresh_logon) = @_;
+
+  my $product;
+  if (defined $code) {
+    $product = BSE::TB::Seminars->getBy(product_code => $code);
+    $product ||= Products->getBy(product_code => $code);
+  }
+  unless ($product) {
+    $$error = "Cannot find product code $code";
+    return;
+  }
+
+  return $class->_validate_add($req, $product, $quantity, $error, $refresh_logon);
+}
+
+sub _validate_add {
+  my ($class, $req, $product, $quantity, $error, $refresh_logon) = @_;
 
   # collect the product options
   my @options;
@@ -1412,7 +1446,7 @@ sub _validate_add {
   
   # used to refresh if a logon is needed
   my $securlbase = $req->cfg->entryVar('site', 'secureurl');
-  my $r = $securlbase . $ENV{SCRIPT_NAME} . "?add=1&id=$addid";
+  my $r = $securlbase . $ENV{SCRIPT_NAME} . "?add=1&id=$product->{id}";
   for my $opt_index (0..$#opt_names) {
     $r .= "&$opt_names[$opt_index]=".escape_uri($options[$opt_index]);
   }
@@ -1493,13 +1527,13 @@ sub _validate_add {
       $$error = "Unknown session id supplied";
       return;
     }
-    unless ($session->{seminar_id} == $addid) {
+    unless ($session->{seminar_id} == $product->{id}) {
       $$error = "Session not for this seminar";
       return;
     }
 
     # check if the user is already booked for this session
-    if (grep($_ == $session_id, $user->seminar_sessions_booked($addid))) {
+    if (grep($_ == $session_id, $user->seminar_sessions_booked($product->{id}))) {
       $$error = "You are already booked for this session";
       return;
     }
