@@ -342,7 +342,7 @@ sub need_logon {
 	return ("you must be logged in to purchase a subscription", "shop/buysub");
       }
       if ($prod->{subscription_required} != -1) {
-	return ("must be logged in to purchse a product requiring a subscription", "shop/subrequired");
+	return ("must be logged in to purchase a product requiring a subscription", "shop/subrequired");
       }
     }
   }
