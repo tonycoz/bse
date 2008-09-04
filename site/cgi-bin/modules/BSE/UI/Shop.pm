@@ -148,6 +148,10 @@ sub req_add {
     return $class->req_cart($req, $error);
   }
 
+  if ($cgi->param('empty')) {
+    $req->session->{cart} = [];
+  }
+
   $req->session->{cart} ||= [];
   my @cart = @{$req->session->{cart}};
   my $started_empty = @cart == 0;
@@ -212,6 +216,10 @@ sub req_addsingle {
   elsif ($error) {
     return $class->req_cart($req, $error);
   }    
+
+  if ($cgi->param('empty')) {
+    $req->session->{cart} = [];
+  }
 
   $req->session->{cart} ||= [];
   my @cart = @{$req->session->{cart}};
@@ -295,6 +303,9 @@ sub req_addmultiple {
   
   my $started_empty = 0;
   if (keys %additions) {
+    if ($cgi->param('empty')) {
+      $req->session->{cart} = [];
+    }
     $req->session->{cart} ||= [];
     my @cart = @{$req->session->{cart}};
     $started_empty = @cart == 0;
@@ -1192,7 +1203,14 @@ sub _refresh_logon {
   $r ||= $securlbase."/cgi-bin/shop.pl?checkout=1";
   
   my %parms;
+  if ($req->cfg->entry('shop registration', 'all')
+      || $req->cfg->entry('shop registration', $msgid)) {
+    $parms{show_register} = 1;
+  }
   $parms{r} = $r;
+  if ($msgid) {
+    $msg = $req->cfg->entry('messages', $msgid, $msg);
+  }
   $parms{message} = $msg if $msg;
   $parms{mid} = $msgid if $msgid;
   $url .= "?" . join("&", map "$_=".escape_uri($parms{$_}), keys %parms);

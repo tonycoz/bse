@@ -512,6 +512,11 @@ the user entered a new password on the options page without entering
 their old password.  Default: "You need to enter your old password to
 change your password".  No parameters.
 
+=item shop/logonrequired
+
+Displayed if the user attempts to checkout when [shop].require_logon
+is true.
+
 =back
 
 =head2 [downloads]
@@ -1781,6 +1786,15 @@ application/octet-stream.
 
 If the inline status is not supplied then images are considered
 inline, and other files arent.
+
+=head2 [shop registration]
+
+Each key represents a message id from attempts to checkout.  Except
+the all key which covers all cases.
+
+If the C<all> key or the message id key is non-zero then the checkout
+page will redirect to registration instead of login if the cart or
+configuration requires that the user be logged in.
 
 =head1 AUTHOR
 
