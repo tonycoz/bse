@@ -3713,7 +3713,8 @@ sub req_ajax_save_body {
    my $cfg = $req->cfg;
    my $cgi = $req->cgi;
 
-   unless ($req->user_can("edit_field_edit_body", $article)) {
+   unless ($req->user_can("edit_save", $article)
+	   && $req->user_can("edit_field_edit_body", $article)) {
     return {
 	    content => "Access denied to body",
 	    headers => [
@@ -3787,7 +3788,8 @@ sub req_ajax_set {
 		       ],
 	   };
    }
-   unless ($req->user_can("edit_field_edit_$field", $article)) {
+   unless ($req->user_can("edit_save", $article)
+	   && $req->user_can("edit_field_edit_$field", $article)) {
     return {
 	    content => "Access denied to $field",
 	    headers => [
