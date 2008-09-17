@@ -259,8 +259,11 @@ sub validate_field {
   if (@data && $data[0] !~ /\S/ && $info->{required_if}) {
     # field is required if any of the named fields are non-blank
     for my $testfield (split /;/, $info->{required_if}) {
-      my $testvalue = $self->param($testfield);
-      if (defined $testvalue && $testvalue =~ /\S/) {
+      my ($field_name, $field_value) = split /=/, $testfield;
+      my $testvalue = $self->param($field_name);
+      if (defined $testvalue &&
+	  (defined $field_value && $testvalue eq $field_value
+	   || !defined $field_value && $testvalue =~ /\S/)) {
 	++$required;
 	last;
       }

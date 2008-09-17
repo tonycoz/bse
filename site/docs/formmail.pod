@@ -269,6 +269,25 @@ required field.
 
 =item *
 
+I<fieldname>_required_if - a semi-colon separated list of other fields
+to check.  Each entry can be a simple field name or a
+I<fieldname>=I<value>.
+
+  ; name is required if the company or phone field is set
+  name_required_if=company;phone
+
+  ; email is required if contacttype is email
+  email_required_if=contacttype=email
+  phone_required_if=contacttype=phone
+
+If you supply multiple fields to check against the then the field is
+required if any of the fields match:
+
+  ; require phone if a contact type = phone or they have a company
+  phone_required_if=contacttype=phone;company
+
+=item *
+
 I<fieldname>_required_error - message displayed for the field if it's
 marked required but isn't set.
 
