@@ -3713,6 +3713,15 @@ sub req_ajax_save_body {
    my $cfg = $req->cfg;
    my $cgi = $req->cgi;
 
+   unless ($req->user_can("edit_field_edit_body", $article)) {
+    return {
+	    content => "Access denied to body",
+	    headers => [
+			"Status: 187" # bad request
+		       ],
+	   };
+   }
+
    require Encode;
    # ajax always sends in UTF-8
    my $body = Encode::decode(utf8 => $cgi->param('body'));
@@ -3773,6 +3782,14 @@ sub req_ajax_set {
    unless ($field && $settable_fields{$field}) {
     return {
 	    content => 'Invalid or missing field name',
+	    headers => [
+			"Status: 187" # bad request
+		       ],
+	   };
+   }
+   unless ($req->user_can("edit_field_edit_$field", $article)) {
+    return {
+	    content => "Access denied to $field",
 	    headers => [
 			"Status: 187" # bad request
 		       ],
