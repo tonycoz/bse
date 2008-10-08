@@ -194,9 +194,10 @@ sub tag_admin {
 }
 
 sub tag_thumbimage {
-  my ($self, $rcurrent, $images, $args) = @_;
+  my ($self, $rcurrent, $images, $args, $acts, $funcname, $templater) = @_;
 
-  my ($geometry_id, $id, $field) = split ' ', $args;
+  my ($geometry_id, $id, $field) = 
+    DevHelp::Tags->get_parms($args, $acts, $templater);
 
   return $self->do_thumbimage($geometry_id, $id, $field, $images, $$rcurrent);
 }
