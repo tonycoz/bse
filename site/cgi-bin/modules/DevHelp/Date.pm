@@ -5,7 +5,8 @@ use vars qw(@EXPORT_OK %EXPORT_TAGS @ISA);
 @ISA = qw(Exporter);
 @EXPORT_OK = 
   qw(dh_parse_date dh_parse_date_sql dh_parse_time dh_parse_time_sql
-     dh_parse_sql_date dh_parse_sql_datetime dh_strftime_sql_datetime);
+     dh_parse_sql_date dh_parse_sql_datetime dh_strftime_sql_datetime
+     dh_valid_date);
 %EXPORT_TAGS =
   (
    all => \@EXPORT_OK,
@@ -161,6 +162,37 @@ sub dh_strftime_sql_datetime {
   require POSIX;
   return POSIX::strftime($format, $sec, $min, $hour, $day, $month, $year, 
 			 0, 0);
+}
+
+=item dh_valid_date($year, $month, $day)
+
+Validate the value ranges for a date.
+
+Returns a true value on success.
+
+=cut
+
+sub dh_valid_date {
+  my ($year, $month, $day) = @_;
+
+  $month >= 1 and $month <= 12
+    or return;
+
+  $day >= 1
+    or return;
+
+  my $days_in_month;
+  if ($month == 2) {
+    my $leap = $year % 4 == 0 && $year % 100 != 0 || $year % 400 == 0;
+    $days_in_month = $leap ? 29 : 28;
+  }
+  else {
+    $days_in_month = [ 31, 0, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]->[$month-1];
+  }
+  $day <= $days_in_month
+    or return;
+
+  return 1;
 }
 
 1;

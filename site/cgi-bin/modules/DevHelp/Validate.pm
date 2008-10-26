@@ -385,6 +385,11 @@ sub validate_field {
 	  last RULE;
 	}
 	require DevHelp::Date;
+	unless (DevHelp::Date::dh_valid_date($year, $month, $day)) {
+	  $errors->{$field} = _make_error($field, $info, $rule,
+					  '$n must be a valid date');
+	  last RULE;
+	}
 	my $msg;
 	unless (($year, $month, $day) = DevHelp::Date::dh_parse_date($data, \$msg)) {
 	  $errors->{$field} = $msg;
