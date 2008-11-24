@@ -68,7 +68,8 @@ sub dispatch {
   $id = $article->{id};
 
   if (!$article->is_dynamic 
-      && $cfg->entry('basic', 'alias_static_redirect', 1)) {
+      && ($cfg->entry('basic', 'alias_static_redirect', 1)
+	  || $cgi->param('redirect'))) {
     require BSE::Template;
     return BSE::Template->get_refresh($article->{link}, $cfg);
   }
