@@ -225,14 +225,30 @@ sub new {
 sub dh_validate {
   my ($cgi, $errors, $validation, $cfg, $section) = @_;
 
-  return DevHelp::Validate::CGI->new(cfg=>$cfg, section=>$section, fields=>$validation->{fields}, rules=>$validation->{rules}, optional=>$validation->{optional})
+  return DevHelp::Validate::CGI->new
+    (
+     cfg => $cfg,
+     section => $section, 
+     fields => $validation->{fields}, 
+     rules => $validation->{rules}, 
+     optional => $validation->{optional}, 
+     dbh => $validation->{dbh},
+    )
     ->validate($cgi, $errors);
 }
 
 sub dh_validate_hash {
   my ($hash, $errors, $validation, $cfg, $section) = @_;
 
-  return DevHelp::Validate::Hash->new(cfg=>$cfg, section=>$section, fields=>$validation->{fields}, rules=>$validation->{rules}, optional=>$validation->{optional})
+  return DevHelp::Validate::Hash->new
+    (
+     cfg => $cfg,
+     section => $section,
+     fields => $validation->{fields}, 
+     rules => $validation->{rules}, 
+     optional=>$validation->{optional},
+     dbh => $validation->{dbh},
+    )
     ->validate($hash, $errors);
 }
 

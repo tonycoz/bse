@@ -451,7 +451,12 @@ sub req_send {
   my $cgi = $req->cgi;
   my $cfg = $req->cfg;
 
-  my %form = ( fields =>$form->{validation}, rules=>{} );
+  my %form =
+    ( 
+     fields => $form->{validation},
+     rules=>{},
+     dbh => BSE::DB->single->dbh,
+    );
 
   my %errors;
   dh_validate($cgi, \%errors, \%form, $cfg, $form->{validation_section});
