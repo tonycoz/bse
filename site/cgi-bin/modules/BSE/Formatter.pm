@@ -64,7 +64,7 @@ sub _image {
     if ($style =~ /^\d/) {
       $text .= qq! style="padding: $style"!;
     }
-    elsif ($style =~ /^\w+$/) {
+    elsif ($style =~ /^\w[\w-]*$/) {
       $text .= qq! class="$style"!;
     }
     else {

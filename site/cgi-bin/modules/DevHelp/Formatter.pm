@@ -221,10 +221,10 @@ sub _tag_with_attrs {
   my $out = "<$tag";
   my @classes;
   while ($extra) {
-    if ($extra =~ s/^\#(\w+)(?:\s+|$)//) {
+    if ($extra =~ s/^\#([\w-]+)(?:\s+|$)//) {
       $out .= qq! id="$1"!;
     }
-    elsif ($extra =~ s/^([a-z]\w+)(?:\s+|$)//i) {
+    elsif ($extra =~ s/^([a-z][\w-]*)(?:\s+|$)//i) {
       push @classes, $1;
     }
     elsif ($extra =~ s/^((?:[a-z][\w-]*: .*?;\s*)+)//) {
