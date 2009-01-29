@@ -49,6 +49,23 @@ sub unescape_uri {
   URI::Escape::uri_unescape(shift);
 }
 
+sub _options {
+  my ($values, $labels, $default) = @_;
+
+  my $html = '';
+  for my $value (@$values) {
+    my $option = '<option value="' . escape_html($value) . '"';
+    my $label = $labels->{$value};
+    defined $label or $label = $value;
+    $option .= ' selected="selected"'
+      if defined($default) && $default eq $value;
+    $option .= '>' . escape_html($label) . "</option>";
+    $html .= $option . "\n";
+  }
+
+  return $html;
+}
+
 sub popup_menu {
   my (%opts) = @_;
 
@@ -65,29 +82,17 @@ sub popup_menu {
   if ($groups) {
     for my $group (@$groups) {
       my ($label, $ids) = @$group;
-      $html .= '<optgroup label="' . escape_html($label) . '">';
-      for my $value (@$ids) {
-	my $option = '<option value="' . escape_html($value) . '"';
-	my $label = $labels->{$value};
-	defined $label or $label = $value;
-	$option .= ' selected="selected"'
-	  if defined($default) && $default eq $value;
-	$option .= '>' . escape_html($label) . "</option>";
-	$html .= $option . "\n";
+      if (length $label) {
+	$html .= '<optgroup label="' . escape_html($label) . '">'
+	  . _options($ids, $labels, $default) . '</optgroup>';
       }
-      $html .= '</optgroup>';
+      else {
+	$html .= _options($ids, $labels, $default);
+      }
     }
   }
   else {
-    for my $value (@$values) {
-      my $option = '<option value="' . escape_html($value) . '"';
-      my $label = $labels->{$value};
-      defined $label or $label = $value;
-      $option .= ' selected="selected"'
-	if defined($default) && $default eq $value;
-      $option .= '>' . escape_html($label) . "</option>";
-      $html .= $option . "\n";
-    }
+    $html .= _options($values, $labels, $default);
   }
   $html .= "</select>";
 
