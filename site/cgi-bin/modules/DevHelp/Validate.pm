@@ -4,6 +4,7 @@ require Exporter;
 use vars qw(@EXPORT_OK @ISA);
 @EXPORT_OK = qw(dh_validate dh_validate_hash dh_fieldnames dh_configure_fields);
 @ISA = qw(Exporter);
+use Carp qw(confess);
 
 my %built_ins =
   (
@@ -162,7 +163,7 @@ sub new {
   my $rules = $self->{rules} || {};
 
   my %cfg_rules;
-  _get_cfg_fields(\%cfg_rules, $self->{cfg}, $self->{section}, $fields)
+  _get_cfg_fields(\%cfg_rules, $self->{cfg}, $self->{section}, $fields, $opts{dbh})
     if $self->{cfg} && $self->{section};
 
   for my $rulename (keys %$rules) {
@@ -385,14 +386,14 @@ sub validate_field {
 	  last RULE;
 	}
 	require DevHelp::Date;
-	unless (DevHelp::Date::dh_valid_date($year, $month, $day)) {
-	  $errors->{$field} = _make_error($field, $info, $rule,
-					  '$n must be a valid date');
-	  last RULE;
-	}
 	my $msg;
 	unless (($year, $month, $day) = DevHelp::Date::dh_parse_date($data, \$msg)) {
 	  $errors->{$field} = $msg;
+	  last RULE;
+	}
+	unless (DevHelp::Date::dh_valid_date($year, $month, $day)) {
+	  $errors->{$field} = _make_error($field, $info, $rule,
+					  '$n must be a valid date');
 	  last RULE;
 	}
 	if ($rule->{mindate} || $rule->{maxdate}) {
@@ -483,8 +484,98 @@ sub _make_error {
   return $message;
 }
 
+sub _get_cfg_values_sql {
+  my ($field_ref, $cfg, $field, $section, $dbh) = @_;
+
+  $dbh
+    or confess "Missing database handle for $section/${field}_values";
+  my $groups_sql = $cfg->entry($section, "${field}_values_group_sql");
+  my $values_sql = $cfg->entry($section, "${field}_values_sql");
+  my $empty_groups = $cfg->entry($section, "${field}_empty_groups");
+  
+  my $values_sth = $dbh->prepare($values_sql)
+    or confess "Cannot prepare $values_sql: ", $dbh->errstr;
+  $values_sth->execute
+    or confess "Cannot execute $values_sql: ", $values_sth->errstr;
+  my @value_rows;
+  while (my $row = $values_sth->fetchrow_hashref) {
+    push @value_rows, +{ %$row };
+  }
+  $values_sth->finish;
+  if ($groups_sql) {
+    my $groups_sth = $dbh->prepare($groups_sql)
+      or confess "Cannot prepare $groups_sql: ", $dbh->errstr;
+    $groups_sth->execute
+      or confess "Cannot execute $groups_sql: ", $groups_sth->errstr;
+    my @group_rows;
+    while (my $row = $groups_sth->fetchrow_hashref) {
+      push @group_rows, +{ %$row };
+    }
+
+    if (@group_rows) {
+      my %values;
+      my %group_ids = map { $_->{id} => 1 } @group_rows;
+      my $bad_values;
+      my %group_values;
+
+      # collate the values
+      for my $value_row (@value_rows) {
+	unless (defined $value_row->{group_id}) {
+	  ++$bad_values;
+	  print STDERR "Row for $field missing group_id\n";
+	  last;
+	}
+	unless ($group_ids{$value_row->{group_id}}) {
+	  ++$bad_values;
+	  print STDERR "Row for $field $value_row->{id} group id $value_row->{group_id} not in group list\n";
+	  last;
+	}
+	push @{$group_values{$value_row->{group_id}}}, $value_row->{id};
+      }
+      unless ($bad_values) {
+	my @groups;
+	for my $group (@group_rows) {
+	  my @value_ids;
+	  @value_ids = @{$group_values{$group->{id}}}
+	    if $group_values{$group->{id}};
+	  if ($empty_groups || @value_ids) {
+	    push @groups, [ $group->{label}, \@value_ids ];
+	  }
+	}
+	if (@groups) {
+	  $field_ref->{value_groups} = \@groups;
+	}
+      }
+      else {
+	# fall through and just list the values
+	print STDERR "Value rows included group ids which weren't returned in groups - not grouping\n";
+      }
+    }
+    else {
+      # fall through and just list the values
+      print STDERR "Group sql for $field provided returned no rows\n";
+    }
+  }
+
+  return map [ $_->{id}, $_->{label} ], @value_rows;
+}
+
+sub _get_cfg_groups {
+  my ($field_ref, $cfg, $field, $section) = @_;
+
+  my $groups = $cfg->entry($section, "${field}_groups")
+    or return;
+
+  my @groups;
+  for my $group_entry (split /;/, $groups) {
+    my ($label, $ids) = split /=/, $group_entry, 2;
+    push @groups, [ $label, [ split /,/, $ids ] ];
+  }
+  $field_ref->{value_groups} = \@groups;
+}
+
 sub _get_cfg_fields {
-  my ($rules, $cfg, $section, $field_hash) = @_;
+  my ($rules, $cfg, $section, $field_hash, $dbh) = @_;
 
   $rules->{rules} = {};
   $rules->{fields} = {};
@@ -495,6 +586,7 @@ sub _get_cfg_fields {
   my @names = ( split(/,/, $fields), keys %$field_hash );
 
   for my $field (@names) {
+    $cfg_fields->{$field} = {};
     for my $cfg_name (qw(required rules description required_error range_error mindatemsg maxdatemsg)) {
       my $value = $cfg->entry($section, "${field}_$cfg_name");
       if (defined $value) {
@@ -505,7 +597,10 @@ sub _get_cfg_fields {
     my $values = $cfg->entry($section, "${field}_values");
     if (defined $values) {
       my @values;
-      if ($values =~ /;/) {
+      if ($values eq "-sql") {
+	@values = _get_cfg_values_sql($cfg_fields->{$field}, $cfg, $field, $section, $dbh);
+      }
+      elsif ($values =~ /;/) {
 	for my $entry (split /;/, $values) {
 	  if ($entry =~ /^([^=]*)=(.*)$/) {
 	    push @values, [ $1, $2 ];
@@ -514,6 +609,7 @@ sub _get_cfg_fields {
 	    push @values, [ $entry, $entry ];
 	  }
 	}
+	_get_cfg_groups($cfg_fields->{$field}, $cfg, $field, $section);
       }
       else {
 	my $strip;
@@ -530,6 +626,7 @@ sub _get_cfg_fields {
 	if ($strip) {
 	  $_->[0] =~ s/^\Q$strip// for @values;
 	}
+	_get_cfg_groups($cfg_fields->{$field}, $cfg, $field, $section);
       }
       $cfg_fields->{$field}{values} = \@values;
     }
@@ -537,10 +634,10 @@ sub _get_cfg_fields {
 }
 
 sub dh_configure_fields {
-  my ($fields, $cfg, $section) = @_;
+  my ($fields, $cfg, $section, $dbh) = @_;
 
   my %cfg_rules;
-  _get_cfg_fields(\%cfg_rules, $cfg, $section, $fields);
+  _get_cfg_fields(\%cfg_rules, $cfg, $section, $fields, $dbh);
 
   # **FIXME** duplicated code
   my $cfg_fields = $cfg_rules{fields};

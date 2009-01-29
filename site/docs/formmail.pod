@@ -363,6 +363,45 @@ values:
   prefix1=One
   prefix2=Two
 
+If I<fieldname}_values is "-sql" then the I<fieldname>_values_sql is
+used to obtain the possible field values, and
+I<fieldname>_values_group_sql is used to build the list of groups if
+option groups are used.
+
+=item *
+
+I<fieldname>_groups - semi-colon separated list of option groups.
+Each entry is the label, '=', followed by a comma-separated list of
+values from I<fieldname>_values.
+
+=item *
+
+I<fieldname>_values_sql - SQL that returns values, this must return
+columns called id, label and optionally group_id, if
+I<fieldname>_values_group_sql is used.
+
+  product_values=-sql
+  product_values=<<SQL
+  select id, title as "label", parentId as "group_id" 
+  from product pr, article ar
+  where pr.articleId = ar.id and listed > 0
+  order by 2
+  SQL
+  product_values_group_sql=<<SQL
+  select id, title as "label"
+  from article where parentId = 3
+  order by 2
+  SQL
+
+=item *
+
+I<fieldname>_values_group_sql - see I<fieldname>_values_sql.
+
+=item *
+
+I<fieldname>_empty_groups - if true then empty groups will still be
+listed.
+
 =item *
 
 I<fieldname>_maxfilesize - if the field has htmltype set to "file"

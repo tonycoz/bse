@@ -90,7 +90,7 @@ sub _get_form {
 
   my $valid_section = "$id formmail validation";
   $form{validation_section} = $valid_section;
-  my $fields = dh_configure_fields(\%fields, $cfg, $valid_section);
+  my $fields = dh_configure_fields(\%fields, $cfg, $valid_section, BSE::DB->single->dbh);
   my $extra_cfg_names = $cfg->entry($section, 'field_config', '') . ',' .
     $cfg->entry("formmail", "field_config", '');
   my %std_cfg_names = map { $_ => 1 } 
@@ -183,6 +183,9 @@ sub tag_values_select {
   my @extras;
   if (defined $value) {
     push @extras, -default => $value;
+  }
+  if ($field->{value_groups}) {
+    push @extras, -groups => $field->{value_groups};
   }
   
   return popup_menu(-name => $field->{name},

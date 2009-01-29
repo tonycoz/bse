@@ -61,14 +61,33 @@ sub popup_menu {
   my $labels = $opts{"-labels"} || {};
   my $values = $opts{"-values"};
   my $default = $opts{"-default"};
-  for my $value (@$values) {
-    my $option = '<option value="' . escape_html($value) . '"';
-    my $label = $labels->{$value};
-    defined $label or $label = $value;
-    $option .= ' selected="selected"'
-      if defined($default) && $default eq $value;
-    $option .= '>' . escape_html($label) . "</option>";
-    $html .= $option . "\n";
+  my $groups = $opts{"-groups"};
+  if ($groups) {
+    for my $group (@$groups) {
+      my ($label, $ids) = @$group;
+      $html .= '<optgroup label="' . escape_html($label) . '">';
+      for my $value (@$ids) {
+	my $option = '<option value="' . escape_html($value) . '"';
+	my $label = $labels->{$value};
+	defined $label or $label = $value;
+	$option .= ' selected="selected"'
+	  if defined($default) && $default eq $value;
+	$option .= '>' . escape_html($label) . "</option>";
+	$html .= $option . "\n";
+      }
+      $html .= '</optgroup>';
+    }
+  }
+  else {
+    for my $value (@$values) {
+      my $option = '<option value="' . escape_html($value) . '"';
+      my $label = $labels->{$value};
+      defined $label or $label = $value;
+      $option .= ' selected="selected"'
+	if defined($default) && $default eq $value;
+      $option .= '>' . escape_html($label) . "</option>";
+      $html .= $option . "\n";
+    }
   }
   $html .= "</select>";
 
