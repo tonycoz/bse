@@ -1318,7 +1318,7 @@ sub _validate_common {
   }
   if (exists $data->{linkAlias} 
       && length $data->{linkAlias}) {
-    unless ($data->{linkAlias} =~ /\A[a-zA-Z0-9-]+\z/
+    unless ($data->{linkAlias} =~ /\A[a-zA-Z0-9-_]+\z/
 	    && $data->{linkAlias} =~ /[A-Za-z]/) {
       $errors->{linkAlias} = "Link alias must contain only alphanumerics and contain at least one letter";
     }
@@ -1357,7 +1357,7 @@ sub validate_old {
       && length $data->{linkAlias} 
       && $data->{linkAlias} ne $article->{linkAlias}) {
     my $other = $articles->getBy(linkAlias => $data->{linkAlias});
-    $other
+    $other && $other->{id} != $article->{id}
       and $errors->{linkAlias} = "Duplicate link alias - already used by article $other->{id}";
   }
 
