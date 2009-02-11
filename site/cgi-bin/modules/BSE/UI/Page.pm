@@ -145,6 +145,18 @@ sub dispatch {
     push @{$result->{headers}}, @more_headers;
   }
 
+  # check if we should override the default no-cache
+  if ($article->{flags} =~ /A/) {
+    $result->{no_cache_dynamic} = 1;
+  }
+  elsif ($article->{flags} =~ /B/) {
+    $result->{no_cache_dynamic} = 0;
+  }
+  defined $result->{no_cache_dynamic}
+    or $result->{no_cache_dynamic} = $req->cfg->entry("template $article->{template}", "no_cache_dynamic");
+  defined $result->{no_cache_dynamic}
+    or $result->{no_cache_dynamic} = $req->cfg->entry("article", "no_cache_dynamic");
+
   return $result;
 }
 

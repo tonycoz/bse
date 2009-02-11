@@ -352,6 +352,14 @@ gpopimage[] tags.  Default: popup.
 Some obsolete tags will warn to stderr if this is non-zero.  Default:
 don't warn.
 
+=item no_cache_dynamic
+
+If non-zero, the default, dynamic responses will include a
+C<Cache-Control: no-cache> header.  This can be overridden for
+articles via , article flags, C<[template >
+I<templatename>C<].no_cache_dynamic> and [article].no_cache_dynamic.
+Default: 1.
+
 =back
 
 =head2 [mail]
@@ -1795,6 +1803,35 @@ the all key which covers all cases.
 If the C<all> key or the message id key is non-zero then the checkout
 page will redirect to registration instead of login if the cart or
 configuration requires that the user be logged in.
+
+=head2 [template I<template-name>]
+
+Settings for articles based on a particular template.
+
+=over
+
+=item no_cache_dynamic
+
+Controls whether a cache-control: no-cache header will be produced.
+Can be overridden with the A and B article flags.  If not set the
+value of [article].no_cache_dynamic is used.
+
+=back
+
+=head2 [article]
+
+Global settings for articles.
+
+=over
+
+=item no_cache_dynamic
+
+Controls whether a cache-control: no-cache header will be produced.
+Can be overridden with the A and B article flags or [template
+I<template-name>].no_cache_dynamic.  If not set the value of
+[basic].no_cache_dynamic is used.
+
+=back
 
 =head1 AUTHOR
 
