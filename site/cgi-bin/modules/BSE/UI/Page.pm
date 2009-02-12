@@ -65,6 +65,19 @@ sub dispatch {
     return $self->error($req, "No page or page alias specified for display");
   }
 
+  # check if we should override the default no-cache
+  my $no_cache_dynamic;
+  if ($article->{flags} =~ /A/) {
+    $no_cache_dynamic = 1;
+  }
+  elsif ($article->{flags} =~ /B/) {
+    $no_cache_dynamic = 0;
+  }
+  defined $no_cache_dynamic
+    or $no_cache_dynamic = $cfg->entry("template $article->{template}", "no_cache_dynamic");
+  defined $no_cache_dynamic
+    or $no_cache_dynamic = $req->cfg->entry("article", "no_cache_dynamic");
+
   $id = $article->{id};
 
   if (!$article->is_dynamic 
@@ -83,7 +96,8 @@ sub dispatch {
       return
 	{
 	 content => $content,
-	 type => BSE::Template->get_type($cfg, $article->{template})
+	 type => BSE::Template->get_type($cfg, $article->{template}),
+	 no_cache_dynamic => $no_cache_dynamic,
 	};
     }
   }
@@ -145,17 +159,7 @@ sub dispatch {
     push @{$result->{headers}}, @more_headers;
   }
 
-  # check if we should override the default no-cache
-  if ($article->{flags} =~ /A/) {
-    $result->{no_cache_dynamic} = 1;
-  }
-  elsif ($article->{flags} =~ /B/) {
-    $result->{no_cache_dynamic} = 0;
-  }
-  defined $result->{no_cache_dynamic}
-    or $result->{no_cache_dynamic} = $req->cfg->entry("template $article->{template}", "no_cache_dynamic");
-  defined $result->{no_cache_dynamic}
-    or $result->{no_cache_dynamic} = $req->cfg->entry("article", "no_cache_dynamic");
+  $result->{no_cache_dynamic} = $no_cache_dynamic;
 
   return $result;
 }
