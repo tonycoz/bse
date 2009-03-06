@@ -2684,10 +2684,11 @@ sub req_thumb {
     my $error;
     ($data, $type) = $thumb_obj->
       thumb_data("$imagedir/$image->{image}", $geometry, \$error)
-	or return [
-		   type => 'text/plain',
-		   content => 'Error: '.$error
-		  ];
+	or return 
+	  {
+	   type => 'text/plain',
+	   content => 'Error: '.$error
+	  };
   }
 
   if ($type && $data) {
