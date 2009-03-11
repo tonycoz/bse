@@ -1257,15 +1257,24 @@ sub req_download_file {
   my $article_id = $cgi->param('page');
   if ($article_id) {
     require Articles;
-    if ($article_id == -1) {
+    if ($article_id eq '-1') {
       ($file) = grep $_->{name} eq $fileid, Articles->global_files;
     }
-    else {
+    elsif ($article_id =~ /\A\d+\z/) {
       $article = Articles->getByPkey($article_id)
 	or return $self->req_show_logon($req,
 					$msgs->('nosucharticle', "No such article"));
-      ($file) = grep $_->{name} eq $fileid, $article->files;
     }
+    elsif ($article_id =~ /\A[a-zA-Z0-9-_]+\z/) {
+      ($article) = Articles->getBy(linkAlias => $article_id)
+	or return $self->req_show_logon($req,
+					$msgs->('nosucharticle', "No such article"));
+    }
+    else {
+      return $self->req_show_logon($req, $msgs->('invalidarticle', "Invalid article id"));
+    }
+
+    ($file) = grep $_->{name} eq $fileid, $article->files;
   }
   else {
     $file = ArticleFiles->getByPkey($fileid);
