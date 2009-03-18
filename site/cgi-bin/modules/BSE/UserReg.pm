@@ -950,6 +950,14 @@ sub req_register {
     elsif ($subs) {
       return if $self->send_conf_request($req, $user, 1);
     }
+    elsif ($cfg->entry('site users', 'notify_register_customer')) {
+      $req->send_email
+	(
+	 id => 'notify_register_customer', 
+	 template => 'user/email_register',
+	 to => $user
+	);
+    }
     
     _got_user_refresh($session, $cgi, $cfg);
 

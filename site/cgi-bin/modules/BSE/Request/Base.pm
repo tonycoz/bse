@@ -3,7 +3,7 @@ use strict;
 use CGI ();
 use BSE::Cfg;
 use DevHelp::HTML;
-use Carp qw(cluck);
+use Carp qw(cluck confess);
 
 sub new {
   my ($class, %opts) = @_;
@@ -19,7 +19,7 @@ sub new {
     $self->_encode_utf8();
   }
   elsif ($self->cfg->entry('html', 'ajaxcharset', 0)
-      && (() = $self->cgi->param('_'))) {
+      && $self->is_ajax) {
     # convert the values of each parameter from UTF8 to iso-8859-1
     $self->_convert_utf8_cgi_to_charset();
   }
@@ -546,6 +546,75 @@ sub user_url {
   }
 
   return $template;
+}
+
+sub admin_tags {
+  my ($req) = @_;
+
+  require BSE::Util::Tags;
+  return
+    (
+     BSE::Util::Tags->common($req),
+     BSE::Util::Tags->admin(undef, $req->cfg),
+     BSE::Util::Tags->secure($req),
+    );
+}
+
+=item is_ajax
+
+Return true if the current request is an ajax request.
+
+=cut
+
+sub is_ajax {
+  my ($self) = @_;
+
+  defined $ENV{HTTP_X_REQUESTED_WITH}
+    && $ENV{HTTP_X_REQUESTED_WITH} =~ /XMLHttpRequest/
+      and return 1;
+
+  my $under = () = $self->cgi->param('_');
+  $under
+    and return 1;
+
+  return;
+}
+
+=item send_email
+
+Send a simple email.
+
+=cut
+
+sub send_email {
+  my ($self, %opts) = @_;
+
+  require BSE::ComposeMail;
+  my $mailer = BSE::ComposeMail->new(cfg => $self->cfg);
+
+  my $id = $opts{id}
+    or confess "No mail id provided";
+
+  my $section = "email $id";
+
+  for my $key (qw/subject template html_template allow_html from from_name/) {
+    my $value = $self->{cfg}->entry($section, $key);
+    defined $value and $opts{$key} = $value;
+  }
+  unless (defined $opts{acts}) {
+    require BSE::Util::Tags;
+    BSE::Util::Tags->import(qw/tag_hash_plain/);
+    my %acts =
+      (
+       $self->dyn_user_tags
+      );
+    $opts{args} = \%opts;
+  }
+
+  $mailer->send(%opts)
+    or print STDERR "Error sending mail $id: ", $mailer->errstr, "\n";
+
+  return 1;
 }
 
 1;
