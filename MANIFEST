@@ -529,6 +529,8 @@ site/templates/user/email_conferror_base.tmpl
 site/templates/user/email_confirm.tmpl
 site/templates/user/email_confirm_nop.tmpl
 site/templates/user/email_edit_seminar.tmpl
+site/templates/user/email_register.tmpl
+site/templates/user/email_register_html.tmpl
 site/templates/user/email_unbook_seminar.tmpl
 site/templates/user/logon_base.tmpl
 site/templates/user/lostemailsent_base.tmpl

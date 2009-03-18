@@ -608,7 +608,10 @@ sub send_email {
       (
        $self->dyn_user_tags
       );
-    $opts{args} = \%opts;
+    if ($opts{extraacts}) {
+      %acts = ( %acts, %{$opts{extraacts}} );
+    }
+    $opts{acts} = \%acts;
   }
 
   $mailer->send(%opts)

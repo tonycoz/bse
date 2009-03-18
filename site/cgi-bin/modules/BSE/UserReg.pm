@@ -955,7 +955,12 @@ sub req_register {
 	(
 	 id => 'notify_register_customer', 
 	 template => 'user/email_register',
-	 to => $user
+	 subject => 'Thank you for registering',
+	 to => $user,
+	 extraacts =>
+	 {
+	  user => [ \&tag_hash_plain, $user ],
+	 },
 	);
     }
     

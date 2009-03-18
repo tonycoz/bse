@@ -1115,6 +1115,13 @@ user.  See notify_register above.
 
 Default: New user {userId} registered
 
+=item notify_register_customer
+
+If non-zero then email id C<notify_register_customer> will be sent to
+new user on registration.  By default this uses template
+user/email_register, subject "Thank you for registering" which can be
+overridden in [email notify_register_customer]
+
 =back
 
 =head2 [payment type names]
