@@ -1023,6 +1023,8 @@ sub new {
      grady2 => '100%',
      xpos => '50%',
      ypos => '50%',
+     opacity => 1,
+     combine => 'normal',
     );
 
   my ($width, $height);
@@ -1070,7 +1072,7 @@ sub new {
 
 sub size {
   my ($self, $width, $height) = @_;
-
+  
   my $want_width = defined $self->{width} ?
     $self->_calc_dim($width, $self->{width}) : $width;
   my $want_height = defined $self->{height} ? 
@@ -1086,7 +1088,7 @@ sub size {
 
 sub do {
   my ($self, $work) = @_;
-
+  
   if ($work->getchannels < 3) {
     $work = $work->convert(preset => 'rgb');
   }
@@ -1095,7 +1097,7 @@ sub do {
   }
 
   my $bg = $self->_bgcolor;
-
+  
   my $width = $work->getwidth;
   my $height = $work->getheight;
   my $want_width = defined $self->{width} ? 
@@ -1166,12 +1168,12 @@ sub do {
     require Imager::Fountain;
     my $grad = Imager::Fountain->read(gimp => $self->{bggrad})
       or die "Cannot load $self->{bggrad}: ", Imager->errstr;
-
+      
     my $x1 = $self->_calc_dim($want_width, $self->{gradx1});
     my $y1 = $self->_calc_dim($want_height, $self->{grady1});
     my $x2 = $self->_calc_dim($want_width, $self->{gradx2});
     my $y2 = $self->_calc_dim($want_height, $self->{grady2});
-
+    
     print STDERR "x1 $x1 y1 $y1 x2 $x2 y2 $x2\n";
     $out->box(fill => { fountain => $self->{gradtype},
 			combine => 'normal',
@@ -1180,12 +1182,18 @@ sub do {
 			xa => $x1, ya => $y1, xb => $x2, yb => $y2 })
       or die "Cannot do gradient: ", $out->errstr;
   }
-
-  if ($work->getchannels == 3) {
-    $out->paste(src => $work, left => $want_xpos, top => $want_ypos);
+    
+  if ($self->{combine} ne 'normal' || $self->{opacity} != 1) {  
+    $out->compose(src => $work, combine => $self->{combine}, opacity => $self->{opacity})
+      or print STDERR "Compose failed: ", $out->errstr, "\n";
   }
   else {
-    $out->rubthrough(src => $work, tx => $want_xpos, ty => $want_ypos);
+    if ($work->getchannels == 3) {
+      $out->paste(src => $work, left => $want_xpos, top => $want_ypos);
+    }
+    else {
+      $out->rubthrough(src => $work, tx => $want_xpos, ty => $want_ypos);
+    }
   }
 
   $out;
