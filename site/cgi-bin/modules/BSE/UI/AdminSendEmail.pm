@@ -2,6 +2,7 @@ package BSE::UI::AdminSendEmail;
 use strict;
 use base 'BSE::UI::AdminDispatch';
 use SiteUsers;
+use BSE::Util::Tags qw(tag_hash_plain);
 
 my %actions =
   (
@@ -16,6 +17,45 @@ sub rights {
 
 sub default_action {
   "send"
+}
+
+sub tag_ifUserCanSee {
+  my ($req, $user, $args) = @_;
+
+  $args 
+    or return 0;
+
+  my $article;
+  if ($args =~ /^\d+$/) {
+    require Articles;
+    $article = Articles->getByPkey($args);
+  }
+  else {
+    $article = $req->get_article($args);
+  }
+  $article
+    or return 0;
+
+  $req->siteuser_has_access($article, $user);
+}
+
+sub tag_ifUserMemberOf {
+  my ($req, $user, $args, $acts, $func, $templater) = @_;
+
+  require DevHelp::Tags;
+  my ($name) = DevHelp::Tags->get_parms($args, $acts, $templater);
+
+  $name
+    or return 0; # no group name
+  
+  require BSE::TB::SiteUserGroups;
+  my $group = BSE::TB::SiteUserGroups->getByName($req->cfg, $name);
+  unless ($group) {
+    print STDERR "Unknown group name '$name' in ifUserMemberOf\n";
+    return 0;
+  }
+
+  return $group->contains_user($user);
 }
 
 sub req_send {
@@ -46,13 +86,17 @@ sub req_send {
 
   my %acts =
     (
-     emailuser => [ \&tag_hash_plain, $user ],
+     user => [ \&tag_hash_plain, $user ],
+     ifUser => 1,
+     ifUserCanSee => [ \&tag_isUserCanSee, $req, $user ],
+     ifUserMemberOf => [ \tag_ifUserMemberOf => $req, $user ],
     );
 
   $req->send_email
     (
      to => $user,
-     id => $id
+     id => $id,
+     extraacts => \%acts,
     );
 
   my $r = $cgi->param('r');
