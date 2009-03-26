@@ -923,7 +923,10 @@ sub baseActs {
      $art_it->make_iterator( \&iter_inlines, 'inline', 'inlines' ),
      gimage => 
      sub {
-       my ($name, $align, $rest) = split ' ', $_[0], 3;
+       my ($args, $acts, $name, $templater) = @_;
+       my ($name, $align, @rest) = 
+	 DevHelp::Tags->get_parms($args, $acts, $templater);
+       my $rest = "@rest";
 
        my $im;
        if ($name eq '-') {
