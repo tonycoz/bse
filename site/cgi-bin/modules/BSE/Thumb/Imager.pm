@@ -362,8 +362,8 @@ sub size {
       
       $width *= $scale;
       $height *= $scale;
-      $width = int($width);
-      $height = int($height);
+      $width = int($width+0.5);
+      $height = int($height+0.5);
       $width > $geo->{width} and $width = $geo->{width};
       $height > $geo->{height} and $height = $geo->{height};
       $can_original = $start_width == $width && $start_height == $height && $scale == 1;
@@ -419,8 +419,8 @@ sub do {
       $width = $width * $geo->{height} / $height;
       $height = $geo->{height};
     }
-    $width = int($width);
-    $height = int($height);
+    $width = int($width+0.5);
+    $height = int($height+0.5);
     $scaled = $work->scale(xpixels => $width, ypixels => $height, 
 			   qtype => 'mixing');
   }
