@@ -34,7 +34,14 @@ sub article_class {
   $editclass =~ s/^(?:BSE::)?Generate::/BSE::Edit::/;
   my $obj = _get_class($editclass, $cfg);
   if ($obj) {
-    $article = $obj->get_article($articles, $article);
+    my $work = $obj->get_article($articles, $article);
+    if ($work) {
+      $article = $work;
+    }
+    else {
+      # broken object
+      $obj = _get_class("BSE::Edit::Article", $cfg);
+    }
   }
   return ($obj, $article);
 }

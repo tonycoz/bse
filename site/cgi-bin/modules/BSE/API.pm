@@ -5,7 +5,7 @@ use BSE::Util::SQL qw(sql_datetime now_sqldatetime);
 use BSE::Cfg;
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(bse_cfg bse_make_product bse_encoding);
+@EXPORT_OK = qw(bse_cfg bse_make_product bse_make_catalog bse_encoding);
 use Carp qw(confess);
 
 my %acticle_defaults =
@@ -58,6 +58,13 @@ my %product_defaults =
    subscription_usage => 3,
    subscription_required => -1,
    product_code => '',
+  );
+
+my %catalog_defaults =
+  (
+   template => 'catalog.tmpl',
+   parentid => 3,
+   generator => 'Generate::Catalog',
   );
 
 sub _set_dynamic {
@@ -147,6 +154,55 @@ sub bse_make_product {
   _finalize_article($cfg, $product, 'BSE::Edit::Product');
 
   return $product;
+}
+
+sub bse_make_catalog {
+  my (%opts) = @_;
+
+  my $cfg = delete $opts{cfg}
+    or die "cfg option missing";
+
+  require Articles;
+
+  defined $opts{title} && length $opts{title}
+    or confess "Missing title option\n";
+  defined $opts{body} && length $opts{body}
+    or confess "Missing body option\n";
+
+  $opts{summary} ||= $opts{title};
+  unless ($opts{displayOrder}) {
+    if ($order) {
+      my $now = time;
+      if ($now == $order) {
+	$order++;
+      }
+      else {
+	$order = $now;
+      }
+    }
+    else {
+      $order = time;
+    }
+    $opts{displayOrder} = $order;
+  }
+
+  %opts =
+    (
+     %acticle_defaults,
+     %catalog_defaults,
+     %opts
+    );
+
+  _set_dynamic($cfg, \%opts);
+
+  my @cols = Article->columns;
+  shift @cols;
+  my $catalog = Articles->add(@opts{@cols});
+
+  require BSE::Edit::Catalog;
+  _finalize_article($cfg, $catalog, 'BSE::Edit::Catalog');
+
+  return $catalog;
 }
 
 sub bse_encoding {

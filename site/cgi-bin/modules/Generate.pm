@@ -923,7 +923,7 @@ sub baseActs {
      $art_it->make_iterator( \&iter_inlines, 'inline', 'inlines' ),
      gimage => 
      sub {
-       my ($args, $acts, $name, $templater) = @_;
+       my ($args, $acts, $func, $templater) = @_;
        my ($name, $align, @rest) = 
 	 DevHelp::Tags->get_parms($args, $acts, $templater);
        my $rest = "@rest";
