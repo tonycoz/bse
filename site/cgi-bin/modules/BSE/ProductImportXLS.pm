@@ -33,11 +33,8 @@ sub new {
     (my $out = $xform) =~ s/^xform_//;
     $map{$out}
       or die "Xform for $out but no mapping\n";
-    my $code = 'sub { local ($_) = @_; '.$ids{$xform}.'; return $_ }';
-    my $sub;
-    eval {
-      $sub = eval $code;
-    };
+    my $code = "sub { local (\$_) = \@_; \n".$ids{$xform}."\n; return \$_ }";
+    my $sub = eval $code;
     $sub
       or die "Compilation error for $xform code: $@\n";
     $xform{$out} = $sub;
