@@ -1,12 +1,13 @@
 package BSE::ProductImportXLS;
 use strict;
 use Spreadsheet::ParseExcel;
-use BSE::API qw(bse_make_product bse_make_catalog);
+use BSE::API qw(bse_make_product bse_make_catalog bse_add_image);
 use Articles;
 use Products;
+use Config;
 
 sub new {
-  my ($class, $cfg, $profile) = @_;
+  my ($class, $cfg, $profile, %opts) = @_;
 
   # field mapping
   my $section = "xls import $profile";
@@ -19,6 +20,18 @@ sub new {
   my $use_codes = $cfg->entry($section, 'codes', 0);
   my $parent = $cfg->entry($section, 'parent', 3);
   my $price_dollar = $cfg->entry($section, 'price_dollar', 0);
+  my $reset_images = $cfg->entry($section, 'reset_images', 0);
+  my $file_path = $cfg->entry($section, 'file_path');
+  defined $file_path or $file_path = '';
+  my @file_path = split /$Config{path_sep}/, $file_path;
+  if ($opts{file_path}) {
+    unshift @file_path, 
+      map 
+	{ 
+	  split /$Config{path_sep}/, $_ 
+	}
+	  @{$opts{file_path}};
+  }
 
   my %map;
   for my $map (grep /^map_\w+$/, keys %ids) {
@@ -28,12 +41,17 @@ sub new {
       or die "Mapping for $out not numeric\n";
     $map{$out} = $in;
   }
+  my %set;
+  for my $set (grep /^set_\w+$/, keys %ids) {
+    (my $out = $set) =~ s/^set_//;
+    $set{$out} = $ids{$set};
+  }
   my %xform;
   for my $xform (grep /^xform_\w+$/, keys %ids) {
     (my $out = $xform) =~ s/^xform_//;
     $map{$out}
       or die "Xform for $out but no mapping\n";
-    my $code = "sub { local (\$_) = \@_; \n".$ids{$xform}."\n; return \$_ }";
+    my $code = "sub { (local \$_, my \$product) = \@_; \n".$ids{$xform}."\n; return \$_ }";
     my $sub = eval $code;
     $sub
       or die "Compilation error for $xform code: $@\n";
@@ -56,13 +74,16 @@ sub new {
     {
      map => \%map,
      xform => \%xform,
+     set => \%set,
      sheet => $sheet,
      skiprows => $skiprows,
      codes => $use_codes,
      cats => \@cats,
      parent => $parent,
      price_dollar => $price_dollar,
+     reset_images => $reset_images,
      cfg => $cfg,
+     file_path => \@file_path,
      product_template => scalar($cfg->entry($section, 'product_template')),
      catalog_template => scalar($cfg->entry($section, 'catalog_template')),
     }, $class;
@@ -94,7 +115,7 @@ sub process {
   my %cat_cache;
   for my $rownum ($self->{skiprows} ... $maxrow) {
     eval {
-      my %entry;
+      my %entry = %{$self->{set}};
 
       $self->{product_template}
 	and $entry{template} = $self->{product_template};
@@ -103,10 +124,9 @@ sub process {
       for my $col (keys %{$self->{map}}) {
 	my $cell = $ws->get_cell($rownum, $self->{map}{$col}-1);
 	$entry{$col} = $cell->value;
-
-	if ($self->{xform}{$col}) {
-	  $entry{$col} = $self->{xform}{$col}->($entry{$col});
-	}
+      }
+      for my $col (keys %{$self->{xform}}) {
+	$entry{$col} = $self->{xform}{$col}->($entry{$col}, \%entry);
       }
       $entry{title} =~ /\S/
 	or die "title blank\n";
@@ -143,6 +163,11 @@ sub process {
 	$product->save;
 	$callback
 	  and $callback->("Updated $product->{id}: $entry{title}");
+	if ($self->{reset_images}) {
+	  $product->remove_images($self->{cfg});
+	  $callback
+	    and $callback->(" $product->{id}: Reset images");
+	}
       }
       else
       {
@@ -153,6 +178,29 @@ sub process {
 	  );
 	$callback
 	  and $callback->("Added $product->{id}: $entry{title}");
+      }
+      for my $image_index (1 .. 10) {
+	my $file = $entry{"image${image_index}_file"};
+	$file
+	  or next;
+	my $full_file = $self->_find_file($file);
+	$full_file
+	  or die "File '$file' not found for image$image_index\n";
+
+	my %opts = ( file => $full_file );
+	for my $key (qw/alt name url storage/) {
+	  my $fkey = "image${image_index}_$key";
+	  $entry{$fkey}
+	    and $opts{$key} = $entry{$fkey};
+	}
+
+	my %errors;
+	my $im = bse_add_image($self->{cfg}, $product, %opts, 
+			       errors => \%errors);
+	$im 
+	  or die join(", ",map "$_: $errors{$_}", keys %errors), "\n";
+	$callback
+	  and $callback->(" $product->{id}: Add image '$file'");
       }
       push @{$self->{products}}, $product;
     };
@@ -222,6 +270,17 @@ sub catalogs {
   $_[0]{catalogs} or return;
 
   return @{$_[0]{catalogs}};
+}
+
+sub _find_file {
+  my ($self, $file) = @_;
+
+  for my $path (@{$self->{file_path}}) {
+    my $full = "$path/$file";
+    -f $full and return $full;
+  }
+
+  return;
 }
 
 1;

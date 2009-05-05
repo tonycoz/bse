@@ -13,8 +13,10 @@ chdir "$FindBin::Bin/../cgi-bin"
 
 my $verbose;
 my $delete;
+my @file_path;
 GetOptions("v", \$verbose,
-	   "d", \$delete);
+	   "d", \$delete,
+	   "path|p=s", \@file_path);
 $verbose = defined $verbose;
 
 my $cfg = bse_cfg();
@@ -23,7 +25,11 @@ my $profile = shift;
 my $filename = shift
   or die "Usage: $0 profile filename\n";
 
-my $importer = BSE::ProductImportXLS->new($cfg, $profile);
+my $importer = BSE::ProductImportXLS->new
+  (
+   $cfg, $profile,
+   file_path => \@file_path
+  );
 
 my $callback;
 $verbose

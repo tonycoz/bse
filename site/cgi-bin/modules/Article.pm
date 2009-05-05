@@ -232,18 +232,32 @@ sub cached_filename {
   return $dynamic_path . "/" . $self->{id} . ".html";
 }
 
+sub remove_images {
+  my ($self, $cfg) = @_;
+
+  my @images = $self->images;
+  my $mgr;
+  my $imagedir = $cfg->entry('paths', 'images', $Constants::IMAGEDIR);
+  for my $image (@images) {
+    if ($image->{storage} ne 'local') {
+      unless ($mgr) {
+	require BSE::StorageMgr::Images;
+	$mgr = BSE::StorageMgr::Images->new(cfg => $cfg);
+      }
+      $mgr->unstore($image->{image}, $image->{storage});
+    }
+
+    unlink("$imagedir/$image->{image}");
+    $image->remove();
+  }
+}
+
 sub remove {
   my ($self, $cfg) = @_;
 
   $cfg or confess "No \$cfg supplied to ", ref $self, "->remove";
 
-  require Images;
-  my @images = Images->getBy(articleId=>$self->{id});
-  my $imagedir = $cfg->entry('paths', 'images', $Constants::IMAGEDIR);
-  for my $image (@images) {
-    unlink("$imagedir/$image->{image}");
-    $image->remove();
-  }
+  $self->remove_images($cfg);
 
   for my $file ($self->files) {
     $file->remove($cfg);

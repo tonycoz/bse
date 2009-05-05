@@ -5,8 +5,8 @@ use BSE::Util::SQL qw(sql_datetime now_sqldatetime);
 use BSE::Cfg;
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(bse_cfg bse_make_product bse_make_catalog bse_encoding);
-use Carp qw(confess);
+@EXPORT_OK = qw(bse_cfg bse_make_product bse_make_catalog bse_encoding bse_add_image);
+use Carp qw(confess croak);
 
 my %acticle_defaults =
   (
@@ -212,6 +212,39 @@ sub bse_encoding {
     or confess "bse_encoding: Missing cfg parameter\n";
 
   return $cfg->entry('html', 'charset', 'iso-8859-1');
+}
+
+sub bse_add_image {
+  my ($cfg, $article, %opts) = @_;
+
+  my $editor;
+  ($editor, $article) = _load_editor_class($article, $cfg);
+
+  my %image;
+  my $file = delete $opts{file};
+  $file
+    or croak "Missing image filename";
+  open IN, "< $file"
+    or croak "Failed opening image file $file: $!";
+  binmode IN;
+  my %errors;
+
+  $editor->do_add_image
+    (
+     $cfg,
+     $article,
+     *IN,
+     %opts,
+     errors => \%errors,
+     filename => $file,
+    );
+}
+
+sub _load_editor_class {
+  my ($article, $cfg) = @_;
+
+  require BSE::Edit::Base;
+  return BSE::Edit::Base->article_class($article, 'Articles', $cfg);
 }
 
 1;

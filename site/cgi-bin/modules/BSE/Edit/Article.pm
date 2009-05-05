@@ -2387,7 +2387,7 @@ sub save_image_changes {
 }
 
 sub _service_error {
-  my ($self, $req, $article, $articles, $error) = @_;
+  my ($self, $req, $article, $articles, $msg, $error) = @_;
 
   if ($req->cgi->param('_service')) {
     my $body = '';
@@ -2412,7 +2412,7 @@ sub _service_error {
       };
   }
   else {
-    return $self->edit_form($req, $article, $articles, $error);
+    return $self->edit_form($req, $article, $articles, $msg, $error);
   }
 }
 
@@ -2430,59 +2430,52 @@ sub _service_success {
     };
 }
 
-sub add_image {
-  my ($self, $req, $article, $articles) = @_;
+sub do_add_image {
+  my ($self, $cfg, $article, $image, %opts) = @_;
 
-  $req->user_can(edit_images_add => $article)
-    or return $self->_service_error($req, $article, $articles,
-				    "You don't have access to add new images to this article");
+  my $errors = $opts{errors}
+    or die "No errors parameter";
 
-  my $cgi = $req->cgi;
-
-  my %errors;
-  my $msg;
-  my $imageref = $cgi->param('name');
+  my $imageref = $opts{name};
   if (defined $imageref && $imageref ne '') {
     if ($imageref =~ /^[a-z_]\w+$/i) {
       # make sure it's unique
       my @images = $self->get_images($article);
       for my $img (@images) {
 	if (defined $img->{name} && lc $img->{name} eq lc $imageref) {
-	  $errors{name} = 'Image name must be unique to the article';
+	  $errors->{name} = 'Image name must be unique to the article';
 	  last;
 	}
       }
     }
     else {
-      $errors{name} = 'Image name must be empty or alphanumeric beginning with an alpha character';
+      $errors->{name} = 'Image name must be empty or alphanumeric beginning with an alpha character';
     }
   }
   else {
     $imageref = '';
   }
-  unless ($errors{name}) {
+  unless ($errors->{name}) {
     my $workmsg;
     $self->validate_image_name($imageref, \$workmsg)
-      or $errors{name} = $workmsg;
+      or $errors->{name} = $workmsg;
   }
 
-  my $image = $cgi->param('image');
   if ($image) {
     if (-z $image) {
-      $errors{image} = 'Image file is empty';
+      $errors->{image} = 'Image file is empty';
     }
   }
   else {
-    #$msg = 'Enter or select the name of an image file on your machine';
-    $errors{image} = 'Please enter an image filename';
+    $errors->{image} = 'Please enter an image filename';
   }
-  if ($msg || keys %errors) {
-    return $self->_service_error($req, $article, $articles, $msg, \%errors);
-  }
+  keys %$errors
+    and return;
 
-  my $imagename = $image;
+  my $imagename = $opts{filename} || $image;
   $imagename .= ''; # force it into a string
   my $basename = '';
+  $imagename =~ tr/ //d;
   $imagename =~ /([\w.-]+)$/ and $basename = $1;
 
   # create a filename that we hope is unique
@@ -2491,7 +2484,7 @@ sub add_image {
   # for the sysopen() constants
   use Fcntl;
 
-  my $imagedir = cfg_image_dir($req->cfg);
+  my $imagedir = cfg_image_dir($cfg);
   # loop until we have a unique filename
   my $counter="";
   $filename = time. '_' . $counter . '_' . $basename 
@@ -2519,9 +2512,9 @@ sub add_image {
 
   my($width,$height) = imgsize("$imagedir/$filename");
 
-  my $alt = $cgi->param('altIn');
+  my $alt = $opts{alt};
   defined $alt or $alt = '';
-  my $url = $cgi->param('url');
+  my $url = $opts{url};
   defined $url or $url = '';
   my %image =
     (
@@ -2541,9 +2534,9 @@ sub add_image {
   shift @cols;
   my $imageobj = Images->add(@image{@cols});
 
-  my $storage = $cgi->param('storage');
+  my $storage = $opts{storage};
   defined $storage or $storage = 'local';
-  my $image_manager = $self->_image_manager($req->cfg);
+  my $image_manager = $self->_image_manager($cfg);
   local $SIG{__DIE__};
   eval {
     my $src;
@@ -2557,8 +2550,40 @@ sub add_image {
     }
   };
   if ($@) {
-    $req->flash($@);
+    $errors->{flash} = $@;
   }
+
+  return $imageobj;
+}
+
+sub add_image {
+  my ($self, $req, $article, $articles) = @_;
+
+  $req->user_can(edit_images_add => $article)
+    or return $self->_service_error($req, $article, $articles,
+				    "You don't have access to add new images to this article");
+
+  my $cgi = $req->cgi;
+  my %errors;
+  my $imageobj =
+    $self->do_add_image
+      (
+       $req->cfg,
+       $article,
+       scalar($cgi->param('image')),
+       name => scalar($cgi->param('name')),
+       alt => scalar($cgi->param('altIn')),
+       url => scalar($cgi->param('url')),
+       storage => scalar($cgi->param('storage')),
+       errors => \%errors,
+      );
+
+  $imageobj
+    or return $self->_service_error($req, $article, $articles, undef, \%errors);
+
+  # typically a soft failure from the storage
+  $errors{flash}
+    and $req->flash($errors{flash});
 
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
