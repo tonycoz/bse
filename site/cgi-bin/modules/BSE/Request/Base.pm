@@ -620,4 +620,69 @@ sub send_email {
   return 1;
 }
 
+=item is_ssl
+
+Return true if the current request is an SSL request.
+
+=cut
+
+sub is_ssl {
+  exists $ENV{HTTPS} || exists $ENV{SSL_CIPHER};
+}
+
+my %recaptcha_errors = 
+  (
+   'incorrect-captcha-sol' => 'Incorrect CAPTCHA solution',
+   'recaptcha-not-reachable' => "CAPTCHA server not reachable, please wait a moment and try again",
+  );
+
+=item test_recaptcha
+
+Test if a valid reCAPTCHA response was received.
+
+=cut
+
+sub test_recaptcha {
+  my ($self, %opts) = @_;
+
+  require Captcha::reCAPTCHA;
+  my $apiprivkey = $self->cfg->entry('recaptcha', 'api_private_key');
+  unless (defined $apiprivkey) {
+    print STDERR "** No recaptcha api_private_key defined **\n";
+    return;
+  }
+  my $msg;
+  my $error = $opts{error} || \$msg;
+  my $c = Captcha::reCAPTCHA->new;
+  my $cgi = $self->cgi;
+  my $challenge = $cgi->param('recaptcha_challenge_field');
+  my $response = $cgi->param('recaptcha_response_field');
+  delete $self->{recaptcha_error};
+  if (!defined $challenge || $challenge !~ /\S/) {
+    $$error = "No reCAPTCHA challenge found";
+    return;
+  }
+  if (!defined $response || $response !~ /\S/) {
+    $$error = "No reCAPTCHA response entered";
+    return;
+  }
+
+  my $result = $c->check_answer($apiprivkey, $ENV{REMOTE_ADDR},
+				$challenge, $response);
+  unless ($result->{is_valid}) {
+    my $key = 'error_'.$result->{error};
+    $key =~ tr/-/_/;
+    $$error = $self->cfg->entry('recaptcha', $key)
+      || $recaptcha_errors{$result->{error}}
+	|| $result->{error};
+  }
+  $self->{recaptcha_result} = $result;
+
+  return !!$result->{is_valid};
+}
+
+sub recaptcha_result {
+  $_[0]{recaptcha_result};
+}
+
 1;

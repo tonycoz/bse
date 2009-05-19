@@ -56,6 +56,7 @@ my %form_defs =
    spam_check_field => undef,
    log_spam_check_fail => 1,
    email_select => undef,
+   recaptcha => 1,
   );
 
 sub _get_form {
@@ -250,6 +251,7 @@ sub req_show {
      [ \&tag_ifValueSet, $req->cgi, \$current_field, \$current_value, $errors ],
      formcfg => [ \&tag_formcfg, $req->cfg, $form ],
      ifFormHasFileFields => $form->{has_file_fields},
+     ifRecaptcha => $form->{recaptcha},
     );
 
   return $req->response($form->{query}, \%acts);
@@ -477,6 +479,13 @@ sub req_send {
 	$field->{fh} = $fh;
 	$field->{type} = $cgi->uploadInfo($filename)->{'Content-Type'};
       }
+    }
+  }
+
+  if ($form->{recaptcha}) {
+    my $error;
+    unless ($req->test_recaptcha(error => \$error)) {
+      $errors{recaptcha} = $error;
     }
   }
 

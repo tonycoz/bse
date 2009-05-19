@@ -38,6 +38,7 @@ sub tags {
      $self->dyn_iterator('dynvimages', 'dynvimage'),
      dynvimage => [ tag_dynvimage => $self ],
      dynvthumbimage => [ tag_dynvthumbimage => $self ],
+     recaptcha => [ tag_recaptcha => $self, $req ],
      $self->_custom_tags,
     );
 }
@@ -693,6 +694,29 @@ sub tag_dthumbimage {
   
   return $self->_thumbimage_low($geometry, $im, $field, $self->{req}->cfg);
 }
+
+=item recaptcha
+
+Category: dynamic
+
+Produce a recaptcha block.
+
+No parameters, though this may change.
+
+=cut
+
+sub tag_recaptcha {
+  my ($self, $req) = @_;
+
+  require Captcha::reCAPTCHA;
+  my $api_key = $req->cfg->entry('recaptcha', 'api_public_key')
+    or return "** No reCAPTCHA api_public_key defined **";
+
+  my $c = Captcha::reCAPTCHA->new;
+
+  return $c->get_html($api_key, $req->recaptcha_result, scalar $req->is_ssl);
+}
+
 
 1;
 

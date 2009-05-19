@@ -44,6 +44,12 @@
   <td><:error_img [field name]:></td>
 </tr>
 <:iterator end fields:>
+<:if Recaptcha:>
+<tr>
+<td></td>
+<td><:recaptcha:></td>
+</tr>
+<:or Recaptcha:><:eif Recaptcha:>
 <tr>
   <td colspan="2"><input type="submit" name="a_send" value="<:formcfg submit "Submit":>" /></td>
   <td></td>

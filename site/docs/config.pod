@@ -1840,6 +1840,30 @@ I<template-name>].no_cache_dynamic.  If not set the value of
 
 =back
 
+=head2 [recaptcha]
+
+For the <:recaptcha:> tag currently only used for fmail.pl.
+
+=over
+
+=item api_public_key
+
+=item api_private_key
+
+The public and private key you receive when you register with reCAPTCHA.
+
+=item error_I<error_code>
+
+Replace the error message for the given I<error_code> where
+I<error_code> is the reCAPTCHA error code
+(eg. "incorrect-captcha-sol") with dash replaced by underscore.
+
+eg.
+
+  error_incorrect_captch_sol=VERY BAD INPUT
+
+=back
+
 =head1 AUTHOR
 
 Tony Cook <tony@develop-help.com>
