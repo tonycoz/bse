@@ -185,7 +185,7 @@ sub new {
     my $dest = $cfg_fields->{$field} || {};
 
     # the config overrides the software supplied fields
-    for my $override (qw(description required required_error maxlength range_error mindatemsg maxdatemsg)) {
+    for my $override (qw(description required required_error maxlength range_error mindatemsg maxdatemsg ne_error)) {
       if (defined $src->{$override} && !defined $dest->{$override}) {
 	$dest->{$override} = $src->{$override};
       }
@@ -440,6 +440,22 @@ sub validate_field {
 	  last RULE;
 	}
       }
+      if ($rule->{notequal}) {
+	for my $ne_field (split /,/, $rule->{notequal}) {
+	  next if $ne_field eq $field;
+	  my $other = $self->param($ne_field);
+	  if ($other eq $data) {
+	    $errors->{$field} = _make_error
+	      (
+	       $field, $info, $rule,
+	       $info->{ne_error} 
+	       || $rule->{ne_error} 
+	       || "\$n may not be the same as $ne_field"
+	      );
+	    last RULE;
+	  }
+	}
+      }
       if ($rule->{ccexpiry}) {
 	(my $year_field = $field) =~ s/month/year/;
 	
@@ -603,7 +619,7 @@ sub _get_cfg_fields {
 
   for my $field (@names) {
     $cfg_fields->{$field} = {};
-    for my $cfg_name (qw(required rules description required_error range_error mindatemsg maxdatemsg)) {
+    for my $cfg_name (qw(required rules description required_error range_error mindatemsg maxdatemsg ne_error)) {
       my $value = $cfg->entry($section, "${field}_$cfg_name");
       if (defined $value) {
 	$cfg_fields->{$field}{$cfg_name} = $value;
@@ -848,6 +864,25 @@ integer in that range.
 =item date
 
 If set to 1, simply validates the value as a date.
+
+Set mindate to specify a minimum date for range validation.  Uses
+mindatemsg from the field or rule for the error message.
+
+Set maxdate to specify a maximum date for range validation.  Uses
+maxdatemsg from the field or rule for the error message.
+
+=item confirm
+
+Specify another field that the field must be equal to, intended for
+password confirm validation.
+
+=item notequal
+
+A list of field names that may not be equal to the current field.  If
+the current field is in the list it is ignored, so you can use one
+rule to compare several fields with each other.  Uses ne_error from
+the field, or ne_error from the rule for customizing the error
+message.
 
 =back
 
