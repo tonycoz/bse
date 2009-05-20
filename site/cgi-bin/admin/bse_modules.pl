@@ -50,6 +50,7 @@ my @base_check =
      'Log::Agent' => 0,
      'Net::Amazon::S3' => 0,
      'Date::Format' => 0,
+     'Captcha::reCAPTCHA' => 0,
     },
    },
    {
@@ -63,7 +64,7 @@ my @base_check =
     name => 'FastCGI support',
     modules =>
     {
-     FCGI => 0,
+     'FCGI' => 0,
      'CGI::Fast' => 0,
     },
    },
