@@ -56,7 +56,7 @@ my %form_defs =
    spam_check_field => undef,
    log_spam_check_fail => 1,
    email_select => undef,
-   recaptcha => 1,
+   recaptcha => 0,
   );
 
 sub _get_form {
