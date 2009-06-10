@@ -113,6 +113,18 @@ sub children {
     Articles->children($self->{id});
 }
 
+sub section {
+  my ($self) = @_;
+
+  my $section = $self;
+  while ($section->{parentid} > 0
+	 and my $parent = Articles->getByPkey($section->{parentid})) {
+    $section = $parent;
+  }
+
+  return $section;
+}
+
 sub files {
   my ($self) = @_;
 

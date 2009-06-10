@@ -46,10 +46,12 @@ sub tags {
   $self->{req}->set_article(dynarticle => $article);
   my $allkid_index;
   my $allkid_data;
+  my $section; # managed by tag_dynsection
   return
     (
      $self->SUPER::tags(),
      dynarticle => [ \&tag_article, $article, $self->{req}->cfg ],
+     dynsection => [ tag_dynsection => $self, $article, \$section ],
      ifAncestor => [ tag_ifAncestor => $self, $article ],
      ifStepAncestor => [ tag_ifStepAncestor => $self, $article ],
      $self->dyn_article_iterator('dynallkids', 'dynallkid', $article,
@@ -181,6 +183,22 @@ sub tag_url {
   }
   
   return escape_html($value);
+}
+
+=item dynsection I<field>
+
+Retrieve a value from the section the article is in.
+
+=cut
+
+sub tag_dynsection {
+  my ($self, $article, $rsection) = @_;
+
+  unless ($$rsection) {
+    $$rsection = $article->section;
+  }
+
+  return tag_article($$rsection, $self->{req}->cfg);
 }
 
 sub get_real_article {

@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>100;
+use Test::More tests=>102;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
@@ -30,6 +30,9 @@ for my $name ('One', 'Two', 'Three') {
 # make parent a step child of itself
 require BSE::Admin::StepParents;
 BSE::Admin::StepParents->add($parent, $parent);
+
+is($parent->section->{id}, $parent->{id}, "parent should be it's own section");
+is($kids[0]->section->{id}, $parent->{id}, "kids section should be the parent");
 
 my $top = Articles->getByPkey(1);
 ok($top, "grabbing Home page");
