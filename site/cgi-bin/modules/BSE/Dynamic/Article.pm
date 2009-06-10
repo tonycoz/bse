@@ -192,13 +192,13 @@ Retrieve a value from the section the article is in.
 =cut
 
 sub tag_dynsection {
-  my ($self, $article, $rsection) = @_;
+  my ($self, $article, $rsection, $args) = @_;
 
   unless ($$rsection) {
     $$rsection = $article->section;
   }
 
-  return tag_article($$rsection, $self->{req}->cfg);
+  return tag_article($$rsection, $self->{req}->cfg, $args);
 }
 
 sub get_real_article {
