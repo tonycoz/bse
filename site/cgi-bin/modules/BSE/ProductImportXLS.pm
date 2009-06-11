@@ -121,10 +121,19 @@ sub process {
 	and $entry{template} = $self->{product_template};
 
       # load from mapping
+      my $non_blank = 0;
       for my $col (keys %{$self->{map}}) {
 	my $cell = $ws->get_cell($rownum, $self->{map}{$col}-1);
-	$entry{$col} = $cell->value;
+	if (defined $cell) {
+	  $entry{$col} = $cell->value;
+	}
+	else {
+	  $entry{$col} = '';
+	}
+	$non_blank ||= $entry{$col} =~ /\S/;
       }
+      $non_blank
+	or return;
       for my $col (keys %{$self->{xform}}) {
 	$entry{$col} = $self->{xform}{$col}->($entry{$col}, \%entry);
       }
@@ -136,9 +145,17 @@ sub process {
       }
       $entry{retailPrice} =~ s/\$//; # in case
 
-      $self->{price_dollar}
-	and $entry{retailPrice} *= 100;
-
+      if ($entry{retailPrice} =~ /\d/) {
+	$self->{price_dollar}
+	  and $entry{retailPrice} *= 100;
+      }
+      else {
+	$callback
+	  and $callback->("Row $rownum: Warning: no price");
+	$entry{retailPrice} = 0;
+      }
+      $entry{title} =~ /\n/
+	and die "Title may not contain newlines";
       $entry{summary}
 	or $entry{summary} = $entry{title};
       $entry{description}
@@ -149,7 +166,9 @@ sub process {
       my @cats;
       for my $cat (@{$self->{cats}}) {
 	my $cell = $ws->get_cell($rownum, $cat-1);
-	my $value = $cell->value;
+	my $value;
+	defined $cell and
+	  $value = $cell->value;
 	defined $value && $value =~ /\S/
 	  and push @cats, $value;
       }
@@ -227,7 +246,7 @@ sub _find_cat {
   }
 
   my $title = shift @cats;
-  my ($cat) = grep $_->{title} eq $title, @{$cache->{$parent}};
+  my ($cat) = grep lc $_->{title} eq lc $title, @{$cache->{$parent}};
   unless ($cat) {
     my %opts =
       (
