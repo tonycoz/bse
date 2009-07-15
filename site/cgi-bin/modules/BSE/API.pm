@@ -5,7 +5,7 @@ use BSE::Util::SQL qw(sql_datetime now_sqldatetime);
 use BSE::Cfg;
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(bse_cfg bse_make_product bse_make_catalog bse_encoding bse_add_image);
+@EXPORT_OK = qw(bse_cfg bse_make_product bse_make_catalog bse_encoding bse_add_image bse_add_step_child);
 use Carp qw(confess croak);
 
 my %acticle_defaults =
@@ -94,6 +94,18 @@ sub _finalize_article {
   $article->save();
 }
 
+{
+  my $order;
+  sub _next_display_order {
+    unless ($order) {
+      my ($row) = BSE::DB->query("bse_MaxArticleDisplayOrder");
+      $order = $row->{displayOrder} + 1;
+    }
+
+    return $order++;
+  }
+}
+
 sub bse_cfg {
   my $cfg = BSE::Cfg->new;
   $cfg->entry('site', 'url')
@@ -102,13 +114,11 @@ sub bse_cfg {
   return $cfg;
 }
 
-my $order;
-
 sub bse_make_product {
   my (%opts) = @_;
 
   my $cfg = delete $opts{cfg}
-    or die "cfg option missing";
+    or confess "cfg option missing";
 
   require Products;
 
@@ -120,21 +130,9 @@ sub bse_make_product {
     or confess "Missing or invalid retailPrice\n";
 
   $opts{summary} ||= $opts{title};
-  $opts{description} ||= $opts{description};
+  $opts{description} ||= $opts{title};
   unless ($opts{displayOrder}) {
-    if ($order) {
-      my $now = time;
-      if ($now == $order) {
-	$order++;
-      }
-      else {
-	$order = $now;
-      }
-    }
-    else {
-      $order = time;
-    }
-    $opts{displayOrder} = $order;
+    $opts{displayOrder} = _next_display_order();
   }
 
   %opts =
@@ -160,7 +158,7 @@ sub bse_make_catalog {
   my (%opts) = @_;
 
   my $cfg = delete $opts{cfg}
-    or die "cfg option missing";
+    or confess "cfg option missing";
 
   require Articles;
 
@@ -171,19 +169,7 @@ sub bse_make_catalog {
 
   $opts{summary} ||= $opts{title};
   unless ($opts{displayOrder}) {
-    if ($order) {
-      my $now = time;
-      if ($now == $order) {
-	$order++;
-      }
-      else {
-	$order = $now;
-      }
-    }
-    else {
-      $order = time;
-    }
-    $opts{displayOrder} = $order;
+    $opts{displayOrder} = _next_display_order();
   }
 
   %opts =
@@ -203,6 +189,40 @@ sub bse_make_catalog {
   _finalize_article($cfg, $catalog, 'BSE::Edit::Catalog');
 
   return $catalog;
+}
+
+my %other_parent_defaults =
+  (
+   release => sql_datetime(time - 86_400),
+   expire => '2999-12-31',
+  );
+
+sub bse_add_step_child {
+  my (%opts) = @_;
+
+  my $cfg = delete $opts{cfg}
+    or confess "cfg option missing";
+
+  require OtherParents;
+
+  my $parent = delete $opts{parent}
+    or confess "parent option missing";
+  my $child = delete $opts{child}
+    or confess "child option missing";
+  %opts =
+    (
+     %other_parent_defaults,
+     parentId => $parent->{id},
+     childId => $child->{id},
+     %opts
+    );
+  $opts{parentDisplayOrder} ||= _next_display_order();
+  $opts{childDisplayOrder} ||= _next_display_order();
+
+  my @cols = OtherParent->columns;
+  shift @cols;
+
+  return OtherParents->add(@opts{@cols});
 }
 
 sub bse_encoding {

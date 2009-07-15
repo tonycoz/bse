@@ -100,6 +100,19 @@ sub all_visible_kids {
   Articles->all_visible_kids($self->{id});
 }
 
+sub all_visible_products {
+  my ($self) = @_;
+
+  require Products;
+  Products->all_visible_children($self->{id});
+}
+
+sub all_visible_catalogs {
+  my ($self) = @_;
+
+  return grep $_->{generator} eq "Generate::Catalog", $self->all_visible_kids;
+}
+
 sub images {
   my ($self) = @_;
   require Images;

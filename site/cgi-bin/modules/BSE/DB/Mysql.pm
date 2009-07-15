@@ -67,6 +67,9 @@ select a.id, a.title from article a
 where a.id not in (select childId from other_parents where parentId = ?) 
       and a.id <> ?;
 EOS
+   bse_MaxArticleDisplayOrder => <<EOS,
+select max(displayOrder) as "displayOrder" from article
+EOS
 
    Images => 'select * from image',
    replaceImage =>
@@ -112,6 +115,13 @@ SQL
 select ar.*, pr.* from article ar, product pr, bse_wishlist wi
   where wi.user_id = ? and wi.product_id = ar.id and ar.id = pr.articleId
 order by wi.display_order desc
+SQL
+   'Products.visible_children_of' => <<SQL,
+select ar.*, pr.* from article ar, product pr
+   where ar.id = pr.articleId 
+     and listed <> 0
+     and ar.parentid = ?
+     and ? between ar.release and ar.expire
 SQL
    bse_userWishlistOrder => <<SQL,
 select product_id, display_order
