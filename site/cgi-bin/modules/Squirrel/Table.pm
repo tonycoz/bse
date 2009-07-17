@@ -95,8 +95,15 @@ sub getByPkey {
     (my $reqName = $rowClass) =~ s!::!/!g;
     require $reqName . ".pm";
     my $member = "get${rowClass}ByPkey";
-    my $sth = $dh->stmt($member)
-      or confess "No $member in DatabaseHandle";
+    my $sth = $dh->stmt_noerror($member);
+    unless ($sth) {
+      my @cols = ( $rowClass->primary );
+      my %vals;
+      @vals{@cols} = @values;
+      $sth ||= $self->_getBy_sth($member, \@cols, \%vals);
+    }
+    $sth
+      or confess "No $member in BSE::DB";
     $sth->execute(@values)
       or confess "Cannot execute $member handle from DatabaseHandle:", DBI->errstr;
     # should only be one row
@@ -191,7 +198,9 @@ sub getBy {
     (my $reqName = $rowClass) =~ s!::!/!g;
     require $reqName . ".pm";
     my $member = "get${rowClass}By".join("And", map "\u$_", @cols);
-    my $sth = $dh->stmt($member)
+    my $sth = $dh->stmt_noerror($member);
+    $sth ||= $self->_getBy_sth($member, \@cols, \%vals);
+    $sth
       or confess "No $member in BSE::DB";
     $sth->execute(@vals{@cols})
       or confess "Cannot execute $member from BSE::DB: ",DBI->errstr;
@@ -206,6 +215,36 @@ sub getBy {
   }
 
   return wantarray ? @results : $results[0];
+}
+
+sub _getBy_sth {
+  my ($self, $name, $cols, $vals) = @_;
+
+  my $bases = $self->rowClass->bases;
+  keys %$bases
+    and confess "No statement $name found and cannot generate";
+
+  my @db_cols = $self->rowClass->db_columns;
+  my @code_cols = $self->rowClass->columns;
+  my %map;
+  @map{@code_cols} = @db_cols;
+  
+  my @conds;
+  for my $col (@$cols) {
+    my $db_col = $map{$col}
+      or confess "Cannot generate $name: unknown column $col";
+    # this doesn't handle null, but that should use a "special"
+    push @conds, "$db_col = ?";
+  }
+
+  my $sql = "select " . join(",", @db_cols) .
+    " from " . $self->rowClass->table .
+      " where " . join(" and ", @conds);
+
+  my $sth = $dh->{dbh}->prepare($sql)
+    or confess "Cannot prepare generated $sql: ", $dh->{dbh}->errstr;
+
+  return $sth;
 }
 
 sub getSpecial {
@@ -269,6 +308,34 @@ sub query {
   my ($self, $columns, $query, $opts) = @_;
 
   $dh->generate_query($self, $columns, $query, $opts);
+}
+
+sub make {
+  my ($self, %values) = @_;
+
+  my @cols = $self->rowClass->columns;
+  my %defaults = $self->rowClass->defaults;
+  shift @cols; # presumably the generated private key
+  my @values;
+  for my $col (@cols) {
+    my $value;
+    # a defined test is inappropriate here, the caller might want to
+    # set a column to null.
+    if (exists $values{$col}) {
+      $value = delete $values{$col};
+    }
+    elsif (exists $defaults{$col}) {
+      $value = $defaults{$col};
+    }
+    else {
+      confess "No value or default supplied for $col";
+    }
+    push @values, $value;
+  }
+  keys %values
+    and confess "Extra values ", join(",", keys %values), " supplied to ${self}->make()";
+
+  return $self->add(@values);
 }
 
 1;

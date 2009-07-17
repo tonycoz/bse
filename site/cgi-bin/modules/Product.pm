@@ -53,24 +53,71 @@ sub is_start_sub_only {
   $self->{subscription_usage} == SUBUSAGE_START_ONLY;
 }
 
-sub _get_prod_options {
-  my ($product, $cfg, @values) = @_;
+sub _get_cfg_options {
+  my ($cfg) = @_;
 
   require BSE::CfgInfo;
   my $avail_options = BSE::CfgInfo::product_options($cfg);
-  my @opt_names = split /,/, $product->{options};
-  push @values, '' while @values < @opt_names;
-  my %values;
-  @values{@opt_names} = @values;
+  my @options;
+  for my $name (keys %$avail_options) {
+    my $rawopt = $avail_options->{$name};
+    my %opt =
+      (
+       id => $name,
+       name => $rawopt->{desc},
+       default => $rawopt->{default} || '',
+      );
+    my @values;
+    for my $value (@{$rawopt->{values}}) {
+      my $label = $rawopt->{labels}{$value} || $value;
+      push @values,
+	bless
+	  {
+	   id => $value,
+	   value => $label,
+	  }, "BSE::CfgProductOptionValue";
+    }
+    $opt{values} = \@values;
+    push @options, bless \%opt, "BSE::CfgProductOption";
+  }
 
-  my @sem_options = map 
-    +{ 
-      id => $_, 
-      %{$avail_options->{$_}},
-      value => $values{$_},
-     }, @opt_names;
-  for my $option (@sem_options) {
-    $option->{display} = $option->{labels}{$option->{value}};
+  return @options;
+}
+
+sub _get_prod_options {
+  my ($product, $cfg, @values) = @_;
+
+  my %all_cfg_opts = map { $_->id => $_ } _get_cfg_options($cfg);
+  my @opt_names = split /,/, $product->{options};
+
+  my @cfg_opts = map $all_cfg_opts{$_}, @opt_names;
+  my @db_opts = grep $_->enabled, $product->db_options;
+  my @all_options = ( @cfg_opts, @db_opts );
+
+  push @values, '' while @values < @all_options;
+
+  my $index = 0;
+  my @sem_options;
+  for my $opt (@all_options) {
+    my @opt_values = $opt->values;
+    my %opt_values = map { $_->id => $_->value } @opt_values;
+    my $result_opt = 
+      {
+       id => $opt->key,
+       name => $opt->key,
+       desc => $opt->name,
+       value => $values[$index],
+       type => $opt->type,
+       labels => \%opt_values,
+       default => $opt->default_value,
+      };
+    my $value = $values[$index];
+    if (defined $value) {
+      $result_opt->{values} = [ map $_->id, @opt_values ],
+      $result_opt->{display} = $opt_values{$values[$index]};
+    }
+    push @sem_options, $result_opt;
+    ++$index;
   }
 
   return @sem_options;
@@ -83,5 +130,36 @@ sub option_descs {
 
   return $self->_get_prod_options($cfg, @$rvalues);
 }
+
+sub db_options {
+  my ($self) = @_;
+
+  require BSE::TB::ProductOptions;
+  return BSE::TB::ProductOptions->getBy(product_id => $self->{id});
+}
+
+package BSE::CfgProductOption;
+use strict;
+
+sub id { $_[0]{id} }
+
+sub key {$_[0]{id} } # same as id for config options
+
+sub type { "select" }
+
+sub name { $_[0]{name} }
+
+sub values {
+  @{$_[0]{values}}
+}
+
+sub default_value { $_[0]{default} }
+
+package BSE::CfgProductOptionValue;
+use strict;
+
+sub id { $_[0]{id} }
+
+sub value { $_[0]{value} }
 
 1;

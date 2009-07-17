@@ -685,4 +685,131 @@ sub recaptcha_result {
   $_[0]{recaptcha_result};
 }
 
+=item json_content
+
+Generate a hash suitable for output_result() as JSON.
+
+=cut
+
+sub json_content {
+  my ($self, @values) = @_;
+
+  require JSON;
+
+  my $json = JSON->new;
+
+  my $value = @values > 1 ? +{ @values } : $values[0];
+
+  return
+    +{
+      type => "application/json",
+      content => $json->encode($value),
+     };
+}
+
+=item get_csrf_token($name)
+
+Generate a csrf token for the given name.
+
+=cut
+
+my $sequence = 0;
+
+sub get_csrf_token {
+  my ($req, $name) = @_;
+
+  my $cache = $req->session->{csrfp};
+  my $max_age = $req->cfg->entry('basic', 'csrfp_max_age', 3600);
+  my $now = time;
+  
+  my $entry = $cache->{$name};
+  if (!$entry || $entry->{time} + $max_age < $now) {
+    if ($entry) {
+      $entry->{oldtoken} = $entry->{token};
+      $entry->{oldtime} = $entry->{time};
+    }
+    else {
+      $entry = {};
+    }
+
+    # this doesn't need to be so perfectly secure that we drain the
+    # entropy pool and it'll be called fairly often
+    require Digest::MD5;
+    $entry->{token} =
+      Digest::MD5::md5_hex($now . $$ . rand() . $sequence++ . $name);
+    $entry->{time} = $now;
+  }
+  $cache->{$name} = $entry;
+  $req->session->{csrfp} = $cache;
+
+  return $entry->{token};
+}
+
+=item check_csrf($name)
+
+Check if the CSRF token supplied by the form is valid.
+
+$name should be the name supplied to the csrfp token.
+
+=cut
+
+sub check_csrf {
+  my ($self, $name) = @_;
+
+  defined $name
+    or confess "No CSRF token name supplied";
+
+  my $debug = $self->cfg->entry('debug', 'csrf', 0);
+
+  # the form might have multiple submit buttons, each initiating a
+  # different function, so the the form should supply tokens for every
+  # function for the form
+  my @tokens = $self->cgi->param('_csrfp');
+  unless (@tokens) {
+    $self->_csrf_error("No _csrfp token supplied");
+    return;
+  }
+
+  my $entry = $self->session->{csrfp}{$name};
+  unless ($entry) {
+    $self->_csrf_error("No token entry found for $name");
+    return;
+  }
+  
+  my $max_age = $self->cfg->entry('basic', 'csrfp_max_age', 3600);
+  my $now = time;
+  for my $token (@tokens) {
+    if ($entry->{token} 
+	&& $entry->{token} eq $token
+	&& $entry->{time} + 2*$max_age >= $now) {
+      $debug
+	and print STDERR "CSRF: match current token\n";
+      return 1;
+    }
+
+    if ($entry->{oldtoken}
+	&& $entry->{oldtoken} eq $token
+	&& $entry->{oldtime} + 2*$max_age >= $now) {
+      return 1;
+    }
+  }
+
+  $self->_csrf_error("No tokens matched the $name entry");
+  return;
+}
+
+sub _csrf_error {
+  my ($self, $message) = @_;
+
+  $self->cfg->entry('debug', 'csrf', 0)
+    and print STDERR "csrf error: $message\n";
+  $self->{csrf_error} = $message;
+
+  return;
+}
+
+sub csrf_error {
+  $_[0]{csrf_error};
+}
+
 1;

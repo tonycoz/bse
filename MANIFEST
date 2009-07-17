@@ -132,9 +132,15 @@ site/cgi-bin/modules/BSE/TB/Locations.pm
 site/cgi-bin/modules/BSE/TB/Order.pm
 site/cgi-bin/modules/BSE/TB/Orders.pm
 site/cgi-bin/modules/BSE/TB/OrderItem.pm
+site/cgi-bin/modules/BSE/TB/OrderItemOption.pm
+site/cgi-bin/modules/BSE/TB/OrderItemOptions.pm
 site/cgi-bin/modules/BSE/TB/OrderItems.pm
 site/cgi-bin/modules/BSE/ProductImportXLS.pm
 site/cgi-bin/modules/BSE/TB/Seminar.pm
+site/cgi-bin/modules/BSE/TB/ProductOption.pm
+site/cgi-bin/modules/BSE/TB/ProductOptions.pm
+site/cgi-bin/modules/BSE/TB/ProductOptionValue.pm
+site/cgi-bin/modules/BSE/TB/ProductOptionValues.pm
 site/cgi-bin/modules/BSE/TB/SeminarBooking.pm
 site/cgi-bin/modules/BSE/TB/SeminarBookings.pm
 site/cgi-bin/modules/BSE/TB/SeminarSession.pm
@@ -350,6 +356,7 @@ site/templates/admin/edit_1.tmpl
 # site/templates/admin/edit_5.tmpl
 site/templates/admin/edit_catalog.tmpl
 site/templates/admin/edit_groups.tmpl
+site/templates/admin/edit_prodopts.tmpl
 site/templates/admin/edit_product.tmpl
 site/templates/admin/edit_seminar.tmpl
 site/templates/admin/edit_semsessions.tmpl
@@ -381,8 +388,13 @@ site/templates/admin/order_list_filled.tmpl
 site/templates/admin/order_list_incomplete.tmpl
 site/templates/admin/order_list_unfilled.tmpl
 # site/templates/admin/product_custom.tmpl
+site/templates/admin/prodopt_delete.tmpl
+site/templates/admin/prodopt_edit.tmpl
+site/templates/admin/prodopt_value_delete.tmpl
+site/templates/admin/prodopt_value_edit.tmpl
 site/templates/admin/product_detail.tmpl
 site/templates/admin/product_list.tmpl
+site/templates/admin/product_menu.tmpl
 site/templates/admin/regenerror.tmpl
 site/templates/admin/registeremail.tmpl
 site/templates/admin/reports/list.tmpl

@@ -5,10 +5,15 @@ use strict;
 use Carp;
 use BSE::DB;
 
+my %methods_created;
+
 my $dh = BSE::DB->single;
 
 sub new {
   my ($class, @values) = @_;
+
+  $methods_created{$class}
+    or $class->_create_methods();
 
   my @primary = $class->primary;
   my @columns = $class->columns;
@@ -27,8 +32,8 @@ sub new {
       my @bases = $class->_get_bases;
       my $base_base = $bases[0];
       my $base_class = $base_base->[1];
-      my $sth = $dh->stmt("add$base_class")
-	or confess "No add$base_class member in DatabaseHandle";
+
+      my $sth = $dh->stmt("add$base_class");
 
       # extract the base class columns
       my @base_cols = $base_class->columns;
@@ -58,7 +63,10 @@ sub new {
       }
     }
     else {
-      my $sth = $dh->stmt("add$class")
+      my $sth = $dh->stmt_noerror("add$class");
+      my @cols = $self->db_columns;
+      shift @cols; # lose the pkey
+      $sth ||= $dh->insert_stmt($self->table, \@cols)
 	or confess "No add$class member in DatabaseHandle";
       my $ret = $sth->execute(@values[1..$#values]);
       $ret && $ret != 0
@@ -86,6 +94,10 @@ sub primary {
 
 sub bases {
   return {};
+}
+
+sub defaults {
+  return;
 }
 
 sub db_columns {
@@ -124,9 +136,27 @@ sub save {
     }
   }
   else {
-    my $sth = $dh->stmt('replace'.ref $self)
+    my $member = 'replace'.ref $self;
+    my @exe_vals = @$self{$self->columns};
+    my $sth = $dh->stmt_noerror($member);
+    unless ($sth) {
+      my ($pkey_col) = $self->primary;
+      my @nonkey = grep $_ ne $pkey_col, $self->columns;
+      @exe_vals = @$self{@nonkey, $pkey_col};
+      $member = 'update'.ref $self;
+      $sth = $dh->stmt_noerror($member);
+
+      unless ($sth) {
+	# not strictly correct, but plenty of other code makes the
+	# same assumption
+	my @db_cols = $self->db_columns;
+	$pkey_col = shift @db_cols;
+	$sth = $dh->update_stmt($self->table, $pkey_col, \@db_cols);
+      }
+    }
+    $sth
       or confess "No replace",ref $self," member in DatabaseHandle";
-    $sth->execute(@$self{$self->columns})
+    $sth->execute(@exe_vals)
       or confess "Cannot save ",ref $self,":",$sth->errstr;
   }
 
@@ -136,19 +166,32 @@ sub save {
 sub remove {
   my $self = shift;
 
-  my $sth = $dh->stmt('delete'.ref($self));
   my $bases = $self->bases;
   my @primary = @$self{$self->primary};
-  $sth->execute(@primary);
-  while (keys %$bases) {
-    my ($col) = keys %$bases;
-    my $class = $bases->{$col}{class};
-    my $sth = $dh->stmt('delete'.$class);
+  if (keys %$bases) {
+    my $sth = $dh->stmt('delete'.ref($self));
     $sth->execute(@primary);
-    $bases = $class->bases;
+    while (keys %$bases) {
+      my ($col) = keys %$bases;
+      my $class = $bases->{$col}{class};
+      my $sth = $dh->stmt('delete'.$class);
+      $sth->execute(@primary);
+      $bases = $class->bases;
+    }
+    
+    # BUG: this should invalidate the cache
   }
-
-  # BUG: this should invalidate the cache
+  else {
+    my $member = 'delete'.ref($self);
+    my $sth = $dh->stmt_noerror($member);
+    unless ($sth) {
+      $sth = $dh->delete_stmt($self->table, [ $self->primary ]);
+    }
+    $sth
+      or confess "No $member member in DatabaseHandle";
+    $sth->execute(@primary)
+      or confess "Cannot delete ", ref $self, ":", $sth->errstr;
+  }
 }
 
 sub set {
@@ -198,8 +241,46 @@ sub _get_bases {
   @bases;
 }
 
+sub data_only {
+  my ($self) = @_;
+
+  my %result;
+  my @cols = $self->columns;
+  @result{@cols} = @{$self}{@cols};
+
+  return \%result;
+}
+
 # in case someone tries AUTOLOAD tricks
 sub DESTROY {
+}
+
+sub _create_methods {
+  my $class = shift;
+
+  $methods_created{$class} = 1;
+
+  my $bases = $class->bases;
+  my @bases = map $_->{class}, values %$bases;
+  my %all_cols = map { $_ => 1 } $class->columns;
+  for my $base (@bases) {
+    unless ($methods_created{$base}) {
+      $base->_create_methods();
+    }
+    delete @all_cols{$base->columns};
+  }
+  for my $col (keys %all_cols) {
+    unless ($class->can("set_$col")) {
+      no strict 'refs';
+      my $work_col = $col; # for closure
+      *{"${class}::set_$col"} = sub { $_[0]{$work_col} = $_[1] };
+    }
+    unless ($class->can($col)) {
+      no strict 'refs';
+      my $work_col = $col; # for closure
+      *{"${class}::$col"} = sub { $_[0]{$work_col} };
+    }
+  }
 }
 
 1;
@@ -225,6 +306,13 @@ Based on code by Jason.
 Class is some derived class.
 
 Create a new object of that class.
+
+Preferably, use the make method of the table class, See
+Squirrel::Table.
+
+=item $row->save
+
+Save the row to the database.
 
 =item $row->columns()
 
@@ -266,6 +354,24 @@ Defaults to ('id').
 
 The older code returned column numbers, but was always looking up the
 column names in the columns array.
+
+=item $row->db_columns
+
+Columns as they are named in the database.  Defaults to calling columns().
+
+=item $row->remove
+
+Remove the row from the database.
+
+=item Class->defaults
+
+Returns defaults as name, value pairs suitable for assignment to hash.
+Used by make() in Squirrel::Table.
+
+=item $row->data_only
+
+Returns the data of the row as a hashref, with no extra housekeeping
+data.
 
 =back
 

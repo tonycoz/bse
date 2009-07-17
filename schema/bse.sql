@@ -826,3 +826,37 @@ create table bse_wishlist (
   display_order integer not null,
   primary key(user_id, product_id)
 );
+
+drop table if exists bse_product_options;
+create table bse_product_options (
+  id integer not null auto_increment primary key,
+  product_id integer not null references product(productId),
+  name varchar(40) not null,
+  type varchar(10) not null,
+  global_ref integer null,
+  display_order integer not null,
+  enabled integer not null default 0,
+  default_value integer,
+  index product_order(product_id, display_order)
+) type=innodb;
+
+drop table if exists bse_product_option_values;
+create table bse_product_option_values (
+  id integer not null auto_increment primary key,
+  product_option_id integer not null references bse_product_options(id),
+  value varchar(40) not null,
+  display_order integer not null,
+  index option_order(product_option_id, display_order)
+) type=innodb;
+
+drop table if exists bse_order_item_options;
+create table bse_order_item_options (
+  id integer not null auto_increment primary key,
+  order_item_id integer not null references order_item(id),
+  original_id varchar(40) not null,
+  name varchar(40) not null,
+  value varchar(40) not null,
+  display varchar(80) not null,
+  display_order integer not null,
+  index item_order(order_item_id, display_order)
+) type=innodb;

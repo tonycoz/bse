@@ -13,6 +13,22 @@ use BSE::Template;
 use BSE::Util::ContentType qw(content_type);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
+=head1 NAME
+
+  BSE::Edit::Article - editing functionality for BSE articles
+
+=head1 DESCRIPTION
+
+Provides the base article editing functionality.
+
+This is badly organized and documented.
+
+=head1 METHODS
+
+=over
+
+=cut
+
 sub not_logged_on {
   my ($self, $req) = @_;
 
@@ -1068,9 +1084,7 @@ sub low_edit_tags {
   my $it = BSE::Util::Iterate->new;
   return
     (
-     BSE::Util::Tags->basic($acts, $cgi, $cfg),
-     BSE::Util::Tags->admin($acts, $cfg),
-     BSE::Util::Tags->secure($request),
+     $request->admin_tags,
      article => [ $tag_hash, $article ],
      old => [ \&tag_old, $article, $cgi ],
      default => [ \&tag_default, $self, $request, $article ],
@@ -2157,7 +2171,7 @@ sub save_stepparents {
 			'Stepparent information saved');
 }
 
-sub refresh {
+sub refresh_url {
   my ($self, $article, $cgi, $name, $message, $extras) = @_;
 
   my $url = $cgi->param('r');
@@ -2186,6 +2200,14 @@ sub refresh {
     my $cgiextras = $cgi->param('e');
     $url .= "#$name" if $name;
   }
+
+  return $url;
+}
+
+sub refresh {
+  my ($self, $article, $cgi, $name, $message, $extras) = @_;
+
+  my $url = $self->refresh_url($article, $cgi, $name, $message, $extras);
 
   return BSE::Template->get_refresh($url, $self->{cfg});
 }
@@ -2386,6 +2408,31 @@ sub save_image_changes {
   return $self->refresh($article, $cgi);
 }
 
+=item _service_error
+
+This function is called on various errors.
+
+If a _service parameter was supplied, returns text like:
+
+=over
+
+Result: failure
+
+Field-Error: I<field-name1> - I<message1>
+
+Field-Error: I<field-name2> - I<message2>
+
+=back
+
+If the request is detected as an ajax request or a _ parameter is
+supplied, return JSON like:
+
+  { error: I<message> }
+
+Otherwise display the normal edit page with the error.
+
+=cut
+
 sub _service_error {
   my ($self, $req, $article, $articles, $msg, $error) = @_;
 
@@ -2402,6 +2449,9 @@ sub _service_error {
       $text =~ tr/\n/ /;
       $body .= "Error: $text\n";
     }
+    elsif ($msg) {
+      $body .= "Error: $msg\n";
+    }
     else {
       $body .= "Error: $error\n";
     }
@@ -2410,6 +2460,11 @@ sub _service_error {
        type => 'text/plain',
        content => $body,
       };
+  }
+  elsif ((() = $req->cgi->param('_')) ||
+	 (defined $ENV{HTTP_X_REQUESTED_WITH}
+	  && $ENV{HTTP_X_REQUESTED_WITH} =~ /XMLHttpRequest/)) {
+    return $req->json_content({ errors => $error });
   }
   else {
     return $self->edit_form($req, $article, $articles, $msg, $error);
@@ -3872,11 +3927,17 @@ sub req_ajax_set {
      };
 }
 
+sub csrf_error {
+  my ($self, $req, $article, $name, $description) = @_;
+
+  my %errors;
+  $errors{_csrfp} = "Possible CSRF attempt on $name/$description: " . $req->csrf_error;
+  return $self->_service_error($req, $article, 'Articles', undef, \%errors);
+}
+
 1;
 
-=head1 NAME
-
-  BSE::Edit::Article - editing functionality for BSE articles
+=back
 
 =head1 AUTHOR
 

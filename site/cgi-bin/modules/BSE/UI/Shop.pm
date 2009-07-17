@@ -4,7 +4,7 @@ use base 'BSE::UI::Dispatch';
 use DevHelp::HTML;
 use BSE::Util::SQL qw(now_sqldate now_sqldatetime);
 use BSE::Shop::Util qw(need_logon shop_cart_tags payment_types nice_options 
-                       cart_item_opts basic_tags);
+                       cart_item_opts basic_tags order_item_opts);
 use BSE::CfgInfo qw(custom_class credit_card_class);
 use BSE::TB::Orders;
 use BSE::TB::OrderItems;
@@ -158,7 +158,7 @@ sub req_add {
 
   my $found;
   for my $item (@cart) {
-    $item->{productId} eq $product->{id} && $item->{options} eq $options
+    $item->{productId} eq $product->{id} && _same_options($item->{options}, $options)
       or next;
 
     ++$found;
@@ -227,7 +227,7 @@ sub req_addsingle {
  
   my $found;
   for my $item (@cart) {
-    $item->{productId} eq $addid && $item->{options} eq $options
+    $item->{productId} eq $addid && _same_options($item->{options}, $options)
       or next;
 
     ++$found;
@@ -310,7 +310,7 @@ sub req_addmultiple {
     my @cart = @{$req->session->{cart}};
     $started_empty = @cart == 0;
     for my $item (@cart) {
-      $item->{options} eq '' or next;
+      @{$item->{options}} == 0 or next;
 
       my $addition = delete $additions{$item->{productId}}
 	or next;
@@ -336,7 +336,7 @@ sub req_addmultiple {
 	 productId => $product->{id},
 	 units => $addition->{quantity}, 
 	 price=>$product->{retailPrice},
-	 options=>'',
+	 options=>[],
 	 %{$addition->{extras}},
 	};
     }
@@ -735,17 +735,36 @@ sub req_payment {
   for my $row_num (0..$#items) {
     my $item = $items[$row_num];
     my $product = $products[$row_num];
-    $item->{orderId} = $order->{id};
-    $item->{max_lapsed} = 0;
+    my %item = %$item;
+    $item{orderId} = $order->{id};
+    $item{max_lapsed} = 0;
     if ($product->{subscription_id} != -1) {
       my $sub = $product->subscription;
-      $item->{max_lapsed} = $sub->{max_lapsed} if $sub;
+      $item{max_lapsed} = $sub->{max_lapsed} if $sub;
     }
-    defined $item->{session_id} or $item->{session_id} = 0;
-    my @data = @{$item}{@item_cols};
-    
+    defined $item{session_id} or $item{session_id} = 0;
+    $item{options} = ""; # not used for new orders
+    my @data = @item{@item_cols};
     shift @data;
-    push(@dbitems, BSE::TB::OrderItems->add(@data));
+    my $dbitem = BSE::TB::OrderItems->add(@data);
+    push @dbitems, $dbitem;
+
+    if ($item->{options} and @{$item->{options}}) {
+      require BSE::TB::OrderItemOptions;
+      my @option_descs = $product->option_descs($cfg, $item->{options});
+      my $display_order = 1;
+      for my $option (@option_descs) {
+	BSE::TB::OrderItemOptions->make
+	    (
+	     order_item_id => $dbitem->{id},
+	     original_id => $option->{id},
+	     name => $option->{desc},
+	     value => $option->{value},
+	     display => $option->{display},
+	     display_order => $display_order++,
+	    );
+      }
+    }
 
     my $sub = $product->subscription;
     if ($sub) {
@@ -756,10 +775,11 @@ sub req_payment {
       my $user = $req->siteuser;
       require BSE::TB::SeminarSessions;
       my $session = BSE::TB::SeminarSessions->getByPkey($item->{session_id});
+      my $options = join(",", @{$item->{options}});
       eval {
 	$session->add_attendee($user, 
 			       instructions => $order->{instructions},
-			       options => $item->{options});
+			       options => $options);
       };
     }
   }
@@ -895,9 +915,7 @@ sub req_orderdone {
      sub { 
        if (++$item_index < @items) {
 	 $option_index = -1;
-	 @options = cart_item_opts($req, 
-				   $items[$item_index], 
-				   $products[$item_index]);
+	 @options = order_item_opts($req, $items[$item_index]);
 	 undef $sem_session;
 	 undef $location;
 	 $item = $items[$item_index];
@@ -1082,9 +1100,9 @@ sub _send_order {
      sub { 
        if (++$item_index < @$items) {
 	 $option_index = -1;
-	 @options = cart_item_opts($req,
-				   $items->[$item_index], 
-				   $products->[$item_index]);
+	 @options = order_item_opts($req,
+				    $items->[$item_index], 
+				    $products->[$item_index]);
 	 return 1;
        }
        return 0;
@@ -1452,10 +1470,11 @@ sub _validate_add {
 
   # collect the product options
   my @options;
-  my @opt_names = split /,/, $product->{options};
+  my @option_descs =  $product->option_descs($req->cfg);
+  my @option_names = map $_->{name}, @option_descs;
   my @not_def;
   my $cgi = $req->cgi;
-  for my $name (@opt_names) {
+  for my $name (@option_names) {
     my $value = $cgi->param($name);
     push @options, $value;
     unless (defined $value) {
@@ -1466,7 +1485,6 @@ sub _validate_add {
     $$error = "Some product options (@not_def) not supplied";
     return;
   }
-  my $options = join(",", @options);
   
   # the product must be non-expired and listed
   (my $comp_release = $product->{release}) =~ s/ .*//;
@@ -1488,8 +1506,8 @@ sub _validate_add {
   # used to refresh if a logon is needed
   my $securlbase = $req->cfg->entryVar('site', 'secureurl');
   my $r = $securlbase . $ENV{SCRIPT_NAME} . "?add=1&id=$product->{id}";
-  for my $opt_index (0..$#opt_names) {
-    $r .= "&$opt_names[$opt_index]=".escape_uri($options[$opt_index]);
+  for my $opt_index (0..$#option_names) {
+    $r .= "&$option_names[$opt_index]=".escape_uri($options[$opt_index]);
   }
   
   my $user = $req->siteuser;
@@ -1582,7 +1600,7 @@ sub _validate_add {
     $extras{session_id} = $session_id;
   }
 
-  return ( $product, $options, \%extras );
+  return ( $product, \@options, \%extras );
 }
 
 sub _add_refresh {
@@ -1632,6 +1650,21 @@ sub _add_refresh {
   }
 
   return BSE::Template->get_refresh($refresh, $cfg);
+}
+
+sub _same_options {
+  my ($left, $right) = @_;
+
+  for my $index (0 .. $#$left) {
+    my $left_value = $left->[$index];
+    my $right_value = $right->[$index];
+    defined $right_value
+      or return;
+    $left_value eq $right_value
+      or return;
+  }
+
+  return 1;
 }
 
 1;

@@ -8,7 +8,6 @@ use Constants qw(:shop $CGI_URI $ADMIN_URI);
 use Carp qw(confess);
 use DevHelp::HTML;
 use BSE::Util::Tags qw(tag_article);
-use BSE::CfgInfo 'product_options';
 
 sub edit_link {
   my ($self, $id) = @_;
@@ -53,11 +52,7 @@ sub baseActs {
 
   my @stepcats = $product->step_parents();
   my $stepcat_index;
-  my $avail_options = product_options($self->{cfg});
-  my @options = 
-    map { +{ id=>$_, %{$avail_options->{$_}} } } 
-      grep $avail_options->{$_},
-      split /,/, $product->{options};
+  my @options = $product->option_descs($self->{cfg});
   my $option_index;
 
   return

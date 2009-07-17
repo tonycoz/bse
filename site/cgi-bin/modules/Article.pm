@@ -18,6 +18,10 @@ sub columns {
     metaDescription metaKeywords summary menu titleAlias linkAlias/;
 }
 
+sub table {
+  'article';
+}
+
 sub numeric {
   qw(id listed parentid threshold summaryLength level 
      customInt1 customInt2 customInt3 customInt4 menu);

@@ -116,6 +116,11 @@ select ar.*, pr.* from article ar, product pr, bse_wishlist wi
   where wi.user_id = ? and wi.product_id = ar.id and ar.id = pr.articleId
 order by wi.display_order desc
 SQL
+   getProductOptionByProduct_id => <<SQL,
+select *
+from bse_product_options
+where product_id = ?
+SQL
    'Products.visible_children_of' => <<SQL,
 select ar.*, pr.* from article ar, product pr
    where ar.id = pr.articleId 
@@ -612,7 +617,7 @@ sub _single
 
 my $get_sql_by_name = 'select sql_statement from sql_statements where name=?';
 
-sub stmt {
+sub stmt_sql {
   my ($self, $name) = @_;
 
   $name =~ s/BSE.*:://;
@@ -625,10 +630,29 @@ sub stmt {
       #print STDERR "Found SQL '$sql'\n";
     }
     else {
-      print STDERR "SQL statment $name not found in sql_statements table\n";
+      #print STDERR "SQL statment $name not found in sql_statements table\n";
     }
   }
-  $sql or confess "Statement named '$name' not found";
+
+  return $sql;
+}
+
+sub stmt {
+  my ($self, $name) = @_;
+
+  my $sql = $self->stmt_sql($name)
+    or confess "Statement named '$name' not found";
+  my $sth = $self->{dbh}->prepare($sql)
+    or croak "Cannot prepare $name statment: ",$self->{dbh}->errstr;
+
+  $sth;
+}
+
+sub stmt_noerror {
+  my ($self, $name) = @_;
+
+  my $sql = $self->stmt_sql($name)
+    or return;
   my $sth = $self->{dbh}->prepare($sql)
     or croak "Cannot prepare $name statment: ",$self->{dbh}->errstr;
 

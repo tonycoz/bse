@@ -12,4 +12,12 @@ sub columns {
             session_id product_code/;
 }
 
+sub option_list {
+  my ($self) = @_;
+
+  require BSE::TB::OrderItemOptions;
+  return sort { $a->{display_order} <=> $b->{display_order} }
+    BSE::TB::OrderItemOptions->getBy(order_item_id => $self->{id});
+}
+
 1;

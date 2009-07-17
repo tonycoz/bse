@@ -21,4 +21,80 @@ h4 {  font-size: 12px}
 .version { font-size: 10px }
 input.inline { border-style: none; }
 tr.inline_form { background-color: #8080C0 }
- 
+
+.bse_arrows img {
+  border: none;
+  vertical-align: bottom;
+  width: 17px;
+  height: 13px;
+}
+
+#productoptions .prodopt { 
+  border: 1px solid #000;
+  margin: 5px;
+}
+
+#productoptions .prodoptmenu {
+  font-size: 120%;
+  font-weight: bold;
+  background-color: #EEE;
+  padding: 3px;
+  border-bottom: 1px solid #000;
+}
+
+#productoptions .prodoptmenu a {
+  font-size: 82%;
+  float: right;
+  padding-left: 2px;
+}
+
+.editform {
+  border: 1px solid #000;
+  border-collapse: collapse;
+  vertical-align: baseline;
+  width: 100%;
+}
+
+table.editformsmall {
+  width: 50%;
+}
+
+table.editformtiny { 
+  width: auto;
+}
+
+table.editform td, table.editform th {
+  padding: 4px;
+  border: 1px solid #000;
+}
+
+table.editform th {
+  color: #FFF;
+  background-color: #999;
+  font-weight: bold;
+  text-align: left;
+  white-space: nowrap;
+}
+
+table.editform td {
+  color: #000;
+  background-color: #FFF;
+}
+
+table.editform td.help,
+table.editform td.check  {
+  white-space: nowrap;
+  width: 20px;
+}
+
+table.editform td.check { 
+  text-align: center;
+}
+
+table.editform td.buttons { 
+  text-align: right;
+}
+
+div.menu { 
+  margin-bottom: 1em;
+}

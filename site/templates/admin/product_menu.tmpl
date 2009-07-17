@@ -1,0 +1,60 @@
+<div class="menu">
+|
+<a href="/cgi-bin/admin/menu.pl">Admin Menu</a>
+|
+<:ifEq [param menuitem] edit:>
+<span>Edit product</span>
+<:or:>
+<a href="<:script:>?id=<:article id:>">Edit product</a>
+<:eif:>
+|
+<:if New:><:or New:>
+<:if Eq [param menuitem] "edit":>
+<a href="<:product admin:>">See product</a>
+|
+<a href="/cgi-bin/admin/add.pl?id=<:product parentid:>">Edit parent</a>
+|
+<a href="/cgi-bin/admin/shopadmin.pl">Manage catalogs</a>
+|
+<:if UserCan edit_save:product,edit_field_edit_listed:product
+   :>
+   <:if Product listed:>
+     <a href="<:script:>?id=<:product id:>&hide=1&r=<:script:>?id=<:product id:>">Hide product</a> |
+  <:or Product:>
+    <a href="<:script:>?id=<:product id:>&unhide=1&r=<:script:>?id=<:product id:>">Show product</a> |
+  <:eif Product:>
+<:or UserCan:><:eif UserCan:>
+<:or Eq:>
+<:eif Eq:>
+<:ifEq [param menuitem] images:>
+<span>Images</span>
+<:or:>
+<a href="<:script:>?id=<:article id:>&amp;showimages=1">Images</a>
+<:eif:>
+|
+<:ifEq [param menuitem] files:>
+<span>Files</span>
+<:or:>
+<a href="<:script:>?id=<:article id:>&amp;filelist=1">Files</a>
+<:eif:>
+|
+<:ifEq [param menuitem] steps:>
+<span>Manage step parents</span>
+<:or:>
+<a href="<:script:>?id=<:article id:>&amp;_t=steps">Manage step parents</a>
+<:eif:>
+|
+<:ifEq [param menuitem] access:>
+<span>Manage access</span>
+<:or:>
+<a href="<:script:>?id=<:article id:>&amp;_t=groups">Manage access</a>
+<:eif:>
+|
+<:ifEq [param menuitem] prodopts:>
+<span>Product options</span>
+<:or:>
+<a href="<:script:>?id=<:article id:>&amp;_t=prodopts">Product options</a>
+<:eif:>
+|
+<:eif New:>
+</div>

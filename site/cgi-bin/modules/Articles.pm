@@ -9,10 +9,6 @@ sub rowClass {
   return 'Article';
 }
 
-sub table {
-  'article';
-}
-
 # returns a list of articles which are sections
 sub sections {
   my ($self) = @_;

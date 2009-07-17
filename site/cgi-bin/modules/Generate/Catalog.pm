@@ -96,6 +96,21 @@ sub tag_moveallcat {
   return make_arrows($self->{cfg}, $down_url, $up_url, $refreshto, $img_prefix);
 }
 
+sub tag_ifAnyProductOptions {
+  my ($self, $lookup, $arg) = @_;
+
+  $arg ||= "product";
+
+  my $entry = $lookup->{$arg}
+    or die "** No such product $arg **";
+  my ($rindex, $rdata) = @$entry;
+  $$rindex >= 0 && $$rindex < @$rdata
+    or die "** not in an iterator for $arg **";
+  my @options = $rdata->[$$rindex]->option_descs($self->{cfg});
+
+  return scalar(@options);
+}
+
 sub generate_low {
   my ($self, $template, $article, $articles, $embedded) = @_;
 
@@ -130,6 +145,11 @@ sub generate_low {
   my $allprod_index;
   my $catalog_index = -1;
   my $allcat_index;
+  my %named_product_iterators =
+    (
+     product => [ \$product_index, \@products ],
+     allprod => [ \$allprod_index, \@allprods ],
+    );
   my $it = BSE::Util::Iterate->new;
   my $cfg = $self->{cfg};
   my $art_it = BSE::Util::Iterate::Article->new(cfg => $cfg);
@@ -202,6 +222,7 @@ HTML
 	 my $previd = $allprods[$allprod_index-1]{id};
 	 $up_url = "$CGI_URI/admin/move.pl?stepparent=$article->{id}&d=swap&id=$myid&other=$previd";
        }
+       
        return make_arrows($self->{cfg}, $down_url, $up_url, $refreshto, $img_prefix);
      },
      ifAnyProds => scalar(@allprods),
@@ -214,6 +235,8 @@ HTML
      $art_it->make_iterator(undef, 'allcat', 'allcats', \@allcats, \$allcat_index),
      moveallcat => 
      [ \&tag_moveallcat, $self, \@allcats, \$allcat_index, $article ],
+     ifAnyProductOptions =>
+     [ tag_ifAnyProductOptions => $self, \%named_product_iterators ],
     );
   my $oldurl = $acts{url};
   my $urlbase = $self->{cfg}->entryVar('site', 'url');

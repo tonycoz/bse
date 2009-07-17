@@ -1,0 +1,13 @@
+<:wrap admin/xbase.tmpl title => "Delete Product Option Value", menuitem=>"prodopt_delete" :>
+<:include admin/product_menu.tmpl:>
+<form action="<:script:>" method="post">
+<input type="hidden" name="id" value="<:article id:>" />
+<input type="hidden" name="value_id" value="<:option_value id:>" />
+<input type="hidden" name="_t" value="prodopts" />
+<:csrfp admin_delete_option_value hidden:>
+<p>Option: <:option name:></p>
+<p>Value: <:option_value value:></p>
+<p><input type="submit" name="a_delete_option_value" value="Delete" />
+<input type="submit" value="Return to product options" />
+</p>
+</form>

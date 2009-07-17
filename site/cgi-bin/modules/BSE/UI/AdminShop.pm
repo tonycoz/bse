@@ -17,7 +17,7 @@ use BSE::Util::Iterate;
 use BSE::WebUtil 'refresh_to_admin';
 use DevHelp::HTML qw(:default popup_menu);
 use BSE::Arrows;
-use BSE::CfgInfo 'product_options';
+use BSE::Shop::Util qw(order_item_opts nice_options);
 
 my %actions =
   (
@@ -556,44 +556,6 @@ sub req_order_list_incomplete {
 			'Order list - Incomplete orders', @orders);
 }
 
-sub cart_item_opts {
-  my ($req, $cart_item, $product) = @_;
-
-  my $avail_options = product_options($req->cfg);
-
-  my @options = ();
-  my @values = split /,/, $cart_item->{options};
-  my @ids = split /,/, $product->{options};
-  for my $opt_index (0 .. $#ids) {
-    my $entry = $avail_options->{$ids[$opt_index]};
-    my $option = {
-		  id=>$ids[$opt_index],
-		  value=>$values[$opt_index],
-		  desc => $entry->{desc} || $ids[$opt_index],
-		 };
-    if ($entry->{labels}) {
-      $option->{label} = $entry->{labels}{$values[$opt_index]};
-    }
-    else {
-      $option->{label} = $option->{value};
-    }
-    push(@options, $option);
-  }
-
-  return @options;
-}
-
-sub nice_options {
-  my (@options) = @_;
-
-  if (@options) {
-    return '('.join(", ", map("$_->{desc} $_->{label}", @options)).')';
-  }
-  else {
-    return '';
-  }
-}
-
 sub tag_siteuser {
   my ($order, $rsiteuser, $arg) = @_;
 
@@ -637,24 +599,14 @@ sub req_order_detail {
        sub { 
 	 if (++$line_index < @lines ) {
 	   $option_index = -1;
-	   @options = cart_item_opts($req,
-				     $lines[$line_index],
-				     $products[$line_index]);
+	   @options = order_item_opts($req,
+				      $lines[$line_index],
+				      $products[$line_index]);
 	   return 1;
 	 }
 	 return 0;
        },
        order => [ \&tag_hash, $order ],
-       #money => 
-       #sub { 
-#	 my ($func, $args) = split ' ', $_[0], 2;
-#	 return sprintf("%.2f", $acts{$func}->($args)/100.0)
-#       },
-#       date =>
-#       sub {
-#	 my ($func, $args) = split ' ', $_[0], 2;
-#	 return display_date($acts{$func}->($args));
-#       },
        extension =>
        sub {
 	 sprintf("%.2f", $lines[$line_index]{units} * $lines[$line_index]{$_[0]}/100.0)

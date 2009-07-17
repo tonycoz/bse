@@ -49,7 +49,7 @@
               description:></a></font> <:moveallprod:></td>
 <:if Allprod retailPrice:>
             <td align="right"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>$<:money allprod retailPrice:></b></font></td>
-<:ifAnd [cfg shop order_from_catalog] [ifEq [allprod options] ""]:>
+<:ifAnd [cfg shop order_from_catalog] [ifEq [ifAnyProductOptions allprod] "0"]:>
 <td nowrap="nowrap"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><input type="text" name="qty<:allprod id:>" size="4" /><input type="image" src="/images/store/quick_add.gif" alt="+" name="a_addsingle<:allprod id:>" /></font></td>
 <:or:><:eif:>
 <:or Allprod:>

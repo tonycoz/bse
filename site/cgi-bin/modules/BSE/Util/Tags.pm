@@ -482,6 +482,43 @@ sub basic {
     );
 }
 
+sub common {
+  my ($class, $req) = @_;
+
+  return
+    (
+     BSE::Util::Tags->basic(undef, $req->cgi, $req->cfg),
+     csrfp => [ \&tag_csrfp, $req ],
+    );
+}
+
+=item tag csrfp
+
+Generate a token that can be used to prevent cross-site request
+forgery.
+
+Takes a single argument, the action to be authenticated.
+
+=cut
+
+sub tag_csrfp {
+  my ($req, $args) = @_;
+
+  $args
+    or return "** missing required argument **";
+
+  my ($name, $type) = split ' ', $args;
+  defined $type
+    or $type = 'plain';
+
+  my $token = $req->get_csrf_token($name);
+
+  $type eq "plain" and return $token;
+  $type eq "hidden" and return
+    qq(<input type="hidden" name="_csrfp" value="$token" />);
+  return "** unknown csrfp type $type **";
+}
+
 sub make_iterator {
   my ($class, $array, $single, $plural, $saveto) = @_;
 

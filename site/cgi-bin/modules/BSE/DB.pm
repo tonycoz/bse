@@ -68,13 +68,12 @@ sub _query_expr {
 }
 
 sub generate_query {
-  my ($self, $table, $columns, $query) = @_;
+  my ($self, $row_class, $columns, $query) = @_;
 
-  my $row_class = $table->rowClass;
   my %trans;
   @trans{$row_class->columns} = $row_class->db_columns;
 
-  my $table_name = $table->table;
+  my $table_name = $row_class->table;
 
   my @out_columns = map 
     {; $trans{$_} or confess "No column '$_' in $table_name" } @$columns;
@@ -97,6 +96,46 @@ sub generate_query {
   }
 
   return @rows;
+}
+
+sub insert_stmt {
+  my ($self, $table_name, $columns) = @_;
+
+  my $sql = "insert into $table_name(" . join(",", @$columns) . ")";
+  $sql .= " values(" . join(",", ("?") x @$columns) . ")";
+
+  my $sth = $self->{dbh}->prepare($sql);
+  $sth
+    or confess "Cannot prepare generated sql $sql: ", $self->{dbh}->errstr;
+
+  return $sth;
+}
+
+sub update_stmt {
+  my ($self, $table_name, $pkey, $cols) = @_;
+
+  my $sql = "update $table_name set\n  " .
+    join(",\n  ", map "$_ = ?", @$cols) .
+      "\n  where $pkey = ?";
+
+  my $sth = $self->{dbh}->prepare($sql);
+  $sth
+    or confess "Cannot prepare generated sql $sql: ", $self->{dbh}->errstr;
+
+  return $sth;
+}
+
+sub delete_stmt {
+  my ($self, $table_name, $pkeys) = @_;
+
+  my @where = map "$_ = ?", @$pkeys;
+  my $sql = "delete from $table_name where " . join " and ", @where;
+
+  my $sth = $self->{dbh}->prepare($sql);
+  $sth
+    or confess "Cannot prepare generated sql $sql: ", $self->{dbh}->errstr;
+
+  return $sth;
 }
 
 1;

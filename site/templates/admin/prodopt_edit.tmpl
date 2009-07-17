@@ -1,0 +1,45 @@
+<:wrap admin/xbase.tmpl title => "Edit Product Option", menuitem=>none, showtitle=>1 :>
+<:include admin/product_menu.tmpl:>
+<form action="<:script:>" method="post">
+<input type="hidden" name="id" value="<:article id:>" />
+<input type="hidden" name="option_id" value="<:option id:>" />
+<input type="hidden" name="_t" value="prodopts" />
+<:csrfp admin_save_option hidden:>
+<input type="hidden" name="save_enabled" value="1" />
+<table class="editform">
+<tr>
+  <th>Name:</th>
+  <td><input type="text" name="name" value="<:old name option name:>" /></td>
+  <td class="help"><:error_img name:></td>
+</tr>
+<tr>
+  <th>Enabled:</th>
+  <td><input type="checkbox" name="enabled" value="1" <:ifOld enabled option enabled:>checked="checked"<:or:><:eif:> /></td>
+  <td class="help"><:error_img name:></td>
+</tr>
+<tr>
+  <th>Values:</th>
+<td>
+<table class="editform">
+<tr>
+  <td colspan="2"></td>
+  <th>Default<:error_img default_value:></th>
+</tr>
+<:iterator begin dboptionvalues:>
+<tr>
+  <th>Value:</th>
+  <td><input type="text" name="value<:dboptionvalue id:>" value="<:oldi [concatenate value [dboptionvalue id]] 0 dboptionvalue value:>" /><:error_img [concatenate value [dboptionvalue id]]:></td>
+  <td class="check"><input type="radio" name="default_value" value="<:dboptionvalue id:>" <:ifEq [dboptionvalue id] [option default_value]:>checked="checked"<:or:><:eif:> /></td>
+</tr>
+<:iterator end dboptionvalues:>
+</table>
+</td>
+<td class="help"></td>
+</tr>
+<tr>
+  <td colspan="2" class="buttons"><input type="submit" name="a_save_option" value="Save" />
+<input type="submit" value="Return to product options" /></td>
+<td></td>
+</tr>
+</table>
+</form>

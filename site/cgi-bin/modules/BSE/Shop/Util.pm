@@ -4,11 +4,11 @@ use vars qw(@ISA @EXPORT_OK);
 @ISA = qw/Exporter/;
 @EXPORT_OK = qw/shop_cart_tags cart_item_opts nice_options shop_nice_options
                 total shop_total load_order_fields basic_tags need_logon
-                get_siteuser payment_types/;
+                get_siteuser payment_types order_item_opts/;
 use Constants qw/:shop/;
 use BSE::Util::SQL qw(now_sqldate);
 use BSE::Util::Tags;
-use BSE::CfgInfo qw(custom_class product_options);
+use BSE::CfgInfo qw(custom_class);
 use Carp 'confess';
 use DevHelp::HTML qw(escape_html);
 
@@ -123,28 +123,49 @@ sub tag_location {
 sub cart_item_opts {
   my ($req, $cart_item, $product) = @_;
 
-  my $avail_options = product_options($req->cfg);
+  my @option_descs = $product->option_descs($req->cfg, $cart_item->{options});
 
-  my @options = ();
-  my @values = split /,/, $cart_item->{options};
-  my @ids = split /,/, $product->{options};
-  for my $opt_index (0 .. $#ids) {
-    my $entry = $avail_options->{$ids[$opt_index]};
-    my $option = {
-		  id=>$ids[$opt_index],
-		  value=>$values[$opt_index],
-		  desc => $entry->{desc} || $ids[$opt_index],
-		 };
-    if ($entry->{labels}) {
-      $option->{label} = $entry->{labels}{$values[$opt_index]};
-    }
-    else {
-      $option->{label} = $option->{value};
-    }
-    push(@options, $option);
+  my @options;
+  my $index = 0;
+  for my $option (@option_descs) {
+    my $out_opt =
+      {
+       id => $option->{name},
+       value => $option->{value},
+       desc => $option->{desc},
+       label => $option->{display}
+      };
+
+    push @options, $out_opt;
+    ++$index;
   }
-
+  
   return @options;
+}
+
+sub order_item_opts {
+  my ($req, $order_item, $product) = @_;
+  
+  if (length $order_item->{options}) {
+    my @values = split /,/, $order_item->options;
+    return map
+      +{
+	id => $_->{id},
+	value => $_->{value},
+	desc => $_->{desc},
+	label => $_->{display},
+       }, $product->option_descs($req->cfg, \@values);
+  }
+  else {
+    my @options = $order_item->option_list;
+    return map
+      +{
+	id => $_->original_id,
+	value => $_->value,
+	desc => $_->name,
+	label => $_->display
+       }, @options;
+  }
 }
 
 sub nice_options {
