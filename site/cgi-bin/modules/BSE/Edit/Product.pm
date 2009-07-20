@@ -673,6 +673,11 @@ sub _get_option {
   my $cgi = $req->cgi;
   $req->validate(fields => \%option_id,
 		 errors => $errors);
+  my @option_ids = $cgi->param("option_id");
+  unless ($errors->{option_id}) {
+    @option_ids == 1
+      or $errors->{option_id} = "This request accepts only one option_id";
+  }
   unless ($errors->{option_id}) {
     require BSE::TB::ProductOptions;
     $option = BSE::TB::ProductOptions->getByPkey($cgi->param("option_id"));
@@ -1316,19 +1321,21 @@ sub _option_move {
   $option->save;
   $other->save;
 
-  $req->is_ajax
-    and $req->json_content
+  if ($req->is_ajax) {
+    @options = sort { $a->{display_order} <=> $b->{display_order} } @options;
+    return $req->json_content
       (
        success => 1,
        order => [ map $_->{id}, @options ]
       );
+  }
 
   return $self->refresh($article, $req->cgi, undef, "Option moved");
 }
 
-=item a_option_move_up
+=item a_option_moveup
 
-=item a_option_move_down
+=item a_option_movedown
 
 Move a product option up/down through the options for a product.
 
@@ -1542,6 +1549,10 @@ Parameters:
 =item *
 
 id - article id
+
+=item *
+
+option_id - the option to reorder values for
 
 =item *
 
