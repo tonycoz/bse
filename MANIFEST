@@ -332,8 +332,14 @@ site/htdocs/images/titles/the_shop.gif
 site/htdocs/images/titles/your_site.gif
 site/htdocs/images/trans_pixel.gif
 site/htdocs/js/admin_prodopts.js
+site/htdocs/js/builder.js
+site/htdocs/js/controls.js
 site/htdocs/js/date.js
+site/htdocs/js/dragdrop.js
+site/htdocs/js/effects.js
 site/htdocs/js/prototype.js
+site/htdocs/js/scriptaculous.js
+site/htdocs/js/slider.js
 site/htdocs/js/validate.js
 #  site/htdocs/shop created by the Makefile
 site/templates/1/shop_multicat.tmpl
