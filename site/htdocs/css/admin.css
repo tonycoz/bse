@@ -40,6 +40,7 @@ tr.inline_form { background-color: #8080C0 }
   background-color: #EEE;
   padding: 3px;
   border-bottom: 1px solid #000;
+  cursor: n-resize;
 }
 
 #productoptions .prodoptmenuoptions {
@@ -97,4 +98,13 @@ table.editform td.buttons {
 
 div.menu { 
   margin-bottom: 1em;
+}
+
+.inplaceeditor-form input {
+  border: 1px solid #444;
+}
+
+.inplaceeditor-saving {
+  padding-right: 20px;
+  background: url(/images/admin/busy.gif) bottom right no-repeat;
 }

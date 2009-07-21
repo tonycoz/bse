@@ -279,7 +279,25 @@ function prodopts_start() {
     prodopts_by_id[opt.id] = opt;
     var opt_ele_id = 'prodoptmenu' + opt.id;
     var opt_ele = $(opt_ele_id);
-    
+    var edit_ele_id = "editoption" + opt.id;
+    var edit_ele = $(edit_ele_id);
+    new Ajax.InPlaceEditor("prodoptname"+opt.id, edit_script,
+      {
+      cancelControl: "button",
+      okText: "Save",
+      cancelText: "Cancel",
+      callback: function(option_id, f, v) {
+        return "_=1&_t=prodopts&_csrfp="+ edit_option_csrf +"&id="+article_id+"&a_save_option=1&option_id="+option_id+"&name="+encodeURIComponent(v);
+      }.bind(opt_ele, opt.id),
+      onComplete: function(id, xport) {
+        var name_ele = $("prodoptname"+id);
+        name_ele.innerHTML = "";
+        var new_name = xport.responseJSON.option.name;
+        name_ele.appendChild(document.createTextNode(new_name));
+	prodopts_by_id[id].name = new_name;
+      }.bind(opt_ele, opt.id)
+      });
+
 //    opt_ele.appendChild(document.createTextNode(" "));
 //    var sort_a = document.createElement("a");
 //    sort_a.href = "javascript:sort_prodopt_values('" + opt.id + "')";

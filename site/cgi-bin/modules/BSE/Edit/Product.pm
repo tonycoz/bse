@@ -819,7 +819,8 @@ it.  Ignored unless save_enabled is true.
 =item *
 
 valueI<value-id> - set the displayed value for the value record
-identified by I<value-id>
+identified by I<value-id>.  If these aren't supplied the values aren't
+changed.
 
 =back
 
@@ -863,7 +864,7 @@ sub req_save_option {
   $option->save;
   for my $value (@values) {
     my $new_value = $cgi->param("value$value->{id}");
-    if ($new_value ne $value->value) {
+    if (defined $new_value && $new_value ne $value->value) {
       $value->set_value($new_value);
       $value->save;
     }
