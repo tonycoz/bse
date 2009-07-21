@@ -7,6 +7,7 @@
 <div id="prodoptmenu">All options:
 <a id="sortoptions" href="<:script:>?a_option_reorder=1&amp;_t=prodopts&amp;id=<:article id:>&amp;_csrfp=<:csrfp admin_move_option:>&amp;option_ids=<:arithmetic join ",", map $_->{id}, sort { lc $a->{name} cmp lc $b->{name} } Products->getByPkey([article id])->db_options:>">Sort</a>
 <a id="reverseoptions" href="<:script:>?a_option_reorder=1&amp;_t=prodopts&amp;id=<:article id:>&amp;_csrfp=<:csrfp admin_move_option:>&amp;option_ids=<:arithmetic join ",", map $_->{id}, reverse Products->getByPkey([article id])->db_options:>">Reverse</a>
+<img src="/images/admin/busy.gif" id="busy_img" style="visibility: hidden" />
 </div>
 <div id="productoptions">
 <:iterator begin dboptions:>
