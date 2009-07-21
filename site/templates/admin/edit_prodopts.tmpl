@@ -13,11 +13,13 @@
 <:iterator begin dboptions:>
 <div id="prodopt<:dboption id:>" class="prodopt">
 <div id="prodoptmenu<:dboption id:>" class="prodoptmenu">Option: <span id="prodoptname<:dboption id:>"><:dboption name:></span>
+<div class="prodoptmenuoptions">
 <a href="<:script:>?id=<:article id:>&amp;a_edit_option=1&amp;option_id=<:dboption id:>">Edit</a>
 <a href="<:script:>?id=<:article id:>&amp;a_delconf_option=1&amp;option_id=<:dboption id:>">Delete</a>
 <a id="sortvals<:dboption id:>" href="<:script:>?id=<:article id:>&amp;a_option_value_reorder=1&amp;option_id=<:dboption id:>&amp;_csrfp=<:csrfp admin_move_option_value:>&amp;_t=prodopts&amp;value_ids=<:arithmetic join ',', map $_->{id}, sort { lc $a->{value} cmp lc $b->{value} } BSE::TB::ProductOptions->getByPkey([dboption id])->values:>">Sort</a>
 <a id="reversevals<:dboption id:>" href="<:script:>?id=<:article id:>&amp;a_option_value_reorder=1&amp;option_id=<:dboption id:>&amp;_csrfp=<:csrfp admin_move_option_value:>&amp;_t=prodopts&amp;value_ids=<:arithmetic join ',', map $_->{id}, reverse BSE::TB::ProductOptions->getByPkey([dboption id])->values:>">Reverse</a>
 <:dboption_move:>
+</div>
 </div>
 <:if Dboptionvalues:>
 <ul id="vallist<:dboption id:>" class="prodoptvalues">

@@ -42,7 +42,7 @@ tr.inline_form { background-color: #8080C0 }
   border-bottom: 1px solid #000;
 }
 
-#productoptions .prodoptmenu a {
+#productoptions .prodoptmenuoptions {
   font-size: 82%;
   float: right;
   padding-left: 2px;

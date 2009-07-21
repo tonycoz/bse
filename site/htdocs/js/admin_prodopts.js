@@ -268,19 +268,10 @@ function prodopts_start() {
       tag: "div",
       only: "prodopt",
       format: /^prodopt(\d+)$/,
+      handle: "prodoptmenu",
       onUpdate: function () {
-        // build the new order
-        var ord = new Array;
-        var par = $("productoptions");
-        for (var i = 0; i < par.childNodes.length; ++i) {
-          var m;
-          var ch = par.childNodes[i];
-          if (ch.className == "prodopt"
-              && (m = /^prodopt(\d+)$/.exec(ch.id))) {
-            ord.push(m[1]);
-          }
-        }
-        reorder_prodopts_req("sortoptions", ord);
+        reorder_prodopts_req("sortoptions", 
+            Sortable.sequence("productoptions"));
       }
     });
   for (var i = 0; i < prodopts.length; ++i) {
