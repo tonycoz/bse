@@ -4,41 +4,55 @@
 
 <:if Dboptions:>
 <h2>Product options</h2>
+<:if UserCan bse_edit_prodopt_move:article:>
 <div id="prodoptmenu">All options:
 <a id="sortoptions" href="<:script:>?a_option_reorder=1&amp;_t=prodopts&amp;id=<:article id:>&amp;_csrfp=<:csrfp admin_move_option:>&amp;option_ids=<:arithmetic join ",", map $_->{id}, sort { lc $a->{name} cmp lc $b->{name} } Products->getByPkey([article id])->db_options:>">Sort</a>
 <a id="reverseoptions" href="<:script:>?a_option_reorder=1&amp;_t=prodopts&amp;id=<:article id:>&amp;_csrfp=<:csrfp admin_move_option:>&amp;option_ids=<:arithmetic join ",", map $_->{id}, reverse Products->getByPkey([article id])->db_options:>">Reverse</a>
 <img src="/images/admin/busy.gif" id="busy_img" style="visibility: hidden" />
 </div>
+<:or UserCan:><:eif UserCan:>
 <div id="productoptions">
 <:iterator begin dboptions:>
 <div id="prodopt<:dboption id:>" class="prodopt">
 <div id="prodoptmenu<:dboption id:>" class="prodoptmenu">Option: <span id="prodoptname<:dboption id:>"><:dboption name:></span>
 <div class="prodoptmenuoptions">
+<:if UserCan bse_edit_prodopt_edit:article :>
 <a id="editoption<:dboption id:>" href="<:script:>?id=<:article id:>&amp;a_edit_option=1&amp;option_id=<:dboption id:>">Edit</a>
 <a href="<:script:>?id=<:article id:>&amp;a_delconf_option=1&amp;option_id=<:dboption id:>">Delete</a>
 <a id="sortvals<:dboption id:>" href="<:script:>?id=<:article id:>&amp;a_option_value_reorder=1&amp;option_id=<:dboption id:>&amp;_csrfp=<:csrfp admin_move_option_value:>&amp;_t=prodopts&amp;value_ids=<:arithmetic join ',', map $_->{id}, sort { lc $a->{value} cmp lc $b->{value} } BSE::TB::ProductOptions->getByPkey([dboption id])->values:>">Sort</a>
 <a id="reversevals<:dboption id:>" href="<:script:>?id=<:article id:>&amp;a_option_value_reorder=1&amp;option_id=<:dboption id:>&amp;_csrfp=<:csrfp admin_move_option_value:>&amp;_t=prodopts&amp;value_ids=<:arithmetic join ',', map $_->{id}, reverse BSE::TB::ProductOptions->getByPkey([dboption id])->values:>">Reverse</a>
-<:dboption_move:>
+<:or UserCan:><:eif UserCan:>
+<:ifUserCan bse_edit_prodopt_move:article:><:dboption_move:><:or:><:eif:>
 </div>
 </div>
 <:if Dboptionvalues:>
 <ul id="vallist<:dboption id:>" class="prodoptvalues">
 <:iterator begin dboptionvalues:>
-<li id="valentry<:dboptionvalue id:>"><:dboptionvalue value:> <:ifEq [dboptionvalue id] [dboption default_value]:>(default)<:or:><:eif:> <a href="<:script:>?id=<:product id:>&amp;value_id=<:dboptionvalue id:>&amp;a_edit_option_value=1">Edit</a> <a href="<:script:>?id=<:product id:>&amp;value_id=<:dboptionvalue id:>&amp;a_confdel_option_value=1">Delete</a> <:dboptionvalue_move:></li>
+<li id="valentry<:dboptionvalue id:>"><:dboptionvalue value:>
+<:ifEq [dboptionvalue id] [dboption default_value]:>(default)<:or:><:eif:>
+<:if UserCan bse_edit_prodopt_edit:article:>
+<a href="<:script:>?id=<:product id:>&amp;value_id=<:dboptionvalue id:>&amp;a_edit_option_value=1">Edit</a>
+<a href="<:script:>?id=<:product id:>&amp;value_id=<:dboptionvalue id:>&amp;a_confdel_option_value=1">Delete</a>
+<:dboptionvalue_move:>
+<:or UserCan:><:eif UserCan:>
+</li>
 <:iterator end dboptionvalues:>
-</ul>  
-<form action="<:script:>" method="post" id="valform<:dboption id:>" /><input type="hidden" name="id" value="<:article id:>" /><input type="hidden" name="option_id" value="<:dboption id:>" /><input type="hidden" name="_t" value="prodopts" /><:csrfp admin_add_option_value hidden:><input type="text" name="value" /><input type="submit" name="a_add_option_value" value="Add Value" /></form>
+</ul>
 <:or Dboptionvalues:><:eif Dboptionvalues:>
+<:if UserCan bse_edit_prodopt_edit:article:>
+<form action="<:script:>" method="post" id="valform<:dboption id:>" /><input type="hidden" name="id" value="<:article id:>" /><input type="hidden" name="option_id" value="<:dboption id:>" /><input type="hidden" name="_t" value="prodopts" /><:csrfp admin_add_option_value hidden:><input type="text" name="value" /><input type="submit" name="a_add_option_value" value="Add Value" /></form>
+<:or UserCan:><:eif UserCan:>
 </div>
 <:iterator end dboptions:>
 </div>
 <:or Dboptions:><:eif Dboptions:>
+<:if UserCan bse_edit_prodopt_add:article:>
 <div id="addoptionform">
 <form action="<:script:>" method="post">
 <:csrfp admin_add_option hidden:>
 <input type="hidden" name="_t" value="prodopts" />
 <input type="hidden" name="id" value="<:article id:>" />
-<table>
+<table class="editform editformsmall">
   <tr>
     <th>Name</th>
     <td><input type="text" name="name" value="<:old name:>" size="40" maxlength="40" /><:error_img name:></td>
@@ -60,12 +74,8 @@
 <div id="addoptionbutton" style="display: none">
 <a href="#" onclick="javascript: document.getElementById('addoptionform').style.display='block'; return false;">Add an option</a>
 </div>
+<:or UserCan:><:eif UserCan:>
 <script>
-
-<:ifDboptions:>
-$('addoptionform').style.display='none';
-$('addoptionbutton').style.display='block';
-<:or:><:eif:>
 
 var prodopts = <:dboptionsjson:>;
 var reorder_values_csrf = '<:csrfp admin_move_option_value:>';
@@ -74,6 +84,8 @@ var edit_option_csrf = '<:csrfp admin_save_option:>';
 var article_id = "<:article id:>";
 var edit_script = "<:script:>";
 
-Event.observe(window, "load", function() { prodopts_start() });
+var user_can_edit_option = <:ifUserCan bse_edit_prodopt_edit:>1<:or:>0<:eif:>;
+var user_can_delete_option = <:ifUserCan bse_edit_prodopt_delete:>1<:or:>0<:eif:>;
+var user_can_move_option = <:ifUserCan bse_edit_prodopt_move:>1<:or:>0<:eif:>;
 
 </script>

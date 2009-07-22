@@ -1,8 +1,12 @@
 var prodopts_by_id = new Object;
 var menu;
 
-function reorder_option_values(id, order) {
-  var parent = $("vallist"+id);
+function handle_exception(e) {
+  alert("Exception: " + e);
+}
+
+function reorder_option_values(opt_id, order) {
+  var parent = $("vallist"+opt_id);
   var nodes = new Array;
   var nodes_by_id = new Object;
   for (var i = 0; i < parent.childNodes.length; ++i) {
@@ -16,7 +20,7 @@ function reorder_option_values(id, order) {
     }
   }
   // remove our value nodes
-  for (var i = 0; i < nodes; ++i) {
+  for (var i = 0; i < nodes.length; ++i) {
     parent.removeChild(nodes[i]);
   }
   // put them back in, in the new order
@@ -26,7 +30,18 @@ function reorder_option_values(id, order) {
       parent.appendChild(n);
   }
 
-  // TODO: reorder the values in prodopts
+  var vals = prodopts_by_id[opt_id].values;
+  var vals_by_id = new Object;
+  for (var i = 0; i < vals.length; ++i) {
+    vals_by_id[vals[i].id] = vals[i];
+  }
+  var new_vals = new Array;
+  for (i = 0; i < order.length; ++i) {
+    new_vals.push(vals_by_id[order[i]]);
+  }
+  prodopts_by_id[opt_id].values = new_vals;
+
+  fix_prodoptval_order_tools(prodopts_by_id[opt_id]);
 }
 
 function reorder_options(order) {
@@ -62,6 +77,44 @@ function reorder_options(order) {
   fix_prodopt_order_tools();
 }
 
+function reorder_values(option_id, order) {
+  var parent = $("vallist"+option_id);
+  var nodes = new Array;
+  var nodes_by_id = new Object;
+  for (var i = 0; i < parent.childNodes.length; ++i) {
+    var n = parent.childNodes[i];
+    if (n.id) {
+      var m = n.id.match(/^valentry(\d+)$/);
+      if (m) {
+        nodes_by_id[m[1]] = n;
+        nodes.push(n);
+      }
+    }
+  }
+  // remove our value nodes
+  for (var i = 0; i < nodes; ++i) {
+    parent.removeChild(nodes[i]);
+  }
+  // put them back in, in the new order
+  for (var i = 0; i < order.length; ++i) {
+    var n = nodes_by_id[order[i]];
+    if (n)
+      parent.appendChild(n);
+  }
+
+  var opt = prodopts_by_id[option_id];
+  var vals_by_id = new Object;
+  for (var i = 0; i < opt.values.length; ++i) {
+    vals_by_id[opt.values[i].id] = opt.values[i];
+  }
+  opt.values = new Array;
+  for (var i = 0; i < order.length; ++i) {
+    opt.values.push(vals_by_id[order[i]]);
+  }
+
+  fix_prodoptval_order_tools(opt);
+}
+
 function do_option_move(key, id) {
   set_busy("prodoptmove"+id);
   var parm = {
@@ -77,17 +130,18 @@ function do_option_move(key, id) {
     onSuccess: function(xport) {
       var json = xport.responseJSON;
       set_not_busy("prodoptmove"+id);
-      if (json.success) {
+      if (json && json.success) {
         reorder_options(json.order);
       }
       else {
-        alert("Error ordering: " + json.error);
+        show_response_error("reordering options", xport);
       }
     },
-    onFailure: function() {
-      alert("Error contacting server");
+    onFailure: function(xport) {
       set_not_busy("prodoptmove"+id);
-    }
+      show_response_error("reordering options", xport);
+    },
+    onException: handle_exception
     });
 }
 
@@ -111,28 +165,107 @@ function fix_prodopt_order_tools() {
       }
     }
     if (i != prodopts.length-1) {
-      var move_down = document.createElement("a");
+      var move_down = new Element("a");
       move_down.href="javascript:prodopt_move_down("+opt.id+")";
-      var down_img = document.createElement("img");
+      var down_img = new Element("img");
       down_img.src = "/images/admin/move_down.gif";
       move_down.appendChild(down_img);
       move_ele.appendChild(move_down);
     }
     else {
-      var empty = document.createElement('img');
+      var empty = new Element('img');
       empty.src = "/images/trans_pixel.gif";
       move_ele.appendChild(empty);
     }
     if (i != 0) {
-      var move_up = document.createElement("a");
+      var move_up = new Element("a");
       move_up.href="javascript:prodopt_move_up("+opt.id+")";
-      var up_img = document.createElement("img");
+      var up_img = new Element("img");
       up_img.src = "/images/admin/move_up.gif";
       move_up.appendChild(up_img);
       move_ele.appendChild(move_up);
     }
     else {
-      var empty = document.createElement('img');
+      var empty = new Element('img');
+      empty.src = "/images/trans_pixel.gif";
+      move_ele.appendChild(empty);
+    }
+  }
+}
+
+function do_value_move(key, opt_id, id) {
+  set_busy("prodoptvaluemove"+id);
+  var parm = {
+      id: article_id,
+      option_id: opt_id,
+      value_id: id,
+      _csrfp: reorder_values_csrf,
+      _: 1
+    };
+  parm[key] = 1;
+  new Ajax.Request(edit_script, {
+    method: "post",
+    parameters: parm,
+    onSuccess: function(xport) {
+      var json = xport.responseJSON;
+      set_not_busy("prodoptvaluemove"+id);
+      if (json && json.success) {
+        reorder_option_values(opt_id, json.order);
+      }
+      else {
+        show_response_error("reordering values", xport);
+      }
+    },
+    onFailure: function(xport) {
+      set_not_busy("prodoptvaluemove"+id);
+      show_response_error("reordering values", xport);
+    },
+    onException: handle_exception
+    });
+}
+
+function prodoptval_move_up(opt_id, id) {
+  do_value_move('a_option_value_moveup', opt_id, id);
+}
+
+function prodoptval_move_down(opt_id, id) {
+  do_value_move('a_option_value_movedown', opt_id, id);
+}
+
+function fix_prodoptval_order_tools(opt) {
+  var vals = opt.values;
+  for (var i = 0; i < vals.length; ++i) {
+    var val = vals[i];
+    var move_ele = $('prodoptvaluemove'+val.id);
+    if (move_ele) {
+      // remove all the kids
+      while (move_ele.firstChild != null) {
+        move_ele.removeChild(move_ele.firstChild);
+      }
+    }
+    if (i != vals.length-1) {
+      var move_down = new Element("a");
+      move_down.href="javascript:prodoptval_move_down("+opt.id+","+val.id+")";
+      var down_img = new Element("img");
+      down_img.src = "/images/admin/move_down.gif";
+      move_down.appendChild(down_img);
+      move_ele.appendChild(move_down);
+    }
+    else {
+      var empty = new Element('img');
+      empty.src = "/images/trans_pixel.gif";
+      move_ele.appendChild(empty);
+    }
+    if (i != 0) {
+      var move_up = new Element("a");
+      move_up.href="javascript:prodoptval_move_up("+opt.id+","+val.id+")";
+      var up_img = new Element("img");
+      up_img.src = "/images/admin/move_up.gif";
+      move_up.appendChild(up_img);
+      move_ele.appendChild(move_up);
+    }
+    else {
+      var empty = new Element('img');
       empty.src = "/images/trans_pixel.gif";
       move_ele.appendChild(empty);
     }
@@ -193,7 +326,8 @@ function sort_prodopt_values(id) {
     onFailure: function() {
       alert("Error contacting server");
       set_not_busy();
-    }
+    },
+    onException: handle_exception
     });
 }
 
@@ -211,17 +345,48 @@ function reorder_prodopts_req(ele_id, ids) {
     onSuccess: function(xport) {
       var json = xport.responseJSON;
       set_not_busy(ele_id);
-      if (json.success) {
+      if (json && json.success) {
         reorder_options(json.order);
       }
       else {
-        alert("Error ordering: " + json.error);
+        show_response_error("re-ordering options", xport);
       }
     },
-    onFailure: function() {
-      alert("Error contacting server");
+    onFailure: function(xport) {
       set_not_busy(ele_id);
-    }
+      show_response_error("re-ordering options", xport);
+    },
+    onException: handle_exception
+    });
+}
+
+function reorder_prodoptvals_req(ele_id, opt_id, ids) {
+  set_busy(ele_id);
+  new Ajax.Request(edit_script, {
+    method: "post",
+    parameters: {
+      a_option_value_reorder: 1,
+      id: article_id,
+      option_id: opt_id,
+      value_ids: ids.join(","),
+      _csrfp: reorder_values_csrf,
+      _: 1
+    },
+    onSuccess: function(xport) {
+      var json = xport.responseJSON;
+      set_not_busy(ele_id);
+      if (json && json.success) {
+        reorder_values(opt_id, json.order);
+      }
+      else {
+        show_response_error("re-ordering values", xport);
+      }
+    },
+    onFailure: function(xport) {
+      set_not_busy(ele_id);
+      show_response_error("re-ordering values", xport);
+    },
+    onException: handle_exception
     });
 }
 
@@ -252,6 +417,63 @@ function reverse_prodopts() {
   reorder_prodopts_req("reverseoptions", ids);
 }
 
+function show_response_error(action, xport) {
+  if (xport.responseJSON) {
+    if (xport.responseJSON.errors
+        && xport.responseJSON.errors._csrfp) {
+      alert("Please reload the page, your update tokens may be out of date\n\n"+xport.responseJSON.errors._csrfp);
+    }
+    else if (xport.responseJSON.message)
+       alert("Error "+action+": " + xport.responseJSON.message);
+    else
+      alert("Unknown error "+action);
+  }
+  else if (xport.responseText) {
+    alert(xport.responseText);
+  }
+  else
+    alert("Unknown error "+action);
+}
+
+function prodopt_add_option_ipe(opt) {
+    new Ajax.InPlaceEditor("prodoptname"+opt.id, edit_script,
+      {
+      cancelControl: "button",
+      okText: "Save",
+      cancelText: "Cancel",
+      callback: function(f, v) {
+        return "_=1&_t=prodopts&_csrfp="+ edit_option_csrf +"&id="+article_id+"&a_save_option=1&option_id="+this.id+"&name="+encodeURIComponent(v);
+      }.bind(opt),
+      onComplete: function(xport) {
+        var name_ele = $("prodoptname"+this.id);
+        name_ele.innerHTML = "";
+        var new_name;
+        if (xport
+            && xport.status == 200 
+            && xport.responseJSON
+            && xport.responseJSON.success) {
+          new_name = xport.responseJSON.option.name;
+	  prodopts_by_id[this.id].name = new_name;
+          name_ele.appendChild(document.createTextNode(new_name));
+        }
+        else {
+          // restore the original name
+          new_name = prodopts_by_id[this.id].name;
+          name_ele.appendChild(document.createTextNode(new_name));
+          if (xport) {
+            if (xport.responseJSON && xport.responseJSON.errors.name) {
+              alert("Error saving option name: " 
+	            + xport.responseJSON.errors.name);
+	    }
+            else
+              show_response_error("saving option name", xport);
+	  }  // otherwise cancelled edit
+        }
+      }.bind(opt)
+      });
+
+}
+
 function prodopts_start() {
   menu = $('prodoptmenu');
   var sortopts = $('sortoptions');
@@ -263,17 +485,20 @@ function prodopts_start() {
     reverseopts.href="javascript:reverse_prodopts()";
   }
   busy_img = $('busy_img');
-  Sortable.create("productoptions",
-    { 
-      tag: "div",
-      only: "prodopt",
-      format: /^prodopt(\d+)$/,
-      handle: "prodoptmenu",
-      onUpdate: function () {
-        reorder_prodopts_req("sortoptions", 
-            Sortable.sequence("productoptions"));
-      }
-    });
+  if (user_can_move_option) {
+    Sortable.create("productoptions",
+      { 
+        tag: "div",
+        only: "prodopt",
+        format: /^prodopt(\d+)$/,
+        handle: "prodoptmenu",
+        onUpdate: function () {
+          reorder_prodopts_req("sortoptions", 
+              Sortable.sequence("productoptions"));
+        },
+            onException: handle_exception
+      });
+  }
   for (var i = 0; i < prodopts.length; ++i) {
     var opt = prodopts[i];
     prodopts_by_id[opt.id] = opt;
@@ -281,23 +506,23 @@ function prodopts_start() {
     var opt_ele = $(opt_ele_id);
     var edit_ele_id = "editoption" + opt.id;
     var edit_ele = $(edit_ele_id);
-    new Ajax.InPlaceEditor("prodoptname"+opt.id, edit_script,
-      {
-      cancelControl: "button",
-      okText: "Save",
-      cancelText: "Cancel",
-      callback: function(option_id, f, v) {
-        return "_=1&_t=prodopts&_csrfp="+ edit_option_csrf +"&id="+article_id+"&a_save_option=1&option_id="+option_id+"&name="+encodeURIComponent(v);
-      }.bind(opt_ele, opt.id),
-      onComplete: function(id, xport) {
-        var name_ele = $("prodoptname"+id);
-        name_ele.innerHTML = "";
-        var new_name = xport.responseJSON.option.name;
-        name_ele.appendChild(document.createTextNode(new_name));
-	prodopts_by_id[id].name = new_name;
-      }.bind(opt_ele, opt.id)
-      });
-
+    if (user_can_edit_option)
+      prodopt_add_option_ipe(opt);
+      if (user_can_edit_option) {
+        fix_prodoptval_order_tools(opt);
+        Sortable.create("vallist"+opt.id, 
+          {
+            format: /^valentry(\d+)$/,
+            onUpdate: function (parent) {
+              var m = /^vallist(\d+)/.exec(parent.id);
+              if (m) {
+                reorder_prodoptvals_req("sortvalues"+m[1], m[1],
+                  Sortable.sequence(parent.id));
+              }
+            },
+            onException: handle_exception
+	  });
+      }
 //    opt_ele.appendChild(document.createTextNode(" "));
 //    var sort_a = document.createElement("a");
 //    sort_a.href = "javascript:sort_prodopt_values('" + opt.id + "')";
@@ -307,3 +532,15 @@ function prodopts_start() {
   }
   fix_prodopt_order_tools();
 }
+
+Event.observe(document, "dom:loaded",
+  function() {
+    var add_option_form = $('addoptionform');
+    if (add_option_form)
+      add_option_form.style.display='none';
+    if ($('addoptionbutton'))
+      $('addoptionbutton').style.display='block';
+  });
+
+Event.observe(document, "dom:loaded", function() { prodopts_start() });
+

@@ -4,7 +4,7 @@
 <html><head><title>BSE - <:param title:></title>
 <link rel="stylesheet" href="/css/admin.css" />
 <:ajax includes:>
-<:ifParam js:><script type="text/javascript" src="/js/<:param js:>"></script><:or:><:eif:>
+<:ifAnd [param js] [ifAjax]:><script type="text/javascript" src="/js/<:param js:>"></script><:or:><:eif:>
 </head>
 <body>
 <:ifParam showtitle:><h1><:param title:></h1><:or:><:eif:>

@@ -120,6 +120,7 @@ sub req_logon {
   $user && $user->{password} eq $password
     or return $class->_service_error($req, "Invalid logon or password");
   $req->session->{adminuserid} = $user->{id};
+  delete $req->session->{csrfp};
 
   if ($cgi->param('_service')) {
     return $class->_service_success({});
@@ -138,6 +139,7 @@ sub req_logoff {
   my ($class, $req) = @_;
 
   delete $req->session->{adminuserid};
+  delete $req->session->{csrfp};
   ++$req->session->{changed};
 
   my $r = admin_base_url($req->cfg) . "/cgi-bin/admin/logon.pl";

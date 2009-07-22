@@ -283,12 +283,20 @@ sub validate {
   $options{rules} ||= {};
 
   require BSE::Validate;
-  BSE::Validate::bse_validate($req->cgi, $options{errors},
-			      { 
-			       fields => $options{fields},
-			       rules => $options{rules},
-			      },
-			      $req->cfg, $options{section});
+  my %opts =
+    (
+     fields => $options{fields},
+     rules => $options{rules},
+    );
+  exists $options{optional} and $opts{optional} = $options{optional};
+  BSE::Validate::bse_validate
+      (
+       $req->cgi,
+       $options{errors},
+       \%opts,
+       $req->cfg,
+       $options{section}
+      );
 }
 
 sub validate_hash {
@@ -296,13 +304,21 @@ sub validate_hash {
 
   $options{rules} ||= {};
 
+  my %opts =
+    (
+     fields => $options{fields},
+     rules => $options{rules},
+    );
+  exists $options{optional} and $opts{optional} = $options{optional};
   require BSE::Validate;
-  BSE::Validate::bse_validate_hash($options{data}, $options{errors},
-				   { 
-				    fields=>$options{fields},
-				    rules => $options{rules},
-				   },
-				   $req->cfg, $options{section});
+  BSE::Validate::bse_validate_hash
+      (
+       $options{data},
+       $options{errors},
+       \%opts,
+       $req->cfg,
+       $options{section}
+      );
 }
 
 sub configure_fields {

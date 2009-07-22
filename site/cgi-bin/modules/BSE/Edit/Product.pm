@@ -605,6 +605,8 @@ option as values.
 
 =back
 
+Permission required: bse_edit_prodopt_add 
+
 =cut
 
 sub req_add_option {
@@ -612,6 +614,9 @@ sub req_add_option {
 
   $req->check_csrf('admin_add_option')
     or return $self->csrf_error($req, $article, "admin_add_option", "Add Product Option");
+
+  $req->user_can(bse_edit_prodopt_add => $article)
+    or return $self->_service_error($req, $article, $articles, "Insufficient product access to add options");
 
   my %errors;
   $req->validate(fields => \%option_fields,
@@ -740,10 +745,15 @@ id.
 
 Template: admin/prodopt_edit
 
+Permission required: bse_edit_prodopt_edit
+
 =cut
 
 sub req_edit_option {
   my ($self, $req, $article, $articles, $msg, $errors) = @_;
+
+  $req->user_can(bse_edit_prodopt_edit => $article)
+    or return $self->_service_error($req, $article, $articles, "Insufficient product access to edit options");
 
   return $self->_common_option('admin/prodopt_edit', $req, $article, 
 			       $articles, $msg, $errors);
@@ -759,7 +769,7 @@ my %option_name =
    default_value =>
    {
     description => "Default Value",
-    rules => "integer"
+    rules => "positiveint"
    }
   );
 
@@ -824,6 +834,8 @@ changed.
 
 =back
 
+Permission required: bse_edit_prodopt_save
+
 =cut
 
 sub req_save_option {
@@ -834,23 +846,27 @@ sub req_save_option {
   $req->check_csrf("admin_save_option")
     or return $self->csrf_error($req, $article, "admin_save_option", "Save Product Option");
 
+  $req->user_can(bse_edit_prodopt_edit => $article)
+    or return $self->_service_error($req, $article, $articles, "Insufficient product access to edit options");
+
   my %errors;
   my $option = $self->_get_option($req, $article, \%errors);
   keys %errors
     and return $self->_service_error($req, $article, $articles, undef, \%errors);
-  $req->validate(rules => \%option_name,
+  $req->validate(fields => \%option_name,
 		 errors => \%errors);
   my @values = $option->values;
   my %fields = map {; "value$_->{id}" => \%option_value } @values;
-  $req->validate(rules => \%fields,
-		 errors => \%errors);
+  $req->validate(fields => \%fields,
+		 errors => \%errors,
+		 optional => 1);
   my $default_value = $cgi->param('default_value');
   if (!$errors{default_value} && $default_value) {
     grep $_->{id} == $default_value, @values
       or $errors{default_value} = "Unknown value selected as default";
   }
   keys %errors
-    and return $self->req_edit_option($req, $article, $articles, undef, \%errors);
+    and return $self->_service_error($req, $article, $articles, undef, \%errors);
 
   my $name = $cgi->param("name");
   defined $name
@@ -907,6 +923,9 @@ Template: admin/prodopt_delete
 sub req_delconf_option {
   my ($self, $req, $article, $articles, $msg, $errors) = @_;
 
+  $req->user_can(bse_edit_prodopt_delete => $article)
+    or return $self->_service_error($req, $article, $articles, "Insufficient product access to delete options");
+
   return $self->_common_option('admin/prodopt_delete', $req, $article, 
 			       $articles, $msg, $errors);
 }
@@ -925,6 +944,8 @@ For Ajax requests (or with a _ parameter), returns JSON like:
    success: 1,
   }
 
+Permission required: bse_edit_prodopt_delete
+
 =cut
 
 sub req_delete_option {
@@ -932,6 +953,9 @@ sub req_delete_option {
 
   $req->check_csrf("admin_delete_option")
     or return $self->csrf_error($req, $article, "admin_delete_option", "Delete Product Option");
+
+  $req->user_can(bse_edit_prodopt_delete => $article)
+    or return $self->_service_error($req, $article, $articles, "Insufficient product access to delete options");
 
   my %errors;
   my $option = $self->_get_option($req, $article, \%errors);
@@ -1000,6 +1024,8 @@ value - text of the value to add.
 
 =back
 
+Permission required: bse_edit_prodopt_edit
+
 =cut
 
 sub req_add_option_value {
@@ -1007,6 +1033,9 @@ sub req_add_option_value {
 
   $req->check_csrf("admin_add_option_value")
     or return $self->csrf_error($req, $article, "admin_add_option_value", "Add Product Option Value");
+
+  $req->user_can(bse_edit_prodopt_edit => $article)
+    or return $self->_service_error($req, $article, $articles, "Insufficient product access to edit options");
 
   my %errors;
   $req->validate(fields => \%add_option_value_fields,
@@ -1116,10 +1145,15 @@ given product.
 
 Template: admin/prodopt_value_edit
 
+Permission required: bse_edit_prodopt_edit
+
 =cut
 
 sub req_edit_option_value {
   my ($self, $req, $article, $articles, $msg, $errors) = @_;
+
+  $req->user_can(bse_edit_prodopt_edit => $article)
+    or return $self->_service_error($req, $article, $articles, "Insufficient product access to edit options");
 
   return $self->_common_option_value('admin/prodopt_value_edit', $req,
 				     $article, $articles, $msg, $errors);
@@ -1167,6 +1201,8 @@ value - new displayed value for the option value.
 
 =back
 
+Permission required: bse_edit_prodopt_edit
+
 =cut
 
 sub req_save_option_value {
@@ -1174,6 +1210,9 @@ sub req_save_option_value {
 
   $req->check_csrf("admin_save_option_value")
     or return $self->csrf_error($req, $article, "admin_save_option_value", "Save Product Option Value");
+
+  $req->user_can(bse_edit_prodopt_edit => $article)
+    or return $self->_service_error($req, $article, $articles, "Insufficient product access to edit options");
 
   my %errors;
   $req->validate(fields => \%save_option_value_fields,
@@ -1216,10 +1255,15 @@ value_id - option value id
 
 Template: admin/prodopt_value_delete
 
+Permission required: bse_edit_prodopt_edit
+
 =cut
 
 sub req_confdel_option_value {
   my ($self, $req, $article, $articles, $msg, $errors) = @_;
+
+  $req->user_can(bse_edit_prodopt_edit => $article)
+    or return $self->_service_error($req, $article, $articles, "Insufficient product access to edit options");
 
   return $self->_common_option_value('admin/prodopt_value_delete', $req,
 				     $article, $articles, $msg, $errors);
@@ -1254,6 +1298,8 @@ identified by id.
 
 =back
 
+Permission required: bse_edit_prodopt_edit
+
 =cut
 
 sub req_delete_option_value {
@@ -1261,6 +1307,9 @@ sub req_delete_option_value {
 
   $req->check_csrf("admin_delete_option_value")
     or return $self->csrf_error($req, $article, "admin_delete_option_value", "Delete Product Option Value");
+
+  $req->user_can(bse_edit_prodopt_edit => $article)
+    or return $self->_service_error($req, $article, $articles, "Insufficient product access to edit options");
 
   my %errors;
   my $option_value = $self->_get_option_value($req, $article, \%errors);
@@ -1301,6 +1350,9 @@ sub _option_move {
   $req->check_csrf("admin_move_option")
     or return $self->csrf_error($req, $article, "admin_move_option", "Move Product Option");
 
+  $req->user_can(bse_edit_prodopt_move => $article)
+    or return $self->_service_error($req, $article, $articles, "Insufficient product access to move options");
+
   my %errors;
   my $option = $self->_get_option($req, $article, \%errors);
   keys %errors
@@ -1324,7 +1376,7 @@ sub _option_move {
 
   if ($req->is_ajax) {
     @options = sort { $a->{display_order} <=> $b->{display_order} } @options;
-    return $req->json_content
+    return return $req->json_content
       (
        success => 1,
        order => [ map $_->{id}, @options ]
@@ -1365,6 +1417,8 @@ option_id - option id.  This must belong to the product identified by
 id.
 
 =back
+
+Permission required: bse_edit_prodopt_move
 
 =cut
 
@@ -1410,6 +1464,8 @@ product identified by id.
 
 =back
 
+Permission required: bse_edit_prodopt_move
+
 =cut
 
 sub req_option_reorder {
@@ -1417,6 +1473,9 @@ sub req_option_reorder {
 
   $req->check_csrf("admin_move_option")
     or return $self->csrf_error($req, $article, "admin_move_option", "Move Product Option");
+
+  $req->user_can(bse_edit_prodopt_move => $article)
+    or return $self->_service_error($req, $article, $articles, "Insufficient product access to move options");
 
   my @options = $article->db_options;
   my @order = map { split ',' } $req->cgi->param('option_ids');
@@ -1450,6 +1509,9 @@ sub _option_value_move {
   $req->check_csrf("admin_move_option_value")
     or return $self->csrf_error($req, $article, "admin_move_option_value", "Move Product Option Value");
 
+  $req->user_can(bse_edit_prodopt_edit => $article)
+    or return $self->_service_error($req, $article, $articles, "Insufficient product access to edit options");
+
   my %errors;
   my ($option_value, $option) = $self->_get_option_value($req, $article, \%errors);
   keys %errors
@@ -1471,8 +1533,11 @@ sub _option_value_move {
   $option_value->save;
   $other->save;
 
+  # make sure the json gets the new order
+  @values[$index, $other_index] = @values[$other_index, $index];
+
   $req->is_ajax
-    and $req->json_content
+    and return $req->json_content
       (
        success => 1,
        order => [ map $_->{id}, @values ]
@@ -1513,6 +1578,8 @@ value_id - option id.  This must belong to the product identified by
 id.
 
 =back
+
+Permission required: bse_edit_prodopt_edit
 
 =cut
 
@@ -1562,6 +1629,8 @@ commas.
 
 =back
 
+Permission required: bse_edit_prodopt_edit
+
 =cut
 
 sub req_option_value_reorder {
@@ -1569,6 +1638,9 @@ sub req_option_value_reorder {
 
   $req->check_csrf("admin_move_option_value")
     or return $self->csrf_error($req, $article, "admin_move_option_value", "Move Product Option Value");
+
+  $req->user_can(bse_edit_prodopt_edit => $article)
+    or return $self->_service_error($req, $article, $articles, "Insufficient product access to edit options");
 
   my %errors;
   my $option = $self->_get_option($req, $article, \%errors);

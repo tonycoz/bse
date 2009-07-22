@@ -32,10 +32,17 @@ This is badly organized and documented.
 sub not_logged_on {
   my ($self, $req) = @_;
 
-  if (() = $req->cgi->param('_') ||
-     (defined $ENV{HTTP_X_REQUESTED_WITH}
-      && $ENV{HTTP_X_REQUESTED_WITH} =~ /XMLHttpRequest/)) {
+  if ($req->is_ajax) {
     # AJAX/Prototype request
+    return $req->json_content
+      (
+       {
+	message => "Access forbidden: user not logged on",
+	errors => {},
+       }
+      );
+  }
+  elsif ($req->cgi->param('_service')) {
     return
       {
        content => 'Access Forbidden: login timed out',
@@ -2464,7 +2471,10 @@ sub _service_error {
   elsif ((() = $req->cgi->param('_')) ||
 	 (defined $ENV{HTTP_X_REQUESTED_WITH}
 	  && $ENV{HTTP_X_REQUESTED_WITH} =~ /XMLHttpRequest/)) {
-    return $req->json_content({ errors => $error });
+    $error ||= {};
+    my $result = { errors => $error };
+    $msg and $result->{message} = $msg;
+    return $req->json_content($result);
   }
   else {
     return $self->edit_form($req, $article, $articles, $msg, $error);
@@ -3931,8 +3941,9 @@ sub csrf_error {
   my ($self, $req, $article, $name, $description) = @_;
 
   my %errors;
-  $errors{_csrfp} = "Possible CSRF attempt on $name/$description: " . $req->csrf_error;
-  return $self->_service_error($req, $article, 'Articles', undef, \%errors);
+  my $msg = $req->csrf_error;
+  $errors{_csrfp} = $msg;
+  return $self->_service_error($req, $article, 'Articles', $msg, \%errors);
 }
 
 1;
