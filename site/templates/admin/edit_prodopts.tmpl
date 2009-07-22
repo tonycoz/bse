@@ -11,10 +11,10 @@
 <img src="/images/admin/busy.gif" id="busy_img" style="visibility: hidden" />
 </div>
 <:or UserCan:><:eif UserCan:>
-<div id="productoptions">
+<div id="productoptions" <:ifUserCan bse_edit_prodopt_move:>class="moveable"<:or:><:eif:>>
 <:iterator begin dboptions:>
 <div id="prodopt<:dboption id:>" class="prodopt">
-<div id="prodoptmenu<:dboption id:>" class="prodoptmenu">Option: <span id="prodoptname<:dboption id:>"><:dboption name:></span>
+<div id="prodoptmenu<:dboption id:>" class="prodoptmenu">Option:<span id="prodoptname<:dboption id:>"><:dboption name:></span>
 <div class="prodoptmenuoptions">
 <:if UserCan bse_edit_prodopt_edit:article :>
 <a id="editoption<:dboption id:>" href="<:script:>?id=<:article id:>&amp;a_edit_option=1&amp;option_id=<:dboption id:>">Edit</a>
@@ -28,7 +28,7 @@
 <:if Dboptionvalues:>
 <ul id="vallist<:dboption id:>" class="prodoptvalues">
 <:iterator begin dboptionvalues:>
-<li id="valentry<:dboptionvalue id:>"><:dboptionvalue value:>
+<li id="valentry<:dboptionvalue id:>"><span id="prodoptvalue<:dboptionvalue id:>"><:dboptionvalue value:></span>
 <:ifEq [dboptionvalue id] [dboption default_value]:>(default)<:or:><:eif:>
 <:if UserCan bse_edit_prodopt_edit:article:>
 <a href="<:script:>?id=<:product id:>&amp;value_id=<:dboptionvalue id:>&amp;a_edit_option_value=1">Edit</a>
@@ -81,6 +81,7 @@ var prodopts = <:dboptionsjson:>;
 var reorder_values_csrf = '<:csrfp admin_move_option_value:>';
 var reorder_options_csrf = '<:csrfp admin_move_option:>';
 var edit_option_csrf = '<:csrfp admin_save_option:>';
+var edit_value_csrf = '<:csrfp admin_save_option_value:>';
 var article_id = "<:article id:>";
 var edit_script = "<:script:>";
 

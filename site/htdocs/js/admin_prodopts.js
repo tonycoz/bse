@@ -1,7 +1,11 @@
 var prodopts_by_id = new Object;
 var menu;
 
-function handle_exception(e) {
+/*
+ I got sick of Prototype eating real errors, so now I always capture
+ and display them.
+ */
+function handle_exception(obj, e) {
   alert("Exception: " + e);
 }
 
@@ -36,7 +40,7 @@ function reorder_option_values(opt_id, order) {
     vals_by_id[vals[i].id] = vals[i];
   }
   var new_vals = new Array;
-  for (i = 0; i < order.length; ++i) {
+  for (var i = 0; i < order.length; ++i) {
     new_vals.push(vals_by_id[order[i]]);
   }
   prodopts_by_id[opt_id].values = new_vals;
@@ -469,9 +473,83 @@ function prodopt_add_option_ipe(opt) {
               show_response_error("saving option name", xport);
 	  }  // otherwise cancelled edit
         }
-      }.bind(opt)
+      }.bind(opt),
+      onException: handle_exception
       });
 
+}
+
+function prodopt_add_value_ipe(opt, val) {
+    new Ajax.InPlaceEditor("prodoptvalue"+val.id, edit_script,
+      {
+      cancelControl: "button",
+      okText: "Save",
+      cancelText: "Cancel",
+      callback: function(f, v) {
+        return "_=1&_t=prodopts&_csrfp="+ edit_value_csrf +"&id="+article_id+"&a_save_option_value=1&value_id="+this.id+"&value="+encodeURIComponent(v);
+      }.bind(val),
+      onComplete: function(xport) {
+        var value_ele = $("prodoptvalue"+this.id);
+        value_ele.innerHTML = "";
+        var new_value;
+        if (xport
+            && xport.status == 200 
+            && xport.responseJSON
+            && xport.responseJSON.success) {
+          new_value = xport.responseJSON.value.value;
+	  val.value = new_value;
+          value_ele.appendChild(document.createTextNode(new_value));
+        }
+        else {
+          // restore the original name
+          new_value = val.value;
+          value_ele.appendChild(document.createTextNode(new_value));
+          if (xport) {
+            if (xport.responseJSON && xport.responseJSON.errors.value) {
+              alert("Error saving option value: " 
+	            + xport.responseJSON.errors.value);
+	    }
+            else
+              show_response_error("saving option value", xport);
+	  }  // otherwise cancelled edit
+        }
+      }.bind(val),
+      onException: handle_exception
+      });
+
+}
+
+function prodopt_add_value_hooks(opt, val) {
+  if (user_can_edit_option) {
+    prodopt_add_value_ipe(opt, val);
+  }
+}
+
+function prodopt_add_option_hooks(opt) {
+  var opt_ele_id = 'prodoptmenu' + opt.id;
+  var opt_ele = $(opt_ele_id);
+  var edit_ele_id = "editoption" + opt.id;
+  var edit_ele = $(edit_ele_id);
+  if (user_can_edit_option)
+    prodopt_add_option_ipe(opt);
+    if (user_can_edit_option) {
+      fix_prodoptval_order_tools(opt);
+      Sortable.create("vallist"+opt.id, 
+        {
+          format: /^valentry(\d+)$/,
+          onUpdate: function (parent) {
+            var m = /^vallist(\d+)/.exec(parent.id);
+            if (m) {
+              reorder_prodoptvals_req("sortvalues"+m[1], m[1],
+                Sortable.sequence(parent.id));
+            }
+          },
+          onException: handle_exception
+     });
+    for (var i = 0; i < opt.values.length; ++i) {
+      prodopt_add_value_hooks(opt, opt.values[i]);
+    }
+  }
 }
 
 function prodopts_start() {
@@ -499,36 +577,15 @@ function prodopts_start() {
             onException: handle_exception
       });
   }
-  for (var i = 0; i < prodopts.length; ++i) {
-    var opt = prodopts[i];
+  for (var opt_index = 0; opt_index < prodopts.length; ++opt_index) {
+    var opt = prodopts[opt_index];
     prodopts_by_id[opt.id] = opt;
-    var opt_ele_id = 'prodoptmenu' + opt.id;
-    var opt_ele = $(opt_ele_id);
-    var edit_ele_id = "editoption" + opt.id;
-    var edit_ele = $(edit_ele_id);
-    if (user_can_edit_option)
-      prodopt_add_option_ipe(opt);
-      if (user_can_edit_option) {
-        fix_prodoptval_order_tools(opt);
-        Sortable.create("vallist"+opt.id, 
-          {
-            format: /^valentry(\d+)$/,
-            onUpdate: function (parent) {
-              var m = /^vallist(\d+)/.exec(parent.id);
-              if (m) {
-                reorder_prodoptvals_req("sortvalues"+m[1], m[1],
-                  Sortable.sequence(parent.id));
-              }
-            },
-            onException: handle_exception
-	  });
-      }
-//    opt_ele.appendChild(document.createTextNode(" "));
-//    var sort_a = document.createElement("a");
-//    sort_a.href = "javascript:sort_prodopt_values('" + opt.id + "')";
-//    sort_a.title = "Sort values alphabetically";
-//    sort_a.appendChild(document.createTextNode("Sort"));
-//    opt_ele.appendChild(sort_a);
+    try {
+      prodopt_add_option_hooks(opt);
+    }
+    catch (e) {
+      alert("init:"+e);
+    }
   }
   fix_prodopt_order_tools();
 }
@@ -542,5 +599,5 @@ Event.observe(document, "dom:loaded",
       $('addoptionbutton').style.display='block';
   });
 
-Event.observe(document, "dom:loaded", function() { prodopts_start() });
+Event.observe(document, "dom:loaded", prodopts_start);
 

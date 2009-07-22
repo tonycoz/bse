@@ -511,16 +511,22 @@ Ajax.InPlaceEditor = Class.create({
     else if (Event.KEY_RETURN == e.keyCode)
       this.handleFormSubmission(e);
   },
+  // note: hand applied patch from:
+  // https://prototype.lighthouseapp.com/projects/8887/tickets/198-ajaxinplaceeditor-bug-on-cancel-in-ie7
   createControl: function(mode, handler, extraClasses) {
     var control = this.options[mode + 'Control'];
     var text = this.options[mode + 'Text'];
     if ('button' == control) {
       var btn = document.createElement('input');
-      btn.type = 'submit';
-      btn.value = text;
       btn.className = 'editor_' + mode + '_button';
-      if ('cancel' == mode)
+      if ('cancel' == mode) {
+        btn.type = 'button';
         btn.onclick = this._boundCancelHandler;
+      }
+      else {
+        btn.type = 'submit';
+      }
+      btn.value = text;
       this._form.appendChild(btn);
       this._controls[mode] = btn;
     } else if ('link' == control) {

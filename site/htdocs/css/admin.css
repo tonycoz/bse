@@ -40,7 +40,18 @@ tr.inline_form { background-color: #8080C0 }
   background-color: #EEE;
   padding: 3px;
   border-bottom: 1px solid #000;
+}
+
+/* only indicate it's moveable if it is
+ */
+#productoptions.moveable .prodoptmenu {
   cursor: n-resize;
+}
+
+/* make the span with the option name a little wider to make click to
+   edit a bit easier */
+#productoptions .prodoptmenu span {
+  padding: 0 5px;
 }
 
 #productoptions .prodoptmenuoptions {

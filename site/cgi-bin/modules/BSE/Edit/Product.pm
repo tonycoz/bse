@@ -1061,7 +1061,7 @@ sub req_add_option_value {
     );
 
   $req->is_ajax
-    and return $self->json_content
+    and return $req->json_content
       (
        success => 1,
        value => $entry->data_only
@@ -1226,7 +1226,7 @@ sub req_save_option_value {
   $option_value->save;
 
   $req->is_ajax
-    and return $self->json_content
+    and return $req->json_content
       (
        success => 1,
        value => $option_value->data_only
@@ -1319,7 +1319,7 @@ sub req_delete_option_value {
   $option_value->remove;
 
   $req->is_ajax
-    and return $self->json_content
+    and return $req->json_content
       (
        success => 1
       );
