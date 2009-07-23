@@ -770,7 +770,7 @@ my %option_name =
    name =>
    {
     description => "Option name",
-    rules => "required;dh_one_line"
+    rules => "required;dh_one_line",
     maxlength => 255,
    },
    default_value =>
@@ -783,7 +783,7 @@ my %option_name =
 my %option_value =
   (
    description => "Value",
-   rules => "required;dh_one_line"
+   rules => "required;dh_one_line",
    maxlength => 255,
   );
 
