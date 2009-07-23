@@ -25,22 +25,24 @@
 <:ifUserCan bse_edit_prodopt_move:article:><:dboption_move:><:or:><:eif:>
 </div>
 </div>
-<:if Dboptionvalues:>
-<ul id="vallist<:dboption id:>" class="prodoptvalues">
+<div id="vallist<:dboption id:>" class="prodoptvalues">
 <:iterator begin dboptionvalues:>
-<li id="valentry<:dboptionvalue id:>"><span id="prodoptvalue<:dboptionvalue id:>"><:dboptionvalue value:></span>
+<div id="valentry<:dboptionvalue id:>" class="valueentry<:ifMatch [dboptionvalue_index] "[13579]$":> odd<:or:><:eif:>"><span id="prodoptvalue<:dboptionvalue id:>"><:dboptionvalue value:></span>
 <:ifEq [dboptionvalue id] [dboption default_value]:>(default)<:or:><:eif:>
 <:if UserCan bse_edit_prodopt_edit:article:>
+<div class="valueentrymenu">
 <a href="<:script:>?id=<:product id:>&amp;value_id=<:dboptionvalue id:>&amp;a_edit_option_value=1">Edit</a>
 <a href="<:script:>?id=<:product id:>&amp;value_id=<:dboptionvalue id:>&amp;a_confdel_option_value=1">Delete</a>
 <:dboptionvalue_move:>
+</div>
 <:or UserCan:><:eif UserCan:>
-</li>
+</div>
 <:iterator end dboptionvalues:>
-</ul>
-<:or Dboptionvalues:><:eif Dboptionvalues:>
+</div>
 <:if UserCan bse_edit_prodopt_edit:article:>
-<form action="<:script:>" method="post" id="valform<:dboption id:>" /><input type="hidden" name="id" value="<:article id:>" /><input type="hidden" name="option_id" value="<:dboption id:>" /><input type="hidden" name="_t" value="prodopts" /><:csrfp admin_add_option_value hidden:><input type="text" name="value" /><input type="submit" name="a_add_option_value" value="Add Value" /></form>
+<div class="addvalueform">
+<form action="<:script:>" method="post" id="valform<:dboption id:>" class="addvalue"><input type="hidden" name="id" value="<:article id:>" /><input type="hidden" name="option_id" value="<:dboption id:>" /><input type="hidden" name="_t" value="prodopts" /><:csrfp admin_add_option_value hidden:><input type="text" name="value"  class="add_field" /><input type="submit" name="a_add_option_value" value="Add Value" class="add_submit" /></form>
+</div>
 <:or UserCan:><:eif UserCan:>
 </div>
 <:iterator end dboptions:>
@@ -88,5 +90,7 @@ var edit_script = "<:script:>";
 var user_can_edit_option = <:ifUserCan bse_edit_prodopt_edit:>1<:or:>0<:eif:>;
 var user_can_delete_option = <:ifUserCan bse_edit_prodopt_delete:>1<:or:>0<:eif:>;
 var user_can_move_option = <:ifUserCan bse_edit_prodopt_move:>1<:or:>0<:eif:>;
+
+var show_add_form = <:ifCgi a_add_option:>true<:or:>false<:eif:>;
 
 </script>

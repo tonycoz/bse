@@ -240,6 +240,10 @@ function fix_prodoptval_order_tools(opt) {
   var vals = opt.values;
   for (var i = 0; i < vals.length; ++i) {
     var val = vals[i];
+    var val_ele = $('valentry'+val.id);
+    val_ele.removeClassName("odd");
+    if (i % 2 == 1)
+      val_ele.addClassName("odd");
     var move_ele = $('prodoptvaluemove'+val.id);
     if (move_ele) {
       // remove all the kids
@@ -295,7 +299,7 @@ function sort_prodopt_values(id) {
   for (var i = 0; i < opt.values.length; ++i) {
     ord.push(opt.values[i]);
   }
-  ord.sort(function(a, b) { 
+  ord.sort(function(a, b) {
     var va = a.value.toLowerCase();
     var vb = b.value.toLowerCase();
     if (va < vb) return -1;
@@ -445,6 +449,7 @@ function prodopt_add_option_ipe(opt) {
       cancelControl: "button",
       okText: "Save",
       cancelText: "Cancel",
+      maxlength: 255,
       callback: function(f, v) {
         return "_=1&_t=prodopts&_csrfp="+ edit_option_csrf +"&id="+article_id+"&a_save_option=1&option_id="+this.id+"&name="+encodeURIComponent(v);
       }.bind(opt),
@@ -453,7 +458,7 @@ function prodopt_add_option_ipe(opt) {
         name_ele.innerHTML = "";
         var new_name;
         if (xport
-            && xport.status == 200 
+            && xport.status == 200
             && xport.responseJSON
             && xport.responseJSON.success) {
           new_name = xport.responseJSON.option.name;
@@ -466,7 +471,7 @@ function prodopt_add_option_ipe(opt) {
           name_ele.appendChild(document.createTextNode(new_name));
           if (xport) {
             if (xport.responseJSON && xport.responseJSON.errors.name) {
-              alert("Error saving option name: " 
+              alert("Error saving option name: "
 	            + xport.responseJSON.errors.name);
 	    }
             else
@@ -485,6 +490,7 @@ function prodopt_add_value_ipe(opt, val) {
       cancelControl: "button",
       okText: "Save",
       cancelText: "Cancel",
+      maxlength: 255,
       callback: function(f, v) {
         return "_=1&_t=prodopts&_csrfp="+ edit_value_csrf +"&id="+article_id+"&a_save_option_value=1&value_id="+this.id+"&value="+encodeURIComponent(v);
       }.bind(val),
@@ -493,7 +499,7 @@ function prodopt_add_value_ipe(opt, val) {
         value_ele.innerHTML = "";
         var new_value;
         if (xport
-            && xport.status == 200 
+            && xport.status == 200
             && xport.responseJSON
             && xport.responseJSON.success) {
           new_value = xport.responseJSON.value.value;
@@ -506,7 +512,7 @@ function prodopt_add_value_ipe(opt, val) {
           value_ele.appendChild(document.createTextNode(new_value));
           if (xport) {
             if (xport.responseJSON && xport.responseJSON.errors.value) {
-              alert("Error saving option value: " 
+              alert("Error saving option value: "
 	            + xport.responseJSON.errors.value);
 	    }
             else
@@ -534,9 +540,12 @@ function prodopt_add_option_hooks(opt) {
     prodopt_add_option_ipe(opt);
     if (user_can_edit_option) {
       fix_prodoptval_order_tools(opt);
-      Sortable.create("vallist"+opt.id, 
+      Sortable.create("vallist"+opt.id,
         {
+	  tag: "div",
+	  only: "valueentry",
           format: /^valentry(\d+)$/,
+	  hoverclass: "valentryhover",
           onUpdate: function (parent) {
             var m = /^vallist(\d+)/.exec(parent.id);
             if (m) {
@@ -565,13 +574,13 @@ function prodopts_start() {
   busy_img = $('busy_img');
   if (user_can_move_option) {
     Sortable.create("productoptions",
-      { 
+      {
         tag: "div",
         only: "prodopt",
         format: /^prodopt(\d+)$/,
         handle: "prodoptmenu",
         onUpdate: function () {
-          reorder_prodopts_req("sortoptions", 
+          reorder_prodopts_req("sortoptions",
               Sortable.sequence("productoptions"));
         },
             onException: handle_exception
@@ -593,10 +602,12 @@ function prodopts_start() {
 Event.observe(document, "dom:loaded",
   function() {
     var add_option_form = $('addoptionform');
-    if (add_option_form)
+    var add_option_button = $('addoptionbutton');
+    if (add_option_form && add_option_button && prodopts.length != 0
+        && !show_add_form) {
       add_option_form.style.display='none';
-    if ($('addoptionbutton'))
-      $('addoptionbutton').style.display='block';
+      add_option_button.style.display = 'block';
+    }
   });
 
 Event.observe(document, "dom:loaded", prodopts_start);

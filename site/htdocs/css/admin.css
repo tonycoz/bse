@@ -39,6 +39,7 @@ tr.inline_form { background-color: #8080C0 }
   font-weight: bold;
   background-color: #EEE;
   padding: 3px;
+  overflow: auto;
   border-bottom: 1px solid #000;
 }
 
@@ -58,6 +59,48 @@ tr.inline_form { background-color: #8080C0 }
   font-size: 82%;
   float: right;
   padding-left: 2px;
+}
+
+#productoptions .valueentry {
+  width: 100%;
+  /*padding: 4px 20px 4px 20px;*/
+  padding: 4px 0px;
+  background-color: #ccc;
+  overflow: auto;
+  clear: both;
+}
+
+#productoptions .valentryhover {
+  background-color: #DDF;
+}
+
+#productoptions .valueentry span {
+  padding: 0 3px;
+  margin: 0 20px;
+}
+
+#productoptions .valueentrymenu { 
+  float: right;
+}
+
+#productoptions .valueentry.odd {
+  background-color: #DDD;
+}
+
+#productoptions form.addvalue input.add_field { 
+  margin-left: 20px;
+  margin-right: 2px;
+  width: 50%;
+  background-color: #DDD;
+  border: 1px solid #888;
+}
+
+#productoptions form.addvalue input.add_submit { 
+  border: 1px solid #888;
+}
+
+#productoptions .addvalueform {
+  padding: 2px 0;
 }
 
 .editform {
@@ -111,7 +154,21 @@ div.menu {
   margin-bottom: 1em;
 }
 
-.inplaceeditor-form input {
+.inplaceeditor-form input.editor_field {
+  border: 1px solid #444;
+  width: 50%;
+  margin-left: 20px;
+  margin-right: 2px;
+  background-color: #DDD;
+}
+
+.odd .inplaceeditor-form input.editor_field { 
+  background-color: #EEE;
+  border: 1px solid #444;
+}
+
+.inplaceeditor-form input.editor_ok_button,
+.inplaceeditor-form input.editor_cancel_button {
   border: 1px solid #444;
 }
 

@@ -340,6 +340,7 @@ site/htdocs/js/dragdrop.js
 site/htdocs/js/effects.js
 site/htdocs/js/prototype.js
 site/htdocs/js/scriptaculous.js
+site/htdocs/js/scriptoverride.js
 site/htdocs/js/slider.js
 site/htdocs/js/validate.js
 #  site/htdocs/shop created by the Makefile
