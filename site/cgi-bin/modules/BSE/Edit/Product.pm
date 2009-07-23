@@ -536,31 +536,37 @@ my %option_fields =
     description => "Option name",
     required => 1,
     rules => "dh_one_line",
+    maxlength => 255,
    },
    value1 =>
    {
     description => "Value 1",
     rules => "dh_one_line",
+    maxlength => 255,
    },
    value2 =>
    {
     description => "Value 2",
     rules => "dh_one_line",
+    maxlength => 255,
    },
    value3 =>
    {
     description => "Value 3",
     rules => "dh_one_line",
+    maxlength => 255,
    },
    value4 =>
    {
     description => "Value 4",
     rules => "dh_one_line",
+    maxlength => 255,
    },
    value5 =>
    {
     description => "Value 5",
     rules => "dh_one_line",
+    maxlength => 255,
    },
   );
 
@@ -765,6 +771,7 @@ my %option_name =
    {
     description => "Option name",
     rules => "required;dh_one_line"
+    maxlength => 255,
    },
    default_value =>
    {
@@ -777,6 +784,7 @@ my %option_value =
   (
    description => "Value",
    rules => "required;dh_one_line"
+   maxlength => 255,
   );
 
 =item a_save_option
@@ -988,7 +996,8 @@ my %add_option_value_fields =
    value =>
    {
     description => "Value",
-    rules => "required",
+    rules => "required;dh_one_line",
+    maxlength => 255,
    },
   );
 
@@ -1164,6 +1173,7 @@ my %save_option_value_fields =
    value => 
    {
     rules => "required;dh_one_line",
+    maxlength => 255,
    },
   );
 

@@ -135,14 +135,14 @@ Index item_order;0;[order_item_id;display_order]
 Table bse_product_option_values
 Column id;int(11);NO;NULL;auto_increment
 Column product_option_id;int(11);NO;NULL;
-Column value;varchar(40);NO;NULL;
+Column value;varchar(255);NO;NULL;
 Column display_order;int(11);NO;NULL;
 Index PRIMARY;1;[id]
 Index option_order;0;[product_option_id;display_order]
 Table bse_product_options
 Column id;int(11);NO;NULL;auto_increment
 Column product_id;int(11);NO;NULL;
-Column name;varchar(40);NO;NULL;
+Column name;varchar(255);NO;NULL;
 Column type;varchar(10);NO;NULL;
 Column global_ref;int(11);YES;NULL;
 Column display_order;int(11);NO;NULL;
