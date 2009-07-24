@@ -449,6 +449,7 @@ function prodopt_add_option_ipe(opt) {
       cancelControl: "button",
       okText: "Save",
       cancelText: "Cancel",
+      htmlResponse: false,
       maxlength: 255,
       callback: function(f, v) {
         return "_=1&_t=prodopts&_csrfp="+ edit_option_csrf +"&id="+article_id+"&a_save_option=1&option_id="+this.id+"&name="+encodeURIComponent(v);
@@ -491,6 +492,7 @@ function prodopt_add_value_ipe(opt, val) {
       okText: "Save",
       cancelText: "Cancel",
       maxlength: 255,
+      htmlResponse: false,
       callback: function(f, v) {
         return "_=1&_t=prodopts&_csrfp="+ edit_value_csrf +"&id="+article_id+"&a_save_option_value=1&value_id="+this.id+"&value="+encodeURIComponent(v);
       }.bind(val),

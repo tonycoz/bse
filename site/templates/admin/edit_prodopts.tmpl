@@ -49,29 +49,19 @@
 </div>
 <:or Dboptions:><:eif Dboptions:>
 <:if UserCan bse_edit_prodopt_add:article:>
-<div id="addoptionform">
+<div id="addoptionform" class="prodopt">
 <form action="<:script:>" method="post">
 <:csrfp admin_add_option hidden:>
 <input type="hidden" name="_t" value="prodopts" />
 <input type="hidden" name="id" value="<:article id:>" />
-<table class="editform editformsmall">
-  <tr>
-    <th>Name</th>
-    <td><input type="text" name="name" value="<:old name:>" size="40" maxlength="40" /><:error_img name:></td>
-  </tr>
-  <tr>
-    <th>Values</th>
-    <td><input type="text" name="value1" value="<:old value1:>" size="40" maxlength="40" /><:error_img value1:><br />
-<input type="text" name="value2" value="<:old value2:>" size="40" maxlength="40" /><:error_img value2:><br />
-<input type="text" name="value3" value="<:old value3:>" size="40" maxlength="40" /><:error_img value3:><br />
-<input type="text" name="value4" value="<:old value4:>" size="40" maxlength="40" /><:error_img value4:><br />
-<input type="text" name="value5" value="<:old value5:>" size="40" maxlength="40" /><:error_img value5:><br /></td>
-  </tr>
-  <tr>
-    <td colspan="2"><input type="submit" name="a_add_option" value="Add New Option" /></td>
-  </tr>
-</table>
-</form>
+<div class="prodoptmenu">Option: <input type="text" name="name" value="<:old name:>" maxlength="255" class="editor_field" /><:error_img name:><input type="submit" name="a_add_option" value="Add New Option" class="editor_ok_button" /></div>
+<div class="prodoptvalues">
+<div class="valueentry"><input type="text" name="value1" value="<:old value1:>" maxlength="255" class="editor_field" /><:error_img value1:></div>
+<div class="valueentry odd"><input type="text" name="value2" value="<:old value2:>" maxlength="255" class="editor_field" /><:error_img value2:></div>
+<div class="valueentry"><input type="text" name="value3" value="<:old value3:>" maxlength="255" class="editor_field" /><:error_img value3:></div>
+<div class="valueentry odd"><input type="text" name="value4" value="<:old value4:>" maxlength="255" class="editor_field" /><:error_img value4:></div>
+<div class="valueentry"><input type="text" name="value5" value="<:old value5:>" maxlength="255" class="editor_field" /><:error_img value5:></div>
+</div>
 </div>
 <div id="addoptionbutton" style="display: none">
 <a href="#" onclick="javascript: document.getElementById('addoptionform').style.display='block'; return false;">Add an option</a>
