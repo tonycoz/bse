@@ -70,10 +70,6 @@ tr.inline_form { background-color: #8080C0 }
   clear: both;
 }
 
-#productoptions .valentryhover {
-  background-color: #DDF;
-}
-
 #productoptions .valueentry span {
   padding: 0 3px;
   margin: 0 20px;

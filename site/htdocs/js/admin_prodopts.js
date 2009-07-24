@@ -545,7 +545,6 @@ function prodopt_add_option_hooks(opt) {
 	  tag: "div",
 	  only: "valueentry",
           format: /^valentry(\d+)$/,
-	  hoverclass: "valentryhover",
           onUpdate: function (parent) {
             var m = /^vallist(\d+)/.exec(parent.id);
             if (m) {
