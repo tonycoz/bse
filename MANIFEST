@@ -343,7 +343,6 @@ site/htdocs/js/scriptaculous.js
 site/htdocs/js/scriptoverride.js
 site/htdocs/js/slider.js
 site/htdocs/js/sound.js
-site/htdocs/js/validate.js
 #  site/htdocs/shop created by the Makefile
 site/templates/1/shop_multicat.tmpl
 site/templates/1/sitemap.tmpl
