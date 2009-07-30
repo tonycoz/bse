@@ -25,7 +25,7 @@ sub description {
 }
 
 sub set_order {
-    my ($self, $order) = @_;
+    my ($self, $order, $items) = @_;
 
     $self->{order} = $order;
     $self->{length} = 0;
@@ -33,7 +33,7 @@ sub set_order {
     $self->{width} = 0;
 
     my $totalWeight = 0;
-    foreach my $item ($order->items()) {
+    foreach my $item (@$items) {
         my $product = Products->getByPkey($item->{productId});
 
         my $weight = $product->{weight};
@@ -87,7 +87,7 @@ sub error_message {
 }
 
 sub get_couriers {
-    my ($cfg, $order) = @_;
+    my ($cfg) = @_;
 
     my @couriers;
     foreach my $name (split /\s+/, $cfg->entry("shipping", "couriers")) {
@@ -100,15 +100,11 @@ sub get_couriers {
             require $file;
             $courier = $name->new(config => $cfg);
         };
-        unless ($@) {
-            $courier->set_order($order);
-            if ($courier->can_deliver()) {
-                push @couriers, $courier;
-            }
-        }
-        else {
+        if ($@) {
             warn "Unable to load $courier: $@\n";
+            next;
         }
+        push @couriers, $courier;
     }
     return @couriers;
 }
