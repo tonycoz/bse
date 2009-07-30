@@ -54,6 +54,12 @@ sub calculate_shipping {
                 $self->{error} = $1;
             }
         }
+        if ($self->{error} ne "OK") {
+            warn "AustraliaPost error: ",
+                $self->{error}, " (",
+                join(", ", map { "$_ => '$data{$_}'" } keys %data),
+                ")\n";
+        }
     }
     else {
         warn $u->as_string(). ": ". $r->status_line, "\n";
