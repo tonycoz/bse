@@ -451,7 +451,6 @@ sub req_checkout {
         $c->calculate_shipping();
         $shipping = $c->shipping_cost();
         # next if $shipping == 0 && $self->{error_message} ne 'OK';
-        # $req->session->{courier} = $c;
       }
     }
 
@@ -652,6 +651,7 @@ sub req_show_payment {
      ifPayments => [ \&tag_ifPayments, \@payment_types, \%types_by_name ],
      error_img => [ \&tag_error_img, $cfg, $errors ],
      total => $order_values->{total},
+     shipping => $order_values->{shipping_cost}
     );
   for my $type (@pay_types) {
     my $id = $type->{id};
@@ -1402,11 +1402,36 @@ sub _fillout_order {
   $values->{total} = $total;
   $values->{gst} = $total_gst;
   $values->{wholesale} = $total_wholesale;
-  $values->{shipping_cost} = 0;
+
+  my ($courier) = Courier::get_couriers($cfg, $cgi->param("courier"));
+  if ($courier) {
+      $courier->set_order($values, $items);
+      unless ($courier->can_deliver()) {
+          $cgi->param("courier", undef);
+          $$rmsg =
+            "Can't use the selected courier ".
+            "(". $courier->description(). ") for this order.";
+          return;
+      }
+      $courier->calculate_shipping();
+      my $cost = $courier->shipping_cost();
+      unless ($cost) {
+          my $err = $courier->error_message();
+          $$rmsg = "Error calculating shipping cost";
+          $$rmsg .= ": $err" if $err;
+          return;
+      }
+      $values->{shipping_cost} = $cost;
+      $values->{total} += $values->{shipping_cost};
+  }
+  else {
+      # XXX: What to do?
+      $$rmsg = "Error: no usable courier found.";
+      return;
+  }
 
   my $cust_class = custom_class($cfg);
 
-  # if it sets shipping cost it must also update the total
   eval {
     local $SIG{__DIE__};
     my %custom = %{$session->{custom}};

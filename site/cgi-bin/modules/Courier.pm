@@ -98,7 +98,7 @@ sub error_message {
 }
 
 sub get_couriers {
-    my ($cfg) = @_;
+    my ($cfg, $wanted) = @_;
 
     my @couriers;
     foreach my $name (split /\s+/, $cfg->entry("shipping", "couriers")) {
@@ -115,6 +115,7 @@ sub get_couriers {
             warn "Unable to load $courier: $@\n";
             next;
         }
+        next if defined $wanted and $wanted ne $courier->name();
         push @couriers, $courier;
     }
     return @couriers;
