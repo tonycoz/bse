@@ -15,7 +15,7 @@ sub name {
 }
 
 sub description {
-    "Australia Post: Standard";
+    "Australia Post Standard Service";
 }
 
 1;
