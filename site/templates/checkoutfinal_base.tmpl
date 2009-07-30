@@ -66,6 +66,12 @@
             money item price :></b></font></td>
         </tr>
         <:iterator end items:> 
+        <:ifShipping:>
+        <tr valign="middle" align="center" bgcolor="#FFFFFF"> 
+          <td colspan=2 width="100%" align="left">&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Shipping charges</font></td>
+          <td align="right"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>$<:money order shipping:></b></font></td>
+        </tr>
+        <:or:><:eif:>
       </table>
     </td>
   </tr>
