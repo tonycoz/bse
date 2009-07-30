@@ -192,6 +192,15 @@ site/cgi-bin/modules/BSE/Validate.pm
 site/cgi-bin/modules/BSE/Version.pm
 site/cgi-bin/modules/BSE/WebUtil.pm
 site/cgi-bin/modules/Constants.pm
+site/cgi-bin/modules/Courier.pm
+site/cgi-bin/modules/Courier/AustraliaPost.pm
+site/cgi-bin/modules/Courier/Fastway.pm
+site/cgi-bin/modules/Courier/AustraliaPost/Standard.pm
+site/cgi-bin/modules/Courier/AustraliaPost/Express.pm
+site/cgi-bin/modules/Courier/AustraliaPost/Air.pm
+site/cgi-bin/modules/Courier/AustraliaPost/Sea.pm
+site/cgi-bin/modules/Courier/Fastway/Road.pm
+site/cgi-bin/modules/Courier/Fastway/Satchel.pm
 site/cgi-bin/modules/DevHelp/Date.pm
 site/cgi-bin/modules/DevHelp/DynSort.pm
 site/cgi-bin/modules/DevHelp/FileUpload.pm
