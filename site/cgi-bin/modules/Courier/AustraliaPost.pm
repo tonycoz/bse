@@ -10,7 +10,7 @@ while (<DATA>) {
     chomp;
     next if /^#/ || /^\s*$/;
     my ($code, $country) = split /\s+/, $_, 2;
-    $countries{$country} = $code;
+    $countries{lc $country} = $code;
 }
 
 my $url = "http://drc.edeliver.com.au/ratecalc.asp";
