@@ -14,6 +14,7 @@ use Products;
 use BSE::TB::Seminars;
 use DevHelp::Validate qw(dh_validate dh_validate_hash);
 use Digest::MD5 'md5_hex';
+use Courier;
 
 use constant PAYMENT_CC => 0;
 use constant PAYMENT_CHEQUE => 1;
@@ -426,6 +427,37 @@ sub req_checkout {
 
   my $order_info = $req->session->{order_info};
 
+  # Get a list of couriers
+  my %fake_order;
+  my %fields = BSE::TB::Order->valid_fields($cfg);
+  for my $name (keys %fields) {
+    ($fake_order{$name}) = $cgi->param($name);
+  }
+
+  my $couriers;
+  my $shipping;
+  foreach my $c (Courier::get_couriers($cfg)) {
+    my $sel_c = $cgi->param("courier");
+    my $sel =
+      $c->name() eq $sel_c ? "selected " : "";
+
+    if (exists $fake_order{delivCountry}) {
+      $c->set_order(\%fake_order, \@items);
+      next unless $c->can_deliver();
+
+      if ($sel and $fake_order{delivPostCode} and $fake_order{delivSuburb}) {
+        $c->calculate_shipping();
+        $shipping = $c->shipping_cost();
+        # next if $shipping == 0 && $self->{error_message} ne 'OK';
+        # $req->session->{courier} = $c;
+      }
+    }
+
+    $couriers .=
+      "<option ${sel}value=".'"'. $c->name() .'">'.
+      $c->description() ."</option>";
+  }
+
   my $item_index = -1;
   my @options;
   my $option_index;
@@ -465,8 +497,12 @@ sub req_checkout {
      user => $user ? [ \&tag_hash, $user ] : '',
      affiliate_code => escape_html($affiliate_code),
      error_img => [ \&tag_error_img, $cfg, $errors ],
+     courier_list => $couriers,
+     shipping => $shipping
     );
   $req->session->{custom} = \%custom_state;
+  my $tmp = $acts{total};
+  $acts{total} = sub { return $shipping+&$tmp() };
 
   return $req->response('checkoutnew', \%acts);
 }
