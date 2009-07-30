@@ -1644,6 +1644,19 @@ The previously entered value for I<field>.  This should be used as the
 value for the various checkout fields, so that if a validation error
 occurs the user won't need to re-enter values.
 
+=item delivery_in
+
+An estimate in days for delivery. May look like "1" or "1 or 2" if it is
+available at all.
+
+=item shipping_cost
+
+The cost of shipping by the selected shipping_method, if available.
+
+=item shipping_method
+
+The selected shipping_method, if any.
+
 =back
 
 =head2 Completed order

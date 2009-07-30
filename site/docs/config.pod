@@ -807,6 +807,31 @@ quantities.  Default: Unlimited.
 
 =back
 
+=head2 [shipping]
+
+=over
+
+=item couriers
+
+A space-separated list of modules under Courier::, e.g. "Fastway::Road
+AustraliaPost::Air". These will be made available as shipping methods
+on the checkout page.
+
+=item sourcepostcode
+
+The post code from which products are shipped.
+
+=item fastwayfranchisee
+
+The name of the Fastway franchisee used to ship products from the
+sourcepostcode.
+
+=item fastwayfranchiseecode
+
+The Fastway franchisee code for the customer, if any.
+
+=back
+
 =head2 [Shop Order Validation]
 
 This section can contain extra order validation information, including
