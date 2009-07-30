@@ -185,6 +185,12 @@ create table product (
   subscription_required integer not null default -1,
 
   product_code varchar(80) not null,
+
+  -- properties relevant to calculating shipping cost
+  weight integer not null,
+  length integer not null default 0,
+  width integer not null default 0,
+  height integer not null default 0,
   
   primary key(articleId)
 );
