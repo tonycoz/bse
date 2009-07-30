@@ -427,19 +427,50 @@ sub req_checkout {
 
   my $order_info = $req->session->{order_info};
 
+  my $old = sub {
+    my $value;
+
+    if ($olddata) {
+      $value = $cgi->param($_[0]);
+      unless (defined $value) {
+      $value = $user->{$_[0]}
+        if $user;
+      }
+    }
+    elsif ($order_info && defined $order_info->{$_[0]}) {
+      $value = $order_info->{$_[0]};
+    }
+    else {
+      my $field = $_[0];
+      $rev_field_map{$field} and $field = $rev_field_map{$field};
+      $value = $user && defined $user->{$field} ? $user->{$field} : '';
+    }
+
+    defined $value or $value = '';
+    return $value;
+  };
+
   # Get a list of couriers
-  my $sel_c = $cgi->param("courier");
+  my $selected = 0;
+  my $sel_cn = $cgi->param("courier");
+  my $sel_cd = $old->("shipping_method");
   my %fake_order;
   my %fields = BSE::TB::Order->valid_fields($cfg);
   for my $name (keys %fields) {
-    ($fake_order{$name}) = $cgi->param($name);
+    $fake_order{$name} = $old->($name);
   }
 
   my ($couriers, $shipping_cost, $shipping_method);
   foreach my $c (Courier::get_couriers($cfg)) {
     my $sel = "";
-    if ($sel_c and $sel_c eq $c->name()) {
+    if (($sel_cn and $sel_cn eq $c->name()) or
+        ($sel_cd and $sel_cd eq $c->description()) or
+        (not ($selected or $sel_cn or $sel_cd) and
+        $fake_order{delivPostCode} and $fake_order{delivSuburb} and
+        $fake_order{delivCountry}))
+    {
         $sel = "selected ";
+        $selected = 1;
     }
 
     if ($fake_order{delivCountry}) {
@@ -468,29 +499,7 @@ sub req_checkout {
      basic_tags(\%acts),
      message => $message,
      msg => $message,
-     old => 
-     sub { 
-       my $value;
-
-       if ($olddata) {
-	 $value = $cgi->param($_[0]);
-	 unless (defined $value) {
-	   $value = $user->{$_[0]}
-	     if $user;
-	 }
-       }
-       elsif ($order_info && defined $order_info->{$_[0]}) {
-	 $value = $order_info->{$_[0]};
-       }
-       else {
-	 my $field = $_[0];
-	 $rev_field_map{$field} and $field = $rev_field_map{$field};
-	 $value = $user && defined $user->{$field} ? $user->{$field} : '';
-       }
-       
-       defined $value or $value = '';
-       escape_html($value);
-     },
+     old => sub { escape_html($old->($_[0])); },
      $cust_class->checkout_actions(\%acts, \@cart, \@cart_prods, 
 				   \%custom_state, $req->cgi, $cfg),
      ifUser => [ \&tag_ifUser, $user ],
