@@ -460,7 +460,7 @@ sub req_checkout {
     $fake_order{$name} = $old->($name);
   }
 
-  my ($couriers, $shipping_cost, $shipping_method);
+  my ($couriers, $delivery_in, $shipping_cost, $shipping_method);
   foreach my $c (Courier::get_couriers($cfg)) {
     my $sel = "";
     if (($sel_cn and $sel_cn eq $c->name()) or
@@ -479,6 +479,7 @@ sub req_checkout {
 
       if ($sel and $fake_order{delivPostCode} and $fake_order{delivSuburb}) {
         $c->calculate_shipping();
+        $delivery_in = $c->delivery_in();
         $shipping_cost = $c->shipping_cost();
         $shipping_method = $c->description();
       }
@@ -507,6 +508,7 @@ sub req_checkout {
      affiliate_code => escape_html($affiliate_code),
      error_img => [ \&tag_error_img, $cfg, $errors ],
      courier_list => $couriers,
+     delivery_in => $delivery_in,
      shipping_cost => $shipping_cost,
      shipping_method => $shipping_method,
     );
@@ -660,6 +662,7 @@ sub req_show_payment {
      ifPayments => [ \&tag_ifPayments, \@payment_types, \%types_by_name ],
      error_img => [ \&tag_error_img, $cfg, $errors ],
      total => $order_values->{total},
+     delivery_in => $order_values->{delivery_in},
      shipping_cost => $order_values->{shipping_cost},
      shipping_method => $order_values->{shipping_method},
     );
@@ -679,6 +682,7 @@ my %nostore =
   (
    cardNumber => 1,
    cardExpiry => 1,
+   delivery_in => 1,
   );
 
 sub req_payment {
@@ -1015,6 +1019,7 @@ sub req_orderdone {
      session => [ \&tag_session, \$item, \$sem_session ],
      location => [ \&tag_location, \$item, \$location ],
      msg => '',
+     delivery_in => $order->{delivery_in},
      shipping_cost => $order->{shipping_cost},
      shipping_method => $order->{shipping_method},
     );
@@ -1435,6 +1440,7 @@ sub _fillout_order {
       }
       $values->{shipping_method} = $courier->description();
       $values->{shipping_cost} = $cost;
+      $values->{delivery_in} = $courier->delivery_in();
       $values->{total} += $values->{shipping_cost};
   }
   else {
