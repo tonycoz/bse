@@ -361,6 +361,10 @@ Column subscription_period;int(11);NO;0;
 Column subscription_usage;int(11);NO;3;
 Column subscription_required;int(11);NO;-1;
 Column product_code;varchar(80);NO;NULL;
+Column weight;int(11);NO;NULL;
+Column length;int(11);NO;0;
+Column width;int(11);NO;0;
+Column height;int(11);NO;0;
 Index PRIMARY;1;[articleId]
 Table searchindex
 Column id;varbinary(200);NO;;
