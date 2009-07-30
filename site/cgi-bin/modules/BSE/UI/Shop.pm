@@ -1005,6 +1005,7 @@ sub req_orderdone {
      session => [ \&tag_session, \$item, \$sem_session ],
      location => [ \&tag_location, \$item, \$location ],
      msg => '',
+     shipping => $order->{shipping_cost}
     );
   for my $type (@pay_types) {
     my $id = $type->{id};
