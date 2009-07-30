@@ -441,7 +441,7 @@ sub req_checkout {
     my $sel =
       $c->name() eq $sel_c ? "selected " : "";
 
-    if (exists $fake_order{delivCountry}) {
+    if ($fake_order{delivCountry}) {
       $c->set_order(\%fake_order, \@items);
       next unless $c->can_deliver();
 
