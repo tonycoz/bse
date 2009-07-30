@@ -14,7 +14,7 @@ sub columns {
   return ($_[0]->SUPER::columns(), 
 	  qw/articleId description leadTime retailPrice wholesalePrice gst options
              subscription_id subscription_period subscription_usage
-             subscription_required product_code/ );
+             subscription_required product_code weight length height width/ );
 }
 
 sub bases {

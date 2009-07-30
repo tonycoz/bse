@@ -443,7 +443,8 @@ sub _fill_product_data {
     }
   }
   for my $field (qw(options subscription_id subscription_period
-                    subscription_usage subscription_required)) {
+                    subscription_usage subscription_required
+                    weight length width height)) {
     if (exists $src->{$field}) {
       $data->{$field} = $src->{$field};
     }

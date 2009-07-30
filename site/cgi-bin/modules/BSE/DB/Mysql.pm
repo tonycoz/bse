@@ -88,10 +88,10 @@ SQL
    searchIndexWC => 'select * from searchindex where id like ?',
    
    Products=> 'select article.*, product.* from article, product where id = articleId',
-   addProduct => 'insert product values(?,?,?,?,?,?,?,?,?,?,?,?)',
+   addProduct => 'insert product values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
    getProductByPkey => 'select article.*, product.* from article, product where id=? and articleId = id',
    getProductByProduct_code => 'select article.*, product.* from article, product where product_code=? and articleId = id',
-   replaceProduct => 'replace product values(?,?,?,?,?,?,?,?,?,?,?,?)',
+   replaceProduct => 'replace product values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
    'Products.stepProducts' => <<EOS,
 select ar.*, pr.* from article ar, product pr, other_parents op
    where ar.id = pr.articleId and op.childId = ar.id and op.parentId = ?
