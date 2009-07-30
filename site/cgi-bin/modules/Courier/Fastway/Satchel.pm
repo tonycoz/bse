@@ -11,6 +11,10 @@ sub new {
 }
 
 sub name {
+    "fastway-satchel"
+}
+
+sub description {
     "Fastway Satchel Service"
 }
 

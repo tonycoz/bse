@@ -11,6 +11,10 @@ sub new {
 }
 
 sub name {
+    "ap-standard"
+}
+
+sub description {
     "Australia Post: Standard";
 }
 

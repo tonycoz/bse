@@ -11,6 +11,10 @@ sub new {
 }
 
 sub name {
+    "fastway-road"
+}
+
+sub description {
     "Fastway Road Service"
 }
 

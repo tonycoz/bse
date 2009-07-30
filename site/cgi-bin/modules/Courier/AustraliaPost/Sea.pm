@@ -11,6 +11,10 @@ sub new {
 }
 
 sub name {
+    "ap-sea"
+}
+
+sub description {
     "Australia Post: Sea"
 }
 

@@ -11,6 +11,10 @@ sub new {
 }
 
 sub name {
+    "ap-air"
+}
+
+sub description {
     "Australia Post: Air"
 }
 

@@ -20,6 +20,10 @@ sub name {
     # Implemented by subclasses
 }
 
+sub description {
+    # Implemented by subclasses
+}
+
 sub set_order {
     my ($self, $order) = @_;
 
