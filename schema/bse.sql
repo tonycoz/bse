@@ -312,6 +312,8 @@ create table orders (
 
   purchase_order varchar(80) not null default '',
 
+  shipping_method varchar(64) not null default '',
+
   primary key (id),
   index order_cchash(ccNumberHash),
   index order_userId(userId, orderDate)

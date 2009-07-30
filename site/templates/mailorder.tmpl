@@ -35,6 +35,7 @@ Card Type    : <:order ccType :><:eif Order:><:or:><:eif
 :><:eif:><:ifEq [order paymentType] "2"
 :>Please call the customer to arrange for payment<:or:><:eif:><:
 include custom/payment_type_email.include:>
+To be shipped by: <:order shipping_method:>
 <:if Order instructions:>
 <:with begin wrap:>Special Instruction: <:order instructions:><:with end wrap:>
 <:or Order:><:eif Order:>

@@ -93,10 +93,10 @@ function BSE_validateForm {
             money item retailPrice :></b></font></td>
         </tr>
         <:iterator end items:> 
-        <:ifShipping:>
+        <:ifShipping_cost:>
         <tr valign="middle" align="center" bgcolor="#FFFFFF"> 
-          <td colspan=2 width="100%" align="left">&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Shipping charges</font></td>
-          <td align="right"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>$<:money shipping:></b></font></td>
+          <td colspan=2 width="100%" align="left">&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Shipping charges (for <:shipping_method:>)</font></td>
+          <td align="right"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>$<:money shipping_cost:></b></font></td>
         </tr>
         <:or:><:eif:>
       </table>
@@ -239,7 +239,7 @@ function BSE_validateForm {
         <textarea name="instructions" rows="5" cols="40" wrap="virtual"><:old instructions:></textarea></font><:error_img instructions:></td>
     </tr>
     <tr>
-      <td valign="top"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Courier</font></td>
+      <td valign="top"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Shipping<br /> method:</font></td>
       <td><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><select name="courier"><:courier_list:></select></font></td>
     </tr>
     <tr> 

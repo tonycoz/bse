@@ -435,8 +435,7 @@ sub req_checkout {
     ($fake_order{$name}) = $cgi->param($name);
   }
 
-  my $couriers;
-  my $shipping;
+  my ($couriers, $shipping_cost, $shipping_method);
   foreach my $c (Courier::get_couriers($cfg)) {
     my $sel = "";
     if ($sel_c and $sel_c eq $c->name()) {
@@ -449,8 +448,8 @@ sub req_checkout {
 
       if ($sel and $fake_order{delivPostCode} and $fake_order{delivSuburb}) {
         $c->calculate_shipping();
-        $shipping = $c->shipping_cost();
-        # next if $shipping == 0 && $self->{error_message} ne 'OK';
+        $shipping_cost = $c->shipping_cost();
+        $shipping_method = $c->description();
       }
     }
 
@@ -499,14 +498,15 @@ sub req_checkout {
      affiliate_code => escape_html($affiliate_code),
      error_img => [ \&tag_error_img, $cfg, $errors ],
      courier_list => $couriers,
-     shipping => $shipping
+     shipping_cost => $shipping_cost,
+     shipping_method => $shipping_method,
     );
   $req->session->{custom} = \%custom_state;
   my $tmp = $acts{total};
   $acts{total} =
     sub {
         my $total = &$tmp();
-        $total += $shipping if $total and $shipping;
+        $total += $shipping_cost if $total and $shipping_cost;
         return $total;
     };
 
@@ -651,7 +651,8 @@ sub req_show_payment {
      ifPayments => [ \&tag_ifPayments, \@payment_types, \%types_by_name ],
      error_img => [ \&tag_error_img, $cfg, $errors ],
      total => $order_values->{total},
-     shipping => $order_values->{shipping_cost}
+     shipping_cost => $order_values->{shipping_cost},
+     shipping_method => $order_values->{shipping_method},
     );
   for my $type (@pay_types) {
     my $id = $type->{id};
@@ -1005,7 +1006,8 @@ sub req_orderdone {
      session => [ \&tag_session, \$item, \$sem_session ],
      location => [ \&tag_location, \$item, \$location ],
      msg => '',
-     shipping => $order->{shipping_cost}
+     shipping_cost => $order->{shipping_cost},
+     shipping_method => $order->{shipping_method},
     );
   for my $type (@pay_types) {
     my $id = $type->{id};
@@ -1422,6 +1424,7 @@ sub _fillout_order {
           $$rmsg .= ": $err" if $err;
           return;
       }
+      $values->{shipping_method} = $courier->description();
       $values->{shipping_cost} = $cost;
       $values->{total} += $values->{shipping_cost};
   }
