@@ -428,6 +428,7 @@ sub req_checkout {
   my $order_info = $req->session->{order_info};
 
   # Get a list of couriers
+  my $sel_c = $cgi->param("courier");
   my %fake_order;
   my %fields = BSE::TB::Order->valid_fields($cfg);
   for my $name (keys %fields) {
@@ -437,9 +438,10 @@ sub req_checkout {
   my $couriers;
   my $shipping;
   foreach my $c (Courier::get_couriers($cfg)) {
-    my $sel_c = $cgi->param("courier");
-    my $sel =
-      $c->name() eq $sel_c ? "selected " : "";
+    my $sel = "";
+    if ($sel_c and $sel_c eq $c->name()) {
+        $sel = "selected ";
+    }
 
     if ($fake_order{delivCountry}) {
       $c->set_order(\%fake_order, \@items);
@@ -502,7 +504,12 @@ sub req_checkout {
     );
   $req->session->{custom} = \%custom_state;
   my $tmp = $acts{total};
-  $acts{total} = sub { return $shipping+&$tmp() };
+  $acts{total} =
+    sub {
+        my $total = &$tmp();
+        $total += $shipping if $total and $shipping;
+        return $total;
+    };
 
   return $req->response('checkoutnew', \%acts);
 }
