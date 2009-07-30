@@ -2,30 +2,21 @@ package Courier::Fastway;
 
 use strict;
 use Courier;
-use LWP::UserAgent;
 use XML::Parser;
-use Data::Dumper;
 
 our @ISA = qw(Courier);
 
-my $ua;
 my $url = "http://www.fastwayfms.com/scripts/mgrqispi.dll";
 my @fields =
     qw(APPNAME PRGNAME vXML Country CustFranCode pFranchisee
        vTown vPostcode vWeight vLength vHeight vWidth);
-
-sub new {
-    my ($class, %args) = @_;
-
-    $ua = LWP::UserAgent->new;
-    return $class->SUPER::new(%args);
-}
 
 sub can_deliver {
     my ($self) = @_;
 
     return 0 unless defined $self->{order};
     return 0 if $self->{order}->{delivCountry} ne "Australia";
+    return 1;
 }
 
 sub calculate_shipping {
@@ -55,7 +46,7 @@ sub calculate_shipping {
 
     my $u = URI->new($url);
     $u->query_form(\%data);
-    my $r = $ua->get($u);
+    my $r = $self->{ua}->get($u);
 
     if ($r->is_success) {
         my $p = XML::Parser->new(

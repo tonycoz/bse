@@ -2,7 +2,6 @@ package Courier::AustraliaPost;
 
 use strict;
 use Courier;
-use LWP::UserAgent;
 
 our @ISA = qw(Courier);
 
@@ -14,18 +13,10 @@ while (<DATA>) {
     $countries{$country} = $code;
 }
 
-my $ua;
 my $url = "http://drc.edeliver.com.au/ratecalc.asp";
 my @fields =
     qw(Pickup_Postcode Destination_Postcode Country
        Weight Service_Type Length Width Height Quantity);
-
-sub new {
-    my ($class, %args) = @_;
-
-    $ua = LWP::UserAgent->new;
-    return $class->SUPER::new(%args);
-}
 
 sub can_deliver {
     return 1;
@@ -48,7 +39,7 @@ sub calculate_shipping {
     $data{Width} = $self->{width};
 
     my $u = URI->new($url);
-    my $r = $ua->post($u, \%data);
+    my $r = $self->{ua}->post($u, \%data);
 
     if ($r->is_success) {
         my @lines = split /\r?\n/, $r->content;

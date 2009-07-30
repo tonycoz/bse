@@ -2,6 +2,7 @@ package Courier;
 
 use strict;
 use Products;
+use LWP::UserAgent;
 
 sub new {
     my $class = shift;
@@ -11,6 +12,7 @@ sub new {
     @$self{qw(cost days error)} = undef;
     $self->{config} = $args{config};
     $self->{type} = $args{type};
+    $self->{ua} = LWP::UserAgent->new;
     return bless $self, $class;
 }
 
