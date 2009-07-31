@@ -45,7 +45,7 @@ sub calculate_shipping {
     }
 
     if ($data{vWeight} > 25) {
-        $self->{error} = "Parcel too heavy for this service."
+        $self->{error} = "Parcel too heavy for this service.";
         return;
     }
 
