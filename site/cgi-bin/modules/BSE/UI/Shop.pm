@@ -1,7 +1,7 @@
 package BSE::UI::Shop;
 use strict;
 use base 'BSE::UI::Dispatch';
-use DevHelp::HTML;
+use DevHelp::HTML qw(:default popup_menu);
 use BSE::Util::SQL qw(now_sqldate now_sqldatetime);
 use BSE::Shop::Util qw(need_logon shop_cart_tags payment_types nice_options 
                        cart_item_opts basic_tags order_item_opts);
@@ -452,43 +452,42 @@ sub req_checkout {
 
   # Get a list of couriers
   my $selected = 0;
-  my $sel_cn = $cgi->param("courier");
-  my $sel_cd = $old->("shipping_method");
+  my $sel_cn = $old->("shipping_name") || "";
   my %fake_order;
   my %fields = BSE::TB::Order->valid_fields($cfg);
   for my $name (keys %fields) {
     $fake_order{$name} = $old->($name);
   }
+  $fake_order{delivCountry} ||= $cfg->entry("basic", "country", "Australia");
 
-  my ($couriers, $delivery_in, $shipping_cost, $shipping_method);
-  foreach my $c (Courier::get_couriers($cfg)) {
-    my $sel = "";
-    if (($sel_cn and $sel_cn eq $c->name()) or
-        ($sel_cd and $sel_cd eq $c->description()) or
-        (not ($selected or $sel_cn or $sel_cd) and
-        $fake_order{delivPostCode} and $fake_order{delivSuburb} and
-        $fake_order{delivCountry}))
-    {
-        $sel = "selected ";
-        $selected = 1;
-    }
+  my ($delivery_in, $shipping_cost, $shipping_method);
+  my @couriers = Courier::get_couriers($cfg);
 
-    if ($fake_order{delivCountry}) {
-      $c->set_order(\%fake_order, \@items);
-      next unless $c->can_deliver();
-
-      if ($sel and $fake_order{delivPostCode} and $fake_order{delivSuburb}) {
-        $c->calculate_shipping();
-        $delivery_in = $c->delivery_in();
-        $shipping_cost = $c->shipping_cost();
-        $shipping_method = $c->description();
-      }
-    }
-
-    $couriers .=
-      "<option ${sel}value=".'"'. $c->name() .'">'.
-      $c->description() ."</option>";
+  for my $c (@couriers) {
+    $c->set_order(\%fake_order, \@items);
   }
+
+  @couriers = grep $_->can_deliver, @couriers;
+
+  my ($sel_cour) = grep $_->name eq $sel_cn, @couriers;
+  if ($sel_cour and $fake_order{delivPostCode} and $fake_order{delivSuburb}) {
+    $sel_cour->set_order(\%fake_order, \@items);
+    if ($sel_cour->can_deliver) {
+      $sel_cour->calculate_shipping();
+      $delivery_in = $sel_cour->delivery_in();
+      $shipping_cost = $sel_cour->shipping_cost();
+      $shipping_method = $sel_cour->description();
+    }
+  }
+
+  
+  my $shipping_select = popup_menu
+    (
+     -name => "shipping_name",
+     -values => [ map $_->name, @couriers ],
+     -labels => { map { $_->name => $_->description } @couriers },
+     -default => $sel_cn,
+    );
 
   my $item_index = -1;
   my @options;
@@ -507,7 +506,7 @@ sub req_checkout {
      user => $user ? [ \&tag_hash, $user ] : '',
      affiliate_code => escape_html($affiliate_code),
      error_img => [ \&tag_error_img, $cfg, $errors ],
-     courier_list => $couriers,
+     shipping_select => $shipping_select,
      delivery_in => $delivery_in,
      shipping_cost => $shipping_cost,
      shipping_method => $shipping_method,
@@ -1420,7 +1419,7 @@ sub _fillout_order {
   $values->{gst} = $total_gst;
   $values->{wholesale} = $total_wholesale;
 
-  my ($courier) = Courier::get_couriers($cfg, $cgi->param("courier"));
+  my ($courier) = Courier::get_couriers($cfg, $cgi->param("shipping_name"));
   if ($courier) {
       $courier->set_order($values, $items);
       unless ($courier->can_deliver()) {
