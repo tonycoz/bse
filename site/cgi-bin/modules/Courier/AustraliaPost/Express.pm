@@ -11,7 +11,7 @@ sub new {
 }
 
 sub name {
-    "ap-air"
+    "ap-express"
 }
 
 sub description {

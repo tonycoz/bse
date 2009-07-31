@@ -18,4 +18,8 @@ sub description {
     "Fastway Satchel Service"
 }
 
+sub weight_limit {
+  3;
+}
+
 1;

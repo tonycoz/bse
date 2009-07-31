@@ -11,6 +11,15 @@ my @fields =
     qw(APPNAME PRGNAME vXML Country CustFranCode pFranchisee
        vTown vPostcode vWeight vLength vHeight vWidth);
 
+sub new {
+  my $class = shift;
+  my $self = $class->SUPER::new(@_);
+
+  $self->{frequent} = $self->{config}->entry('shipping', 'fastwayfrequent', 0);
+
+  return $self;
+}
+
 sub can_deliver {
     my ($self) = @_;
 
@@ -54,7 +63,7 @@ sub calculate_shipping {
         $data{vWeight} = int($cubic_weight+0.5);
     }
 
-    if ($data{vWeight} > 25) {
+    if ($data{vWeight} > $self->weight_limit) {
         $self->{error} = "Parcel too heavy for this service.";
         return;
     }
@@ -78,8 +87,13 @@ sub calculate_shipping {
         unless ($@) {
             my $type = lc $self->{type};
             my $props = \%Courier::Fastway::Parser::props;
-            if (exists $props->{$type}) {
-                ($self->{cost} = $props->{$type}) =~ s/^.*to //;
+            if (exists $props->{$type}
+		and exists $props->{$type}{price}
+		and exists $props->{$type}{totalprice}) {
+		my $cost = $self->_extract_price($props->{$type}{price});
+	        my $extra = $self->_extract_price($props->{$type}{totalprice});
+		$extra and $cost += $extra;
+                $self->{cost} = $cost;
                 $self->{days} = $props->{days};
             }
             else {
@@ -100,6 +114,28 @@ sub calculate_shipping {
     $self->{trace} = $trace;
 }
 
+# the price and totalprice fields are formatted:
+#  $\s*(\d+.\d\d) - $\s*(\d+.\d\d)
+# where the first price is the frequent user price and the second the
+# standard user price
+#
+# parse such a price, extra the appropriate field scaled to cents.
+# returns nothing on failure.
+
+sub _extract_price {
+  my ($self, $value) = @_;
+
+  $value =~ /^\s*\$?\s*(\d+\.\d\d)\s*(?:-|to)\s*\$?\s*(\d+\.\d\d)\s*$/
+    or return;
+
+  my $price_dollars = $self->{frequent} ? $1 : $2;
+
+  return 100 * $price_dollars;
+}
+
+# derived class must implement:
+#   weight_limit - limit in kg for the service
+
 package Courier::Fastway::Parser;
 
 my $text;
@@ -111,7 +147,8 @@ sub StartTag {
     shift;
     if ($_[0] eq 'deltime' or
         $_[0] eq 'serv' or
-        $_[0] eq 'price')
+        $_[0] eq 'price' or
+        $_[0] eq 'totalprice')
     {
         $capture = $_[0];
     }
@@ -126,8 +163,12 @@ sub EndTag {
         elsif ($capture eq 'serv') {
             $service = $text;
         }
+	elsif ($capture eq 'totalprice') {
+	    # total price of extra labels to add
+            $props{lc $service}{totalprice} = $text;
+	}
         elsif ($capture eq 'price') {
-            $props{lc $service} = $text;
+            $props{lc $service}{price} = $text;
         }
         $capture = 0;
         $text = "";

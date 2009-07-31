@@ -91,17 +91,7 @@ sub calculate_shipping {
 sub shipping_cost {
     my ($self) = @_;
 
-    my $cost = $self->{cost};
-    if ($cost) {
-        # We can't be sure what sort of number the courier returned.
-        if ($cost =~ m/\...$/) {
-            $cost =~ s/\.//;
-        }
-        else {
-            $cost *= 100;
-        }
-    }
-    return $cost;
+    return $self->{cost};
 }
 
 sub delivery_in {

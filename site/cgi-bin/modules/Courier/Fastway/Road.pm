@@ -18,4 +18,8 @@ sub description {
     "Fastway Road Service"
 }
 
+sub weight_limit {
+  25;
+}
+
 1;

@@ -58,7 +58,7 @@ sub calculate_shipping {
         my @lines = split /\r?\n/, $r->content;
         foreach (@lines) {
             if (/^charge=(.*)$/) {
-                $self->{cost} = $1;
+                $self->{cost} = $1 * 100;
             }
             elsif (/^days=(.*)$/) {
                 $self->{days} = $1;
@@ -72,6 +72,7 @@ sub calculate_shipping {
                 $self->{error}, " (",
                 join(", ", map { "$_ => '$data{$_}'" } keys %data),
                 ")\n";
+	    undef $self->{cost}; # indicate failure
         }
     }
     else {
