@@ -34,9 +34,15 @@ sub calculate_shipping {
     $data{Country} = $countries{lc $self->{order}->{delivCountry}};
     $data{Quantity} = 1;
     $data{Weight} = $self->{weight};
-    $data{Length} = $self->{length};
-    $data{Height} = $self->{height};
-    $data{Width} = $self->{width};
+
+    my ($l, $w, $d) = @{$self}{qw(length height width)};
+    if ($l < 50 && not ($w >= 50 and $h >= 50)) {
+        $l = 50;
+    }
+    if ($w < 50 && not ($l >= 50 and $h >= 50)) {
+        $w = 50;
+    }
+    @data{qw(Length Width Height)} = ($l, $w, $h);
 
     my $u = URI->new($url);
     my $r = $self->{ua}->post($u, \%data);
