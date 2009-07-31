@@ -1439,6 +1439,7 @@ sub _fillout_order {
           return;
       }
       $values->{shipping_method} = $courier->description();
+      $values->{shipping_name} = $courier->name;
       $values->{shipping_cost} = $cost;
       $values->{delivery_in} = $courier->delivery_in();
       $values->{total} += $values->{shipping_cost};

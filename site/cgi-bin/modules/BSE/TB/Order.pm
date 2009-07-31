@@ -24,7 +24,8 @@ sub columns {
            delivMobile billMobile
            ccOnline ccSuccess ccReceipt ccStatus ccStatusText
            ccStatus2 ccTranId complete delivOrganization billOrganization
-           delivStreet2 billStreet2 purchase_order shipping_method/;
+           delivStreet2 billStreet2 purchase_order shipping_method
+           shipping_name/;
 }
 
 =item siteuser

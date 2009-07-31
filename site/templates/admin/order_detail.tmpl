@@ -60,12 +60,8 @@
 </table>
 
 <br>
-<table bgcolor="#000000" cellpadding="0" cellspacing="0" border="0" class="table">
-  <tr>
-<td>
-
-      <table border=0 cellpadding="6" cellspacing="1">
-        <tr bgcolor="#FFFFFF"> 
+      <table class="editform">
+        <tr> 
           <th width="100%">Description</th>
           <th nowrap>Units</th>
           <th nowrap>Unit Price</th>
@@ -76,7 +72,7 @@
           <th nowrap>Ext GST</th>
 </tr>
 <:iterator begin items:>
-        <tr bgcolor="#FFFFFF"> 
+        <tr> 
           <td width="100%"><a href="<:script:>?product_detail=1&amp;id=<:product id:>"><:product 
             title:></a> <:options:></td>
           <td align=center nowrap><:item units:></td>
@@ -88,6 +84,23 @@
           <td align=right nowrap><:extension gst:></td>
 </tr>
 <:iterator end items:>
+<:if Order shipping_name:>
+
+        <tr> 
+          <td colspan=3 align=right>
+<:if Eq [order shipping_name] "contact":>
+<b>Contact customer to make shipping arrangements</b>
+<:or Eq:>
+Shipping via <:order shipping_method:>:
+<:eif Eq:>
+</td>
+          <td align=right nowrap><:money order shipping_cost:></td>
+          <td>&nbsp;</td>
+          <td align=right nowrap></td>
+          <td>&nbsp;</td>
+          <td align=right nowrap></td>
+</tr>
+<:or Order:><:eif Order:>
         <tr bgcolor="#FFFFFF"> 
           <td colspan=3 align=right>Total:</td>
           <td align=right nowrap><:money order total:></td>
