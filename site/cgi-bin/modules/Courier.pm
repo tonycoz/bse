@@ -35,29 +35,46 @@ sub set_order {
     my $totalWeight = 0;
     foreach my $item (@$items) {
         my $product = Products->getByPkey($item->{productId});
+        my $number = $item->{units};
 
         my $weight = $product->{weight};
         if ($weight == 0) {
             $totalWeight = 0;
             last;
         }
-        $totalWeight += $weight*$item->{units};
+        $totalWeight += $weight*$number;
 
-        # Store the longest length and width of any item in the order,
-        # but keep adding up the heights. Represents something like a
-        # worst-case packing.
+        # Calculate dimensions for the given number of items. We keep
+        # filling a stack of n*n squares with products, and measure the
+        # stack.
 
-        my $length = $product->{length};
+        my ($L, $W, $H) =
+            @{$product}{qw(length width height)};
+        my ($length, $width, $height) = ($L, $W, $H);
+ 
+        $number--;
+        my $i = 0;
+        while ($number > 0) {
+            my $n = $i++ % 3;
+            if ($n == 0) { $length += $L; }
+            elsif ($n == 1) { $width += $W; }
+            elsif ($n == 2) { $height += $H; }
+            $number >>= 1;
+        }
+
+        # Store the longest length and width of any group of items in
+        # the order, but keep adding up the heights. Represents
+        # something like a worst-case packing.
+
         if ($length != 0 && $length > $self->{length}) {
             $self->{length} = $length;
         }
 
-        my $width = $product->{width};
         if ($width != 0 && $width > $self->{width}) {
             $self->{width} = $width;
         }
 
-        $self->{height} += $product->{height};
+        $self->{height} += $height;
     }
     $self->{weight} = $totalWeight;
 }
