@@ -1432,7 +1432,7 @@ sub _fillout_order {
       }
       $courier->calculate_shipping();
       my $cost = $courier->shipping_cost();
-      unless ($cost) {
+      if (!$cost and $courier->name() ne 'contact') {
           my $err = $courier->error_message();
           $$rmsg = "Error calculating shipping cost";
           $$rmsg .= ": $err" if $err;

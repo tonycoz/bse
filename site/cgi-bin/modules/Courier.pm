@@ -117,8 +117,11 @@ sub error_message {
 sub get_couriers {
     my ($cfg, $wanted) = @_;
 
+    my @enabled = split /\s+/, $cfg->entry("shipping", "couriers");
+    push @enabled, "Null";
+
     my @couriers;
-    foreach my $name (split /\s+/, $cfg->entry("shipping", "couriers")) {
+    foreach my $name (@enabled) {
         $name = "Courier::$name";
         (my $file = $name) =~ s/::/\//g;
         $file .= ".pm";
