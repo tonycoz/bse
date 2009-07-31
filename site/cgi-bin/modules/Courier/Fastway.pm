@@ -36,7 +36,7 @@ sub calculate_shipping {
     $data{vPostcode} = $self->{order}->{delivPostCode};
     $data{vTown} = $self->{order}->{delivSuburb};
 
-    $data{vWeight} = $self->{weight};
+    $data{vWeight} = $self->{weight}/1000;
     foreach my $d (qw(length height width)) {
         my $v = $self->{$d};
         if (defined $v && $v) {
