@@ -35,7 +35,7 @@ sub calculate_shipping {
     $data{Quantity} = 1;
     $data{Weight} = $self->{weight};
 
-    my ($l, $w, $h) = @{$self}{qw(length height width)};
+    my ($l, $w, $h) = @{$self}{qw(length width height)};
     if ($l < 50 && not ($w >= 50 and $h >= 50)) {
         $l = 50;
     }
