@@ -44,6 +44,11 @@ sub calculate_shipping {
         }
     }
 
+    if ($data{vWeight} > 25) {
+        $self->{error} = "Parcel too heavy for this service."
+        return;
+    }
+
     my $u = URI->new($url);
     $u->query_form(\%data);
     my $r = $self->{ua}->get($u);
