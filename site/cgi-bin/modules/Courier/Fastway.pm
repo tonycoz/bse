@@ -22,12 +22,16 @@ sub can_deliver {
 sub calculate_shipping {
     my ($self) = @_;
 
+    my $debug = $self->{config}->entry("debug", "fastway", 0);
+
     my %data = (
         APPNAME => "FW",
         PRGNAME => "FastLocatorResult",
         vXML => 1,
         Country => 1,
     );
+
+    my $trace = '';
 
     $data{CustFranCode} =
         $self->{config}->entry("shipping", "fastwayfranchiseecode") || "";
@@ -59,7 +63,13 @@ sub calculate_shipping {
     $u->query_form(\%data);
     my $r = $self->{ua}->get($u);
 
+    $trace .= "Request url: $u\n";
+
+    $debug and print STDERR "Fastway request: $u\n";
+
     if ($r->is_success) {
+        $debug and print STDERR "Success: [",$r->content,"]\n";
+        $trace .= "Response: [\n" . $r->content . "\n]\n";
         my $p = XML::Parser->new(
             Style => "Stream",
             Pkg => "Courier::Fastway::Parser"
@@ -73,7 +83,7 @@ sub calculate_shipping {
                 $self->{days} = $props->{days};
             }
             else {
-                $self->{error} = $self->{type} . " service not available";
+                $self->{error} = $self->{type} . " service not available to this location (check your postcode)";
             }
         }
         else {
@@ -82,9 +92,12 @@ sub calculate_shipping {
         }
     }
     else {
+        $trace .= "Error: ". $r->status_line . "\n";
+	$debug and print STDERR "Failure: [",$r->status_line,"]\n";
         warn $u->as_string(). ": ". $r->status_line, "\n";
         $self->{error} = "Server error";
     }
+    $self->{trace} = $trace;
 }
 
 package Courier::Fastway::Parser;

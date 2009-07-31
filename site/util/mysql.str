@@ -336,6 +336,7 @@ Column billStreet2;varchar(127);NO;;
 Column purchase_order;varchar(80);NO;;
 Column shipping_method;varchar(64);NO;;
 Column shipping_name;varchar(40);NO;;
+Column shipping_trace;text;YES;NULL;
 Index PRIMARY;1;[id]
 Index order_cchash;0;[ccNumberHash]
 Index order_userId;0;[userId;orderDate]

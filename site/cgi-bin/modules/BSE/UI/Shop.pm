@@ -450,44 +450,58 @@ sub req_checkout {
     return $value;
   };
 
-  # Get a list of couriers
-  my $selected = 0;
-  my $sel_cn = $old->("shipping_name") || "";
-  my %fake_order;
-  my %fields = BSE::TB::Order->valid_fields($cfg);
-  for my $name (keys %fields) {
-    $fake_order{$name} = $old->($name);
-  }
-  $fake_order{delivCountry} ||= $cfg->entry("basic", "country", "Australia");
-
+  # shipping handling, if enabled
+  my $shipping_select = ''; # select of shipping types
   my ($delivery_in, $shipping_cost, $shipping_method);
-  my @couriers = Courier::get_couriers($cfg);
-
-  for my $c (@couriers) {
-    $c->set_order(\%fake_order, \@items);
-  }
-
-  @couriers = grep $_->can_deliver, @couriers;
-
-  my ($sel_cour) = grep $_->name eq $sel_cn, @couriers;
-  if ($sel_cour and $fake_order{delivPostCode} and $fake_order{delivSuburb}) {
-    $sel_cour->set_order(\%fake_order, \@items);
-    if ($sel_cour->can_deliver) {
-      $sel_cour->calculate_shipping();
-      $delivery_in = $sel_cour->delivery_in();
-      $shipping_cost = $sel_cour->shipping_cost();
-      $shipping_method = $sel_cour->description();
+  my $shipping_error = '';
+  my $shipping_name = '';
+  my $prompt_ship = $cfg->entry("shop", "shipping", 0);
+  if ($prompt_ship) {
+    # Get a list of couriers
+    my $sel_cn = $old->("shipping_name") || "";
+    my %fake_order;
+    my %fields = BSE::TB::Order->valid_fields($cfg);
+    for my $name (keys %fields) {
+      $fake_order{$name} = $old->($name);
     }
+    $fake_order{delivCountry} ||= $cfg->entry("basic", "country", "Australia");
+    
+    my @couriers = Courier::get_couriers($cfg);
+    
+    for my $c (@couriers) {
+      $c->set_order(\%fake_order, \@items);
+    }
+    
+    @couriers = grep $_->can_deliver, @couriers;
+    
+    my ($sel_cour) = grep $_->name eq $sel_cn, @couriers;
+    if ($sel_cour and $fake_order{delivPostCode} and $fake_order{delivSuburb}) {
+      $sel_cour->set_order(\%fake_order, \@items);
+      if ($sel_cour->can_deliver) {
+	$sel_cour->calculate_shipping();
+	$delivery_in = $sel_cour->delivery_in();
+	$shipping_cost = $sel_cour->shipping_cost();
+	$shipping_method = $sel_cour->description();
+	$shipping_name = $sel_cour->name;
+	unless (defined $shipping_cost) {
+	  $shipping_error = $sel_cour->error_message;
+	  $errors->{shipping_name} = $shipping_error;
+	}
+      }
+    }
+    
+    $shipping_select = popup_menu
+      (
+       -name => "shipping_name",
+       -values => [ map $_->name, @couriers ],
+       -labels => { map { $_->name => $_->description } @couriers },
+       -default => $sel_cn,
+      );
   }
 
-  
-  my $shipping_select = popup_menu
-    (
-     -name => "shipping_name",
-     -values => [ map $_->name, @couriers ],
-     -labels => { map { $_->name => $_->description } @couriers },
-     -default => $sel_cn,
-    );
+  if (!$message && keys %$errors) {
+    $message = $req->message($errors);
+  }
 
   my $item_index = -1;
   my @options;
@@ -506,10 +520,13 @@ sub req_checkout {
      user => $user ? [ \&tag_hash, $user ] : '',
      affiliate_code => escape_html($affiliate_code),
      error_img => [ \&tag_error_img, $cfg, $errors ],
+     ifShipping => $prompt_ship,
      shipping_select => $shipping_select,
-     delivery_in => $delivery_in,
+     delivery_in => escape_html($delivery_in),
      shipping_cost => $shipping_cost,
-     shipping_method => $shipping_method,
+     shipping_method => escape_html($shipping_method),
+     shipping_error => escape_html($shipping_error),
+     shipping_name => $shipping_name,
     );
   $req->session->{custom} = \%custom_state;
   my $tmp = $acts{total};
@@ -1419,34 +1436,38 @@ sub _fillout_order {
   $values->{gst} = $total_gst;
   $values->{wholesale} = $total_wholesale;
 
-  my ($courier) = Courier::get_couriers($cfg, $cgi->param("shipping_name"));
-  if ($courier) {
+  my $prompt_ship = $cfg->entry("shop", "shipping", 0);
+  if ($prompt_ship) {
+    my ($courier) = Courier::get_couriers($cfg, $cgi->param("shipping_name"));
+    if ($courier) {
       $courier->set_order($values, $items);
       unless ($courier->can_deliver()) {
-          $cgi->param("courier", undef);
-          $$rmsg =
-            "Can't use the selected courier ".
+	$cgi->param("courier", undef);
+	$$rmsg =
+	  "Can't use the selected courier ".
             "(". $courier->description(). ") for this order.";
-          return;
+	return;
       }
       $courier->calculate_shipping();
       my $cost = $courier->shipping_cost();
       if (!$cost and $courier->name() ne 'contact') {
-          my $err = $courier->error_message();
-          $$rmsg = "Error calculating shipping cost";
-          $$rmsg .= ": $err" if $err;
-          return;
+	my $err = $courier->error_message();
+	$$rmsg = "Error calculating shipping cost";
+	$$rmsg .= ": $err" if $err;
+	return;
       }
       $values->{shipping_method} = $courier->description();
       $values->{shipping_name} = $courier->name;
       $values->{shipping_cost} = $cost;
+      $values->{shipping_trace} = $courier->trace;
       $values->{delivery_in} = $courier->delivery_in();
       $values->{total} += $values->{shipping_cost};
-  }
-  else {
+    }
+    else {
       # XXX: What to do?
       $$rmsg = "Error: no usable courier found.";
       return;
+    }
   }
 
   my $cust_class = custom_class($cfg);

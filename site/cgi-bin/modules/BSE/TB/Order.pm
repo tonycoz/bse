@@ -25,7 +25,7 @@ sub columns {
            ccOnline ccSuccess ccReceipt ccStatus ccStatusText
            ccStatus2 ccTranId complete delivOrganization billOrganization
            delivStreet2 billStreet2 purchase_order shipping_method
-           shipping_name/;
+           shipping_name shipping_trace/;
 }
 
 =item siteuser

@@ -318,6 +318,9 @@ create table orders (
   -- the name of the shipping method as per $courier->name
   shipping_name varchar(40) not null default '',
 
+  -- trace of the request and response
+  shipping_trace text null,
+
   primary key (id),
   index order_cchash(ccNumberHash),
   index order_userId(userId, orderDate)

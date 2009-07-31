@@ -25,6 +25,8 @@ sub can_deliver {
 sub calculate_shipping {
     my ($self) = @_;
 
+    my $trace = '';
+
     my %data = ();
 
     $data{Service_Type} = $self->{type};
@@ -45,9 +47,14 @@ sub calculate_shipping {
     @data{qw(Length Width Height)} = ($l, $w, $h);
 
     my $u = URI->new($url);
-    my $r = $self->{ua}->post($u, \%data);
 
+    $trace .= "Request URL: $u\nPosted:\n";
+    $trace .= " $_: $data{$_}\n" for keys %data;
+    $trace .= "\n";
+
+    my $r = $self->{ua}->post($u, \%data);
     if ($r->is_success) {
+        $trace .= "Success: [\n" . $r->content . "\n]\n";
         my @lines = split /\r?\n/, $r->content;
         foreach (@lines) {
             if (/^charge=(.*)$/) {
@@ -68,9 +75,11 @@ sub calculate_shipping {
         }
     }
     else {
+        $trace .= "Error: ". $r->status_line . "\n";
         warn $u->as_string(). ": ". $r->status_line, "\n";
         $self->{error} = "Server error";
     }
+    $self->{trace} = $trace;
 }
 
 1;

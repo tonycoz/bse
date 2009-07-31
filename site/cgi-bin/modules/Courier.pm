@@ -9,7 +9,7 @@ sub new {
     my $self = {};
     my %args = @_;
 
-    @$self{qw(cost days error)} = undef;
+    @$self{qw(cost days error trace)} = undef;
     $self->{config} = $args{config};
     $self->{type} = $args{type};
     $self->{ua} = LWP::UserAgent->new;
@@ -112,6 +112,10 @@ sub delivery_in {
 sub error_message {
     my ($self) = @_;
     return $self->{error};
+}
+
+sub trace {
+    $_[0]{trace};
 }
 
 sub get_couriers {

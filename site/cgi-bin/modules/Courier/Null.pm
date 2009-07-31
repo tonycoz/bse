@@ -20,7 +20,7 @@ sub can_deliver {
 sub calculate_shipping {
     my ($self) = @_;
 
-    $self->{shipping_cost} = 0;
+    $self->{cost} = 0;
     $self->{error} = "OK";
     $self->{days} = 0;
 }
