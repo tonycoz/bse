@@ -352,7 +352,6 @@ sub product_form {
 #    @images = $imageEditor->images()
 #      if $product->{id};
   my $image_index;
-  my $avail_options = product_options($req->cfg);
 
   my $blank = qq!<img src="$IMAGES_URI/trans_pixel.gif" width="17" height="13" border="0" align="absbottom" />!;
 
@@ -375,8 +374,6 @@ sub product_form {
      script=>sub { $ENV{SCRIPT_NAME} },
      ifImage => sub { $product->{imageName} },
      hiddenNote => sub { $product->{listed} ? "&nbsp;" : "Hidden" },
-     alloptions => 
-     sub { escape_html(join(',', sort keys %$avail_options)) },
      templates => 
      sub {
        return popup_menu(-name=>'template', -values=>\@templates,
