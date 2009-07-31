@@ -36,12 +36,18 @@ sub calculate_shipping {
     $data{vPostcode} = $self->{order}->{delivPostCode};
     $data{vTown} = $self->{order}->{delivSuburb};
 
-    $data{vWeight} = $self->{weight}/1000;
+    $data{vWeight} = int($self->{weight}/1000+0.5);
     foreach my $d (qw(length height width)) {
         my $v = $self->{$d};
         if (defined $v && $v) {
-            $data{"v".ucfirst $d} = $v;
+            $data{"v".ucfirst $d} = int($v/10+0.5);
         }
+    }
+
+    my $cubic_weight =
+        (($data{vLength}/100)*($data{vWidth}/100)*($data{vHeight}/100))*250;
+    if ($cubic_weight > $data{vWeight}) {
+        $data{vWeight} = int($cubic_weight+0.5);
     }
 
     if ($data{vWeight} > 25) {
