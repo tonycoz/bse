@@ -22,4 +22,12 @@ sub weight_limit {
   25;
 }
 
+sub _find_result {
+  my ($self, $props) = @_;
+
+  $props->{road} and return $props->{road};
+  $props->{local} and return $props->{local};
+  return;
+}
+
 1;

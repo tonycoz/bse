@@ -79,6 +79,7 @@ sub calculate_shipping {
     if ($r->is_success) {
         $debug and print STDERR "Success: [",$r->content,"]\n";
         $trace .= "Response: [\n" . $r->content . "\n]\n";
+	%Courier::Fastway::Parser::props = ();
         my $p = XML::Parser->new(
             Style => "Stream",
             Pkg => "Courier::Fastway::Parser"
@@ -87,17 +88,18 @@ sub calculate_shipping {
         unless ($@) {
             my $type = lc $self->{type};
             my $props = \%Courier::Fastway::Parser::props;
-            if (exists $props->{$type}
-		and exists $props->{$type}{price}
-		and exists $props->{$type}{totalprice}) {
-		my $cost = $self->_extract_price($props->{$type}{price});
-	        my $extra = $self->_extract_price($props->{$type}{totalprice});
+	    my $result = $self->_find_result($props);
+            if ($result
+		and exists $result->{price}
+		and exists $result->{totalprice}) {
+		my $cost = $self->_extract_price($result->{price});
+	        my $extra = $self->_extract_price($result->{totalprice});
 		$extra and $cost += $extra;
                 $self->{cost} = $cost;
                 $self->{days} = $props->{days};
             }
             else {
-                $self->{error} = $self->{type} . " service not available to this location (check your postcode)";
+                $self->{error} = $self->description . " not available to this location (check your postcode)";
             }
         }
         else {
