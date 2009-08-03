@@ -44,6 +44,8 @@ sub calculate_shipping {
 
     my $debug = $self->{config}->entry("debug", "fastway", 0);
 
+    undef $self->{error};
+
     my $total_cost = 0;
     my $trace = '';
       
@@ -112,13 +114,13 @@ sub calculate_shipping {
 	  }
 	  else {
 	    $self->{error} = $self->description . " not available to this location (check your postcode)";
-	    last;
+	    return;
 	  }
         }
         else {
 	  warn $u->as_string(). ": $@\n";
 	  $self->{error} = "Server error";
-	  last;
+	  return;
         }
       }
       else {
@@ -126,7 +128,7 @@ sub calculate_shipping {
 	$debug and print STDERR "Failure: [",$r->status_line,"]\n";
         warn $u->as_string(). ": ". $r->status_line, "\n";
         $self->{error} = "Server error";
-	last;
+	return;
       }
     }
     $self->{trace} = $trace;

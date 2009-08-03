@@ -24,12 +24,19 @@ sub description {
 }
 
 sub can_deliver {
-    # Implemented by subclasses
-    return 0;
+  # Implemented by subclasses
+  # accepts:
+  # country - country name for delivery
+  # suburb - suburb name for delivery
+  # postcode - postcode for delivery
+  return 0;
 }
 
 sub calculate_shipping {
-    # Implemented by subclasses
+  # Implemented by subclasses
+  # accepts:
+  # parcels - array ref of BSE::Shipping::Parcel objects
+  # country, suburb, postcode - delivery location
 }
 
 sub delivery_in {

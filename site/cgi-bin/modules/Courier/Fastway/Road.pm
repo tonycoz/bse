@@ -25,8 +25,9 @@ sub weight_limit {
 sub _find_result {
   my ($self, $props) = @_;
 
-  $props->{road} and return $props->{road};
-  $props->{local} and return $props->{local};
+  for my $type (qw/road shorthaul local/) {
+    $props->{$type} and return $props->{$type};
+  }
   return;
 }
 
