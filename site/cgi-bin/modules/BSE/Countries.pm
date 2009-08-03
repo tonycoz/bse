@@ -16,9 +16,9 @@ while (<DATA>) {
 sub bse_country_code {
   my ($name) = @_;
 
-  exists $country_name_to_code{$name} or return;
+  exists $country_name_to_code{lc $name} or return;
 
-  return $country_name_to_code{$name};
+  return $country_name_to_code{lc $name};
 }
 
 1;
