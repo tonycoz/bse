@@ -64,6 +64,7 @@ site/cgi-bin/modules/BSE/CustomBase.pm
 site/cgi-bin/modules/BSE/DB.pm
 site/cgi-bin/modules/BSE/DB/MSSQL.pm
 site/cgi-bin/modules/BSE/DB/Mysql.pm
+site/cgi-bin/modules/BSE/Countries.pm
 site/cgi-bin/modules/BSE/Dynamic/Article.pm
 site/cgi-bin/modules/BSE/Dynamic/Catalog.pm
 site/cgi-bin/modules/BSE/Dynamic/Product.pm
@@ -100,6 +101,7 @@ site/cgi-bin/modules/BSE/Request/Test.pm
 site/cgi-bin/modules/BSE/Search/Base.pm
 site/cgi-bin/modules/BSE/Search/BSE.pm
 site/cgi-bin/modules/BSE/Session.pm
+site/cgi-bin/modules/BSE/Shipping.pm
 site/cgi-bin/modules/BSE/Shop/Util.pm
 site/cgi-bin/modules/BSE/Sort.pm
 site/cgi-bin/modules/BSE/Storage/AmazonS3.pm

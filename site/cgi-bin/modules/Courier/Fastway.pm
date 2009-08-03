@@ -3,6 +3,7 @@ package Courier::Fastway;
 use strict;
 use Courier;
 use XML::Parser;
+use Carp qw(confess);
 
 our @ISA = qw(Courier);
 
@@ -21,62 +22,73 @@ sub new {
 }
 
 sub can_deliver {
-    my ($self) = @_;
+    my ($self, %opts) = @_;
 
-    return 0 unless defined $self->{order};
-    return 0 if $self->{order}->{delivCountry} ne "Australia";
+    my $country = $opts{country}
+      or return 0;
+
+    return 0 if lc $country ne "australia";
+
     return 1;
 }
 
 sub calculate_shipping {
-    my ($self) = @_;
+    my ($self, %opts) = @_;
+
+    my $parcels = $opts{parcels}
+      or confess "Missing parcels parameter";
+    my $suburb = $opts{suburb}
+      or confess "Missing suburb paramater";
+    my $postcode = $opts{postcode}
+      or confess "Missing postcode parameter";
 
     my $debug = $self->{config}->entry("debug", "fastway", 0);
 
-    my %data = (
-        APPNAME => "FW",
-        PRGNAME => "FastLocatorResult",
-        vXML => 1,
-        Country => 1,
-    );
-
+    my $total_cost = 0;
     my $trace = '';
-
-    $data{CustFranCode} =
+      
+    for my $parcel (@$parcels) {
+      my %data = (
+		  APPNAME => "FW",
+		  PRGNAME => "FastLocatorResult",
+		  vXML => 1,
+		  Country => 1,
+		 );
+      
+      $data{CustFranCode} =
         $self->{config}->entry("shipping", "fastwayfranchiseecode") || "";
-    $data{pFranchisee} =
+      $data{pFranchisee} =
         $self->{config}->entry("shipping", "fastwayfranchisee");
-    $data{vPostcode} = $self->{order}->{delivPostCode};
-    $data{vTown} = $self->{order}->{delivSuburb};
-
-    $data{vWeight} = int($self->{weight}/1000+0.5);
-    foreach my $d (qw(length height width)) {
-        my $v = $self->{$d};
+      $data{vPostcode} = $postcode;
+      $data{vTown} = $suburb;
+      
+      $data{vWeight} = int($parcel->weight / 1000 + 0.5);
+      foreach my $d (qw(length height width)) {
+        my $v = $parcel->$d;
         if (defined $v && $v) {
-            $data{"v".ucfirst $d} = int($v/10+0.5);
+	  $data{"v".ucfirst $d} = int($v/10+0.5);
         }
-    }
+      }
 
-    my $cubic_weight =
-        (($data{vLength}/100)*($data{vWidth}/100)*($data{vHeight}/100))*250;
-    if ($cubic_weight > $data{vWeight}) {
-        $data{vWeight} = int($cubic_weight+0.5);
-    }
+      my $cubic_weight = int( $parcel->cubic_weight / 1000 + 0.5);
+      if ($cubic_weight > $data{vWeight}) {
+        $data{vWeight} = $cubic_weight;
+      }
 
-    if ($data{vWeight} > $self->weight_limit) {
+      if ($data{vWeight} > $self->weight_limit) {
         $self->{error} = "Parcel too heavy for this service.";
         return;
-    }
+      }
 
-    my $u = URI->new($url);
-    $u->query_form(\%data);
-    my $r = $self->{ua}->get($u);
-
-    $trace .= "Request url: $u\n";
-
-    $debug and print STDERR "Fastway request: $u\n";
-
-    if ($r->is_success) {
+      my $u = URI->new($url);
+      $u->query_form(\%data);
+      my $r = $self->{ua}->get($u);
+      
+      $trace .= "Request url: $u\n";
+      
+      $debug and print STDERR "Fastway request: $u\n";
+      
+      if ($r->is_success) {
         $debug and print STDERR "Success: [",$r->content,"]\n";
         $trace .= "Response: [\n" . $r->content . "\n]\n";
 	%Courier::Fastway::Parser::props = ();
@@ -86,34 +98,40 @@ sub calculate_shipping {
         );
         eval { $p->parse($r->content) };
         unless ($@) {
-            my $type = lc $self->{type};
-            my $props = \%Courier::Fastway::Parser::props;
-	    my $result = $self->_find_result($props);
-            if ($result
-		and exists $result->{price}
-		and exists $result->{totalprice}) {
-		my $cost = $self->_extract_price($result->{price});
-	        my $extra = $self->_extract_price($result->{totalprice});
-		$extra and $cost += $extra;
-                $self->{cost} = $cost;
-                $self->{days} = $props->{days};
-            }
-            else {
-                $self->{error} = $self->description . " not available to this location (check your postcode)";
-            }
+	  my $type = lc $self->{type};
+	  my $props = \%Courier::Fastway::Parser::props;
+	  my $result = $self->_find_result($props);
+	  if ($result
+	      and exists $result->{price}
+	      and exists $result->{totalprice}) {
+	    my $cost = $self->_extract_price($result->{price});
+	    my $extra = $self->_extract_price($result->{totalprice});
+	    $extra and $cost += $extra;
+	    $total_cost += $cost;
+	    $self->{days} = $props->{days};
+	  }
+	  else {
+	    $self->{error} = $self->description . " not available to this location (check your postcode)";
+	    last;
+	  }
         }
         else {
-            warn $u->as_string(). ": $@\n";
-            $self->{error} = "Server error";
+	  warn $u->as_string(). ": $@\n";
+	  $self->{error} = "Server error";
+	  last;
         }
-    }
-    else {
+      }
+      else {
         $trace .= "Error: ". $r->status_line . "\n";
 	$debug and print STDERR "Failure: [",$r->status_line,"]\n";
         warn $u->as_string(). ": ". $r->status_line, "\n";
         $self->{error} = "Server error";
+	last;
+      }
     }
     $self->{trace} = $trace;
+    
+    return $total_cost;
 }
 
 # the price and totalprice fields are formatted:

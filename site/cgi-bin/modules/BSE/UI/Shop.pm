@@ -14,7 +14,7 @@ use Products;
 use BSE::TB::Seminars;
 use DevHelp::Validate qw(dh_validate dh_validate_hash);
 use Digest::MD5 'md5_hex';
-use Courier;
+use BSE::Shipping;
 
 use constant PAYMENT_CC => 0;
 use constant PAYMENT_CHEQUE => 1;
@@ -464,29 +464,32 @@ sub req_checkout {
     for my $name (keys %fields) {
       $fake_order{$name} = $old->($name);
     }
-    $fake_order{delivCountry} ||= $cfg->entry("basic", "country", "Australia");
+    my $country = $fake_order{delivCountry} || $cfg->entry("basic", "country", "Australia");
+    my $suburb = $fake_order{delivSuburb};
+    my $postcode = $fake_order{delivPostCode};
+
+    my @couriers = BSE::Shipping->get_couriers($cfg);
     
-    my @couriers = Courier::get_couriers($cfg);
-    
-    for my $c (@couriers) {
-      $c->set_order(\%fake_order, \@items);
-    }
-    
-    @couriers = grep $_->can_deliver, @couriers;
+    @couriers = grep $_->can_deliver(country => $country,
+				     suburb => $suburb,
+				     postcode => $postcode), @couriers;
     
     my ($sel_cour) = grep $_->name eq $sel_cn, @couriers;
-    if ($sel_cour and $fake_order{delivPostCode} and $fake_order{delivSuburb}) {
-      $sel_cour->set_order(\%fake_order, \@items);
-      if ($sel_cour->can_deliver) {
-	$sel_cour->calculate_shipping();
-	$delivery_in = $sel_cour->delivery_in();
-	$shipping_cost = $sel_cour->shipping_cost();
-	$shipping_method = $sel_cour->description();
-	$shipping_name = $sel_cour->name;
-	unless (defined $shipping_cost) {
-	  $shipping_error = $sel_cour->error_message;
-	  $errors->{shipping_name} = $shipping_error;
-	}
+    if ($sel_cour and $postcode and $suburb) {
+      my @parcels = BSE::Shipping->package_order($cfg, \%fake_order, \@items);
+      $shipping_cost = $sel_cour->calculate_shipping
+	(
+	 parcels => \@parcels,
+	 suburb => $suburb,
+	 postcode => $postcode,
+	 country => $country
+	);
+      $delivery_in = $sel_cour->delivery_in();
+      $shipping_method = $sel_cour->description();
+      $shipping_name = $sel_cour->name;
+      unless (defined $shipping_cost) {
+	$shipping_error = $sel_cour->error_message;
+	$errors->{shipping_name} = $shipping_error;
       }
     }
     
@@ -1438,18 +1441,25 @@ sub _fillout_order {
 
   my $prompt_ship = $cfg->entry("shop", "shipping", 0);
   if ($prompt_ship) {
-    my ($courier) = Courier::get_couriers($cfg, $cgi->param("shipping_name"));
+    my ($courier) = BSE::Shipping->get_couriers($cfg, $cgi->param("shipping_name"));
     if ($courier) {
-      $courier->set_order($values, $items);
-      unless ($courier->can_deliver()) {
+      unless ($courier->can_deliver(country => $values->{delivCountry},
+				    suburb => $values->{delivSuburb},
+				    postcode => $values->{delivPostCode})) {
 	$cgi->param("courier", undef);
 	$$rmsg =
 	  "Can't use the selected courier ".
             "(". $courier->description(). ") for this order.";
 	return;
       }
-      $courier->calculate_shipping();
-      my $cost = $courier->shipping_cost();
+      my @parcels = BSE::Shipping->package_order($cfg, $values, $items);
+      my $cost = $courier->calculate_shipping
+	(
+	 parcels => \@parcels,
+	 country => $values->{delivCountry},
+	 suburb => $values->{delivSuburb},
+	 postcode => $values->{delivPostCode}
+       );
       if (!$cost and $courier->name() ne 'contact') {
 	my $err = $courier->error_message();
 	$$rmsg = "Error calculating shipping cost";
