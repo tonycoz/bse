@@ -17,11 +17,13 @@ sub tags {
      $self->dyn_article_iterator('dynallprods', 'dynallprod', $article,
 				 \$allprod_index, \$allprod_data),
      dynmoveallprod =>
-     [ tag_dynmove => $self, \$allprod_index, \$allprod_data ],
+     [ tag_dynmove => $self, \$allprod_index, \$allprod_data, 
+       "stepparent=$article->{id}" ],
      $self->dyn_article_iterator('dynallcats', 'dynallcat', $article,
 				 \$allcat_index, \$allcat_data),
      dynmoveallcat =>
-     [ tag_dynmove => $self, \$allcat_index, \$allcat_data ],
+     [ tag_dynmove => $self, \$allcat_index, \$allcat_data,
+       "stepparent=$article->{id}" ],
     );
 }
 
