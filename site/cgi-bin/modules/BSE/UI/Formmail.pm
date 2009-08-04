@@ -313,6 +313,15 @@ sub _send_to_db {
 	  push @params, '';
 	}
       }
+      elsif ($param =~ /^env\{(\w+)\}$/) {
+	my $key = $1;
+	if (defined $ENV{$key}) {
+	  push @params, $ENV{$key};
+	}
+	else {
+	  push @params, '';
+	}
+      }
       else {
 	if (exists $names{$param}
 	    && defined $form->{fields}[$names{$param}]{value}) {

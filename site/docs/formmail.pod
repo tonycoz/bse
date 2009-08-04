@@ -204,9 +204,15 @@ execute this against a different database.
 =item *
 
 sql_params - a comma separated list of fields to supply to the SQL
-given by I<sql>.  If a field name is surrounded by {} then that field
-is extracted from the currently logged on user, otherwise it's taken
-as the name of one of the submitted form fields.
+given by I<sql>. 
+
+If the field if of the form C<{>fieldC<}> then that field is extracted
+from the currently logged on user.
+
+If the field is of the form C<env{>I<NAME>C<}> then the environment
+variable called name will be used.
+
+Otherwise it's taken as the name of one of the submitted form fields.
 
 =item *
 
