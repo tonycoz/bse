@@ -475,6 +475,14 @@ sub req_checkout {
 				     postcode => $postcode), @couriers;
     
     my ($sel_cour) = grep $_->name eq $sel_cn, @couriers;
+    # if we don't match against the list (perhaps because of a country
+    # change) the first item in the list will be selected by the
+    # browser anyway, so select it ourselves and display an
+    # appropriate shipping cost for the item
+    unless ($sel_cour) {
+      $sel_cour = $couriers[0];
+      $sel_cn = $sel_cour->name;
+    }
     if ($sel_cour and $postcode and $suburb) {
       my @parcels = BSE::Shipping->package_order($cfg, \%fake_order, \@items);
       $shipping_cost = $sel_cour->calculate_shipping
