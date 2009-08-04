@@ -58,6 +58,10 @@ my %product_defaults =
    subscription_usage => 3,
    subscription_required => -1,
    product_code => '',
+   weight => 0,
+   length => 0,
+   height => 0,
+   width => 0,
   );
 
 my %catalog_defaults =
