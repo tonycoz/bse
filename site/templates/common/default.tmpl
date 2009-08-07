@@ -23,7 +23,7 @@
   </tr>
 </table>
 <:if Article body:> 
-<font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:body:></font>
+<div class="body"><:body:></div>
 <:or Article:><:eif Article:><:if Embedded:><:or Embedded:><:ifAdmin:><:if Children:> 
 <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Reorder child articles: 
   <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=title&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 

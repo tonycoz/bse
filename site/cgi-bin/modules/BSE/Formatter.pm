@@ -38,6 +38,7 @@ sub new {
   elsif ($cfg->entry('html', 'msentify', 0)) {
     $self->{msentify} = 1;
   }
+  $self->{xhtml} = $cfg->entry('basic', 'xhtml', 1);
 
   $self->{redirect_links} = $cfg->entry('html', 'redirect_links', '');
   $self->{redirect_salt} = $cfg->entry('html', 'redirect_salt', '');
@@ -57,19 +58,28 @@ sub _image {
   my $image_url = escape_html($self->image_url($im));
 
   my $text = qq!<img src="$image_url" width="$im->{width}"!
-    . qq! height="$im->{height}" alt="! . escape_html($im->{alt}).'"'
-      . qq! border="0"!;
+    . qq! height="$im->{height}" alt="! . escape_html($im->{alt}).'"';
+  my @classes;
+  if ($self->{xhtml}) {
+    push @classes, "bse_image_inline";
+  }
+  else {
+    $text .= qq! border="0"!;
+  }
   $text .= qq! align="$align"! if $align && $align ne 'center';
   if ($style) {
     if ($style =~ /^\d/) {
       $text .= qq! style="padding: $style"!;
     }
     elsif ($style =~ /^\w[\w-]*$/) {
-      $text .= qq! class="$style"!;
+      push @classes, $style;
     }
     else {
       $text .= qq! style="$style"!;
     }
+  }
+  if (@classes) {
+    $text .= qq! class="@classes"!;
   }
   $text .= qq! />!;
   $text = qq!<div align="center">$text</div>!

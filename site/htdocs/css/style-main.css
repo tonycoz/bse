@@ -42,3 +42,25 @@ form td.submit { text-align: right; }
 #nav td { background-color: #CCCCCC }
 #nav a:link, #nav a:visited { font-weight: bold; padding-left: 0.5em; }
 #nav table table a:link { padding-left: 1em; }
+.body { 
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 12px;
+}
+
+.body img.bse_image_left { 
+  float: left;
+  border: 0px;
+  margin: 10px 10px 10px 0px;
+}
+
+.body img.bse_image_right {
+  float: right;
+  border: 0px;
+  margin: 10px 0px 10px 10px;
+}
+
+.body img.bse_image_popup_base {
+  border: 0px;
+  margin: 5px 0px;
+  vertical-align: middle;
+}

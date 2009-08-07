@@ -225,6 +225,8 @@ sub format_body {
 
   $body = $formatter->format($body);
 
+  my $xhtml = $self->{cfg}->entry('basic', 'xhtml', 1);
+
   # we don't format named images
   my @images = grep $_->{name} eq '', @$images;
   if ($auto_images && @images) {
@@ -261,9 +263,17 @@ sub format_body {
       
       # assuming 5.005_03 would make this simpler, but <sigh>
       my $image_url = $self->image_url($image);
-      my $img = qq!<img src="$image_url"!
-	.qq! width="$image->{width}" height="$image->{height}" border="0"!
-	  .qq! alt="$image->{alt}" align="$align" hspace="10" vspace="10" />!;
+      my $img;
+      if ($xhtml) {
+	$img = qq!<img src="$image_url"!
+	  .qq! width="$image->{width}" height="$image->{height}"!
+	    .qq! alt="$image->{alt}" class="bse_image_$align" />!;
+      }
+      else {
+	$img = qq!<img src="$image_url"!
+	  .qq! width="$image->{width}" height="$image->{height}" border="0"!
+	    .qq! alt="$image->{alt}" align="$align" hspace="10" vspace="10" />!;
+      }
       if ($image->{url}) {
 	$img = qq!<a href="$image->{url}">$img</a>!;
       }
@@ -457,10 +467,18 @@ sub do_popimage_low {
   defined $class
     or $class = $cfg->entry('basic', 'default_popupimage', 'popup');
 
+  my $default_popup = '<a href="{outline_src}" rel="lightbox[id]" target="_blank"><img src="{inline_src}" alt="{inline_alt}" width="{inline_width}" height="{inline_height}"';
+  unless ($cfg->entry('basic', 'xhtml', 1)) {
+    $default_popup .= ' border="0"';
+  }
+  my $img_class = $cfg->entry('basic', 'default_popupimage', 'bse_image_popup_base');
+  if ($img_class) {
+    $default_popup .= qq! class="$img_class"!;
+  }
+  $default_popup .= ' /></a>';
+
   my $section = "popimage class $class";
-  my $html = $cfg->entry
-    ($section, 'html',
-     '<a href="{outline_src}" rel="lightbox[id]" target="_blank"><img src="{inline_src}" alt="{inline_alt}" width="{inline_width}" height="{inline_height}" border="0" /></a>');
+  my $html = $cfg->entry($section, 'html', $default_popup );
   my $inline_geo = $cfg->entry($section, 'inline', 'editor');
   my $outline_geo = $cfg->entry($section, 'outline');
 
