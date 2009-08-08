@@ -25,10 +25,16 @@ sub _format_image {
       . qq! height="$im->{height}" alt="! . escape_html($im->{alt})
 	     . qq!"!;
     $html .= qq! align="$align"! if $align && $align ne '-';
-    unless (defined($rest) && $rest =~ /\bborder=/i) {
-      $html .= ' border="0"';
+    my $xhtml = $self->{cfg}->entry("basic", "xhtml", 1);
+    unless ($xhtml) {
+      unless (defined($rest) && $rest =~ /\bborder=/i) {
+	$html .= ' border="0"' ;
+      }
     }
-    $html .= " $rest" if defined $rest;
+    defined $rest or $rest = '';
+    $rest =~ /\bclass=/ or $rest .= ' class="bse_image_tag"';
+
+    $html .= " $rest" if $rest;
     $html .= qq! />!;
     if ($im->{url}) {
       $html = qq!<a href="$im->{url}">$html</a>!;
