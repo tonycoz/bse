@@ -89,8 +89,10 @@ sub _thumbimage_low {
     return escape_html($value);
   }
   else {
-    my $class = $cfg->entry('thumb classes', $geo_id);
-    my $html = '<img src="' . escape_html($imwork->{src}) . '" alt="' . escape_html($imwork->{alt}) . qq!" width="$imwork->{width}" height="$imwork->{height}" border="0"!;
+    my $class = $cfg->entry('thumb classes', $geo_id, "bse_image_thumb");
+    my $xhtml = $cfg->entry("basic", "xhtml", 1);
+    my $html = '<img src="' . escape_html($imwork->{src}) . '" alt="' . escape_html($imwork->{alt}) . qq!" width="$imwork->{width}" height="$imwork->{height}"!;
+    $html .= qq! border="0"! unless $xhtml;
     if ($class) {
       $html .= qq! class="$class"!;
     }

@@ -67,7 +67,7 @@ sub generate_low {
 }
 
 sub tag_title {
-  my ($article, $images, $args, $acts, $funcname, $templater) = @_;
+  my ($cfg, $article, $images, $args, $acts, $funcname, $templater) = @_;
 
   my $which = $args || 'article';
 
@@ -77,9 +77,12 @@ sub tag_title {
   my $title = $templater->perform($acts, $which, 'title');
   my $imagename = $which eq 'article' ? $article->{titleImage} : 
     $templater->perform($acts, $which, 'titleImage');
-  $imagename and
-    return qq!<img src="/images/titles/$imagename"!
-      .qq! border="0" alt="$title" />! ;
+  my $xhtml = $cfg->entry("basic", "xhtml", 1);
+  if ($imagename) {
+    my $html = qq!<img src="/images/titles/$imagename"!;
+    $html .= ' border="0"' unless $xhtml;
+    $html .= qq! class="bse_image_title" alt="$title" />!;
+  }
   my $im;
   if ($which eq 'article') {
     ($im) = grep lc $_->{name} eq 'bse_title', @$images;
@@ -95,7 +98,7 @@ sub tag_title {
     my $src = $im->{src} || "/images/$im->{image}";
     $src = escape_html($src);
     return qq!<img src="$src" width="$im->{width}"!
-      . qq! height="$im->{height}" alt="$title" />!;
+      . qq! height="$im->{height}" alt="$title" class="bse_image_title" />!;
   }
   else {
     return $title;
@@ -355,7 +358,7 @@ sub baseActs {
        my $which = shift || 'article';
        return $acts->{$which} && $acts->{$which}->('titleImage')
      },
-     title => [ \&tag_title, $article, \@images ],
+     title => [ \&tag_title, $cfg, $article, \@images ],
      thumbnail =>
      sub {
        my ($args, $acts, $name, $templater) = @_;
