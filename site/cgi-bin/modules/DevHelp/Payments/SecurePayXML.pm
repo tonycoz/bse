@@ -11,15 +11,31 @@ my $sequence = 0;
 sub new {
   my ($class, $cfg) = @_;
 
+  my $top_tag;
+  my $def_live_url;
+  my $def_test_url;
+  my $vendor = $cfg->entry("securepay xml", "vendor", "securepay");
+  if (lc $vendor eq "securepay") {
+    $top_tag = "SecurePayMessage";
+    $def_live_url = "https://www.securepay.com.au/xmlapi/payment";
+    $def_test_url = "https://www.securepay.com.au/test/payment";
+  }
+  elsif (lc $vendor eq "nab") {
+    $top_tag = "NABTransactMessage";
+    $def_live_url = "https://transact.nab.com.au/live/xmlapi/payment";
+    $def_test_url = "https://transact.nab.com.au/test/xmlapi/payment";
+  }
+  else {
+    confess "Unknown value for [securepay xml].vendor: $vendor";
+  }
+
   my $debug = $cfg->entry('securepay xml', 'debug', 0);
 
   my $test = $cfg->entry('securepay xml', 'test', 1);
   my $livemerchantid = $cfg->entry('securepay xml', 'merchantid');
   my $testmerchantid = $cfg->entry('securepay xml', 'testmerchantid');
-  my $testurl =  $cfg->entry('securepay xml', 'testurl', 
-			     "https://www.securepay.com.au/test/payment");
-  my $liveurl =  $cfg->entry('securepay xml', 'url',
-			     "https://www.securepay.com.au/xmlapi/payment");
+  my $testurl =  $cfg->entry('securepay xml', 'testurl', $def_test_url);
+  my $liveurl =  $cfg->entry('securepay xml', 'url', $def_live_url);
   my $periodictesturl =  $cfg->entry('securepay xml', 'periodictesturl', 
 			     "https://www.securepay.com.au/test/periodic");
   my $periodicliveurl =  $cfg->entry('securepay xml', 'url',
@@ -29,30 +45,41 @@ sub new {
   my $livepassword = $cfg->entry('securepay xml', 'password');
   my $poprefix = $cfg->entry('securepay xml', 'prefix', '');
   my $periodic_prefix = $cfg->entry('securepay xml', 'periodic_prefix', '');
+  
   if ($debug) {
-    print STDERR "SecurePay XML Config:\n",
-      "  test: $test\n  url: $testurl - $liveurl\n  merchantid: $testmerchantid - $livemerchantid\n  timeout:",
-	defined($timeout) ? $timeout : "undef", "\n  prefix: $poprefix\n";
+    my $display_timeout = defined($timeout) ? $timeout : "undef";
+    print STDERR <<DEBUG
+SecurePay XML Config:
+  test: $test
+  url: $testurl - $liveurl
+  merchantid: $testmerchantid - $livemerchantid
+  timeout: $display_timeout
+  prefix: $poprefix
+  vendor:  $vendor
+  top_tag: $top_tag
+DEBUG
        
   }
   my $result_code = $cfg->entry('securepay xml', 'result_code');
-  return bless {
-		test => $test,
-		livemerchantid => $livemerchantid,
-		testmerchantid => $testmerchantid,
-		liveurl => $liveurl,
-		testurl => $testurl,
-		periodicliveurl => $periodicliveurl,
-		periodictesturl => $periodictesturl,
-		timeout => $timeout,
-		testpassword => $testpassword,
-		livepassword => $livepassword,
-		prefix => $poprefix,
-		debug => $debug,
-		result_code => $result_code,
-		paranoid => $cfg->entry('securepay xml', 'paranoid', 1),
-		periodic_prefix => $periodic_prefix,
-	       }, $class;
+  return bless
+    {
+     test => $test,
+     livemerchantid => $livemerchantid,
+     testmerchantid => $testmerchantid,
+     liveurl => $liveurl,
+     testurl => $testurl,
+     periodicliveurl => $periodicliveurl,
+     periodictesturl => $periodictesturl,
+     timeout => $timeout,
+     testpassword => $testpassword,
+     livepassword => $livepassword,
+     prefix => $poprefix,
+     debug => $debug,
+     result_code => $result_code,
+     paranoid => $cfg->entry('securepay xml', 'paranoid', 1),
+     periodic_prefix => $periodic_prefix,
+     top_tag => $top_tag,
+    }, $class;
 }
 
 sub _escape_xml {
@@ -205,7 +232,7 @@ sub _request_low {
 
 my $payment_template = <<'XML';
 <?xml version="1.0" encoding="UTF-8"?>
-<SecurePayMessage>
+<<:toptag:>>
   <MessageInfo>
     <messageID><:messageid:></messageID>
     <messageTimestamp><:timestamp:></messageTimestamp>
@@ -232,7 +259,7 @@ my $payment_template = <<'XML';
       </Txn>
     </TxnList>
   </Payment>
-</SecurePayMessage>
+</<:toptag:>>
 XML
 
 sub payment {
@@ -275,6 +302,7 @@ sub payment {
      cardnumber => $args{cardnumber},
      currency => $args{currency} || 'AUD',
      cvvtag => '',
+     toptag => $self->{top_tag},
     );
   
   # XML escape all of these
