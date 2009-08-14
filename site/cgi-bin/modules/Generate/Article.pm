@@ -388,13 +388,6 @@ sub baseActs {
      },
      ifUnderThreshold => 
      sub { 
-       if ($article->{threshold} !~ /\d/) {
-	 use Data::Dumper;
-	 use Carp qw/cluck/;
-	 print STDERR Dumper($article);
-	 cluck 'Why is a template name in \$article->{threshold}?';
-       }
-
        my $count;
        my $what = $_[0] || '';
        if ($what eq 'stepkids') {

@@ -60,21 +60,6 @@ sub low_perform {
     return unless defined $value;
     return $fmt ? $acts->{_format}->($value, $fmt) : $value;
   }
-  for my $match (keys %$acts) {
-    if ($match =~ m(^/(.+)/$)) {
-      my $re = $1;
-      if ($func =~ /$re/) {
-	$args =~ s/^\s+|\s+$//g;
-	my $value = $acts->{$match}->($func, $args);
-	#defined $value
-	#  or return "** function $func $args returned undef **";
-	if (defined($value) && $fmt) {
-	  $value = $acts->{_format}->($value, $fmt);
-	}
-	return $value;
-      }
-    }
-  }
   if ($func eq 'summary') {
     my $size = 80;
     my $temp = $args;
