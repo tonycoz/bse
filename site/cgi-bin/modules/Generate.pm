@@ -534,6 +534,10 @@ sub _find_image {
   if ($article_id =~ /^\d+$/) {
     require Articles;
     $article = Articles->getByPkey($article_id);
+    unless ($article) {
+      $$msg = "* no article $article_id found *";
+      return;
+    }
   }
   elsif ($acts->{$article_id}) {
     my $id = $templater->perform($acts, $article_id, "id");
@@ -571,6 +575,10 @@ sub _find_image {
       ($im) = grep $_->{name} eq $tag, @images
 	and last;
     }
+  }
+  unless ($im) {
+    $$msg = "* no image matching $image_tags found *";
+    return;
   }
 
   return $im;
