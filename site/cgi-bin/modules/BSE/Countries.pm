@@ -125,6 +125,8 @@ FO	Faroe Islands
 FR	France
 GA	Gabon
 GB	Britain (UK)
+GB	United Kingdom
+GB	Great Britain
 GD	Grenada
 GE	Georgia
 GF	French Guiana
