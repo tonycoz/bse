@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>102;
+use Test::More tests=>105;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
@@ -21,8 +21,12 @@ my $parent = add_article(title=>'Parent', body=>'parent article doclink[shop|foo
 ok($parent, "create section");
 my @kids;
 for my $name ('One', 'Two', 'Three') {
-  my $kid = add_article(title => $name, parentid => $parent->{id}, 
-			body => "b[$name]");
+  my $kid = add_article
+    (
+     title => $name, parentid => $parent->{id}, 
+     body => "b[$name] - alpha, beta, gamma, delta, epsilon",
+     summaryLength => 35
+    );
   ok($kid, "creating kid $name");
   push(@kids, $kid);
 }
@@ -201,7 +205,7 @@ EXPECTED
 template_test "nobodytext", $kids[0], <<'TEMPLATE', <<EXPECTED;
 <:nobodytext article body:>
 TEMPLATE
-One
+One - alpha, beta, gamma, delta, epsilon
 EXPECTED
 
 template_test "date", $parent, <<'TEMPLATE', <<EXPECTED;
@@ -319,6 +323,14 @@ template_test "replace complex re", $parent, <<'TEMPLATE', <<EXPECTED;
 <:replace "test&amp;test 01234567890123456789" ((?:&[^;]*;|[^&]){16}).* $1...:>
 TEMPLATE
 test&amp;test 012345...
+EXPECTED
+
+template_test "summary", $kids[0], <<'TEMPLATE', <<EXPECTED;
+<:summary article:>
+<:summary article 14:>
+TEMPLATE
+One - alpha, beta, gamma, delta,...
+One - alpha,...
 EXPECTED
 
 ############################################################

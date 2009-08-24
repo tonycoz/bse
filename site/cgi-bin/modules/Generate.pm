@@ -823,16 +823,17 @@ sub baseActs {
 
      summary =>
      sub {
-       my ($which, $acts, $name, $templater) = @_;
+       my ($args, $acts, $name, $templater) = @_;
+       my ($which, $limit) = DevHelp::Tags->get_parms($args, $acts, $templater);
        $which or $which = "child";
+       $limit or $limit = $article->{summaryLength};
        $acts->{$which}
 	 or return "<:summary $which Cannot find $which:>";
        my $id = $templater->perform($acts, $which, "id")
 	 or return "<:summary $which No id returned :>";
        my $article = $articles->getByPkey($id)
 	 or return "<:summary $which Cannot find article $id:>";
-       return $self->summarize($articles, $article->{body}, $acts, 
-			       $article->{summaryLength})
+       return $self->summarize($articles, $article->{body}, $acts, $limit);
      },
      ifAdmin => sub { $self->{admin} },
      
