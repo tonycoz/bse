@@ -65,7 +65,7 @@ sub _make_table {
   for my $row (@rows) {
     my ($opts, @cols) = split /\|/, $row;
     $tag .= "<tr";
-    if ($opts =~ /=/) {
+    if (defined $opts && $opts =~ /=/) {
       $tag .= " ".unescape_html($opts);
     }
     $tag .= "><td>$cellstart".join("$cellend</td><td>$cellstart", @cols)
