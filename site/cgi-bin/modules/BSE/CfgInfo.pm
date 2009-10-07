@@ -4,7 +4,7 @@ use strict;
 use vars qw(@ISA @EXPORT_OK);
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(custom_class admin_base_url cfg_image_dir credit_card_class product_options);
+@EXPORT_OK = qw(custom_class admin_base_url cfg_image_dir credit_card_class product_options bse_default_country);
 
 =head1 NAME
 
@@ -24,6 +24,9 @@ BSE::CfgInfo - functions that return information derived from configuration
 
   use BSE::CfgInfo 'product_options';
   my $options = product_options($cfg);
+
+  use BSE::CfgInfo 'bse_default_country';
+  my $country = bse_default_country($cfg);
 
 =head1 DESCRIPTION
 
@@ -150,6 +153,12 @@ sub product_options {
   }
 
   \%options;
+}
+
+sub bse_default_country {
+  my ($cfg) = @_;
+
+  return $cfg->entry("basic", "country", "Australia");
 }
 
 1;

@@ -5,7 +5,7 @@ use DevHelp::HTML qw(:default popup_menu);
 use BSE::Util::SQL qw(now_sqldate now_sqldatetime);
 use BSE::Shop::Util qw(need_logon shop_cart_tags payment_types nice_options 
                        cart_item_opts basic_tags order_item_opts);
-use BSE::CfgInfo qw(custom_class credit_card_class);
+use BSE::CfgInfo qw(custom_class credit_card_class bse_default_country);
 use BSE::TB::Orders;
 use BSE::TB::OrderItems;
 use BSE::Mail;
@@ -15,6 +15,7 @@ use BSE::TB::Seminars;
 use DevHelp::Validate qw(dh_validate dh_validate_hash);
 use Digest::MD5 'md5_hex';
 use BSE::Shipping;
+use BSE::Countries qw(bse_country_code);
 
 use constant PAYMENT_CC => 0;
 use constant PAYMENT_CHEQUE => 1;
@@ -464,15 +465,21 @@ sub req_checkout {
     for my $name (keys %fields) {
       $fake_order{$name} = $old->($name);
     }
-    my $country = $fake_order{delivCountry} || $cfg->entry("basic", "country", "Australia");
+    my $country = $fake_order{delivCountry} || bse_default_country($cfg);
+    my $country_code = bse_country_code($country);
     my $suburb = $fake_order{delivSuburb};
     my $postcode = $fake_order{delivPostCode};
 
+    $country_code
+      or $errors->{delivCountry} = "Unknown country name $country";
+
     my @couriers = BSE::Shipping->get_couriers($cfg);
-    
-    @couriers = grep $_->can_deliver(country => $country,
-				     suburb => $suburb,
-				     postcode => $postcode), @couriers;
+
+    if ($country_code and $postcode) {
+      @couriers = grep $_->can_deliver(country => $country_code,
+				       suburb => $suburb,
+				       postcode => $postcode), @couriers;
+    }
     
     my ($sel_cour) = grep $_->name eq $sel_cn, @couriers;
     # if we don't match against the list (perhaps because of a country
@@ -483,14 +490,14 @@ sub req_checkout {
       $sel_cour = $couriers[0];
       $sel_cn = $sel_cour->name;
     }
-    if ($sel_cour and $postcode and $suburb) {
+    if ($sel_cour and $postcode and $suburb and $country_code) {
       my @parcels = BSE::Shipping->package_order($cfg, \%fake_order, \@items);
       $shipping_cost = $sel_cour->calculate_shipping
 	(
 	 parcels => \@parcels,
 	 suburb => $suburb,
 	 postcode => $postcode,
-	 country => $country
+	 country => $country_code
 	);
       $delivery_in = $sel_cour->delivery_in();
       $shipping_method = $sel_cour->description();
@@ -627,6 +634,13 @@ sub req_order {
 
   dh_validate_hash(\%values, \%errors, { rules=>\%rules, fields=>\%fields },
 		   $cfg, 'Shop Order Validation');
+  my $prompt_ship = $cfg->entry("shop", "shipping", 0);
+  if ($prompt_ship) {
+    my $country = $values{delivCountry} || bse_default_country($cfg);
+    my $country_code = bse_country_code($country);
+    $country_code
+      or $errors{delivCountry} = "Unknown country name $country";
+  }
   keys %errors
     and return $class->req_checkout($req, \%errors, 1);
 
@@ -1450,8 +1464,9 @@ sub _fillout_order {
   my $prompt_ship = $cfg->entry("shop", "shipping", 0);
   if ($prompt_ship) {
     my ($courier) = BSE::Shipping->get_couriers($cfg, $cgi->param("shipping_name"));
+    my $country_code = bse_country_code($values->{delivCountry});
     if ($courier) {
-      unless ($courier->can_deliver(country => $values->{delivCountry},
+      unless ($courier->can_deliver(country => $country_code,
 				    suburb => $values->{delivSuburb},
 				    postcode => $values->{delivPostCode})) {
 	$cgi->param("courier", undef);
@@ -1464,7 +1479,7 @@ sub _fillout_order {
       my $cost = $courier->calculate_shipping
 	(
 	 parcels => \@parcels,
-	 country => $values->{delivCountry},
+	 country => $country_code,
 	 suburb => $values->{delivSuburb},
 	 postcode => $values->{delivPostCode}
        );

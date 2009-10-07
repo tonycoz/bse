@@ -28,14 +28,8 @@ sub calculate_shipping {
     or confess "Missing suburb paramater";
   my $postcode = $opts{postcode}
     or confess "Missing postcode parameter";
-  my $country = $opts{country}
+  my $country_code = $opts{country}
     or confess "Missing country parameter";
-
-  my $country_code = bse_country_code($country);
-  unless ($country_code) {
-    $self->{error} = "Unknown country";
-    return;
-  }
 
   my $source_postcode = $self->{config}->entry("shipping", "sourcepostcode");
   unless ($source_postcode) {

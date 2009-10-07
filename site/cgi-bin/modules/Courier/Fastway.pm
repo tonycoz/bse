@@ -27,7 +27,7 @@ sub can_deliver {
     my $country = $opts{country}
       or return 0;
 
-    return 0 if lc $country ne "australia";
+    return 0 if lc $country ne "au";
 
     return 1;
 }

@@ -4,17 +4,22 @@ use base "Exporter";
 our @EXPORT_OK = qw(bse_country_code);
 
 my %country_name_to_code;
+my %code_to_country;
 my @codes;
 while (<DATA>) {
     chomp;
     next if /^#/ || /^\s*$/;
     my ($code, $name) = split /\s+/, $_, 2;
     $country_name_to_code{lc $name} = $code;
+    $code_to_country{$code} = $name;
     push @codes, $code;
 }
 
 sub bse_country_code {
   my ($name) = @_;
+
+  exists $code_to_country{uc $name}
+    and return uc $name;
 
   exists $country_name_to_code{lc $name} or return;
 
