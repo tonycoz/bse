@@ -49,13 +49,13 @@ my %req_bad =
 
 $result = $payment->payment(%req_bad);
 ok($result, "got some sort of result");
-ok(!$result->{success}, "failed as expected");
+ok(!$result->{success}, "failed as expected (bad CC expiry)");
 ok($result->{error}, "got an error: $result->{error}");
 
 # try to fail one with a bad password
 my %cfg_bad =
   (
-   testmerchantid=>'ABC0001x',
+   testmerchantid=>'xyz0010', ##'ABC0001x',
    testpassword=>'abc123xyz',
    test=>1,
    debug => $debug,
@@ -68,7 +68,7 @@ $payment = DevHelp::Payments::SecurePayXML->new($cfg);
 
 $result = $payment->payment(%req);
 ok($result, "got some sort of result");
-ok(!$result->{success}, "failed as expected");
+ok(!$result->{success}, "failed as expected (bad password)");
 ok($result->{error}, "got an error: $result->{error}");
 
 # try to fail one with a bad connectivity
