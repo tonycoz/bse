@@ -1,302 +1,287 @@
 <:wrap admin/xbase.tmpl title=>"Edit Site Member":>
 <h1>Edit Site Member</h1>
-<p>
-| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |
-<a href="/cgi-bin/admin/siteusers.pl">Site Members</a> |
-<a href="mailto:<:siteuser email:>">Email</a>
-<:ifUserorders:>| <a href="/cgi-bin/admin/siteusers.pl?a_view=1&amp;id=<:siteuser id:>&amp;_t=orders">Orders</a><:or:><:eif:> |
-<a href="/cgi-bin/admin/admin_seminar.pl?a_addattendseminar=1&amp;siteuser_id=<:siteuser id:>">Add to seminar</a> |
-<a href="/cgi-bin/admin/siteusers.pl?a_view=1&amp;id=<:siteuser id:>&amp;_t=bookings">Seminar Bookings</a> |
-<a href="<:script:>?a_edit=1&amp;id=<:siteuser id:>&amp;_t=groups">Groups</a> |
-</p>
-
+<:include admin/users/inc_user_menu.tmpl:>
 <:ifMessage:>
 <p><b><:message:></b></p>
 <:or:><:eif:> 
 
 <form method="POST" action="<:script:>" enctype="multipart/form-data">
 <input type="hidden" name="id" value="<:siteuser id:>" />
-  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
-    <tr> 
-      <td> 
-        <table cellpadding="6" border="0" cellspacing="1">
+        <table class="editform editformtiny">
 <:ifCfg "site users" nopassword:><:or:>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">Logon: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>Logon: </th>
+            <td> 
 	      <:siteuser userId:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser userId:> <:error_img userId:></td>
+            <td class="help"><:help editsiteuser userId:> <:error_img userId:></td>
           </tr>
 <:eif:>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">Email: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>Email: </th>
+            <td> 
               <input type="text" name="email" value="<:old email siteuser email:>" size="60" /> (<:ifSiteuser confirmed:>confirmed<:or:><:if UserCan bse_members_confirm:><a href="<:script:>?a_view=1&amp;id=<:siteuser id:>&amp;_t=confirm&amp;r=<:script:>%3Fa_edit=1%26id=<:siteuser id:>">unconfirmed</a><:or UserCan:>unconfirmed<:eif UserCan:><:eif:>)
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser email:>  <:error_img email:></td>
+            <td class="help"><:help editsiteuser email:>  <:error_img email:></td>
           </tr>
 <:ifCfg "site users" nopassword:>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">Confirm Email: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>Confirm Email: </th>
+            <td> 
               <input type="text" name="confirmemail" value="<:old confirmemail:>" size="60" />
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser confirmemail:>  <:error_img confirmemail:></td>
+            <td class="help"><:help editsiteuser confirmemail:>  <:error_img confirmemail:></td>
           </tr>
 <:or:><:eif:>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">Disabled: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>Disabled: </th>
+            <td> 
               <input type="checkbox" name="disabled" value="1" <:ifSiteuser disabled:>checked<:or:><:eif:>  /><input type="hidden" name="saveDisabled" value="1" />
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser disabled:></td>
+            <td class="help"><:help editsiteuser disabled:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">First Name: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>First Name: </th>
+            <td> 
               <input type="text" name="name1" value="<:old name1 siteuser name1:>" size="60" /><:ifRequired name1:>*<:or:><:eif:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser name1:>  <:error_img name1:></td>
+            <td class="help"><:help editsiteuser name1:>  <:error_img name1:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">Last Name: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>Last Name: </th>
+            <td> 
               <input type="text" name="name2" value="<:old name2 siteuser name2:>" size="60" /><:ifRequired name2:>*<:or:><:eif:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser name2:>  <:error_img name2:></td>
+            <td class="help"><:help editsiteuser name2:>  <:error_img name2:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">address: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>address: </th>
+            <td> 
               <input type="text" name="address" value="<:old address siteuser address:>" size="60" /><:ifRequired address:>*<:or:><:eif:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser address:>  <:error_img address:></td>
+            <td class="help"><:help editsiteuser address:>  <:error_img address:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">city: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>city: </th>
+            <td> 
               <input type="text" name="city" value="<:old city siteuser city:>" /><:ifRequired city:>*<:or:><:eif:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser city:>  <:error_img city:></td>
+            <td><:help editsiteuser city:>  <:error_img city:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">state: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>state: </th>
+            <td> 
               <input type="text" name="state" value="<:old state siteuser state:>" /><:ifRequired state:>*<:or:><:eif:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser state:>  <:error_img state:></td>
+            <td class="help"><:help editsiteuser state:>  <:error_img state:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">postcode: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>postcode: </th>
+            <td> 
               <input type="text" name="postcode" value="<:old postcode siteuser postcode:>" /><:ifRequired postcode:>*<:or:><:eif:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser postcode:>  <:error_img postcode:></td>
+            <td class="help"><:help editsiteuser postcode:>  <:error_img postcode:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">telephone: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>telephone: </th>
+            <td> 
               <input type="text" name="telephone" value="<:old telephone siteuser telephone:>" /><:ifRequired telephone:>*<:or:><:eif:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser telephone:>  <:error_img telephone:></td>
+            <td class="help"><:help editsiteuser telephone:>  <:error_img telephone:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">mobile: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>mobile: </th>
+            <td> 
               <input type="text" name="delivMobile" value="<:old delivMobile siteuser delivMobile:>" /><:ifRequired delivMobile:>*<:or:><:eif:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser delivMobile:>  <:error_img delivMobile:></td>
+            <td class="help"><:help editsiteuser delivMobile:>  <:error_img delivMobile:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">facsimile: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>facsimile: </th>
+            <td> 
               <input type="text" name="facsimile" value="<:old facsimile siteuser facsimile:>" /><:ifRequired facsimile:>*<:or:><:eif:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser facsimile:>  <:error_img facsimile:></td>
+            <td class="help"><:help editsiteuser facsimile:>  <:error_img facsimile:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">country: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>country: </th>
+            <td> 
               <input type="text" name="country" value="<:old country siteuser country:>" size="60" /><:ifRequired country:>*<:or:><:eif:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser country:>  <:error_img country:></td>
+            <td class="help"><:help editsiteuser country:>  <:error_img country:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">title: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>title: </th>
+            <td> 
               <input type="text" name="title" value="<:old title siteuser title:>" /><:ifRequired title:>*<:or:><:eif:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser title:>  <:error_img title:></td>
+            <td class="help"><:help editsiteuser title:>  <:error_img title:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">organization: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>organization: </th>
+            <td> 
               <input type="text" name="organization" value="<:old organization siteuser organization:>" size="60" /><:ifRequired organization:>*<:or:><:eif:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser organization:>  <:error_img organization:></td>
+            <td class="help"><:help editsiteuser organization:>  <:error_img organization:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">billFirstName: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>billFirstName: </th>
+            <td> 
               <input type="text" name="billFirstName" value="<:old billFirstName siteuser billFirstName:>" size="60" /><:ifRequired billFirstName:>*<:or:><:eif:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser billFirstName:>  <:error_img billFirstName:></td>
+            <td class="help"><:help editsiteuser billFirstName:>  <:error_img billFirstName:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">billLastName: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>billLastName: </th>
+            <td> 
               <input type="text" name="billLastName" value="<:old billLastName siteuser billLastName:>" size="60" /><:ifRequired billLastName:>*<:or:><:eif:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser billLastName:>  <:error_img billLastName:></td>
+            <td class="help"><:help editsiteuser billLastName:>  <:error_img billLastName:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">billStreet: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>billStreet: </th>
+            <td> 
               <input type="text" name="billStreet" value="<:old billStreet siteuser billStreet:>" size="60" /><:ifRequired billStreet:>*<:or:><:eif:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser billStreet:>  <:error_img billStreet:></td>
+            <td class="help"><:help editsiteuser billStreet:>  <:error_img billStreet:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">billSuburb: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>billSuburb: </th>
+            <td> 
               <input type="text" name="billSuburb" value="<:old billSuburb siteuser billSuburb:>" /><:ifRequired billSuburb:>*<:or:><:eif:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser billSuburb:>  <:error_img billSuburb:></td>
+            <td><:help editsiteuser billSuburb:>  <:error_img billSuburb:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">billState: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>billState: </th>
+            <td> 
               <input type="text" name="billState" value="<:old billState siteuser billState:>" /><:ifRequired billState:>*<:or:><:eif:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser billState:>  <:error_img billState:></td>
+            <td class="help"><:help editsiteuser billState:>  <:error_img billState:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">billPostCode: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>billPostCode: </th>
+            <td> 
               <input type="text" name="billPostCode" value="<:old billPostCode siteuser billPostCode:>" /><:ifRequired billPostCode:>*<:or:><:eif:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser billPostCode:>  <:error_img billPostCode:></td>
+            <td class="help"><:help editsiteuser billPostCode:>  <:error_img billPostCode:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">billCountry: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>billCountry: </th>
+            <td> 
               <input type="text" name="billCountry" value="<:old billCountry siteuser billCountry:>" /><:ifRequired billCountry:>*<:or:><:eif:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser billCountry:>  <:error_img billCountry:></td>
+            <td class="help"><:help editsiteuser billCountry:>  <:error_img billCountry:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">instructions: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>instructions: </th>
+            <td> 
               <input type="text" name="instructions" value="<:old instructions siteuser instructions:>" /><:ifRequired instructions:>*<:or:><:eif:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser instructions:>  <:error_img instructions:></td>
+            <td class="help"><:help editsiteuser instructions:>  <:error_img instructions:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">billTelephone: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>billTelephone: </th>
+            <td> 
               <input type="text" name="billTelephone" value="<:old billTelephone siteuser billTelephone:>" /><:ifRequired billTelephone:>*<:or:><:eif:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser billTelephone:>  <:error_img billTelephone:></td>
+            <td class="help"><:help editsiteuser billTelephone:>  <:error_img billTelephone:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">billMobile: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>billMobile: </th>
+            <td> 
               <input type="text" name="billMobile" value="<:old billMobile siteuser billMobile:>" /><:ifRequired billMobile:>*<:or:><:eif:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser billMobile:>  <:error_img billMobile:></td>
+            <td class="help"><:help editsiteuser billMobile:>  <:error_img billMobile:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">billFacsimile: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>billFacsimile: </th>
+            <td> 
               <input type="text" name="billFacsimile" value="<:old billFacsimile siteuser billFacsimile:>" /><:ifRequired billFacsimile:>*<:or:><:eif:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser billFacsimile:>  <:error_img billFacsimile:></td>
+            <td class="help"><:help editsiteuser billFacsimile:>  <:error_img billFacsimile:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">billEmail: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>billEmail: </th>
+            <td> 
               <input type="text" name="billEmail" value="<:old billEmail siteuser billEmail:>" /><:ifRequired billEmail:>*<:or:><:eif:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser billEmail:>  <:error_img billEmail:></td>
+            <td class="help"><:help editsiteuser billEmail:>  <:error_img billEmail:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">Affiliate Name: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>Affiliate Name: </th>
+            <td> 
               <input type="text" name="affiliate_name" value="<:old affiliate_name siteuser affiliate_name:>" />
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser affiliate_name:>  <:error_img affiliate_name:></td>
+            <td class="help"><:help editsiteuser affiliate_name:>  <:error_img affiliate_name:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left" valign="top">Admin Notes: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>Admin Notes: </th>
+            <td> 
               <textarea name="adminNotes" wrap="soft" rows="5" cols="60"><:old adminNotes siteuser adminNotes:></textarea>
             </td>
-            <td bgcolor="#FFFFFF" valign="top"><:help editsiteuser adminNotes:>  <:error_img adminNotes:></td>
+            <td class="help"><:help editsiteuser adminNotes:>  <:error_img adminNotes:></td>
           </tr>
 <:if Flags:>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left" valign="top">Flags: </th>
-            <td bgcolor="#FFFFFF"> <input type="hidden" name="saveFlags" value="1" />
+            <th>Flags: </th>
+            <td> <input type="hidden" name="saveFlags" value="1" />
 	    <:iterator begin flags:>
 	    <input type="checkbox" name="flags" value="<:flag id:>" <:ifFlagSet [flag id]:>checked="checked" <:or:><:eif:>/> <:flag desc:>
 	    <:iterator separator flags:>
 	    <br />
 	    <:iterator end flags:>
             </td>
-            <td bgcolor="#FFFFFF" valign="top"><:help editsiteuser flags:>  <:error_img adminNotes:></td>
+            <td class="help"><:help editsiteuser flags:>  <:error_img adminNotes:></td>
           </tr>
 <:or Flags:><:eif Flags:>
 <:if Subscriptions:>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left" valign="top">Subscriptions: </th>
-            <td bgcolor="#FFFFFF"> <input type="hidden" name="checkedsubs" value="1" />
+            <th valign="top">Subscriptions: </th>
+            <td> <input type="hidden" name="checkedsubs" value="1" />
 	    <:iterator begin subscriptions:>
 	    <input type="checkbox" name="subscription" value="<:subscription id:>" <:ifSubscribed:>checked="checked" <:or:><:eif:>/> <:subscription name:>
 	    <:iterator separator subscriptions:>
 	    <br />
 	    <:iterator end subscriptions:>
             </td>
-            <td bgcolor="#FFFFFF" valign="top"><:help editsiteuser subscriptions:></td>
+            <td class="help"><:help editsiteuser subscriptions:></td>
           </tr>
 <:or Subscriptions:><:eif Subscriptions:>
 <:iterator begin imagetemplates:>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left"> <:imagetemplate description:>: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th> <:imagetemplate description:>: </th>
+            <td> 
               <input type="file" name="image_<:imagetemplate id:>_file" /><br />
               Alt: <input type="text" name="image_<:imagetemplate id:>_alt" value="<:siteuser_image [imagetemplate id] alt:>" /><br />
 	<:ifSiteuser_image [imagetemplate id]:><input type="checkbox" name="image_<:imagetemplate id:>_delete" value="1" /> Delete<br /><img src="<:siteuser_image [imagetemplate id] url:>" /><:or:><:eif:>
               </td>
-            <td bgcolor="#FFFFFF"> <:help editsiteuser images:>  <:error_img password:></td>
+            <td class="help"> <:help editsiteuser images:>  <:error_img password:></td>
           </tr>
 <:iterator end imagetemplates:>
 <:if UserCan siteuser_changepw:>
 <:if Cfg "site users" nopassword:><:or Cfg:>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left"> Password: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th> Password: </th>
+            <td> 
               <input type="password" name="password" />
               </td>
-            <td bgcolor="#FFFFFF"> <:help editsiteuser password:>  <:error_img password:></td>
+            <td> <:help editsiteuser password:>  <:error_img password:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left"> Confirm: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th> Confirm: </th>
+            <td> 
               <input type="password" name="confirm_password" />
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser confirm_password:> <:error_img confirm_password:> </td>
+            <td class="help"><:help editsiteuser confirm_password:> <:error_img confirm_password:> </td>
           </tr>
 <:eif Cfg:>
 <:or UserCan:><:eif UserCan:>
 <:include admin/users/custom_edit.tmpl optional:>
           <tr> 
-            <td bgcolor="#FFFFFF" colspan="3" align="right"> 
+            <td class="buttons"colspan="3"> 
               <input type="submit" name="a_save" value="  Save User  " />
             </td>
           </tr>
         </table>
-      </td>
-    </tr>
-  </table>
 </form>
