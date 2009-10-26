@@ -1,7 +1,9 @@
 <:wrap admin/xbase.tmpl title=>"Site Member Files":>
 <h1>Site Member Files</h1>
 <:include admin/users/inc_user_menu.tmpl:>
-<:ifUserCan bse_members_user_add_file:><p><a href="/cgi-bin/admin/siteusers.pl?a_adduserfileform=1&amp;id=<:siteuser id:>">Add a file</a></p><:or:><:eif:>
+<p>| <:ifUserCan bse_members_user_add_file:><a href="/cgi-bin/admin/siteusers.pl?a_adduserfileform=1&amp;id=<:siteuser id:>">Add a file</a> |<:or:><:eif:>
+<a href="<:script:>?a_fileaccesslog=1&amp;siteuser_id=<:siteuser id:>">Files downloaded by <:siteuser userId:></a> |
+</p>
 
 <:ifMessage:><div id="message"><:message:></div><:or:><:eif:>
 <div id="filelist">
@@ -26,7 +28,7 @@
     <td><:date userfile modwhen:></td>
     <td><:userfile title:></td>
     <td><:replace [userfile body] ^([\w\W]{25})[\w\W]+ "$1 ...":></td>
-    <td><a href="<:script:>?a_deluserfileform=1&amp;id=<:siteuser id:>&amp;file_id=<:userfile id:>">Delete</a></div> <a href="<:script:>?a_edituserfile=1&amp;id=<:siteuser id:>&amp;file_id=<:userfile id:>">Edit</a></div></td>
+    <td><a href="<:script:>?a_deluserfileform=1&amp;id=<:siteuser id:>&amp;file_id=<:userfile id:>">Delete</a> <a href="<:script:>?a_edituserfile=1&amp;id=<:siteuser id:>&amp;file_id=<:userfile id:>">Edit</a> <a href="<:script:>?a_fileaccesslog=1&amp;file_id=<:userfile id:>">Downloads</a></td>
   </tr>
   <:iterator end userfiles:>
 <:or Userfiles:>

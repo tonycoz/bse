@@ -1877,7 +1877,7 @@ sub req_fileaccesslog {
   require BSE::TB::FileAccessLog;
   my @entries;
   unless (keys %errors) {
-    push @filters, [ between => when_at => $from_sql, $to_sql ];
+    push @filters, [ between => when_at => $from_sql, "$to_sql 23:59:59" ];
     $cgi->param(from => $from);
     $cgi->param(to => $to);
     $page_args{from} = $from;
