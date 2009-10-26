@@ -94,6 +94,7 @@ site/cgi-bin/modules/BSE/Mail/Sendmail.pm
 site/cgi-bin/modules/BSE/Message.pm
 site/cgi-bin/modules/BSE/NLFilter/SQL.pm
 site/cgi-bin/modules/BSE/Permissions.pm
+site/cgi-bin/modules/BSE/ProductImportXLS.pm
 site/cgi-bin/modules/BSE/Report.pm
 site/cgi-bin/modules/BSE/Request.pm
 site/cgi-bin/modules/BSE/Request/Base.pm
@@ -129,6 +130,8 @@ site/cgi-bin/modules/BSE/TB/AdminPerm.pm
 site/cgi-bin/modules/BSE/TB/AdminPerms.pm
 site/cgi-bin/modules/BSE/TB/AdminUser.pm
 site/cgi-bin/modules/BSE/TB/AdminUsers.pm
+site/cgi-bin/modules/BSE/TB/FileAccessLog.pm
+site/cgi-bin/modules/BSE/TB/FileAccessLogEntry.pm
 site/cgi-bin/modules/BSE/TB/Location.pm
 site/cgi-bin/modules/BSE/TB/Locations.pm
 site/cgi-bin/modules/BSE/TB/Order.pm
@@ -137,7 +140,8 @@ site/cgi-bin/modules/BSE/TB/OrderItem.pm
 site/cgi-bin/modules/BSE/TB/OrderItemOption.pm
 site/cgi-bin/modules/BSE/TB/OrderItemOptions.pm
 site/cgi-bin/modules/BSE/TB/OrderItems.pm
-site/cgi-bin/modules/BSE/ProductImportXLS.pm
+site/cgi-bin/modules/BSE/TB/OwnedFile.pm
+site/cgi-bin/modules/BSE/TB/OwnedFiles.pm
 site/cgi-bin/modules/BSE/TB/Seminar.pm
 site/cgi-bin/modules/BSE/TB/ProductOption.pm
 site/cgi-bin/modules/BSE/TB/ProductOptions.pm
@@ -180,6 +184,7 @@ site/cgi-bin/modules/BSE/UI/SubAdmin.pm
 site/cgi-bin/modules/BSE/UI/Tellafriend.pm
 site/cgi-bin/modules/BSE/UI/Thumb.pm
 site/cgi-bin/modules/BSE/UI/User.pm
+site/cgi-bin/modules/BSE/UI/UserCommon.pm
 site/cgi-bin/modules/BSE/UserReg.pm
 site/cgi-bin/modules/BSE/Util/ContentType.pm
 site/cgi-bin/modules/BSE/Util/DynSort.pm
@@ -344,6 +349,7 @@ site/htdocs/images/titles/perl.gif
 site/htdocs/images/titles/the_shop.gif
 site/htdocs/images/titles/your_site.gif
 site/htdocs/images/trans_pixel.gif
+site/htdocs/js/admin_dragdrop.js
 site/htdocs/js/admin_prodopts.js
 site/htdocs/js/builder.js
 site/htdocs/js/controls.js
@@ -376,7 +382,9 @@ site/templates/admin/edit_1.tmpl
 # site/templates/admin/edit_4.tmpl
 # site/templates/admin/edit_5.tmpl
 site/templates/admin/edit_catalog.tmpl
+site/templates/admin/edit_dragdrop.tmpl
 site/templates/admin/edit_groups.tmpl
+site/templates/admin/edit_kidsof.tmpl
 site/templates/admin/edit_prodopts.tmpl
 site/templates/admin/edit_product.tmpl
 site/templates/admin/edit_seminar.tmpl
@@ -451,14 +459,26 @@ site/templates/admin/subscr/edit.tmpl
 site/templates/admin/subscr/list.tmpl
 site/templates/admin/userlist.tmpl
 site/templates/admin/users/add.tmpl
+site/templates/admin/users/add_group_file.tmpl
+site/templates/admin/users/add_user_file.tmpl
+site/templates/admin/users/delete_group_file.tmpl
+site/templates/admin/users/delete_user_file.tmpl
 site/templates/admin/users/edit.tmpl
+site/templates/admin/users/edit_files.tmpl
 site/templates/admin/users/edit_groups.tmpl
+site/templates/admin/users/edit_group_file.tmpl
 site/templates/admin/users/edit_orders.tmpl
+site/templates/admin/users/edit_user_file.tmpl
+site/templates/admin/users/fileaccess.tmpl
 site/templates/admin/users/groupadd.tmpl
 site/templates/admin/users/groupdelete.tmpl
 site/templates/admin/users/groupedit.tmpl
+site/templates/admin/users/groupedit_files.tmpl
 site/templates/admin/users/grouplist.tmpl
 site/templates/admin/users/groupmembers.tmpl
+site/templates/admin/users/inc_add_user_file.tmpl
+site/templates/admin/users/inc_group_menu.tmpl
+site/templates/admin/users/inc_user_menu.tmpl
 site/templates/admin/users/list.tmpl
 site/templates/admin/users/list_low.tmpl
 site/templates/admin/users/view.tmpl
@@ -554,6 +574,8 @@ site/templates/user/base_cancelbooking.tmpl
 site/templates/user/base_editbooking.tmpl
 site/templates/user/base_orderdetail.tmpl
 site/templates/user/base_redirect.tmpl
+site/templates/user/base_userpage_files.tmpl
+site/templates/user/base_userpage_orders.tmpl
 site/templates/user/base_userpage_wishlist.tmpl
 site/templates/user/base_wishlist.tmpl
 site/templates/user/blacklistdone_base.tmpl

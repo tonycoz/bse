@@ -546,6 +546,15 @@ downloaded.
 if non-zero the user must be registered/logged on to download I<any>
 file.
 
+=item log_downufile
+
+if non-zero, downloads of userfiles will be logged.  Default: 0
+
+=item log_downufile_maxage
+
+the maximum age of entries in the user file download log, in days.
+Default: 30.
+
 =back
 
 =head2 [confirmations]

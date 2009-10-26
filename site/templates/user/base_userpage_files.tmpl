@@ -1,0 +1,31 @@
+<:wrap base.tmpl:> 
+<:include include/usermenu.tmpl:>
+<p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Hello <:ifUser 
+  name1:><:user name1:><:or:><:user userId:><:eif:>, this section contains your 
+  personal account details. From here you can <:ifCfg subscriptions enabled:> manage 
+  your newsletter subscriptions,<:or:><:eif:><:ifCfg shop enabled:> monitor the current status 
+  or purchase history of your orders from our on-line store<:or:><:eif:><:ifOr [cfg shop enabled] [cfg subscriptions enabled]:> and<:or:><:eif:> modify 
+  your personal details, for example, your password, email and mailing addresses 
+  etc.</font></p>
+<p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">To modify your 
+  account options, <:ifCfg subscriptions enabled:>like subscribing to one of our available newsletters,<:or:><:eif:> please 
+  proceed to edit your &#8220;<a href="<:script:>?show_opts=1">User Profile</a>&#8221; 
+  and make your changes <:ifCfg subscriptions enabled:>eg: select a newsletter from the available list<:or:><:eif:> then 
+  select &#8220;Save Options&#8221;.</font></p>
+
+<table>
+<tr>
+  <th>Name</th>
+  <th>Date</th>
+  <th>Title</th>
+  <th>Size</th>
+</tr>
+<:iterator begin userfiles sort: -modwhen:>
+<tr>
+  <td><a href="<:userfile url:>"><:userfile display_name:></a></td>
+  <td><:date userfile modwhen:></td>
+  <td><:userfile title:></td>
+  <td><:kb userfile size_in_bytes:></td>
+</tr>
+<:iterator end userfiles:>
+</table>

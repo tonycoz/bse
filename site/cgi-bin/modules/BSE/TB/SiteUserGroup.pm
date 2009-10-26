@@ -1,6 +1,7 @@
 package BSE::TB::SiteUserGroup;
 use strict;
 use base 'Squirrel::Row';
+use constant OWNER_TYPE => "G";
 
 sub columns {
   qw(id name);
@@ -77,6 +78,18 @@ sub contains_user {
 					  $user_id, $self->{id});
 
   return scalar @membership;
+}
+
+sub file_owner_type {
+  return OWNER_TYPE;
+}
+
+sub files {
+  my ($self) = @_;
+
+  require BSE::TB::OwnedFiles;
+  return BSE::TB::OwnedFiles->getBy(owner_type => OWNER_TYPE,
+				    owner_id => $self->id);
 }
 
 1;

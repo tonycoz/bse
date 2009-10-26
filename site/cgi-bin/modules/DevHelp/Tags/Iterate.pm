@@ -29,11 +29,33 @@ sub _iter_iterate {
 
   if (++${$state->{index}} < @{$state->{data}}) {
     my $item = $state->{data}[${$state->{index}}];
+    if ($state->{fetch}) {
+      my $fetch = $state->{fetch};
+      my $code = $fetch;
+      my @args;
+      if (ref $fetch eq 'ARRAY') {
+	($code, @args) = @$fetch;
+      }
+      if ($state->{state}) {
+	push @args, $state->{state};
+      }
+      push @args, $item;
+      if (ref $code) {
+	($item) = $code->(@args);
+      }
+      else {
+	my $object = shift @args;
+	($item) = $object->$code(@args);
+      }
+    }
+    $state->{item} = $item;
     ${$state->{store}} = $item if $state->{store};
     $self->next_item($item, $state->{single});
     return 1;
   }
   else {
+    $state->{item} = undef;
+    ${$state->{store}} = undef if $state->{store};
     $self->next_item(undef, $state->{single});
   }
   return;
@@ -51,10 +73,10 @@ sub item {
 sub _iter_item {
   my ($self, $state, $args) = @_;
 
-  ${$state->{index}} >= 0 && ${$state->{index}} < @{$state->{data}}
+  $state->{item}
     or return "** $state->{single} should only be used inside iterator $state->{plural} **";
 
-  return $self->item($state->{data}[${$state->{index}}], $args);
+  return $self->item($state->{item}, $args);
 }
 
 sub _iter_number_paged {

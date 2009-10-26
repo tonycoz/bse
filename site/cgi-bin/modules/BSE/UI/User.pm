@@ -6,6 +6,7 @@ use DevHelp::HTML qw(:default popup_menu);
 use BSE::Util::Iterate;
 use BSE::Util::SQL qw/now_datetime/;
 use DevHelp::Date qw(dh_strftime_sql_datetime);
+use base 'BSE::UI::UserCommon';
 
 my %actions =
   (
@@ -112,6 +113,12 @@ sub req_info {
 			'subscription', 'subscriptions'),
      $it->make_iterator([ \&iter_sembookings, $user ],
 			'booking', 'bookings'),
+     $it->make
+     (
+      code => [ iter_userfiles => $self, $user, $req ],
+      single => 'userfile',
+      plural => 'userfiles',
+     ),
     );
 
   return $req->dyn_response('user/userpage', \%acts);

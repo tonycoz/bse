@@ -5,8 +5,9 @@ use BSE::Util::SQL qw(sql_datetime now_sqldatetime);
 use BSE::Cfg;
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(bse_cfg bse_make_product bse_make_catalog bse_encoding bse_add_image bse_add_step_child);
+@EXPORT_OK = qw(bse_cfg bse_make_product bse_make_catalog bse_encoding bse_add_image bse_add_step_child bse_add_owned_file bse_delete_owned_file bse_replace_owned_file);
 use Carp qw(confess croak);
+use Fcntl qw(:seek);
 
 my %acticle_defaults =
   (
@@ -269,6 +270,102 @@ sub _load_editor_class {
 
   require BSE::Edit::Base;
   return BSE::Edit::Base->article_class($article, 'Articles', $cfg);
+}
+
+# File::Copy doesn't like CGI.pm's fake fhs
+sub _copy_file_from_fh {
+  my ($in_fh, $out_fh) = @_;
+
+  binmode $out_fh;
+  binmode $in_fh;
+  seek $in_fh, 0, SEEK_SET;
+  my $data;
+  local $/ = \8192;
+  while (defined ($data = <$in_fh>)) {
+    print $out_fh $data;
+  }
+
+  1;
+}
+
+sub bse_add_owned_file {
+  my ($cfg, $owner, %opts) = @_;
+
+  defined $opts{display_name} && $opts{display_name} =~ /\S/
+    or croak "bse_add_owned_file: display_name must be non-blank";
+
+  defined $opts{title} && $opts{title} =~ /\S/
+    or $opts{title} = $opts{display_name};
+  
+  unless ($opts{content_type}) {
+    require BSE::Util::ContentType;
+    $opts{content_type} = BSE::Util::ContentType::content_type($cfg, $opts{display_name});
+  }
+
+  my $file = delete $opts{file}
+    or die "No source file provided\n";;
+
+  # copy the file to the right place
+  require DevHelp::FileUpload;
+  my $file_dir = $cfg->entryVar('paths', 'downloads');
+  my $msg;
+  my ($saved_name, $out_fh) = DevHelp::FileUpload->
+    make_img_filename($file_dir, $opts{display_name}, \$msg)
+    or die "$msg\n";
+  _copy_file_from_fh($file, $out_fh)
+    or die "$!\n";
+  unless (close $out_fh) {
+    die "Error saving file: $!\n";
+  }
+
+  $opts{owner_type} = $owner->file_owner_type;
+  $opts{size_in_bytes} = -s "$file_dir/$saved_name";
+  $opts{owner_id} = $owner->id;
+  $opts{category} ||= '';
+  $opts{filename} = $saved_name;
+  
+  require BSE::TB::OwnedFiles;
+  return BSE::TB::OwnedFiles->make(%opts);
+}
+
+sub bse_delete_owned_file {
+  my ($cfg, $owned_file) = @_;
+
+  my $file_dir = $cfg->entryVar('paths', 'downloads');
+  unlink "$file_dir/$owned_file->{filename}";
+  $owned_file->remove;
+}
+
+sub bse_replace_owned_file {
+  my ($cfg, $owned_file, %opts) = @_;
+
+  my $file_dir = $cfg->entryVar('paths', 'downloads');
+  my $old_name;
+  if ($opts{file}) {
+    my $msg;
+    require DevHelp::FileUpload;
+    my ($saved_name, $out_fh) = DevHelp::FileUpload->
+      make_img_filename($file_dir, $opts{display_name}, \$msg)
+	or die "$msg\n";
+    _copy_file_from_fh($opts{file}, $out_fh)
+	or die "$!\n";
+    unless (close $out_fh) {
+      die "Error saving file: $!\n";
+    }
+    $old_name = $owned_file->{filename};
+    $owned_file->{filename} = $saved_name;
+    $owned_file->{size_in_bytes} = -s "$file_dir/$saved_name";
+  }
+
+  for my $field (qw/category display_name content_type download title body modwhen size_in_bytes/) {
+    defined $opts{$field}
+      and $owned_file->{$field} = $opts{$field};
+  }
+  $owned_file->save;
+  $old_name
+    and unlink "$file_dir/$old_name";
+
+  1;
 }
 
 1;

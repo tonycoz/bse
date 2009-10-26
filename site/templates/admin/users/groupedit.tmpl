@@ -1,14 +1,6 @@
 <:wrap admin/xbase.tmpl title=>"Edit Member Group":>
 <h2>Add Member Group</h2>
-<p>
-| 
-<a href="/cgi-bin/admin/menu.pl">Admin menu</a>
-|
-<a href="<:script:>">Member List</a>
-|
-<a href="<:script:>?a_grouplist=1">Group List</a>
-|
-</p>
+<:include admin/users/inc_group_menu.tmpl:>
 <:ifMsg:><p><:msg:></p><:or:><:eif:>
 
 <form method="post" action="<:script:>" name="editgroup">

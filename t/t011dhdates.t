@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests=>42;
+use Test::More tests=>44;
 
 my $gotmodule;
 BEGIN { $gotmodule = use_ok('DevHelp::Date', ':all'); }
@@ -42,6 +42,11 @@ SKIP:
   undef $msg;
   is_deeply([ dh_parse_time("1101", \$msg) ], [ 11, 1, 0 ], "parse 1101");
   is($msg, undef, "no error");
+
+  is_deeply([ dh_parse_time("11:01:02", \$msg) ], [ 11, 1, 2 ],
+	    "parse 11:01:02") or diag $msg;
+  is_deeply([ dh_parse_time("11:01:02pm", \$msg) ], [23, 1, 2 ],
+	    "parse 11:01:02pm") or diag $msg;
 
   # fail a bit
   undef $msg;

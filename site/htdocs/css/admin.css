@@ -138,6 +138,14 @@ table.editform td.check  {
   width: 20px;
 }
 
+table.editform td textarea {
+  width: 95%;
+}
+
+table.editform td input.wide {
+  width: 95%;
+}
+
 table.editform td.check { 
   text-align: center;
 }
@@ -166,4 +174,35 @@ div.menu {
 .inplaceeditor-saving {
   padding-right: 20px;
   background: url(/images/admin/busy.gif) bottom right no-repeat;
+}
+
+#sitedragdrop li { 
+  margin-top: 0px;
+  margin-bottom: 0px;
+  padding-bottom: 0px;
+  padding-top: 2px;
+}
+
+#sitedragdrop ul {
+  padding-top: 6px;
+  padding-bottom: 0px;
+}
+
+#filelist div.fileentry {
+  border: 1px solid #000;
+}
+
+#filelist div.fileentry .title { 
+  background-color: #fff;
+  border-bottom: 1px solid black;
+}
+
+#fileaccesslog .col_size { 
+  text-align: right;
+}
+
+#fileaccesslog a:link,
+#fileaccesslog a:visited,
+#fileaccesslog a:active { 
+  font-weight: normal;
 }

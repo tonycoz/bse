@@ -1,0 +1,36 @@
+<:wrap admin/xbase.tmpl title=>"Site Member Files":>
+<h1>Site Member Files</h1>
+<:include admin/users/inc_user_menu.tmpl:>
+<:ifUserCan bse_members_user_add_file:><p><a href="/cgi-bin/admin/siteusers.pl?a_adduserfileform=1&amp;id=<:siteuser id:>">Add a file</a></p><:or:><:eif:>
+
+<:ifMessage:><div id="message"><:message:></div><:or:><:eif:>
+<div id="filelist">
+<table class="editform">
+<tr>
+  <th>Filename</th>
+  <th>Content Type</th>
+  <th>Size</th>
+  <th>Category</th>
+  <th>Last Modified</th>
+  <th>Title</th>
+  <th>Body (partial)</th>
+  <th></th>
+</tr>
+<:if Userfiles:>
+  <:iterator begin userfiles:>
+  <tr>
+    <td><:userfile display_name:></td>
+    <td><:userfile content_type:></td>
+    <td><:kb userfile size_in_bytes:>b</td>
+    <td><:userfile category:></td>
+    <td><:date userfile modwhen:></td>
+    <td><:userfile title:></td>
+    <td><:replace [userfile body] ^([\w\W]{25})[\w\W]+ "$1 ...":></td>
+    <td><a href="<:script:>?a_deluserfileform=1&amp;id=<:siteuser id:>&amp;file_id=<:userfile id:>">Delete</a></div> <a href="<:script:>?a_edituserfile=1&amp;id=<:siteuser id:>&amp;file_id=<:userfile id:>">Edit</a></div></td>
+  </tr>
+  <:iterator end userfiles:>
+<:or Userfiles:>
+<tr><td colspan="8">There are no files attached to this user</td></tr>
+<:eif Userfiles:>
+</table>
+</div>

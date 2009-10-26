@@ -143,10 +143,13 @@ my %built_ins =
                    (?:[01]?\d|2[0-3])  # hour 0-23
                       [:.]             # separator
                       [0-5]\d          # minute
+                      (?:[:.][0-5]\d)? # optional seconds
                   |                    # or 12 hour time:
 		    (?:0?[1-9]|1[012]) # hour 1-12
 		     (?:[:.]           # optionally separator followed
-		      [0-5]\d)?        # by minutes
+		      [0-5]\d          # by minutes
+                      (?:[:.][0-5]\d)? # optionall by seconds
+                    )? 
 		    [ap]m?             # followed by afternoon/morning
                   )$!ix,
     error=>'Invalid time $n',

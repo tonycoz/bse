@@ -203,6 +203,19 @@ sub output_result {
       push @{$result->{headers}}, "Cache-Control: no-cache";
     }
   }
+  if (!grep /^content-length:/, @{$result->{headers}}) {
+    my $length;
+    if (defined $result->{content}) {
+      $length = length $result->{content};
+    }
+    elsif (defined $result->{content_fh}) {
+      # this may need to change if we support byte ranges
+      $length = -s $result->{content_fh};
+    }
+    if (defined $length) {
+      push @{$result->{headers}}, "Content-Length: $length";
+    }
+  }
   if (exists $ENV{GATEWAY_INTERFACE}
       && $ENV{GATEWAY_INTERFACE} =~ /^CGI-Perl\//) {
     require Apache;
@@ -213,7 +226,22 @@ sub output_result {
     print "$_\n" for @{$result->{headers}};
     print "\n";
   }
-  print $result->{content};
+  if (defined $result->{content}) {
+    print $result->{content};
+  }
+  elsif ($result->{content_fh}) {
+    # in the future this could be updated to support byte ranges
+    local $/ = \8192;
+    my $fh = $result->{content_fh};
+    binmode $fh;
+    while (my $data = <$fh>) {
+      print $data;
+    }
+  }
+  else {
+    print STDERR "$ENV{SCRIPT_NAME}: ** No content supplied\n";
+    print "** Internal error\n";
+  }
 }
 
 1;

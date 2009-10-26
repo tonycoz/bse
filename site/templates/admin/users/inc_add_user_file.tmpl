@@ -1,0 +1,41 @@
+<div id="addfile">
+<form enctype="multipart/form-data" method="post">
+<input type="hidden" name="id" value="<:siteuser id:>" />
+<:csrfp admin_user_add_file hidden:>
+<table class="editform editformsmall">
+  <tr>
+    <th>File:</th>
+    <td><input type="file" name="file" /><:error_img file:></td>
+  </tr>
+  <tr>
+   <th>Content-type:</th>
+   <td><input type="text" name="content_type" value="<:old content_type:>" /><:error_img content_type:></td>
+  </tr>
+  <tr>
+   <th>Download:</th>
+   <td><input type="checkbox" name="download" <:ifOld download:>checked="checked" <:or:><:eif:>/><:error_img download:></td>
+  </tr>
+  <tr>
+   <th>Category:</th>
+   <td><:userfile_category:><:error_img category:></td>
+  </tr>
+  <tr>
+    <th>Last modified:</th>
+    <td>Date: <input type="text" name="modwhen_date" value="<:old modwhen_date:>" size="10" /><:error_img modwhen_date:> dd/mm/yyyy<br />Time: <input type="text" name="modwhen_time" value="<:old modwhen_time:>" size="10" /><:error_img modwhen_time:> HH:MM:SS</td>
+  </tr>
+  <tr>
+   <th>Title:</th>
+   <td><input type="text" name="title" value="<:old title:>" class="wide" /><:error_img title:></td>
+  </tr>
+  <tr>
+    <th>Body:</th>
+    <td><textarea name="body" rows="5"><:old body:></textarea><:error_img body:></td>
+  </tr>
+  <tr>
+    <td class="buttons" colspan="2">
+      <input type="submit" name="a_adduserfile" value="Add File" />
+    </td>
+  </tr>
+</table>
+</form>
+</div>

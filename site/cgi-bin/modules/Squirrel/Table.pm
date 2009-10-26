@@ -307,7 +307,7 @@ sub all {
 sub query {
   my ($self, $columns, $query, $opts) = @_;
 
-  $dh->generate_query($self, $columns, $query, $opts);
+  $dh->generate_query($self->rowClass, $columns, $query, $opts);
 }
 
 sub make {

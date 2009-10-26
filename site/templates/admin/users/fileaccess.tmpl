@@ -1,0 +1,48 @@
+<:wrap admin/xbase.tmpl title=>"File Access Log":>
+<h1>File Access Log</h1>
+<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |</p>
+<:if Owner:><p>Only files owned by <a href="<:script:>?id=<:owner_id:>&amp;_t=files&amp;<:ifEq [owner_type] G:>a_editgroup=1<:or:>a_edit=1<:eif:>"><:owner_desc:></a> <a href="<:script:>?a_fileaccesslog=1&amp;<:page_args owner_id owner_type:>">(Remove this filter)</a></p><:or Owner:><:eif Owner:>
+<:ifSiteuser:><p>Files downloaded by <a href="<:script:>?a_edit=1&amp;id=<:siteuser id:>"><:siteuser userId:></a> <a href="<:script:>?a_fileaccesslog=1&amp;<:page_args siteuser_id:>">(Remove this filter)</a></p><:or:><:eif:>
+<:if File:><p>File <a href="<:script:>?<:ifEq [file owner_type] U:>a_edituserfile<:or:>a_editgroupfile<:eif:>=1&amp;id=<:file owner_id:>&amp;file_id=<:file id:>"><:file display_name:></a> <a href="<:script:>?a_fileaccesslog=1&amp;<:page_args file_id:>">(Remove this filter)</a></p><:or File:><:eif File:>
+<:ifCategory:>Files in category: <:category name:> <a href="<:script:>?a_fileaccesslog=1&amp;<:page_args category:>">(Remove this filter)</a><:or:><:eif:>
+
+<p>Page <:fileaccesses_pagenum:> of <:fileaccesses_pagecount:>
+<:ifFirstFileaccessesPage:>First Previous<:or:><a href="<:script:>?a_fileaccesslog=1&amp;p=1&amp;pp=<:fileaccesses_perpage:>">First</a> <a href="<:script:>?a_fileaccesslog=1&amp;p=<:prevFileaccessesPage:>&amp;pp=<:fileaccesses_perpage:>&amp;<:page_args:>">Previous</a><:eif:>
+<:iterator begin repeats [fileaccesses_pagecount]:>
+<:if Eq [repeat value] [fileaccesses_pagenum]:><:repeat value:><:or Eq:><a href="<:script:>?a_fileaccesslog=1&amp;p=<:repeat value:>&amp;pp=<:fileaccesses_perpage:>&amp;<:page_args:>"><:repeat value:></a><:eif Eq:>
+<:iterator end repeats:>
+<:ifLastFileaccessesPage:>Next Last<:or:><a href="<:script:>?a_fileaccesslog=1&amp;p=<:nextFileaccessesPage:>&amp;pp=<:fileaccesses_perpage:>&amp;<:page_args:>">Next</a> <a href="<:script:>?a_fileaccesslog=1&amp;p=<:fileaccesses_pagecount:>&amp;pp=<:fileaccesses_perpage:>&amp;<:page_args:>">Last</a><:eif:>
+</p>
+<form action="<:script:>"><:page_argsh from to:><p>Records from <input type="text" name="from" size="12" value="<:cgi from:>" /> to <input type="text" name="to" size="12" value="<:cgi to:>" /> <input type="submit" name="a_fileaccesslog" value="Go" /></form>
+
+<table class="editform" id="fileaccesslog">
+  <tr>
+    <th>When</th>
+    <th>User</th>
+    <th>File</th>
+    <th>Owner</th>
+    <th>Title</th>
+    <th>Category</th>
+    <th>Size</th>
+    <th>Filters</th>
+  </tr>
+<:iterator begin fileaccesses:>
+  <tr>
+    <td class="col_when_at"><:date "%d/%m/%Y %H:%M" fileaccess when_at:></td>
+    <td class="col_user"><a href="<:script:>?a_edit=1&amp;id=<:fileaccess siteuser_id:>"><:user:></a>
+    </td>
+    <td class="col_filename"><a href="<:script:>?<:ifEq [fileaccess owner_type] "U":>a_edituserfile<:or:>a_editgroupfile<:eif:>=1&amp;id=<:fileaccess owner_id:>&amp;file_id=<:fileaccess file_id:>"><:fileaccess display_name:> (<:fileaccess file_id:>)</a></td>
+    <td class="col_owner"><a href="<:script:>?<:ifEq [fileaccess owner_type] "U":>a_edit<:or:>a_editgroup<:eif:>=1&amp;<:ifMatch [fileaccess owner_id] ^-:>_t=files&amp;<:or:><:eif:>=1&amp;id=<:fileaccess owner_id:>"><:fileowner desc:></a></td>
+    <td class="col_title"><:fileaccess title:></td>
+    <td class="col_category"><:filecat:></td>
+    <td class="col_size"><:fileaccess size_in_bytes:></td>
+    <td class="col_links">
+<a href="<:script:>?a_fileaccesslog=1&amp;<:page_args siteuser_id:>&amp;siteuser_id=<:fileaccess siteuser_id:>">User</a>
+<a href="<:script:>?a_fileaccesslog=1&amp;<:page_args file_id:>&amp;file_id=<:fileaccess file_id:>">File</a>
+
+<a href="<:script:>?a_fileaccesslog=1&amp;<:page_args owner_type owner_id:>&amp;owner_id=<:fileaccess owner_id:>&amp;owner_type=<:fileaccess owner_type:>">Owner</a>
+<a href="<:script:>?a_fileaccesslog=1&amp;<:page_args category:>&amp;category=<:fileaccess category:>">Category</a>
+</td>
+  </tr>
+<:iterator end fileaccesses:>
+</table>

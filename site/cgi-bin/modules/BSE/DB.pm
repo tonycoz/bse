@@ -59,16 +59,22 @@ sub _query_expr {
     return '(' . join (" $op ", map _query_expr($args, $map, $table_name, @$_), @terms) . ')';
   }
   else {
-    my ($column, $value) = @terms;
+    my ($column, @values) = @terms;
     my $db_col = $map->{$column}
       or confess "No column '$column' in $table_name";
-    push @$args, $value;
-    return "$db_col $op ?";
+    if ($op eq "between") {
+      push @$args, @values[0, 1];
+      return "$db_col $op ? and ?";
+    }
+    else {
+      push @$args, $values[0];
+      return "$db_col $op ?";
+    }
   }
 }
 
 sub generate_query {
-  my ($self, $row_class, $columns, $query) = @_;
+  my ($self, $row_class, $columns, $query, $opts) = @_;
 
   my %trans;
   @trans{$row_class->columns} = $row_class->db_columns;
@@ -79,8 +85,11 @@ sub generate_query {
     {; $trans{$_} or confess "No column '$_' in $table_name" } @$columns;
   my $sql = 'select ' . join(',', @out_columns) . ' from ' . $table_name;
   my @args;
-  if ($query) {
+  if ($query && @$query) {
     $sql .= ' where ' . _query_expr(\@args, \%trans, $table_name, 'and', @$query,);
+  }
+  if ($opts->{order}) {
+    $sql .= "order by " . $opts->{order};
   }
 
   #print STDERR "generated sql >$sql<\n";

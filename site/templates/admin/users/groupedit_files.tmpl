@@ -1,0 +1,36 @@
+<:wrap admin/xbase.tmpl title=>"Group Files":>
+<h1>Group Files: <:group name:></h1>
+<:include admin/users/inc_group_menu.tmpl:>
+<:ifUserCan bse_members_group_add_file:><p><a href="/cgi-bin/admin/siteusers.pl?a_addgroupfileform=1&amp;id=<:group id:>">Add a file</a></p><:or:><:eif:>
+
+<:ifMessage:><div id="message"><:message:></div><:or:><:eif:>
+<div id="filelist">
+<table class="editform">
+<tr>
+  <th>Filename</th>
+  <th>Content Type</th>
+  <th>Size</th>
+  <th>Category</th>
+  <th>Last Modified</th>
+  <th>Title</th>
+  <th>Body (partial)</th>
+  <th></th>
+</tr>
+<:if Groupfiles:>
+  <:iterator begin groupfiles:>
+  <tr>
+    <td><:groupfile display_name:></td>
+    <td><:groupfile content_type:></td>
+    <td><:kb groupfile size_in_bytes:>b</td>
+    <td><:groupfile category:></td>
+    <td><:date groupfile modwhen:></td>
+    <td><:groupfile title:></td>
+    <td><:replace [groupfile body] ^([\w\W]{25})[\w\W]+ "$1 ...":></td>
+    <td><a href="<:script:>?a_delgroupfileform=1&amp;id=<:group id:>&amp;file_id=<:groupfile id:>">Delete</a></div> <a href="<:script:>?a_editgroupfile=1&amp;id=<:group id:>&amp;file_id=<:groupfile id:>">Edit</a></div></td>
+  </tr>
+  <:iterator end groupfiles:>
+<:or Groupfiles:>
+<tr><td colspan="8">There are no files attached to this group</td></tr>
+<:eif Groupfiles:>
+</table>
+</div>

@@ -698,7 +698,8 @@ var Sortable = {
       onHover:      Sortable.onEmptyHover,
       overlap:      options.overlap,
       containment:  options.containment,
-      hoverclass:   options.hoverclass
+      hoverclass:   options.hoverclass,
+      tree:         options.tree
     };
 
     // fix for gecko engine

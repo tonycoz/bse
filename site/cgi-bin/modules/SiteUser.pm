@@ -9,6 +9,7 @@ use BSE::Util::SQL qw/now_datetime now_sqldate sql_normal_date sql_add_date_days
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
+use constant OWNER_TYPE => "U";
 
 sub columns {
   return qw/id userId password email keepAddress whenRegistered lastLogon
@@ -529,6 +530,73 @@ sub move_up_wishlist {
 
   $self->_set_wishlist_order($product->{id}, $order->[$index-1]{display_order});
   $self->_set_wishlist_order($order->[$index-1]{product_id}, $order->[$index]{display_order});
+}
+
+# files owned specifically by this user
+sub files {
+  my ($self) = @_;
+
+  require BSE::TB::OwnedFiles;
+  return BSE::TB::OwnedFiles->getBy(owner_type => OWNER_TYPE,
+				    owner_id => $self->id);
+}
+
+sub admin_group_files {
+  my ($self) = @_;
+
+  require BSE::TB::OwnedFiles;
+  return BSE::TB::OwnedFiles->getSpecial(userVisibleGroupFiles => $self->{id});
+}
+
+sub query_group_files {
+  my ($self, $cfg) = @_;
+
+  require BSE::TB::SiteUserGroups;
+  return
+    (
+     map $_->files, BSE::TB::SiteUserGroups->query_groups($cfg)
+    );
+}
+
+# files the user can see, both owned and owned by groups
+sub visible_files {
+  my ($self, $cfg) = @_;
+
+  return
+    (
+     $self->files,
+     $self->admin_group_files,
+     $self->query_group_files($cfg)
+    );
+}
+
+sub file_owner_type {
+  return OWNER_TYPE;
+}
+
+sub subscribed_file_categories {
+  my ($self) = @_;
+
+  return map $_->{category}, BSE::DB->query(siteuserSubscribedFileCategories => $self->{id});
+}
+
+sub set_subscribed_file_categories {
+  my ($self, $cfg, @new) = @_;
+
+  require BSE::TB::OwnedFiles;
+  my %current = map { $_ => 1 } $self->subscribed_file_categories;
+  my %new = map { $_ => 1 } @new;
+  my @all = BSE::TB::OwnedFiles->categories($cfg);
+  for my $cat (@all) {
+    if ($new{$cat->{id}} && !$current{$cat->{id}}) {
+      eval {
+	BSE::DB->run(siteuserAddFileCategory => $self->{id}, $cat->{id});
+      }; # a race condition might cause a duplicate key error here
+    }
+    elsif (!$new{$cat->{id}} && $current{$cat->{id}}) {
+      BSE::DB->run(siteuserRemoveFileCategory => $self->{id}, $cat->{id});
+    }
+  }
 }
 
 1;

@@ -1,0 +1,12 @@
+<:wrap admin/xbase.tmpl title=>"Site Member Files - Add File":>
+<h1>Add Member File</h1>
+
+<p>
+| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |
+<a href="/cgi-bin/admin/siteusers.pl">Site Members</a> |
+<a href="mailto:<:siteuser email:>">Email</a> |
+<:ifUserCan bse_members_user_edit:><a href="/cgi-bin/admin/siteusers.pl?a_edit=1&amp;id=<:siteuser id:>">Edit User</a> |<:or:><:eif:>
+<a href="/cgi-bin/admin/siteusers.pl?a_view=1&amp;id=<:siteuser id:>">User Details</a> |</p>
+
+<:ifMessage:><div id="message"><:message:></div><:or:><:eif:>
+<:include admin/users/inc_add_user_file.tmpl:>

@@ -21,9 +21,12 @@
 <tr>
   <td><:group name:></td>
   <td>
+<:if Match [group id] ^\d:>
     <a href="<:script:>?a_editgroup=1&amp;id=<:group id:>">Edit</a>
     <a href="<:script:>?a_deletegroupform=1&amp;id=<:group id:>">Delete</a>
     <a href="<:script:>?a_groupmemberform=1&amp;id=<:group id:>">Members</a>
+<:or Match:><:eif Match:>
+    <a href="<:script:>?a_editgroup=1&amp;_t=files&amp;id=<:group id:>">Files</a>
   </td>
 </tr>
 <:iterator end groups:>

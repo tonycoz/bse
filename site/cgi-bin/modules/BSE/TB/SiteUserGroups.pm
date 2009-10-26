@@ -8,11 +8,10 @@ use constant SECT_QUERY_GROUP_PREFIX => 'Query group ';
 
 sub rowClass { 'BSE::TB::SiteUserGroup' }
 
-sub admin_and_query_groups {
+sub query_groups {
   my ($class, $cfg) = @_;
 
-  my @groups = $class->all;
-
+  my @groups;
   my $id = 1;
   my $name;
   while ($name = $cfg->entry(SECT_QUERY_GROUPS, $id)) {
@@ -22,7 +21,17 @@ sub admin_and_query_groups {
     ++$id;
   }
 
-  @groups;
+  return @groups;
+}
+
+sub admin_and_query_groups {
+  my ($class, $cfg) = @_;
+
+  return
+    (
+     $class->all,
+     $class->query_groups($cfg),
+    );
 }
 
 sub getQueryGroup {
@@ -58,6 +67,11 @@ sub getByName {
 }
 
 package BSE::TB::SiteUserQueryGroup;
+use constant OWNER_TYPE => "G";
+
+sub id { $_[0]{id} }
+
+sub name { $_[0]{name} }
 
 sub contains_user {
   my ($self, $user) = @_;
@@ -69,6 +83,22 @@ sub contains_user {
     and return 1;
   
   return 0;
+}
+
+sub file_owner_type {
+  return OWNER_TYPE;
+}
+
+sub files {
+  my ($self) = @_;
+
+  require BSE::TB::OwnedFiles;
+  return BSE::TB::OwnedFiles->getBy(owner_type => OWNER_TYPE,
+				    owner_id => $self->id);
+}
+
+sub data_only {
+  return +{ %{$_[0]} };
 }
 
 1;

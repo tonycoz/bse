@@ -875,3 +875,68 @@ create table bse_order_item_options (
   display_order integer not null,
   index item_order(order_item_id, display_order)
 ) type=innodb;
+
+drop table if exists bse_owned_files;
+create table bse_owned_files (
+  id integer not null auto_increment primary key,
+
+  -- owner type, either 'U' or 'G'
+  owner_type char not null,
+
+  -- siteuser_id when owner_type is 'U'
+  -- group_id when owner_type is 'G'
+  owner_id integer not null,
+
+  category varchar(20) not null,
+  filename varchar(255) not null,
+  display_name varchar(255) not null,
+  content_type varchar(80) not null,
+  download integer not null,
+  title varchar(255) not null,
+  body text not null,
+  modwhen datetime not null,
+  size_in_bytes integer not null,
+  index by_owner_category(owner_type, owner_id, category)
+);
+
+drop table if exists bse_file_subscriptions;
+create table bse_file_subscriptions (
+  id integer not null,
+  siteuser_id integer not null,
+  category varchar(20) not null,
+
+  index by_siteuser(siteuser_id),
+  index by_category(category)
+);
+
+drop table if exists bse_file_notifies;
+create table bse_file_notifies (
+  id integer not null auto_increment primary key,
+  siteuser_id integer not null,
+  file_id integer not null,
+  index by_siteuser(siteuser_id)
+);
+
+drop table if exists bse_file_access_log;
+create table bse_file_access_log (
+  id integer not null auto_increment primary key,
+  when_at datetime not null,
+  siteuser_id integer not null,
+  siteuser_logon varchar(40) not null,
+
+  file_id integer not null,
+  owner_type char not null,
+  owner_id integer not null,
+  category varchar(20) not null,
+  filename varchar(255) not null,
+  display_name varchar(255) not null,
+  content_type varchar(80) not null,
+  download integer not null,
+  title varchar(255) not null,
+  modwhen datetime not null,
+  size_in_bytes integer not null,
+
+  index by_when_at(when_at),
+  index by_file(file_id),
+  index by_user(siteuser_id, when_at)
+);

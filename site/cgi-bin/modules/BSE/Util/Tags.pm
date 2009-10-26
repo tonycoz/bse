@@ -121,7 +121,7 @@ sub static {
        --$month;
        # passing the isdst as 0 seems to provide a more accurate result than
        # -1 on glibc.
-       return bse_strftime($cfg, $fmt, $sec, $min, $hour, $day, $month, $year, -1, -1, 0);
+       return bse_strftime($cfg, $fmt, $sec, $min, $hour, $day, $month, $year, -1, -1, -1);
      },
      today => [ \&tag_today, $cfg ],
      money =>

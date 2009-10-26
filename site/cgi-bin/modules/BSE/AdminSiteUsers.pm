@@ -2,7 +2,7 @@ package BSE::AdminSiteUsers;
 use strict;
 use base qw(BSE::UI::AdminDispatch BSE::UI::SiteuserCommon);
 use BSE::Util::Tags qw(tag_error_img tag_hash);
-use DevHelp::HTML;
+use DevHelp::HTML qw(:default popup_menu);
 use SiteUsers;
 use BSE::Util::Iterate;
 use BSE::Util::DynSort qw(sorter tag_sorthelp);
@@ -11,6 +11,7 @@ use BSE::SubscriptionTypes;
 use BSE::CfgInfo qw(custom_class);
 use constant SITEUSER_GROUP_SECT => 'BSE Siteuser groups validation';
 use BSE::Template;
+use DevHelp::Date qw(dh_parse_date_sql dh_parse_time_sql);
 
 my %actions =
   (
@@ -30,6 +31,20 @@ my %actions =
    groupmemberform   => 'bse_members_user_edit',
    savegroupmembers  => 'bse_members_user_edit',
    confirm           => 'bse_members_confirm',
+   adduserfile       => 'bse_members_user_add_file',
+   adduserfileform   => 'bse_members_user_add_file',
+   edituserfile      => 'bse_members_user_edit_file',
+   saveuserfile      => 'bse_members_user_edit_file',
+   deluserfileform   => 'bse_members_user_del_file',
+   deluserfile       => 'bse_members_user_del_file',
+
+   addgroupfile      => 'bse_members_group_add_file',
+   addgroupfileform  => 'bse_members_group_add_file',
+   editgroupfile     => 'bse_members_group_edit_file',
+   savegroupfile     => 'bse_members_group_edit_file',
+   delgroupfileform  => 'bse_members_group_del_file',
+   delgroupfile      => 'bse_members_group_del_file',
+   fileaccesslog     => 'bse_members_file_log',
   );
 
 my @donttouch = qw(id userId password email confirmed confirmSecret waitingForConfirmation flags affiliate_name previousLogon); # flags is saved separately
@@ -232,18 +247,24 @@ sub _display_user {
     $msg = $req->message($errors);
   }
 
+  require BSE::TB::OwnedFiles;
+  my @file_cats = BSE::TB::OwnedFiles->categories($req->cfg);
+  my %subbed = map { $_ => 1 } $siteuser->subscribed_file_categories;
+  for my $cat (@file_cats) {
+    $cat->{subscribed} = exists $subbed{$cat->{id}} ? 1 : 0;
+  }
+
   my @subs = grep $_->{visible}, BSE::SubscriptionTypes->all;
   my $sub_index;
   require BSE::SubscribedUsers;
   my @usersubs = BSE::SubscribedUsers->getBy(userId=>$siteuser->{id});
   my %usersubs = map { $_->{subId}, $_ } @usersubs;
   my $current_group;
+  my $current_file;
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(undef, $req->cgi, $req->cfg),
-     BSE::Util::Tags->secure($req),
-     BSE::Util::Tags->admin(undef, $req->cfg),
+     $req->admin_tags,
      message => $msg,
      siteuser => [ \&tag_hash, $siteuser ],
      error_img => [ \&tag_error_img, $req->cfg, $errors ],
@@ -262,9 +283,46 @@ sub _display_user {
      ifMember => [ \&tag_ifUserMember, $siteuser, \$current_group ],
      $it->make_iterator([ \&iter_seminar_bookings, $siteuser],
 			'booking', 'bookings'),
+     $it->make
+     (
+      code => [ files => $siteuser ],
+      single => "userfile",
+      plural => "userfiles",
+      store => \$current_file,
+     ),
+     userfile_category => [ tag_userfile_category => $class, $req, \$current_file ],
+     $it->make
+     (
+      data => \@file_cats,
+      single => "filecat",
+      plural => "filecats"
+     ),
     );  
 
   return $req->dyn_response($template, \%acts);
+}
+
+sub tag_userfile_category {
+  my ($self, $req, $rfile) = @_;
+
+  my ($current) = $req->cgi->param("category");
+  unless (defined $current) {
+    if ($rfile && $$rfile) {
+      $current = $$rfile->category;
+    }
+  }
+  defined $current
+    or $current = "";
+
+  require BSE::TB::OwnedFiles;
+  my @all = BSE::TB::OwnedFiles->categories($req->cfg);
+  return popup_menu
+    (
+     -name => "category",
+     -default => $current,
+     -values => [ map $_->{id}, @all ],
+     -labels => { map { $_->{id} => $_->{name} } @all },
+    );
 }
 
 sub iter_seminar_bookings {
@@ -427,6 +485,11 @@ sub req_save {
 
   if ($cgi->param('checkedsubs')) {
     $class->save_subs($req, $user);
+  }
+
+  if ($cgi->param('save_file_subs')) {
+    my @new_subs = $cgi->param("file_subscriptions");
+    $user->set_subscribed_file_categories($cfg, @new_subs);
   }
 
   $custom->siteusers_changed($cfg);
@@ -746,10 +809,17 @@ sub _get_group {
   my ($req, $msg) = @_;
 
   my $id = $req->cgi->param('id');
-  defined $id && $id =~ /^\d+$/
+  defined $id && $id =~ /^-?\d+$/
     or do { $$msg = "Missing or invalid group id"; return };
+
+  my $group;
   require BSE::TB::SiteUserGroups;
-  my $group = BSE::TB::SiteUserGroups->getByPkey($id);
+  if ($id < 0) {
+    $group = BSE::TB::SiteUserGroups->getQueryGroup($req->cfg, $id);
+  }
+  else {
+    $group = BSE::TB::SiteUserGroups->getByPkey($id);
+  }
   $group
     or do { $$msg = "Unknown group id"; return };
 
@@ -760,7 +830,7 @@ sub req_grouplist {
   my ($class, $req, $errors) = @_;
 
   require BSE::TB::SiteUserGroups;
-  my @groups = BSE::TB::SiteUserGroups->all;
+  my @groups = BSE::TB::SiteUserGroups->admin_and_query_groups($req->cfg);
 
   my $msg = $req->message($errors);
 
@@ -865,7 +935,8 @@ sub _common_group {
     or return $class->req_grouplist($req, { id=> $msg });
 
   $msg = $req->message($errors);
-
+  my $it = BSE::Util::Iterate->new;
+  my $current_file;
   my %acts;
   %acts =
     (
@@ -876,6 +947,13 @@ sub _common_group {
      message=>$msg,
      error_img => [ \&tag_error_img, $req->cfg, $errors ],
      group => [ \&tag_hash, $group ],
+     $it->make
+     (
+      code => [ files => $group ],
+      single => "groupfile",
+      plural => "groupfiles",
+      store => \$current_file,
+     ),
     );
 
   return $req->dyn_response($template, \%acts);
@@ -1003,6 +1081,854 @@ sub req_confirm {
   }
 
   return BSE::Template->get_refresh($r, $req->cfg);
+}
+
+my %file_fields =
+  (
+   content_type => 
+   {
+    description => "Content type",
+    rules => "dh_one_line",
+   },
+   category =>
+   {
+    description => "Category",
+    rules => "dh_one_line",
+   },
+   modwhen_date =>
+   {
+    description => "Last Modified date",
+    rules => "date",
+    requried_if => "modwhen_time",
+   },
+   modwhen_time =>
+   {
+    description => "Last Modified time",
+    rules => "time",
+    required_if => "modwhen_date",
+   },
+   title =>
+   {
+    description => "Title",
+    rules => "dh_one_line",
+   },
+   body =>
+   {
+    description => "Body",
+   },
+  );
+
+my %save_file_fields =
+  (
+   content_type => 
+   {
+    description => "Content type",
+    rules => "dh_one_line",
+   },
+   category =>
+   {
+    description => "Category",
+    rules => "dh_one_line",
+   },
+   modwhen_date =>
+   {
+    description => "Last Modified date",
+    rules => "date",
+    requried => 1,
+   },
+   modwhen_time =>
+   {
+    description => "Last Modified time",
+    rules => "time",
+    required => 1,
+   },
+   title =>
+   {
+    description => "Title",
+    rules => "dh_one_line",
+    required => 1,
+   },
+   body =>
+   {
+    description => "Body",
+   },
+  );
+
+sub req_adduserfileform {
+  my ($self, $req, $errors) = @_;
+
+  my $msg;
+  my $siteuser = _get_user($req, \$msg)
+    or return $self->req_list($req, $msg);
+
+  my %acts =
+    (
+     $req->admin_tags,
+     message => $msg,
+     siteuser => [ \&tag_hash, $siteuser ],
+     error_img => [ \&tag_error_img, $req->cfg, $errors ],
+     userfile_category => [ tag_userfile_category => $self, $req, undef ],
+    );
+
+  return $req->dyn_response("admin/users/add_user_file", \%acts);
+}
+
+sub req_adduserfile {
+  my ($self, $req) = @_;
+
+  my $msg;
+  my $user = _get_user($req, \$msg)
+    or return $self->req_list($req, $msg);
+
+  my $cgi = $req->cgi;
+
+  $req->check_csrf("admin_user_add_file")
+    or return $self->csrf_error($req, "admin_user_add_file", "Add Member File");
+
+  my %errors;
+  $req->validate(fields => \%file_fields,
+		 errors => \%errors);
+
+  my $file = $cgi->param("file");
+  my $file_fh = $cgi->upload("file");
+  unless ($file) {
+    $errors{file} = "Please select a file";
+  }
+  if ($file && -z $file) {
+    $errors{file} = "File is empty";
+  }
+  if (!$errors{$file} && !$file_fh) {
+    $errors{file} = "Something is wrong with the upload form or your file wasn't found";
+  }
+
+  keys %errors
+    and return $self->req_adduserfileform($req, undef, \%errors);
+
+  require BSE::API;
+  BSE::API->import("bse_add_owned_file");
+
+  my %file;
+  $file{file} = $file_fh;
+  for my $field (qw/content_type category title body/) {
+    my ($value) = $cgi->param($field);
+    defined $value or $value = "";
+    $file{$field} = $value;
+  }
+  $file{download} = $cgi->param('download') ? 1 : 0;
+  my $mod_date = $cgi->param("modwhen_date");
+  my $mod_time = $cgi->param("modwhen_time");
+  if ($mod_date && $mod_time) {
+    $file{modwhen} = dh_parse_date_sql($mod_date) . " " 
+      . dh_parse_time_sql($mod_time);
+  }
+  $file{display_name} = $file . "";
+  my $upload_info = $cgi->uploadInfo($file);
+# some content types come through strangely
+#  if (!$file{content_type} && $upload_info->{"Content-Type"}) {
+#    $file{content_type} = $upload_info->{"Content-Type"}
+#  }
+  for my $key (keys %$upload_info) {
+    print STDERR "uploadinfo: $key: $upload_info->{$key}\n";
+  }
+  local $SIG{__DIE__};
+  my $owned_file = eval { bse_add_owned_file($req->cfg, $user, %file) };
+  unless ($owned_file) {
+    $errors{file} = $@;
+    return $self->req_edit($req, undef, \%errors);
+  }
+
+  my $r = $cgi->param('r');
+  unless ($r) {
+    $r = $req->url('siteusers', { a_edit => 1, _t => "files", id => $user->id, m => "File created" });
+  }
+
+  return BSE::Template->get_refresh($r, $req->cfg);
+}
+
+sub _get_user_file {
+  my ($req, $user, $msg) = @_;
+
+  my $file_id = $req->cgi->param("file_id");
+  unless (defined $file_id && $file_id =~ /^\d+$/) {
+    $$msg = "Missing or invalid file id";
+    return;
+  }
+  require BSE::TB::OwnedFiles;
+  my ($file) = BSE::TB::OwnedFiles->getBy
+    (
+     owner_type => $user->file_owner_type,
+     owner_id => $user->id,
+     id => $file_id
+    );
+  unless ($file) {
+    $$msg = "No such file found";
+    return;
+  }
+
+  return $file;
+}
+
+sub _show_userfile {
+  my ($self, $req, $template, $siteuser, $file, $errors) = @_;
+
+  my $message = $req->message($errors);
+
+  my %acts =
+    (
+     $req->admin_tags,
+     userfile => [ \&tag_hash, $file ],
+     message => $message,
+     siteuser => [ \&tag_hash, $siteuser ],
+     error_img => [ \&tag_error_img, $req->cfg, $errors ],
+     userfile_category => [ tag_userfile_category => $self, $req, \$file ],
+    );
+
+  return $req->dyn_response($template, \%acts);
+}
+
+sub req_edituserfile {
+  my ($self, $req, $errors) = @_;
+
+  my $msg;
+  my $siteuser = _get_user($req, \$msg)
+    or return $self->req_list($req, $msg);
+
+  my $file = _get_user_file($req, $siteuser, \$msg)
+    or return $self->req_list($req, $msg);
+
+  return $self->_show_userfile($req, "admin/users/edit_user_file", $siteuser, $file, $errors);
+}
+
+sub req_deluserfileform {
+  my ($self, $req, $errors) = @_;
+
+  my $msg;
+  my $siteuser = _get_user($req, \$msg)
+    or return $self->req_list($req, $msg);
+
+  my $file = _get_user_file($req, $siteuser, \$msg)
+    or return $self->req_list($req, $msg);
+
+  return $self->_show_userfile($req, "admin/users/delete_user_file", $siteuser, $file, $errors);
+}
+
+sub req_saveuserfile {
+  my ($self, $req) = @_;
+
+  $req->check_csrf("admin_user_edit_file")
+    or return $self->csrf_error($req, "admin_user_edit_file", "Edit Member File");
+
+  my $msg;
+  my $siteuser = _get_user($req, \$msg)
+    or return $self->req_list($req, $msg);
+
+  my $file = _get_user_file($req, $siteuser, \$msg)
+    or return $self->req_list($req, $msg);
+
+  my %errors;
+  $req->validate(fields => \%file_fields,
+		 errors => \%errors);
+
+  my %changes;
+  my $cgi = $req->cgi;
+  my $new_file = $cgi->param("file");
+  my $new_fh = $cgi->upload("file");
+
+  if ($new_file) {
+    if (!$new_fh) {
+      $errors{file} = "Something is wrong with the upload form or your file wasn't found";
+    }
+  }
+  unless ($errors{file}) {
+    -z $new_file
+      and $errors{file} = "File is empty";
+  }
+
+  keys %errors
+    and return $self->req_edituserfile($req, \%errors);
+
+  for my $field (qw/content_type category title body/) {
+    my ($value) = $cgi->param($field);
+    defined $value
+      and $changes{$field} = $value;
+  }
+  if ($new_file && $new_fh) {
+    $changes{file} = $new_fh;
+    $changes{display_name} = $new_file;
+    my $upload_info = $cgi->uploadInfo($new_file);
+# some content types come through strangely
+#    if (!$changes{content_type} && $upload_info->{"Content-Type"}) {
+#      $changes{content_type} = $upload_info->{"Content-Type"}
+#    }
+  }
+  if (defined $changes{content_type} && !$changes{content_type} =~ /\S/) {
+    $errors{content_type} = "Content type must be set";
+  }
+  $changes{download} = $cgi->param('download') ? 1 : 0;
+  my $mod_date = $cgi->param("modwhen_date");
+  my $mod_time = $cgi->param("modwhen_time");
+  if ($mod_date && $mod_time) {
+    $changes{modwhen} = dh_parse_date_sql($mod_date) . " " 
+      . dh_parse_time_sql($mod_time);
+  }
+
+  require BSE::API;
+  BSE::API->import("bse_replace_owned_file");
+  my $good = eval { bse_replace_owned_file($req->cfg, $file, %changes); };
+
+  $good
+    or return $self->req_edituserfile($req, { _ => $@ });
+  
+  my $r = $cgi->param('r');
+  unless ($r) {
+    $r = $req->url('siteusers', { a_edit => 1, _t => "files", id => $siteuser->id, m => "File saved" });
+  }
+
+  return BSE::Template->get_refresh($r, $req->cfg);
+}
+
+sub req_deluserfile {
+  my ($self, $req) = @_;
+
+  $req->check_csrf("admin_user_del_file")
+    or return $self->csrf_error($req, "admin_user_del_file", "Delete Member File");
+
+  my $msg;
+  my $siteuser = _get_user($req, \$msg)
+    or return $self->req_list($req, $msg);
+
+  my $file = _get_user_file($req, $siteuser, \$msg)
+    or return $self->req_list($req, $msg);
+
+  require BSE::API;
+  BSE::API->import("bse_delete_owned_file");
+  my $good = eval { bse_delete_owned_file($req->cfg, $file); };
+
+  $good
+    or return $self->req_deluserfileform($req, { _ => $@ });
+
+  my $r = $req->cgi->param('r');
+  unless ($r) {
+    $r = $req->url('siteusers', { a_edit => 1, _t => "files", id => $siteuser->id, m => "File removed" });
+  }
+
+  return BSE::Template->get_refresh($r, $req->cfg);
+}
+
+sub req_addgroupfileform {
+  my ($self, $req, $errors) = @_;
+
+  my $msg;
+  my $group = _get_group($req, \$msg)
+    or return $self->req_list($req, $msg);
+
+  my %acts =
+    (
+     $req->admin_tags,
+     message => $msg,
+     group => [ \&tag_hash, $group ],
+     error_img => [ \&tag_error_img, $req->cfg, $errors ],
+     userfile_category => [ tag_userfile_category => $self, $req, undef ],
+    );
+
+  return $req->dyn_response("admin/users/add_group_file", \%acts);
+}
+
+sub req_addgroupfile {
+  my ($self, $req) = @_;
+
+  my $msg;
+  my $group = _get_group($req, \$msg)
+    or return $self->req_list($req, $msg);
+
+  my $cgi = $req->cgi;
+
+  $req->check_csrf("admin_group_add_file")
+    or return $self->csrf_error($req, "admin_group_add_file", "Add Member File");
+
+  my %errors;
+  $req->validate(fields => \%file_fields,
+		 errors => \%errors);
+
+  my $file = $cgi->param("file");
+  my $file_fh = $cgi->upload("file");
+  unless ($file) {
+    $errors{file} = "Please select a file";
+  }
+  if ($file && -z $file) {
+    $errors{file} = "File is empty";
+  }
+  if (!$errors{$file} && !$file_fh) {
+    $errors{file} = "Something is wrong with the upload form or your file wasn't found";
+  }
+
+  keys %errors
+    and return $self->req_addgroupfileform($req, undef, \%errors);
+
+  require BSE::API;
+  BSE::API->import("bse_add_owned_file");
+
+  my %file;
+  $file{file} = $file_fh;
+  for my $field (qw/content_type category title body/) {
+    my ($value) = $cgi->param($field);
+    defined $value or $value = "";
+    $file{$field} = $value;
+  }
+  $file{download} = $cgi->param('download') ? 1 : 0;
+  my $mod_date = $cgi->param("modwhen_date");
+  my $mod_time = $cgi->param("modwhen_time");
+  if ($mod_date && $mod_time) {
+    $file{modwhen} = dh_parse_date_sql($mod_date) . " " 
+      . dh_parse_time_sql($mod_time);
+  }
+  $file{display_name} = $file . "";
+  my $upload_info = $cgi->uploadInfo($file);
+# some content types come through strangely
+#  if (!$file{content_type} && $upload_info->{"Content-Type"}) {
+#    $file{content_type} = $upload_info->{"Content-Type"}
+#  }
+  for my $key (keys %$upload_info) {
+    print STDERR "uploadinfo: $key: $upload_info->{$key}\n";
+  }
+  local $SIG{__DIE__};
+  my $owned_file = eval { bse_add_owned_file($req->cfg, $group, %file) };
+  unless ($owned_file) {
+    $errors{file} = $@;
+    return $self->req_edit($req, undef, \%errors);
+  }
+
+  my $r = $cgi->param('r');
+  unless ($r) {
+    $r = $req->url('siteusers', { a_editgroup => 1, _t => "files", id => $group->id, m => "File created" });
+  }
+
+  return BSE::Template->get_refresh($r, $req->cfg);
+}
+
+sub _get_group_file {
+  my ($req, $group, $msg) = @_;
+
+  my $file_id = $req->cgi->param("file_id");
+  unless (defined $file_id && $file_id =~ /^\d+$/) {
+    $$msg = "Missing or invalid file id";
+    return;
+  }
+  require BSE::TB::OwnedFiles;
+  my ($file) = BSE::TB::OwnedFiles->getBy
+    (
+     owner_type => $group->file_owner_type,
+     owner_id => $group->id,
+     id => $file_id
+    );
+  unless ($file) {
+    $$msg = "No such file found";
+    return;
+  }
+
+  return $file;
+}
+
+sub _show_groupfile {
+  my ($self, $req, $template, $group, $file, $errors) = @_;
+
+  my $message = $req->message($errors);
+
+  my %acts =
+    (
+     $req->admin_tags,
+     groupfile => [ \&tag_hash, $file ],
+     message => $message,
+     group => [ \&tag_hash, $group ],
+     error_img => [ \&tag_error_img, $req->cfg, $errors ],
+     userfile_category => [ tag_userfile_category => $self, $req, \$file ],
+    );
+
+  return $req->dyn_response($template, \%acts);
+}
+
+sub req_editgroupfile {
+  my ($self, $req, $errors) = @_;
+
+  my $msg;
+  my $group = _get_group($req, \$msg)
+    or return $self->req_list($req, $msg);
+
+  my $file = _get_group_file($req, $group, \$msg)
+    or return $self->req_list($req, $msg);
+
+  return $self->_show_groupfile($req, "admin/users/edit_group_file", $group, $file, $errors);
+}
+
+sub req_delgroupfileform {
+  my ($self, $req, $errors) = @_;
+
+  my $msg;
+  my $group = _get_group($req, \$msg)
+    or return $self->req_list($req, $msg);
+
+  my $file = _get_group_file($req, $group, \$msg)
+    or return $self->req_list($req, $msg);
+
+  return $self->_show_groupfile($req, "admin/users/delete_group_file", $group, $file, $errors);
+}
+
+sub req_savegroupfile {
+  my ($self, $req) = @_;
+
+  $req->check_csrf("admin_group_edit_file")
+    or return $self->csrf_error($req, "admin_group_edit_file", "Edit Member File");
+
+  my $msg;
+  my $group = _get_group($req, \$msg)
+    or return $self->req_list($req, $msg);
+
+  my $file = _get_group_file($req, $group, \$msg)
+    or return $self->req_list($req, $msg);
+
+  my %errors;
+  $req->validate(fields => \%file_fields,
+		 errors => \%errors);
+
+  my %changes;
+  my $cgi = $req->cgi;
+  my $new_file = $cgi->param("file");
+  my $new_fh = $cgi->upload("file");
+
+  if ($new_file) {
+    if (!$new_fh) {
+      $errors{file} = "Something is wrong with the upload form or your file wasn't found";
+    }
+  }
+  unless ($errors{file}) {
+    -z $new_file
+      and $errors{file} = "File is empty";
+  }
+
+  keys %errors
+    and return $self->req_editgroupfile($req, \%errors);
+
+  for my $field (qw/content_type category title body/) {
+    my ($value) = $cgi->param($field);
+    defined $value
+      and $changes{$field} = $value;
+  }
+  if ($new_file && $new_fh) {
+    $changes{file} = $new_fh;
+    $changes{display_name} = $new_file;
+    my $upload_info = $cgi->uploadInfo($new_file);
+# some content types come through strangely
+#    if (!$changes{content_type} && $upload_info->{"Content-Type"}) {
+#      $changes{content_type} = $upload_info->{"Content-Type"}
+#    }
+  }
+  if (defined $changes{content_type} && !$changes{content_type} =~ /\S/) {
+    $errors{content_type} = "Content type must be set";
+  }
+  $changes{download} = $cgi->param('download') ? 1 : 0;
+  my $mod_date = $cgi->param("modwhen_date");
+  my $mod_time = $cgi->param("modwhen_time");
+  if ($mod_date && $mod_time) {
+    $changes{modwhen} = dh_parse_date_sql($mod_date) . " " 
+      . dh_parse_time_sql($mod_time);
+  }
+
+  require BSE::API;
+  BSE::API->import("bse_replace_owned_file");
+  my $good = eval { bse_replace_owned_file($req->cfg, $file, %changes); };
+
+  $good
+    or return $self->req_editgroupfile($req, { _ => $@ });
+  
+  my $r = $cgi->param('r');
+  unless ($r) {
+    $r = $req->url('siteusers', { a_editgroup => 1, _t => "files", id => $group->id, m => "File saved" });
+  }
+
+  return BSE::Template->get_refresh($r, $req->cfg);
+}
+
+sub req_delgroupfile {
+  my ($self, $req) = @_;
+
+  $req->check_csrf("admin_group_del_file")
+    or return $self->csrf_error($req, "admin_group_del_file", "Delete Member File");
+
+  my $msg;
+  my $group = _get_group($req, \$msg)
+    or return $self->req_list($req, $msg);
+
+  my $file = _get_group_file($req, $group, \$msg)
+    or return $self->req_list($req, $msg);
+
+  require BSE::API;
+  BSE::API->import("bse_delete_owned_file");
+  my $good = eval { bse_delete_owned_file($req->cfg, $file); };
+
+  $good
+    or return $self->req_delgroupfileform($req, { _ => $@ });
+
+  my $r = $req->cgi->param('r');
+  unless ($r) {
+    $r = $req->url('siteusers', { a_editgroup => 1, _t => "files", id => $group->id, m => "File removed" });
+  }
+
+  return BSE::Template->get_refresh($r, $req->cfg);
+}
+
+sub _get_user {
+  my ($req, $msg) = @_;
+
+  my $id = $req->cgi->param('id');
+  defined $id && $id =~ /^\d+$/
+    or do { $$msg = "Missing or invalid user id"; return };
+  require BSE::TB::SiteUserGroups;
+  my $group = SiteUsers->getByPkey($id);
+  $group
+    or do { $$msg = "Unknown user id"; return };
+
+  $group;
+}
+
+sub csrf_error {
+  my ($self, $req, $name, $description) = @_;
+
+  my %errors;
+  my $msg = $req->csrf_error;
+  $errors{_csrfp} = $msg;
+  return $self->req_list($req, "$description: $msg ($name)");
+}
+
+sub tag_page_args {
+  my ($self, $page_args, $args) = @_;
+
+  my %args = %$page_args;
+  if ($args) {
+    delete @args{split ' ', $args};
+  }
+
+  return join "&amp;", map { "$_=" . escape_uri($args{$_}) } keys %args;
+}
+
+sub tag_page_argsh {
+  my ($self, $page_args, $args) = @_;
+
+  my %args = %$page_args;
+  if ($args) {
+    delete @args{split ' ', $args};
+  }
+
+  return join "", map 
+    { 
+      my $value = escape_html($args{$_});
+      qq(<input type="hidden" name="$_" value="$value" />);
+    } keys %args;
+}
+
+sub tag_fileaccess_user {
+  my ($rcurrent, $cache) = @_;
+  
+  $$rcurrent
+    or return '';
+  my $id = $$rcurrent->siteuser_id;
+  exists $cache->{$id}
+    or $cache->{$id} = SiteUsers->getByPkey($id);
+
+  $cache->{$id}
+    or return "** No user $id";
+
+  return escape_html($cache->{$id}->userId);
+}
+
+sub tag_ifFileuser {
+  my ($rcurrent, $cache) = @_;
+  
+  $$rcurrent
+    or return '';
+  my $id = $$rcurrent->siteuser_id;
+  exists $cache->{$id}
+    or $cache->{$id} = SiteUsers->getByPkey($id);
+
+  return defined $cache->{$id};
+}
+
+sub _find_file_owner {
+  my ($owner_type, $owner_id, $cfg, $cache) = @_;
+
+  require BSE::TB::SiteUserGroups;
+  my $owner;
+  if ($owner_type eq SiteUser->file_owner_type) {
+    if ($cache->{$owner_id} ||= SiteUsers->getByPkey($owner_id)) {
+      $owner = $cache->{$owner_id}->data_only;
+      $owner->{desc} = "User: " . $owner->{userId};
+    }
+    else {
+      return;
+    }
+  }
+  elsif ($owner_type eq BSE::TB::SiteUserGroup->file_owner_type) {
+    my $group;
+    if ($owner_id < 0) {
+      $group = BSE::TB::SiteUserGroups->getQueryGroup($cfg, $owner_id);
+    }
+    else {
+      $group = BSE::TB::SiteUserGroups->getByPkey($owner_id);
+    }
+    $group
+      or return;
+    $owner = $group->data_only;
+    $owner->{desc} = "Group: " . $group->{name};
+  }
+  else {
+    print STDERR "** Unknown file owner type $owner_type\n";
+    return;
+  }
+
+  return $owner;
+}
+
+sub tag_fileowner {
+  my ($rcurrent, $cache, $cfg, $args) = @_;
+
+  $$rcurrent or return "";
+
+  my $owner = _find_file_owner($$rcurrent->{owner_type}, $$rcurrent->{owner_id}, $cfg, $cache)
+    or return "Unknown";
+
+  return tag_hash($owner, $args);
+}
+
+sub tag_filecat {
+  my ($rcurrent, $cats) = @_;
+
+  $$rcurrent
+    or return '';
+
+  $cats->{$$rcurrent->{category}};
+}
+
+sub req_fileaccesslog {
+  my ($self, $req) = @_;
+
+  my @filters;
+  my $cgi = $req->cgi;
+  my %page_args;
+  my $file_id = $cgi->param("file_id");
+  my $file;
+  if ($file_id && $file_id =~ /^\d+$/) {
+    require BSE::TB::OwnedFiles;
+    $file = BSE::TB::OwnedFiles->getByPkey($file_id);
+    if ($file) {
+      push @filters, [ '=', file_id => $file_id ];
+      $page_args{file_id} = $file_id;
+    }
+  }
+  my $siteuser_id = $cgi->param('siteuser_id');
+  my $user;
+  if ($siteuser_id && $siteuser_id =~ /^\d+$/) {
+    $user = SiteUsers->getByPkey($siteuser_id);
+    if ($user) {
+      push @filters, [ '=', siteuser_id => $siteuser_id ];
+      $page_args{siteuser_id} = $siteuser_id;
+    }
+  }
+  my $owner_id = $cgi->param("owner_id");
+  my $owner_type = $cgi->param("owner_type") || "U";
+  my $owner;
+  my $owner_desc = '';
+  my %user_cache;
+  if (defined $owner_id) {
+    push @filters,
+      (
+       [ '=', owner_id => $owner_id ],
+       [ '=', owner_type => $owner_type ],
+      );
+    $owner = _find_file_owner($owner_type, $owner_id, $req->cfg, \%user_cache);
+    if ($owner) {
+      $owner_desc = $owner->{desc};
+    }
+    if ($owner) {
+      $page_args{owner_type} = $owner_type;
+      $page_args{owner_id} = $owner_id;
+    }
+  }
+
+  require BSE::TB::OwnedFiles;
+  my %categories = map { $_->{id} => escape_html($_->{name}) } 
+    BSE::TB::OwnedFiles->categories($req->cfg);
+
+  my $category_id = $cgi->param("category");
+  my $category;
+  if (defined $category_id && $categories{$category_id}) {
+    $category = $categories{$category_id};
+    push @filters,
+      [ "=", category => $category_id ];
+    $page_args{category} = $category_id;
+  }
+  use POSIX qw(strftime);
+  my %errors;
+  my $from = $cgi->param("from") || strftime("%d/%m/%Y", localtime(time()-30*86400));
+  my $to = $cgi->param("to") || strftime("%d/%m/%Y", localtime);
+  my $from_sql = dh_parse_date_sql($from)
+    or $errors{from_sql} = "Invalid from date";
+  my $to_sql = dh_parse_date_sql($to)
+    or $errors{to_sql} = "Invalid to date";
+
+  require BSE::TB::FileAccessLog;
+  my @entries;
+  unless (keys %errors) {
+    push @filters, [ between => when_at => $from_sql, $to_sql ];
+    $cgi->param(from => $from);
+    $cgi->param(to => $to);
+    $page_args{from} = $from;
+    $page_args{to} = $to;
+    @entries = map $_->{id}, BSE::TB::FileAccessLog->query
+      (
+       [ qw/id/ ],
+       \@filters,
+       {
+	order => 'when_at desc'
+       },
+      );
+  }
+
+  my $it = BSE::Util::Iterate->new;
+  my $current_access;
+  my %acts =
+    (
+     $req->admin_tags,
+     $it->make_paged
+     (
+      data => \@entries,
+      fetch => [ getByPkey => 'BSE::TB::FileAccessLog' ],
+      cgi => $req->cgi,
+      single => "fileaccess",
+      plural => "fileaccesses",
+      store => \$current_access,
+      name => "fileaccesses",
+      session => $req->session,
+      perpage_parm => "pp=100",
+     ),
+     ifOwner => defined $owner,
+     owner => [ \&tag_hash, $owner ],
+     owner_type => (defined $owner_type ? $owner_type : ''),
+     owner_desc => escape_html($owner_desc),
+     ifSiteuser => defined $user,
+     siteuser => [ \&tag_hash, $user ],
+     ifFile => defined $file,
+     file => [ \&tag_hash, $file ],
+     page_args => [ tag_page_args => $self, \%page_args ],
+     page_argsh => [ tag_page_argsh => $self, \%page_args ],
+     user => [ \&tag_fileaccess_user, \$current_access, \%user_cache ],
+     ifFileuser => [ \&tag_ifFileuser, \$current_access, \%user_cache ],
+     fileowner => [ \&tag_fileowner, \$current_access, \%user_cache, $req->cfg ],
+     filecat => [ \&tag_filecat, \$current_access, \%categories ],
+     error_img =>[ \&tag_error_img, $req->cfg, \%errors ],
+     ifCategory => $category,
+     category => escape_html($category),
+    );
+
+  return $req->dyn_response("admin/users/fileaccess", \%acts);
 }
 
 1;

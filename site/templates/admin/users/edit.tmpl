@@ -277,6 +277,20 @@
           </tr>
 <:eif Cfg:>
 <:or UserCan:><:eif UserCan:>
+<:if Filecats:>
+      <tr>
+	<th>File subscriptions:</th>
+	<td>
+	  <input type="hidden" name="save_file_subs" value="1" />
+ 	  <:iterator begin filecats:>
+	    <input type="checkbox" name="file_subscriptions" value="<:filecat id:>" <:ifFilecat subscribed:>checked="checked" <:or:><:eif:> /> <:filecat name:>
+	  <:iterator separator filecats:>
+	    <br />
+	  <:iterator end filecats:>
+	</td>
+            <td class="help"><:help editsiteuser filesubs:></td></tr>
+<:or Filecats:><:eif Filecats:>
+
 <:include admin/users/custom_edit.tmpl optional:>
           <tr> 
             <td class="buttons"colspan="3"> 

@@ -92,3 +92,35 @@ select ab.*, ag.*
 where am.user_id = ? and am.group_id = ab.id and ab.id = ag.base_id
 SQL
 
+name: siteuserAddFileCategory
+sql_statement: <<SQL
+insert into bse_file_subscriptions(siteuser_id, category)
+ values(?, ?)
+SQL
+
+name: siteuserRemoveFileCategory
+sql_statement: <<SQL
+delete from bse_file_subscriptions where siteuser_id = ? and category = ?
+SQL
+
+name: siteuserSubscribedFileCategories
+sql_statement: <<SQL
+select category
+from bse_file_subscriptions
+where siteuser_id = ?
+SQL
+
+name: OwnedFiles.userVisibleGroupFiles
+sql_statement: <<SQL
+select of.*
+from bse_owned_files of, bse_siteuser_membership sm
+where sm.siteuser_id = ?
+  and sm.group_id = of.owner_id
+  and of.owner_type = 'G'
+SQL
+
+name: bseDownloadLogAge
+sql_statement: <<SQL
+delete from bse_file_access_log
+ where when_at < date_sub(now(), interval ? day)
+SQL

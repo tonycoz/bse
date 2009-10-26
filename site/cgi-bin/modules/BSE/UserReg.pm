@@ -15,6 +15,7 @@ use DevHelp::HTML;
 use BSE::CfgInfo qw(custom_class);
 use BSE::WebUtil qw/refresh_to/;
 use BSE::Util::Iterate;
+use base 'BSE::UI::UserCommon';
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -42,6 +43,7 @@ my %actions =
    image => 'req_image',
    orderdetail => 'req_orderdetail',
    wishlist => 'req_wishlist',
+   downufile => 'req_downufile',
   );
 
 sub actions { \%actions }
@@ -476,7 +478,14 @@ sub req_show_opts {
       $message = '';
     }
   }
+  require BSE::TB::OwnedFiles;
+  my @file_cats = BSE::TB::OwnedFiles->categories($cfg);
+  my %subbed = map { $_ => 1 } $user->subscribed_file_categories;
+  for my $cat (@file_cats) {
+    $cat->{subscribed} = exists $subbed{$cat->{id}} ? 1 : 0;
+  }
 
+  my $it = BSE::Util::Iterate->new;
   my %acts;
   %acts =
     (
@@ -502,6 +511,12 @@ sub req_show_opts {
      $self->_edit_tags($user, $cfg),
      ifSubscribedTo => [ \&tag_ifSubscribedTo, $user ],
      partial_logon => $partial_logon,
+     $it->make
+     (
+      data => \@file_cats,
+      single => "filecat",
+      plural => "filecats"
+     ),
     );
 
   my $base = 'user/options';
@@ -709,6 +724,10 @@ sub req_saveopts {
       if $subs && !$user->{confirmed};
   }
 
+  if ($cgi->param('save_file_subs')) {
+    my @new_subs = $cgi->param("file_subscriptions");
+    $user->set_subscribed_file_categories($cfg, @new_subs);
+  }
 
   if ($partial_logon) {
     $user->{previousLogon} = $user->{lastLogon};
@@ -1072,6 +1091,12 @@ sub req_userpage {
 			'subscription', 'subscriptions'),
      $it->make_iterator([ \&iter_sembookings, $user ],
 			'booking', 'bookings'),
+     $it->make
+     (
+      code => [ iter_userfiles => $self, $user, $req ],
+      single => 'userfile',
+      plural => 'userfiles',
+     ),
     );
   my $base_template = 'user/userpage';
   my $template = $base_template;
@@ -1924,6 +1949,92 @@ sub req_wishlist {
   }
 
   BSE::Template->show_page($template, $req->cfg, \%acts);
+}
+
+=item req_downufile
+
+=target a_downufile
+
+Download a user file.
+
+=cut
+
+sub req_downufile {
+  my ($self, $req) = @_;
+
+  require BSE::TB::OwnedFiles;
+  my $cgi = $req->cgi;
+  my $cfg = $req->cfg;
+  my $id = $cgi->param("id");
+  defined $id && $id =~ /^\d+$/
+    or return $self->error($req, "Invalid or missing file id");
+
+  # return the same error to avoid giving someone a mechanism to find
+  # which files are in use
+  my $file = BSE::TB::OwnedFiles->getByPkey($id)
+    or return $self->error($req, "Invalid or missing file id");
+
+  my $user = $self->_get_user($req, 'downufile')
+    or return;
+
+  require BSE::TB::SiteUserGroups;
+  my $accessible = 0;
+  if ($file->owner_type eq $user->file_owner_type) {
+    $accessible = $user->id == $file->owner_id;
+  }
+  elsif ($file->owner_type eq BSE::TB::SiteUserGroup->file_owner_type) {
+    my $owner_id = $file->owner_id;
+    my $group = $owner_id < 0
+      ? BSE::TB::SiteUserGroups->getQueryGroup($cfg, $owner_id)
+      : BSE::TB::SiteUserGroups->getByPkey($owner_id);
+    if ($group) {
+      $accessible = $group->contains_user($user);
+    }
+    else {
+      print STDERR "** downufile: unknown group id ", $file->owner_id, " in file ", $file->id, "\n";
+    }
+  }
+  else {
+    print STDERR "** downufile: Unknown file owner type ", $file->owner_type, " in file ", $file->id, "\n";
+    $accessible = 0;
+  }
+
+  $accessible
+    or return $self->error($req, "Sorry, you don't have access to this file");
+
+  my $filebase = $cfg->entryVar('paths', 'downloads');
+  require IO::File;
+  my $fh = IO::File->new("$filebase/" . $file->filename, "r")
+    or return $self->error($req, "Cannot open stored file: $!");
+
+  my @headers;
+  my %result =
+    (
+     content_fh => $fh,
+     headers => \@headers,
+    );
+  my $download = $cgi->param("force_download") || $file->download;
+  if ($download) {
+    push @headers, "Content-Disposition: attachment; filename=".$file->display_name;
+    $result{type} = "application/octet-stream";
+  }
+  else {
+    push @headers, "Content-Disposition: inline; filename=" . $file->display_name;
+    $result{type} = $file->content_type;
+  }
+  if ($cfg->entry("download", "log_downuload", 0)) {
+    my $max_age = $cfg->entry("download", "log_downuload_maxage", 30);
+    BSE::DB->run(bseDownloadLogAge => $max_age);
+    require BSE::TB::FileAccessLog;
+    BSE::TB::FileAccessLog->log_download
+	(
+	 user => $user,
+	 file => $file,
+	 download => $download,
+	);
+  }
+
+  BSE::Template->output_result($req, \%result);
 }
 
 1;

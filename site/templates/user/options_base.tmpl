@@ -333,6 +333,19 @@
         </td>
       </tr>
 <:eif Cfg:>
+<:if Filecats:>
+      <tr>
+	<th nowrap="nowrap" align="left">File subscriptions:</th>
+	<td>
+	  <input type="hidden" name="save_file_subs" value="1" />
+ 	  <:iterator begin filecats:>
+	    <input type="checkbox" name="file_subscriptions" value="<:filecat id:>" <:ifFilecat subscribed:>checked="checked" <:or:><:eif:> /> <:filecat name:>
+	  <:iterator separator filecats:>
+	    <br />
+	  <:iterator end filecats:>
+	</td>
+      </tr>
+<:or Filecats:><:eif Filecats:>
       <tr> 
         <td colspan="2" align="right"> 
           <input type="submit" name="saveopts" value="Save Options" class="user-buttons" />

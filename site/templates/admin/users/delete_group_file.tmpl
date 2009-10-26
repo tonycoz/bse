@@ -1,0 +1,47 @@
+<:wrap admin/xbase.tmpl title=>"Group Files - Delete File":>
+<h1>Delete Group File</h1>
+
+<:include admin/users/inc_group_menu.tmpl:>
+<:ifMessage:><div id="message"><:message:></div><:or:><:eif:>
+<div id="delfile">
+<form enctype="multipart/form-data" method="post">
+<input type="hidden" name="id" value="<:group id:>" />
+<input type="hidden" name="file_id" value="<:groupfile id:>" />
+<:csrfp admin_group_del_file hidden:>
+<table class="editform editformsmall">
+  <tr>
+    <th>File:</th>
+    <td><:groupfile display_name:></td>
+  </tr>
+  <tr>
+   <th>Content-type:</th>
+   <td><:groupfile content_type:></td>
+  </tr>
+  <tr>
+   <th>Download:</th>
+   <td><:ifGroupfile download:>Yes<:or:>No<:eif:></td>
+  </tr>
+  <tr>
+   <th>Category:</th>
+   <td><:groupfile category:></td>
+  </tr>
+  <tr>
+    <th>Last modified:</th>
+    <td>Date: <:date "%d/%m/%Y" groupfile modwhen:><br />Time: <:date "%H:%M:%S" groupfile modwhen:></td>
+  </tr>
+  <tr>
+   <th>Title:</th>
+   <td><:groupfile title:></td>
+  </tr>
+  <tr>
+    <th>Body:</th>
+    <td><textarea name="body" rows="5" readonly="readonly"><: groupfile body:></textarea><:error_img body:></td>
+  </tr>
+  <tr>
+    <td class="buttons" colspan="2">
+      <input type="submit" name="a_delgroupfile" value="Delete File" />
+    </td>
+  </tr>
+</table>
+</form>
+</div>

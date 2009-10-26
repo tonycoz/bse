@@ -76,9 +76,9 @@ sub dh_parse_date_sql {
 sub dh_parse_time {
   my ($time, $rmsg) = @_;
 
-  if ($time =~ /^\s*(\d+)[:. ]?(\d{2})\s*$/) {
+  if ($time =~ /^\s*(\d+)[:. ]?(\d{2})(?:[:.](\d{2}))?\s*$/) {
     # 24 hour time
-    my ($hour, $min) = ($1, $2);
+    my ($hour, $min, $sec) = ($1, $2, $3);
 
     if ($hour > 23) {
       $$rmsg = "Hour must be from 0 to 23 for 24-hour time";
@@ -88,19 +88,27 @@ sub dh_parse_time {
       $$rmsg = "Minutes must be from 0 to 59";
       return;
     }
+    defined $sec or $sec = 0;
+    if ($sec > 59) {
+      $$rmsg = "Seconds must be from 0 to 59";
+      return;
+    }
 
-    return (0+$hour, 0+$min, 0);
+    return (0+$hour, 0+$min, 0+$sec);
   }
   else {
     # try for 12 hour time
-    my ($hour, $min, $ampm);
+    my ($hour, $min, $sec, $ampm);
 
     if ($time =~ /^\s*(\d+)\s*(?:([ap])m?)\s*$/i) {
       # "12am", "2pm", etc
-      ($hour, $min, $ampm) = ($1, 0, $2);
+      ($hour, $min, $sec, $ampm) = ($1, 0, 0, $2);
     }
     elsif ($time =~ /^\s*(\d+)[.: ](\d{2})\s*(?:([ap])m?)\s*$/i) {
-      ($hour, $min, $ampm) = ($1, $2, $3);
+      ($hour, $min, $sec, $ampm) = ($1, $2, 0, $3);
+    }
+    elsif ($time =~ /^\s*(\d+)[.: ](\d{2})[:.](\d{2})\s*(?:([ap])m?)\s*$/i) {
+      ($hour, $min, $sec, $ampm) = ($1, $2, $3, $4);
     }
     else {
       $$rmsg = "Unknown time format";
@@ -114,10 +122,14 @@ sub dh_parse_time {
       $$rmsg = "Minutes must be from 0 to 59";
       return;
     }
+    if ($sec > 59) {
+      $$rmsg = "Seconds must be from 0 to 59";
+      return;
+    }
     $hour = 0 if $hour == 12;
     $hour += 12 if lc $ampm eq 'p';
 
-    return (0+$hour, 0+$min, 0);
+    return (0+$hour, 0+$min, 0+$sec);
   }
 }
 
