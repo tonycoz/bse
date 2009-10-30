@@ -388,6 +388,7 @@ sub done {
     (
      %{$self->{acts}},
      resource => [ tag_resource => $self ],
+     set_subject => [ tag_set_subject => $self ],
     ); # 
 
   my $message;
@@ -511,6 +512,16 @@ sub tag_resource {
   $self->{resource}{$args} = $url;
 
   return $url;
+}
+
+sub tag_set_subject {
+  my ($self, $args, $acts, $tag, $templater) = @_;
+
+  my @args = DevHelp::Tags->get_parms($args, $acts, $templater);
+
+  $self->{subject} = "@args";
+
+  return '';
 }
 
 1;

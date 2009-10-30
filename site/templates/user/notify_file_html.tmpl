@@ -1,0 +1,14 @@
+<html><body>
+<p>Hello <:ifUser name1:><:user name1 |h:><:or:><:user userId |h:><:eif:>,</p>
+
+<p>New content has been uploaded to your account:</p>
+
+<ul>
+<:iterator begin files:>
+<li><:file display_name |h:> (<:kb file size_in_bytes:>)<br />
+  Title: <:file title |h:><br />
+  Category: <:file catname |h:></li>
+<:iterator end files:>
+
+</ul>
+</body></html>

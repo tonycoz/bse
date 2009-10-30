@@ -124,10 +124,13 @@ Index by_user;0;[siteuser_id;when_at]
 Index by_when_at;0;[when_at]
 Table bse_file_notifies
 Column id;int(11);NO;NULL;auto_increment
-Column siteuser_id;int(11);NO;NULL;
+Column owner_type;char(1);NO;NULL;
+Column owner_id;int(11);NO;NULL;
 Column file_id;int(11);NO;NULL;
+Column when_at;datetime;NO;NULL;
 Index PRIMARY;1;[id]
-Index by_siteuser;0;[siteuser_id]
+Index by_owner;0;[owner_type;owner_id]
+Index by_time;0;[owner_type;when_at]
 Table bse_file_subscriptions
 Column id;int(11);NO;NULL;
 Column siteuser_id;int(11);NO;NULL;

@@ -912,9 +912,12 @@ create table bse_file_subscriptions (
 drop table if exists bse_file_notifies;
 create table bse_file_notifies (
   id integer not null auto_increment primary key,
-  siteuser_id integer not null,
+  owner_type char not null,
+  owner_id integer not null,
   file_id integer not null,
-  index by_siteuser(siteuser_id)
+  when_at datetime not null,
+  index by_owner(owner_type, owner_id),
+  index by_time(owner_type, when_at)
 );
 
 drop table if exists bse_file_access_log;

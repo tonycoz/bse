@@ -124,3 +124,70 @@ sql_statement: <<SQL
 delete from bse_file_access_log
  where when_at < date_sub(now(), interval ? day)
 SQL
+
+name: bseClearOldFileNotifications
+sql_statement: <<SQL
+delete from bse_file_notifies
+  where when_at < date_sub(now(), interval ? day)
+SQL
+
+name: bseAddOwnedFileNotification
+sql_statement: <<SQL
+insert into bse_file_notifies(file_id, owner_type, owner_id, when_at)
+  values(?, ?, ?, now())
+SQL
+
+name: bseAddOwnedFileNotificationTime
+sql_statement: <<SQL
+insert into bse_file_notifies(file_id, owner_type, owner_id, when_at)
+  values(?, ?, ?, ?)
+SQL
+
+name: baseClearOldFileNotifications
+sql_statement: <<SQL
+delete from bse_file_notifies
+ where when_at < date_sub(now(), interval ? day)
+SQL
+
+name: bseDeleteFileNotification
+sql_statement: <<SQL
+delete from bse_file_notifies where id = ?
+SQL
+
+name: bseExpandGroupFileNotification
+sql_statement: <<SQL
+insert into bse_file_notifies(file_id, owner_type, owner_id, when_at)
+select fn.file_id, 'U', sm.siteuser_id, fn.when_at
+from bse_file_notifies fn,
+     bse_siteuser_membership sm,
+     bse_owned_files fi,
+     bse_file_subscriptions fs
+where fn.id = ?
+  and fi.id = fn.file_id
+  and fn.owner_id = sm.group_id
+  and fs.siteuser_id = fs.siteuser_id
+  and fs.category = fi.category;
+SQL
+
+name: bseNotifyFileGroupEntries
+sql_statement: <<SQL
+select * from bse_file_notifies
+where owner_type = 'G'
+order by when_at
+limit 100
+SQL
+
+name: bseFileNotifyUsers
+sql_statement: <<SQL
+select distinct owner_id as id
+from bse_file_notifies
+where owner_type = 'U'
+SQL
+
+name: bseFileNotifyUserEntries
+sql_statement: <<SQL
+select *
+from bse_file_notifies
+where owner_type = 'U'
+  and owner_id = ?
+SQL

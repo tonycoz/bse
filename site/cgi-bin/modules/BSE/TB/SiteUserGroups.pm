@@ -17,7 +17,7 @@ sub query_groups {
   while ($name = $cfg->entry(SECT_QUERY_GROUPS, $id)) {
     my $group = $class->getQueryGroup($cfg, -$id);
     $group and push @groups, $group;
-      
+
     ++$id;
   }
 
@@ -39,11 +39,18 @@ sub getQueryGroup {
 
   my $name = $cfg->entry(SECT_QUERY_GROUPS, -$id)
     or return;
-  my $sql = $cfg->entry(SECT_QUERY_GROUP_PREFIX.$name, 'sql')
+  my $section = SECT_QUERY_GROUP_PREFIX . $name;
+  my $sql = $cfg->entry($section, 'sql')
     or return;
+  my $sql_all = $cfg->entry($section, 'sql_all');
 
-  return bless { id => $id, name => "*$name", sql=>$sql }, 
-    "BSE::TB::SiteUserQueryGroup";
+  return bless
+    {
+     id => $id,
+     name => "*$name",
+     sql=>$sql,
+     sql_all => $sql_all,
+    }, "BSE::TB::SiteUserQueryGroup";
 }
 
 sub getByName {
@@ -68,6 +75,7 @@ sub getByName {
 
 package BSE::TB::SiteUserQueryGroup;
 use constant OWNER_TYPE => "G";
+use Carp qw(confess);
 
 sub id { $_[0]{id} }
 
@@ -83,6 +91,22 @@ sub contains_user {
     and return 1;
   
   return 0;
+}
+
+sub member_ids {
+  my ($self) = @_;
+
+  if ($self->{sql_all}) {
+    my $dbh = BSE::DB->single->dbh;
+    my $values = $dbh->selectcol_arrayref($self->{sql_all});
+    $values
+      or confess "Cannot execute $self->{sql_all}: ", $dbh->errstr, "\n";
+
+    return @$values;
+  }
+  else {
+    return grep $self->contains_user($_), SiteUsers->all_ids;
+  }
 }
 
 sub file_owner_type {

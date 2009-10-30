@@ -1,0 +1,11 @@
+Hello <:ifUser name1:><:user name1:><:or:><:user userId:><:eif:>,
+
+New content has been uploaded to your account:
+
+<:iterator begin files:>
+<:file display_name:> (<:kb file size_in_bytes:>bytes)
+  Title: <:file title:>
+  Category: <:file catname:>
+<:iterator end files:>
+
+<:set_subject [concatenate [file_count] " new files waiting"]:>

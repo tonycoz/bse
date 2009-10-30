@@ -325,7 +325,13 @@ sub bse_add_owned_file {
   $opts{filename} = $saved_name;
   
   require BSE::TB::OwnedFiles;
-  return BSE::TB::OwnedFiles->make(%opts);
+  my $result = BSE::TB::OwnedFiles->make(%opts);
+
+  if ($cfg->entry('notify_files', 'active', 0)) {
+    BSE::DB->run(bseAddOwnedFileNotification => $result->id, $owner->file_owner_type, $owner->id);
+  }
+
+  return $result;
 }
 
 sub bse_delete_owned_file {
