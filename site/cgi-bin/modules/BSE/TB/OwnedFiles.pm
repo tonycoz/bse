@@ -16,7 +16,7 @@ sub categories {
 
   my @cats;
   for my $id (@cat_ids) {
-    my $section = "file category $id";
+    my $section = length $id ? "file category $id" : "file category empty";
     my $def_name = length $id ? ucfirst $id : "(None)";
     my $name = $cfg->entry($section, "name", $def_name);
     push @cats, +{ id => $id, name => $name };

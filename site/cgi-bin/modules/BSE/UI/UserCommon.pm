@@ -11,11 +11,15 @@ sub iter_userfiles {
   my ($self, $user, $req, $args) = @_;
 
   my @files = map $_->data_only, $user->visible_files($req->cfg);
+  require BSE::TB::OwnedFiles;
+  my %catnames = map { $_->{id} => $_->{name} } BSE::TB::OwnedFiles->categories($req->cfg);
 
   # produce a url for each file
   my $base = '/cgi-bin/user.pl?a_downufile=1&id=';
   for my $file (@files) {
     $file->{url} = $base . $file->{id};
+    $file->{catname} = $catnames{$file->{category}} || $file->{category};
+    $file->{new} = $file->{modwhen} gt $user->previousLogon;
   }
   defined $args or $args = '';
 
