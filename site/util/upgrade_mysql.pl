@@ -61,6 +61,10 @@ while (<STRUCT>) {
   if (/^Table\s+([^,]+)/) {
     $table = $1;
   }
+  elsif (/^Engine (\w+)/) {
+    $table or die "Engine before Table";
+    $tables{$table}{engine} = $1;
+  }
   elsif (/^Column\s+(\w+);([^;]+);(\w*);([^;]*);([^;]*)/) {
     $table or die "Column before Table";
     push(@{$tables{$table}{cols}}, 
@@ -87,22 +91,29 @@ while (<STRUCT>) {
 close STRUCT;
 
 # get a list of existing tables from the database
-my $st = $db->{dbh}->prepare('show tables')
+my $st = $db->{dbh}->prepare('show table status')
   or die "Cannot prepare 'show tables': ",$db->{dbh}->errstr,"\n";
 $st->execute
   or die "Cannot execute 'show tables': ",$st->errstr,"\n";
 
 my %ctables;
+my %current_engines;
 while (my $row = $st->fetchrow_arrayref) {
   $ctables{lc $row->[0]} = 1;
+  $current_engines{lc $row->[0]} = $row->[1];
 }
 
 # ok, we know about the tables, check the database
 for my $table (sort keys %tables) {
-  print "Table $table\n" if $verbose;
+  my $want_engine = $tables{$table}{engine};
+
+  print "Table $table\n"
+    if $verbose;
+
   if (!$ctables{$table}) {
     # table doesn't exist - build it
-    make_table($table, $tables{$table}{cols}, $tables{$table}{indices});
+    make_table($table, $tables{$table}{cols}, $tables{$table}{indices},
+	       $want_engine);
   }
   else {
     my $cols = $tables{$table}{cols};
@@ -110,6 +121,12 @@ for my $table (sort keys %tables) {
     @ccols <= @$cols
       or die "The $table table is bigger in your database";
     my @alters;
+    if ($want_engine &&
+	lc $want_engine ne lc $current_engines{lc $table}) {
+      print STDERR "Changing engine type to $want_engine\n"
+	if $verbose;
+      push @alters, qq!type = $want_engine!;
+    }
     for my $i (0..$#ccols) {
       my $col = $cols->[$i];
       my $ccol = $ccols[$i];
@@ -179,7 +196,7 @@ for my $table (sort keys %tables) {
 }
 
 sub make_table {
-  my ($name, $cols, $indices) = @_;
+  my ($name, $cols, $indices, $engine) = @_;
 
   print "Creating table $name\n" if $verbose;
   my @def = create_clauses(@$cols);
@@ -188,7 +205,11 @@ sub make_table {
   }
   my $sql = "create table $name (\n";
   $sql .= join(",\n", @def);
-  $sql .= "\n)\n";
+  $sql .= "\n)";
+  if (defined $engine) {
+    $sql .= "type = $engine";
+  }
+  $sql .= "\n";
   print "SQL to create $name: $sql\n" if $verbose > 2;
   run_sql($sql)
     or die "Cannot create table $name\n";
