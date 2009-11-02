@@ -391,9 +391,9 @@ site/templates/admin/edit_1.tmpl
 # site/templates/admin/edit_4.tmpl
 # site/templates/admin/edit_5.tmpl
 site/templates/admin/edit_catalog.tmpl
-#site/templates/admin/edit_dragdrop.tmpl
+# site/templates/admin/edit_dragdrop.tmpl
 site/templates/admin/edit_groups.tmpl
-$#ite/templates/admin/edit_kidsof.tmpl
+# site/templates/admin/edit_kidsof.tmpl
 site/templates/admin/edit_prodopts.tmpl
 site/templates/admin/edit_product.tmpl
 site/templates/admin/edit_seminar.tmpl
