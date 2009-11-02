@@ -356,7 +356,7 @@ site/htdocs/images/titles/perl.gif
 site/htdocs/images/titles/the_shop.gif
 site/htdocs/images/titles/your_site.gif
 site/htdocs/images/trans_pixel.gif
-site/htdocs/js/admin_dragdrop.js
+# site/htdocs/js/admin_dragdrop.js
 site/htdocs/js/admin_prodopts.js
 site/htdocs/js/builder.js
 site/htdocs/js/controls.js
