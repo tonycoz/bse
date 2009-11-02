@@ -52,6 +52,14 @@ sub dbh {
   $_[0]{dbh};
 }
 
+sub forked {
+  my $self = shift;
+
+  $self = BSE::DB->single unless ref $self;
+
+  $self->_forked;
+}
+
 sub _query_expr {
   my ($args, $map, $table_name, $op, @terms) = @_;
 

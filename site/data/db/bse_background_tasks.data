@@ -1,0 +1,7 @@
+--
+id: gen
+description: Regenerate Site
+binname: perl util/gen.pl
+bin_opts: -v
+start_right: regen_all
+

@@ -191,3 +191,6 @@ from bse_file_notifies
 where owner_type = 'U'
   and owner_id = ?
 SQL
+
+name: BackgroundTasks
+sql_statement: select * from bse_background_tasks

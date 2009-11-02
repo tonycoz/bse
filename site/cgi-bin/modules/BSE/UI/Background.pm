@@ -1,0 +1,130 @@
+package BSE::UI::Background;
+use strict;
+use base "BSE::UI::AdminDispatch";
+use BSE::TB::BackgroundTasks;
+use BSE::Util::Iterate;
+use BSE::Util::Tags;
+use BSE::Util::SQL qw(now_sqldatetime);
+use DevHelp::HTML;
+use IO::File;
+use BSE::Util::Tags qw(tag_hash);
+
+my %actions =
+  (
+   list => "",
+   start => "bse_back_start",
+   stop => "bse_back_stop",
+   detail => "bse_back_detail",
+  );
+
+sub actions { \%actions }
+
+sub rights { \%actions }
+
+sub default_action { "list" }
+
+sub req_list {
+  my ($self, $req, $errors) = @_;
+
+  my @all = BSE::TB::BackgroundTasks->all;
+  my $it = BSE::Util::Iterate->new;
+  my $message = $req->message($errors);
+  my $current_task;
+  my %acts =
+    (
+     BSE::Util::Tags->basic(undef, $req->cgi, $req->cfg),
+     BSE::Util::Tags->secure($req),
+     BSE::Util::Tags->admin(undef, $req->cfg),
+     $it->make
+     (
+      single => "task",
+      plural => "tasks",
+      data => \@all,
+      store => \$current_task,
+     ),
+     message => $message,
+     task_running => [ tag_task_running => $self, \$current_task ],
+    );
+
+  return $req->dyn_response("admin/back/list", \%acts);
+}
+
+sub tag_task_running {
+  my ($self, $rcurrent) = @_;
+
+  $$rcurrent or return '';
+
+  return $$rcurrent->check_running;
+}
+
+sub _get_task {
+  my ($req, $msg) = @_;
+
+  my $id = $req->cgi->param("id");
+  unless ($id) {
+    $$msg = "Missing id parameter";
+    return;
+  }
+
+  my $task = BSE::TB::BackgroundTasks->getByPkey($id);
+  unless ($task) {
+    $$msg = "Task not found";
+    return;
+  }
+
+  return $task;
+}
+
+sub req_start {
+  my ($self, $req) = @_;
+
+  my $msg;
+  my $task = _get_task($req, \$msg)
+    or return $self->req_list($req, { _ => $msg });
+
+  $task->check_running
+    and return $self->req_list($req, { _ => $task->description . " is already running" });
+
+  my $pid = $task->start
+    (
+     cfg => $req->cfg,
+     msg => \$msg,
+    );
+  if ($pid) {
+    return BSE::Template->get_refresh("$ENV{SCRIPT_NAME}?m=Started+".escape_uri($task->description), $req->cfg);
+  }
+  else {
+    return $self->req_list($req, { _ => $msg });
+  }
+}
+
+sub req_detail {
+  my ($self, $req) = @_;
+
+  my $msg;
+  my $task = _get_task($req, \$msg)
+    or return $self->req_list($req, { _ => $msg });
+
+  my $logfilename = $task->logfilename($req->cfg);
+  my $logtext = '';
+  if (-f $logfilename) {
+    my $fh = IO::File->new($logfilename, "r");
+    if ($fh) {
+      local $/;
+      $logtext = <$fh>;
+    }
+  }
+  my %acts =
+    (
+     BSE::Util::Tags->basic(undef, $req->cgi, $req->cfg),
+     BSE::Util::Tags->secure($req),
+     BSE::Util::Tags->admin(undef, $req->cfg),
+     task => [ \&tag_hash, $task ],
+     task_running => scalar($task->check_running),
+     log => escape_html($logtext),
+    );
+
+  return $req->dyn_response("admin/back/detail", \%acts);
+}
+
+1;

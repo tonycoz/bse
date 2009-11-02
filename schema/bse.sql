@@ -943,3 +943,43 @@ create table bse_file_access_log (
   index by_file(file_id),
   index by_user(siteuser_id, when_at)
 );
+
+-- configuration of background tasks
+drop table if exists bse_background_tasks;
+create table bse_background_tasks (
+  -- static, doesn't change at runtime
+  -- string id of the task
+  id varchar(20) not null primary key,
+
+  -- description suitable for users
+  description varchar(80) not null,
+
+  -- module that implements the task, or
+  modname varchar(80) not null default '',
+
+  -- binary (relative to base) that implements the task and options
+  binname varchar(80) not null default '',
+  bin_opts varchar(255) not null default '',
+
+  -- whether the task can be stopped
+  stoppable integer not null default 0,
+
+  -- bse right required to start it
+  start_right varchar(40),
+
+  -- dynamic, changes over time
+  -- non-zero if running
+  running integer not null default 0,
+
+  -- pid of the task
+  task_pid integer null,
+
+  -- last exit code
+  last_exit integer null,
+
+  -- last time started
+  last_started datetime null,
+
+  -- last completion time
+  last_completion datetime null
+);

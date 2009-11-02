@@ -2002,39 +2002,17 @@ sub req_downufile {
   $accessible
     or return $self->error($req, "Sorry, you don't have access to this file");
 
-  my $filebase = $cfg->entryVar('paths', 'downloads');
-  require IO::File;
-  my $fh = IO::File->new("$filebase/" . $file->filename, "r")
-    or return $self->error($req, "Cannot open stored file: $!");
-
-  my @headers;
-  my %result =
+  my $msg;
+  my $result = $file->download_result
     (
-     content_fh => $fh,
-     headers => \@headers,
-    );
-  my $download = $cgi->param("force_download") || $file->download;
-  if ($download) {
-    push @headers, "Content-Disposition: attachment; filename=".$file->display_name;
-    $result{type} = "application/octet-stream";
-  }
-  else {
-    push @headers, "Content-Disposition: inline; filename=" . $file->display_name;
-    $result{type} = $file->content_type;
-  }
-  if ($cfg->entry("download", "log_downuload", 0)) {
-    my $max_age = $cfg->entry("download", "log_downuload_maxage", 30);
-    BSE::DB->run(bseDownloadLogAge => $max_age);
-    require BSE::TB::FileAccessLog;
-    BSE::TB::FileAccessLog->log_download
-	(
-	 user => $user,
-	 file => $file,
-	 download => $download,
-	);
-  }
+     cfg => $req->cfg,
+     download => scalar($cgi->param("force_download")),
+     msg => \$msg,
+     user => $user,
+    )
+      or return $self->error($req, $msg);
 
-  BSE::Template->output_result($req, \%result);
+  BSE::Template->output_result($req, $result);
 }
 
 1;

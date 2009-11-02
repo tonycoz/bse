@@ -1,0 +1,32 @@
+<:wrap admin/xbase.tmpl title=>"Background task detail", showtitle => 1 :>
+<p>| <a href="/cgi-bin/admin/menu.pl">Admin Menu</a> |
+<a href="<:script:>">Task list</a> |
+<:if Task running:>
+<:ifTask stoppable:><a href="<:script:>?a_stop=1&amp;id=<:task id:>">Stop</a> |<:or:><:eif:>
+
+<:or Task:>
+<a href="<:script:>?a_start=1&amp;id=<:task id:>">Start</a> |
+<:eif Task:>
+</p>
+<table class="editform">
+<tr>
+  <th>Task</th>
+  <td><:task description:></td>
+</tr>
+<tr>
+  <th>Status</th>
+  <td><:ifTask_running:>Running (<:task task_pid:>)<:or:>Stopped<:eif:></td>
+</tr>
+<tr>
+  <th>Last Started</th>
+  <td><:task last_started:></td>
+</tr>
+<tr>
+  <th>Last Completed</th>
+  <td><:task last_completion:></td>
+</tr>
+<tr>
+  <th>Log:</th>
+  <td><textarea rows="20" class="wide"><:log:></textarea>
+</tr>
+</table>

@@ -615,6 +615,15 @@ sub _single
   $self;
 }
 
+sub _forked {
+  my $self = shift;
+
+  $self->{dbh}{InactiveDestroy} = 1;
+  delete $self->{dbh};
+  $self->{dbh} = $self->_connect;
+}
+
+
 my $get_sql_by_name = 'select sql_statement from sql_statements where name=?';
 
 sub stmt_sql {

@@ -1,0 +1,35 @@
+<:wrap admin/xbase.tmpl title=>"Background tasks", showtitle => 1 :>
+<:ifMessage:><p><:message:></p><:or:><:eif:>
+<table class="editform">
+<tr>
+  <th>Task</th>
+  <th>Status</th>
+  <th>Last Started</th>
+  <th>Last Completed</th>
+  <th>Completion Status</th>
+  <th>Admin</th>
+</tr>
+<:if Tasks:>
+<:iterator begin tasks:>
+<tr>
+  <td><:task description:></td>
+  <td><:ifTask running:>Running (<:task task_pid:>)<:or:>Stopped<:eif:></td>
+  <td><:task last_started:></td>
+  <td><:task last_completion:></td>
+  <td><:switch:><:case Eq [task last_exit] "":><:case task last_exit:>Failed<:case default:>Success<:endswitch:></td>
+  <td><:if Task_running:>
+<:ifTask stoppable:><a href="<:script:>?a_stop=1&amp;id=<:task id:>">Stop</a><:or:><:eif:>
+
+<:or Task_running:>
+<a href="<:script:>?a_start=1&amp;id=<:task id:>">Start</a>
+<:eif Task_running:>
+<a href="<:script:>?a_detail=1&amp;id=<:task id:>">Details</a>
+</td>
+</tr>
+<:iterator end tasks:>
+<:or Tasks:>
+<tr>
+  <td colspan="3">No tasks available.</td>
+</tr>
+<:eif Tasks:>
+</table>
