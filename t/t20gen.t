@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>105;
+use Test::More tests=>123;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
@@ -16,8 +16,13 @@ BSE::Util::SQL->import(qw/sql_datetime/);
 sub template_test($$$$);
 sub dyn_template_test($$$$);
 
-my $parent = add_article(title=>'Parent', body=>'parent article doclink[shop|foo]',
-			lastModified => '2004-09-23 06:00:00');
+my $parent = add_article
+  (
+   title=>'Parent', 
+   body=>'parent article doclink[shop|foo]',
+   lastModified => '2004-09-23 06:00:00',
+   threshold => 2,
+  );
 ok($parent, "create section");
 my @kids;
 for my $name ('One', 'Two', 'Three') {
@@ -25,7 +30,7 @@ for my $name ('One', 'Two', 'Three') {
     (
      title => $name, parentid => $parent->{id}, 
      body => "b[$name] - alpha, beta, gamma, delta, epsilon",
-     summaryLength => 35
+     summaryLength => 35,
     );
   ok($kid, "creating kid $name");
   push(@kids, $kid);
@@ -332,6 +337,48 @@ TEMPLATE
 One - alpha, beta, gamma, delta,...
 One - alpha,...
 EXPECTED
+
+template_test "ifUnderThreshold parent children", $parent, <<'TEMPLATE', <<EXPECTED;
+<:ifUnderThreshold:>1<:or:>0<:eif:>
+<:ifUnderThreshold children:>1<:or:>0<:eif:>
+TEMPLATE
+0
+0
+EXPECTED
+
+template_test "ifUnderThreshold parent allkids", $parent, <<'TEMPLATE', <<EXPECTED;
+<:ifUnderThreshold allkids:>1<:or:>0<:eif:>
+TEMPLATE
+0
+EXPECTED
+
+template_test "ifUnderThreshold parent stepkids", $parent, <<'TEMPLATE', <<EXPECTED;
+<:ifUnderThreshold stepkids:>1<:or:>0<:eif:>
+TEMPLATE
+1
+EXPECTED
+
+template_test "ifUnderThreshold child children", $kids[0], <<'TEMPLATE', <<EXPECTED;
+<:ifUnderThreshold:>1<:or:>0<:eif:>
+<:ifUnderThreshold children:>1<:or:>0<:eif:>
+TEMPLATE
+1
+1
+EXPECTED
+
+template_test "ifUnderThreshold child allkids", $kids[0], <<'TEMPLATE', <<EXPECTED;
+<:ifUnderThreshold allkids:>1<:or:>0<:eif:>
+TEMPLATE
+1
+EXPECTED
+
+template_test "ifUnderThreshold child stepkids", $kids[0], <<'TEMPLATE', <<EXPECTED;
+<:ifUnderThreshold stepkids:>1<:or:>0<:eif:>
+TEMPLATE
+1
+EXPECTED
+
+
 
 ############################################################
 # dynamic stuff

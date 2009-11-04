@@ -291,6 +291,21 @@ sub iter_crumbs {
   }
 }
 
+sub tag_ifUnderThreshold {
+  my ($self, $article, $args) = @_;
+
+  my $count;
+  my $what = $args || '';
+  if ($self->{kids}{$article->{id}}{$what}) {
+    $count = @{$self->{kids}{$article->{id}}{$what}};
+  }
+  else {
+    $count = @{$self->{kids}{$article->{id}}{children}};
+  }
+
+  return $count <= $article->{threshold};
+}
+
 sub baseActs {
   my ($self, $articles, $acts, $article, $embedded) = @_;
 
@@ -344,6 +359,10 @@ sub baseActs {
     @allkids	  = $article->all_visible_kids;
     @stepparents  = $article->visible_step_parents;
   }
+  $self->{kids}{$article->{id}}{stepkids} = \@stepkids;
+  $self->{kids}{$article->{id}}{allkids} = \@allkids;
+  $self->{kids}{$article->{id}}{children} = \@children;
+
   my $allkids_index;
   my $current_image;
   my $art_it = BSE::Util::Iterate::Article->new(cfg =>$cfg, admin => $self->{admin}, top => $self->{top});
@@ -387,20 +406,7 @@ sub baseActs {
 	 $templater->perform($acts, $which, 'thumbImage');
      },
      ifUnderThreshold => 
-     sub { 
-       my $count;
-       my $what = $_[0] || '';
-       if ($what eq 'stepkids') {
-	 $count = @stepkids;
-       }
-       elsif ($what eq 'allkids') {
-	 $count = @allkids;
-       }
-       else {
-	 $count = @children;
-       }
-       $count <= $article->{threshold};
-     },
+     [ tag_ifUnderThreshold => $self, $article ],
      ifChildren => sub { scalar @children },
      iterate_children_reset => sub { $child_index = -1; },
      iterate_children =>

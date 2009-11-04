@@ -142,6 +142,11 @@ sub generate_low {
   }
   my @allcats = grep UNIVERSAL::isa($_->{generator}, 'Generate::Catalog'), 
     @allkids;
+
+  # for article ifUnderThreshold handler
+  $self->{kids}{$article->{id}}{allprods} = \@allprods;
+  $self->{kids}{$article->{id}}{allcats} = \@allcats;
+
   my $allprod_index;
   my $catalog_index = -1;
   my $allcat_index;

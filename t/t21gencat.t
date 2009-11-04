@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>74;
+use Test::More tests=>80;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
@@ -16,9 +16,14 @@ require BSE::Util::SQL;
 BSE::Util::SQL->import(qw/sql_datetime/);
 sub template_test($$$$);
 
-my $parent = add_catalog(title=>'Test catalog', body=>'test catalog',
-			 parentid => 3,
-			 lastModified => '2004-09-23 06:00:00');
+my $parent = add_catalog
+  (
+   title=>'Test catalog', 
+   body=>'test catalog',
+   parentid => 3,
+   lastModified => '2004-09-23 06:00:00',
+   threshold => 2,
+  );
 ok($parent, "create parent catalog");
 my @kids;
 for my $name ('One', 'Two', 'Three') {
@@ -242,6 +247,18 @@ TEMPLATE
 
 EXPECTED
 
+template_test "ifUnderThreshold parent allcats", $parent, <<TEMPLATE, <<EXPECTED;
+<:ifUnderThreshold allcats:>1<:or:>0<:eif:>
+TEMPLATE
+0
+EXPECTED
+
+template_test "ifUnderThreshold parent allprods", $parent, <<TEMPLATE, <<EXPECTED;
+<:ifUnderThreshold allprods:>1<:or:>0<:eif:>
+TEMPLATE
+0
+EXPECTED
+
 BSE::Admin::StepParents->del($parent, $stepkid);
 BSE::Admin::StepParents->del($parent, $stepprod);
 for my $kid (reverse @prods, $stepprod) {
@@ -274,7 +291,8 @@ sub add_article {
      createdBy=>'t21gencat', author=>'', pageTitle=>'',
      cached_dynamic => 0, force_dynamic=>0, inherit_siteuser_rights => 1,
      metaDescription => '',  metaKeywords => '',
-     summary => '',
+     summary => '', menu => "", titleAlias => "",
+     linkAlias => "",
     );
   for my $key (%defaults) {
     unless (exists $parms{$key}) {
@@ -325,6 +343,13 @@ sub add_product {
 		     subscription_usage => 3,
 		     subscription_required => -1,
 		     product_code => '',
+		     menu => "",
+		     titleAlias => "",
+		     linkAlias => "",
+		     weight => 0,
+		     width => 0,
+		     height => 0,
+		     length => 0,
 		     %parms);
 }
 
