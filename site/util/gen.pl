@@ -19,6 +19,8 @@ my $cfg = BSE::Cfg->new;
 
 my $articles = 'Articles';
 
+$| = 1;
+
 if (@ARGV) {
   Squirrel::Table->caching(1);
   print "Generating @ARGV\n" if $verbose;
