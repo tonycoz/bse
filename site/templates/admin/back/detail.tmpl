@@ -18,6 +18,18 @@
   <td><:ifTask_running:>Running (<:task task_pid:>)<:or:>Stopped<:eif:></td>
 </tr>
 <tr>
+  <th>Completion Status:</th>
+  <td><:if Eq [task last_exit] 0:>Success
+<:or Eq:>
+Failed
+<:switch:>
+<:case task_exit:>(Exit: <:task_exit:>)
+<:case task_signal:>(Signal: <:task_signal_name:>)
+<:case default:>(Unknown cause)
+<:endswitch:>
+<:eif Eq:>
+</tr>
+<tr>
   <th>Last Started</th>
   <td><:task last_started:></td>
 </tr>

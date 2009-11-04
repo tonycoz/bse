@@ -1,7 +1,17 @@
 --
-id: gen
+id: bse_gen
 description: Regenerate Site
 binname: perl util/gen.pl
 bin_opts: -v
 start_right: regen_all
+
+id: bse_sync_storage
+description: Synchronize File Stores
+binname: perl util/bse_storage.pl
+bin_opts: sync -v
+
+id: bse_notify_files
+description: Notify Members about new files
+binname: perl util/bse_notify_files.pl
+bin_opts: -v 2
 

@@ -1,6 +1,7 @@
 #!perl -w
 use strict;
-use lib '../cgi-bin/modules';
+use FindBin;
+use lib "$FindBin::Bin/../cgi-bin/modules";
 use BSE::Cfg;
 use BSE::StorageMgr::Images;
 use BSE::StorageMgr::Files;

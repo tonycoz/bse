@@ -49,6 +49,7 @@ sub start {
 
   my $cfg = delete $opts{cfg};
   my $msg = delete $opts{msg};
+  my $foreground = delete $opts{foreground};
 
   # find the binary
   my $binname = $self->binname;
@@ -85,66 +86,71 @@ sub start {
     return;
   }
   
-  my $pid = fork;
-  unless (defined $pid) {
-    $$msg = "Could not fork: $!";
-    return;
-  }
   my $task_id = $self->id;
-  if ($pid) {
-    # parent process
-    $self->set_task_pid($pid);
+
+  unless ($foreground) {
+    my $pid = fork;
+    unless (defined $pid) {
+      $$msg = "Could not fork: $!";
+      return;
+    }
+
+    if ($pid) {
+      # parent
+      return $pid;
+    }
+
+    # child
+    BSE::DB->forked;
+  }
+
+  # child process
+  my $null = $^O eq 'MSWin32' ? "NUL" : "/dev/null";
+  untie *STDIN;
+  open STDIN, "<$null" 
+    or die "Cannot open $null: $!";
+  untie *STDOUT;
+  open STDOUT, ">&".fileno($outfh)
+    or die "Cannot redirect stdout: $!";
+  untie *STDERR;
+  open STDERR, ">&STDOUT" or die "Cannot redirect STDOUT: $!";
+    POSIX::setsid();
+
+  my $pid2 = fork;
+  unless (defined $pid2) {
+    print STDERR "Cannot start second child: $!\n";
+    $self->set_running(0);
+    $self->set_task_pid(undef);
+    $self->save;
+    exit;
+  }
+  
+  if ($pid2) {
+    # the working child pid is more interesting
+    $self->set_task_pid($pid2);
     $self->set_running(1);
     $self->set_last_started(now_sqldatetime());
     $self->save;
-
-    return $pid;
+    
+    waitpid $pid2, 0;
+    if ($?) {
+      print STDERR "Task exited with non-zero-status: $?\n";
+    }
+    # this can happen hours or minutes after the original task changes
+    # and it's in a different process too
+    my $task = BSE::TB::BackgroundTasks->getByPkey($task_id);
+    $task->set_running(0);
+    $task->set_task_pid(undef);
+    $task->set_last_exit($?);
+    $task->set_last_completion(now_sqldatetime());
+    $task->save;
+    exit;
   }
   else {
     BSE::DB->forked;
-
-    # child process
-    my $null = $^O eq 'MSWin32' ? "NUL" : "/dev/null";
-    untie *STDIN;
-    open STDIN, "<$null" 
-      or die "Cannot open $null: $!";
-    untie *STDOUT;
-    open STDOUT, ">&".fileno($outfh)
-      or die "Cannot redirect stdout: $!";
-    untie *STDERR;
-    open STDERR, ">&STDOUT" or die "Cannot redirect STDOUT: $!";
-    POSIX::setsid();
-
-    my $pid2 = fork;
-    unless (defined $pid) {
-      print STDERR "Cannot start second child: $!\n";
-      $self->set_running(0);
-      $self->set_task_pid(undef);
-      $self->save;
-      exit;
-    }
-
-    if ($pid2) {
-      waitpid $pid2, 0;
-      if ($?) {
-	print STDERR "Task exited with non-zero-status: $?\n";
-      }
-      # this can happen hours or minutes after the original task changes
-      # and it's in a different process too
-      my $task = BSE::TB::BackgroundTasks->getByPkey($task_id);
-      $task->set_running(0);
-      $task->set_task_pid(undef);
-      $task->set_last_exit($?);
-      $task->set_last_completion(now_sqldatetime());
-      $task->save;
-      exit;
-    }
-    else {
-      BSE::DB->forked;
-      {  exec $binname, @args; } # suppress warning
+    {  exec $binname, @args; } # suppress warning
       print STDERR "Exec of $binname failed: $!\n";
-      exit 1;
-    }
+    exit 1;
   }
 }
 

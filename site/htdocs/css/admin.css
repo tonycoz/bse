@@ -206,3 +206,11 @@ div.menu {
 #fileaccesslog a:active { 
   font-weight: normal;
 }
+
+table#backtasklist tr.running td { 
+  background-color: #E0E0FF;
+}
+
+table#backtasklist tr.failed td { 
+  background-color: #FFE0E0;
+}

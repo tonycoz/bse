@@ -37,8 +37,8 @@ sub expand_groups {
   my ($self) = @_;
 
   $self->lock
-    or die "Cannot acquire notify_files lock\n"
-;
+    or die "Cannot acquire notify_files lock\n";
+
   $self->_clear_obsolete;
 
   $self->_expand_groups;
@@ -49,12 +49,16 @@ sub expand_groups {
 sub _clear_obsolete {
   my ($self) = @_;
 
+  $self->_progress("Clearing obsolete notifcations");
+
   my $max_age = $self->{cfg}->entry("notify files", "oldest_notify", 7);
   BSE::DB->run(bseClearOldFileNotifications => $max_age);
 }
 
 sub _expand_groups {
   my ($self) = @_;
+
+  $self->_progress("Expanding group notificatioons");
 
   # a few at a time
   while (my @group_entries = BSE::DB->query("bseNotifyFileGroupEntries")) {
@@ -86,6 +90,8 @@ sub _expand_group {
 sub _send_messages {
   my ($self) = @_;
 
+  $self->_progress("Sending emails");
+
   my @user_ids = map $_->{id}, BSE::DB->query("bseFileNotifyUsers");
   for my $user_id (@user_ids) {
     $self->_notify_user($user_id);
@@ -109,6 +115,8 @@ sub _notify_user {
 
 sub _notify_user_low {
   my ($self, $user_id, $user, $orig_entries) = @_;
+
+  $self->_detail("Emailing: ", $user->userId);
 
   # we keep the original entry list, since we want to delete them all
   # at the end, but we don't want to delete entries added after we
@@ -194,6 +202,20 @@ sub testlock {
   my $row = $dbh->selectrow_arrayref("select is_free_lock(?)", undef, $self->_lockname)
     or die "Cannot retrieve lock status: ", $dbh->errstr, "\n";
   return !$row->[0];
+}
+
+sub _progress {
+  my ($self, @text) = @_;
+
+  $self->{verbose} && $self->{output}
+    and $self->{output}->(@text);
+}
+
+sub _detail {
+  my ($self, @text) = @_;
+
+  $self->{verbose} > 1 && $self->{output}
+    and $self->{output}->(@text);
 }
 
 1;

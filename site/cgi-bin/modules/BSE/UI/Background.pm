@@ -8,6 +8,7 @@ use BSE::Util::SQL qw(now_sqldatetime);
 use DevHelp::HTML;
 use IO::File;
 use BSE::Util::Tags qw(tag_hash);
+use Config;
 
 my %actions =
   (
@@ -22,6 +23,15 @@ sub actions { \%actions }
 sub rights { \%actions }
 
 sub default_action { "list" }
+
+my %signames;
+if ($Config{sig_name} && $Config{sig_num}) {
+  my @names = split ' ', $Config{sig_name};
+  my @nums = split ' ', $Config{sig_num};
+  for my $i (0 .. $#names) {
+    $signames{$nums[$i]} ||= $names[$i];
+  }
+}
 
 sub req_list {
   my ($self, $req, $errors) = @_;
@@ -44,6 +54,8 @@ sub req_list {
      ),
      message => $message,
      task_running => [ tag_task_running => $self, \$current_task ],
+     task_exit => [ tag_task_exit => $self, \$current_task ],
+     task_signal => [ tag_task_signal => $self, \$current_task ],
     );
 
   return $req->dyn_response("admin/back/list", \%acts);
@@ -55,6 +67,22 @@ sub tag_task_running {
   $$rcurrent or return '';
 
   return $$rcurrent->check_running;
+}
+
+sub tag_task_exit {
+  my ($self, $rcurrent) = @_;
+
+  $$rcurrent or return '';
+
+  return $$rcurrent->last_exit() >> 8;
+}
+
+sub tag_task_signal {
+  my ($self, $rcurrent) = @_;
+
+  $$rcurrent or return '';
+
+  return $$rcurrent->last_exit() & 127;
 }
 
 sub _get_task {
@@ -114,6 +142,8 @@ sub req_detail {
       $logtext = <$fh>;
     }
   }
+  my $signum = (($task->last_exit() || 0) & 127);
+  my $signame = $signames{$signum} || '';
   my %acts =
     (
      BSE::Util::Tags->basic(undef, $req->cgi, $req->cfg),
@@ -121,6 +151,9 @@ sub req_detail {
      BSE::Util::Tags->admin(undef, $req->cfg),
      task => [ \&tag_hash, $task ],
      task_running => scalar($task->check_running),
+     task_exit => scalar(($task->last_exit() || 0) >> 8),
+     task_signal => $signum,
+     task_signal_name => $signame,
      log => escape_html($logtext),
     );
 

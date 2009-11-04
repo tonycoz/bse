@@ -1,6 +1,6 @@
 <:wrap admin/xbase.tmpl title=>"Background tasks", showtitle => 1 :>
 <:ifMessage:><p><:message:></p><:or:><:eif:>
-<table class="editform">
+<table class="editform" id="backtasklist">
 <tr>
   <th>Task</th>
   <th>Status</th>
@@ -11,9 +11,9 @@
 </tr>
 <:if Tasks:>
 <:iterator begin tasks:>
-<tr>
+<tr <:switch:><:case task_running:>class="running"<:case task last_exit:>class="failed"<:endswitch:>>
   <td><:task description:></td>
-  <td><:ifTask running:>Running (<:task task_pid:>)<:or:>Stopped<:eif:></td>
+  <td><:ifTask_running:>Running (<:task task_pid:>)<:or:>Stopped<:eif:></td>
   <td><:task last_started:></td>
   <td><:task last_completion:></td>
   <td><:switch:><:case Eq [task last_exit] "":><:case task last_exit:>Failed<:case default:>Success<:endswitch:></td>

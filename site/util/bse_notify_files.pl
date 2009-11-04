@@ -10,8 +10,9 @@ chdir "$FindBin::Bin/../cgi-bin"
   or warn "Could not change to cgi-bin directory: $!\n";
 Getopt::Long::Configure('bundling');
 my $verbose;
-GetOptions("v", \$verbose);
-$verbose = defined $verbose;
+GetOptions("v:i", \$verbose);
+defined $verbose && !$verbose
+  and $verbose = 1;
 
 my $cfg = bse_cfg;
 
