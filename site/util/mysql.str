@@ -194,6 +194,7 @@ Column title;varchar(255);NO;NULL;
 Column body;text;NO;NULL;
 Column modwhen;datetime;NO;NULL;
 Column size_in_bytes;int(11);NO;NULL;
+Column filekey;varchar(80);NO;;
 Index PRIMARY;1;[id]
 Index by_owner_category;0;[owner_type;owner_id;category]
 Table bse_product_option_values

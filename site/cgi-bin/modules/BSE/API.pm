@@ -323,6 +323,16 @@ sub bse_add_owned_file {
   $opts{owner_id} = $owner->id;
   $opts{category} ||= '';
   $opts{filename} = $saved_name;
+  unless ($opts{filekey}) {
+    my $fh = IO::File->new("$file_dir/$saved_name", "r");
+    if ($fh) {
+      require Digest::MD5;
+      my $md5 = Digest::MD5->new;
+      $md5->addfile($fh);
+
+      $opts{filekey} = $md5->hexdigest;
+    }
+  }
   
   require BSE::TB::OwnedFiles;
   my $result = BSE::TB::OwnedFiles->make(%opts);

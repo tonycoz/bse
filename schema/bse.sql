@@ -896,6 +896,7 @@ create table bse_owned_files (
   body text not null,
   modwhen datetime not null,
   size_in_bytes integer not null,
+  filekey varchar(80) not null default '',
   index by_owner_category(owner_type, owner_id, category)
 );
 

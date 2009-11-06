@@ -5,7 +5,7 @@ use BSE::Util::SQL qw(now_sqldatetime);
 use Carp qw(confess);
 
 sub columns {
-  return qw/id owner_type owner_id category filename display_name content_type download title body modwhen size_in_bytes/;
+  return qw/id owner_type owner_id category filename display_name content_type download title body modwhen size_in_bytes filekey/;
 }
 
 sub table {
