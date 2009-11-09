@@ -33,6 +33,47 @@ if ($Config{sig_name} && $Config{sig_num}) {
   }
 }
 
+=item a_list
+
+List all tasks.
+
+Default action.
+
+No parameters.
+
+Tags:
+
+=over
+
+=item *
+
+iterator begin tasks ... task foo ... iterator end tasks - tasks iterator
+
+=item *
+
+message - displays any passed in message
+
+=item *
+
+task_running - returns the result of check_running for the current
+task in the tasks iterator, ie. whether the task is actually running
+
+=item *
+
+task_exit - the last exit code of the current task in the tasks
+iterator
+
+=item *
+
+task_signal - the last signal number of the current task in the tasks
+iterator
+
+=back
+
+Template: admin/back/list
+
+=cut
+
 sub req_list {
   my ($self, $req, $errors) = @_;
 
@@ -103,6 +144,25 @@ sub _get_task {
   return $task;
 }
 
+=item a_start
+
+Start the given task.
+
+=over
+
+=item *
+
+id - id of the task to start
+
+=back
+
+No Ajax support.
+
+Rights required: bse_bask_start plus potentially rights specific to a
+task.
+
+=cut
+
 sub req_start {
   my ($self, $req) = @_;
 
@@ -125,6 +185,57 @@ sub req_start {
     return $self->req_list($req, { _ => $msg });
   }
 }
+
+=item a_detail
+
+Display details for a given background task.
+
+Parameters:
+
+=over
+
+=item *
+
+id - id of the task to display
+
+=back
+
+Tags:
+
+=over
+
+=item *
+
+task - the task object being displayed
+
+=item *
+
+task_running - result of check_running on the task, ie. test that the
+task is actually running.
+
+=item *
+
+task_exit - exit code from the last run of the task
+
+=item *
+
+task_signal - signal number from the last run of the task
+
+=item *
+
+task_signal_name - name of the signal from the last run of the task.
+
+=item *
+
+log - content of the task's log file.
+
+=back
+
+Template: admin/back/detail
+
+Rights required: bse_back_detail.
+
+=cut
 
 sub req_detail {
   my ($self, $req) = @_;
