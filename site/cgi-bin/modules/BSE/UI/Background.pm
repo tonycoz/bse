@@ -83,9 +83,7 @@ sub req_list {
   my $current_task;
   my %acts =
     (
-     BSE::Util::Tags->basic(undef, $req->cgi, $req->cfg),
-     BSE::Util::Tags->secure($req),
-     BSE::Util::Tags->admin(undef, $req->cfg),
+     $req->admin_tags,
      $it->make
      (
       single => "task",
@@ -257,9 +255,7 @@ sub req_detail {
   my $signame = $signames{$signum} || '';
   my %acts =
     (
-     BSE::Util::Tags->basic(undef, $req->cgi, $req->cfg),
-     BSE::Util::Tags->secure($req),
-     BSE::Util::Tags->admin(undef, $req->cfg),
+     $req->admin_tags,
      task => [ \&tag_hash, $task ],
      task_running => scalar($task->check_running),
      task_exit => scalar(($task->last_exit() || 0) >> 8),
