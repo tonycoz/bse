@@ -113,12 +113,6 @@ sub req_info {
 			'subscription', 'subscriptions'),
      $it->make_iterator([ \&iter_sembookings, $user ],
 			'booking', 'bookings'),
-     $it->make
-     (
-      code => [ iter_userfiles => $self, $user, $req ],
-      single => 'userfile',
-      plural => 'userfiles',
-     ),
     );
 
   return $req->dyn_response('user/userpage', \%acts);

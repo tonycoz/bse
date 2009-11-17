@@ -1091,12 +1091,6 @@ sub req_userpage {
 			'subscription', 'subscriptions'),
      $it->make_iterator([ \&iter_sembookings, $user ],
 			'booking', 'bookings'),
-     $it->make
-     (
-      code => [ iter_userfiles => $self, $user, $req ],
-      single => 'userfile',
-      plural => 'userfiles',
-     ),
     );
   my $base_template = 'user/userpage';
   my $template = $base_template;
