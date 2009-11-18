@@ -5,7 +5,7 @@ use FindBin;
 use lib "$FindBin::Bin/../cgi-bin/modules";
 use BSE::Cfg;
 use BSE::API qw(bse_cfg bse_make_product bse_encoding);
-use BSE::ProductImportXLS;
+use BSE::Importer;
 use Carp qw(confess);
 
 chdir "$FindBin::Bin/../cgi-bin"
@@ -25,21 +25,23 @@ my $profile = shift;
 my $filename = shift
   or die "Usage: $0 profile filename\n";
 
-my $importer = BSE::ProductImportXLS->new
-  (
-   $cfg, $profile,
-   file_path => \@file_path
-  );
-
 my $callback;
 $verbose
   and $callback = sub { print "@_\n" };
 
-$importer->process($filename, $callback);
+my $importer = BSE::Importer->new
+  (
+   cfg => $cfg,
+   profile => $profile,
+   file_path => \@file_path,
+   callback => $callback,
+  );
+
+$importer->process($filename);
 
 if ($delete) {
-  my @products = $importer->products;
-  my @catalogs = $importer->catalogs;
+  my @products = $importer->leaves;
+  my @catalogs = $importer->parents;
   for my $product (@products) {
     print "Removing product $product->{id}: $product->{title}\n";
     $product->remove($cfg);

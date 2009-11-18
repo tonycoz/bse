@@ -5,7 +5,7 @@ use BSE::Util::SQL qw(sql_datetime now_sqldatetime);
 use BSE::Cfg;
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(bse_cfg bse_make_product bse_make_catalog bse_encoding bse_add_image bse_add_step_child bse_add_owned_file bse_delete_owned_file bse_replace_owned_file);
+@EXPORT_OK = qw(bse_cfg bse_make_product bse_make_catalog bse_encoding bse_add_image bse_add_step_child bse_add_owned_file bse_delete_owned_file bse_replace_owned_file bse_make_article bse_add_step_parent);
 use Carp qw(confess croak);
 use Fcntl qw(:seek);
 
@@ -196,6 +196,42 @@ sub bse_make_catalog {
   return $catalog;
 }
 
+sub bse_make_article {
+  my (%opts) = @_;
+
+  my $cfg = delete $opts{cfg}
+    or confess "cfg option missing";
+
+  require Articles;
+
+  defined $opts{title} && length $opts{title}
+    or confess "Missing title option\n";
+  defined $opts{body} && length $opts{body}
+    or confess "Missing body option\n";
+
+  $opts{summary} ||= $opts{title};
+  unless ($opts{displayOrder}) {
+    $opts{displayOrder} = _next_display_order();
+  }
+
+  %opts =
+    (
+     %acticle_defaults,
+     %opts
+    );
+
+  _set_dynamic($cfg, \%opts);
+
+  my @cols = Article->columns;
+  shift @cols;
+  my $article = Articles->add(@opts{@cols});
+
+  require BSE::Edit::Article;
+  _finalize_article($cfg, $article, 'BSE::Edit::Article');
+
+  return $article;
+}
+
 my %other_parent_defaults =
   (
    release => sql_datetime(time - 86_400),
@@ -382,6 +418,29 @@ sub bse_replace_owned_file {
     and unlink "$file_dir/$old_name";
 
   1;
+}
+
+my %step_defs =
+  (
+   release => sql_datetime(time - 86_400),
+   expire => '2999-12-31',
+  );
+
+sub bse_add_step_parent {
+  my ($cfg, %opts) = @_;
+
+  my $parent = delete $opts{parent};
+  my $child = delete $opts{child};
+  my %step =
+    (
+     %step_defs,
+     parentId => $parent->{id},
+     childId => $child->{id},
+     parentDisplayOrder => _next_display_order(),
+     childDisplayOrder => _next_display_order(),
+    );
+
+  return OtherParents->make(%step);
 }
 
 1;

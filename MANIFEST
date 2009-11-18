@@ -87,6 +87,12 @@ site/cgi-bin/modules/BSE/Generate/Seminar.pm
 # site/cgi-bin/modules/BSE/FileEditor.pm
 site/cgi-bin/modules/BSE/Handler/Base.pm
 site/cgi-bin/modules/BSE/Handler/Page.pm
+site/cgi-bin/modules/BSE/ImportSourceBase.pm
+site/cgi-bin/modules/BSE/ImportSourceXLS.pm
+site/cgi-bin/modules/BSE/ImportTargetArticle.pm
+site/cgi-bin/modules/BSE/ImportTargetBase.pm
+site/cgi-bin/modules/BSE/ImportTargetProduct.pm
+site/cgi-bin/modules/BSE/Importer.pm
 site/cgi-bin/modules/BSE/Index/BSE.pm
 site/cgi-bin/modules/BSE/Index/Base.pm
 site/cgi-bin/modules/BSE/Mail.pm
