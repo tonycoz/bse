@@ -10,14 +10,46 @@ Maybe I'll add some other bits here.
 
 =head1 CHANGES
 
-=head2 0.16_01
+=head2 0.17
 
 =over
 
 =item *
 
+user manageable product options on products
+
+=item *
+
+background task management
+
+=item *
+
+article/product import tool
+
+=item *
+
+member/member group attached files
+
+=item *
+
+shipping calculations
+
+=item *
+
+performance improvements
+
+=item *
+
+support NAB's adaption of securepay
+
+=item *
+
 static pages now generate and link directly to their cachec thumbnail
 images instead of linking to thumb.pl.
+
+=item *
+
+product wishlists
 
 =back
 
