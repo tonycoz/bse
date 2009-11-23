@@ -4,6 +4,8 @@ use base 'BSE::ImportTargetArticle';
 use BSE::API qw(bse_make_product bse_make_catalog bse_add_image);
 use Articles;
 use Products;
+use BSE::TB::ProductOptions;
+use BSE::TB::ProductOptionValues;
 
 sub new {
   my ($class, %opts) = @_;
@@ -15,7 +17,10 @@ sub new {
   $self->{price_dollar} = $importer->cfg_entry('price_dollar', 0);
   $self->{product_template} = $importer->cfg_entry('product_template');
   $self->{catalog_template} = $importer->cfg_entry('catalog_template');
+  $self->{prodopt_value_sep} = $importer->cfg_entry("prodopt_separator", "|");
+  $self->{reset_prodopts} = $importer->cfg_entry("reset_prodopts", 1);
 
+  my $map = $importer->maps;
   defined $map->{retailPrice}
     or die "No retailPrice mapping found\n";
 
@@ -53,17 +58,21 @@ sub children_of {
 sub make_parent {
   my ($self, $importer, %entry) = @_;
 
-  exists $entry{template}
-    or $entry{template} = $importer->cfg_entry("catalog_template");
-
   return bse_make_catalog(%entry);
 }
 
 sub find_leaf {
   my ($self, $leaf_id) = @_;
 
-  my ($leaf) = Products->getBy($self->{id_field}, $leaf_id)
+  my ($leaf) = Products->getBy($self->{code_field}, $leaf_id)
     or return;
+
+  if ($self->{reset_prodopts}) {
+    my @options = $leaf->db_options;
+    for my $option (@options) {
+      $option->remove;
+    }
+  }
 
   return $leaf;
 }
@@ -71,126 +80,39 @@ sub find_leaf {
 sub make_leaf {
   my ($self, $importer, %entry) = @_;
 
-  exists $entry{template}
-    or $entry{template} = $importer->cfg_entry("leaf_template");
-
   return bse_make_product(%entry);
 }
 
+sub fill_leaf {
+  my ($self, $importer, $leaf, %entry) = @_;
 
-sub xxrow {
-  my ($self, $importer, $entry, $parents) = @_;
+  my $ordering = time;
+  for my $opt_num (1 .. 5) {
+    my $name = $entry{"prodopt${opt_num}_name"};
+    my $values = $entry{"prodopt${opt_num}_values"};
 
-  defined $entry->{template}
-    or $entry->{template} = $self->{product_template};
-
-  $entry->{title} =~ /\S/
-    or die "title blank\n";
-  if ($self->{use_codes}) {
-    $entry->{product_code} =~ /\S/
-      or die "product_code blank with use_codes\n";
-  }
-  $entry->{retailPrice} =~ s/\$//; # in case
-    
-  if ($entry->{retailPrice} =~ /\d/) {
-    $self->{price_dollar}
-      and $entry->{retailPrice} *= 100;
-  }
-  else {
-    $importer->warn("Warning: no price");
-    $entry->{retailPrice} = 0;
-  }
-  $entry->{title} =~ /\n/
-    and die "Title may not contain newlines";
-  $entry->{summary}
-    or $entry->{summary} = $entry->{title};
-  $entry->{description}
-    or $entry->{description} = $entry->{title};
-  $entry->{body}
-    or $entry->{body} = $entry->{title};
-  
-  $entry->{parentid} = $self->_find_parent($importer, $self->{parent}, @$parents);
-  my $product;
-  if ($self->{use_codes}) {
-    $product = Products->getBy(product_code => $entry->{product_code});
-  }
-  if ($product) {
-    @{$product}{keys %$entry} = values %$entry;
-    $product->save;
-    $importer->info("Updated $product->{id}: $entry->{title}");
-    if ($self->{reset_images}) {
-      $product->remove_images($importer->cfg);
-      $importer->info(" $product->{id}: Reset images");
-    }
-  }
-  else {
-    $product = bse_make_product
-      (
-       cfg => $self->{cfg},
-       %$entry
-      );
-    $importer->info("Added $product->{id}: $entry->{title}");
-  }
-  for my $image_index (1 .. 10) {
-    my $file = $entry->{"image${image_index}_file"};
-    $file
+    defined $name && $name =~ /\S/ && $values =~ /\S/
       or next;
-    my $full_file = $importer->find_file($file);
-    $full_file
-      or die "File '$file' not found for image$image_index\n";
-    
-    my %opts = ( file => $full_file );
-    for my $key (qw/alt name url storage/) {
-      my $fkey = "image${image_index}_$key";
-      $entry->{$fkey}
-	and $opts{$key} = $entry->{$fkey};
-    }
-    
-    my %errors;
-    my $im = bse_add_image($self->{cfg}, $product, %opts, 
-			   errors => \%errors);
-    $im 
-      or die join(", ",map "$_: $errors{$_}", keys %errors), "\n";
-    $importer->info(" $product->{id}: Add image '$file'");
-  }
-  push @{$self->{leaves}}, $product;
-}
+    my @values = split /\Q$self->{prodopt_value_sep}/, $values
+      or next;
 
-sub xx_find_parent {
-  my ($self, $importer, $parent, @parents) = @_;
-
-  @parents
-    or return $parent;
-  my $cache = $self->{parent_cache};
-  unless ($cache->{$parent}) {
-    my @kids = grep $_->{generator} eq 'Generate::Catalog', 
-      Articles->children($parent);
-    $cache->{$parent} = \@kids;
-  }
-
-  my $title = shift @parents;
-  my ($cat) = grep lc $_->{title} eq lc $title, @{$cache->{$parent}};
-  unless ($cat) {
-    my %opts =
+    my $option = BSE::TB::ProductOptions->make
       (
-       cfg => $self->{cfg},
-       parentid => $parent,
-       title => $title,
-       body => $title,
+       product_id => $leaf->id,
+       name => $name,
+       display_order => $ordering++,
       );
-    $self->{catalog_template}
-      and $opts{template} = $self->{catalog_template};
-    $cat = bse_make_catalog(%opts);
-    $importer->info("Add catalog $cat->{id}: $title");
-    push @{$cache->{$parent}}, $cat;
-  }
 
-  unless ($self->{catseen}{$cat->{id}}) {
-    $self->{catseen}{$cat->{id}} = 1;
-    push @{$self->{catalogs}}, $cat;
+    for my $value (@values) {
+      my $entry = BSE::TB::ProductOptionValues->make
+	(
+	 product_option_id => $option->id,
+	 value => $value,
+	 display_order => $ordering++,
+	);
+    }
   }
-
-  return $self->_find_parent($importer, $cat->{id}, @parents);
+  return $self->SUPER::fill_leaf($importer, $leaf, %entry);
 }
 
 sub default_parent { 3 }

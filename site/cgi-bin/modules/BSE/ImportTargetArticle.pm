@@ -43,9 +43,6 @@ sub start {
 sub xform_entry {
   my ($self, $importer, $entry) = @_;
 
-  defined $entry->{template}
-    or $entry->{template} = $self->leaf_template;
-
   $entry->{title} =~ /\S/
     or die "title blank\n";
 
@@ -88,9 +85,16 @@ sub make_leaf {
   return bse_make_article(%entry);
 }
 
+sub fill_leaf {
+  my ($self, $importer, $leaf, %entry) = @_;
+
+  return 1;
+}
+
 sub row {
   my ($self, $importer, $entry, $parents) = @_;
 
+  $self->xform_entry($importer, $entry);
   
   $entry->{parentid} = $self->_find_parent($importer, $self->{parent}, @$parents);
   my $leaf;
@@ -165,6 +169,7 @@ sub row {
 
     bse_add_step_parent($importer->cfg, child => $leaf, parent => $step);
   }
+  $self->fill_leaf($importer, $leaf, %$entry);
   push @{$self->{leaves}}, $leaf;
 }
 

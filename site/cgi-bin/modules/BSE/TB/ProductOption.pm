@@ -33,4 +33,15 @@ sub key {
   return "prodopt_" . $self->id;
 }
 
+sub remove {
+  my ($self) = @_;
+
+  my @values = $self->values;
+  for my $value (@values) {
+    $value->remove;
+  }
+
+  return $self->SUPER::remove;
+}
+
 1;
