@@ -9,7 +9,7 @@ use BSE::Template;
 #use Squirrel::ImageEditor;
 use Constants qw(:shop $SHOPID $PRODUCTPARENT 
                  $SHOP_URI $CGI_URI $IMAGES_URI $AUTO_GENERATE);
-use Images;
+use BSE::TB::Images;
 use Articles;
 use BSE::Sort;
 use BSE::Util::Tags qw(tag_hash);

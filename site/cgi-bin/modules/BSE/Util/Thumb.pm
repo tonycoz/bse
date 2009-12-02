@@ -1,6 +1,6 @@
 package BSE::Util::Thumb;
 use strict;
-use Images;
+use BSE::TB::Images;
 use BSE::CfgInfo qw(cfg_image_dir);
 use BSE::StorageMgr::Thumbs;
 

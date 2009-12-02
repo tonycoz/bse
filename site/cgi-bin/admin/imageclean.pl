@@ -2,12 +2,12 @@
 use strict;
 use FindBin;
 use lib "$FindBin::Bin/../modules";
-use Images;
+use BSE::TB::Images;
 use Articles;
 use Constants qw($IMAGEDIR);
 
 my %articleIds = ( -1 => 1 );
-my $images = Images->new;
+my $images = BSE::TB::Images->new;
 my @images = $images->all;
 
 ++$|;
@@ -36,7 +36,7 @@ for my $image (@images) {
 
 print "\n\nRebuilding image list and indexing\n";
 # rebuild the images list
-$images = Images->new;
+$images = BSE::TB::Images->new;
 @images= $images->all;
 
 my %names = map { $_->{image}, $_->{id} } @images;

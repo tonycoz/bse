@@ -145,6 +145,7 @@ CREATE TABLE image (
   name varchar(255) default '' not null,
   storage varchar(20) not null default 'local',
   src varchar(255) not null default '',
+  ftype varchar(20) not null default 'img',
 
   PRIMARY KEY (id)
 );

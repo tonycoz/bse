@@ -1031,20 +1031,41 @@ sub tag_thumbimage {
   my $filename = "$imagedir/$$current_image->{image}";
   -e $filename or return "** image file missing **";
 
-  my $geometry = $cfg->entry('thumb geometries', $args, 'scale(200x200)');
+  defined $args && $args =~ /\S/
+    or $args = "editor";
 
   my $image = $$current_image;
-  my ($width, $height) = $thumbs_obj->thumb_dimensions_sized
-    ($geometry, @$image{qw/width height/});
+  return $image->thumb
+    (
+     geo => $args,
+     cfg => $cfg,
+    );
+}
 
+sub tag_image {
+  my ($self, $cfg, $rcurrent, $args) = @_;
 
-  my ($uri, $alt);
-  $alt = "thumbnail of ".$$current_image->{alt};
-  $uri = "$ENV{SCRIPT_NAME}?a_thumb=1&id=$$current_image->{articleId}&im=$$current_image->{id}&w=$width&h=$height";
+  my $im = $$rcurrent
+    or return '';
 
-  $alt = escape_html($alt);
-  $uri = escape_html($uri);
-  return qq!<img src="$uri" width="$width" height="$height" alt="$alt" border="0" />!;
+  my ($align, $rest) = split ' ', $args, 2;
+
+  if ($align && exists $im->{$align}) {
+    if ($align eq 'src') {
+      return escape_html($im->image_url($self->{cfg}));
+    }
+    else {
+      return escape_html($im->{$align});
+    }
+  }
+  else {
+    return $im->formatted
+      (
+       cfg => $cfg,
+       align => $align,
+       extras => $rest,
+      );
+  }
 }
 
 sub low_edit_tags {
@@ -1105,6 +1126,7 @@ sub low_edit_tags {
      $it->make_iterator
      ([ \&iter_get_images, $self, $article ], 'image', 'images', \@images, 
       \$image_index, undef, \$current_image),
+     image => [ tag_image => $self, $cfg, \$current_image ],
      thumbimage => [ \&tag_thumbimage, $cfg, $thumbs_obj, \$current_image ],
      ifThumbs => defined($thumbs_obj),
      ifCanThumbs => defined($thumbs_obj_real),
@@ -2575,7 +2597,7 @@ sub do_add_image {
   use Image::Size;
 
 
-  my($width,$height) = imgsize("$imagedir/$filename");
+  my($width,$height, $type) = imgsize("$imagedir/$filename");
 
   my $alt = $opts{alt};
   defined $alt or $alt = '';
@@ -2593,11 +2615,15 @@ sub do_add_image {
      name => $imageref,
      storage => 'local',
      src => '/images/' . $filename,
+     ftype => "img",
     );
-  require Images;
-  my @cols = Image->columns;
+  if ($type eq 'CWS' || $type eq 'SWF') {
+    $image{ftype} = "flash";
+  }
+  require BSE::TB::Images;
+  my @cols = BSE::TB::Image->columns;
   shift @cols;
-  my $imageobj = Images->add(@image{@cols});
+  my $imageobj = BSE::TB::Images->add(@image{@cols});
 
   my $storage = $opts{storage};
   defined $storage or $storage = 'local';

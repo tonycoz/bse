@@ -306,6 +306,7 @@ Column displayOrder;int(11);NO;0;
 Column name;varchar(255);NO;;
 Column storage;varchar(20);NO;local;
 Column src;varchar(255);NO;;
+Column ftype;varchar(20);NO;img;
 Index PRIMARY;1;[id]
 Table order_item
 Column id;int(11);NO;NULL;auto_increment

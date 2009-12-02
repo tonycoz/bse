@@ -2,11 +2,11 @@
 |
 <a href="/cgi-bin/admin/menu.pl">Admin Menu</a>
 |
-<:ifEq [param menuitem] edit:>
-<span>Edit product</span>
-<:or:>
+<:if Eq [param menuitem] edit:>
+<span><:ifNew:>Add<:or:>Edit<:eif:> product</span>
+<:or Eq:>
 <a href="<:script:>?id=<:article id:>">Edit product</a>
-<:eif:>
+<:eif Eq:>
 |
 <:if New:><:or New:>
 <:if Eq [param menuitem] "edit":>

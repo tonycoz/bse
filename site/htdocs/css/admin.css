@@ -214,3 +214,7 @@ table#backtasklist tr.running td {
 table#backtasklist tr.failed td { 
   background-color: #FFE0E0;
 }
+
+img.bse_image_thumb { 
+  border: none;
+}

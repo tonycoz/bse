@@ -3,7 +3,7 @@
 <p><b><:message:></b></p>
 <:or:><:eif:> 
 <:include admin/product_menu.tmpl:>
-  <h2>Product Details</h2>
+  <h2><:ifNew:>Add Product<:or:>Product Details<:eif:></h2>
 <:ifNew:><:or:><:if Or [iadminuser_count] [iadmingroup_count]:>
       <form action="/cgi-bin/admin/adminusers.pl">
   <input type="hidden" name="id" value="<: article id:>" />

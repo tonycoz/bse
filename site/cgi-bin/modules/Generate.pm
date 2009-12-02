@@ -261,22 +261,7 @@ sub format_body {
       # adjust to make sure this isn't in the middle of a tag or entity
       my $pos = $self->adjust_for_html($body, $incr);
       
-      # assuming 5.005_03 would make this simpler, but <sigh>
-      my $image_url = $self->image_url($image);
-      my $img;
-      if ($xhtml) {
-	$img = qq!<img src="$image_url"!
-	  .qq! width="$image->{width}" height="$image->{height}"!
-	    .qq! alt="$image->{alt}" class="bse_image_$align" />!;
-      }
-      else {
-	$img = qq!<img src="$image_url"!
-	  .qq! width="$image->{width}" height="$image->{height}" border="0"!
-	    .qq! alt="$image->{alt}" align="$align" hspace="10" vspace="10" />!;
-      }
-      if ($image->{url}) {
-	$img = qq!<a href="$image->{url}">$img</a>!;
-      }
+      my $img = $image->inline(cfg => $self->{cfg}, align => $align);
       $output .= $img;
       $output .= substr($body, 0, $pos);
       substr($body, 0, $pos) = '';
@@ -403,8 +388,8 @@ sub iter_gimages {
   my ($self, $args) = @_;
 
   unless ($self->{gimages}) {
-    require Images;
-    my @gimages = Images->getBy(articleId => -1);
+    require BSE::TB::Images;
+    my @gimages = BSE::TB::Images->getBy(articleId => -1);
     my %gimages = map { $_->{name} => $_ } @gimages;
     $self->{gimages} = \%gimages;
   }
@@ -1146,8 +1131,8 @@ sub get_gimage {
   my ($self, $name) = @_;
 
   unless ($self->{gimages}) {
-    require Images;
-    my @gimages = Images->getBy(articleId => -1);
+    require BSE::TB::Images;
+    my @gimages = BSE::TB::Images->getBy(articleId => -1);
     my %gimages = map { $_->{name} => $_ } @gimages;
     $self->{gimages} = \%gimages;
   }

@@ -73,8 +73,8 @@ EOS
 
    Images => 'select * from image',
    replaceImage =>
-     'replace image values (?,?,?,?,?,?,?,?,?,?,?)',
-   addImage => 'insert image values(null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+     'replace image values (?,?,?,?,?,?,?,?,?,?,?,?)',
+   addImage => 'insert image values(null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
    deleteImage => 'delete from image where id = ?',
    getImageByArticleId => 'select * from image where articleId = ? order by displayOrder',
    getImageByPkey => 'select * from image where id = ?',

@@ -36,6 +36,8 @@ for my $name ('One', 'Two', 'Three') {
   push(@kids, $kid);
 }
 
+my $base_securl = $cfg->entryVar("site", "secureurl");
+
 # make parent a step child of itself
 require BSE::Admin::StepParents;
 BSE::Admin::StepParents->add($parent, $parent);
@@ -288,7 +290,7 @@ EXPECTED
 template_test "body", $parent, <<'TEMPLATE', <<EXPECTED;
 <:body:>
 TEMPLATE
-<p>parent article <a href="http://bsetestshop.develop-help.com/shop/index.html" title="The Shop" class="doclink">foo</a></p>
+<p>parent article <a href="$base_securl/shop/index.html" title="The Shop" class="doclink">foo</a></p>
 EXPECTED
 
 # not actually generation tests, but chekcs that the is_step_ancestor works

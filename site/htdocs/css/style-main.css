@@ -64,3 +64,16 @@ form td.submit { text-align: right; }
   margin: 5px 0px;
   vertical-align: middle;
 }
+
+.body .bse_flash_right { 
+  border: 0px;
+  margin: 5px;
+  float: right;
+}
+
+.body .bse_flash_left { 
+  border: 0px;
+  margin: 5px;
+  float: left;
+}
+

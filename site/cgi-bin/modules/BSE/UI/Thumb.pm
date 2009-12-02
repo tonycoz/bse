@@ -1,7 +1,7 @@
 package BSE::UI::Thumb;
 use strict;
 use base 'BSE::UI::Dispatch'; # for error
-use Images;
+use BSE::TB::Images;
 use BSE::CfgInfo qw(cfg_image_dir);
 use BSE::Util::Thumb;
 
@@ -26,7 +26,7 @@ sub dispatch {
   $thumbs->validate_geometry($geometry, \$error)
     or return $class->error($req, "invalid geometry string: $error");
   
-  my $image = Images->getByPkey($image_id);
+  my $image = BSE::TB::Images->getByPkey($image_id);
   $image && $image->{articleId} == $article_id
     or return $class->error($req, "image not found");
 

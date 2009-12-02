@@ -3,7 +3,7 @@ use strict;
 use BSE::Template;
 use Constants qw(%LEVEL_DEFAULTS $CGI_URI $ADMIN_URI $IMAGES_URI 
                  $UNLISTED_LEVEL1_IN_CRUMBS);
-use Images;
+use BSE::TB::Images;
 use vars qw(@ISA);
 use Generate;
 use Util qw(generate_button);
@@ -89,8 +89,8 @@ sub tag_title {
   }
   else {
     my $id = $templater->perform($acts, $which, 'id');
-    require Images;
-    my @images = Images->getBy(articleId=>$id);
+    require BSE::TB::Images;
+    my @images = BSE::TB::Images->getBy(articleId=>$id);
     ($im) = grep lc $_->{name} eq 'bse_title', @$images;
   }
 
@@ -334,7 +334,7 @@ sub baseActs {
   my $parent = $articles->getByPkey($article->{parentid});
   my $section = @crumbs ? $crumbs[0] : $article;
 
-  my @images = Images->getBy('articleId', $article->{id});
+  my @images = BSE::TB::Images->getBy('articleId', $article->{id});
   my @unnamed_images = grep $_->{name} eq '', @images;
   my @iter_images;
   my $image_index = -1;

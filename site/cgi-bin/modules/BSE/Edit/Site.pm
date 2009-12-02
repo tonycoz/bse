@@ -42,9 +42,9 @@ sub article_actions {
 sub get_images {
   my ($self, $article) = @_;
 
-  require Images;
+  require BSE::TB::Images;
 
-  Images->getBy(articleId => -1);
+  return BSE::TB::Images->getBy(articleId => -1);
 }
 
 sub get_files {

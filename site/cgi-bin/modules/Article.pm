@@ -119,8 +119,8 @@ sub all_visible_catalogs {
 
 sub images {
   my ($self) = @_;
-  require Images;
-  Images->getBy(articleId=>$self->{id});
+  require BSE::TB::Images;
+  BSE::TB::Images->getBy(articleId=>$self->{id});
 }
 
 sub children {

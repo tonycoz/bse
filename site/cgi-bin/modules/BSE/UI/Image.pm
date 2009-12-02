@@ -1,7 +1,7 @@
 package BSE::UI::Image;
 use strict;
 use Articles;
-use Images;
+use BSE::TB::Images;
 use BSE::Util::Tags qw(tag_hash);
 use DevHelp::HTML qw(escape_uri);
 
@@ -22,7 +22,7 @@ sub dispatch {
   if (defined(my $imid = $cgi->param('imid'))) {
     $imid =~ /^\d+$/
       or return $class->error($req, "Invalid imid supplied");
-    $image = Images->getByPkey($imid);
+    $image = BSE::TB::Images->getByPkey($imid);
 
     $image && $image->{articleId} == $article->{id}
       or return $class->error($req, "Unknown image identifier supplied");
@@ -30,7 +30,7 @@ sub dispatch {
   elsif (defined(my $imname = $cgi->param('imname'))) {
     length $imname and $imname =~ /^\w+$/
       or return $class->error($req, "Invalid imname supplied");
-    ($image) = Images->getBy(articleId=>$article->{id}, name=>$imname)
+    ($image) = BSE::TB::Images->getBy(articleId=>$article->{id}, name=>$imname)
       or return $class->error($req, "Unknown image name supplied");
   }
 

@@ -21,8 +21,8 @@ sub type {
 }
 
 sub files {
-  require Images;
-  return Images->image_storages;
+  require BSE::TB::Images;
+  return BSE::TB::Images->image_storages;
 }
 
 sub metadata {
