@@ -17,6 +17,7 @@ sub format {
   my $cfg = $self->cfg;
   my $align = delete $opts{align} || '';
   my $rest = delete $opts{extras} || '';
+  my $url = delete $opts{url};
 
   my $image_url = $im->image_url($cfg);
   my $html = qq!<img src="$image_url" width="$im->{width}"!
@@ -36,8 +37,10 @@ sub format {
 
   $html .= " $rest" if $rest;
   $html .= qq! />!;
-  if ($im->{url}) {
-    $html = qq!<a href="$im->{url}">$html</a>!;
+  $url ||= $im->{url};
+  if ($url) {
+    $url = escape_html($url);
+    $html = qq!<a href="$url">$html</a>!;
   }
 
   return $html;

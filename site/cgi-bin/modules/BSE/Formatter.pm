@@ -55,45 +55,35 @@ sub image_url {
 sub _image {
   my ($self, $im, $align, $url, $style) = @_;
 
-  my $image_url = escape_html($self->image_url($im));
-
-  my $text = qq!<img src="$image_url" width="$im->{width}"!
-    . qq! height="$im->{height}" alt="! . escape_html($im->{alt}).'"';
+  my $extras = '';
   my @classes;
   if ($self->{xhtml}) {
     push @classes, "bse_image_inline";
   }
-  else {
-    $text .= qq! border="0"!;
-  }
-  $text .= qq! align="$align"! if $align && $align ne 'center';
+  $extras .= qq! align="$align"! if $align && $align ne 'center';
   if ($style) {
     if ($style =~ /^\d/) {
-      $text .= qq! style="padding: $style"!;
+      $extras .= qq! style="padding: $style"!;
     }
     elsif ($style =~ /^\w[\w-]*$/) {
       push @classes, $style;
     }
     else {
-      $text .= qq! style="$style"!;
+      $extras .= qq! style="$style"!;
     }
   }
   if (@classes) {
-    $text .= qq! class="@classes"!;
-  }
-  $text .= qq! />!;
-  $text = qq!<div align="center">$text</div>!
-    if $align && $align eq 'center';
-  # the text in $url would have been HTML escaped already, the url
-  # in the image record hasn't been
-  if (!$url && $im->{url}) {
-    $url = escape_html($im->{url});
-  }
-  if ($url) {
-    $text = qq!<a href="$url">$text</a>!;
+    $extras .= qq! class="@classes"!;
   }
 
-  return $text;
+  return $im->formatted
+    (
+     cfg => $self->{gen}{cfg},
+     class => "bse_image_inline",
+     align => $align,
+     extras => $extras,
+     $url ? ( url => unescape_html($url) ) : (),
+    );
 }
 
 sub gimage {

@@ -15,16 +15,16 @@ my %flash_defs =
 sub _render_low {
   my ($self, $im, $image_url, $opts) = @_;
 
-  my $html = qq(<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"\ncodebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,40,0"\ntype="application/x-shockwave-flash"\nwidth="$im->{width}" height="$im->{height}");
+  my $html = qq(<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,40,0" type="application/x-shockwave-flash" width="$im->{width}" height="$im->{height}");
   my $class = delete $opts->{class};
   defined $class and $html .= qq( class="$class");
   my $id = delete $opts->{id};
   defined $id and $html .= qq( id="$id");
-  $html .=">\n";
-  $html .= qq(<param name="movie" value="$image_url" />\n);
+  $html .=">";
+  $html .= qq(<param name="movie" value="$image_url" />);
   for my $opt (keys %$opts) {
     $html .= qq(<param name="$opt" value=") 
-      . escape_html($opts->{$opt}) . qq(" />\n);
+      . escape_html($opts->{$opt}) . qq(" />);
   }
   $html .= qq(<embed src="$image_url");
   for my $opt (keys %$opts) {
