@@ -8,7 +8,7 @@ use vars qw(@ISA);
 use Generate;
 use Util qw(generate_button);
 use BSE::Util::Tags qw(tag_article);
-use ArticleFiles;
+use BSE::TB::ArticleFiles;
 @ISA = qw/Generate/;
 use DevHelp::HTML;
 use BSE::Arrows;
@@ -340,7 +340,7 @@ sub baseActs {
   my $image_index = -1;
   my $had_image_tags = 0;
   my @all_files = sort { $b->{displayOrder} <=> $a->{displayOrder} }
-    ArticleFiles->getBy(articleId=>$article->{id});
+    BSE::TB::ArticleFiles->getBy(articleId=>$article->{id});
   my @files = grep !$_->{hide_from_list}, @all_files;
   
   my $blank = qq!<img src="$IMAGES_URI/trans_pixel.gif"  width="17" height="13" border="0" align="absbottom" alt="" />!;

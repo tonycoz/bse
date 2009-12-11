@@ -44,6 +44,7 @@ my %actions =
    orderdetail => 'req_orderdetail',
    wishlist => 'req_wishlist',
    downufile => 'req_downufile',
+   file_metadata => "req_file_metadata",
   );
 
 sub actions { \%actions }
@@ -1073,9 +1074,9 @@ sub req_userpage {
      make_multidependent_iterator
      ([ \$item_index, \$order_index],
       sub {
-	require 'ArticleFiles.pm';
+	require BSE::TB::ArticleFiles;
 	@files = sort { $b->{displayOrder} <=> $a->{displayOrder} }
-	  ArticleFiles->getBy(articleId=>$items[$item_index]{productId});
+	  BSE::TB::ArticleFiles->getBy(articleId=>$items[$item_index]{productId});
       },
       'prodfile', 'prodfiles', \$file_index),
      ifFileAvail =>
@@ -1222,8 +1223,8 @@ sub req_download {
   my ($item) = grep $_->{id} == $itemid,
   BSE::TB::OrderItems->getBy(orderId=>$order->{id})
     or return _refresh_userpage($cfg, $msgs->(notinorder=>"Not part of that order"));
-  require 'ArticleFiles.pm';
-  my @files = ArticleFiles->getBy(articleId=>$item->{productId})
+  require BSE::TB::ArticleFiles;
+  my @files = BSE::TB::ArticleFiles->getBy(articleId=>$item->{productId})
     or return _refresh_userpage($cfg, $msgs->(nofilesonline=>"No files in this line"));
   my $fileid = $cgi->param('file')
     or return _refresh_userpage($cfg, $msgs->(nofileid=>"No file id supplied"));
@@ -1268,7 +1269,7 @@ sub req_download {
 }
 
 sub req_download_file {
-  my ($self, $req) = @_;
+  my ($self, $req, $fileid) = @_;
 
   my $cfg = $req->cfg;
   my $cgi = $req->cgi;
@@ -1280,10 +1281,10 @@ sub req_download_file {
   if ($userid) {
     $user = SiteUsers->getBy(userId=>$userid);
   }
-  my $fileid = $cgi->param('file')
+  $fileid ||= $cgi->param('file')
     or return $self->req_show_logon($req, 
 			 $msgs->('nofileid', "No file id supplied"));
-  require ArticleFiles;
+  require BSE::TB::ArticleFiles;
   my $file;
   my $article;
   my $article_id = $cgi->param('page');
@@ -1309,7 +1310,7 @@ sub req_download_file {
     ($file) = grep $_->{name} eq $fileid, $article->files;
   }
   else {
-    $file = ArticleFiles->getByPkey($fileid);
+    $file = BSE::TB::ArticleFiles->getByPkey($fileid);
   }
   $file
     or return $self->req_show_logon($req,
@@ -1384,6 +1385,45 @@ sub req_download_file {
     print $data;
   }
   close FILE;
+}
+
+sub req_file_metadata {
+  my ($self, $req, $fileid, $metaname) = @_;
+
+  my $user = $req->siteuser;
+  my $cgi = $req->cgi;
+  $fileid ||= $cgi->param('file')
+    or return $self->req_show_logon($req, $req->text(nofileid => "No file id supplied"));
+  $metaname ||= $cgi->param('name')
+    or return $self->req_show_logon($req, $req->text(nometaname => "No metaname supplied"));
+  require BSE::TB::ArticleFiles;
+  my $file = BSE::TB::ArticleFiles->getByPkey($fileid)
+    or return $self->req_show_logon($req, $req->text(nosuchfile => "No such file"));
+  
+  if ($file->articleId != -1) {
+    # check the user has access
+    my $article = $file->article
+      or return $self->req_show_logon($req, $req->text(nofilearticle => "No article found for this file"));
+    if ($article->is_dynamic && !$req->siteuser_has_access($article)) {
+      if ($req->siteuser) {
+	return $self->req_userpage($req, $req->text(downloadnoacces => "You do not have access to this article"));
+      }
+      else {
+	return $self->req_show_logon($req, $req->text(needlogon => "You need to logon to download this file"));
+      }
+    }
+  }
+  my $meta = $file->meta_by_name($metaname)
+    or return $self->req_show_logon($req, $req->text(nosuchmeta => "There is no metadata by that name for this file"));
+
+  my %result =
+    (
+     type => $meta->content_type,
+     content => $meta->value,
+    );
+    
+  require BSE::Template;
+  BSE::Template->output_result($req, \%result);
 }
 
 sub req_show_lost_password {

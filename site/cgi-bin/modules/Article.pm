@@ -145,8 +145,8 @@ sub section {
 sub files {
   my ($self) = @_;
 
-  require ArticleFiles;
-  return ArticleFiles->getBy(articleId=>$self->{id});
+  require BSE::TB::ArticleFiles;
+  return BSE::TB::ArticleFiles->getBy(articleId=>$self->{id});
 }
 
 sub parent {

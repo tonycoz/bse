@@ -221,7 +221,7 @@ sub should_be_catalog {
     $parent = $articles->getByPkey($article->{id});
   }
 
-  my $shopid = $self->{cfg}->entryErr('articles', 'shop');
+  my $shopid = $self->cfg->entryErr('articles', 'shop');
 
   return $article->{parentid} && $parent &&
     ($article->{parentid} == $shopid || 
@@ -234,7 +234,7 @@ sub possible_parents {
   my %labels;
   my @values;
 
-  my $shopid = $self->{cfg}->entryErr('articles', 'shop');
+  my $shopid = $self->cfg->entryErr('articles', 'shop');
   my @parents = $articles->getBy('level', $article->{level}-1);
   @parents = grep { $_->{generator} eq 'Generate::Article' 
 		      && $_->{id} != $shopid } @parents;
@@ -403,7 +403,7 @@ sub title_images {
   my ($self, $article) = @_;
 
   my @title_images;
-  my $imagedir = cfg_image_dir($self->{cfg});
+  my $imagedir = cfg_image_dir($self->cfg);
   if (opendir TITLE_IMAGES, "$imagedir/titles") {
     @title_images = sort 
       grep -f "$imagedir/titles/$_" && /\.(gif|jpeg|jpg|png)$/i,
@@ -438,7 +438,7 @@ sub template_dirs {
   my @dirs = $self->base_template_dirs;
   if (my $parentid = $article->{parentid}) {
     my $section = "children of $parentid";
-    if (my $dirs = $self->{cfg}->entry($section, 'template_dirs')) {
+    if (my $dirs = $self->cfg->entry($section, 'template_dirs')) {
       push @dirs, split /,/, $dirs;
     }
   }
@@ -2798,8 +2798,12 @@ sub req_thumb {
     my $imagedir = $cfg->entry('paths', 'images', $Constants::IMAGEDIR);
     
     my $error;
-    ($data, $type) = $thumb_obj->
-      thumb_data("$imagedir/$image->{image}", $geometry, \$error)
+    ($data, $type) = $thumb_obj->thumb_data
+      (
+       filename => "$imagedir/$image->{image}",
+       geometry => $geometry,
+       error => \$error
+      )
 	or return 
 	  {
 	   type => 'text/plain',
@@ -3044,6 +3048,11 @@ my %file_fields =
     description => 'Identifier',
     maxlength => 80,
    },
+   category =>
+   {
+    description => "Category",
+    maxlength => 20,
+   },
   );
 
 sub fileadd {
@@ -3055,8 +3064,8 @@ sub fileadd {
 
   my %file;
   my $cgi = $req->cgi;
-  require ArticleFile;
-  my @cols = ArticleFile->columns;
+  require BSE::TB::ArticleFiles;
+  my @cols = BSE::TB::ArticleFile->columns;
   shift @cols;
   for my $col (@cols) {
     if (defined $cgi->param($col)) {
@@ -3075,6 +3084,7 @@ sub fileadd {
   $file{download}	= 0 + exists $file{download};
   $file{requireUser}	= 0 + exists $file{requireUser};
   $file{hide_from_list} = 0 + exists $file{hide_from_list};
+  $file{category}       ||= '';
 
   my $downloadPath = $self->{cfg}->entryVar('paths', 'downloads');
 
@@ -3164,9 +3174,10 @@ sub fileadd {
   $file{whenUploaded} = now_datetime();
   $file{storage}        = 'local';
   $file{src}            = '';
+  $file{file_handler}   = "";
 
-  require ArticleFiles;
-  my $fileobj = ArticleFiles->add(@file{@cols});
+  require BSE::TB::ArticleFiles;
+  my $fileobj = BSE::TB::ArticleFiles->add(@file{@cols});
 
   $req->flash("New file added");
 
@@ -3179,7 +3190,7 @@ sub fileadd {
     my $src;
     $storage = $self->_select_filestore($req, $file_manager, $storage, $fileobj);
     $src = $file_manager->store($filename, $storage, $fileobj);
-      
+
     if ($src) {
       $fileobj->{src} = $src;
       $fileobj->{storage} = $storage;
@@ -3189,6 +3200,9 @@ sub fileadd {
   if ($@) {
     $req->flash($@);
   }
+
+  $fileobj->set_handler($req->cfg);
+  $fileobj->save;
 
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
@@ -3284,7 +3298,7 @@ sub filesave {
 			   "You don't have access to save file information for this article");
   my @files = $self->get_files($article);
 
-  my $download_path = $self->{cfg}->entryVar('paths', 'downloads');
+  my $download_path = BSE::TB::ArticleFiles->download_path($self->{cfg});
 
   my $cgi = $req->cgi;
   my %names;
@@ -3292,6 +3306,7 @@ sub filesave {
   my @old_files;
   my @new_files;
   my %store_anyway;
+  my @content_changed;
   for my $file (@files) {
     my $id = $file->{id};
     my $desc = $cgi->param("description_$id");
@@ -3303,6 +3318,8 @@ sub filesave {
     }
     my $notes = $cgi->param("notes_$id");
     defined $notes and $file->{notes} = $notes;
+    my $category = $cgi->param("category_$id");
+    defined $category and $file->{category} = $category;
     my $name = $cgi->param("name_$id");
     if (defined $name) {
       $file->{name} = $name;
@@ -3364,6 +3381,7 @@ sub filesave {
 	      $file->{sizeInBytes} = -s $full_name;
 	      $file->{whenUploaded} = now_datetime();
 	      $file->{displayName} = $display_name;
+	      push @content_changed, $file;
 	    }
 	    else {
 	      $errors{"file_$id"} = $msg;
@@ -3432,6 +3450,12 @@ sub filesave {
     unlink "$download_path/$filename";
   }
 
+  # update file type metadatas
+  for my $file (@content_changed) {
+    $file->set_handler($self->{cfg});
+    $file->save;
+  }
+
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
@@ -3489,7 +3513,7 @@ sub req_save_file {
 			       "You don't have access to save file information for this article");
   my @other_files = grep $_->{id} != $id, @files;
 
-  my $download_path = $self->{cfg}->entryVar('paths', 'downloads');
+  my $download_path = BSE::TB::ArticleFiles->download_path($self->{cfg});
 
   my %errors;
 

@@ -81,7 +81,12 @@ sub dispatch {
     -e $filename 
       or return $class->error($req, "image file missing");
     
-    (my $data, $type) = $thumbs->thumb_data($filename, $geometry, \$error)
+    (my $data, $type) = $thumbs->thumb_data
+      (
+       filename => $filename,
+       geometry => $geometry,
+       error => \$error
+      )
       or return $class->error($req, $error);
     
     return

@@ -77,3 +77,34 @@ form td.submit { text-align: right; }
   float: left;
 }
 
+#bse_video_stage { 
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0px;
+  background-image: url(/images/50.png);
+  display: none;
+}
+
+#bse_video_frame { 
+  position: absolute;
+  border: 1px solid #000;
+  left: 50%;
+  top: 20%;
+}
+
+#bse_video_close { 
+  display: block;
+  position: absolute;
+  right: 50%;
+  top: 20%;
+  margin-top: -20px;
+}
+
+#bse_video_close img { 
+  border: 0px;
+}
+
+.bse_video_popup img {
+  border: 1px solid #CCC;
+}

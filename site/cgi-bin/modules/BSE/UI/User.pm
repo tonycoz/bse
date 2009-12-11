@@ -97,7 +97,7 @@ sub req_info {
       sub {
 	require 'ArticleFiles.pm';
 	@files = sort { $b->{displayOrder} <=> $a->{displayOrder} }
-	  ArticleFiles->getBy(articleId=>$items[$item_index]{productId});
+	  BSE::TB::ArticleFiles->getBy(articleId=>$items[$item_index]{productId});
       },
       'prodfile', 'prodfiles', \$file_index),
      ifFileAvail =>

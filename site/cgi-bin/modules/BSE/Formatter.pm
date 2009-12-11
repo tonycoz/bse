@@ -264,6 +264,19 @@ sub gfilelink {
   return $self->_file($file, $text, $type);
 }
 
+sub file {
+  my ($self, $fileid, $field, $type) = @_;
+
+  my ($file) = grep $_->{name} eq $fileid, @{$self->{files}}
+    or return "* unknown file $fileid *";
+
+  return $file->inline
+    (
+     field => $field,
+     cfg => $self->{gen}->cfg,
+    );
+}
+
 sub thumbimage {
   my ($self, $geo_id, $image_id) = @_;
 
@@ -313,6 +326,8 @@ sub replace {
       and return 1;
   $$rpart =~ s#filelink\[\s*(\w+)\s*\]# $self->filelink($1, undef, 'filelink') #ige
       and return 1;
+  $$rpart =~ s#file\[(\w+)(?:\|([\w.]*))?\]# $self->file($1, $2, 'file') #ige
+    and return 1;
   $$rpart =~ s#gpopimage\[([^\[\]]+)\]# $self->gpopimage($1) #ige
     and return 1;
   $$rpart =~ s#popimage\[([^\[\]]+)\]# $self->popimage($1) #ige

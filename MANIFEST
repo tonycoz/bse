@@ -46,8 +46,6 @@ site/cgi-bin/modules/AdminUtil.pm
 site/cgi-bin/modules/Apache/Session/DBIreal.pm
 site/cgi-bin/modules/Apache/Session/Store/DBIreal.pm
 site/cgi-bin/modules/Article.pm
-site/cgi-bin/modules/ArticleFile.pm
-site/cgi-bin/modules/ArticleFiles.pm
 site/cgi-bin/modules/Articles.pm
 site/cgi-bin/modules/BSE/API.pm
 site/cgi-bin/modules/BSE/Admin/StepParents.pm
@@ -80,6 +78,9 @@ site/cgi-bin/modules/BSE/EmailBlackEntry.pm
 site/cgi-bin/modules/BSE/EmailBlacklist.pm
 site/cgi-bin/modules/BSE/EmailRequest.pm
 site/cgi-bin/modules/BSE/EmailRequests.pm
+site/cgi-bin/modules/BSE/FileHandler/Base.pm
+site/cgi-bin/modules/BSE/FileHandler/Default.pm
+site/cgi-bin/modules/BSE/FileHandler/FLV.pm
 site/cgi-bin/modules/BSE/Formatter.pm
 site/cgi-bin/modules/BSE/Formatter/Article.pm
 site/cgi-bin/modules/BSE/Formatter/Subscription.pm
@@ -141,6 +142,10 @@ site/cgi-bin/modules/BSE/TB/AdminPerm.pm
 site/cgi-bin/modules/BSE/TB/AdminPerms.pm
 site/cgi-bin/modules/BSE/TB/AdminUser.pm
 site/cgi-bin/modules/BSE/TB/AdminUsers.pm
+site/cgi-bin/modules/BSE/TB/ArticleFile.pm
+site/cgi-bin/modules/BSE/TB/ArticleFileMeta.pm
+site/cgi-bin/modules/BSE/TB/ArticleFileMetas.pm
+site/cgi-bin/modules/BSE/TB/ArticleFiles.pm
 site/cgi-bin/modules/BSE/TB/BackgroundTask.pm
 site/cgi-bin/modules/BSE/TB/BackgroundTasks.pm
 site/cgi-bin/modules/BSE/TB/FileAccessLog.pm
@@ -339,6 +344,7 @@ site/htdocs/css/admin.css
 site/htdocs/css/admin.css_natural
 site/htdocs/css/style-main.css
 site/htdocs/favicon.ico
+site/htdocs/images/50.png
 site/htdocs/images/admin/busy.gif
 site/htdocs/images/admin/checked.gif
 site/htdocs/images/admin/error.gif
@@ -365,8 +371,10 @@ site/htdocs/images/titles/perl.gif
 site/htdocs/images/titles/the_shop.gif
 site/htdocs/images/titles/your_site.gif
 site/htdocs/images/trans_pixel.gif
+site/htdocs/images/videoclose.png
 # site/htdocs/js/admin_dragdrop.js
 site/htdocs/js/admin_prodopts.js
+site/htdocs/js/bse.js
 site/htdocs/js/builder.js
 site/htdocs/js/controls.js
 site/htdocs/js/date.js
@@ -377,6 +385,8 @@ site/htdocs/js/scriptaculous.js
 site/htdocs/js/scriptoverride.js
 site/htdocs/js/slider.js
 site/htdocs/js/sound.js
+site/htdocs/js/swfobject.js
+site/htdocs/swf/flvplayer.swf
 #  site/htdocs/shop created by the Makefile
 site/templates/1/shop_multicat.tmpl
 site/templates/1/sitemap.tmpl
@@ -548,6 +558,8 @@ site/templates/include/search_results.tmpl
 site/templates/include/usermenu.tmpl
 site/templates/index.tmpl
 site/templates/index2.tmpl
+site/templates/inline/flv.tmpl
+site/templates/inline/flv_small.tmpl
 site/templates/interest/askagain_base.tmpl
 site/templates/interest/confirm_base.tmpl
 site/templates/interest/error_base.tmpl

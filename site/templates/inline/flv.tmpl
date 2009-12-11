@@ -1,0 +1,8 @@
+<script type="text/javascript" src="/js/swfobject.js"></script><div id="flashcontent">  This text is replaced by the Flash movie.</div><script type="text/javascript">  var so = new SWFObject("/swf/flvplayer.swf", "flvplayer", "<:meta width:>", "<:meta height:>", "8", "#000000");  so.addParam('allowFullScreen',true);  so.addVariable('aspect_ratio', <:meta width:>/<:meta height:>); so.addVariable('placeholder','/cgi-bin/user.pl/file_metadata/<:file id:>/ph_data');  so.addVariable('video_path','<:src:>'); so.addVariable("wmode", "opaque"); so.write("flashcontent");</script>
+<!--
+so.addVariable('placeholder','placeholder.jpg'); 
+-->
+
+<!-- object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,40,0" type="application/x-shockwave-flash" height="<:meta height:>" width="<:meta width:>"><param name="movie" value="/swf/flvplayer.swf"><param name="video_path" value="/notarealvideo"><param name="quality" value="high"><param name="wmode" value="opaque"><embed src="/swf/flvplayer.swf" video_path="/notarealvideo" quality="high" wmode="opaque" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" height="<:meta height:>" width="<:meta width:>"></object -->
+
+<!-- div id="flv<:file id:>"><a href="#" onclick="return false;"><img src="/cgi-bin/user.pl?file_metadata=1&amp;file=<:file id:>&amp;name=ph_data" width="<:meta width:>" height="<:meta height:>" /></a></div -->

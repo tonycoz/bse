@@ -50,7 +50,12 @@ sub generate_thumb {
 
     my $error;
     (my $data, $type) =
-      $thumbs->thumb_data($image_filename, $geometry, \$error)
+      $thumbs->thumb_data
+	(
+	 filename => $image_filename,
+	 geometry => $geometry,
+	 error => \$error
+	)
 	or return;
 
     if (open IMAGE, ">$cache_name") {

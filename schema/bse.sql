@@ -442,8 +442,26 @@ create table article_files (
 
   storage varchar(20) not null default 'local',
   src varchar(255) not null default '',
+  category varchar(20) not null default '',
+  file_handler varchar(20) not null default '',
 
   primary key (id)
+);
+
+drop table if exists bse_article_file_meta;
+create table bse_article_file_meta (
+  id integer not null auto_increment primary key,
+
+  -- refers to article_files
+  file_id integer not null,
+
+  -- name of this metadata
+  name varchar(20) not null,
+
+  content_type varchar(80) not null default 'text/plain',
+  value longblob not null,
+
+  unique file_name(file_id, name)
 );
 
 -- these are mailing list subscriptions

@@ -351,11 +351,11 @@ sub need_logon {
   my $user = get_siteuser($session, $cfg, $cgi);
 
   if (!$user && $reg_if_files) {
-    require ArticleFiles;
+    require BSE::TB::ArticleFiles;
     # scan to see if any of the products have files
     # requires a subscription or subscribes
     for my $prod (@$cart_prods) {
-      my @files = ArticleFiles->getBy(articleId=>$prod->{id});
+      my @files = BSE::TB::ArticleFiles->getBy(articleId=>$prod->{id});
       if (grep $_->{forSale}, @files) {
 	return ("register before checkout", "shop/fileitems");
       }

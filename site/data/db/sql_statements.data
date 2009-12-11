@@ -194,3 +194,9 @@ SQL
 
 name: BackgroundTasks
 sql_statement: select * from bse_background_tasks
+
+name: bseClearArticleFileMetadata
+sql_statement: <<SQL
+delete from bse_article_file_meta
+where file_id = ?
+SQL

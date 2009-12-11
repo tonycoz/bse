@@ -2,12 +2,12 @@ package BSE::FileEditor;
 use strict;
 use BSE::Util::Tags;
 use Constants qw($TMPLDIR $IMAGES_URI);
-use ArticleFiles;
+use BSE::TB::ArticleFiles;
 use Util qw/refresh_to/;
 
 =head1 NAME
 
-  BSE::FileEditor - maintains a list of images associated with an article
+  BSE::FileEditor - maintains a list of files associated with an article
 
 =head1 SYNOPSIS
 
@@ -142,7 +142,7 @@ sub fileadd {
 
   my %file;
   
-  my @cols = ArticleFile->columns;
+  my @cols = BSE::TB::ArticleFile->columns;
   shift @cols;
   for my $col (@cols) {
     if (defined $self->{cgi}->param($col)) {
@@ -222,7 +222,7 @@ sub fileadd {
   $file{displayOrder} = time;
   $file{whenUploaded} = now_datetime();
 
-  my $fileobj = ArticleFiles->add(@file{@cols});
+  my $fileobj = BSE::TB::ArticleFiles->add(@file{@cols});
 
   $self->_refresh_list($article);
 }
@@ -320,7 +320,7 @@ sub _getfiles {
   my ($self, $article) = @_;
 
   return sort { $b->{displayOrder} <=> $a->{displayOrder} }
-    ArticleFiles->getBy(articleId=>$article->{id});
+    BSE::TB::ArticleFiles->getBy(articleId=>$article->{id});
 }
 
 1;

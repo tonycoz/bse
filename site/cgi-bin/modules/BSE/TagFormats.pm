@@ -28,19 +28,11 @@ sub _format_file {
 
   defined $field or $field = '';
 
-  if ($field && exists $file->{$field}) {
-    return escape_html($file->{$field});
-  }
-  else {
-    my $url = "/cgi-bin/user.pl?download_file=1&file=$file->{id}";
-    my $eurl = escape_html($url);
-    if ($field eq 'url') {
-      return $eurl;
-    }
-    my $class = $file->{download} ? "file_download" : "file_inline";
-    my $html = qq!<a class="$class" href="$eurl">! . escape_html($file->{displayName}) . '</a>';
-    return $html;
-  }
+  return $file->inline
+    (
+     cfg => $self->cfg,
+     field => $field
+    );
 }
 
 1;

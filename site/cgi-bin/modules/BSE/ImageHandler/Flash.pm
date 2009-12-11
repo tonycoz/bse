@@ -117,8 +117,6 @@ sub _make_thumb_hash {
 sub thumb {
   my ($self, %opts) = @_;
 
-  $DB::single=1;
-
   my $geo_id = delete $opts{geo};
   defined $geo_id
     or confess "Missing geo parameter";

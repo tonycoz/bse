@@ -6,38 +6,9 @@
 <meta http-equiv="Expires" content="Thu, 01 Jan 1970 00:00:00 GMT">
 <link rel="stylesheet" href="/css/style-main.css">
 <:ajax includes:>
+<script src="/js/bse.js"></script>
+<script src="/js/swfobject.js"></script>
 </head>
-<script>
-var bse_image_popup;
-function bse_popup_image (article_id, image_id, width, height, tag_id, image_url) {
-  var url = "/cgi-bin/image.pl?id=" + article_id + "&imid=" + image_id
-	+ '&comment=jspopup';
-  var work_width = width + <:cfg popimage extrawidth 0:>;
-  var work_height = height + <:cfg popimage extraheight 0:>;
-  var features = 'width=' + work_width + ',height=' + work_height 
-    + ',resizable=yes';
-
-  // lose the old one if it exists
-  if (<:cfg popimage popmiddle 0:>) {
-    if (bse_image_popup != null && !bse_image_popup.closed) {
-      bse_image_popup.close();
-    }
-    var left = window.screenX + (window.outerWidth - work_width) / 2;
-    var top = window.screenY + (window.outerHeight - work_height) / 2;
-    features = features + ",top=" + top + ",left=" + left;
-  }
-  else if (bse_image_popup != null && !bse_image_popup.closed) {
-    var left = bse_image_popup.screenX;
-    var top = bse_image_popup.screenY;
-    features = features + ",top=" + top + ",left=" + left;
-    bse_image_popup.close();
-  }
-
-  bse_image_popup = window.open(url, 'bse_image', features, 0);
-
-  return 0;
-}
-</script>
 <body bgcolor="#FFFFFF" text="#000000" link="#666666" vlink="#666666" alink="#FF7F00" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
 <table width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#FF7F00">
   <tr> 

@@ -85,8 +85,8 @@ sub all_visible_kids {
 sub global_files {
   my ($self) = @_;
 
-  require ArticleFiles;
-  return ArticleFiles->getBy(articleId => -1);
+  require BSE::TB::ArticleFiles;
+  return BSE::TB::ArticleFiles->getBy(articleId => -1);
 }
 
 1;

@@ -24,8 +24,8 @@ sub type {
 }
 
 sub files {
-  require ArticleFiles;
-  return ArticleFiles->file_storages;
+  require BSE::TB::ArticleFiles;
+  return BSE::TB::ArticleFiles->file_storages;
 }
 
 sub metadata {

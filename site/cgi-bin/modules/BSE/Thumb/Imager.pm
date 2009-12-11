@@ -110,7 +110,14 @@ sub thumb_dimensions_sized {
 }
 
 sub thumb_data {
-  my ($self, $filename, $geometry, $error) = @_;
+  my ($self, %opts) = @_;
+
+  #$filename, $geometry, $error) = @_;
+
+  my $filename = delete $opts{filename};
+  my $geometry = delete $opts{geometry};
+  my $data = delete $opts{data};
+  my $error = delete $opts{error};
 
   my $geolist = $self->_parse_geometry($geometry, $error)
     or return;
@@ -122,8 +129,20 @@ sub thumb_data {
   }
   require Imager;
   my $src = Imager->new;
-  unless ($src->read(file => $filename)) {
-    $$error = "Cannot read image $filename: ".$src->errstr;
+  if ($filename) {
+    unless ($src->read(file => $filename)) {
+      $$error = "Cannot read image $filename: ".$src->errstr;
+      return;
+    }
+  }
+  elsif ($data) {
+    unless ($src->read(data => $data)) {
+      $$error = "Cannot read image (by data): ".$src->errstr;
+      return;
+    }
+  }
+  else {
+    $$error = "No image filename or data supplied";
     return;
   }
 
@@ -135,6 +154,11 @@ sub thumb_data {
      translate => 'errdiff',
      gifquant => 'gen',
     );
+  $write_opts{type} = $src->tags(name => 'i_format');
+  my @allowed_types = split /,/, $self->{cfg}->entry(CFG_SECTION, 'types', "jpeg,png,gif");
+  unless (grep $_ eq $write_opts{type}, @allowed_types) {
+    $write_opts{type} = $allowed_types[0];
+  }
 
   my $work = $src;
   for my $geo (@$geolist) {
@@ -144,7 +168,6 @@ sub thumb_data {
   if ($work->getchannels == 4 || $work->getchannels == 2) {
     $write_opts{type} ||= 'png';
   }
-  $write_opts{type} ||= $src->tags(name => 'i_format');
 
   my $type = $write_opts{type};
 
@@ -157,14 +180,14 @@ sub thumb_data {
     $work = $tmp;
   }
 
-  my $data;
+  my $outdata;
   $work = $work->to_rgb8;
-  unless ($work->write(data => \$data, %write_opts)) {
+  unless ($work->write(data => \$outdata, %write_opts)) {
     $$error = "cannot write image ".$work->errstr;
     return;
   }
 
-  return ( $data, "image/$type" );
+  return ( $outdata, "image/$type" );
 }
 
 sub _incs {
@@ -1463,6 +1486,7 @@ BSE::Thumb::Imager - thumbnail driver using Imager
  include=path1:path2:path3
  blib=/path/to/imager/src
  jpegquality=90
+ allowed_types=jpeg,png,gif
 
  [thumb geometries]
  geometryname1=operator1(arguments),operator2(arguments)

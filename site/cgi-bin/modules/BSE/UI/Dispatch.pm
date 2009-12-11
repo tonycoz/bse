@@ -45,6 +45,13 @@ sub dispatch {
   unless ($action) {
     ($action, @extras) = $self->other_action($cgi);
   }
+  if (!$action && $ENV{PATH_INFO}) {
+    my @components = split '/', $ENV{PATH_INFO};
+    @components && !$components[0] and shift @components;
+    if (@components && $actions->{$components[0]}) {
+      ($action, @extras) = @components;
+    }
+  }
   $action ||= $self->default_action;
 
   $self->check_action($req, $action, \$result)

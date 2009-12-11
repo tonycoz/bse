@@ -316,8 +316,8 @@ sub product_form {
   }
   my @files;
   if ($product->{id}) {
-    require 'ArticleFiles.pm';
-    @files = ArticleFiles->getBy(articleId=>$product->{id});
+    require BSE::TB::ArticleFiles;
+    @files = BSE::TB::ArticleFiles->getBy(articleId=>$product->{id});
   }
   my $file_index;
 

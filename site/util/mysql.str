@@ -97,7 +97,17 @@ Column name;varchar(80);NO;;
 Column hide_from_list;int(11);NO;0;
 Column storage;varchar(20);NO;local;
 Column src;varchar(255);NO;;
+Column category;varchar(20);NO;;
+Column file_handler;varchar(20);NO;;
 Index PRIMARY;1;[id]
+Table bse_article_file_meta
+Column id;int(11);NO;NULL;auto_increment
+Column file_id;int(11);NO;NULL;
+Column name;varchar(20);NO;NULL;
+Column content_type;varchar(80);NO;text/plain;
+Column value;longblob;NO;NULL;
+Index PRIMARY;1;[id]
+Index file_name;1;[file_id;name]
 Table bse_article_groups
 Column article_id;int(11);NO;NULL;
 Column group_id;int(11);NO;NULL;
