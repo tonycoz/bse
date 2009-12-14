@@ -536,6 +536,7 @@ site/templates/common/news_item.tmpl
 site/templates/common/rssbase.tmpl
 site/templates/common/sidebar.tmpl
 site/templates/common/sidebar_section.tmpl
+site/templates/common/vidgallery.tmpl
 # site/templates/custom/checkout.include
 # site/templates/custom/order_detail.include
 site/templates/custom/order_detail_payment.include

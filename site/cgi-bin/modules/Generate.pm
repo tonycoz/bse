@@ -420,6 +420,14 @@ sub iter_gfiles {
     my $re = $1;
     return grep $_->{name} =~ /$re/i, @gfiles;
   }
+  elsif ($args =~ m(^filter: (.*)$)s) {
+    my $expr = $1;
+    $expr =~ s/FILE\[(\w+)\]/\$file->$1/g;
+    my $sub = eval 'sub { my $file = shift; ' . $expr . '; }';
+    $sub
+      or die "* Cannot compile sub from filter $expr: $@ *";
+    return grep $sub->($_), @gfiles;
+  }
   else {
     return @gfiles;
   }

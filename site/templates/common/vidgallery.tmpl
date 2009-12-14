@@ -1,0 +1,14 @@
+<:wrap base.tmpl:> <:embed start:><:admin:>
+<div class="title"><:title:></div>
+<:ifArticle body:><div class="body"><:body:></div><:or:><:eif:>
+<:iterator begin files:>
+<p><:file filename:> - <:file file_handler:></p>
+<:iterator end files:>
+<:if Files filter: FILE[file_handler] eq 'flv':>
+<div class="videocoll">
+<:iterator begin files filter: FILE[file_handler] eq 'flv':>
+<div class="entry"><:filen - small:><div class="bse_video_notes"><:file notes:></div></div>
+<:iterator end files:>
+</div>
+<:or Files:><:eif Files:>
+<:embed end:>

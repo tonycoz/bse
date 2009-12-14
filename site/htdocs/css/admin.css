@@ -218,3 +218,21 @@ table#backtasklist tr.failed td {
 img.bse_image_thumb { 
   border: none;
 }
+
+.file_info_trigger {
+  position: relative;
+  float: right;
+}
+
+.file_info { display: none }
+
+.file_info_trigger:hover .file_info {
+  display: block;
+  position: absolute;
+  width: 300px;
+  left: -50px;
+  border: 1px solid #888;
+  background-color: #fff;
+  z-index: 10;
+  padding: 2px;
+}

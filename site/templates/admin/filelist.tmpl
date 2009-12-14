@@ -15,77 +15,74 @@
 
 <input type="hidden" name="id" value="<: article id :>" />
 <input type="hidden" name="_t" value="file" />
-  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
-    <tr> 
-      <td> 
-        <table cellpadding="6" border="0" cellspacing="1">
+        <table class="editform editformsmall">
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">File to add:</th>
-            <td bgcolor="#FFFFFF"> 
+            <th>File to add:</th>
+            <td> 
               <input type="file" name="file" /> 
             </td>
-            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help file file:> <:error_img file:></td>
+            <td class="help"><:help file file:> <:error_img file:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">Description:</th>
-            <td bgcolor="#FFFFFF"> 
+            <th>Description:</th>
+            <td> 
               <input type="text" name="description" value="<:old description:>" />
             </td>
-            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help file description:> <:error_img description:></td>
+            <td class="help"><:help file description:> <:error_img description:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">Notes:</th>
-            <td bgcolor="#FFFFFF"> 
+            <th>Notes:</th>
+            <td> 
               <textarea name="notes" rows="10" cols="60" wrap="virtual"><:old notes:></textarea>
             </td>
-            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help file description:> <:error_img description:></td>
+            <td><:help file description:> <:error_img description:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">Content-Type:</th>
-            <td bgcolor="#FFFFFF"> 
+            <th>Content-Type:</th>
+            <td> 
               <input type="text" name="contentType" value="<:old contentType:>" />
               (blank for guess) </td>
-            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help file content_type:> <:error_img contentType:></td>
+            <td class="help"><:help file content_type:> <:error_img contentType:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">Identifier:</th>
-            <td bgcolor="#FFFFFF"> 
+            <th>Identifier:</th>
+            <td> 
               <input type="text" name="name" value="<:old name:>" /> </td>
-            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help file name:> <:error_img name:></td>
+            <td class="help"><:help file name:> <:error_img name:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">Treat as download:</th>
-            <td bgcolor="#FFFFFF"> 
+            <th>Treat as download:</th>
+            <td> 
               <input type="checkbox" name="download" value="1" />
             </td>
-            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help file download:> <:error_img download:></td>
+            <td class="help"><:help file download:> <:error_img download:></td>
           </tr>
 <:if Eq [article id] -1:><:or Eq:>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">Require payment:</th>
-            <td bgcolor="#FFFFFF"> 
+            <th>Require payment:</th>
+            <td> 
               <input type="checkbox" name="forSale" value="1" />
             </td>
-            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help file forSale:> <:error_img forSale:></td>
+            <td class="help"><:help file forSale:> <:error_img forSale:></td>
           </tr>
 <:eif Eq:>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">Require login:</th>
-            <td bgcolor="#FFFFFF"> 
+            <th>Require login:</th>
+            <td> 
               <input type="checkbox" name="requireUser" value="1" />
             </td>
-            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help file requireUser:> <:error_img requireUser:></td>
+            <td class="help"><:help file requireUser:> <:error_img requireUser:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">Hide from list:</th>
-            <td bgcolor="#FFFFFF"> 
+            <th>Hide from list:</th>
+            <td> 
               <input type="checkbox" name="hide_from_list" value="1" />
             </td>
-            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help file hide_from_list:> <:error_img hide_from_list:></td>
+            <td class="help"><:help file hide_from_list:> <:error_img hide_from_list:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">Storage:</th>
-            <td bgcolor="#FFFFFF"> 
+            <th>Storage:</th>
+            <td> 
 <select name="storage">
 <option value="">(Auto)</option>
 <:iterator begin file_stores:>
@@ -94,17 +91,14 @@
 </select>
 
             </td>
-            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help file hide_from_list:> <:error_img hide_from_list:></td>
+            <td class="help"><:help file hide_from_list:> <:error_img hide_from_list:></td>
           </tr>
           <tr> 
-            <td bgcolor="#FFFFFF" colspan="3" align="right"> 
+            <td colspan="3" class="buttons"> 
               <input type="submit" name="fileadd" value="Add File" />
             </td>
           </tr>
         </table>
-      </td>
-    </tr>
-  </table>
 </form>
 
 <:or UserCan:><:eif UserCan:>
@@ -115,13 +109,10 @@
 <input type="hidden" name="id" value="<: article id :>" />
 <input type="hidden" name="_t" value="file" />
 <input type="hidden" name="save_file_flags" value="1" />
-<table width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="#000000" class="table">
-    <tr>
-      <td>
-        <table width="100%" border="0" cellpadding="6" cellspacing="1">
+        <table class="editform">
           <:if Files:><tr> 
-            <th width="50%" nowrap="nowrap" bgcolor="#FFFFFF"> File</th>
-            <th width="50%" nowrap="nowrap" bgcolor="#FFFFFF"> Description</th>
+            <th nowrap="nowrap" bgcolor="#FFFFFF"> File</th>
+            <th nowrap="nowrap" bgcolor="#FFFFFF"> Description</th>
             <th bgcolor="#FFFFFF" nowrap="nowrap"> Content-Type</th>
             <th bgcolor="#FFFFFF">Notes</th>
           </tr>
@@ -159,25 +150,28 @@
           </tr>
           <tr bgcolor="#FFFFFF"> 
             <td colspan="3"> 
-              <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                <tr bgcolor="#FFFFFF"> 
-                  <td valign="top" align="center" nowrap="nowrap"> <:if UserCan edit_files_save:article:><input type="checkbox" name="download_<:file id:>"
-                    <:ifFile download:> checked<:or:><:eif:> /><:or UserCan:><img src="/images/admin/<:ifFile download:>checked.gif<:or:>unchecked.gif<:eif:>" width="16" height="16" /><:eif UserCan:>Download&nbsp;&nbsp;&nbsp;</td>
+<:if UserCan edit_files_save:article:><input type="checkbox" name="download_<:file id:>"
+                    <:ifFile download:> checked<:or:><:eif:> /><:or UserCan:><img src="/images/admin/<:ifFile download:>checked.gif<:or:>unchecked.gif<:eif:>" width="16" height="16" /><:eif UserCan:>Download&nbsp;&nbsp;&nbsp;
 <:if Eq [article id] -1:><:or Eq:>
-                  <td valign="top" align="center" nowrap="nowrap"> <:if UserCan edit_files_save:article:><input type="checkbox" name="forSale_<:file id:>"
-                    <:ifFile forSale:> checked<:or:><:eif:> /><:or UserCan:><img src="/images/admin/<:ifFile forSale:>checked.gif<:or:>unchecked.gif<:eif:>" width="16" height="16" /><:eif UserCan:>Require payment&nbsp;&nbsp;&nbsp;</td><:eif Eq:>
-                  <td valign="top" align="center" nowrap="nowrap"> <:if UserCan edit_files_save:article:><input type="checkbox" name="requireUser_<:file id:>"
+                  <:if UserCan edit_files_save:article:><input type="checkbox" name="forSale_<:file id:>"
+                    <:ifFile forSale:> checked<:or:><:eif:> /><:or UserCan:><img src="/images/admin/<:ifFile forSale:>checked.gif<:or:>unchecked.gif<:eif:>" width="16" height="16" /><:eif UserCan:>Require payment&nbsp;&nbsp;&nbsp;<:eif Eq:>
+                   <:if UserCan edit_files_save:article:><input type="checkbox" name="requireUser_<:file id:>"
                     <:ifFile requireUser:> checked<:or:><:eif:> /><:or UserCan:><img src="/images/admin/<:ifFile requireUser:>checked.gif<:or:>unchecked.gif<:eif:>" width="16" height="16" /><:eif UserCan:>Require login 
-                    &nbsp;&nbsp;&nbsp;</td>
-                  <td valign="top" align="center" nowrap="nowrap"> <:if UserCan edit_files_save:article:><input type="checkbox" name="hide_from_list_<:file id:>"
+                    &nbsp;&nbsp;&nbsp;
+                   <:if UserCan edit_files_save:article:><input type="checkbox" name="hide_from_list_<:file id:>"
                     <:ifFile hide_from_list:> checked<:or:><:eif:> /><:or UserCan:><img src="/images/admin/<:ifFile hide_from_list:>checked.gif<:or:>unchecked.gif<:eif:>" width="16" height="16" /><:eif UserCan:>Hide from file list 
-                    &nbsp;&nbsp;&nbsp;</td>
-                  <td nowrap="nowrap" align="right" width="100%">
+                    &nbsp;&nbsp;&nbsp;
+                  
 <:ifUserCan edit_files_save:article:><b><a href="<:script:>?a_edit_file=1&amp;id=<:article id:>&amp;file_id=<:file id:>">Edit</a></b> <:or:><:eif:>
 <:ifUserCan edit_files_delete:article:><b><a href="<:script:>?filedel=1&amp;id=<:article id:>&amp;file=<:file id:>&amp;_t=file" onClick="return window.confirm('Are you sure you want to delete this File')">Delete</a></b> <:or:><:eif:>
-                    <:movefiles:></td>
-                </tr>
-              </table>
+                    <:movefiles:>
+<span class="file_info_trigger">Info
+<div class="file_info">
+<p>Metadata</p>
+<:iterator begin file_metas:>
+<div><:file_meta name:>: <:file_meta value:></div>
+<:iterator end file_metas:>
+</div></span>
             </td>
           </tr>
           <: iterator separator files :> 
@@ -198,13 +192,5 @@
           </tr>
           <:eif Files:> 
         </table>
-</td>
-</tr>
-</table>
-</form>
-
-<form action="<:script:>">
-<input type="hidden" name="id" value="<:article id:>" />
-  <p><input type="submit" name="back" value=" &lt;&lt;  Back  " /></p>
 </form>
 

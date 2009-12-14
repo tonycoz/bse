@@ -24,9 +24,10 @@ sub _format_image {
 }
 
 sub _format_file {
-  my ($self, $file, $field) = @_;
+  my ($self, $file, $field, $rest) = @_;
 
   defined $field or $field = '';
+  defined $rest or $rest = '';
 
   return $file->inline
     (

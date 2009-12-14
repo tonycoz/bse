@@ -108,3 +108,41 @@ form td.submit { text-align: right; }
 .bse_video_popup img {
   border: 1px solid #CCC;
 }
+
+.videocoll { 
+  border: 1px solid #888;
+  overflow: auto;
+  padding-bottom: 40px;
+}
+
+.videocoll .entry {
+  float: left;
+  border: solid 1px #CCC;
+  margin: 2px;
+  position: relative;
+  padding: 10px;
+  display: block;
+}
+
+.videocoll .entry:hover { 
+  background-color: #CCF;
+}
+
+.videocoll .bse_video_popup img { 
+  border: none;
+}
+
+.bse_video_notes { display: none; }
+
+.videocoll .entry:hover .bse_video_notes {
+  display: block;
+  width: 214px;
+  position: absolute;
+  top: 170px;
+  left: 0px;
+  z-index: 10;
+  background-color: #EEF;
+  padding: 2px;
+  /*border: 1px solid #44F;*/
+}
+

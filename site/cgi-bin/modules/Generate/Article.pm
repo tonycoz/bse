@@ -227,6 +227,10 @@ sub iter_images {
 
 =item filen name field
 
+=item filen -
+
+=item filen - field
+
 Reference an article attached file by name.
 
 C<filen name> will display a link to the file.
@@ -243,7 +247,7 @@ image record field names and isn't C<url>.
 =cut
 
 sub tag_filen {
-  my ($self, $files, $arg, $acts, $funcname, $templater) = @_;
+  my ($self, $files, $current, $arg, $acts, $funcname, $templater) = @_;
 
   my ($name, $field, @rest) = 
     DevHelp::Tags->get_parms($arg, $acts, $templater);
@@ -251,10 +255,57 @@ sub tag_filen {
   length $name
     or return '* name cannot be an empty string *';
 
-  my ($file) = grep $_->{name} eq $name, @$files
-    or return '';
+  my $file;
+  if ($name eq '-') {
+    $$current
+      or return "* filen - can only be used inside a files iterator *";
 
-  return $self->_format_file($file, $field);
+    $file = $$current;
+  }
+  else {
+    ($file) = grep $_->{name} eq $name, @$files
+      or return '';
+  }
+
+  return $self->_format_file($file, $field, "@rest");
+}
+
+=item iterator begin files
+
+=item iterator begin files named /foo/
+
+=item iterator begin files filter: FILE[file_handler] eq 'flv'
+
+=item file field
+
+Iterate over files attached to the current article.
+
+<:file field:> can only access simple attributes.
+
+<:filen - field:> can also access any inline representations.
+
+=cut
+
+sub iter_files {
+  my ($self, $files, $arg, $acts, $funcname, $templater) = @_;
+
+  $arg =~ /\S/
+    or return @$files;
+
+  if ($arg =~ m(^named\s+/([^/]+)/$)) {
+    my $re = $1;
+    return grep $_->{name} =~ /$re/i, @$files;
+  }
+  if ($arg =~ m(^filter: (.*)$)s) {
+    my $expr = $1;
+    $expr =~ s/FILE\[(\w+)\]/\$file->$1/g;
+    my $sub = eval 'sub { my $file = shift; ' . $expr . '; }';
+    $sub
+      or die "* Cannot compile sub from filter $expr: $@ *";
+    return grep $sub->($_), @$files;
+  }
+
+  die "* Unknown type of file filter expression *";
 }
 
 =item iterator: crumbs/crumb
@@ -365,6 +416,7 @@ sub baseActs {
 
   my $allkids_index;
   my $current_image;
+  my $current_file;
   my $art_it = BSE::Util::Iterate::Article->new(cfg =>$cfg, admin => $self->{admin}, top => $self->{top});
   my $it = BSE::Util::Iterate->new;
   # separate these so the closures can see %acts
@@ -561,8 +613,15 @@ HTML
      },
      ifImage => sub { $_[0] >= 1 && $_[0] <= @images },
      thumbimage => [ tag_thumbimage => $self, \$current_image, \@images ],
-     BSE::Util::Tags->make_iterator(\@files, 'file', 'files'),
-     filen => [ tag_filen => $self, \@files ],
+     $it->make
+     (
+      plural => "files",
+      single => "file",
+      code => [ iter_files => $self, \@files ],
+      nocache => 1,
+      store => \$current_file,
+     ),
+     filen => [ tag_filen => $self, \@files, \$current_file ],
      BSE::Util::Tags->make_iterator(\@stepkids, 'stepkid', 'stepkids'),
      $art_it->make_iterator(undef, 'allkid', 'allkids', \@allkids, \$allkids_index),
      $art_it->make_iterator(undef, 'stepparent', 'stepparents', \@stepparents),

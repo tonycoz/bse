@@ -1179,6 +1179,13 @@ sub low_edit_tags {
      ([ iter_files => $self, $article ], 'file', 'files', \@files, \$file_index ),
      movefiles => 
      [ \&tag_movefiles, $self, $request, $article, \@files, \$file_index ],
+     $it->make
+     (
+      code => [ iter_file_metas => $self, \@files, \$file_index ],
+      plural => "file_metas",
+      single => "file_meta",
+      nocache => 1,
+     ),
      DevHelp::Tags->make_iterator2
      (\&iter_admin_users, 'iadminuser', 'adminusers'),
      DevHelp::Tags->make_iterator2
@@ -3615,6 +3622,9 @@ sub req_save_file {
   }
   $file->save;
 
+  $file->set_handler($self->cfg);
+  $file->save;
+
   $req->flash('File information saved');
   my $mgr = $self->_file_manager;
 
@@ -3908,6 +3918,17 @@ sub req_ajax_save_body {
       content => $formatted,
       type => BSE::Template->html_type($cfg),
      };
+}
+
+sub iter_file_metas {
+  my ($self, $files, $rfile_index) = @_;
+
+  $$rfile_index < 0 || $$rfile_index >= @$files
+    and return;
+
+  my $file = $files->[$$rfile_index];
+
+  return $file->text_metadata;
 }
 
 my %settable_fields = qw(title keyword author pageTitle);

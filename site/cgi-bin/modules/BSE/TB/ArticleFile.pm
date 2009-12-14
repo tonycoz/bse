@@ -119,6 +119,17 @@ sub metadata {
     );
 }
 
+sub text_metadata {
+  my ($self) = @_;
+
+  require BSE::TB::ArticleFileMetas;
+  return  BSE::TB::ArticleFileMetas->getBy
+    (
+     file_id => $self->id,
+     content_type => "text/plain",
+    );
+}
+
 sub meta_by_name {
   my ($self, $name) = @_;
 
