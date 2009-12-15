@@ -66,6 +66,21 @@ sub thumb {
     );
 }
 
+sub popimage {
+  my ($im, %opts) = @_;
+
+  my $cfg = delete $opts{cfg}
+    or confess "Missing cfg parameter";
+
+  my $handler = $im->_handler_object($cfg);
+
+  return $handler->popimage
+    (
+     image => $im,
+     %opts,
+    );
+}
+
 sub image_url {
   my ($im, $cfg) = @_;
 

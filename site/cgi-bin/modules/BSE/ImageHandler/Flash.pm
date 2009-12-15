@@ -177,6 +177,10 @@ sub inline {
     );
 }
 
+sub popimage {
+  return "* popimage can't be used for Flash *";
+}
+
 1;
 
 =head1 NAME

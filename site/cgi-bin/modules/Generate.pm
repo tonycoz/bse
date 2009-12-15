@@ -455,46 +455,13 @@ sub _static_images {
 sub do_popimage_low {
   my ($self, $im, $class) = @_;
 
-  my $cfg = $self->cfg;
+  return $im->popimage
+    (
+     cfg => $self->cfg,
+     class => $class,
+     static => $self->_static_images,
+    );
 
-  defined $class
-    or $class = $cfg->entry('basic', 'default_popupimage', 'popup');
-
-  my $default_popup = '<a href="{outline_src}" rel="lightbox[id]" target="_blank"><img src="{inline_src}" alt="{inline_alt}" width="{inline_width}" height="{inline_height}"';
-  unless ($cfg->entry('basic', 'xhtml', 1)) {
-    $default_popup .= ' border="0"';
-  }
-  my $img_class = $cfg->entry('basic', 'default_popupimage', 'bse_image_popup_base');
-  if ($img_class) {
-    $default_popup .= qq! class="$img_class"!;
-  }
-  $default_popup .= ' /></a>';
-
-  my $section = "popimage class $class";
-  my $html = $cfg->entry($section, 'html', $default_popup );
-  my $inline_geo = $cfg->entry($section, 'inline', 'editor');
-  my $outline_geo = $cfg->entry($section, 'outline');
-
-  my $msg;
-  my $inline_im;
-  ($inline_im, $msg) = $self->_make_thumb_hash($inline_geo, $im, $cfg, $self->_static_images);
-  $inline_im
-    or return $msg;
-
-  my $outline_im;
-  if ($outline_geo) {
-    ($outline_im, $msg) = $self->_make_thumb_hash($outline_geo, $im, $cfg, $self->_static_images);
-  }
-  else {
-    $outline_im = $im;
-  }
-  my %replace;
-  $replace{"inline_$_"} = escape_html($inline_im->{$_}) for $im->columns;
-  $replace{"outline_$_"} = escape_html($outline_im->{$_}) for $im->columns;
-
-  $html =~ s/\{((?:in|out)line_\w+)\}/exists $replace{$1} ? $replace{$1} : "** unknown key $1 **"/ge;
-
-  return $html;
 }
 
 sub do_gpopimage {
