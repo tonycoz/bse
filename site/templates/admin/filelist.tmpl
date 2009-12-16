@@ -109,7 +109,7 @@
 <input type="hidden" name="id" value="<: article id :>" />
 <input type="hidden" name="_t" value="file" />
 <input type="hidden" name="save_file_flags" value="1" />
-        <table class="editform">
+        <table id="filelist" class="editform">
           <:if Files:><tr> 
             <th nowrap="nowrap" bgcolor="#FFFFFF"> File</th>
             <th nowrap="nowrap" bgcolor="#FFFFFF"> Description</th>
@@ -172,6 +172,8 @@
 <div><:file_meta name:>: <:file_meta value:></div>
 <:iterator end file_metas:>
 </div></span>
+<span class="file_display_trigger">Display
+<div class="file_display"><:file_display:></div></span>
             </td>
           </tr>
           <: iterator separator files :> 

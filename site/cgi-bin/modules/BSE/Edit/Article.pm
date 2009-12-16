@@ -1042,6 +1042,22 @@ sub tag_thumbimage {
     );
 }
 
+sub tag_file_display {
+  my ($self, $files, $file_index) = @_;
+
+  $$file_index >= 0 && $$file_index < @$files
+    or return "* file_display only usable inside a files iterator *";
+  my $file = $files->[$$file_index];
+
+  my $disp_type = $self->cfg->entry("editor", "file_display", "");
+
+  return $file->inline
+    (
+     cfg => $self->cfg,
+     field => $disp_type,
+    );
+}
+
 sub tag_image {
   my ($self, $cfg, $rcurrent, $args) = @_;
 
@@ -1186,6 +1202,7 @@ sub low_edit_tags {
       single => "file_meta",
       nocache => 1,
      ),
+     file_display => [ tag_file_display => $self, \@files, \$file_index ],
      DevHelp::Tags->make_iterator2
      (\&iter_admin_users, 'iadminuser', 'adminusers'),
      DevHelp::Tags->make_iterator2
