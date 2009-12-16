@@ -59,8 +59,6 @@ sub end_request {
   delete $_[0]{session};
 }
 
-sub extra_headers { return }
-
 sub user {
   return $_[0]{adminuser};
 }

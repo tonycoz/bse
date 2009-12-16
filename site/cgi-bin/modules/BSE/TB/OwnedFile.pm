@@ -30,17 +30,17 @@ sub download_result {
   my $user = delete $opts{user};
 
   my $filebase = $cfg->entryVar('paths', 'downloads');
-  require IO::File;
-  my $fh = IO::File->new("$filebase/" . $self->filename, "r");
-  unless ($fh) {
-    $$rmsg = "Cannot open stored file: $!";
+  my $filename = "$filebase/" . $self->filename;
+
+  unless (-r $filename) {
+    $$rmsg = "Cannot read stored file: $!";
     return;
   }
 
   my @headers;
   my %result =
     (
-     content_fh => $fh,
+     content_filename => $filename,
      headers => \@headers,
     );
   if ($download) {

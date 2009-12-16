@@ -92,6 +92,7 @@ sub req_show_logon {
     );
 
   BSE::Template->show_page('user/logon', $cfg, \%acts);
+  return;
 }
 
 sub req_logon {
@@ -215,6 +216,8 @@ sub _got_user_refresh {
   else {
     refresh_to($refresh);
   }
+
+  return;
 }
 
 sub req_setcookie {
@@ -251,6 +254,8 @@ sub req_setcookie {
       make_cookie($cfg, userid=> ''),"\n";
  }
   refresh_to($refresh);
+
+  return;
 }
 
 sub req_logoff {
@@ -282,6 +287,8 @@ sub req_logoff {
   }
 
   _got_user_refresh($session, $cgi, $cfg);
+
+  return;
 }
 
 sub tag_if_subscribed_register {
@@ -372,6 +379,8 @@ sub req_show_register {
   }
 
   BSE::Template->show_page($template, $cfg, \%acts);
+
+  return;
 }
 
 sub _get_user {
@@ -529,6 +538,8 @@ sub req_show_opts {
   }
 
   BSE::Template->show_page($template, $cfg, \%acts, $base);
+
+  return;
 }
 
 sub _checkemail {
@@ -765,6 +776,8 @@ sub req_saveopts {
   $custom->siteusers_changed($cfg);
 
   refresh_to($url);
+
+  return;
 }
 
 # returns true if the caller needs to send output
@@ -995,6 +1008,8 @@ sub req_register {
   else {
     $self->req_show_register($req, $msgs->(regdberr=> "Database error $@"));
   }
+
+  return;
 }
 
 sub iter_usersubs {
@@ -1100,6 +1115,8 @@ sub req_userpage {
     $template = $template . '_' . $t;
   }
   BSE::Template->show_page($template, $cfg, \%acts, $base_template);
+
+  return;
 }
 
 sub tag_detail_product {
@@ -1193,6 +1210,8 @@ sub req_orderdetail {
     $template = $template . '_' . $t;
   }
   BSE::Template->show_page($template, $cfg, \%acts, $base_template);
+
+  return;
 }
 
 sub req_download {
@@ -1243,29 +1262,29 @@ sub req_download {
   }
   
   my $filebase = $cfg->entryVar('paths', 'downloads');
-  open FILE, "< $filebase/$file->{filename}"
+  my $filename = "$filebase/$file->{filename}";
+  -r $filename
     or return _refresh_userpage($cfg, 
 	       $msgs->(openfile =>
 		       "Sorry, cannot open that file.  Contact the webmaster.",
 		       $!));
-  binmode FILE;
-  binmode STDOUT;
-  print "Content-Length: $file->{sizeInBytes}\r\n";
+  my %result;
+  my @headers;
+  $result{content_filename} = $filename;
+  push @headers, "Content-Length: $file->{sizeInBytes}";
   if ($file->{download}) {
-    print qq/Content-Disposition: attachment; filename=$file->{displayName}\r\n/;
-    print "Content-Type: application/octet-stream\r\n";
+    $result{type} = "application/octet-stream";
+    push @headers,
+      qq/Content-Disposition: attachment; filename=$file->{displayName}/;
   }
   else {
-    print qq/Content-Disposition: inline; filename=$file->{displayName}\r\n/;
-    print "Content-Type: $file->{contentType}\r\n";
+    $result{type} = $file->{contentType};
+    push @headers,
+      qq/Content-Disposition: inline; filename=$file->{displayName}/;
   }
-  print "\r\n";
-  $|=1;
-  my $data;
-  while (read(FILE, $data, 8192)) {
-    print $data;
-  }
-  close FILE;
+  $result{headers} = \@headers;
+
+  return \%result;
 }
 
 sub req_download_file {
@@ -1362,29 +1381,30 @@ sub req_download_file {
   }
   
   my $filebase = $cfg->entryVar('paths', 'downloads');
-  open FILE, "< $filebase/$file->{filename}"
+  my $filename = "$filebase/$file->{filename}";
+  -r $filename
     or return $self->req_show_logon($req, 
 	       $msgs->(openfile =>
 		       "Sorry, cannot open that file.  Contact the webmaster.",
 		       $!));
-  binmode FILE;
-  binmode STDOUT;
-  print "Content-Length: $file->{sizeInBytes}\r\n";
+
+  my %result;
+  my @headers;
+  $result{content_filename} = $filename;
+  push @headers, "Content-Length: $file->{sizeInBytes}";
   if ($file->{download}) {
-    print qq/Content-Disposition: attachment; filename=$file->{displayName}\r\n/;
-    print "Content-Type: application/octet-stream\r\n";
+    $result{type} = "application/octet-stream";
+    push @headers,
+      qq/Content-Disposition: attachment; filename=$file->{displayName}/;
   }
   else {
-    print qq/Content-Disposition: inline; filename=$file->{displayName}\r\n/;
-    print "Content-Type: $file->{contentType}\r\n";
+    $result{type} = $file->{contentType};
+    push @headers,
+      qq/Content-Disposition: inline; filename=$file->{displayName}/;
   }
-  print "\r\n";
-  $|=1;
-  my $data;
-  while (read(FILE, $data, 8192)) {
-    print $data;
-  }
-  close FILE;
+  $result{headers} = \@headers;
+
+  return \%result;
 }
 
 sub req_file_metadata {
@@ -1421,9 +1441,8 @@ sub req_file_metadata {
      type => $meta->content_type,
      content => $meta->value,
     );
-    
-  require BSE::Template;
-  BSE::Template->output_result($req, \%result);
+
+  return \%result;
 }
 
 sub req_show_lost_password {
@@ -1448,6 +1467,8 @@ sub req_show_lost_password {
      message => $message,
     );
   BSE::Template->show_page('user/lostpassword', $cfg, \%acts);
+
+  return;
 }
 
 sub req_lost_password {
@@ -1510,6 +1531,8 @@ sub req_lost_password {
      emailuser => [ \&tag_hash, $email_user ],
     );
   BSE::Template->show_page('user/lostemailsent', $cfg, \%acts);
+
+  return;
 }
 
 sub req_subinfo {
@@ -1530,6 +1553,8 @@ sub req_subinfo {
      subscription=>sub { CGI::escapeHTML($sub->{$_[0]}) },
     );
   BSE::Template->show_page('user/subdetail', $cfg, \%acts);
+
+  return;
 }
 
 sub req_nopassword {
@@ -1545,6 +1570,8 @@ sub req_nopassword {
      $req->dyn_user_tags(),
     );
   BSE::Template->show_page('user/nopassword', $cfg, \%acts);
+
+  return;
 }
 
 sub req_blacklist {
@@ -1579,6 +1606,8 @@ sub req_blacklist {
   $black{why} = "Web request from $ENV{REMOTE_ADDR}";
   $black = BSE::EmailBlacklist->add(@black{@cols});
   BSE::Template->show_page('user/blacklistdone', $cfg, \%acts);
+
+  return;
 }
 
 sub req_confirm {
@@ -1621,6 +1650,8 @@ sub req_confirm {
      user=>sub { CGI::escapeHTML($user->{$_[0]}) },
     );
   BSE::Template->show_page('user/confirmed', $cfg, \%acts);
+
+  return;
 }
 
 sub _generic_email {
@@ -1776,6 +1807,7 @@ sub req_unsub {
   unless ($secret eq $user->{confirmSecret}) {
     return $self->req_show_logon($req, 
 			     $msgs->(unsubbadsecret=>"Sorry, the ubsubscribe secret does not match"));
+
   }
   
   my %acts;
@@ -1799,6 +1831,8 @@ sub req_unsub {
   else {
     BSE::Template->show_page('user/cantunsub', $cfg, \%acts);
   }
+
+  return;
 }
 
 sub _validate_affiliate_name {
@@ -1864,20 +1898,20 @@ sub req_image {
     or return $self->req_show_logon($req, "Unknown image id");
   my $image_dir = $cfg->entryVar('paths', 'siteuser_images');
 
-  open IMAGE, "< $image_dir/$image->{filename}"
+  my $filename = "$image_dir/$image->{filename}";
+  -r $filename
     or return $self->req_show_logon($req, "Image file missing");
-  binmode IMAGE;
-  binmode STDOUT;
-    
-  print "Content-Length: $image->{bytes}\r\n";
-  print "Content-Type: $image->{content_type}\r\n";
-  print "\r\n";
-  $|=1;
-  my $data;
-  while (read(IMAGE, $data, 8192)) {
-    print $data;
-  }
-  close IMAGE;
+  my %result =
+    (
+     type => $image->{content_type},
+     content_filename => $filename,
+     headers =>
+     [
+      "Content-Length: $image->{bytes}",
+     ],
+    );
+
+  return \%result;
 }
 
 sub _notify_registration {
@@ -1917,13 +1951,13 @@ sub _notify_registration {
 		subject => $subject);
 }
 
-sub error {
-  my ($self, $req, $error) = @_;
-
-  my $result = $self->SUPER::error($req, $error);
-
-  BSE::Template->output_result($req, $result);
-}
+#sub error {
+#  my ($self, $req, $error) = @_;
+#
+#  my $result = $self->SUPER::error($req, $error);
+#
+#  BSE::Template->output_result($req, $result);
+#}
 
 =item req_wishlist
 
@@ -1983,6 +2017,8 @@ sub req_wishlist {
   }
 
   BSE::Template->show_page($template, $req->cfg, \%acts);
+
+  return;
 }
 
 =item req_downufile
@@ -2037,7 +2073,7 @@ sub req_downufile {
     or return $self->error($req, "Sorry, you don't have access to this file");
 
   my $msg;
-  my $result = $file->download_result
+  return $file->download_result
     (
      cfg => $req->cfg,
      download => scalar($cgi->param("force_download")),
@@ -2045,8 +2081,6 @@ sub req_downufile {
      user => $user,
     )
       or return $self->error($req, $msg);
-
-  BSE::Template->output_result($req, $result);
 }
 
 1;

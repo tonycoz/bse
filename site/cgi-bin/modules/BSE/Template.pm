@@ -180,6 +180,12 @@ sub get_source {
 sub output_result {
   my ($class, $req, $result) = @_;
 
+  $class->output_resultc($req->cfg, $result);
+}
+
+sub output_resultc {
+  my ($class, $cfg, $result) = @_;
+
   $result 
     or return;
 
@@ -187,8 +193,7 @@ sub output_result {
   $| = 1;
   push @{$result->{headers}}, "Content-Type: $result->{type}"
     if $result->{type};
-  push @{$result->{headers}}, $req->extra_headers;
-  my $add_cache_control = $req->cfg->entry('basic', 'no_cache_dynamic', 1);
+  my $add_cache_control = $cfg->entry('basic', 'no_cache_dynamic', 1);
   if (defined $result->{no_cache_dynamic}) {
     $add_cache_control = $result->{no_cache_dynamic};
   }
@@ -203,15 +208,30 @@ sub output_result {
       push @{$result->{headers}}, "Cache-Control: no-cache";
     }
   }
-  if (!grep /^content-length:/, @{$result->{headers}}) {
+
+  if ($result->{content_filename}) {
+    # at some point, if we have a FEP like perlbal of nginx we might
+    # get it to serve the file instead
+    if (open my $fh, "<", $result->{content_filename}) {
+      binmode $fh;
+      $result->{content_fh} = $fh;
+    }
+    else {
+      print STDERR "$ENV{SCRIPT_NAME}: ** cannot open file $result->{content_filename}: $!\n";
+      $result->{content} = "* Internal error";
+    }
+  }
+
+  if (!grep /^content-length:/i, @{$result->{headers}}) {
     my $length;
     if (defined $result->{content}) {
       $length = length $result->{content};
     }
-    elsif (defined $result->{content_fh}) {
+    if (defined $result->{content_fh}) {
       # this may need to change if we support byte ranges
-      $length = -s $result->{content_fh};
+      $length += -s $result->{content_fh};
     }
+
     if (defined $length) {
       push @{$result->{headers}}, "Content-Length: $length";
     }
@@ -231,7 +251,7 @@ sub output_result {
   }
   elsif ($result->{content_fh}) {
     # in the future this could be updated to support byte ranges
-    local $/ = \8192;
+    local $/ = \16384;
     my $fh = $result->{content_fh};
     binmode $fh;
     while (my $data = <$fh>) {
