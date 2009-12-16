@@ -36,7 +36,6 @@ sub process_file {
   $file->add_meta(name => "duration_formatted", value => $fmt_dur);
   $file->add_meta(name => 'audio_type', value => $info{audio_type});
 
-  my $section = "flv handler";
   if ($self->cfg_entry("ffmpeg", 1)) {
     my $raw_frame = $self->cfg_entry("raw_frame", 1);
     my $fmt = $self->cfg_entry("frame_fmt", "jpeg");
