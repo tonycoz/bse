@@ -2362,6 +2362,7 @@ sub save_image_changes {
 	    $changes{$id}{src} = "/images/$image_name";
 	    $changes{$id}{width} = $width;
 	    $changes{$id}{height} = $height;
+	    $changes{$id}{ftype} = $self->_image_ftype($type);
 	  }
 	  else {
 	    $errors{"image$id"} = $type;
@@ -2524,6 +2525,16 @@ sub _service_success {
     };
 }
 
+sub _image_ftype {
+  my ($self, $type) = @_;
+
+  if ($type eq 'CWS' || $type eq 'SWF') {
+    return "flash";
+  }
+
+  return "img";
+}
+
 sub do_add_image {
   my ($self, $cfg, $article, $image, %opts) = @_;
 
@@ -2622,11 +2633,8 @@ sub do_add_image {
      name => $imageref,
      storage => 'local',
      src => '/images/' . $filename,
-     ftype => "img",
+     ftype => $self->_image_ftype($type),
     );
-  if ($type eq 'CWS' || $type eq 'SWF') {
-    $image{ftype} = "flash";
-  }
   require BSE::TB::Images;
   my @cols = BSE::TB::Image->columns;
   shift @cols;
@@ -2958,6 +2966,7 @@ sub req_save_image {
 	  $image->{height} = $height;
 	  $image->{storage} = 'local'; # not on the remote store yet
 	  $image->{src} = '/images/' . $image_name;
+	  $image->{ftype} = $self->_image_ftype($type);
 	}
 	else {
 	  $errors{image} = $type;
