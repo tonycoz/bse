@@ -14,7 +14,7 @@ sub process_file {
 sub inline {
   my ($self, $file) = @_;
 
-  my $url = $file->url;
+  my $url = $file->url($self->cfg);
   my $eurl = escape_html($url);
   my $class = $file->{download} ? "file_download" : "file_inline";
   my $html = qq!<a class="$class" href="$eurl">! . escape_html($file->{displayName}) . '</a>';
