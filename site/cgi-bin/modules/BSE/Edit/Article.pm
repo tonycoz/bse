@@ -3166,7 +3166,7 @@ sub fileadd {
 
   $req->flash("New file added");
 
-  my $storage = $cgi->param("storage") || "local";
+  my $storage = $cgi->param("storage") || "";
   eval {
     my $msg;
 
