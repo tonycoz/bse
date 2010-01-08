@@ -61,4 +61,12 @@ sub download_path {
   return $cfg->entryVar('paths', 'downloads');
 }
 
+sub file_manager {
+  my ($self, $cfg) = @_;
+
+  require BSE::StorageMgr::Files;
+
+  return BSE::StorageMgr::Files->new(cfg => $cfg);
+}
+
 1;

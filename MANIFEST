@@ -172,6 +172,8 @@ site/cgi-bin/modules/BSE/TB/SeminarBookings.pm
 site/cgi-bin/modules/BSE/TB/SeminarSession.pm
 site/cgi-bin/modules/BSE/TB/SeminarSessions.pm
 site/cgi-bin/modules/BSE/TB/Seminars.pm
+site/cgi-bin/modules/BSE/TB/Site.pm
+site/cgi-bin/modules/BSE/TB/SiteCommon.pm
 site/cgi-bin/modules/BSE/TB/SiteUserGroup.pm
 site/cgi-bin/modules/BSE/TB/SiteUserGroups.pm
 site/cgi-bin/modules/BSE/TB/Subscription.pm

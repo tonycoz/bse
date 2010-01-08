@@ -2,8 +2,9 @@ package Article;
 use strict;
 # represents an article from the database
 use Squirrel::Row;
+use BSE::TB::SiteCommon;
 use vars qw/@ISA/;
-@ISA = qw/Squirrel::Row/;
+@ISA = qw/Squirrel::Row BSE::TB::SiteCommon/;
 use Carp 'confess';
 
 sub columns {
@@ -27,109 +28,6 @@ sub numeric {
      customInt1 customInt2 customInt3 customInt4 menu);
 }
 
-sub step_parents {
-  my ($self) = @_;
-
-  Articles->getSpecial('stepParents', $self->{id});
-}
-
-sub visible_step_parents {
-  my ($self) = @_;
-
-  my $now = now_sqldate();
-  Articles->getSpecial('visibleStepParents', $self->{id}, $now);
-}
-
-sub stepkids {
-  my ($self) = @_;
-
-  if ($self->{generator} eq 'Generate::Catalog') {
-    require 'Products.pm';
-    return Products->getSpecial('stepProducts', $self->{id});
-  }
-  else {
-    return Articles->getSpecial('stepKids', $self->{id});
-  }
-  return ();
-}
-
-sub allstepkids {
-  my ($self) = @_;
-
-  return Articles->getSpecial('stepKids', $self->{id});
-}
-
-sub visible_stepkids {
-  my ($self) = @_;
-
-  use BSE::Util::SQL qw/now_sqldate/;
-  my $today = now_sqldate();
-
-  if ($self->{generator} eq 'Generate::Catalog') {
-    require 'Products.pm';
-
-    return Products->getSpecial('visibleStep', $self->{id}, $today);
-  }
-  else {
-    return Articles->getSpecial('visibleStepKids', $self->{id}, $today);
-  }
-  
-  return ();
-}
-
-# returns a list of all children in the correct sort order
-# this is a bit messy
-sub allkids {
-  my ($self) = @_;
-
-  require 'OtherParents.pm';
-
-  my @otherlinks = OtherParents->getBy(parentId=>$self->{id});
-  my @normalkids = Articles->children($self->{id});
-  my %order = (
-	       (map { $_->{id}, $_->{displayOrder} } @normalkids ),
-	       (map { $_->{childId}, $_->{parentDisplayOrder} } @otherlinks),
-	      );
-  my @stepkids = $self->allstepkids;
-  my %kids = map { $_->{id}, $_ } @stepkids, @normalkids;
-
-  return @kids{ sort { $order{$b} <=> $order{$a} } keys %kids };
-}
-
-# returns a list of all visible children in the correct sort order
-# this is a bit messy
-sub all_visible_kids {
-  my ($self) = @_;
-
-  Articles->all_visible_kids($self->{id});
-}
-
-sub all_visible_products {
-  my ($self) = @_;
-
-  require Products;
-  Products->all_visible_children($self->{id});
-}
-
-sub all_visible_catalogs {
-  my ($self) = @_;
-
-  return grep $_->{generator} eq "Generate::Catalog", $self->all_visible_kids;
-}
-
-sub images {
-  my ($self) = @_;
-  require BSE::TB::Images;
-  BSE::TB::Images->getBy(articleId=>$self->{id});
-}
-
-sub children {
-  my ($self) = @_;
-
-  return sort { $b->{displayOrder} <=> $b->{displayOrder} } 
-    Articles->children($self->{id});
-}
-
 sub section {
   my ($self) = @_;
 
@@ -140,13 +38,6 @@ sub section {
   }
 
   return $section;
-}
-
-sub files {
-  my ($self) = @_;
-
-  require BSE::TB::ArticleFiles;
-  return BSE::TB::ArticleFiles->getBy(articleId=>$self->{id});
 }
 
 sub parent {
@@ -259,26 +150,6 @@ sub cached_filename {
 
   my $dynamic_path = $cfg->entryVar('paths', 'dynamic_cache');
   return $dynamic_path . "/" . $self->{id} . ".html";
-}
-
-sub remove_images {
-  my ($self, $cfg) = @_;
-
-  my @images = $self->images;
-  my $mgr;
-  my $imagedir = $cfg->entry('paths', 'images', $Constants::IMAGEDIR);
-  for my $image (@images) {
-    if ($image->{storage} ne 'local') {
-      unless ($mgr) {
-	require BSE::StorageMgr::Images;
-	$mgr = BSE::StorageMgr::Images->new(cfg => $cfg);
-      }
-      $mgr->unstore($image->{image}, $image->{storage});
-    }
-
-    unlink("$imagedir/$image->{image}");
-    $image->remove();
-  }
 }
 
 sub remove {

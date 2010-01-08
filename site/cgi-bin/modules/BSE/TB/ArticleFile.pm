@@ -13,6 +13,30 @@ sub columns {
             file_handler/;
 }
 
+sub table {
+  "article_files";
+}
+
+sub defaults {
+  require BSE::Util::SQL;
+  return
+    (
+     notes => '',
+     description => '',
+     name => '',
+     whenUploaded => BSE::Util::SQL::now_datetime(),
+     displayOrder => time,
+     src => '',
+     file_handler => '',
+     forSale => 0,
+     download => 0,
+     requireUser => 0,
+     hide_from_list => 0,
+     category => '',
+     storage => 'local',
+    );
+}
+
 sub full_filename {
   my ($self, $cfg) = @_;
 
@@ -48,9 +72,22 @@ sub article {
 }
 
 sub url {
-  my ($file) = @_;
+  my ($file, $cfg) = @_;
 
-  return "/cgi-bin/user.pl/download_file/$file->{id}";
+ #   return "/cgi-bin/user.pl/download_file/$file->{id}";
+
+  $cfg or confess "Missing cfg option";
+
+  if ($file->storage eq "local" 
+      || $file->forSale
+      || $file->requireUser
+      || $cfg->entryBool("downloads", "require_logon", 0)
+      || $cfg->entry("downloads", "always_redirect", 0)) {
+    return "/cgi-bin/user.pl/download_file/$file->{id}";
+  }
+  else {
+    return $file->src;
+  }
 }
 
 sub handler {
@@ -180,6 +217,27 @@ sub inline {
     return $handler->inline($file, $field);
   }
 
+}
+
+sub apply_storage {
+  my ($self, $cfg, $mgr, $storage) = @_;
+
+  defined $storage or $storage = 'local';
+
+  if ($storage ne $self->storage) {
+    if ($self->storage ne "local") {
+      $mgr->unstore($self->filename, $self->storage);
+      $self->set_storage("local");
+    }
+    if ($storage ne "local") {
+      my $src = $mgr->store($self->filename, $storage, $self);
+	if ($src) {
+	  $self->{src} = $src;
+	  $self->{storage} = $storage;
+	}
+    }
+    $self->save;
+  }
 }
 
 1;

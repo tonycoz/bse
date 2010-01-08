@@ -1241,15 +1241,16 @@ sub iter_image_stores {
 sub _file_manager {
   my ($self) = @_;
 
-  require BSE::StorageMgr::Files;
+  require BSE::TB::ArticleFiles;
 
-  return BSE::StorageMgr::Files->new(cfg => $self->cfg);
+  return BSE::TB::ArticleFiles->file_manager($self->cfg);
 }
 
 sub iter_file_stores {
   my ($self) = @_;
 
-  my $mgr = $self->_file_manager;
+  require BSE::TB::ArticleFiles;
+  my $mgr = $self->_file_manager($self->cfg);
 
   return map +{ name => $_->name, description => $_->description },
     $mgr->all_stores;
@@ -3111,16 +3112,7 @@ sub fileadd {
   $req->validate(errors => \%errors,
 		 fields => \%file_fields,
 		 section => $article->{id} == -1 ? 'Global File Validation' : 'Article File Validation');
-
-  $file{forSale}	= 0 + exists $file{forSale};
-  $file{articleId}	= $article->{id};
-  $file{download}	= 0 + exists $file{download};
-  $file{requireUser}	= 0 + exists $file{requireUser};
-  $file{hide_from_list} = 0 + exists $file{hide_from_list};
-  $file{category}       ||= '';
-
-  my $downloadPath = $self->{cfg}->entryVar('paths', 'downloads');
-
+  
   # build a filename
   my $file = $cgi->param('file');
   unless ($file) {
@@ -3129,15 +3121,13 @@ sub fileadd {
   if ($file && -z $file) {
     $errors{file} = 'File is empty';
   }
-
-  unless ($file{contentType}) {
-    unless ($file =~ /\.([^.]+)$/) {
-      $file{contentType} = "application/octet-stream";
-    }
-    unless ($file{contentType}) {
-      $file{contentType} = content_type($self->cfg, $file);
-    }
-  }
+  
+  $file{forSale}	= 0 + exists $file{forSale};
+  $file{articleId}	= $article->{id};
+  $file{download}	= 0 + exists $file{download};
+  $file{requireUser}	= 0 + exists $file{requireUser};
+  $file{hide_from_list} = 0 + exists $file{hide_from_list};
+  $file{category}       ||= '';
 
   defined $file{name} or $file{name} = '';
   if ($article->{id} == -1 && $file{name} eq '') {
@@ -3162,80 +3152,115 @@ sub fileadd {
   $workfile =~ tr/_/_/s;
   $workfile =~ /([ \w.-]+)$/ and $basename = $1;
   $basename =~ tr/ /_/;
-
-  # if the user supplies a really long filename, it can overflow the 
-  # filename field
-
-  my $work_filename = $basename;
-  if (length $work_filename > 60) {
-    $work_filename = substr($work_filename, -60);
-  }
-
-  my $filename = time. '_'. $work_filename;
-
-  # for the sysopen() constants
-  use Fcntl;
-
-  # loop until we have a unique filename
-  my $counter="";
-  $filename = time. '_' . $counter . '_' . $work_filename 
-    until sysopen( OUTPUT, "$downloadPath/$filename", 
-		   O_WRONLY| O_CREAT| O_EXCL)
-      || ++$counter > 100;
-
-  fileno(OUTPUT) or die "Could not open file: $!";
-
-  # for OSs with special text line endings
-  binmode OUTPUT;
-
-  my $buffer;
-
-  no strict 'refs';
-
-  # read the image in from the browser and output it to our output filehandle
-  print OUTPUT $buffer while read $file, $buffer, 8192;
-
-  # close and flush
-  close OUTPUT
-    or die "Could not close file $filename: $!";
-
-  use BSE::Util::SQL qw/now_datetime/;
-  $file{filename} = $filename;
   $file{displayName} = $basename;
-  $file{sizeInBytes} = -s $file;
-  $file{displayOrder} = time;
-  $file{whenUploaded} = now_datetime();
-  $file{storage}        = 'local';
-  $file{src}            = '';
-  $file{file_handler}   = "";
+  $file{file} = $file;
 
-  require BSE::TB::ArticleFiles;
-  my $fileobj = BSE::TB::ArticleFiles->add(@file{@cols});
+  local $SIG{__DIE__};
+  my $fileobj = 
+    eval {
+      $article->add_file($self->cfg, %file);
+    };
+
+  $fileobj
+    or return $self->edit_form($req, $article, $articles, $@);
 
   $req->flash("New file added");
 
-  my $storage = $cgi->param('storage');
-  defined $storage or $storage = 'local';
-  my $file_manager = $self->_file_manager($req->cfg);
-
-  local $SIG{__DIE__};
+  my $storage = $cgi->param("storage") || "local";
   eval {
-    my $src;
-    $storage = $self->_select_filestore($req, $file_manager, $storage, $fileobj);
-    $src = $file_manager->store($filename, $storage, $fileobj);
+    my $msg;
 
-    if ($src) {
-      $fileobj->{src} = $src;
-      $fileobj->{storage} = $storage;
-      $fileobj->save;
-    }
+    $article->apply_storage($self->cfg, $fileobj, $storage, \$msg);
+
+    $msg and $req->flash($msg);
   };
-  if ($@) {
-    $req->flash($@);
-  }
+  $@
+    and $req->flash($@);
 
-  $fileobj->set_handler($req->cfg);
-  $fileobj->save;
+#   my $downloadPath = $self->{cfg}->entryVar('paths', 'downloads');
+
+
+#   unless ($file{contentType}) {
+#     unless ($file =~ /\.([^.]+)$/) {
+#       $file{contentType} = "application/octet-stream";
+#     }
+#     unless ($file{contentType}) {
+#       $file{contentType} = content_type($self->cfg, $file);
+#     }
+#   }
+
+
+#   # if the user supplies a really long filename, it can overflow the 
+#   # filename field
+
+#   my $work_filename = $basename;
+#   if (length $work_filename > 60) {
+#     $work_filename = substr($work_filename, -60);
+#   }
+
+#   my $filename = time. '_'. $work_filename;
+
+#   # for the sysopen() constants
+#   use Fcntl;
+
+#   # loop until we have a unique filename
+#   my $counter="";
+#   $filename = time. '_' . $counter . '_' . $work_filename 
+#     until sysopen( OUTPUT, "$downloadPath/$filename", 
+# 		   O_WRONLY| O_CREAT| O_EXCL)
+#       || ++$counter > 100;
+
+#   fileno(OUTPUT) or die "Could not open file: $!";
+
+#   # for OSs with special text line endings
+#   binmode OUTPUT;
+
+#   my $buffer;
+
+#   no strict 'refs';
+
+#   # read the image in from the browser and output it to our output filehandle
+#   print OUTPUT $buffer while read $file, $buffer, 8192;
+
+#   # close and flush
+#   close OUTPUT
+#     or die "Could not close file $filename: $!";
+
+#   use BSE::Util::SQL qw/now_datetime/;
+#   $file{filename} = $filename;
+#   $file{displayName} = $basename;
+#   $file{sizeInBytes} = -s $file;
+#   $file{displayOrder} = time;
+#   $file{whenUploaded} = now_datetime();
+#   $file{storage}        = 'local';
+#   $file{src}            = '';
+#   $file{file_handler}   = "";
+
+#   require BSE::TB::ArticleFiles;
+#   my $fileobj = BSE::TB::ArticleFiles->add(@file{@cols});
+
+#   my $storage = $cgi->param('storage');
+#   defined $storage or $storage = 'local';
+#   my $file_manager = $self->_file_manager($req->cfg);
+
+#   local $SIG{__DIE__};
+#   eval {
+#     my $src;
+#     $storage = $self->_select_filestore($req, $file_manager, $storage, $fileobj);
+#     $src = $file_manager->store($filename, $storage, $fileobj);
+
+#     if ($src) {
+#       $fileobj->{src} = $src;
+#       $fileobj->{storage} = $storage;
+#       $fileobj->save;
+#     }
+#   };
+#   if ($@) {
+#     $req->flash($@);
+#   }
+
+#   $fileobj->set_handler($req->cfg);
+#   $fileobj->save;
 
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
@@ -3290,7 +3315,7 @@ sub filedel {
 
     if ($file) {
       if ($file->{storage} ne 'local') {
-	my $mgr = $self->_file_manager;
+	my $mgr = $self->_file_manager($self->cfg);
 	$mgr->unstore($file->{filename}, $file->{storage});
       }
 
@@ -3302,25 +3327,6 @@ sub filedel {
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
   $self->_refresh_filelist($req, $article, 'File deleted');
-}
-
-# only some files can be stored remotely
-sub _select_filestore {
-  my ($self, $req, $mgr, $storage, $file) = @_;
-
-  my $store = $mgr->select_store($file->{filename}, $storage, $file);
-  if ($store ne 'local') {
-    if ($file->{forSale} || $file->{requireUser}) {
-      $store = 'local';
-      $req->flash("For sale or user required files can only be stored locally");
-    }
-    elsif ($file->{articleId} != -1 && $file->article->is_access_controlled) {
-      $store = 'local';
-      $req->flash("Files for access controlled articles can only be stored locally");
-    }
-  }
-
-  return $store;
 }
 
 sub filesave {
@@ -3447,13 +3453,15 @@ sub filesave {
     return $self->edit_form($req, $article, $articles, undef, \%errors);
   }
   $req->flash('File information saved');
-  my $mgr = $self->_file_manager;
+  my $mgr = $self->_file_manager($self->cfg);
   for my $file (@files) {
     $file->save;
 
     my $storage = $cgi->param("storage_$file->{id}");
     defined $storage or $storage = 'local';
-    $storage = $self->_select_filestore($req, $mgr, $storage, $file);
+    my $msg;
+    $storage = $article->select_filestore($mgr, $file, $storage, \$msg);
+    $msg and $req->flash($msg);
     if ($storage ne $file->{storage} || $store_anyway{$file->{id}}) {
       my $old_storage = $file->{storage};
       eval {
@@ -3652,11 +3660,13 @@ sub req_save_file {
   $file->save;
 
   $req->flash('File information saved');
-  my $mgr = $self->_file_manager;
+  my $mgr = $self->_file_manager($self->cfg);
 
   my $storage = $cgi->param('storage');
   defined $storage or $storage = $file->{storage};
-  $storage = $self->_select_filestore($req, $mgr, $storage, $file);
+  my $msg;
+  $storage = $article->select_filestore($mgr, $file, $storage, \$msg);
+  $msg and $req->flash($msg);
   if ($storage ne $file->{storage} || $store_anyway) {
     my $old_storage = $file->{storage};
     eval {
