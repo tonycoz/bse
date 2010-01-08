@@ -42,15 +42,21 @@ sub process_file {
     my $content_type = $self->cfg_entry("frame_content_type", "image/$fmt");
     my $bin = $self->cfg_entry("ffmpeg_bin", "ffmpeg");
     my $debug = $self->cfg_entry("debug", 0);
-    my @geo_names = split /,/, $self->cfg_entry("frame_thumbs");
-    my @cvt_options = split /,/, $self->cfg_entry("ffmpeg_options");
+    my @geo_names = split /,/, $self->cfg_entry("frame_thumbs", "");
+    my @cvt_options = split /,/, $self->cfg_entry("ffmpeg_options", "");
     my $ss = 2+ rand(10);
+    if ($ss > $dur_secs) {
+      $ss = $dur_secs / 2;
+    }
     my $cmd = "$bin -i " . $file->full_filename($self->cfg) . " -vcodec ppm -ss $ss -vframes 1 @cvt_options -f image2 -";
     my $redir = $debug ? "" : "2>/dev/null";
+    $debug and print STDERR "Cmd: $cmd\n";
     my $ppm_data = `$cmd $redir`;
 
     $?
       and die "Cannot extract placeholder image\n";
+    length $ppm_data
+      or die "No raw image data received from ffmpeg\n";
 
     if ($raw_frame) {
       my $image_data = '';
@@ -150,7 +156,7 @@ sub inline {
      BSE::Util::Tags->static(undef, $self->cfg),
      meta => [ \&tag_hash, \%meta ],
      file => [ \&tag_hash, $file ],
-     src => scalar(escape_html($file->url)),
+     src => scalar(escape_html($file->url($self->cfg))),
     );
 
   return BSE::Template->get_page($template, $self->cfg, \%acts, );
