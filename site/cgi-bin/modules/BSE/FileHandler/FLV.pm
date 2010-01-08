@@ -45,7 +45,7 @@ sub process_file {
     my @geo_names = split /,/, $self->cfg_entry("frame_thumbs", "");
     my @cvt_options = split /,/, $self->cfg_entry("ffmpeg_options", "");
     my $ss = 2+ rand(10);
-    if ($ss > $dur_secs) {
+    if ($ss > $dur_secs / 2) {
       $ss = $dur_secs / 2;
     }
     my $cmd = "$bin -i " . $file->full_filename($self->cfg) . " -vcodec ppm -ss $ss -vframes 1 @cvt_options -f image2 -";
