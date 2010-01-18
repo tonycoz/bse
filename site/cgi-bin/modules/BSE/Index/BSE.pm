@@ -67,6 +67,9 @@ sub process_article {
       $self->process($indexas, $section->{id}, $score, $self->{weights}{$indexas}, \%seen,
 		     @buffer) if @buffer;
     }
+    if ($field eq 'product_code' && $text) {
+      $self->process($indexas, $section->{id}, $score, $self->{weights}{$indexas}, \%seen, $text);
+    }
   }
 }
 
