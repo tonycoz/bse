@@ -18,6 +18,8 @@ sub new {
 
   $self->{decay_multiplier} = 0.4;
 
+  $self->{wordre} = $self->{cfg}->entry("search", "wordre", "\\w+");
+
   return $self;
 }
 
@@ -45,13 +47,17 @@ sub process_article {
   $self->{weights}{$indexas} ||= {};
   for my $field (sort { $self->{scores}{$b} <=> $self->{scores}{$a} }
 		 keys %$fields) {
+    my $word_re = $self->{cfg}->entry("search", "wordre_$field", $self->{wordre});
     my $text = $fields->{$field};
     my $score = $self->{scores}{$field};
     my %seen; # $seen{phrase} non-zero if seen for this field
     
     # for each paragraph
     for my $para (split /\n/, $text) {
-      my @words = split /\W+/, $para;
+      my @words;
+      while ($para =~ /($word_re)/g) {
+	push @words, $1;
+      }
       my @buffer;
       
       for my $word (@words) {

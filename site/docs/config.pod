@@ -661,6 +661,16 @@ result excerpts.  Default: True
 If this is true then resulting articles that can't be accessed by the
 user are listed in the search results.  Default: false.
 
+=item wordre
+
+The default regular expression used to match words in text during
+indexing.  Default: \w+
+
+=item wordre_I<fieldname>
+
+The field specific word match regular expression for the built-in
+search indexer.  Default: the value of C<wordre>.
+
 =back
 
 =head2 [search highlight]
