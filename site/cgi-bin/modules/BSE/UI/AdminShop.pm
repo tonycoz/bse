@@ -28,6 +28,8 @@ my %actions =
    order_list_incomplete => 'shop_order_list',
    order_detail => 'shop_order_detail',
    order_filled => 'shop_order_filled',
+   order_paid => 'shop_order_paid',
+   order_unpaid => 'shop_order_unpaid',
    product_detail => '',
    product_list => '',
   );
@@ -652,6 +654,48 @@ sub req_order_filled {
     else {
       return $class->req_order_list($req);
     }
+  }
+  else {
+    return $class->req_order_list($req);
+  }
+}
+
+sub req_order_paid {
+  my ($class, $req) = @_;
+
+  return $class->_set_order_paid($req, 1);
+}
+
+sub req_order_unpaid {
+  my ($class, $req) = @_;
+
+  return $class->_set_order_paid($req, 0);
+}
+
+sub _set_order_paid {
+  my ($class, $req, $value) = @_;
+
+  my $id = $req->cgi->param('id');
+  if ($id and
+      my $order = BSE::TB::Orders->getByPkey($id)) {
+    if ($order->paidFor != $value) {
+      if ($value) {
+	$order->set_paymentType(3);
+      }
+      else {
+	$order->paymentType == 3
+	  or return $class->req_order_detail($req, "You can only unpay manually paid orders");
+      }
+
+      $order->set_paidFor($value);
+      my $user = $req->user;
+      my $name = $user ? $user->logon : "--unknown--";
+      require POSIX;
+      $order->{instructions} .= "\nMarked " . ($value ? "paid" : "unpaid" ) . " by $name " . POSIX::strftime("%H:%M %d/%m/%Y", localtime);
+      $order->save();
+    }
+
+    return BSE::Template->get_refresh("$ENV{SCRIPT_NAME}?a_order_detail=1&id=$id", $req->cfg);
   }
   else {
     return $class->req_order_list($req);

@@ -28,6 +28,82 @@ sub columns {
            shipping_name shipping_trace/;
 }
 
+sub defaults {
+  require BSE::Util::SQL;
+  require Digest::MD5;
+  return
+    (
+     total => 0,
+     wholesaleTotal => 0,
+     gst => 0,
+     orderDate => BSE::Util::SQL::now_datetime(),
+     filled => 0,
+     whenFilled => undef,
+     whoFilled => '',
+     paidFor => 0,
+     paymentReceipt => '',
+     randomId => Digest::MD5::md5_hex(time().rand().{}.$$),
+     ccNumberHash => '',
+     ccName => '',
+     ccExpiryHash => '',
+     ccType => '',
+     randomId => '',
+     cancelled => 0,
+     userId => '',
+     paymentType => 0,
+     customInt1 => undef,
+     customInt2 => undef,
+     customInt3 => undef,
+     customInt4 => undef,
+     customInt5 => undef,
+     customStr1 => undef,
+     customStr2 => undef,
+     customStr3 => undef,
+     customStr4 => undef,
+     customStr5 => undef,
+     instructions => '',
+     siteuser_id => undef,
+     affiliate_code => '',
+     shipping_cost => 0,
+     ccOnline => 0,
+     ccSuccess => 0,
+     ccReceipt => '',
+     ccStatus => 0,
+     ccStatusText => '',
+     ccStatus2 => '',
+     ccTranId => '',
+     complete => 0,
+     purchase_order => '',
+     shipping_method => '',
+     shipping_name => '',
+     shipping_trace => undef,
+    );
+}
+
+sub address_columns {
+  return qw/
+           delivFirstName delivLastName delivStreet delivSuburb delivState
+	   delivPostCode delivCountry
+           billFirstName billLastName billStreet billSuburb billState
+           billPostCode billCountry
+           telephone facsimile emailAddress
+           instructions billTelephone billFacsimile billEmail
+           delivMobile billMobile
+           delivOrganization billOrganization
+           delivStreet2 billStreet2/;
+}
+
+sub user_columns {
+  return qw/userId siteuser_id/;
+}
+
+sub payment_columns {
+  return qw/ccNumberHash ccName ccExpiryHash ccType
+           paidFor paymentReceipt paymentType
+           ccOnline ccSuccess ccReceipt ccStatus ccStatusText
+           ccStatus2 ccTranId/;
+}
+
 =item siteuser
 
 returns the SiteUser object of the user who made this order.
@@ -185,6 +261,44 @@ sub clear_items {
     if $self->{complete};
   
   BSE::DB->run(deleteOrdersItems => $self->{id});
+}
+
+sub add_item {
+  my ($self, %opts) = @_;
+
+  my $prod = delete $opts{product}
+    or confess "Missing product option";
+  my $units = delete $opts{units} || 1;
+
+  my $options = '';
+  my @dboptions;
+  if ($opts{options}) {
+    if (ref $opts{options}) {
+      @dboptions = @{delete $opts{options}};
+    }
+    else {
+      $options = delete $opts{options};
+    }
+  }
+  
+  require BSE::TB::OrderItems;
+  my %item =
+    (
+     productId => $prod->id,
+     orderId => $self->id,
+     units => $units,
+     price => $prod->retailPrice,
+     options => $options,
+     max_lapsed => 0,
+     session_id => 0,
+     ( map { $_ => $prod->{$_} }
+       qw/wholesalePrice gst customInt1 customInt2 customInt3 customStr1 customStr2 customStr3 title description subscription_id subscription_period product_code/
+     ),
+    );
+
+  $self->set_total($self->total + $prod->retailPrice * $units);
+
+  return BSE::TB::OrderItems->make(%item);
 }
 
 1;

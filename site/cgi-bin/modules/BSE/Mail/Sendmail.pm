@@ -29,6 +29,9 @@ sub send {
   $args{headers} =~ /^\s/
     and return $self->_error("headers starts with whitespace");
 
+  if ($args{cc}) {
+    $args{headers} = "Cc: $args{cc}\n".$args{headers};
+  }
   if ($args{bcc}) {
     $args{headers} = "Bcc: $args{bcc}\n".$args{headers};
   }

@@ -124,7 +124,7 @@ sub req_show {
     );
 
   $msg
-    and return prompt($req, $reports, $msg);
+    and return $class->req_prompt($req, $msg);
 
   my $levels = $reports->levels($repname, BSE::DB->single);
   my $template = $reports->show_template($repname) || 'admin/reports/show' . $levels;

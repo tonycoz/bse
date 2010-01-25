@@ -256,6 +256,11 @@ $user_id is the numeric id of the user.
 Called when a user is removed from a group.  $group is the group
 object, $user_id is the numeric id of the user.
 
+=item order_complete($cfg, $order)
+
+Called when the supplied order has been completed.  It may or may not
+have been paid.
+
 =back
 
 =cut

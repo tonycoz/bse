@@ -21,8 +21,12 @@
     </td>
   </tr>
 </table>
+<:if Order id:>
+<h2>Payment for order <:arithmetic sprintf("%06d", [order id] ) :></h2>
+<:or Order:>
 <p> <b><font face="Verdana, Arial, Helvetica, sans-serif" size="3"> Thank you 
   for shopping at <:siteName:></font></b></p>
+<:eif Order:>
 <font class="article_body_text" face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
 <p> The <:siteName:> store is run on a secure encrypted server, your details are 
   safe with us.</p></font> 
@@ -92,6 +96,7 @@
   </tr>
 </table>
 <form action="<:dyntarget shop:>" method="post">
+<:ifOrder id:><input type="hidden" name="order_id" value="<:order id:>" /><:or:><:eif:>
   <font face="Verdana, Arial, Helvetica, sans-serif" size="3"> <b>Payment Details:</b></font> 
   <hr size="1" noshade>
 <:ifMsg:><p><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:msg:></font></b></p><:or:><:eif:>

@@ -588,7 +588,6 @@ sub req_remove_item {
   return BSE::Template->get_refresh($req->user_url(shop => 'cart'), $req->cfg);
 }
 
-
 # saves order and refresh to payment page
 sub req_order {
   my ($class, $req) = @_;
@@ -659,23 +658,74 @@ sub req_order {
   }
 }
 
+=item a_show_payment
+
+Allows the customer to pay for an existing order.
+
+Parameters:
+
+=over
+
+=item *
+
+orderid - the order id to be paid (Optional, otherwise displays the
+cart for payment).
+
+=back
+
+Template: checkoutpay
+
+=cut
+
+
 sub req_show_payment {
   my ($class, $req, $errors) = @_;
-
-  $req->session->{order_info_confirmed}
-    or return $class->req_checkout($req, 'Please proceed via the checkout page');
-
-  $req->session->{cart} && @{$req->session->{cart}}
-    or return $class->req_cart($req, "Your cart is empty");
 
   my $cfg = $req->cfg;
   my $cgi = $req->cgi;
 
+  my @items;
+  my @products;
+  my $order;
+
+  my $order_id = $cgi->param('orderid');
+  if ($order_id) {
+    $order_id =~ /^\d+$/
+      or return $class->req_cart($req, "No or invalid order id supplied");
+    
+    my $user = $req->siteuser
+      or return $class->_refresh_logon
+	($req, "Please logon before paying your existing order", "logonpayorder",
+	 undef, { a_show_payment => 1, orderid => $order_id });
+    
+    require BSE::TB::Orders;
+    $order = BSE::TB::Orders->getByPkey($order_id)
+      or return $class->req_cart($req, "Unknown order id");
+    
+    $order->siteuser_id == $user->id
+      or return $class->req_cart($req, "You can only pay for your own orders");
+    
+    $order->paidFor
+      and return $class->req_cart($req, "Order $order->{id} has been paid");
+    
+    @items = $order->items;
+    @products = $order->products;
+  }
+  else {
+    $req->session->{order_info_confirmed}
+      or return $class->req_checkout($req, 'Please proceed via the checkout page');
+    
+    $req->session->{cart} && @{$req->session->{cart}}
+      or return $class->req_cart($req, "Your cart is empty");
+    
+    $order = $req->session->{order_info}
+      or return $class->req_checkout($req, "You need to enter order information first");
+
+    @items = $class->_build_items($req, \@products);
+  }
+
   $errors ||= {};
   my $msg = $req->message($errors);
-
-  my $order_values = $req->session->{order_info}
-    or return $class->req_checkout($req, "You need to enter order information first");
 
   my @pay_types = payment_types($cfg);
   my @payment_types = map $_->{id}, grep $_->{enabled}, @pay_types;
@@ -687,25 +737,22 @@ sub req_show_payment {
   $errors and $payment = $cgi->param('paymentType');
   defined $payment or $payment = $payment_types[0];
 
-  my @products;
-  my @items = $class->_build_items($req, \@products);
-
   my %acts;
   %acts =
     (
      basic_tags(\%acts),
      message => $msg,
      msg => $msg,
-     order => [ \&tag_hash, $order_values ],
+     order => [ \&tag_hash, $order ],
      shop_cart_tags(\%acts, \@items, \@products, $req, 'payment'),
      ifMultPaymentTypes => @payment_types > 1,
      checkedPayment => [ \&tag_checkedPayment, $payment, \%types_by_name ],
      ifPayments => [ \&tag_ifPayments, \@payment_types, \%types_by_name ],
      error_img => [ \&tag_error_img, $cfg, $errors ],
-     total => $order_values->{total},
-     delivery_in => $order_values->{delivery_in},
-     shipping_cost => $order_values->{shipping_cost},
-     shipping_method => $order_values->{shipping_method},
+     total => $order->{total},
+     delivery_in => $order->{delivery_in},
+     shipping_cost => $order->{shipping_cost},
+     shipping_method => $order->{shipping_method},
     );
   for my $type (@pay_types) {
     my $id = $type->{id};
@@ -729,13 +776,46 @@ my %nostore =
 sub req_payment {
   my ($class, $req, $errors) = @_;
 
-  $req->session->{order_info_confirmed}
-    or return $class->req_checkout($req, 'Please proceed via the checkout page');
-
-  my $order_values = $req->session->{order_info}
-    or return $class->req_checkout($req, "You need to enter order information first");
-
+  require BSE::TB::Orders;
   my $cgi = $req->cgi;
+  my $order_id = $cgi->param("order_id");
+  my $user = $req->siteuser;
+  my $order;
+  my $order_values;
+  my $old_order; # true if we're paying an old order
+  if ($order_id) {
+    unless ($user) {
+      return $class->_refresh_logon
+	(
+	 $req,
+	 "Please logon before paying your existing order",
+	 "logonpayorder",
+	 undef,
+	 { a_show_payment => 1, orderid => $order_id }
+	);
+    }
+    $order_id =~ /^\d+$/
+      or return $class->req_cart($req, "Invalid order id");
+    $order = BSE::TB::Orders->getByPkey($order_id)
+      or return $class->req_cart($req, "Unknown order id");
+    $order->siteuser_id == $user->id
+      or return $class->req_cart($req, "You can only pay for your own orders");
+
+    $order->paidFor
+      and return $class->req_cart($req, "Order $order->{id} has been paid");
+
+    $order_values = $order;
+    $old_order = 1;
+  }
+  else {
+    $req->session->{order_info_confirmed}
+      or return $class->req_checkout($req, 'Please proceed via the checkout page');
+
+    $order_values = $req->session->{order_info}
+      or return $class->req_checkout($req, "You need to enter order information first");
+    $old_order = 0;
+  }
+
   my $cfg = $req->cfg;
   my $session = $req->session;
 
@@ -787,98 +867,107 @@ sub req_payment {
   }
 
   $order_values->{paymentType} = $paymentType;
-
-  $order_values->{filled} = 0;
-  $order_values->{paidFor} = 0;
-
-  my @products;
-  my @items = $class->_build_items($req, \@products);
-  
-  my @columns = BSE::TB::Order->columns;
-  my %columns; 
-  @columns{@columns} = @columns;
-
-  for my $col (@columns) {
-    defined $order_values->{$col} or $order_values->{$col} = '';
-  }
-
-  my @data = @{$order_values}{@columns};
-  shift @data;
-
-  my $order;
-  if ($session->{order_work}) {
-    $order = BSE::TB::Orders->getByPkey($session->{order_work});
-  }
-  if ($order && !$order->{complete}) {
-    print STDERR "Recycling order $order->{id}\n";
-
-    my @allbutid = @columns;
-    shift @allbutid;
-    @{$order}{@allbutid} = @data;
-
-    $order->clear_items;
-    delete $session->{order_work};
-    eval {
-      tied(%$session)->save;
-    };
-  }
-  else {
-    $order = BSE::TB::Orders->add(@data)
-      or die "Cannot add order";
-  }
-
   my @dbitems;
+  my @products;
   my %subscribing_to;
-  my @item_cols = BSE::TB::OrderItem->columns;
-  for my $row_num (0..$#items) {
-    my $item = $items[$row_num];
-    my $product = $products[$row_num];
-    my %item = %$item;
-    $item{orderId} = $order->{id};
-    $item{max_lapsed} = 0;
-    if ($product->{subscription_id} != -1) {
+  if ($order) {
+    @dbitems = $order->items;
+    @products = $order->products;
+    for my $product (@products) {
       my $sub = $product->subscription;
-      $item{max_lapsed} = $sub->{max_lapsed} if $sub;
-    }
-    defined $item{session_id} or $item{session_id} = 0;
-    $item{options} = ""; # not used for new orders
-    my @data = @item{@item_cols};
-    shift @data;
-    my $dbitem = BSE::TB::OrderItems->add(@data);
-    push @dbitems, $dbitem;
-
-    if ($item->{options} and @{$item->{options}}) {
-      require BSE::TB::OrderItemOptions;
-      my @option_descs = $product->option_descs($cfg, $item->{options});
-      my $display_order = 1;
-      for my $option (@option_descs) {
-	BSE::TB::OrderItemOptions->make
-	    (
-	     order_item_id => $dbitem->{id},
-	     original_id => $option->{id},
-	     name => $option->{desc},
-	     value => $option->{value},
-	     display => $option->{display},
-	     display_order => $display_order++,
-	    );
+      if ($sub) {
+	$subscribing_to{$sub->{text_id}} = $sub;
       }
     }
-
-    my $sub = $product->subscription;
-    if ($sub) {
-      $subscribing_to{$sub->{text_id}} = $sub;
+  }
+  else {
+    $order_values->{filled} = 0;
+    $order_values->{paidFor} = 0;
+    
+    my @items = $class->_build_items($req, \@products);
+    
+    my @columns = BSE::TB::Order->columns;
+    my %columns; 
+    @columns{@columns} = @columns;
+    
+    for my $col (@columns) {
+      defined $order_values->{$col} or $order_values->{$col} = '';
     }
-
-    if ($item->{session_id}) {
-      my $user = $req->siteuser;
-      require BSE::TB::SeminarSessions;
-      my $session = BSE::TB::SeminarSessions->getByPkey($item->{session_id});
-      my $options = join(",", @{$item->{options}});
+    
+    my @data = @{$order_values}{@columns};
+    shift @data;
+    
+    if ($session->{order_work}) {
+      $order = BSE::TB::Orders->getByPkey($session->{order_work});
+    }
+    if ($order && !$order->{complete}) {
+      print STDERR "Recycling order $order->{id}\n";
+      
+      my @allbutid = @columns;
+      shift @allbutid;
+      @{$order}{@allbutid} = @data;
+      
+      $order->clear_items;
+      delete $session->{order_work};
       eval {
-	$session->add_attendee($user, 
-			       instructions => $order->{instructions},
-			       options => $options);
+	tied(%$session)->save;
       };
+    }
+    else {
+      $order = BSE::TB::Orders->add(@data)
+	or die "Cannot add order";
+    }
+    
+    my @item_cols = BSE::TB::OrderItem->columns;
+    for my $row_num (0..$#items) {
+      my $item = $items[$row_num];
+      my $product = $products[$row_num];
+      my %item = %$item;
+      $item{orderId} = $order->{id};
+      $item{max_lapsed} = 0;
+      if ($product->{subscription_id} != -1) {
+	my $sub = $product->subscription;
+	$item{max_lapsed} = $sub->{max_lapsed} if $sub;
+      }
+      defined $item{session_id} or $item{session_id} = 0;
+      $item{options} = ""; # not used for new orders
+      my @data = @item{@item_cols};
+    shift @data;
+      my $dbitem = BSE::TB::OrderItems->add(@data);
+      push @dbitems, $dbitem;
+      
+      if ($item->{options} and @{$item->{options}}) {
+	require BSE::TB::OrderItemOptions;
+	my @option_descs = $product->option_descs($cfg, $item->{options});
+	my $display_order = 1;
+	for my $option (@option_descs) {
+	  BSE::TB::OrderItemOptions->make
+	      (
+	       order_item_id => $dbitem->{id},
+	       original_id => $option->{id},
+	       name => $option->{desc},
+	       value => $option->{value},
+	       display => $option->{display},
+	       display_order => $display_order++,
+	      );
+	}
+      }
+      
+      my $sub = $product->subscription;
+      if ($sub) {
+	$subscribing_to{$sub->{text_id}} = $sub;
+      }
+      
+      if ($item->{session_id}) {
+	require BSE::TB::SeminarSessions;
+	my $session = BSE::TB::SeminarSessions->getByPkey($item->{session_id});
+	my $options = join(",", @{$item->{options}});
+	eval {
+	  $session->add_attendee($user, 
+				 instructions => $order->{instructions},
+				 options => $options);
+	};
+      }
     }
   }
 
@@ -941,6 +1030,10 @@ sub req_payment {
   # order complete
   $order->{complete} = 1;
   $order->save;
+
+  my $custom = custom_class($req->cfg);
+  $custom->can("order_complete")
+    and $custom->order_complete($req->cfg, $order);
 
   # set the order displayed by orderdone
   $session->{order_completed} = $order->{id};
@@ -1314,13 +1407,17 @@ sub tag_with_wrap {
 }
 
 sub _refresh_logon {
-  my ($class, $req, $msg, $msgid, $r) = @_;
+  my ($class, $req, $msg, $msgid, $r, $parms) = @_;
 
   my $securlbase = $req->cfg->entryVar('site', 'secureurl');
   my $url = $securlbase."/cgi-bin/user.pl";
+  $parms ||= { checkout => 1 };
 
-  $r ||= $securlbase."/cgi-bin/shop.pl?checkout=1";
-  
+  unless ($r) {
+    $r = $securlbase."/cgi-bin/shop.pl?" 
+      . join("&", map "$_=" . escape_uri($parms->{$_}), keys %$parms);
+  }
+
   my %parms;
   if ($req->cfg->entry('shop registration', 'all')
       || $req->cfg->entry('shop registration', $msgid)) {

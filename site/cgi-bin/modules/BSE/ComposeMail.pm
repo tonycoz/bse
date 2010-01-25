@@ -91,7 +91,7 @@ sub start {
     || "$self->{template}_html";
   
   $self->{extra_mail_args} = {};
-  for my $arg (qw(to_name from_name)) {
+  for my $arg (qw(to_name from_name cc bcc)) {
     defined $opts{$arg}
       and $self->{extra_mail_args}{$arg} = $opts{$arg};
   }

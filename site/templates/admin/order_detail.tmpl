@@ -56,7 +56,7 @@
     <td><:order delivCountry:></td>
     <td><:order billCountry:></td>
   </tr>
-  <:include custom/order_detail.include optional:>
+  <:include custom/order_detail.include optional:><:include admin/include/custom/order_detail_custom.tmpl optional:><:include admin/include/order_detail_custom.tmpl optional:>
 </table>
 
 <br>
@@ -114,6 +114,9 @@ Shipping via <:order shipping_method:>:
 </tr>
 </table>
 <:switch:>
+<:case Eq [order paidFor] "0":>
+<p>This order hasn't been paid</p>
+<p>If the customer has paid by cheque, transfer, etc, you can <a href="<:script:>?a_order_paid=1&amp;id=<:order id:>">mark this order paid</a></p>
 <:case order ccOnline:>
 <p>This was processed as an online credit card transaction.</p>
 <:if Order ccSuccess:>
@@ -137,6 +140,7 @@ Shipping via <:order shipping_method:>:
 <:case Eq [order paymentType] "0":><p>Payment made by credit card.  Credit card details can be found in the encrypted email you received when the customer made the order.</p>
 <:case Eq [order paymentType] "1":><p>Payment will be made by cheque.</p>
 <:case Eq [order paymentType] "2":><p>Contact the customer to arrange for payment.</p>
+<:case Eq [order paymentType] "3":><p>Paid manually (staff marked this order paid) - you can <a href="<:script:>?a_order_unpaid=1&amp;id=<:order id:>">unmark it</a></p>
 <:endswitch:>
 <:include custom/order_detail_payment.include optional:>
 <:if Order filled:>
@@ -145,4 +149,7 @@ Shipping via <:order shipping_method:>:
 <:ifOrder complete:>
 <p>This order hasn't been filled yet.  <a href="/cgi-bin/admin/shopadmin.pl?id=<:order id:>&order_filled=Yep&filled=1&detail=1">Mark order filled</a>.</p><:or:><:eif:>
 <:eif Order:>
+<:if Order instructions:>
+<p style="white-space: pre-wrap;"><:order instructions:></p>
+<:or Order:><:eif Order:>
 </body></html>

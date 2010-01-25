@@ -156,7 +156,7 @@
             <td bgcolor="#FFFFFF" width="100%"><:iterator begin flags:><:if FieldPerm flags:><input type=checkbox name=flags value="<:flag id:>" <:ifFlagSet [flag id]:>checked<:or:><:eif:>><:or FieldPerm:><:ifFlagSet [flag id]:>Yes<:or:>No<:eif:><:eif FieldPerm:><:flag desc:><:iterator end flags:></td>
             <td bgcolor="#FFFFFF"><:help edit listed:></td>
           </tr>
-<:include admin/product_custom.tmpl optional :>
+<:include admin/product_custom.tmpl optional :><:include admin/include/custom/product_custom.tmpl optional:><:include admin/include/product_custom.tmpl optional:>
           <tr> 
             <th nowrap align="left" bgcolor="#FFFFFF" valign="top">Thumbnail image:</th>
             <td nowrap bgcolor="#FFFFFF"> 

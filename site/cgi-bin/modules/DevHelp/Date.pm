@@ -22,7 +22,7 @@ sub dh_parse_date {
   $bias ||= 0;
 
   my ($year, $month, $day);
-  if (($day, $month, $year) = $when =~ /(\d+)\D+(\d+)\D+(\d+)/) {
+  if (($day, $month, $year) = $when =~ /^\s*(\d+)\D+(\d+)\D+(\d+)\s*$/) {
     if ($year < 100) {
       my $base_year = 1900 + (localtime)[5];
       if ($bias < 0) {
@@ -41,6 +41,10 @@ sub dh_parse_date {
       }
       
       $year = $work_year;
+    }
+    unless (dh_valid_date($year, $month, $day)) {
+      $$rmsg = "Invalid date";
+      return;
     }
   }
   elsif ($when =~ /^\s*([+-]\d+)y\s*$/) {

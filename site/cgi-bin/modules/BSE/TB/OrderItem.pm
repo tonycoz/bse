@@ -12,6 +12,20 @@ sub columns {
             session_id product_code/;
 }
 
+sub defaults {
+  return
+    (
+     units => 1,
+     options => '',
+     customInt1 => undef,
+     customInt2 => undef,
+     customInt3 => undef,
+     customStr1 => undef,
+     customStr2 => undef,
+     customStr3 => undef,
+    );
+}
+
 sub option_list {
   my ($self) = @_;
 
