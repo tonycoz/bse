@@ -199,7 +199,7 @@ sub add_file {
   }
 
   my $name = $opts{name};
-  $self->id != -1 || defined $name and $name =~ /\S/
+  $self->id != -1 || defined $name && $name =~ /\S/
     or die "name is required for global files\n";
   if (defined $name && $name =~ /\S/) {
     $name =~ /^\w+$/
