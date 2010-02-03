@@ -200,3 +200,16 @@ sql_statement: <<SQL
 delete from bse_article_file_meta
 where file_id = ?
 SQL
+
+name: bseClearArticleFileAppMetadata
+sql_statement: <<SQL
+delete from bse_article_file_meta
+where file_id = ? and appdata <> 0
+SQL
+
+name: bseClearArticleFileSysMetadata
+sql_statement: <<SQL
+delete from bse_article_file_meta
+where file_id = ? and appdata = 0
+SQL
+

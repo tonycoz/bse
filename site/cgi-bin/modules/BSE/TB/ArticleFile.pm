@@ -102,6 +102,18 @@ sub clear_metadata {
   BSE::DB->run(bseClearArticleFileMetadata => $self->{id});
 }
 
+sub clear_app_metadata {
+  my ($self) = @_;
+
+  BSE::DB->run(bseClearArticleFileAppMetadata => $self->{id});
+}
+
+sub clear_sys_metadata {
+  my ($self) = @_;
+
+  BSE::DB->run(bseClearArticleFileSysMetadata => $self->{id});
+}
+
 sub set_handler {
   my ($self, $cfg) = @_;
 
@@ -110,14 +122,16 @@ sub set_handler {
   for my $handler_entry (BSE::TB::ArticleFiles->file_handlers($cfg)) {
     my ($key, $handler) = @$handler_entry;
     my $success = eval {
-      $self->clear_metadata;
+      $self->clear_sys_metadata;
       $handler->process_file($self);
       1;
     };
     if ($success) {
       # set errors from handlers that failed
       for my $key (keys %errors) {
-	$self->add_meta(name => "${key}_error", value => $errors{$key});
+	$self->add_meta(name => "${key}_error",
+			value => $errors{$key},
+			appdata => 0);
       }
       $self->set_file_handler($key);
 
@@ -200,11 +214,13 @@ sub inline {
     $meta->content_type eq "text/plain"
       or return "* metadata $name isn't text *";
 
-    return escape_html($meta->value);
+    require DevHelp::HTML;
+    return DevHelp::HTML::escape_html($meta->value);
   }
   elsif ($field eq "link") {
     my $url = "/cgi-bin/user.pl?download_file=1&file=$file->{id}";
-    my $eurl = escape_html($url);
+    require DevHelp::HTML;
+    my $eurl = DevHelp::HTML::escape_html($url);
     if ($field eq 'url') {
       return $eurl;
     }

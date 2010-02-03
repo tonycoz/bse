@@ -106,6 +106,7 @@ Column file_id;int(11);NO;NULL;
 Column name;varchar(20);NO;NULL;
 Column content_type;varchar(80);NO;text/plain;
 Column value;longblob;NO;NULL;
+Column appdata;int(11);NO;0;
 Index PRIMARY;1;[id]
 Index file_name;1;[file_id;name]
 Table bse_article_groups

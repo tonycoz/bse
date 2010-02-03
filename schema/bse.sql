@@ -461,6 +461,10 @@ create table bse_article_file_meta (
   content_type varchar(80) not null default 'text/plain',
   value longblob not null,
 
+  -- metadata specific to an application, not deleted when metadata is
+  -- regenerated
+  appdata integer not null default 0,
+
   unique file_name(file_id, name)
 );
 

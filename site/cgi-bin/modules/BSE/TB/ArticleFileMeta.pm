@@ -7,11 +7,12 @@ sub table {
 }
 
 sub columns {
-  qw/id file_id name content_type value/;
+  qw/id file_id name content_type value appdata/;
 }
 
 sub defaults {
   content_type => "text/plain",
+  appdata => 1,
 }
 
 1;

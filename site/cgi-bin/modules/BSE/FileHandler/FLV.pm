@@ -7,6 +7,8 @@ use DevHelp::HTML;
 sub process_file {
   my ($self, $file) = @_;
 
+  my $debug = $self->cfg_entry("debug", 0);
+
   my %info;
   unless 
     (eval {
@@ -20,28 +22,41 @@ sub process_file {
     die "Cannot parse as FLV: $@\n";
   }
 
-  my @missing;
-  for my $name (qw/video_width video_height duration/) {
-    $info{$name} or push @missing, $name;
+  if ($debug) {
+    print STDERR "FLV info:\n";
+    print STDERR "  $_=$info{$_}\n" for keys %info;
   }
+
+  my $height = $info{video_height} || $info{meta_height};
+  my $width = $info{video_width} || $info{meta_width};
+  my $duration = $info{duration};
+
+  my @missing;
+  $height or push @missing, "video_height/meta_height";
+  $width or push @missing, "video_width/meta_width";
+  $duration or push @missing, "duration";
   @missing
     and die "Missing required metadata @missing\n";
 
-  $file->add_meta(name => 'width', value => $info{video_width});
-  $file->add_meta(name => 'height', value => $info{video_height});
-  my $dur_secs = sprintf("%.0f", $info{duration}/1000);
-  $file->add_meta(name => 'duration', value => $dur_secs);
+  $file->add_meta(name => 'width', value => $width,
+		  appdata => 0);
+  $file->add_meta(name => 'height', value => $height,
+		  appdata => 0);
+  my $dur_secs = sprintf("%.0f", $duration/1000);
+  $file->add_meta(name => 'duration', value => $dur_secs,
+		  appdata => 0);
   my $fmt_dur = sprintf("%02d:%02d:%02d", $dur_secs / 3600, ($dur_secs / 60) % 60,
 			$dur_secs % 60);
-  $file->add_meta(name => "duration_formatted", value => $fmt_dur);
-  $file->add_meta(name => 'audio_type', value => $info{audio_type});
+  $file->add_meta(name => "duration_formatted", value => $fmt_dur,
+		  appdata => 0);
+  $file->add_meta(name => 'audio_type', value => $info{audio_type},
+		  appdata => 0);
 
   if ($self->cfg_entry("ffmpeg", 1)) {
     my $raw_frame = $self->cfg_entry("raw_frame", 1);
     my $fmt = $self->cfg_entry("frame_fmt", "jpeg");
     my $content_type = $self->cfg_entry("frame_content_type", "image/$fmt");
     my $bin = $self->cfg_entry("ffmpeg_bin", "ffmpeg");
-    my $debug = $self->cfg_entry("debug", 0);
     my @geo_names = split /,/, $self->cfg_entry("frame_thumbs", "");
     my @cvt_options = split /,/, $self->cfg_entry("ffmpeg_options", "");
     my $ss = 2+ rand(10);
@@ -69,7 +84,8 @@ sub process_file {
       or die "Cannot produce final placeholder data: ", $im->errstr, "\n";
       $file->add_meta(name => "ph_data",
 		      value => $image_data,
-		      content_type => $content_type);
+		      content_type => $content_type,
+		      appdata => 0);
     }
 
     if (@geo_names) {
@@ -83,8 +99,8 @@ sub process_file {
 	  $thumbs->thumb_dimensions_sized
 	  (
 	   $geometry,
-	   $info{video_width},
-	   $info{video_height},
+	   $width,
+	   $height,
 	   undef
 	  );
 	($thumb_data, $content_type) = $thumbs->thumb_data
@@ -95,12 +111,15 @@ sub process_file {
 	  )
 	    or die "Cannot thumb captured frame; $error\n";
 	$file->add_meta(name => "ph_${geo_name}_width",
-			value => $twidth);
+			value => $twidth,
+			appdata => 0);
 	$file->add_meta(name => "ph_${geo_name}_height",
-			value => $theight);
+			value => $theight,
+			appdata => 0);
 	$file->add_meta(name => "ph_${geo_name}_data",
 			value => $thumb_data,
-			content_type => $content_type);
+			content_type => $content_type,
+			appdata => 0);
       }
     }
 
