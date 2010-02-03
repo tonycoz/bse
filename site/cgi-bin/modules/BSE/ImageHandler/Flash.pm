@@ -49,7 +49,7 @@ sub format {
   my $image_url = $im->image_url($cfg);
 
   my $type = _flash_var($rest, "type");
-  my $section = defined $type ? "embedded $type flash" : "embeded flash";
+  my $section = defined $type ? "embedded $type flash" : "embedded flash";
 
   my %flash_opts = %flash_defs;
   for my $opt (@flash_opts) {
