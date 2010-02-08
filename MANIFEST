@@ -377,6 +377,7 @@ site/htdocs/images/videoclose.png
 # site/htdocs/js/admin_dragdrop.js
 site/htdocs/js/admin_prodopts.js
 site/htdocs/js/bse.js
+site/htdocs/js/bse_flowplayer.js
 site/htdocs/js/builder.js
 site/htdocs/js/controls.js
 site/htdocs/js/date.js
@@ -562,6 +563,7 @@ site/templates/include/usermenu.tmpl
 site/templates/index.tmpl
 site/templates/index2.tmpl
 site/templates/inline/flv.tmpl
+site/templates/inline/flv_flow.tmpl
 site/templates/inline/flv_small.tmpl
 site/templates/interest/askagain_base.tmpl
 site/templates/interest/confirm_base.tmpl
@@ -576,6 +578,7 @@ site/templates/menu/menu2.tmpl
 site/templates/menu/menu3.tmpl
 site/templates/menu/menu4.tmpl
 site/templates/menu/menu5.tmpl
+site/templates/meta/flv_flowplaylist.tmpl
 site/templates/noartbase.tmpl
 site/templates/printable/printable.tmpl
 site/templates/printable/wap.tmpl

@@ -31,4 +31,8 @@ sub process_file {
   confess "$class hasn't implemented process-file";
 }
 
+sub metacontent {
+  return;
+}
+
 1;

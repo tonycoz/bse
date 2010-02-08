@@ -235,6 +235,20 @@ sub inline {
 
 }
 
+# returns file type specific metadata
+sub metacontent {
+  my ($file, %opts) = @_;
+  
+  my $cfg = delete $opts{cfg}
+    or confess "Missing cfg parameter";
+
+  my $name = delete $opts{name}
+    or confess "Missing name parameter";
+
+  my $handler = $file->handler($cfg);
+  return $handler->metacontent($file, $name);
+}
+
 sub apply_storage {
   my ($self, $cfg, $mgr, $storage) = @_;
 

@@ -45,6 +45,7 @@ my %actions =
    wishlist => 'req_wishlist',
    downufile => 'req_downufile',
    file_metadata => "req_file_metadata",
+   file_cmetadata => "req_file_cmetadata",
   );
 
 sub actions { \%actions }
@@ -1443,6 +1444,38 @@ sub req_file_metadata {
     );
 
   return \%result;
+}
+
+sub req_file_cmetadata {
+  my ($self, $req, $fileid, $metaname) = @_;
+
+  my $user = $req->siteuser;
+  my $cgi = $req->cgi;
+  $fileid ||= $cgi->param('file')
+    or return $self->req_show_logon($req, $req->text(nofileid => "No file id supplied"));
+  $metaname ||= $cgi->param('name')
+    or return $self->req_show_logon($req, $req->text(nometaname => "No metaname supplied"));
+  require BSE::TB::ArticleFiles;
+  my $file = BSE::TB::ArticleFiles->getByPkey($fileid)
+    or return $self->req_show_logon($req, $req->text(nosuchfile => "No such file"));
+  
+  if ($file->articleId != -1) {
+    # check the user has access
+    my $article = $file->article
+      or return $self->req_show_logon($req, $req->text(nofilearticle => "No article found for this file"));
+    if ($article->is_dynamic && !$req->siteuser_has_access($article)) {
+      if ($req->siteuser) {
+	return $self->req_userpage($req, $req->text(downloadnoacces => "You do not have access to this article"));
+      }
+      else {
+	return $self->req_show_logon($req, $req->text(needlogon => "You need to logon to download this file"));
+      }
+    }
+  }
+  my $meta = $file->metacontent(cfg => $req->cfg, name => $metaname)
+    or return $self->req_show_logon($req, $req->text(nosuchmeta => "There is no metadata by that name for this file"));
+
+  return $meta;
 }
 
 sub req_show_lost_password {

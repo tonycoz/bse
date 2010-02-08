@@ -165,10 +165,13 @@ sub inline {
 
   my $base_template = "inline/flv";
   my $template = $base_template;
+  my $type = '';
   if ($parms =~ s/\btemplate=(\w+)//
      || $parms =~ /^(\w+)$/) {
-    $template .= "_$1";
+    $type .= $1;
   }
+  $type ||= $self->cfg_entry("defaultinline");
+  $type and $template .= "_$type";
 
   my %acts =
     (
@@ -178,7 +181,27 @@ sub inline {
      src => scalar(escape_html($file->url($self->cfg))),
     );
 
-  return BSE::Template->get_page($template, $self->cfg, \%acts, );
+  return BSE::Template->get_page($template, $self->cfg, \%acts);
+}
+
+sub metacontent {
+  my ($self, $file, $meta_name) = @_;
+
+  require BSE::Template;
+  my %meta = map { $_->name => $_->value }
+    grep $_->content_type eq "text/plain", $file->metadata;
+
+  my $template = "meta/flv_$meta_name";
+
+  my %acts =
+    (
+     BSE::Util::Tags->static(undef, $self->cfg),
+     meta => [ \&tag_hash, \%meta ],
+     file => [ \&tag_hash, $file ],
+     src => scalar(escape_html($file->url($self->cfg))),
+    );
+
+  return BSE::Template->get_response($template, $self->cfg, \%acts);
 }
 
 1;
@@ -197,6 +220,7 @@ BSE::FileHandler::FLV - file metadata generator for FLV files
   frame_content_type=image/jpeg
   ffmpeg_bin=ffmpeg
   frame_thumbs=geoname1,geoname2
+  defaultinline=template
 
 =over
 
@@ -232,6 +256,103 @@ thumbnailed placeholder images, attached as C<ph_>I<geometry>C<_data>
 metadata to the file, with the width and height in
 C<ph_>I<geometry>C<_width> and C<ph_>I<geometry>C<_height>.
 
+=item *
+
+defaultinline - the default inline view to use.  Default: inline/flv.
+A value of xxx will use inline/flv_xxx, just as if you'd done
+file[id|xxx] or <:file - xxx:>
+
 =back
+
+=head1 Processing
+
+=head2 Inline Display
+
+If no type parameter is supplied, eg file[id] or <:file -:> and no
+default is set by defaultinline, the inline/flv.tmpl is used to
+present the FLV.
+
+Otherwise inline/flv_I<type>.tmpl is used.
+
+=head2 Metacontent
+
+Uses /meta/flv_I<name>.tmpl.
+
+Both the inline display templates and the metacontent templates allow
+the following tags:
+
+=over
+
+=item *
+
+Standard static tags (not article tags.)
+
+=item *
+
+meta I<name> - retrieves the named text metadata from the file.
+
+=item *
+
+file I<name> - retrieves the named attribute from the file.
+
+=item *
+
+src - the final URL to the file's content
+
+=back
+
+=head2 Metadata
+
+The following metadata entries are set for the file:
+
+=over
+
+=item *
+
+width, height - the width and height of the video
+
+=item *
+
+duration - duration in seconds rounded to an integer
+
+=item *
+
+duration_formatted - duration formatted as HH:MM:SS
+
+=item *
+
+audio_type - audio type (stereo vs mono)
+
+=item *
+
+ph_data - sample frame from the video.  Not saved if [flv
+handler].raw_frame is 0.
+
+=item *
+
+ph_I<geometry>_width, ph_I<geometry>_height, ph_I<geometry>_data - the
+width, height and content for thumbnails configured via [flv
+handler].frame_thumbs.  ph_I<geometry>_data is binary content and
+cannot be inserted in the template.
+
+=back
+
+=head1 Provided inline templates
+
+=head1 inline/flv.tmpl
+
+Displays the video inline using flvplayer.swf.
+
+=head1 inline/flv_small.tmpl
+
+Displays a placeholder image inline, clicking pops up a player using
+flvplayer.swf (included)
+
+=head1 inline/flv_flow.tmpl
+
+Displays a placeholder image inline, clicking pops up a player using
+flowplayer (not included due to license.)  This also retrieves the
+play list from the server so that the content URL is not included in
+the page (but is trivially fetchable anyway.)
 
 =cut
