@@ -15,4 +15,8 @@ sub defaults {
   appdata => 1,
 }
 
+sub is_text {
+  $_[0]->content_type eq "text/plain"
+}
+
 1;

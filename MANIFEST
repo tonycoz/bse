@@ -81,6 +81,7 @@ site/cgi-bin/modules/BSE/EmailRequests.pm
 site/cgi-bin/modules/BSE/FileHandler/Base.pm
 site/cgi-bin/modules/BSE/FileHandler/Default.pm
 site/cgi-bin/modules/BSE/FileHandler/FLV.pm
+site/cgi-bin/modules/BSE/FileMetaMeta.pm
 site/cgi-bin/modules/BSE/Formatter.pm
 site/cgi-bin/modules/BSE/Formatter/Article.pm
 site/cgi-bin/modules/BSE/Formatter/Subscription.pm

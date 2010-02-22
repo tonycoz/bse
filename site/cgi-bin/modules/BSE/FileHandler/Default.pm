@@ -21,4 +21,8 @@ sub inline {
   return $html;
 }
 
+sub metaprefix {
+  "def"
+}
+
 1;

@@ -52,12 +52,12 @@ sub process_file {
   $file->add_meta(name => 'audio_type', value => $info{audio_type},
 		  appdata => 0);
 
-  if ($self->cfg_entry("ffmpeg", 1)) {
-    my $raw_frame = $self->cfg_entry("raw_frame", 1);
+  if ($self->_have_ffmpeg) {
+    my $raw_frame = $self->_save_raw_frame;
     my $fmt = $self->cfg_entry("frame_fmt", "jpeg");
     my $content_type = $self->cfg_entry("frame_content_type", "image/$fmt");
     my $bin = $self->cfg_entry("ffmpeg_bin", "ffmpeg");
-    my @geo_names = split /,/, $self->cfg_entry("frame_thumbs", "");
+    my @geo_names = $self->_thumb_geometries;
     my @cvt_options = split /,/, $self->cfg_entry("ffmpeg_options", "");
     my $ss = 2+ rand(10);
     if ($ss > $dur_secs / 2) {
@@ -85,6 +85,12 @@ sub process_file {
       $file->add_meta(name => "ph_data",
 		      value => $image_data,
 		      content_type => $content_type,
+		      appdata => 0);
+      $file->add_meta(name => "ph_width",
+		      value => $width,
+		      appdata => 0);
+      $file->add_meta(name => "ph_height",
+		      value => $height,
 		      appdata => 0);
     }
 
@@ -184,24 +190,84 @@ sub inline {
   return BSE::Template->get_page($template, $self->cfg, \%acts);
 }
 
-sub metacontent {
-  my ($self, $file, $meta_name) = @_;
+sub metaprefix { "flv" }
 
-  require BSE::Template;
-  my %meta = map { $_->name => $_->value }
-    grep $_->content_type eq "text/plain", $file->metadata;
+sub metametadata {
+  my ($self) = @_;
 
-  my $template = "meta/flv_$meta_name";
-
-  my %acts =
+  my @fields =
     (
-     BSE::Util::Tags->static(undef, $self->cfg),
-     meta => [ \&tag_hash, \%meta ],
-     file => [ \&tag_hash, $file ],
-     src => scalar(escape_html($file->url($self->cfg))),
+     {
+      name => "width",
+      title => "Video Width",
+      unit => "pixels",
+      type => "integer",
+     },
+     {
+      name => "height",
+      title => "Video Height",
+      unit => "pixels",
+      type => "integer",
+     },
+     {
+      name => "duration",
+      title => "Video Duration",
+      unit => "seconds",
+      type => "real",
+     },
+     {
+      name => "duration_formatted",
+      title => "Formatted Video Duration",
+      unit => "(hh:mm:ss)",
+      type => "string",
+     },
+     {
+      name => "audio_type",
+      title => "Audio Format",
+      type => "enum",
+      values => "mono;stereo",
+      labels => "Mono;Stereo",
+     },
     );
+  if ($self->_have_ffmpeg) {
+    if ($self->_save_raw_frame) {
+      push @fields,
+	{
+	 name => "ph",
+	 title => "Placeholder",
+	 type => "image"
+	};
+    }
 
-  return BSE::Template->get_response($template, $self->cfg, \%acts);
+    for my $geo ($self->_thumb_geometries) {
+      push @fields,
+	{
+	 name => "ph_${geo}",
+	 title => "\u$geo thumbnail of placeholder",
+	 type => "image",
+	};
+    }
+  }
+
+  return @fields;
+}
+
+sub _have_ffmpeg {
+  my $self = shift;
+
+  return $self->cfg_entry("ffmpeg", 1);
+}
+
+sub _save_raw_frame {
+  my $self = shift;
+
+  return $self->cfg_entry("raw_frame", 1);
+}
+
+sub _thumb_geometries {
+  my $self = shift;
+
+  return split /,/, $self->cfg_entry("frame_thumbs", "")
 }
 
 1;

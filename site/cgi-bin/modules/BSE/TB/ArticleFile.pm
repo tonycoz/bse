@@ -114,6 +114,12 @@ sub clear_sys_metadata {
   BSE::DB->run(bseClearArticleFileSysMetadata => $self->{id});
 }
 
+sub delete_meta_by_name {
+  my ($self, $name) = @_;
+
+  BSE::DB->run(bseDeleteArticleFileMetaByName => $self->{id}, $name);
+}
+
 sub set_handler {
   my ($self, $cfg) = @_;
 
@@ -268,6 +274,55 @@ sub apply_storage {
     }
     $self->save;
   }
+}
+
+=item metanames
+
+returns the names of each metadatum defined for the file.
+
+=cut
+
+sub metanames {
+  my ($self) = @_;
+
+  require BSE::TB::ArticleFileMetas;
+  return map $_->{name}, BSE::TB::ArticleFileMetas->getColumnsBy
+    (
+     [ "name" ],
+     file_id => $self->id,
+    );
+}
+
+=item metainfo
+
+Returns all but the value for metadata defined for the file.
+
+=cut
+
+sub metainfo {
+  my ($self) = @_;
+
+  require BSE::TB::ArticleFileMetas;
+  my @cols = grep $_ ne "value", BSE::TB::ArticleFileMeta->columns;
+  return BSE::TB::ArticleFileMetas->getColumnsBy
+    (
+     \@cols,
+     file_id => $self->id,
+    );
+}
+
+sub metafields {
+  my ($self, $cfg) = @_;
+
+  my %metanames = map { $_ => 1 } $self->metanames;
+
+  my @fields = grep $metanames{$_->name} || $_->cond($self), BSE::TB::ArticleFiles->all_metametadata($cfg);
+
+  my $handler = $self->handler($cfg);
+
+  my @handler_fields = map BSE::FileMetaMeta->new(%$_, ro => 1, cfg => $cfg), $handler->metametadata;
+
+  return ( @fields, @handler_fields );
 }
 
 1;

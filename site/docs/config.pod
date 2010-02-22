@@ -1908,6 +1908,112 @@ eg.
 
 =back
 
+=head2 [global file metadata]
+
+Each key represents an item of metadata for files attached to
+articles.
+
+The values are ignored.
+
+For each key, extra information is defined in the [file metadata
+I<name>] section.
+
+=head2 [file metadata I<name>]
+
+Definition for the file metadata item I<name>.
+
+=over
+
+=item *
+
+title - descriptive name of the metadata.  Defaults to I<name>.
+
+=item *
+
+rules - validation rules, separated by ;.  Custom rules can be defined
+in [file metadata validation].
+
+=item *
+
+ro - if non-zero the metadata cannot be modified directly by the admin
+(applications can still generate it). Default: writable.
+
+=item *
+
+type - the data type of the metadata, any of string, text, enum,
+integer, real, image.  If this is enum values must be defined and
+labels should be.  Default: string.
+
+The types are:
+
+=over
+
+=item *
+
+string - single line of text
+
+=item *
+
+text - one or more lines of text
+
+=item *
+
+integer - whole number
+
+=item *
+
+real - number with decimal points
+
+=item *
+
+enum - select from a list of possible values.
+
+=item *
+
+image - image file.
+
+=back
+
+=item *
+
+values - semi-colon separated list of values for this metadata.
+
+=item *
+
+labels - semi-colon separated list of labels for the values
+
+=item *
+
+help - help html to display for the metadata
+
+=item *
+
+data_name - (images only) the key to use to store the image data.
+Default: I<name>_data.
+
+=item *
+
+width_name - (images only) the key to use to store the image width.
+Default: I<name>_width.
+
+=item *
+
+height_name - (images only) the key to use to store the image height.
+Default: I<name>_height.
+
+=item *
+
+cond - a perl expression indicating whether the metadata should be
+prompted for, for this file.  $file is the file object.  Default: 1.
+
+=item *
+
+unit - text displayed after the entry box for the metadata.  Default:
+empty.  Useful for including a unit ("pixels") or format help
+("hh:mm").
+
+=back
+
 =head1 AUTHOR
 
 Tony Cook <tony@develop-help.com>

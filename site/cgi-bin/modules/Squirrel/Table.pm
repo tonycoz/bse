@@ -247,6 +247,45 @@ sub _getBy_sth {
   return $sth;
 }
 
+sub getColumnsBy {
+  my ($self, $cols, %find) = @_;
+
+  my @db_cols = $self->rowClass->db_columns;
+  my @code_cols = $self->rowClass->columns;
+  my %map;
+  @map{@code_cols} = @db_cols;
+  
+  my @conds;
+  my @args;
+  for my $col (keys %find) {
+    my $db_col = $map{$col}
+      or confess "Cannot generate query: unknown column $col";
+    # this doesn't handle null, but that should use a "special"
+    push @conds, "$db_col = ?";
+    push @args, $find{$col};
+  }
+  my @result_cols = map $map{$_}, @$cols;
+
+  my $sql = "select " . join(",", @result_cols) .
+    " from " . $self->rowClass->table .
+      " where " . join(" and ", @conds);
+
+  my $sth = $dh->{dbh}->prepare($sql)
+    or confess "Cannot prepare generated $sql: ", $dh->{dbh}->errstr;
+
+  $sth->execute(@args)
+    or confess "Cannot execute $sql: ",$dh->{dbh}->errstr;
+
+  my @rows;
+  while (my $row = $sth->fetchrow_arrayref) {
+    my %row;
+    @row{@$cols} = @$row;
+    push @rows, \%row;
+  }
+
+  return wantarray ? @rows : \@rows;
+}
+
 sub getSpecial {
   my ($self, $name, @args) = @_;
 

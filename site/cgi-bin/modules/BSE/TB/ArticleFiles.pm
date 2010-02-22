@@ -69,4 +69,28 @@ sub file_manager {
   return BSE::StorageMgr::Files->new(cfg => $cfg);
 }
 
+sub all_metametadata {
+  my ($self, $cfg) = @_;
+
+  $cfg
+    or confess "Missing cfg parameter";
+
+  require BSE::FileMetaMeta;
+  my @metafields;
+  my @keys = $cfg->orderCS("global file metadata");
+  for my $name (@keys) {
+    my %opts = ( name => $name );
+    my $section = "file metadata $name";
+    for my $key (BSE::FileMetaMeta->keys) {
+      my $value = $cfg->entry($section, $key);
+      if (defined $value) {
+	$opts{$key} = $value;
+      }
+    }
+    push @metafields, BSE::FileMetaMeta->new(%opts, cfg => $cfg);
+  }
+
+  return @metafields;
+}
+
 1;

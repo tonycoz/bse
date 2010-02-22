@@ -135,6 +135,7 @@ sub article_actions {
      a_ajax_get => 'req_ajax_get',
      a_ajax_save_body => 'req_ajax_save_body',
      a_ajax_set => 'req_ajax_set',
+     a_filemeta => 'req_filemeta',
     );
 }
 
@@ -3503,10 +3504,163 @@ sub filesave {
   $self->_refresh_filelist($req, $article);
 }
 
+sub req_filemeta {
+  my ($self, $req, $article, $articles, $errors) = @_;
+
+  my $cgi = $req->cgi;
+
+  my $id = $cgi->param('file_id');
+
+  my ($file) = grep $_->{id} == $id, $self->get_files($article)
+    or return $self->edit_form($req, $article, $articles,
+			       "No such file");
+  $req->user_can(edit_files_save => $article)
+    or return $self->edit_form($req, $article, $articles,
+			       "You don't have access to save file information for this article");
+
+  my $name = $cgi->param('name');
+  $name && $name =~ /^\w+$/
+    or return $self->edit_form($req, $article, $articles,
+			       "Missing or invalid metadata name");
+
+  my $meta = $file->meta_by_name($name)
+    or return $self->edit_form($req, $article, $articles,
+			       "Metadata $name not defined for this file");
+
+  return
+    {
+     type => $meta->content_type,
+     content => $meta->value,
+    };
+}
+
 sub tag_old_checked {
   my ($errors, $cgi, $file, $key) = @_;
 
   return $errors ? $cgi->param($key) : $file->{$key};
+}
+
+sub tag_filemeta_value {
+  my ($file, $args, $acts, $funcname, $templater) = @_;
+
+  my ($name) = DevHelp::Tags->get_parms($args, $acts, $templater)
+    or return "* no meta name supplied *";
+
+  my $meta = $file->meta_by_name($name)
+    or return "";
+
+  $meta->content_type eq "text/plain"
+    or return "* $name has type " . $meta->content_type . " and cannot be displayed inline *";
+
+  return escape_html($meta->value);
+}
+
+sub tag_ifFilemeta_set {
+  my ($file, $args, $acts, $funcname, $templater) = @_;
+
+  my ($name) = DevHelp::Tags->get_parms($args, $acts, $templater)
+    or return "* no meta name supplied *";
+
+  my $meta = $file->meta_by_name($name)
+    or return 0;
+
+  return 1;
+}
+
+sub tag_filemeta_source {
+  my ($file, $args, $acts, $funcname, $templater) = @_;
+
+  my ($name) = DevHelp::Tags->get_parms($args, $acts, $templater)
+    or return "* no meta name supplied *";
+
+  return "$ENV{SCRIPT_NAME}?a_filemeta=1&amp;id=$file->{articleId}&amp;file_id=$file->{id}&amp;name=$name";
+}
+
+sub tag_filemeta_select {
+  my ($cgi, $allmeta, $rcurr_meta, $file, $args, $acts, $funcname, $templater) = @_;
+
+  my $meta;
+  if ($args =~ /\S/) {
+    my ($name) = DevHelp::Tags->get_parms($args, $acts, $templater)
+      or return "* cannot parse *";
+    ($meta) = grep $_->name eq $name, @$allmeta
+      or return "* cannot find meta field *";
+  }
+  elsif ($$rcurr_meta) {
+    $meta = $$rcurr_meta;
+  }
+  else {
+    return "* use in filemeta iterator or supply a name *";
+  }
+
+  $meta->type eq "enum"
+    or return "* can only use filemeta_select on enum metafields *";
+
+  my %labels;
+  my @values = $meta->values;
+  @labels{@values} = $meta->labels;
+
+  my $field_name = "meta_" . $meta->name;
+  my ($def) = $cgi->param($field_name);
+  unless (defined $def) {
+    my $value = $file->meta_by_name($meta->name);
+    if ($value && $value->is_text) {
+      $def = $value->value;
+    }
+  }
+  defined $def or $def = $values[0];
+
+  return popup_menu
+    (
+     -name => $field_name,
+     -values => \@values,
+     -labels => \%labels,
+     -default => $def,
+    );
+}
+
+sub tag_filemeta_select_label {
+  my ($allmeta, $rcurr_meta, $file, $args, $acts, $funcname, $templater) = @_;
+
+  my $meta;
+  if ($args =~ /\S/) {
+    my ($name) = DevHelp::Tags->get_parms($args, $acts, $templater)
+      or return "* cannot parse *";
+    ($meta) = grep $_->name eq $name, @$allmeta
+      or return "* cannot find meta field *";
+  }
+  elsif ($$rcurr_meta) {
+    $meta = $$rcurr_meta;
+  }
+  else {
+    return "* use in filemeta iterator or supply a name *";
+  }
+
+  $meta->type eq "enum"
+    or return "* can only use filemeta_select_label on enum metafields *";
+
+  my %labels;
+  my @values = $meta->values;
+  @labels{@values} = $meta->labels;
+
+  my $field_name = "meta_" . $meta->name;
+  my $value = $file->meta_by_name($meta->name);
+  if ($value) {
+    if ($value->is_text) {
+      if (exists $labels{$value->value}) {
+	return escape_html($labels{$value->value});
+      }
+      else {
+	return escape_html($value->value);
+      }
+    }
+    else {
+      return "* cannot display type " . $value->content_type . " inline *";
+    }
+  }
+  else {
+    return "* " . $meta->name . " not set *";
+  }
 }
 
 sub req_edit_file {
@@ -3523,6 +3677,10 @@ sub req_edit_file {
     or return $self->edit_form($req, $article, $articles,
 			       "You don't have access to save file information for this article");
 
+  my @metafields = $file->metafields($self->cfg);
+
+  my $it = BSE::Util::Iterate->new;
+  my $current_meta;
   my %acts;
   %acts =
     (
@@ -3532,6 +3690,23 @@ sub req_edit_file {
      error_img => [ \&tag_error_img, $req->cfg, $errors ],
      ifOldChecked =>
      [ \&tag_old_checked, $errors, $cgi, $file ],
+     $it->make
+     (
+      plural => "filemetas",
+      single => "filemeta",
+      data => \@metafields,
+      store => \$current_meta,
+     ),
+     filemeta_value =>
+     [ \&tag_filemeta_value, $file ],
+     ifFilemeta_set =>
+     [ \&tag_ifFilemeta_set, $file ],
+     filemeta_source =>
+     [ \&tag_filemeta_source, $file ],
+     filemeta_select =>
+     [ \&tag_filemeta_select, $cgi, \@metafields, \$current_meta, $file ],
+     filemeta_select_label =>
+     [ \&tag_filemeta_select_label, \@metafields, \$current_meta, $file ],
     );
 
   return $req->response('admin/file_edit', \%acts);
@@ -3588,6 +3763,71 @@ sub req_save_file {
     if (!$errors{name} && $article->{id} == -1) {
       length $name
 	or $errors{name} = "Identifier is required for global files";
+    }
+  }
+
+  my @meta;
+  my @meta_delete;
+  my @metafields = grep !$_->ro, $file->metafields($self->cfg);
+  my %current_meta = map { $_ => 1 } $file->metanames;
+  for my $meta (@metafields) {
+    my $name = $meta->name;
+    my $cgi_name = "meta_$name";
+    if ($cgi->param("delete_$cgi_name")) {
+      for my $metaname ($meta->metanames) {
+	push @meta_delete, $metaname
+	  if $current_meta{$metaname};
+      }
+    }
+    else {
+      my $new;
+      if ($meta->is_text) {
+	my ($value) = $cgi->param($cgi_name);
+	if (defined $value && 
+	    ($value =~ /\S/ || $current_meta{$meta->name})) {
+	  my $error;
+	  if ($meta->validate(value => $value, error => \$error)) {
+	    push @meta,
+	      {
+	       name => $name,
+	       value => $value,
+	      };
+	  }
+	  else {
+	    $errors{$cgi_name} = $error;
+	  }
+	}
+      }
+      else {
+	my $im = $cgi->param($cgi_name);
+	my $up = $cgi->upload($cgi_name);
+	if (defined $im && $up) {
+	  my $data = do { local $/; <$up> };
+	  my ($width, $height, $type) = imgsize(\$data);
+
+	  if ($width && $height) {
+	    push @meta,
+	      (
+	       {
+		name => $meta->data_name,
+		value => $data,
+		content_type => "image/\L$type",
+	       },
+	       {
+		name => $meta->width_name,
+		value => $width,
+	       },
+	       {
+		name => $meta->height_name,
+		value => $height,
+	       },
+	      );
+	  }
+	  else {
+	    $errors{$cgi_name} = $type;
+	  }
+	}
+      }
     }
   }
 
@@ -3679,6 +3919,13 @@ sub req_save_file {
     };
     $@
       and $req->flash("Could not move $file->{displayName} to $storage: $@");
+  }
+
+  for my $meta_delete (@meta_delete, map $_->{name}, @meta) {
+    $file->delete_meta_by_name($meta_delete);
+  }
+  for my $meta (@meta) {
+    $file->add_meta(%$meta, appdata => 1);
   }
 
   # remove the replaced files
