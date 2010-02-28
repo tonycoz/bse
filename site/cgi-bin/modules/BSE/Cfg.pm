@@ -193,8 +193,8 @@ sub entryVar {
   $depth < VAR_DEPTH
     or $self->_error("Too many levels of variables getting $key from $section");
   my $value = $self->entryErr($section, $key);
-  $value =~ s!\$\((\w+)/(\w+)\)! $self->entryVar($1, $2, $depth+1) !eg;
-  $value =~ s!\$\((\w+)\)! $self->entryVar($section, $1, $depth+1) !eg;
+  $value =~ s!\$\(([\w ]+)/([\w ]+)\)! $self->entryVar($1, $2, $depth+1) !eg;
+  $value =~ s!\$\(([\w ]+)\)! $self->entryVar($section, $1, $depth+1) !eg;
 
   $value;
 }
@@ -281,23 +281,18 @@ sub _load_error {
   exit;
 }
 
-=item _load_cfg($file)
+=item $self->_load_file($file)
 
-Does the basic load of the config file.
+Low level file load.
 
 =cut
 
-sub _load_cfg {
-  my ($class, $file) = @_;
+sub _load_file {
+  my ($self, $file) = @_;
 
-  if ($cache{$file} && $cache{$file}{when} + CACHE_AGE > time) {
-    return $cache{$file};
-  }
-
-  my $section;
-  my %sections;
   open CFG, "< $file"
-    or _load_error("Cannot open config file $file: $!");
+    or return;
+  my $section;
   while (<CFG>) {
     chomp;
     next if /^\s*$/ || /^\s*[#;]/;
@@ -312,78 +307,115 @@ sub _load_cfg {
 	defined $value
 	  or last;
       }
-      push @{$sections{$section}{order}}, lc $key;
-      $sections{$section}{values}{lc $key} = $value;
-      push @{$sections{$section}{order_nc}}, $key;
-      $sections{$section}{case}{$key} = $value;
+      push @{$self->{config}{$section}{order}}, lc $key;
+      $self->{config}{$section}{values}{lc $key} = $value;
+      push @{$self->{sections}{$section}{order_nc}}, $key;
+      $self->{config}{$section}{case}{$key} = $value;
     }
   }
   close CFG;
 
+  return 1;
+}
+
+=item _replace_vars($value, $section)
+
+=cut
+
+sub _replace_vars{
+  my ($self, $value, $section, $key) = @_;
+
+  my $depth = 0;
+  while ($depth++ < 20) {
+    if ($value =~ m!\$\(([\w ]+)/([\w ]+)\)!) {
+      my $var_section = lc $1;
+      my $var_key = lc $2;
+      my $var_value = $self->entry($var_section, $var_key);
+      if (defined $var_value) {
+	$value =~ s!\$\($var_section/$var_key\)!$var_value!;
+      }
+      else {
+	warn "Unknown variable key \$($var_section/$var_key) in includes for [$section].$key\n";
+	return;
+      }
+      $section = $var_section;
+    }
+    if ($value =~ m!\$\(([\w ]+)\)!) {
+      my $var_key = lc $1;
+      my $var_value = $self->entry($section, $var_key);
+      if (defined $var_value) {
+	$value =~ s!\$\($var_key\)!$var_value!;
+      }
+      else {
+	warn "Unknown variable key \$($var_key) in includes for [$section].$key\n";
+	return;
+      }
+    }
+    return $value;
+  }
+  warn "Too many replacements in $value\n";
+
+  return;
+}
+
+=item _load_cfg($file)
+
+Does the basic load of the config file.
+
+=cut
+
+sub _load_cfg {
+  my ($class, $file) = @_;
+
+  if ($cache{$file} && $cache{$file}{when} + CACHE_AGE > time) {
+    return $cache{$file};
+  }
+
+  my $self = bless
+    {
+     config => {},
+     includes => [],
+     when => time,
+    }, $class;
+
+  $self->_load_file($file)
+    or _load_error("Cannot open config file $file: $!");
+
   # go through the includes
   my @raw_includes;
-  if ($sections{includes}) {
-    my $hash = $sections{includes}{values};
+  if ($self->{config}{includes}) {
+    my $hash = $self->{config}{includes}{values};
     @raw_includes = @$hash{sort keys %$hash};
   }
-  my @includes;
   my $path = $file;
   $path =~ s![^\\/:]+$!!;
+ INCLUDE:
   for my $include (@raw_includes) {
-    my $full = $include =~ m!^(?:\w:)?[/\\]! ? $include : "$path$include";
+    my $work_include = $self->_replace_vars($include, "includes", $include);
+    defined $work_include or next INCLUDE;
+    my $full = $work_include =~ m!^(?:\w:)?[/\\]! ? $work_include : "$path$work_include";
     if (-e $full) {
       if (-d $full) {
 	# scan the directory
 	if (opendir CFGDIR, $full) {
-	  push @includes, map "$full$_", sort grep /\.cfg$/, readdir CFGDIR;
+	  my @names = map "$full$_", sort grep /\.cfg$/, readdir CFGDIR;
 	  closedir CFGDIR;
+
+	  for my $name (@names) {
+	    $self->_load_file($name);
+	  }
 	}
 	else {
 	  # it's a directory but we can't read it - probably an error
-	  print STDERR "Cannot scan config directory $full: $!\n";
+	  warn "Cannot scan config directory $full: $!\n";
 	}
       }
       else {
-	push @includes, $full;
+	$self->_load_file($full);
       }
     }
   }
 
-  # scan each of the include files
-  for my $include (@includes) {
-    if (open CFG, "< $include") {
-      undef $section;
-      while (<CFG>) {
-	chomp;
-	next if /^\s*$/ || /^\s*[#;]/;
-	if (/^\[([^]]+)\]\s*$/) {
-	  $section = lc $1;
-	}
-	elsif (/^\s*([^=\s]+)\s*=\s*(.*)$/) {
-	  $section or next;
-	  my ($key, $value) = ($1, $2);
-	  if ($value =~ /^<<(\w+)$/) {
-	    $value = _get_heredoc(\*CFG, $file, $1);
-	    defined $value
-	      or last;
-	  }
-	  push @{$sections{$section}{order}}, lc $key;
-	  $sections{$section}{values}{lc $key} = $value;
-	  push @{$sections{$section}{order_nc}}, $key;
-	  $sections{$section}{case}{$key} = $value;
-	}
-      }
-      close CFG;
-    }
-    else {
-      # it wouldn't be in the list unless we know it exists
-      print STDERR "Cannot open config include $include: $!\n";
-    }
-  }
-
-  my $self = bless { config=>\%sections, 
-		     includes=>\@includes, 
-		     when=>time }, $class;
   $cache{$file} = $self;
 
   return $self;

@@ -105,8 +105,10 @@ testup: distdir
 	perl -MExtUtils::Command -e rm_rf $(DISTBUILD)
 	cd `perl -lne 'do { print $$1; exit; } if /^base_dir\s*=\s*(.*)/' test.cfg`/util ; perl upgrade_mysql.pl -b ; perl loaddata.pl ../data/db
 
-test: testinst
-	perl -MTest::Harness=runtests -Isite/cgi-bin/modules -It -e 'runtests glob q!t/*.t!'
+TEST_FILES=t/*.t
+
+test: testup
+	perl -MTest::Harness=runtests -Isite/cgi-bin/modules -It -e 'runtests @ARGV' $(TEST_FILES)
 
 manicheck:
 	perl -MExtUtils::Manifest=manicheck -e 'manicheck()'
