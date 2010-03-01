@@ -67,10 +67,10 @@ close CON;
 my $dbuser = BSE::Test::test_dbuser();
 my $dbpass = BSE::Test::test_dbpass();
 
-$con =~ s/(^\$DSN = ')[^']*/$1 . BSE::Test::test_dsn()/me;
-$con =~ s/(^\$DBCLASS = ')[^']*/$1 . BSE::Test::test_dbclass()/me;
-$con =~ s/(^\$UN = ')[^']*/$1$dbuser/m;
-$con =~ s/(^\$PW = ')[^']*/$1$dbpass/m;
+#$con =~ s/(^\$DSN = ')[^']*/$1 . BSE::Test::test_dsn()/me;
+#$con =~ s/(^\$DBCLASS = ')[^']*/$1 . BSE::Test::test_dbclass()/me;
+#$con =~ s/(^\$UN = ')[^']*/$1$dbuser/m;
+#$con =~ s/(^\$PW = ')[^']*/$1$dbpass/m;
 $con =~ s/(^\$BASEDIR = ')[^']+/$1 . BSE::Test::base_dir/me;
 #$con =~ s/(^\$URLBASE = ["'])[^'"]+/$1 . BSE::Test::base_url/me;
 #$con =~ s/(^\$SECURLBASE = ["'])[^'"]+/$1 . BSE::Test::test_securl/me;
@@ -79,6 +79,7 @@ open CON, "> $instbase/cgi-bin/modules/Constants.pm"
   or die "Cannot open Constants.pm for write: $!";
 print CON $con;
 close CON;
+
 
 # rebuild the config file
 # first load values from the test.cfg file
@@ -99,53 +100,26 @@ while (<TESTCONF>) {
 }
 
 $uploads = $conf{paths}{downloads};
-# fix bse.cfg
-open CFG, "< $instbase/cgi-bin/bse.cfg"
-  or die "Cannot open $instbase/cgi-bin/bse.cfg: $!";
-my $section = "";
-my @cfg;
-while (<CFG>) {
-  chomp;
-  if (/^\[(.*)\]\s*$/) {
-    my $newsect = lc $1;
-    if ($conf{$section} && keys %{$conf{$section}}) {
-      for my $key (sort keys %{$conf{$section}}) {
-	push @cfg, "$key=$conf{$section}{$key}";
-      }
-      delete $conf{$section};
-    }
-    $section = $newsect;
-  }
-  elsif (/^\s*(\w+)\s*=\s*.*$/ && exists $conf{$section}{lc $1}) {
-    my $key = lc $1;
-    print "found $section.$key\n";
-    $_ = "$key=$conf{$section}{$key}";
-    delete $conf{$section}{$key};
-  }
-  push @cfg, $_;
-}
-if ($conf{$section} && keys %{$conf{$section}}) {
-  for my $key (sort keys %{$conf{$section}}) {
-    push @cfg, "$key=$conf{$section}{$key}";
-  }
-  delete $conf{$section};
-}
-for my $sect (keys %conf) {
-  if ($conf{$sect} && keys %{$conf{$sect}}) {
-    push @cfg, "[$sect]";
-    for my $key (sort keys %{$conf{$sect}}) {
-      push @cfg, "$key=$conf{$sect}{$key}";
-    }
-    push @cfg, "";
-  }
-}
-close CFG;
+# create installation config
 
-open CFG, "> $instbase/cgi-bin/bse.cfg"
-  or die "Cannot create $instbase/cgi-bin/bse.cfg: $!";
-for my $line (@cfg) {
-  print CFG $line, "\n";
+$conf{db}{class} = BSE::Test::test_dbclass();
+$conf{db}{dsn} = BSE::Test::test_dsn();
+$conf{db}{user} = $dbuser;
+$conf{db}{password} = $dbpass;
+
+open CFG, "> $instbase/cgi-bin/bse-install.cfg"
+  or die "Cannot create $instbase/cgi-bin/bse-install.cfg: $!";
+
+print CFG "; DO NOT EDIT - created during installation\n";
+for my $section_name (keys %conf) {
+  print CFG "[$section_name]\n";
+  my $section = $conf{$section_name};
+  for my $key (keys %$section) {
+    print CFG "$key=$section->{$key}\n";
+  }
+  print CFG "\n";
 }
+
 close CFG;
 
 -d $uploads 

@@ -2,12 +2,14 @@ package BSE::API;
 use strict;
 use vars qw(@ISA @EXPORT_OK);
 use BSE::Util::SQL qw(sql_datetime now_sqldatetime);
+use BSE::DB;
 use BSE::Cfg;
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(bse_cfg bse_make_product bse_make_catalog bse_encoding bse_add_image bse_add_step_child bse_add_owned_file bse_delete_owned_file bse_replace_owned_file bse_make_article bse_add_step_parent);
+@EXPORT_OK = qw(bse_init bse_cfg bse_make_product bse_make_catalog bse_encoding bse_add_image bse_add_step_child bse_add_owned_file bse_delete_owned_file bse_replace_owned_file bse_make_article bse_add_step_parent);
 use Carp qw(confess croak);
 use Fcntl qw(:seek);
+use Cwd;
 
 my %acticle_defaults =
   (
@@ -111,12 +113,28 @@ sub _finalize_article {
   }
 }
 
+my $cfg;
+
 sub bse_cfg {
-  my $cfg = BSE::Cfg->new;
+  my $path = shift || ".";
+  $cfg ||= BSE::Cfg->new(path => $path);
   $cfg->entry('site', 'url')
     or confess "Could not load configuration";
 
   return $cfg;
+}
+
+sub bse_init {
+  my ($bse_cgi) = @_;
+
+  defined $bse_cgi
+    or confess "Missing bse_cgi parameter";
+
+  unless ($cfg) {
+    bse_cfg($bse_cgi);
+  }
+
+  BSE::DB->init($cfg);
 }
 
 sub bse_make_product {

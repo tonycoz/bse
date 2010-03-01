@@ -8,9 +8,11 @@ use Carp qw(cluck confess);
 sub new {
   my ($class, %opts) = @_;
 
+  $opts{cfg} ||= BSE::Cfg->new;
+
+  BSE::DB->init($opts{cfg});
   BSE::DB->startup();
 
-  $opts{cfg} ||= BSE::Cfg->new;
   $opts{cgi} ||= $class->_make_cgi;
   $opts{fastcgi} ||= 0;
 
@@ -148,6 +150,13 @@ sub get_object {
 
 sub access_control {
   $_[0]->{cfg}->entry('basic', 'access_control', 0);
+}
+
+sub get_refresh {
+  my ($req, $url) = @_;
+
+  require BSE::Template;
+  BSE::Template->get_refresh($url, $req->cfg);
 }
 
 sub output_result {

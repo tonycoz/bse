@@ -7,7 +7,7 @@ use BSE::DB;
 
 my %methods_created;
 
-my $dh = BSE::DB->single;
+my $dh;
 
 sub new {
   my ($class, @values) = @_;
@@ -26,6 +26,7 @@ sub new {
 
   @$self{@columns} = @values;
   
+  $dh ||= BSE::DB->single;
   unless (defined $self->{$primary[0]}) {
     my $bases = $class->bases;
     if (keys %$bases) {
@@ -109,6 +110,7 @@ sub save {
   my $self = shift;
   my %saved;
   my $bases = $self->bases;
+  $dh ||= BSE::DB->single;
   if (keys %$bases) {
     my @bases = $self->_get_bases;
     my $base_base = $bases[0];
@@ -166,6 +168,7 @@ sub save {
 sub remove {
   my $self = shift;
 
+  $dh ||= BSE::DB->single;
   my $bases = $self->bases;
   my @primary = @$self{$self->primary};
   if (keys %$bases) {

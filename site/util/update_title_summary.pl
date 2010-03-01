@@ -3,12 +3,11 @@ use strict;
 use Getopt::Long;
 use FindBin;
 use lib "$FindBin::Bin/../cgi-bin/modules";
-use BSE::Cfg;
+use BSE::API qw(bse_init bse_cfg);
 use BSE::TB::Orders;
 use Products;
 
-chdir "$FindBin::Bin/../cgi-bin"
-  or warn "Could not change to cgi-bin directory: $!\n";
+bse_init("../cgi-bin");
 
 my @orders = BSE::TB::Orders->all;
 my %products;

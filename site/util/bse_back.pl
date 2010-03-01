@@ -3,15 +3,14 @@ use strict;
 use warnings;
 use FindBin;
 use lib "$FindBin::Bin/../cgi-bin/modules";
+use BSE::API qw(bse_init bse_cfg);
 use BSE::Cfg;
 use BSE::TB::BackgroundTasks;
 use Getopt::Long;
 
 {
-  chdir "$FindBin::Bin/../cgi-bin"
-    or warn "Could not change to cgi-bin directory: $!\n";
-  
-  my $cfg = BSE::Cfg->new;
+  bse_init("../cgi-bin");
+  my $cfg = bse_cfg();
 
   my $cmd = shift
     or usage();

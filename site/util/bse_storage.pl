@@ -2,11 +2,11 @@
 use strict;
 use FindBin;
 use lib "$FindBin::Bin/../cgi-bin/modules";
-use BSE::Cfg;
 use BSE::StorageMgr::Images;
 use BSE::StorageMgr::Files;
 use BSE::StorageMgr::Thumbs;
 use Getopt::Long;
+use BSE::API qw(bse_init bse_cfg);
 
 my $verbose;
 my $noaction;
@@ -14,10 +14,9 @@ my $noaction;
 GetOptions("v", \$verbose,
 	   'n', \$noaction);
 
-chdir "$FindBin::Bin/../cgi-bin"
-  or warn "Could not change to cgi-bin directory: $!\n";
+bse_init("../cgi-bin");
 
-my $cfg = BSE::Cfg->new;
+my $cfg = bse_cfg();
 
 my $images = BSE::StorageMgr::Images->new(cfg => $cfg);
 my $files = BSE::StorageMgr::Files->new(cfg => $cfg);

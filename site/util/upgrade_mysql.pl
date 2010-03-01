@@ -4,6 +4,10 @@ use lib '../cgi-bin/modules';
 use DBI;
 use BSE::DB;
 use Getopt::Long;
+use BSE::API qw(bse_init);
+use Cwd;
+
+bse_init("../cgi-bin");
 
 my $verbose;
 my $pretend;
@@ -41,7 +45,7 @@ EOS
   my $entered = <STDIN>;
   chomp $entered;
   if ($entered ne $conf) {
-    print "Either you didn't backup your data of you didn't read the message.\n";
+    print "Either you didn't backup your data or you didn't read the message.\n";
     exit;
   }
 }
@@ -49,7 +53,7 @@ EOS
 my $db = BSE::DB->single;
 
 UNIVERSAL::isa($db, 'BSE::DB::Mysql')
-  or die "Sorry, this only works for Mysql databases\n";
+  or die "Sorry, this only works for Mysql databases ($db)\n";
 
 open STRUCT, "< $input"
   or die "Cannot open structure file $input: $!\n";

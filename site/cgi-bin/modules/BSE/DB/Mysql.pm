@@ -592,9 +592,16 @@ sub _startup {
 }
 
 sub _connect {
-  my $dbh = DBI->connect( $DSN, $UN, $PW, $DBOPTS)
+  my ($self) = @_;
+
+  my $cfg = $self->{cfg};
+  my $dsn = $self->dsn($cfg);
+  my $un = $self->dbuser($cfg);
+  my $pass = $self->dbpassword($cfg);
+  my $dbopts = $self->dbopts($cfg);
+  my $dbh = DBI->connect( $dsn, $un, $pass, $dbopts)
       or die "Cannot connect to database: $DBI::errstr";
-    
+
   # this might fail, but I don't care
   $dbh->do("set session sql_mode='ansi_quotes'");
 
@@ -603,14 +610,19 @@ sub _connect {
 
 sub _single
 {
-  my $class = shift;
+  my ($class, $cfg) = @_;
 
-  warn "Incorrect number of parameters passed to DatabaseHandle::single\n" unless @_ == 0;
+  warn "Incorrect number of parameters passed to BSE::DB::Mysql::single\n" unless @_ == 2;
   
   unless ( defined $self ) {
-    my $dbh = $class->_connect;
+    $self = bless 
+      { 
+       dbh => undef,
+       birth => time(),
+       cfg => $cfg,
+      }, $class;
 
-    $self = bless { dbh => $dbh, birth => time() }, $class;
+    $self->{dbh} = $self->_connect;
   }
   $self;
 }

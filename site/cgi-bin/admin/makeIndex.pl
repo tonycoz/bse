@@ -14,6 +14,7 @@ if ($in_cgi) {
 }
 
 my $cfg = BSE::Cfg->new;
+BSE::DB->init($cfg);
 my $urlbase = $cfg->entryVar('site', 'url');
 
 my $articles = 'Articles';

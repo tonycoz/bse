@@ -8,10 +8,10 @@ $VERSION = "0.11";
 
 use BSE::DB;
 
-my $dh = BSE::DB->single;
-
 my %query_cache;
 my $cache_queries;
+
+my $dh;
 
 # no caching is performed if this is zero
 my $cache_timeout = 2; # seconds
@@ -33,6 +33,7 @@ sub new {
       && defined $cache{$class}{time}
       && $cache{$class}{time}+$cache_timeout >= time;
 
+  $dh ||= BSE::DB->single;
   my $sth = $dh->stmt($class)
     or confess "No $class member in DatabaseHandle";
   $sth->execute
@@ -85,6 +86,7 @@ sub getByPkey {
     }
   }
 
+  $dh ||= BSE::DB->single;
   my $result;
   if (ref($self)) {
     $result = $self->{coll}{join "", @values};
@@ -182,6 +184,7 @@ sub getBy {
     $vals{$col} = $val;
   }
 
+  $dh ||= BSE::DB->single;
   my @results;
   if (ref($self) && UNIVERSAL::isa($self, __PACKAGE__)) {
     # this is an object with the rows already loaded
@@ -241,6 +244,7 @@ sub _getBy_sth {
     " from " . $self->rowClass->table .
       " where " . join(" and ", @conds);
 
+  $dh ||= BSE::DB->single;
   my $sth = $dh->{dbh}->prepare($sql)
     or confess "Cannot prepare generated $sql: ", $dh->{dbh}->errstr;
 
@@ -270,6 +274,7 @@ sub getColumnsBy {
     " from " . $self->rowClass->table .
       " where " . join(" and ", @conds);
 
+  $dh ||= BSE::DB->single;
   my $sth = $dh->{dbh}->prepare($sql)
     or confess "Cannot prepare generated $sql: ", $dh->{dbh}->errstr;
 
@@ -302,6 +307,7 @@ sub getSpecial {
 
   my $rowClass = $self->rowClass;
   my $sqlname = $class . "." . $name;
+  $dh ||= BSE::DB->single;
   my $sth = $dh->stmt($sqlname)
     or confess "No $sqlname in database object";
   $sth->execute(@args)
@@ -324,6 +330,7 @@ sub doSpecial {
 
   my $class = ref $self ? ref $self : $self;
   my $sqlname = $class . "." . $name;
+  $dh ||= BSE::DB->single;
   my $sth = $dh->stmt($sqlname)
     or confess "No $sqlname in database object";
   $sth->execute(@args)
@@ -346,6 +353,7 @@ sub all {
 sub query {
   my ($self, $columns, $query, $opts) = @_;
 
+  $dh ||= BSE::DB->single;
   $dh->generate_query($self->rowClass, $columns, $query, $opts);
 }
 

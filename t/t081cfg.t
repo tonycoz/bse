@@ -8,10 +8,10 @@ BEGIN {
     or plan skip_all => "Cannot load BSE::Cfg";
 }
 
-plan tests => 10;
+plan tests => 9;
 
-ok(chdir "t/cfg", "chdir to cfg dir");
-my $cfg = eval { BSE::Cfg->new };
+#ok(chdir "t/cfg", "chdir to cfg dir");
+my $cfg = eval { BSE::Cfg->new(path => "t/cfg") };
 ok($cfg, "made a config");
 is($cfg->entry("alpha", "beta"), "one", "check simple lookup");
 is($cfg->entryVar("var", "varb"), "ab", "simple variable lookup");

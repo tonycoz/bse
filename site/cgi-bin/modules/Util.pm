@@ -117,14 +117,13 @@ sub generate_search {
 }
 
 sub generate_shop {
-  my ($articles) = @_;
+  my ($articles, $cfg) = @_;
   my @pages =
     (
      'cart', 'checkoutnew', 'checkoutfinal', 'checkoutcard', 'checkoutconfirm',
      'checkoutpay',
     );
   require 'Generate/Article.pm';
-  my $cfg = BSE::Cfg->new;
   my $shop_base = $articles->getByPkey($SHOPID);
   my $shop = { map { $_ => $shop_base->{$_} } $shop_base->columns };
   $shop->{link} =~ /^\w+:/
@@ -269,7 +268,7 @@ sub generate_all {
   generate_search($articles, $cfg);
 
   $callback->("Generating shop base pages") if $callback;
-  generate_shop($articles);
+  generate_shop($articles, $cfg);
 
   $callback->("Generating extra pages") if $callback;
   generate_extras($articles, $cfg, $callback);
@@ -308,7 +307,7 @@ sub regen_and_refresh {
 	  generate_search($articles, $cfg);
 	  
 	  $progress->("Generating shop base pages") if $progress  ;
-	  generate_shop($articles);
+	  generate_shop($articles, $cfg);
 	  
 	  $progress->("Generating extra pages") if $progress;
 	  generate_extras($articles, $cfg, $progress);

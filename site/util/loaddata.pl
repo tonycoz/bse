@@ -4,17 +4,22 @@ use lib '../cgi-bin/modules';
 use DevHelp::LoaderData;
 use DBI;
 use Constants;
+use BSE::API qw(bse_cfg bse_init);
+use BSE::DB;
+use Cwd;
+
+bse_init("../cgi-bin");
+
+my $cfg = bse_cfg;
 
 my $datadir = shift
   or die "Usage: $0 directoryname\n";
 
-my $dsn = $Constants::DSN;
-my $dbuser = $Constants::UN;
-my $dbpass = $Constants::PW;
-
 # this is pretty rough, but good enough for now
-my $dbh = DBI->connect($dsn, $dbuser, $dbpass)
+my $dbh = BSE::DB::single->dbh
   or die "Cannot connect to database: ",DBI->errstr;
+
+my $dbuser = BSE::DB->dbuser($cfg);
 
 my %tables;
 opendir DATADIR, $datadir or die "Cannot open '$datadir' directory: $!";

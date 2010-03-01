@@ -4,12 +4,11 @@ use Getopt::Long;
 use FindBin;
 use lib "$FindBin::Bin/../cgi-bin/modules";
 use BSE::Cfg;
-use BSE::API qw(bse_cfg bse_make_product bse_encoding);
+use BSE::API qw(bse_init bse_cfg bse_make_product bse_encoding);
 use BSE::Importer;
 use Carp qw(confess);
 
-chdir "$FindBin::Bin/../cgi-bin"
-  or warn "Could not change to cgi-bin directory: $!\n";
+bse_init("../cgi-bin");
 
 my $verbose;
 my $delete;

@@ -4,18 +4,18 @@ use Getopt::Long;
 use FindBin;
 use lib "$FindBin::Bin/../cgi-bin/modules";
 use Util qw/generate_all generate_article/;
-use BSE::Cfg;
+use BSE::API qw(bse_init bse_cfg);
 use Articles;
 
-chdir "$FindBin::Bin/../cgi-bin"
-  or warn "Could not change to cgi-bin directory: $!\n";
+bse_init("../cgi-bin");
+
 Getopt::Long::Configure('bundling');
 my $verbose;
 my $article;
 GetOptions("v", \$verbose);
 $verbose = defined $verbose;
 
-my $cfg = BSE::Cfg->new;
+my $cfg = bse_cfg();
 
 my $articles = 'Articles';
 

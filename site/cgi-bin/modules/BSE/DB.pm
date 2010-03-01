@@ -7,18 +7,78 @@ use Carp qw/confess/;
 use vars qw($VERSION);
 $VERSION = '1.00';
 
-use Constants qw/$DBCLASS/;
+my $single;
 
-my $file = $DBCLASS;
-$file =~ s!::!/!g;
-require "$file.pm";
+my $constants_loaded = eval {
+  require Constants;
+  1;
+};
+
+sub dsn {
+  my ($class, $cfg) = @_;
+
+  $cfg or confess "Missing cfg option";
+
+  return $cfg->entry("db", "dsn", $Constants::DSN);
+}
+
+sub dbuser {
+  my ($class, $cfg) = @_;
+
+  $cfg or confess "Missing cfg option";
+
+  return $cfg->entry("db", "user", $Constants::UN);
+}
+
+sub dbpassword {
+  my ($class, $cfg) = @_;
+
+  $cfg or confess "Missing cfg option";
+
+  return $cfg->entry("db", "password", $Constants::PW);
+}
+
+sub dbopts {
+  my ($class, $cfg) = @_;
+
+  $cfg or confess "Missing cfg option";
+
+  my $def_opts = $Constants::DBOPTS || {};
+
+  my $opts = $cfg->entry("db", "dbopts", $def_opts);
+  unless (ref $opts) {
+    my $work_opts = eval $opts;
+    $@
+      and confess "Error evaluation db options: $@";
+
+    $opts = $work_opts;
+  }
+
+  return $opts;
+}
+
+sub init {
+  my ($class, $cfg) = @_;
+
+  $single and return;
+
+  my $dbclass = $cfg->entry("db", "class", "BSE::DB::Mysql");
+  
+  my $file = $dbclass;
+  $file =~ s!::!/!g;
+  require "$file.pm";
+
+  $single = $dbclass->_single($cfg);
+}
 
 sub single {
-  $DBCLASS->_single();
+  $single
+    or confess "BSE::DB->init(\$cfg) needs to be called first";
+  $single;
 }
 
 sub startup {
-  $DBCLASS->_startup();
+  $single->_startup();
 }
 
 sub query {

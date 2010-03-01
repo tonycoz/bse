@@ -7,12 +7,11 @@ use lib '../cgi-bin/modules';
 use DBI;
 use Article;
 use Constants qw($DSN $UN $PW $CGI_URI $SHOP_URI $ROOT_URI);
-use BSE::Cfg;
+use BSE::API qw(bse_init bse_cfg);
 use BSE::Util::SQL qw(now_sqldate now_sqldatetime);
 
-chdir "../cgi-bin"
-  or warn "Could not change to cgi-bin directory - may not be able to get config file";
-my $cfg = BSE::Cfg->new;
+bse_init("../cgi-bin");
+my $cfg = bse_cfg();
 my $securlbase = $cfg->entryVar('site', 'secureurl');
 my $nowDate = now_sqldate();
 my $nowDatetime = now_sqldatetime();
@@ -565,7 +564,7 @@ EOS
    },
   );
 
-my $dbh = DBI->connect($DSN, $UN, $PW)
+my $dbh = BSE::DB->single->dbh
   or die "Cannot connect to database: ",DBI->errstr;
 my @columns = Article->columns;
 $dbh->do('delete from article')
