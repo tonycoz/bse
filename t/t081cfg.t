@@ -8,7 +8,7 @@ BEGIN {
     or plan skip_all => "Cannot load BSE::Cfg";
 }
 
-plan tests => 9;
+plan tests => 11;
 
 #ok(chdir "t/cfg", "chdir to cfg dir");
 my $cfg = eval { BSE::Cfg->new(path => "t/cfg") };
@@ -28,3 +28,9 @@ is($cfg->entry("unknown", "keya", "abc"), "abc", "missing value with default");
 
 # include included by variable name
 is($cfg->entry("varinc", "vara"), "somevalue", "include included by variable name");
+
+# get entire sections
+is_deeply({ $cfg->entriesCS("conflict") },
+	  { keya => "valuez" }, "CS section with a value");
+is_deeply([ $cfg->orderCS("conflict") ],
+	  [ qw/keya keya/ ], "original case keys in order of appearance");

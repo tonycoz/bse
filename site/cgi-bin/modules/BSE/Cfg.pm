@@ -309,7 +309,7 @@ sub _load_file {
       }
       push @{$self->{config}{$section}{order}}, lc $key;
       $self->{config}{$section}{values}{lc $key} = $value;
-      push @{$self->{sections}{$section}{order_nc}}, $key;
+      push @{$self->{config}{$section}{order_nc}}, $key;
       $self->{config}{$section}{case}{$key} = $value;
     }
   }
