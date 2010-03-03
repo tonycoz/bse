@@ -24,6 +24,7 @@ sub tags {
      dynmoveallcat =>
      [ tag_dynmove => $self, \$allcat_index, \$allcat_data,
        "stepparent=$article->{id}" ],
+     ifDynAnyProductOptions => [ tag_ifDynAnyProductOptions => $self ],
     );
 }
 
@@ -53,6 +54,20 @@ sub iter_dynallcats {
   $self->set_cached(dynallcats => $result);
 
   return $result
+}
+
+sub tag_ifDynAnyProductOptions {
+  my ($self, $arg) = @_;
+
+  $arg ||= "dynallprod";
+
+  my $prod = $self->{req}->get_article($arg)
+    or return 0;
+  $prod->can("option_descs")
+    or return 0;
+  my @options = $prod->option_descs($self->{req}->cfg);
+
+  return scalar(@options);
 }
 
 1;

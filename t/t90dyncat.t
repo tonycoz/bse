@@ -12,6 +12,8 @@ my $cfg = BSE::Cfg->new;
 # create some articles to test with
 require Articles;
 require Products;
+require BSE::TB::ProductOptions;
+require BSE::TB::ProductOptionValues;
 require BSE::API;
 require BSE::Dynamic::Catalog;
 require BSE::Request::Test;
@@ -69,6 +71,28 @@ for my $title (qw/prod1 prod2 prod3/) {
   $prod_order{$prod->{displayOrder}} = 1;
   $price += 500;
 }
+
+# give the last an option
+my $order = time();
+my $opt = BSE::TB::ProductOptions->make
+  (
+   product_id => $prods[2]->id,
+   name => "Test Option",
+   display_order => $order++,
+  );
+BSE::TB::ProductOptionValues->make
+  (
+   product_option_id => $opt->id,
+   value => "Alpha",
+   display_order => $order++,
+  );
+BSE::TB::ProductOptionValues->make
+  (
+   product_option_id => $opt->id,
+   value => "Beta",
+   display_order => $order++,
+  );
+
 is(scalar keys %prod_order, 3, "make sure display orders unique");
 
 my $prod4 = bse_make_product
@@ -99,13 +123,13 @@ bse_add_step_child
 
 dyn_template_test "dynallprods", $parent, <<TEMPLATE, <<EXPECTED;
 <:iterator begin dynallprods:><:
-dynallprod id:>
+dynallprod id:><:ifDynAnyProductOptions:> options<:or:><:eif:>
 <:iterator end dynallprods:>
 TEMPLATE
 $prod4->{id}
 $prods[0]{id}
 $prods[1]{id}
-$prods[2]{id}
+$prods[2]{id} options
 
 EXPECTED
 
