@@ -38,6 +38,8 @@ sub calculate_shipping {
   # parcels - array ref of BSE::Shipping::Parcel objects
   # country - country code for delivery
   # suburb, postcode - delivery location
+  # items - array ref of cart item entries
+  # products - array ref of product objects
 }
 
 sub delivery_in {

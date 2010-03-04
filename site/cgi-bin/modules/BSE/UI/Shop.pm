@@ -497,7 +497,9 @@ sub req_checkout {
 	 parcels => \@parcels,
 	 suburb => $suburb,
 	 postcode => $postcode,
-	 country => $country_code
+	 country => $country_code,
+	 products => \@cart_prods,
+	 items => \@items,
 	);
       $delivery_in = $sel_cour->delivery_in();
       $shipping_method = $sel_cour->description();
@@ -643,7 +645,7 @@ sub req_order {
   keys %errors
     and return $class->req_checkout($req, \%errors, 1);
 
-  $class->_fillout_order($req, \%values, \@items, \$msg, 'payment')
+  $class->_fillout_order($req, \%values, \@items, \@products, \$msg, 'payment')
     or return $class->req_checkout($req, $msg, 1);
 
   $req->session->{order_info} = \%values;
@@ -1540,7 +1542,7 @@ sub _build_items {
 }
 
 sub _fillout_order {
-  my ($class, $req, $values, $items, $rmsg, $how) = @_;
+  my ($class, $req, $values, $items, $products, $rmsg, $how) = @_;
 
   my $session = $req->session;
   my $cfg = $req->cfg;
@@ -1578,7 +1580,9 @@ sub _fillout_order {
 	 parcels => \@parcels,
 	 country => $country_code,
 	 suburb => $values->{delivSuburb},
-	 postcode => $values->{delivPostCode}
+	 postcode => $values->{delivPostCode},
+	 products => $products,
+	 items => $items,
        );
       if (!$cost and $courier->name() ne 'contact') {
 	my $err = $courier->error_message();
