@@ -10,9 +10,13 @@ push @INC, 'modules';
 require BSE::Cfg;
 my $cfg = BSE::Cfg->new;
 # create some articles to test with
+use BSE::DB;
 require Articles;
 require Products;
 require BSE::Util::SQL;
+
+BSE::DB->init($cfg);
+
 BSE::Util::SQL->import(qw/sql_datetime/);
 sub template_test($$$$);
 

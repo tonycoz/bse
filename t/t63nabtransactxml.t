@@ -4,7 +4,7 @@ use Test::More tests => 14;
 
 ++$|;
 
-my $debug = 1;
+my $debug = 0;
 
 my $gotmodule;
 BEGIN { $gotmodule = use_ok('DevHelp::Payments::SecurePayXML'); }

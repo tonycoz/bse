@@ -9,6 +9,8 @@ ok(chdir $cgidir, "switch to CGI directory");
 push @INC, 'modules';
 require BSE::Cfg;
 my $cfg = BSE::Cfg->new;
+use BSE::DB;
+BSE::DB->init($cfg);
 # create some articles to test with
 require Articles;
 require BSE::Util::SQL;
