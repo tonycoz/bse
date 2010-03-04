@@ -6,9 +6,11 @@ use CGI qw(:standard);
 use Carp; # 'verbose'; # remove the 'verbose' in production
 use Articles;
 use BSE::Cfg;
+use BSE::DB;
 use BSE::Template;
 
 my $cfg = BSE::Cfg->new;
+BSE::DB->init($cfg);
 
 my $id = param('id');
 defined $id or $id = 1;
