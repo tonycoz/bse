@@ -26,11 +26,11 @@ my $air = Courier::AustraliaPost::Air->new(config => $cfg);
 my $sea = Courier::AustraliaPost::Sea->new(config => $cfg);
 
 ok($std, "make standard courier object");
-ok($std->can_deliver(country => "Australia",
+ok($std->can_deliver(country => "AU",
 		      suburb => "Westmead",
 		      postcode => "2145"), "can deliver to australia");
-ok($std->can_deliver(country => "New Zealand"),
-   "can deliver to NZ");
+ok(!$std->can_deliver(country => "NZ"),
+   "can't deliver to NZ");
 
 my $tiny_parcel = BSE::Shipping::Parcel->new
   (
@@ -60,7 +60,7 @@ my $local_tiny_cost = $std->calculate_shipping
    parcels => [ $tiny_parcel ],
    postcode => 4405,
    suburb => "Dalby",
-   country => "Australia"
+   country => "AU"
   );
 ok($local_tiny_cost, "got a local tiny parcel cost")
   or diag $std->error_message;
@@ -72,7 +72,7 @@ my $local_small_cost = $std->calculate_shipping
    parcels => [ $small_parcel ],
    postcode => 4405,
    suburb => "Dalby",
-   country => "Australia"
+   country => "AU"
   );
 ok($local_small_cost, "got a local small parcel cost")
   or diag $std->error_message;
@@ -84,7 +84,7 @@ my $local_medium_cost = $std->calculate_shipping
    parcels => [ $medium_parcel ],
    postcode => 4405,
    suburb => "Dalby",
-   country => "Australia"
+   country => "AU"
   );
 ok($local_medium_cost, "got a local medium cost")
   or diag $std->error_message;
@@ -99,7 +99,7 @@ my $nsw_medium_cost = $std->calculate_shipping
    parcels => [ $medium_parcel ],
    postcode => 2145,
    suburb => "Westmead",
-   country => "Australia"
+   country => "AU"
   );
 
 ok($nsw_medium_cost, "got a nsw medium cost");
@@ -113,7 +113,7 @@ my $perth_medium_cost = $std->calculate_shipping
    parcels => [ $medium_parcel ],
    postcode => 6000,
    suburb => "Perth",
-   country => "Australia"
+   country => "AU"
   );
 
 ok($perth_medium_cost, "got a perth medium cost");
@@ -127,7 +127,7 @@ my $us_medium_cost_air = $air->calculate_shipping
    parcels => [ $medium_parcel ],
    postcode => 6000,
    suburb => "Perth",
-   country => "United States"
+   country => "US"
   );
 
 ok($us_medium_cost_air, "got a US medium cost");
@@ -140,7 +140,7 @@ my $us_medium_cost_sea = $sea->calculate_shipping
    parcels => [ $medium_parcel ],
    postcode => 6000,
    suburb => "Perth",
-   country => "United States"
+   country => "US"
   );
 
 ok($us_medium_cost_sea, "got a US medium cost");
@@ -161,7 +161,7 @@ my $too_long_cost = $std->calculate_shipping
    parcels => [ $too_long ],
    postcode => 2145,
    suburb => "Westmead",
-   country => "Australia",
+   country => "AU",
   );
 is($too_long_cost, undef, "too long returns undef");
 ok($std->error_message, "some error set");
@@ -179,7 +179,7 @@ my $big_girth_cost = $std->calculate_shipping
    parcels => [ $big_girth ],
    postcode => 2145,
    suburb => "Westmead",
-   country => "Australia",
+   country => "AU",
   );
 is($too_long_cost, undef, "big girth returns undef");
 ok($std->error_message, "some error set");

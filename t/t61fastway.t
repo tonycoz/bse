@@ -22,10 +22,10 @@ my $cfg = bless \%cfg_work, "Test::Cfg";
 
 my $cour = Courier::Fastway::Road->new(config => $cfg);
 ok($cour, "make courier object");
-ok($cour->can_deliver(country => "Australia",
+ok($cour->can_deliver(country => "AU",
 		      suburb => "Westmead",
 		      postcode => "2145"), "can deliver to australia");
-ok(!$cour->can_deliver(country => "New Zealand"),
+ok(!$cour->can_deliver(country => "NZ"),
    "can't deliver to NZ");
 
 my $small_parcel = BSE::Shipping::Parcel->new
@@ -49,7 +49,7 @@ my $local_small_cost = $cour->calculate_shipping
    parcels => [ $small_parcel ],
    postcode => 4405,
    suburb => "Dalby",
-   country => "Australia"
+   country => "AU"
   );
 ok($local_small_cost, "got a local small parcel cost");
 like($local_small_cost, qr/^\d+$/, "it's an integer");
@@ -59,7 +59,7 @@ my $local_medium_cost = $cour->calculate_shipping
    parcels => [ $medium_parcel ],
    postcode => 4405,
    suburb => "Dalby",
-   country => "Australia"
+   country => "AU"
   );
 ok($local_medium_cost, "got a local medium cost");
 like($local_medium_cost, qr/^\d+$/, "it's an integer");
