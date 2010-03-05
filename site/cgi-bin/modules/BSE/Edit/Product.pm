@@ -342,7 +342,7 @@ sub validate {
 sub validate_old {
   my ($self, $article, $data, $articles, $errors) = @_;
 
-  $self->SUPER::validate($data, $articles, $errors)
+  $self->SUPER::validate_old($article, $data, $articles, $errors)
     or return;
   
   return !keys %$errors;
