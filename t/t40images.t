@@ -11,20 +11,20 @@ fetch_ok($ua, "menu", "$base_url/cgi-bin/admin/menu.pl", qr/Administration Centr
 
 follow_ok($ua, "add section link", "Add a new section", qr/New Page Lev1/);
 
-ok($ua->form("edit"), "select edit form");
+ok($ua->form_name("edit"), "select edit form");
 
 $ua->field(title => "Images test article");
 $ua->field(body => "ONE((image[test]))\n\nTWO\{\{image[2]\}\}");
 
 click_ok($ua, "add the article", "save", qr/Images test article/);
 
-ok($ua->form("edit"), "select edit form");
+ok($ua->form_name("edit"), "select edit form");
 
 click_ok($ua, "back to editor", undef, qr/Edit Page Lev1/);
 
 follow_ok($ua, "to images", "Manage Images", qr/Page Lev1 Image Wizard/);
 
-ok($ua->form("add"), "select add form");
+ok($ua->form_name("add"), "select add form");
 
 my @image_content = ( image1(), image2() );
 
@@ -38,7 +38,7 @@ $ua->field(altIn => 'one');
 
 click_ok($ua, "add an image", 'addimg', qr/New image added/);
 
-ok($ua->form('add'), "add form again");
+ok($ua->form_name('add'), "add form again");
 
 $form = $ua->current_form;
 ok($file = $form->find_input("image"), "get file field");
@@ -102,7 +102,7 @@ for my $im_index (0..1) {
   $ua->back();
 }
 
-ok($ua->form("edit"), "select edit form");
+ok($ua->form_name("edit"), "select edit form");
 
 click_ok($ua, "back to editor", undef, qr/Edit Page Lev1/);
 
@@ -113,7 +113,7 @@ follow_ok($ua, "sections", "Administer sections", qr/Manage Sections/);
 follow_ok($ua, "global images", "Global Images", qr/Global Image Wizard/);
 
 # fail to add a global image
-ok($ua->form('add'), "add form");
+ok($ua->form_name('add'), "add form");
 $form = $ua->current_form;
 ok($file = $form->find_input("image"), "get file field");
 $file->filename("t105_trans.gif");
@@ -126,7 +126,7 @@ click_ok($ua, "fail to add a global image", "addimg",
 
 # try again, and supply a name
 my $global_name = "test".time;
-ok($ua->form('add'), "add form");
+ok($ua->form_name('add'), "add form");
 $form = $ua->current_form;
 ok($file = $form->find_input("image"), "get file field");
 $file->filename("t105_trans.gif");
@@ -141,7 +141,7 @@ print "# edit url $edit_url\n";
 fetch_ok($ua, "back to edit", $edit_url, qr/Edit Page Lev1/);
 
 # update the body to reference the global image
-ok($ua->form("edit"), "select edit form");
+ok($ua->form_name("edit"), "select edit form");
 $ua->field(body =>"ONE((image[test]))\n\nTWO\{\{image[2]\}\}\n\nTHREE<<gimage[$global_name]>>");
 
 click_ok($ua, "save the new body", "save", undef, qr/Title: BSE - Edit Page Lev1/);
@@ -168,7 +168,7 @@ is($ua->content, imageg(), "gimage content");
 $ua->back;
 
 # back to the editor
-ok($ua->form("edit"), "select edit form");
+ok($ua->form_name("edit"), "select edit form");
 click_ok($ua, "edit page", undef, qr/Edit Page Lev1/);
 
 follow_ok($ua, "image manager", "Manage Images", qr/Page Lev1 Image Wizard/);
@@ -396,9 +396,9 @@ sub get_images {
       #++$indent;
 					       
       if ($tagname eq 'td') {
-	my $name = $attr->{name};
-	#print "# name $name\n" if $name;
-	if ($name && $name eq 'images') {
+	my $id = $attr->{id};
+	#print "# id $id\n" if $id;
+	if ($id && $id eq 'images') {
 	  ++$in_images;
 	}
       }

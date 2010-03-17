@@ -20,6 +20,6 @@ for my $file (@files) {
   close SRC;
   ok($data =~ /^use\s+strict/m, "use strict in $file");
   if ($file =~ /\.(pl|t)$/) {
-    ok($data =~ /#!.*perl.*-w/, "-w in $file");
+    ok($data =~ /#!.*perl.*-w|use warnings;/m, "-w or use warnings in $file");
   }
 }

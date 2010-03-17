@@ -93,7 +93,7 @@ sub skip {
 sub make_ua {
   require WWW::Mechanize;
   require "HTTP/Cookies.pm";
-  my $ua = WWW::Mechanize->new;
+  my $ua = WWW::Mechanize->new(onerror => undef);
   $ua->cookie_jar(HTTP::Cookies->new);
 
   $ua;
@@ -226,7 +226,7 @@ sub follow_ok {
     $ok = $resp->is_success;
   }
   else {
-    $ok = $ua->follow($link);
+    $ok = $ua->follow_link(text_regex => qr/\Q$link/);
   }
 
   return _check_fetch($ua->{content}, $ua->{status}, $ok, 

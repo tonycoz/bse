@@ -1,19 +1,22 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>20;
+use Test::More tests=>19;
 use File::Spec;
 use FindBin;
-my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
-ok(chdir $cgidir, "switch to CGI directory");
-push @INC, 'modules';
-require BSE::Cfg;
-my $cfg = BSE::Cfg->new;
+my $cgidir;
+BEGIN {
+  $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
+  unshift @INC, $cgidir . 'modules';
+}
+#ok(chdir $cgidir, "switch to CGI directory");
 # create some articles to test with
-require Articles;
-require Products;
-require BSE::API;
-BSE::API->import(qw/bse_make_catalog bse_make_product bse_add_step_child/);
+use Articles;
+use Products;
+use BSE::API qw/bse_cfg bse_init bse_make_catalog bse_make_product bse_add_step_child/;
+
+bse_init($cgidir);
+my $cfg = bse_cfg;
 
 my $parent = bse_make_catalog
   (

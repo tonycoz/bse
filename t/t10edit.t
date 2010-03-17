@@ -30,7 +30,7 @@ ok($ua->click('save'), 'submit modified edit form');
 # should redirect to admin mode page
 check_content($ua->{content}, "admin mode", 
   	   qr!
-  	   <title>Test\ Server\ -\ Test\ Article</title>
+  	   <title>.*Test\ Article.*</title>
   	   .*
   	   This\ is\ a\ test\ body
   	   !xsm);

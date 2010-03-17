@@ -54,6 +54,7 @@ for my $name (qw(Alpha Beta Gamma)) {
 
 require BSE::Admin::StepParents;
 BSE::Admin::StepParents->add($parent, $stepkid);
+sleep(2); # make sure they get a new displayOrder
 BSE::Admin::StepParents->add($parent, $stepprod);
 
 my $top = Articles->getByPkey(1);
@@ -78,8 +79,8 @@ template_test "allkids_of", $top, <<TEMPLATE, <<EXPECTED;
 ofallkid title:>
 <:iterator end allkids_of:>
 TEMPLATE
-step kid
 Delta
+step kid
 Gamma
 Beta
 Alpha
@@ -284,7 +285,7 @@ sub add_article {
   $display_order ||= 1000;
   my %defaults = 
     (
-     parentid=>-1, displayOrder => 1000, title=>'Test Parent',
+     parentid=>-1, title=>'Test Parent',
      titleImage => '', body=>'Test parent b[body]',
      thumbImage => '', thumbWidth => 0, thumbHeight => 0,
      imagePos => 'tr', release=>sql_datetime(time-86400), expire=>'2999-12-31',
