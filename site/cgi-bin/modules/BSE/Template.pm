@@ -2,6 +2,7 @@ package BSE::Template;
 use strict;
 use Squirrel::Template;
 use Carp 'confess';
+use Config ();
 
 sub get_page {
   my ($class, $template, $cfg, $acts, $base_template, $rsets) = @_;
@@ -140,10 +141,15 @@ sub template_dirs {
   ref($cfg) eq 'BSE::Cfg'
     or confess "Invalid cfg $cfg supplied\n";
 
+  my $path_sep = $Config::Config{path_sep};
+
   my $base = $cfg->entryVar('paths', 'templates');
+  my @dirs = split /\Q$path_sep/, $base;
   my $local = $cfg->entry('paths', 'local_templates');
-  my @dirs = ( $base );
-  unshift @dirs, $local if $local;
+  if ($local) {
+    unshift @dirs, split /\Q$path_sep/,
+      $cfg->entryVar('paths', 'local_templates');
+  }
 
   @dirs;
 }

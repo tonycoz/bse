@@ -79,12 +79,15 @@ directory under $TMPLDIR.
 
 =item templates
 
-Directory base for most templates.
+Directory base for most templates.  This can contain references like
+$(section/key) to other configuration entries.  Split on the systems
+PATH separators (run: perl -V:path_sep)
 
 =item local_templates
 
 Local Directory base for templates.  This is searched before the
-templates directory.
+templates directory.  This can contain references like $(section/key)
+to other configuration entries.  Split on the system's PATH separator.
 
 =item images
 
