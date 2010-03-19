@@ -49,8 +49,7 @@ sub custom_class {
   my $class = $cfg->entry('basic', 'custom_class', 'BSE::Custom');
   (my $file = $class . ".pm") =~ s!::!/!g;
 
-  my $local_inc = $cfg->entry('paths', 'libraries');
-  unshift @INC, $local_inc if $local_inc;
+  _do_local_inc($cfg);
 
   require $file;
 
@@ -99,8 +98,7 @@ sub credit_card_class {
     or return;
   (my $file = $class . ".pm") =~ s!::!/!g;
 
-  my $local_inc = $cfg->entry('paths', 'libraries');
-  unshift @INC, $local_inc if $local_inc;
+  _do_local_inc($cfg);
 
   require $file;
 
@@ -159,6 +157,14 @@ sub bse_default_country {
   my ($cfg) = @_;
 
   return $cfg->entry("basic", "country", "Australia");
+}
+
+sub _do_local_inc {
+  my ($cfg) = @_;
+
+  my $local_inc = $cfg->entryIfVar('paths', 'libraries');
+
+  unshift @INC, $local_inc if $local_inc;
 }
 
 1;
