@@ -13,6 +13,12 @@
   <th>Task</th>
   <td><:task description:></td>
 </tr>
+<:ifTask long_desc:>
+<tr>
+  <th>Description</th>
+  <td><:task long_desc |z:></td>
+</tr>
+<:or:><:eif:>
 <tr>
   <th>Status</th>
   <td><:ifTask_running:>Running (<:task task_pid:>)<:or:>Stopped<:eif:></td>

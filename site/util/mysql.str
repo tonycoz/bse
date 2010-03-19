@@ -126,6 +126,7 @@ Column task_pid;int(11);YES;NULL;
 Column last_exit;int(11);YES;NULL;
 Column last_started;datetime;YES;NULL;
 Column last_completion;datetime;YES;NULL;
+Column long_desc;text;YES;NULL;
 Index PRIMARY;1;[id]
 Table bse_file_access_log
 Column id;int(11);NO;NULL;auto_increment

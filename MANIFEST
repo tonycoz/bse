@@ -651,6 +651,7 @@ site/util/bseaddimages.pl
 site/util/bse_back.pl
 site/util/bse_notify_files.pl
 site/util/bse_s3.pl
+site/util/bse_session_clean.pl
 site/util/bse_storage.pl
 site/util/bsexlsprod.pl
 site/util/gen.pl

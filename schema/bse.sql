@@ -1005,5 +1005,8 @@ create table bse_background_tasks (
   last_started datetime null,
 
   -- last completion time
-  last_completion datetime null
+  last_completion datetime null,
+
+  -- longer description
+  long_desc text null
 );

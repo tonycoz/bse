@@ -4,14 +4,35 @@ description: Regenerate Site
 binname: perl util/gen.pl
 bin_opts: -v
 start_right: regen_all
+long_desc: <<TEXT
+Regenerate all of the pages in your site, similar to the <b>Regenerate
+static and base pages</b> options on the main menu.
+TEXT
 
 id: bse_sync_storage
 description: Synchronize File Stores
 binname: perl util/bse_storage.pl
 bin_opts: sync -v
+long_desc: <<TEXT
+Synchronizes images and files stored with Amazon S3 or other external
+file stores.  If you aren't using external file stores, this task
+isn't useful.
+TEXT
 
 id: bse_notify_files
 description: Notify Members about new files
 binname: perl util/bse_notify_files.pl
 bin_opts: -v 2
+long_desc: <<TEXT
+Notifies members who have had new files added to their account or a
+group.
+TEXT
+
+id: bse_session_clean
+description: Web session table clean up
+binname: perl util/bse_session_clean.pl
+bin_opts: -v=3
+long_desc: <<TEXT
+Cleans up old entries from BSE's session table.
+TEXT
 
