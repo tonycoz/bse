@@ -157,6 +157,8 @@ CREATE TABLE sessions (
   a_session text,
   -- so we can age this table
   whenChanged timestamp
+  -- note: an index on whenChanged would speed up only the rare case 
+  -- of bse_session_clean.pl, think hard before adding an index
 );
 
 -- these share data with the article table
@@ -1007,6 +1009,6 @@ create table bse_background_tasks (
   -- last completion time
   last_completion datetime null,
 
-  -- longer description
+  -- longer description - formatted as HTML
   long_desc text null
 );

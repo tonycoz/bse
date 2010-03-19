@@ -114,7 +114,9 @@ sub start {
     or die "Cannot redirect stdout: $!";
   untie *STDERR;
   open STDERR, ">&STDOUT" or die "Cannot redirect STDOUT: $!";
+  unless ($foreground) {
     POSIX::setsid();
+  }
 
   my $pid2 = fork;
   unless (defined $pid2) {
@@ -122,7 +124,12 @@ sub start {
     $self->set_running(0);
     $self->set_task_pid(undef);
     $self->save;
-    exit;
+    if ($foreground) {
+      $$msg = "Cannot start child: $!\n";
+    }
+    else {
+      exit;
+    }
   }
   
   if ($pid2) {
@@ -144,7 +151,12 @@ sub start {
     $task->set_last_exit($?);
     $task->set_last_completion(now_sqldatetime());
     $task->save;
-    exit;
+    if ($foreground) {
+      return $pid2;
+    }
+    else {
+      exit;
+    }
   }
   else {
     BSE::DB->forked;

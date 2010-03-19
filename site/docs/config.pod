@@ -2017,6 +2017,46 @@ empty.  Useful for including a unit ("pixels") or format help
 
 =back
 
+=head2 [session cleanup]
+
+Controls the processing of the bse_session_clean.pl script.
+
+=over
+
+=item *
+
+days - the minimum age in days of sessions to be removed.  Default: 30.
+
+=item *
+
+per - the number of records to remove per SQL delete request.
+Default: 1000.
+
+=item *
+
+count - the number of SQL delete requests to perform, maximum.
+Default: 1000.
+
+=item *
+
+optimize - whether to perform a table optimization after deleting
+records.  Default: 1 (set to 0 to skip optimization)
+
+=back
+
+=head2 [nightly work]
+
+Controls the bse_nightly.pl script.
+
+=over
+
+=item *
+
+jobs - a comma separated list of BSE background processes to run when
+bse_nightly.pl is run.  Default: bse_session_clean
+
+=back
+
 =head1 AUTHOR
 
 Tony Cook <tony@develop-help.com>
