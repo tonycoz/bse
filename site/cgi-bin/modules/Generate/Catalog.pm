@@ -193,7 +193,7 @@ HTML
 	 return '';
        }
      },
-     $it->make_iterator(undef, 'allprod', 'allprods', \@allprods, 
+     $art_it->make_iterator(undef, 'allprod', 'allprods', \@allprods, 
 			\$allprod_index),
      moveallprod =>
      sub {
