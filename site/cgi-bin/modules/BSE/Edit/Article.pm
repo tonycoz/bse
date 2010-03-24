@@ -838,13 +838,16 @@ sub tag_imgmove {
   $url .= $urladd;
 
   my $image = $images->[$$rindex];
-  my $down_url;
+  my $csrfp = $req->get_csrf_token("admin_move_image");
+  my $baseurl = "$ENV{SCRIPT_NAME}?id=$article->{id}&imageid=$image->{id}&";
+  $baseurl .= "_csrfp=$csrfp&";
+  my $down_url = "";
   if ($$rindex < $#$images) {
-    $down_url = "$ENV{SCRIPT_NAME}?id=$article->{id}&moveimgdown=1&imageid=$image->{id}";
+    $down_url = $baseurl . "moveimgdown=1";
   }
-  my $up_url = '';
+  my $up_url = "";
   if ($$rindex > 0) {
-    $up_url = "$ENV{SCRIPT_NAME}?id=$article->{id}&moveimgup=1&imageid=$image->{id}";
+    $up_url = $baseurl . "moveimgup=1";
   }
   return make_arrows($req->cfg, $down_url, $up_url, $url, $img_prefix);
 }
@@ -873,12 +876,15 @@ sub tag_movefiles {
   }
 
   my $down_url = "";
+  my $csrfp = $req->get_csrf_token("admin_move_file");
+  my $baseurl = "$ENV{SCRIPT_NAME}?fileswap=1&id=$article->{id}&";
+  $baseurl .= "_csrfp=$csrfp&";
   if ($$rindex < $#$files) {
-    $down_url = "$ENV{SCRIPT_NAME}?fileswap=1&amp;id=$article->{id}&amp;file1=$files->[$$rindex]{id}&amp;file2=$files->[$$rindex+1]{id}";
+    $down_url = $baseurl . "file1=$files->[$$rindex]{id}&file2=$files->[$$rindex+1]{id}";
   }
   my $up_url = "";
   if ($$rindex > 0) {
-    $up_url = "$ENV{SCRIPT_NAME}?fileswap=1&amp;id=$article->{id}&amp;file1=$files->[$$rindex]{id}&amp;file2=$files->[$$rindex-1]{id}";
+    $up_url = $baseurl . "file1=$files->[$$rindex]{id}&file2=$files->[$$rindex-1]{id}";
   }
 
   return make_arrows($req->cfg, $down_url, $up_url, $url, $img_prefix);
@@ -1309,8 +1315,8 @@ sub edit_form {
   return $self->low_edit_form($request, $article, $articles, $msg, $errors);
 }
 
-sub add_form {
-  my ($self, $req, $articles, $msg, $errors) = @_;
+sub _dummy_article {
+  my ($self, $req, $articles, $rmsg) = @_;
 
   my $level;
   my $cgi = $req->cgi;
@@ -1347,13 +1353,25 @@ sub add_form {
 
   my ($values, $labels) = $self->possible_parents(\%article, $articles, $req);
   unless (@$values) {
-    require BSE::Edit::Site;
-    my $site = BSE::Edit::Site->new(cfg=>$req->cfg, db=> BSE::DB->single);
-    return $site->edit_sections($req, $articles, 
-				"You can't add children to any article at that level");
+    $$rmsg = "You can't add children to any article at that level";
+    return;
   }
 
-  return $self->low_edit_form($req, \%article, $articles, $msg, $errors);
+  return \%article;
+}
+
+sub add_form {
+  my ($self, $req, $articles, $msg, $errors) = @_;
+
+  my $mymsg;
+  my $article = $self->_dummy_article($req, $articles, \$mymsg);
+  unless ($article) {
+    require BSE::Edit::Site;
+    my $site = BSE::Edit::Site->new(cfg=>$req->cfg, db=> BSE::DB->single);
+    return $site->edit_sections($req, $articles, $mymsg);
+  }
+
+  return $self->low_edit_form($req, $article, $articles, $msg, $errors);
 }
 
 sub generator { 'Generate::Article' }
@@ -1488,6 +1506,9 @@ sub make_link {
 
 sub save_new {
   my ($self, $req, $articles) = @_;
+
+  $req->check_csrf("admin_add_article")
+    or return $self->csrf_error($req, undef, "admin_add_article", "Add Article");
   
   my $cgi = $req->cgi;
   my %data;
@@ -1638,6 +1659,9 @@ sub fill_old_data {
 
 sub save {
   my ($self, $req, $article, $articles) = @_;
+
+  $req->check_csrf("admin_save_article")
+    or return $self->csrf_error($req, $article, "admin_save_article", "Save Article");
 
   $req->user_can(edit_save => $article)
     or return $self->edit_form($req, $article, $articles,
@@ -1991,6 +2015,9 @@ sub child_types {
 sub add_stepkid {
   my ($self, $req, $article, $articles) = @_;
 
+  $req->check_csrf("admin_add_stepkid")
+    or return $self->csrf_error($req, $article, "admin_add_stepkid", "Add Stepkid");
+
   $req->user_can(edit_stepkid_add => $article)
     or return $self->edit_form($req, $article, $articles,
 			       "You don't have access to add step children to this article");
@@ -2031,6 +2058,8 @@ sub add_stepkid {
 sub del_stepkid {
   my ($self, $req, $article, $articles) = @_;
 
+  $req->check_csrf("admin_remove_stepkid")
+    or return $self->csrf_error($req, $article, "admin_del_stepkid", "Delete Stepkid");
   $req->user_can(edit_stepkid_delete => $article)
     or return $self->edit_form($req, $article, $articles,
 			       "You don't have access to delete stepchildren from this article");
@@ -2063,6 +2092,9 @@ sub del_stepkid {
 
 sub save_stepkids {
   my ($self, $req, $article, $articles) = @_;
+
+  $req->check_csrf("admin_save_stepkids")
+    or return $self->csrf_error($req, $article, "admin_save_stepkids", "Save Stepkids");
 
   $req->user_can(edit_stepkid_save => $article)
     or return $self->edit_form($req, $article, $articles,
@@ -2105,6 +2137,9 @@ sub save_stepkids {
 
 sub add_stepparent {
   my ($self, $req, $article, $articles) = @_;
+
+  $req->check_csrf("admin_add_stepparent")
+    or return $self->csrf_error($req, $article, "admin_add_stepparent", "Add Stepparent");
 
   $req->user_can(edit_stepparent_add => $article)
     or return $self->edit_form($req, $article, $articles,
@@ -2150,6 +2185,9 @@ sub add_stepparent {
 sub del_stepparent {
   my ($self, $req, $article, $articles) = @_;
 
+  $req->check_csrf("admin_remove_stepparent")
+    or return $self->csrf_error($req, $article, "admin_del_stepparent", "Delete Stepparent");
+
   $req->user_can(edit_stepparent_delete => $article)
     or return $self->edit_form($req, $article, $articles,
 			       "You cannot remove stepparents from that article");
@@ -2184,6 +2222,8 @@ sub del_stepparent {
 sub save_stepparents {
   my ($self, $req, $article, $articles) = @_;
 
+  $req->check_csrf("admin_save_stepparents")
+    or return $self->csrf_error($req, $article, "admin_save_stepparents", "Save Stepparents");
   $req->user_can(edit_stepparent_save => $article)
     or return $self->edit_form($req, $article, $articles,
 			       "No access to save stepparent data for this artice");
@@ -2279,6 +2319,9 @@ sub show_images {
 
 sub save_image_changes {
   my ($self, $req, $article, $articles) = @_;
+
+  $req->check_csrf("admin_save_images")
+    or return $self->csrf_error($req, $article, "admin_save_images", "Save Images");
 
   $req->user_can(edit_images_save => $article)
     or return $self->edit_form($req, $article, $articles,
@@ -2684,6 +2727,8 @@ sub do_add_image {
 sub add_image {
   my ($self, $req, $article, $articles) = @_;
 
+  $req->check_csrf("admin_add_image")
+    or return $self->csrf_error($req, $article, "admin_add_image", "Add Image");
   $req->user_can(edit_images_add => $article)
     or return $self->_service_error($req, $article, $articles,
 				    "You don't have access to add new images to this article");
@@ -2738,6 +2783,9 @@ sub _image_manager {
 sub remove_img {
   my ($self, $req, $article, $articles, $imageid) = @_;
 
+  $req->check_csrf("admin_remove_image")
+    or return $self->csrf_error($req, $article, "admin_remove_image", "Remove Image");
+
   $req->user_can(edit_images_delete => $article)
     or return $self->edit_form($req, $article, $articles,
 				 "You don't have access to delete images from this article");
@@ -2766,6 +2814,8 @@ sub remove_img {
 sub move_img_up {
   my ($self, $req, $article, $articles) = @_;
 
+  $req->check_csrf("admin_move_image")
+    or return $self->csrf_error($req, $article, "admin_move_image", "Move Image");
   $req->user_can(edit_images_reorder => $article)
     or return $self->edit_form($req, $article, $articles,
 				 "You don't have access to reorder images in this article");
@@ -2791,6 +2841,8 @@ sub move_img_up {
 sub move_img_down {
   my ($self, $req, $article, $articles) = @_;
 
+  $req->check_csrf("admin_move_image")
+    or return $self->csrf_error($req, $article, "admin_move_image", "Move Image");
   $req->user_can(edit_images_reorder => $article)
     or return $self->edit_form($req, $article, $articles,
 				 "You don't have access to reorder images in this article");
@@ -2912,6 +2964,8 @@ sub req_edit_image {
 sub req_save_image {
   my ($self, $req, $article, $articles) = @_;
   
+  $req->check_csrf("admin_save_image")
+    or return $self->csrf_error($req, $article, "admin_save_image", "Save Image");
   my $cgi = $req->cgi;
 
   my $id = $cgi->param('image_id');
@@ -3093,6 +3147,8 @@ my %file_fields =
 sub fileadd {
   my ($self, $req, $article, $articles) = @_;
 
+  $req->check_csrf("admin_add_file")
+    or return $self->csrf_error($req, $article, "admin_add_file", "Add File");
   $req->user_can(edit_files_add => $article)
     or return $self->edit_form($req, $article, $articles,
 			      "You don't have access to add files to this article");
@@ -3272,6 +3328,9 @@ sub fileadd {
 sub fileswap {
   my ($self, $req, $article, $articles) = @_;
 
+  $req->check_csrf("admin_move_file")
+    or return $self->csrf_error($req, $article, "admin_move_file", "Move File");
+
   $req->user_can('edit_files_reorder', $article)
     or return $self->edit_form($req, $article, $articles,
 			   "You don't have access to reorder files in this article");
@@ -3303,6 +3362,8 @@ sub fileswap {
 sub filedel {
   my ($self, $req, $article, $articles) = @_;
 
+  $req->check_csrf("admin_remove_file")
+    or return $self->csrf_error($req, $article, "admin_remove_file", "Delete File");
   $req->user_can('edit_files_delete', $article)
     or return $self->edit_form($req, $article, $articles,
 			       "You don't have access to delete files from this article");
@@ -3332,6 +3393,9 @@ sub filedel {
 
 sub filesave {
   my ($self, $req, $article, $articles) = @_;
+
+  $req->check_csrf("admin_save_files")
+    or return $self->csrf_error($req, $article, "admin_save_files", "Save Files");
 
   $req->user_can('edit_files_save', $article)
     or return $self->edit_form($req, $article, $articles,
@@ -3715,6 +3779,9 @@ sub req_edit_file {
 sub req_save_file {
   my ($self, $req, $article, $articles) = @_;
 
+  $req->check_csrf("admin_save_file")
+    or return $self->csrf_error($req, $article, "admin_save_file", "Save File");
+
   my $cgi = $req->cgi;
 
   my @files = $self->get_files($article);
@@ -3966,6 +4033,9 @@ sub can_remove {
 
 sub remove {
   my ($self, $req, $article, $articles) = @_;
+
+  $req->check_csrf("admin_remove_article")
+    or return $self->csrf_error($req, $article, "admin_remove_article", "Remove Article");
 
   my $why_not;
   unless ($self->can_remove($req, $article, $articles, \$why_not)) {
@@ -4297,6 +4367,13 @@ sub csrf_error {
   my %errors;
   my $msg = $req->csrf_error;
   $errors{_csrfp} = $msg;
+  my $mymsg;
+  $article ||= $self->_dummy_article($req, 'Articles', \$mymsg);
+  unless ($article) {
+    require BSE::Edit::Site;
+    my $site = BSE::Edit::Site->new(cfg=>$req->cfg, db=> BSE::DB->single);
+    return $site->edit_sections($req, 'Articles', $mymsg);
+  }
   return $self->_service_error($req, $article, 'Articles', $msg, \%errors);
 }
 

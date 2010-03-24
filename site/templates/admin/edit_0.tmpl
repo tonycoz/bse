@@ -64,7 +64,7 @@
           <td width="70%"><: summary child body :></td>
           <td bgcolor="#FFFFFF" align="center"><: is child listed :></td>
           <td nowrap="nowrap"> <a href="/cgi-bin/admin/add.pl?id=<:child id:>">Edit</a> 
-            <:if UserCan edit_delete_article:child:><a href="/cgi-bin/admin/add.pl?id=<:child id:>&amp;remove=1" onclick="return window.confirm('Are you sure you want to delete this Section')">Delete</a> <:or UserCan:><:eif UserCan:></td>
+            <:if UserCan edit_delete_article:child:><a href="/cgi-bin/admin/add.pl?id=<:child id:>&amp;remove=1&amp;_csrfp=<:csrfp admin_remove_article:>" onclick="return window.confirm('Are you sure you want to delete this Section')">Delete</a> <:or UserCan:><:eif UserCan:></td>
 		   <td nowrap="nowrap"><:movechild:></td>
         </tr>
         <:iterator separator children:> <:iterator end children:> 

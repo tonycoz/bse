@@ -50,7 +50,7 @@
     <input type="hidden" name="type" value="Article" />
     <input type="hidden" name="level" value="<: level :>" />
     <input type="hidden" name="id" value="<: article id :>" />
-
+<:ifNew:><:csrfp admin_add_article hidden:><:or:><:csrfp admin_save_article hidden:><:eif:>
         <table class="editform">
           <tr> 
             <th>Parent:</th>

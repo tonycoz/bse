@@ -15,6 +15,7 @@
 
 <input type="hidden" name="id" value="<: article id :>" />
 <input type="hidden" name="_t" value="file" />
+<:csrfp admin_add_file hidden:>
         <table class="editform editformsmall">
           <tr> 
             <th>File to add:</th>
@@ -109,6 +110,7 @@
 <input type="hidden" name="id" value="<: article id :>" />
 <input type="hidden" name="_t" value="file" />
 <input type="hidden" name="save_file_flags" value="1" />
+<:csrfp admin_save_files hidden:>
         <table id="filelist" class="editform">
           <:if Files:><tr> 
             <th nowrap="nowrap" bgcolor="#FFFFFF"> File</th>
@@ -163,7 +165,7 @@
                     &nbsp;&nbsp;&nbsp;
                   
 <:ifUserCan edit_files_save:article:><b><a href="<:script:>?a_edit_file=1&amp;id=<:article id:>&amp;file_id=<:file id:>">Edit</a></b> <:or:><:eif:>
-<:ifUserCan edit_files_delete:article:><b><a href="<:script:>?filedel=1&amp;id=<:article id:>&amp;file=<:file id:>&amp;_t=file" onClick="return window.confirm('Are you sure you want to delete this File')">Delete</a></b> <:or:><:eif:>
+<:ifUserCan edit_files_delete:article:><b><a href="<:script:>?filedel=1&amp;id=<:article id:>&amp;file=<:file id:>&amp;_t=file&amp;_csrfp=<:csrfp admin_remove_file:>" onClick="return window.confirm('Are you sure you want to delete this File')">Delete</a></b> <:or:><:eif:>
                     <:movefiles:>
 <span class="file_info_trigger">Info
 <div class="file_info">
