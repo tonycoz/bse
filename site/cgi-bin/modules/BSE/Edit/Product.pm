@@ -508,6 +508,11 @@ my %defaults =
    subscription_period => 1,
    subscription_usage => 3,
    retailPrice => 0,
+   product_code => '',
+   weight => 0,
+   length => 0,
+   height => 0,
+   width => 0,
   );
 
 sub default_value {
