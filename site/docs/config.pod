@@ -363,6 +363,12 @@ articles via , article flags, C<[template >
 I<templatename>C<].no_cache_dynamic> and [article].no_cache_dynamic.
 Default: 1.
 
+=item redir_to_alias
+
+If true then page.pl will 301 redirect (Moved Permanently) requests
+for an article by its id to the generated link if the article has a
+link alias.  Default: false.  Must only be used with use_alias true.
+
 =back
 
 =head2 [mail]

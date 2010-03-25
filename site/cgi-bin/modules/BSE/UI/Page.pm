@@ -14,14 +14,16 @@ sub dispatch {
   my $cfg = $req->cfg;
   my $article;
   my $id;
-    my @more_headers;
+  my $found_by_id = 0;
+  my @more_headers;
   if ($self->action) {
     my $action = $self->action;
     if ($action =~ /^\d+$/) {
       $article = Articles->getByPkey($action)
 	or return $self->error($req, "unknown article id $action");
+      $found_by_id = 1;
     }
-    elsif ($action =~ /^\w+$/) {
+    elsif ($action =~ /^[\w-]+$/) {
       $article = Articles->getBy(linkAlias => $action)
 	or return $self->error($req, "Unknown article alias '$action'");
     }
@@ -34,6 +36,7 @@ sub dispatch {
 	or return $self->error($req, "page parameter not valid");
       $article = Articles->getByPkey($id)
 	or return $self->error($req, "unknown article id $id");
+      $found_by_id = 1;
     }
     elsif (my $alias = $cgi->param('alias')) {
       $article = Articles->getBy(linkAlias => $alias)
@@ -63,6 +66,13 @@ sub dispatch {
       }
     }
     return $self->error($req, "No page or page alias specified for display");
+  }
+
+  if ($found_by_id && 
+      $article->linkAlias &&
+      $cfg->entry("basic", "redir_to_alias", 0)) {
+    # this should be a 301
+    return BSE::Template->get_moved($article->link($cfg), $cfg);
   }
 
   # check if we should override the default no-cache
