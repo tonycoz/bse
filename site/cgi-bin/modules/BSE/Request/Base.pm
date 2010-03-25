@@ -585,7 +585,12 @@ sub admin_tags {
 
 =item is_ajax
 
-Return true if the current request is an ajax request.
+Return true if the current request is an Ajax request.
+
+Warning: changing this code has security concerns, it should only
+match where the request can only be an Ajax request - if the request
+can be produced by a normal form/link POST or GET this method must NOT
+return true.
 
 =cut
 
@@ -595,10 +600,6 @@ sub is_ajax {
   defined $ENV{HTTP_X_REQUESTED_WITH}
     && $ENV{HTTP_X_REQUESTED_WITH} =~ /XMLHttpRequest/
       and return 1;
-
-  my $under = () = $self->cgi->param('_');
-  $under
-    and return 1;
 
   return;
 }
@@ -781,6 +782,9 @@ sub check_csrf {
 
   defined $name
     or confess "No CSRF token name supplied";
+
+  $self->is_ajax
+    and return 1;
 
   my $debug = $self->cfg->entry('debug', 'csrf', 0);
 
