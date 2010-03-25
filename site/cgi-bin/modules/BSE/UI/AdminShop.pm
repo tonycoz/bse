@@ -85,9 +85,7 @@ sub embedded_catalog {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $req->cgi, $req->cfg),
-     BSE::Util::Tags->admin(\%acts, $req->cfg),
-     BSE::Util::Tags->secure($req),
+     $req->admin_tags,
      catalog => [ \&tag_hash, $catalog ],
      date => sub { display_date($list[$list_index]{$_[0]}) },
      money => sub { sprintf("%.2f", $list[$list_index]{$_[0]}/100.0) },
@@ -101,7 +99,7 @@ sub embedded_catalog {
        $list_index >= 0 && $list_index < @list
 	 or return '** outside products iterator **';
        my $value = $list[$list_index]{$_[0]};
-       defined $value or return;
+       defined $value or return '';
        return escape_html($value)
      },
      ifProducts => sub { @list },
@@ -207,9 +205,7 @@ sub req_product_list {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $cgi, $req->cfg),
-     BSE::Util::Tags->admin(\%acts, $req->cfg),
-     BSE::Util::Tags->secure($req),
+     $req->admin_tags,
      catalog=> sub { escape_html($catalogs[$catalog_index]{$_[0]}) },
      iterate_catalogs => sub { ++$catalog_index < @catalogs  },
      shopid=>sub { $shopid },
