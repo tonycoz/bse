@@ -218,3 +218,9 @@ sql_statement: <<SQL
 delete from bse_article_file_meta
 where file_id = ? and name = ?
 SQL
+
+name: bseArticleKidSummary
+sql_statement: <<SQL
+select id, title, level, listed from article where parentid = ?
+order by displayOrder desc
+SQL

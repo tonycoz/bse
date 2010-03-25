@@ -58,7 +58,9 @@ sub req_logon_form {
 }
 
 sub _service_error {
-  my ($self, $req, $error, $errors) = @_;
+  my ($self, $req, $error, $errors, $error_code) = @_;
+
+  $error_code ||= "UNKNOWN";
 
   if ($req->cgi->param('_service')) {
     my $body = '';
@@ -81,6 +83,17 @@ sub _service_error {
        type => 'text/plain',
        content => $body,
       };
+  }
+  elsif ($req->is_ajax) {
+    return $req->json_content
+      (
+       {
+	success => 0,
+	errors => $errors,
+	msg => $error,
+	error_code => $error_code,
+       }
+      );
   }
   else {
     return $self->req_logon_form($req, $error, $errors);
@@ -114,16 +127,19 @@ sub req_logon {
   defined $password && length $password
     or $errors{password} = "Please enter your password";
   %errors
-    and return $class->_service_error($req, undef, \%errors);
+    and return $class->_service_error($req, undef, \%errors, "FIELD");
   require BSE::TB::AdminUsers;
   my $user = BSE::TB::AdminUsers->getBy(logon=>$logon);
   $user && $user->{password} eq $password
-    or return $class->_service_error($req, "Invalid logon or password");
+    or return $class->_service_error($req, "Invalid logon or password", {}, "INVALID");
   $req->session->{adminuserid} = $user->{id};
   delete $req->session->{csrfp};
 
   if ($cgi->param('_service')) {
     return $class->_service_success({});
+  }
+  elsif ($req->is_ajax) {
+    return $req->json_content({success => 1});
   }
   else {
     my $r = $cgi->param('r');
@@ -141,6 +157,10 @@ sub req_logoff {
   delete $req->session->{adminuserid};
   delete $req->session->{csrfp};
   ++$req->session->{changed};
+
+  if ($req->is_ajax) {
+    return $req->json_content({ success => 1 });
+  }
 
   my $r = admin_base_url($req->cfg) . "/cgi-bin/admin/logon.pl";
 

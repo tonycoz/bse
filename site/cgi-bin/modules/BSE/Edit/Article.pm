@@ -37,8 +37,10 @@ sub not_logged_on {
     return $req->json_content
       (
        {
+	success => 0,
 	message => "Access forbidden: user not logged on",
 	errors => {},
+	error_code => "LOGON",
        }
       );
   }
@@ -137,6 +139,7 @@ sub article_actions {
      a_ajax_set => 'req_ajax_set',
      a_filemeta => 'req_filemeta',
      a_csrfp => 'req_csrfp',
+     a_tree => 'req_tree',
     );
 }
 
@@ -2536,7 +2539,7 @@ Otherwise display the normal edit page with the error.
 =cut
 
 sub _service_error {
-  my ($self, $req, $article, $articles, $msg, $error) = @_;
+  my ($self, $req, $article, $articles, $msg, $error, $code) = @_;
 
   unless ($article) {
     my $mymsg;
@@ -2578,6 +2581,7 @@ sub _service_error {
     $error ||= {};
     my $result = { errors => $error };
     $msg and $result->{message} = $msg;
+    $code and $result->{error_code} = $code;
     return $req->json_content($result);
   }
   else {
@@ -4412,7 +4416,7 @@ sub req_csrfp {
 
   $req->is_ajax
     or return $self->_service_error($req, undef, "Articles",
-				    "Only usable from Ajax", {}, "CTX");
+				    "Only usable from Ajax", {}, "NOTAJAX");
 
   my %errors;
   my $name = $req->cgi->param("name");
@@ -4432,6 +4436,50 @@ sub req_csrfp {
       success => 1,
       token => $req->get_csrf_token($name),
      },
+    );
+}
+
+sub _article_kid_summary {
+  my ($article_id, $depth) = @_;
+
+  my @kids = BSE::DB->query(bseArticleKidSummary => $article_id);
+  if (--$depth > 0) {
+    for my $kid (@kids) {
+      $kid->{children} = [ _article_kid_summary($kid->{id}, $depth) ];
+    }
+  }
+
+  return @kids;
+}
+
+=item a_tree
+
+Returns a JSON tree of articles.
+
+Requires an article id (-1 to start from the root).
+
+Takes an optional tree depth.  1 only shows immediate children of the
+article.
+
+=cut
+
+sub req_tree {
+  my ($self, $req, $article, $articles) = @_;
+
+  my $depth = $req->cgi->param("depth");
+  defined $depth && $depth =~ /^\d+$/ and $depth >= 1
+    or $depth = 10000; # something large
+
+  $req->is_ajax
+    or return $self->_service_error($req, $article, $articles, "Only available to Ajax requests", {}, "NOTAJAX");
+
+  return $req->json_content
+    (
+     success => 1,
+     articles =>
+     [
+      _article_kid_summary($article->id, $depth),
+     ],
     );
 }
 

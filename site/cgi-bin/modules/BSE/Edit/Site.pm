@@ -8,7 +8,7 @@ sub edit_sections {
   my ($self, $req, $articles, $msg) = @_;
 
   BSE::Permissions->check_logon($req)
-    or return BSE::Template->get_refresh($req->url('logon'), $req->cfg);
+    or return $self->not_logged_on($req);
 
   my $article = BSE::TB::Site->new;
 
@@ -18,7 +18,7 @@ sub edit_sections {
 my @site_actions =
   qw(edit artimg process addimg removeimg moveimgup moveimgdown a_thumb
      a_edit_image a_save_image filelist fileadd fileswap filedel 
-     filesave a_edit_file a_save_file);
+     filesave a_edit_file a_save_file a_tree);
 
 sub article_actions {
   my ($self) = @_;
