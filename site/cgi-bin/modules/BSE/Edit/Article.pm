@@ -136,6 +136,7 @@ sub article_actions {
      a_ajax_save_body => 'req_ajax_save_body',
      a_ajax_set => 'req_ajax_set',
      a_filemeta => 'req_filemeta',
+     a_csrfp => 'req_csrfp',
     );
 }
 
@@ -156,6 +157,7 @@ sub noarticle_actions {
     (
      add => 'add_form',
      save => 'save_new',
+     a_csrfp => 'req_csrfp',
     );
 }
 
@@ -2274,8 +2276,9 @@ sub refresh_url {
     if ($url !~ /[?&](m|message)=/ && $message) {
       # add in messages if none in the provided refresh
       my @msgs = ref $message ? @$message : $message;
+      my $sep = $url =~ /\?/ ? "&" : "?";
       for my $msg (@msgs) {
-	$url .= "&m=" . CGI::escape($msg);
+	$url .= $sep . "m=" . CGI::escape($msg);
       }
     }
   }
@@ -2534,6 +2537,15 @@ Otherwise display the normal edit page with the error.
 
 sub _service_error {
   my ($self, $req, $article, $articles, $msg, $error) = @_;
+
+  unless ($article) {
+    my $mymsg;
+    $article = $self->_dummy_article($req, $articles, \$mymsg);
+    $article ||=
+      {
+       map $_ => '', Article->columns
+      };
+  }
 
   if ($req->cgi->param('_service')) {
     my $body = '';
@@ -4057,6 +4069,9 @@ sub remove {
 sub unhide {
   my ($self, $req, $article, $articles) = @_;
 
+  $req->check_csrf("admin_save_article")
+    or return $self->csrf_error($req, $article, "admin_save_article", "Unhide article");
+
   if ($req->user_can(edit_field_edit_listed => $article)
       && $req->user_can(edit_save => $article)) {
     $article->{listed} = 1;
@@ -4070,6 +4085,9 @@ sub unhide {
 
 sub hide {
   my ($self, $req, $article, $articles) = @_;
+
+  $req->check_csrf("admin_save_article")
+    or return $self->csrf_error($req, $article, "admin_save_article", "Hide article");
 
   if ($req->user_can(edit_field_edit_listed => $article)
       && $req->user_can(edit_save => $article)) {
@@ -4375,6 +4393,46 @@ sub csrf_error {
     return $site->edit_sections($req, 'Articles', $mymsg);
   }
   return $self->_service_error($req, $article, 'Articles', $msg, \%errors);
+}
+
+=item a_csrp
+
+Returns the csrf token for a given action.
+
+Must only be callable from Ajax requests.
+
+In general Ajax requests won't require a token, but some types of
+requests initiated by an Ajax based client might need a token, in
+particular: file uploads.
+
+=cut
+
+sub req_csrfp {
+  my ($self, $req) = @_;
+
+  $req->is_ajax
+    or return $self->_service_error($req, undef, "Articles",
+				    "Only usable from Ajax", {}, "CTX");
+
+  my %errors;
+  my $name = $req->cgi->param("name");
+  defined $name or $errors{action} = "Missing parameter 'name'";
+  unless ($errors{name}) {
+    $name =~ /^\w+\z/
+      or $errors{name} = "Invalid name: must be an identifier";
+  }
+
+  keys %errors
+    and return $self->_service_error($req, undef, "Articles",
+				     "Invalid parameter", \%errors, "FIELD");
+
+  return $req->json_content
+    (
+     {
+      success => 1,
+      token => $req->get_csrf_token($name),
+     },
+    );
 }
 
 1;

@@ -57,6 +57,7 @@
   <input type="hidden" name="lastModified" value="<: old lastModified article lastModified :>" />
   <input type="hidden" name="id" value="<:seminar id:>" />
   <input type="hidden" name="type" value="Seminar" />
+<:ifNew:><:csrfp admin_add_article hidden:><:or:><:csrfp admin_save_article hidden:><:eif:>
   <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
     <tr>
       <td>
@@ -91,6 +92,12 @@
             <td nowrap="nowrap" bgcolor="#FFFFFF"><:ifFieldPerm description:><input type="text" name="description" value="<:old description default description:>" size="60" /><:or:><:seminar description:><:eif:> </td>
             <td nowrap="nowrap" bgcolor="#FFFFFF"><:help product description:> <:error_img
             description:></td>
+          </tr>
+          <tr> 
+            <th nowrap="nowrap" align="left" bgcolor="#FFFFFF">Product Code:</th>
+            <td nowrap="nowrap" bgcolor="#FFFFFF"><:ifFieldPerm product_code:><input type="text" name="product_code" value="<:old product_code default product_code:>" size=60><:or:><:product product_code:><:eif:> </td>
+            <td  nowrap="nowrap" bgcolor="#FFFFFF"><:help product product_code:> <:error_img
+            product_code:></td>
           </tr>
           <tr> 
             <th align="left" bgcolor="#FFFFFF" valign="top"> Body:</th>
