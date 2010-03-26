@@ -149,10 +149,18 @@ sub dh_parse_time_sql {
 sub dh_parse_sql_date {
   my ($date) = @_;
 
-  $date =~ /^(\d+)\D+(\d+)\D+(\d+)/
+  my ($year, $month, $day) = $date =~ /^(\d+)\D+(\d+)\D+(\d+)/
     or return;
 
-  return (0+$1, 0+$2, 0+$3);
+  # numify
+  $year += 0;
+  $month += 0;
+  $day += 0;
+
+  dh_valid_date($year, $month, $day)
+    or return;
+
+  return ($year, $month, $day);
 }
 
 sub dh_parse_sql_datetime {

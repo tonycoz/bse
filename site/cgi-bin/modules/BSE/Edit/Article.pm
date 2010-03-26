@@ -3,7 +3,6 @@ use strict;
 use base qw(BSE::Edit::Base);
 use BSE::Util::Tags qw(tag_error_img);
 use BSE::Util::SQL qw(now_sqldate now_sqldatetime);
-use BSE::Util::Valid qw/valid_date/;
 use BSE::Permissions;
 use DevHelp::HTML qw(:default popup_menu);
 use BSE::Arrows;
@@ -11,6 +10,7 @@ use BSE::CfgInfo qw(custom_class admin_base_url cfg_image_dir);
 use BSE::Util::Iterate;
 use BSE::Template;
 use BSE::Util::ContentType qw(content_type);
+use DevHelp::Date qw(dh_parse_date dh_parse_sql_date);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
 =head1 NAME
@@ -140,6 +140,7 @@ sub article_actions {
      a_filemeta => 'req_filemeta',
      a_csrfp => 'req_csrfp',
      a_tree => 'req_tree',
+     a_article => 'req_article',
     );
 }
 
@@ -1434,14 +1435,17 @@ sub validate {
 }
 
 sub validate_old {
-  my ($self, $article, $data, $articles, $errors) = @_;
+  my ($self, $article, $data, $articles, $errors, $ajax) = @_;
 
   $self->_validate_common($data, $articles, $errors, $article);
   custom_class($self->{cfg})
     ->article_validate($data, $article, $self->typename, $errors);
 
-  if (exists $data->{release} && !valid_date($data->{release})) {
-    $errors->{release} = "Invalid release date";
+  if (exists $data->{release}) {
+    if ($ajax && !dh_parse_sql_date($data->{release})
+	|| !$ajax && !dh_parse_date($data->{release})) {
+      $errors->{release} = "Invalid release date";
+    }
   }
 
   if (!$errors->{linkAlias} 
@@ -1592,7 +1596,7 @@ sub save_new {
 # end adrian
 
   $self->fill_new_data($req, \%data, $articles);
-  for my $col (qw(titleImage imagePos template keyword menu titleAlias linkAlias)) {
+  for my $col (qw(titleImage imagePos template keyword menu titleAlias linkAlias body author summary)) {
     defined $data{$col} 
       or $data{$col} = $self->default_value($req, \%data, $col);
   }
@@ -1607,8 +1611,10 @@ sub save_new {
     }
   }
 
-  for my $col (qw(release expire)) {
-    $data{$col} = sql_date($data{$col});
+  unless ($req->is_ajax) {
+    for my $col (qw(release expire)) {
+      $data{$col} = sql_date($data{$col});
+    }
   }
 
   # these columns are handled a little differently
@@ -1630,6 +1636,21 @@ sub save_new {
 
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
+
+  if ($req->is_ajax) {
+    my $article_data = $article->data_only;
+    $article_data->{images} = [];
+    $article_data->{files} = [];
+    $article_data->{link} = $article->link($req->cfg);
+
+    return $req->json_content
+      (
+       {
+	success => 1,
+	article => $self->_article_data($req, $article),
+       },
+      );
+  }
 
   my $r = $cgi->param('r');
   if ($r) {
@@ -1660,6 +1681,23 @@ sub fill_old_data {
     ->article_fill_old($article, $data, $self->typename);
 
   return 1;
+}
+
+sub _article_data {
+  my ($self, $req, $article) = @_;
+
+  my $article_data = $article->data_only;
+  $article_data->{link} = $article->link($req->cfg);
+  $article_data->{images} =
+    [
+     map $_->data_only, $article->images
+    ];
+  $article_data->{files} =
+    [
+     map $_->data_only, $article->files,
+    ];
+
+  return $article_data;
 }
 
 sub save {
@@ -1701,7 +1739,7 @@ sub save {
   $data{flags} = join '', sort $cgi->param('flags')
     if $req->user_can("edit_field_edit_flags", $article);
   my %errors;
-  $self->validate_old($article, \%data, $articles, \%errors)
+  $self->validate_old($article, \%data, $articles, \%errors, scalar $req->is_ajax)
     or return $self->edit_form($req, $article, $articles, undef, \%errors);
   $self->save_thumbnail($cgi, $article, \%data)
     if $req->user_can('edit_field_edit_thumbImage', $article);
@@ -1757,10 +1795,19 @@ sub save {
   $article->{listed} = $cgi->param('listed')
    if defined $cgi->param('listed') && 
       $req->user_can('edit_field_edit_listed', $article);
-  $article->{release} = sql_date($cgi->param('release'))
-    if defined $cgi->param('release') && 
-      $req->user_can('edit_field_edit_release', $article);
-  
+
+  if ($req->user_can('edit_field_edit_release', $article)) {
+    my $release = $cgi->param("release");
+    if (defined $release && $release =~ /\S/) {
+      if ($req->is_ajax) {
+	$article->{release} = $release;
+      }
+      else {
+	$article->{release} = sql_date($release)
+      }
+    }
+  }
+
   $article->{expire} = sql_date($cgi->param('expire')) || $Constants::D_99
     if defined $cgi->param('expire') && 
       $req->user_can('edit_field_edit_expire', $article);
@@ -1828,6 +1875,16 @@ sub save {
       my $regen = $articles->getByPkey($regen_id);
       Util::generate_low($articles, $regen, $self->{cfg});
     }
+  }
+
+  if ($req->is_ajax) {
+    return $req->json_content
+      (
+       {
+	success => 1,
+	article => $self->_article_data($req, $article),
+       },
+      );
   }
 
   return $self->refresh($article, $cgi, undef, 'Article saved');
@@ -2041,11 +2098,10 @@ sub add_stepkid {
     $req->user_can(edit_stepparent_add => $child)
       or die "You don't have access to add a stepparent to that article\n";
     
-    use BSE::Util::Valid qw/valid_date/;
     my $release = $cgi->param('release');
-    valid_date($release) or $release = undef;
+    dh_parse_date($release) or $release = undef;
     my $expire = $cgi->param('expire');
-    valid_date($expire) or $expire = undef;
+    dh_parse_date($expire) or $expire = undef;
   
     my $newentry = 
       BSE::Admin::StepParents->add($article, $child, $release, $expire);
@@ -2119,7 +2175,7 @@ sub save_stepkids {
 	if ($date eq '') {
 	  $date = $datedefs{$name};
 	}
-	elsif (valid_date($date)) {
+	elsif (dh_parse_date($date)) {
 	  use BSE::Util::SQL qw/date_to_sql/;
 	  $date = date_to_sql($date);
 	}
@@ -2167,13 +2223,12 @@ sub add_stepparent {
     my $release = $cgi->param('release');
     defined $release
       or $release = "01/01/2000";
-    use BSE::Util::Valid qw/valid_date/;
-    $release eq '' or valid_date($release)
+    $release eq '' or dh_parse_date($release)
       or die "Invalid release date";
     my $expire = $cgi->param('expire');
     defined $expire
       or $expire = '31/12/2999';
-    $expire eq '' or valid_date($expire)
+    $expire eq '' or dh_parse_date($expire)
       or die "Invalid expire data";
   
     my $newentry = 
@@ -2248,7 +2303,7 @@ sub save_stepparents {
 	if ($date eq '') {
 	  $date = $datedefs{$name};
 	}
-	elsif (valid_date($date)) {
+	elsif (dh_parse_date($date)) {
 	  use BSE::Util::SQL qw/date_to_sql/;
 	  $date = date_to_sql($date);
 	}
@@ -4122,6 +4177,8 @@ my %defaults =
    menu => 0,
    titleAlias => '',
    linkAlias => '',
+   author => '',
+   summary => '',
   );
 
 sub default_value {
@@ -4418,12 +4475,18 @@ sub req_csrfp {
     or return $self->_service_error($req, undef, "Articles",
 				    "Only usable from Ajax", {}, "NOTAJAX");
 
+  $ENV{REQUEST_METHOD} eq 'POST'
+    or return $self->_service_error($req, undef, "Articles",
+				    "POST required for this action", {}, "NOTPOST");
+
   my %errors;
-  my $name = $req->cgi->param("name");
-  defined $name or $errors{action} = "Missing parameter 'name'";
+  my (@names) = $req->cgi->param("name");
+  @names or $errors{name} = "Missing parameter 'name'";
   unless ($errors{name}) {
-    $name =~ /^\w+\z/
-      or $errors{name} = "Invalid name: must be an identifier";
+    for my $name (@names) {
+      $name =~ /^\w+\z/
+	or $errors{name} = "Invalid name: must be an identifier";
+    }
   }
 
   keys %errors
@@ -4434,7 +4497,10 @@ sub req_csrfp {
     (
      {
       success => 1,
-      token => $req->get_csrf_token($name),
+      tokens =>
+      {
+       map { $_ => $req->get_csrf_token($_) } @names,
+      },
      },
     );
 }
@@ -4480,6 +4546,29 @@ sub req_tree {
      [
       _article_kid_summary($article->id, $depth),
      ],
+    );
+}
+
+=item a_article
+
+Returns the article as JSON.
+
+Populates images with images and files with files.
+
+The article data is in the article member of the returned object.
+
+=cut
+
+sub req_article {
+  my ($self, $req, $article, $articles) = @_;
+
+  $req->is_ajax
+    or return $self->_service_error($req, $article, $articles, "Only available to Ajax requests", {}, "NOTAJAX");
+
+  return $req->json_content
+    (
+     success => 1,
+     article => $self->_article_data($req, $article),
     );
 }
 

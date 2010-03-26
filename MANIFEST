@@ -378,6 +378,7 @@ site/htdocs/images/videoclose.png
 # site/htdocs/js/admin_dragdrop.js
 site/htdocs/js/admin_prodopts.js
 site/htdocs/js/bse.js
+site/htdocs/js/bse_api.js
 site/htdocs/js/bse_flowplayer.js
 site/htdocs/js/builder.js
 site/htdocs/js/controls.js

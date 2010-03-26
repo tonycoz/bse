@@ -24,4 +24,13 @@ sub id {
   -1;
 }
 
+sub data_only {
+  my ($self) = @_;
+
+  return
+    {
+     map { $_ => $self->{$_} } grep /^[^_]/, keys %$self
+    };
+}
+
 1;

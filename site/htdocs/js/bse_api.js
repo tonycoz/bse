@@ -1,0 +1,171 @@
+// requires prototype.js for now
+
+var BSEAPI = Class.create
+  ({
+     initialize: function(domain) {
+       this.initialized = true;
+       this.onException = function(obj, e) { alert(e); };
+       this.onFailure = function(error) { alert(error.message); };
+     },
+     // logon to the server
+     // logon - logon name of user
+     // password - password of user
+     // onSuccess - called on successful logon (no parameters)
+     // onFailure - called with an error object on failure.
+     logon: function(parameters) {
+       var success = parameters.onSuccess;
+       if (!success) this._badparm("logon() missing onSuccess parameter");
+       var failure = parameters.onFailure;
+       if (!failure) failure = this.onFailure;
+       if (parameters.logon == null)
+	 this._badparm("logon() Missing logon parameter");
+       if (parameters.password == null)
+	 this._badparm("logon() Missing password parameter");
+       new Ajax.Request('/cgi-bin/admin/logon.pl',
+       {
+	 parameters: {
+	   a_logon: 1,
+	   logon: parameters.logon,
+	   password: parameters.password
+	 },
+	 onSuccess: function (success, failure, resp) {
+	   if (resp.responseJSON) {
+             if(resp.responseJSON.success != 0) {
+	       success();
+             }
+             else {
+	       failure(this._wrap_json_failure(resp), resp);
+             }
+	   }
+	   else {
+	     failure(this._wrap_nojson_failure(resp), resp);
+	   }
+	 }.bind(this, success, failure),
+	 onFailure: function (failure, resp) {
+	   failure(this._wrap_req_failure(resp), resp);
+	 }.bind(this, failure),
+	 onException: this.onException
+       });
+     },
+     // fetch a tree of articles;
+     // id - parent of tree to fetch
+     // depth - optional depth of tree to fetch (default is large)
+     // onSuccess - called with tree on success
+     // onFailure - called with error object on failure
+     tree: function(parameters) {
+       var success = parameters.onSuccess;
+       if (!success) this._badparm("tree() missing onSuccess parameter");
+       var failure = parameters.onFailure;
+       if (!failure) failure = this.onFailure;
+       var req_parms = { id: -1, a_tree: 1 };
+       if (parameters.id)
+	 req_parms.id = parameters.id;
+       if (parameters.depth)
+	 req_parms.depth = parameters.depth;
+       new Ajax.Request('/cgi-bin/admin/add.pl',
+       {
+	 parameters: req_parms,
+	 onSuccess: function(success, failure, resp) {
+	   if (resp.responseJSON) {
+	     if (resp.responseJSON.success != 0) {
+	       success(resp.responseJSON.articles);
+	     }
+	     else {
+	       failure(this._wrap_json_failure(resp), resp);
+	     }
+	   }
+	   else {
+	     failure(this._wrap_nojson_failure(resp), resp);
+	   }
+	 }.bind(this, success, failure),
+	 onFailure: function(failure, resp) {
+	   failure(this._wrap_req_failure(resp), resp);
+	 }.bind(this, failure),
+	 onException: this.onException
+       });
+     },
+     article: function(parameters) {
+       var success = parameters.onSuccess;
+       if (!success) this._badparm("tree() missing onSuccess parameter");
+       var failure = parameters.onFailure;
+       if (!failure) failure = this.onFailure;
+       if (parameters.id == null)
+	 this._badparm("article() missing id parameter");
+       var req_parms = { a_article: 1, id: parameters.id };
+       new Ajax.Request('/cgi-bin/admin/add.pl',
+       {
+	 parameters: req_parms,
+	 onSuccess: function(success, failure, resp) {
+	   if (resp.responseJSON) {
+	     if (resp.responseJSON.success != 0) {
+	       success(resp.responseJSON.article);
+	     }
+	     else {
+	       failure(this._wrap_json_failure(resp), resp);
+	     }
+	   }
+	   else {
+	     failure(this._wrap_nojson_failure(resp), resp);
+	   }
+	 }.bind(this, success, failure),
+	 onFailure: function(failure, resp) {
+	   failure(this._wrap_req_failure(resp), resp);
+	 }.bind(this, failure),
+	 onException: this.onException
+       });
+     },
+     save_article: function(parameters) {
+       var success = parameters.onSuccess;
+       if (!success) this._badparm("tree() missing onSuccess parameter");
+       var failure = parameters.onFailure;
+       if (!failure) failure = this.onFailure;
+       if (parameters.id == null)
+	 this._badparm("save_article() missing id parameter");
+       delete parameters.onSuccess;
+       delete parameters.onFailure;
+       parameters.save = 1;
+       new Ajax.Request('/cgi-bin/admin/add.pl',
+       {
+	 parameters: parameters,
+	 onSuccess: function(success, failure, resp) {
+	   if (resp.responseJSON) {
+	     if (resp.responseJSON.success != 0) {
+	       success(resp.responseJSON.article);
+	     }
+	     else {
+	       failure(this._wrap_json_failure(resp), resp);
+	     }
+	   }
+	   else {
+	     failure(this._wrap_nojson_failure(resp), resp);
+	   }
+	 }.bind(this, success, failure),
+	 onFailure: function(failure, resp) {
+	   failure(this._wrap_req_failure(resp), resp);
+	 }.bind(this, failure),
+	 onException: this.onException
+       });
+     },
+     _wrap_json_failure: function(resp) {
+       return resp.responseJSON;
+     },
+     _wrap_nojson_failure: function(resp) {
+       return {
+	   success: 0,
+	   message: "Unexpected non-JSON response from server",
+	   errors: {},
+	   error_code: "NOTJSON"
+	 };
+     },
+     _wrap_req_failure: function(resp) {
+       return {
+	 success: 0,
+	 message: "Server error requesing content: " + resp.statusText,
+	 errors: {},
+	 error_code: "SERVFAIL"
+       };
+     },
+     _badparm: function(msg) {
+       this.onException(msg);
+     }
+   });
