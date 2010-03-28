@@ -47,10 +47,9 @@ sub req_logon_form {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(undef, $req->cgi, $req->cfg),
-     BSE::Util::Tags->secure($req),
-     BSE::Util::Tags->admin(undef, $req->cfg),
+     $req->admin_tags($req),
      message => $msg,
+     ifError => 1, # all messages we display are errors
      error_img => [ \&tag_error_img, $req->cfg, $errors ],
     );
 

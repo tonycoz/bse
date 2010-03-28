@@ -1,8 +1,8 @@
 <:wrap admin/xbase.tmpl title=>"Edit [articleType]":>
 <h1><:ifNew:>New<:or:>Edit<:eif:> <:articleType:></h1>
-<:ifMessage:> 
-<p><b><:message:></b></p>
-<:or:><:eif:> 
+<:if Message:> 
+<div id="message" <:ifError:>class="error"<:or:><:eif:>><:message:></div>
+<:or Message:><:eif Message:> 
 <p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | <:ifNew:><:or:><:if Eq
    [article id] [cfg articles shop]:><a href="<:article admin:>">See shop</a><:or
     Eq:><a href="<:article admin:>">See article</a><:eif Eq:> | <:eif:><:editParent:> 

@@ -1,8 +1,8 @@
 <:wrap admin/base.tmpl title=>"Logon":>
 <h1>Logon</h1>
-<:ifMessage:>
-<p><b><:message:></b></p>
-<:or:><:eif:> 
+<:if Message:> 
+<div id="message" <:ifError:>class="error"<:or:><:eif:>><:message:></div>
+<:or Message:><:eif Message:> 
 
 <form method="post" action="<:adminbase:><:script:>">
 <:if Cgi r:>

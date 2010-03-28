@@ -314,3 +314,13 @@ img.bse_image_thumb {
 .meta_string { width: 95%; }
 .meta_real { width: 10em; }
 .meta_integer { width: 5em; }
+
+#message {
+  font-weight: bold;
+  font-size: 120%;
+  margin: 0.5em 0px 0.5em 0px;
+}
+
+#message.error {
+  color: red;
+}

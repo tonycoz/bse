@@ -1102,6 +1102,7 @@ sub low_edit_tags {
 
   my $cgi = $request->cgi;
   my $show_full = $cgi->param('f_showfull');
+  my $if_error = $msg || ($errors && keys %$errors) || $request->cgi->param("_e");
   $msg ||= join "\n", map escape_html($_), $cgi->param('message'), $cgi->param('m');
   $msg ||= $request->message($errors);
   my $parent;
@@ -1161,6 +1162,7 @@ sub low_edit_tags {
      ifCanThumbs => defined($thumbs_obj_real),
      imgmove => [ \&tag_imgmove, $request, $article, \$image_index, \@images ],
      message => $msg,
+     ifError => $if_error,
      DevHelp::Tags->make_iterator2
      ([ \&iter_get_kids, $article, $articles ], 
       'child', 'children', \@children, \$child_index),

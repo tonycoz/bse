@@ -490,6 +490,7 @@ sub common {
     (
      BSE::Util::Tags->basic(undef, $req->cgi, $req->cfg),
      csrfp => [ \&tag_csrfp, $req ],
+     ifError => 0, # overridden elsewhere
     );
 }
 
