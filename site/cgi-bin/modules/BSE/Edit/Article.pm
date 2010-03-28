@@ -1702,6 +1702,28 @@ sub _article_data {
   return $article_data;
 }
 
+=item save
+
+Error codes:
+
+=over
+
+=item *
+
+ACCESS - user doesn't have access to this article.
+
+=item *
+
+LASTMOD - lastModified value doesn't match that in the article
+
+=item *
+
+PARENT - invalid parentid specified
+
+=back
+
+=cut
+
 sub save {
   my ($self, $req, $article, $articles) = @_;
 
@@ -1709,8 +1731,9 @@ sub save {
     or return $self->csrf_error($req, $article, "admin_save_article", "Save Article");
 
   $req->user_can(edit_save => $article)
-    or return $self->edit_form($req, $article, $articles,
-			       "You don't have access to save this article");
+    or return $self->_service_error
+      ($req, $article, $articles, "You don't have access to save this article",
+       {}, "ACCESS");
 
   my $old_dynamic = $article->is_dynamic;
   my $cgi = $req->cgi;
@@ -1732,7 +1755,7 @@ sub save {
       }
       print STDERR "non-matching lastModified, article not saved\n";
       my $msg = "Article changes not saved, this article was modified $whoModified at $timeModified since this editor was loaded";
-	  return $self->edit_form($req, $article, $articles, $msg);
+      return $self->_service_error($req, $article, $articles, $msg, {}, "LASTMOD");
     }
   }
 # end adrian
@@ -1741,16 +1764,15 @@ sub save {
   $data{flags} = join '', sort $cgi->param('flags')
     if $req->user_can("edit_field_edit_flags", $article);
   my %errors;
+  if (exists $article->{template} &&
+      $article->{template} =~ m|\.\.|) {
+    $errors{template} = "Please only select templates from the list provided";
+  }
   $self->validate_old($article, \%data, $articles, \%errors, scalar $req->is_ajax)
-    or return $self->edit_form($req, $article, $articles, undef, \%errors);
+    or return $self->_service_error($req, $article, $articles, undef, \%errors, "FIELD");
   $self->save_thumbnail($cgi, $article, \%data)
     if $req->user_can('edit_field_edit_thumbImage', $article);
   $self->fill_old_data($req, $article, \%data);
-  if (exists $article->{template} &&
-      $article->{template} =~ m|\.\.|) {
-    my $msg = "Please only select templates from the list provided";
-    return $self->edit_form($req, $article, $articles, $msg);
-  }
   
   # reparenting
   my $newparentid = $cgi->param('parentid');
@@ -1768,16 +1790,16 @@ sub save {
 	  if ($article->{id} == $newparentid 
 	      || $self->is_descendant($article->{id}, $newparentid, $articles)) {
 	    my $msg = "Cannot become a child of itself or of a descendant";
-	    return $self->edit_form($req, $article, $articles, $msg);
+	    return $self->_service_error($req, $article, $articles, $msg, {}, "PARENT");
 	  }
 	  my $shopid = $self->{cfg}->entryErr('articles', 'shop');
 	  if ($self->is_descendant($article->{id}, $shopid, $articles)) {
 	    my $msg = "Cannot become a descendant of the shop";
-	    return $self->edit_form($req, $article, $articles, $msg);
+	    return $self->_service_error($req, $article, $articles, $msg, {}, "PARENT");
 	  }
 	  my $msg;
 	  $self->reparent($article, $newparentid, $articles, \$msg)
-	    or return $self->edit_form($req, $article, $articles, $msg);
+	    or return $self->_service_error($req, $article, $articles, $msg, {}, "PARENT");
 	}
 	else {
 	  # stays at the same level, nothing special
@@ -1790,7 +1812,7 @@ sub save {
       # becoming a section
       my $msg;
       $self->reparent($article, -1, $articles, \$msg)
-	or return $self->edit_form($req, $article, $articles, $msg);
+	or return $self->_service_error($req, $article, $articles, $msg, {}, "PARENT");
     }
   }
 
@@ -4081,28 +4103,61 @@ sub req_save_file {
 }
 
 sub can_remove {
-  my ($self, $req, $article, $articles, $rmsg) = @_;
+  my ($self, $req, $article, $articles, $rmsg, $rcode) = @_;
 
   unless ($req->user_can('edit_delete_article', $article, $rmsg)) {
     $$rmsg ||= "Access denied";
+    $$rcode = "ACCESS";
     return;
   }
 
   if ($articles->children($article->{id})) {
     $$rmsg = "This article has children.  You must delete the children first (or change their parents)";
+    $$rcode = "CHILDREN";
     return;
   }
   if (grep $_ == $article->{id}, @Constants::NO_DELETE) {
     $$rmsg = "Sorry, these pages are essential to the site structure - they cannot be deleted";
+    $$rcode = "ESSENTIAL";
     return;
   }
   if ($article->{id} == $Constants::SHOPID) {
     $$rmsg = "Sorry, these pages are essential to the store - they cannot be deleted - you may want to hide the store instead.";
+    $$rcode = "SHOP";
     return;
   }
 
   return 1;
 }
+
+=item remove
+
+Error codes:
+
+=over
+
+=item *
+
+ACCESS - access denied
+
+=item *
+
+CHILDREN - the article has children
+
+=item *
+
+ESSENTIAL - the article is marked essential
+
+=item *
+
+SHOP - the article is an essential part of the shop (the shop article
+itself)
+
+=back
+
+JSON success response: { success: 1 }
+
+=cut
 
 sub remove {
   my ($self, $req, $article, $articles) = @_;
@@ -4111,12 +4166,20 @@ sub remove {
     or return $self->csrf_error($req, $article, "admin_remove_article", "Remove Article");
 
   my $why_not;
-  unless ($self->can_remove($req, $article, $articles, \$why_not)) {
-    return $self->edit_form($req, $article, $articles, $why_not);
+  my $code;
+  unless ($self->can_remove($req, $article, $articles, \$why_not, \$code)) {
+    return $self->_service_error($req, $article, $articles, $why_not, {}, $code);
   }
 
   my $parentid = $article->{parentid};
   $article->remove($req->cfg);
+
+  if ($req->is_ajax) {
+    return $req->json_content
+      (
+       success => 1,
+      );
+  }
 
   my $url = $req->cgi->param('r');
   unless ($url) {

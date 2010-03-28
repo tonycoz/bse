@@ -36,6 +36,14 @@ if (defined $id && $id =~ /\d/ && $id == -1) {
 elsif (my ($obj, $article) = BSE::Edit::Base->article_class_id($id, $articles, $cfg)) {
   $result = $obj->article_dispatch($req, $article, $articles);
 }
+elsif ($id && $req->is_ajax) {
+  $result = $req->json_content
+    (
+     success => 0,
+     error_code => "UNKNOWN",
+     message => "Unknown article id $id"
+    );
+}
 else {
   # look for a type
   my $obj;
