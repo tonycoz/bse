@@ -1540,36 +1540,72 @@ sub save_new {
   elsif ($data{parentid} !~ /^(?:-1|\d+)$/) {
     $errors{parentid} = "Invalid parent selection (template bug)";
   }
-  $self->validate(\%data, $articles, \%errors)
-    or return $self->add_form($req, $articles, $msg, \%errors);
+  $self->validate(\%data, $articles, \%errors);
+  if (keys %errors) {
+    if ($req->is_ajax) {
+      return $req->json_content
+	(
+	 success => 0,
+	 errors => \%errors,
+	 error_code => "FIELD",
+	 message => $req->message(\%errors),
+	);
+    }
+    else {
+      return $self->add_form($req, $articles, $msg, \%errors);
+    }
+  }
 
   my $parent;
+  my $parent_msg;
+  my $parent_code;
   if ($data{parentid} > 0) {
     $parent = $articles->getByPkey($data{parentid}) or die;
-    $req->user_can('edit_add_child', $parent)
-      or return $self->add_form($req, $articles,
-				"You cannot add a child to that article");
-    for my $name (@columns) {
-      if (exists $data{$name} && 
-	  !$req->user_can("edit_add_field_$name", $parent)) {
-	delete $data{$name};
+    if ($req->user_can('edit_add_child', $parent)) {
+      for my $name (@columns) {
+	if (exists $data{$name} && 
+	    !$req->user_can("edit_add_field_$name", $parent)) {
+	  delete $data{$name};
+	}
       }
+    }
+    else {
+      $parent_msg = "You cannot add a child to that article";
+      $parent_code = "ACCESS";
     }
   }
   else {
-    $req->user_can('edit_add_child')
-      or return $self->add_form($req, $articles, 
-				"You cannot create a top-level article");
-    for my $name (@columns) {
-      if (exists $data{$name} && 
-	  !$req->user_can("edit_add_field_$name")) {
-	delete $data{$name};
+    if ($req->user_can('edit_add_child')) {
+      for my $name (@columns) {
+	if (exists $data{$name} && 
+	    !$req->user_can("edit_add_field_$name")) {
+	  delete $data{$name};
+	}
       }
     }
+    else {
+      $parent_msg = "You cannot create a top-level article";
+      $parent_code = "ACCESS";
+    }
   }
-  
-  $self->validate_parent(\%data, $articles, $parent, \$msg)
-    or return $self->add_form($req, $articles, $msg);
+  if (!$parent_msg) {
+    $self->validate_parent(\%data, $articles, $parent, \$parent_msg)
+      or $parent_code = "PARENT";
+  }
+  if ($parent_msg) {
+    if ($req->is_ajax) {
+      return $req->json_content
+	(
+	 success => 0,
+	 message => $parent_msg,
+	 error_code => $parent_code,
+	 errors => {},
+	);
+    }
+    else {
+      return $self->add_form($req, $articles, $parent_msg);
+    }
+  }
 
   my $level = $parent ? $parent->{level}+1 : 1;
   $data{level} = $level;
