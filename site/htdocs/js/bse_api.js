@@ -208,5 +208,5 @@ var BSEAPI = Class.create
 	 }.bind(this, failure),
 	 onException: this.onException
        });
-     },
+     }
    });
