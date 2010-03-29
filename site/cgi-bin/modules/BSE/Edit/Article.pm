@@ -88,6 +88,14 @@ sub noarticle_dispatch {
   BSE::Permissions->check_logon($req)
     or return BSE::Template->get_refresh($req->url('logon'), $req->cfg);
 
+  my $mymsg;
+  my $article = $self->_dummy_article($req, $articles, \$mymsg);
+  unless ($article) {
+    require BSE::Edit::Site;
+    my $site = BSE::Edit::Site->new(cfg=>$req->cfg, db=> BSE::DB->single);
+    return $site->edit_sections($req, $articles, $mymsg);
+  }
+
   my $cgi = $req->cgi;
   my $action = 'add';
   my %actions = $self->noarticle_actions;
@@ -98,7 +106,7 @@ sub noarticle_dispatch {
     }
   }
   my $method = $actions{$action};
-  return $self->$method($req, $articles);
+  return $self->$method($req, $article, $articles);
 }
 
 sub article_actions {
@@ -141,6 +149,7 @@ sub article_actions {
      a_csrfp => 'req_csrfp',
      a_tree => 'req_tree',
      a_article => 'req_article',
+     a_config => 'req_config',
     );
 }
 
@@ -162,6 +171,7 @@ sub noarticle_actions {
      add => 'add_form',
      save => 'save_new',
      a_csrfp => 'req_csrfp',
+     a_config => 'req_config',
     );
 }
 
@@ -1369,15 +1379,7 @@ sub _dummy_article {
 }
 
 sub add_form {
-  my ($self, $req, $articles, $msg, $errors) = @_;
-
-  my $mymsg;
-  my $article = $self->_dummy_article($req, $articles, \$mymsg);
-  unless ($article) {
-    require BSE::Edit::Site;
-    my $site = BSE::Edit::Site->new(cfg=>$req->cfg, db=> BSE::DB->single);
-    return $site->edit_sections($req, $articles, $mymsg);
-  }
+  my ($self, $req, $article, $articles, $msg, $errors) = @_;
 
   return $self->low_edit_form($req, $article, $articles, $msg, $errors);
 }
@@ -1516,7 +1518,7 @@ sub make_link {
 }
 
 sub save_new {
-  my ($self, $req, $articles) = @_;
+  my ($self, $req, $article, $articles) = @_;
 
   $req->check_csrf("admin_add_article")
     or return $self->csrf_error($req, undef, "admin_add_article", "Add Article");
@@ -1552,7 +1554,7 @@ sub save_new {
 	);
     }
     else {
-      return $self->add_form($req, $articles, $msg, \%errors);
+      return $self->add_form($req, $article, $articles, $msg, \%errors);
     }
   }
 
@@ -1603,7 +1605,7 @@ sub save_new {
 	);
     }
     else {
-      return $self->add_form($req, $articles, $parent_msg);
+      return $self->add_form($req, $article, $articles, $parent_msg);
     }
   }
 
@@ -1662,7 +1664,7 @@ sub save_new {
   }
 
   shift @columns;
-  my $article = $table_object->add(@data{@columns});
+  $article = $table_object->add(@data{@columns});
 
   # we now have an id - generate the links
 
@@ -1676,11 +1678,6 @@ sub save_new {
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
   if ($req->is_ajax) {
-    my $article_data = $article->data_only;
-    $article_data->{images} = [];
-    $article_data->{files} = [];
-    $article_data->{link} = $article->link($req->cfg);
-
     return $req->json_content
       (
        {
@@ -4570,14 +4567,14 @@ particular: file uploads.
 =cut
 
 sub req_csrfp {
-  my ($self, $req) = @_;
+  my ($self, $req, $article, $articles) = @_;
 
   $req->is_ajax
-    or return $self->_service_error($req, undef, "Articles",
-				    "Only usable from Ajax", {}, "NOTAJAX");
+    or return $self->_service_error($req, $article, $articles,
+				    "Only usable from Ajax", undef, "NOTAJAX");
 
   $ENV{REQUEST_METHOD} eq 'POST'
-    or return $self->_service_error($req, undef, "Articles",
+    or return $self->_service_error($req, $article, "Articles",
 				    "POST required for this action", {}, "NOTPOST");
 
   my %errors;
@@ -4591,7 +4588,7 @@ sub req_csrfp {
   }
 
   keys %errors
-    and return $self->_service_error($req, undef, "Articles",
+    and return $self->_service_error($req, $article, $articles,
 				     "Invalid parameter", \%errors, "FIELD");
 
   return $req->json_content
@@ -4670,6 +4667,96 @@ sub req_article {
     (
      success => 1,
      article => $self->_article_data($req, $article),
+    );
+}
+
+sub _populate_config {
+  my ($self, $req, $article, $articles, $conf) = @_;
+
+  my $cfg = $req->cfg;
+  my %geos = $cfg->entries("thumb geometries");
+  my %defaults;
+  my @cols = $self->table_object($articles)->rowClass->columns;
+  shift @cols;
+  for my $col (@cols) {
+    my $def = $self->default_value($req, $article, $col);
+    defined $def and $defaults{$col} = $def;
+  }
+  my @templates = $self->templates($article);
+  $defaults{template} =
+    $self->default_template($article, $req->cfg, \@templates);
+
+  $conf->{templates} =
+    [
+     map
+      {
+	$_ =>
+	  {
+	   description => $cfg->entry("template description", $_, $_),
+	  };
+      } @templates
+     ];
+  $conf->{thumb_geometries} =
+    [
+     map
+     {
+       $_ =>
+	 {
+	  description => $cfg->entry("thumb geometry $_", "description", $_),
+	 };
+     } sort keys %geos
+    ];
+  $conf->{defaults} = \%defaults;
+  my @child_types = $self->child_types($article);
+  s/^BSE::Edit::// for @child_types;
+  $conf->{child_types} = \@child_types;
+}
+
+=item a_config
+
+Returns configuration information as JSON.
+
+Returns an object of the form:
+
+  {
+    success: 1,
+    templates:
+    [
+      "template.tmpl":
+      {
+        description: "template.tmpl", // or from [template descriptions]
+      },
+      ...
+    ],
+    thumb_geometries:
+    [
+      "geoid":
+      {
+        description: "geoid", // or from [thumb geometry id].description
+      },
+    ],
+    defaults:
+    {
+      field: value,
+      ...
+    },
+    child_types: [ "Article" ],
+  }
+
+=cut
+
+sub req_config {
+  my ($self, $req, $article, $articles) = @_;
+  
+  $req->is_ajax
+    or return $self->_service_error($req, $article, $articles, "Only available to Ajax requests", {}, "NOTAJAX");
+
+  my %conf;
+  $self->_populate_config($req, $article, $articles, \%conf);
+  $conf{success} = 1;
+  return $req->json_content
+    (
+     \%conf
     );
 }
 

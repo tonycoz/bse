@@ -3,7 +3,7 @@ use strict;
 use BSE::Test qw(make_ua base_url);
 use JSON;
 use DevHelp::HTML;
-use Test::More tests => 124;
+use Test::More tests => 144;
 
 my $ua = make_ua;
 my $baseurl = base_url;
@@ -132,6 +132,56 @@ SKIP:
     $data or skip("not a json response", 2);
     ok(!$data->{success}, "should be failure");
     is($data->{error_code}, "PARENT", "should be a parent error");
+  }
+
+  # grab config data for the article
+ SKIP:
+  {
+    my %conf_req =
+      (
+       a_config => 1,
+       id => $art->{id},
+      );
+    my $data = do_req($add_url, \%conf_req, "config data");
+    $data or skip("no json to check", 3);
+    ok($data->{success}, "check for success");
+    ok($data->{templates}, "has templates");
+    ok($data->{thumb_geometries}, "has geometries");
+    ok($data->{defaults}, "has defaults");
+    ok($data->{child_types}, "has child types");
+    is($data->{child_types}[0], "Article", "check child type value");
+  }
+
+ SKIP:
+  { # config article for children of the article
+    my %conf_req =
+      (
+       a_config => 1,
+       parentid => $art->{id},
+      );
+    my $data = do_req($add_url, \%conf_req, "config data");
+    $data or skip("no json to check", 3);
+    ok($data->{success}, "check for success");
+    ok($data->{templates}, "has templates");
+    ok($data->{thumb_geometries}, "has geometries");
+    ok($data->{defaults}, "has defaults");
+  }
+
+ SKIP:
+  { # section config
+    my %conf_req =
+      (
+       a_config => 1,
+       parentid => -1,
+      );
+    my $data = do_req($add_url, \%conf_req, "section config data");
+    $data or skip("no json to check", 3);
+    ok($data->{success}, "check for success");
+    ok($data->{templates}, "has templates");
+    ok($data->{thumb_geometries}, "has geometries");
+    ok($data->{defaults}, "has defaults");
+    use Data::Dumper;
+    note(Dumper($data));
   }
 
   # delete it
