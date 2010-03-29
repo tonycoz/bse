@@ -114,6 +114,26 @@ var BSEAPI = Class.create
 	 onException: this.onException
        });
      },
+     // create a new article, accepts all article fields except id
+     new_article: function(parameters) {
+       var success = parameters.onSuccess;
+       if (!success) this._badparm("tree() missing onSuccess parameter");
+       var failure = parameters.onFailure;
+       if (!failure) failure = this.onFailure;
+       if (parameters.title == null)
+	 this._badparm("new_article() missing title parameter");
+       if (parameters.parentid == null)
+	 this._badparm("new_article() missing parentid parameter");
+       if (parameters.id != null)
+	 this._badparm("new_article() can't accept an id parameter");
+       delete parameters.onSuccess;
+       delete parameters.onFailure;
+       this._do_add_request("save", parameters,
+         function(success, resp) {
+	   success(resp.article);
+	 }.bind(this, success),
+	 failure);
+     },
      save_article: function(parameters) {
        var success = parameters.onSuccess;
        if (!success) this._badparm("tree() missing onSuccess parameter");
@@ -121,30 +141,26 @@ var BSEAPI = Class.create
        if (!failure) failure = this.onFailure;
        if (parameters.id == null)
 	 this._badparm("save_article() missing id parameter");
+       if (parameters.lastModified == null)
+	 this._badparm("save_article() missing lastModified parameter");
        delete parameters.onSuccess;
        delete parameters.onFailure;
-       parameters.save = 1;
-       new Ajax.Request('/cgi-bin/admin/add.pl',
-       {
-	 parameters: parameters,
-	 onSuccess: function(success, failure, resp) {
-	   if (resp.responseJSON) {
-	     if (resp.responseJSON.success != 0) {
-	       success(resp.responseJSON.article);
-	     }
-	     else {
-	       failure(this._wrap_json_failure(resp), resp);
-	     }
-	   }
-	   else {
-	     failure(this._wrap_nojson_failure(resp), resp);
-	   }
-	 }.bind(this, success, failure),
-	 onFailure: function(failure, resp) {
-	   failure(this._wrap_req_failure(resp), resp);
-	 }.bind(this, failure),
-	 onException: this.onException
-       });
+       this._do_add_request("save", parameters,
+	 function(success, result) {
+	   success(result.article);
+	 }.bind(this, success),
+	 failure);
+     },
+     get_config: function(parameters) {
+       var success = parameters.onSuccess;
+       if (!success) this._badparm("tree() missing onSuccess parameter");
+       var failure = parameters.onFailure;
+       if (!failure) failure = this.onFailure;
+       delete parameters.onSuccess;
+       delete parameters.onFailure;
+       if (parameters.id == null && parameters.parentid == null)
+         this._badparm("get_config() missing both id and parentid");
+       this._do_add_request("a_config", parameters, success, failure);
      },
      _wrap_json_failure: function(resp) {
        return resp.responseJSON;
@@ -167,5 +183,30 @@ var BSEAPI = Class.create
      },
      _badparm: function(msg) {
        this.onException(msg);
-     }
+     },
+     // in the future this might call a proxy
+     _do_add_request: function(action, other_parms, success, failure) {
+       other_parms[action] = 1;
+       new Ajax.Request("/cgi-bin/admin/add.pl",
+       {
+	 parameters: other_parms,
+	 onSuccess: function (success, failure, resp) {
+	   if (resp.responseJSON) {
+	     if (resp.responseJSON.success != 0) {
+	       success(resp.responseJSON);
+	     }
+	     else {
+	       failure(this._wrap_json_failure(resp), resp);
+	     }
+	   }
+	   else {
+	     failure(this._wrap_nojson_failure(resp), resp);
+	   }
+	 }.bind(this, success, failure),
+	 onFailure: function(failure, resp) {
+	   failure(this._wrap_req_failure(resp), resp);
+	 }.bind(this, failure),
+	 onException: this.onException
+       });
+     },
    });

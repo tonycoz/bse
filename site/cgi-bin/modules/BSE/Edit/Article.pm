@@ -4690,20 +4690,20 @@ sub _populate_config {
     [
      map
       {
-	$_ =>
-	  {
-	   description => $cfg->entry("template description", $_, $_),
-	  };
+	+{
+	  name => $_,
+	  description => $cfg->entry("template description", $_, $_),
+	 };
       } @templates
      ];
   $conf->{thumb_geometries} =
     [
      map
      {
-       $_ =>
-	 {
-	  description => $cfg->entry("thumb geometry $_", "description", $_),
-	 };
+       +{
+	 name => $_,
+	 description => $cfg->entry("thumb geometry $_", "description", $_),
+	};
      } sort keys %geos
     ];
   $conf->{defaults} = \%defaults;
