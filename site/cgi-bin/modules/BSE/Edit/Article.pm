@@ -1925,6 +1925,13 @@ sub save {
     }
   }
 
+  my ($after_id) = $cgi->param("_after");
+  if (defined $after_id) {
+    Articles->reorder_child($article->{parentid}, $article->{id}, $after_id);
+    # reload, the displayOrder probably changed
+    $article = $articles->getByPkey($article->{id});
+  }
+
   use Util 'generate_article';
   if ($Constants::AUTO_GENERATE) {
     generate_article($articles, $article);
@@ -4610,6 +4617,7 @@ sub _article_kid_summary {
   if (--$depth > 0) {
     for my $kid (@kids) {
       $kid->{children} = [ _article_kid_summary($kid->{id}, $depth) ];
+      $kid->{allkids} = [ Articles->allkid_summary($kid->{id}) ];
     }
   }
 

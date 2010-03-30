@@ -224,3 +224,31 @@ sql_statement: <<SQL
 select id, title, level, listed from article where parentid = ?
 order by displayOrder desc
 SQL
+
+name: bseChildOrder
+sql_statement: <<SQL
+select id, displayOrder
+from article
+where parentid = ?
+SQL
+
+name: bseStepchildOrder
+sql_statement: <<SQL
+select childId as id, parentDisplayOrder as displayOrder, id as step_id
+from other_parents
+where parentId = ?
+SQL
+
+name: bseSetStepOrder
+sql_statement: <<SQL
+update other_parents
+set parentDisplayOrder = ?
+where id = ?
+SQL
+
+name: bseSetArticleOrder
+sql_statement: <<SQL
+update article
+set displayOrder = ?
+where id = ?
+SQL

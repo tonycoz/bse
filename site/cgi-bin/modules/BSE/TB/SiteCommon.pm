@@ -273,4 +273,19 @@ sub apply_storage {
   $file->apply_storage($cfg, $mgr, $storage);
 }
 
+=item reorder_child($child_id, $after_id)
+
+Change the order of children of $self so that $child_id is after
+$after_id.
+
+If $after_id is zero then $child_id becomes the first child.
+
+=cut
+
+sub reorder_child {
+  my ($self, $child_id, $after_id) = @_;
+
+  Articles->reorder_child($self->{id}, $child_id, $after_id);
+}
+
 1;
