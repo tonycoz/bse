@@ -192,7 +192,7 @@ var BSEAPI = Class.create
 	 parameters: other_parms,
 	 onSuccess: function (success, failure, resp) {
 	   if (resp.responseJSON) {
-	     if (resp.responseJSON.success != null && resp.responseJSON != 0) {
+	     if (resp.responseJSON.success != null && resp.responseJSON.success != 0) {
 	       success(resp.responseJSON);
 	     }
 	     else {
