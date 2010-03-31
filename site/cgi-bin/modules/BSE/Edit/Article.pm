@@ -2698,7 +2698,11 @@ sub _service_error {
 	 (defined $ENV{HTTP_X_REQUESTED_WITH}
 	  && $ENV{HTTP_X_REQUESTED_WITH} =~ /XMLHttpRequest/)) {
     $error ||= {};
-    my $result = { errors => $error };
+    my $result = 
+      {
+       errors => $error,
+       success => 0,
+      };
     $msg and $result->{message} = $msg;
     $code and $result->{error_code} = $code;
     return $req->json_content($result);
