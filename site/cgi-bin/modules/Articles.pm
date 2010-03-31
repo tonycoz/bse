@@ -104,7 +104,7 @@ sub allkid_summary {
   my @child_order = BSE::DB->query(bseChildOrder => $parent_id);
   my @stepchild_order = BSE::DB->query(bseStepchildOrder => $parent_id);
 
-  return sort { $b->{displayOrder} cmp $a->{displayOrder} }
+  return sort { $b->{displayOrder} <=> $a->{displayOrder} }
     ( @child_order, @stepchild_order );
 }
 
