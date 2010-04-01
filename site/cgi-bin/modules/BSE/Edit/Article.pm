@@ -2905,6 +2905,18 @@ sub add_image {
        },
       );
   }
+  elsif ($cgi->param("_") || $req->is_ajax) {
+    my $resp = $req->json_content
+      (
+       success => 1,
+       image => $imageobj->data_only,
+      );
+
+    # the browser handles this directly, tell it that it's text
+    $resp->{type} = "text/plain";
+
+    return $resp;
+  }
   else {
     return $self->refresh($article, $cgi, undef, 'New image added');
   }
@@ -4719,6 +4731,7 @@ sub _populate_config {
      } sort keys %geos
     ];
   $conf->{defaults} = \%defaults;
+  $conf->{upload_progress} = $req->_tracking_uploads;
   my @child_types = $self->child_types($article);
   s/^BSE::Edit::// for @child_types;
   $conf->{child_types} = \@child_types;

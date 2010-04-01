@@ -4,7 +4,9 @@ var BSEAPI = Class.create
   ({
      initialize: function(domain) {
        this.initialized = true;
-       this.onException = function(obj, e) { alert(e); };
+       this.onException = function(obj, e) {
+			    alert(e);
+			    };
        this.onFailure = function(error) { alert(error.message); };
      },
      // logon to the server
@@ -27,6 +29,64 @@ var BSEAPI = Class.create
 	   a_logon: 1,
 	   logon: parameters.logon,
 	   password: parameters.password
+	 },
+	 onSuccess: function (success, failure, resp) {
+	   if (resp.responseJSON) {
+             if(resp.responseJSON.success != 0) {
+	       success(resp.responseJSON.user);
+             }
+             else {
+	       failure(this._wrap_json_failure(resp), resp);
+             }
+	   }
+	   else {
+	     failure(this._wrap_nojson_failure(resp), resp);
+	   }
+	 }.bind(this, success, failure),
+	 onFailure: function (failure, resp) {
+	   failure(this._wrap_req_failure(resp), resp);
+	 }.bind(this, failure),
+	 onException: this.onException
+       });
+     },
+     userinfo: function(parameters) {
+       var success = parameters.onSuccess;
+       if (!success) this._badparm("logon() missing onSuccess parameter");
+       var failure = parameters.onFailure;
+       if (!failure) failure = this.onFailure;
+       new Ajax.Request('/cgi-bin/admin/logon.pl',
+       {
+	 parameters: {
+	   a_userinfo: 1
+	 },
+	 onSuccess: function (success, failure, resp) {
+	   if (resp.responseJSON) {
+             if(resp.responseJSON.success != 0) {
+	       success(resp.responseJSON);
+             }
+             else {
+	       failure(this._wrap_json_failure(resp), resp);
+             }
+	   }
+	   else {
+	     failure(this._wrap_nojson_failure(resp), resp);
+	   }
+	 }.bind(this, success, failure),
+	 onFailure: function (failure, resp) {
+	   failure(this._wrap_req_failure(resp), resp);
+	 }.bind(this, failure),
+	 onException: this.onException
+       });
+     },
+     logoff: function(parameters) {
+       var success = parameters.onSuccess;
+       if (!success) this._badparm("logon() missing onSuccess parameter");
+       var failure = parameters.onFailure;
+       if (!failure) failure = this.onFailure;
+       new Ajax.Request('/cgi-bin/admin/logon.pl',
+       {
+	 parameters: {
+	   a_logoff: 1
 	 },
 	 onSuccess: function (success, failure, resp) {
 	   if (resp.responseJSON) {
@@ -162,6 +222,41 @@ var BSEAPI = Class.create
          this._badparm("get_config() missing both id and parentid");
        this._do_add_request("a_config", parameters, success, failure);
      },
+     get_csrfp: function(parameters) {
+       var success = parameters.onSuccess;
+       if (!success) this._badparm("tree() missing onSuccess parameter");
+       var failure = parameters.onFailure;
+       if (!failure) failure = this.onFailure;
+       delete parameters.onSuccess;
+       delete parameters.onFailure;
+       if (parameters.id == null && parameters.id == null)
+         this._badparm("get_csrfp() missing both id and parentid");
+       this._do_add_request("a_csrfp", parameters,
+	function(success, result) {
+	  success(result.tokens);
+	}.bind(this, success),
+	failure);
+     },
+     get_file_progress: function(parameters) {
+       var success = parameters.onSuccess;
+       if (!success) this._badparm("tree() missing onSuccess parameter");
+       var failure = parameters.onFailure;
+       if (!failure) failure = this.onFailure;
+       delete parameters.onSuccess;
+       delete parameters.onFailure;
+       if (parameters._upload == null)
+         this._badparm("get_file_progress() missing _upload");
+       if (parameters.filename == null)
+         this._badparm("get_file_progress() missing filename");
+       this._do_request("/cgi-bin/fileprogress.pl", "a_csrfp", parameters,
+	function(success, result) {
+	  success(result.progress);
+	}.bind(this, success),
+	failure);
+     },
+     thumb_link: function(im, geoid) {
+       return "/cgi-bin/admin/add.pl?a_thumb=1&im="+im.id+"&g="+geoid+"&id="+im.articleId;
+     },
      _wrap_json_failure: function(resp) {
        return resp.responseJSON;
      },
@@ -186,8 +281,11 @@ var BSEAPI = Class.create
      },
      // in the future this might call a proxy
      _do_add_request: function(action, other_parms, success, failure) {
+       this._do_request("/cgi-bin/admin/add.pl", action, other_parms, success, failure);
+     },
+     _do_request: function(url, action, other_parms, success, failure) {
        other_parms[action] = 1;
-       new Ajax.Request("/cgi-bin/admin/add.pl",
+       new Ajax.Request(url,
        {
 	 parameters: other_parms,
 	 onSuccess: function (success, failure, resp) {

@@ -21,6 +21,7 @@ site/cgi-bin/admin/bse_timeout.pl
 site/cgi-bin/admin/bse_modules.pl
 site/cgi-bin/admin/changepw.pl
 site/cgi-bin/admin/datadump.pl
+site/cgi-bin/fileprogress.pl
 site/cgi-bin/admin/generate.pl
 site/cgi-bin/admin/imageclean.pl
 site/cgi-bin/admin/logon.pl

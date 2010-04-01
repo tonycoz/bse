@@ -13,10 +13,11 @@ sub new {
   BSE::DB->init($opts{cfg});
   BSE::DB->startup();
 
-  $opts{cgi} ||= $class->_make_cgi;
+  my $self = bless \%opts, $class;
+
+  $opts{cgi} ||= $self->_make_cgi;
   $opts{fastcgi} ||= 0;
 
-  my $self = bless \%opts, $class;
   if ($self->cfg->entry('html', 'utf8decodeall')) {
     $self->_encode_utf8();
   }
@@ -29,7 +30,107 @@ sub new {
   $self;
 }
 
+sub _tracking_uploads {
+  my ($self) = @_;
+  unless (defined $self->{_tracking_uploads}) {
+    my $want_track = $self->cfg->entry("basic", "track_uploads", 0);
+    my $will_track = $self->_cache_available && $want_track;
+    if ($want_track && !$will_track) {
+      print STDERR "** Upload tracking requested but no cache found\n";
+    }
+    $self->{_tracking_uploads} = $will_track;
+  }
+
+  return $self->{_tracking_uploads};
+}
+
+sub _cache_available {
+  my ($self) = @_;
+
+  unless (defined $self->{_cache_available}) {
+    my $cache_class = $self->cfg->entry("cache", "class");
+    $self->{_cache_available} = defined $cache_class;
+  }
+
+  return $self->{_cache_available};
+}
+
+sub _cache_object {
+  my ($self) = @_;
+
+  $self->_cache_available or return;
+  $self->{_cache} and return $self->{_cache};
+
+  my $cache_class = $self->cfg->entry("cache", "class");
+  ( my $cache_mod_file = $cache_class . ".pm" ) =~ s(::)(/)g;
+
+  require $cache_mod_file;
+
+  my $params_str = $self->cfg->entry("cache", "params");
+  my @eval_res = eval $params_str;
+  if ($@) {
+    print STDERR "Error evaluating cache parameters: $@\n";
+    return;
+  }
+
+  $self->{_cache} = $cache_class->new(@eval_res);
+
+  return $self->{_cache};
+}
+
+sub cache_set {
+  my ($self, $key, $value) = @_;
+
+  my $cache = $self->_cache_object
+    or return;
+
+  my $entry = $cache->entry($key);
+  $entry->freeze($value);
+}
+
+sub cache_get {
+  my ($self, $key) = @_;
+
+  my $cache = $self->_cache_object
+    or return;
+
+  my $entry = $cache->entry($key);
+  $entry->exists
+    or return;
+
+  return $entry->thaw;
+}
+
 sub _make_cgi {
+  my ($self) = @_;
+
+  if ($self->_tracking_uploads
+      && $ENV{REQUEST_METHOD} eq 'POST'
+     && $ENV{CONTENT_TYPE} =~ m(^multipart/form-data)) {
+    # very hacky
+    my $q;
+    $q = CGI->new
+      (
+       sub {
+	 my ($filename, $data, $size_so_far) = @_;
+
+	 my ($key) = $q->param("_upload")
+	   or return;
+	 my $fullkey = "upload-$key-$filename";
+	 my $old = $self->cache_get($fullkey) || [ 0, $ENV{CONTENT_LENGTH} ];
+	 $old->[0] += length $data;
+	 $self->cache_set($fullkey, $old);
+       },
+       0, # data for upload hook
+       1, # continue to use temp files
+       {} # start out empty and don't read STDIN
+      );
+
+    $q->init(); # initialize for real cgi
+
+    return $q;
+  }
+
   my $q = CGI->new;
   my $error = $q->cgi_error;
   if ($error) {

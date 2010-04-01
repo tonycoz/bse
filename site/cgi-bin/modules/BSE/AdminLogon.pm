@@ -9,6 +9,7 @@ my %actions =
    logon_form=>1,
    logon=>1,
    logoff=>1,
+   userinfo => 1,
   );
 
 sub dispatch {
@@ -138,7 +139,17 @@ sub req_logon {
     return $class->_service_success({});
   }
   elsif ($req->is_ajax) {
-    return $req->json_content({success => 1});
+    return $req->json_content
+      (
+       {
+	success => 1,
+	user =>
+	{
+	 logon => $user->logon,
+	 name => $user->name || $user->logon,
+	},
+       }
+      );
   }
   else {
     my $r = $cgi->param('r');
@@ -164,6 +175,31 @@ sub req_logoff {
   my $r = admin_base_url($req->cfg) . "/cgi-bin/admin/logon.pl";
 
   return BSE::Template->get_refresh($r, $req->cfg);
+}
+
+sub req_userinfo {
+  my ($class, $req) = @_;
+
+  $req->is_ajax
+    or return $class->req_logon_form($req, "userinfo only available from Ajax");
+
+  my $result =
+    {
+     success => 1,
+    };
+
+  $req->check_admin_logon;
+  my $user = $req->user;
+  if ($user) {
+    $result->{user} =
+      {
+       logon => $user->logon,
+       name => $user->name || $user->logon,
+      };
+  }
+  $result->{access_control} = $req->cfg->entry('basic', 'access_control', 0);
+
+  return $req->json_content($result);
 }
 
 1;
