@@ -69,6 +69,15 @@ my @base_check =
     },
    },
    {
+    name => "Caching - one of the following",
+    modules =>
+    {
+     "CHI" => 0.23,
+     "Cache" => 2.00,
+     "Cache::Memcached::Fast" => 0.17,
+    },
+   },
+   {
     name => "Following should fail\n",
     modules =>
     {
