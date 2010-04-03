@@ -48,3 +48,15 @@ sub delete {
 
 1;
 
+=head1 NAME
+
+BSE::Cache::Cache - BSE interface to Cache compatible caches
+
+=head1 SYNOPSIS
+
+  [cache]
+  class=BSE::Cache::Cache
+  cache_class=Cache::File
+  params=cache_root => "/home/httpd/bseburn.develop-help.com/dcache"
+
+=cut

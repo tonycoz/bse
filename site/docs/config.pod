@@ -369,6 +369,15 @@ If true then page.pl will 301 redirect (Moved Permanently) requests
 for an article by its id to the generated link if the article has a
 link alias.  Default: false.  Must only be used with use_alias true.
 
+=item track_uploads
+
+If this is non-zero, and a cache is configured (see [cache]), file
+uploads are tracked in entries in the cache.
+
+The fileprogress.pl script can be called by Ajax to display file
+upload progress information to the user.  The upload state is updated
+a maximum of once a second.
+
 =back
 
 =head2 [mail]
@@ -2060,6 +2069,20 @@ Controls the bse_nightly.pl script.
 
 jobs - a comma separated list of BSE background processes to run when
 bse_nightly.pl is run.  Default: bse_session_clean
+
+=back
+
+=head2 [cache]
+
+Parameters controlling where cached information - eg. file upload
+progress is stored.
+
+=over
+
+=item *
+
+class - the BSE::Cache compatible cache class.  See the documentation
+of BSE::Cache::Cache, BSE::Cache::CHI or BSE::Cache::Memcached.
 
 =back
 

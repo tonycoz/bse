@@ -57,3 +57,39 @@ sub delete {
 }
 
 1;
+
+=head1 NAME
+
+BSE::Cache::Memcached - BSE interface to Cache::Memcached::Fast
+
+=head1 SYNOPSIS
+
+  [cache]
+  class=BSE::Cache::Memcached::Fast
+  servers=127.0.0.1:11211;{address=host:port,weight=0.5,noreply=1}
+  ...
+
+=head1 DESCRIPTION
+
+Cache in one or more memcached instances.
+
+Configurable [cache] values:
+
+=over
+
+=item *
+
+servers - the servers to cache at (required).  Multiple servers can be
+specified as a ; separated list.  Each entry is either a host:port or
+a {} surrounded list of comma separated key=value, where address is a
+required key.  See the Cache::Memcached::Fast documentation for
+servers key information.
+
+=item *
+
+namespace, compress_threshold, compress_ratio, nowait, max_size - see
+the Cache::Memcached::Fast documentation.
+
+=back
+
+=cut
