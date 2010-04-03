@@ -55,6 +55,10 @@ site/cgi-bin/modules/BSE/AdminMenu.pm
 site/cgi-bin/modules/BSE/AdminUsers.pm
 site/cgi-bin/modules/BSE/AdminSiteUsers.pm
 site/cgi-bin/modules/BSE/Arrows.pm
+site/cgi-bin/modules/BSE/Cache.pod
+site/cgi-bin/modules/BSE/Cache/Cache.pm
+site/cgi-bin/modules/BSE/Cache/CHI.pm
+site/cgi-bin/modules/BSE/Cache/Memcached.pm
 site/cgi-bin/modules/BSE/Cfg.pm
 site/cgi-bin/modules/BSE/CfgInfo.pm
 site/cgi-bin/modules/BSE/ChangePW.pm

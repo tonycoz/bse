@@ -63,17 +63,9 @@ sub _cache_object {
 
   my $cache_class = $self->cfg->entry("cache", "class");
   ( my $cache_mod_file = $cache_class . ".pm" ) =~ s(::)(/)g;
-
   require $cache_mod_file;
 
-  my $params_str = $self->cfg->entry("cache", "params");
-  my @eval_res = eval $params_str;
-  if ($@) {
-    print STDERR "Error evaluating cache parameters: $@\n";
-    return;
-  }
-
-  $self->{_cache} = $cache_class->new(@eval_res);
+  $self->{_cache} = $cache_class->new($self->cfg);
 
   return $self->{_cache};
 }
@@ -84,8 +76,7 @@ sub cache_set {
   my $cache = $self->_cache_object
     or return;
 
-  my $entry = $cache->entry($key);
-  $entry->freeze($value);
+  $cache->set($key, $value);
 }
 
 sub cache_get {
@@ -94,21 +85,20 @@ sub cache_get {
   my $cache = $self->_cache_object
     or return;
 
-  my $entry = $cache->entry($key);
-  $entry->exists
-    or return;
-
-  return $entry->thaw;
+  return $cache->get($key);
 }
 
 sub _make_cgi {
   my ($self) = @_;
 
+  my $cache;
   if ($self->_tracking_uploads
       && $ENV{REQUEST_METHOD} eq 'POST'
-     && $ENV{CONTENT_TYPE} =~ m(^multipart/form-data)) {
+      && $ENV{CONTENT_TYPE} =~ m(^multipart/form-data)
+      && defined ($cache = $self->_cache_object)) {
     # very hacky
     my $q;
+    my $total = 0;
     $q = CGI->new
       (
        sub {
@@ -117,9 +107,9 @@ sub _make_cgi {
 	 my ($key) = $q->param("_upload")
 	   or return;
 	 my $fullkey = "upload-$key-$filename";
-	 my $old = $self->cache_get($fullkey) || [ 0, $ENV{CONTENT_LENGTH} ];
-	 $old->[0] += length $data;
-	 $self->cache_set($fullkey, $old);
+	 $total += length $data;
+print STDERR "read size ",length $data, "\n";
+	 $cache->set($fullkey, [ $total, $ENV{CONTENT_LENGTH} ] );
        },
        0, # data for upload hook
        1, # continue to use temp files
