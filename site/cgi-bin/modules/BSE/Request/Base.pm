@@ -99,6 +99,7 @@ sub _make_cgi {
     # very hacky
     my $q;
     my $total = 0;
+    my $last_set = time();
     $q = CGI->new
       (
        sub {
@@ -108,8 +109,11 @@ sub _make_cgi {
 	   or return;
 	 my $fullkey = "upload-$key-$filename";
 	 $total += length $data;
-print STDERR "read size ",length $data, "\n";
-	 $cache->set($fullkey, [ $total, $ENV{CONTENT_LENGTH} ] );
+	 my $now = time;
+	 if ($last_set + 1 <= $now) { # just in case we end up loading Time::HiRes
+	   $cache->set($fullkey, [ $total, $ENV{CONTENT_LENGTH} ] );
+	   $last_set = $now;
+	 }
        },
        0, # data for upload hook
        1, # continue to use temp files
