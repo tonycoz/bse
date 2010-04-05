@@ -51,6 +51,8 @@ my @base_check =
      'Net::Amazon::S3' => 0,
      'Date::Format' => 0,
      'Captcha::reCAPTCHA' => 0,
+     'FLV::Info' => 0,
+     'JSON' => 0,
     },
    },
    {
