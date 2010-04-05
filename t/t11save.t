@@ -3,7 +3,7 @@ use strict;
 use BSE::Test qw(make_ua base_url);
 use JSON;
 use DevHelp::HTML;
-use Test::More tests => 144;
+use Test::More tests => 152;
 
 my $ua = make_ua;
 my $baseurl = base_url;
@@ -72,6 +72,23 @@ SKIP:
       ok($data->{article}, "has an article object");
       $art = $data->{article};
     }
+  }
+
+  { # grab the tree
+    my %tree_req =
+      (
+       a_tree => 1,
+       id => -1,
+      );
+    my $data = do_req($add_url, \%tree_req, "fetch tree");
+    $data or skip("not a json response", 6);
+    ok($data->{success}, "was successful");
+    ok($data->{articles}, "has articles");
+    my $art = $data->{articles}[0];
+    ok(defined $art->{level}, "entries have level");
+    ok($art->{title}, "entries have a title");
+    ok(defined $art->{listed}, "entries have a listed");
+    ok($art->{lastModified}, "entries have a lastModified");
   }
 
   # error handling on save
