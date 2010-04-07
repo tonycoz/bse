@@ -6,7 +6,8 @@ sub new {
   my ($class, $cfg) = @_;
 
   my $servers = $cfg->entry("cache", "servers");
-  my @servers = split /;/, $servers;
+  my @servers = split /;/, $servers
+    or die "No servers configured in [cache].servers";
   for my $server (@servers) {
     if ($server =~ /^\{(.*)\}$/) {
       my %server;
@@ -30,7 +31,7 @@ sub new {
     defined $value and $params{$key} = $value;
   }
 
-  my $cache = Cache::Memcached::Fast->new(%params);
+  my $cache = Cache::Memcached::Fast->new(\%params);
 
   return bless
     {
