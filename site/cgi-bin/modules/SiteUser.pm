@@ -5,6 +5,7 @@ use Squirrel::Row;
 use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 use Constants qw($SHOP_FROM);
+use Carp qw(confess);
 use BSE::Util::SQL qw/now_datetime now_sqldate sql_normal_date sql_add_date_days/;
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
@@ -26,6 +27,10 @@ sub columns {
             delivStreet2 billStreet2
             billOrganization
             customInt1 customInt2/;
+}
+
+sub table {
+  return "site_users";
 }
 
 sub valid_fields {
@@ -597,6 +602,63 @@ sub set_subscribed_file_categories {
       BSE::DB->run(siteuserRemoveFileCategory => $self->{id}, $cat->{id});
     }
   }
+}
+
+=item describe
+
+Returns a description of the user
+
+=cut
+
+sub describe {
+  my ($self) = @_;
+
+  return "Member: " . $self->userId;
+}
+
+sub remove {
+  my ($self, $cfg) = @_;
+
+  $cfg or confess "Missing parameter cfg";
+
+  # remove any owned files
+  for my $file ($self->files) {
+    $file->remove($cfg);
+  }
+
+  # file subscriptions
+  BSE::DB->run(bseRemoveUserFileSubs => $self->id);
+
+  # file notifies
+  BSE::DB->run(bseRemoveUserFileNotifies => $self->id);
+
+  # download log
+  BSE::DB->run(bseMarkUserFileAccessesAnon => $self->id);
+
+  # mark any orders owned by the user as anonymous
+  BSE::DB->run(bseMarkOwnedOrdersAnon => $self->id);
+
+  # newsletter subscriptions
+  BSE::DB->run(bseRemoveUserSubs => $self->id);
+
+  # wishlist
+  BSE::DB->run(bseRemoveUserWishlist => $self->id);
+
+  # group memberships
+  BSE::DB->run(bseRemoveUserMemberships => $self->id);
+
+  # seminar bookings
+  BSE::DB->run(bseRemoveUserBookings => $self->id);
+
+  # paid subscriptions
+  BSE::DB->run(bseRemoveUserProdSubs => $self->id);
+
+  # images
+  for my $im ($self->images) {
+    $self->remove_image($cfg, $im->{image_id});
+  }
+
+  $self->SUPER::remove();
 }
 
 1;

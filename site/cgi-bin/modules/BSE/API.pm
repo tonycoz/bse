@@ -401,9 +401,7 @@ sub bse_add_owned_file {
 sub bse_delete_owned_file {
   my ($cfg, $owned_file) = @_;
 
-  my $file_dir = $cfg->entryVar('paths', 'downloads');
-  unlink "$file_dir/$owned_file->{filename}";
-  $owned_file->remove;
+  $owned_file->remove($cfg);
 }
 
 sub bse_replace_owned_file {

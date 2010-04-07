@@ -253,3 +253,58 @@ update article
 set displayOrder = ?
 where id = ?
 SQL
+
+name: bseMarkOwnedOrdersAnon
+sql_statement: <<SQL
+update orders
+set siteuser_id = -1 where siteuser_id = ?
+SQL
+
+name: bseRemoveUserSubs
+sql_statement: <<SQL
+delete from subscribed_users
+where userId = ?
+SQL
+
+name: bseRemoveUserWishlist
+sql_statement: <<SQL
+delete from bse_wishlist
+where user_id = ?
+SQL
+
+name: bseRemoveUserMemberships
+sql_statement: <<SQL
+delete from bse_siteuser_membership
+where siteuser_id = ?
+SQL
+
+name: bseRemoveUserFileSubs
+sql_statement: <<SQL
+delete from bse_file_subscriptions
+where siteuser_id = ?
+SQL
+
+name: bseRemoveUserFileNotifies
+sql_statement: <<SQL
+delete from bse_file_notifies
+where owner_id = ? and owner_type = 'U'
+SQL
+
+name: bseMarkUserFileAccessesAnon
+sql_statement: <<SQL
+update bse_file_access_log
+set siteuser_id = -1 where siteuser_id = ?
+SQL
+
+name: bseRemoveUserProdSubs
+sql_statement: <<SQL
+delete from bse_user_subscribed
+where siteuser_id = ?
+SQL
+
+name: bseRemoveUserBookings
+sql_statement: <<SQL
+delete from bse_seminar_bookings
+where siteuser_id = ?
+SQL
+

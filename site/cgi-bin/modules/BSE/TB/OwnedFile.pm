@@ -66,4 +66,12 @@ sub download_result {
   return \%result;
 }
 
+sub remove {
+  my ($self, $cfg) = @_;
+
+  my $file_dir = $cfg->entryVar('paths', 'downloads');
+  unlink "$file_dir/$self->{filename}";
+  $self->SUPER::remove();
+}
+
 1;

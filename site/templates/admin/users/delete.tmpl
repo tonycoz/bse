@@ -1,0 +1,43 @@
+<:wrap admin/xbase.tmpl title=>"Delete Site Member":>
+<h1>Delete Site Member</h1>
+<:include admin/users/inc_user_menu.tmpl:>
+<p><b>THIS WILL PERMANENTLY REMOVE THE USER AND CANNOT BE UNDONE</b></p>
+
+<form method="POST" action="<:script:>" enctype="multipart/form-data">
+<input type="hidden" name="id" value="<:siteuser id:>" />
+<:csrfp admin_siteuser_delete hidden:>
+        <table class="editform editformtiny">
+<:ifCfg "site users" nopassword:><:or:>
+          <tr> 
+            <th>Logon: </th>
+            <td> 
+	      <:siteuser userId:>
+            </td>
+          </tr>
+<:eif:>
+          <tr> 
+            <th>Email: </th>
+            <td> 
+              <:siteuser email:>
+            </td>
+          </tr>
+          <tr> 
+            <th>First Name: </th>
+            <td> 
+              <:siteuser name1:>
+            </td>
+          </tr>
+          <tr> 
+            <th>Last Name: </th>
+            <td> 
+              <:siteuser name2:>
+            </td>
+          </tr>
+<:include admin/users/custom_delete.tmpl optional:>
+          <tr> 
+            <td class="buttons" colspan="2"> 
+              <input type="submit" name="a_delete" value="  Delete Member  " />
+            </td>
+          </tr>
+        </table>
+</form>

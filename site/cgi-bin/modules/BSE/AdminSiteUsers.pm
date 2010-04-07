@@ -20,6 +20,8 @@ my %actions =
    save		     => 'bse_members_user_edit',
    addform	     => 'bse_members_user_add',
    add		     => 'bse_members_user_add',
+   deleteform        => 'bse_members_user_delete',
+   delete            => 'bse_members_user_delete',
    view              => 'bse_members_user_view',
    grouplist	     => 'bse_members_group_list',
    addgroupform	     => 'bse_members_group_add',
@@ -122,7 +124,7 @@ sub req_list {
 
   my $search_param =
     join('&', map { "$_=".escape_uri($search_fields{$_}) } keys %search_fields);
-			    
+
   my %acts;
   %acts =
     (
@@ -217,6 +219,12 @@ sub req_edit {
   my ($class, $req, $msg, $errors) = @_;
 
   $class->_display_user($req, $msg, $errors, 'admin/users/edit');
+}
+
+sub req_deleteform {
+  my ($class, $req, $msg, $errors) = @_;
+
+  $class->_display_user($req, $msg, $errors, 'admin/users/delete');
 }
 
 sub req_view {
@@ -529,6 +537,39 @@ sub req_save {
   $r .= "&m=".escape_uri($_) for @msgs;
 
   return BSE::Template->get_refresh($r, $req->cfg);
+}
+
+sub req_delete {
+  my ($class, $req) = @_;
+
+  my $cgi = $req->cgi;
+  my $cfg = $req->cfg;
+
+  $req->check_csrf("admin_siteuser_delete")
+    or return $class->csrf_error($req, "admin_siteuser_delete", "Delete Member");
+
+  my $id = $cgi->param('id');
+  $id && $id =~ /^\d+$/
+    or return $class->req_list($req, "No user id supplied");
+
+  my $user = SiteUsers->getByPkey($id)
+    or return $class->req_list($req, "No user $id found");
+
+  $req->audit(object => $user,
+	      action => "delete");
+
+  my $desc = $user->describe;
+
+  $user->remove($req->cfg);
+
+  my @msgs = "Deleted $desc";
+  my $r = $cgi->param('r');
+  unless ($r) {
+    $r = $req->url('siteusers', { list => 1 });
+  }
+  $r .= "&m=".escape_uri($_) for @msgs;
+
+  return $req->get_refresh($r);
 }
 
 sub req_addform {

@@ -499,6 +499,7 @@ site/templates/admin/userlist.tmpl
 site/templates/admin/users/add.tmpl
 site/templates/admin/users/add_group_file.tmpl
 site/templates/admin/users/add_user_file.tmpl
+site/templates/admin/users/delete.tmpl
 site/templates/admin/users/delete_group_file.tmpl
 site/templates/admin/users/delete_user_file.tmpl
 site/templates/admin/users/edit.tmpl
