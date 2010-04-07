@@ -274,11 +274,19 @@ var BSEAPI = Class.create
      },
      // parameters:
      //  file - file input element (required)
-     //  name - name of the image to add (required)
      //  article_id - owner article of the new image (required)
+     //  name - name of the image to add (default: "")
      //  alt - alt text for the image (default: "")
      //  url - url for the image (default: "")
      //  storage - storage for the image (default: auto)
+     //  onSuccess: called on success in adding the image, with the image object
+     //    (required)
+     //  onFailure: called on failure (optional)
+     //  onStart: called when the image upload starts
+     //  onComplete: called when the image upload is complete (success
+     //    or failure) (optional)
+     //  onProgress: called occasionally during the image upload with
+     //    the approximate amount sent and the total to be sent (optional)
      add_image_file: function(parameters) {
        var success = parameters.onSuccess;
        if (!success) this._badparm("tree() missing onSuccess parameter");
