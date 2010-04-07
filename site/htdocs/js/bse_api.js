@@ -368,6 +368,8 @@ var BSEAPI = Class.create
 	 eval("data = " + text + ";");
 	 document.body.removeChild(ifr);
 	 document.body.removeChild(form);
+         if (parms.progress != null && parms.total != null)
+	   parms.progress(parms.total, parms.total);
 	 if (parms.complete != null)
 	   parms.complete();
 	 parms.finished = 1;
@@ -400,15 +402,17 @@ var BSEAPI = Class.create
        form.submit();
      },
      _progress_handler: function(parms) {
+	  if (parms.finished) return;
        this.get_file_progress(
        {
 	 _upload: parms.up_id,
 	 onSuccess: function(parms, prog) {
-	   if (prog.length) {
-	     parms.progress(prog[0], prog[1]);
-	   }
-	   parms.updates += 1;
 	   if (!parms.finished) {
+	     if (prog.length) {
+               parms.total = prog[1];
+	       parms.progress(prog[0], prog[1]);
+	     }
+	     parms.updates += 1;
              parms.timeout = window.setTimeout
 	       (this._progress_handler.bind(this, parms),
 		 parms.updates > 5 ? 6000 : 1500);
