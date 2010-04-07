@@ -8,6 +8,22 @@ var BSEAPI = Class.create
 			    alert(e);
 			    };
        this.onFailure = function(error) { alert(error.message); };
+       this._load_csrfp();
+     },
+     _load_csrfp: function () {
+       this.get_csrfp
+       ({
+	 id: -1,
+	  name: this._csrfp_names,
+	 onSuccess: function(csrfp) {
+	   this._csrfp = csrfp;
+	   window.setTimeout(this._load_csrfp.bind(this), 600000);
+	 }.bind(this),
+	 onFailure: function() {
+	   // ignore this
+	   this._csrfp = null;
+	 }
+       });
      },
      // logon to the server
      // logon - logon name of user
@@ -33,6 +49,7 @@ var BSEAPI = Class.create
 	 onSuccess: function (success, failure, resp) {
 	   if (resp.responseJSON) {
              if(resp.responseJSON.success != 0) {
+	       this._load_csrfp();
 	       success(resp.responseJSON.user);
              }
              else {
@@ -213,7 +230,7 @@ var BSEAPI = Class.create
      },
      get_config: function(parameters) {
        var success = parameters.onSuccess;
-       if (!success) this._badparm("tree() missing onSuccess parameter");
+       if (!success) this._badparm("get_config() missing onSuccess parameter");
        var failure = parameters.onFailure;
        if (!failure) failure = this.onFailure;
        delete parameters.onSuccess;
@@ -224,7 +241,7 @@ var BSEAPI = Class.create
      },
      get_csrfp: function(parameters) {
        var success = parameters.onSuccess;
-       if (!success) this._badparm("tree() missing onSuccess parameter");
+       if (!success) this._badparm("get_csrfp() missing onSuccess parameter");
        var failure = parameters.onFailure;
        if (!failure) failure = this.onFailure;
        delete parameters.onSuccess;
@@ -239,16 +256,14 @@ var BSEAPI = Class.create
      },
      get_file_progress: function(parameters) {
        var success = parameters.onSuccess;
-       if (!success) this._badparm("tree() missing onSuccess parameter");
+       if (!success) this._badparm("get_file_progress() missing onSuccess parameter");
        var failure = parameters.onFailure;
        if (!failure) failure = this.onFailure;
        delete parameters.onSuccess;
        delete parameters.onFailure;
        if (parameters._upload == null)
          this._badparm("get_file_progress() missing _upload");
-       if (parameters.filename == null)
-         this._badparm("get_file_progress() missing filename");
-       this._do_request("/cgi-bin/fileprogress.pl", "a_csrfp", parameters,
+       this._do_request("/cgi-bin/fileprogress.pl", null, parameters,
 	function(success, result) {
 	  success(result.progress);
 	}.bind(this, success),
@@ -256,6 +271,158 @@ var BSEAPI = Class.create
      },
      thumb_link: function(im, geoid) {
        return "/cgi-bin/admin/add.pl?a_thumb=1&im="+im.id+"&g="+geoid+"&id="+im.articleId;
+     },
+     // parameters:
+     //  file - file input element (required)
+     //  name - name of the image to add (required)
+     //  article_id - owner article of the new image (required)
+     //  alt - alt text for the image (default: "")
+     //  url - url for the image (default: "")
+     //  storage - storage for the image (default: auto)
+     add_image_file: function(parameters) {
+       var success = parameters.onSuccess;
+       if (!success) this._badparm("tree() missing onSuccess parameter");
+       var failure = parameters.onFailure;
+       if (!failure) failure = this.onFailure;
+       var file = parameters.file;
+       if (file == null) this._badparm("tree() missing file parameter");
+
+       // stuff we use in the callbacks
+       var parms =
+	 {
+	   success: success,
+	   failure: failure,
+	   progress: parameters.onProgress,
+	   complete: parameters.onComplete,
+	   // track the number of progress updates done
+	   updates: 0,
+	   finished: 0
+	 };
+
+       parms.up_id = this._new_upload_id();
+
+       // setup the iframe
+       parms.ifr = new Element("iframe", {
+	 src: "about:blank",
+	 id: "bseiframe"+parms.up_id,
+	 name: "bseiframe"+parms.up_id,
+	 width: 400,
+	 height: 100
+       });
+       parms.ifr.style.display = "none";
+
+       // setup the form
+       var form = new Element
+	 ("form",
+	 {
+	   method: "post",
+	   action: "/cgi-bin/admin/add.pl",
+	   enctype: "multipart/form-data",
+	   // the following for IE
+	   encoding: "multipart/form-data",
+	   id: "bseform"+parms.up_id,
+	   target: "bseiframe"+parms.up_id
+	 });
+       parms.form = form;
+       form.style.display = "none";
+       form.appendChild(this._hidden("_upload", parms.up_id));
+       if (parameters.clone) {
+	 var cloned = file.cloneNode(true);
+	 file.parentNode.insertBefore(cloned, file);
+       }
+       file.name = "image";
+       form.appendChild(file);
+       form.appendChild(this._hidden("id", parameters.article_id));
+       // trigger BSE's alternative JSON return handling
+       form.appendChild(this._hidden("_", 1));
+       if (parameters.name != null)
+	 form.appendChild(this._hidden("name", parameters.name));
+       if (parameters.alt != null)
+         form.appendChild(this._hidden("alt", parameters.alt));
+       if (parameters.url != null)
+	 form.appendChild(this._hidden("url", parameters.url));
+       if (parameters.storage != null)
+	 form.appendChild(this._hidden("storage", parameters.storage));
+       form.appendChild(this._hidden("_csrfp", this._csrfp.admin_add_image));
+       form.appendChild(this._hidden("addimg", 1));
+
+       document.body.appendChild(parms.ifr);
+       document.body.appendChild(form);
+       var onLoad = function(parms) {
+	 // we should get json back in the body
+         var ifr = parms.ifr;
+	 var form = parms.form;
+	 var text = Try.these(
+	   function(ifr) {
+	     var text = ifr.contentDocument.body.textContent;
+	     ifr.contentDocument.close();
+	     return text;
+	   }.bind(this, ifr),
+	   function(ifr) {
+	     var text = ifr.contentWindow.document.body.innerText;
+	     ifr.contentWindow.document.close();
+	     return text;
+	   }.bind(this, ifr)
+	 );
+	 var data;
+	 eval("data = " + text + ";");
+	 document.body.removeChild(ifr);
+	 document.body.removeChild(form);
+	 if (parms.complete != null)
+	   parms.complete();
+	 parms.finished = 1;
+	 if (data != null) {
+	   if (data.success != null && data.success != 0) {
+	     parms.success(data.image);
+	   }
+	   else {
+	     parms.failure(this._wrap_json_failure(data));
+	   }
+	 }
+	 else {
+	   parms.failure(this._wrap_req_failure({statusText: "Unknown"}));
+	 }
+       }.bind(this, parms);
+       if (window.attachEvent) {
+	 parms.ifr.attachEvent("onload", onLoad);
+       }
+       else {
+	 parms.ifr.addEventListener("load", onLoad, false);
+       }
+
+       if (parameters.onStart != null)
+	 parameters.onStart(file.value);
+
+       if (parameters.onProgress != null) {
+	 parms.timeout = window.setTimeout ( this._progress_handler.bind(this, parms), 200 );
+       }
+
+       form.submit();
+     },
+     _progress_handler: function(parms) {
+       this.get_file_progress(
+       {
+	 _upload: parms.up_id,
+	 onSuccess: function(parms, prog) {
+	   if (prog.length) {
+	     parms.progress(prog[0], prog[1]);
+	   }
+	   parms.updates += 1;
+	   if (!parms.finished) {
+             parms.timeout = window.setTimeout
+	       (this._progress_handler.bind(this, parms),
+		 parms.updates > 5 ? 6000 : 1500);
+	   }
+	 }.bind(this, parms)
+       });
+     },
+     _hidden: function(name, value) {
+       var hidden = document.createElement("input");
+       hidden.type = "hidden";
+       hidden.name = name;
+       hidden.value = value;
+
+       return hidden;
      },
      _wrap_json_failure: function(resp) {
        return resp.responseJSON;
@@ -284,7 +451,8 @@ var BSEAPI = Class.create
        this._do_request("/cgi-bin/admin/add.pl", action, other_parms, success, failure);
      },
      _do_request: function(url, action, other_parms, success, failure) {
-       other_parms[action] = 1;
+       if (action != null)
+         other_parms[action] = 1;
        new Ajax.Request(url,
        {
 	 parameters: other_parms,
@@ -306,5 +474,13 @@ var BSEAPI = Class.create
 	 }.bind(this, failure),
 	 onException: this.onException
        });
-     }
+     },
+     _new_upload_id: function () {
+       this._upload_id += 1;
+       return new Date().valueOf() + "_" + this._upload_id;
+     },
+     // we request these names on startup, on login
+     // and occasionally otherwise, to avoid them going stale
+     _csrfp_names: [ "admin_add_image" ],
+     _upload_id: 0
    });

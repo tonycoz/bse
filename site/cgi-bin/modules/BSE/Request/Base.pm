@@ -107,7 +107,7 @@ sub _make_cgi {
 
 	 my ($key) = $q->param("_upload")
 	   or return;
-	 my $fullkey = "upload-$key-$filename";
+	 my $fullkey = "upload-$key";
 	 $total += length $data;
 	 my $now = time;
 	 if ($last_set + 1 <= $now) { # just in case we end up loading Time::HiRes

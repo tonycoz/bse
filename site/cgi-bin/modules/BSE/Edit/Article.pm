@@ -1693,11 +1693,9 @@ sub save_new {
     $r .= "id=$article->{id}";
   }
   else {
-    
     $r = admin_base_url($req->cfg) . $article->{admin};
   }
   return BSE::Template->get_refresh($r, $self->{cfg});
-
 }
 
 sub fill_old_data {
@@ -1725,7 +1723,7 @@ sub _article_data {
   $article_data->{link} = $article->link($req->cfg);
   $article_data->{images} =
     [
-     map $_->data_only, $article->images
+     map $self->_image_data($req->cfg, $_), $article->images
     ];
   $article_data->{files} =
     [
@@ -2695,7 +2693,7 @@ sub _service_error {
       };
   }
   elsif ((() = $req->cgi->param('_')) ||
-	 (defined $ENV{HTTP_X_REQUESTED_WITH}
+	 (exists $ENV{HTTP_X_REQUESTED_WITH}
 	  && $ENV{HTTP_X_REQUESTED_WITH} =~ /XMLHttpRequest/)) {
     $error ||= {};
     my $result = 
@@ -2705,7 +2703,14 @@ sub _service_error {
       };
     $msg and $result->{message} = $msg;
     $code and $result->{error_code} = $code;
-    return $req->json_content($result);
+    my $json_result = $req->json_content($result);
+
+    if (!exists $ENV{HTTP_X_REQUESTED_WITH}
+	&& $ENV{HTTP_X_REQUESTED_WITH} !~ /XMLHttpRequest/) {
+      $json_result->{type} = "text/plain";
+    }
+
+    return $json_result;
   }
   else {
     return $self->edit_form($req, $article, $articles, $msg, $error);
@@ -2863,6 +2868,15 @@ sub do_add_image {
   return $imageobj;
 }
 
+sub _image_data {
+  my ($self, $cfg, $image) = @_;
+
+  my $data = $image->data_only;
+  $data->{src} = $image->image_url($cfg);
+
+  return $data;
+}
+
 sub add_image {
   my ($self, $req, $article, $articles) = @_;
 
@@ -2909,7 +2923,7 @@ sub add_image {
     my $resp = $req->json_content
       (
        success => 1,
-       image => $imageobj->data_only,
+       image => $self->_image_data($req->cfg, $imageobj),
       );
 
     # the browser handles this directly, tell it that it's text

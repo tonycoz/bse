@@ -11,10 +11,9 @@ my $req = BSE::Request->new(nosession => 1);
 
 my $cgi = $req->cgi;
 my $key = $cgi->param("_upload");
-my $filename = $cgi->param("filename");
 my $result;
-if ($key && $filename) {
-  my $cached = $req->cache_get("upload-$key-$filename");
+if ($key) {
+  my $cached = $req->cache_get("upload-$key");
   if ($cached) {
     $result =
       {
@@ -34,7 +33,7 @@ else {
   $result =
     {
      success => 0,
-     message => "missing _upload or filename parameter",
+     message => "missing _upload parameter",
     };
 }
 
