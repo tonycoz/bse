@@ -701,7 +701,7 @@ keywords and matchFile tags.
 
 Each field has a prefix and suffix entry.  The key is
 I<fieldname>_prefix or I<fieldname>_suffix.  For file fields this is
-file_I<fieldname}_prefix and file_I<fieldname}_suffix.
+file_I<fieldname>_prefix and file_I<fieldname>_suffix.
 
 The default prefix is <b>.  The default suffix is </b>.
 
@@ -1467,11 +1467,11 @@ asciily), so an entry with key "A" is read before one with key "B",
 one with key "01" is read before "02", but key "10" would be read
 I<before> key "2".
 
-=item *
+=item 3.
 
 if an entry is a file then that is read and the values merged.
 
-=item *
+=item 4.
 
 if an entry is a directory, then that is scanned and the files found
 read alphabetically as above.
@@ -2083,6 +2083,38 @@ progress is stored.
 
 class - the BSE::Cache compatible cache class.  See the documentation
 of BSE::Cache::Cache, BSE::Cache::CHI or BSE::Cache::Memcached.
+
+=back
+
+=head2 [db]
+
+Database connection parameters.  These override the settings in
+Constants.pm which are deprecated.
+
+=over
+
+=item *
+
+dsn - the DBI dsn used to connect to the database. Default:
+$Constants::DSN.
+
+=item *
+
+user - the logon to the database.  Default: $Constants::UN
+
+=item *
+
+password - the password for the user.  Default: $Constants::PW.
+
+=item *
+
+dbopts - a perl expression that should evaluate to a hash reference.
+Default: $Constants::DBOPTs, or an empty hashref.
+
+=item *
+
+class - the database wrapper class to use.  Default: BSE::DB::Mysql.
+No other values are currently supported.
 
 =back
 
