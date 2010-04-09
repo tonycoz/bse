@@ -389,20 +389,6 @@ sub _make_art_info {
   return { not=>$not, arts=>\@arts };
 }
 
-sub _is_product_and_in_use {
-  my ($article) = @_;
-
-  if ($article->{generator} eq 'Generate::Product') {
-    # can't delete products that have been used in orders
-    require BSE::TB::OrderItems;
-    my @items = BSE::TB::OrderItems->getBy(productId=>$article->{id});
-    if (@items) {
-      return 1;
-    }
-  }
-  return 0;
-}
-
 sub check_edit_delete_article {
   my ($self, $user, $article, $action, $rmsg) = @_;
 
@@ -418,10 +404,6 @@ sub check_edit_delete_article {
   my $shopid = $self->{cfg}->entryErr('articles', 'shop');
   if ($article->{id} == $shopid) {
     $$rmsg = "Sorry, these pages are essential to the store - they cannot be deleted - you may want to hide the the store instead.";
-    return;
-  }
-  if (_is_product_and_in_use($article)) {
-    $$rmsg = "There are orders for this product.  It cannot be deleted.";
     return;
   }
 

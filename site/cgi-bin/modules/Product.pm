@@ -138,6 +138,23 @@ sub db_options {
   return BSE::TB::ProductOptions->getBy(product_id => $self->{id});
 }
 
+sub remove {
+  my ($self, $cfg) = @_;
+
+  # remove any product options
+  for my $opt ($self->db_options) {
+    $opt->remove;
+  }
+
+  # mark any order line items to "anonymize" them
+  BSE::DB->run(bseMarkProductOrderItemsAnon => $self->id);
+
+  # remove any wishlist items
+  BSE::DB->run(bseRemoveProductFromWishlists => $self->id);
+
+  return $self->SUPER::remove($cfg);
+}
+
 package BSE::CfgProductOption;
 use strict;
 

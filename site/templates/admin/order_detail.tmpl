@@ -73,8 +73,8 @@
 </tr>
 <:iterator begin items:>
         <tr> 
-          <td width="100%"><a href="<:script:>?product_detail=1&amp;id=<:product id:>"><:product 
-            title:></a> <:options:></td>
+          <td width="100%"><:ifOr [ifEq [item productId] -1] [ifEq [product id] ""]:><:item title:> (product deleted)<:or:><a href="<:script:>?product_detail=1&amp;id=<:product id:>"><:product
+            title:></a><:eif:> <:options:></td>
           <td align=center nowrap><:item units:></td>
           <td align=right nowrap><:money item price:></td>
           <td align=right nowrap><:extension price:></td>

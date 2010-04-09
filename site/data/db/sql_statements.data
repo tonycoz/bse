@@ -308,3 +308,15 @@ delete from bse_seminar_bookings
 where siteuser_id = ?
 SQL
 
+name: bseMarkProductOrderItemsAnon
+sql_statement: <<SQL
+update order_item
+set productId = -1
+where productId = ?
+SQL
+
+name: bseRemoveProductFromWishlists
+sql_statement: <<SQL
+delete from bse_wishlist
+where product_id = ?
+SQL

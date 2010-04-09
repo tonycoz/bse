@@ -436,6 +436,7 @@ select ar.*, pr.*, se.*
 SQL
    addSeminar => 'insert bse_seminars values(?,?)',
    replaceSeminar => 'replace bse_seminars values(?,?)',
+   deleteSeminar => 'delete from bse_seminars where seminar_id = ?',
    getSeminarByPkey => <<SQL,
 select ar.*, pr.*, se.*
   from article ar, product pr, bse_seminars se
