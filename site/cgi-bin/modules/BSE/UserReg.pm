@@ -1025,6 +1025,31 @@ sub iter_sembookings {
   $user->seminar_bookings_detail;
 }
 
+sub tag_order_item_options {
+  my ($self, $req, $ritem_index, $items) = @_;
+
+  if ($$ritem_index < 0 || $$ritem_index >= @$items) {
+    return "** only usable in the items iterator **";
+  }
+
+  my $item = $items->[$$ritem_index];
+  require BSE::Shop::Util;
+  BSE::Shop::Util->import(qw/order_item_opts nice_options/);
+  my @options;
+  if ($item->{options}) {
+    # old order
+    require Products;
+    my $product = Products->getByPkey($item->{productId});
+
+    @options = order_item_opts($req, $item, $product);
+  }
+  else {
+    @options = order_item_opts($req, $item);
+  }
+
+  return nice_options(@options);
+}
+
 sub req_userpage {
   my ($self, $req, $message) = @_;
 
@@ -1104,6 +1129,7 @@ sub req_userpage {
        return 0 if $must_be_filled && !$orders[$order_index]{filled};
        return 1;
      },
+     options => [ tag_order_item_options => $self, $req, \$item_index, \@items ],
      $it->make_iterator([ \&iter_usersubs, $user ], 
 			'subscription', 'subscriptions'),
      $it->make_iterator([ \&iter_sembookings, $user ],
