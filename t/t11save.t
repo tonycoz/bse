@@ -3,7 +3,7 @@ use strict;
 use BSE::Test qw(make_ua base_url);
 use JSON;
 use DevHelp::HTML;
-use Test::More tests => 152;
+use Test::More tests => 171;
 
 my $ua = make_ua;
 my $baseurl = base_url;
@@ -201,6 +201,32 @@ SKIP:
     note(Dumper($data));
   }
 
+ SKIP:
+  {
+    my $parent = do_add($add_url, { parentid => -1, title => "parent" }, "add parent");
+    my $kid1 = do_add($add_url, { parentid => $parent->{id}, title => "kid1" }, "add first kid");
+    sleep 2;
+    my $kid2 = do_add($add_url,
+		      {
+		       parentid => $parent->{id},
+		       title => "kid2",
+		       _after => $kid1->{id},
+		      }, "add second child");
+    my @expected_order = ( $kid1->{id}, $kid2->{id} );
+    my %tree_req =
+      (
+       a_tree => 1,
+       id => $parent->{id},
+      );
+    my $data = do_req($add_url, \%tree_req, "get newly ordered tree");
+    ok($data->{success}, "got the tree");
+    my @saved_order = map $_->{id}, @{$data->{articles}};
+    is_deeply(\@saved_order, \@expected_order, "check saved order");
+    do_req($add_url, { remove => 1, id => $kid1->{id} }, "remove kid1");
+    do_req($add_url, { remove => 1, id => $kid2->{id} }, "remove kid2");
+    do_req($add_url, { remove => 1, id => $parent->{id} }, "remove parent");
+  }
+
   # delete it
  SKIP:
   {
@@ -243,4 +269,22 @@ sub do_req {
     or print "# $@\n";
 
   return $data;
+}
+
+sub do_add {
+  my ($url, $req, $comment) = @_;
+
+  $req->{save} = 1;
+
+  my $result = do_req($url, $req, $comment);
+  my $article;
+ SKIP:
+  {
+    $result or skip("No JSON result", 1);
+    if (ok($result->{success} && $result->{article}, "check success and article")) {
+      return $result->{article};
+    }
+  };
+
+  return;
 }

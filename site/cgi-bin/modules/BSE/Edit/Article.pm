@@ -1674,6 +1674,13 @@ sub save_new {
   $article->setLink($self->make_link($article));
   $article->save();
 
+  my ($after_id) = $cgi->param("_after");
+  if (defined $after_id) {
+    Articles->reorder_child($article->{parentid}, $article->{id}, $after_id);
+    # reload, the displayOrder probably changed
+    $article = $articles->getByPkey($article->{id});
+  }
+
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
