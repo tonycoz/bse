@@ -487,6 +487,8 @@ sub flag_sections {
   return ( 'product flags', $self->SUPER::flag_sections );
 }
 
+sub shop_article { 1 }
+
 my %defaults =
   (
    options => '',

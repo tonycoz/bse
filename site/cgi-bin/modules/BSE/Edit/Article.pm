@@ -1814,43 +1814,32 @@ sub save {
   
   # reparenting
   my $newparentid = $cgi->param('parentid');
-  if ($newparentid && $req->user_can('edit_field_edit_parentid', $article)) {
-    if ($newparentid == $article->{parentid}) {
-      # nothing to do
-    }
-    elsif ($newparentid != -1) {
-      print STDERR "Reparenting...\n";
-      my $newparent = $articles->getByPkey($newparentid);
-      if ($newparent) {
-	if ($newparent->{level} != $article->{level}-1) {
-	  # the article cannot become a child of itself or one of it's 
-	  # children
-	  if ($article->{id} == $newparentid 
-	      || $self->is_descendant($article->{id}, $newparentid, $articles)) {
-	    my $msg = "Cannot become a child of itself or of a descendant";
-	    return $self->_service_error($req, $article, $articles, $msg, {}, "PARENT");
-	  }
-	  my $shopid = $self->{cfg}->entryErr('articles', 'shop');
-	  if ($self->is_descendant($article->{id}, $shopid, $articles)) {
-	    my $msg = "Cannot become a descendant of the shop";
-	    return $self->_service_error($req, $article, $articles, $msg, {}, "PARENT");
-	  }
-	  my $msg;
-	  $self->reparent($article, $newparentid, $articles, \$msg)
-	    or return $self->_service_error($req, $article, $articles, $msg, {}, "PARENT");
-	}
-	else {
-	  # stays at the same level, nothing special
-	  $article->{parentid} = $newparentid;
-	}
-      }
-      # else ignore it
+  if ($newparentid
+      && $req->user_can('edit_field_edit_parentid', $article)
+      && $newparentid != $article->{parentid}) {
+    my $newparent;
+    my $parent_editor;
+    if ($newparentid == -1) {
+      require BSE::Edit::Site;
+      $newparent = BSE::TB::Site->new;
+      $parent_editor = BSE::Edit::Site->new(cfg => $req->cfg);
     }
     else {
-      # becoming a section
+      $newparent = $articles->getByPkey($newparentid);
+      ($parent_editor, $newparent) = $self->article_class($newparent, $articles, $req->cfg);
+    }
+    if ($newparent) {
       my $msg;
-      $self->reparent($article, -1, $articles, \$msg)
-	or return $self->_service_error($req, $article, $articles, $msg, {}, "PARENT");
+      if ($self->can_reparent_to($article, $newparent, $parent_editor, $articles, \$msg)
+	 && $self->reparent($article, $newparentid, $articles, \$msg)) {
+	# nothing to do here
+      }
+      else {
+	return $self->_service_error($req, $article, $articles, $msg, {}, "PARENT");
+      }
+    }
+    else {
+      return $self->_service_error($req, $article, $articles, "No such parent article", {}, "PARENT");
     }
   }
 
@@ -1958,6 +1947,49 @@ sub save {
 
   return $self->refresh($article, $cgi, undef, 'Article saved');
 }
+
+sub can_reparent_to {
+  my ($self, $article, $newparent, $parent_editor, $articles, $rmsg) = @_;
+
+  $DB::single = 1;
+
+  my @child_types = $parent_editor->child_types;
+  if (!grep $_ eq ref $self, @child_types) {
+    my ($child_type) = (ref $self) =~ /(\w+)$/;
+    my ($parent_type) = (ref $parent_editor) =~ /(\w+)$/;
+    
+    $$rmsg = "A $child_type cannot be a child of a $parent_type";
+    return;
+  }
+  
+  # the article cannot become a child of itself or one of it's 
+  # children
+  if ($article->{id} == $newparent->id
+      || $self->is_descendant($article->id, $newparent->id, $articles)) {
+    $$rmsg = "Cannot become a child of itself or of a descendant";
+    return;
+  }
+
+  my $shopid = $self->{cfg}->entryErr('articles', 'shop');
+  if ($self->shop_article) { # if this article belongs in the shop
+    unless ($newparent->id == $shopid
+	    || $self->is_descendant($shopid, $newparent->{id}, $articles)) {
+      $$rmsg = "This article belongs in the shop";
+      return;
+    }
+  }
+  else {
+    if ($newparent->id == $shopid
+	|| $self->is_descendant($shopid, $newparent->id, $articles)) {
+      $$rmsg = "This article doesn't belong in the shop";
+      return;
+    }
+  }
+
+  return 1;
+}
+
+sub shop_article { 0 }
 
 sub update_child_dynamic {
   my ($self, $article, $articles, $req) = @_;

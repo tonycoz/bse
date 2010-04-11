@@ -107,6 +107,8 @@ sub child_types {
   return qw(BSE::Edit::Product BSE::Edit::Seminar BSE::Edit::Catalog);
 }
 
+sub shop_article { 1 }
+
 sub default_template {
   my ($self, $article, $cfg, $templates) = @_;
 
