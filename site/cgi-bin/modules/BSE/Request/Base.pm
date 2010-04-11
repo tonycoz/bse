@@ -94,6 +94,7 @@ sub _make_cgi {
   my $cache;
   if ($self->_tracking_uploads
       && $ENV{REQUEST_METHOD} eq 'POST'
+      && $ENV{CONTENT_TYPE}
       && $ENV{CONTENT_TYPE} =~ m(^multipart/form-data)
       && defined ($cache = $self->_cache_object)) {
     # very hacky
