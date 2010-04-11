@@ -3,7 +3,7 @@ use strict;
 use BSE::Test qw(make_ua base_url);
 use JSON;
 use DevHelp::HTML;
-use Test::More tests => 171;
+use Test::More tests => 172;
 
 my $ua = make_ua;
 my $baseurl = base_url;
@@ -236,8 +236,9 @@ SKIP:
        id => $art->{id},
       );
     my $data = do_req($add_url, \%del_req, "remove test article");
-    $data or skip("no json from req");
+    $data or skip("no json from req", 2);
     ok($data->{success}, "successfully deleted");
+    is($data->{article_id}, $art->{id}, "check id returned");
   }
 
   # shouldn't be fetchable anymore

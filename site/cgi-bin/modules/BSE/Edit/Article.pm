@@ -4232,7 +4232,7 @@ itself)
 
 =back
 
-JSON success response: { success: 1 }
+JSON success response: { success: 1, article_id: I<id> }
 
 =cut
 
@@ -4248,6 +4248,8 @@ sub remove {
     return $self->_service_error($req, $article, $articles, $why_not, {}, $code);
   }
 
+  my $id = $article->id;
+
   my $parentid = $article->{parentid};
   $article->remove($req->cfg);
 
@@ -4255,6 +4257,7 @@ sub remove {
     return $req->json_content
       (
        success => 1,
+       article_id => $id,
       );
   }
 
