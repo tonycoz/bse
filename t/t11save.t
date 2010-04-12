@@ -3,7 +3,7 @@ use strict;
 use BSE::Test qw(make_ua base_url);
 use JSON;
 use DevHelp::HTML;
-use Test::More tests => 172;
+use Test::More tests => 173;
 
 my $ua = make_ua;
 my $baseurl = base_url;
@@ -160,13 +160,14 @@ SKIP:
        id => $art->{id},
       );
     my $data = do_req($add_url, \%conf_req, "config data");
-    $data or skip("no json to check", 3);
+    $data or skip("no json to check", 7);
     ok($data->{success}, "check for success");
     ok($data->{templates}, "has templates");
     ok($data->{thumb_geometries}, "has geometries");
     ok($data->{defaults}, "has defaults");
     ok($data->{child_types}, "has child types");
     is($data->{child_types}[0], "Article", "check child type value");
+    ok($data->{flags}, "has flags");
   }
 
  SKIP:

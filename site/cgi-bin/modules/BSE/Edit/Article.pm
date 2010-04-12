@@ -4791,6 +4791,7 @@ sub _populate_config {
   my @child_types = $self->child_types($article);
   s/^BSE::Edit::// for @child_types;
   $conf->{child_types} = \@child_types;
+  $conf->{flags} = [ $self->flags ];
 }
 
 =item a_config
@@ -4822,6 +4823,11 @@ Returns an object of the form:
       ...
     },
     child_types: [ "Article" ],
+    flags:
+    [
+      { id => "A", desc => "description" },
+      ...
+    ]
   }
 
 =cut
