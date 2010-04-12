@@ -819,6 +819,10 @@ sub json_content {
   my $json = JSON->new;
 
   my $value = @values > 1 ? +{ @values } : $values[0];
+  my ($context) = $self->cgi->param("_context");
+  if (defined $context) {
+    $value->{context} = $context;
+  }
 
   return
     +{

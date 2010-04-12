@@ -3,7 +3,7 @@ use strict;
 use BSE::Test qw(make_ua base_url);
 use JSON;
 use DevHelp::HTML;
-use Test::More tests => 173;
+use Test::More tests => 175;
 
 my $ua = make_ua;
 my $baseurl = base_url;
@@ -17,6 +17,7 @@ my %add_req =
    save => 1,
    title => "test",
    parentid => -1,
+   _context => "test context",
   );
 my $art_data = do_req($add_url, \%add_req, "add article");
 
@@ -24,6 +25,8 @@ SKIP:
 {
   $art_data or skip("no response to add", 20);
   ok($art_data->{success}, "successful json response");
+
+  is($art_data->{context}, "test context", "check context returned");
 
   my $art = $art_data->{article};
   my $orig_lastmod = $art->{lastModified};
@@ -235,11 +238,13 @@ SKIP:
       (
        remove => 1,
        id => $art->{id},
+       _context => $art->{id},
       );
     my $data = do_req($add_url, \%del_req, "remove test article");
-    $data or skip("no json from req", 2);
+    $data or skip("no json from req", 3);
     ok($data->{success}, "successfully deleted");
     is($data->{article_id}, $art->{id}, "check id returned");
+    is($data->{context}, $art->{id}, "check context returned");
   }
 
   # shouldn't be fetchable anymore
