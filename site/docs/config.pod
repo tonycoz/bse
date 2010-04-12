@@ -1578,6 +1578,11 @@ group.
 Each key is a template name, the value is the content type to be used
 when displaying the template dynamically.
 
+=head2 [template descriptions]
+
+Each key is a template name, the value is a description used in the
+template dropdown for that template.
+
 =head2 [body class]
 
 This section defines CSS class names for BSE's body text link tags.
@@ -2117,6 +2122,34 @@ class - the database wrapper class to use.  Default: BSE::DB::Mysql.
 No other values are currently supported.
 
 =back
+
+=head2 [extra a_config]
+
+Defines extra configuration to be returned from the BSE system
+configuration.
+
+Each key is the keyword in the returned JSON object.  If the key
+already exists it is not overwritten.
+
+Each value is the name of a section in the BSE configuration.  The
+strings "{level}", "{generator}", "{parentid}", "{template}" are
+replaced with their values from the article that config is being
+requested for.
+
+So:
+
+  [extra a_config]
+  menu=level{level} menu
+
+  [level1 menu]
+  alpha=One
+  beta=Two
+
+will include:
+
+  menu: { alpha: "One", beta: "Two" }
+
+in the returned configuration
 
 =head1 AUTHOR
 

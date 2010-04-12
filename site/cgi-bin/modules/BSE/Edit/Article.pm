@@ -401,19 +401,30 @@ sub default_template {
 sub tag_templates {
   my ($self, $article, $cfg, $cgi) = @_;
 
-  my @templates = sort $self->templates($article);
+  my @templates = sort { $a->{name} cmp $b->{name} } $self->templates_long($article);
   my $default;
-  if ($article->{template} && grep $_ eq $article->{template}, @templates) {
+  if ($article->{template} && grep $_->{name} eq $article->{template}, @templates) {
     $default = $article->{template};
   }
   else {
     my @options;
     $default = $self->default_template($article, $cfg, \@templates);
   }
-  return popup_menu(-name=>'template',
-		    -values=>\@templates,
-		    -default=>$default,
-		    -override=>1);
+  my %labels =
+    (
+     map
+     { ;
+       $_->{name} => 
+       $_->{name} eq $_->{description}
+	 ? $_->{name}
+	   : "$_->{description} ($_->{name})"
+     } @templates
+    );
+  return popup_menu(-name => 'template',
+		    -values => [ map $_->{name}, @templates ],
+		    -labels => \%labels,
+		    -default => $default,
+		    -override => 1);
 }
 
 sub title_images {
@@ -4750,6 +4761,19 @@ sub req_article {
     );
 }
 
+sub templates_long {
+  my ($self, $article) = @_;
+
+  my @templates = $self->templates($article);
+
+  my $cfg = $self->{cfg};
+  return map
+    +{
+      name => $_,
+      description => $cfg->entry("template descriptions", $_, $_),
+     }, @templates;
+}
+
 sub _populate_config {
   my ($self, $req, $article, $articles, $conf) = @_;
 
@@ -4766,16 +4790,7 @@ sub _populate_config {
   $defaults{template} =
     $self->default_template($article, $req->cfg, \@templates);
 
-  $conf->{templates} =
-    [
-     map
-      {
-	+{
-	  name => $_,
-	  description => $cfg->entry("template description", $_, $_),
-	 };
-      } @templates
-     ];
+  $conf->{templates} = [ $self->templates_long($article) ];
   $conf->{thumb_geometries} =
     [
      map
@@ -4827,8 +4842,14 @@ Returns an object of the form:
     [
       { id => "A", desc => "description" },
       ...
-    ]
+    ],
+    // possibible custom data
   }
+
+To define custom data add entries to the [extra a_config] section,
+keys become the keys in the returned structure pointing at hashes
+containing that section from the system configuration.  Custom keys
+may not conflict with system defined keys.
 
 =cut
 
@@ -4841,6 +4862,20 @@ sub req_config {
   my %conf;
   $self->_populate_config($req, $article, $articles, \%conf);
   $conf{success} = 1;
+
+  my $cfg = $req->cfg;
+  my %custom = $cfg->entries("extra a_config");
+  for my $key (keys %custom) {
+    exists $conf{$key} and next;
+
+    my $section = $custom{$key};
+    $section =~ s/\{(level|generator|parentid|template)\}/$article->{$1}/g;
+
+    $section eq "db" and die;
+
+    $conf{$key} = { $cfg->entries($section) };
+  }
+
   return $req->json_content
     (
      \%conf
