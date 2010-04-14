@@ -81,9 +81,19 @@ sub check_action {
   ref $rights or $rights = [ split /,/, $rights ];
   for my $right (@$rights) {
     unless ($req->user_can($right, -1, \$msg)) {
-      my $url = $req->url(menu => 
-			  { 'm' => 'You do not have access to this function '.$msg });
-      $$rresult = BSE::Template->get_refresh($url, $req->cfg);
+      if ($req->is_ajax || $req->param("_")) {
+	$$rresult = $req->json_content
+	  (
+	   success => 0,
+	   error_code => "ACCESS",
+	   message => "You do not have access to this function $msg",
+	  );
+      }
+      else {
+	my $url = $req->url(menu => 
+			    { 'm' => 'You do not have access to this function '.$msg });
+	$$rresult = $req->get_refresh($url);
+      }
       return;
     }
   }
