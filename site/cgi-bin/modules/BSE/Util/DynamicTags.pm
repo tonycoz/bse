@@ -778,12 +778,13 @@ sub iter_userfiles {
 
   if ($args =~ /^\s*filter:(.*)$/) {
     my $expr = $1;
-    my $func = eval 'sub { my $file = $_[0];' .  $expr . '}';
+    my $func = eval 'sub { my ($file, $state) = @_;' .  $expr . '}';
     unless ($func) {
       print STDERR "** Cannot compile userfile filter $expr: $@\n";
       return;
     }
-    return [ grep $func->($_), @files ];
+    my %state;
+    return [ grep $func->($_, \%state), @files ];
   }
 
   if ($args =~ /^\s*(!)?(\w+(?:,\w+)*)\s*$/) {
