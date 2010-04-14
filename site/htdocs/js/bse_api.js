@@ -458,6 +458,148 @@ var BSEAPI = Class.create
      _badparm: function(msg) {
        this.onException(msg);
      },
+     _add_complex_item: function(form, key, val, clone) {
+       if (typeof(val) == "string" || typeof(val) == "number") {
+	 form.appendChild(this._hidden(key, val));
+       }
+       else if (typeof(val) == "object") {
+	 if (val.constructor == Array) {
+	   for (var i = 0; i < val.length; ++i) {
+	     this._add_complex_item(form, key, val[i], clone);
+	   }
+	 }
+	 else {
+	   // presumed to be a file field
+	   if (clone) {
+	     var cloned = val.cloneNode(true);
+	     val.parentNode.insertBefore(cloned, val);
+	   }
+	   form.appendChild(val);
+	 }
+       }
+     },
+     _populate_complex_form: function(form, req_parms, clone) {
+       for (var key in req_parms) {
+         this._add_complex_item(form, key, req_parms[key], clone);
+       }
+     },
+     _do_complex_request: function(url, action, parameters) {
+       var success = parameters.onSuccess;
+       if (!success) this._badparm("tree() missing onSuccess parameter");
+       var failure = parameters.onFailure;
+       if (!failure) failure = this.onFailure;
+       var on_complete = parameters.onComplete;
+       var on_start = parameters.onStart;
+       var on_progress = parameters.onProgress;
+       var clone = parameters.clone;
+
+       delete parameters.onSuccess;
+       delete parameters.onFailure;
+       delete parameters.onComplete;
+       delete parameters.onProgress;
+       delete parameters.onStart;
+       delete parameters.clone;
+
+       // stuff we use in the callbacks
+       var parms =
+	 {
+	 success: success,
+	 failure: failure,
+	 progress: on_progress,
+	 complete: on_complete,
+	 // track the number of progress updates done
+	 updates: 0,
+	 finished: 0
+	 };
+
+       parms.up_id = this._new_upload_id();
+
+       // setup the iframe
+       parms.ifr = new Element("iframe", {
+	 src: "about:blank",
+	 id: "bseiframe"+parms.up_id,
+	 name: "bseiframe"+parms.up_id,
+	 width: 400,
+	 height: 100
+	 });
+       //parms.ifr.style.display = "none";
+
+       // setup the form
+       var form = new Element
+       ("form",
+       {
+	 method: "post",
+	 action: url,
+	 enctype: "multipart/form-data",
+	 // the following for IE
+	 encoding: "multipart/form-data",
+	 id: "bseform"+parms.up_id,
+	 target: "bseiframe"+parms.up_id
+       });
+       parms.form = form;
+       //form.style.display = "none";
+       // _upload must come before anything large
+       form.appendChild(this._hidden("_upload", parms.up_id));
+       this._populate_complex_form(form, parameters, clone);
+       // trigger BSE's alternative JSON return handling
+       form.appendChild(this._hidden("_", 1));
+       form.appendChild(this._hidden(action, 1));
+
+       document.body.appendChild(parms.ifr);
+       document.body.appendChild(form);
+       var onLoad = function(parms) {
+	 // we should get json back in the body
+         var ifr = parms.ifr;
+	 var form = parms.form;
+	 var text = Try.these(
+	   function(ifr) {
+	     var text = ifr.contentDocument.body.textContent;
+	     ifr.contentDocument.close();
+	     return text;
+	   }.bind(this, ifr),
+	   function(ifr) {
+	     var text = ifr.contentWindow.document.body.innerText;
+	     ifr.contentWindow.document.close();
+	     return text;
+	   }.bind(this, ifr)
+	 );
+	 var data;
+	 eval("data = " + text + ";");
+	 //document.body.removeChild(ifr);
+	 //document.body.removeChild(form);
+         if (parms.progress != null && parms.total != null)
+	   parms.progress(parms.total, parms.total);
+	 if (parms.complete != null)
+	   parms.complete();
+	 parms.finished = 1;
+	 if (data != null) {
+	   if (data.success != null && data.success != 0) {
+	     parms.success(data);
+	   }
+	   else {
+	     parms.failure(data);
+	   }
+	 }
+	 else {
+	   parms.failure(this._wrap_req_failure({statusText: "Unknown"}));
+	 }
+       }.bind(this, parms);
+       if (window.attachEvent) {
+	 parms.ifr.attachEvent("onload", onLoad);
+       }
+       else {
+	 parms.ifr.addEventListener("load", onLoad, false);
+       }
+
+       if (on_start != null)
+	 on_start();
+
+       if (on_progress != null) {
+	 parms.timeout = window.setTimeout ( this._progress_handler.bind(this, parms), 200 );
+       }
+
+       form.submit();
+     },
      // in the future this might call a proxy
      _do_add_request: function(action, other_parms, success, failure) {
        this._do_request("/cgi-bin/admin/add.pl", action, other_parms, success, failure);
