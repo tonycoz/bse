@@ -6,35 +6,10 @@ use FindBin;
 use lib "$FindBin::Bin/modules";
 use BSE::Request;
 use BSE::Template;
+use BSE::UI::FileProgress;
 
 my $req = BSE::Request->new(nosession => 1);
 
-my $cgi = $req->cgi;
-my $key = $cgi->param("_upload");
-my $result;
-if ($key) {
-  my $cached = $req->cache_get("upload-$key");
-  if ($cached) {
-    $result =
-      {
-       success => 1,
-       progress => $cached,
-      };
-  }
-  else {
-    $result =
-      {
-       success => 1,
-       progress => [],
-      };
-  }
-}
-else {
-  $result =
-    {
-     success => 0,
-     message => "missing _upload parameter",
-    };
-}
+my $result = BSE::UI::FileProgress->dispatch($req);
 
-BSE::Template->output_result($req, $req->json_content($result));
+$req->output_result($result);

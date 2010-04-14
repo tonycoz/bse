@@ -199,6 +199,7 @@ site/cgi-bin/modules/BSE/UI/AdminSeminar.pm
 site/cgi-bin/modules/BSE/UI/AdminShop.pm
 site/cgi-bin/modules/BSE/UI/Affiliate.pm
 site/cgi-bin/modules/BSE/UI/Dispatch.pm
+site/cgi-bin/modules/BSE/UI/FileProgress.pm
 site/cgi-bin/modules/BSE/UI/Formmail.pm
 site/cgi-bin/modules/BSE/UI/Image.pm
 site/cgi-bin/modules/BSE/UI/NAdmin.pm
