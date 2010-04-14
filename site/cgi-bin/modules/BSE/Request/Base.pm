@@ -824,11 +824,18 @@ sub json_content {
     $value->{context} = $context;
   }
 
-  return
+  my $json_result =
     +{
       type => "application/json",
       content => $json->encode($value),
      };
+
+  if (!exists $ENV{HTTP_X_REQUESTED_WITH}
+      || $ENV{HTTP_X_REQUESTED_WITH} !~ /XMLHttpRequest/) {
+    $json_result->{type} = "text/plain";
+  }
+
+  return $json_result;
 }
 
 =item get_csrf_token($name)
