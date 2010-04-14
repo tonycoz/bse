@@ -21,7 +21,6 @@ site/cgi-bin/admin/bse_timeout.pl
 site/cgi-bin/admin/bse_modules.pl
 site/cgi-bin/admin/changepw.pl
 site/cgi-bin/admin/datadump.pl
-site/cgi-bin/fileprogress.pl
 site/cgi-bin/admin/generate.pl
 site/cgi-bin/admin/imageclean.pl
 site/cgi-bin/admin/logon.pl
@@ -40,6 +39,8 @@ site/cgi-bin/admin/userlist.pl
 site/cgi-bin/admin/userupdate.pl
 site/cgi-bin/affiliate.pl
 site/cgi-bin/bse.cfg
+site/cgi-bin/fileprogress.fcgi
+site/cgi-bin/fileprogress.pl
 site/cgi-bin/fmail.pl
 site/cgi-bin/image.pl
 site/cgi-bin/interest.pl
