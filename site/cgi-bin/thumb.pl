@@ -12,6 +12,6 @@ use Carp 'confess';
 
 $SIG{__DIE__} = sub { confess $@ };
 
-my $req = BSE::Request->new;
+my $req = BSE::Request->new(nosession => 1);
 my $result = BSE::UI::Thumb->dispatch($req);
-BSE::Template->output_result($req, $result);
+$req->output_result($result);
