@@ -98,32 +98,69 @@ sub _make_cgi {
       && $ENV{REQUEST_METHOD} eq 'POST'
       && $ENV{CONTENT_TYPE}
       && $ENV{CONTENT_TYPE} =~ m(^multipart/form-data)
+      && $ENV{CONTENT_LENGTH}
       && defined ($cache = $self->_cache_object)) {
     # very hacky
     my $q;
-    my $total = 0;
+    my $done = 0;
     my $last_set = time();
-    $q = CGI->new
-      (
-       sub {
-	 my ($filename, $data, $size_so_far) = @_;
+    my $upload_key;
+    if ($ENV{QUERY_STRING}
+	&& $ENV{QUERY_STRING} =~ /^_upload=([a-zA-Z0-9_]+)$/) {
+      $upload_key = $1;
+    }
+    my $complete = 0;
+    eval {
+      $q = CGI->new
+	(
+	 sub {
+	   my ($filename, $data, $size_so_far) = @_;
+	   
+	   $upload_key ||= $q->param("_upload");
+	   $upload_key or return;
+	   my $fullkey = "upload-$upload_key";
+	   $done += length $data;
+	   my $now = time;
+	   if ($last_set + 1 <= $now) { # just in case we end up loading Time::HiRes
+	     $cache->set($fullkey, 
+			 { 
+			  done => $done,
+			  total => $ENV{CONTENT_LENGTH},
+			  filename => $filename,
+			  complete => 0 
+			 });
+	     $last_set = $now;
+	   }
+	 },
+	 0, # data for upload hook
+	 1, # continue to use temp files
+	 {} # start out empty and don't read STDIN
+	);
+      
+      $q->init(); # initialize for real cgi
+      $complete = 1;
+    };
 
-	 my ($key) = $q->param("_upload")
-	   or return;
-	 my $fullkey = "upload-$key";
-	 $total += length $data;
-	 my $now = time;
-	 if ($last_set + 1 <= $now) { # just in case we end up loading Time::HiRes
-	   $cache->set($fullkey, [ $total, $ENV{CONTENT_LENGTH} ] );
-	   $last_set = $now;
-	 }
-       },
-       0, # data for upload hook
-       1, # continue to use temp files
-       {} # start out empty and don't read STDIN
-      );
-
-    $q->init(); # initialize for real cgi
+    if ($upload_key) {
+      my $fullkey = "upload-$upload_key";
+      
+      if ($complete) {
+	$cache->set($fullkey,
+		    {
+		     done => $ENV{CONTENT_LENGTH},
+		     total => $ENV{CONTENT_LENGTH},
+		     complete => 1,
+		    });
+      }
+      else {
+	$cache->set($fullkey,
+		    {
+		     failed => 1,
+		    });
+	die;
+      }
+    }
+ 
 
     return $q;
   }

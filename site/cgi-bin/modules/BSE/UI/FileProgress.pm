@@ -27,7 +27,6 @@ return
       $result =
 	{
 	 success => 1,
-	 progress => [],
 	};
     }
   }
