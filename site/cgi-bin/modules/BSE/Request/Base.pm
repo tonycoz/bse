@@ -10,8 +10,10 @@ sub new {
 
   $opts{cfg} ||= BSE::Cfg->new;
 
-  BSE::DB->init($opts{cfg});
-  BSE::DB->startup();
+  unless ($opts{nodatabase}) {
+    BSE::DB->init($opts{cfg});
+    BSE::DB->startup();
+  }
 
   my $self = bless \%opts, $class;
 

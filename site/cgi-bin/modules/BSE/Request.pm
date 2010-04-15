@@ -1,6 +1,5 @@
 package BSE::Request;
 use strict;
-use BSE::Session;
 use base 'BSE::Request::Base';
 
 sub new {
@@ -9,6 +8,7 @@ sub new {
   my $self = $class->SUPER::new(%opts);
 
   unless ($opts{nosession}) {
+    require BSE::Session;
     my %session;
     BSE::Session->tie_it(\%session, $self->{cfg});
     $self->{session} = \%session;

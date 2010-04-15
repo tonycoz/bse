@@ -3,6 +3,14 @@ package BSE::UI::FileProgress;
 sub dispatch {
   my ($class, $req) = @_;
 
+  if ($req->cgi->param("dump")) {
+return
++{
+    type => "text/plain",
+    content => join("\n", keys %INC)."\n",
+};
+  }
+
   my $cgi = $req->cgi;
   my $key = $cgi->param("_upload");
   my $result;

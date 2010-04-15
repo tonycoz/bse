@@ -12,8 +12,14 @@ use BSE::UI::FileProgress;
 my $cfg = BSE::Cfg->new; # only do this once
 
 while (my $cgi = CGI::Fast->new) {
-  my $req = BSE::Request->new(nosession => 1, cfg => $cfg, cgi => $cgi,
-			     fastcgi => $FCGI::global_request->IsFastCGI);
+  my $req = BSE::Request->new
+      (
+       nosession => 1,
+       nodatabase => 1,
+       cfg => $cfg,
+       cgi => $cgi,
+       fastcgi => $FCGI::global_request->IsFastCGI,
+      );
 
   my $result = BSE::UI::FileProgress->dispatch($req);
 

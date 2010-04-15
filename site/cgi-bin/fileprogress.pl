@@ -8,7 +8,7 @@ use BSE::Request;
 use BSE::Template;
 use BSE::UI::FileProgress;
 
-my $req = BSE::Request->new(nosession => 1);
+my $req = BSE::Request->new(nosession => 1, nodatabase => 1);
 
 my $result = BSE::UI::FileProgress->dispatch($req);
 
