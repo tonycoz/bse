@@ -68,7 +68,7 @@ sub check_action {
       $extras{r} = $rurl;
     }
     my $url = $req->url(logon => \%extras);
-    $$rresult = BSE::Template->get_refresh($url, $req->cfg);
+    $$rresult = $req->get_refresh($url);
     return;
   }
 

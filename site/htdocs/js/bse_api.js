@@ -522,7 +522,7 @@ var BSEAPI = Class.create
 	 width: 400,
 	 height: 100
 	 });
-       //parms.ifr.style.display = "none";
+       parms.ifr.style.display = "none";
 
        // setup the form
        var form = new Element
@@ -537,7 +537,7 @@ var BSEAPI = Class.create
 	 target: "bseiframe"+parms.up_id
        });
        parms.form = form;
-       //form.style.display = "none";
+       form.style.display = "none";
        // _upload must come before anything large
        form.appendChild(this._hidden("_upload", parms.up_id));
        this._populate_complex_form(form, parameters, clone);
@@ -565,8 +565,8 @@ var BSEAPI = Class.create
 	 );
 	 var data;
 	 eval("data = " + text + ";");
-	 //document.body.removeChild(ifr);
-	 //document.body.removeChild(form);
+	 document.body.removeChild(ifr);
+	 document.body.removeChild(form);
          if (parms.progress != null && parms.total != null)
 	   parms.progress(parms.total, parms.total);
 	 if (parms.complete != null)
