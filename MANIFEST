@@ -38,6 +38,7 @@ site/cgi-bin/admin/subs.pl
 site/cgi-bin/admin/userlist.pl
 site/cgi-bin/admin/userupdate.pl
 site/cgi-bin/affiliate.pl
+site/cgi-bin/api.pl
 site/cgi-bin/bse.cfg
 site/cgi-bin/fileprogress.fcgi
 site/cgi-bin/fileprogress.pl
@@ -191,6 +192,7 @@ site/cgi-bin/modules/BSE/Template.pm
 site/cgi-bin/modules/BSE/Thumb/Imager.pm
 site/cgi-bin/modules/BSE/Thumb/Imager/RandomCrop.pm
 site/cgi-bin/modules/BSE/ThumbLow.pm
+site/cgi-bin/modules/BSE/UI/API.pm
 site/cgi-bin/modules/BSE/UI/Background.pm
 site/cgi-bin/modules/BSE/UI/AdminDispatch.pm
 site/cgi-bin/modules/BSE/UI/AdminNewsletter.pm
