@@ -391,6 +391,20 @@ var BSEAPI = Class.create
          this._add_complex_item(form, key, req_parms[key], clone);
        }
      },
+     // perform a request through an iframe
+     // parameters can contain:
+     // onSuccess: callback called on successful processs
+     // onFailure: called on failed processing
+     // onStart: called when the form is submitted
+     // onProgress: called occasionally with submission progres info
+     // onComplete: called on completion (before onSuccess/onFailure)
+     // clone: if true, clone any file objects supplied
+     //
+     // all other parameters are treated as form fields.
+     // if a value is an array, it is treated as multiple values for
+     // that field
+     //
+     // Bugs: should fallback to Ajax if there are no form fields
      _do_complex_request: function(url, action, parameters) {
        var success = parameters.onSuccess;
        if (!success) this._badparm("tree() missing onSuccess parameter");
