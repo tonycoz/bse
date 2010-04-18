@@ -3,7 +3,7 @@ use strict;
 use BSE::Test qw(make_ua base_url);
 use JSON;
 use DevHelp::HTML;
-use Test::More tests => 175;
+use Test::More tests => 193;
 
 my $ua = make_ua;
 my $baseurl = base_url;
@@ -226,6 +226,56 @@ SKIP:
     ok($data->{success}, "got the tree");
     my @saved_order = map $_->{id}, @{$data->{articles}};
     is_deeply(\@saved_order, \@expected_order, "check saved order");
+
+    {
+      {
+	# stepkids
+	my %add_step =
+	  (
+	   add_stepkid => 1,
+	   id => $parent->{id},
+	   stepkid => $art->{id},
+	   _after => $kid1->{id},
+	  );
+	sleep(2);
+	my $result = do_req($add_url, \%add_step, "add stepkid in order");
+	ok($result->{success}, "Successfully");
+	my $rel = $result->{relationship};
+	ok($rel, "has a relationship");
+	is($rel->{childId}, $art->{id}, "check the rel child id");
+	is($rel->{parentId}, $parent->{id}, "check the rel parent id");
+      }
+
+      {
+	# refetch the tree
+	my $data = do_req($add_url, \%tree_req, "get tree with stepkid");
+	my @expected_order = ( $kid1->{id}, $art->{id}, $kid2->{id} );
+	my @found_order = map $_->{id}, @{$data->{allkids}};
+	is_deeply(\@found_order, \@expected_order, "check new order");
+      }
+
+      {
+	# remove the stepkid
+	my %del_step =
+	  (
+	   del_stepkid => 1,
+	   id => $parent->{id},
+	   stepkid => $art->{id},
+	   _after => $kid1->{id},
+	  );
+	my $result = do_req($add_url, \%del_step, "delete stepkid");
+	ok($result->{success}, "check success");
+
+	$result = do_req($add_url, \%del_step, "delete stepkid again (should failed)");
+	ok(!$result->{success}, "it failed");
+
+	my $data = do_req($add_url, \%tree_req, "get tree with stepkid removed");
+	my @expected_order = ( $kid1->{id}, $kid2->{id} );
+	my @found_order = map $_->{id}, @{$data->{allkids}};
+	is_deeply(\@found_order, \@expected_order, "check new order with stepkid removed");
+      }
+    }
+
     do_req($add_url, { remove => 1, id => $kid1->{id} }, "remove kid1");
     do_req($add_url, { remove => 1, id => $kid2->{id} }, "remove kid2");
     do_req($add_url, { remove => 1, id => $parent->{id} }, "remove parent");

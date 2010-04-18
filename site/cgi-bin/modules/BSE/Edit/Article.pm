@@ -2186,6 +2186,46 @@ sub child_types {
   return ( 'BSE::Edit::Article' );
 }
 
+=item add_stepkid
+
+Add a step child to an article.
+
+Parameters:
+
+=over
+
+=item *
+
+id - parent article id (required)
+
+=item *
+
+stepkid - child article id (required)
+
+=item *
+
+_after - id of the allkid of id to position the stepkid after
+(optional)
+
+=back
+
+Returns a FIELD error for an invalid stepkid.
+
+Returns an ACCESS error for insufficient access.
+
+Return an ADD error for a general add failure.
+
+On success returns:
+
+  {
+   success: 1,
+   relationship: { childId: I<childid>, parentId: I<parentid> }
+  }
+
+=back
+
+=cut
+
 sub add_stepkid {
   my ($self, $req, $article, $articles) = @_;
 
@@ -2193,40 +2233,92 @@ sub add_stepkid {
     or return $self->csrf_error($req, $article, "admin_add_stepkid", "Add Stepkid");
 
   $req->user_can(edit_stepkid_add => $article)
-    or return $self->edit_form($req, $article, $articles,
-			       "You don't have access to add step children to this article");
+    or return $self->_service_error($req, $article, $articles,
+			       "You don't have access to add step children to this article", {}, "ACCESS");
 
   my $cgi = $req->cgi;
-  require 'BSE/Admin/StepParents.pm';
-  eval {
-    my $childId = $cgi->param('stepkid');
-    defined $childId
-      or die "No stepkid supplied to add_stepkid";
-    $childId =~ /^\d+$/
-      or die "Invalid stepkid supplied to add_stepkid";
-    my $child = $articles->getByPkey($childId)
-      or die "Article $childId not found";
+  require BSE::Admin::StepParents;
 
-    $req->user_can(edit_stepparent_add => $child)
-      or die "You don't have access to add a stepparent to that article\n";
+  my %errors;
+  my $childId = $cgi->param('stepkid');
+  defined $childId
+    or $errors{stepkid} = "No stepkid supplied to add_stepkid";
+  unless ($errors{stepkid}) {
+    $childId =~ /^\d+$/
+      or $errors{stepkid} = "Invalid stepkid supplied to add_stepkid";
+  }
+  my $child;
+  unless ($errors{stepkid}) {
+    $child = $articles->getByPkey($childId)
+      or $errors{stepkid} = "Article $childId not found";
+  }
+  keys %errors
+    and return $self->_service_error
+      ($req, $article, $articles, $errors{stepkid}, \%errors, "FIELD");
+
+  $req->user_can(edit_stepparent_add => $child)
+    or return $self->_service_error($req, $article, $articles, "You don't have access to add a stepparent to that article", {}, "ACCESS");
+
+  my $new_entry;
+  eval {
     
     my $release = $cgi->param('release');
     dh_parse_date($release) or $release = undef;
     my $expire = $cgi->param('expire');
     dh_parse_date($expire) or $expire = undef;
   
-    my $newentry = 
+    $new_entry = 
       BSE::Admin::StepParents->add($article, $child, $release, $expire);
   };
   if ($@) {
-    return $self->edit_form($req, $article, $articles, $@);
+    return $self->_service_error($req, $article, $articles, $@, {}, "ADD");
+  }
+
+  my $after_id = $cgi->param("_after");
+  if (defined $after_id) {
+    Articles->reorder_child($article->id, $child->id, $after_id);
   }
 
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
-  return $self->refresh($article, $cgi, 'step', 'Stepchild added');
+  if ($req->is_ajax) {
+    return $req->json_content
+      (
+       success => 1,
+       relationship => $new_entry->data_only,
+      );
+  }
+  else {
+    $self->refresh($article, $cgi, 'step', 'Stepchild added');
+  }
 }
+
+=item del_stepkid
+
+Remove a stepkid relationship.
+
+Parameters:
+
+=over
+
+=item *
+
+id - parent article id (required)
+
+=item *
+
+stepkid - child article id (required)
+
+=back
+
+Returns a FIELD error for an invalid stepkid.
+
+Returns an ACCESS error for insufficient access.
+
+Return a DELETE error for a general delete failure.
+
+=cut
 
 sub del_stepkid {
   my ($self, $req, $article, $articles) = @_;
@@ -2234,33 +2326,49 @@ sub del_stepkid {
   $req->check_csrf("admin_remove_stepkid")
     or return $self->csrf_error($req, $article, "admin_del_stepkid", "Delete Stepkid");
   $req->user_can(edit_stepkid_delete => $article)
-    or return $self->edit_form($req, $article, $articles,
-			       "You don't have access to delete stepchildren from this article");
+    or return $self->_service_error($req, $article, $articles,
+			       "You don't have access to delete stepchildren from this article", {}, "ACCESS");
 
   my $cgi = $req->cgi;
-  require 'BSE/Admin/StepParents.pm';
-  eval {
-    my $childId = $cgi->param('stepkid');
-    defined $childId
-      or die "No stepkid supplied to add_stepkid";
-    $childId =~ /^\d+$/
-      or die "Invalid stepkid supplied to add_stepkid";
-    my $child = $articles->getByPkey($childId)
-      or die "Article $childId not found";
 
-    $req->user_can(edit_stepparent_delete => $child)
-      or die "You cannot remove stepparents from that article\n";
+  my %errors;
+  my $childId = $cgi->param('stepkid');
+  defined $childId
+    or $errors{stepkid} = "No stepkid supplied to add_stepkid";
+  unless ($errors{stepkid}) {
+    $childId =~ /^\d+$/
+      or $errors{stepkid} = "Invalid stepkid supplied to add_stepkid";
+  }
+  my $child;
+  unless ($errors{stepkid}) {
+    $child = $articles->getByPkey($childId)
+      or $errors{stepkid} = "Article $childId not found";
+  }
+  keys %errors
+    and return $self->_service_error
+      ($req, $article, $articles, $errors{stepkid}, \%errors, "FIELD");
+
+  $req->user_can(edit_stepparent_delete => $child)
+    or return _service_error($req, $article, $article, "You cannot remove stepparents from that article", {}, "ACCESS");
     
+
+  require BSE::Admin::StepParents;
+  eval {
     BSE::Admin::StepParents->del($article, $child);
   };
   
   if ($@) {
-    return $self->edit_form($req, $article, $articles, $@);
+    return $self->_service_error($req, $article, $articles, $@, {}, "DELETE");
   }
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
-  return $self->refresh($article, $cgi, 'step', 'Stepchild deleted');
+  if ($req->is_ajax) {
+    return $req->json_content(success => 1);
+  }
+  else {
+    return $self->refresh($article, $cgi, 'step', 'Stepchild deleted');
+  }
 }
 
 sub save_stepkids {
@@ -4734,6 +4842,10 @@ sub req_tree {
      articles =>
      [
       _article_kid_summary($article->id, $depth),
+     ],
+     allkids =>
+     [
+      Articles->allkid_summary($article->id)
      ],
     );
 }

@@ -19,10 +19,10 @@ sub add {
   # check for an existing entry
   my $existing = 
     OtherParents->getBy(parentId=>$parent->{id}, childId=>$child->{id})
-    and die "Entry already exists";
+    and die "Entry already exists\n";
 
   my $otherprod = OtherParents->add(@data{@cols})
-    or die "Cannot add";
+    or die "Cannot add\n";
 
   return $otherprod;
 }
