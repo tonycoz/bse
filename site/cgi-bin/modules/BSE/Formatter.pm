@@ -181,7 +181,17 @@ sub doclink {
 
   # make the URL absolute if necessary
   my $admin = $self->{gen}{admin_links};
-  my $url = $admin ? $art->{admin} : $art->link($self->{gen}{cfg});
+  my $url;
+  if ($admin) {
+    $url = $art->{admin};
+    if (!$self->{gen}{admin}) {
+      $url .= $url =~ /\?/ ? "&" : "?";
+      $url .= "admin=0&admin_links=1";
+    }
+  }
+  else {
+    $url = $art->link($self->{gen}{cfg});
+  }
   if ($self->{abs_urls}) {
     $url = $cfg->entryErr('site', 'url') . $url
       unless $url =~ /^\w+:/;
