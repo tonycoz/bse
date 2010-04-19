@@ -537,9 +537,108 @@ var BSEAPI = Class.create
 
        form.submit();
      },
+     // flatten the parameters
+     _flat_parms: function(flat, key, val) {
+       if (typeof(val) == "string" || typeof(val) == "number") {
+	 flat.push([ key, val, false ]);
+       }
+       else if (typeof(val) == "object") {
+	 if (val.constructor == Array) {
+	   for (var i = 0; i < val.length; ++i) {
+	     this._flat_parms(flat, key, val[i]);
+	   }
+	 }
+	 else {
+	   // this should handle File objects, not just elements
+	   // or perhaps data transfer objects
+	   // push the individual files if there's multiple
+	   for (var i = 0; i < val.files.length; ++i) {
+	     flat.push([key, val.files[i], true]);
+	   }
+	 }
+       }
+     },
+     _build_api_req_data: function(state) {
+       while (state.index < state.flat.length) {
+	 var entry = state.flat[state.index];
+	 if (entry[2]) {
+	   // file object
+	   var fr  = new FileReader;
+	   fr.addEventListener
+	   ("loadend", function(state, fr, event) {
+   	      var entry = state.flat[state.index];
+	      state.req_data += "--" + state.sep + "\r\n";
+	      // TODO: utf encode the filename
+	      // TODO: filenames with quotes
+	      state.req_data += "Content-Disposition: form-data; name=\"" + entry[0] + "\"; filename=\"" + entry[1].fileName + "\"\r\n\r\n";
+	      state.req_data += event.target.result + "\r\n";
+	      ++state.index;
+	      this._build_api_req_data(state);
+	    }.bind(this, state, fr), false);
+	   fr.readAsBinaryString(entry[1]);
+	   return;
+	 }
+	 else {
+	   // just plain data
+	   state.req_data += "--" + state.sep;
+	   state.req_data += "Content-Disposition: form-data; name=\"" + entry[0] + "\"\r\n\r\n";
+	   state.req_data += entry[1] + "\r\n";
+	   ++state.index;
+	 }
+       }
+
+       // everything should be state.req_data now
+       state.req_data += "--"  + state.sep + "--\r\n";
+
+       state.xhr = new XMLHttpRequest();
+       state.xhr.open("POST", state.url, true);
+       state.xhr.onreadystatechange = function(state, event) {
+	 if (state.xhr.readyState == 4) {
+	   if (state.complete)
+	     state.complete();
+	   if (state.xhr.status == 200) {
+	     var data;
+	     try {
+	       data = state.xhr.responseText.evalJSON(false);
+	       if (data.success != null && data.success != 0 ) {
+		 state.success(data);
+	       }
+	       else {
+	         state.failure({ responseJSON: data});
+	       }
+	     } catch (e) {
+	       state.failure(this._wrap_nojson_failure(state.xhr));
+	     }
+	   }
+	   else {
+	     state.failure(this._wrap_req_failure(state.xhr));
+	   }
+	 }
+       }.bind(this, state);
+       state.xhr.setRequestHeader("Content-Type", "multipart/form-data; boundary="+state.sep);
+       state.xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+       state.xhr.sendAsBinary(state.req_data);
+     },
      // use the HTML5 file API to perform the upload
      _do_complex_file_api: function(url, action, state, req_parms) {
+       state.url = url;
+       //state.url = "/cgi-bin/dump.pl";
+       if (action != null)
+	 req_parms[action] = 1;
+       state.sep = "x" + state.up_id + "x";
 
+       // flatten the request parameters
+       var flat = new Array;
+       for (var key in req_parms) {
+         this._flat_parms(flat, key, req_parms[key]);
+       }
+       state.index = 0;
+       state.flat = flat;
+       state.req_data = '';
+       this._build_api_req_data(state);
+       // the rest happens elsewhere
+
+       return true;
      },
      // in the future this might call a proxy
      _do_add_request: function(action, other_parms, success, failure) {
