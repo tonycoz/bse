@@ -146,8 +146,14 @@ sub _embed_low {
 	return "** Cannot load generator $embed->{generator} for article $id **";
       }
       my $top = $self->{top} || $embed;
-      $gen = $embed->{generator}->new(admin=>$self->{admin}, cfg=>$self->{cfg},
-				      request=>$self->{request}, top=>$top);
+      $gen = $embed->{generator}->new
+	(
+	 admin=>$self->{admin},
+	 admin_links => $self->{admin_links},
+	 cfg=>$self->{cfg},
+	 request=>$self->{request},
+	 top=>$top
+	);
     }
 
     # a rare appropriate use of local
@@ -796,6 +802,7 @@ sub baseActs {
        return $self->summarize($articles, $article->{body}, $acts, $limit);
      },
      ifAdmin => sub { $self->{admin} },
+     ifAdminLinks => sub { $self->{admin_links} },
      
      # for generating the side menu
      iterate_level1_reset => sub { $section_index = -1 },
@@ -849,9 +856,14 @@ sub baseActs {
      url=>
      sub {
        my ($name, $acts, $func, $templater) = @_;
-       my $item = $self->{admin} ? 'admin' : 'link';
+       my $item = $self->{admin_links} ? 'admin' : 'link';
        $acts->{$name} or return "<:url $name:>";
-       return $templater->perform($acts, $name, $item);
+       my $url = $templater->perform($acts, $name, $item);
+       if (!$self->{admin} && $self->{admin_links}) {
+	 $url .= $url =~ /\?/ ? "&" : "?";
+	 $url .= "admin=0&admin_links=1";
+       }
+       return $url;
      },
      ifInMenu =>
      sub {

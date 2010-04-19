@@ -22,6 +22,9 @@ if ($req->check_admin_logon()) {
   defined $id or $id = 1;
   my $admin = 1;
   $admin = $cgi->param('admin') if defined $cgi->param('admin');
+  my $admin_links = $admin;
+  $admin_links = $cgi->param('admin_links')
+    if defined $cgi->param('admin_links');
   
   #my $articles = Articles->new;
   my $articles = 'Articles';
@@ -32,9 +35,15 @@ if ($req->check_admin_logon()) {
   if ($article) {
     eval "use $article->{generator}";
     die $@ if $@;
-    my $generator = $article->{generator}
-      ->new(admin=>$admin, articles=>$articles, cfg=>$cfg, request=>$req, 
-	    top=>$article);
+    my $generator = $article->{generator}->new
+      (
+       admin=>$admin,
+       admin_links => $admin_links,
+       articles=>$articles,
+       cfg=>$cfg,
+       request=>$req,
+       top=>$article
+      );
 
     if ($article->is_dynamic) {
       my $content = $generator->generate($article, $articles);
@@ -42,7 +51,12 @@ if ($req->check_admin_logon()) {
       $dyn_gen_class = "BSE::Dynamic::".$dyn_gen_class;
       (my $dyn_gen_file = $dyn_gen_class . ".pm") =~ s!::!/!g;
       require $dyn_gen_file;
-      my $dyn_gen = $dyn_gen_class->new($req, admin => 1);
+      my $dyn_gen = $dyn_gen_class->new
+	(
+	 $req,
+	 admin => $admin,
+	 admin_links => $admin_links,
+	);
       $article = $dyn_gen->get_real_article($article);
       my $result = $dyn_gen->generate($article, $content);
       BSE::Template->output_result($req, $result);

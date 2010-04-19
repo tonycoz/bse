@@ -180,7 +180,7 @@ sub doclink {
     or confess "cfg not set in acts";
 
   # make the URL absolute if necessary
-  my $admin = $self->{gen}{admin};
+  my $admin = $self->{gen}{admin_links};
   my $url = $admin ? $art->{admin} : $art->link($self->{gen}{cfg});
   if ($self->{abs_urls}) {
     $url = $cfg->entryErr('site', 'url') . $url

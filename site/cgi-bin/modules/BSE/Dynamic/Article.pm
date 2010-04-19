@@ -10,7 +10,10 @@ sub new {
 
   my $self = $class->SUPER::new($req, %opts);
 
+  $self->{admin} = 0;
+  $self->{admin_links} = 0;
   ++$self->{admin} if $opts{admin};
+  ++$self->{admin_links} if $opts{admin_links};
 
   return $self;
 }
@@ -172,13 +175,27 @@ sub tag_dynmove {
 sub tag_url {
   my ($self, $top, $name, $acts, $func, $templater) = @_;
 
-  my $item = $self->{admin} ? 'admin' : 'link';
   my $article = $self->{req}->get_article($name)
     or return "** unknown article $name **";
 
-  my $value = $item eq 'link' ? $article->link($self->{req}->cfg) : $article->{$item};
+  my $value;
+  my $top_link;
+  if ($self->{admin_links}) {
+    $value = $article->{admin};
+    if (!$self->{admin}) {
+      $value .= $value =~ /\?/ ? "&" : "?";
+      $value .= "admin=0&admin_links=1";
+    }
 
-  if ($top->{$item} =~ /^\w+:/ && $value !~ /^\w+:/) {
+    $top_link = $top->{admin};
+  }
+  else {
+    $value = $article->link($self->{req}->cfg);
+
+    $top_link = $top->{link};
+  }
+
+  if ($top_link =~ /^\w+:/ && $value !~ /^\w+:/) {
     $value = $self->{req}->cfg->entryErr('site', 'url') . $value;
   }
   
