@@ -5,7 +5,7 @@
 // TODO: start reporting
 // TODO: utf8 filenames
 // TODO: quotes in filenames(?)
-var bse_use_file_api = false;
+var bse_use_file_api = true;
 
 var BSEAPI = Class.create
   ({
@@ -509,7 +509,7 @@ var BSEAPI = Class.create
 	 document.body.removeChild(ifr);
 	 document.body.removeChild(form);
          if (parms.progress != null && parms.total != null)
-	   parms.progress(parms.total, parms.total);
+	   parms.progress({ done: parms.total, total: parms.total});
 	 if (parms.complete != null)
 	   parms.complete();
 	 parms.finished = 1;
@@ -574,6 +574,7 @@ var BSEAPI = Class.create
 	      state.req_data += "--" + state.sep + "\r\n";
 	      // TODO: utf encode the filename
 	      // TODO: filenames with quotes
+	      state.fileoffsets.push([ state.req_data.length, entry[1].fileName]);
 	      state.req_data += "Content-Disposition: form-data; name=\"" + entry[0] + "\"; filename=\"" + entry[1].fileName + "\"\r\n\r\n";
 	      state.req_data += event.target.result + "\r\n";
 	      ++state.index;
@@ -595,6 +596,52 @@ var BSEAPI = Class.create
        state.req_data += "--"  + state.sep + "--\r\n";
 
        state.xhr = new XMLHttpRequest();
+       if (state.start)
+	 state.start();
+       if (state.progress && state.xhr.upload) {
+	 state.xhr.upload.addEventListener
+	   (
+	   "progress",
+	   function(state, evt) {
+	     if (evt.lengthComputable) {
+	       var filename;
+	       for (var i = 0; i < state.fileoffsets.length; ++i) {
+		 if (evt.loaded > state.fileoffsets[i][0])
+		   filename = state.fileoffsets[i][1];
+	       }
+	       state.last_filename = filename;
+	       state.progress
+	       (
+		 {
+		   done: evt.loaded,
+		   total: evt.total,
+		   filename: filename,
+		   complete: 0
+		 }
+	       );
+	     }
+	   }.bind(this, state),
+	   false
+	   );
+	 state.xhr.upload.addEventListener
+	   (
+	   "load",
+	   function(state, evt) {
+	     if (evt.lengthComputable) {
+	       state.progress
+	       (
+		 {
+		   done: evt.total,
+		   total: evt.total,
+		   filename: state.last_filename,
+		   complete: 1
+		 }
+	       );
+	     }
+	   }.bind(this, state),
+	   false
+	   );
+       }
        state.xhr.open("POST", state.url, true);
        state.xhr.onreadystatechange = function(state, event) {
 	 if (state.xhr.readyState == 4) {
@@ -630,6 +677,7 @@ var BSEAPI = Class.create
        if (action != null)
 	 req_parms[action] = 1;
        state.sep = "x" + state.up_id + "x";
+       state.fileoffsets = new Array;
 
        // flatten the request parameters
        var flat = new Array;
