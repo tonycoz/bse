@@ -303,6 +303,41 @@ var BSEAPI = Class.create
      thumb_link: function(im, geoid) {
        return "/cgi-bin/admin/add.pl?a_thumb=1&im="+im.id+"&g="+geoid+"&id="+im.articleId;
      },
+     can_drag_and_drop: function() {
+       // hopefully they're implemented at the same time
+       return window.FileReader != null;
+     },
+     make_drop_zone: function(options) {
+       options.element.addEventListener
+       (
+	 "dragenter",
+	 function(options, e) {
+	   e.stopPropagation();
+	   e.preventDefault();
+	 }.bind(this, options),
+	 false
+       );
+       options.element.addEventListener
+       (
+	 "dragover",
+	 function(options, e) {
+	   e.stopPropagation();
+	   e.preventDefault();
+	 }.bind(this, options),
+	 false
+       );
+       options.element.addEventListener
+       (
+	 "drop",
+	 function(options, e) {
+	   e.stopPropagation();
+	   e.preventDefault();
+
+	   options.onDrop(e.dataTransfer.files);
+	 }.bind(this, options),
+	 false
+       );
+     },
      // parameters:
      //  image - file input element (required)
      //  id - owner article of the new image (required)
@@ -552,6 +587,10 @@ var BSEAPI = Class.create
 	     this._flat_parms(flat, key, val[i]);
 	   }
 	 }
+	 else if (val.constructor == File) {
+	   // File object from drag and drop
+	   flat.push([key, val, true]);
+	 }
 	 else {
 	   // this should handle File objects, not just elements
 	   // or perhaps data transfer objects
@@ -572,7 +611,6 @@ var BSEAPI = Class.create
 	   ("loadend", function(state, fr, event) {
    	      var entry = state.flat[state.index];
 	      state.req_data += "--" + state.sep + "\r\n";
-	      // TODO: utf encode the filename
 	      // TODO: filenames with quotes
 	      state.fileoffsets.push([ state.req_data.length, entry[1].fileName]);
 	      state.req_data += "Content-Disposition: form-data; name=\"" + entry[0] + "\"; filename=\"" + this._encode_utf8(entry[1].fileName) + "\"\r\n\r\n";
