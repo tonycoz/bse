@@ -1,6 +1,10 @@
 // requires prototype.js for now
 
 // true to use the File API if available
+// TODO: progress reporting
+// TODO: start reporting
+// TODO: utf8 filenames
+// TODO: quotes in filenames(?)
 var bse_use_file_api = false;
 
 var BSEAPI = Class.create
