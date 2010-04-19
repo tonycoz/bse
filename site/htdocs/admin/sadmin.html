@@ -1,0 +1,43 @@
+<html>
+  <head>
+    <title>BSE API demo/test</title>
+    <script src="/js/prototype.js"></script>
+    <script src="/js/bse_api.js"></script>
+    <script src="/js/sadmin.js"></script>
+    <link rel="stylesheet" type="text/css" href="/css/sadmin.css" />
+  </head>
+  <body>
+    <!-- a href="#" onclick="return startup();">Load</a -->
+    <div id="usertop">User: <span id="user"></span> <a id="logoff" href="#" onclick="return do_logoff()">Logoff</a></div>
+    <div id="message"></div>
+    <div id="busy">Please Wait</div>
+    <div id="logonf">
+      <form onsubmit="return do_logon()">
+	<div class="form"><table><tr><th>Logon:</th><td><input type="text" id="logon" /></td></tr>
+	    <tr><th>Password:</th><td><input type="password" id="password" /></td></tr>
+	    <tr><td colspan="2"><input type="submit" value="Logon" /></td></tr></table></div>
+      </form>
+    </div>
+    <div id="treetop">
+      <div id="tree"></div>
+    </div>
+    <div id="article" class="tabcontent">
+      <div id="arthead">
+	<a href="#" onclick="return seltab('content')" id="selcontent">Content</a>
+	<a href="#" onclick="return seltab('images')" id="selimages">Images</a>
+      </div>
+      <div id="artcontent">
+	content
+      </div>
+      <div id="artimages">
+	<div id="imagelist"></div>
+	<form id="imageaddform" action="#" onsubmit="return do_image_upload()">
+	  File: <input type="file" id="imagefile" /><br />
+	  Name: <input type="text" id="imagename" /><br />
+	  <input type="submit" name="addimg">
+	</form>
+	<div id="imageprogwrap">File upload progress <span id="imageprog"></span></div>
+      </div>
+    </div>
+  </body>
+</html>
