@@ -575,7 +575,7 @@ var BSEAPI = Class.create
 	      // TODO: utf encode the filename
 	      // TODO: filenames with quotes
 	      state.fileoffsets.push([ state.req_data.length, entry[1].fileName]);
-	      state.req_data += "Content-Disposition: form-data; name=\"" + entry[0] + "\"; filename=\"" + entry[1].fileName + "\"\r\n\r\n";
+	      state.req_data += "Content-Disposition: form-data; name=\"" + entry[0] + "\"; filename=\"" + this._encode_utf8(entry[1].fileName) + "\"\r\n\r\n";
 	      state.req_data += event.target.result + "\r\n";
 	      ++state.index;
 	      this._build_api_req_data(state);
@@ -727,6 +727,9 @@ var BSEAPI = Class.create
      _new_upload_id: function () {
        this._upload_id += 1;
        return new Date().valueOf() + "_" + this._upload_id;
+     },
+     _encode_utf8: function(str) {
+       return unescape(encodeURIComponent(str));
      },
      // we request these names on startup, on login
      // and occasionally otherwise, to avoid them going stale
