@@ -187,15 +187,19 @@ function edit_article(article) {
   });
   //load_csrfp(article.id);
 
+  _populate_images(article.images);
+  //$("image_article_id").value = article.id;
+}
+
+function _populate_images(ims) {
   var imgs_div = $("imagelist");
   imgs_div.innerHTML = "";
-  var ims = article.images;
   for (var i = 0; i < ims.length; ++i) {
     var img_div = document.createElement("div");
     img_div.id = "imgdiv" + ims[i].id;
     var img_img = document.createElement("img");
     img_img.id = "img" + ims[i].id;
-    img_img.src = api.thumb_link(ims[i], "editor");
+    img_img.src = api.thumb_link(ims[i], "sadmingall");
     img_div.appendChild(img_img);
     imgs_div.appendChild(img_div);
   }
@@ -209,15 +213,55 @@ function edit_article(article) {
       {
         element: dz,
         onDrop: function(files) {
-	  _send_drop_files({files: files, index: 0});
+	  for (var i = 0; i < files.length; ++i) {
+	    _send_drop_file(files[i]);
+	  }
         }
       }
     );
   }
-  //$("image_article_id").value = article.id;
 }
 
-function _send_drop_files(state) {
+function _send_drop_file(file) {
+  var img_div = new Element("div", { className: "imageup" });
+  img_div.appendChild(document.createTextNode("0%"));
+  $('imagelist').insertBefore(img_div, $("dropzone"));
+
+  api.add_image_file({
+    image: file,
+    name: "",
+    id: last_article.id,
+    onSuccess: function(img_div, img) {
+      img_div.innerHTML = "";
+      var img_img = new Element
+	(
+	"img",
+	{
+	  id: "img" + img.id,
+	  src: api.thumb_link(img, "sadmingall")
+	});
+      img_div.appendChild(img_img);
+      img_div.id = "imgdiv" + img.id;
+    }.bind(this, img_div),
+    onFailure: function() {
+      img_div.parentNode.removeChild(img_div);
+      alert("upload error");
+    }.bind(this, img_div),
+    //onStart: _progress_start,
+    //onComplete: function(img_div) {
+    //}.bind(this, state),
+    onProgress: function(img_div, prog) {
+      if (prog.total) {
+	var per_thou =
+	  Math.round(prog.done / prog.total * 1000);
+	img_div.innerHTML = "" + Math.floor(per_thou / 10) + "."
+	  + per_thou % 10 + "%";
+      }
+    }.bind(this, img_div)
+    });
+}
+
+function xx_send_drop_files(state) {
   api.add_image_file({
     image: state.files[state.index],
     name: "",
