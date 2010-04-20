@@ -153,6 +153,7 @@ sub thumb_data {
      make_colors => 'mediancut',
      translate => 'errdiff',
      gifquant => 'gen',
+     bgcolor => '808080',
     );
   $write_opts{type} = $src->tags(name => 'i_format');
   my @allowed_types = split /,/, $self->{cfg}->entry(CFG_SECTION, 'types', "jpeg,png,gif");
