@@ -301,7 +301,7 @@ var BSEAPI = Class.create
 	failure);
      },
      thumb_link: function(im, geoid) {
-       return "/cgi-bin/admin/add.pl?a_thumb=1&im="+im.id+"&g="+geoid+"&id="+im.articleId;
+       return "/cgi-bin/thumb.pl?image="+im.id+"&g="+geoid+"&page="+im.articleId;
      },
      can_drag_and_drop: function() {
        // hopefully they're implemented at the same time
@@ -355,6 +355,10 @@ var BSEAPI = Class.create
      //    the approximate amount sent and the total to be sent (optional)
      add_image_file: function(parameters) {
 	  parameters._csrfp = this._csrfp.admin_add_image;
+       var success = parameters.onSuccess;
+       parameters.onSuccess = function(success, result) {
+	 success(result.image);
+       }.bind(this, success);
 	  this._do_complex_request("/cgi-bin/admin/add.pl", "addimg", parameters);
       },
      _progress_handler: function(parms) {
