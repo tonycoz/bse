@@ -697,7 +697,7 @@ var BSEAPI = Class.create
 		 state.success(data);
 	       }
 	       else {
-	         state.failure({ responseJSON: data});
+	         state.failure(this._wrap_json_failure({ responseJSON: data}));
 	       }
 	     } catch (e) {
 	       state.failure(this._wrap_nojson_failure(state.xhr));
