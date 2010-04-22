@@ -480,6 +480,7 @@ sub basic {
      dynreport => [ \&tag_report, $cfg ],
      ajax => [ \&tag_ajax_dynamic, $cfg ],
      ifAjax => [ \&tag_ifAjax, $cfg ],
+     $it->make_iterator([ \&iter_cfgsection, $cfg ], 'dyncfgentry', 'dyncfgsection'),
     );
 }
 
