@@ -14,13 +14,20 @@ my $pretend;
 my $didbackup;
 my $input = "mysql.str";
 my $wanthelp;
+my $charset;
+my $collation;
 
 Getopt::Long::Configure('bundling');
-GetOptions("v:i", \$verbose,
-	   "n", \$pretend,
-	   "b", \$didbackup,
-	   "i=s", \$input,
-	   "h", \$wanthelp);
+GetOptions
+  (
+   "v:i", \$verbose,
+   "n", \$pretend,
+   "b", \$didbackup,
+   "i=s", \$input,
+   "c=s", \$charset,
+   "o=s", \$collation,
+   "h", \$wanthelp
+  );
 $verbose = 1 if defined $verbose && $verbose == 0;
 $verbose = 0 unless $verbose;
 
@@ -94,6 +101,27 @@ while (<STRUCT>) {
 }
 close STRUCT;
 
+my %coll_map;
+if ($charset) {
+  my @coll = get_result("show collation");
+  if (@coll) {
+    for my $coll (@coll) {
+      $coll_map{$coll->{collation}} = $coll->{charset};
+      if (!$collation
+	  && $coll->{charset} eq $charset
+	  && $coll->{default}) {
+	$collation = $coll->{collation};
+      }
+    }
+    unless ($collation) {
+      die "Cannot find a default collation for charset $charset\n";
+    }
+  }
+  else {
+    die "Cannot get database collations\n";
+  }
+}
+
 # get a list of existing tables from the database
 my $st = $db->{dbh}->prepare('show table status')
   or die "Cannot prepare 'show tables': ",$db->{dbh}->errstr,"\n";
@@ -121,27 +149,64 @@ for my $table (sort keys %tables) {
   }
   else {
     my $cols = $tables{$table}{cols};
-    my @ccols = get_result("describe $table");
+    my @ccols;
+    if ($charset) {
+      @ccols = get_result("show full columns from $table");
+    }
+    else {
+      @ccols = get_result("describe $table");
+    }
     @ccols <= @$cols
       or die "The $table table is bigger in your database";
     my @alters;
     if ($want_engine &&
 	lc $want_engine ne lc $current_engines{lc $table}) {
-      print STDERR "Changing engine type to $want_engine\n"
+      print "Changing engine type to $want_engine\n"
 	if $verbose;
       push @alters, qq!type = $want_engine!;
     }
-    for my $i (0..$#ccols) {
+
+    # preprocess the types.
+    for my $i (0 .. $#ccols) {
       my $col = $cols->[$i];
       my $ccol = $ccols[$i];
+
       if ($ccol->{type} =~ /^varchar\((\d+)\) binary$/) {
 	$ccol->{type} = "varbinary($1)";
+      }
+      if ($charset) {
+	$ccol->{type} =~ s/char/binary/;
+	$ccol->{type} =~ s/text/blob/;
       }
       defined $ccol->{default} or $ccol->{default} = 'NULL';
       if ($col->{type} eq 'timestamp') {
 	$col->{default} = $ccol->{default} = 'current_timestamp';
       }
-      
+    }
+
+    if ($charset) {
+      # check all columns are the right charset/collation
+      my $all_right = 1;
+      for my $col_index (0..$#ccols) {
+	my $col = $cols->[$col_index];
+	my $ccol = $ccols[$col_index];
+	if ($col->{type} =~ /char|text/i
+	    && (!$ccol->{collation} 
+		|| $ccol->{collation} ne $collation)) {
+	  $all_right = 0;
+	}
+      }
+
+      unless ($all_right) {
+	print "Changing charset/collation to $charset/$collation\n";
+	push @alters, "convert to character set '$charset' collate '$collation'";
+      }
+      push @alters, "character set '$charset' collate '$collation'";
+    }
+    for my $i (0..$#ccols) {
+      my $col = $cols->[$i];
+      my $ccol = $ccols[$i];
+
       $col->{field} eq $ccol->{field}
 	or die "Field name mismatch old: $ccol->{field} new: $col->{field}\n";
 
@@ -210,8 +275,17 @@ sub make_table {
   my $sql = "create table $name (\n";
   $sql .= join(",\n", @def);
   $sql .= "\n)";
+  my @extras;
   if (defined $engine) {
-    $sql .= "type = $engine";
+    push @extras, "type = $engine";
+  }
+  if ($charset) {
+    push @extras,
+      "character set '$charset'", 
+	"collate '$collation'";
+  }
+  if (@extras) {
+    $sql .= join (", ", @extras);
   }
   $sql .= "\n";
   print "SQL to create $name: $sql\n" if $verbose > 2;
@@ -251,6 +325,9 @@ sub create_clauses {
   my @results;
   for my $col (@cols) {
     my $sql = "`" . $col->{field} . "` " . $col->{type};
+    if ($charset && $col->{type} =~ /char|text/) {
+      $sql .= " character set '$charset' collate '$collation'";
+    }
     $sql .= $col->{null} eq 'YES' ? ' null' : ' not null';
     if ($col->{default} ne 'NULL' &&
 	($col->{type} =~ /char/i || $col->{default} =~ /\d/)) {
