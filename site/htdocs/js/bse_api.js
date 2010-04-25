@@ -693,14 +693,16 @@ var BSEAPI = Class.create
 	     var data;
 	     try {
 	       data = state.xhr.responseText.evalJSON(false);
-	       if (data.success != null && data.success != 0 ) {
-		 state.success(data);
-	       }
-	       else {
-	         state.failure(this._wrap_json_failure({ responseJSON: data}));
-	       }
 	     } catch (e) {
 	       state.failure(this._wrap_nojson_failure(state.xhr));
+	       return;
+	     }
+
+	     if (data.success != null && data.success != 0 ) {
+	       state.success(data);
+	     }
+	     else {
+	       state.failure(this._wrap_json_failure({ responseJSON: data}));
 	     }
 	   }
 	   else {
