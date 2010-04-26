@@ -335,7 +335,7 @@ sub message {
     my %seen;
     @lines = grep !$seen{$_}++, @lines; # don't need duplicates
   }
-  if ($req->session->{flash}) {
+  if (!$req->{nosession} && $req->session->{flash}) {
     push @lines, @{$req->session->{flash}};
     delete $req->session->{flash};
   }
