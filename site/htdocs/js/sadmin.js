@@ -222,17 +222,35 @@ function _populate_images(ims) {
   }
 }
 
+var active_uploads = 0;
+var queued_uploads = new Array;
 function _send_drop_file(file) {
   var img_div = new Element("div", { className: "imageup" });
-  img_div.appendChild(document.createTextNode("0%"));
+  img_div.appendChild(document.createTextNode("--"));
   $('imagelist').insertBefore(img_div, $("dropzone"));
 
+  var upload =
+    {
+      file: file,
+      div: img_div
+    };
+
+  if (active_uploads < 3) {
+    _start_img_upload(upload);
+  }
+  else {
+    queued_uploads.push(upload);
+  }
+}
+
+function _start_img_upload(upload) {
+  ++active_uploads;
   api.add_image_file({
-    image: file,
+    image: upload.file,
     name: "",
     id: last_article.id,
-    onSuccess: function(img_div, img) {
-      img_div.innerHTML = "";
+    onSuccess: function(upload, img) {
+      upload.div.innerHTML = "";
       var img_img = new Element
 	(
 	"img",
@@ -240,51 +258,39 @@ function _send_drop_file(file) {
 	  id: "img" + img.id,
 	  src: api.thumb_link(img, "sadmingall")
 	});
-      img_div.appendChild(img_img);
-      img_div.id = "imgdiv" + img.id;
-    }.bind(this, img_div),
-    onFailure: function() {
-      img_div.parentNode.removeChild(img_div);
+      upload.div.appendChild(img_img);
+      upload.div.id = "imgdiv" + img.id;
+      upload.div.className = "";
+    }.bind(this, upload),
+    onFailure: function(upload) {
+      upload.div.parentNode.removeChild(upload.div);
       alert("upload error");
-    }.bind(this, img_div),
+    }.bind(this, upload),
     //onStart: _progress_start,
-    //onComplete: function(img_div) {
-    //}.bind(this, state),
-    onProgress: function(img_div, prog) {
+    onComplete: function() {
+      --active_uploads;
+      if (queued_uploads.length) {
+	var upload = queued_uploads.shift();
+	_start_img_upload(upload);
+      }
+    },
+    onProgress: function(upload, prog) {
       if (prog.total) {
 	var per_thou =
 	  Math.round(prog.done / prog.total * 1000);
-	img_div.innerHTML = "" + Math.floor(per_thou / 10) + "."
+	upload.div.innerHTML = "" + Math.floor(per_thou / 10) + "."
 	  + per_thou % 10 + "%";
       }
-    }.bind(this, img_div)
+    }.bind(this, upload)
     });
+
 }
 
-function xx_send_drop_files(state) {
-  api.add_image_file({
-    image: state.files[state.index],
-    name: "",
-    id: last_article.id,
-    onSuccess: function(state) {
-      ++state.index;
-      if (state.index < state.files.length) {
-	_send_drop_files(state);
-      }
-      else {
-	alert("Files sent");
-      }
-    }.bind(this, state),
-    onFailure: function() {
-      alert("upload error");
-    },
-    onStart: _progress_start,
-    onComplete: function(state) {
-      if (state.index == state.files.length - 1)
-	_progress_complete();
-    }.bind(this, state),
-    onProgress: _progress_progress
-    });
+function xx_send_drop_file(file) {
+  var img_div = new Element("div", { className: "imageup" });
+  img_div.appendChild(document.createTextNode("0%"));
+  $('imagelist').insertBefore(img_div, $("dropzone"));
+
 }
 
 function save_article(id, inp) {
@@ -329,18 +335,6 @@ var prog_filename;
 var prog_id;
 var uploading = 0;
 var prog_updates;
-function xxdo_image_upload() {
-  uploading = 1;
-  prog_filename =   $("imagefile").value;
-  prog_id = $("image_upload_id").value;
-  prog_updates = 0;
-
-  $("imageaddform").style.display = "none";
-  $("imageprog").innerHTML = "--";
-  $("imageprogwrap").style.display = "block";
-  prog_timeout = window.setTimeout("update_progress()", 200);
-}
-
 function _progress_start() {
   $("imageprogwrap").style.display = "block";
   $("imageprog").innerHTML = "--";
@@ -406,19 +400,6 @@ function update_progress() {
       prog_updates += 1;
       if (uploading != 0)
         prog_timeout = window.setTimeout("update_progress()", prog_updates > 5 ? 6000 : 1500);
-    }
-  });
-}
-
-function load_csrfp(id) {
-  api.get_csrfp({
-    name: [ "admin_add_image" ],
-    id: id,
-    onSuccess: function(tokens) {
-      $("image_csrfp").value = tokens.admin_add_image;
-    },
-    onFailure: function(result) {
-      error_message(result.message);
     }
   });
 }
