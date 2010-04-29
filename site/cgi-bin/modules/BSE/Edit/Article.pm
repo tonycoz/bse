@@ -150,6 +150,7 @@ sub article_actions {
      a_tree => 'req_tree',
      a_article => 'req_article',
      a_config => 'req_config',
+     a_restepkid => 'req_restepkid',
     );
 }
 
@@ -2414,6 +2415,114 @@ sub save_stepkids {
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
   return $self->refresh($article, $cgi, 'step', 'Stepchild information saved');
+}
+
+=item a_restepkid
+
+Moves a stepkid from one parent to another, and sets the order within
+that new stepparent.
+
+Parameters:
+
+=over
+
+=item *
+
+id - id of the step kid to move (required)
+
+=item *
+
+parentid - id of the parent in the stepkid relationship (required)
+
+=item *
+
+newparentid - the new parent for the stepkid relationship (optional)
+
+=item *
+
+_after - id of the allkid under newparentid (or parentid if
+newparentid isn't supplied) to place the stepkid after (0 to place at
+the start)
+
+=back
+
+Errors:
+
+=over
+
+=item *
+
+NOPARENTID - parentid parameter not supplied
+
+=item *
+
+BADPARENTID - non-numeric parentid supplied
+
+=item *
+
+NOTFOUND - no stepkid relationship from parentid was found
+
+=item *
+
+BADNEWPARENT - newparentid is non-numeric
+
+=item *
+
+UNKNOWNNEWPARENT - no article id newparentid found
+
+=item *
+
+NEWPARENTDUP - there's already a stepkid relationship between
+newparentid and id.
+
+=back
+
+=cut
+
+sub req_restepkid {
+  my ($self, $req, $article, $articles) = @_;
+
+  # first, identify the stepkid link
+  my $cgi = $req->cgi;
+  require OtherParents;
+  my $parentid = $cgi->param("parentid");
+  defined $parentid
+    or return $self->_service_error($req, $article, $articles, "Missing parentid", {}, "NOPARENTID");
+  $parentid =~ /^\d+$/
+    or return $self->_service_error($req, $article, $articles, "Invalid parentid", {}, "BADPARENTID");
+
+  my ($step) = OtherParents->getBy(parentId => $parentid, childId => $article->id)
+    or return $self->_service_error($req, $article, $articles, "Unknown relationship", {}, "NOTFOUND");
+
+  my $newparentid = $cgi->param("newparentid");
+  if ($newparentid) {
+    $newparentid =~ /^\d+$/
+      or return $self->_service_error($req, $article, $articles, "Bad new parent id", {}, "BADNEWPARENT");
+    my $new_parent = Articles->getByPkey($newparentid)
+      or return $self->_service_error($req, $article, $articles, "Unknown new parent id", {}, "UNKNOWNNEWPARENT");
+    my $existing = 
+      OtherParents->getBy(parentId=>$newparentid, childId=>$article->id)
+	and return $self->_service_error($req, $article, $articles, "New parent is duplicate", {}, "NEWPARENTDUP");
+
+    $step->{parentId} = $newparentid;
+    $step->save;
+  }
+
+  my $after_id = $cgi->param("_after");
+  if (defined $after_id) {
+    Articles->reorder_child($step->{parentId}, $article->id, $after_id);
+  }
+
+  if ($req->is_ajax) {
+    return $req->json_content
+      (
+       success => 1,
+       relationshop => $step->data_only,
+      );
+  }
+  else {
+    return $self->refresh($article, $cgi, 'step', "Stepchild moved");
+  }
 }
 
 sub add_stepparent {
