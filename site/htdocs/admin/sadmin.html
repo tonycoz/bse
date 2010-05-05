@@ -40,5 +40,18 @@
 	<div id="imageprogwrap">File upload progress <span id="imageprog"></span></div>
       </div>
     </div>
+    <div id="image_edit" class="wind">
+      <div class="head">Edit Image</div>
+      <form id="image_edit_form">
+      <table>
+	<tr><th>Image</th><td><input type="file" name="file" /></td></tr>
+	<tr><th>Alt</th><td><input type="text" name="alt" /></td></tr>
+	<tr><th>Name</th><td><input type="text" name="name" /></td></tr>
+	<tr><th>URL</th><td><input type="text" name="url" /></td></tr>
+	<tr><td colspan="2" class="button"><input type="submit" value="Save image" /></td></tr>
+      </table>
+      </form>
+    </div>
+    <div id="windowclose"><a href="#" onclick="return _close_window()">X</a></div>
   </body>
 </html>

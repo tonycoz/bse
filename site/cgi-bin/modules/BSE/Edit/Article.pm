@@ -3219,14 +3219,21 @@ sub remove_img {
     or return $self->csrf_error($req, $article, "admin_remove_image", "Remove Image");
 
   $req->user_can(edit_images_delete => $article)
-    or return $self->edit_form($req, $article, $articles,
-				 "You don't have access to delete images from this article");
+    or return $self->_service_error($req, $article, $articles,
+				 "You don't have access to delete images from this article", {}, "ACCESS");
 
   $imageid or die;
 
   my @images = $self->get_images($article);
-  my ($image) = grep $_->{id} == $imageid, @images
-    or return $self->show_images($req, $article, $articles, "No such image");
+  my ($image) = grep $_->{id} == $imageid, @images;
+  unless ($image) {
+    if ($req->want_json_response) {
+      return $self->_service_error($req, $article, $articles, "No such image", {}, "NOTFOUND");
+    }
+    else {
+      return $self->show_images($req, $article, $articles, "No such image");
+    }
+  }
 
   if ($image->{storage} ne 'local') {
     my $mgr = $self->_image_manager($req->cfg);
@@ -3239,6 +3246,13 @@ sub remove_img {
 
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
+
+  if ($req->want_json_response) {
+    return $req->json_content
+      (
+       success => 1,
+      );
+  }
 
   return $self->refresh($article, $req->cgi, undef, 'Image removed');
 }
@@ -3393,6 +3407,34 @@ sub req_edit_image {
   return $req->response('admin/image_edit', \%acts);
 }
 
+=item a_save_image
+
+Save changes to an image.
+
+Parameters:
+
+=over
+
+=item *
+
+id - article id
+
+=item *
+
+image_id - image id
+
+=item *
+
+alt, url, name - text fields to update
+
+=item *
+
+image - replacement image data (if any)
+
+=back
+
+=cut
+
 sub req_save_image {
   my ($self, $req, $article, $articles) = @_;
   
@@ -3404,11 +3446,11 @@ sub req_save_image {
 
   my @images = $self->get_images($article);
   my ($image) = grep $_->{id} == $id, @images
-    or return $self->edit_form($req, $article, $articles,
-			       "No such image");
+    or return $self->_service_error($req, $article, $articles, "No such image",
+				    {}, "NOTFOUND");
   $req->user_can(edit_images_save => $article)
-    or return $self->edit_form($req, $article, $articles,
-			       "You don't have access to save image information for this article");
+    or return $self->_service_error($req, $article, $articles,
+				    "You don't have access to save image information for this article", {}, "ACCESS");
 
   my $image_dir = cfg_image_dir($req->cfg);
 
@@ -3485,8 +3527,15 @@ sub req_save_image {
       $errors{image} = "No image file received";
     }
   }
-  keys %errors
-    and return $self->req_edit_image($req, $article, $articles, \%errors);
+  if (keys %errors) {
+    if ($req->want_json_response) {
+      return $self->_service_error($req, $article, $articles, undef,
+				   \%errors, "FIELD");
+    }
+    else {
+      return $self->req_edit_image($req, $article, $articles, \%errors);
+    }
+  }
 
   my $new_storage = $cgi->param('storage');
   defined $new_storage or $new_storage = $image->{storage};
@@ -3518,6 +3567,14 @@ sub req_save_image {
       $mgr->unstore($image->{image}, $old_storage);
     };
     $@ and $req->flash("There was a problem removing if from the old storage: $@");
+  }
+
+  if ($req->want_json_response) {
+    return $req->json_content
+      (
+       success => 1,
+       image => $self->_image_data($req->cfg, $image),
+      );
   }
 
   return $self->refresh($article, $cgi);

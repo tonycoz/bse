@@ -192,16 +192,22 @@ function edit_article(article) {
 }
 
 function _fill_one_image(div, im) {
+  div.className = "animage";
   div.id = "imgdiv" + im.id;
   var img_img = document.createElement("img");
   img_img.id = "img" + im.id;
   img_img.src = api.thumb_link(im, "sadmingall");
-  img_div.appendChild(img_img);
+  div.appendChild(img_img);
 
   var edit = new Element("a", { href: "#", className: "img_edit" });
   edit.update("Edit");
   edit.onclick = _start_edit_image.bind(this, im);
   div.appendChild(edit);
+
+  var del = new Element("a", { href: "#", className: "img_del" });
+  del.update("Delete");
+  del.onclick = _start_delete_image.bind(this, im);
+  div.appendChild(del);
 }
 
 function _populate_images(ims) {
@@ -261,7 +267,6 @@ function _start_img_upload(upload) {
     id: last_article.id,
     onSuccess: function(upload, img) {
       upload.div.innerHTML = "";
-      upload.div.className = "";
       _fill_one_image(upload.div, img);
 //       var img_img = new Element
 // 	(
@@ -296,13 +301,6 @@ function _start_img_upload(upload) {
       }
     }.bind(this, upload)
     });
-
-}
-
-function xx_send_drop_file(file) {
-  var img_div = new Element("div", { className: "imageup" });
-  img_div.appendChild(document.createTextNode("0%"));
-  $('imagelist').insertBefore(img_div, $("dropzone"));
 
 }
 
@@ -376,8 +374,10 @@ function do_image_upload() {
     alt: alt,
     id: last_article.id,
     clone: true,
-    onSuccess: function () {
-      alert("upload successful");
+    onSuccess: function (im) {
+      var div = new Element("div");
+      _fill_one_image(div, im);
+      $("imagelist").appendChild(div);
     },
     onFailure: function () {
       alert("upload error");
@@ -451,4 +451,79 @@ document.observe("dom:loaded", function () { startup(); });
 function seltab(which) {
   $("article").className = "tab" + which;
   return false;
+}
+
+var current_window;
+function _open_window(ele, title) {
+  var closer = $("windowclose");
+  closer.parentNode.removeChild(closer);
+  if (title) {
+    ele.firstDescendant().innerHTML = "";
+    ele.firstDescendant().appendChild(document.createTextNode(title));
+  }
+  ele.firstDescendant().appendChild(closer);
+  current_window=ele;
+  ele.style.display="block";
+}
+
+function _close_window() {
+  current_window.style.display="none";
+  return false;
+}
+
+function _start_edit_image(im) {
+  var form = $("image_edit_form");
+  form.reset();
+  form.alt.value = im.alt;
+  form.name.value = im.name;
+  form.url.value = im.url;
+  form.onsubmit = _do_save_image.bind(this, im);
+
+  _open_window($("image_edit"));
+
+  return false;
+}
+
+function _do_save_image(im) {
+  var form = $("image_edit_form");
+
+  api.save_image_file
+  ({
+     id: im.articleId,
+     image_id: im.id,
+     alt: form.alt.value,
+     url: form.url.value,
+     image: form.file,
+     name: form.name.value,
+     // storage: form.storage.value,
+     clone: true,
+
+     onSuccess: function(im) {
+       var div = $("imgdiv"+im.id);
+       div.innerHTML = "";
+       _fill_one_image(div, im);
+       _close_window();
+     },
+     onFailure: function(err) {
+       alert(err.error_code);
+     }
+  });
+
+  return false;
+}
+
+function _start_delete_image(im) {
+  if (window.confirm("Are you sure you want to delete this image?")) {
+    api.remove_image_file
+    ({
+       image: im,
+       onSuccess: function(image_id) {
+	 var div = $("imgdiv"+im.id);
+	 div.parentNode.removeChild(div);
+       }.bind(this, im.id),
+       onFailure: function(err) {
+         alert(err.error_code);
+       }
+     });
+  }
 }

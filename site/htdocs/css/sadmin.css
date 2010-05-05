@@ -147,3 +147,57 @@ th {
 #imageprogwrap {
   display: none;
 }
+
+.wind
+{
+  border: 1px solid #888;
+  position: absolute;
+  margin-left: -200px;
+  left: 50%;
+  width: 400px;
+  top: 150px;
+  display: none;
+  background: #fff;
+  }
+
+.wind.wider
+{
+  margin-left: -410px;
+  width: 820px;
+  }
+
+.wind .head 
+{
+  color: white;
+  font-weight: bold;
+  background-color: #00F;
+  }
+
+#windowclose 
+{
+  display: none;
+  }
+
+.wind .head #windowclose 
+{
+  display: block;
+  float: right;
+  font-weight: bold;
+  background-color: #888;
+  }
+
+#imagelist .animage {
+  position: relative;
+}
+
+#imagelist .img_edit,
+#imagelist .img_del { 
+  position: absolute;
+  left: 2px;
+  text-decoration: none;
+  font-weight: bold;
+  background-color: #88F;
+}
+
+#imagelist .img_edit { top: 2px; }
+#imagelist .img_del { top: 20px; }

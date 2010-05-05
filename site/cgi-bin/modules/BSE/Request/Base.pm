@@ -739,6 +739,25 @@ sub is_ajax {
   return;
 }
 
+=item want_json_response
+
+Return true if the caller has indicated they want a JSON response.
+
+In practice, returns true if is_ajax() is true or a _ parameter was
+supplied.
+
+=cut
+
+sub want_json_response {
+  my ($self) = @_;
+
+  $self->is_ajax and return 1;
+
+  $self->cgi->param("_") and return 1;
+
+  return;
+}
+
 =item send_email
 
 Send a simple email.

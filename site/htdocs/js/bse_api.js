@@ -5,7 +5,7 @@
 // TODO: start reporting
 // TODO: utf8 filenames
 // TODO: quotes in filenames(?)
-var bse_use_file_api = true;
+var bse_use_file_api = false;
 
 var BSEAPI = Class.create
   ({
@@ -301,11 +301,11 @@ var BSEAPI = Class.create
 	failure);
      },
      thumb_link: function(im, geoid) {
-       return "/cgi-bin/thumb.pl?image="+im.id+"&g="+geoid+"&page="+im.articleId;
+       return "/cgi-bin/thumb.pl?image="+im.id+"&g="+geoid+"&page="+im.articleId+"&f="+encodeURIComponent(im.image);
      },
      can_drag_and_drop: function() {
        // hopefully they're implemented at the same time
-       return window.FileReader != null;
+       return bse_use_file_api && window.FileReader != null;
      },
      make_drop_zone: function(options) {
        options.element.addEventListener
@@ -361,6 +361,30 @@ var BSEAPI = Class.create
        }.bind(this, success);
 	  this._do_complex_request("/cgi-bin/admin/add.pl", "addimg", parameters);
       },
+     save_image_file: function(parameters) {
+       parameters._csrfp = this._csrfp.admin_save_image;
+       var success = parameters.onSuccess;
+       parameters.onSuccess = function(success, result) {
+	 success(result.image);
+       }.bind(this, success);
+       this._do_complex_request("/cgi-bin/admin/add.pl", "a_save_image", parameters);
+     },
+     remove_image_file: function(parameters) {
+       var success = parameters.onSuccess;
+       if (!success) this._badparm("remove_image_file() missing onSuccess parameter");
+       var failure = parameters.onFailure;
+       if (!failure) failure = this.onFailure;
+       var im = parameters.image;
+       if (!im) this._badparm("remove_image_file() missing image parameter");
+       this._do_add_request
+         (
+	 "removeimg_"+im.id,
+	 {
+	   id: im.articleId
+	 },
+	 success, failure
+	 );
+     },
      _progress_handler: function(parms) {
 	  if (parms.finished) return;
        this.get_file_progress(
@@ -777,7 +801,11 @@ var BSEAPI = Class.create
      },
      // we request these names on startup, on login
      // and occasionally otherwise, to avoid them going stale
-     _csrfp_names: [ "admin_add_image" ],
+     _csrfp_names:
+       [
+	 "admin_add_image",
+	 "admin_save_image"
+       ],
      _upload_id: 0
    });
 
