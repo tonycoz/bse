@@ -191,16 +191,26 @@ function edit_article(article) {
   //$("image_article_id").value = article.id;
 }
 
+function _fill_one_image(div, im) {
+  div.id = "imgdiv" + im.id;
+  var img_img = document.createElement("img");
+  img_img.id = "img" + im.id;
+  img_img.src = api.thumb_link(im, "sadmingall");
+  img_div.appendChild(img_img);
+
+  var edit = new Element("a", { href: "#", className: "img_edit" });
+  edit.update("Edit");
+  edit.onclick = _start_edit_image.bind(this, im);
+  div.appendChild(edit);
+}
+
 function _populate_images(ims) {
   var imgs_div = $("imagelist");
   imgs_div.innerHTML = "";
   for (var i = 0; i < ims.length; ++i) {
     var img_div = document.createElement("div");
-    img_div.id = "imgdiv" + ims[i].id;
-    var img_img = document.createElement("img");
-    img_img.id = "img" + ims[i].id;
-    img_img.src = api.thumb_link(ims[i], "sadmingall");
-    img_div.appendChild(img_img);
+    _fill_one_image(img_div, ims[i]);
+
     imgs_div.appendChild(img_div);
   }
 
@@ -251,16 +261,19 @@ function _start_img_upload(upload) {
     id: last_article.id,
     onSuccess: function(upload, img) {
       upload.div.innerHTML = "";
-      var img_img = new Element
-	(
-	"img",
-	{
-	  id: "img" + img.id,
-	  src: api.thumb_link(img, "sadmingall")
-	});
-      upload.div.appendChild(img_img);
-      upload.div.id = "imgdiv" + img.id;
       upload.div.className = "";
+      _fill_one_image(upload.div, img);
+//       var img_img = new Element
+// 	(
+// 	"img",
+// 	{
+// 	  id: "img" + img.id,
+// 	  src: api.thumb_link(img, "sadmingall")
+// 	});
+//       upload.div.appendChild(img_img);
+//       upload.div.id = "imgdiv" + img.id;
+//       upload.div.className = "";
+
     }.bind(this, upload),
     onFailure: function(upload) {
       upload.div.parentNode.removeChild(upload.div);
@@ -356,9 +369,11 @@ function _progress_progress(prog) {
 function do_image_upload() {
   var file = $("imagefile");
   var name = $("imagename").value;
+  var alt = $("imagealt").value;
   api.add_image_file({
     image: file,
     name: name,
+    alt: alt,
     id: last_article.id,
     clone: true,
     onSuccess: function () {
