@@ -41,7 +41,7 @@
           </tr>
         </table>
       </form>
-<br>
+<br />
 <:or Or:><:eif Or:>
 <:eif:>
   <form enctype="multipart/form-data" method="post" action="<:script:>" name="edit">
@@ -92,7 +92,7 @@
           <tr> 
             <th> Body: </th>
             <td> 
-              <:if FieldPerm body:><textarea name="body" rows="10" cols="60" wrap="virtual"><: old body default body :></textarea>
+              <:if FieldPerm body:><textarea name="body" rows="10" cols="60"><: old body default body :></textarea>
               <:or FieldPerm:><:bodytext article body:><:eif FieldPerm:>
             </td>
             <td class="help"><:help body body:> <:error_img body:></td>
@@ -120,7 +120,7 @@
           <tr> 
             <th>Link alias:</th>
             <td> 
-            <:ifFieldPerm linkAlias:><input type="text" name="linkAlias" maxlength="<:cfg fields linkAlias_size 255:>" size="40" value="<: old linkAlias article linkAlias :>">
+            <:ifFieldPerm linkAlias:><input type="text" name="linkAlias" maxlength="<:cfg fields linkAlias_size 255:>" size="40" value="<: old linkAlias article linkAlias :>" />
             <:or:><:default linkAlias:><:eif:></td>
             <td class="help"><:help edit linkAlias:> <:error_img linkAlias:></td>
           </tr>
@@ -306,15 +306,12 @@
         </tr>
         <:iterator separator children:> <:iterator end children:> 
       </table>
-</td>
-</tr>
-</table>
 <:or children:>
 <:eif children:>
 <:if HaveChildType:>
 <:if New:>
 <:or New:>
-<:if UserCan edit_add_child:article:><form action="/cgi-bin/admin/add.pl" "addchild">
+<:if UserCan edit_add_child:article:><form action="/cgi-bin/admin/add.pl" name="addchild">
 <input type="hidden" name="parentid" value="<:article id:>" />
   <p> 
     <input type="submit" value="Add <:ifEq [article id] [cfg articles shop]:>Catalog<:or:><: childtype :><:eif:>" />
