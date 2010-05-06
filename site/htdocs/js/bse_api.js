@@ -385,6 +385,16 @@ var BSEAPI = Class.create
 	 success, failure
 	 );
      },
+     images_set_order: function(parameters) {
+       var success = parameters.onSuccess;
+       if (!success) this._badparm("remove_image_file() missing onSuccess parameter");
+       var failure = parameters.onFailure;
+       if (!failure) failure = this.onFailure;
+       var id = parameters.id;
+       if (!id) this._badparm("images_set_order() missing id parameter");
+       var order = parameters.order.join(",");
+       this._do_add_request("a_order_images", { id: id, order: order }, success, failure);
+     },
      _progress_handler: function(parms) {
 	  if (parms.finished) return;
        this.get_file_progress(

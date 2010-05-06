@@ -236,6 +236,30 @@ function _populate_images(ims) {
       }
     );
   }
+  _make_images_orderable();
+}
+
+function _make_images_orderable() {
+  Sortable.create
+  ("imagelist",
+   {
+     tag: "div",
+     only: "animage",
+     format: /^imgdiv(\d+)$/,
+     overlap: "horizontal",
+     constraint: "horizontal",
+     onUpdate: function () {
+       api.images_set_order
+       (
+	 {
+	   id: last_article.id,
+	   order: Sortable.sequence("imagelist"),
+	   onSuccess: function() {}
+	 }
+       );
+     }
+   }
+  );
 }
 
 var active_uploads = 0;
@@ -378,6 +402,7 @@ function do_image_upload() {
       var div = new Element("div");
       _fill_one_image(div, im);
       $("imagelist").appendChild(div);
+      _make_images_orderable();
     },
     onFailure: function () {
       alert("upload error");

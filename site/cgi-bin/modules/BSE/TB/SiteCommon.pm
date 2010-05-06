@@ -288,4 +288,31 @@ sub reorder_child {
   Articles->reorder_child($self->{id}, $child_id, $after_id);
 }
 
+sub set_image_order {
+  my ($self, $order) = @_;
+
+  my @images = $self->images;
+  my %images = map { $_->{id} => $_ } @images;
+
+  my @new_order;
+  for my $id (@$order) {
+    if ($images{$id}) {
+      push @new_order, delete $images{$id};
+    }
+  }
+  for my $id (map $_->id, @images) {
+    if ($images{$id}) {
+      push @new_order, delete $images{$id};
+    }
+  }
+
+  my @display_order = map $_->{displayOrder}, @images;
+  for my $index (0 .. $#images) {
+    $new_order[$index]->set_displayOrder($display_order[$index]);
+    $new_order[$index]->save;
+  }
+
+  return @new_order;
+}
+
 1;

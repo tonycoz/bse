@@ -126,6 +126,7 @@ sub article_actions {
      addimg => 'add_image',
      a_edit_image => 'req_edit_image',
      a_save_image => 'req_save_image',
+     a_order_images => 'req_order_images',
      remove => 'remove',
      showimages => 'show_images',
      process => 'save_image_changes',
@@ -3578,6 +3579,53 @@ sub req_save_image {
   }
 
   return $self->refresh($article, $cgi);
+}
+
+=item a_order_images
+
+Change the order of images for an article (or global images).
+
+Ajax only.
+
+=over
+
+=item *
+
+id - id of the article to change the image order for (-1 for global
+images)
+
+=item *
+
+order - comma-separated list of image ids in the new order.
+
+=back
+
+=cut
+
+sub req_order_images {
+  my ($self, $req, $article, $articles) = @_;
+
+  $req->is_ajax
+    or return $self->_service_error($req, $article, $articles, "The function only permitted from Ajax", {}, "AJAXONLY");
+
+  my $order = $req->cgi->param("order");
+  defined $order
+    or return $self->_service_error($req, $article, $articles, "order not supplied", {}, "NOORDER");
+  $order =~ /^\d+(,\d+)*$/
+    or return $self->_service_error($req, $article, $articles, "order not supplied", {}, "BADORDER");
+
+  my @order = split /,/, $order;
+
+  my @images = $article->set_image_order(\@order);
+
+  return $req->json_content
+    (
+     success => 1,
+     images =>
+     [
+      map $self->_image_data($req->cfg, $_), @images
+     ],
+    );
 }
 
 sub get_article {
