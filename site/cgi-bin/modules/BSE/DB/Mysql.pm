@@ -628,6 +628,22 @@ sub _single
   $self;
 }
 
+sub _another
+{
+  my ($class, $cfg) = @_;
+
+  warn "Incorrect number of parameters passed to BSE::DB::Mysql::_another\n" unless @_ == 2;
+
+  my $self = bless {
+      dbh => undef,
+      birth => time(),
+      cfg => $cfg
+  }, $class;
+
+  $self->{dbh} = $self->_connect;
+  return $self;
+}
+
 sub _forked {
   my $self = shift;
 

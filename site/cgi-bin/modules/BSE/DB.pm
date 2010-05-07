@@ -71,6 +71,18 @@ sub init {
   $single = $dbclass->_single($cfg);
 }
 
+sub init_another {
+  my ($class, $cfg) = @_;
+
+  my $dbclass = $cfg->entry("db", "class", "BSE::DB::Mysql");
+
+  my $file = $dbclass;
+  $file =~ s!::!/!g;
+  require "$file.pm";
+
+  return $dbclass->_another($cfg);
+}
+
 sub single {
   $single
     or confess "BSE::DB->init(\$cfg) needs to be called first";

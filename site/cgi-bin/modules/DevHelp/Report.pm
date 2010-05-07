@@ -66,6 +66,7 @@ sub valid_report {
 sub prompt_tags {
   my ($self, $repid, $cgi, $db) = @_;
 
+  $db = $self->report_db($repid, $db);
   my $report = $self->_load($repid, $cgi, $db);
 
   return
@@ -315,6 +316,7 @@ my %validators =
 sub validate_params {
   my ($self, $repid, $cgi, $db, $errors) = @_;
 
+  $db = $self->report_db($repid, $db);
   my $report = $self->_load($repid, $cgi, $db);
 
   my $params = $report->{params};
@@ -557,6 +559,8 @@ sub show_tags {
 sub show_tags2 {
   my ($self, $repid, $db, $rmsg, $params, %opts) = @_;
 
+  $db = $self->report_db($repid, $db);
+
   my $prefix = $opts{tag_prefix} || '';
   # build up result sets
   my $dbh = $db->dbh;
@@ -660,6 +664,7 @@ sub show_tags2 {
 sub levels {
   my ($self, $repid, $db) = @_;
 
+  $db = $self->report_db($repid, $db);
   my $report = $self->_load($repid, undef, $db);
   scalar @{$report->{sql}};
   # scalar 1+@{$report->{breaks}};
@@ -818,6 +823,23 @@ sub iter_levelN {
 #       ];
 #   }
 # }
+
+sub report_db {
+    my ($self, $reportid, $db) = @_;
+
+    my $rdb = $self->{cfg}->entry("report $reportid", "db");
+    if (defined $rdb &&
+        $self->{cfg}->entries("db $rdb"))
+    {
+        my $newcfg = { config => { %{ $self->{cfg}{config} } } };
+        $newcfg->{config}{db} = $newcfg->{config}{lc "db $rdb"};
+        bless $newcfg, 'BSE::Cfg';
+
+        return $db->init_another($newcfg);
+    }
+
+    return $db;
+}
 
 package DevHelp::Report::Report;
 
