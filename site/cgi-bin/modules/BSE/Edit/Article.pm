@@ -4475,7 +4475,7 @@ sub req_save_file {
 	  
 	  $file->{filename} = $file_name;
 	  $file->{sizeInBytes} = -s $full_name;
-	  $file->{whenUploaded} = now_datetime();
+	  $file->{whenUploaded} = now_sqldatetime();
 	  $file->{displayName} = $display_name;
 	  $file->{storage} = 'local';
 	}
