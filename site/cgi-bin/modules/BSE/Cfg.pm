@@ -1,6 +1,7 @@
 package BSE::Cfg;
 use strict;
 use FindBin;
+use Carp qw(confess);
 use constant MAIN_CFG => 'bse.cfg';
 use constant CFG_DEPTH => 5; # unused so far
 use constant CACHE_AGE => 30;
@@ -8,6 +9,7 @@ use constant VAR_DEPTH => 10;
 
 my %cache;
 
+my $single;
 
 =head1 NAME
 
@@ -34,8 +36,18 @@ for use in a mod_perl version of BSE.
 
 =item BSE::Cfg->new
 
-Create a new configuration file object.  Currently takes no
-parameters, but may do so in the future.
+Create a new configuration file object.
+
+Parameters:
+
+=over
+
+=item *
+
+path - the path to start searching for the config file in, typically
+the BSE cgi-bin.
+
+=back
 
 =cut
 
@@ -52,7 +64,25 @@ sub new {
       or return bless { config => {} }, $class;
   }
 
-  return $class->_load_cfg($file);
+  $single = $class->_load_cfg($file);
+
+  return $single;
+}
+
+=item single
+
+Return the BSE configuration object.
+
+This is used to avoid always passing around a config object.
+
+=cut
+
+sub single {
+  my ($class) = @_;
+
+  $single or confess "BSE's configuration hasn't been initialized yet";
+
+  return $single;
 }
 
 =item entry($section, $key, $def)
