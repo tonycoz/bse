@@ -5,7 +5,7 @@ use strict;
 my $db = 'bsebuilder';
 my $un = 'bsebuilder';
 my $pw = 'bsebuilder';
-my $dist = "schema/bse.sql";
+my $dist = shift || "schema/bse.sql";
 
 my $dbh = DBI->connect("dbi:mysql:$db", $un, $pw)
   or die "Cannot connect to db: ",DBI->errstr;
@@ -20,9 +20,27 @@ while (my $row = $tl->fetchrow_arrayref) {
   push(@drop_tables, $row->[0]);
 }
 undef $tl;
-for my $drop (@drop_tables) {
-  $dbh->do("drop table $drop")
-    or die "Could not drop old table: ", $dbh->errstr;
+my %tables = map { $_ => 1 } @drop_tables;
+my $error;
+my $dropped = 1;
+# need this loop to handle references between tables restricting us
+# from dropping them
+while ($dropped && keys %tables) {
+  my $dropped = 0;
+  my @tables = keys %tables;
+  for my $drop (@tables) { # not keys %tables, since we modify it
+    if ($dbh->do("drop table $drop")) {
+      ++$dropped;
+      delete $tables{$drop};
+    }
+    else {
+      $error = "Could not drop old table: ". $dbh->errstr;
+    }
+  }
+}
+if (keys %tables) {
+  print "Could not drop bsebuilder tables:\n   ", join("\n  ", sort keys %tables), "\n";
+  die $error;
 }
 
 system "mysql -u$un -p$pw $db <$dist"
