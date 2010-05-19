@@ -409,8 +409,8 @@ sub tag_templates {
     $default = $article->{template};
   }
   else {
-    my @options;
-    $default = $self->default_template($article, $cfg, \@templates);
+    my @template_names = map $_->{name}, @templates;
+    $default = $self->default_template($article, $cfg, \@template_names);
   }
   my %labels =
     (
