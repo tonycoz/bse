@@ -25,6 +25,8 @@ sub tags {
      $self->dyn_article_iterator('dynlevel2s', 'dynlevel2'),
      $self->dyn_article_iterator('dynlevel3s', 'dynlevel3'),
      $self->dyn_article_iterator('dynallkids_of', 'dynofallkid'),
+     $self->dyn_article_iterator('dynallkids_of2', 'dynofallkid2'),
+     $self->dyn_article_iterator('dynallkids_of3', 'dynofallkid3'),
      $self->dyn_article_iterator('dynchildren_of', 'dynofchild'),
      $self->dyn_iterator('dyncart', 'dyncartitem'),
      $self->dyn_article_iterator('wishlist', 'wishlistentry', $req),
@@ -232,11 +234,15 @@ sub iter_dynallkids_of {
       $id = $self->{req}->get_article($id);
     }
   }
-  @ids = grep defined && /^\d+$|^-1$/, @ids;
+  @ids = grep defined && /^\d+$|^-1$/,
+    map ref() ? $_->{id} : $_, @ids;
 
   require Articles;
   return $self->access_filter(map Articles->all_visible_kids($_), @ids);
 }
+
+*iter_dynallkids_of2 = \&iter_dynallkids_of;
+*iter_dynallkids_of3 = \&iter_dynallkids_of;
 
 sub iter_dynchildren_of {
   my ($self, $unused, $args, $acts, $templater) = @_;

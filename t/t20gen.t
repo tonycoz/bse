@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>123;
+use Test::More tests=>126;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
@@ -37,6 +37,13 @@ for my $name ('One', 'Two', 'Three') {
   ok($kid, "creating kid $name");
   push(@kids, $kid);
 }
+
+my $grandkid = add_article
+  (
+   parentid => $kids[1]{id},
+   title => "Grandkid",
+   body => "grandkid",
+  );
 
 my $base_securl = $cfg->entryVar("site", "secureurl");
 
@@ -401,10 +408,23 @@ One
 
 EXPECTED
 
+dyn_template_test "dynallkidsof nested", $parent, <<TEMPLATE, <<EXPECTED;
+<:iterator begin dynallkids_of $parent->{id} filter: [title] =~ /o/i :><:
+dynofallkid title:><:iterator begin dynallkids_of2 dynofallkid:>
+  <:dynofallkid2 title:><:iterator end dynallkids_of2:>
+<:iterator end dynallkids_of:>
+TEMPLATE
+Two
+  Grandkid
+One
+
+EXPECTED
+
 ############################################################
 # Cleanup
 
 BSE::Admin::StepParents->del($parent, $parent);
+$grandkid->remove($cfg);
 for my $kid (reverse @kids) {
   my $name = $kid->{title};
   my $kidid = $kid->{id};
