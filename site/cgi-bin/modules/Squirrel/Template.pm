@@ -471,14 +471,14 @@ sub replace_template {
 
   # conditionals
   my $nesting = 0; # prevents loops if result is an if statement
-  1 while $template =~ s/(<:\s*if\s+(\w+))(?:\s+(.*?))?\s*:>
+  1 while $template =~ s/(<:\s*if\s+(\w+))(?:\s+(.*?))?:>
                           (.*?)
                          (<:\s*or\s+\2\s*:>)
                           (.*?)
                          (<:\s*eif\s+\2\s*:>)/
                         $self->cond($2, $3, $acts, $1, $4, $5, $6, $7) /sgex
 			  && ++$nesting < 5;
-  $template =~ s/(<:\s*if([A-Z]\w*))(?:\s+(.*?))?\s*:>
+  $template =~ s/(<:\s*if([A-Z]\w*))(?:\s+(.*?))?:>
                   (.*?)
                  (<:\s*or\s*:>)
                   (.*?)

@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>126;
+use Test::More tests=>129;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
@@ -389,7 +389,35 @@ TEMPLATE
 1
 EXPECTED
 
-
+template_test "noreplace undefined", $parent, <<'TEMPLATE', <<'EXPECTED';
+<:switch:><:case Dynallkids_of2 dynofallkid filter: [listed] != 2 :><:if Or [ifAncestor dynofallkid] [ifEq [cgi catid] [dynofallkid id]]:>
+contentA
+  <:iterator begin dynallkids_of2 dynofallkid filter: [listed] != 2 && [generator] =~ /Catalog/ :>
+contentB
+<:ifEq [dynarticle id] [dynofallkid2 id]:> focus<:or:><:eif:>
+<:ifAncestor dynofallkid2:> hilite<:or:><:eif:>
+<:ifFirstDynofallkid2:> first<:or:><:eif:>
+<:ifLastDynofallkid2:> last<:or:><:eif:>
+<:ifDynallkids_of3 dynofallkid2 filter: [listed] != 2 :> parent<:or:><:eif:>
+<:ifDynofallkid2 titleAlias:><:dynofallkid2 titleAlias:><:or:><:dynofallkid2 title:><:eif:>
+<:iterator separator dynallkids_of2:>
+<:iterator end dynallkids_of2:>
+<:or Or:><:eif Or:><:endswitch:>
+TEMPLATE
+<:switch:><:case Dynallkids_of2 dynofallkid filter: [listed] != 2 :><:if Or [ifAncestor dynofallkid] [ifEq [cgi catid] [dynofallkid id]]:>
+contentA
+  <:iterator begin dynallkids_of2 dynofallkid filter: [listed] != 2 && [generator] =~ /Catalog/ :>
+contentB
+<:ifEq [dynarticle id] [dynofallkid2 id]:> focus<:or:><:eif:>
+<:ifAncestor dynofallkid2:> hilite<:or:><:eif:>
+<:ifFirstDynofallkid2:> first<:or:><:eif:>
+<:ifLastDynofallkid2:> last<:or:><:eif:>
+<:ifDynallkids_of3 dynofallkid2 filter: [listed] != 2 :> parent<:or:><:eif:>
+<:ifDynofallkid2 titleAlias:><:dynofallkid2 titleAlias:><:or:><:dynofallkid2 title:><:eif:>
+<:iterator separator dynallkids_of2:>
+<:iterator end dynallkids_of2:>
+<:or Or:><:eif Or:><:endswitch:>
+EXPECTED
 
 ############################################################
 # dynamic stuff
