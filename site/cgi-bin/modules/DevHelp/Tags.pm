@@ -366,6 +366,7 @@ sub get_parms {
       if (exists $acts->{$func}) {
 	print STDERR "  Evaluating [$func $subargs]\n" if DEBUG_GET_PARMS;
 	my $value = $templater->perform($acts, $func, $subargs);
+	defined $value or die "ENOIMPL";
 	print STDERR "    Result '$value'\n" if DEBUG_GET_PARMS;
 	push(@out, $value);
       }
