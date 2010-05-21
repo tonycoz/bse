@@ -533,8 +533,9 @@ sub _dyn_count {
   my ($self, $rdata, $rindex, $plural, $context, $args, $acts, $name, 
       $templater) = @_;
 
+  my $filter = $self->_get_filter(\$args);
   my $method = "iter_$plural";
-  my $data = $self->$method($context, $args, $acts, $templater);
+  my $data = $self->_do_filter($filter, $self->$method($context, $args, $acts, $templater));
 
   return scalar @$data;
 }
