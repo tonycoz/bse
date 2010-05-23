@@ -66,8 +66,8 @@ sub valid_report {
 sub prompt_tags {
   my ($self, $repid, $cgi, $db) = @_;
 
-  $db = $self->report_db($repid, $db);
-  my $report = $self->_load($repid, $cgi, $db);
+  my $dbh = $self->report_db($repid, $db);
+  my $report = $self->_load($repid, $cgi, $dbh);
 
   return
     (
@@ -78,7 +78,7 @@ sub prompt_tags {
 }
 
 sub _load {
-  my ($self, $repid, $cgi, $db) = @_;
+  my ($self, $repid, $cgi, $dbh) = @_;
 
   my %report;
   my $cfg = $self->{cfg};
@@ -95,7 +95,7 @@ sub _load {
       $type = 'text40';
     }
     my ($html, $values)
-      = $self->_get_type_html($type, $cgi, $param_index, $db);
+      = $self->_get_type_html($type, $cgi, $param_index, $dbh);
 
     push @params, {
 		   type => $type,
@@ -207,7 +207,7 @@ sub prompt_template {
 }
 
 sub _get_type_html {
-  my ($self, $type, $cgi, $index, $db) = @_;
+  my ($self, $type, $cgi, $index, $dbh) = @_;
 
   my $name = "p" . $index;
   my $old = $cgi ? $cgi->param($name) : '';
@@ -239,19 +239,18 @@ sub _get_type_html {
       return qq!Unknown or invalid type '$type' for param$index!;
     }
 
-    return $self->$method($type, $name, $cgi, $db);
+    return $self->$method($type, $name, $cgi, $dbh);
   }
 }
 
 # generates a popup field
 sub _get_type_html_sql {
-  my ($self, $type, $name, $cgi, $db) = @_;
+  my ($self, $type, $name, $cgi, $dbh) = @_;
 
   my $sect = "report datatype $type";
   my $sql = $self->{cfg}->entry($sect, 'sql')
     or return qq!** No SQL provided for SQL type '$type' **!;
 
-  my $dbh = $db->dbh;
   my $rows = $dbh->selectall_arrayref($sql);
 
   unless (@$rows) {
@@ -272,7 +271,7 @@ sub _get_type_html_sql {
 }
 
 sub _get_type_html_enum {
-  my ($self, $type, $name, $cgi, $db) = @_;
+  my ($self, $type, $name, $cgi, $dbh) = @_;
 
   my $sect = "report datatype $type";
   
@@ -316,8 +315,8 @@ my %validators =
 sub validate_params {
   my ($self, $repid, $cgi, $db, $errors) = @_;
 
-  $db = $self->report_db($repid, $db);
-  my $report = $self->_load($repid, $cgi, $db);
+  my $dbh = $self->report_db($repid, $db);
+  my $report = $self->_load($repid, $cgi, $dbh);
 
   my $params = $report->{params};
   return unless @$params;
@@ -334,7 +333,7 @@ sub validate_params {
 	$typebase = $validators{$typebase} if exists $validators{$typebase};
 	my $method = "_validate_$typebase";
 	
-	$self->$method($name, $value, $param, $repid, $db, $errors)
+	$self->$method($name, $value, $param, $repid, $dbh, $errors)
 	  if $self->can($method);
       }
     }
@@ -349,7 +348,7 @@ sub validate_params {
 }
 
 sub validate_text {
-  my ($self, $name, $value, $param, $repid, $db, $errors) = @_;
+  my ($self, $name, $value, $param, $repid, $dbh, $errors) = @_;
 
   my $sect = "report $repid";
   my $match = $self->{cfg}->entry($repid, "${name}match");
@@ -364,7 +363,7 @@ sub validate_text {
 }
 
 sub _validate_integer {
-  my ($self, $name, $value, $param, $repid, $db, $errors) = @_;
+  my ($self, $name, $value, $param, $repid, $dbh, $errors) = @_;
 
   unless ($value =~ /^\s*[-+]?\d+$/) {
     $errors->{$name} = "Supply an integer for $param->{label}";
@@ -398,7 +397,7 @@ sub _validate_integer {
 }
 
 sub _validate_enum {
-  my ($self, $name, $value, $param, $repid, $db, $errors) = @_;
+  my ($self, $name, $value, $param, $repid, $dbh, $errors) = @_;
 
   my $values = $param->{values};
   unless (grep $value eq $_, @$values) {
@@ -559,12 +558,11 @@ sub show_tags {
 sub show_tags2 {
   my ($self, $repid, $db, $rmsg, $params, %opts) = @_;
 
-  $db = $self->report_db($repid, $db);
+  my $dbh = $self->report_db($repid, $db);
 
   my $prefix = $opts{tag_prefix} || '';
   # build up result sets
-  my $dbh = $db->dbh;
-  my $report = $self->_load($repid, undef, $db);
+  my $report = $self->_load($repid, undef, $dbh);
   if ($report->{debug}) {
     print STDERR "Params: @$params\n";
   }
@@ -664,8 +662,8 @@ sub show_tags2 {
 sub levels {
   my ($self, $repid, $db) = @_;
 
-  $db = $self->report_db($repid, $db);
-  my $report = $self->_load($repid, undef, $db);
+  my $dbh = $self->report_db($repid, $db);
+  my $report = $self->_load($repid, undef, $dbh);
   scalar @{$report->{sql}};
   # scalar 1+@{$report->{breaks}};
 }
@@ -831,14 +829,10 @@ sub report_db {
     if (defined $rdb &&
         $self->{cfg}->entries("db $rdb"))
     {
-        my $newcfg = { config => { %{ $self->{cfg}{config} } } };
-        $newcfg->{config}{db} = $newcfg->{config}{lc "db $rdb"};
-        bless $newcfg, 'BSE::Cfg';
-
-        return $db->init_another($newcfg);
+        return $db->new_dbh($self->{cfg}, $rdb);
     }
 
-    return $db;
+    return $db->dbh;
 }
 
 package DevHelp::Report::Report;

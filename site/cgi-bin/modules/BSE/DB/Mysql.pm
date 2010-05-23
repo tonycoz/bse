@@ -628,20 +628,23 @@ sub _single
   $self;
 }
 
-sub _another
+sub new_dbh
 {
-  my ($class, $cfg) = @_;
+  my ($class, $cfg, $name) = @_;
 
-  warn "Incorrect number of parameters passed to BSE::DB::Mysql::_another\n" unless @_ == 2;
+  my $dbname = "db $name";
 
-  my $self = bless {
-      dbh => undef,
-      birth => time(),
-      cfg => $cfg
-  }, $class;
+  my $dsn = $cfg->entry($dbname, "dsn", $DSN);
+  my $un = $cfg->entry($dbname, "user", $UN);
+  my $pass = $cfg->entry($dbname, "password", $PW);
+  my $dbopts = $cfg->entry($dbname, "dbopts", $DBOPTS);
+  my $dbh = DBI->connect( $dsn, $un, $pass, $dbopts)
+      or die "Cannot connect to database: $DBI::errstr";
 
-  $self->{dbh} = $self->_connect;
-  return $self;
+  # this might fail, but I don't care
+  $dbh->do("set session sql_mode='ansi_quotes'");
+
+  return $dbh;
 }
 
 sub _forked {

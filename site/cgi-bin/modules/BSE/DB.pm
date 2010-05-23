@@ -71,16 +71,16 @@ sub init {
   $single = $dbclass->_single($cfg);
 }
 
-sub init_another {
-  my ($class, $cfg) = @_;
+sub new_dbh {
+  my ($class, $cfg, $name) = @_;
 
-  my $dbclass = $cfg->entry("db", "class", "BSE::DB::Mysql");
+  my $dbclass = $cfg->entry("db $name", "class", "BSE::DB::Mysql");
 
   my $file = $dbclass;
   $file =~ s!::!/!g;
   require "$file.pm";
 
-  return $dbclass->_another($cfg);
+  return $dbclass->new_dbh($cfg, $name);
 }
 
 sub single {
