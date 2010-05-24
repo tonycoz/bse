@@ -829,7 +829,7 @@ sub report_db {
     if (defined $rdb &&
         $self->{cfg}->entries("db $rdb"))
     {
-        return $db->new_dbh($self->{cfg}, $rdb);
+        return $db->new_dbh($rdb, $self->{cfg});
     }
 
     return $db->dbh;

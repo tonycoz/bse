@@ -72,8 +72,9 @@ sub init {
 }
 
 sub new_dbh {
-  my ($class, $cfg, $name) = @_;
+  my ($self, $name, $cfg) = @_;
 
+  $cfg ||= $self->{cfg};
   my $dbclass = $cfg->entry("db $name", "class", "BSE::DB::Mysql");
 
   my $file = $dbclass;
