@@ -628,7 +628,7 @@ sub _single
   $self;
 }
 
-sub new_dbh
+sub dbh
 {
   my ($class, $cfg, $name) = @_;
 

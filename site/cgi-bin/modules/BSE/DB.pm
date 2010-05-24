@@ -81,7 +81,7 @@ sub new_dbh {
   $file =~ s!::!/!g;
   require "$file.pm";
 
-  return $dbclass->new_dbh($cfg, $name);
+  return $dbclass->dbh($cfg, $name);
 }
 
 sub single {
