@@ -227,6 +227,47 @@ sub delete_stmt {
   return $sth;
 }
 
+sub auto_commit {
+  my ($self, $value) = @_;
+
+  $self = BSE::DB->single unless ref $self;
+  $self->dbh->{AutoCommit} = $value;
+}
+
+sub commit {
+  my ($self, $value) = @_;
+
+  $self = BSE::DB->single unless ref $self;
+
+  $self->dbh->commit;
+}
+
+sub rollback {
+  my ($self, $value) = @_;
+
+  $self = BSE::DB->single unless ref $self;
+
+  $self->dbh->rollback;
+}
+
+sub do_txn {
+  my ($self, $code) = @_;
+
+  $self->auto_commit(0);
+  eval {
+    $code->();
+    $self->commit;
+    $self->auto_commit(1);
+    1;
+  }
+    and return 1;
+  my $error = $@;
+
+  $self->rollback;
+  $self->auto_commit(1);
+  die $error;
+}
+
 1;
 
 __END__
