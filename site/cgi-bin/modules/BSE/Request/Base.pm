@@ -1049,4 +1049,8 @@ sub audit {
   BSE::TB::AuditLog->make(%entry);
 }
 
+sub ip_address {
+  return $ENV{REMOTE_ADDR};
+}
+
 1;
