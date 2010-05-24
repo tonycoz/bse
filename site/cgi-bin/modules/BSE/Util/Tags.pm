@@ -4,7 +4,7 @@ use HTML::Entities;
 use DevHelp::Tags;
 use DevHelp::HTML qw(:default escape_xml);
 use vars qw(@EXPORT_OK @ISA);
-@EXPORT_OK = qw(tag_error_img tag_hash tag_hash_plain tag_hash_mbcs tag_article tag_article_plain);
+@EXPORT_OK = qw(tag_error_img tag_hash tag_hash_plain tag_hash_mbcs tag_article tag_article_plain tag_object);
 @ISA = qw(Exporter);
 require Exporter;
 
@@ -894,6 +894,20 @@ sub tag_hash_plain {
   defined $value or $value = '';
 
   $value;
+}
+
+sub tag_object {
+  my ($object, $args, $acts, $func) = @_;
+
+  $object or return '';
+
+  $object->can($args)
+    or return "** $func has no method $args **";
+
+  my $value = $object->$args();
+  defined $value or return "";
+
+  return escape_html($value);
 }
 
 sub tag_today {
