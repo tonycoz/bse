@@ -1,4 +1,5 @@
 package BSE::UI::FileProgress;
+use strict;
 
 sub dispatch {
   my ($class, $req) = @_;
