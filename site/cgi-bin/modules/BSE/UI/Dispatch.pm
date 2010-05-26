@@ -42,6 +42,7 @@ sub dispatch {
     }
   }
   my @extras;
+  my $rest = '';
   unless ($action) {
     ($action, @extras) = $self->other_action($cgi);
   }
@@ -49,7 +50,9 @@ sub dispatch {
     my @components = split '/', $ENV{PATH_INFO};
     @components && !$components[0] and shift @components;
     if (@components && $actions->{$components[0]}) {
-      ($action, @extras) = @components;
+      $action = $components[0];
+      $rest = join '/', @components[1..$#components]
+	if @components > 1;
     }
   }
   $action ||= $self->default_action;
@@ -58,6 +61,7 @@ sub dispatch {
     or return $result;
 
   ref $self and $self->{action} = $action;
+  ref $self and $self->{rest} = $rest;
 
   my $method = "req_$action";
   $self->$method($req, @extras);
