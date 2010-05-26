@@ -586,20 +586,19 @@ sub _startup {
   if ($self) {
     unless ($self->{dbh}->ping) {
       print STDERR "Database connection lost - reconnecting\n";
-      $self->{dbh} = $class->_connect;
+      $self->{dbh} = $class->connect;
       $self->{birth} = time();
     }
   }
 }
 
-sub _connect {
-  my ($self) = @_;
+sub connect {
+  my ($class, $dbname) = @_;
 
-  my $cfg = $self->{cfg};
-  my $dsn = $self->dsn($cfg);
-  my $un = $self->dbuser($cfg);
-  my $pass = $self->dbpassword($cfg);
-  my $dbopts = $self->dbopts($cfg);
+  my $dsn = $class->dsn($dbname);
+  my $un = $self->dbuser($dbname);
+  my $pass = $self->dbpassword($dbname);
+  my $dbopts = $self->dbopts($dbname);
   my $dbh = DBI->connect( $dsn, $un, $pass, $dbopts)
       or die "Cannot connect to database: $DBI::errstr";
 
@@ -623,28 +622,9 @@ sub _single
        cfg => $cfg,
       }, $class;
 
-    $self->{dbh} = $self->_connect;
+    $self->{dbh} = $self->connect;
   }
   $self;
-}
-
-sub dbh
-{
-  my ($class, $cfg, $name) = @_;
-
-  my $dbname = "db $name";
-
-  my $dsn = $cfg->entry($dbname, "dsn", $DSN);
-  my $un = $cfg->entry($dbname, "user", $UN);
-  my $pass = $cfg->entry($dbname, "password", $PW);
-  my $dbopts = $cfg->entry($dbname, "dbopts", $DBOPTS);
-  my $dbh = DBI->connect( $dsn, $un, $pass, $dbopts)
-      or die "Cannot connect to database: $DBI::errstr";
-
-  # this might fail, but I don't care
-  $dbh->do("set session sql_mode='ansi_quotes'");
-
-  return $dbh;
 }
 
 sub _forked {
@@ -652,7 +632,7 @@ sub _forked {
 
   $self->{dbh}{InactiveDestroy} = 1;
   delete $self->{dbh};
-  $self->{dbh} = $self->_connect;
+  $self->{dbh} = $self->connect;
 }
 
 

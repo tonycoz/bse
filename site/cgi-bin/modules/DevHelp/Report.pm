@@ -196,7 +196,10 @@ sub _load {
 }
 
 sub load {
-  goto &_load;
+  my ($self, $repid, $cgi, $db) = @_;
+
+  my $dbh = $self->report_db($repid, $db);
+  return $self->_load($repid, $cgi, $dbh);
 }
 
 sub prompt_template {
@@ -826,10 +829,9 @@ sub report_db {
     my ($self, $reportid, $db) = @_;
 
     my $rdb = $self->{cfg}->entry("report $reportid", "db");
-    if (defined $rdb &&
-        $self->{cfg}->entries("db $rdb"))
-    {
-        return $db->new_dbh($rdb, $self->{cfg});
+    if (defined $rdb) {
+      # crash spectacularly if not configured
+      return $db->new_dbh($rdb, $self->{cfg});
     }
 
     return $db->dbh;

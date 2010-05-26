@@ -14,38 +14,38 @@ my $constants_loaded = eval {
   1;
 };
 
+sub cfg_entry {
+  my ($class, $dbname, $key, $default) = @_;
+
+  my $section = $dbname ? "db $dbname" : "db";
+
+  return BSE::Cfg->single->entry($section, $key, $default);
+}
+
 sub dsn {
-  my ($class, $cfg) = @_;
+  my ($class, $dbname) = @_;
 
-  $cfg or confess "Missing cfg option";
-
-  return $cfg->entry("db", "dsn", $Constants::DSN);
+  return $class->cfg_entry($dbname, "dsn", $Constants::DSN);
 }
 
 sub dbuser {
-  my ($class, $cfg) = @_;
+  my ($class, $dbname) = @_;
 
-  $cfg or confess "Missing cfg option";
-
-  return $cfg->entry("db", "user", $Constants::UN);
+  return $class->cfg_entry($dbname, "user", $Constants::UN);
 }
 
 sub dbpassword {
-  my ($class, $cfg) = @_;
+  my ($class, $dbname) = @_;
 
-  $cfg or confess "Missing cfg option";
-
-  return $cfg->entry("db", "password", $Constants::PW);
+  return $class->cfg_entry($dbname, "password", $Constants::PW);
 }
 
 sub dbopts {
-  my ($class, $cfg) = @_;
-
-  $cfg or confess "Missing cfg option";
+  my ($class, $dbname) = @_;
 
   my $def_opts = $Constants::DBOPTS || {};
 
-  my $opts = $cfg->entry("db", "dbopts", $def_opts);
+  my $opts = $class->cfg_entry($dbname, "dbopts", $def_opts);
   unless (ref $opts) {
     my $work_opts = eval $opts;
     $@
@@ -62,7 +62,7 @@ sub init {
 
   $single and return;
 
-  my $dbclass = $cfg->entry("db", "class", "BSE::DB::Mysql");
+  my $dbclass = $class->cfg_entry(undef, "class", "BSE::DB::Mysql");
   
   my $file = $dbclass;
   $file =~ s!::!/!g;
@@ -72,16 +72,15 @@ sub init {
 }
 
 sub new_dbh {
-  my ($self, $name, $cfg) = @_;
+  my ($self, $dbname) = @_;
 
-  $cfg ||= $self->{cfg};
-  my $dbclass = $cfg->entry("db $name", "class", "BSE::DB::Mysql");
+  my $dbclass = $self->cfg_entry($dbname, "class", "BSE::DB::Mysql");
 
   my $file = $dbclass;
   $file =~ s!::!/!g;
   require "$file.pm";
 
-  return $dbclass->dbh($cfg, $name);
+  return $dbclass->connect($dbname);
 }
 
 sub single {

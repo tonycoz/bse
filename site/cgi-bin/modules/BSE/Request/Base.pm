@@ -11,6 +11,7 @@ sub new {
   $opts{cfg} ||= BSE::Cfg->new;
 
   unless ($opts{nodatabase}) {
+    require BSE::DB;
     BSE::DB->init($opts{cfg});
     BSE::DB->startup();
   }

@@ -47,12 +47,12 @@ sub do_dump {
     return;
   }
   
-  my $user = BSE::DB->dbuser($cfg);
-  my $pass = BSE::DB->dbpassword($cfg);
+  my $user = BSE::DB->dbuser();
+  my $pass = BSE::DB->dbpassword();
   my $data;
   my $host;
   my $port;
-  my $dsn = BSE::DB->dsn($cfg);
+  my $dsn = BSE::DB->dsn();
   if ($dsn =~ /^dbi:mysql:(\w+)$/i) {
     $data = $1;
   }

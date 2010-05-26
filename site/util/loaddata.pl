@@ -19,7 +19,7 @@ my $datadir = shift
 my $dbh = BSE::DB::single->dbh
   or die "Cannot connect to database: ",DBI->errstr;
 
-my $dbuser = BSE::DB->dbuser($cfg);
+my $dbuser = BSE::DB->dbuser;
 
 my %tables;
 opendir DATADIR, $datadir or die "Cannot open '$datadir' directory: $!";
