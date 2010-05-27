@@ -64,7 +64,9 @@ sub _get_form {
 
   my $cfg = $req->cfg;
 
-  my $id = $req->cgi->param('form') || 'default';
+  my $id = $req->cgi->param('form');
+  defined $id and $id =~ /\A[A-Za-z0-9_-]+\z/
+    or $id = 'default';
 
   my $section = "$id form";
 
@@ -241,7 +243,7 @@ sub req_show {
      $it->make_iterator(undef, 'field', 'fields', $form->{fields},
 			undef, undef, \$current_field),
      msg => $msg,
-     id => $form->{id},
+     id => escape_html($form->{id}),
      $it->make_iterator([ \&iter_values, $form, \$current_field ],
 			'value', 'values', undef, undef,
 			'nocache', \$current_value),
