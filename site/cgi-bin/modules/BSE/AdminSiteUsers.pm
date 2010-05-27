@@ -1128,7 +1128,7 @@ my %file_fields =
    {
     description => "Last Modified date",
     rules => "date",
-    requried_if => "modwhen_time",
+    required_if => "modwhen_time",
    },
    modwhen_time =>
    {
@@ -1163,7 +1163,7 @@ my %save_file_fields =
    {
     description => "Last Modified date",
     rules => "date",
-    requried => 1,
+    required => 1,
    },
    modwhen_time =>
    {
