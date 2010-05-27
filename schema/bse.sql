@@ -1012,3 +1012,87 @@ create table bse_background_tasks (
   -- longer description - formatted as HTML
   long_desc text null
 );
+
+-- message catalog
+-- should only ever be loaded from data - maintained like code
+create table bse_msg_base (
+  -- message identifier
+  -- codebase/subsystem/messageid (message id can contain /)
+  -- eg. bse/edit/save/noaccess
+  -- referred to as msg:bse/edit/save/noaccess
+  -- in this table only, id can have a trailing /, and the description 
+  -- refers to a description of message under that tree, eg
+  -- "bse/" "BSE Message"
+  -- "bse/edit/" "Article editor messages"
+  -- "bse/siteuser/" "Member management messages"
+  -- "bse/userreg/" "Member services"
+  -- id, formatting, params are limited to ascii text
+  -- description unicode
+  id varchar(40) not null primary key,
+
+  -- a semi-long description of the message, including any parameters
+  description text not null,
+
+  -- type of formatting if any to do on the message
+  -- valid values are "none" and "body"
+  formatting varchar(5) not null default 'none',
+
+  -- parameter types, as a comma separated list
+  -- U - user
+  -- A - article
+  -- M - member
+  --   for any of these describe() is called, the distinction is mostly for
+  --   the message editor preview
+  -- S - scalar
+  -- comma separation is for future expansion
+  -- %{n}:printfspec
+  -- is replaced with parameter n in the text
+  -- so %2:d is the second parameter formatted as an integer
+  -- %% is replaced with %
+  params varchar(40) not null default '',
+
+  -- non-zero if the text can be multiple lines
+  multiline integer not null default 0
+);
+
+-- default messages
+-- should only ever be loaded from data, though different priorities
+-- for the same message might be loaded from different data sets
+create table bse_msg_defaults (
+  -- message identifier
+  id varchar(40) not null,
+
+  -- language code for this message
+  -- empty as the fallback
+  language_code varchar(10) not null default '',
+
+  -- priority of this message, lowest 0
+  priority integer not null default 0,
+
+  -- message text
+  message text not null,
+
+  primary key(id, language_code, priority)
+);
+
+-- admin managed message base, should never be loaded from data
+create table bse_msg_managed (
+  -- message identifier
+  id varchar(40) not null,
+
+  -- language code
+  -- empty as the fallback
+  language_code varchar(10) not null default '',
+
+  message text not null,
+
+  primary key(id, language_code)
+);
+
+-- admin user saved UI state
+create table bse_admin_ui_state (
+  id integer not null auto_increment primary key,
+  user_id integer not null,
+  name varchar(80) not null,
+  val text not null
+);

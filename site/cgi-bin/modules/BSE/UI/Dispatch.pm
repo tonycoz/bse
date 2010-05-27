@@ -112,6 +112,18 @@ sub error {
   return $req->response($template, \%acts);
 }
 
+sub _field_error {
+  my ($self, $req, $errors) = @_;
+
+  return $req->json_content
+    (
+     success => 0,
+     error_code => "FIELD",
+     errors => $errors,
+     message => "Fields failed validation",
+    );
+}
+
 sub controller_id {
   $_[0]{controller_id};
 }

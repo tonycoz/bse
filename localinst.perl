@@ -95,7 +95,7 @@ open TESTCONF, "< $conffile"
   or die "Could not open config file $conffile: $!";
 while (<TESTCONF>) {
   chomp;
-  /^\s*(\w[^=]*\w)\.(\w+)\s*=\s*(.*)\s*$/ or next;
+  /^\s*(\w[^=]*\w)\.([\w-]+)\s*=\s*(.*)\s*$/ or next;
   $conf{lc $1}{lc $2} = $3;
 }
 

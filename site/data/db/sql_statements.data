@@ -320,3 +320,73 @@ sql_statement: <<SQL
 delete from bse_wishlist
 where product_id = ?
 SQL
+
+name: bseGetMsgManaged
+sql_statement: <<SQL
+select m.message, m.language_code, b.formatting, b.params
+from bse_msg_managed m, bse_msg_base b
+where m.id = ?
+  and m.language_code = ?
+  and m.id = b.id
+SQL
+
+name: bseGetMsgDefault
+sql_statement: <<SQL
+select d.message, d.language_code, b.formatting, b.params
+from bse_msg_defaults d, bse_msg_base b
+where d.id = ?
+  and d.language_code = ?
+  and d.id = b.id
+order by d.priority desc
+SQL
+
+name: bseAllMsgs
+sql_statement: <<SQL
+select * from bse_msg_base order by id
+SQL
+
+name: bseMessageDetail
+sql_statement: select * from bse_msg_base where id = ?
+
+name: bseMessageDefaults
+sql_statement: <<SQL
+select * from bse_msg_defaults
+where id = ?
+SQL
+
+name: bseMessageDefinitions
+sql_statement: <<SQL
+select * from bse_msg_managed
+where id = ?
+SQL
+
+name: bseMessageFetch
+sql_statement: <<SQL
+select * from bse_msg_managed
+where id = ? and language_code = ?
+SQL
+
+name: bseMessageCreate
+sql_statement: <<SQL
+insert into bse_msg_managed(id, language_code, message) values(?,?,?)
+SQL
+
+name: bseMessageUpdate
+sql_statement: <<SQL
+update bse_msg_managed
+   set message = ?
+ where id = ? and language_code = ?
+SQL
+
+name: bseMessageDelete
+sql_statement: <<SQL
+delete from bse_msg_managed where id = ? and language_code = ?
+SQL
+
+name: AdminUIStates.matchingState
+sql_statement: <<SQL
+select *
+from bse_admin_ui_state
+where user_id = ?
+  and name like ?
+SQL

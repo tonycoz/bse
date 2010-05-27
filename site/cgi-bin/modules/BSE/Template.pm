@@ -4,12 +4,10 @@ use Squirrel::Template;
 use Carp 'confess';
 use Config ();
 
-sub get_page {
-  my ($class, $template, $cfg, $acts, $base_template, $rsets) = @_;
+sub templater {
+  my ($class, $cfg, $rsets) = @_;
 
   my @conf_dirs = $class->template_dirs($cfg);
-  my $file = $cfg->entry('templates', $template) || $template;
-  $file =~ /\.\w+$/ or $file .= ".tmpl";
   my @dirs;
   if ($rsets && @$rsets) {
     for my $set (@$rsets) {
@@ -20,8 +18,16 @@ sub get_page {
   else {
     @dirs = @conf_dirs;
   }
-  
-  my $obj = Squirrel::Template->new(template_dir => \@dirs);
+
+  return Squirrel::Template->new(template_dir => \@dirs);
+}
+
+sub get_page {
+  my ($class, $template, $cfg, $acts, $base_template, $rsets) = @_;
+
+  my $file = $cfg->entry('templates', $template) || $template;
+  $file =~ /\.\w+$/ or $file .= ".tmpl";
+  my $obj = $class->templater($cfg, $rsets);
 
   my $out;
   if ($base_template) {
@@ -44,7 +50,6 @@ sub get_page {
   else {
     $out = $obj->show_page(undef, $file, $acts);
   }
-    
 
   $out;
 }
@@ -52,8 +57,7 @@ sub get_page {
 sub replace {
   my ($class, $source, $cfg, $acts) = @_;
 
-  my @dirs = $class->template_dirs($cfg);
-  my $obj = Squirrel::Template->new(template_dir => \@dirs);
+  my $obj = $class->templater($cfg);
 
   $obj->replace_template($source, $acts);
 }

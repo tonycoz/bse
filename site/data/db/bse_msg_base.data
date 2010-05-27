@@ -1,0 +1,69 @@
+--
+id: bse/
+description: BSE messages
+
+id: bse/user/
+description: <<TEXT
+Messages displayed by user.pl (member user registration, logon, etc)
+TEXT
+
+id: bse/user/needlogon
+description: <<TEXT
+Message displayed when a member doesn't enter a user name on the login page
+TEXT
+
+id: bse/user/needpass
+description: <<TEXT
+Message displayed when a member doesn't enter a password on the login page
+TEXT
+
+id: bse/user/baduserpass
+description: <<TEXT
+Message displayed when the username or password is invalid when logging in
+TEXT
+
+id: bse/admin/
+description: BSE Administration
+
+id: bse/admin/edit/
+description: Article editor messages
+
+id: bse/admin/edit/uplabelsect
+description: label in parent list to make article a section
+
+id: test/
+description: <<TEXT
+Test category
+TEXT
+
+id: test/test/
+description: More testing
+
+id: test/test/test
+description: an actual message
+
+id: test/test/multiline
+description: a multiline message
+multiline: 1
+
+id: bse/admin/message/
+description: Message administration tool
+
+id: bse/admin/message/noid
+description: Error for when no id is supplied to a_detail
+
+id: bse/admin/message/invalidid
+description: Error for when an invalid id is supplied to a_detail
+
+id: bse/admin/message/invalidlang
+description: Invalid language code supplied when creating, removing or saving a message definition
+
+id: bse/admin/message/unknownid
+description: Attempted to create or save an unknown message id (not in bse_msg_base)
+
+id: bse/admin/message/unknownlang
+description: Attempted to create or save a message to a language not in the config file.
+
+id: bse/admin/message/badmultiline
+description: Multiple lines of text supplied when creating or saving a single line message
+

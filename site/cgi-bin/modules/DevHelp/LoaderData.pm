@@ -11,6 +11,9 @@ sub new {
   if ($intro eq '--') {
     $result = DevHelp::LoaderData::Fields->new($file);
   } 
+  elsif ($intro eq '---') {
+    $result = DevHelp::LoaderData::FieldsDefaulted->new($file);
+  } 
   elsif ($intro =~ /\t/) {
     $result = DevHelp::LoaderData::Tab->new($file, $intro);
   }
@@ -160,6 +163,32 @@ sub read {
   keys %data or return;
 
   return \%data;
+}
+
+package DevHelp::LoaderData::FieldsDefaulted;
+use vars qw(@ISA);
+@ISA = qw(DevHelp::LoaderData::Fields);
+
+sub new {
+  my ($class, $file) = @_;
+
+  my $self = $class->SUPER::new($file);
+  $self->{defaults} = $self->SUPER::read() || {};
+
+  return $self;
+}
+
+sub read {
+  my ($self) = @_;
+
+  my $values = $self->SUPER::read()
+    or return;
+
+  for my $key (keys %{$self->{defaults}}) {
+    exists $values->{$key} or $values->{$key} = $self->{defaults}{$key};
+  }
+
+  return $values;
 }
 
 package DevHelp::LoaderData::CSV;

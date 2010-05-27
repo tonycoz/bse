@@ -50,11 +50,11 @@ while (my $inname = readdir DATADIR) {
     or die;
 
   while (my $row = $datafile->read) {
-    for my $pkey_col (@pkey) {
-      unless (exists $row->{$pkey_col}) {
-	die "Missing value for $pkey_col in record ending $. of $inname\n";
-      }
-    }
+    #for my $pkey_col (@pkey) {
+    #  unless (exists $row->{$pkey_col}) {
+    #	die "Missing value for $pkey_col in record ending $. of $inname\n";
+    #  }
+    #}
     defined($dbh->do($del_sql, {}, @{$row}{@pkey}))
       or die "Error deleting old record: ", DBI->errstr;
 

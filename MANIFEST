@@ -26,6 +26,7 @@ site/cgi-bin/admin/imageclean.pl
 site/cgi-bin/admin/logon.pl
 site/cgi-bin/admin/makeIndex.pl
 site/cgi-bin/admin/menu.pl
+site/cgi-bin/admin/messages.pl
 site/cgi-bin/admin/move.pl
 site/cgi-bin/admin/nadmin.pl
 site/cgi-bin/admin/reorder.pl
@@ -57,7 +58,7 @@ site/cgi-bin/modules/BSE/AdminMenu.pm
 site/cgi-bin/modules/BSE/AdminUsers.pm
 site/cgi-bin/modules/BSE/AdminSiteUsers.pm
 site/cgi-bin/modules/BSE/Arrows.pm
-site/cgi-bin/modules/BSE/Cache.pod
+site/cgi-bin/modules/BSE/Cache.pm
 site/cgi-bin/modules/BSE/Cache/Cache.pm
 site/cgi-bin/modules/BSE/Cache/CHI.pm
 site/cgi-bin/modules/BSE/Cache/Memcached.pm
@@ -111,6 +112,7 @@ site/cgi-bin/modules/BSE/Mail.pm
 site/cgi-bin/modules/BSE/Mail/SMTP.pm
 site/cgi-bin/modules/BSE/Mail/Sendmail.pm
 site/cgi-bin/modules/BSE/Message.pm
+site/cgi-bin/modules/BSE/MessageScanner.pm
 site/cgi-bin/modules/BSE/NLFilter/SQL.pm
 site/cgi-bin/modules/BSE/NotifyFiles.pm
 site/cgi-bin/modules/BSE/Permissions.pm
@@ -148,6 +150,8 @@ site/cgi-bin/modules/BSE/TB/AdminMembership.pm
 site/cgi-bin/modules/BSE/TB/AdminMemberships.pm
 site/cgi-bin/modules/BSE/TB/AdminPerm.pm
 site/cgi-bin/modules/BSE/TB/AdminPerms.pm
+site/cgi-bin/modules/BSE/TB/AdminUIState.pm
+site/cgi-bin/modules/BSE/TB/AdminUIStates.pm
 site/cgi-bin/modules/BSE/TB/AdminUser.pm
 site/cgi-bin/modules/BSE/TB/AdminUsers.pm
 site/cgi-bin/modules/BSE/TB/ArticleFile.pm
@@ -195,6 +199,7 @@ site/cgi-bin/modules/BSE/ThumbLow.pm
 site/cgi-bin/modules/BSE/UI/API.pm
 site/cgi-bin/modules/BSE/UI/Background.pm
 site/cgi-bin/modules/BSE/UI/AdminDispatch.pm
+site/cgi-bin/modules/BSE/UI/AdminMessages.pm
 site/cgi-bin/modules/BSE/UI/AdminNewsletter.pm
 site/cgi-bin/modules/BSE/UI/AdminReport.pm
 site/cgi-bin/modules/BSE/UI/AdminSendEmail.pm
@@ -290,6 +295,10 @@ site/cgi-bin/user.pl
 site/data/stopwords.txt
 site/data/db/bse_background_tasks.data
 site/data/db/bse_background_tasks.pkey
+site/data/db/bse_msg_base.pkey
+site/data/db/bse_msg_base.data
+site/data/db/bse_msg_defaults.pkey
+site/data/db/bse_msg_defaults.data
 site/data/db/sql_statements.data
 site/data/db/sql_statements.pkey
 site/docs/BSE::UI::Affiliate.html
@@ -355,6 +364,7 @@ site/htdocs/admin/index.html
 site/htdocs/admin/sadmin.html
 site/htdocs/css/admin.css
 site/htdocs/css/admin.css_natural
+site/htdocs/css/admin_messages.css
 site/htdocs/css/sadmin.css
 site/htdocs/css/style-main.css
 site/htdocs/favicon.ico
@@ -387,7 +397,9 @@ site/htdocs/images/titles/your_site.gif
 site/htdocs/images/trans_pixel.gif
 site/htdocs/images/videoclose.png
 # site/htdocs/js/admin_dragdrop.js
+site/htdocs/js/admin_messages.js
 site/htdocs/js/admin_prodopts.js
+site/htdocs/js/admin_tools.js
 site/htdocs/js/bse.js
 site/htdocs/js/bse_api.js
 site/htdocs/js/bse_flowplayer.js
@@ -442,14 +454,15 @@ site/templates/admin/file_edit.tmpl
 site/templates/admin/grouplist.tmpl
 site/templates/admin/helpicon.tmpl	Help icon template for admin templates
 site/templates/admin/image_edit.tmpl	Edit a single image
+site/templates/admin/interestemail.tmpl
 site/templates/admin/logon.tmpl
 site/templates/admin/memberupdate/import.tmpl
 site/templates/admin/memberupdate/preview.tmpl
 site/templates/admin/memberupdate/request.tmpl
 site/templates/admin/menu.tmpl
 site/templates/admin/menu_adv.tmpl
+site/templates/admin/msgs/index.tmpl
 # site/templates/admin/menu_custom.tmpl
-site/templates/admin/interestemail.tmpl
 site/templates/admin/locations/add.tmpl
 site/templates/admin/locations/delete.tmpl
 site/templates/admin/locations/edit.tmpl
@@ -663,6 +676,7 @@ site/templates/user/userpage_base.tmpl
 site/templates/xbase.tmpl
 site/util/bseaddimages.pl
 site/util/bse_back.pl
+site/util/bse_msgcheck.pl	Scan for undefined message ids
 site/util/bse_nightly.pl
 site/util/bse_notify_files.pl
 site/util/bse_s3.pl

@@ -1,3 +1,20 @@
+package BSE::Cache;
+use strict;
+
+sub load {
+  my ($class, $cfg) = @_;
+
+  $cfg ||= BSE::Cfg->single;
+  my $cache_class = $cfg->entry("cache", "class");
+  defined $cache_class
+    or return;
+  ( my $cache_mod_file = $cache_class . ".pm" ) =~ s(::)(/)g;
+  require $cache_mod_file;
+  return $cache_class->new($cfg);
+}
+
+1;
+__END__
 =head1 NAME
 
 BSE::Cache - internal BSE cache module interface

@@ -1,0 +1,41 @@
+---
+# defaults for the following
+language_code: en
+priority: 0
+
+id: bse/user/needlogon
+message: Please enter your username
+
+id: bse/user/needpass
+message: Please enter your password
+
+id: bse/user/baduserpass
+message: Invalid username or password
+
+id: bse/admin/edit/uplabelsect
+message: -- move up a level -- become a section
+
+id: bse/admin/message/noid
+message: Missing id parameter
+
+id: bse/admin/message/invalidid
+message: Invalid id parameter - must be word/word/word...
+
+id: bse/admin/message/invalidlang
+message: Invalid language_code parameter - must contain only letters, underscore or dash
+
+id: bse/admin/message/unknownid
+message: Unknown message identifier - no entry found in bse_msg_base
+
+id: bse/admin/message/unknownlang
+message: Unknown language code - no entry found in [languages]
+
+id: bse/admin/message/badmultiline
+message: Message $1:s may contain only a single line of text
+
+id: test/test/multiline
+message: <<TEXT
+This message has
+multiple
+lines
+TEXT

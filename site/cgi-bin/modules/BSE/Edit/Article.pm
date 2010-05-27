@@ -291,7 +291,7 @@ sub possible_parents {
       else {
 	if ($req->user_can('edit_add_child')) {
 	  push @values, -1;
-	  $labels{-1} = "-- move up a level -- become a section";
+	  $labels{-1} = $req->catmsg("bse/admin/edit/uplabelsect");
 	}
       }
     }

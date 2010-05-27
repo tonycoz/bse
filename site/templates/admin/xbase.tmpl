@@ -3,10 +3,13 @@
    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" >  
 <html><head><title>BSE - <:param title:></title>
 <link rel="stylesheet" href="/css/admin.css" />
+<:ifParam css:><link rel="stylesheet" href="/css/<:param css:>" /><:or:><:eif:>
 <:ajax includes:>
-<script src="/js/bse.js"></script>
-<script src="/js/swfobject.js"></script>
-<:ifAnd [param js] [ifAjax]:><script type="text/javascript" src="/js/<:param js:>"></script><:or:><:eif:>
+<script type="text/javascript" src="/js/bse.js"></script>
+<script type="text/javascript" src="/js/swfobject.js"></script>
+<:ifParam api:><script type="text/javascript" src="/js/bse_api.js"></script><:or:><:eif:>
+<:ifParam jstools:><script type="text/javascript" src="/js/admin_tools.js"></script><:or:><:eif:>
+<:ifParam js:><script type="text/javascript" src="/js/<:param js:>"></script><:or:><:eif:>
 </head>
 <body>
 <:ifParam showtitle:><h1><:param title:></h1><:or:><:eif:>

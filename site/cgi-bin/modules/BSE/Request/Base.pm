@@ -64,11 +64,9 @@ sub _cache_object {
   $self->_cache_available or return;
   $self->{_cache} and return $self->{_cache};
 
-  my $cache_class = $self->cfg->entry("cache", "class");
-  ( my $cache_mod_file = $cache_class . ".pm" ) =~ s(::)(/)g;
-  require $cache_mod_file;
+  require BSE::Cache;
 
-  $self->{_cache} = $cache_class->new($self->cfg);
+  $self->{_cache} = BSE::Cache->load($self->cfg);
 
   return $self->{_cache};
 }
@@ -318,6 +316,21 @@ sub message {
   my $msg = '';
   my @lines;
   if ($errors and keys %$errors) {
+    # do any translation needed
+    for my $key (keys %$errors) {
+      my @msgs = ref $errors->{$key} ? @{$errors->{$key}} : $errors->{$key};
+
+      for my $msg (@msgs) {
+	if ($msg =~ /^(msg:[\w-]+(?:\/[\w-]+)+)(?::(.*))/) {
+	  my $id = $1;
+	  my $params = $2;
+	  my @params = defined $params ? split(/:/, $params) : ();
+	  $msg = $req->catmsg($id, \@params);
+	}
+      }
+      $errors->{$key} = ref $errors->{$key} ? \@msgs : $msgs[0];
+    }
+
     my @fields = $req->cgi->param;
     my %work = %$errors;
     for my $field (@fields) {
@@ -1048,6 +1061,71 @@ sub audit {
      when_at => BSE::Util::SQL::now_datetime(),
     );
   BSE::TB::AuditLog->make(%entry);
+}
+
+=item message_catalog
+
+Retrieve the message catalog.
+
+=cut
+
+sub message_catalog {
+  my ($self) = @_;
+
+  unless ($self->{message_catalog}) {
+    require BSE::Message;
+    my %opts;
+    $self->_cache_available and $opts{cache} = $self->_cache_object;
+    $self->{message_catalog} = BSE::Message->new(%opts);
+  }
+
+  return $self->{message_catalog};
+}
+
+=item catmsg($id)
+
+=item catmsg($id, \@params)
+
+=item catmsg($id, \@params, $default)
+
+=item catmsg($id, \@params, $default, $lang)
+
+Retrieve a message from the message catalog, performing substitution.
+
+This retrieves the text version of the message only.
+
+=cut
+
+sub catmsg {
+  my ($self, $id, $params, $default, $lang) = @_;
+
+  defined $lang or $lang = $self->language;
+  defined $params or $params = [];
+
+  $id =~ s/^msg://
+    or return "* bad message id - missing leading msg: *";
+
+  my $result = $self->message_catalog->text($lang, $id, $params, $default);
+  unless ($result) {
+    $result = "Unknown message id $id";
+  }
+
+  return $result;
+}
+
+=item language
+
+Fetch the language for the current system/user.
+
+Warning: this currently fetches a system configured default, in the
+future it will use a user default and/or a browser set default.
+
+=cut
+
+sub language {
+  my ($self) = @_;
+
+  return $self->cfg->entry("basic", "language_code", "en");
 }
 
 sub ip_address {

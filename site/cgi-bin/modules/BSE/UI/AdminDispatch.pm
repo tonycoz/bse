@@ -56,19 +56,30 @@ sub check_action {
   unless ($req->check_admin_logon) {
     # time to logon
     # if this was a GET, try to refresh back to it after logon
-    my %extras =
-      (
-       'm' => 'You must logon to use this function'
-      );
-    if ($ENV{REQUEST_METHOD} eq 'GET') {
-      my $rurl = admin_base_url($req->cfg) . $ENV{SCRIPT_NAME};
-      $rurl .= "?" . $ENV{QUERY_STRING} if $ENV{QUERY_STRING};
-      $rurl .= $rurl =~ /\?/ ? '&' : '?';
-      $rurl .= "refreshed=1";
-      $extras{r} = $rurl;
+    if ($req->is_ajax || $req->cgi->param("_")) {
+      $$rresult = $req->json_content
+	(
+	 success => 0,
+	 error_code => "LOGON",
+	 message => "Access forbidden: user not logged on",
+	 errors => {},
+	);
     }
-    my $url = $req->url(logon => \%extras);
-    $$rresult = $req->get_refresh($url);
+    else {
+      my %extras =
+	(
+	 'm' => 'You must logon to use this function'
+	);
+      if ($ENV{REQUEST_METHOD} eq 'GET') {
+	my $rurl = admin_base_url($req->cfg) . $ENV{SCRIPT_NAME};
+	$rurl .= "?" . $ENV{QUERY_STRING} if $ENV{QUERY_STRING};
+	$rurl .= $rurl =~ /\?/ ? '&' : '?';
+	$rurl .= "refreshed=1";
+	$extras{r} = $rurl;
+      }
+      my $url = $req->url(logon => \%extras);
+      $$rresult = $req->get_refresh($url);
+    }
     return;
   }
 

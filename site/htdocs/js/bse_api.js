@@ -395,6 +395,113 @@ var BSEAPI = Class.create
        var order = parameters.order.join(",");
        this._do_add_request("a_order_images", { id: id, order: order }, success, failure);
      },
+
+     // Message catalog functions
+     message_catalog: function(parameters) {
+       var success = parameters.onSuccess;
+       if (!success) this._badparm("remove_image_file() missing onSuccess parameter");
+       var failure = parameters.onFailure;
+       if (!failure) failure = this.onFailure;
+       this._do_request
+	 (
+	 "/cgi-bin/admin/messages.pl", "a_catalog", { },
+	 function(success, resp) {
+	   success(resp.messages);
+	 }.bind(this, success),
+	 failure
+	 );
+     },
+     message_detail: function(parameters) {
+       var success = parameters.onSuccess;
+       if (!success) this._badparm("message_detail() missing onSuccess parameter");
+       var failure = parameters.onFailure;
+       if (!failure) failure = this.onFailure;
+       var id = parameters.id;
+       if (id == null) this._badparm("message_detail() missing id parameter");
+       this._do_request
+	 (
+	   "/cgi-bin/admin/messages.pl", "a_detail", { id: id }, success, failure
+	 );
+     },
+     // requires id, language_code, message
+     message_save: function(parameters) {
+       var success = parameters.onSuccess;
+       if (!success) this._badparm("message_save() missing onSuccess parameter");
+       var my_success = function(success, resp) {
+	 success(resp.definition);
+       }.bind(this, success);
+       delete parameters.success;
+       var failure = parameters.onFailure;
+       if (!failure) failure = this.onFailure;
+       delete parameters.failure;
+       this._do_request("/cgi-bin/admin/messages.pl", "a_save", parameters,
+			my_success, failure);
+     },
+     // requires id, language_code
+     message_delete: function(parameters) {
+       var success = parameters.onSuccess;
+       if (!success) this._badparm("message_delete() missing onSuccess parameter");
+       delete parameters.success;
+       var failure = parameters.onFailure;
+       if (!failure) failure = this.onFailure;
+       delete parameters.failure;
+       this._do_request("/cgi-bin/admin/messages.pl", "a_delete", parameters,
+			success, failure);
+     },
+
+     // requires name, value
+     set_state: function(parameters) {
+       var success = parameters.onSuccess || function() {};
+       var failure = parameters.onFailure || this.onFailure;
+       delete parameters.onSuccess;
+       delete parameters.onFailure;
+       this._do_request("/cgi-bin/admin/menu.pl", "a_set_state", parameters, success, failure);
+     },
+     // requires name
+     get_state: function(parameters) {
+       var success = parameters.onSuccess;
+       if (!success) this._badparm("get_state() missing onSuccess parameter");
+       var my_success = function(success, result) {
+	 success(result.value);
+       }.bind(this, success);
+       var failure = parameters.onFailure || this.onFailure;
+       delete parameters.onSuccess;
+       delete parameters.onFailure;
+       this._do_request("/cgi-bin/admin/menu.pl", "a_get_state", parameters, my_success, failure);
+     },
+     // requires name
+     delete_state: function(parameters) {
+       var success = parameters.onSuccess || function() {};
+       var failure = parameters.onFailure || this.onFailure;
+       delete parameters.onSuccess;
+       delete parameters.onFailure;
+       this._do_request("/cgi-bin/admin/menu.pl", "a_delete_state", parameters, success, failure);
+     },
+
+     // requires name, a prefix for the state entries we want
+     get_matching_state: function(parameters) {
+       var success = parameters.onSuccess;
+       if (!success) this._badparm("get_matching_state() missing onSuccess parameter");
+       var my_success = function(success, result) {
+	 success(result.entries);
+       }.bind(this, success);
+       var failure = parameters.onFailure || this.onFailure;
+       delete parameters.onSuccess;
+       delete parameters.onFailure;
+       this._do_request("/cgi-bin/admin/menu.pl", "a_get_matching_state", parameters, my_success, failure);
+
+     },
+
+     // requires name, a prefix for the state entries we want
+     delete_matching_state: function(parameters) {
+       var success = parameters.onSuccess || function() {};
+       var failure = parameters.onFailure || this.onFailure;
+       delete parameters.onSuccess;
+       delete parameters.onFailure;
+       this._do_request("/cgi-bin/admin/menu.pl", "a_delete_matching_state", parameters, success, failure);
+
+     },
+
      _progress_handler: function(parms) {
 	  if (parms.finished) return;
        this.get_file_progress(
