@@ -378,6 +378,27 @@ The fileprogress.pl script can be called by Ajax to display file
 upload progress information to the user.  The upload state is updated
 a maximum of once a second.
 
+=item http_only_session
+
+If this is non-zero, the default, the session cookie sent to the
+browser has the C<HttpOnly> attribute set.  This can prevent session
+cookie hijacking.  Default: 1.
+
+=item secure_session
+
+If this is non-zero then the session cookie sent to the browser has
+the C<Secure> attribute set.  This means that the cookie will only be
+visible over https.  This is only useful when the only URL the site is
+visited over is a https URL.  Default: 0.
+
+=item make_userid_cookie
+
+If this is non-zero, the default, then when the site member logs in, a
+javascript visible cookie, C<userid> will be set that contains the
+login name of the user.  BSE's back-end doesn't use this cookie, its
+only use is for Javascript to enable/disable user interface elements.
+Default: 1.
+
 =back
 
 =head2 [mail]
@@ -2150,6 +2171,18 @@ will include:
   menu: { alpha: "One", beta: "Two" }
 
 in the returned configuration
+
+=head2 [cookie names]
+
+This section maps BSE's default cookie names to alternate names.  This
+can be useful if you have two BSE sites under the same domain and need
+to ensure they use different cookies.
+
+eg.
+
+  [cookie names]
+  userid=altuserid
+
 
 =head1 AUTHOR
 

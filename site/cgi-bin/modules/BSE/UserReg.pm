@@ -67,6 +67,22 @@ sub _refresh_userpage ($$) {
   refresh_to($url);
 }
 
+# returns true if the userid cookie should be created
+sub _should_make_user_cookie {
+  return BSE::Cfg->single->entry("basic", "make_userid_cookie", 1);
+}
+
+sub _send_user_cookie {
+  my ($self, $user) = @_;
+
+  $self->_should_make_user_cookie or return;
+
+  my $value = $user ? $user->userId : "";
+
+  BSE::Session->send_cookie
+      (BSE::Session->make_cookie(BSE::Cfg->single, userid => $value));
+}
+
 sub req_show_logon {
   my ($self, $req, $message) = @_;
 
@@ -155,8 +171,7 @@ sub req_logon {
     $custom->siteuser_login($session->{_session_id}, $session->{userid}, 
 			    $cfg, $session);
   }
-  print "Set-Cookie: ",BSE::Session->
-    make_cookie($cfg, userid=>$user->{userId}),"\n";
+  $self->_send_user_cookie($user);
 
   _got_user_refresh($session, $cgi, $cfg);
 }
@@ -244,16 +259,12 @@ sub req_setcookie {
     or return $self->req_show_logon($req, 
 				$msgs->(norefresh=>"No refresh provided"));
   my $userid = $newsession{userid};
+  my $user;
   if ($userid) {
-    my $user = SiteUsers->getBy(userId => $userid);
-    print "Set-Cookie: ",BSE::Session->
-      make_cookie($cfg, userid=>$userid),"\n";
+    $user = SiteUsers->getBy(userId => $userid);
   }
-  else {
-    # clear it 
-    print "Set-Cookie: ",BSE::Session->
-      make_cookie($cfg, userid=> ''),"\n";
- }
+  $self->_send_user_cookie($user);
+
   refresh_to($refresh);
 
   return;
@@ -279,8 +290,7 @@ sub req_logoff {
 
   delete $session->{userid};
   $session->{cart} = [];
-  print "Set-Cookie: ",BSE::Session->
-    make_cookie($cfg, userid=>''),"\n";
+  $self->_send_user_cookie();
 
   my $custom = custom_class($cfg);
   if ($custom->can('siteuser_logout')) {
@@ -754,9 +764,8 @@ sub req_saveopts {
       $custom->siteuser_login($session->{_session_id}, $session->{userid}, $cfg);
     }
 
-    print "Set-Cookie: ",BSE::Session->
-      make_cookie($cfg, userid=>$user->{userId}),"\n";
-    
+    $self->_send_user_cookie($user);
+
     _got_user_refresh($session, $cgi, $cfg);
     return;
   }
@@ -967,8 +976,7 @@ sub req_register {
     $custom->can('siteuser_add')
       and $custom->siteuser_add($user, 'user', $cfg);
 
-    print "Set-Cookie: ",BSE::Session->
-      make_cookie($cfg, userid=>$user->{userId}),"\n";
+    $self->_send_user_cookie($user);
     unless ($nopassword) {
       $session->{userid} = $user->{userId};
       my $custom = custom_class($cfg);

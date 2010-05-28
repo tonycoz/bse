@@ -29,7 +29,14 @@ sub _send_session_cookie {
   my $debug = $cfg->entry('debug', 'cookies');
 
   my $cookie_name = $cfg->entry('basic', 'cookie_name', 'sessionid');
-  my $cookie = $self->make_cookie($cfg, $cookie_name => $session->{_session_id});
+  my %extras;
+  if ($cfg->entry("basic", "http_only_session", 1)) {
+    $extras{httponly} = 1;
+  }
+  if ($cfg->entry("basic", "secure_session")) {
+    $extras{secure} = 1;
+  }
+  my $cookie = $self->make_cookie($cfg, $cookie_name => $session->{_session_id}, \%extras);
   BSE::Session->send_cookie($cookie);
 
   print STDERR "Sent cookie: $cookie\n" if $debug;
@@ -104,16 +111,17 @@ sub change_cookie {
 }
 
 sub make_cookie {
-  my ($self, $cfg, $name, $value, $lifetime) = @_;
+  my ($self, $cfg, $name, $value, $extras) = @_;
 
-  $lifetime ||= $cfg->entry('basic', 'cookie_lifetime') || '+3h';
+  $extras ||= {};
+  $extras->{lifetime} ||= $cfg->entry('basic', 'cookie_lifetime') || '+3h';
   $name = $cfg->entry('cookie names', $name, $name);
   my %opts =
     (
      -name => $name,
      -value => $value,
-     -path=> '/',
-     -expires=>$lifetime,
+     -path => '/',
+     map {; "-$_" => $extras->{$_} } keys %$extras,
     );
   my $domain = $ENV{HTTP_HOST};
   $domain =~ s/:\d+$//;
@@ -121,7 +129,7 @@ sub make_cookie {
   if ($domain !~ /^\d+\.\d+\.\d+\.\d+$/) {
     $opts{"-domain"} = $domain;
   }
-  
+
   return CGI::Cookie->new(%opts);
 }
 
