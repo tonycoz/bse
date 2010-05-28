@@ -42,7 +42,7 @@ function messages_load(msgs) {
   api.get_base_config
   ({
      onSuccess: function(result) {
-       if (result.access_control) {
+       if (result.access_control == 1) {
 	 save_state = true;
 	 api.get_matching_state
 	 ({
