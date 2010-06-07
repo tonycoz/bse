@@ -32,7 +32,7 @@ sub generate_button {
 sub generate_low {
   my ($articles, $article, $cfg) = @_;
 
-  $cfg ||= BSE::Cfg->new;
+  $cfg ||= BSE::Cfg->single;
 
   my $outname;
   if ($article->is_dynamic) {
@@ -87,7 +87,7 @@ sub generate_article {
 sub generate_search {
   my ($articles, $cfg) = @_;
 
-  $cfg or confess "Call generate search with a config object";
+  $cfg ||= BSE::Cfg->single;
 
   # build a dummy article
   use Constants qw($SEARCH_TITLE $SEARCH_TITLE_IMAGE $CGI_URI);
