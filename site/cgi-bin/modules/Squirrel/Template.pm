@@ -2,7 +2,12 @@ package Squirrel::Template;
 use vars qw($VERSION);
 use strict;
 use Carp qw/cluck confess/;
-use constant DEBUG => 0;
+BEGIN {
+  unless ( defined &DEBUG ) {
+    require constant;
+    constant->import(DEBUG => 0);
+  }
+}
 
 $VERSION="0.09";
 
