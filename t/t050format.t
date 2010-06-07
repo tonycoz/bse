@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 71;
+use Test::More tests => 73;
 
 sub format_test($$$;$);
 sub noformat_test($$$;$);
@@ -277,9 +277,13 @@ EOS
 <p>test2</p></div>
 EOS
 
+  format_test "abc comment[foo] def", "<p>abc  def</p>", "comment";
+
   # remove_format() tests
   noformat_test 'image[foo]', '', 'image';
   noformat_test 'code[something [bar]]', 'something [bar]', 'nested []';
+
+  noformat_test "abc comment[foo] def", "abc  def", "comment";
 }
 
 sub format_test ($$$;$) {

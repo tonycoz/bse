@@ -339,6 +339,8 @@ sub format {
 	  and next TRY;
 	$part =~ s#(div|address|blockquote)\[\n*([^\[\]\|]+)\|\n*([^\[\]]+?)\n*\]#"\n\n" . $self->_tag_with_attrs($1, $2) . "$3</$1>\n\n"#eig
 	  and next TRY;
+	$part =~ s#comment\[[^\[\]]*\]##ig
+	  and next TRY;
 	$part =~ s#(div|address|blockquote)\[\n*\|([^\[\]]+?)\n*]#\n\n<$1>$2</$1>\n\n#ig
 	  and next TRY;
 	$part =~ s#(div|address|blockquote)\[\n*([^\[\]]+?)\n*]#\n\n<$1>$2</$1>\n\n#ig
@@ -425,6 +427,8 @@ sub remove_format {
 	$part =~ s#(?:strong|em|samp|code|var|sub|sup|kbd|q|address|blockquote|b|i|tt)\[([^\]\[]+)\]#$1#ig
 	  and next TRY;
 	$part =~ s#div\[([^\[\]\|]+)\|([^\[\]]+)\](?:\r?\n)?#$2#ig
+	  and next TRY;
+	$part =~ s#comment\[([^\[\]]+)\](?:\r?\n)?##ig
 	  and next TRY;
 	$part =~ s#h([1-6])\[([^\[\]\|]+)\|([^\[\]]+)\](?:\r?\n)?#$3#ig
 	  and next TRY;
