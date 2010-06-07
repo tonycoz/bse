@@ -4,8 +4,24 @@ use strict;
 print "Content-Type: text/html\n\n";
 
 print <<EOS;
-<html><head><title>BSE Module Check</title></head>
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" >
+<html>
+  <head>
+    <title>BSE Module Check</title>
+    <link rel="stylesheet" href="/css/admin.css" />
+<style type="text/css">
+li.error {
+  font-weight: bold;
+}
+</style>
+  </head>
 <body>
+<h1>BSE Module Check</h1>
+
+<p>| <a href="/cgi-bin/admin/menu.pl">Admin Menu</a> |</p>
+<div id="bse_modules">
 EOS
 
 my @base_check =
@@ -89,7 +105,7 @@ my @base_check =
   );
 
 for my $sect (@base_check) {
-  print "<h1>$sect->{name}</h1>\n";
+  print qq(<div class="category"><h2>$sect->{name}</h2><ul>\n);
   for my $module (sort keys %{$sect->{modules}}) {
     my $use = "use $module";
     if ($sect->{modules}{$module}) {
@@ -99,16 +115,21 @@ for my $sect (@base_check) {
     eval $use;
     if ($@) {
       my $msg = escape_html($@);
+      (my $mod_file = $module . ".pm") =~ s(::)(/)g;
+      if ($msg =~ /^Can't locate \Q$mod_file\E in \@INC /) {
+	$msg = "Not found";
+      }
       $msg =~ s!\n!<br />!g;
-      print "<p>Error loading $module: $msg</p>\n";
+      print "<li class=\"error\">$module: $msg</li>\n";
     }
     else {
-      print "<p>$module loaded successfully\n</p>";
+      print "<li>$module: loaded successfully\n</li>";
     }
   }
+  print "</ul></div>\n";
 }
 
-print "</body></html>\n";
+print "</div></body></html>\n";
 
 my %escape;
 
