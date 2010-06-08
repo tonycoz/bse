@@ -92,7 +92,7 @@ sub check_action {
   ref $rights or $rights = [ split /,/, $rights ];
   for my $right (@$rights) {
     unless ($req->user_can($right, -1, \$msg)) {
-      if ($req->is_ajax || $req->param("_")) {
+      if ($req->is_ajax || $req->cgi->param("_")) {
 	$$rresult = $req->json_content
 	  (
 	   success => 0,
