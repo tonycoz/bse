@@ -1,0 +1,8 @@
+<:wrap admin/base.tmpl title => "Pregen View - Index":>
+<p>| <a href="/cgi-bin/admin/menu.pl">Admin Menu</a> |</p>
+<ul>
+<:iterator begin templates:>
+<li><a href="<:script:>?a_show=1&amp;template=<:template id:>"><:template id:></a>
+<:iterator end templates:>
+</ul>
+

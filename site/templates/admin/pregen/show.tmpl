@@ -1,0 +1,10 @@
+<:wrap admin/base.tmpl title => "Show template":>
+<style type="text/css">
+#show {
+  width: 90%;
+  height: 90%;
+}
+</style>
+<p>Viewing: <:template id:> | <a href="<:script:>">Return to list</a> | <a href="/cgi-bin/menu.pl">Admin Menu</a> |</p>
+<iframe id="show" src="<:script:>?a_display=1&amp;template=<:template id:>">
+</iframe>
