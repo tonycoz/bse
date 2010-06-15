@@ -29,6 +29,7 @@ site/cgi-bin/admin/menu.pl
 site/cgi-bin/admin/messages.pl
 site/cgi-bin/admin/move.pl
 site/cgi-bin/admin/nadmin.pl
+site/cgi-bin/admin/pregen.pl
 site/cgi-bin/admin/reorder.pl
 site/cgi-bin/admin/report.pl
 site/cgi-bin/admin/sendemail.pl
@@ -201,6 +202,7 @@ site/cgi-bin/modules/BSE/UI/Background.pm
 site/cgi-bin/modules/BSE/UI/AdminDispatch.pm
 site/cgi-bin/modules/BSE/UI/AdminMessages.pm
 site/cgi-bin/modules/BSE/UI/AdminNewsletter.pm
+site/cgi-bin/modules/BSE/UI/AdminPregen.pm
 site/cgi-bin/modules/BSE/UI/AdminReport.pm
 site/cgi-bin/modules/BSE/UI/AdminSendEmail.pm
 site/cgi-bin/modules/BSE/UI/AdminSeminar.pm
@@ -474,6 +476,8 @@ site/templates/admin/order_list.tmpl
 site/templates/admin/order_list_filled.tmpl
 site/templates/admin/order_list_incomplete.tmpl
 site/templates/admin/order_list_unfilled.tmpl
+site/templates/admin/pregen/index.tmpl
+site/templates/admin/pregen/show.tmpl
 # site/templates/admin/product_custom.tmpl
 site/templates/admin/prodopt_delete.tmpl
 site/templates/admin/prodopt_edit.tmpl
