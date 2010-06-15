@@ -3,7 +3,10 @@ use strict;
 use Carp qw/confess/;
 use BSE::DB;
 use BSE::Cfg;
+use BSE::Cache;
 use overload "&{}" => sub { my $self = $_[0]; return sub { $self->_old_msg(@_) } };
+
+my $single;
 
 =head1 NAME
 
@@ -21,17 +24,33 @@ BSE::Message - BSE message catalog access.
 
 =cut
 
+sub _new {
+  my ($class, %opts) = @_;
+
+  return bless
+    {
+     cache_age => BSE::Cfg->single->entry("messages", "cache_age", 60),
+     mycache => {},
+     cache => scalar(BSE::Cache->load),
+    }, $class;
+}
+
 sub new {
   my ($class, %opts) = @_;
 
-  $opts{cache_age} = BSE::Cfg->single->entry("messages", "cache_age", 60);
-  $opts{mycache} = {};
+  $single ||= $class->_new;
 
-  return bless \%opts, $class;
+  if ($opts{section}) {
+    $single->{section} = $opts{section};
+  }
+
+  return $single;
 }
 
 sub text {
   my ($self, $lang, $msgid, $parms, $def) = @_;
+
+  ref $self or $self = $self->new;
 
   my $msg = $self->_get_replaced($lang, $msgid, $parms);
   if ($msg) {
@@ -51,6 +70,8 @@ sub text {
 
 sub html {
   my ($self, $lang, $msgid, $parms, $def) = @_;
+
+  ref $self or $self = $self->new;
 
   my $msg = $self->_get_replaced($lang, $msgid, $parms);
   if ($msg) {
@@ -238,12 +259,12 @@ sub fallback {
 }
 
 sub uncache {
-  my ($self, $id, $cache) = @_;
+  my ($self, $id) = @_;
 
-  unless ($cache) {
-    require BSE::Cache;
-    $cache = BSE::Cache->load;
-  }
+  ref $self or $self = $self->new;
+
+  my $cache = $self->{cache}
+    or return;
 
   for my $lang ($self->languages) {
     $cache->delete("msg-$lang->{id}.$id");
