@@ -303,7 +303,14 @@ sub output_result {
 sub flash {
   my ($self, @msg) = @_;
 
-  my $msg = "@msg";
+  my $msg;
+  if ($msg[0] =~ /^msg:/) {
+    $msg = $self->catmsg(@msg);
+  }
+  else {
+    $msg = "@msg";
+  }
+
   my @flash;
   @flash = @{$self->session->{flash}} if $self->session->{flash};
   push @flash, $msg;
@@ -321,7 +328,7 @@ sub message {
       my @msgs = ref $errors->{$key} ? @{$errors->{$key}} : $errors->{$key};
 
       for my $msg (@msgs) {
-	if ($msg =~ /^(msg:[\w-]+(?:\/[\w-]+)+)(?::(.*))/) {
+	if ($msg =~ /^(msg:[\w-]+(?:\/[\w-]+)+)(?::(.*))?$/) {
 	  my $id = $1;
 	  my $params = $2;
 	  my @params = defined $params ? split(/:/, $params) : ();
