@@ -120,11 +120,16 @@ sub req_display {
     };
   my $content = BSE::Template->get_page($input, $cfg, \%acts);
 
-  return
-    {
-     content => $content,
-     type => BSE::Template->html_type($req->cfg),
-    };
+  unless ($dynamic) {
+    return
+      {
+       content => $content,
+       type => BSE::Template->html_type($req->cfg),
+      };
+  }
+  require BSE::Dynamic::Article;
+  my $dyngen = BSE::Dynamic::Article->new($req);
+  return $dyngen->generate(\%article, $content);
 }
 
 1;
