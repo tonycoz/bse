@@ -31,7 +31,7 @@ BSE::Cache - internal BSE cache module interface
 CPAN has Cache and Cache::Cache and CHI based caching, and some
 library specific interfaces.
 
-This library wraps all the confusing in yet another layer.
+This library wraps all the confusion in yet another layer.
 
 =head1 INTERFACE
 
