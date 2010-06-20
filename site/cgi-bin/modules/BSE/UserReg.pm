@@ -621,6 +621,7 @@ sub req_saveopts {
 
   my $custom = custom_class($cfg);
   if ($cfg->entry('custom', 'saveopts')) {
+    local $SIG{__DIE__};
     eval {
       $custom->siteuser_saveopts($user, $req);
     };
