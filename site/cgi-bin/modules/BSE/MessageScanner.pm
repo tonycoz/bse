@@ -26,8 +26,8 @@ sub scan {
       or die "Cannot open $file: $!\n";
     my $errors = 0;
     while (my $line = <$fh>) {
-      my @msgs = $line =~ m(\b(msg:[\w-]+(?:/[\w-]+)*));
-      push @ids, map [ $_, $file, $. ], @msgs;
+      my @msgs = $line =~ m(\b(msg:[\w-]+(?:/\$?[\w-]+)*));
+      push @ids, map [ $_, $file, $. ], grep !/\$/, @msgs;
     }
     close $fh;
   }
