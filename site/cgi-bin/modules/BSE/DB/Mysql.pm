@@ -100,6 +100,7 @@ EOS
 select ar.*, pr.* from article ar, product pr, other_parents op
    where ar.id = pr.articleId and op.childId = ar.id 
      and op.parentId = ? and ? between op.release and op.expire
+     and listed <> 0
 EOS
    'Products.subscriptionDependent' => <<SQL,
 select ar.*, pr.* from article ar, product pr
