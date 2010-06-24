@@ -4,7 +4,9 @@ use Carp qw/confess/;
 use BSE::DB;
 use BSE::Cfg;
 use BSE::Cache;
-use overload "&{}" => sub { my $self = $_[0]; return sub { $self->_old_msg(@_) } };
+use overload 
+  "&{}" => sub { my $self = $_[0]; return sub { $self->_old_msg(@_) } },
+  "bool" => sub { 1 };
 
 my $single;
 
@@ -178,7 +180,11 @@ sub _get_base {
     }
   }
 
-  $entry and return $entry->[1];
+  if ($entry) {
+    # clone the entry so text replacement doesn't mess us up
+    my %entry = %$entry->[1];
+    return \%entry;
+  }
 
   my $msg = $self->_get_base_low($lang, $msgid);
   $entry = [ $now, $msg ];
