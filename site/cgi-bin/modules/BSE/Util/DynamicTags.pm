@@ -17,7 +17,7 @@ sub tags {
   my $req = $self->{req};
   return
     (
-     BSE::Util::Tags->basic(undef, $req->cgi, $req->cfg),
+     BSE::Util::Tags->common($req),
      user => [ \&tag_user, $req ],
      ifUser => [ \&tag_ifUser, $req ],
      ifUserCanSee => [ \&tag_ifUserCanSee, $req ],
@@ -41,6 +41,7 @@ sub tags {
      dynvimage => [ tag_dynvimage => $self ],
      dynvthumbimage => [ tag_dynvthumbimage => $self ],
      recaptcha => [ tag_recaptcha => $self, $req ],
+     dyncatmsg => [ tag_dyncatmsg => $self, $req ],
      $self->dyn_iterator("userfiles", "userfile"),
      $self->_custom_tags,
     );
@@ -723,6 +724,29 @@ sub tag_recaptcha {
   my $c = Captcha::reCAPTCHA->new;
 
   return $c->get_html($api_key, $req->recaptcha_result, scalar $req->is_ssl);
+}
+
+=item dyncatmsg msgid parameters...
+
+Return a message from the message catalog.
+
+=cut
+
+sub tag_dyncatmsg {
+  my ($self, $req, $args, $acts, $func, $templater) = @_;
+
+  my ($id, @params) = DevHelp::Tags->get_parms($args, $acts, $templater);
+  $id or return '* no message id for dyncatmsg *';
+  $id =~ s/^msg:// or return '* invalid message id, no msg: prefix *';
+  my $cat = $req->message_catalog;
+
+  my $html = $cat->html($req->language, $id, \@params);
+
+  if ($self->{admin}) {
+    $html = qq(<div class="bse_catmsg">$html</div>);
+  }
+
+  return $html;
 }
 
 my %num_file_fields = map { $_=> 1 }

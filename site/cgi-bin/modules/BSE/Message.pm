@@ -4,6 +4,7 @@ use Carp qw/confess/;
 use BSE::DB;
 use BSE::Cfg;
 use BSE::Cache;
+use DevHelp::HTML;
 use overload 
   "&{}" => sub { my $self = $_[0]; return sub { $self->_old_msg(@_) } },
   "bool" => sub { 1 };
