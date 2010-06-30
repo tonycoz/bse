@@ -183,7 +183,7 @@ sub _get_base {
 
   if ($entry) {
     # clone the entry so text replacement doesn't mess us up
-    my %entry = %$entry->[1];
+    my %entry = %{$entry->[1]};
     return \%entry;
   }
 
@@ -194,7 +194,9 @@ sub _get_base {
     $self->{cache}->set("msg-$key", $entry);
   }
 
-  return $msg;
+  # clone so the caller doesn't modify cached value
+  my %entry = %$msg;
+  return \%entry;
 }
 
 sub _get_base_low {
