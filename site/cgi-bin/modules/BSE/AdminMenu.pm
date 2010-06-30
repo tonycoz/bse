@@ -22,7 +22,15 @@ sub default_action { 'menu' }
 sub req_menu {
   my ($class, $req, $msg) = @_;
 
-  $msg ||= $req->cgi->param('m') || '';
+  my $cgi = $req->cgi;
+  unless (defined $cgi->param("_t")) {
+    my $def_menu = $req->cfg->entry("menu", "default");
+    if ($def_menu) {
+      $cgi->param("_t", $def_menu);
+    }
+  }
+
+  $msg ||= $cgi->param('m') || '';
 
   my %acts;
   %acts =
