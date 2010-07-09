@@ -142,4 +142,15 @@ sub move_article {
   return make_arrows($self->{cfg}, $down_url, $up_url, $refresh_to, $img_prefix);
 }
 
+package BSE::Util::Iterate::Objects;
+use vars qw(@ISA);
+@ISA = 'BSE::Util::Iterate';
+use BSE::Util::Tags qw(tag_object);
+
+sub item {
+  my ($self, $item, $args) = @_;
+
+  return tag_object($item, $args);
+}
+
 1;

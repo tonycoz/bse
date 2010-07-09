@@ -2,6 +2,7 @@ package BSE::AdminMenu;
 use strict;
 use BSE::Util::Tags;
 use base 'BSE::UI::AdminDispatch';
+use DevHelp::HTML;
 
 my %actions =
   (
@@ -30,14 +31,17 @@ sub req_menu {
     }
   }
 
-  $msg ||= $cgi->param('m') || '';
+  if ($msg) {
+    $msg = escape_html($msg);
+  }
+  else {
+    $msg = $req->message;
+  }
 
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(undef, $req->cgi, $req->cfg),
-     BSE::Util::Tags->secure($req),
-     BSE::Util::Tags->admin(undef, $req->cfg),
+     $req->admin_tags,
      message => $msg,
     );
 

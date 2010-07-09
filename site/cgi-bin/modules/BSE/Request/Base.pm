@@ -736,7 +736,19 @@ sub admin_tags {
      BSE::Util::Tags->common($req),
      BSE::Util::Tags->admin(undef, $req->cfg),
      BSE::Util::Tags->secure($req),
+     $req->custom_admin_tags,
     );
+}
+
+sub custom_admin_tags {
+  my ($req) = @_;
+
+  $req->cfg->entry("custom", "admin_tags")
+    or return;
+
+  require BSE::CfgInfo;
+
+  return BSE::CfgInfo::custom_class($req->cfg)->admin_tags($req);
 }
 
 =item is_ajax
