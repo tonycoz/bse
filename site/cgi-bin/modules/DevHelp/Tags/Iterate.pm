@@ -88,7 +88,7 @@ sub _iter_number_paged {
 sub _iter_reset_page_counter {
   my ($self, $rpage) = @_;
 
-  $$rpage = 1;
+  $$rpage = 0;
 }
 
 sub _iter_iterate_page_counter {
