@@ -1028,7 +1028,7 @@ create table bse_msg_base (
   -- "bse/userreg/" "Member services"
   -- id, formatting, params are limited to ascii text
   -- description unicode
-  id varchar(40) not null primary key,
+  id varchar(80) not null primary key,
 
   -- a semi-long description of the message, including any parameters
   description text not null,
@@ -1060,7 +1060,7 @@ create table bse_msg_base (
 -- for the same message might be loaded from different data sets
 create table bse_msg_defaults (
   -- message identifier
-  id varchar(40) not null,
+  id varchar(80) not null,
 
   -- language code for this message
   -- empty as the fallback
@@ -1078,7 +1078,7 @@ create table bse_msg_defaults (
 -- admin managed message base, should never be loaded from data
 create table bse_msg_managed (
   -- message identifier
-  id varchar(40) not null,
+  id varchar(80) not null,
 
   -- language code
   -- empty as the fallback
