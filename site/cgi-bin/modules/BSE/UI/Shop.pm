@@ -690,7 +690,8 @@ sub req_show_payment {
   my @products;
   my $order;
 
-  my $order_id = $cgi->param('orderid');
+  # ideally supply order_id to be consistent with a_payment.
+  my $order_id = $cgi->param('orderid') || $cgi->param("order_id");
   if ($order_id) {
     $order_id =~ /^\d+$/
       or return $class->req_cart($req, "No or invalid order id supplied");
