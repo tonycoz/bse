@@ -715,15 +715,20 @@ No parameters, though this may change.
 =cut
 
 sub tag_recaptcha {
-  my ($self, $req) = @_;
+  my ($self, $req, $args) = @_;
 
+  defined $args or $args = '';
   require Captcha::reCAPTCHA;
+  my $section = $args =~ /\S/ ? "recaptcha $args" : "recaptcha";
   my $api_key = $req->cfg->entry('recaptcha', 'api_public_key')
     or return "** No reCAPTCHA api_public_key defined **";
 
+  my %opts = $req->cfg->entries($section);
+  delete @opts{qw/api_public_key api_private_key/};
+
   my $c = Captcha::reCAPTCHA->new;
 
-  return $c->get_html($api_key, $req->recaptcha_result, scalar $req->is_ssl);
+  return $c->get_html($api_key, $req->recaptcha_result, scalar $req->is_ssl, \%opts);
 }
 
 =item dyncatmsg msgid parameters...
