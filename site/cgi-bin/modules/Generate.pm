@@ -118,65 +118,64 @@ sub _embed_low {
     }
   }
 
-  my $id;
-  if ($what !~ /^\d+$/) {
-    # not an article id, assume there's an article here we can use
-    $id = $acts->{$what} && $templater->perform($acts, $what, 'id');
-    unless ($id && $id =~ /^\d+$/) {
-      # save it for later
-      defined $template or $template = "-";
-      return "<:embed $what $template $maxdepth:>";
-    }
+  my $embed;
+  if ($what =~ /^alias:([a-z]\w*)$/) {
+    my $alias = $1;
+    ($embed) = $articles->getBy(linkAlias => $alias)
+      or return "** Cannot find article aliased $alias to be embedded **";;
   }
   else {
-    $id = $what;
-  }
-  my $embed = $articles->getByPkey($id);
-  if ($embed) {
-    my $gen = $self;
-    if (ref($self) ne $embed->{generator}) {
-      my $genname = $embed->{generator};
-      $genname =~ s#::#/#g; # broken on MacOS I suppose
-      $genname .= ".pm";
-      eval {
-	require $genname;
-      };
-      if ($@) {
-	print STDERR "Cannot load generator $embed->{generator}: $@\n";
-	return "** Cannot load generator $embed->{generator} for article $id **";
+    my $id;
+    if ($what !~ /^\d+$/) {
+      # not an article id, assume there's an article here we can use
+      $id = $acts->{$what} && $templater->perform($acts, $what, 'id');
+      unless ($id && $id =~ /^\d+$/) {
+	# save it for later
+	defined $template or $template = "-";
+	return "<:embed $what $template $maxdepth:>";
       }
-      my $top = $self->{top} || $embed;
-      $gen = $embed->{generator}->new
-	(
-	 admin=>$self->{admin},
-	 admin_links => $self->{admin_links},
-	 cfg=>$self->{cfg},
-	 request=>$self->{request},
-	 top=>$top
-	);
+    }
+    else {
+      $id = $what;
     }
 
-    # a rare appropriate use of local
-    # it's a pity that it's broken before 5.8
-    #local $gen->{depth} = $self->{depth}+1;
-    #local $gen->{maxdepth} = $maxdepth;
-    #$template = "" if defined($template) && $template eq "-";
-    #return $gen->embed($embed, $articles, $template);
-
-    my $olddepth = $gen->{depth};
-    $gen->{depth} = $self->{depth}+1;
-    my $oldmaxdepth = $gen->{maxdepth};
-    $gen->{maxdepth} = $maxdepth;
-    $template = "" if defined($template) && $template eq "-";
-    my $result = $gen->embed($embed, $articles, $template);
-    $gen->{depth} = $olddepth;
-    $gen->{maxdepth} = $oldmaxdepth;
-
-    return $result;
+    $embed = $articles->getByPkey($id)
+      or return "** Cannot find article $id to be embedded **";;
   }
-  else {
-    return "** Cannot find article $id to be embedded **";
+
+  my $gen = $self;
+  if (ref($self) ne $embed->{generator}) {
+    my $genname = $embed->{generator};
+    $genname =~ s#::#/#g; # broken on MacOS I suppose
+    $genname .= ".pm";
+    eval {
+      require $genname;
+    };
+    if ($@) {
+      print STDERR "Cannot load generator $embed->{generator}: $@\n";
+      return "** Cannot load generator $embed->{generator} for article $embed->{id} **";
+    }
+    my $top = $self->{top} || $embed;
+    $gen = $embed->{generator}->new
+      (
+       admin=>$self->{admin},
+       admin_links => $self->{admin_links},
+       cfg=>$self->{cfg},
+       request=>$self->{request},
+       top=>$top
+      );
   }
+
+  my $olddepth = $gen->{depth};
+  $gen->{depth} = $self->{depth}+1;
+  my $oldmaxdepth = $gen->{maxdepth};
+  $gen->{maxdepth} = $maxdepth;
+  $template = "" if defined($template) && $template eq "-";
+  my $result = $gen->embed($embed, $articles, $template);
+  $gen->{depth} = $olddepth;
+  $gen->{maxdepth} = $oldmaxdepth;
+
+  return $result;
 }
 
 sub _body_embed {
