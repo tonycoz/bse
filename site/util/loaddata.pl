@@ -59,7 +59,7 @@ while (my $inname = readdir DATADIR) {
       or die "Error deleting old record: ", DBI->errstr;
 
     my $add_sql = "insert into $table_name(" .
-      join(",", keys %$row) . ") values (".
+      join(",", map $dbh->quote_identifier($_), keys %$row) . ") values (".
 	join(",", ("?") x keys %$row) . ")";
     defined($dbh->do($add_sql, {}, values %$row))
       or die "Error adding new record ($add_sql): ", DBI->errstr;
