@@ -23,6 +23,12 @@ open MYSTDOUT, ">&STDOUT" or die "Cannot dup STDOUT: $!\n";
 
   my @tasks = split /,/, $cfg->entry("nightly work", "jobs", $def_nightly);
 
+  my %more_tasks = $cfg->entries("nightly work");
+  delete $more_tasks{jobs};
+  for my $key (sort keys %more_tasks) {
+    my ($name, $extra) = split /,/, $more_tasks{$key};
+    push @tasks, $name;
+  }
 
  TASK:
   for my $task_id (@tasks) {
