@@ -2096,6 +2096,16 @@ Controls the bse_nightly.pl script.
 jobs - a comma separated list of BSE background processes to run when
 bse_nightly.pl is run.  Default: bse_session_clean
 
+=item *
+
+I<other keys> - each key is a sort key, and the value is a single
+background task name.  This allows add-ons to setup extra tasks
+without overwriting each other.  The sugessted key format is:
+
+  99 - two digit priority - 00 is executed first, 99 last
+  package-name - name of package the task is for
+  unique - extra text to make the key unique, if necessary
+
 =back
 
 =head2 [cache]
