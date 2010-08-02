@@ -363,6 +363,7 @@ sub make {
   my @cols = $self->rowClass->columns;
   my %defaults = $self->rowClass->defaults;
   shift @cols; # presumably the generated private key
+  my $bases = $self->rowClass->bases;
   my @values;
   for my $col (@cols) {
     my $value;
@@ -373,6 +374,9 @@ sub make {
     }
     elsif (exists $defaults{$col}) {
       $value = $defaults{$col};
+    }
+    elsif ($bases->{$col}) {
+      # populated elsewhere
     }
     else {
       confess "No value or default supplied for $col";
