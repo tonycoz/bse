@@ -23,8 +23,9 @@ Table admin_users
 Column base_id;int(11);NO;NULL;
 Column logon;varchar(60);NO;NULL;
 Column name;varchar(255);NO;NULL;
-Column password;varchar(80);NO;NULL;
+Column password;varchar(255);NO;NULL;
 Column perm_map;varchar(255);NO;NULL;
+Column password_type;varchar(20);NO;plain;
 Index PRIMARY;1;[base_id]
 Index logon;1;[logon]
 Table article

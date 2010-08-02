@@ -698,8 +698,9 @@ create table admin_users (
   base_id integer not null,
   logon varchar(60) not null,
   name varchar(255) not null,
-  password varchar(80) not null,
+  password varchar(255) not null,
   perm_map varchar(255) not null,
+  password_type varchar(20) not null default 'plain',
   primary key (base_id),
   unique (logon)
 );

@@ -63,7 +63,7 @@ sub req_change {
     $errors{oldpassword} = "Enter your current password";
   }
   else {
-    $oldpw eq $user->{password}
+    $user->check_password($oldpw)
       or $errors{oldpassword} = "Your old password is incorrect";
   }
   if (!defined $newpw || $newpw eq '') {
@@ -79,7 +79,7 @@ sub req_change {
   keys %errors
     and return $class->req_form($req, undef, \%errors);
 
-  $user->{password} = $newpw;
+  $user->changepw($newpw);
   $user->save;
 
   my $r = $cgi->param('r');

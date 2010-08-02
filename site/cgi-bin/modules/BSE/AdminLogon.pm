@@ -130,7 +130,13 @@ sub req_logon {
     and return $class->_service_error($req, undef, \%errors, "FIELD");
   require BSE::TB::AdminUsers;
   my $user = BSE::TB::AdminUsers->getBy(logon=>$logon);
-  $user && $user->{password} eq $password
+  my $error;
+  my $match = $user->check_password($password, \$error);
+  if (!$match && $error eq "LOAD") {
+    $errors{logon} = "Could not load password check module for type ".$user->password_type;
+    return $class->_service_error($req, undef, \%errors, "FIELD");
+  }
+  $user && $match
     or return $class->_service_error($req, "Invalid logon or password", {}, "INVALID");
   $req->session->{adminuserid} = $user->{id};
   delete $req->session->{csrfp};

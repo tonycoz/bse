@@ -116,6 +116,12 @@ site/cgi-bin/modules/BSE/Message.pm
 site/cgi-bin/modules/BSE/MessageScanner.pm
 site/cgi-bin/modules/BSE/NLFilter/SQL.pm
 site/cgi-bin/modules/BSE/NotifyFiles.pm
+site/cgi-bin/modules/BSE/Password.pod
+site/cgi-bin/modules/BSE/Password/Crypt.pm
+site/cgi-bin/modules/BSE/Password/CryptMD5.pm
+site/cgi-bin/modules/BSE/Password/CryptSHA256.pm
+site/cgi-bin/modules/BSE/Password/Plain.pm
+site/cgi-bin/modules/BSE/Passwords.pm
 site/cgi-bin/modules/BSE/Permissions.pm
 site/cgi-bin/modules/BSE/ProductImportXLS.pm
 site/cgi-bin/modules/BSE/Report.pm

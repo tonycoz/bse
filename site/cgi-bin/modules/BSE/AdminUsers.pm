@@ -99,10 +99,25 @@ sub _save_htusers {
     $$rmsg = "Cannot create work userfile $work: $!";
     return;
   }
+  my $bad_count = 0;
+  my $bad_user;
   for my $user (@users) {
-    my $salt = join '', @saltchars[rand(@saltchars), rand(@saltchars)];
-    my $cryptpw = crypt $user->{password}, $salt;
+    my $cryptpw;
+    if ($user->password_type eq "plain") {
+      my $salt = join '', @saltchars[rand(@saltchars), rand(@saltchars)];
+      $cryptpw = crypt $user->{password}, $salt;
+    }
+    elsif ($user->password_type =~ /^crypt/) {
+      $cryptpw = $user->password;
+    }
+    else {
+      $bad_user = $user;
+      ++$bad_count;
+    }
     print USERS "$user->{logon}:$cryptpw\n";
+  }
+  if ($bad_count) {
+    $req->flash("Cannot handle password type " . $bad_user->password_type . " in userfile for up to $bad_count users");
   }
   close USERS;
   chmod 0644, $work;
@@ -263,9 +278,7 @@ sub req_adduser {
      password => $password,
      perm_map => '',
     );
-  my @cols = BSE::TB::AdminUser->columns;
-  shift @cols;
-  my $user = BSE::TB::AdminUsers->add(@user{@cols});
+  my $user = BSE::TB::AdminUsers->make(%user);
 
   my $msg = "User $logon created";
 
@@ -297,7 +310,7 @@ sub req_addgroup {
     or $errors{template_set} = 
       $req->text(bse_invalid_group_template_set =>
 		 'Please select a valid template_set');
-					  
+
   keys %errors
     and return $class->req_addgroupform($req, undef, \%errors);
   my $old = BSE::TB::AdminGroups->getBy(name=>$name)
@@ -664,7 +677,7 @@ sub req_saveuser {
      && length $password) {
     if (length $confirm) {
       if ($password eq $confirm) {
-	$user->{password} = $password;
+	$user->changepw($password);
       }
       else {
 	$errors{confirm} = "Password and confirmation password didn't match"
