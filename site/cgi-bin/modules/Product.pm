@@ -1,7 +1,7 @@
 package Product;
 use strict;
 # represents a product from the database
-use Article;
+use Articles;
 use vars qw/@ISA/;
 @ISA = qw/Article/;
 
