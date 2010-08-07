@@ -236,8 +236,12 @@ sub possible_stepchildren {
 sub link {
   my ($self, $cfg) = @_;
 
-  $cfg
-    or confess "article link() called without config object\n";
+  if ($self->flags =~ /P/) {
+    my $parent = $self->parent;
+    $parent and return $parent->link($cfg);
+  }
+
+  $cfg ||= BSE::Cfg->single;
 
   if ($self->{linkAlias} && $cfg->entry('basic', 'use_alias', 1)) {
     my $prefix = $cfg->entry('basic', 'alias_prefix', '');

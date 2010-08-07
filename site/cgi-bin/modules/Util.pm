@@ -51,6 +51,12 @@ sub generate_low {
       or return; # no output for this article 
   }
 
+  if ($article->flags =~ /P/ && $article->{parentid} != -1) {
+    # link to parent, remove the file
+    unlink $outname;
+    return;
+  }
+
   my $genname = $article->{generator};
   eval "use $genname";
   $@ && die $@;
