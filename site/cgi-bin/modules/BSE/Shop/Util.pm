@@ -56,6 +56,9 @@ sub shop_cart_tags {
        my $value = $cart->[$item_index]{$_[0]};
        defined($value) or $value = $cart_prods->[$item_index]{$_[0]};
        defined($value) or $value = '';
+       if ($_[0] eq 'link') {
+	 $value = $cart_prods->[$item_index]->link,
+       }
        if ($_[0] eq 'link' && $value !~ /^\w+:/) {
 	 $value = $req->cfg->entryErr('site', 'url') . $value;
        }
