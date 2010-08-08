@@ -639,7 +639,7 @@ sub _cart {
     require Products;
     my $product = Products->getByPkey($item->{productId});
     my $extended = $product->{retailPrice} * $item->{units};
-    my $link = $product->{link};
+    my $link = $product->link;
     $link =~ /^\w+:/ 
       or $link = $self->{req}->cfg->entryErr('site', 'url') . $link;
     push @cart,
