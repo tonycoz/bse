@@ -139,6 +139,7 @@ sub static {
        $value =~ /\d/ or $value = 0;
        sprintf("%.02f", $value/100.0);
      },
+     number => \&tag_number,
      bodytext =>
      sub {
        my ($arg, $acts, $name, $templater) = @_;
@@ -970,7 +971,7 @@ sub _if_ajax {
     if $cfg->entry('basic', 'allajax', 0);
 
   my $ua = $ENV{HTTP_USER_AGENT};
-  defined $ua or $ua = ''; # some clients don't send a UA
+  defined $ua or $ua = ''; # some clients don\'t send a UA # silly cperl
 
   my %fail_entries = $cfg->entries('nonajax user agents');
   for my $re (values %fail_entries) {
@@ -1053,6 +1054,39 @@ sub tag_article_plain {
   }
 
   return $value;
+}
+
+sub tag_number {
+  my ($args, $acts, $tagname, $templater) = @_;
+
+  my ($format, $value) = 
+    DevHelp::Tags->get_parms($args, $acts, $templater);
+  $format or return "* no number format *";
+  my $section = "number $format";
+  my $cfg = BSE::Cfg->single;
+  my $comma_sep = $cfg->entry($section, "comma", ",");
+  $comma_sep =~ s/^"(.*)"$/$1/;
+  $comma_sep =~ /\w/ and return "* comma cannot be a word character *";
+  my $comma_limit = $cfg->entry($section, "comma_limit", 1000);
+  my $commify = $cfg->entry($section, "commify", 1);
+  my $dec_sep = $cfg->entry($section, "decimal", ".");
+  my $div = $cfg->entry($section, "divisor", 1)
+    or return "* divisor must be non-zero *";
+  my $places = $cfg->entry($section, "places", 0);
+
+  my $div_value = $value / $div;
+  my $formatted = sprintf("%.*f", $places, $div_value);
+  my ($int, $frac) = split /\./, $formatted;
+  if ($commify && $int >= $comma_limit) {
+    1 while $int =~ s/([0-9])([0-9][0-9][0-9]\b)/$1$comma_sep$2/;
+  }
+
+  if ($places) {
+    return $int . $dec_sep . $frac;
+  }
+  else {
+    return $int;
+  }
 }
 
 1;
