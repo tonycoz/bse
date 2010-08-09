@@ -1072,16 +1072,17 @@ sub tag_number {
   my $dec_sep = $cfg->entry($section, "decimal", ".");
   my $div = $cfg->entry($section, "divisor", 1)
     or return "* divisor must be non-zero *";
-  my $places = $cfg->entry($section, "places", 0);
+  my $places = $cfg->entry($section, "places", -1);
 
   my $div_value = $value / $div;
-  my $formatted = sprintf("%.*f", $places, $div_value);
+  my $formatted = $places < 0 ? $div_value : sprintf("%.*f", $places, $div_value);
+
   my ($int, $frac) = split /\./, $formatted;
   if ($commify && $int >= $comma_limit) {
     1 while $int =~ s/([0-9])([0-9][0-9][0-9]\b)/$1$comma_sep$2/;
   }
 
-  if ($places) {
+  if (defined $frac) {
     return $int . $dec_sep . $frac;
   }
   else {
