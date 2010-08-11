@@ -299,7 +299,7 @@ sub req_import {
       +{ 
 	name => $_,
 	description => $cfg->entry($spec->{section}, "${_}_description", $_)
-       }, @{$spec->{fields}};
+       }, grep $_ ne "x", @{$spec->{fields}};
   my $it = BSE::Util::Iterate->new;
   my %acts;
   my $curline;
