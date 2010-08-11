@@ -18,6 +18,9 @@ my %rights =
    import => 'bse_siteuser_edit',
   );
 
+my %cant_update = map { $_ => 1 }
+  qw/whenRegistered lastLogon confirmed confirmSecret waitingForConfirmation/;
+
 sub actions { \%rights }
 
 sub rights { \%rights }
@@ -25,7 +28,7 @@ sub rights { \%rights }
 sub default_action { 'importform' }
 
 sub _get_import_spec {
-  my ($req, $name) = @_;
+  my ($req, $name, $error) = @_;
 
   my $cfg = $req->cfg;
 
@@ -35,7 +38,7 @@ sub _get_import_spec {
   $spec{description} = $cfg->entry("siteuser updates", $name);
   my @fields = split /;/, $cfg->entry($section, 'fields', '');
   unless (@fields) {
-    print STDERR "No fields for siteuser update spec $name\n";
+    $$error = "No fields for siteuser update spec $name\n";
     return;
   }
   my $gotkey;
@@ -43,20 +46,24 @@ sub _get_import_spec {
     if ($field eq 'id' || $field eq 'userId') {
       if ($gotkey) {
 	# only one key allowed
-	print STDERR "Fields list may only contain one of id, userId\n";
+	$$error = "Fields list may only contain one of id, userId\n";
 	return;
       }
       $spec{key} = $field;
       ++$gotkey;
     }
+    if ($cant_update{$field}) {
+      $$error = "Field $field can't be updated";
+      return;
+    }
   }
   unless ($gotkey) {
-    print STDERR "Fields list must contain id or userId\n";
+    $$error = "Fields list must contain id or userId\n";
     return;
   }
   my %valid_fields = map { $_ => 1 } SiteUser->columns;
-  unless (@fields == grep($valid_fields{$_}, @fields)) {
-    print STDERR "Unknown fields in field list for $name\n";
+  unless (@fields == grep($valid_fields{$_} || $_ eq "x", @fields)) {
+    $$error = "Unknown fields in field list for $name\n";
     return;
   }
   $spec{fields} = \@fields;
@@ -71,8 +78,14 @@ sub _get_import_list {
   my %entries = $req->cfg->entries("siteuser updates");
   my @specs;
   for my $key (keys %entries) {
-    my $spec = _get_import_spec($req, $key);
-    $spec and push @specs, $spec;
+    my $error;
+    my $spec = _get_import_spec($req, $key, \$error);
+    if ($spec) {
+      push @specs, $spec;
+    }
+    else {
+      $req->flash("Cannot load spec $key: $error");
+    }
   }
 
   @specs;
@@ -134,8 +147,9 @@ sub req_preview {
   my $specname = $cgi->param('importspec');
   my $spec;
   if (defined $specname and length $specname) {
-    $spec = _get_import_spec($req, $specname)
-      or $errors{importspec} = "Unknown or invalid import specification";
+    my $error;
+    $spec = _get_import_spec($req, $specname, \$error)
+      or $errors{importspec} = "Unknown or invalid import specification: $error";
   }
   else {
     $errors{importspec} = "Please select an import specification";
@@ -158,12 +172,13 @@ sub req_preview {
     }
   }
 
+  my @real_fields = grep $_ ne "x", @{$spec->{fields}};
   my @iter_fields = 
     map 
       +{ 
 	name => $_,
 	description => $cfg->entry($spec->{section}, "${_}_description", $_)
-       }, @{$spec->{fields}};
+       }, @real_fields;
   my $it = BSE::Util::Iterate->new;
   my %acts;
   my $curline;
@@ -210,8 +225,9 @@ sub req_import {
   my $specname = $cgi->param('importspec');
   my $spec;
   if (defined $specname and length $specname) {
-    $spec = _get_import_spec($req, $specname)
-      or $errors{importspec} = "Unknown or invalid import specification";
+    my $error;
+    $spec = _get_import_spec($req, $specname, \$error)
+      or $errors{importspec} = "Unknown or invalid import specification: $error";
   }
   else {
     $errors{importspec} = "Please select an import specification";
@@ -253,7 +269,9 @@ sub req_import {
 
     my $new_email = $have_email && $row->{email} ne $user->{email};
     # store them
-    @$user{@fields} = @$row{@fields};
+    for my $field (keys %$row) {
+      $user->set($field => $row->{$field});
+    }
 
     if ($new_email) {
       $user->{confirmed} = 0;
@@ -357,6 +375,7 @@ sub _parse {
     push @data, '' while @data < @fields;
     my %data;
     @data{@fields} = @data;
+    delete $data{"x"}; # don't store ignored columns
 
     my %errors;
     $validator->validate(\%data, \%errors);

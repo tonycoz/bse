@@ -2193,6 +2193,28 @@ eg.
   [cookie names]
   userid=altuserid
 
+=item [siteuser updates]
+
+Each key identifies an update specification for userupdate.pl, the
+value is a description of the specification.
+
+See L<<[siteuser update I<specid>]>> for the rest of the import
+specification.
+
+=head2 [siteuser update I<specid>]
+
+Currently contains only a single key:
+
+=over
+
+=item *
+
+fields - a semi-colon separated list of fields to import.  Must
+contain one of C<id> or C<userId> which is used as a key to identify
+the user to update.  An C<x> entry is a field to ignore.  Some fields,
+such as C<confirmed> may not appear in this list.
+
+=back
 
 =head1 AUTHOR
 
