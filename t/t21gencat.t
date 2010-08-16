@@ -340,6 +340,7 @@ sub add_product {
 		     _single => 'Product',
 		     _aggregate => 'Products',
 		     description => $parms{title} || '',
+		     wholesalePrice => 0,
 		     leadTime=> 0,
 		     gst => int($parms{retailPrice} / 11),
 		     options => '',
