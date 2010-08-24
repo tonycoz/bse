@@ -1324,7 +1324,9 @@ sub req_download {
 }
 
 sub req_download_file {
-  my ($self, $req, $fileid) = @_;
+  my ($self, $req) = @_;
+
+  my ($fileid) = split '/', $self->rest;
 
   my $cfg = $req->cfg;
   my $cgi = $req->cgi;
@@ -1444,7 +1446,9 @@ sub req_download_file {
 }
 
 sub req_file_metadata {
-  my ($self, $req, $fileid, $metaname) = @_;
+  my ($self, $req) = @_;
+
+  my ($fileid, $metaname) = split '/', $self->rest;
 
   my $user = $req->siteuser;
   my $cgi = $req->cgi;
@@ -1482,7 +1486,9 @@ sub req_file_metadata {
 }
 
 sub req_file_cmetadata {
-  my ($self, $req, $fileid, $metaname) = @_;
+  my ($self, $req) = @_;
+
+  my ($fileid, $metaname) = split '/', $self->rest;
 
   my $user = $req->siteuser;
   my $cgi = $req->cgi;

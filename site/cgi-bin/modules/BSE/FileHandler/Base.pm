@@ -1,6 +1,7 @@
 package BSE::FileHandler::Base;
 use strict;
 use Carp qw(confess);
+use DevHelp::HTML;
 
 =head1 NAME
 
@@ -135,7 +136,7 @@ sub metacontent {
   my $found;
   for my $prefix (@prefix) {
     $template = "meta/${prefix}_$meta_name";
-    $found = BSE::Template->find_source($template)
+    $found = BSE::Template->find_source($template, $self->cfg)
       and last;
   }
   unless ($found) {

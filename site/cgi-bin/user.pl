@@ -12,7 +12,7 @@ use Carp 'confess';
 $SIG{__DIE__} = sub { confess $@ };
 
 my $req = BSE::Request->new;
-my $result = BSE::UserReg->dispatch($req);
+my $result = BSE::UserReg->new->dispatch($req);
 
 # just for now, eventually all UserReg methods should properly return
 # a result
