@@ -508,7 +508,7 @@ sub add_article {
   my $article = Articles->add(@parms{@artcols[1..$#artcols]});
   # use consistent links to ensure that the links remain consistent, even 
   # if they are incorrect
-  $article->{link} = "/a/$display_order.html";
+  $article->{link} = "/a/$article->{id}.html";
   $article->{admin} = "/cgi-bin/admin/admin.pl?id=$article->{id}";
   $article->save;
   $display_order += 100;
