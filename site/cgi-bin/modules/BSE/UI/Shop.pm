@@ -302,6 +302,42 @@ sub req_addmultiple {
        quantity => $quantity,
       };
   }
+
+  my @qtys = $cgi->param("qty");
+  my @ids = $cgi->param("id");
+  for my $addid (@ids) {
+    my $quantity = shift @qtys;
+    $addid =~ /^\d+$/
+      or next;
+    $additions{$addid}
+      and next;
+    defined $quantity or $quantity = 1;
+    $quantity =~ /^\d+$/
+      or next;
+    $quantity
+      or next;
+    my ($error, $refresh_logon);
+
+    my ($product, $options, $extras) =
+      $class->_validate_add_by_id($req, $addid, $quantity, \$error, \$refresh_logon);
+    if ($refresh_logon) {
+      return $class->_refresh_logon($req, @$refresh_logon);
+    }
+    elsif ($error) {
+      return $class->req_cart($req, $error);
+    }
+    if ($product->{options}) {
+      push @messages, "$product->{title} has options, you need to use the product page to add this product";
+      next;
+    }
+    $additions{$addid} = 
+      { 
+       id => $product->{id},
+       product => $product, 
+       extras => $extras,
+       quantity => $quantity,
+      };
+  }
   
   my $started_empty = 0;
   if (keys %additions) {
