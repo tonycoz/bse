@@ -60,7 +60,6 @@ sub _image {
   if ($self->{xhtml}) {
     push @classes, "bse_image_inline";
   }
-  $extras .= qq! align="$align"! if $align && $align ne 'center';
   if ($style) {
     if ($style =~ /^\d/) {
       $extras .= qq! style="padding: $style"!;
