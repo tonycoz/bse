@@ -21,6 +21,7 @@ my %handlers =
    overlay => 'BSE::Thumb::Imager::Overlay',
    dropshadow => 'BSE::Thumb::Imager::DropShadow',
    randomcrop => 'BSE::Thumb::Imager::RandomCrop',
+   colourize => "BSE::Thumb::Imager::Colourize",
   );
 
 sub new {
