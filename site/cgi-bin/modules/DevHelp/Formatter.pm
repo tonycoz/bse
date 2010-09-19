@@ -165,28 +165,28 @@ sub link {
 
 sub replace_char {
   my ($self, $rpart) = @_;
-  $$rpart =~ s#(acronym|abbr|dfn)\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#
+  $$rpart =~ s#(acronym|abbr|dfn)\[(?:\r?\n)?([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+?)(?:\r?\n)?\]#
     $self->_fix_spanned(qq/<$1 class="$3" title="$2">/, "</$1>", $4)#egi
     and return 1;
-  $$rpart =~ s#(acronym|abbr|dfn)\[([^|\]\[]+)\|([^\]\[]+)\]#
+  $$rpart =~ s#(acronym|abbr|dfn)\[(?:\r?\n)?([^|\]\[]+)\|([^\]\[]+?)(?:\r?\n)?\]#
     $self->_fix_spanned(qq/<$1 title="$2">/, "</$1>", $3)#egi
     and return 1;
-  $$rpart =~ s#(acronym|abbr|dfn)\[\|([^\]\[]+)\]#
+  $$rpart =~ s#(acronym|abbr|dfn)\[(?:\r?\n)?\|([^\]\[]+?)(?:\r?\n)?\]#
     $self->_fix_spanned("<$1>", "</$1>", $2)#egi
     and return 1;
-  $$rpart =~ s#(acronym|abbr|dfn)\[([^\]\[]+)\]#
+  $$rpart =~ s#(acronym|abbr|dfn)\[(?:\r?\n)?([^\]\[]+?)(?:\r?\n)?\]#
     $self->_fix_spanned("<$1>", "</$1>", $2)#egi
     and return 1;
-  $$rpart =~ s#bdo\[([^|\]\[]+)\|([^\]\[]+)\]#
+  $$rpart =~ s#bdo\[(?:\r?\n)?([^|\]\[]+)\|([^\]\[]+?)(?:\r?\n)?\]#
     $self->_fix_spanned(qq/<bdo dir="$1">/, "</bdo>", $2)#egi
     and return 1;
-  $$rpart =~ s#(strong|em|samp|code|var|sub|sup|kbd|q|b|i|tt)\[([^|\]\[]+)\|([^\]\[]+)\]#
+  $$rpart =~ s#(strong|em|samp|code|var|sub|sup|kbd|q|b|i|tt|span)\[(?:\r?\n)?([^|\]\[]+)\|([^\]\[]+?)(?:\r?\n)?\]#
     $self->_fix_spanned(qq/<$1 class="$2">/, "</$1>", $3)#egi
     and return 1;
-  $$rpart =~ s#(strong|em|samp|code|var|sub|sup|kbd|q|b|i|tt)\[\|([^\]\[]+)\]#
+  $$rpart =~ s#(strong|em|samp|code|var|sub|sup|kbd|q|b|i|tt|span)\[(?:\r?\n)?\|([^\]\[]+?)(?:\r?\n)?\]#
     $self->_fix_spanned("<$1>", "</$1>", $2)#egi
     and return 1;
-  $$rpart =~ s#(strong|em|samp|code|var|sub|sup|kbd|q|b|i|tt)\[([^\]\[]+)\]#
+  $$rpart =~ s#(strong|em|samp|code|var|sub|sup|kbd|q|b|i|tt|span)\[(?:\r?\n)?([^\]\[]+?)(?:\r?\n)?\]#
     $self->_fix_spanned("<$1>", "</$1>", $2)#egi
     and return 1;
   $$rpart =~ s#poplink\[([^|\]\[]+)\|([^\]\[]+)\]#
@@ -352,11 +352,9 @@ sub format {
       $part = "<p>$part</p>";
       1 while $part =~ s/<p>(<div(?: [^>]*)?>)/$1<p>/g;
       1 while $part =~ s!</div></p>!</p></div>!g;
-      1 while $part =~ s/<p>(<blockquote>)/$1<p>/g;
-      1 while $part =~ s/<p>(<blockquote [^>]*>)/$1<p>/g;
+      1 while $part =~ s/<p>(<blockquote(?: [^>]*)?>)/$1<p>/g;
       1 while $part =~ s!</blockquote></p>!</p></blockquote>!g;
-      1 while $part =~ s/<p>(<address>)/$1<p>/g;
-      1 while $part =~ s/<p>(<address [^>]*>)/$1<p>/g;
+      1 while $part =~ s/<p>(<address(?: [^>]*)?>)/$1<p>/g;
       1 while $part =~ s!</address></p>!</p></address>!g;
       $part =~ s!<p>(<hr[^>]*>)</p>!$1!g;
       $part =~ s!<p>(<(?:table|ol|ul|center|h[1-6])[^>]*>)!$1!g;
@@ -420,11 +418,11 @@ sub remove_format {
 	  and next TRY;
 	$part =~ s#(?:acronym|abbr|dfn)\[([^|\]\[]+)\]#$1#ig
 	  and next TRY;
-	$part =~ s#(?:strong|em|samp|code|var|sub|sup|kbd|q|address|blockquote|b|i|tt)\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
+	$part =~ s#(?:strong|em|samp|code|var|sub|sup|kbd|q|address|blockquote|b|i|tt|span)\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
 	  and next TRY;
-	$part =~ s#(?:strong|em|samp|code|var|sub|sup|kbd|q|address|blockquote|b|i|tt)\[\|([^\]\[]+)\]#$1#ig
+	$part =~ s#(?:strong|em|samp|code|var|sub|sup|kbd|q|address|blockquote|b|i|tt|span)\[\|([^\]\[]+)\]#$1#ig
 	  and next TRY;
-	$part =~ s#(?:strong|em|samp|code|var|sub|sup|kbd|q|address|blockquote|b|i|tt)\[([^\]\[]+)\]#$1#ig
+	$part =~ s#(?:strong|em|samp|code|var|sub|sup|kbd|q|address|blockquote|b|i|tt|span)\[([^\]\[]+)\]#$1#ig
 	  and next TRY;
 	$part =~ s#div\[([^\[\]\|]+)\|([^\[\]]+)\](?:\r?\n)?#$2#ig
 	  and next TRY;
