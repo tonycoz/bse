@@ -18,14 +18,7 @@ sub visible_step_parents {
 sub stepkids {
   my ($self) = @_;
 
-  if ($self->{generator} eq 'Generate::Catalog') {
-    require 'Products.pm';
-    return Products->getSpecial('stepProducts', $self->{id});
-  }
-  else {
-    return Articles->getSpecial('stepKids', $self->{id});
-  }
-  return ();
+  return Articles->getSpecial('stepKids', $self->{id});
 }
 
 sub allstepkids {
