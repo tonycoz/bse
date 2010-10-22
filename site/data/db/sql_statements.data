@@ -390,3 +390,13 @@ from bse_admin_ui_state
 where user_id = ?
   and name like ?
 SQL
+
+name: bseProductHasSaleFiles
+sql_statement: <<SQL
+select exists(
+  select id
+  from article_files
+  where articleId = ?
+    and forSale <> 0
+  ) as "have_sale_files"
+SQL

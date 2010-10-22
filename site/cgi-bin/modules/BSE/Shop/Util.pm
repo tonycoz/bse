@@ -12,7 +12,27 @@ use BSE::CfgInfo qw(custom_class);
 use Carp 'confess';
 use DevHelp::HTML qw(escape_html);
 
-# returns a list of tags which display the cart details
+=item shop_cart_tags($acts, $cart, $cart_prods, $req, $stage)
+
+Returns a list of tags which display the cart details
+
+Returns standard dynamic tags and:
+
+=over
+
+=item *
+
+ifHaveSaleFiles - returns true if any of the supplied products has a
+file attached that's forSale.
+
+=item *
+
+And several more undocumented DOCME.
+
+=back
+
+=cut
+
 sub shop_cart_tags {
   my ($acts, $cart, $cart_prods, $req, $stage) = @_;
 
@@ -28,6 +48,7 @@ sub shop_cart_tags {
   my $location;
   my $item;
   my $product;
+  my $have_sale_files;
   return
     (
      $req->dyn_user_tags(),
@@ -80,6 +101,7 @@ sub shop_cart_tags {
      options => sub { nice_options(@options) },
      session => [ \&tag_session, \$item, \$sem_session ],
      location => [ \&tag_location, \$item, \$location ],
+     ifHaveSaleFiles => [ \&tag_ifHaveSaleFiles, \$have_sale_files, $cart_prods ],
      custom_class($cfg)
      ->checkout_actions($acts, $cart, $cart_prods, $req->session->{custom}, $q, $cfg),
     );  
@@ -121,6 +143,23 @@ sub tag_location {
   defined $value or return '';
 
   escape_html($value);
+}
+
+sub tag_ifHaveSaleFiles {
+  my ($rhave_sale_files, $cart_prods) = @_;
+
+  unless (defined $$rhave_sale_files) {
+    $$rhave_sale_files = 0;
+  PRODUCT:
+    for my $prod (@$cart_prods) {
+      if ($prod->has_sale_files) {
+	$$rhave_sale_files = 1;
+	last PRODUCT;
+      }
+    }
+  }
+
+  return $$rhave_sale_files;
 }
 
 sub cart_item_opts {

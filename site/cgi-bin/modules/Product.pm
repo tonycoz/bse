@@ -155,6 +155,14 @@ sub remove {
   return $self->SUPER::remove($cfg);
 }
 
+sub has_sale_files {
+  my ($self) = @_;
+
+  my ($row) = BSE::DB->query(bseProductHasSaleFiles => $self->{id});
+
+  return $row->{have_sale_files};
+}
+
 package BSE::CfgProductOption;
 use strict;
 
