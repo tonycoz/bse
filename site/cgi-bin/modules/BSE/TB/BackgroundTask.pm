@@ -53,25 +53,29 @@ sub start {
 
   # find the binary
   my $binname = $self->binname;
-  my @args = split ' ', $self->bin_opts;
-  if ($binname =~ s/^perl //) {
-    my $script = _find_script($cfg, $binname);
-    unless ($script) {
-      $$msg = "Cannot find script $binname";
-      return;
+  my @args;
+  my $modname = $self->modname;
+  if ($binname) {
+     @args = split ' ', $self->bin_opts;
+    if ($binname =~ s/^perl //) {
+      my $script = _find_script($cfg, $binname);
+      unless ($script) {
+	$$msg = "Cannot find script $binname";
+	return;
+      }
+      $binname = $^X;
+      unshift @args, $script;
     }
-    $binname = $^X;
-    unshift @args, $script;
-  }
-  else {
-    my $foundname = _find_script($cfg, $binname);
-    unless ($foundname) {
-      $$msg = "Cannot find binary $binname";
-      return;
+    else {
+      my $foundname = _find_script($cfg, $binname);
+      unless ($foundname) {
+	$$msg = "Cannot find binary $binname";
+	return;
+      }
+      $binname = $foundname;
     }
-    $binname = $foundname;
   }
-  
+
   require POSIX;
   my $logfilename = $self->logfilename($cfg);
   require IO::File;
@@ -160,9 +164,18 @@ sub start {
   }
   else {
     BSE::DB->forked;
-    {  exec $binname, @args; } # suppress warning
+    if ($binname) {
+      {  exec $binname, @args; } # suppress warning
       print STDERR "Exec of $binname failed: $!\n";
-    exit 1;
+      exit 1;
+    }
+    else {
+      (my $mod_filename = $modname . ".pm") =~ s(::)(/)g;
+
+      require $mod_filename;
+      $modname->run;
+      exit;
+    }
   }
 }
 
