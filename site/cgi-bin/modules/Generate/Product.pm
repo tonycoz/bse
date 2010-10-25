@@ -6,7 +6,7 @@ use BSE::TB::Images;
 use base qw(Generate::Article);
 use Constants qw(:shop $CGI_URI $ADMIN_URI);
 use Carp qw(confess);
-use DevHelp::HTML;
+use BSE::Util::HTML;
 use BSE::Util::Tags qw(tag_article);
 
 sub edit_link {
@@ -74,7 +74,7 @@ sub baseActs {
 	   );
 	 push(@args, -labels=>$option->{labels}) if $option->{labels};
 	 push(@args, -default=>$option->{default}) if $option->{default};
-	 return DevHelp::HTML::popup_menu(@args);
+	 return BSE::Util::HTML::popup_menu(@args);
        }
        else {
 	 return escape_html($options[$option_index]{$_[0]})

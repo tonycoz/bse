@@ -5,7 +5,7 @@ use BSE::TB::BackgroundTasks;
 use BSE::Util::Iterate;
 use BSE::Util::Tags;
 use BSE::Util::SQL qw(now_sqldatetime);
-use DevHelp::HTML;
+use BSE::Util::HTML;
 use IO::File;
 use BSE::Util::Tags qw(tag_hash);
 use Config;

@@ -1,7 +1,7 @@
 package BSE::ChangePW;
 use strict;
 use BSE::Util::Tags qw(tag_error_img);
-use DevHelp::HTML;
+use BSE::Util::HTML;
 use base 'BSE::UI::AdminDispatch';
 
 my %actions =

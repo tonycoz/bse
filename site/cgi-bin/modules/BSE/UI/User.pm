@@ -2,7 +2,7 @@ package BSE::UI::User;
 use strict;
 use base 'BSE::UI::Dispatch';
 use BSE::Util::Tags qw(tag_hash tag_error_img tag_hash_plain);
-use DevHelp::HTML qw(:default popup_menu);
+use BSE::Util::HTML qw(:default popup_menu);
 use BSE::Util::Iterate;
 use BSE::Util::SQL qw/now_datetime/;
 use DevHelp::Date qw(dh_strftime_sql_datetime);

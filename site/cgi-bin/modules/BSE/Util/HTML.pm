@@ -1,5 +1,6 @@
-package DevHelp::HTML;
+package BSE::Util::HTML;
 use strict;
+use BSE::Cfg;
 use Carp qw(confess);
 
 require Exporter;
@@ -34,19 +35,34 @@ sub escape_xml {
   my ($text) = @_;
 
   $text =~ s/([<>&\"\x7F])/$xml_entities{$1} ? "&$xml_entities{$1};" : "&#".ord($1).";"/ge;
-  
+
   return $text;
 }
 
 sub escape_uri {
+  my ($text) = @_;
+
+  if (BSE::Cfg->utf8) {
+    require Encode;
+    $text = Encode::encode(BSE::Cfg->charset, $text);
+  }
   # older versions of uri_escape() acted differently without the
   # second argument, so supply one to make sure we escape what
   # needs escaping
-  URI::Escape::uri_escape(shift, "^A-Za-z0-9\-_.!~*()");
+  return URI::Escape::uri_escape($text, "^A-Za-z0-9\-_.!~*()");
 }
 
 sub unescape_uri {
-  URI::Escape::uri_unescape(shift);
+  my ($text) = @_;
+
+  if (BSE::Cfg->utf8) {
+    $text = URI::Escape::uri_unescape($text);
+    require Encode;
+    return Encode::decode(BSE::Cfg->charset, $text);
+  }
+  else {
+    return URI::Escape::uri_unescape($text);
+  }
 }
 
 sub _options {
@@ -105,12 +121,12 @@ __END__
 
 =head1 NAME
 
-DevHelp::HTML - provides simple consistent interfaces to HTML/URI
+BSE::Util::HTML - provides simple consistent interfaces to HTML/URI
 escaping with some extras
 
 =head1 SYNOPSIS
 
-  use DevHelp::HTML;
+  use BSE::Util::HTML;
 
   my $escaped = escape_html($text);
   my $escaped = escape_uri($text);
@@ -126,28 +142,42 @@ escaping with some extras
 Provides some of the functionality of the CGI.pm module, without the
 code to get the query/POST parameters.
 
+This is a BSE specific version of DevHelp::HTML that depends on BSE's
+configuration to do the right thing with character strings, as opposed
+to BSE's historic octet strings.
+
 =over
 
 =item escape_html($text)
 
-Converts characters that should be entities into entities.  Don't
-expect this to work with UTF-8 text.  Unlike the native HTML::Entities
-interface it won't convert CR (\x0D) into an entity, since this causes
-problems.
+=item escape_html($text, $what)
 
-Probably assumes Latin-1.
-
-=item escape_uti($text)
-
-URI escapes $text.
+Escape $text using HTML escapes.  Expected characters as input,
+returns characters (not octets).
 
 =item unescape_html($text)
 
-Unescape entities.
+Converts entities to characters, returning the characters.
+
+=item escape_xml($text)
+
+Escape only <, >, & and ".
+
+=cut
+
+=item escape_uri($text)
+
+Escapes $text given as characters.
+
+When BSE's utf8 flag is enabled the characters are first converted to
+the BSE character set then URI escaped.
 
 =item unescape_uri($text)
 
-Unescape URI escaped text.
+Unescape URI escapes in $text and returns characters.
+
+When BSE's utf8 flag is enabled the octets resulting from URI
+unescaping are decoded to perl's internal character representation.
 
 =item popup_menu(...)
 

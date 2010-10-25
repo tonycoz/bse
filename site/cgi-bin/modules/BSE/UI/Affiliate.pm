@@ -2,7 +2,7 @@ package BSE::UI::Affiliate;
 use strict;
 use base qw(BSE::UI::Dispatch BSE::UI::SiteuserCommon);
 use BSE::Util::Tags qw(tag_hash);
-use DevHelp::HTML;
+use BSE::Util::HTML;
 
 my %actions =
   (

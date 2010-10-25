@@ -5,7 +5,7 @@ use Squirrel::Row;
 use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 use Carp qw(confess);
-use DevHelp::HTML qw(escape_html);
+use BSE::Util::HTML qw(escape_html);
 
 sub columns {
   return qw/id articleId image alt width height url displayOrder name

@@ -2,7 +2,7 @@ package BSE::Util::Tags;
 use strict;
 use HTML::Entities;
 use DevHelp::Tags;
-use DevHelp::HTML qw(:default escape_xml);
+use BSE::Util::HTML qw(:default escape_xml);
 use vars qw(@EXPORT_OK @ISA);
 @EXPORT_OK = qw(tag_error_img tag_hash tag_hash_plain tag_hash_mbcs tag_article tag_article_plain tag_object);
 @ISA = qw(Exporter);

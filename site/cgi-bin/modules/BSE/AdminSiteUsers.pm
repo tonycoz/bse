@@ -2,7 +2,7 @@ package BSE::AdminSiteUsers;
 use strict;
 use base qw(BSE::UI::AdminDispatch BSE::UI::SiteuserCommon);
 use BSE::Util::Tags qw(tag_error_img tag_hash);
-use DevHelp::HTML qw(:default popup_menu);
+use BSE::Util::HTML qw(:default popup_menu);
 use SiteUsers;
 use BSE::Util::Iterate;
 use BSE::Util::DynSort qw(sorter tag_sorthelp);

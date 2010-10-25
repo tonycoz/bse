@@ -4,7 +4,7 @@ use BSE::SubscriptionTypes;
 use BSE::Util::Tags qw(tag_hash);
 use Articles;
 use BSE::Message;
-use DevHelp::HTML qw(:default popup_menu);
+use BSE::Util::HTML qw(:default popup_menu);
 use BSE::Util::Iterate;
 use base 'BSE::UI::AdminDispatch';
 

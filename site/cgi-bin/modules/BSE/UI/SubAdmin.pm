@@ -7,7 +7,7 @@ use DevHelp::Validate qw(dh_validate);
 use BSE::Template;
 use BSE::Util::Iterate;
 use BSE::TB::Subscriptions;
-use DevHelp::HTML;
+use BSE::Util::HTML;
 
 my %rights =
   (

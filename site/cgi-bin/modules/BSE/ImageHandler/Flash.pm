@@ -1,7 +1,7 @@
 package BSE::ImageHandler::Flash;
 use strict;
 use base 'BSE::ImageHandler::Base';
-use DevHelp::HTML;
+use BSE::Util::HTML;
 use Carp qw(confess);
 
 my @flash_opts = qw/quality wmode id play loop menu bgcolor flashvars class/;

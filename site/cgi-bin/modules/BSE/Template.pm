@@ -1,7 +1,7 @@
 package BSE::Template;
 use strict;
 use Squirrel::Template;
-use Carp 'confess';
+use Carp qw(confess cluck);
 use Config ();
 
 sub templater {
@@ -62,12 +62,23 @@ sub replace {
   $obj->replace_template($source, $acts);
 }
 
+sub charset {
+  my ($class, $cfg) = @_;
+
+  return $cfg->charset;
+}
+
+sub utf8 {
+  my ($class, $cfg) = @_;
+
+  return $cfg->utf8;
+}
+
 sub html_type {
   my ($class, $cfg) = @_;
 
   my $type = "text/html";
-  my $charset = $cfg->entry('html', 'charset');
-  $charset = 'iso-8859-1' unless defined $charset;
+  my $charset = $class->charset($cfg);
   return $type . "; charset=$charset";
 }
 
@@ -102,11 +113,23 @@ sub show_literal {
 sub get_response {
   my ($class, $template, $cfg, $acts, $base_template, $rsets) = @_;
 
+  my $content = $class->get_page($template, $cfg, $acts,
+				 $base_template, $rsets);
+  if ($class->utf8($cfg)) {
+    my $charset = $class->charset($cfg);
+
+    require Encode;
+    Encode->import();
+    my $check = $cfg->entry("utf8", "check", Encode::FB_DEFAULT());
+    $check = oct($check) if $check =~ /^0/;
+
+    $content = Encode::encode($charset, $content, $check);
+  }
+
   my $result =
     {
      type => $class->get_type($cfg, $template),
-     content => scalar($class->get_page($template, $cfg, $acts, 
-					$base_template, $rsets)),
+     content => $content,
     };
   push @{$result->{headers}}, "Content-Length: ".length($result->{content});
 
@@ -178,11 +201,15 @@ sub get_source {
 
   my $path = $class->find_source($template, $cfg)
     or confess "Cannot find template $template";
-  open SOURCE, "< $path"
+  open my $source, "< $path"
     or confess "Cannot open template $path: $!";
-  binmode SOURCE;
-  my $html = do { local $/; <SOURCE> };
-  close SOURCE;
+  binmode $source;
+  if ($cfg->utf8) {
+    my $charset = $cfg->charset;
+    binmode $source, ":encoding($charset)";
+  }
+  my $html = do { local $/; <$source> };
+  close $source;
 
   $html;
 }
@@ -257,6 +284,9 @@ sub output_resultc {
     print "\n";
   }
   if (defined $result->{content}) {
+    if ($result->{content} =~ /([^\x00-\xff])/) {
+      cluck "Wide character in content (\\x{", sprintf("%X", ord $1), "})";
+    }
     print $result->{content};
   }
   elsif ($result->{content_fh}) {

@@ -65,9 +65,7 @@ sub generate_low {
   my $content = $gen->generate($article, $articles);
   my $tempname = $outname . ".work";
   unlink $tempname;
-  open OUT, "> $tempname" or die "Cannot create $tempname: $!";
-  print OUT $content or die "Cannot write content to $outname: $!";
-  close OUT or die "Cannot close $outname: $!";
+  _write_text($tempname, $content, $cfg);
   unlink $outname;
   rename($tempname, $outname)
     or die "Cannot rename $tempname to $outname: $!";
@@ -112,12 +110,7 @@ sub generate_search {
   my $tmpldir = $cfg->entryVar('paths', 'templates');
   my $outname = "$tmpldir/search.tmpl.work";
   my $finalname = "$tmpldir/search.tmpl";
-  open OUT, "> $outname"
-    or die "Cannot open $outname for write: $!";
-  print OUT $content
-    or die "Cannot write to $outname: $!";
-  close OUT
-    or die "Cannot close $outname: $!";
+  _write_text($outname, $content, $cfg);
   rename $outname, $finalname
     or die "Cannot rename $outname to $finalname: $!";
 }
@@ -156,12 +149,7 @@ sub generate_shop {
     my $tmpldir = $cfg->entryVar('paths', 'templates');
     my $outname = "$tmpldir/$name.tmpl.work";
     my $finalname = "$tmpldir/$name.tmpl";
-    open OUT, "> $outname"
-      or die "Cannot open $outname for write: $!";
-    print OUT $content
-      or die "Cannot write to $outname: $!";
-    close OUT
-      or die "Cannot close $outname: $!";
+    _write_text($outname, $content, $cfg);
     unlink $finalname;
     rename $outname, $finalname
       or die "Cannot rename $outname to $finalname: $!";
@@ -231,12 +219,7 @@ sub generate_extras {
       my $content = BSE::Template->get_page($input, $cfg, \%acts);
       my $finalname = $outpath . '/'. $out;
       my $outname = $finalname . '.work';
-      open OUT, "> $outname"
-	or die "Cannot open $outname for write: $!";
-      print OUT $content
-	or die "Cannot write content to $outname: $!";
-      close OUT
-	or die "Cannot close $outname: $!";
+      _write_text($outname, $content, $cfg);
       unlink $finalname;
       rename $outname, $finalname
 	or die "Cannot rename $outname to $finalname: $!";
@@ -362,6 +345,21 @@ sub regen_and_refresh {
   }
 
   return 1;
+}
+
+sub _write_text {
+  my ($filename, $data, $cfg) = @_;
+
+  open my $fh, ">", $filename
+    or die "Cannot create $filename: $!";
+  if ($cfg->utf8) {
+    my $charset = $cfg->charset;
+    binmode $fh,  ":encoding($charset)";
+  }
+  print $fh $data
+    or die "Cannot write $filename: $!";
+  close $fh
+    or die "Cannot close $filename: $!";
 }
 
 1;

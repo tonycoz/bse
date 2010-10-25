@@ -2,7 +2,7 @@ package BSE::ImageHandler::Img;
 use strict;
 use base 'BSE::ImageHandler::Base';
 use Carp qw(confess);
-use DevHelp::HTML;
+use BSE::Util::HTML;
 
 sub thumb_base_url {
   '/cgi-bin/thumb.pl';

@@ -2,7 +2,7 @@ package BSE::FileHandler::FLV;
 use strict;
 use base "BSE::FileHandler::Base";
 use BSE::Util::Tags qw(tag_hash);
-use DevHelp::HTML;
+use BSE::Util::HTML;
 
 sub process_file {
   my ($self, $file) = @_;

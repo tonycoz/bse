@@ -5,7 +5,7 @@ use Products;
 use HTML::Entities;
 use BSE::Template;
 use BSE::Util::Iterate;
-use DevHelp::HTML;
+use BSE::Util::HTML;
 use BSE::CfgInfo 'product_options';
 use BSE::Util::Tags qw(tag_hash);
 

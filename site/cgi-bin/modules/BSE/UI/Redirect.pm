@@ -2,7 +2,7 @@ package BSE::UI::Redirect;
 use strict;
 use base qw(BSE::UI::Dispatch);
 use Digest::MD5 qw(md5_hex);
-use DevHelp::HTML;
+use BSE::Util::HTML;
 
 my %actions =
   (

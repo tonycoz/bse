@@ -220,13 +220,13 @@ sub inline {
     $meta->content_type eq "text/plain"
       or return "* metadata $name isn't text *";
 
-    require DevHelp::HTML;
-    return DevHelp::HTML::escape_html($meta->value);
+    require BSE::Util::HTML;
+    return BSE::Util::HTML::escape_html($meta->value);
   }
   elsif ($field eq "link" || $field eq "url") {
     my $url = "/cgi-bin/user.pl?download_file=1&file=$file->{id}";
-    require DevHelp::HTML;
-    my $eurl = DevHelp::HTML::escape_html($url);
+    require BSE::Util::HTML;
+    my $eurl = BSE::Util::HTML::escape_html($url);
     if ($field eq 'url') {
       return $eurl;
     }

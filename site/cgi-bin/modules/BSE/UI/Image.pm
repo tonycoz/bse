@@ -3,7 +3,7 @@ use strict;
 use Articles;
 use BSE::TB::Images;
 use BSE::Util::Tags qw(tag_hash);
-use DevHelp::HTML qw(escape_uri);
+use BSE::Util::HTML qw(escape_uri);
 
 # we don't do anything fancy on dispatch yet, so don't use the 
 # dispatch classes

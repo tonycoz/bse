@@ -689,6 +689,19 @@ sub insert_id {
   return $id;
 }
 
+sub dbopts {
+  my ($class) = @_;
+
+  my $opts = $class->SUPER::dbopts();
+
+  if (BSE::Cfg->utf8
+      && lc(BSE::Cfg->charset) eq "utf-8") {
+    $opts->{mysql_enable_utf8} = 1;
+  }
+
+  return $opts;
+}
+
 # gotta love this
 sub DESTROY
 {

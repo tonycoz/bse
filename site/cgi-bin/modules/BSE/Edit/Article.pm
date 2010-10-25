@@ -4,7 +4,7 @@ use base qw(BSE::Edit::Base);
 use BSE::Util::Tags qw(tag_error_img);
 use BSE::Util::SQL qw(now_sqldate now_sqldatetime);
 use BSE::Permissions;
-use DevHelp::HTML qw(:default popup_menu);
+use BSE::Util::HTML qw(:default popup_menu);
 use BSE::Arrows;
 use BSE::CfgInfo qw(custom_class admin_base_url cfg_image_dir);
 use BSE::Util::Iterate;
@@ -1515,15 +1515,16 @@ sub default_link_path {
 sub make_link {
   my ($self, $article) = @_;
 
+  my $title = $article->title;
   if ($article->is_dynamic) {
-    return "/cgi-bin/page.pl?page=$article->{id}&title=".escape_uri($article->{title});
+    return "/cgi-bin/page.pl?page=$article->{id}&title=".escape_uri($title);
   }
 
   my $article_uri = $self->link_path($article);
   my $link = "$article_uri/$article->{id}.html";
   my $link_titles = $self->{cfg}->entryBool('basic', 'link_titles', 0);
   if ($link_titles) {
-    (my $extra = lc $article->{title}) =~ tr/a-z0-9/_/sc;
+    (my $extra = $title) =~ tr/a-z0-9/_/sc;
     $link .= "/" . $extra . "_html";
   }
 
@@ -2139,11 +2140,12 @@ sub save_thumbnail {
     unlink("$imagedir/$original->{thumbImage}");
     @$newdata{qw/thumbImage thumbWidth thumbHeight/} = ('', 0, 0);
   }
-  my $image = $cgi->param('thumbnail');
-  if ($image && -s $image) {
+  my $image_name = $cgi->param('thumbnail');
+  my $image = $cgi->upload('thumbnail');
+  if ($image_name && -s $image) {
     # where to put it...
     my $name = '';
-    $image =~ /([\w.-]+)$/ and $name = $1;
+    $image_name =~ /([\w.-]+)$/ and $name = $1;
     my $filename = time . "_" . $name;
 
     use Fcntl;
@@ -2974,7 +2976,7 @@ sub _service_error {
     my $json_result = $req->json_content($result);
 
     if (!exists $ENV{HTTP_X_REQUESTED_WITH}
-	&& $ENV{HTTP_X_REQUESTED_WITH} !~ /XMLHttpRequest/) {
+	|| $ENV{HTTP_X_REQUESTED_WITH} !~ /XMLHttpRequest/) {
       $json_result->{type} = "text/plain";
     }
 
@@ -3161,12 +3163,13 @@ sub add_image {
       (
        $req->cfg,
        $article,
-       scalar($cgi->param('image')),
+       scalar($cgi->upload('image')),
        name => scalar($cgi->param('name')),
        alt => scalar($cgi->param('altIn')),
        url => scalar($cgi->param('url')),
        storage => scalar($cgi->param('storage')),
        errors => \%errors,
+       filename => scalar($cgi->param("image")),
       );
 
   $imageobj
@@ -3708,7 +3711,8 @@ sub fileadd {
 		 section => $article->{id} == -1 ? 'Global File Validation' : 'Article File Validation');
   
   # build a filename
-  my $file = $cgi->param('file');
+  my $file = $cgi->upload('file');
+  my $filename = $cgi->param("file");
   unless ($file) {
     $errors{file} = 'Please enter a filename';
   }
@@ -3741,7 +3745,7 @@ sub fileadd {
     and return $self->edit_form($req, $article, $articles, undef, \%errors);
   
   my $basename = '';
-  my $workfile = $file;
+  my $workfile = $filename;
   $workfile =~ s![^\w.:/\\-]+!_!g;
   $workfile =~ tr/_/_/s;
   $workfile =~ /([ \w.-]+)$/ and $basename = $1;
@@ -3770,91 +3774,6 @@ sub fileadd {
   };
   $@
     and $req->flash($@);
-
-#   my $downloadPath = $self->{cfg}->entryVar('paths', 'downloads');
-
-
-#   unless ($file{contentType}) {
-#     unless ($file =~ /\.([^.]+)$/) {
-#       $file{contentType} = "application/octet-stream";
-#     }
-#     unless ($file{contentType}) {
-#       $file{contentType} = content_type($self->cfg, $file);
-#     }
-#   }
-
-
-#   # if the user supplies a really long filename, it can overflow the 
-#   # filename field
-
-#   my $work_filename = $basename;
-#   if (length $work_filename > 60) {
-#     $work_filename = substr($work_filename, -60);
-#   }
-
-#   my $filename = time. '_'. $work_filename;
-
-#   # for the sysopen() constants
-#   use Fcntl;
-
-#   # loop until we have a unique filename
-#   my $counter="";
-#   $filename = time. '_' . $counter . '_' . $work_filename 
-#     until sysopen( OUTPUT, "$downloadPath/$filename", 
-# 		   O_WRONLY| O_CREAT| O_EXCL)
-#       || ++$counter > 100;
-
-#   fileno(OUTPUT) or die "Could not open file: $!";
-
-#   # for OSs with special text line endings
-#   binmode OUTPUT;
-
-#   my $buffer;
-
-#   no strict 'refs';
-
-#   # read the image in from the browser and output it to our output filehandle
-#   print OUTPUT $buffer while read $file, $buffer, 8192;
-
-#   # close and flush
-#   close OUTPUT
-#     or die "Could not close file $filename: $!";
-
-#   use BSE::Util::SQL qw/now_datetime/;
-#   $file{filename} = $filename;
-#   $file{displayName} = $basename;
-#   $file{sizeInBytes} = -s $file;
-#   $file{displayOrder} = time;
-#   $file{whenUploaded} = now_datetime();
-#   $file{storage}        = 'local';
-#   $file{src}            = '';
-#   $file{file_handler}   = "";
-
-#   require BSE::TB::ArticleFiles;
-#   my $fileobj = BSE::TB::ArticleFiles->add(@file{@cols});
-
-#   my $storage = $cgi->param('storage');
-#   defined $storage or $storage = 'local';
-#   my $file_manager = $self->_file_manager($req->cfg);
-
-#   local $SIG{__DIE__};
-#   eval {
-#     my $src;
-#     $storage = $self->_select_filestore($req, $file_manager, $storage, $fileobj);
-#     $src = $file_manager->store($filename, $storage, $fileobj);
-
-#     if ($src) {
-#       $fileobj->{src} = $src;
-#       $fileobj->{storage} = $storage;
-#       $fileobj->save;
-#     }
-#   };
-#   if ($@) {
-#     $req->flash($@);
-#   }
-
-#   $fileobj->set_handler($req->cfg);
-#   $fileobj->save;
 
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;

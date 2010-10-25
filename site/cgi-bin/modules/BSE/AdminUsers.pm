@@ -2,7 +2,7 @@ package BSE::AdminUsers;
 use strict;
 use BSE::Util::Tags qw/tag_error_img/;
 use BSE::Permissions;
-use DevHelp::HTML qw(:default popup_menu);
+use BSE::Util::HTML qw(:default popup_menu);
 use BSE::CfgInfo qw(admin_base_url);
 use BSE::Template;
 

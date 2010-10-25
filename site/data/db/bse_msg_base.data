@@ -22,6 +22,15 @@ description: <<TEXT
 Message displayed when the username or password is invalid when logging in
 TEXT
 
+id: bse/user/dupaffiliatename
+description: Message displayed for a duplicate affiliate name
+
+id: bse/user/badaffiliatename
+description: Message displayed for an invalid affiliate name
+
+id: bse/user/optsrequired
+description: Message displayed for a required field during registration or when saving user details
+
 id: bse/admin/
 description: BSE Administration
 

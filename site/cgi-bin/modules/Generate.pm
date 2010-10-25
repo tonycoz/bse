@@ -4,7 +4,7 @@ use Articles;
 use Constants qw($IMAGEDIR $LOCAL_FORMAT $BODY_EMBED 
                  $EMBED_MAX_DEPTH $HAVE_HTML_PARSER);
 use DevHelp::Tags;
-use DevHelp::HTML;
+use BSE::Util::HTML;
 use BSE::Util::Tags qw(tag_article);
 use BSE::CfgInfo qw(custom_class);
 use BSE::Util::Iterate;

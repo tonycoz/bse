@@ -2,7 +2,7 @@ package BSE::UI::Formmail;
 use strict;
 use base qw(BSE::UI::Dispatch);
 use BSE::Util::Tags qw(tag_hash tag_hash_plain tag_error_img);
-use DevHelp::HTML qw(:default popup_menu);
+use BSE::Util::HTML qw(:default popup_menu);
 use DevHelp::Validate qw(dh_validate dh_configure_fields);
 use BSE::Util::Iterate;
 use constant DISPLAY_TIMEOUT => 300;

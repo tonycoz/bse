@@ -7,7 +7,7 @@ use Constants qw(:search);
 use Carp;
 use BSE::Cfg;
 use BSE::Template;
-use DevHelp::HTML qw':default popup_menu';
+use BSE::Util::HTML qw':default popup_menu';
 use BSE::Util::Tags qw(tag_article);
 use BSE::Request;
 
@@ -268,10 +268,12 @@ sub req_search {
      sub { $page_num_iter == $page_number },
      pageurl => 
      sub {
-       $ENV{SCRIPT_NAME} . "?q=" . escape_uri($words) . 
+       my $work_words = $words;
+       $ENV{SCRIPT_NAME} . "?q=" . escape_uri($work_words) .
 	 "&amp;s=" . escape_uri($section) .
 	   "&amp;d=" . escape_uri($date) .
-	     "&amp;page=".$page_num_iter;
+	     "&amp;page=".$page_num_iter .
+	       "&amp;pp=$results_per_page";
      },
      highlight_result =>
      [ \&tag_highlight_result, \$current_result, $cfg, $words_re ],

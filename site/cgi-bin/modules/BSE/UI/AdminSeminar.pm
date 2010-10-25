@@ -6,7 +6,7 @@ use BSE::Util::DynSort qw(sorter tag_sorthelp);
 use BSE::Template;
 use BSE::Util::Iterate;
 use BSE::TB::Locations;
-use DevHelp::HTML qw(:default popup_menu);
+use BSE::Util::HTML qw(:default popup_menu);
 use constant SECT_LOCATION_VALIDATION => "BSE Location Validation";
 use BSE::CfgInfo 'product_options';
 use DevHelp::Date qw(dh_strftime_sql_datetime);

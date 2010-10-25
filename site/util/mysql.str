@@ -477,7 +477,7 @@ Column articleId;int(11);NO;NULL;
 Column summary;varchar(255);NO;NULL;
 Column leadTime;int(11);NO;0;
 Column retailPrice;int(11);NO;NULL;
-Column wholesalePrice;int(11);YES;NULL;
+Column wholesalePrice;int(11);NO;NULL;
 Column gst;int(11);NO;NULL;
 Column options;varchar(255);NO;NULL;
 Column subscription_id;int(11);NO;-1;
@@ -498,7 +498,7 @@ Column scores;varchar(255);NO;;
 Index PRIMARY;1;[id]
 Table sessions
 Column id;char(32);NO;NULL;
-Column a_session;text;YES;NULL;
+Column a_session;blob;YES;NULL;
 Column whenChanged;timestamp;NO;CURRENT_TIMESTAMP;
 Index PRIMARY;1;[id]
 Table site_users

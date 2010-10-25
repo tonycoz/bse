@@ -1,7 +1,7 @@
 package BSE::Formatter::Article;
 use strict;
 use base 'BSE::Formatter';
-use DevHelp::HTML;
+use BSE::Util::HTML;
 use Digest::MD5 qw(md5_hex);
 
 sub link {

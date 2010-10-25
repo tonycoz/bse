@@ -1,7 +1,7 @@
 package BSE::Edit::Catalog;
 use strict;
 use base 'BSE::Edit::Article';
-use DevHelp::HTML;
+use BSE::Util::HTML;
 
 sub base_template_dirs {
   return ( "catalog" );

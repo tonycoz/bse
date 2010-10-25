@@ -770,7 +770,7 @@ var BSEAPI = Class.create
 	   // just plain data
 	   state.req_data += "--" + state.sep;
 	   state.req_data += "Content-Disposition: form-data; name=\"" + entry[0] + "\"\r\n\r\n";
-	   state.req_data += entry[1] + "\r\n";
+	   state.req_data += this._encode_utf8(entry[1]) + "\r\n";
 	   ++state.index;
 	 }
        }

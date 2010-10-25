@@ -1,7 +1,7 @@
 package BSE::Util::Iterate;
 use strict;
 use base 'DevHelp::Tags::Iterate';
-use DevHelp::HTML;
+use BSE::Util::HTML;
 use Carp 'confess';
 
 sub escape {

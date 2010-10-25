@@ -154,7 +154,7 @@ CREATE TABLE image (
 DROP TABLE IF EXISTS sessions;
 CREATE TABLE sessions (
   id char(32) not null primary key,
-  a_session text,
+  a_session blob,
   -- so we can age this table
   whenChanged timestamp
   -- note: an index on whenChanged would speed up only the rare case 
@@ -174,7 +174,7 @@ create table product (
 
   -- prices are in cents
   retailPrice integer not null,
-  wholesalePrice integer,
+  wholesalePrice integer not null,
 
   -- amount of GST on this item
   gst integer not null,

@@ -11,11 +11,12 @@ use BSE::SubscribedUsers;
 use BSE::Mail;
 use BSE::EmailRequests;
 use BSE::Util::SQL qw/now_datetime/;
-use DevHelp::HTML;
+use BSE::Util::HTML;
 use BSE::CfgInfo qw(custom_class);
 use BSE::WebUtil qw/refresh_to/;
 use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
+use Carp qw(confess);
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -108,8 +109,7 @@ sub req_show_logon {
      message => sub { CGI::escapeHTML($message) },
     );
 
-  BSE::Template->show_page('user/logon', $cfg, \%acts);
-  return;
+  return $req->response('user/logon', \%acts);
 }
 
 sub req_logon {
@@ -158,11 +158,11 @@ sub req_logon {
   _validate_affiliate_name($cfg, $user->{affiliate_name}, \%errors, $msgs, $user);
   if (keys %errors) {
     delete $session->{userid};
-    $session->{partial_logon} = $user->{userId};
+    $session->{partial_logon} = $user->id;
     return $self->req_show_opts($req, undef, \%errors);
   }
 
-  $session->{userid} = $user->{userId};
+  $session->{userid} = $user->id;
   $user->{previousLogon} = $user->{lastLogon};
   $user->{lastLogon} = now_datetime;
   $user->save;
@@ -384,18 +384,13 @@ sub req_show_register {
     );
 
   my $template = 'user/register';
-  my $t = $cgi->param('_t');
-  if ($t && $t =~ /^\w+$/ && $t ne 'base') {
-    $template .= "_$t";
-  }
-
-  BSE::Template->show_page($template, $cfg, \%acts);
-
-  return;
+  return $req->dyn_response($template, \%acts);
 }
 
 sub _get_user {
-  my ($self, $req, $name) = @_;
+  my ($self, $req, $name, $result) = @_;
+
+  defined $result or confess "Missing result parameter";
 
   my $cfg = $req->cfg;
   my $cgi = $req->cgi;
@@ -414,7 +409,7 @@ sub _get_user {
 
     $user->{password} eq $password
       or do { refresh_to($ENV{SCRIPT}."?nopassword=1"); return };
-    
+
     return $user;
   }
   else {
@@ -424,11 +419,16 @@ sub _get_user {
       return $custom->siteuser_auth($session, $cgi, $cfg);
     }
     else {
-      my $user = $req->siteuser
-	or do { $self->req_show_logon($req); return };
-      $user->{disabled}
-	and do { $self->req_show_logon($req, "Account disabled"); return };
-      
+      my $user = $req->siteuser;
+      unless ($user) {
+	$$result = $self->req_show_logon($req);
+	return;
+      }
+      if ($user->{disabled}) {
+	$$result = $self->req_show_logon($req, "Account disabled");
+	return;
+      }
+
       return $user;
     }
   }
@@ -473,8 +473,9 @@ sub req_show_opts {
   }
 
   unless ($user) {
-    $user = $self->_get_user($req, 'show_opts')
-      or return;
+    my $result;
+    $user = $self->_get_user($req, 'show_opts', \$result)
+      or return $result;
   }
   
   my @subs = grep $_->{visible}, BSE::SubscriptionTypes->all;
@@ -541,16 +542,8 @@ sub req_show_opts {
     );
 
   my $base = 'user/options';
-  my $template = $base;
 
-  my $t = $cgi->param('_t');
-  if ($t && $t =~ /^\w+$/) {
-    $template .= "_$t";
-  }
-
-  BSE::Template->show_page($template, $cfg, \%acts, $base);
-
-  return;
+  return $req->dyn_response($base, \%acts);
 }
 
 sub _checkemail {
@@ -615,8 +608,9 @@ sub req_saveopts {
     and ++$partial_logon;
 
   unless ($user) {
-    $user = $self->_get_user($req)
-      or return;
+    my $result;
+    $user = $self->_get_user($req, undef, \$result)
+      or return $result;
   }
 
   my $custom = custom_class($cfg);
@@ -756,7 +750,7 @@ sub req_saveopts {
   if ($partial_logon) {
     $user->{previousLogon} = $user->{lastLogon};
     $user->{lastLogon} = now_datetime;
-    $session->{userid} = $user->{userId};
+    $session->{userid} = $user->id;
     delete $session->{partial_logon};
     $user->save;
 
@@ -979,7 +973,7 @@ sub req_register {
 
     $self->_send_user_cookie($user);
     unless ($nopassword) {
-      $session->{userid} = $user->{userId};
+      $session->{userid} = $user->id;
       my $custom = custom_class($cfg);
       if ($custom->can('siteuser_login')) {
 	$custom->siteuser_login($session->{_session_id}, $session->{userid}, $cfg);
@@ -1073,8 +1067,9 @@ sub req_userpage {
     $message = $req->message;
   }
 
-  my $user = $self->_get_user($req, 'userpage')
-    or return;
+  my $result;
+  my $user = $self->_get_user($req, 'userpage', \$result)
+    or return $result;
   require BSE::TB::Orders;
   my @orders = sort { $b->{orderDate} cmp $a->{orderDate}
 			|| $b->{id} <=> $a->{id} }
@@ -1145,14 +1140,16 @@ sub req_userpage {
 			'booking', 'bookings'),
     );
   my $base_template = 'user/userpage';
-  my $template = $base_template;
-  my $t = $cgi->param('_t');
-  if (defined $t && $t =~ /^\w+$/) {
-    $template = $template . '_' . $t;
-  }
-  BSE::Template->show_page($template, $cfg, \%acts, $base_template);
+#   my $template = $base_template;
+#   my $t = $cgi->param('_t');
+#   if (defined $t && $t =~ /^\w+$/) {
+#     $template = $template . '_' . $t;
+#   }
 
-  return;
+  return $req->dyn_response($base_template, \%acts);
+#  BSE::Template->show_page($template, $cfg, \%acts, $base_template);
+#
+#  return;
 }
 
 sub tag_detail_product {
@@ -1194,8 +1191,9 @@ sub req_orderdetail {
   my $cgi = $req->cgi;
   my $session = $req->session;
 
-  my $user = $self->_get_user($req, 'userpage')
-    or return;
+  my $result;
+  my $user = $self->_get_user($req, 'userpage', \$result)
+    or return $result;
   my $order_id = $cgi->param('id');
   my $order;
   if (defined $order_id && $order_id =~ /^\d+$/) {
@@ -1240,14 +1238,8 @@ sub req_orderdetail {
     );
 
   my $base_template = 'user/orderdetail';
-  my $template = $base_template;
-  my $t = $cgi->param('_t');
-  if (defined $t && $t =~ /^\w+$/) {
-    $template = $template . '_' . $t;
-  }
-  BSE::Template->show_page($template, $cfg, \%acts, $base_template);
 
-  return;
+  return $req->dyn_response($base_template, \%acts);
 }
 
 sub req_download {
@@ -1258,8 +1250,9 @@ sub req_download {
   my $session = $req->session;
 
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
-  my $user = $self->_get_user($req, 'show_opts')
-    or return;
+  my $result;
+  my $user = $self->_get_user($req, 'show_opts', \$result)
+    or return $result;
 
   my $orderid = $cgi->param('order')
     or return _refresh_userpage($cfg, $msgs->('noorderid', "No order id supplied"));
@@ -1336,7 +1329,7 @@ sub req_download_file {
   my $userid = $session->{userid};
   my $user;
   if ($userid) {
-    $user = SiteUsers->getBy(userId=>$userid);
+    $user = SiteUsers->getByPkey($userid);
   }
   $fileid ||= $cgi->param('file')
     or return $self->req_show_logon($req, 
@@ -1528,11 +1521,6 @@ sub req_show_lost_password {
 
   $message ||= $cgi->param('message') || '';
   $message = escape_html($message);
-  my $userid = $session->{userid};
-  my $user;
-  if ($userid) {
-    $user = SiteUsers->getBy(userId=>$userid);
-  }
 
   my %acts;
   %acts =
@@ -2118,8 +2106,9 @@ sub req_downufile {
   my $file = BSE::TB::OwnedFiles->getByPkey($id)
     or return $self->error($req, "Invalid or missing file id");
 
-  my $user = $self->_get_user($req, 'downufile')
-    or return;
+  my $result;
+  my $user = $self->_get_user($req, 'downufile', \$result)
+    or return $result;
 
   require BSE::TB::SiteUserGroups;
   my $accessible = 0;

@@ -1,6 +1,6 @@
 package BSE::TagFormats;
 use strict;
-use DevHelp::HTML;
+use BSE::Util::HTML;
 
 sub _format_image {
   my ($self, $im, $align, $rest) = @_;

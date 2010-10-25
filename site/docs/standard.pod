@@ -34,7 +34,7 @@ C<r> is to be used to accept refresh to URLs.
 
 =head2 CGI/URL encoding/generation
 
-Use the functions in DevHelp::HTML instead of the functions from CGI.
+Use the functions in BSE::Util::HTML instead of the functions from CGI.
 
 =head2 Refreshing
 

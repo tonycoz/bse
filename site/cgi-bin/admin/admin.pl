@@ -64,7 +64,12 @@ if ($req->check_admin_logon()) {
     else {
       my $type = BSE::Template->html_type($req->cfg);
       print "Content-Type: $type\n\n";
-      print $generator->generate($article, $articles);
+      my $page = $generator->generate($article, $articles);
+      if ($req->utf8) {
+	require Encode;
+	$page = Encode::encode($req->charset, $page);
+      }
+      print $page;
     }
   }
   else {

@@ -3,7 +3,7 @@ use strict;
 use vars qw(@ISA);
 use Generate::Article;
 @ISA = qw(Generate::Article);
-use DevHelp::HTML;
+use BSE::Util::HTML;
 
 sub set_user {
   my ($self, $user) = @_;

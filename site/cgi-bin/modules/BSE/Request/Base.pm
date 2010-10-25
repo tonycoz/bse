@@ -2,7 +2,7 @@ package BSE::Request::Base;
 use strict;
 use CGI ();
 use BSE::Cfg;
-use DevHelp::HTML;
+use BSE::Util::HTML;
 use Carp qw(cluck confess);
 
 sub new {
@@ -21,16 +21,7 @@ sub new {
   $opts{cgi} ||= $self->_make_cgi;
   $opts{fastcgi} ||= 0;
 
-  if ($self->cfg->entry('html', 'utf8decodeall')) {
-    $self->_encode_utf8();
-  }
-  elsif ($self->cfg->entry('html', 'ajaxcharset', 0)
-      && $self->is_ajax) {
-    # convert the values of each parameter from UTF8 to iso-8859-1
-    $self->_convert_utf8_cgi_to_charset();
-  }
-
-  $self;
+  return $self;
 }
 
 sub _tracking_uploads {
@@ -98,26 +89,22 @@ sub _make_cgi {
       && $ENV{CONTENT_TYPE}
       && $ENV{CONTENT_TYPE} =~ m(^multipart/form-data)
       && $ENV{CONTENT_LENGTH}
+      && $ENV{QUERY_STRING}
+      && $ENV{QUERY_STRING} =~ /^_upload=([a-zA-Z0-9_]+)$/
       && defined ($cache = $self->_cache_object)) {
     # very hacky
+    my $upload_key = $1;
+    my $fullkey = "upload-$upload_key";
     my $q;
     my $done = 0;
     my $last_set = time();
-    my $upload_key;
-    if ($ENV{QUERY_STRING}
-	&& $ENV{QUERY_STRING} =~ /^_upload=([a-zA-Z0-9_]+)$/) {
-      $upload_key = $1;
-    }
     my $complete = 0;
     eval {
       $q = CGI->new
 	(
 	 sub {
 	   my ($filename, $data, $size_so_far) = @_;
-	   
-	   $upload_key ||= $q->param("_upload");
-	   $upload_key or return;
-	   my $fullkey = "upload-$upload_key";
+
 	   $done += length $data;
 	   my $now = time;
 	   if ($last_set + 1 <= $now) { # just in case we end up loading Time::HiRes
@@ -140,26 +127,26 @@ sub _make_cgi {
       $complete = 1;
     };
 
-    if ($upload_key) {
-      my $fullkey = "upload-$upload_key";
-      
-      if ($complete) {
-	$cache->set($fullkey,
-		    {
-		     done => $ENV{CONTENT_LENGTH},
-		     total => $ENV{CONTENT_LENGTH},
-		     complete => 1,
-		    });
-      }
-      else {
-	$cache->set($fullkey,
-		    {
-		     failed => 1,
-		    });
-	die;
-      }
+    if ($complete) {
+      $cache->set($fullkey,
+		  {
+		   done => $ENV{CONTENT_LENGTH},
+		   total => $ENV{CONTENT_LENGTH},
+		   complete => 1,
+		  });
     }
- 
+    else {
+      $cache->set($fullkey,
+		  {
+		   failed => 1,
+		  });
+      die;
+    }
+
+    if ($self->utf8) {
+      require BSE::CGI;
+      return BSE::CGI->new($q, $self->charset);
+    }
 
     return $q;
   }
@@ -168,6 +155,11 @@ sub _make_cgi {
   my $error = $q->cgi_error;
   if ($error) {
     print STDERR "CGI ERROR: $error\n";
+  }
+
+  if ($self->utf8) {
+    require BSE::CGI;
+    return BSE::CGI->new($q, $self->charset);
   }
 
   return $q;
@@ -429,7 +421,7 @@ sub siteuser {
 
     my $userid = $session->{userid}
       or return;
-    my $user = SiteUsers->getBy(userId=>$userid)
+    my $user = SiteUsers->getByPkey($userid)
       or return;
     $user->{disabled}
       and return;
@@ -909,6 +901,10 @@ sub json_content {
 
   my $json = JSON->new;
 
+  if ($self->utf8) {
+    $json->utf8;
+  }
+
   my $value = @values > 1 ? +{ @values } : $values[0];
   my ($context) = $self->cgi->param("_context");
   if (defined $context) {
@@ -1055,6 +1051,16 @@ sub audit {
   $opts{actor} ||= $self->user;
 
   return BSE::TB::AuditLog->log(%opts);
+}
+
+sub utf8 {
+  my $self = shift;
+  return $self->cfg->utf8;
+}
+
+sub charset {
+  my $self = shift;
+  return $self->cfg->charset;
 }
 
 =item message_catalog

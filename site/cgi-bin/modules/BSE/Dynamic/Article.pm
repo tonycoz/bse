@@ -2,7 +2,7 @@ package BSE::Dynamic::Article;
 use strict;
 use BSE::Util::Tags qw(tag_article);
 use BSE::Template;
-use DevHelp::HTML;
+use BSE::Util::HTML;
 use base qw(BSE::Util::DynamicTags);
 
 sub new {
@@ -34,6 +34,11 @@ sub generate {
      content => BSE::Template->replace($template, $self->{req}->cfg, \%acts),
      type => BSE::Template->get_type($self->{req}->cfg, $article->{template}),
     };
+
+  if (BSE::Cfg->utf8) {
+    require Encode;
+    $result->{content} = Encode::encode(BSE::Cfg->charset, $result->{content});
+  }
 
   %acts = (); # hopefully break circular refs
 

@@ -72,6 +72,7 @@ site/cgi-bin/modules/BSE/CustomBase.pm
 site/cgi-bin/modules/BSE/DB.pm
 site/cgi-bin/modules/BSE/DB/MSSQL.pm
 site/cgi-bin/modules/BSE/DB/Mysql.pm
+site/cgi-bin/modules/BSE/CGI.pm
 site/cgi-bin/modules/BSE/Countries.pm
 site/cgi-bin/modules/BSE/Dynamic/Article.pm
 site/cgi-bin/modules/BSE/Dynamic/Catalog.pm
@@ -239,6 +240,7 @@ site/cgi-bin/modules/BSE/UserReg.pm
 site/cgi-bin/modules/BSE/Util/ContentType.pm
 site/cgi-bin/modules/BSE/Util/DynSort.pm
 site/cgi-bin/modules/BSE/Util/DynamicTags.pm
+site/cgi-bin/modules/BSE/Util/HTML.pm
 site/cgi-bin/modules/BSE/Util/Iterate.pm
 site/cgi-bin/modules/BSE/Util/SQL.pm
 site/cgi-bin/modules/BSE/Util/Secure.pm
@@ -259,6 +261,7 @@ site/cgi-bin/modules/Courier/AustraliaPost/Sea.pm
 site/cgi-bin/modules/Courier/Fastway/Road.pm
 site/cgi-bin/modules/Courier/Fastway/Satchel.pm
 site/cgi-bin/modules/Courier/Null.pm
+site/cgi-bin/modules/DevHelp/Cfg.pm
 site/cgi-bin/modules/DevHelp/Date.pm
 site/cgi-bin/modules/DevHelp/DynSort.pm
 site/cgi-bin/modules/DevHelp/FileUpload.pm

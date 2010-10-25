@@ -1,7 +1,7 @@
 package BSE::AdminLogon;
 use strict;
 use BSE::Util::Tags qw(tag_error_img);
-use DevHelp::HTML;
+use BSE::Util::HTML;
 use BSE::CfgInfo 'admin_base_url';
 
 my %actions =

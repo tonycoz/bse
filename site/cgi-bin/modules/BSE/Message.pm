@@ -194,6 +194,8 @@ sub _get_base {
     $self->{cache}->set("msg-$key", $entry);
   }
 
+  $msg or return;
+
   # clone so the caller doesn't modify cached value
   my %entry = %$msg;
   return \%entry;

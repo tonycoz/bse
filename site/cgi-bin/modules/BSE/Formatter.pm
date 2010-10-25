@@ -1,6 +1,6 @@
 package BSE::Formatter;
 use strict;
-use DevHelp::HTML;
+use BSE::Util::HTML;
 use Carp 'confess';
 
 use base 'DevHelp::Formatter';

@@ -5,7 +5,7 @@ use BSE::Template;
 use SiteUsers;
 use BSE::Util::Iterate;
 use BSE::Util::Tags qw(tag_error_img);
-use DevHelp::HTML;
+use BSE::Util::HTML;
 use DevHelp::Validate;
 use BSE::Util::Secure qw/make_secret/;
 use BSE::SubscribedUsers;

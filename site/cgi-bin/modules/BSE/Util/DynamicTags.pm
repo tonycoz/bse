@@ -1,7 +1,7 @@
 package BSE::Util::DynamicTags;
 use strict;
 use BSE::Util::Tags qw(tag_article);
-use DevHelp::HTML;
+use BSE::Util::HTML;
 use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 use BSE::CfgInfo qw(custom_class);

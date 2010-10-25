@@ -1,7 +1,7 @@
 package BSE::FileHandler::Default;
 use strict;
 use base "BSE::FileHandler::Base";
-use DevHelp::HTML;
+use BSE::Util::HTML;
 
 sub process_file {
   my ($self, $file) = @_;

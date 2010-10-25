@@ -1,6 +1,5 @@
 package BSE::ThumbLow;
 use strict;
-use DevHelp::HTML;
 
 sub _thumbimage_low {
   my ($self, $geo_id, $im, $field, $cfg, $static) = @_;

@@ -1,7 +1,7 @@
 package BSE::UI::Page;
 use strict;
 use Articles;
-use DevHelp::HTML qw(escape_uri);
+use BSE::Util::HTML qw(escape_uri);
 use BSE::UI::Dispatch;
 our @ISA = qw(BSE::UI::Dispatch);
 
@@ -46,10 +46,10 @@ sub dispatch {
       (my $url = $ENV{SCRIPT_URL}) =~ s(^\Q$prefix\E/)();
       my ($alias) = $url =~ /^([a-zA-Z0-9_]+)/
 	or return $self->error($req, "Missing document $ENV{SCRIPT_URL}");
-      
+
       $article = Articles->getBy(linkAlias => $alias)
 	or return $self->error($req, "Unknown article alias '$alias'");
-      
+
       # have the client treat this as successful, though an error is
       # still written to the Apache error log
       push @more_headers, "Status: 200";
@@ -100,16 +100,12 @@ sub dispatch {
   if ($cfg->entry('basic', 'alias_use_static', 1)
       && !$article->is_dynamic
       && -r (my $file = $article->link_to_filename($cfg))) {
-    if (open DOC, "< $file") {
-      my $content = do { local $/; <DOC> };
-      close DOC;
-      return
-	{
-	 content => $content,
-	 type => BSE::Template->get_type($cfg, $article->{template}),
-	 no_cache_dynamic => $no_cache_dynamic,
-	};
-    }
+    return
+      {
+       content_filename => $file,
+       type => BSE::Template->get_type($cfg, $article->{template}),
+       no_cache_dynamic => $no_cache_dynamic,
+      };
   }
 
   # get the dynamic generate for this article type
@@ -147,10 +143,14 @@ sub dispatch {
   my $dynamic_pregen = $cfg->entry('basic', 'jit_dynamic_pregen');
   my $template;
   if (-e $srcname) {
-    if (open SRC, "< $srcname") {
+    if (open my $src, "< $srcname") {
       local $/;
-      $template = <SRC>;
-      close SRC;
+      if ($cfg->utf8) {
+	my $charset = $cfg->charset;
+	binmode $src, ":encoding($charset)";
+      }
+      $template = <$src>;
+      close $src;
     }
     else {
       print STDERR "** PAGE: $id - page file exists but isn't readable\n";
@@ -187,10 +187,14 @@ sub _generate_pregen {
 
   my $content = $gen->generate($article, $articles);
 
-  if (open CONTENT, "> $srcname") {
-    binmode CONTENT;
-    print CONTENT $content;
-    close CONTENT;
+  if (open my $cfile, "> $srcname") {
+    binmode $cfile;
+    if ($req->cfg->utf8) {
+      my $charset = $req->cfg->charset;
+      binmode $cfile, ":encoding($charset)";
+    }
+    print $cfile $content;
+    close $cfile;
   }
   else {
     print STDERR "** PAGE: $article->{id} - cannot create $srcname: $!\n";

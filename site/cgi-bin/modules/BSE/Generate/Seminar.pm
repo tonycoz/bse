@@ -2,7 +2,7 @@ package BSE::Generate::Seminar;
 use strict;
 use base 'Generate::Product';
 use BSE::TB::Seminars;
-use DevHelp::HTML;
+use BSE::Util::HTML;
 use BSE::Util::Tags qw(tag_article);
 use BSE::Util::Iterate;
 

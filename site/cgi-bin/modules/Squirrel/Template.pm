@@ -19,6 +19,24 @@ sub new {
   return bless \%opts, $class;
 }
 
+sub _slurp {
+  my ($self, $filename, $error) = @_;
+
+  my $opened = open my $fh, "<", $filename;
+  unless ($opened) {
+    $$error = "Cannot open $filename: $!";
+    return;
+  }
+  if ($self->{utf8}) {
+    my $charset = $self->{charset} || "utf-8";
+    binmode $fh, ":encoding($charset)";
+  }
+  my $data = do { local $/; <$fh> };
+  close $fh;
+
+  return $data;
+}
+
 sub low_perform {
   my ($self, $acts, $func, $args, $orig) = @_;
 
@@ -286,10 +304,9 @@ sub include {
 
   print STDERR "Found $filename\n" if DEBUG;
 
-  open INCLUDE, "< $filename"
-    or return "** cannot open $filename : $! **";
-  my $data = do { local $/; <INCLUDE> };
-  close INCLUDE;
+  my $error;
+  my $data = $self->_slurp($filename, \$error)
+    or return "* $error *";
   print STDERR "Included $filename >>$data<<\n"
       if DEBUG;
 
@@ -385,9 +402,8 @@ sub replace_template {
 	last;
       }
       my $params = $3;
-      if (open WRAPPER, "< $wrapper") {
-        my $wraptext = do { local $/; <WRAPPER> };
-        close WRAPPER;
+      my $error;
+      if (my $wraptext = $self->_slurp($wrapper, \$error)) {
         $template = substr($template, length $1);
         $wraptext =~ s/<:\s*wrap\s+here\s*:>/$template/i
           and $template = $wraptext
@@ -417,7 +433,7 @@ sub replace_template {
 	}
       }
       else {
-	print "ERROR: Unable to load wrapper $wrapper: $!\n";
+	print "ERROR: Unable to load wrapper $wrapper: $error\n";
       }
     }
   }
@@ -535,10 +551,9 @@ sub show_page {
     $file
       or die "Cannot find template $page";
   }
-  open TMPLT, "< $file"
+  my $error;
+  my $template = $self->_slurp($file, $error)
     or die "Cannot open template $file: $!";
-  my $template = do { local $/; <TMPLT> };
-  close TMPLT;
 
   my $result = $self->replace_template($template, $acts, $iter);
   print STDERR "<< show_page\n" if DEBUG;

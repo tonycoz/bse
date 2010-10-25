@@ -1,7 +1,7 @@
 package BSE::UI::Shop;
 use strict;
 use base 'BSE::UI::Dispatch';
-use DevHelp::HTML qw(:default popup_menu);
+use BSE::Util::HTML qw(:default popup_menu);
 use BSE::Util::SQL qw(now_sqldate now_sqldatetime);
 use BSE::Shop::Util qw(need_logon shop_cart_tags payment_types nice_options 
                        cart_item_opts basic_tags order_item_opts);

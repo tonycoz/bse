@@ -10,7 +10,7 @@ use BSE::Util::SQL qw(now_sqldate);
 use BSE::Util::Tags;
 use BSE::CfgInfo qw(custom_class);
 use Carp 'confess';
-use DevHelp::HTML qw(escape_html);
+use BSE::Util::HTML qw(escape_html);
 
 =item shop_cart_tags($acts, $cart, $cart_prods, $req, $stage)
 

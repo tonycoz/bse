@@ -1,6 +1,6 @@
 package BSE::UI::SiteuserCommon;
 use strict;
-use DevHelp::HTML;
+use BSE::Util::HTML;
 use BSE::Util::Tags qw(tag_hash);
 
 use constant MAXWIDTH => 10000;

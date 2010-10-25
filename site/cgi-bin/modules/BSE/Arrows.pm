@@ -1,6 +1,6 @@
 package BSE::Arrows;
 use strict;
-use DevHelp::HTML;
+use BSE::Util::HTML;
 
 use base 'Exporter';
 

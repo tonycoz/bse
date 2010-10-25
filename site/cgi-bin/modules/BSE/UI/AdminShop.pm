@@ -15,7 +15,7 @@ use BSE::Sort;
 use BSE::Util::Tags qw(tag_hash);
 use BSE::Util::Iterate;
 use BSE::WebUtil 'refresh_to_admin';
-use DevHelp::HTML qw(:default popup_menu);
+use BSE::Util::HTML qw(:default popup_menu);
 use BSE::Arrows;
 use BSE::Shop::Util qw(order_item_opts nice_options);
 

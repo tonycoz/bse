@@ -10,7 +10,7 @@ use Util qw(generate_button);
 use BSE::Util::Tags qw(tag_article);
 use BSE::TB::ArticleFiles;
 @ISA = qw/Generate/;
-use DevHelp::HTML;
+use BSE::Util::HTML;
 use BSE::Arrows;
 use Carp 'confess';
 use BSE::Util::Iterate;

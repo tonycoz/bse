@@ -3,7 +3,7 @@ use strict;
 use base 'BSE::UI::AdminDispatch';
 use BSE::Util::Tags;
 use BSE::Report;
-use DevHelp::HTML;
+use BSE::Util::HTML;
 
 my %actions =
   (

@@ -1,0 +1,104 @@
+=head1 NAME
+
+bse-unicode.pod - using unicode with BSE
+
+=head1 DESCRIPTION
+
+Using utf-8 with BSE is currently experimental.  This latest support
+is independent and incompatible with previous implementation changes.
+
+You will need to perform three steps:
+
+=over
+
+=item 1.
+
+change the database character set to utf-8
+
+=item 2.
+
+change the BSE character set to utf-8
+
+=item 3.
+
+enable the utf8 flag.
+
+=back
+
+=head2 Changing the database character set
+
+For a new system you can simply do:
+
+  cd util
+  perl upgrade_mysql.pl -c utf8
+
+For an old system it will be more complex.
+
+If the character set the database uses for your tables matches the
+character set of the data you already have stored, then the above will
+work.
+
+To check the character set:
+
+  mysql -uuser -p databasename
+  mysql> show full columns from order_item;
+
+If the C<Collation> column is a collation for your character set the
+the above will work.
+
+Note that Mysql's C<latin1> is equivalent to C<windows-1252>.
+
+If your database character set isn't equivalent you can fix the table
+character sets by converting to binary and then to the correct
+character set:
+
+  perl upgrade_mysql.pl -c binary
+  perl upgrade_mysql.pl -c latin1
+
+Only then perform the conversion to C<utf8>.
+
+=head2 Changing the BSE character set to UTF-8
+
+As you did historically, set C<charset> in C<html>:
+
+  [html]
+  charset=utf-8
+
+=head2 Enable the C<utf8> flag
+
+Set C<utf8=1> in C<[basic]>:
+
+  [basic]
+  utf8=1
+
+Note that this flag doesn't require that the BSE character set be set
+to utf-8, but it is recommended.
+
+The flag currently causes the following changes in behaviour:
+
+=over
+
+=item *
+
+template files are converted from the BSE character set to unicode for
+internal processing.
+
+=item *
+
+if the BSE character set is utf-8 then the database handle is
+configured to work in unicode.
+
+=item *
+
+template processed output is converted from unicode to the BSE
+character set on output.
+
+=item *
+
+JSON output is explicitly converted to UTF-8.
+
+=back
+
+BSE character set refers to the value configured in [html].charset
+
+=cut
