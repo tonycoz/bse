@@ -36,3 +36,14 @@ long_desc: <<TEXT
 Cleans up old entries from BSE's session table.
 TEXT
 
+id: bse_audit_log_clean
+description: Audit log clean up
+modname: BSE::Jobs::AuditClean
+long_desc: <<TEXT
+<p>Clean up entries from the BSE audit log older than the limit.</p>
+
+<p>The default limit is 30 days, but this can be set in bse.cfg:</p>
+<pre>[basic]
+audit_log_age=60
+</pre>
+TEXT

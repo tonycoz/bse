@@ -1041,45 +1041,20 @@ sub csrf_error {
 
 Simple audit logging.
 
-We record:
+See BSE::TB::AuditLog.
 
-  object id, object describe result, action, siteuserid, ip address, date/time
-
-object and action are required.
+object, component, msg are required.
 
 =cut
 
 sub audit {
   my ($self, %opts) = @_;
 
-  my $object = delete $opts{object}
-    or confess "Missing object parameter";
-
-  my $action = delete $opts{action}
-    or confess "Missing action parameter";
-
-  # check all of these are callable
-  my $id = $object->id;
-  my $desc = $object->describe;
-
-  $self->cfg->entry("basic", "auditlog", 0)
-    or return; # no audit logging
-
-  # assumed that check_admin_logon() has been done
-  my $admin = $self->user;
-
-  require BSE::Util::SQL;
   require BSE::TB::AuditLog;
-  my %entry =
-    (
-     object_id => $id,
-     object_desc => $desc,
-     action => $action,
-     admin_id => $admin ? $admin->id : undef,
-     ip_address => $ENV{REMOTE_ADDR},
-     when_at => BSE::Util::SQL::now_datetime(),
-    );
-  BSE::TB::AuditLog->make(%entry);
+
+  $opts{actor} ||= $self->user;
+
+  return BSE::TB::AuditLog->log(%opts);
 }
 
 =item message_catalog

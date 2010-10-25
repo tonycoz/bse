@@ -116,8 +116,10 @@ sub run {
 
   my $sth = $self->stmt($name);
 
-  $sth->execute(@args)
+  my $result = $sth->execute(@args)
     or confess "Cannot execute statement $name: ",$sth->errstr;
+
+  return 0 + $result;
 }
 
 sub dbh {

@@ -109,6 +109,7 @@ site/cgi-bin/modules/BSE/ImportTargetProduct.pm
 site/cgi-bin/modules/BSE/Importer.pm
 site/cgi-bin/modules/BSE/Index/BSE.pm
 site/cgi-bin/modules/BSE/Index/Base.pm
+site/cgi-bin/modules/BSE/Jobs/AuditClean.pm
 site/cgi-bin/modules/BSE/Mail.pm
 site/cgi-bin/modules/BSE/Mail/SMTP.pm
 site/cgi-bin/modules/BSE/Mail/Sendmail.pm
@@ -161,6 +162,8 @@ site/cgi-bin/modules/BSE/TB/AdminUIState.pm
 site/cgi-bin/modules/BSE/TB/AdminUIStates.pm
 site/cgi-bin/modules/BSE/TB/AdminUser.pm
 site/cgi-bin/modules/BSE/TB/AdminUsers.pm
+site/cgi-bin/modules/BSE/TB/AuditEntry.pm
+site/cgi-bin/modules/BSE/TB/AuditLog.pm
 site/cgi-bin/modules/BSE/TB/ArticleFile.pm
 site/cgi-bin/modules/BSE/TB/ArticleFileMeta.pm
 site/cgi-bin/modules/BSE/TB/ArticleFileMetas.pm

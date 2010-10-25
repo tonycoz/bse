@@ -1097,3 +1097,57 @@ create table bse_admin_ui_state (
   name varchar(80) not null,
   val text not null
 );
+
+drop table if exists bse_audit_log;
+create table bse_audit_log (
+  id integer not null auto_increment primary key,
+  when_at datetime not null,
+
+  -- bse for core BSE code, add on code supplies something different
+  facility varchar(20) not null default 'bse',
+
+  -- shop, search, editor, etc
+  component varchar(20) not null,
+
+  -- piece of component, paypal, index, etc
+  -- NOT a perl module name
+  module varchar(20) not null,
+
+  -- what the module what doing
+  function varchar(40) not null,
+
+  -- level of event: (stolen from syslog)
+  --  emerg - the system is broken
+  --  alert - something needing immediate action
+  --  crit - critical problem
+  --  error - error
+  --  warning - warning, something someone should look at
+  --  notice - notice, something significant happened, but not an error
+  --  info - informational
+  --  debug - debug
+  -- Stored as numbers from 0 to 7
+  level smallint not null,
+
+  -- actor
+  -- type of actor:
+  --  S - system
+  --  U - member
+  --  A - admin
+  actor_type char not null,
+  actor_id integer null,
+
+  -- object (if any)
+  object_type varchar(40) null,
+  object_id integer null,
+
+  ip_address varchar(20) not null,  
+
+  -- brief description
+  msg varchar(255) not null,
+
+  -- debug dump
+  dump longtext null,
+
+  index ba_when(when_at),
+  index ba_what(facility, component, module, function)
+);

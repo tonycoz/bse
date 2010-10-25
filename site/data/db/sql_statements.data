@@ -400,3 +400,9 @@ select exists(
     and forSale <> 0
   ) as "have_sale_files"
 SQL
+
+name: bseAuditLogClean
+sql_statement: <<SQL
+delete from bse_audit_log
+where when_at < date_sub(now(), interval ? day)
+SQL
