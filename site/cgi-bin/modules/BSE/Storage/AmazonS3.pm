@@ -129,20 +129,20 @@ EOS
 
 =head1 NAME
 
-BSE::Storage::FTP - storage that stores via FTP.
+BSE::Storage::AmazonS3 - storage that stores via Amazon S3.
 
 =head1 SYNOPSIS
 
-  [ftpimages]
-  class=BSE::Storage::FTP
+  [s3images]
+  class=BSE::Storage::AmazonS3
   baseurl=http://yourisp.com/images/
-  cwd=/public_html/images/
-  user=ftpuser
-  password=ftppassword
+  keyid=...
+  accesskey=...
+  bucket=ftppassword
   cond=...
 
 =head1 DESCRIPTION
 
-This is a BSE storage that accesses the remote store via FTP.
+This is a BSE storage that accesses the remote store via Amazon S3.
 
 =cut
