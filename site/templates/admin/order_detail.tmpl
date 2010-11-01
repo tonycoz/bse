@@ -10,6 +10,7 @@
 <:ifSiteuser id:><a href="/cgi-bin/admin/siteusers.pl?a_edit=1&amp;id=<:siteuser id:>">Edit Member</a> |
 <a href="/cgi-bin/admin/siteusers.pl?a_edit=1&amp;id=<:siteuser id:>&amp;_t=orders">Other member orders</a> |<:or:><:eif:>
 </p>
+<:ifMessage:><div class="message"><:message:></div><:or:><:eif:>
 <h2>Order details - No: #<:order id:></h2>
 <:ifOrder complete:><:or:><p><b><font size="+1">This order is incomplete and should not be filled.</font></b></p><:eif:>
 <table cellpadding="6" cellspacing="1" border="0">
@@ -110,9 +111,6 @@ Shipping via <:order shipping_method:>:
           <td align=right nowrap><:money order gst:></td>
 </tr>
 </table>
-</td>
-</tr>
-</table>
 <:switch:>
 <:case Eq [order paidFor] "0":>
 <p>This order hasn't been paid</p>
@@ -141,6 +139,7 @@ Shipping via <:order shipping_method:>:
 <:case Eq [order paymentType] "1":><p>Payment will be made by cheque.</p>
 <:case Eq [order paymentType] "2":><p>Contact the customer to arrange for payment.</p>
 <:case Eq [order paymentType] "3":><p>Paid manually (staff marked this order paid) - you can <a href="<:script:>?a_order_unpaid=1&amp;id=<:order id:>">unmark it</a></p>
+<:case Eq [order paymentType] "4":><p>Paid via PayPal, transaction id <:order paypal_tran_id:><:ifUserCan bse_shop_order_refund_paypal:> <a href="<:script:>?a_paypal_refund=1&amp;id=<:order id:>">Refund</a><:or:><:eif:></p>
 <:endswitch:>
 <:include custom/order_detail_payment.include optional:>
 <:if Order filled:>
@@ -152,4 +151,13 @@ Shipping via <:order shipping_method:>:
 <:if Order instructions:>
 <p style="white-space: pre-wrap;"><:order instructions:></p>
 <:or Order:><:eif Order:>
+
+<table class="editform" id="auditlog">
+<:include admin/include/audithead.tmpl:>
+<:iterator begin auditlog object_id [order id] object_type BSE::TB::Order:>
+<:include admin/include/auditentry.tmpl:>
+<:iterator end auditlog:>
+</table>
+
+</table>
 </body></html>

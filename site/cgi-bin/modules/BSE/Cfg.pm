@@ -92,6 +92,47 @@ sub charset {
   return $single->entry('html', 'charset', 'iso-8859-1');
 }
 
+=item user_url($script, $target)
+
+=cut
+
+sub user_url {
+  my ($cfg, $script, $target, @options) = @_;
+
+  my $base = $script eq 'shop' ? $cfg->entryVar('site', 'secureurl') : '';
+  my $template;
+  if ($target) {
+    if ($script eq 'nuser') {
+      $template = "/cgi-bin/nuser.pl/user/TARGET";
+    }
+    else {
+      $template = "$base/cgi-bin/$script.pl?a_TARGET=1";
+    }
+    $template = $cfg->entry('targets', $script, $template);
+    $template =~ s/TARGET/$target/;
+  }
+  else {
+    if ($script eq 'nuser') {
+      $template = "/cgi-bin/nuser.pl/user";
+    }
+    else {
+      $template = "$base/cgi-bin/$script.pl";
+    }
+    $template = $cfg->entry('targets', $script.'_n', $template);
+  }
+  if (@options) {
+    $template .= $template =~ /\?/ ? '&' : '?';
+    my @entries;
+    while (my ($key, $value) = splice(@options, 0, 2)) {
+      require BSE::Util::HTML;
+      push @entries, "$key=" . BSE::Util::HTML::escape_uri($value);
+    }
+    $template .= join '&', @entries;
+  }
+
+  return $template;
+}
+
 1;
 
 =head1 AUTHOR

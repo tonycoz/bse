@@ -777,6 +777,10 @@ The possible payment types are:
 
 2 - contact customer for details
 
+=item *
+
+3 - paypal - see L<paypal.pod>
+
 =back
 
 Other types can be added by adding entries to the [payment type names]
@@ -862,6 +866,11 @@ information.  Default: False.
 Maximum number of entries in the cart.  This limits the number of
 distinct products (with options) in the cart, not the total
 quantities.  Default: Unlimited.
+
+=item currency
+
+The shop currency as a 3-letter currency code.  Default: AUD.
+Currencies other than "AUD" aren't supported by most of the system.
 
 =back
 

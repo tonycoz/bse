@@ -4,13 +4,26 @@ use vars qw(@ISA @EXPORT_OK);
 @ISA = qw/Exporter/;
 @EXPORT_OK = qw/shop_cart_tags cart_item_opts nice_options shop_nice_options
                 total shop_total load_order_fields basic_tags need_logon
-                get_siteuser payment_types order_item_opts/;
+                get_siteuser payment_types order_item_opts
+ PAYMENT_CC PAYMENT_CHEQUE PAYMENT_CALLME PAYMENT_MANUAL PAYMENT_PAYPAL/;
+
+our %EXPORT_TAGS =
+  (
+   payment => [ grep /^PAYMENT_/, @EXPORT_OK ],
+  );
+
 use Constants qw/:shop/;
 use BSE::Util::SQL qw(now_sqldate);
 use BSE::Util::Tags;
 use BSE::CfgInfo qw(custom_class);
 use Carp 'confess';
 use BSE::Util::HTML qw(escape_html);
+
+use constant PAYMENT_CC => 0;
+use constant PAYMENT_CHEQUE => 1;
+use constant PAYMENT_CALLME => 2;
+use constant PAYMENT_MANUAL => 3;
+use constant PAYMENT_PAYPAL => 4;
 
 =item shop_cart_tags($acts, $cart, $cart_prods, $req, $stage)
 
@@ -476,27 +489,34 @@ information.
 sub payment_types {
   my ($cfg) = @_;
 
-  my %types =
+  my @types =
     (
-     0 => { 
-	   id => 0, 
-	   name => 'CC', 
-	   desc => 'Credit Card',
-	   require => [ qw/cardNumber cardExpiry cardHolder/ ],
-	  },
-     1 => { 
-	   id => 1, 
-	   name => 'Cheque', 
-	   desc => 'Cheque',
-	   require => [],
-	  },
-     2 => {
-	   id => 2,
-	   name => 'CallMe',
-	   desc => 'Call customer for payment',
-	   require => [],
-	  },
+     {
+      id => PAYMENT_CC, 
+      name => 'CC', 
+      desc => 'Credit Card',
+      require => [ qw/cardNumber cardExpiry cardHolder/ ],
+     },
+     {
+      id => PAYMENT_CHEQUE, 
+      name => 'Cheque', 
+      desc => 'Cheque',
+      require => [],
+     },
+     {
+      id => PAYMENT_CALLME,
+      name => 'CallMe',
+      desc => 'Call customer for payment',
+      require => [],
+     },
+     {
+      id => PAYMENT_PAYPAL,
+      name => "PayPal",
+      desc => "PayPal",
+      require => [],
+     },
     );
+  my %types = map { $_->{id} => $_ } @types;
 
   my @payment_types = split /,/, $cfg->entry('shop', 'payment_types', '0');
   
@@ -505,6 +525,7 @@ sub payment_types {
     my $name = $cfg->entry('payment type names', $type, $hash->{name});
     my $desc = $cfg->entry('payment type descs', $type, 
 			   $hash->{desc} || $name);
+    my $enabled = !$cfg->entry('payment type disable', $hash->{name}, 0);
     my @require = $hash->{require} ? @{$hash->{require}} : ();
     @require = split /,/, $cfg->entry('payment type required', $type,
 				      join ",", @require);
@@ -529,12 +550,24 @@ sub payment_types {
 
   # credit card payments require either encrypted emails enabled or
   # an online CC processing module
-  if ($types{0}) {
+  if ($types{+PAYMENT_CC}) {
     my $noencrypt = $cfg->entryBool('shop', 'noencrypt', 0);
     my $ccprocessor = $cfg->entry('shop', 'cardprocessor');
 
     if ($noencrypt && !$ccprocessor) {
-      $types{0}{enabled} = 0;
+      $types{+PAYMENT_CC}{enabled} = 0;
+      $types{+PAYMENT_CC}{message} =
+	"No card processor configured and encryption disabled";
+    }
+  }
+
+  # paypal requires api confguration
+  if ($types{+PAYMENT_PAYPAL} && $types{+PAYMENT_PAYPAL}{enabled}) {
+    require BSE::PayPal;
+
+    unless (BSE::PayPal->configured) {
+      $types{+PAYMENT_PAYPAL}{enabled} = 0;
+      $types{+PAYMENT_PAYPAL}{message} = "No API configuration";
     }
   }
 

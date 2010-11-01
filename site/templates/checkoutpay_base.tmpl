@@ -101,7 +101,7 @@
   <hr size="1" noshade>
 <:ifMsg:><p><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:msg:></font></b></p><:or:><:eif:>
   <:if Payments CC :>
-  <:if MultPaymentTypes:><p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><input type="radio" name="paymentType" value="0" <:checkedPayment CC:>> Credit Card</font></p><:or MultPaymentTypes:><input type=hidden name=paymentType value=0 <:checkedPayment CC:>><:eif MultPaymentTypes:>
+  <:if MultPaymentTypes:><p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><input type="radio" name="paymentType" value="<:paymentTypeId CC:>" <:checkedPayment CC:>> Credit Card</font></p><:or MultPaymentTypes:><input type=hidden name=paymentType value="<:paymentTypeId CC:>" <:checkedPayment CC:>><:eif MultPaymentTypes:>
   <table border="0" cellspacing="0" cellpadding="0">
     <tr> 
       <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Name on 
@@ -139,22 +139,27 @@
   </table>
   <:or Payments:><:eif Payments:>
   <:if Payments Cheque:>
-  <:if MultPaymentTypes:><p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"> <input type=radio name=paymentType value=1 <:checkedPayment Cheque:>/>
-    Cheque</font></p><:or MultPaymentTypes:><input type=hidden name=paymentType value=1><:eif MultPaymentTypes:>
+  <:if MultPaymentTypes:><p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"> <input type="radio" name="paymentType" value="<:paymentTypeId Cheque:>" <:checkedPayment Cheque:>/>
+    Cheque</font></p><:or MultPaymentTypes:><input type="hidden" name="paymentType" value="<:paymentTypeId Cheque:>"><:eif MultPaymentTypes:>
   <p> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Please send your cheque to:</font></p>
   <ul> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> <:cfg shop address1:><br />
      <:cfg shop address2:><br />
      <:cfg shop address3:></font></ul>
   <:or Payments:><:eif Payments:>
   <:if Payments CallMe:>
-   <:if MultPaymentTypes:><p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><input type=radio name=paymentType value=2 <:checkedPayment CallMe:>/> Contact me for billing details</font></p>
+   <:if MultPaymentTypes:><p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><input type="radio" name="paymentType" value="<:paymentTypeId CallMe:>" <:checkedPayment CallMe:>/> Contact me for billing details</font></p>
    <:or MultPaymentTypes:>
-     <input type=hidden name=paymentType value=2>
+     <input type="hidden" name="paymentType" value="<:paymentTypeId CallMe:>">
      <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">We will call you to arrange for payment.</font></p>
    <:eif MultPaymentTypes:>
   <:or Payments:>
 
   <:eif Payments:>
+  <:if Payments PayPal:>
+<:if MultPaymentTypes:><p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"> <input type=radio name=paymentType value="<:paymentTypeId PayPal:>" <:checkedPayment PayPal:>/>
+<img src="https://www.paypal.com/en_AU/i/logo/PayPal_mark_37x23.gif" align="absmiddle" style="margin-right:7px;"><span style="font-size:11px; font-family: Arial, Verdana;">The safer, easier way to pay.</span></font></p><:or MultPaymentTypes:><input type=hidden name=paymentType value=1><:eif MultPaymentTypes:>
+
+  <:or Payments:><:eif Payments:>
   <:include custom/payment_type.include optional:>
   <p>&nbsp; </p>
   <font face="Verdana, Arial, Helvetica, sans-serif" size="3"> <b>Tax Invoice 

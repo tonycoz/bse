@@ -4,7 +4,7 @@ use Squirrel::Table;
 use vars qw(@ISA $VERSION);
 @ISA = qw(Squirrel::Table);
 use BSE::TB::AuditEntry;
-use Scalar::Util;
+use Scalar::Util qw(blessed);
 
 sub rowClass {
   return 'BSE::TB::AuditEntry';
@@ -25,7 +25,29 @@ separated component, module and function.
 
 =item *
 
-level - level of event, one of 
+level - level of event, one of emerg, alert, crit, error, warning,
+notice, info, debug.
+
+=item *
+
+actor - the entity performing the actor, one of a SiteUser object, an
+AdminUser object, "S" for system, "U" for an unknown public user.
+
+=item *
+
+msg - a brief message
+
+=item *
+
+ip_address - the actor's IP address (optional, loaded from $REMOTE_ADDR).
+
+=item *
+
+object - an optional object being acted upon.
+
+=item *
+
+dump - an optional dump of debugging data
 
 =back
 
@@ -46,6 +68,11 @@ sub log {
     or $class->crash("Missing component");
   if ($component =~ /^(\w+):(\w*):(.+)$/) {
     @entry{qw/component module function/} = ( $1, $2, $3 );
+  }
+  elsif ($component =~ /^(\w+):(\w*)$/) {
+    @entry{qw/component module/} = ( $1, $2 );
+    $entry{function} = delete $opts{function} || delete $opts{action}
+      or $class->crash("Missing function parameter");
   }
   else {
     $entry{component} = $component;
@@ -76,16 +103,16 @@ sub log {
       $entry{actor_type} = "A";
     }
     else {
-      $entry{actor_type} = "A";
+      $entry{actor_type} = "M";
     }
     $entry{actor_id} = $actor->id;
   }
   else {
-    if ($actor eq "S") {
-      $entry{actor_type} = "S";
+    if ($actor =~ /^[US]$/) {
+      $entry{actor_type} = $actor;
     }
     else {
-      $entry{actor_type} = "U";
+      $entry{actor_type} = "E";
     }
     $entry{actor_id} = undef;
   }

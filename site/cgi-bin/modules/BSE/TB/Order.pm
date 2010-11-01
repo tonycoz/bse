@@ -25,7 +25,8 @@ sub columns {
            ccOnline ccSuccess ccReceipt ccStatus ccStatusText
            ccStatus2 ccTranId complete delivOrganization billOrganization
            delivStreet2 billStreet2 purchase_order shipping_method
-           shipping_name shipping_trace/;
+           shipping_name shipping_trace
+	   paypal_token paypal_tran_id/;
 }
 
 sub defaults {
@@ -79,6 +80,8 @@ sub defaults {
      shipping_trace => undef,
     );
 }
+
+sub table { "orders" }
 
 sub address_columns {
   return qw/
@@ -299,6 +302,19 @@ sub add_item {
   $self->set_total($self->total + $prod->retailPrice * $units);
 
   return BSE::TB::OrderItems->make(%item);
+}
+
+sub deliv_country_code {
+  my ($self) = @_;
+
+  my $use_codes = BSE::Cfg->single->entry("shop", "country_code", 0);
+  if ($use_codes) {
+    return $self->delivCountry;
+  }
+  else {
+    require BSE::Countries;
+    return BSE::Countries::bse_country_code($self->delivCountry);
+  }
 }
 
 1;

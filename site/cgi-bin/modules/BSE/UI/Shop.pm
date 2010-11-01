@@ -3,7 +3,7 @@ use strict;
 use base 'BSE::UI::Dispatch';
 use BSE::Util::HTML qw(:default popup_menu);
 use BSE::Util::SQL qw(now_sqldate now_sqldatetime);
-use BSE::Shop::Util qw(need_logon shop_cart_tags payment_types nice_options 
+use BSE::Shop::Util qw(:payment need_logon shop_cart_tags payment_types nice_options 
                        cart_item_opts basic_tags order_item_opts);
 use BSE::CfgInfo qw(custom_class credit_card_class bse_default_country);
 use BSE::TB::Orders;
@@ -16,10 +16,7 @@ use DevHelp::Validate qw(dh_validate dh_validate_hash);
 use Digest::MD5 'md5_hex';
 use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
-
-use constant PAYMENT_CC => 0;
-use constant PAYMENT_CHEQUE => 1;
-use constant PAYMENT_CALLME => 2;
+use BSE::Util::Secure qw(make_secret);
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -40,6 +37,8 @@ my %actions =
    payment => 1,
    orderdone => 1,
    location => 1,
+   paypalret => 1,
+   paypalcan => 1,
   );
 
 my %field_map = 
@@ -787,6 +786,7 @@ sub req_show_payment {
      ifMultPaymentTypes => @payment_types > 1,
      checkedPayment => [ \&tag_checkedPayment, $payment, \%types_by_name ],
      ifPayments => [ \&tag_ifPayments, \@payment_types, \%types_by_name ],
+     paymentTypeId => [ \&tag_paymentTypeId, \%types_by_name ],
      error_img => [ \&tag_error_img, $cfg, $errors ],
      total => $order->{total},
      delivery_in => $order->{delivery_in},
@@ -1010,6 +1010,7 @@ sub req_payment {
     }
   }
 
+  $order->set_randomId(make_secret($cfg));
   $order->{ccOnline} = 0;
   
   my $ccprocessor = $cfg->entry('shop', 'cardprocessor');
@@ -1065,27 +1066,49 @@ sub req_payment {
       $order->{ccExpiryHash} = md5_hex($ccExpiry);
     }
   }
+  elsif ($paymentType == PAYMENT_PAYPAL) {
+    require BSE::PayPal;
+    my $msg;
+    my $url = BSE::PayPal->payment_url(order => $order,
+				       user => $user,
+				       msg => \$msg);
+    unless ($url) {
+      $session->{order_work} = $order->{id};
+      my %errors;
+      $errors{_} = "PayPal error: $msg" if $msg;
+      return $class->req_show_payment($req, \%errors);
+    }
+
+    # have to mark it complete so it doesn't get used by something else
+    return BSE::Template->get_refresh($url, $req->cfg);
+  }
 
   # order complete
   $order->{complete} = 1;
   $order->save;
+
+  $class->_finish_order($order, $req);
+
+  return BSE::Template->get_refresh($req->user_url(shop => 'orderdone'), $req->cfg);
+}
+
+# do final processing of an order after payment
+sub _finish_order {
+  my ($self, $req, $order) = @_;
+
 
   my $custom = custom_class($req->cfg);
   $custom->can("order_complete")
     and $custom->order_complete($req->cfg, $order);
 
   # set the order displayed by orderdone
-  $session->{order_completed} = $order->{id};
-  $session->{order_completed_at} = time;
+  $req->session->{order_completed} = $order->{id};
+  $req->session->{order_completed_at} = time;
 
-  my $noencrypt = $cfg->entryBool('shop', 'noencrypt', 0);
-  $class->_send_order($req, $order, \@dbitems, \@products, $noencrypt,
-		      \%subscribing_to);
+  $self->_send_order($req, $order);
 
   # empty the cart ready for the next order
-  delete @{$session}{qw/order_info order_info_confirmed cart order_work/};
-
-  return BSE::Template->get_refresh($req->user_url(shop => 'orderdone'), $req->cfg);
+  delete @{$req->session}{qw/order_info order_info_confirmed cart order_work/};
 }
 
 sub req_orderdone {
@@ -1255,6 +1278,16 @@ sub tag_ifPayment {
   return $payment == $type;
 }
 
+sub tag_paymentTypeId {
+  my ($types_by_name, $args) = @_;
+
+  if (exists $types_by_name->{$args}) {
+    return $types_by_name->{$args};
+  }
+
+  return '';
+}
+
 
 sub _validate_cfg {
   my ($class, $req, $rmsg) = @_;
@@ -1289,12 +1322,12 @@ sub req_recalculate {
 }
 
 sub _send_order {
-  my ($class, $req, $order, $items, $products, $noencrypt, 
-      $subscribing_to) = @_;
+  my ($class, $req, $order) = @_;
 
   my $cfg = $req->cfg;
   my $cgi = $req->cgi;
 
+  my $noencrypt = $cfg->entryBool('shop', 'noencrypt', 0);
   my $crypto_class = $cfg->entry('shop', 'crypt_module',
 				 $Constants::SHOP_CRYPTO);
   my $signing_id = $cfg->entry('shop', 'crypt_signing_id',
@@ -1317,6 +1350,16 @@ sub _send_order {
     $extras{$key} = sub { $data };
   }
 
+  my @items = $order->items;
+  my @products = map $_->product, @items;
+  my %subscribing_to;
+  for my $product (@products) {
+    my $sub = $product->subscription;
+    if ($sub) {
+      $subscribing_to{$sub->{text_id}} = $sub;
+    }
+  }
+
   my $item_index = -1;
   my @options;
   my $option_index;
@@ -1325,32 +1368,32 @@ sub _send_order {
     (
      %extras,
      custom_class($cfg)
-     ->order_mail_actions(\%acts, $order, $items, $products, 
+     ->order_mail_actions(\%acts, $order, \@items, \@products, 
 			  $session->{custom}, $cfg),
      BSE::Util::Tags->static(\%acts, $cfg),
      iterate_items_reset => sub { $item_index = -1; },
      iterate_items => 
      sub { 
-       if (++$item_index < @$items) {
+       if (++$item_index < @items) {
 	 $option_index = -1;
 	 @options = order_item_opts($req,
-				    $items->[$item_index], 
-				    $products->[$item_index]);
+				    $items[$item_index], 
+				    $products[$item_index]);
 	 return 1;
        }
        return 0;
      },
-     item=> sub { $items->[$item_index]{$_[0]}; },
+     item=> sub { $items[$item_index]{$_[0]}; },
      product => 
      sub { 
-       my $value = $products->[$item_index]{$_[0]};
+       my $value = $products[$item_index]{$_[0]};
        defined($value) or $value = '';
        $value;
      },
      order => sub { $order->{$_[0]} },
      extended => 
      sub {
-       $items->[$item_index]{units} * $items->[$item_index]{$_[0]};
+       $items[$item_index]{units} * $items[$item_index]{$_[0]};
      },
      _format =>
      sub {
@@ -1374,7 +1417,7 @@ sub _send_order {
      ifOptions => sub { @options },
      options => sub { nice_options(@options) },
      with_wrap => \&tag_with_wrap,
-     ifSubscribingTo => [ \&tag_ifSubscribingTo, $subscribing_to ],
+     ifSubscribingTo => [ \&tag_ifSubscribingTo, \%subscribing_to ],
     );
 
   my $mailer = BSE::Mail->new(cfg=>$cfg);
@@ -1678,7 +1721,7 @@ sub _fillout_order {
   $values->{orderDate} = now_sqldatetime;
 
   # this should be hard to guess
-  $values->{randomId} ||= md5_hex(time().rand().{}.$$);
+  $values->{randomId} = md5_hex(time().rand().{}.$$);
 
   return 1;
 }
@@ -1944,6 +1987,90 @@ sub _same_options {
   }
 
   return 1;
+}
+
+sub _paypal_order {
+  my ($self, $req, $rmsg) = @_;
+
+  my $id = $req->cgi->param("order");
+  unless ($id) {
+    $$rmsg = $req->catmsg("msg:bse/shop/paypal/noorderid");
+    return;
+  }
+  my ($order) = BSE::TB::Orders->getBy(randomId => $id);
+  unless ($order) {
+    $$rmsg = $req->catmsg("msg:bse/shop/paypal/unknownorderid");
+    return;
+  }
+
+  return $order;
+}
+
+=item paypalret
+
+Handles PayPal returning control.
+
+Expects:
+
+=over
+
+=item *
+
+order - the randomId of the order
+
+=item *
+
+token - paypal token we originally supplied to paypal.  Supplied by
+PayPal.
+
+=item *
+
+PayerID - the paypal user who paid the order.  Supplied by PayPal.
+
+=back
+
+=cut
+
+sub req_paypalret {
+  my ($self, $req) = @_;
+
+  require BSE::PayPal;
+  BSE::PayPal->configured
+      or return $self->req_cart($req, { _ => "msg:bse/shop/paypal/unconfigured" });
+
+  my $msg;
+  my $order = $self->_paypal_order($req, \$msg)
+    or return $self->req_show_payment($req, { _ => $msg });
+
+  $order->complete
+    and return $self->req_cart($req, { _ => "msg:bse/shop/paypal/alreadypaid" });
+
+  unless (BSE::PayPal->pay_order(req => $req,
+				 order => $order,
+				 msg => \$msg)) {
+    return $self->req_show_payment($req, { _ => $msg });
+  }
+
+  $self->_finish_order($req, $order);
+
+  return $req->get_refresh($req->user_url(shop => "orderdone"));
+}
+
+sub req_paypalcan {
+  my ($self, $req) = @_;
+
+  require BSE::PayPal;
+  BSE::PayPal->configured
+      or return $self->req_cart($req, { _ => "msg:bse/shop/paypal/unconfigured" });
+
+  my $msg;
+  my $order = $self->_paypal_order($req, \$msg)
+    or return $self->req_show_payment($req, { _ => $msg });
+
+  $req->flash("msg:bse/shop/paypal/cancelled");
+
+  my $url = $req->user_url(shop => "show_payment");
+  return $req->get_refresh($url);
 }
 
 1;

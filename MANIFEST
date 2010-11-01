@@ -126,6 +126,7 @@ site/cgi-bin/modules/BSE/Password/Plain.pm
 site/cgi-bin/modules/BSE/Passwords.pm
 site/cgi-bin/modules/BSE/Permissions.pm
 site/cgi-bin/modules/BSE/ProductImportXLS.pm
+site/cgi-bin/modules/BSE/PayPal.pm
 site/cgi-bin/modules/BSE/Report.pm
 site/cgi-bin/modules/BSE/Request.pm
 site/cgi-bin/modules/BSE/Request/Base.pm
@@ -470,6 +471,8 @@ site/templates/admin/grouplist.tmpl
 site/templates/admin/helpicon.tmpl	Help icon template for admin templates
 site/templates/admin/image_edit.tmpl	Edit a single image
 site/templates/admin/interestemail.tmpl
+site/templates/admin/include/audithead.tmpl
+site/templates/admin/include/auditentry.tmpl
 site/templates/admin/logon.tmpl
 site/templates/admin/memberupdate/import.tmpl
 site/templates/admin/memberupdate/preview.tmpl

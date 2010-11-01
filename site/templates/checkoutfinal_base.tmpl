@@ -38,6 +38,9 @@
 <:if Payment CallMe:>
 <p>We will call you to arrange payment.</p>
 <:or Payment:><:eif Payment:>
+<:if Payment PayPal:>
+<p>Paid via PayPal, transaction ID <:order paypal_tran_id:></p>
+<:or Payment:><:eif Payment:>
 <:include custom/checkout_final_payments.include optional:>
 </font> 
 <table width="100%" border="0" cellspacing="0" cellpadding="0">

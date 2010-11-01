@@ -76,3 +76,32 @@ description: Attempted to create or save a message to a language not in the conf
 id: bse/admin/message/badmultiline
 description: Multiple lines of text supplied when creating or saving a single line message
 
+id: bse/shop/
+description: Shop messages
+
+id: bse/shop/paypal/
+description: PayPal messages
+
+id: bse/shop/paypal/noorderid
+description: No order value was passed back from PayPal
+
+id: bse/shop/paypal/notoken
+description: No token value was passed back from PayPal
+
+id: bse/shop/paypal/nopayerid
+description: No PayerID value was passed back from PayPal
+
+id: bse/shop/paypal/unknownorderid
+description: Order id supplied by PayPal is unknown
+
+id: bse/shop/paypal/cancelled
+description: Payment through PayPal was cancelled by the user
+
+id: bse/shop/paypal/unconfigured
+description: Entry via one of the PayPal entries when PayPal isn't configured
+
+id: bse/shop/paypal/alreadypaid
+description: Returned from PayPal for an order that was already paid.  The payment through PayPal won't be completed.
+
+id: bse/shop/paypal/badtoken
+description: The transaction token supplied by PayPal to paypalret doesn't match the token value stored in the order

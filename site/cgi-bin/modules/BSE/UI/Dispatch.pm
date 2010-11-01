@@ -27,14 +27,14 @@ sub dispatch {
   }
   unless ($action) {
     for my $check (keys %$actions) {
-      if ($cgi->param("$prefix$check") || $cgi->param("$prefix$check.x")) {
+      if ($cgi->param("a_$check") || $cgi->param("a_$check.x")) {
 	$action = $check;
 	last;
       }
     }
     if (!$action && $prefix ne 'a_') {
       for my $check (keys %$actions) {
-	if ($cgi->param("a_$check") || $cgi->param("a_$check.x")) {
+	if ($cgi->param("$prefix$check") || $cgi->param("$prefix$check.x")) {
 	  $action = $check;
 	  last;
 	}

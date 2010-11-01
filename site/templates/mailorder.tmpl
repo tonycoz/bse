@@ -33,7 +33,8 @@ Name on Card : <:order ccName:>
 Card Type    : <:order ccType :><:eif Order:><:or:><:eif
 :><:ifEq [order paymentType] "1" :>Will be paid by cheque<:or
 :><:eif:><:ifEq [order paymentType] "2"
-:>Please call the customer to arrange for payment<:or:><:eif:><:
+:>Please call the customer to arrange for payment<:or:><:eif:><:ifEq [order paymentType] "4"
+:>Paid by PayPal, transaction id <:order paypal_tran_id:><:or:><:eif:><:
 include custom/payment_type_email.include:>
 To be shipped by: <:order shipping_method:>
 <:if Order instructions:>

@@ -662,11 +662,18 @@ sub make_multidependent_iterator {
 }
 
 sub admin {
-  my ($class, $acts, $cfg) = @_;
+  my ($class, $acts, $cfg, $req) = @_;
 
+  my $oit = BSE::Util::Iterate::Objects->new(cfg => $cfg);
   return
     (
      help => [ \&tag_help, $cfg, 'admin' ],
+     $oit->make
+     (
+      single => "auditentry",
+      plural => "auditlog",
+      code => [ iter_auditlog => $class, $req ],
+     ),
     );
 }
 
@@ -688,6 +695,15 @@ sub tag_stylecfg {
   my ($name, $default) = split ' ', $args, 2;
 
   return $cfg->entry("help style $style", $name, $default);
+}
+
+sub iter_auditlog {
+  my ($class, $req, $args, $acts, $funcname, $templater) = @_;
+
+  my (@args) = DevHelp::Tags->get_parms($args, $acts, $templater);
+  require BSE::TB::AuditLog;
+  return sort { $b->id cmp $a->id }
+    BSE::TB::AuditLog->getBy(@args);
 }
 
 sub tag_help {

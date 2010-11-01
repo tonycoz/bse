@@ -458,6 +458,8 @@ Column purchase_order;varchar(80);NO;;
 Column shipping_method;varchar(64);NO;;
 Column shipping_name;varchar(40);NO;;
 Column shipping_trace;text;YES;NULL;
+Column paypal_token;varchar(255);YES;NULL;
+Column paypal_tran_id;varchar(255);YES;NULL;
 Index PRIMARY;1;[id]
 Index order_cchash;0;[ccNumberHash]
 Index order_userId;0;[userId;orderDate]

@@ -292,6 +292,13 @@ sub output_result {
   BSE::Template->output_result($req, $result);
 }
 
+# one day, this will mark the message as an error
+sub flash_error {
+  my ($self, @msg) = @_;
+
+  return $self->flash(@msg);
+}
+
 sub flash {
   my ($self, @msg) = @_;
 
@@ -309,6 +316,19 @@ sub flash {
   $self->session->{flash} = \@flash;
 }
 
+sub _str_msg {
+  my ($req, $msg) = @_;
+
+  if ($msg =~ /^(msg:[\w-]+(?:\/[\w-]+)+)(?::(.*))?$/) {
+    my $id = $1;
+    my $params = $2;
+    my @params = defined $params ? split(/:/, $params) : ();
+    $msg = $req->catmsg($id, \@params);
+  }
+
+  return $msg;
+}
+
 sub message {
   my ($req, $errors) = @_;
 
@@ -320,12 +340,7 @@ sub message {
       my @msgs = ref $errors->{$key} ? @{$errors->{$key}} : $errors->{$key};
 
       for my $msg (@msgs) {
-	if ($msg =~ /^(msg:[\w-]+(?:\/[\w-]+)+)(?::(.*))?$/) {
-	  my $id = $1;
-	  my $params = $2;
-	  my @params = defined $params ? split(/:/, $params) : ();
-	  $msg = $req->catmsg($id, \@params);
-	}
+	$msg = $req->_str_msg($msg);
       }
       $errors->{$key} = ref $errors->{$key} ? \@msgs : $msgs[0];
     }
@@ -352,13 +367,11 @@ sub message {
     push @lines, @{$req->session->{flash}};
     delete $req->session->{flash};
   }
-  $msg = join "<br />", map escape_html($_), @lines;
-  if (!$msg && $req->cgi->param('m')) {
-    $msg = join(' ', $req->cgi->param('m'));
-    $msg = escape_html($msg);
+  if (!@lines && $req->cgi->param('m')) {
+    push @lines, map $req->_str_msg($_), $req->cgi->param("m");
   }
 
-  return $msg;
+  return join "<br />", map escape_html($_), @lines;
 }
 
 sub dyn_response {
@@ -685,38 +698,7 @@ sub _encode_utf8 {
 sub user_url {
   my ($req, $script, $target, @options) = @_;
 
-  my $cfg = $req->cfg;
-  my $base = $script eq 'shop' ? $cfg->entryVar('site', 'secureurl') : '';
-  my $template;
-  if ($target) {
-    if ($script eq 'nuser') {
-      $template = "/cgi-bin/nuser.pl/user/TARGET";
-    }
-    else {
-      $template = "$base/cgi-bin/$script.pl?a_TARGET=1";
-    }
-    $template = $cfg->entry('targets', $script, $template);
-    $template =~ s/TARGET/$target/;
-  }
-  else {
-    if ($script eq 'nuser') {
-      $template = "/cgi-bin/nuser.pl/user";
-    }
-    else {
-      $template = "$base/cgi-bin/$script.pl";
-    }
-    $template = $cfg->entry('targets', $script.'_n', $template);
-  }
-  if (@options) {
-    $template .= $template =~ /\?/ ? '&' : '?';
-    my @entries;
-    while (my ($key, $value) = splice(@options, 0, 2)) {
-      push @entries, "$key=" . escape_uri($value);
-    }
-    $template .= join '&', @entries;
-  }
-
-  return $template;
+  return $req->cfg->user_url($script, $target, @options);
 }
 
 sub admin_tags {

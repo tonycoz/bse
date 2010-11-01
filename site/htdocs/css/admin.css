@@ -364,3 +364,71 @@ img.bse_image_thumb {
   background-color: #888;
   }
 
+#menu_wrapper .column {
+  float: left;
+  width: 20em;
+  margin: 5px;
+  background-color: #FFF;
+}
+
+#menu_wrapper .title {
+  font-weight: bold;
+  text-align: left;
+  padding: 5px;
+  font-size: 120%;
+}
+
+#menu_wrapper .column li {
+  list-style: none;
+  margin-top: 5px;
+  /*margin-bottom: 5px;*/
+}
+
+#menu_wrapper .column>ul ul {
+  padding-left: 1em;
+  padding-right: 0px;
+  margin-left: 0px;
+  margin-right: 0px;
+}
+
+#menu_wrapper .column>ul {
+  padding-left: 0px;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+/*#menu_wrapper .column>ul>li {
+  margin-top: 10px;
+}*/
+
+#menu_wrapper .column li a:link,
+#menu_wrapper .column li a:visited {
+  display: block;
+  border: 1px dotted #8080FF;
+  padding: 5px;
+  text-decoration: none;
+  background-color: #CCCCFF;
+  color: #000;
+}
+
+#menu_wrapper .column li a:hover {
+  background-color: #8080FF;
+}
+
+#menu_wrapper li>ul.submenu { 
+  display: none;
+}
+
+#menu_wrapper li:hover>ul.submenu { 
+  display: block;
+  position: absolute;
+  background: #FFF;
+  width: 17em;
+  padding-right: 1em;
+  border: 1px solid #8080ff;
+}
+
+#auditlog .col_when_at,
+#auditlog .col_who { 
+  white-space: nowrap;
+}

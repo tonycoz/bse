@@ -33,6 +33,30 @@ message: Unknown language code - no entry found in [languages]
 id: bse/admin/message/badmultiline
 message: Message $1:s may contain only a single line of text
 
+id: bse/shop/paypal/notoken
+message: No token supplied by PayPal
+
+id: bse/shop/paypal/nopayerid
+message: No PayerID supplied by PayPal
+
+id: bse/shop/paypal/noorderid
+message: No order ID supplied by PayPal
+
+id: bse/shop/paypal/unknownorderid
+message: Unknown order ID supplied by PayPal
+
+id: bse/shop/paypal/unconfigured
+message: PayPal payments cannot be processed, PayPal support is not configured
+
+id: bse/shop/paypal/alreadypaid
+message: Order has already been paid
+
+id: bse/shop/paypal/cancelled
+message: PayPal payment cancelled
+
+id: bse/shop/paypal/badtoken
+message: The token returned by PayPal doesn't match the token generated for your order.
+
 id: test/test/multiline
 message: <<TEXT
 This message has

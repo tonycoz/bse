@@ -324,6 +324,12 @@ create table orders (
   -- trace of the request and response
   shipping_trace text null,
 
+  -- paypal stuff
+  -- token from SetExpressCheckout
+  paypal_token varchar(255) null,
+  
+  paypal_tran_id varchar(255) null,
+
   primary key (id),
   index order_cchash(ccNumberHash),
   index order_userId(userId, orderDate)

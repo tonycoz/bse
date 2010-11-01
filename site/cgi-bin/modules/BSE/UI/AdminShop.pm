@@ -17,7 +17,7 @@ use BSE::Util::Iterate;
 use BSE::WebUtil 'refresh_to_admin';
 use BSE::Util::HTML qw(:default popup_menu);
 use BSE::Arrows;
-use BSE::Shop::Util qw(order_item_opts nice_options);
+use BSE::Shop::Util qw(:payment order_item_opts nice_options);
 
 my %actions =
   (
@@ -32,6 +32,7 @@ my %actions =
    order_unpaid => 'shop_order_unpaid',
    product_detail => '',
    product_list => '',
+   paypal_refund => 'bse_shop_order_refund_paypal',
   );
 
 sub actions {
@@ -676,10 +677,10 @@ sub _set_order_paid {
       my $order = BSE::TB::Orders->getByPkey($id)) {
     if ($order->paidFor != $value) {
       if ($value) {
-	$order->set_paymentType(3);
+	$order->set_paymentType(PAYMENT_MANUAL);
       }
       else {
-	$order->paymentType == 3
+	$order->paymentType == PAYMENT_MANUAL
 	  or return $class->req_order_detail($req, "You can only unpay manually paid orders");
       }
 
@@ -695,6 +696,28 @@ sub _set_order_paid {
   }
   else {
     return $class->req_order_list($req);
+  }
+}
+
+sub req_paypal_refund {
+  my ($self, $req) = @_;
+
+  my $id = $req->cgi->param('id');
+  if ($id and
+      my $order = BSE::TB::Orders->getByPkey($id)) {
+    require BSE::PayPal;
+    my $msg;
+    unless (BSE::PayPal->refund_order(order => $order,
+				      req => $req,
+				      msg => \$msg)) {
+      return $self->req_order_detail($req, $msg);
+    }
+
+    return $req->get_refresh($req->url(shopadmin => { "a_order_detail" => 1, id => $id }));
+  }
+  else {
+    $req->flash_error("Missing or invalid order id");
+    return $self->req_order_list($req);
   }
 }
 

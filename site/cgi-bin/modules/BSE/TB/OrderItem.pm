@@ -34,4 +34,13 @@ sub option_list {
     BSE::TB::OrderItemOptions->getBy(order_item_id => $self->{id});
 }
 
+sub product {
+  my ($self) = @_;
+
+  $self->productId == -1
+    and return;
+  require Products;
+  return Products->getByPkey($self->productId);
+}
+
 1;
