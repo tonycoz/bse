@@ -779,7 +779,7 @@ The possible payment types are:
 
 =item *
 
-3 - paypal - see L<paypal.pod>
+4 - paypal - see L<paypal.pod>
 
 =back
 
@@ -871,6 +871,13 @@ quantities.  Default: Unlimited.
 
 The shop currency as a 3-letter currency code.  Default: AUD.
 Currencies other than "AUD" aren't supported by most of the system.
+
+=item country_code
+
+Set to non-zero if you're using country codes in the order country
+field.  If this is set then the delivCountry is supplied as is to
+various parts of the system, otherwise it is translated from a country
+name to a country code.  Default: 0.
 
 =back
 
@@ -2222,6 +2229,82 @@ fields - a semi-colon separated list of fields to import.  Must
 contain one of C<id> or C<userId> which is used as a key to identify
 the user to update.  An C<x> entry is a field to ignore.  Some fields,
 such as C<confirmed> may not appear in this list.
+
+=back
+
+=head2 [paypal]
+
+Configuration for BSE's PayPal integration.
+
+It shouldn't be necessary to change any of the URLs.
+
+=over
+
+=item *
+
+test - if true, then the PayPal sandbox is used, and the configuration
+entries starting in C<test_> are used.  If false, PayPal is live, and
+configuration entries starting in C<live_> are used.  Default: 1.
+
+=item *
+
+test_api_username, test_api_password, test_api_signature - API
+credentials for test mode.  Required in test mode.
+
+=item *
+
+live_api_username, live_api_password, live_api_signature - API
+credentials for live mode.  Required for live mode.
+
+=item *
+
+test_ws_url - URL to make NVP requests through in test mode.  Default:
+https://api-3t.sandbox.paypal.com/nvp
+
+=item *
+
+test_refresh_url - PayPal URL to refresh to in test mode.  Default:
+https://www.sandbox.paypal.com/webscr
+
+=item *
+
+live_ws_url - URL to make NVP requests through in live mode.  Default:
+https://api-3t.paypal.com/nvp
+
+=item *
+
+live_refresh_url - PayPal URL to refresh to in live mode.  Default:
+https://www.paypal.com/cgibin/webscr
+
+=back
+
+=head2 [paypal custom]
+
+Extra parameters supplied to the SetExpressCheckout API.  See the
+Express Checkout Advanced Features Guide (from PayPal) for details.
+
+Some settings that may be useful:
+
+=over
+
+=item *
+
+PAGESTYLE - the style of payment page to use from those listed in your
+account profile.
+
+=item *
+
+HDRIMG - https URL to an image to use in the payment page header.
+
+=item *
+
+HDRBACKCOLOR - a 6 hex digit color to use as the background of the
+payment page header.
+
+=item *
+
+HDRBORDERCOLOR - a 6 hex digit color to use as the border of the
+payment page header.
 
 =back
 

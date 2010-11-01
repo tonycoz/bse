@@ -9,6 +9,9 @@ paypal.pod - processing payments through PayPal with BSE.
   ; or for both CC and paypal:
   payment_types=0,4
 
+  ; you may need to set this, or not
+  country_code=1
+
   [paypal]
   test=0
   live_api_username=...
@@ -29,3 +32,48 @@ paypal.pod - processing payments through PayPal with BSE.
   HDRIMG=...
   LOCALECODE=...
 
+=head1 DESCRIPTION
+
+BSE's PayPal integration uses PayPal's Express Checkout API.
+
+Setting up:
+
+=over
+
+=item *
+
+check that country_code in the [shop] section is configured correctly.
+If it isn't then shipping information will not be passed to PayPal.
+
+=item *
+
+add 4 to the list of payments types accepted by BSE, the payment_types
+key in [shop].
+
+=item *
+
+for test, configure test_api_username, test_api_password and
+test_api_signature in [paypal] from the values in the PayPal sandbox
+for your test business account.
+
+=item *
+
+for live, configure live_api_username, live_api_password and
+live_api_signature in [paypal] from the values from your live merchant
+account.  You must also C<test=0> in [paypal].
+
+=item *
+
+optionally, configure values in [paypal custom].  See C</config.pod>
+for some examples.
+
+=back
+
+Unless disabled, all API requests to PayPal are logged in the audit
+log.  To see the most recent event:
+
+  select * from bse_audit_log order by id desc limit 1;
+
+in the mysql shell.
+
+=cut
