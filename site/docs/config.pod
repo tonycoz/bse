@@ -867,7 +867,7 @@ Maximum number of entries in the cart.  This limits the number of
 distinct products (with options) in the cart, not the total
 quantities.  Default: Unlimited.
 
-=item currency
+=item currency_code
 
 The shop currency as a 3-letter currency code.  Default: AUD.
 Currencies other than "AUD" aren't supported by most of the system.

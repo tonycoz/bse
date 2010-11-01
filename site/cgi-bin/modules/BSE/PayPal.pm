@@ -83,7 +83,7 @@ sub _order_amt {
 sub _order_currency {
   my ($order) = @_;
 
-  return BSE::Cfg->single->entry("shop", "currency", "AUD")
+  return BSE::Cfg->single->entry("shop", "currency_code", "AUD")
 }
 
 sub payment_url {
