@@ -1519,7 +1519,7 @@ sub _refresh_logon {
 sub _need_logon {
   my ($class, $req, $cart, $cart_prods) = @_;
 
-  return need_logon($req->cfg, $cart, $cart_prods, $req->session, $req->cgi);
+  return need_logon($req, $cart, $cart_prods);
 }
 
 sub tag_checkedPayment {

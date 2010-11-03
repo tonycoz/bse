@@ -4,7 +4,7 @@ use vars qw(@ISA @EXPORT_OK);
 @ISA = qw/Exporter/;
 @EXPORT_OK = qw/shop_cart_tags cart_item_opts nice_options shop_nice_options
                 total shop_total load_order_fields basic_tags need_logon
-                get_siteuser payment_types order_item_opts
+                payment_types order_item_opts
  PAYMENT_CC PAYMENT_CHEQUE PAYMENT_CALLME PAYMENT_MANUAL PAYMENT_PAYPAL/;
 
 our %EXPORT_TAGS =
@@ -273,10 +273,10 @@ my %nostore =
   );
 
 sub load_order_fields {
-  my ($wantcard, $q, $order, $session, $cart_prods, $error) = @_;
+  my ($wantcard, $q, $order, $req, $cart_prods, $error) = @_;
 
-  require 'BSE/Cfg.pm';
-  my $cfg = BSE::Cfg->new;
+  my $session = $req->session;
+  my $cfg = $req->cfg;
 
   my $cust_class = custom_class($cfg);
 
@@ -351,7 +351,7 @@ sub load_order_fields {
   $order->{total} += $cust_class->total_extras(\@cart, \@products, 
 					     $session->{custom});
 
-  if (need_logon($cfg, \@cart, \@products, $session, $q)) {
+  if (need_logon($req, \@cart, \@products)) {
     $$error = "Your cart contains some file-based products.  Please register or logon";
     return 0;
   }
@@ -397,13 +397,15 @@ sub basic_tags {
 }
 
 sub need_logon {
-  my ($cfg, $cart, $cart_prods, $session, $cgi) = @_;
+  my ($req, $cart, $cart_prods) = @_;
 
-  defined $cgi or confess "No cgi parameter supplied";
+  defined $req or confess "No cgi parameter supplied";
+  my $cfg = $req->cfg;
+  my $cgi = $req->cgi;
   
   my $reg_if_files = $cfg->entryBool('shop', 'register_if_files', 1);
 
-  my $user = get_siteuser($session, $cfg, $cgi);
+  my $user = $req->siteuser;
 
   if (!$user && $reg_if_files) {
     require BSE::TB::ArticleFiles;
@@ -452,27 +454,6 @@ sub need_logon {
   }
   
   return;
-}
-
-sub get_siteuser {
-  my ($session, $cfg, $cgi) = @_;
-
-  require SiteUsers;
-  if ($cfg->entryBool('custom', 'user_auth')) {
-    my $custom = custom_class($cfg);
-    
-    return $custom->siteuser_auth($session, $cgi, $cfg);
-  }
-  else {
-    my $userid = $session->{userid}
-      or return;
-    my $user = SiteUsers->getBy(userId=>$userid)
-      or return;
-    $user->{disabled}
-      and return;
-    
-    return $user;
-  }
 }
 
 =item payment_types($cfg)
