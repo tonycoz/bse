@@ -40,9 +40,9 @@ sub baseActs {
      user =>
      sub {
        $self->{user} or return '';
-       CGI::escapeHTML($self->{user}{$_[0]});
+       escape_html($self->{user}{$_[0]});
      },
-     sub => sub { CGI::escapeHTML($self->{sub}{$_[0]}) },
+     sub => sub { escape_html($self->{sub}{$_[0]}) },
     );
 }
 

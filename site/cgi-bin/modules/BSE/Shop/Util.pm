@@ -7,6 +7,7 @@ use vars qw(@ISA @EXPORT_OK);
                 payment_types order_item_opts
  PAYMENT_CC PAYMENT_CHEQUE PAYMENT_CALLME PAYMENT_MANUAL PAYMENT_PAYPAL/;
 
+
 our %EXPORT_TAGS =
   (
    payment => [ grep /^PAYMENT_/, @EXPORT_OK ],
@@ -109,7 +110,7 @@ sub shop_cart_tags {
      count => sub { scalar @$cart },
      iterate_options_reset => sub { $option_index = -1 },
      iterate_options => sub { ++$option_index < @options },
-     option => sub { CGI::escapeHTML($options[$option_index]{$_[0]}) },
+     option => sub { escape_html($options[$option_index]{$_[0]}) },
      ifOptions => sub { @options },
      options => sub { nice_options(@options) },
      session => [ \&tag_session, \$item, \$sem_session ],
@@ -280,7 +281,7 @@ sub load_order_fields {
 
   my $cust_class = custom_class($cfg);
 
-  my @required = $cust_class->required_fields($CGI::Q, $session->{custom});
+  my @required = $cust_class->required_fields($q, $session->{custom});
   push(@required, qw(cardHolder cardExpiry)) if $wantcard;
   for my $field (@required) {
     defined($q->param($field)) && length($q->param($field))

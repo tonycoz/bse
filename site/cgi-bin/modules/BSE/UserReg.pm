@@ -63,7 +63,7 @@ sub _refresh_userpage ($$) {
 
   my $url = $cfg->entryErr('site', 'url') . "/cgi-bin/user.pl?userpage=1";
   if (defined $msg) {
-    $url .= '&message='.CGI::escape($msg);
+    $url .= '&message='.escape_uri($msg);
   }
   refresh_to($url);
 }
@@ -106,7 +106,7 @@ sub req_show_logon {
   %acts =
     (
      $req->dyn_user_tags(),
-     message => sub { CGI::escapeHTML($message) },
+     message => sub { escape_html($message) },
     );
 
   return $req->response('user/logon', \%acts);
@@ -226,7 +226,7 @@ sub _got_user_refresh {
     $refresh = $finalbase . $refresh unless $refresh =~ /^\w+:/;
     print STDERR "Heading to $url to setcookie\n" if $debug;
     $url .= "$ENV{SCRIPT_NAME}?setcookie=".$session->{_session_id};
-    $url .= "&r=".CGI::escape($refresh);
+    $url .= "&r=".escape_uri($refresh);
     refresh_to($url);
   }
   else {
@@ -371,7 +371,7 @@ sub req_show_register {
      sub {
        my $value = $cgi->param($_[0]);
        defined $value or $value = '';
-       CGI::escapeHTML($value);
+       escape_html($value);
      },
      message => $message,
      BSE::Util::Tags->make_iterator(\@subs, 'subscription', 'subscriptions',
@@ -520,7 +520,7 @@ sub req_show_opts {
        my $value = $cgi->param($_[0]);
        defined $value or $value = $user->{$_[0]};
        defined $value or $value = '';
-       CGI::escapeHTML($value);
+       escape_html($value);
      },
      message => $message,
      BSE::Util::Tags->make_iterator(\@subs, 'subscription', 'subscriptions',
@@ -1113,7 +1113,7 @@ sub req_userpage {
        require 'Products.pm';
        $product = Products->getByPkey($items[$item_index]{productId})
 	 unless $product && $product->{id} == $items[$item_index]{productId};
-       CGI::escapeHTML($product->{$_[0]});
+       escape_html($product->{$_[0]});
      },
      BSE::Util::Tags->
      make_multidependent_iterator
@@ -1223,7 +1223,7 @@ sub req_orderdetail {
     (
      $req->dyn_user_tags(),
      order => [ \&tag_hash, $order ],
-     message => sub { CGI::escapeHTML($message) },
+     message => sub { escape_html($message) },
      $it->make_iterator
      (undef, 'item', 'items', \@items, undef, undef, \$current_item),
      $it->make_iterator
@@ -1589,7 +1589,7 @@ sub req_lost_password {
     (
      message => $message,
      $req->dyn_user_tags(),
-     user => sub { CGI::escapeHTML($user->{$_[0]}) },
+     user => sub { escape_html($user->{$_[0]}) },
      emailuser => [ \&tag_hash, $email_user ],
     );
   BSE::Template->show_page('user/lostemailsent', $cfg, \%acts);
@@ -1612,7 +1612,7 @@ sub req_subinfo {
   %acts =
     (
      $req->dyn_user_tags(),
-     subscription=>sub { CGI::escapeHTML($sub->{$_[0]}) },
+     subscription=>sub { escape_html($sub->{$_[0]}) },
     );
   BSE::Template->show_page('user/subdetail', $cfg, \%acts);
 
@@ -1653,7 +1653,7 @@ sub req_blacklist {
   %acts =
     (
      $req->dyn_user_tags(),
-     email => sub { CGI::escapeHTML($email) },
+     email => sub { escape_html($email) },
     );
   require BSE::EmailBlacklist;
   my $black = BSE::EmailBlacklist->getEntry($genemail);
@@ -1709,7 +1709,7 @@ sub req_confirm {
   %acts =
     (
      $req->dyn_user_tags(),
-     user=>sub { CGI::escapeHTML($user->{$_[0]}) },
+     user=>sub { escape_html($user->{$_[0]}) },
     );
   BSE::Template->show_page('user/confirmed', $cfg, \%acts);
 
@@ -1753,7 +1753,7 @@ sub send_conf_request {
   %acts =
     (
      $req->dyn_user_tags(),
-     user=>sub { CGI::escapeHTML($user->{$_[0]}) },
+     user=>sub { escape_html($user->{$_[0]}) },
     );
   
   # check that the from address has been configured
@@ -1768,7 +1768,7 @@ sub send_conf_request {
   my $blackentry = BSE::EmailBlacklist->getEntry($checkemail);
 
   if ($blackentry) {
-    $acts{black} = sub { CGI::escapeHTML($blackentry->{$_[0]}) },
+    $acts{black} = sub { escape_html($blackentry->{$_[0]}) },
     BSE::Template->show_page('user/blacklisted', $cfg, \%acts);
     return 1;
   }
@@ -1783,7 +1783,7 @@ sub send_conf_request {
   # check for existing confirmations
   my $confirm = BSE::EmailRequests->getBy(genEmail=>$checkemail);
   if ($confirm) {
-    $acts{confirm} = sub { CGI::escapeHTML($confirm->{$_[0]}) };
+    $acts{confirm} = sub { escape_html($confirm->{$_[0]}) };
     my $too_many = $confirm->{unackedConfMsgs} >= MAX_UNACKED_CONF_MSGS;
     $acts{ifTooMany} = sub { $too_many };
     use BSE::Util::SQL qw/sql_datetime_to_epoch/;
@@ -1832,7 +1832,7 @@ sub send_conf_request {
   unless ($mail->send(from=>$from, to=>$user->{email}, subject=>$subject,
 		      body=>$body)) {
     # a problem sending the mail
-    $acts{mailerror} = sub { CGI::escapeHTML($mail->errstr) };
+    $acts{mailerror} = sub { escape_html($mail->errstr) };
     BSE::Template->show_page('user/email_conferror', $cfg, \%acts);
     return;
   }
@@ -1876,7 +1876,7 @@ sub req_unsub {
   %acts =
     (
      $req->dyn_user_tags(),
-     user => sub { CGI::escapeHTML($user->{$_[0]}) },
+     user => sub { escape_html($user->{$_[0]}) },
     );
   my $subid = $cgi->param('s');
   my $sub;
@@ -1886,7 +1886,7 @@ sub req_unsub {
   }
   elsif (0+$subid eq $subid 
 	 and $sub = BSE::SubscriptionTypes->getByPkey($subid)) {
-    $acts{subscription} = sub { CGI::escapeHTML($sub->{$_[0]}) };
+    $acts{subscription} = sub { escape_html($sub->{$_[0]}) };
     $user->removeSubscription($subid);
     BSE::Template->show_page('user/unsubone', $cfg, \%acts);
   }

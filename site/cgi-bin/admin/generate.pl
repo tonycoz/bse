@@ -11,7 +11,7 @@ use Util qw(generate_button regen_and_refresh);
 use BSE::WebUtil qw(refresh_to_admin);
 use Carp 'verbose';
 use BSE::Request;
-use URI::Escape;
+use BSE::Util::HTML;
 use BSE::CfgInfo 'admin_base_url';
 
 my $req = BSE::Request->new;
@@ -43,7 +43,7 @@ if (generate_button()) {
     print "Content-Type: text/html\n\n";
     print "<html><title>Regenerating your site</title></head><body>";
     print "<h2>Regenerating your site</h2>\n";
-    $callback = sub { print "<div>",CGI::escapeHTML($_[0]),"</div>" };
+    $callback = sub { print "<div>",escape_html($_[0]),"</div>" };
   }
   if (defined $id) {
     use Util 'generate_article';
@@ -68,7 +68,7 @@ if (generate_button()) {
       }
       else {
 	if ($baseurl =~ /menu\.pl$/) {
-	  $baseurl .= "?m=".uri_escape("You don't have permission to regenerate that");
+	  $baseurl .= "?m=".escape_uri("You don't have permission to regenerate that");
 	}
 	refresh_to_admin($cfg, $baseurl);
       }
@@ -85,7 +85,7 @@ if (generate_button()) {
       }
       else {
 	if ($baseurl =~ /menu\.pl$/) {
-	  $baseurl .= "?m=".uri_escape("You don't have permission to regenerate all");
+	  $baseurl .= "?m=".escape_uri("You don't have permission to regenerate all");
 	}
 	refresh_to_admin($cfg, $baseurl);
       }

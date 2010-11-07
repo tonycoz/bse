@@ -8,6 +8,7 @@ require Exporter;
 use Constants qw($CONTENTBASE $GENERATE_BUTTON $SHOPID $AUTO_GENERATE);
 use Carp qw(confess);
 use BSE::WebUtil qw(refresh_to_admin);
+use BSE::Util::HTML;
 
 # returns non-zero if the Regenerate button should work
 sub generate_button {
@@ -325,13 +326,13 @@ sub regen_and_refresh {
 	   article => 
 	   sub { 
 	     if (ref $article) {
-	       return CGI::escapeHTML($article->{$_[0]});
+	       return escape_html($article->{$_[0]});
 	     }
 	     else {
 	       return 'extras';
 	     }
 	   },
-	   error => sub { CGI::escapeHTML($error) },
+	   error => sub { escape_html($error) },
 	  );
 	BSE::Template->show_page('admin/regenerror', $cfg, \%acts);
 	

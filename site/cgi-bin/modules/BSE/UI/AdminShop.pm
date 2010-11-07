@@ -611,7 +611,7 @@ sub req_order_detail {
        script => sub { $ENV{SCRIPT_NAME} },
        iterate_options_reset => sub { $option_index = -1 },
        iterate_options => sub { ++$option_index < @options },
-       option => sub { CGI::escapeHTML($options[$option_index]{$_[0]}) },
+       option => sub { escape_html($options[$option_index]{$_[0]}) },
        ifOptions => sub { @options },
        options => sub { nice_options(@options) },
        message => sub { $message },

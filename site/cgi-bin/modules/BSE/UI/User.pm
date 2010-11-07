@@ -89,7 +89,7 @@ sub req_info {
        require Products;
        $product = Products->getByPkey($items[$item_index]{productId})
 	 unless $product && $product->{id} == $items[$item_index]{productId};
-       CGI::escapeHTML($product->{$_[0]});
+       return escape_html($product->{$_[0]});
      },
      BSE::Util::Tags->
      make_multidependent_iterator

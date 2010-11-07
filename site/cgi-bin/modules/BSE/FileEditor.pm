@@ -3,6 +3,7 @@ use strict;
 use BSE::Util::Tags;
 use Constants qw($TMPLDIR $IMAGES_URI);
 use BSE::TB::ArticleFiles;
+use BSE::Util::HTML;
 use Util qw/refresh_to/;
 
 =head1 NAME
@@ -69,11 +70,11 @@ sub filelist {
   my %acts;
   %acts =
     (
-     article=>sub { CGI::escapeHTML($article->{$_[0]}) },
+     article=>sub { escape_html($article->{$_[0]}) },
      BSE::Util::Tags->make_iterator(\@files, 'file', 'files', \$file_index),
      BSE::Util::Tags->basic(\%acts),
      BSE::Util::Tags->admin(\%acts, $self->{cfg}),
-     message => sub { CGI::escapeHTML($message) },
+     message => sub { escape_html($message) },
      move =>
      sub {
        my $html = '';
