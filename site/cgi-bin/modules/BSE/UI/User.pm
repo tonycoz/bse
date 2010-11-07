@@ -89,7 +89,7 @@ sub req_info {
        require Products;
        $product = Products->getByPkey($items[$item_index]{productId})
 	 unless $product && $product->{id} == $items[$item_index]{productId};
-       return escape_html($product->{$_[0]});
+       return tag_article($product, $cfg, $_[0]);
      },
      BSE::Util::Tags->
      make_multidependent_iterator
@@ -109,6 +109,7 @@ sub req_info {
        return 0 if $must_be_filled && !$orders[$order_index]{filled};
        return 1;
      },
+     options => [ tag_order_item_options => $self, $req, \$item_index, \@items ],
      $it->make_iterator([ \&iter_usersubs, $user ], 
 			'subscription', 'subscriptions'),
      $it->make_iterator([ \&iter_sembookings, $user ],

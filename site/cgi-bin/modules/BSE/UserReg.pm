@@ -2,7 +2,7 @@ package BSE::UserReg;
 use strict;
 use base qw(BSE::UI::SiteuserCommon BSE::UI::Dispatch);
 use SiteUsers;
-use BSE::Util::Tags qw(tag_error_img tag_hash tag_hash_plain);
+use BSE::Util::Tags qw(tag_error_img tag_hash tag_hash_plain tag_article);
 use BSE::Template;
 use Constants qw($SHOP_FROM);
 use BSE::Message;
@@ -1110,10 +1110,10 @@ sub req_userpage {
 			     'orderfile', 'orderfiles', \$file_index),
      product =>
      sub {
-       require 'Products.pm';
+       require Products;
        $product = Products->getByPkey($items[$item_index]{productId})
 	 unless $product && $product->{id} == $items[$item_index]{productId};
-       escape_html($product->{$_[0]});
+       return tag_article($product, $cfg, $_[0]);
      },
      BSE::Util::Tags->
      make_multidependent_iterator
