@@ -5,7 +5,7 @@ use BSE::Modules;
 use BSE::Util::Iterate;
 use BSE::Util::Prereq;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 my %actions =
   (
@@ -15,6 +15,60 @@ my %actions =
 sub rights { \%actions }
 
 sub actions { \%actions }
+
+=item modules
+
+Displays the result of the module check.
+
+Tags:
+
+=over
+
+=item *
+
+hash - the module version hash, if this has changed, then a module
+version has changed.
+
+=item *
+
+iterator modules (single: module) - iterates over the modules checked.
+Modules with errors are listed first, but modules are otherwise listed
+alphabetically.
+
+=back
+
+Each module has the following fields:
+
+=over
+
+=item *
+
+name - the module name
+
+=item *
+
+version - the version from BSE::Modules
+
+=item *
+
+found - the module version number found installed
+
+=item *
+
+error - an errors that occurred
+
+=item *
+
+notes - any reason the module was not checked.  Only one of C<error>
+and C<notes> can be set.
+
+=back
+
+Template: admin/modules
+
+Permissions: bse_modules
+
+=cut
 
 sub req_modules {
   my ($self, $req) = @_;
