@@ -490,11 +490,7 @@ sub req_show_opts {
   }
   else {
     if (keys %$errors) {
-      my @keys = $cgi->param();
-      my %errors_copy = %$errors;
-      my @errors = grep defined, delete @errors_copy{@keys};
-      push @errors, values %errors_copy;
-      $message = join("<br />", map escape_html($_), @errors);
+      $message = $req->message($errors);
     }
     else {
       $message = '';
@@ -511,10 +507,7 @@ sub req_show_opts {
   my %acts;
   %acts =
     (
-     $req->dyn_user_tags(),
-     # dyn_user_tags supplies a user tag, but it's not set for partial
-     # logons
-     user => [ \&tag_hash, $user ],
+     $self->_common_tags($req, $user),
      last => 
      sub {
        my $value = $cgi->param($_[0]);
@@ -1053,46 +1046,44 @@ sub tag_order_item_options {
   return nice_options(@options);
 }
 
-sub req_userpage {
-  my ($self, $req, $message) = @_;
+sub iter_orders {
+  my ($self, $user) = @_;
+
+  require BSE::TB::Orders;
+  return sort { $b->{orderDate} cmp $a->{orderDate}
+		  || $b->{id} <=> $a->{id} }
+    BSE::TB::Orders->getBy(userId=>$user->{userId});
+}
+
+sub _common_tags {
+  my ($self, $req, $user) = @_;
 
   my $cfg = $req->cfg;
-  my $cgi = $req->cgi;
-  my $session = $req->session;
 
-  if ($message) {
-    $message = escape_html($message);
-  }
-  else {
-    $message = $req->message;
-  }
-
-  my $result;
-  my $user = $self->_get_user($req, 'userpage', \$result)
-    or return $result;
-  require BSE::TB::Orders;
-  my @orders = sort { $b->{orderDate} cmp $a->{orderDate}
-			|| $b->{id} <=> $a->{id} }
-    BSE::TB::Orders->getBy(userId=>$user->{userId});
-  $message ||= $cgi->param('message') || '';
+  my $order_index;
+  my $item_index;
+  my @items;
+  my $product;
+  my @files;
+  my $file_index;
+  my @orders;
 
   my $must_be_paid = $cfg->entryBool('downloads', 'must_be_paid', 0);
   my $must_be_filled = $cfg->entryBool('downloads', 'must_be_filled', 0);
 
-  my $it = BSE::Util::Iterate->new;
-  my $order_index;
-  my $item_index;
-  my @items;
-  my %acts;
-  my $product;
-  my @files;
-  my $file_index;
-  %acts =
+  my $it = BSE::Util::Iterate->new(cfg => $cfg);
+  return
     (
      $req->dyn_user_tags(),
-     message => $message,
-     BSE::Util::Tags->make_iterator(\@orders, 'order', 'orders', 
-				    \$order_index),
+     user => [ \&tag_hash, $user ],
+     $it->make
+     (
+      data => \@orders,
+      single => 'order',
+      plural => 'orders',
+      index => \$order_index,
+      code => [ iter_orders => $self, $user ],
+     ),
      BSE::Util::Tags->
      make_dependent_iterator(\$order_index,
 			     sub {
@@ -1113,6 +1104,7 @@ sub req_userpage {
        require Products;
        $product = Products->getByPkey($items[$item_index]{productId})
 	 unless $product && $product->{id} == $items[$item_index]{productId};
+       $product or return '';
        return tag_article($product, $cfg, $_[0]);
      },
      BSE::Util::Tags->
@@ -1134,22 +1126,41 @@ sub req_userpage {
        return 1;
      },
      options => [ tag_order_item_options => $self, $req, \$item_index, \@items ],
+    );
+}
+
+sub req_userpage {
+  my ($self, $req, $message) = @_;
+
+  my $cfg = $req->cfg;
+  my $cgi = $req->cgi;
+  my $session = $req->session;
+
+  if ($message) {
+    $message = escape_html($message);
+  }
+  else {
+    $message = $req->message;
+  }
+
+  my $result;
+  my $user = $self->_get_user($req, 'userpage', \$result)
+    or return $result;
+  $message ||= $cgi->param('message') || '';
+
+  my $it = BSE::Util::Iterate->new;
+  my %acts =
+    (
+     $self->_common_tags($req, $user),
+     message => $message,
      $it->make_iterator([ \&iter_usersubs, $user ], 
 			'subscription', 'subscriptions'),
      $it->make_iterator([ \&iter_sembookings, $user ],
 			'booking', 'bookings'),
     );
   my $base_template = 'user/userpage';
-#   my $template = $base_template;
-#   my $t = $cgi->param('_t');
-#   if (defined $t && $t =~ /^\w+$/) {
-#     $template = $template . '_' . $t;
-#   }
 
   return $req->dyn_response($base_template, \%acts);
-#  BSE::Template->show_page($template, $cfg, \%acts, $base_template);
-#
-#  return;
 }
 
 sub tag_detail_product {
