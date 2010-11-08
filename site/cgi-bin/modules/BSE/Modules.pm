@@ -3,7 +3,7 @@ use strict;
 
 # automatically generated
 
-our $hash = "fdabc46aba81e80d62733c19a197fc94";
+our $hash = "ed24611e822d70851d7d6a80a2fd4ef1";
 
 our %versions =
   (
@@ -185,7 +185,7 @@ our %versions =
   "BSE::UI::Page" => "1.000",
   "BSE::UI::Redirect" => "1.000",
   "BSE::UI::Search" => "1.000",
-  "BSE::UI::Shop" => "1.000",
+  "BSE::UI::Shop" => "1.001",
   "BSE::UI::SiteUserUpdate" => "1.000",
   "BSE::UI::SiteuserCommon" => "1.000",
   "BSE::UI::SubAdmin" => "1.000",

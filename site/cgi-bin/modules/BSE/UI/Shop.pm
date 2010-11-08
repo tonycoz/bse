@@ -18,7 +18,7 @@ use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -1089,7 +1089,7 @@ sub req_payment {
   $order->{complete} = 1;
   $order->save;
 
-  $class->_finish_order($order, $req);
+  $class->_finish_order($req, $order);
 
   return BSE::Template->get_refresh($req->user_url(shop => 'orderdone'), $req->cfg);
 }
