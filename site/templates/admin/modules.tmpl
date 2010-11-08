@@ -1,0 +1,24 @@
+<:wrap admin/xbase.tmpl title => "BSE Modules":>
+<h1>BSE Modules</h1>
+<p>
+| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> 
+| </p>
+
+<p>Versions hash: <:hash:></p>
+
+<table class="editform">
+  <tr>
+    <th>Module</th>
+    <th>Expected</th>
+    <th>Found</th>
+    <th>Error</th>
+  </tr>
+<:iterator begin modules:>
+  <tr <:switch:><:case module error:>class="bad"<:case arithmetic [module_index] % 2:>class="odd"<:endswitch:>>
+    <td><:module name:></td>
+    <td><:module version:></td>
+    <td><:module found:></td>
+    <td><:switch:><:case module error:><:module error:><:case default:><:module notes:><:endswitch:></td>
+  </tr>
+<:iterator end modules:>
+</table>

@@ -132,6 +132,14 @@ table.editform td {
   background-color: #FFF;
 }
 
+table.editform tr.bad td {
+  background-color: #FF8080;
+}
+
+table.editform tr.odd td {
+  background-color: #E0E0FF;
+}
+
 table.editform td.help,
 table.editform td.check  {
   white-space: nowrap;

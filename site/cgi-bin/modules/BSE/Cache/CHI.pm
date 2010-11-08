@@ -1,7 +1,7 @@
 package BSE::Cache::CHI;
 use strict;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub new {
   my ($class, $cfg) = @_;
@@ -11,7 +11,7 @@ sub new {
 
   require $cache_mod_file;
 
-  my $params_str = $self->cfg->entry("cache", "chi_params");
+  my $params_str = $cfg->entry("cache", "chi_params");
   my @eval_res = eval $params_str;
   if ($@) {
     print STDERR "Error evaluating cache parameters: $@\n";

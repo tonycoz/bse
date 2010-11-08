@@ -70,7 +70,7 @@ site/cgi-bin/modules/BSE/ComposeMail.pm
 site/cgi-bin/modules/BSE/Custom.pm
 site/cgi-bin/modules/BSE/CustomBase.pm
 site/cgi-bin/modules/BSE/DB.pm
-site/cgi-bin/modules/BSE/DB/MSSQL.pm
+#site/cgi-bin/modules/BSE/DB/MSSQL.pm
 site/cgi-bin/modules/BSE/DB/Mysql.pm
 site/cgi-bin/modules/BSE/CGI.pm
 site/cgi-bin/modules/BSE/Countries.pm
@@ -97,8 +97,8 @@ site/cgi-bin/modules/BSE/Formatter/Article.pm
 site/cgi-bin/modules/BSE/Formatter/Subscription.pm
 site/cgi-bin/modules/BSE/Generate/Seminar.pm
 # site/cgi-bin/modules/BSE/FileEditor.pm
-site/cgi-bin/modules/BSE/Handler/Base.pm
-site/cgi-bin/modules/BSE/Handler/Page.pm
+#site/cgi-bin/modules/BSE/Handler/Base.pm
+#site/cgi-bin/modules/BSE/Handler/Page.pm
 site/cgi-bin/modules/BSE/ImageHandler/Base.pm
 site/cgi-bin/modules/BSE/ImageHandler/Flash.pm
 site/cgi-bin/modules/BSE/ImageHandler/Img.pm
@@ -116,6 +116,7 @@ site/cgi-bin/modules/BSE/Mail/SMTP.pm
 site/cgi-bin/modules/BSE/Mail/Sendmail.pm
 site/cgi-bin/modules/BSE/Message.pm
 site/cgi-bin/modules/BSE/MessageScanner.pm
+site/cgi-bin/modules/BSE/Modules.pm	generated list of module versions
 site/cgi-bin/modules/BSE/NLFilter/SQL.pm
 site/cgi-bin/modules/BSE/NotifyFiles.pm
 site/cgi-bin/modules/BSE/Password.pod
@@ -212,6 +213,7 @@ site/cgi-bin/modules/BSE/ThumbLow.pm
 site/cgi-bin/modules/BSE/UI/API.pm
 site/cgi-bin/modules/BSE/UI/Background.pm
 site/cgi-bin/modules/BSE/UI/AdminDispatch.pm
+site/cgi-bin/modules/BSE/UI/AdminModules.pm
 site/cgi-bin/modules/BSE/UI/AdminMessages.pm
 site/cgi-bin/modules/BSE/UI/AdminNewsletter.pm
 site/cgi-bin/modules/BSE/UI/AdminPregen.pm
@@ -243,6 +245,7 @@ site/cgi-bin/modules/BSE/Util/DynSort.pm
 site/cgi-bin/modules/BSE/Util/DynamicTags.pm
 site/cgi-bin/modules/BSE/Util/HTML.pm
 site/cgi-bin/modules/BSE/Util/Iterate.pm
+site/cgi-bin/modules/BSE/Util/Prereq.pm
 site/cgi-bin/modules/BSE/Util/SQL.pm
 site/cgi-bin/modules/BSE/Util/Secure.pm
 site/cgi-bin/modules/BSE/Util/Tags.pm
@@ -479,6 +482,7 @@ site/templates/admin/memberupdate/preview.tmpl
 site/templates/admin/memberupdate/request.tmpl
 site/templates/admin/menu.tmpl
 site/templates/admin/menu_adv.tmpl
+site/templates/admin/modules.tmpl
 site/templates/admin/msgs/index.tmpl
 # site/templates/admin/menu_custom.tmpl
 site/templates/admin/locations/add.tmpl

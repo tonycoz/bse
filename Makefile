@@ -5,6 +5,8 @@ DISTTAR=../$(DISTNAME).tar
 DISTTGZ=$(DISTTAR).gz
 WEBBASE=/home/httpd/html/bse
 
+MODULES=$(shell grep cgi-bin/.*\.pm MANIFEST | sed -e '/^\#/d' -e 's/[ \t].*//' )
+
 help:
 	@echo make dist - build the tar.gz file and copy to distribution directory
 	@echo make 'archive - build the tar.gz (in the parent directory)'
@@ -44,7 +46,7 @@ $(DISTTGZ): distdir
 
 # recent ExtUtils::Manifest don't copy the executable bit, fix that here
 
-distdir: docs dbinfo version
+distdir: docs dbinfo version modversion
 	-perl -MExtUtils::Command -e rm_rf $(DISTBUILD)
 	perl -MExtUtils::Manifest=manicopy,maniread -e "manicopy(maniread(), '$(DISTBUILD)')"
 	mkdir $(DISTBUILD)/site/htdocs/shop
@@ -85,7 +87,7 @@ site/cgi-bin/modules/BSE/Version.pm: Makefile
 	echo 'package BSE::Version;' >site/cgi-bin/modules/BSE/Version.pm
 	echo 'use strict;' >>site/cgi-bin/modules/BSE/Version.pm
 	echo  >>site/cgi-bin/modules/BSE/Version.pm
-	echo 'my $$VERSION = "$(VERSION)";' >>site/cgi-bin/modules/BSE/Version.pm
+	echo 'our $$VERSION = "$(VERSION)";' >>site/cgi-bin/modules/BSE/Version.pm
 	echo  >>site/cgi-bin/modules/BSE/Version.pm
 	echo 'sub version { $$VERSION }' >>site/cgi-bin/modules/BSE/Version.pm
 	echo  >>site/cgi-bin/modules/BSE/Version.pm
@@ -93,6 +95,11 @@ site/cgi-bin/modules/BSE/Version.pm: Makefile
 
 svnversion:
 	perl site/util/bse_mksvnversion.pl $(VERSION) site/cgi-bin/modules/BSE/Version.pm
+
+modversion: site/cgi-bin/modules/BSE/Modules.pm
+
+site/cgi-bin/modules/BSE/Modules.pm: $(MODULES) site/util/make_versions.pl
+	perl site/util/make_versions.pl site/cgi-bin/modules/BSE/Modules.pm
 
 # this is very rough
 testinst: distdir
@@ -106,7 +113,7 @@ testup: checkver distdir
 	cd `perl -lne 'do { print $$1; exit; } if /^base_dir\s*=\s*(.*)/' test.cfg`/util ; perl upgrade_mysql.pl -b ; perl loaddata.pl ../data/db
 
 checkver:
-	perl site/util/check_versions.pl
+	if [ -d .svn ] ; then perl site/util/check_versions.pl ; fi
 
 TEST_FILES=t/*.t
 
