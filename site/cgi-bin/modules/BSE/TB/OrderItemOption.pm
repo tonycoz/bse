@@ -2,6 +2,8 @@ package BSE::TB::OrderItemOption;
 use strict;
 use base 'Squirrel::Row';
 
+our $VERSION = "1.000";
+
 sub table {
   "bse_order_item_options";
 }

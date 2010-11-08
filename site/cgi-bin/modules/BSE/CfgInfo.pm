@@ -1,6 +1,8 @@
 package BSE::CfgInfo;
 use strict;
 
+our $VERSION = "1.000";
+
 use vars qw(@ISA @EXPORT_OK);
 require Exporter;
 @ISA = qw(Exporter);

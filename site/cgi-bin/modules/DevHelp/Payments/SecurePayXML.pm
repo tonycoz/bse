@@ -6,6 +6,8 @@ use POSIX qw(strftime);
 use LWP::UserAgent;
 use XML::Simple;
 
+our $VERSION = "1.000";
+
 my $sequence = 0;
 
 sub new {

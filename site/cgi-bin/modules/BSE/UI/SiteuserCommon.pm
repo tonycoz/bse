@@ -3,6 +3,8 @@ use strict;
 use BSE::Util::HTML;
 use BSE::Util::Tags qw(tag_hash);
 
+our $VERSION = "1.000";
+
 use constant MAXWIDTH => 10000;
 use constant MAXHEIGHT => 10000;
 use constant MAXSIZE => 1_000_000;

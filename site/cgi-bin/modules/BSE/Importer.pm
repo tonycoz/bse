@@ -2,6 +2,8 @@ package BSE::Importer;
 use strict;
 use Config;
 
+our $VERSION = "1.000";
+
 sub new {
   my ($class, %opts) = @_;
 

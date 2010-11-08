@@ -6,6 +6,8 @@ use vars qw(@EXPORT @EXPORT_OK);
 @EXPORT = ();
 @EXPORT_OK = qw(bse_validate bse_validate_hash bse_configure_fields);
 
+our $VERSION = "1.000";
+
 sub bse_validate {
   return dh_validate(@_);
 }

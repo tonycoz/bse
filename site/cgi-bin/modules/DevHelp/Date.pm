@@ -13,6 +13,8 @@ use vars qw(@EXPORT_OK %EXPORT_TAGS @ISA);
    sql => [ grep /_sql$/, @EXPORT_OK ],
   );
 
+our $VERSION = "1.000";
+
 use constant SECS_PER_DAY => 24 * 60 * 60;
 
 # for now just a simple date parser

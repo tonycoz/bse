@@ -3,6 +3,8 @@ use strict;
 use BSE::Cfg;
 use Carp qw(confess);
 
+our $VERSION = "1.000";
+
 require Exporter;
 use vars qw(@EXPORT_OK @EXPORT @ISA %EXPORT_TAGS);
 @EXPORT_OK = qw(escape_html escape_uri unescape_html unescape_uri popup_menu escape_xml);

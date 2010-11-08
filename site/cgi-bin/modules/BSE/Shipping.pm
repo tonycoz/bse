@@ -2,6 +2,8 @@ package BSE::Shipping;
 use strict;
 use Carp qw(confess);
 
+our $VERSION = "1.000";
+
 sub get_couriers {
     my ($class, $cfg, $wanted) = @_;
 

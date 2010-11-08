@@ -3,6 +3,8 @@ use strict;
 use base 'BSE::ImportSourceBase';
 use Spreadsheet::ParseExcel;
 
+our $VERSION = "1.000";
+
 sub new {
   my ($class, %opts) = @_;
 

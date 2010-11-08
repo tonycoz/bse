@@ -2,6 +2,8 @@ package BSE::TB::ArticleFileMeta;
 use strict;
 use base 'Squirrel::Row';
 
+our $VERSION = "1.000";
+
 sub table {
   "bse_article_file_meta";
 }

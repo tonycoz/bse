@@ -2,6 +2,8 @@ package BSE::Password::CryptSHA256;
 use strict;
 use base "BSE::Password::Crypt";
 
+our $VERSION = "1.000";
+
 sub new {
   my ($class) = @_;
 

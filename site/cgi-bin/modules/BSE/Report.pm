@@ -1,6 +1,8 @@
 package BSE::Report;
 use strict;
 
+our $VERSION = "1.000";
+
 use base 'DevHelp::Report';
 
 sub new {

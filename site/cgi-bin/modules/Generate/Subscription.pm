@@ -5,6 +5,8 @@ use Generate::Article;
 @ISA = qw(Generate::Article);
 use BSE::Util::HTML;
 
+our $VERSION = "1.000";
+
 sub set_user {
   my ($self, $user) = @_;
 

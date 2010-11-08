@@ -2,6 +2,8 @@ package DevHelp::LoaderData;
 use strict;
 use Carp 'confess';
 
+our $VERSION = "1.000";
+
 sub new {
   my ($class, $file, %opts) = @_;
   

@@ -1,6 +1,8 @@
 package BSE::Cache::Cache;
 use strict;
 
+our $VERSION = "1.000";
+
 # BSE cache interface for Cache interface compatible caches.
 
 sub new {

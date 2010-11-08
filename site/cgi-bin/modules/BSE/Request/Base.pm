@@ -5,6 +5,8 @@ use BSE::Cfg;
 use BSE::Util::HTML;
 use Carp qw(cluck confess);
 
+our $VERSION = "1.000";
+
 sub new {
   my ($class, %opts) = @_;
 

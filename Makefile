@@ -1,4 +1,4 @@
-VERSION=0.18
+VERSION=0.19
 DISTNAME=bse-$(VERSION)
 DISTBUILD=$(DISTNAME)
 DISTTAR=../$(DISTNAME).tar
@@ -100,10 +100,13 @@ testinst: distdir
 	perl -MExtUtils::Command -e rm_rf $(DISTBUILD)
 	cd `perl -lne 'do { print $$1; exit; } if /^base_dir\s*=\s*(.*)/' test.cfg`/util ; perl loaddata.pl ../data/db
 
-testup: distdir
+testup: checkver distdir
 	perl localinst.perl $(DISTBUILD) leavedb
 	perl -MExtUtils::Command -e rm_rf $(DISTBUILD)
 	cd `perl -lne 'do { print $$1; exit; } if /^base_dir\s*=\s*(.*)/' test.cfg`/util ; perl upgrade_mysql.pl -b ; perl loaddata.pl ../data/db
+
+checkver:
+	perl site/util/check_versions.pl
 
 TEST_FILES=t/*.t
 

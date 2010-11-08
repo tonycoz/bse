@@ -2,6 +2,8 @@ package BSE::Custom;
 use BSE::CustomBase;
 use strict;
 
+our $VERSION = "1.000";
+
 use vars qw(@ISA);
 @ISA = qw(BSE::CustomBase);
 

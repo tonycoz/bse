@@ -2,6 +2,8 @@ package BSE::Cache::Memcached;
 use strict;
 use Cache::Memcached::Fast;
 
+our $VERSION = "1.000";
+
 sub new {
   my ($class, $cfg) = @_;
 

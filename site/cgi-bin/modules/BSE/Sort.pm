@@ -5,6 +5,8 @@ require 'Exporter.pm';
 @ISA = qw(Exporter);
 @EXPORT = qw(bse_sort);
 
+our $VERSION = "1.000";
+
 my %backwhacked =
   (
    "\\"=> "\\",

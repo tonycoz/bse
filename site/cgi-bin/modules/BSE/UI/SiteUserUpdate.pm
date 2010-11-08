@@ -11,6 +11,8 @@ use BSE::Util::Secure qw/make_secret/;
 use BSE::SubscribedUsers;
 use BSE::CfgInfo qw(custom_class);
 
+our $VERSION = "1.000";
+
 my %rights =
   (
    importform => 'bse_siteuser_list',

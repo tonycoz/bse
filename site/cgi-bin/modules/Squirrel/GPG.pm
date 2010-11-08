@@ -3,6 +3,8 @@ use strict;
 use IO::File;
 use POSIX ();
 
+our $VERSION = "1.000";
+
 sub new {
   return bless {}, $_[0];
 }

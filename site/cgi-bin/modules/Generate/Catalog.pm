@@ -1,5 +1,7 @@
 package Generate::Catalog;
 
+our $VERSION = "1.000";
+
 use strict;
 use Generate;
 use Products;

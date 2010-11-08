@@ -5,6 +5,8 @@ use BSE::TB::Images;
 use BSE::Util::Tags qw(tag_hash);
 use BSE::Util::HTML qw(escape_uri);
 
+our $VERSION = "1.000";
+
 # we don't do anything fancy on dispatch yet, so don't use the 
 # dispatch classes
 sub dispatch {

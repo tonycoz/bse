@@ -2,6 +2,8 @@ package BSE::Storage::Base;
 use strict;
 use Carp qw(confess);
 
+our $VERSION = "1.000";
+
 sub new {
   my ($class, %opts) = @_;
 

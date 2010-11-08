@@ -1,5 +1,7 @@
 package Courier::Fastway;
 
+our $VERSION = "1.000";
+
 use strict;
 use Courier;
 use XML::Parser;

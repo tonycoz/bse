@@ -4,6 +4,8 @@ use base 'BSE::Index::Base';
 use BSE::DB;
 use Constants qw($DATADIR $MAXPHRASE);
 
+our $VERSION = "1.000";
+
 sub new {
   my ($class, %opts) = @_;
 

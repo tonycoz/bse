@@ -1,5 +1,7 @@
 package Courier::AustraliaPost::Sea;
 
+our $VERSION = "1.000";
+
 use strict;
 use Courier::AustraliaPost;
 

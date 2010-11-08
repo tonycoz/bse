@@ -2,6 +2,8 @@ package BSE::FileMetaMeta;
 use strict;
 use Carp qw(confess);
 
+our $VERSION = "1.000";
+
 my %meta_rules =
   (
    meta_real =>

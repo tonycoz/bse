@@ -2,6 +2,8 @@ package BSE::TB::ProductOption;
 use strict;
 use base 'Squirrel::Row';
 
+our $VERSION = "1.000";
+
 sub columns {
   return qw/id product_id name type global_ref display_order enabled default_value/;
 }

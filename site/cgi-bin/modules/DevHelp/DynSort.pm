@@ -5,6 +5,8 @@ use base 'Exporter';
 @EXPORT_OK = qw(sorter tag_sorthelp);
 use Carp 'confess';
 
+our $VERSION = "1.000";
+
 sub sorter {
   my (%opts) = @_;
   

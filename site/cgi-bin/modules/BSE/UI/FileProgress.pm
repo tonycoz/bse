@@ -1,6 +1,8 @@
 package BSE::UI::FileProgress;
 use strict;
 
+our $VERSION = "1.000";
+
 sub dispatch {
   my ($class, $req) = @_;
 

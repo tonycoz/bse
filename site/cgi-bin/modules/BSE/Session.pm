@@ -4,6 +4,8 @@ use CGI::Cookie;
 use BSE::DB;
 use BSE::CfgInfo qw/custom_class/;
 
+our $VERSION = "1.000";
+
 sub _session_require {
   my ($cfg) = @_;
 

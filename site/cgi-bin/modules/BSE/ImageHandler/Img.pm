@@ -4,6 +4,8 @@ use base 'BSE::ImageHandler::Base';
 use Carp qw(confess);
 use BSE::Util::HTML;
 
+our $VERSION = "1.000";
+
 sub thumb_base_url {
   '/cgi-bin/thumb.pl';
 }

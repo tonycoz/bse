@@ -4,6 +4,8 @@ use Squirrel::Template;
 use Carp qw(confess cluck);
 use Config ();
 
+our $VERSION = "1.000";
+
 sub templater {
   my ($class, $cfg, $rsets) = @_;
 

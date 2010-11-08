@@ -1,5 +1,7 @@
 package Apache::Session::Store::DBIreal;
 
+our $VERSION = "1.000";
+
 use strict;
 
 use DBI;

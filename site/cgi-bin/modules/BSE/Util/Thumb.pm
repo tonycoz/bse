@@ -4,6 +4,8 @@ use BSE::TB::Images;
 use BSE::CfgInfo qw(cfg_image_dir);
 use BSE::StorageMgr::Thumbs;
 
+our $VERSION = "1.000";
+
 # returns a list of $url, $filename, $basename
 sub generate_thumb {
   my ($class, $cfg, $image, $geometry_id, $thumbs) = @_;

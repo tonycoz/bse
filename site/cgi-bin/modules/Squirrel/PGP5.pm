@@ -1,6 +1,8 @@
 package Squirrel::PGP5;
 use strict;
 
+our $VERSION = "1.000";
+
 sub new {
   return bless {}, $_[0];
 }

@@ -4,6 +4,8 @@ use base 'DevHelp::Tags::Iterate';
 use BSE::Util::HTML;
 use Carp 'confess';
 
+our $VERSION = "1.000";
+
 sub escape {
   escape_html($_[1]);
 }

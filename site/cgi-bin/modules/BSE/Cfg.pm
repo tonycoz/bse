@@ -4,6 +4,8 @@ use base "DevHelp::Cfg";
 use Carp qw(confess);
 use constant MAIN_CFG => 'bse.cfg';
 
+our $VERSION = "1.000";
+
 my %cache;
 
 my $single;

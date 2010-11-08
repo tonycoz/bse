@@ -5,6 +5,8 @@ use vars qw(@ISA $VERSION);
 @ISA = qw(Squirrel::Table);
 use BSE::SubscriptionType;
 
+our $VERSION = "1.000";
+
 sub rowClass {
   return 'BSE::SubscriptionType';
 }

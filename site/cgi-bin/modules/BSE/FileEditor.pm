@@ -6,6 +6,8 @@ use BSE::TB::ArticleFiles;
 use BSE::Util::HTML;
 use Util qw/refresh_to/;
 
+our $VERSION = "1.000";
+
 =head1 NAME
 
   BSE::FileEditor - maintains a list of files associated with an article

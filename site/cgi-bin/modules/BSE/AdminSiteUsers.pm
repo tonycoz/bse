@@ -13,6 +13,8 @@ use constant SITEUSER_GROUP_SECT => 'BSE Siteuser groups validation';
 use BSE::Template;
 use DevHelp::Date qw(dh_parse_date_sql dh_parse_time_sql);
 
+our $VERSION = "1.000";
+
 my %actions =
   (
    list		     => 'bse_members_user_list',

@@ -1,6 +1,8 @@
 package AdminUtil;
 use strict;
 
+our $VERSION = "1.000";
+
 require Exporter;
 use base qw(Exporter);
 use vars qw/@EXPORT_OK/;

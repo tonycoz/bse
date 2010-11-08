@@ -2,6 +2,8 @@ package BSE::UI::API;
 use strict;
 use base "BSE::UI::Dispatch";
 
+our $VERSION = "1.000";
+
 my %actions =
   (
    config => 1,

@@ -2,6 +2,8 @@ package BSE::TB::Subscription::Calc;
 use strict;
 use BSE::Util::SQL qw(:datemath);
 
+our $VERSION = "1.000";
+
 # this code is here to allow testing of it without having real data
 # in the database.
 

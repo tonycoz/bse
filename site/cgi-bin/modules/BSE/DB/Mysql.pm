@@ -5,6 +5,8 @@ use vars qw/@ISA/;
 use Carp 'confess';
 @ISA = qw(BSE::DB);
 
+our $VERSION = "1.000";
+
 use vars qw($VERSION $MAX_CONNECTION_AGE);
 
 use Constants 0.1 qw/$DSN $UN $PW $DBOPTS/;

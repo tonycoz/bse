@@ -1,5 +1,7 @@
 package Courier::AustraliaPost;
 
+our $VERSION = "1.000";
+
 use strict;
 use Courier;
 use BSE::Countries qw(bse_country_code);

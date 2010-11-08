@@ -2,6 +2,8 @@ package BSE::UI::NUser;
 use strict;
 use base 'BSE::UI::Dispatch';
 
+our $VERSION = "1.000";
+
 sub controller_section {
   'nuser controllers';
 }

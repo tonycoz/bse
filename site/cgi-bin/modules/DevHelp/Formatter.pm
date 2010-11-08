@@ -3,6 +3,8 @@ use strict;
 use DevHelp::HTML;
 use Carp 'confess';
 
+our $VERSION = "1.000";
+
 use constant DEBUG => 0;
 
 sub new {

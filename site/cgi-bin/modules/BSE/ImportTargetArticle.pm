@@ -6,6 +6,8 @@ use Articles;
 use Products;
 use OtherParents;
 
+our $VERSION = "1.000";
+
 sub new {
   my ($class, %opts) = @_;
 

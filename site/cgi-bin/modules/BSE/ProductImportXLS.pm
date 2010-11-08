@@ -6,6 +6,8 @@ use Articles;
 use Products;
 use Config;
 
+our $VERSION = "1.000";
+
 sub new {
   my ($class, $cfg, $profile, %opts) = @_;
 

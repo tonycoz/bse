@@ -5,6 +5,8 @@ use vars qw(@ISA $VERSION);
 @ISA = qw(Squirrel::Table);
 use OtherParent;
 
+our $VERSION = "1.000";
+
 sub rowClass {
   return 'OtherParent';
 }

@@ -19,6 +19,8 @@ use BSE::Util::HTML qw(:default popup_menu);
 use BSE::Arrows;
 use BSE::Shop::Util qw(:payment order_item_opts nice_options);
 
+our $VERSION = "1.000";
+
 my %actions =
   (
    order_list => 'shop_order_list',

@@ -3,6 +3,8 @@ use strict;
 use DevHelp::Tags;
 use DevHelp::HTML qw(escape_html popup_menu escape_uri);
 
+our $VERSION = "1.000";
+
 sub new {
   my ($class, $cfg, $section) = @_;
 

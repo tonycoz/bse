@@ -9,6 +9,8 @@ use DevHelp::Tags::Iterate;
 use BSE::TB::SiteUserGroups;
 use Carp qw(confess);
 
+our $VERSION = "1.000";
+
 sub new {
   my ($class, %opts) = @_;
 

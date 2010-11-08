@@ -1,5 +1,7 @@
 package Courier;
 
+our $VERSION = "1.000";
+
 use strict;
 use LWP::UserAgent;
 

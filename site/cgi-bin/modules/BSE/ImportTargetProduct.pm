@@ -7,6 +7,8 @@ use Products;
 use BSE::TB::ProductOptions;
 use BSE::TB::ProductOptionValues;
 
+our $VERSION = "1.000";
+
 sub new {
   my ($class, %opts) = @_;
 

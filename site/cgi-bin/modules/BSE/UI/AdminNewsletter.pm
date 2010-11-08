@@ -8,6 +8,8 @@ use BSE::Util::HTML qw(:default popup_menu);
 use BSE::Util::Iterate;
 use base 'BSE::UI::AdminDispatch';
 
+our $VERSION = "1.000";
+
 my %actions =
   (
    list => '',

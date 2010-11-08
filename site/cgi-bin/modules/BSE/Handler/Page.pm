@@ -12,6 +12,8 @@ use BSE::Dynamic::Product;
 use BSE::Dynamic::Catalog;
 use BSE::Dynamic::Seminar;
 
+our $VERSION = "1.000";
+
 sub handler {
   my ($r) = @_;
 

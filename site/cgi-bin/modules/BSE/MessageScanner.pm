@@ -2,6 +2,8 @@ package BSE::MessageScanner;
 use strict;
 use File::Find;
 
+our $VERSION = "1.000";
+
 =item BSE::MessageScanner->scan(\@basepaths)
 
 Scan .tmpl, .pm and .pl files under the given directories for apparent

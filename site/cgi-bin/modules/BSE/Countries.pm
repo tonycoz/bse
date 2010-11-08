@@ -3,6 +3,8 @@ use strict;
 use base "Exporter";
 our @EXPORT_OK = qw(bse_country_code);
 
+our $VERSION = "1.000";
+
 my %country_name_to_code;
 my %code_to_country;
 my @codes;

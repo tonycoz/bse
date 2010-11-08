@@ -4,6 +4,8 @@ use base 'BSE::ImageHandler::Base';
 use BSE::Util::HTML;
 use Carp qw(confess);
 
+our $VERSION = "1.000";
+
 my @flash_opts = qw/quality wmode id play loop menu bgcolor flashvars class/;
 my %flash_defs =
   (

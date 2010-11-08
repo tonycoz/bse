@@ -2,6 +2,8 @@ package BSE::DB::MSSQL;
 use strict;
 use DBI;
 
+our $VERSION = "1.000";
+
 use vars qw($VERSION);
 
 use Constants 0.1 qw/$DSN $DBOPTS $UN $PW/;

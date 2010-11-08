@@ -4,6 +4,8 @@ use base 'BSE::Formatter';
 use BSE::Util::HTML;
 use Digest::MD5 qw(md5_hex);
 
+our $VERSION = "1.000";
+
 sub link {
   my ($self, $url, $text) = @_;
 

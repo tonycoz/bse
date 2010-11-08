@@ -9,6 +9,8 @@ BEGIN {
   }
 }
 
+our $VERSION = "1.000";
+
 $VERSION="0.09";
 
 sub new {

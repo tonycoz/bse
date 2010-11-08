@@ -1,6 +1,8 @@
 package BSE::Passwords;
 use strict;
 
+our $VERSION = "1.000";
+
 # wrapper around using the BSE::Password classes
 
 sub new_password_hash {

@@ -2,6 +2,8 @@ package BSE::Request::Test;
 use strict;
 use base 'BSE::Request::Base';
 
+our $VERSION = "1.000";
+
 sub new {
   my ($class, %opts) = @_;
 

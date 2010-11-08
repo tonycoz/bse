@@ -1,6 +1,8 @@
 package BSE::Edit::Site;
 use strict;
 
+our $VERSION = "1.000";
+
 use base 'BSE::Edit::Article';
 use BSE::TB::Site;
 

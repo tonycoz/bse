@@ -1,6 +1,8 @@
 package BSE::WebUtil;
 use strict;
 
+our $VERSION = "1.000";
+
 use vars qw(@EXPORT_OK @ISA);
 require Exporter;
 @ISA = qw(Exporter);

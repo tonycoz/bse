@@ -6,6 +6,8 @@ use vars qw(@ISA $VERSION);
 use BSE::TB::ArticleFile;
 use Carp qw(confess);
 
+our $VERSION = "1.000";
+
 sub rowClass {
   return 'BSE::TB::ArticleFile';
 }

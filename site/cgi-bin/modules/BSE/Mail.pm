@@ -3,6 +3,8 @@ use strict;
 use Constants;
 use Carp qw/confess/;
 
+our $VERSION = "1.000";
+
 sub new {
   my ($class, %opts) = @_;
   my $cfg = $opts{cfg}

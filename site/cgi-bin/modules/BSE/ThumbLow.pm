@@ -1,6 +1,8 @@
 package BSE::ThumbLow;
 use strict;
 
+our $VERSION = "1.000";
+
 sub _thumbimage_low {
   my ($self, $geo_id, $im, $field, $cfg, $static) = @_;
 

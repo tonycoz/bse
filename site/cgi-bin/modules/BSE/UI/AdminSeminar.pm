@@ -11,6 +11,8 @@ use constant SECT_LOCATION_VALIDATION => "BSE Location Validation";
 use BSE::CfgInfo 'product_options';
 use DevHelp::Date qw(dh_strftime_sql_datetime);
 
+our $VERSION = "1.000";
+
 my %rights =
   (
    loclist		 => 'bse_location_list',

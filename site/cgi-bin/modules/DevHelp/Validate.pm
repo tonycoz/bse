@@ -6,6 +6,8 @@ use vars qw(@EXPORT_OK @ISA);
 @ISA = qw(Exporter);
 use Carp qw(confess);
 
+our $VERSION = "1.000";
+
 my %built_ins =
   (
    email => 

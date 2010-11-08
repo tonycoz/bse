@@ -2,6 +2,8 @@ package Squirrel::Row;
 require 5.005;
 use strict;
 
+our $VERSION = "1.000";
+
 use Carp;
 use BSE::DB;
 

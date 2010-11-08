@@ -4,6 +4,8 @@ require Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(content_type);
 
+our $VERSION = "1.000";
+
 my %types =
   (
    qw(

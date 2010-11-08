@@ -10,6 +10,8 @@ use Carp qw(confess);
 use BSE::WebUtil qw(refresh_to_admin);
 use BSE::Util::HTML;
 
+our $VERSION = "1.000";
+
 # returns non-zero if the Regenerate button should work
 sub generate_button {
   if ($GENERATE_BUTTON) {

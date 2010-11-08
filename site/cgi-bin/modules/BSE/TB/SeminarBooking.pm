@@ -2,6 +2,8 @@ package BSE::TB::SeminarBooking;
 use strict;
 use base qw(Squirrel::Row);
 
+our $VERSION = "1.000";
+
 sub columns {
   qw/id session_id siteuser_id roll_present options customer_instructions 
      support_notes/;

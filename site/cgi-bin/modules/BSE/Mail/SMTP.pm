@@ -3,6 +3,8 @@ use strict;
 use vars qw/@ISA/;
 use Net::SMTP;
 
+our $VERSION = "1.000";
+
 @ISA = qw/BSE::Mail/;
 
 sub new {

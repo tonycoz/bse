@@ -13,6 +13,8 @@ use BSE::Util::ContentType qw(content_type);
 use DevHelp::Date qw(dh_parse_date dh_parse_sql_date);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
+our $VERSION = "1.000";
+
 =head1 NAME
 
   BSE::Edit::Article - editing functionality for BSE articles

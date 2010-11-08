@@ -1,6 +1,8 @@
 package Constants;
 use strict;
 
+our $VERSION = "1.000";
+
 # this needs to be re-organized
 use vars qw(@EXPORT_OK %EXPORT_TAGS @ISA $VERSION 
 $DSN $DBOPTS $DBCLASS $UN $PW $D_00 $D_99 $D_XX

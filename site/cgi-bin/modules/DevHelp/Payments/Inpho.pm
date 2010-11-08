@@ -4,6 +4,8 @@ use Carp 'confess';
 use LWP::UserAgent;
 use DevHelp::HTML;
 
+our $VERSION = "1.000";
+
 sub new {
   my ($class, $cfg) = @_;
 

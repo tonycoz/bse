@@ -5,6 +5,8 @@ our @ISA = qw(BSE::Storage::Base);
 use Net::FTP;
 use Carp qw(confess);
 
+our $VERSION = "1.000";
+
 sub new {
   my ($class, %opts) = @_;
 

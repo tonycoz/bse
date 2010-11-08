@@ -5,6 +5,8 @@ use BSE::Util::Tags;
 use BSE::Report;
 use BSE::Util::HTML;
 
+our $VERSION = "1.000";
+
 my %actions =
   (
    prompt => '',

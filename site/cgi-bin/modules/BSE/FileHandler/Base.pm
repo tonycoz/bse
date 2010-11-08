@@ -3,6 +3,8 @@ use strict;
 use Carp qw(confess);
 use DevHelp::HTML;
 
+our $VERSION = "1.000";
+
 =head1 NAME
 
 BSE::FileHandler::Base - base class for file handlers

@@ -5,6 +5,8 @@ use BSE::TB::Images;
 use BSE::CfgInfo qw(cfg_image_dir);
 use BSE::Util::Thumb;
 
+our $VERSION = "1.000";
+
 sub dispatch {
   my ($class, $req) = @_;
 

@@ -11,6 +11,8 @@ use BSE::Util::HTML qw':default popup_menu';
 use BSE::Util::Tags qw(tag_article);
 use BSE::Request;
 
+our $VERSION = "1.000";
+
 my %actions =
   (
    search => 1,

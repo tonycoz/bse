@@ -8,6 +8,8 @@ use vars qw(@EXPORT_OK @ISA);
 @ISA = qw(Exporter);
 require Exporter;
 
+our $VERSION = "1.000";
+
 sub _get_parms {
   my ($acts, $args) = @_;
 

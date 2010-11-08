@@ -6,6 +6,8 @@ use constant CFG_DEPTH => 5; # unused so far
 use constant CACHE_AGE => 30;
 use constant VAR_DEPTH => 10;
 
+our $VERSION = "1.000";
+
 my %cache;
 
 =head1 NAME

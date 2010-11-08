@@ -2,6 +2,8 @@ package Apache::Session::DBIreal;
 use strict;
 use vars qw(@ISA $VERSION);
 
+our $VERSION = "1.000";
+
 $VERSION = '1.01';
 @ISA = qw(Apache::Session);
 

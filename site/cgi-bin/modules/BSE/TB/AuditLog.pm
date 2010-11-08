@@ -6,6 +6,8 @@ use vars qw(@ISA $VERSION);
 use BSE::TB::AuditEntry;
 use Scalar::Util qw(blessed);
 
+our $VERSION = "1.000";
+
 sub rowClass {
   return 'BSE::TB::AuditEntry';
 }

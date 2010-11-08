@@ -6,6 +6,8 @@ use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 use BSE::CfgInfo qw(custom_class);
 
+our $VERSION = "1.000";
+
 sub new {
   my ($class, $req) = @_;
   return bless { req => $req }, $class;

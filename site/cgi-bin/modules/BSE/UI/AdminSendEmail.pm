@@ -4,6 +4,8 @@ use base 'BSE::UI::AdminDispatch';
 use SiteUsers;
 use BSE::Util::Tags qw(tag_hash_plain);
 
+our $VERSION = "1.000";
+
 my %actions =
   (
    send => 1,

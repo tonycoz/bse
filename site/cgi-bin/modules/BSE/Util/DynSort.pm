@@ -1,6 +1,8 @@
 package BSE::Util::DynSort;
 use strict;
 
+our $VERSION = "1.000";
+
 use DevHelp::DynSort qw(tag_sorthelp);
 use vars qw(@EXPORT_OK);
 use base 'Exporter';

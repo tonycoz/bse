@@ -7,6 +7,8 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::TB::SiteCommon/;
 use Carp 'confess';
 
+our $VERSION = "1.000";
+
 sub columns {
   return qw/id parentid displayOrder title titleImage body
     thumbImage thumbWidth thumbHeight imagePos

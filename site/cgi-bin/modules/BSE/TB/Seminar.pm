@@ -6,6 +6,8 @@ use vars qw/@ISA/;
 @ISA = qw/Product/;
 use BSE::Util::SQL qw(now_sqldatetime);
 
+our $VERSION = "1.000";
+
 sub columns {
   return ($_[0]->SUPER::columns(), 
 	  qw/seminar_id duration/ );

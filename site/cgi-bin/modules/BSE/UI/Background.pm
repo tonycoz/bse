@@ -10,6 +10,8 @@ use IO::File;
 use BSE::Util::Tags qw(tag_hash);
 use Config;
 
+our $VERSION = "1.000";
+
 my %actions =
   (
    list => "",

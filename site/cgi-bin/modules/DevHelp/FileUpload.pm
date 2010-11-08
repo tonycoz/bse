@@ -3,6 +3,8 @@ use strict;
 use IO::File;
 use File::Copy;
 
+our $VERSION = "1.000";
+
 =head1 NAME
 
   DevHelp::FileUpload - tools to maintain a file upload directory

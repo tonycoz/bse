@@ -1,6 +1,8 @@
 package BSE::Cache;
 use strict;
 
+our $VERSION = "1.000";
+
 sub load {
   my ($class, $cfg) = @_;
 

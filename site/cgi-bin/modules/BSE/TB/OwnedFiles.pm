@@ -3,6 +3,8 @@ use strict;
 use base 'Squirrel::Table';
 use BSE::TB::OwnedFile;
 
+our $VERSION = "1.000";
+
 sub rowClass {
   'BSE::TB::OwnedFile';
 }

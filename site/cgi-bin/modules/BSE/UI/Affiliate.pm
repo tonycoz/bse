@@ -4,6 +4,8 @@ use base qw(BSE::UI::Dispatch BSE::UI::SiteuserCommon);
 use BSE::Util::Tags qw(tag_hash);
 use BSE::Util::HTML;
 
+our $VERSION = "1.000";
+
 my %actions =
   (
    set => 1,

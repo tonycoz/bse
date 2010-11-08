@@ -2,6 +2,8 @@ package BSE::TB::Site;
 use strict;
 use base qw(BSE::TB::SiteCommon);
 
+our $VERSION = "1.000";
+
 # like an article, but doesn't exist in the database
 
 sub new {

@@ -1,6 +1,8 @@
 package BSE::Cache::CHI;
 use strict;
 
+our $VERSION = "1.000";
+
 sub new {
   my ($class, $cfg) = @_;
 

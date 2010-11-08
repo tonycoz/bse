@@ -1,6 +1,8 @@
 package BSE::Edit::Base;
 use strict;
 
+our $VERSION = "1.000";
+
 # one day I might put something useful here
 sub new {
   my ($class, %parms) = @_;

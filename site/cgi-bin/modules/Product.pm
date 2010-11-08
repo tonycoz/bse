@@ -5,6 +5,8 @@ use Articles;
 use vars qw/@ISA/;
 @ISA = qw/Article/;
 
+our $VERSION = "1.000";
+
 # subscription_usage values
 use constant SUBUSAGE_START_ONLY => 1;
 use constant SUBUSAGE_RENEW_ONLY => 2;

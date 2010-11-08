@@ -2,6 +2,8 @@ package BSE::UI::Dispatch;
 use strict;
 use Carp 'confess';
 
+our $VERSION = "1.000";
+
 sub new {
   my ($class, %opts) = @_;
 

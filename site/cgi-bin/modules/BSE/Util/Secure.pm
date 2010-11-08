@@ -1,6 +1,8 @@
 package BSE::Util::Secure;
 use strict;
 
+our $VERSION = "1.000";
+
 use vars qw(@ISA @EXPORT_OK);
 
 @ISA = qw(Exporter);

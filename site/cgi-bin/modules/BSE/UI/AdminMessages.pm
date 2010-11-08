@@ -4,6 +4,8 @@ use base 'BSE::UI::AdminDispatch';
 use BSE::Util::Iterate;
 use BSE::Message;
 
+our $VERSION = "1.000";
+
 my %actions =
   (
    index => "bse_msg_view",

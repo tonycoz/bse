@@ -4,6 +4,8 @@ use base 'Squirrel::Table';
 use BSE::TB::AdminGroup;
 use constant SECT_TEMPLATE_SETS => 'admin group template sets';
 
+our $VERSION = "1.000";
+
 sub rowClass {
   return 'BSE::TB::AdminGroup';
 }

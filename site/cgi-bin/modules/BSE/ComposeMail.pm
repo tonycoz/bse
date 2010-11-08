@@ -5,6 +5,8 @@ use BSE::Mail;
 use Carp 'confess';
 use Digest::MD5 qw(md5_hex);
 
+our $VERSION = "1.000";
+
 =head1 NAME
 
 BSE::ComposeMail - compose mail for BSE

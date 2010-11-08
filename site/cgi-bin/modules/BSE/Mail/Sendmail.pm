@@ -2,6 +2,8 @@ package BSE::Mail::Sendmail;
 use strict;
 use vars qw/@ISA/;
 
+our $VERSION = "1.000";
+
 @ISA = qw/BSE::Mail/;
 
 sub new {

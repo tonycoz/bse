@@ -5,6 +5,8 @@ use BSE::Template;
 use BSE::Util::HTML;
 use base qw(BSE::Util::DynamicTags);
 
+our $VERSION = "1.000";
+
 sub new {
   my ($class, $req, %opts) = @_;
 

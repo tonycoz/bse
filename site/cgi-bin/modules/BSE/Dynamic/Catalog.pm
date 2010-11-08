@@ -2,6 +2,8 @@ package BSE::Dynamic::Catalog;
 use strict;
 use base 'BSE::Dynamic::Article';
 
+our $VERSION = "1.000";
+
 # no specific behavious yet
 
 sub tags {

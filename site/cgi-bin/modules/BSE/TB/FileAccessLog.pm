@@ -4,6 +4,8 @@ use base 'Squirrel::Table';
 use BSE::TB::FileAccessLogEntry;
 use Carp qw(confess);
 
+our $VERSION = "1.000";
+
 sub rowClass {
   'BSE::TB::FileAccessLogEntry';
 }

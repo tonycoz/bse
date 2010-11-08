@@ -2,6 +2,8 @@ package BSE::Thumb::Imager::RandomCrop;
 use strict;
 use base 'BSE::Thumb::Imager::Handler';
 
+our $VERSION = "1.000";
+
 sub new {
   my ($class, $text, $error, $thumb) = @_;
   

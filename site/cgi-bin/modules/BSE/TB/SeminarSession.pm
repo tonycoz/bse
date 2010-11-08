@@ -3,6 +3,8 @@ use strict;
 use base qw(Squirrel::Row);
 use BSE::Util::SQL qw(now_sqldatetime);
 
+our $VERSION = "1.000";
+
 sub columns {
   return qw/id seminar_id location_id when_at roll_taken/;
 }

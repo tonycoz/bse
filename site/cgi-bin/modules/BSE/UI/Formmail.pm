@@ -7,6 +7,8 @@ use DevHelp::Validate qw(dh_validate dh_configure_fields);
 use BSE::Util::Iterate;
 use constant DISPLAY_TIMEOUT => 300;
 
+our $VERSION = "1.000";
+
 my %actions =
   (
    show => 1,

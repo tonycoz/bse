@@ -3,6 +3,8 @@ use strict;
 use BSE::Util::HTML;
 use Carp 'confess';
 
+our $VERSION = "1.000";
+
 use base 'DevHelp::Formatter';
 
 my $pop_nameid = 'AAAAAA';

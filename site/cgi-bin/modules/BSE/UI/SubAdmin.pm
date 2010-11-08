@@ -9,6 +9,8 @@ use BSE::Util::Iterate;
 use BSE::TB::Subscriptions;
 use BSE::Util::HTML;
 
+our $VERSION = "1.000";
+
 my %rights =
   (
    list => 'bse_subscr_list',

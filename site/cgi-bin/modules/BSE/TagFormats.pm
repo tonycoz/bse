@@ -2,6 +2,8 @@ package BSE::TagFormats;
 use strict;
 use BSE::Util::HTML;
 
+our $VERSION = "1.000";
+
 sub _format_image {
   my ($self, $im, $align, $rest) = @_;
 

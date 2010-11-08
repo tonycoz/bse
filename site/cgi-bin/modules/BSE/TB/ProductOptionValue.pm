@@ -2,6 +2,8 @@ package BSE::TB::ProductOptionValue;
 use strict;
 use base "Squirrel::Row";
 
+our $VERSION = "1.000";
+
 sub columns {
   return qw/id product_option_id value display_order/;
 }

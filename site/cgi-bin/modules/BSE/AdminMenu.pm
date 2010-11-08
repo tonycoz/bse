@@ -4,6 +4,8 @@ use BSE::Util::Tags;
 use base 'BSE::UI::AdminDispatch';
 use DevHelp::HTML;
 
+our $VERSION = "1.000";
+
 my %actions =
   (
    menu=>1,

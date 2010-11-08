@@ -3,6 +3,8 @@ use strict;
 use base 'BSE::Edit::Article';
 use BSE::Util::HTML;
 
+our $VERSION = "1.000";
+
 sub base_template_dirs {
   return ( "catalog" );
 }

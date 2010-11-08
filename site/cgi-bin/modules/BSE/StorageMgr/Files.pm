@@ -5,6 +5,8 @@ our @ISA = qw(BSE::StorageMgr::Base);
 use BSE::Storage::LocalFiles;
 use BSE::Util::ContentType qw(content_type);
 
+our $VERSION = "1.000";
+
 sub filebase {
   my ($self) = @_;
 

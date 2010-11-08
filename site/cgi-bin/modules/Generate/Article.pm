@@ -15,6 +15,8 @@ use BSE::Arrows;
 use Carp 'confess';
 use BSE::Util::Iterate;
 
+our $VERSION = "1.000";
+
 my $excerptSize = 300;
 
 my %level_names = map { $_, $LEVEL_DEFAULTS{$_}{display} }

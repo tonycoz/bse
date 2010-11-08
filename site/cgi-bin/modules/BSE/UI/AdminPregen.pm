@@ -4,6 +4,8 @@ use base qw(BSE::UI::AdminDispatch);
 use BSE::Util::Iterate;
 use BSE::Util::Tags qw(tag_hash);
 
+our $VERSION = "1.000";
+
 my %actions =
   (
    list => "",

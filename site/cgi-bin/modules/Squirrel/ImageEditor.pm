@@ -3,6 +3,8 @@ package Squirrel::ImageEditor;
 use strict;
 use Constants qw($TMPLDIR %TEMPLATE_OPTS);
 
+our $VERSION = "1.000";
+
 sub new {
   my ($class, %opts) = @_;
   $opts{message} = '';

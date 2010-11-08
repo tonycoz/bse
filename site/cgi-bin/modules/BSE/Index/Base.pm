@@ -1,6 +1,8 @@
 package BSE::Index::Base;
 use strict;
 
+our $VERSION = "1.000";
+
 1;
 
 __END__

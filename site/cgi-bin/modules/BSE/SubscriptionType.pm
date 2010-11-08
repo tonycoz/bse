@@ -5,6 +5,8 @@ use Squirrel::Row;
 use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 
+our $VERSION = "1.000";
+
 sub columns {
   return qw/id name title description frequency keyword archive 
             article_template html_template text_template parentId lastSent

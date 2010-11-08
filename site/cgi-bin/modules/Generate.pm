@@ -11,6 +11,8 @@ use BSE::Util::Iterate;
 use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 
+our $VERSION = "1.000";
+
 my $excerptSize = 300;
 
 sub new {

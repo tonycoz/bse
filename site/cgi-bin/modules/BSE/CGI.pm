@@ -2,6 +2,8 @@ package BSE::CGI;
 use strict;
 use Encode;
 
+our $VERSION = "1.000";
+
 sub new {
   my ($class, $q, $charset) = @_;
 

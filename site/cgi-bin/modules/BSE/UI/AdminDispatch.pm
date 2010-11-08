@@ -4,6 +4,8 @@ use base qw(BSE::UI::Dispatch);
 use BSE::CfgInfo qw(admin_base_url);
 use Carp qw(confess);
 
+our $VERSION = "1.000";
+
 # checks we're coming from HTTPS
 sub check_secure {
   my ($class, $req, $rresult) = @_;

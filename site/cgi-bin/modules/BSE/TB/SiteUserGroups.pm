@@ -3,6 +3,8 @@ use strict;
 use base 'Squirrel::Table';
 use BSE::TB::SiteUserGroup;
 
+our $VERSION = "1.000";
+
 use constant SECT_QUERY_GROUPS => "Query Groups";
 use constant SECT_QUERY_GROUP_PREFIX => 'Query group ';
 

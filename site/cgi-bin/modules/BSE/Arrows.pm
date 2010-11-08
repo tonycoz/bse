@@ -2,6 +2,8 @@ package BSE::Arrows;
 use strict;
 use BSE::Util::HTML;
 
+our $VERSION = "1.000";
+
 use base 'Exporter';
 
 use vars qw(@EXPORT);

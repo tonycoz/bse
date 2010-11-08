@@ -11,6 +11,8 @@ use Carp qw(confess croak);
 use Fcntl qw(:seek);
 use Cwd;
 
+our $VERSION = "1.000";
+
 my %acticle_defaults =
   (
    titleImage => '',

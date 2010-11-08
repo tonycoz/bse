@@ -4,6 +4,8 @@ use base qw(BSE::UI::Dispatch);
 use Digest::MD5 qw(md5_hex);
 use BSE::Util::HTML;
 
+our $VERSION = "1.000";
+
 my %actions =
   (
    redir => 1,

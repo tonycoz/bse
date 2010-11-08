@@ -12,6 +12,8 @@ require 'Exporter.pm';
   );
 @ISA = qw/Exporter/;
 
+our $VERSION = "1.000";
+
 use constant SECONDS_PER_DAY => 86400;
 
 =head1 NAME

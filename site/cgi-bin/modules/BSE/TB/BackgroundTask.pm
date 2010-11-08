@@ -5,6 +5,8 @@ use BSE::Util::SQL qw(now_sqldatetime);
 use Carp qw(confess);
 use Errno qw(EPERM EACCES);
 
+our $VERSION = "1.000";
+
 sub columns {
   return qw/id description modname binname bin_opts stoppable start_right running task_pid last_exit last_started last_completion long_desc/;
 }

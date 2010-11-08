@@ -6,6 +6,8 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 use Carp 'confess';
 
+our $VERSION = "1.000";
+
 sub columns {
   return qw/id articleId displayName filename sizeInBytes description 
             contentType displayOrder forSale download whenUploaded

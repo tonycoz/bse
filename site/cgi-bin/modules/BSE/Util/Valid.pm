@@ -5,6 +5,8 @@ require 'Exporter.pm';
 @EXPORT_OK = qw/valid_date convert_date_to_sql/;
 @ISA = qw/Exporter/;
 
+our $VERSION = "1.000";
+
 sub valid_date {
   $_[0] =~ m!^\d+[/-]\d+[/-]\d+$!;
 }

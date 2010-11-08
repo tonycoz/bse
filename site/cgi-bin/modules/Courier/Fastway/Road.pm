@@ -1,5 +1,7 @@
 package Courier::Fastway::Road;
 
+our $VERSION = "1.000";
+
 use strict;
 use Courier::Fastway;
 

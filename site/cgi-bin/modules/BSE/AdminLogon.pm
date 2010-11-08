@@ -4,6 +4,8 @@ use BSE::Util::Tags qw(tag_error_img);
 use BSE::Util::HTML;
 use BSE::CfgInfo 'admin_base_url';
 
+our $VERSION = "1.000";
+
 my %actions =
   (
    logon_form=>1,

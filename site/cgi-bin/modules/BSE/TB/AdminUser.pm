@@ -2,6 +2,8 @@ package BSE::TB::AdminUser;
 use strict;
 use base qw(BSE::TB::AdminBase);
 
+our $VERSION = "1.000";
+
 sub columns {
   return ($_[0]->SUPER::columns,
 	  qw/base_id logon name password perm_map password_type/);

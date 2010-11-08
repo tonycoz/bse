@@ -3,6 +3,8 @@ use strict;
 use Config;
 use Carp 'confess';
 
+our $VERSION = "1.000";
+
 sub new {
   my ($class, $cfg) = @_;
 

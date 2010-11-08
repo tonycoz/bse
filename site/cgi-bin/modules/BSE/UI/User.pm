@@ -8,6 +8,8 @@ use BSE::Util::SQL qw/now_datetime/;
 use DevHelp::Date qw(dh_strftime_sql_datetime);
 use base 'BSE::UI::UserCommon';
 
+our $VERSION = "1.000";
+
 my %actions =
   (
    info => 1,

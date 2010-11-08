@@ -9,6 +9,8 @@ use constant SECT_SEMSESSION_VALIDATION => 'BSE Seminar Session Validation';
 use BSE::Util::HTML qw(escape_html);
 use BSE::Util::Iterate;
 
+our $VERSION = "1.000";
+
 sub article_actions {
   my ($self) = @_;
 

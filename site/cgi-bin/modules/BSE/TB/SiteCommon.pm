@@ -2,6 +2,8 @@ package BSE::TB::SiteCommon;
 use strict;
 use Carp qw(confess);
 
+our $VERSION = "1.000";
+
 sub step_parents {
   my ($self) = @_;
 

@@ -5,6 +5,8 @@ use BSE::Util::HTML qw(escape_uri);
 use BSE::UI::Dispatch;
 our @ISA = qw(BSE::UI::Dispatch);
 
+our $VERSION = "1.000";
+
 # we don't do anything fancy on dispatch yet, so don't use the 
 # dispatch classes
 sub dispatch {

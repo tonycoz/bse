@@ -6,6 +6,8 @@ use BSE::CfgInfo qw(cfg_image_dir);
 use BSE::Storage::LocalImages;
 use BSE::Util::ContentType qw(content_type);
 
+our $VERSION = "1.000";
+
 sub filebase {
   my ($self) = @_;
 

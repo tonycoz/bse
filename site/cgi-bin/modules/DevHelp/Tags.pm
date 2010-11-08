@@ -1,6 +1,8 @@
 package DevHelp::Tags;
 use strict;
 
+our $VERSION = "1.000";
+
 sub make_iterator {
   my ($class, $array, $single, $plural, $saveto) = @_;
 

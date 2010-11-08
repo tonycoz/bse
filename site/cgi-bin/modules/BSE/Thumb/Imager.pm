@@ -3,6 +3,8 @@ use strict;
 use constant CFG_SECTION => 'imager thumb driver';
 use Config;
 
+our $VERSION = "1.000";
+
 my %handlers =
   (
    # default handlers

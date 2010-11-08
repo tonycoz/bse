@@ -1,5 +1,7 @@
 package Squirrel::Table;
 
+our $VERSION = "1.000";
+
 use vars qw($VERSION);
 use Carp;
 use strict;

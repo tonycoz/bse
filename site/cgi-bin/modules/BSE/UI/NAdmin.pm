@@ -2,6 +2,8 @@ package BSE::UI::NAdmin;
 use strict;
 use base qw/BSE::UI::NUser/;
 
+our $VERSION = "1.000";
+
 sub controller_section {
   'nadmin controllers';
 }

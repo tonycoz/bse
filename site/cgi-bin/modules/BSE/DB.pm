@@ -4,6 +4,8 @@ use strict;
 use Carp qw(croak);
 use Carp qw/confess/;
 
+our $VERSION = "1.000";
+
 use vars qw($VERSION);
 $VERSION = '1.00';
 

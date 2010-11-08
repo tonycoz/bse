@@ -4,6 +4,8 @@ use BSE::Util::Tags qw(tag_error_img);
 use BSE::Util::HTML;
 use base 'BSE::UI::AdminDispatch';
 
+our $VERSION = "1.000";
+
 my %actions =
   (
    form=>1,

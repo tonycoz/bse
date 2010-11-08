@@ -1,6 +1,8 @@
 package BSE::Password::Crypt;
 use strict;
 
+our $VERSION = "1.000";
+
 sub new {
   my ($class) = @_;
 

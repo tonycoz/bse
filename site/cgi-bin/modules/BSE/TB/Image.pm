@@ -7,6 +7,8 @@ use vars qw/@ISA/;
 use Carp qw(confess);
 use BSE::Util::HTML qw(escape_html);
 
+our $VERSION = "1.000";
+
 sub columns {
   return qw/id articleId image alt width height url displayOrder name
             storage src ftype/;

@@ -2,6 +2,8 @@ package BSE::Search::BSE;
 use strict;
 use Constants qw(:search);
 
+our $VERSION = "1.000";
+
 use base 'BSE::Search::Base';
 
 sub new {

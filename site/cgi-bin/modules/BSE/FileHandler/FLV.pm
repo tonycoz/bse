@@ -4,6 +4,8 @@ use base "BSE::FileHandler::Base";
 use BSE::Util::Tags qw(tag_hash);
 use BSE::Util::HTML;
 
+our $VERSION = "1.000";
+
 sub process_file {
   my ($self, $file) = @_;
 

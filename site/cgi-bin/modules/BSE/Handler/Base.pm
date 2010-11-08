@@ -4,6 +4,8 @@ use BSE::Cfg;
 use Apache::Request;
 use BSE::Request;
 
+our $VERSION = "1.000";
+
 sub handler {
   my ($class, $r) = @_;
 

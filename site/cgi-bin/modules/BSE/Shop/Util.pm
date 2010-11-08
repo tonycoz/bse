@@ -7,6 +7,8 @@ use vars qw(@ISA @EXPORT_OK);
                 payment_types order_item_opts
  PAYMENT_CC PAYMENT_CHEQUE PAYMENT_CALLME PAYMENT_MANUAL PAYMENT_PAYPAL/;
 
+our $VERSION = "1.000";
+
 
 our %EXPORT_TAGS =
   (

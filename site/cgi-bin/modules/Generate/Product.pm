@@ -9,6 +9,8 @@ use Carp qw(confess);
 use BSE::Util::HTML;
 use BSE::Util::Tags qw(tag_article);
 
+our $VERSION = "1.000";
+
 sub edit_link {
   my ($self, $id) = @_;
   return "/cgi-bin/admin/add.pl?id=$id";

@@ -6,6 +6,8 @@ use BSE::Util::Tags qw(tag_hash tag_error_img tag_hash_plain tag_article tag_art
 use BSE::ComposeMail;
 use Articles;
 
+our $VERSION = "1.000";
+
 my %actions =
   (
    form => 1,

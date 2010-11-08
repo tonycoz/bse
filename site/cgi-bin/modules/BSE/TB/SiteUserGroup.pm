@@ -3,6 +3,8 @@ use strict;
 use base 'Squirrel::Row';
 use constant OWNER_TYPE => "G";
 
+our $VERSION = "1.000";
+
 sub columns {
   qw(id name);
 }

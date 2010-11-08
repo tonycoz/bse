@@ -5,6 +5,8 @@ use BSE::Util::HTML;
 use BSE::Shop::Util qw(:payment);
 use Carp qw(confess);
 
+our $VERSION = "1.000";
+
 use constant DEF_TEST_WS_URL => "https://api-3t.sandbox.paypal.com/nvp";
 use constant DEF_TEST_REFRESH_URL => "https://www.sandbox.paypal.com/webscr";
 
