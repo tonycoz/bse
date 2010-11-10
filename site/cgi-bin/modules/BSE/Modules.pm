@@ -3,7 +3,7 @@ use strict;
 
 # automatically generated
 
-our $hash = "ed24611e822d70851d7d6a80a2fd4ef1";
+our $hash = "3d6e716f5b0e1f81f1fe4c4fa1e48089";
 
 our %versions =
   (
@@ -70,7 +70,7 @@ our %versions =
   "BSE::Mail" => "1.000",
   "BSE::Mail::SMTP" => "1.000",
   "BSE::Mail::Sendmail" => "1.000",
-  "BSE::Message" => "1.000",
+  "BSE::Message" => "1.001",
   "BSE::MessageScanner" => "1.000",
   "BSE::NLFilter::SQL" => "1.000",
   "BSE::NotifyFiles" => "1.000",
@@ -167,7 +167,7 @@ our %versions =
   "BSE::UI::API" => "1.000",
   "BSE::UI::AdminDispatch" => "1.000",
   "BSE::UI::AdminMessages" => "1.000",
-  "BSE::UI::AdminModules" => "1.000",
+  "BSE::UI::AdminModules" => "1.001",
   "BSE::UI::AdminNewsletter" => "1.000",
   "BSE::UI::AdminPregen" => "1.000",
   "BSE::UI::AdminReport" => "1.000",
@@ -193,7 +193,7 @@ our %versions =
   "BSE::UI::Thumb" => "1.000",
   "BSE::UI::User" => "1.000",
   "BSE::UI::UserCommon" => "1.000",
-  "BSE::UserReg" => "1.000",
+  "BSE::UserReg" => "1.001",
   "BSE::Util::ContentType" => "1.000",
   "BSE::Util::DynSort" => "1.000",
   "BSE::Util::DynamicTags" => "1.000",

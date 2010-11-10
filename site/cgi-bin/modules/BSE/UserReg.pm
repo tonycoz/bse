@@ -18,7 +18,7 @@ use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
 use Carp qw(confess);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -104,15 +104,39 @@ sub req_show_logon {
     my $temp = $cfg->entry("messages", $msgid);
     $message = $temp if $temp;
   }
+  my $errors;
+  if (ref $message) {
+    $errors = $message;
+    $message = $req->message($errors);
+  }
+  elsif ($message) {
+    $message = escape_html($message);
+    $errors = {};
+  }
   my %acts;
   %acts =
     (
      $req->dyn_user_tags(),
-     message => sub { escape_html($message) },
+     message => $message,
+     error_img => [ \&tag_error_img, $cfg, $errors ],
     );
 
   return $req->response('user/logon', \%acts);
 }
+
+my %logon_fields =
+  (
+   userid =>
+   {
+    description => "Logon name",
+    rules => "required",
+   },
+   password =>
+   {
+    description => "Password",
+    rules => "required",
+   },
+  );
 
 sub req_logon {
   my ($self, $req) = @_;
@@ -127,21 +151,25 @@ sub req_logon {
     return $self->req_nopassword($req);
   }
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
-  my $userid = $cgi->param('userid')
-    or return $self->req_show_logon($req, 
-				$msgs->(needlogon=>"Please enter your username"));
-  my $password = $cgi->param('password')
-    or return $self->req_show_logon($req,
-				$msgs->(needpass=>"Please enter your password"));
-  my $user = SiteUsers->getBy(userId => $userid);
-  unless ($user && $user->{password} eq $password) {
-    return $self->req_show_logon($req,
-			     $msgs->(baduserpass=>"Invalid username or password"));
+  my %errors;
+  $req->validate(fields => \%logon_fields,
+		 errors => \%errors,
+		 section => "Logon Fields");
+  my $user;
+  my $userid = $cgi->param("userid");
+  my $password = $cgi->param("password");
+  unless (keys %errors) {
+    $user = SiteUsers->getBy(userId => $userid);
+    unless ($user && $user->{password} eq $password) {
+      $errors{_} = $msgs->(baduserpass=>"Invalid username or password");
+    }
   }
-  if ($user->{disabled}) {
-    return $self->req_show_logon($req,
-			     $msgs->(disableduser=>"Account $userid has been disabled"));
+  if (!keys %errors && $user->{disabled}) {
+    $errors{_} = $msgs->(disableduser=>"Account $userid has been disabled");
   }
+
+  keys %errors
+    and return $self->req_show_logon($req, \%errors);
 
   my %fields = $user->valid_fields($cfg);
   my $custom = custom_class($cfg);
@@ -151,7 +179,6 @@ sub req_logon {
   }
   my %rules = $user->valid_rules($cfg);
 
-  my %errors;
   $req->validate_hash(data => $user,
 		      errors => \%errors,
 		      fields => \%fields,
@@ -1533,13 +1560,22 @@ sub req_show_lost_password {
   my $session = $req->session;
 
   $message ||= $cgi->param('message') || '';
-  $message = escape_html($message);
+  my $errors;
+  if (ref $message) {
+    $errors = $message;
+    $message = $req->message($errors);
+  }
+  elsif ($message) {
+    $message = escape_html($message);
+    $errors = {};
+  }
 
   my %acts;
   %acts =
     (
      $req->dyn_user_tags(),
      message => $message,
+     error_img => [ \&tag_error_img, $cfg, $errors ],
     );
   BSE::Template->show_page('user/lostpassword', $cfg, \%acts);
 
@@ -1555,15 +1591,19 @@ sub req_lost_password {
 
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
   my $userid = $cgi->param('userid');
-  defined $userid && length $userid
-    or return $self->req_show_lost_password($req,
-					$msgs->(lostnouserid=>
-						"Please enter your username"));
+  my %errors;
   
-  my $user = SiteUsers->getBy(userId=>$userid)
-    or return $self->req_show_lost_password($req,
-					$msgs->(lostnosuch=>
-						"Unknown username supplied", $userid));
+  unless (defined $userid && length $userid) {
+    $errors{userid} = $msgs->(lostnouserid=> "Please enter your username");
+  }
+  
+  my $user;
+  unless (keys %errors) {
+    $user = SiteUsers->getBy(userId=>$userid)
+      or $errors{userid} = $msgs->(lostnosuch=> "Unknown username supplied", $userid);
+  }
+  keys %errors
+    and return $self->req_show_lost_password($req, \%errors);
 
   my $custom = custom_class($cfg);
   my $email_user = $user;

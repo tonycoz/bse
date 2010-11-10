@@ -9,7 +9,7 @@ use overload
   "&{}" => sub { my $self = $_[0]; return sub { $self->_old_msg(@_) } },
   "bool" => sub { 1 };
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 my $single;
 
@@ -185,6 +185,7 @@ sub _get_base {
 
   if ($entry) {
     # clone the entry so text replacement doesn't mess us up
+    $entry->[1] or return;
     my %entry = %{$entry->[1]};
     return \%entry;
   }

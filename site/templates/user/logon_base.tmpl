@@ -1,6 +1,6 @@
 <:wrap base.tmpl:>
 <div align=center>
-  <table width="250">
+  <table width="300">
     <tr> 
       <th colspan="2" align="center"> 
         <p><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>User 
@@ -29,14 +29,14 @@
       <tr> 
         <th align="left" nowrap><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Logon 
           Name:</font></b></th>
-        <td> 
-          <input type="text" name="userid" value="" size="40" />
+        <td style="white-space: nowrap;"> 
+          <input type="text" name="userid" value="<:old userid:>" size="40" /><:error_img userid:>
         </td>
       </tr>
       <tr> 
         <th align="left" nowrap><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Password:</font></b></th>
-        <td> 
-          <input type="password" name="password" value="" size="40" />
+        <td style="white-space: nowrap;"> 
+          <input type="password" name="password" value="" size="40" /><:error_img password:>
         </td>
       </tr>
       <tr> 
