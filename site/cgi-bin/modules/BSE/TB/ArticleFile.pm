@@ -6,7 +6,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 use Carp 'confess';
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub columns {
   return qw/id articleId displayName filename sizeInBytes description 
@@ -78,7 +78,7 @@ sub url {
 
  #   return "/cgi-bin/user.pl/download_file/$file->{id}";
 
-  $cfg or confess "Missing cfg option";
+  $cfg ||= BSE::Cfg->single;
 
   if ($file->storage eq "local" 
       || $file->forSale
@@ -325,6 +325,17 @@ sub metafields {
   my @handler_fields = map BSE::FileMetaMeta->new(%$_, ro => 1, cfg => $cfg), $handler->metametadata;
 
   return ( @fields, @handler_fields );
+}
+
+sub downloadable_by {
+  my ($self, $user) = @_;
+
+  $self->forSale
+    or return 1;
+
+  my ($entry) = BSE::DB->single->query(bseFileAvailableFor => $self->id, $user->id);
+
+  return defined $entry;
 }
 
 1;

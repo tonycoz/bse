@@ -6,7 +6,7 @@ use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 use BSE::CfgInfo qw(custom_class);
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub new {
   my ($class, $req) = @_;
@@ -57,7 +57,7 @@ sub tags {
      recaptcha => [ tag_recaptcha => $self, $req ],
      dyncatmsg => [ tag_dyncatmsg => $self, $req ],
      $self->dyn_iterator("userfiles", "userfile"),
-     $self->dyn_iterator("paidfiles", "paidfile"),
+     $self->dyn_iterator_obj("paidfiles", "paidfile"),
      $self->_custom_tags,
     );
 }
@@ -512,6 +512,24 @@ sub _dyn_item {
   return escape_html($value);
 }
 
+sub _dyn_item_object {
+  my ($self, $rdata, $rindex, $single, $plural, $args) = @_;
+
+  if ($$rindex < 0 || $$rindex >= @$$rdata) {
+    return "** $single only usable inside iterator $plural **";
+  }
+
+  my $item = $$rdata->[$$rindex]
+    or return '';
+  $item->can($args)
+    or return "* $args not valid for $single *";
+  my $value = $item->$args;
+  defined $value 
+    or return '';
+
+  return escape_html($value);
+}
+
 sub _dyn_article {
   my ($self, $rdata, $rindex, $single, $plural, $args) = @_;
 
@@ -584,6 +602,35 @@ sub dyn_iterator {
      [ _dyn_iterate => $self, $rdata, $rindex, $single, $context ],
      $single => 
      [ _dyn_item => $self, $rdata, $rindex, $single, $plural ],
+     "${single}_index" =>
+     [ _dyn_index => $self, $rindex, $rdata, $single ],
+     "${single}_number" =>
+     [ _dyn_number => $self, $rindex, $rdata ],
+     "${single}_count" =>
+     [ _dyn_count => $self, $rindex, $rdata, $plural, $context ],
+     "if\u$plural" =>
+     [ _dyn_count => $self, $rindex, $rdata, $plural, $context ],
+     "ifLast\u$single" => [ _dyn_if_last => $self, $rindex, $rdata ],
+     "ifFirst\u$single" => [ _dyn_if_first => $self, $rindex, $rdata ],
+    );
+}
+
+sub dyn_iterator_obj {
+  my ($self, $plural, $single, $context, $rindex, $rdata) = @_;
+
+  my $method = $plural;
+  my $index;
+  defined $rindex or $rindex = \$index;
+  my $data;
+  defined $rdata or $rdata = \$data;
+  return
+    (
+     "iterate_${plural}_reset" =>
+     [ _dyn_iterate_reset => $self, $rdata, $rindex, $plural, $context ],
+     "iterate_$plural" =>
+     [ _dyn_iterate => $self, $rdata, $rindex, $single, $context ],
+     $single => 
+     [ _dyn_item_object => $self, $rdata, $rindex, $single, $plural ],
      "${single}_index" =>
      [ _dyn_index => $self, $rindex, $rdata, $single ],
      "${single}_number" =>

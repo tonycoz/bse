@@ -3,7 +3,7 @@ use strict;
 
 # automatically generated
 
-our $hash = "cf8f59e953a435603cec97dd21c76b38";
+our $hash = "dd63ce638dbed77b7f94b82966ce47f3";
 
 our %versions =
   (
@@ -119,7 +119,7 @@ our %versions =
   "BSE::TB::AdminUIStates" => "1.000",
   "BSE::TB::AdminUser" => "1.000",
   "BSE::TB::AdminUsers" => "1.000",
-  "BSE::TB::ArticleFile" => "1.000",
+  "BSE::TB::ArticleFile" => "1.001",
   "BSE::TB::ArticleFileMeta" => "1.000",
   "BSE::TB::ArticleFileMetas" => "1.000",
   "BSE::TB::ArticleFiles" => "1.000",
@@ -193,10 +193,10 @@ our %versions =
   "BSE::UI::Thumb" => "1.000",
   "BSE::UI::User" => "1.000",
   "BSE::UI::UserCommon" => "1.000",
-  "BSE::UserReg" => "1.001",
+  "BSE::UserReg" => "1.002",
   "BSE::Util::ContentType" => "1.000",
   "BSE::Util::DynSort" => "1.000",
-  "BSE::Util::DynamicTags" => "1.001",
+  "BSE::Util::DynamicTags" => "1.002",
   "BSE::Util::HTML" => "1.000",
   "BSE::Util::Iterate" => "1.000",
   "BSE::Util::Prereq" => "1.001",
