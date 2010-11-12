@@ -3,14 +3,14 @@ use strict;
 
 # automatically generated
 
-our $hash = "1f1e8f71d674276bddd7b13a1e90daaa";
+our $hash = "1caf79631b70ab3d59d52ef8a77bece8";
 
 our %versions =
   (
   "AdminUtil" => "1.000",
   "Apache::Session::DBIreal" => "1.000",
   "Apache::Session::Store::DBIreal" => "1.000",
-  "Article" => "1.001",
+  "Article" => "1.002",
   "Articles" => "1.000",
   "BSE::API" => "1.000",
   "BSE::Admin::StepParents" => "1.000",
@@ -37,7 +37,7 @@ our %versions =
   "BSE::Dynamic::Catalog" => "1.000",
   "BSE::Dynamic::Product" => "1.000",
   "BSE::Dynamic::Seminar" => "1.000",
-  "BSE::Edit::Article" => "1.001",
+  "BSE::Edit::Article" => "1.002",
   "BSE::Edit::Base" => "1.000",
   "BSE::Edit::Catalog" => "1.000",
   "BSE::Edit::Product" => "1.000",

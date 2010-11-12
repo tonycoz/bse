@@ -7,7 +7,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::TB::SiteCommon/;
 use Carp 'confess';
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub columns {
   return qw/id parentid displayOrder title titleImage body
@@ -283,7 +283,7 @@ sub link {
 sub is_linked {
   my ($self) = @_;
 
-  return $self->flags !~ /L/;
+  return $self->flags !~ /D/;
 }
 
 1;

@@ -13,7 +13,7 @@ use BSE::Util::ContentType qw(content_type);
 use DevHelp::Date qw(dh_parse_date dh_parse_sql_date);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 =head1 NAME
 
@@ -1829,7 +1829,7 @@ sub save {
     or return $self->_service_error($req, $article, $articles, undef, \%errors, "FIELD");
   $self->save_thumbnail($cgi, $article, \%data)
     if $req->user_can('edit_field_edit_thumbImage', $article);
-  if (exists $data{flags} && $data{flags} =~ /L/) {
+  if (exists $data{flags} && $data{flags} =~ /D/) {
     $article->remove_html;
   }
   $self->fill_old_data($req, $article, \%data);
