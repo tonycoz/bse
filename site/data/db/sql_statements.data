@@ -406,3 +406,15 @@ sql_statement: <<SQL
 delete from bse_audit_log
 where when_at < date_sub(now(), interval ? day)
 SQL
+
+name: ArticleFiles.userPaidFor
+sql_statement: <<SQL
+select af.*
+from article_files af, orders od, order_item oi
+where af.forSale <> 0
+  and af.articleId = oi.productId
+  and oi.orderId = od.id
+  and od.paidFor <> 0
+  and od.siteuser_id = ?
+order by af.displayName
+SQL

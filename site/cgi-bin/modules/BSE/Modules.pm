@@ -3,7 +3,7 @@ use strict;
 
 # automatically generated
 
-our $hash = "f807d1f56fb9d53057c36af8e3192f6c";
+our $hash = "cf8f59e953a435603cec97dd21c76b38";
 
 our %versions =
   (
@@ -196,7 +196,7 @@ our %versions =
   "BSE::UserReg" => "1.001",
   "BSE::Util::ContentType" => "1.000",
   "BSE::Util::DynSort" => "1.000",
-  "BSE::Util::DynamicTags" => "1.000",
+  "BSE::Util::DynamicTags" => "1.001",
   "BSE::Util::HTML" => "1.000",
   "BSE::Util::Iterate" => "1.000",
   "BSE::Util::Prereq" => "1.001",
@@ -242,7 +242,7 @@ our %versions =
   "OtherParents" => "1.000",
   "Product" => "1.000",
   "Products" => "1.000",
-  "SiteUser" => "1.000",
+  "SiteUser" => "1.001",
   "SiteUsers" => "1.000",
   "Squirrel::GPG" => "1.000",
   "Squirrel::PGP5" => "1.000",

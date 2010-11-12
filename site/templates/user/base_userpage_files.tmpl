@@ -29,3 +29,22 @@
 </tr>
 <:iterator end userfiles:>
 </table>
+
+<:if Paidfiles:>
+<table>
+<tr>
+  <th>Name</th>
+  <th>Date</th>
+  <th>Title</th>
+  <th>Size</th>
+</tr>
+<:iterator begin paidfiles sort: -modwhen:>
+<tr>
+  <td><a href="<:paidfile src:>"><:paidfile displayName:></a></td>
+  <td><:date paidfile whenUploaded:></td>
+  <td><:paidfile description:></td>
+  <td><:kb paidfile sizeInBytes:></td>
+</tr>
+<:iterator end paidfiles:>
+</table>
+<:or Paidfiles:><:eif Paidfiles:>

@@ -8,7 +8,7 @@ use Constants qw($SHOP_FROM);
 use Carp qw(confess);
 use BSE::Util::SQL qw/now_datetime now_sqldate sql_normal_date sql_add_date_days/;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -616,6 +616,19 @@ sub describe {
   my ($self) = @_;
 
   return "Member: " . $self->userId;
+}
+
+=item paid_files
+
+Files that require payment that the user has paid for.
+
+=cut
+
+sub paid_files {
+  my ($self) = @_;
+
+  require BSE::TB::ArticleFiles;
+  return BSE::TB::ArticleFiles->getSpecial(userPaidFor => $self->id);
 }
 
 sub remove {

@@ -6,12 +6,24 @@ use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 use BSE::CfgInfo qw(custom_class);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub new {
   my ($class, $req) = @_;
   return bless { req => $req }, $class;
 }
+
+=item Common dynamic tags
+
+=over
+
+=item *
+
+paid_files, paid_file - iterates over the files the user has paid for.
+
+=back
+
+=cut
 
 sub tags {
   my ($self) = @_;
@@ -45,6 +57,7 @@ sub tags {
      recaptcha => [ tag_recaptcha => $self, $req ],
      dyncatmsg => [ tag_dyncatmsg => $self, $req ],
      $self->dyn_iterator("userfiles", "userfile"),
+     $self->dyn_iterator("paidfiles", "paidfile"),
      $self->_custom_tags,
     );
 }
@@ -839,6 +852,15 @@ sub iter_userfiles {
   print STDERR "** unparsable arguments to userfile: $args\n";
 
   return [];
+}
+
+sub iter_paidfiles {
+  my ($self, $unused, $args) = @_;
+
+  my $user = $self->req->siteuser
+    or return [];
+
+  return [ $user->paid_files ];
 }
 
 1;
