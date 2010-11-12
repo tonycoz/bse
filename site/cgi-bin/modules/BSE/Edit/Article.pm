@@ -13,7 +13,7 @@ use BSE::Util::ContentType qw(content_type);
 use DevHelp::Date qw(dh_parse_date dh_parse_sql_date);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 =head1 NAME
 
@@ -1517,6 +1517,9 @@ sub default_link_path {
 sub make_link {
   my ($self, $article) = @_;
 
+  $article->is_linked
+    or return "";
+
   my $title = $article->title;
   if ($article->is_dynamic) {
     return "/cgi-bin/page.pl?page=$article->{id}&title=".escape_uri($title);
@@ -1826,6 +1829,9 @@ sub save {
     or return $self->_service_error($req, $article, $articles, undef, \%errors, "FIELD");
   $self->save_thumbnail($cgi, $article, \%data)
     if $req->user_can('edit_field_edit_thumbImage', $article);
+  if (exists $data{flags} && $data{flags} =~ /L/) {
+    $article->remove_html;
+  }
   $self->fill_old_data($req, $article, \%data);
   
   # reparenting
@@ -1914,8 +1920,7 @@ sub save {
   my $old_link = $article->{link};
   # this need to go last
   $article->update_dynamic($self->{cfg});
-  if ($article->{link} && 
-      !$self->{cfg}->entry('protect link', $article->{id})) {
+  if (!$self->{cfg}->entry('protect link', $article->{id})) {
     my $article_uri = $self->make_link($article);
     $article->setLink($article_uri);
   }

@@ -120,13 +120,13 @@
                   <table width="100%" border="0" cellspacing="0" cellpadding="0">
                     <:if Ancestor level1:>
                     <tr> 
-                      <td height="19" width="100%" nowrap bgcolor="#999999">&nbsp;<a href="<:url level1:>"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#FFFFFF"><:level1 
-                        title:></font></b></a> </td>
+                      <td height="19" width="100%" nowrap bgcolor="#999999">&nbsp;<:ifLevel1 link:><a href="<:url level1:>"><:or:><:eif:><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#FFFFFF"><:level1 
+                        title:></font></b><:ifLevel1 link:></a><:or:><:eif:> </td>
                     </tr>
                     <:or Ancestor:>
                     <tr> 
-                      <td height="19" width="100%" nowrap bgcolor="#CCCCCC">&nbsp;<a href="<:url level1:>"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:level1 
-                        title:></font></b></a> </td>
+                      <td height="19" width="100%" nowrap bgcolor="#CCCCCC">&nbsp;<:ifLevel1 link:><a href="<:url level1:>"><:or:><:eif:><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:level1 
+                        title:></font></b><:ifLevel1 link:></a><:or:><:eif:> </td>
                     </tr>
                     <:eif Ancestor:>
                   </table>

@@ -79,6 +79,7 @@ sub makeIndex {
     # find the section
     my $article = $articles->getByPkey($id);
     next unless ($article->{listed} || $article->{flags} =~ /I/);
+    next unless $article->is_linked;
     next if $article->{flags} =~ /[CN]/;
     my $section = $article;
     while ($section->{parentid} >= 1) {

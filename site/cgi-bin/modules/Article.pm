@@ -7,7 +7,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::TB::SiteCommon/;
 use Carp 'confess';
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub columns {
   return qw/id parentid displayOrder title titleImage body
@@ -130,7 +130,7 @@ sub force_dynamic_inherited {
 sub link_to_filename {
   my ($self, $cfg, $link) = @_;
 
-  $cfg or confess "No \$cfg supplied to ", ref $self, "->link_to_filename";
+  $cfg ||= BSE::Cfg->single;
 
   defined $link or $link = $self->{link};
 
@@ -148,10 +148,32 @@ sub link_to_filename {
 sub cached_filename {
   my ($self, $cfg) = @_;
 
-  $cfg or confess "No \$cfg supplied to ", ref $self, "->cached_filename";
+  $cfg ||= BSE::Cfg->single;
 
   my $dynamic_path = $cfg->entryVar('paths', 'dynamic_cache');
   return $dynamic_path . "/" . $self->{id} . ".html";
+}
+
+sub html_filename {
+  my ($self, $cfg) = @_;
+
+  $cfg ||= BSE::Cfg->single;
+
+  return $self->is_dynamic
+    ? $self->cached_filename($cfg)
+      : $self->link_to_filename($cfg);
+}
+
+sub remove_html {
+  my ($self, $cfg) = @_;
+
+  my $filename = $self->html_filename($cfg)
+    or return 1;
+
+  unlink $filename
+    or return;
+
+  return 1;
 }
 
 sub remove {
@@ -173,12 +195,7 @@ sub remove {
   }
 
   # remove the static page
-  if ($self->is_dynamic) {
-    unlink $self->cached_filename($cfg);
-  }
-  else {
-    unlink $self->link_to_filename($cfg);
-  }
+  $self->remove_html($cfg);
   
   $self->SUPER::remove();
 }
@@ -243,6 +260,9 @@ sub link {
     $parent and return $parent->link($cfg);
   }
 
+  $self->is_linked
+    or return "";
+
   $cfg ||= BSE::Cfg->single;
 
   if ($self->{linkAlias} && $cfg->entry('basic', 'use_alias', 1)) {
@@ -258,6 +278,12 @@ sub link {
   else {
     return $self->{link};
   }
+}
+
+sub is_linked {
+  my ($self) = @_;
+
+  return $self->flags !~ /L/;
 }
 
 1;

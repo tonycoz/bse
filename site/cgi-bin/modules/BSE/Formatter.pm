@@ -3,7 +3,7 @@ use strict;
 use BSE::Util::HTML;
 use Carp 'confess';
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 use base 'DevHelp::Formatter';
 
@@ -193,15 +193,22 @@ sub doclink {
   else {
     $url = $art->link($self->{gen}{cfg});
   }
-  if ($self->{abs_urls}) {
-    $url = $cfg->entryErr('site', 'url') . $url
-      unless $url =~ /^\w+:/;
-  }
-  $url = escape_html($url);
 
   unless ($title) {
     $title = escape_html($art->{title});
   }
+
+  if ($url) {
+    if ($self->{abs_urls}) {
+      $url = $cfg->entryErr('site', 'url') . $url
+	unless $url =~ /^\w+:/;
+    }
+    $url = escape_html($url);
+  }
+
+
+  $url
+    or return $title;
 
   $target = $target ? qq! target="$target"! : '';
   my $title_attrib = escape_html($art->{title});

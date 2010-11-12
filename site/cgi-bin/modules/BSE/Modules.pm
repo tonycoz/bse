@@ -3,14 +3,14 @@ use strict;
 
 # automatically generated
 
-our $hash = "3d6e716f5b0e1f81f1fe4c4fa1e48089";
+our $hash = "1f1e8f71d674276bddd7b13a1e90daaa";
 
 our %versions =
   (
   "AdminUtil" => "1.000",
   "Apache::Session::DBIreal" => "1.000",
   "Apache::Session::Store::DBIreal" => "1.000",
-  "Article" => "1.000",
+  "Article" => "1.001",
   "Articles" => "1.000",
   "BSE::API" => "1.000",
   "BSE::Admin::StepParents" => "1.000",
@@ -37,7 +37,7 @@ our %versions =
   "BSE::Dynamic::Catalog" => "1.000",
   "BSE::Dynamic::Product" => "1.000",
   "BSE::Dynamic::Seminar" => "1.000",
-  "BSE::Edit::Article" => "1.000",
+  "BSE::Edit::Article" => "1.001",
   "BSE::Edit::Base" => "1.000",
   "BSE::Edit::Catalog" => "1.000",
   "BSE::Edit::Product" => "1.000",
@@ -51,7 +51,7 @@ our %versions =
   "BSE::FileHandler::Default" => "1.000",
   "BSE::FileHandler::FLV" => "1.000",
   "BSE::FileMetaMeta" => "1.000",
-  "BSE::Formatter" => "1.000",
+  "BSE::Formatter" => "1.001",
   "BSE::Formatter::Article" => "1.000",
   "BSE::Formatter::Subscription" => "1.000",
   "BSE::Generate::Seminar" => "1.000",
