@@ -3,7 +3,7 @@ use strict;
 use base 'BSE::Edit::Article';
 use BSE::Util::HTML;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub base_template_dirs {
   return ( "catalog" );
@@ -89,6 +89,9 @@ sub default_link_path {
 
 sub make_link {
   my ($self, $article) = @_;
+
+  $article->is_linked
+    or return "";
 
 # Modified by adrian
   my $urlbase = '';

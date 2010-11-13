@@ -9,7 +9,7 @@ use BSE::Util::HTML;
 use BSE::CfgInfo 'product_options';
 use BSE::Util::Tags qw(tag_hash);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 =head1 NAME
 
@@ -396,6 +396,9 @@ sub default_link_path {
 
 sub make_link {
   my ($self, $article) = @_;
+
+  $article->is_linked
+    or return "";
 
 # Modified by adrian
   my $urlbase = '';
