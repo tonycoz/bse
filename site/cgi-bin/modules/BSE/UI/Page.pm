@@ -5,7 +5,7 @@ use BSE::Util::HTML qw(escape_uri);
 use BSE::UI::Dispatch;
 our @ISA = qw(BSE::UI::Dispatch);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 # we don't do anything fancy on dispatch yet, so don't use the 
 # dispatch classes
@@ -68,6 +68,12 @@ sub dispatch {
       }
     }
     return $self->error($req, "No page or page alias specified for display");
+  }
+
+  unless ($article->is_linked) {
+    my $result = $self->error($req, "Sorry, this page is not available");
+    push @{$result->{headers}}, "Status: 404";
+    return $result;
   }
 
   if ($found_by_id && 
