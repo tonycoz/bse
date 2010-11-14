@@ -409,7 +409,7 @@ SQL
 
 name: ArticleFiles.userPaidFor
 sql_statement: <<SQL
-select af.*
+select distinct af.*
 from article_files af, orders od, order_item oi
 where af.forSale <> 0
   and af.articleId = oi.productId
