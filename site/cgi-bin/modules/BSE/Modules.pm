@@ -3,7 +3,7 @@ use strict;
 
 # automatically generated
 
-our $hash = "84fc68a1e3e7fd0439a093ef4ffe7eab";
+our $hash = "244bbf793845abb75b38f647a91a1951";
 
 our %versions =
   (
@@ -31,7 +31,7 @@ our %versions =
   "BSE::Countries" => "1.000",
   "BSE::Custom" => "1.000",
   "BSE::CustomBase" => "1.000",
-  "BSE::DB" => "1.000",
+  "BSE::DB" => "1.001",
   "BSE::DB::Mysql" => "1.000",
   "BSE::Dynamic::Article" => "1.000",
   "BSE::Dynamic::Catalog" => "1.000",
@@ -133,7 +133,7 @@ our %versions =
   "BSE::TB::Images" => "1.000",
   "BSE::TB::Location" => "1.000",
   "BSE::TB::Locations" => "1.000",
-  "BSE::TB::Order" => "1.000",
+  "BSE::TB::Order" => "1.001",
   "BSE::TB::OrderItem" => "1.000",
   "BSE::TB::OrderItemOption" => "1.000",
   "BSE::TB::OrderItemOptions" => "1.000",
@@ -185,7 +185,7 @@ our %versions =
   "BSE::UI::Page" => "1.001",
   "BSE::UI::Redirect" => "1.000",
   "BSE::UI::Search" => "1.000",
-  "BSE::UI::Shop" => "1.001",
+  "BSE::UI::Shop" => "1.002",
   "BSE::UI::SiteUserUpdate" => "1.000",
   "BSE::UI::SiteuserCommon" => "1.000",
   "BSE::UI::SubAdmin" => "1.000",
@@ -193,7 +193,7 @@ our %versions =
   "BSE::UI::Thumb" => "1.000",
   "BSE::UI::User" => "1.000",
   "BSE::UI::UserCommon" => "1.000",
-  "BSE::UserReg" => "1.002",
+  "BSE::UserReg" => "1.003",
   "BSE::Util::ContentType" => "1.000",
   "BSE::Util::DynSort" => "1.000",
   "BSE::Util::DynamicTags" => "1.002",

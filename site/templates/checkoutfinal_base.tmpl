@@ -108,3 +108,19 @@
     <td></td>
   </tr>
 </table>
+<:if Orderpaidfiles:>
+<h3>You've bought access to the following files:</h3>
+      <table>
+        <tr> 
+          <th>Description</th>
+          <th>Filename</th>
+          <th>Size</th>
+        </tr>
+        <:iterator begin orderpaidfiles:> 
+        <tr> 
+          <td><:orderpaidfile description:></td>
+          <td><a href="<:orderpaidfile url:>"><:orderpaidfile displayName:></a></font></td>
+          <td align="right"><:kb orderpaidfile sizeInBytes:></td>
+        </tr>
+        <:iterator end orderpaidfiles:> </table>
+<:or Orderpaidfiles:><:eif Orderpaidfiles:>

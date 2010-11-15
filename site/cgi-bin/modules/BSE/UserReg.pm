@@ -18,7 +18,7 @@ use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
 use Carp qw(confess);
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -1081,7 +1081,7 @@ sub iter_orders {
   require BSE::TB::Orders;
   return sort { $b->{orderDate} cmp $a->{orderDate}
 		  || $b->{id} <=> $a->{id} }
-    BSE::TB::Orders->getBy(userId=>$user->{userId});
+    grep $_->complete, BSE::TB::Orders->getBy(userId=>$user->{userId});
 }
 
 sub _common_tags {

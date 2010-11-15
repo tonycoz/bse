@@ -18,7 +18,7 @@ use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -1158,6 +1158,8 @@ sub req_orderdone {
   my $product;
   my $sem_session;
   my $location;
+  require BSE::Util::Iterate;
+  my $it = BSE::Util::Iterate::Objects->new(cfg => $req->cfg);
   my %acts;
   %acts =
     (
@@ -1220,6 +1222,12 @@ sub req_orderdone {
      delivery_in => $order->{delivery_in},
      shipping_cost => $order->{shipping_cost},
      shipping_method => $order->{shipping_method},
+     $it->make
+     (
+      single => "orderpaidfile",
+      plural => "orderpaidfiles",
+      code => [ paid_files => $order ],
+     ),
     );
   for my $type (@pay_types) {
     my $id = $type->{id};

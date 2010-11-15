@@ -6,7 +6,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 use Carp 'confess';
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub columns {
   return qw/id
@@ -136,6 +136,16 @@ sub files {
   my ($self) = @_;
 
   BSE::DB->query(orderFiles=>$self->{id});
+}
+
+sub paid_files {
+  my ($self) = @_;
+
+  $self->paidFor
+    or return;
+
+  require BSE::TB::ArticleFiles;
+  return BSE::TB::ArticleFiles->getSpecial(orderPaidFor => $self->id);
 }
 
 sub products {

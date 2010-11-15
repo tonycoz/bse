@@ -419,6 +419,16 @@ where af.forSale <> 0
 order by af.displayName
 SQL
 
+name: ArticleFiles.orderPaidFor
+sql_statement: <<SQL
+select distinct af.*
+from article_files af, order_item oi
+where af.forSale <> 0
+  and af.articleId = oi.productId
+  and oi.orderId = ?
+order by af.displayName
+SQL
+
 name: bseFileAvailableFor
 sql_statement: <<SQL
 select af.id
