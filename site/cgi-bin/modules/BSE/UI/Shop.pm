@@ -18,7 +18,7 @@ use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -41,6 +41,7 @@ my %actions =
    location => 1,
    paypalret => 1,
    paypalcan => 1,
+   emptycart => 1,
   );
 
 my %field_map = 
@@ -96,6 +97,8 @@ sub req_cart {
   $cust_class->enter_cart(\@cart, \@cart_prods, \%custom_state, $req->cfg); 
   $msg = '' unless defined $msg;
   $msg = escape_html($msg);
+
+  $msg ||= $req->message;
   
   my %acts;
   %acts =
@@ -116,6 +119,31 @@ sub req_cart {
     $template = "include/cart_$embed";
   }
   return $req->response($template, \%acts);
+}
+
+=item a_emptycart
+
+Empty the shopping cart.
+
+Refreshes to the URL in C<r> or the cart otherwise.
+
+Flashes msg:bse/shop/cart/empty unless C<r> is supplied.
+
+=cut
+
+sub req_emptycart {
+  my ($self, $req) = @_;
+
+  my $old = $req->session->{cart};;
+  $req->session->{cart} = [];
+
+  my $refresh = $req->cgi->param('r');
+  unless ($refresh) {
+    $refresh = $req->user_url(shop => 'cart');
+    $req->flash("msg:bse/shop/cart/empty");
+  }
+
+  return _add_refresh($refresh, $req, !$old);
 }
 
 sub req_add {

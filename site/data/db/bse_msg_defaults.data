@@ -1,4 +1,5 @@
 ---
+# VERSION=1.000
 # defaults for the following
 language_code: en
 priority: 0
@@ -32,6 +33,9 @@ message: Unknown language code - no entry found in [languages]
 
 id: bse/admin/message/badmultiline
 message: Message $1:s may contain only a single line of text
+
+id: bse/shop/cart/empty
+message: Cart emptied
 
 id: bse/shop/paypal/notoken
 message: No token supplied by PayPal

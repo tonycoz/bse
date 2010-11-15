@@ -3,7 +3,7 @@ use strict;
 
 # automatically generated
 
-our $hash = "05cd6e77d34a1f6a35167c20ada19aee";
+our $hash = "b14eacca6398718e49d065458ad8fead";
 
 our %versions =
   (
@@ -185,7 +185,7 @@ our %versions =
   "BSE::UI::Page" => "1.001",
   "BSE::UI::Redirect" => "1.000",
   "BSE::UI::Search" => "1.000",
-  "BSE::UI::Shop" => "1.002",
+  "BSE::UI::Shop" => "1.003",
   "BSE::UI::SiteUserUpdate" => "1.000",
   "BSE::UI::SiteuserCommon" => "1.000",
   "BSE::UI::SubAdmin" => "1.000",
@@ -251,6 +251,14 @@ our %versions =
   "Squirrel::Table" => "1.000",
   "Squirrel::Template" => "1.000",
   "Util" => "1.000",
+  );
+
+our %file_versions =
+  (
+  "db/bse_background_tasks.data" => "1.000",
+  "db/bse_msg_base.data" => "1.000",
+  "db/bse_msg_defaults.data" => "1.000",
+  "db/sql_statements.data" => "1.000",
   );
 
 1;

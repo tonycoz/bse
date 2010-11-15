@@ -1,4 +1,5 @@
 --
+# VERSION=1.000
 id: bse_gen
 description: Regenerate Site
 binname: perl util/gen.pl

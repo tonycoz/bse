@@ -33,6 +33,21 @@ for my $file (@files) {
   $md5->add("$module=$1\n");
 }
 
+my %data_versions;
+my @data_files = sort grep m(data/db/.*\.data$), keys %$files;
+for my $file (@data_files) {
+  my $content = read_file($file);
+  
+  (my $inst_name = $file) =~ s(^site/data/)()
+    or die "Can't convert $file to installed name\n";
+  $content =~ /^\s*\#\s*VERSION=\s*([0-9.]+)/m
+    or die "No version found in $file\n";
+
+  $data_versions{$inst_name} = $1;
+
+  $md5->add("$inst_name=$1\n");
+}
+
 my $hash = $md5->hexdigest;
 
 open my $out, ">", $outname
@@ -55,6 +70,17 @@ for my $module (sort keys %versions) {
 }
 
 print $out <<EOS;
+  );
+
+our %file_versions =
+  (
+EOS
+
+for my $file (sort keys %data_versions) {
+  print $out qq/  "$file" => "$data_versions{$file}",\n/;
+}
+
+print $out <<EOS
   );
 
 1;

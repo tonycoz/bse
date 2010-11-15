@@ -1,4 +1,5 @@
 --
+# VERSION=1.000
 name: bse_siteuserSeminarBookingsDetail
 sql_statement: <<SQL
 select ar.*, pr.*, se.*, ss.*, sb.*,

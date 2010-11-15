@@ -1,4 +1,5 @@
 --
+# VERSION=1.000
 id: bse/
 description: BSE messages
 
@@ -78,6 +79,12 @@ description: Multiple lines of text supplied when creating or saving a single li
 
 id: bse/shop/
 description: Shop messages
+
+id: bse/shop/cart/
+description: Messages from interacting with the cart
+
+id: bse/shop/cart/empty
+description: flashed when the cart is emptied
 
 id: bse/shop/paypal/
 description: PayPal messages
