@@ -6,7 +6,7 @@ use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 use BSE::CfgInfo qw(custom_class);
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub new {
   my ($class, $req) = @_;
@@ -470,24 +470,47 @@ sub _do_filter {
 }
 
 sub _dyn_iterate_reset {
-  my ($self, $rdata, $rindex, $plural, $context, $args, $acts, $name, 
-      $templater) = @_;
+  my ($self, $state, $args, $acts, $name, $templater) = @_;
 
-  my $method = "iter_$plural";
+  my $rindex = $state->{rindex};
+  my $rdata = $state->{rdata};
+  my $method = "iter_$state->{plural}";
   my $filter = $self->_get_filter(\$args);
   $$rdata = $self->
-    _do_filter($filter, $self->$method($context, $args, $acts, $templater));
+    _do_filter($filter, $self->$method($state->{context}, $args, $acts, $templater));
   
   $$rindex = -1;
+
+  $state->{previous} = undef;
+  $state->{item} = undef;
+  if (@$$rdata) {
+    $state->{next} = $$rdata->[0];
+  }
+  else {
+    $state->{next} = undef;
+  }
 
   1;
 }
 
 sub _dyn_iterate {
-  my ($self, $rdata, $rindex, $single) = @_;
+  my ($self, $state) = @_;
 
+  my $rindex = $state->{rindex};
+  my $rdata = $state->{rdata};
+  my $single = $state->{single};
   if (++$$rindex < @$$rdata) {
-    $self->{req}->set_article($single => $$rdata->[$$rindex]);
+    $state->{previous} = $state->{item};
+    $state->{item} = $state->{next};
+    if ($$rindex < $#$$rdata) {
+      $state->{next} = $$rdata->[$$rindex+1];
+    }
+    else {
+      $state->{next} = undef;
+    }
+    $self->{req}->set_article("previous_$single" => $state->{previous});
+    $self->{req}->set_article($single => $state->{item});
+    $self->{req}->set_article("next_$single" => $state->{next});
     return 1;
   }
   else {
@@ -496,15 +519,10 @@ sub _dyn_iterate {
   }
 }
 
-sub _dyn_item {
-  my ($self, $rdata, $rindex, $single, $plural, $args) = @_;
+sub _dyn_item_low {
+  my ($self, $item, $args) = @_;
 
-  if ($$rindex < 0 || $$rindex >= @$$rdata) {
-    return "** $single only usable inside iterator $plural **";
-  }
-
-  my $item = $$rdata->[$$rindex]
-    or return '';
+  $item or return '';
   my $value = $item->{$args};
   defined $value 
     or return '';
@@ -512,17 +530,38 @@ sub _dyn_item {
   return escape_html($value);
 }
 
-sub _dyn_item_object {
-  my ($self, $rdata, $rindex, $single, $plural, $args) = @_;
+sub _dyn_item {
+  my ($self, $state, $args) = @_;
 
-  if ($$rindex < 0 || $$rindex >= @$$rdata) {
-    return "** $single only usable inside iterator $plural **";
+  my $rindex = $state->{rindex};
+  my $rdata = $state->{rdata};
+  my $item = $state->{item};
+  unless ($state->{item}) {
+    return "** $state->{single} only usable inside iterator $state->{plural} **";
   }
 
-  my $item = $$rdata->[$$rindex]
+  return $self->_dyn_item_low($item, $args);
+}
+
+sub _dyn_next {
+  my ($self, $state, $args) = @_;
+
+  return $self->_dyn_item_low($state->{next}, $args);
+}
+
+sub _dyn_previous {
+  my ($self, $state, $args) = @_;
+
+  return $self->_dyn_item_low($state->{previous}, $args);
+}
+
+sub _dyn_item_object_low {
+  my ($self, $item, $args, $state) = @_;
+
+  $item
     or return '';
   $item->can($args)
-    or return "* $args not valid for $single *";
+    or return "* $args not valid for $state->{single} *";
   my $value = $item->$args;
   defined $value 
     or return '';
@@ -530,17 +569,69 @@ sub _dyn_item_object {
   return escape_html($value);
 }
 
-sub _dyn_article {
-  my ($self, $rdata, $rindex, $single, $plural, $args) = @_;
+sub _dyn_item_object {
+  my ($self, $state, $args) = @_;
 
-  if ($$rindex < 0 || $$rindex >= @$$rdata) {
-    return "** $single only usable inside iterator $plural **";
+  unless ($state->{item}) {
+    return "** $state->{single} only usable inside iterator $state->{plural} **";
   }
 
-  my $item = $$rdata->[$$rindex]
+  return $self->_dyn_item_object_low($state->{item}, $args, $state);
+}
+
+sub _dyn_next_obj {
+  my ($self, $state, $args) = @_;
+
+  return $self->_dyn_item_object_low($state->{next}, $args, $state);
+}
+
+sub _dyn_previous_obj {
+  my ($self, $state, $args) = @_;
+
+  return $self->_dyn_item_object_low($state->{previous}, $args, $state);
+}
+
+sub _dyn_ifNext {
+  my ($self, $state) = @_;
+
+  return defined $state->{next};
+}
+
+sub _dyn_ifPrevious {
+  my ($self, $state) = @_;
+
+  return defined $state->{previous};
+}
+
+sub _dyn_article {
+  my ($self, $state, $args) = @_;
+
+  my $rindex = $state->{rindex};
+  my $rdata = $state->{rdata};
+  unless ($state->{item}) {
+    return "** $state->{single} only usable inside iterator $state->{plural} **";
+  }
+
+  my $item = $state->{item}
     or return '';
 
   return tag_article($item, $self->{req}->cfg, $args);
+}
+
+sub _dyn_next_article {
+  my ($self, $state, $args) = @_;
+
+  $state->{next} or return '';
+
+  return tag_article($state->{next}, $self->{req}->cfg, $args);
+}
+
+sub _dyn_previous_article {
+  my ($self, $state, $args) = @_;
+
+  $state->{previous} or return '';
+
+  return tag_article($state->{previous}, $self->{req}->cfg, $args);
 }
 
 sub _dyn_index {
@@ -594,14 +685,22 @@ sub dyn_iterator {
   defined $rindex or $rindex = \$index;
   my $data;
   defined $rdata or $rdata = \$data;
+  my %state =
+    (
+     plural => $plural,
+     single => $single,
+     rindex => $rindex,
+     rdata => $rdata,
+     context => $context,
+    );
   return
     (
      "iterate_${plural}_reset" =>
-     [ _dyn_iterate_reset => $self, $rdata, $rindex, $plural, $context ],
+     [ _dyn_iterate_reset => $self, \%state ],
      "iterate_$plural" =>
-     [ _dyn_iterate => $self, $rdata, $rindex, $single, $context ],
+     [ _dyn_iterate => $self, \%state ],
      $single => 
-     [ _dyn_item => $self, $rdata, $rindex, $single, $plural ],
+     [ _dyn_item => $self, \%state ],
      "${single}_index" =>
      [ _dyn_index => $self, $rindex, $rdata, $single ],
      "${single}_number" =>
@@ -612,6 +711,10 @@ sub dyn_iterator {
      [ _dyn_count => $self, $rindex, $rdata, $plural, $context ],
      "ifLast\u$single" => [ _dyn_if_last => $self, $rindex, $rdata ],
      "ifFirst\u$single" => [ _dyn_if_first => $self, $rindex, $rdata ],
+     "next_$single" => [ _dyn_next => $self, \%state ],
+     "previous_$single" => [ _dyn_previous => $self, \%state ],
+     "ifNext\u$single" => [ _dyn_ifNext => $self, \%state ],
+     "ifPrevious\u$single" => [ _dyn_ifPrevious => $self, \%state ],
     );
 }
 
@@ -623,14 +726,22 @@ sub dyn_iterator_obj {
   defined $rindex or $rindex = \$index;
   my $data;
   defined $rdata or $rdata = \$data;
+  my %state =
+    (
+     plural => $plural,
+     single => $single,
+     rindex => $rindex,
+     rdata => $rdata,
+     context => $context,
+    );
   return
     (
      "iterate_${plural}_reset" =>
-     [ _dyn_iterate_reset => $self, $rdata, $rindex, $plural, $context ],
+     [ _dyn_iterate_reset => $self, \%state ],
      "iterate_$plural" =>
-     [ _dyn_iterate => $self, $rdata, $rindex, $single, $context ],
+     [ _dyn_iterate => $self, \%state ],
      $single => 
-     [ _dyn_item_object => $self, $rdata, $rindex, $single, $plural ],
+     [ _dyn_item_object => $self, \%state ],
      "${single}_index" =>
      [ _dyn_index => $self, $rindex, $rdata, $single ],
      "${single}_number" =>
@@ -641,6 +752,10 @@ sub dyn_iterator_obj {
      [ _dyn_count => $self, $rindex, $rdata, $plural, $context ],
      "ifLast\u$single" => [ _dyn_if_last => $self, $rindex, $rdata ],
      "ifFirst\u$single" => [ _dyn_if_first => $self, $rindex, $rdata ],
+     "next_$single" => [ _dyn_next_obj => $self, \%state ],
+     "previous_$single" => [ _dyn_previous_obj => $self, \%state ],
+     "ifNext\u$single" => [ _dyn_ifNext => $self, \%state ],
+     "ifPrevious\u$single" => [ _dyn_ifPrevious => $self, \%state ],
     );
 }
 
@@ -652,14 +767,22 @@ sub dyn_article_iterator {
   defined $rindex or $rindex = \$index;
   my $data;
   defined $rdata or $rdata = \$data;
+  my %state =
+    (
+     plural => $plural,
+     single => $single,
+     rindex => $rindex,
+     rdata => $rdata,
+     context => $context,
+    );
   return
     (
      "iterate_${plural}_reset" =>
-     [ _dyn_iterate_reset => $self, $rdata, $rindex, $plural, $context ],
+     [ _dyn_iterate_reset => $self, \%state ],
      "iterate_$plural" =>
-     [ _dyn_iterate => $self, $rdata, $rindex, $single, $context ],
+     [ _dyn_iterate => $self, \%state],
      $single => 
-     [ _dyn_article => $self, $rdata, $rindex, $single, $plural ],
+     [ _dyn_article => $self, \%state ],
      "${single}_index" =>
      [ _dyn_index => $self, $rindex, $rdata, $single ],
      "${single}_number" =>
@@ -670,6 +793,10 @@ sub dyn_article_iterator {
      [ _dyn_count => $self, $rindex, $rdata, $plural, $context ],
      "ifLast\u$single" => [ _dyn_if_last => $self, $rindex, $rdata ],
      "ifFirst\u$single" => [ _dyn_if_first => $self, $rindex, $rdata ],
+     "next_$single" => [ _dyn_next_article => $self, \%state ],
+     "previous_$single" => [ _dyn_previous_article => $self, \%state ],
+     "ifNext\u$single" => [ _dyn_ifNext => $self, \%state ],
+     "ifPrevious\u$single" => [ _dyn_ifPrevious => $self, \%state ],
     );
 }
 

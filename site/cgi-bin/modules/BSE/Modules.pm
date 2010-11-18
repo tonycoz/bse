@@ -3,7 +3,7 @@ use strict;
 
 # automatically generated
 
-our $hash = "b14eacca6398718e49d065458ad8fead";
+our $hash = "b7a98a46dfbe0c852aafa13afa84cac2";
 
 our %versions =
   (
@@ -196,7 +196,7 @@ our %versions =
   "BSE::UserReg" => "1.003",
   "BSE::Util::ContentType" => "1.000",
   "BSE::Util::DynSort" => "1.000",
-  "BSE::Util::DynamicTags" => "1.002",
+  "BSE::Util::DynamicTags" => "1.003",
   "BSE::Util::HTML" => "1.000",
   "BSE::Util::Iterate" => "1.000",
   "BSE::Util::Prereq" => "1.001",
@@ -231,7 +231,7 @@ our %versions =
   "DevHelp::Payments::Test" => "1.000",
   "DevHelp::Report" => "1.000",
   "DevHelp::Tags" => "1.000",
-  "DevHelp::Tags::Iterate" => "1.000",
+  "DevHelp::Tags::Iterate" => "1.001",
   "DevHelp::Validate" => "1.000",
   "Generate" => "1.000",
   "Generate::Article" => "1.000",

@@ -428,11 +428,17 @@ my $gen = BSE::Dynamic::Article->new($req);
 
 dyn_template_test "dynallkidsof", $parent, <<TEMPLATE, <<EXPECTED;
 <:iterator begin dynallkids_of $parent->{id} filter: [title] =~ /o/i :><:
-dynofallkid title:>
+dynofallkid title:> <:next_dynofallkid title:> <:previous_dynofallkid title:>
+  next: <:ifNextDynofallkid:>Y<:or:>N<:eif:>
+  previous: <:ifPreviousDynofallkid:>Y<:or:>N<:eif:>
 <:iterator end dynallkids_of:>
 TEMPLATE
-Two
-One
+Two One 
+  next: Y
+  previous: N
+One  Two
+  next: N
+  previous: Y
 
 EXPECTED
 

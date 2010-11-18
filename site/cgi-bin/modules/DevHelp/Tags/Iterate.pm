@@ -2,7 +2,7 @@ package DevHelp::Tags::Iterate;
 use strict;
 use Carp qw(confess);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub new {
   my ($class, %opts) = @_;
@@ -21,38 +21,63 @@ sub _iter_reset_paged {
   my ($self, $state) = @_;
 
   ${$state->{index}} = -1;
+
+  $self->next_item(undef, $state->{single});
+  $state->{previous} = undef;
+  $state->{item} = undef;
+  if (@{$state->{data}}) {
+    $state->{next} = $self->_load($state, $state->{data}[0]);
+  }
+  else {
+    $state->{next} = undef;
+  }
+
   undef ${$state->{store}} if $state->{store};
 
   1;
+}
+
+sub _load {
+  my ($self, $state, $item) = @_;
+
+  $state->{fetch} or return $item;
+
+  my $fetch = $state->{fetch};
+  my $code = $fetch;
+  my @args;
+  if (ref $fetch eq 'ARRAY') {
+    ($code, @args) = @$fetch;
+  }
+  if ($state->{state}) {
+    push @args, $state->{state};
+  }
+  push @args, $item;
+  if (ref $code) {
+    ($item) = $code->(@args);
+  }
+  else {
+    my $object = shift @args;
+    ($item) = $object->$code(@args);
+  }
+
+  return $item;
 }
 
 sub _iter_iterate {
   my ($self, $state) = @_;
 
   if (++${$state->{index}} < @{$state->{data}}) {
-    my $item = $state->{data}[${$state->{index}}];
-    if ($state->{fetch}) {
-      my $fetch = $state->{fetch};
-      my $code = $fetch;
-      my @args;
-      if (ref $fetch eq 'ARRAY') {
-	($code, @args) = @$fetch;
-      }
-      if ($state->{state}) {
-	push @args, $state->{state};
-      }
-      push @args, $item;
-      if (ref $code) {
-	($item) = $code->(@args);
-      }
-      else {
-	my $object = shift @args;
-	($item) = $object->$code(@args);
-      }
+    $state->{previous} = $state->{item};
+    $state->{item} = $state->{next};
+    $DB::single = 1;
+    if (${$state->{index}} < $#{$state->{data}}) {
+      $state->{next} = $self->_load($state, $state->{data}[${$state->{index}}+1]);
     }
-    $state->{item} = $item;
-    ${$state->{store}} = $item if $state->{store};
-    $self->next_item($item, $state->{single});
+    else {
+      $state->{next} = undef;
+    }
+    ${$state->{store}} = $state->{item} if $state->{store};
+    $self->next_item($state->{item}, $state->{single});
     return 1;
   }
   else {
@@ -121,6 +146,34 @@ sub _iter_if_last {
   my ($self, $state) = @_;
 
   ${$state->{index}} == $#{$state->{data}};
+}
+
+sub _iter_previous {
+  my ($self, $state, $args) = @_;
+
+  $state->{previous} or return '';
+
+  return $self->item($state->{previous}, $args);
+}
+
+sub _iter_next {
+  my ($self, $state, $args) = @_;
+
+  $state->{next} or return '';
+
+  return $self->item($state->{next}, $args);
+}
+
+sub _iter_if_previous {
+  my ($self, $state) = @_;
+
+  return defined $state->{previous};
+}
+
+sub _iter_if_next {
+  my ($self, $state) = @_;
+
+  return defined $state->{next};
 }
 
 sub _get_values {
@@ -257,6 +310,8 @@ sub make_paged {
      "${single}_pagecounter" =>
      [ _iter_page_counter=>$self, \$page_counter ],
      "${plural}_perpage" => $perpage,
+     "previous_${single}"       => [ _iter_previous=>$self, \%state ],
+     "next_${single}"           => [ _iter_next=>$self, \%state ],
 #      "${plural}_pagelist" =>
 #      [ _iter_pagelist => $self, $page_num, $page_count, $pagename ],
 #      "${plural}_firstpage" =>
@@ -276,6 +331,15 @@ sub _iter_reset {
 
   ${$state->{index}} = -1;
   $self->next_item(undef, $state->{single});
+  $state->{previous} = undef;
+  $state->{item} = undef;
+  if (@{$state->{data}}) {
+    $state->{next} = $self->_load($state, $state->{data}[0]);
+  }
+  else {
+    $state->{next} = undef;
+  }
+
   undef ${$state->{store}} if $state->{store};
 
   1;
@@ -310,6 +374,10 @@ sub make_iterator {
 		     store => $rstore);
 }
 
+=item standard iterator
+
+=cut
+
 sub make {
   my ($self, %opts) = @_;
 
@@ -334,6 +402,10 @@ sub make {
      "${single}_count"		=> [ _iter_count=>$self, \%opts ],
      "ifLast\u$single"		=> [ _iter_if_last=>$self, \%opts ],
      "ifFirst\u$single"		=> [ _iter_if_first=>$self, \%opts ],
+     "previous_${single}"       => [ _iter_previous=>$self, \%opts ],
+     "next_${single}"           => [ _iter_next=>$self, \%opts ],
+     "ifPrevious\u$single"      => [ _iter_if_previous=>$self, \%opts ],
+     "ifNext\u$single"          => [ _iter_if_next=>$self, \%opts ],
      $self->more_tags(\%opts),
     );
 }
