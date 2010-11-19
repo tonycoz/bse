@@ -2,7 +2,7 @@ package DevHelp::Tags::Iterate;
 use strict;
 use Carp qw(confess);
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub new {
   my ($class, %opts) = @_;
@@ -69,7 +69,6 @@ sub _iter_iterate {
   if (++${$state->{index}} < @{$state->{data}}) {
     $state->{previous} = $state->{item};
     $state->{item} = $state->{next};
-    $DB::single = 1;
     if (${$state->{index}} < $#{$state->{data}}) {
       $state->{next} = $self->_load($state, $state->{data}[${$state->{index}}+1]);
     }
@@ -213,6 +212,55 @@ sub make_paged_iterator {
 			   store => $rstore);
 }
 
+sub page_iterator_obj {
+  return DevHelp::Tags::Iterate->new;
+}
+
+sub page_iterator_size {
+  return 20;
+}
+
+sub iter_pages {
+  my ($self, $page_count, $page_num) = @_;
+
+  my $size = $self->page_iterator_size;
+  if ($page_count <= $size+2) {
+    return map +{ page => $_, link => $_ != $page_num, gap => 0 }, 1 .. $page_count;
+  }
+  my @entries;
+  my $counter = 1;
+  if ($page_num <= $size / 2) {
+    my $first_limit = int($size * 0.66)+1;
+    push @entries, map +{ page => $_, link => $_ != $page_num, gap => 0 }, 1 .. $first_limit;
+    push @entries, { page => '...', link => 0, gap => 1 };
+    my $last_limit = $page_count - ($size - @entries) + 1;
+    push @entries, map +{ page => $_, link => $_ != $page_num, gap => 0 }, $last_limit .. $page_count;
+  }
+  elsif ($page_num >= int($page_count - $size / 2)) {
+    my $last_limit = $page_count - int($size * 0.66);
+    my $first_limit = $page_count - $last_limit - 2;
+    push @entries, map +{ page => $_, link => $_ != $page_num, gap => 0 }, 1 .. $first_limit;
+    push @entries, { page => "...", link => 0, gap => 1 };
+    push @entries, map +{ page => $_, link => $_ != $page_num, gap => 0 }, $last_limit .. $page_count;
+  }
+  else {
+    my $middle_count = int($size / 3) + 1;
+    ($middle_count & 1) == 0 and ++$middle_count;
+    my $mid_diff = ($middle_count-1) / 2;
+    my $side_count = int($size - $middle_count - 2) / 2;
+    push @entries, map +{ page => $_, link => 1, gap => 0 }, 1 .. $side_count;
+    push @entries, { page => "...", link => 0, gap => 1 };
+    my $mid_first = $page_num - $mid_diff;
+    my $mid_last = $page_num + $mid_diff;
+    push @entries, map +{ page => $_, link => $_ != $page_num, gap => 0 }, $mid_first .. $mid_last;
+    push @entries, { page => "...", link => 0, gap => 1 };
+    my $last_limit = $page_count - $side_count + 1;
+    push @entries, map +{ page => $_, link => 1, gap => 0 }, $last_limit .. $page_count;
+  }
+
+  return @entries;
+}
+
 sub make_paged {
   my ($self, %state) = @_;
 
@@ -277,6 +325,8 @@ sub make_paged {
 
   my $page_counter;
 
+  my $it = $self->page_iterator_obj;
+
   my $plural = $state{plural};
   my $single = $state{single};
   return
@@ -312,6 +362,12 @@ sub make_paged {
      "${plural}_perpage" => $perpage,
      "previous_${single}"       => [ _iter_previous=>$self, \%state ],
      "next_${single}"           => [ _iter_next=>$self, \%state ],
+     $it->make
+     (
+      single => "${single}_pagec",
+      plural => "${plural}_pagec",
+      code => [ iter_pages => $self, $page_count, $page_num ],
+     ),
 #      "${plural}_pagelist" =>
 #      [ _iter_pagelist => $self, $page_num, $page_count, $pagename ],
 #      "${plural}_firstpage" =>

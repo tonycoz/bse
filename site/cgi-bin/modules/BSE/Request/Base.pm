@@ -5,7 +5,7 @@ use BSE::Cfg;
 use BSE::Util::HTML;
 use Carp qw(cluck confess);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub new {
   my ($class, %opts) = @_;
@@ -201,19 +201,10 @@ sub getuser {
   $_[0]{adminuser};
 }
 
-# this needs to become non-admin specific
 sub url {
   my ($self, $action, $params, $name) = @_;
 
-  require BSE::CfgInfo;
-  my $url = BSE::CfgInfo::admin_base_url($self->{cfg});
-  $url .= "/cgi-bin/admin/$action.pl";
-  if ($params && keys %$params) {
-    $url .= "?" . join("&", map { "$_=".escape_uri($params->{$_}) } keys %$params);
-  }
-  $url .= "#$name" if $name;
-
-  $url;
+  return $self->cfg->admin_url($action, $params, $name);
 }
 
 sub check_admin_logon {

@@ -3,7 +3,7 @@ use strict;
 
 # automatically generated
 
-our $hash = "b7a98a46dfbe0c852aafa13afa84cac2";
+our $hash = "fb24530fa6a93a319fcf45fa4cc29a26";
 
 our %versions =
   (
@@ -24,7 +24,7 @@ our %versions =
   "BSE::Cache::CHI" => "1.001",
   "BSE::Cache::Cache" => "1.000",
   "BSE::Cache::Memcached" => "1.000",
-  "BSE::Cfg" => "1.000",
+  "BSE::Cfg" => "1.001",
   "BSE::CfgInfo" => "1.000",
   "BSE::ChangePW" => "1.000",
   "BSE::ComposeMail" => "1.000",
@@ -84,7 +84,7 @@ our %versions =
   "BSE::ProductImportXLS" => "1.000",
   "BSE::Report" => "1.000",
   "BSE::Request" => "1.000",
-  "BSE::Request::Base" => "1.000",
+  "BSE::Request::Base" => "1.001",
   "BSE::Request::Test" => "1.000",
   "BSE::Search::BSE" => "1.000",
   "BSE::Search::Base" => "1.000",
@@ -202,7 +202,7 @@ our %versions =
   "BSE::Util::Prereq" => "1.001",
   "BSE::Util::SQL" => "1.000",
   "BSE::Util::Secure" => "1.000",
-  "BSE::Util::Tags" => "1.000",
+  "BSE::Util::Tags" => "1.001",
   "BSE::Util::Thumb" => "1.000",
   "BSE::Util::Valid" => "1.000",
   "BSE::Validate" => "1.000",
@@ -231,7 +231,7 @@ our %versions =
   "DevHelp::Payments::Test" => "1.000",
   "DevHelp::Report" => "1.000",
   "DevHelp::Tags" => "1.000",
-  "DevHelp::Tags::Iterate" => "1.001",
+  "DevHelp::Tags::Iterate" => "1.002",
   "DevHelp::Validate" => "1.000",
   "Generate" => "1.000",
   "Generate::Article" => "1.000",

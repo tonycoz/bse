@@ -4,7 +4,7 @@ use base "DevHelp::Cfg";
 use Carp qw(confess);
 use constant MAIN_CFG => 'bse.cfg';
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 my %cache;
 
@@ -134,6 +134,27 @@ sub user_url {
 
   return $template;
 }
+
+sub admin_url {
+  my ($self, $action, $params, $name) = @_;
+
+  require BSE::CfgInfo;
+  my $url = BSE::CfgInfo::admin_base_url($self);
+  if ($self->entry("nadmin controllers", $action)) {
+    $url .= "/cgi-bin/admin/nadmin.pl/$action";
+  }
+  else {
+    $url .= "/cgi-bin/admin/$action.pl";
+  }
+  if ($params && keys %$params) {
+    require BSE::Util::HTML;
+    $url .= "?" . join("&", map { "$_=".BSE::Util::HTML::escape_uri($params->{$_}) } keys %$params);
+  }
+  $url .= "#$name" if $name;
+
+  return $url;
+}
+
 
 1;
 

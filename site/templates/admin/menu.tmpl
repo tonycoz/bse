@@ -3,11 +3,7 @@
 <:ifFormLogon:><p>| <a href="/cgi-bin/admin/logon.pl?a_logoff=1">Logoff <:adminuser logon:></a> | <a href="/cgi-bin/admin/changepw.pl">Change Password</a> |</p><:or:><:eif:>
 <:ifMessage:><p><b><:message:></b></p><:or:><:eif:>
 
-  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
-  <tr>
-    <td>
-
-<table cellpadding="6" cellspacing="1" border="0" width="100%">
+<table class="editform menu">
 <tr>
   <th width="33%">Content</th>
   <th width="33%">Users</th>
@@ -39,7 +35,7 @@ section</a></li>
 
 </ul>
 
-<p>&nbsp;</p>
+<p><a href="<:adminurl pregen:>">Preview Pregen pages</a></p>
 
   </td>
   <td bgcolor="#FFFFFF">
@@ -75,6 +71,12 @@ href="/cgi-bin/admin/generate.pl?id=extras&amp;progress=1">verbose</a>)</li></ul
 
 <p><a href="/cgi-bin/admin/backmon.pl">Background processing</a></p>
 
+<p><a href="<:adminurl messages:>">Message database</a></p>
+
+<p><a href="<:adminurl modules:>">Module Check</a></p>
+
+<p><a href="<:adminurl report:>">Reports</a></p>
+
 <p><a href="/cgi-bin/admin/shopadmin.pl">Shop administration</a></p>
 
 <ul>
@@ -93,11 +95,6 @@ href="/cgi-bin/admin/shopadmin.pl?order_list=1&amp;template=order_list_filled">f
   </td>
 </tr>
 </table>
-  </td>
-</tr>
-</table>
-
-
 
  
 <p>&nbsp;</p>

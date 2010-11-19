@@ -440,3 +440,30 @@ img.bse_image_thumb {
 #auditlog .col_who { 
   white-space: nowrap;
 }
+
+div.pagelist {
+  margin: 6px 0px;
+}
+.pagelist a,
+.pagelist span {
+  padding: 2px 4px;
+  text-decoration: none;
+  color: #000;
+}
+
+.pagelist a {
+  background-color: #FFF;
+  border: 1px dotted #88F;
+}
+
+.pagelist a:hover {
+  text-decoration: underline;
+  /*background-color: #CCF;*/
+  border: 1px solid #44f;
+}
+
+.pagelist span {
+  background-color: #CCF;
+  border: 1px solid #88f;
+  font-weight: bold;
+}

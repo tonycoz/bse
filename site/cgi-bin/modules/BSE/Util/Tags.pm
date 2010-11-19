@@ -8,7 +8,7 @@ use vars qw(@EXPORT_OK @ISA);
 @ISA = qw(Exporter);
 require Exporter;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub _get_parms {
   my ($acts, $args) = @_;
@@ -96,6 +96,14 @@ sub tag_adminbase {
 
   require BSE::CfgInfo;
   return escape_html(BSE::CfgInfo::admin_base_url($cfg));
+}
+
+sub tag_adminurl {
+  my ($cfg, $args, $acts, $tag_name, $templater) = @_;
+
+  my ($script, %params) = DevHelp::Tags->get_parms($args, $acts, $templater);
+
+  return $cfg->admin_url($script, \%params);
 }
 
 sub static {
@@ -289,10 +297,11 @@ sub static {
        my @items = DevHelp::Tags->get_parms($arg, $acts, $templater);
        my $out = join '', @items;
        $out = lc $out; # start all lowercase
-       $out =~ s/(^'?|\W'|[^'\w])(\w)/$1\U$2/g;
+       $out =~ s/(^\'?|\W\'|[^'\w])(\w)/$1\U$2/g;
        $out;
      },
      adminbase => [ \&tag_adminbase, $cfg ],
+     adminurl => [ \&tag_adminurl, $cfg ],
      help => [ \&tag_help, $cfg, 'user' ],
      $it->make_iterator(\&DevHelp::Tags::iter_get_repeat, 'strepeat', 'strepeats'),
      report => [ \&tag_report, $cfg ],
@@ -456,6 +465,14 @@ sub tag_oldi {
 
   return $value;
 }
+
+=item basic dynamic tags
+
+Tags available for all dynamic pages, user and admin alike.
+
+Includes the basic static tags.
+
+=cut
 
 sub basic {
   my ($class, $acts, $cgi, $cfg) = @_;
