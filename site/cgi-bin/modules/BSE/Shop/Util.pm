@@ -7,8 +7,7 @@ use vars qw(@ISA @EXPORT_OK);
                 payment_types order_item_opts
  PAYMENT_CC PAYMENT_CHEQUE PAYMENT_CALLME PAYMENT_MANUAL PAYMENT_PAYPAL/;
 
-our $VERSION = "1.000";
-
+our $VERSION = "1.001";
 
 our %EXPORT_TAGS =
   (
@@ -90,16 +89,13 @@ sub shop_cart_tags {
      },
      item => 
      sub { 
-       my $value = $cart->[$item_index]{$_[0]};
-       defined($value) or $value = $cart_prods->[$item_index]{$_[0]};
-       defined($value) or $value = '';
-       if ($_[0] eq 'link') {
-	 $value = $cart_prods->[$item_index]->link,
+       my $value = $item->{$_[0]};
+       if (defined $value) {
+	 return escape_html($value);
        }
-       if ($_[0] eq 'link' && $value !~ /^\w+:/) {
-	 $value = $req->cfg->entryErr('site', 'url') . $value;
+       else {
+	 return tag_article($product, $cfg, $_[0]);
        }
-       escape_html($value);
      },
      extended =>
      sub { 

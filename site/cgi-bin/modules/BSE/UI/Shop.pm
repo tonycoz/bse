@@ -9,7 +9,7 @@ use BSE::CfgInfo qw(custom_class credit_card_class bse_default_country);
 use BSE::TB::Orders;
 use BSE::TB::OrderItems;
 use BSE::Mail;
-use BSE::Util::Tags qw(tag_error_img tag_hash);
+use BSE::Util::Tags qw(tag_error_img tag_hash tag_article);
 use Products;
 use BSE::TB::Seminars;
 use DevHelp::Validate qw(dh_validate dh_validate_hash);
@@ -18,7 +18,7 @@ use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -1214,12 +1214,9 @@ sub req_orderdone {
        return 0;
      },
      item=> sub { escape_html($showitems[$item_index]{$_[0]}); },
-     product => 
+     product =>
      sub { 
-       my $value = $products[$item_index]{$_[0]};
-       defined $value or $value = '';
-
-       escape_html($value);
+       return tag_article($product, $cfg, $_[0]);
      },
      extended =>
      sub { 
