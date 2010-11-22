@@ -18,7 +18,7 @@ use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -1637,7 +1637,7 @@ sub _build_items {
 	or do { push @msgs, "'$product->{title}' not available"; next; };
 
       for my $col (@prodcols) {
-	$work{$col} = $product->{$col} unless exists $work{$col};
+	$work{$col} = $product->$col() unless exists $work{$col};
       }
       $work{extended_retailPrice} = $work{units} * $work{retailPrice};
       $work{extended_gst} = $work{units} * $work{gst};

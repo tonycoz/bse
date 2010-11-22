@@ -7,7 +7,7 @@ use vars qw(@ISA @EXPORT_OK);
                 payment_types order_item_opts
  PAYMENT_CC PAYMENT_CHEQUE PAYMENT_CALLME PAYMENT_MANUAL PAYMENT_PAYPAL/;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 our %EXPORT_TAGS =
   (
@@ -16,7 +16,7 @@ our %EXPORT_TAGS =
 
 use Constants qw/:shop/;
 use BSE::Util::SQL qw(now_sqldate);
-use BSE::Util::Tags;
+use BSE::Util::Tags qw(tag_article);
 use BSE::CfgInfo qw(custom_class);
 use Carp 'confess';
 use BSE::Util::HTML qw(escape_html);
