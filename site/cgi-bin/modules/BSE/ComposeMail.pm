@@ -5,7 +5,7 @@ use BSE::Mail;
 use Carp 'confess';
 use Digest::MD5 qw(md5_hex);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 =head1 NAME
 
@@ -116,6 +116,13 @@ sub start {
   $self->{attachments} = [];
   $self->{encrypt} = 0;
 
+  $self->{log} = {};
+  for my $key (keys %opts) {
+    if ($key =~ /^log_(\w+)$/) {
+      $self->{log}{$1} = $opts{$key};
+    }
+  }
+
   1;
 }
 
@@ -212,6 +219,7 @@ sub encrypt_body {
   $self->{encrypt} = 1;
   $self->{signing_id} = $opts{signing_id};
   $self->{passphrase} = $opts{passphrase};
+  $self->{crypt_recipient} = $opts{recipient};
 }
 
 sub _build_internal {
@@ -383,6 +391,18 @@ sub extra_headers {
   return @headers;
 }
 
+sub _log_dump {
+  my ($self, $headers, $message) = @_;
+
+  my $max = $self->{cfg}->entry("audit log", "mail_max_dump", 10000);
+  my $msg = "$headers\n\n$message";
+  if (length($msg) > $max) {
+    substr($msg, $max-3) = "...";
+  }
+
+  return $msg;
+}
+
 sub done {
   my ($self) = @_;
 
@@ -420,9 +440,28 @@ sub done {
 		    body => $message,
 		    headers => $headers,
 		    %{$self->{extra_mail_args}})) {
+    if ($self->{cfg}->entry("audit log", "mail", 0)) {
+      my %log_opts = %{$self->{log}};
+      $log_opts{msg} ||= "Mail sent to $self->{to}";
+      $log_opts{component} ||= "composemail::send";
+      $log_opts{level} ||= "info";
+      $log_opts{actor} ||= "S";
+      $log_opts{dump} =$self->_log_dump($headers, $message);
+      require BSE::TB::AuditLog;
+      BSE::TB::AuditLog->log(%log_opts);
+    }
     return 1;
   }
   else {
+    my %log_opts = %{$self->{log}};
+    $log_opts{msg} = "Error sending email: " . $mailer->errstr;
+    $log_opts{component} ||= "composemail:send";
+    $log_opts{level} ||= "error";
+    $log_opts{actor} ||= "S";
+    $log_opts{dump} = $self->_log_dump($headers, $message);
+    require BSE::TB::AuditLog;
+    BSE::TB::AuditLog->log(%log_opts);
+    
     $self->{errstr} = "Send error: ", $mailer->errstr;
     print STDERR "Error sending mail ", $mailer->errstr, "\n";
     return;
@@ -460,7 +499,9 @@ sub _encrypt {
      gpg => $gpg,
     );
 
-  my $result = $encryptor->encrypt($self->{to}, $content, %opts)
+  my $recip = $self->{crypt_recipient} || $self->{to};
+
+  my $result = $encryptor->encrypt($recip, $content, %opts)
     or die "Cannot encrypt ",$encryptor->error;
 
   if ($cfg->entry('shop', 'crypt_content_type', 0)) {

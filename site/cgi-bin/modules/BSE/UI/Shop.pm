@@ -8,7 +8,6 @@ use BSE::Shop::Util qw(:payment need_logon shop_cart_tags payment_types nice_opt
 use BSE::CfgInfo qw(custom_class credit_card_class bse_default_country);
 use BSE::TB::Orders;
 use BSE::TB::OrderItems;
-use BSE::Mail;
 use BSE::Util::Tags qw(tag_error_img tag_hash tag_article);
 use Products;
 use BSE::TB::Seminars;
@@ -18,7 +17,7 @@ use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -1455,58 +1454,59 @@ sub _send_order {
      ifSubscribingTo => [ \&tag_ifSubscribingTo, \%subscribing_to ],
     );
 
-  my $mailer = BSE::Mail->new(cfg=>$cfg);
-  # ok, send some email
-  my $confirm = BSE::Template->get_page('mailconfirm', $cfg, \%acts);
   my $email_order = $cfg->entryBool('shop', 'email_order', $Constants::SHOP_EMAIL_ORDER);
+  require BSE::ComposeMail;
   if ($email_order) {
     unless ($noencrypt) {
       $acts{cardNumber} = $cgi->param('cardNumber');
       $acts{cardExpiry} = $cgi->param('cardExpiry');
       $acts{cardVerify} = $cgi->param('cardVerify');
     }
-    my $ordertext = BSE::Template->get_page('mailorder', $cfg, \%acts);
-    
-    my $send_text;
-    if ($noencrypt) {
-      $send_text = $ordertext;
-    }
-    else {
-      eval "use $crypto_class";
-      !$@ or die $@;
-      my $encrypter = $crypto_class->new;
-      
-      my $debug = $cfg->entryBool('debug', 'mail_encryption', 0);
-      my $sign = $cfg->entryBool('basic', 'sign', 1);
-      
-      # encrypt and sign
-      my %opts = 
-	(
-	 sign=> $sign,
-	 passphrase=> $passphrase,
-	 stripwarn=>1,
-	 fastcgi => $req->is_fastcgi,
-	 debug=>$debug,
-	);
-      
-      $opts{secretkeyid} = $signing_id if $signing_id;
-      $opts{pgp} = $pgp if $pgp;
-      $opts{gpg} = $gpg if $gpg;
-      $opts{pgpe} = $pgpe if $pgpe;
-      my $recip = "$toName $toEmail";
 
-      unless ($send_text = $encrypter->encrypt($recip, $ordertext, %opts )) {
-	print STDERR "Cannot encrypt email: ", $encrypter->error;
-	exit 1;
-      }
+    my $mailer = BSE::ComposeMail->new(cfg => $cfg);
+    $mailer->start
+      (
+       to=>$toEmail,
+       from=>$from,
+       subject=>'New Order '.$order->{id},
+       acts => \%acts,
+       template => "mailorder",
+       log_component => "shop:sendorder:mailowner",
+       log_object => $order,
+       log_msg => "Order $order->{id} sent to site owner",
+      );
+
+    unless ($noencrypt) {
+      my %crypt_opts;
+      my $sign = $cfg->entryBool('basic', 'sign', 1);
+      $sign or $crypt_opts{signing_id} = "";
+      $crypt_opts{recipient} =
+	$cfg->entry("shop", "crypt_recipient", "$toName $toEmail");
+      $mailer->encrypt_body(%crypt_opts);
     }
-    $mailer->send(to=>$toEmail, from=>$from, subject=>'New Order '.$order->{id},
-		  body=>$send_text)
+
+    $mailer->done
       or print STDERR "Error sending order to admin: ",$mailer->errstr,"\n";
+
+    delete @acts{qw/cardNumber cardExpiry cardVerify/};
   }
-  $mailer->send(to=>$order->{emailAddress}, from=>$from,
-		subject=>$subject . " " . localtime,
-		body=>$confirm)
+  my $to = $order->emailAddress;
+  my $user = $req->siteuser;
+  if ($user && $user->email eq $to) {
+    $to = $user;
+  }
+  my $mailer = BSE::ComposeMail->new(cfg => $cfg);
+  $mailer->send
+    (
+     to => $to,
+     from => $from,
+     subject => $subject . " " . localtime,
+     template => "mailconfirm",
+     acts => \%acts,
+     log_component => "shop:sendorder:mailbuyer",
+     log_object => $order,
+     log_msg => "Order $order->{id} sent to purchaser ".$order->emailAddress,
+    )
     or print STDERR "Error sending order to customer: ",$mailer->errstr,"\n";
 }
 
