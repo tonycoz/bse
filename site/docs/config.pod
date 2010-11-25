@@ -2308,6 +2308,22 @@ payment page header.
 
 =back
 
+=head2 [audit log]
+
+=over
+
+=item *
+
+mail - if non-zero any emails sent through BSE::ComposeMail are logged
+in the audit log.  Default: 0.
+
+=item *
+
+mail_max_dump - if non-zero this is the size limit of the dump stored
+in the audit log when [audit log].mail is enabled.
+
+=back
+
 =head1 AUTHOR
 
 Tony Cook <tony@develop-help.com>
