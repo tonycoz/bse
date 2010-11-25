@@ -437,8 +437,41 @@ img.bse_image_thumb {
 }
 
 #auditlog .col_when_at,
-#auditlog .col_who { 
+#auditlog .col_who,
+#auditlog .col_object,
+#auditlog .col_level,
+#auditlog .col_actor,
+#auditlog .col_object { 
   white-space: nowrap;
+}
+
+#auditlog .audit_crit td,
+#auditlog .audit_emerg td,
+#auditlog .audit_alert td {
+  background-color: #FFA0A0;
+}
+
+#auditlog .audit_error td {
+  background-color: #FFE0E0;
+}
+
+#auditlog a.filter,
+#auditentry a.filter { 
+  padding: 0px 2px;
+  background-color: #C0FFC0;
+  text-decoration: none;
+  border: 1px dotted #080;
+}
+
+#auditlog a.unfilter { 
+  padding: 0px 2px;
+  background-color: #FFC0C0;
+  text-decoration: none;
+  border: 1px dotted #800;
+}
+
+#auditentry .dump {
+  white-space: pre-wrap;
 }
 
 div.pagelist {
@@ -446,7 +479,7 @@ div.pagelist {
 }
 .pagelist a,
 .pagelist span {
-  padding: 2px 4px;
+  padding: 2px 5px;
   text-decoration: none;
   color: #000;
 }
@@ -456,14 +489,17 @@ div.pagelist {
   border: 1px dotted #88F;
 }
 
-.pagelist a:hover {
-  text-decoration: underline;
-  /*background-color: #CCF;*/
-  border: 1px solid #44f;
+.pagelist a:hover,
+.pagelist a:active,
+.pagelist a:focus {
+  /*text-decoration: underline;*/
+  background-color: #CCF;
+  border: 1px solid #444;
 }
 
 .pagelist span {
-  background-color: #CCF;
-  border: 1px solid #88f;
+  background-color: #606080;
+  border: 1px solid #000;
+  color: #FFF;
   font-weight: bold;
 }

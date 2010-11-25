@@ -13,7 +13,7 @@ use BSE::Util::ContentType qw(content_type);
 use DevHelp::Date qw(dh_parse_date dh_parse_sql_date);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 =head1 NAME
 
@@ -1971,8 +1971,6 @@ sub save {
 
 sub can_reparent_to {
   my ($self, $article, $newparent, $parent_editor, $articles, $rmsg) = @_;
-
-  $DB::single = 1;
 
   my @child_types = $parent_editor->child_types;
   if (!grep $_ eq ref $self, @child_types) {

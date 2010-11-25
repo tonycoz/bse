@@ -2,7 +2,7 @@ package Squirrel::Row;
 require 5.005;
 use strict;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 use Carp;
 use BSE::DB;
@@ -219,7 +219,7 @@ sub AUTOLOAD {
       && return $_[0]->set(lcfirst $1, $_[1]);
   }
   confess qq/Can't locate object method "$calledName" via package "/,
-    ref $_[0],'"';
+    (ref $_[0] || $_[0]),'"';
 }
 
 sub _get_bases {

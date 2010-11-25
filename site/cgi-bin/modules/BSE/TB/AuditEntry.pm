@@ -2,7 +2,7 @@ package BSE::TB::AuditEntry;
 use strict;
 use base qw(Squirrel::Row);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub columns {
   return qw/id 
@@ -67,6 +67,76 @@ sub actor_name {
   }
   else {
     return "Unknown type $type";
+  }
+}
+
+sub actor_link {
+  my ($self) = @_;
+
+  my $type = $self->actor_type;
+  if ($type eq "A") {
+    require BSE::TB::AdminUsers;
+    my $admin = BSE::TB::AdminUsers->getByPkey($self->actor_id);
+    if ($admin) {
+      return $admin->link;
+    }
+    else {
+      return "";
+    }
+  }
+  elsif ($type eq "M") {
+    require SiteUsers;
+    my $user = SiteUsers->getByPkey($self->actor_id);
+    if ($user) {
+      return $user->link;
+    }
+    else {
+      return "";
+    }
+  }
+  else {
+    return "";
+  }
+}
+
+my %types =
+  (
+   "BSE::TB::Order" =>
+   {
+    target => "shopadmin",
+    action => "order_detail",
+    format => "Order %d",
+   },
+  );
+
+sub object_link {
+  my ($self) = @_;
+
+  my $type = $self->object_type;
+  my $entry = $types{$type};
+  if ($entry) {
+    BSE::Cfg->single->admin_url($entry->{target},
+				{ id => $self->object_id,
+				  $entry->{action} => 1 });
+  }
+  else {
+    return "";
+  }
+}
+
+sub object_name {
+  my ($self) = @_;
+
+  my $type = $self->object_type;
+  my $entry = $types{$type};
+  if ($entry) {
+    return sprintf $entry->{format}, $self->object_id;
+  }
+  elsif ($type) {
+    return $type . ": " . $self->object_id;
+  }
+  else {
+    return '(None)';
   }
 }
 

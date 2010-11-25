@@ -9,7 +9,7 @@ use overload
   "&{}" => sub { my $self = $_[0]; return sub { $self->_old_msg(@_) } },
   "bool" => sub { 1 };
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 my $single;
 
@@ -244,7 +244,6 @@ sub _old_msg {
     return $msg;
   }
 
-  $DB::single = 1;
   $msgid = "bse/$self->{section}/$msgid";
   my $text = $self->text(undef, $msgid, \@parms);
   $text and return $text;

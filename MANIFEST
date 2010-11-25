@@ -212,6 +212,7 @@ site/cgi-bin/modules/BSE/Thumb/Imager/RandomCrop.pm
 site/cgi-bin/modules/BSE/ThumbLow.pm
 site/cgi-bin/modules/BSE/UI/API.pm
 site/cgi-bin/modules/BSE/UI/Background.pm
+site/cgi-bin/modules/BSE/UI/AdminAudit.pm
 site/cgi-bin/modules/BSE/UI/AdminDispatch.pm
 site/cgi-bin/modules/BSE/UI/AdminModules.pm
 site/cgi-bin/modules/BSE/UI/AdminMessages.pm
@@ -476,6 +477,8 @@ site/templates/admin/image_edit.tmpl	Edit a single image
 site/templates/admin/interestemail.tmpl
 site/templates/admin/include/audithead.tmpl
 site/templates/admin/include/auditentry.tmpl
+site/templates/admin/log/entry.tmpl
+site/templates/admin/log/log.tmpl
 site/templates/admin/logon.tmpl
 site/templates/admin/memberupdate/import.tmpl
 site/templates/admin/memberupdate/preview.tmpl

@@ -6,7 +6,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 use Carp 'confess';
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub columns {
   return qw/id articleId displayName filename sizeInBytes description 
@@ -288,10 +288,10 @@ sub metanames {
   my ($self) = @_;
 
   require BSE::TB::ArticleFileMetas;
-  return map $_->{name}, BSE::TB::ArticleFileMetas->getColumnsBy
+  return BSE::TB::ArticleFileMetas->getColumnBy
     (
-     [ "name" ],
-     file_id => $self->id,
+     "name",
+     [ file_id => $self->id ],
     );
 }
 
@@ -309,7 +309,7 @@ sub metainfo {
   return BSE::TB::ArticleFileMetas->getColumnsBy
     (
      \@cols,
-     file_id => $self->id,
+     [ file_id => $self->id ],
     );
 }
 

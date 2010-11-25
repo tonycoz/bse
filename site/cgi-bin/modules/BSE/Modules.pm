@@ -3,7 +3,7 @@ use strict;
 
 # automatically generated
 
-our $hash = "f2ae748b177e9cba9d24aa9a23f676cd";
+our $hash = "889015368dfce7d41ab585f4eb8c75da";
 
 our %versions =
   (
@@ -37,7 +37,7 @@ our %versions =
   "BSE::Dynamic::Catalog" => "1.000",
   "BSE::Dynamic::Product" => "1.000",
   "BSE::Dynamic::Seminar" => "1.000",
-  "BSE::Edit::Article" => "1.002",
+  "BSE::Edit::Article" => "1.003",
   "BSE::Edit::Base" => "1.000",
   "BSE::Edit::Catalog" => "1.001",
   "BSE::Edit::Product" => "1.001",
@@ -70,7 +70,7 @@ our %versions =
   "BSE::Mail" => "1.000",
   "BSE::Mail::SMTP" => "1.000",
   "BSE::Mail::Sendmail" => "1.000",
-  "BSE::Message" => "1.001",
+  "BSE::Message" => "1.002",
   "BSE::MessageScanner" => "1.000",
   "BSE::NLFilter::SQL" => "1.000",
   "BSE::NotifyFiles" => "1.000",
@@ -79,7 +79,7 @@ our %versions =
   "BSE::Password::CryptSHA256" => "1.000",
   "BSE::Password::Plain" => "1.000",
   "BSE::Passwords" => "1.000",
-  "BSE::PayPal" => "1.000",
+  "BSE::PayPal" => "1.001",
   "BSE::Permissions" => "1.000",
   "BSE::ProductImportXLS" => "1.000",
   "BSE::Report" => "1.000",
@@ -117,13 +117,13 @@ our %versions =
   "BSE::TB::AdminPerms" => "1.000",
   "BSE::TB::AdminUIState" => "1.000",
   "BSE::TB::AdminUIStates" => "1.000",
-  "BSE::TB::AdminUser" => "1.000",
+  "BSE::TB::AdminUser" => "1.001",
   "BSE::TB::AdminUsers" => "1.000",
-  "BSE::TB::ArticleFile" => "1.001",
+  "BSE::TB::ArticleFile" => "1.002",
   "BSE::TB::ArticleFileMeta" => "1.000",
   "BSE::TB::ArticleFileMetas" => "1.000",
   "BSE::TB::ArticleFiles" => "1.000",
-  "BSE::TB::AuditEntry" => "1.000",
+  "BSE::TB::AuditEntry" => "1.001",
   "BSE::TB::AuditLog" => "1.000",
   "BSE::TB::BackgroundTask" => "1.000",
   "BSE::TB::BackgroundTasks" => "1.000",
@@ -165,6 +165,7 @@ our %versions =
   "BSE::Thumb::Imager::RandomCrop" => "1.000",
   "BSE::ThumbLow" => "1.000",
   "BSE::UI::API" => "1.000",
+  "BSE::UI::AdminAudit" => "1.000",
   "BSE::UI::AdminDispatch" => "1.000",
   "BSE::UI::AdminMessages" => "1.000",
   "BSE::UI::AdminModules" => "1.001",
@@ -242,13 +243,13 @@ our %versions =
   "OtherParents" => "1.000",
   "Product" => "1.000",
   "Products" => "1.000",
-  "SiteUser" => "1.001",
+  "SiteUser" => "1.002",
   "SiteUsers" => "1.000",
   "Squirrel::GPG" => "1.000",
   "Squirrel::PGP5" => "1.000",
   "Squirrel::PGP6" => "1.000",
-  "Squirrel::Row" => "1.000",
-  "Squirrel::Table" => "1.000",
+  "Squirrel::Row" => "1.001",
+  "Squirrel::Table" => "1.001",
   "Squirrel::Template" => "1.000",
   "Util" => "1.000",
   );

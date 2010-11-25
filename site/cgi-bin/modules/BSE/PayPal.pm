@@ -5,7 +5,7 @@ use BSE::Util::HTML;
 use BSE::Shop::Util qw(:payment);
 use Carp qw(confess);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 use constant DEF_TEST_WS_URL => "https://api-3t.sandbox.paypal.com/nvp";
 use constant DEF_TEST_REFRESH_URL => "https://www.sandbox.paypal.com/webscr";
@@ -166,7 +166,6 @@ sub pay_order {
   }
 
   my %info;
-  $DB::single = 1;
   if (_do_express_checkout_payment
       ($cfg, $rmsg, $order, scalar($req->siteuser), $token, $payerid, \%info)) {
     $order->set_paypal_tran_id($info{TRANSACTIONID});

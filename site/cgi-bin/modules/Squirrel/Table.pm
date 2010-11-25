@@ -1,12 +1,9 @@
 package Squirrel::Table;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
-use vars qw($VERSION);
 use Carp;
 use strict;
-
-$VERSION = "0.11";
 
 use BSE::DB;
 
@@ -50,7 +47,6 @@ sub new {
     my $item = $rowClass->new(@$row);
     $coll{$item->{pkey}} = $item;
     push(@order, $item);
-    
   }
 
   my $result = bless { ptr=>-1, coll=>\%coll, order=>\@order }, $class;
@@ -253,28 +249,75 @@ sub _getBy_sth {
   return $sth;
 }
 
-sub getColumnsBy {
-  my ($self, $cols, %find) = @_;
+sub _where_clause {
+  my ($self, $map, @query) = @_;
+
+  if (ref $query[0]) {
+    unshift @query, "and";
+  }
+  my ($sql, @args);
+  my $op = shift @query;
+  if ($op =~ /^(and|or)$/) {
+    my @exprs;
+    for my $sub (@query) {
+      my ($expr, @subargs) = $self->_where_clause($map, @$sub);
+      push @exprs, $expr;
+      push @args, @subargs;
+    }
+    return ("(".join(" $op ", @exprs).")", @args);
+  }
+  elsif ($op =~ /^(=|<>|>=|<=|like|not like)$/) {
+    my $dbcol = $map->{$query[0]}
+      or confess "Unknown column $query[0]";
+    return ("$dbcol $op ?", $query[1] );
+  }
+  elsif ($op =~ /^(?:not )?null$/) {
+    my $dbcol = $map->{$query[0]}
+      or confess "Unknown column $query[0]";
+    return ("$dbcol $op", () );
+  }
+  elsif ($op eq "between") {
+    my $dbcol = $map->{$query[0]}
+      or confess "Unknown column $query[0]";
+    return ("$dbcol $op ? and ?", @query[0, 1] );
+  }
+  else {
+    my $dbcol = $map->{$op}
+      or confess "Unknown column $op";
+    return ("$dbcol = ?", $query[0]);
+  }
+}
+
+sub _make_sql {
+  my ($self, $cols, $query, $options) = @_;
+
+  my $table_name = $self->rowClass->table
+    or confess "No table_name defined";
 
   my @db_cols = $self->rowClass->db_columns;
   my @code_cols = $self->rowClass->columns;
   my %map;
   @map{@code_cols} = @db_cols;
-  
-  my @conds;
-  my @args;
-  for my $col (keys %find) {
-    my $db_col = $map{$col}
-      or confess "Cannot generate query: unknown column $col";
-    # this doesn't handle null, but that should use a "special"
-    push @conds, "$db_col = ?";
-    push @args, $find{$col};
-  }
-  my @result_cols = map $map{$_}, @$cols;
 
-  my $sql = "select " . join(",", @result_cols) .
-    " from " . $self->rowClass->table .
-      " where " . join(" and ", @conds);
+  my $sql = "select * from $table_name";
+  my @args;
+  if (@$query) {
+    ((my $where), @args) = $self->_where_clause(\%map, @$query);
+    if (length $where) {
+      $sql .= " where $where";
+    }
+  }
+  if ($options->{order}) {
+    $sql .= " order by $options->{order}";
+  }
+
+  return ($sql, @args);
+}
+
+sub getColumnsBy {
+  my ($self, $cols, $query, $opts) = @_;
+
+  my ($sql, @args) = $self->_make_sql($cols, $query, $opts);
 
   $dh ||= BSE::DB->single;
   my $sth = $dh->{dbh}->prepare($sql)
@@ -288,6 +331,26 @@ sub getColumnsBy {
     my %row;
     @row{@$cols} = @$row;
     push @rows, \%row;
+  }
+
+  return wantarray ? @rows : \@rows;
+}
+
+sub getColumnBy {
+  my ($self, $col, $query, $opts) = @_;
+
+  my ($sql, @args) = $self->_make_sql([ $col ], $query, $opts);
+
+  $dh ||= BSE::DB->single;
+  my $sth = $dh->{dbh}->prepare($sql)
+    or confess "Cannot prepare generated $sql: ", $dh->{dbh}->errstr;
+
+  $sth->execute(@args)
+    or confess "Cannot execute $sql: ",$dh->{dbh}->errstr;
+
+  my @rows;
+  while (my $row = $sth->fetchrow_arrayref) {
+    push @rows, $row->[0];
   }
 
   return wantarray ? @rows : \@rows;

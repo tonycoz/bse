@@ -13,7 +13,7 @@
 <:ifParam jstools:><script type="text/javascript" src="/js/admin_tools.js"></script><:or:><:eif:>
 <:ifParam js:><script type="text/javascript" src="/js/<:param js:>"></script><:or:><:eif:>
   </head>
-  <body>
+  <body<:ifParam bodyid:> id="<:param bodyid:>"<:or:><:eif:>>
 <:ifParam showtitle:><h1><:param title:></h1><:or:><:eif:>
 <:wrap here:>
   <hr />

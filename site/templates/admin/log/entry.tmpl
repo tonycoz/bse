@@ -1,0 +1,60 @@
+<:wrap admin/xbase.tmpl title => "Audit Entry", bodyid => "auditentry":>
+<h1>BSE Audit Log - Entry <:auditentry id:></h1>
+<p>| <a href="/admin/">Admin Menu</a>
+| <a href="<:adminurl log:>">Return to Log</a>
+ |</p>
+<:if Or [next_auditentry_id] [prev_auditentry_id]:>
+<p>| <:ifPrev_auditentry_id:><a href="<:adminurl log a_detail 1 id [prev_auditentry_id]:>">&lt; &lt; Previous</a> |<:or:><:eif:>
+ <:ifNext_auditentry_id:><a href="<:adminurl log a_detail 1 id [next_auditentry_id]:>">Next &gt; &gt;</a> |<:or:><:eif:>
+</p><:or Or:><:eif Or:>
+
+<table class="editform">
+  <tr>
+    <th>Id:</th>
+    <td><:auditentry id:></td>
+  </tr>
+  <tr>
+    <th>When:</th>
+    <td><:date "%H:%M %d/%m/%Y" auditentry when_at:></td>
+  </tr>
+  <tr>
+    <th>Facility:</th>
+    <td><:auditentry facility:></td>
+  </tr>
+  <tr>
+    <th>Component:</th>
+    <td><:auditentry component:></td>
+  </tr>
+  <tr>
+    <th>Module:</th>
+    <td><:auditentry module:></td>
+  </tr>
+  <tr>
+    <th>Function:</th>
+    <td><:auditentry function:></td>
+  </tr>
+  <tr>
+    <th>Level:</th>
+    <td><:auditentry level_name:></td>
+  </tr>
+  <tr>
+    <th>Actor:</th>
+    <td><:ifAuditentry actor_link:><a href="<:auditentry actor_link:>"><:auditentry actor_name:></a><:or:><:auditentry actor_name:><:eif:></td>
+  </tr>
+  <tr>
+    <th>Object:</th>
+    <td><:ifAuditentry object_link:><a href="<:auditentry object_link:>"><:auditentry object_name:></a><:or:><:auditentry object_name<:eif:></td>
+  </tr>
+  <tr>
+    <th>Message:</th>
+    <td><:auditentry msg:></td>
+  </tr>
+  <tr>
+    <th>IP Address:</th>
+    <td><:auditentry ip_address:></td>
+  </tr>
+  <tr>
+    <th>Dump:</th>
+    <td><span class="dump"><:auditentry dump:></span></td>
+  </tr>
+</table>
