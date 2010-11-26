@@ -3,7 +3,7 @@ use strict;
 
 # automatically generated
 
-our $hash = "ba27db37723ef836f43ad3f44365b227";
+our $hash = "e3211500289e1c4109dd490aa745a656";
 
 our %versions =
   (
@@ -24,7 +24,7 @@ our %versions =
   "BSE::Cache::CHI" => "1.001",
   "BSE::Cache::Cache" => "1.000",
   "BSE::Cache::Memcached" => "1.000",
-  "BSE::Cfg" => "1.001",
+  "BSE::Cfg" => "1.002",
   "BSE::CfgInfo" => "1.000",
   "BSE::ChangePW" => "1.000",
   "BSE::ComposeMail" => "1.001",
@@ -194,12 +194,12 @@ our %versions =
   "BSE::UI::Thumb" => "1.000",
   "BSE::UI::User" => "1.000",
   "BSE::UI::UserCommon" => "1.000",
-  "BSE::UserReg" => "1.004",
+  "BSE::UserReg" => "1.005",
   "BSE::Util::ContentType" => "1.000",
   "BSE::Util::DynSort" => "1.000",
   "BSE::Util::DynamicTags" => "1.003",
   "BSE::Util::HTML" => "1.000",
-  "BSE::Util::Iterate" => "1.000",
+  "BSE::Util::Iterate" => "1.001",
   "BSE::Util::Prereq" => "1.001",
   "BSE::Util::SQL" => "1.000",
   "BSE::Util::Secure" => "1.000",
@@ -232,7 +232,7 @@ our %versions =
   "DevHelp::Payments::Test" => "1.000",
   "DevHelp::Report" => "1.000",
   "DevHelp::Tags" => "1.000",
-  "DevHelp::Tags::Iterate" => "1.002",
+  "DevHelp::Tags::Iterate" => "1.003",
   "DevHelp::Validate" => "1.000",
   "Generate" => "1.000",
   "Generate::Article" => "1.000",

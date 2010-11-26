@@ -2,7 +2,7 @@ package DevHelp::Tags::Iterate;
 use strict;
 use Carp qw(confess);
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub new {
   my ($class, %opts) = @_;
@@ -15,6 +15,11 @@ sub escape {
 }
 
 sub next_item {
+  my ($self, $item, $single, $state) = @_;
+
+  if ($state->{changed}) {
+    $state->{changed}->($item);
+  }
 }
 
 sub _iter_reset_paged {
@@ -22,7 +27,7 @@ sub _iter_reset_paged {
 
   ${$state->{index}} = -1;
 
-  $self->next_item(undef, $state->{single});
+  $self->next_item(undef, $state->{single}, $state);
   $state->{previous} = undef;
   $state->{item} = undef;
   if (@{$state->{data}}) {
@@ -76,13 +81,13 @@ sub _iter_iterate {
       $state->{next} = undef;
     }
     ${$state->{store}} = $state->{item} if $state->{store};
-    $self->next_item($state->{item}, $state->{single});
+    $self->next_item($state->{item}, $state->{single}, $state);
     return 1;
   }
   else {
     $state->{item} = undef;
     ${$state->{store}} = undef if $state->{store};
-    $self->next_item(undef, $state->{single});
+    $self->next_item(undef, $state->{single}, $state);
   }
   return;
 }
@@ -386,7 +391,7 @@ sub _iter_reset {
   }
 
   ${$state->{index}} = -1;
-  $self->next_item(undef, $state->{single});
+  $self->next_item(undef, $state->{single}, $state);
   $state->{previous} = undef;
   $state->{item} = undef;
   if (@{$state->{data}}) {

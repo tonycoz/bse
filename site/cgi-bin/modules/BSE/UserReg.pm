@@ -18,7 +18,7 @@ use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
 use Carp qw(confess);
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -1051,13 +1051,12 @@ sub iter_sembookings {
 }
 
 sub tag_order_item_options {
-  my ($self, $req, $ritem_index, $items) = @_;
+  my ($self, $req, $ritem) = @_;
 
-  if ($$ritem_index < 0 || $$ritem_index >= @$items) {
-    return "** only usable in the items iterator **";
-  }
+  $$ritem
+    or return "** only usable in the items iterator **";
 
-  my $item = $items->[$$ritem_index];
+  my $item = $$ritem;
   require BSE::Shop::Util;
   BSE::Shop::Util->import(qw/order_item_opts nice_options/);
   my @options;
@@ -1084,23 +1083,42 @@ sub iter_orders {
     grep $_->complete, BSE::TB::Orders->getBy(userId=>$user->{userId});
 }
 
+sub iter_order_items {
+  my ($self, $rorder) = @_;
+
+  $$rorder or return "** Not in the order iterator **";
+
+  return $$rorder->items;
+}
+
+sub iter_orderfiles {
+  my ($self, $rorder) = @_;
+
+  $$rorder or return;
+
+  return BSE::DB->query(orderFiles => $$rorder->id);
+}
+
 sub _common_tags {
   my ($self, $req, $user) = @_;
 
   my $cfg = $req->cfg;
 
-  my $order_index;
-  my $item_index;
-  my @items;
+  #my $order_index;
+  #my $item_index;
+  #my @items;
+  my $item;
   my $product;
-  my @files;
-  my $file_index;
+  #my @files;
+  #my $file_index;
+  my $file;
   my @orders;
+  my $order;
 
   my $must_be_paid = $cfg->entryBool('downloads', 'must_be_paid', 0);
   my $must_be_filled = $cfg->entryBool('downloads', 'must_be_filled', 0);
 
-  my $it = BSE::Util::Iterate->new(cfg => $cfg);
+  my $it = BSE::Util::Iterate->new(req => $req);
   return
     (
      $req->dyn_user_tags(),
@@ -1110,51 +1128,57 @@ sub _common_tags {
       data => \@orders,
       single => 'order',
       plural => 'orders',
-      index => \$order_index,
+      #index => \$order_index,
       code => [ iter_orders => $self, $user ],
+      store => \$order,
      ),
-     BSE::Util::Tags->
-     make_dependent_iterator(\$order_index,
-			     sub {
-			       require BSE::TB::OrderItems;
-			       @items = BSE::TB::OrderItems->
-				 getBy(orderId=>$orders[$_[0]]{id});
-			     },
-			     'item', 'items', \$item_index),
-     BSE::Util::Tags->
-     make_dependent_iterator(\$order_index,
-			     sub {
-			       @files = BSE::DB->query
-				 (orderFiles=>$orders[$_[0]]{id});
-			     },
-			     'orderfile', 'orderfiles', \$file_index),
-     product =>
-     sub {
-       require Products;
-       $product = Products->getByPkey($items[$item_index]{productId})
-	 unless $product && $product->{id} == $items[$item_index]{productId};
-       $product or return '';
+     $it->make
+     (
+      single => "item",
+      plural => "items",
+      code => [ iter_order_items => $self, \$order ],
+      store => \$item,
+      changed => sub {
+	my ($item) = @_;
+	if ($item) {
+	  $product = $item->product
+	    or print STDERR "No product found for item $item->{id}\n";
+	}
+	else {
+	  undef $product;
+	}
+	$req->set_article(product => $product);
+      },
+     ),
+     $it->make
+     (
+      single => "orderfile",
+      plural => "orderfiles",
+      code => [ iter_orderfiles => $self, \$order ],
+      store => \$file,
+     ),
+     product => sub {
+       $item or return "* Not in item iterator *";
+       $product or return "* No current product *";
        return tag_article($product, $cfg, $_[0]);
      },
-     BSE::Util::Tags->
-     make_multidependent_iterator
-     ([ \$item_index, \$order_index],
-      sub {
-	require BSE::TB::ArticleFiles;
-	@files = sort { $b->{displayOrder} <=> $a->{displayOrder} }
-	  BSE::TB::ArticleFiles->getBy(articleId=>$items[$item_index]{productId});
-      },
-      'prodfile', 'prodfiles', \$file_index),
+     $it->make
+     (
+      single => "prodfile",
+      plural => "prodfiles",
+      code => [ files => $product ],
+      store => \$file,
+     ),
      ifFileAvail =>
      sub {
-       if ($file_index >= 0 && $file_index < @files) {
-	 return 1 if !$files[$file_index]{forSale};
+       if ($file) {
+	 return 1 if !$file->{forSale};
        }
-       return 0 if $must_be_paid && !$orders[$order_index]{paidFor};
-       return 0 if $must_be_filled && !$orders[$order_index]{filled};
+       return 0 if $must_be_paid && !$order->paidFor;
+       return 0 if $must_be_filled && !$order->filled;
        return 1;
      },
-     options => [ tag_order_item_options => $self, $req, \$item_index, \@items ],
+     options => [ tag_order_item_options => $self, $req, \$item ],
     );
 }
 

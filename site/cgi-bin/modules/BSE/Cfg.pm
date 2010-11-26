@@ -4,7 +4,7 @@ use base "DevHelp::Cfg";
 use Carp qw(confess);
 use constant MAIN_CFG => 'bse.cfg';
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 my %cache;
 
@@ -101,7 +101,9 @@ sub charset {
 sub user_url {
   my ($cfg, $script, $target, @options) = @_;
 
-  my $base = $script eq 'shop' ? $cfg->entryVar('site', 'secureurl') : '';
+  my $secure = $script =~ /^(shop|user)$/;
+  $secure = $cfg->entry("secure user url", $script, $secure);
+  my $base = $secure ? $cfg->entryVar('site', 'secureurl') : '';
   my $template;
   if ($target) {
     if ($script eq 'nuser') {

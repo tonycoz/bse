@@ -4,7 +4,7 @@ use base 'DevHelp::Tags::Iterate';
 use BSE::Util::HTML;
 use Carp 'confess';
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub escape {
   escape_html($_[1]);
@@ -98,6 +98,7 @@ sub item {
 sub next_item {
   my ($self, $article, $name) = @_;
 
+  $self->SUPER::next_item(@_[1 .. $#_]);
   if ($self->{req}) {
     $self->{req}->set_article($name => $article);
   }
