@@ -17,7 +17,7 @@ use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -1496,7 +1496,7 @@ sub _send_order {
     $to = $user;
   }
   my $mailer = BSE::ComposeMail->new(cfg => $cfg);
-  $mailer->send
+  my %opts =
     (
      to => $to,
      from => $from,
@@ -1506,7 +1506,12 @@ sub _send_order {
      log_component => "shop:sendorder:mailbuyer",
      log_object => $order,
      log_msg => "Order $order->{id} sent to purchaser ".$order->emailAddress,
-    )
+    );
+  my $bcc_order = $cfg->entry("shop", "bcc_email");
+  if ($bcc_order) {
+    $opts{bcc} = $bcc_order;
+  }
+  $mailer->send(%opts)
     or print STDERR "Error sending order to customer: ",$mailer->errstr,"\n";
 }
 

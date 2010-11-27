@@ -810,6 +810,11 @@ in Constants.pm
 To email for emailed orders sent by the shop.  Overrides $SHOP_TO_EMAIL
 in Constants.pm
 
+=item bcc_email
+
+BCC email address for order confirmation emails sent to the customer.
+Default: No bcc.
+
 =item noencrypt
 
 If this is true then orders sent to you by the shop will not be
