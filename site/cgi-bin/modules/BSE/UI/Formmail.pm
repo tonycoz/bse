@@ -7,7 +7,7 @@ use DevHelp::Validate qw(dh_validate dh_configure_fields);
 use BSE::Util::Iterate;
 use constant DISPLAY_TIMEOUT => 300;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 my %actions =
   (
@@ -59,6 +59,8 @@ my %form_defs =
    log_spam_check_fail => 1,
    email_select => undef,
    recaptcha => 0,
+   send_member_email => 0,
+   member_email_template => "formmail/defemailcopy",
   );
 
 sub _get_form {
@@ -379,8 +381,110 @@ sub tag_formcfg_plain {
   $cfg->entry($form->{section}, $key, $def);
 }
 
+=item _send_to_mail
+
+Called during send processing if C<send_email> is set.
+
+Sends an email to the form configured email address, or as selected by
+the email address selection field.
+
+Uses the form C<mail> configuration as the mail template, which is
+F<formmail/defemail> by default.
+
+=cut
+
 sub _send_to_mail {
   my ($class, $form, $user, $values, $errors, $req) = @_;
+  
+  my $to_email = $form->{email};
+  if ($form->{email_select}
+      && $form->{email_select} =~ /^(\w+);(.+)$/) {
+    my ($field_name, $section) = ( $1, $2 );
+    my ($field) = grep $_->{name} eq $field_name, @{$form->{fields}};
+    my $cfg = $req->cfg;
+    if ($field && $cfg->entry($section, $field->{value})) {
+      $to_email = $cfg->entry($section, $field->{value});
+    }
+  }
+
+  return $class->_send_to_mail_low($to_email, 1, $form->{mail}, $form, $user, $values, $errors, $req);
+}
+
+=item _send_to_member
+
+Called during send processing if the form has C<send_member_email>
+enabled and there is a user logged in.
+
+Sends an email to the user's email address.
+
+Uses the form C<member_email_template> configuration as the mail template
+which is F<formmail/defmember> by default.
+
+=cut
+
+sub _send_to_member {
+  my ($class, $form, $user, $values, $errors, $req) = @_;
+
+  return $class->_send_to_mail_low($user, 0, $form->{member_email_template}, $form, $user, $values, $errors, $req);
+}
+
+=item _send_to_mail_low
+
+Sends the form values to the supplied email (or member object) as an
+email.
+
+Template tags:
+
+=over
+
+=item *
+
+default static tags
+
+=item *
+
+ifUser - test if a user is logged on
+
+=item *
+
+user - access the values of the currently logged on user record (if any)
+
+=item *
+
+iterator fields - iterate over the fields defined for the form.
+
+=item *
+
+field I<attribute> - access a field attribute, this can be any of:
+value, description, rules, required, htmltype, width, height, default,
+type, url.
+
+=item *
+
+iterator values - iterate over values for the current field.
+
+=item *
+
+id - the identifier of the current form
+
+=item *
+
+formcfg - access to the form's configuration
+
+=item *
+
+remote_addr - the IP address of the customer
+
+=item *
+
+attached_files - whether or not files were attached
+
+=back
+
+=cut
+
+sub _send_to_mail_low {
+  my ($class, $to_email, $attach, $template, $form, $user, $values, $errors, $req) = @_;
 
   my $cfg = $req->cfg;
 
@@ -401,30 +505,21 @@ sub _send_to_mail {
      id => $form->{id},
      formcfg => [ \&tag_formcfg_plain, $req->cfg, $form ],
      remote_addr => $ENV{REMOTE_ADDR},
+     attached_files => $attach,
     );
 
-  my $to_email = $form->{email};
-  if ($form->{email_select}
-      && $form->{email_select} =~ /^(\w+);(.+)$/) {
-    my ($field_name, $section) = ( $1, $2 );
-    my ($field) = grep $_->{name} eq $field_name, @{$form->{fields}};
-    if ($field && $cfg->entry($section, $field->{value})) {
-      $to_email = $cfg->entry($section, $field->{value});
-    }
-  }
-  
   require BSE::ComposeMail;
   my $mailer = BSE::ComposeMail->new(cfg=>$cfg);
   $mailer->start(to => $to_email,
 		 from => $form->{email},
 		 subject=>$form->{subject},
-		 template => $form->{mail},
+		 template => $template,
 		 acts => \%acts);
   if ($form->{encrypt}) {
     $mailer->encrypt_body(passphrase => $form->{crypt_passphrase},
 			  signing_id => $form->{crypt_signing_id});
   }
-  if ($form->{has_file_fields}) {
+  if ($form->{has_file_fields} && $attach) {
     my $seq = 1;
     for my $field (grep $_->{htmltype} && $_->{htmltype} eq 'file'
 		   && $_->{value}, @{$form->{fields}}) {
@@ -491,6 +586,7 @@ sub req_send {
 	}
 	$field->{fh} = $fh;
 	$field->{type} = $cgi->uploadInfo($filename)->{'Content-Type'};
+	$field->{size_bytes} = -s $fh;
       }
     }
   }
@@ -528,6 +624,7 @@ sub req_send {
     }
   }
 
+  my $member_sent = 0;
   if ($do_send) {
     my $user = $req->siteuser;
     if ($form->{sql}) {
@@ -537,7 +634,13 @@ sub req_send {
     
     if ($form->{send_email}) {
       $class->_send_to_mail($form, $user, \%values, \%errors, $req)
-	or $class->req_show($req, \%errors);
+	or return $class->req_show($req, \%errors);
+    }
+
+    if ($form->{send_member_email} && $user) {
+      $class->_send_to_member($form, $user, \%values, \%errors, $req)
+	or return $class->req_show($req, \%errors);
+      $member_sent = 1;
     }
   }
 
@@ -547,6 +650,7 @@ sub req_send {
     my $session = $req->session;
     $session->{formmail} = \%values;
     $session->{formmail_array} = \%array_values;
+    $session->{formmail_membersent} = $member_sent;
     $session->{formmail_done} = time;
     
     $url = $ENV{SCRIPT_NAME} . "?a_done=1&form=$form->{id}&t=".$session->{formmail_done};
@@ -573,6 +677,45 @@ sub iter_done_values {
     @{$array_values->{$field->{name}}};
 }
 
+=item done
+
+Displayed on completion of form processing.
+
+Template: done configuration from the form, C<formmail/defdone> by
+default.
+
+Tags:
+
+=over
+
+=item *
+
+default dynamic tags.
+
+=item *
+
+iterator fields - iterate over the fields defined for the form.
+
+=item *
+
+field I<attribute> - retrieve a field attribute for the current field.
+
+=item *
+
+id - id of the current form
+
+=item *
+
+formcfg I<config> - retrieve a value from the field configuration.
+
+=item *
+
+ifMemberSent - indicates whether the member was sent a copy.
+
+=back
+
+=cut
+
 sub req_done {
   my ($class, $req) = @_;
 
@@ -594,6 +737,7 @@ sub req_done {
   for my $field (@{$form->{fields}}) {
     $field->{value} = $values->{$field->{name}};
   }
+  my $member_sent = $session->{formmail_membersent};
   my $it = BSE::Util::Iterate->new;
   my $current_field;
   my %acts;
@@ -606,6 +750,7 @@ sub req_done {
 			'value', 'values', undef, undef, 'nocache'),
      id => $form->{id},
      formcfg => [ \&tag_formcfg, $req->cfg, $form ],
+     ifMemberSent => $member_sent,
     );
 
   return $req->response($form->{done}, \%acts);

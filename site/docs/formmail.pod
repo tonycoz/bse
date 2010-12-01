@@ -114,7 +114,10 @@ form is being used for. Default: formmail/defdone
 =item *
 
 mail - the name of the email template, used to build the content sent
-to the configured email address. Default: formmail/defemail
+to the configured email address.  If [mail].html_system_email is
+non-zero and a template I<mail-template>C<_html> exists then a
+multipart/alternative message will be sent. Default:
+C<formmail/defemail>.
 
 =item *
 
@@ -254,6 +257,21 @@ described under spam_check_field fail.  Default: true.
 email_select - a semi-colon separated field name and configuration
 section to select an alternate email address from.  Default: the email
 value or it's default is used.  See L</ALTERNATE EMAIL ADDRESSES>.
+
+=item *
+
+send_member_email - if this is set to non-zero and a site member is
+logged on when the form is submitted successfully, an email with the
+field values (but no attached files) is sent to the email address
+configured to that member.  This uses the template specified by
+C<member_email_template>.  Default: 0 (no email sent to the member.)
+
+=item *
+
+member_email_template - the template base name used to render the
+email.  If the user doesn't have text only emails enabled, and a
+template I<member_email_template>C<_html> exists then the email will
+be multipart/alternative.  Default: C<formmail/defemailcopy>.
 
 =back
 

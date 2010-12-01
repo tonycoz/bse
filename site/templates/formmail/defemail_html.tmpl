@@ -1,0 +1,30 @@
+<:wrap email/base.tmpl:>
+<p>Your online form has been submitted.</p>
+
+<:if User:><p>A registered user submitted the form:<br />
+<table>
+  <tr>
+    <th>Logon:</th>
+    <td><:user userId |h:></td>
+  </tr>
+  <tr>
+    <th>Email:</th>
+    <td><:user email |h:></td>
+  </tr>
+</table>
+<:or User:><p>The user wasn't registered/logged on when they submitted the form.</p>
+<:eif User
+:>
+<table>
+<:iterator begin fields:>
+<tr>
+  <th><:field description |h:></th>
+<td>
+<:ifField values:><:iterator begin values
+:>  <:value id |h:>: <:value name |h:><br />
+<:iterator end values
+:><:or:>  <:field value |h:> <:if Eq [field htmltype] "file":><a href="<:field url:>">(attached file)</a><:or Eq:><:eif Eq:>
+<:eif:>
+</td>
+  </tr><:iterator end fields:>
+</table>

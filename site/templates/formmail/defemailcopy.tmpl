@@ -1,0 +1,10 @@
+Your form has been submitted.
+
+<:iterator begin fields:>
+ <:field description:>:
+<:ifField values:><:iterator begin values
+:>  <:value id:>: <:value name:>
+<:iterator end values
+:><:or:>  <:field value:> <:if Eq [field htmltype] "file":>(file)<:or Eq:><:eif Eq:>
+<:eif:><:iterator end fields:>
+<:set_subject "Your" [cfg site name] "form submitted":>

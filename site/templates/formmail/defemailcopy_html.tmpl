@@ -1,0 +1,16 @@
+<:wrap email/base.tmpl:>
+<p>Your details have been submitted.</p>
+
+<table>
+<:iterator begin fields:>
+<tr>
+  <th><:field description |h:></th>
+<td>
+<:ifField values:><:iterator begin values
+:>  <:value id |h:>: <:value name |h:><br />
+<:iterator end values
+:><:or:>  <:field value |h:> <:if Eq [field htmltype] "file":>(file)<:or Eq:><:eif Eq:>
+<:eif:>
+</td>
+  </tr><:iterator end fields:>
+</table>

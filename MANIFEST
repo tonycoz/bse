@@ -606,6 +606,9 @@ site/templates/email/base.tmpl
 site/templates/extras.txt
 site/templates/formmail/defdone_base.tmpl
 site/templates/formmail/defemail.tmpl
+site/templates/formmail/defemail_html.tmpl
+site/templates/formmail/defemailcopy.tmpl
+site/templates/formmail/defemailcopy_html.tmpl
 site/templates/formmail/defquery_base.tmpl
 site/templates/helpicon.tmpl	Help icon for user templates
 site/templates/htmlemail/basic.tmpl

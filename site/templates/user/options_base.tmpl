@@ -81,6 +81,9 @@
           Address:</font></b></th>
         <td width="100%" nowrap="nowrap"> 
           <input type="text" name="email" value="<:last email:>" size="40" maxlength="127" /><:error_img email:>
+<p> 	<input type="hidden" name="saveTextOnlyMail" value="1" /><input type="checkbox" name="textOnlyMail" value="1"<:ifLast textOnlyMail:> 
+            checked<:or:><:eif:> /> <font face="Verdana, Arial, Helvetica, sans-serif" size="2">Text 
+            only E-mail messages</font></p>
         </td>
       </tr>
 <:if Cfg "site users" nopassword:>
@@ -88,6 +91,7 @@
         <th nowrap="nowrap" align="left"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Confirm Email:</font></b></th>
         <td width="100%" nowrap="nowrap"> 
           <input type="text" name="confirmemail" value="<:last confirmemail:>" size="40" maxlength="127" /><:error_img confirmemail:>
+
         </td>
       </tr>
 <:or Cfg:><:eif Cfg:>      
@@ -130,9 +134,7 @@
             your subscription. If you change your email address you will need 
             to reconfirm your subscription.</font></div>
           <:eif User:> <:eif AnySubs:> 
-          <p> 	<input type="hidden" name="saveTextOnlyMail" value="1" /><input type="checkbox" name="textOnlyMail" value="1"<:ifLast textOnlyMail:> 
-            checked<:or:><:eif:> /> <font face="Verdana, Arial, Helvetica, sans-serif" size="2">Text 
-            only E-mail messages</font></p>
+          
         </td>
       </tr>
       <:or Subscriptions:><:eif Subscriptions:> 
