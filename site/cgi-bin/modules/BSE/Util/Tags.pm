@@ -8,7 +8,7 @@ use vars qw(@EXPORT_OK @ISA);
 @ISA = qw(Exporter);
 require Exporter;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub _get_parms {
   my ($acts, $args) = @_;
@@ -835,6 +835,7 @@ sub secure {
   my $perms;
   return
     (
+     csrfp => [ \&tag_csrfp, $req ],
      ifUserCan => [ \&tag_if_user_can, $req, \$perms ],
      ifFormLogon => $req->session->{adminuserid},
      ifLoggedOn => [ \&tag_if_logged_on, $req ],

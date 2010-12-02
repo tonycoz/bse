@@ -3,7 +3,7 @@ use strict;
 
 # automatically generated
 
-our $hash = "2d95c46eac02c76e357bc8349c510bea";
+our $hash = "8068c57b4df2edcf5a77a347b1daf5aa";
 
 our %versions =
   (
@@ -203,7 +203,7 @@ our %versions =
   "BSE::Util::Prereq" => "1.001",
   "BSE::Util::SQL" => "1.000",
   "BSE::Util::Secure" => "1.000",
-  "BSE::Util::Tags" => "1.001",
+  "BSE::Util::Tags" => "1.002",
   "BSE::Util::Thumb" => "1.000",
   "BSE::Util::Valid" => "1.000",
   "BSE::Validate" => "1.000",
