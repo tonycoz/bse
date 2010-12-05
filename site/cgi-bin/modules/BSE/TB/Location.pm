@@ -2,7 +2,7 @@ package BSE::TB::Location;
 use strict;
 use base qw(Squirrel::Row);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub columns {
   return qw/id 
@@ -28,7 +28,7 @@ sub valid_fields {
 		 maxlength=>255, width=>50 },
      state => { description => 'State', required => 1,
 		maxlength=>80, width=>15 },
-     country => { description => 'Country', maxlength=>80 },
+     country => { description => 'Country', maxlength=>80, width => 30 },
      postcode => { description => 'Post Code', 
 		   rules => 'postcode', 
 		   required => 1, maxlength=>40, width=>5 },
