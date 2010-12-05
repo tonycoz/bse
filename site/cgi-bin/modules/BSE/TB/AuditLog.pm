@@ -6,7 +6,7 @@ use vars qw(@ISA $VERSION);
 use BSE::TB::AuditEntry;
 use Scalar::Util qw(blessed);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub rowClass {
   return 'BSE::TB::AuditEntry';
@@ -58,6 +58,7 @@ dump - an optional dump of debugging data
 sub log {
   my ($class, %opts) = @_;
 
+  require BSE::Util::SQL;
   my %entry =
     (
      when_at => BSE::Util::SQL::now_datetime(),
@@ -142,7 +143,6 @@ sub log {
     return;
   }
 
-  require BSE::Util::SQL;
   require BSE::TB::AuditLog;
   BSE::TB::AuditLog->make(%entry);
   keys %opts

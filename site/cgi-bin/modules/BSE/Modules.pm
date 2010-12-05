@@ -3,7 +3,7 @@ use strict;
 
 # automatically generated
 
-our $hash = "344642bb535b3de9740e7ef8c0bcbbab";
+our $hash = "ca1788c3a46c7ae9f946d59ece7153f6";
 
 our %versions =
   (
@@ -123,8 +123,8 @@ our %versions =
   "BSE::TB::ArticleFileMeta" => "1.000",
   "BSE::TB::ArticleFileMetas" => "1.000",
   "BSE::TB::ArticleFiles" => "1.000",
-  "BSE::TB::AuditEntry" => "1.001",
-  "BSE::TB::AuditLog" => "1.000",
+  "BSE::TB::AuditEntry" => "1.002",
+  "BSE::TB::AuditLog" => "1.001",
   "BSE::TB::BackgroundTask" => "1.000",
   "BSE::TB::BackgroundTasks" => "1.000",
   "BSE::TB::FileAccessLog" => "1.000",
