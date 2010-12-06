@@ -8,7 +8,7 @@ use vars qw(@EXPORT_OK @ISA);
 @ISA = qw(Exporter);
 require Exporter;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub _get_parms {
   my ($acts, $args) = @_;
@@ -103,7 +103,7 @@ sub tag_adminurl {
 
   my ($script, %params) = DevHelp::Tags->get_parms($args, $acts, $templater);
 
-  return $cfg->admin_url($script, \%params);
+  return escape_html($cfg->admin_url($script, \%params));
 }
 
 sub static {

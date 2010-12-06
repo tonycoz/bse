@@ -19,7 +19,7 @@ use BSE::Util::HTML qw(:default popup_menu);
 use BSE::Arrows;
 use BSE::Shop::Util qw(:payment order_item_opts nice_options);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 my %actions =
   (
@@ -301,7 +301,7 @@ sub product_form {
   
   my $cgi = $req->cgi;
   $message ||= $cgi->param('m') || $cgi->param('message') || '';
-  $template ||= 'add_product';
+  $template ||= 'admin/product_detail';
   my @catalogs;
   my $shopid = $req->cfg->entryErr('articles', 'shop');
   my @work = [ $shopid, '' ];
