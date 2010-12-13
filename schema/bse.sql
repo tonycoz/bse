@@ -1022,6 +1022,7 @@ create table bse_background_tasks (
 
 -- message catalog
 -- should only ever be loaded from data - maintained like code
+drop table if exists bse_msg_base;
 create table bse_msg_base (
   -- message identifier
   -- codebase/subsystem/messageid (message id can contain /)
@@ -1065,6 +1066,7 @@ create table bse_msg_base (
 -- default messages
 -- should only ever be loaded from data, though different priorities
 -- for the same message might be loaded from different data sets
+drop table if exists bse_msg_defaults;
 create table bse_msg_defaults (
   -- message identifier
   id varchar(80) not null,
@@ -1083,6 +1085,7 @@ create table bse_msg_defaults (
 );
 
 -- admin managed message base, should never be loaded from data
+drop table if exists bse_msg_managed;
 create table bse_msg_managed (
   -- message identifier
   id varchar(80) not null,
@@ -1097,6 +1100,7 @@ create table bse_msg_managed (
 );
 
 -- admin user saved UI state
+drop table if exists bse_admin_ui_state;
 create table bse_admin_ui_state (
   id integer not null auto_increment primary key,
   user_id integer not null,
