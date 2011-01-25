@@ -1,6 +1,6 @@
 package Squirrel::Table;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 use Carp;
 use strict;
@@ -239,8 +239,11 @@ sub _getBy_sth {
   }
 
   my $sql = "select " . join(",", @db_cols) .
-    " from " . $self->rowClass->table .
-      " where " . join(" and ", @conds);
+    " from " . $self->rowClass->table;
+
+  if (@conds) {
+    $sql .= " where " . join(" and ", @conds);
+  }
 
   $dh ||= BSE::DB->single;
   my $sth = $dh->{dbh}->prepare($sql)
@@ -408,11 +411,17 @@ sub doSpecial {
 sub all {
   my $self = shift;
 
-  unless (ref $self) {
-    $self = $self->new();
+  $dh ||= BSE::DB->single;
+  if (ref $self) {
+    return @{$self->{order}};
   }
-
-  return @{$self->{order}};
+  elsif ($dh->stmt_noerror($self)) {
+    $self = $self->new;
+    return @{$self->{order}};
+  }
+  else {
+    return $self->getBy();
+  }
 }
 
 sub query {

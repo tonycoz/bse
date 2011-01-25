@@ -3,7 +3,7 @@ use strict;
 
 # automatically generated
 
-our $hash = "f969af34708cac6dd628b5def649b873";
+our $hash = "b427f45a131deefc4db8e990c068cfe2";
 
 our %versions =
   (
@@ -14,7 +14,7 @@ our %versions =
   "Articles" => "1.000",
   "BSE::API" => "1.000",
   "BSE::Admin::StepParents" => "1.000",
-  "BSE::AdminLogon" => "1.000",
+  "BSE::AdminLogon" => "1.001",
   "BSE::AdminMenu" => "1.000",
   "BSE::AdminSiteUsers" => "1.000",
   "BSE::AdminUsers" => "1.000",
@@ -129,7 +129,7 @@ our %versions =
   "BSE::TB::BackgroundTasks" => "1.000",
   "BSE::TB::FileAccessLog" => "1.000",
   "BSE::TB::FileAccessLogEntry" => "1.000",
-  "BSE::TB::Image" => "1.000",
+  "BSE::TB::Image" => "1.001",
   "BSE::TB::Images" => "1.000",
   "BSE::TB::Location" => "1.001",
   "BSE::TB::Locations" => "1.000",
@@ -249,7 +249,7 @@ our %versions =
   "Squirrel::PGP5" => "1.000",
   "Squirrel::PGP6" => "1.000",
   "Squirrel::Row" => "1.001",
-  "Squirrel::Table" => "1.001",
+  "Squirrel::Table" => "1.002",
   "Squirrel::Template" => "1.000",
   "Util" => "1.000",
   );

@@ -7,7 +7,7 @@ use vars qw/@ISA/;
 use Carp qw(confess);
 use BSE::Util::HTML qw(escape_html);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub columns {
   return qw/id articleId image alt width height url displayOrder name
@@ -84,9 +84,18 @@ sub popimage {
 }
 
 sub image_url {
-  my ($im, $cfg) = @_;
+  my ($im) = @_;
 
   $im->src || "/images/$im->{image}";
+}
+
+sub json_data {
+  my ($self) = @_;
+
+  my $data = $self->data_only;
+  $data->{url} = $self->image_url;
+
+  return $data;
 }
 
 1;
