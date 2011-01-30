@@ -49,13 +49,13 @@ if ($perl ne '/usr/bin/perl') {
   }
 }
 
-system "cp -rf $dist/site/htdocs $instbase"
+system "cp -rf $dist/site/htdocs/* $instbase/htdocs"
   and die "Cannot copy htdocs";
-system "cp -rf $dist/site/templates $instbase"
+system "cp -rf $dist/site/templates/* $instbase/templates"
   and die "Cannot copy templates";
 system "cp -rf $dist/site/data $instbase"
   and die "Cannot copy data";
-system "cp -rf $dist/site/util $instbase";
+system "cp -rf $dist/site/util/ $instbase";
 
 print "Updating conf\n";
 # try to update Constants.pm
