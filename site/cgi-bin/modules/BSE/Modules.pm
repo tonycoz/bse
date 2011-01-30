@@ -3,7 +3,7 @@ use strict;
 
 # automatically generated
 
-our $hash = "b427f45a131deefc4db8e990c068cfe2";
+our $hash = "3bd9495c226d17a31609eeaa6c89815c";
 
 our %versions =
   (
@@ -250,7 +250,7 @@ our %versions =
   "Squirrel::PGP6" => "1.000",
   "Squirrel::Row" => "1.001",
   "Squirrel::Table" => "1.002",
-  "Squirrel::Template" => "1.000",
+  "Squirrel::Template" => "1.001",
   "Util" => "1.000",
   );
 

@@ -9,9 +9,7 @@ BEGIN {
   }
 }
 
-our $VERSION = "1.000";
-
-$VERSION="0.09";
+our $VERSION = "1.001";
 
 sub new {
   my ($class, %opts) = @_;
@@ -54,7 +52,8 @@ sub low_perform {
   }
 
   if (exists $acts->{$func}) {
-    $args =~ s/^\s+|\s+$//g;
+    $args =~ s/^\s+//;
+    $args =~ s/\s+$//;
     my $value;
     my $action = $acts->{$func};
     if (ref $action) {
