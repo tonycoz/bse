@@ -3,7 +3,7 @@ use strict;
 
 # automatically generated
 
-our $hash = "3bd9495c226d17a31609eeaa6c89815c";
+our $hash = "3610d449fe10da4aab3c760682dc184d";
 
 our %versions =
   (
@@ -234,7 +234,7 @@ our %versions =
   "DevHelp::Tags" => "1.000",
   "DevHelp::Tags::Iterate" => "1.003",
   "DevHelp::Validate" => "1.000",
-  "Generate" => "1.000",
+  "Generate" => "1.001",
   "Generate::Article" => "1.000",
   "Generate::Catalog" => "1.000",
   "Generate::Product" => "1.000",

@@ -11,7 +11,7 @@ use BSE::Util::Iterate;
 use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 my $excerptSize = 300;
 
@@ -324,30 +324,37 @@ sub iter_kids_of {
 
 my $cols_re; # cache for below
 
-sub _get_filter {
-  my ($self, $rargs) = @_;
+{
+  my %expr_cache;
 
-  if ($$rargs =~ s/filter:\s+(.*)\z//s) {
-    my $expr = $1;
-    my $orig_expr = $expr;
-    unless ($cols_re) {
-      my $cols_expr = '(' . join('|', Article->columns) . ')';
-      $cols_re = qr/\[$cols_expr\]/;
+  sub _get_filter {
+    my ($self, $rargs) = @_;
+    
+    if ($$rargs =~ s/filter:\s+(.*)\z//s) {
+      my $expr = $1;
+      my $orig_expr = $expr;
+      unless ($cols_re) {
+	my $cols_expr = '(' . join('|', Article->columns) . ')';
+	$cols_re = qr/\[$cols_expr\]/;
+      }
+      $expr =~ s/$cols_re/\$article->{$1}/g;
+      $expr =~ s/ARTICLE/\$article/g;
+      #print STDERR "Expr $expr\n";
+      my $filter = $expr_cache{$expr};
+      unless ($filter) {
+	$filter = eval 'sub { my $article = shift; '.$expr.'; }';
+	if ($@) {
+	  print STDERR "** Failed to compile filter expression >>$expr<< built from >>$orig_expr<<\n";
+	  return;
+	}
+	$expr_cache{$expr} = $filter;
+      }
+      
+      return $filter;
     }
-    $expr =~ s/$cols_re/\$article->{$1}/g;
-    $expr =~ s/ARTICLE/\$article/g;
-    #print STDERR "Expr $expr\n";
-    my $filter;
-    $filter = eval 'sub { my $article = shift; '.$expr.'; }';
-    if ($@) {
-      print STDERR "** Failed to compile filter expression >>$expr<< built from >>$orig_expr<<\n";
+    else {
       return;
     }
-
-    return $filter;
-  }
-  else {
-    return;
   }
 }
 
