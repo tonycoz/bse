@@ -11,7 +11,7 @@ use BSE::Util::Iterate;
 use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 my $excerptSize = 300;
 
@@ -494,9 +494,9 @@ sub _sthumbimage_low {
 }
 
 sub tag_gthumbimage {
-  my ($self, $rcurrent, $args) = @_;
+  my ($self, $rcurrent, $args, $acts, $name, $templater) = @_;
 
-  my ($geometry_id, $id, $field) = split ' ', $args;
+  my ($geometry_id, $id, $field) = DevHelp::Tags->get_parms($args, $acts, $templater);
 
   return $self->do_gthumbimage($geometry_id, $id, $field, $$rcurrent);
 }
