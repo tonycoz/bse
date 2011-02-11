@@ -125,3 +125,6 @@ manicheck:
 
 filecheck:
 	perl -MExtUtils::Manifest=filecheck -e 'filecheck()'
+
+manifest:
+	perl -MExtUtils::Manifest=mkmanifest -e mkmanifest

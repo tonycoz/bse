@@ -2,6 +2,8 @@
 .*~
 \bCVS\b
 \.cvsignore$
+^\.svn/
+/\.svn/
 ^test\.cfg$
 ^test-.*cfg$
 ^nswfitc\.cfg$
@@ -9,3 +11,4 @@
 ^install.perl$
 ^schema/data/article\.txt$
 ^schema/data/demoload\.pl$
+\.bak$
