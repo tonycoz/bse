@@ -3,22 +3,24 @@ COPYING
 INSTALL.html
 INSTALL.pod
 INSTALL.txt
+localinst.perl			# simple test installer
+Makefile
 MANIFEST
 MANIFEST.SKIP
-Makefile
+pod2htmd.tmp
+pod2htmi.tmp
 README
-localinst.perl  # simple test installer
 schema/article.txt
 schema/bse.sql
 schema/mssql.sql
-schema/mysql_build.pl   # builds site/util/mysql.str
+schema/mysql_build.pl		# builds site/util/mysql.str
 site/cgi-bin/admin/add.pl
 site/cgi-bin/admin/admin.pl
 site/cgi-bin/admin/admin_seminar.pl
 site/cgi-bin/admin/adminusers.pl
 site/cgi-bin/admin/backmon.pl
-site/cgi-bin/admin/bse_timeout.pl
 site/cgi-bin/admin/bse_modules.pl
+site/cgi-bin/admin/bse_timeout.pl
 site/cgi-bin/admin/changepw.pl
 site/cgi-bin/admin/datadump.pl
 site/cgi-bin/admin/generate.pl
@@ -44,6 +46,7 @@ site/cgi-bin/api.pl
 site/cgi-bin/bse.cfg
 site/cgi-bin/fileprogress.fcgi
 site/cgi-bin/fileprogress.pl
+site/cgi-bin/fmail.fcgi
 site/cgi-bin/fmail.pl
 site/cgi-bin/image.pl
 site/cgi-bin/interest.pl
@@ -52,12 +55,12 @@ site/cgi-bin/modules/Apache/Session/DBIreal.pm
 site/cgi-bin/modules/Apache/Session/Store/DBIreal.pm
 site/cgi-bin/modules/Article.pm
 site/cgi-bin/modules/Articles.pm
-site/cgi-bin/modules/BSE/API.pm
 site/cgi-bin/modules/BSE/Admin/StepParents.pm
 site/cgi-bin/modules/BSE/AdminLogon.pm
 site/cgi-bin/modules/BSE/AdminMenu.pm
-site/cgi-bin/modules/BSE/AdminUsers.pm
 site/cgi-bin/modules/BSE/AdminSiteUsers.pm
+site/cgi-bin/modules/BSE/AdminUsers.pm
+site/cgi-bin/modules/BSE/API.pm
 site/cgi-bin/modules/BSE/Arrows.pm
 site/cgi-bin/modules/BSE/Cache.pm
 site/cgi-bin/modules/BSE/Cache/Cache.pm
@@ -65,15 +68,15 @@ site/cgi-bin/modules/BSE/Cache/CHI.pm
 site/cgi-bin/modules/BSE/Cache/Memcached.pm
 site/cgi-bin/modules/BSE/Cfg.pm
 site/cgi-bin/modules/BSE/CfgInfo.pm
+site/cgi-bin/modules/BSE/CGI.pm
 site/cgi-bin/modules/BSE/ChangePW.pm
 site/cgi-bin/modules/BSE/ComposeMail.pm
+site/cgi-bin/modules/BSE/Countries.pm
 site/cgi-bin/modules/BSE/Custom.pm
 site/cgi-bin/modules/BSE/CustomBase.pm
 site/cgi-bin/modules/BSE/DB.pm
-#site/cgi-bin/modules/BSE/DB/MSSQL.pm
+site/cgi-bin/modules/BSE/DB/MSSQL.pm
 site/cgi-bin/modules/BSE/DB/Mysql.pm
-site/cgi-bin/modules/BSE/CGI.pm
-site/cgi-bin/modules/BSE/Countries.pm
 site/cgi-bin/modules/BSE/Dynamic/Article.pm
 site/cgi-bin/modules/BSE/Dynamic/Catalog.pm
 site/cgi-bin/modules/BSE/Dynamic/Product.pm
@@ -88,6 +91,7 @@ site/cgi-bin/modules/BSE/EmailBlackEntry.pm
 site/cgi-bin/modules/BSE/EmailBlacklist.pm
 site/cgi-bin/modules/BSE/EmailRequest.pm
 site/cgi-bin/modules/BSE/EmailRequests.pm
+site/cgi-bin/modules/BSE/FileEditor.pm
 site/cgi-bin/modules/BSE/FileHandler/Base.pm
 site/cgi-bin/modules/BSE/FileHandler/Default.pm
 site/cgi-bin/modules/BSE/FileHandler/FLV.pm
@@ -96,24 +100,23 @@ site/cgi-bin/modules/BSE/Formatter.pm
 site/cgi-bin/modules/BSE/Formatter/Article.pm
 site/cgi-bin/modules/BSE/Formatter/Subscription.pm
 site/cgi-bin/modules/BSE/Generate/Seminar.pm
-# site/cgi-bin/modules/BSE/FileEditor.pm
-#site/cgi-bin/modules/BSE/Handler/Base.pm
-#site/cgi-bin/modules/BSE/Handler/Page.pm
+site/cgi-bin/modules/BSE/Handler/Base.pm
+site/cgi-bin/modules/BSE/Handler/Page.pm
 site/cgi-bin/modules/BSE/ImageHandler/Base.pm
 site/cgi-bin/modules/BSE/ImageHandler/Flash.pm
 site/cgi-bin/modules/BSE/ImageHandler/Img.pm
+site/cgi-bin/modules/BSE/Importer.pm
 site/cgi-bin/modules/BSE/ImportSourceBase.pm
 site/cgi-bin/modules/BSE/ImportSourceXLS.pm
 site/cgi-bin/modules/BSE/ImportTargetArticle.pm
 site/cgi-bin/modules/BSE/ImportTargetBase.pm
 site/cgi-bin/modules/BSE/ImportTargetProduct.pm
-site/cgi-bin/modules/BSE/Importer.pm
-site/cgi-bin/modules/BSE/Index/BSE.pm
 site/cgi-bin/modules/BSE/Index/Base.pm
+site/cgi-bin/modules/BSE/Index/BSE.pm
 site/cgi-bin/modules/BSE/Jobs/AuditClean.pm
 site/cgi-bin/modules/BSE/Mail.pm
-site/cgi-bin/modules/BSE/Mail/SMTP.pm
 site/cgi-bin/modules/BSE/Mail/Sendmail.pm
+site/cgi-bin/modules/BSE/Mail/SMTP.pm
 site/cgi-bin/modules/BSE/Message.pm
 site/cgi-bin/modules/BSE/MessageScanner.pm
 site/cgi-bin/modules/BSE/Modules.pm	generated list of module versions
@@ -125,9 +128,9 @@ site/cgi-bin/modules/BSE/Password/CryptMD5.pm
 site/cgi-bin/modules/BSE/Password/CryptSHA256.pm
 site/cgi-bin/modules/BSE/Password/Plain.pm
 site/cgi-bin/modules/BSE/Passwords.pm
+site/cgi-bin/modules/BSE/PayPal.pm
 site/cgi-bin/modules/BSE/Permissions.pm
 site/cgi-bin/modules/BSE/ProductImportXLS.pm
-site/cgi-bin/modules/BSE/PayPal.pm
 site/cgi-bin/modules/BSE/Report.pm
 site/cgi-bin/modules/BSE/Request.pm
 site/cgi-bin/modules/BSE/Request/Base.pm
@@ -140,11 +143,11 @@ site/cgi-bin/modules/BSE/Shop/Util.pm
 site/cgi-bin/modules/BSE/Sort.pm
 site/cgi-bin/modules/BSE/Storage/AmazonS3.pm
 site/cgi-bin/modules/BSE/Storage/Base.pm
+site/cgi-bin/modules/BSE/Storage/FTP.pm
 site/cgi-bin/modules/BSE/Storage/LocalBase.pm
 site/cgi-bin/modules/BSE/Storage/LocalFiles.pm
 site/cgi-bin/modules/BSE/Storage/LocalImages.pm
 site/cgi-bin/modules/BSE/Storage/LocalThumbs.pm
-site/cgi-bin/modules/BSE/Storage/FTP.pm
 site/cgi-bin/modules/BSE/StorageMgr/Base.pm
 site/cgi-bin/modules/BSE/StorageMgr/Files.pm
 site/cgi-bin/modules/BSE/StorageMgr/Images.pm
@@ -153,6 +156,7 @@ site/cgi-bin/modules/BSE/SubscribedUser.pm
 site/cgi-bin/modules/BSE/SubscribedUsers.pm
 site/cgi-bin/modules/BSE/SubscriptionType.pm
 site/cgi-bin/modules/BSE/SubscriptionTypes.pm
+site/cgi-bin/modules/BSE/TagFormats.pm
 site/cgi-bin/modules/BSE/TB/AdminBase.pm
 site/cgi-bin/modules/BSE/TB/AdminBases.pm
 site/cgi-bin/modules/BSE/TB/AdminGroup.pm
@@ -165,12 +169,12 @@ site/cgi-bin/modules/BSE/TB/AdminUIState.pm
 site/cgi-bin/modules/BSE/TB/AdminUIStates.pm
 site/cgi-bin/modules/BSE/TB/AdminUser.pm
 site/cgi-bin/modules/BSE/TB/AdminUsers.pm
-site/cgi-bin/modules/BSE/TB/AuditEntry.pm
-site/cgi-bin/modules/BSE/TB/AuditLog.pm
 site/cgi-bin/modules/BSE/TB/ArticleFile.pm
 site/cgi-bin/modules/BSE/TB/ArticleFileMeta.pm
 site/cgi-bin/modules/BSE/TB/ArticleFileMetas.pm
 site/cgi-bin/modules/BSE/TB/ArticleFiles.pm
+site/cgi-bin/modules/BSE/TB/AuditEntry.pm
+site/cgi-bin/modules/BSE/TB/AuditLog.pm
 site/cgi-bin/modules/BSE/TB/BackgroundTask.pm
 site/cgi-bin/modules/BSE/TB/BackgroundTasks.pm
 site/cgi-bin/modules/BSE/TB/FileAccessLog.pm
@@ -180,23 +184,23 @@ site/cgi-bin/modules/BSE/TB/Images.pm
 site/cgi-bin/modules/BSE/TB/Location.pm
 site/cgi-bin/modules/BSE/TB/Locations.pm
 site/cgi-bin/modules/BSE/TB/Order.pm
-site/cgi-bin/modules/BSE/TB/Orders.pm
 site/cgi-bin/modules/BSE/TB/OrderItem.pm
 site/cgi-bin/modules/BSE/TB/OrderItemOption.pm
 site/cgi-bin/modules/BSE/TB/OrderItemOptions.pm
 site/cgi-bin/modules/BSE/TB/OrderItems.pm
+site/cgi-bin/modules/BSE/TB/Orders.pm
 site/cgi-bin/modules/BSE/TB/OwnedFile.pm
 site/cgi-bin/modules/BSE/TB/OwnedFiles.pm
-site/cgi-bin/modules/BSE/TB/Seminar.pm
 site/cgi-bin/modules/BSE/TB/ProductOption.pm
 site/cgi-bin/modules/BSE/TB/ProductOptions.pm
 site/cgi-bin/modules/BSE/TB/ProductOptionValue.pm
 site/cgi-bin/modules/BSE/TB/ProductOptionValues.pm
+site/cgi-bin/modules/BSE/TB/Seminar.pm
 site/cgi-bin/modules/BSE/TB/SeminarBooking.pm
 site/cgi-bin/modules/BSE/TB/SeminarBookings.pm
+site/cgi-bin/modules/BSE/TB/Seminars.pm
 site/cgi-bin/modules/BSE/TB/SeminarSession.pm
 site/cgi-bin/modules/BSE/TB/SeminarSessions.pm
-site/cgi-bin/modules/BSE/TB/Seminars.pm
 site/cgi-bin/modules/BSE/TB/Site.pm
 site/cgi-bin/modules/BSE/TB/SiteCommon.pm
 site/cgi-bin/modules/BSE/TB/SiteUserGroup.pm
@@ -204,25 +208,24 @@ site/cgi-bin/modules/BSE/TB/SiteUserGroups.pm
 site/cgi-bin/modules/BSE/TB/Subscription.pm
 site/cgi-bin/modules/BSE/TB/Subscription/Calc.pm
 site/cgi-bin/modules/BSE/TB/Subscriptions.pm
-site/cgi-bin/modules/BSE/TagFormats.pm
 site/cgi-bin/modules/BSE/Template.pm
 site/cgi-bin/modules/BSE/Thumb/Imager.pm
 site/cgi-bin/modules/BSE/Thumb/Imager/Colourize.pm
 site/cgi-bin/modules/BSE/Thumb/Imager/RandomCrop.pm
 site/cgi-bin/modules/BSE/ThumbLow.pm
-site/cgi-bin/modules/BSE/UI/API.pm
-site/cgi-bin/modules/BSE/UI/Background.pm
 site/cgi-bin/modules/BSE/UI/AdminAudit.pm
 site/cgi-bin/modules/BSE/UI/AdminDispatch.pm
-site/cgi-bin/modules/BSE/UI/AdminModules.pm
 site/cgi-bin/modules/BSE/UI/AdminMessages.pm
+site/cgi-bin/modules/BSE/UI/AdminModules.pm
 site/cgi-bin/modules/BSE/UI/AdminNewsletter.pm
 site/cgi-bin/modules/BSE/UI/AdminPregen.pm
 site/cgi-bin/modules/BSE/UI/AdminReport.pm
-site/cgi-bin/modules/BSE/UI/AdminSendEmail.pm
 site/cgi-bin/modules/BSE/UI/AdminSeminar.pm
+site/cgi-bin/modules/BSE/UI/AdminSendEmail.pm
 site/cgi-bin/modules/BSE/UI/AdminShop.pm
 site/cgi-bin/modules/BSE/UI/Affiliate.pm
+site/cgi-bin/modules/BSE/UI/API.pm
+site/cgi-bin/modules/BSE/UI/Background.pm
 site/cgi-bin/modules/BSE/UI/Dispatch.pm
 site/cgi-bin/modules/BSE/UI/FileProgress.pm
 site/cgi-bin/modules/BSE/UI/Formmail.pm
@@ -242,13 +245,13 @@ site/cgi-bin/modules/BSE/UI/User.pm
 site/cgi-bin/modules/BSE/UI/UserCommon.pm
 site/cgi-bin/modules/BSE/UserReg.pm
 site/cgi-bin/modules/BSE/Util/ContentType.pm
-site/cgi-bin/modules/BSE/Util/DynSort.pm
 site/cgi-bin/modules/BSE/Util/DynamicTags.pm
+site/cgi-bin/modules/BSE/Util/DynSort.pm
 site/cgi-bin/modules/BSE/Util/HTML.pm
 site/cgi-bin/modules/BSE/Util/Iterate.pm
 site/cgi-bin/modules/BSE/Util/Prereq.pm
-site/cgi-bin/modules/BSE/Util/SQL.pm
 site/cgi-bin/modules/BSE/Util/Secure.pm
+site/cgi-bin/modules/BSE/Util/SQL.pm
 site/cgi-bin/modules/BSE/Util/Tags.pm
 site/cgi-bin/modules/BSE/Util/Thumb.pm
 site/cgi-bin/modules/BSE/Util/Valid.pm
@@ -258,11 +261,11 @@ site/cgi-bin/modules/BSE/WebUtil.pm
 site/cgi-bin/modules/Constants.pm
 site/cgi-bin/modules/Courier.pm
 site/cgi-bin/modules/Courier/AustraliaPost.pm
-site/cgi-bin/modules/Courier/Fastway.pm
-site/cgi-bin/modules/Courier/AustraliaPost/Standard.pm
-site/cgi-bin/modules/Courier/AustraliaPost/Express.pm
 site/cgi-bin/modules/Courier/AustraliaPost/Air.pm
+site/cgi-bin/modules/Courier/AustraliaPost/Express.pm
 site/cgi-bin/modules/Courier/AustraliaPost/Sea.pm
+site/cgi-bin/modules/Courier/AustraliaPost/Standard.pm
+site/cgi-bin/modules/Courier/Fastway.pm
 site/cgi-bin/modules/Courier/Fastway/Road.pm
 site/cgi-bin/modules/Courier/Fastway/Satchel.pm
 site/cgi-bin/modules/Courier/Null.pm
@@ -275,6 +278,7 @@ site/cgi-bin/modules/DevHelp/HTML.pm
 site/cgi-bin/modules/DevHelp/LoaderData.pm
 site/cgi-bin/modules/DevHelp/Payments.pod
 site/cgi-bin/modules/DevHelp/Payments/Inpho.pm
+site/cgi-bin/modules/DevHelp/Payments/SecurePay.pm
 site/cgi-bin/modules/DevHelp/Payments/SecurePayXML.pm
 site/cgi-bin/modules/DevHelp/Payments/Test.pm
 site/cgi-bin/modules/DevHelp/Report.pm
@@ -286,6 +290,10 @@ site/cgi-bin/modules/Generate/Article.pm
 site/cgi-bin/modules/Generate/Catalog.pm
 site/cgi-bin/modules/Generate/Product.pm
 site/cgi-bin/modules/Generate/Subscription.pm
+site/cgi-bin/modules/Order.pm
+site/cgi-bin/modules/OrderItem.pm
+site/cgi-bin/modules/OrderItems.pm
+site/cgi-bin/modules/Orders.pm
 site/cgi-bin/modules/OtherParent.pm
 site/cgi-bin/modules/OtherParents.pm
 site/cgi-bin/modules/Product.pm
@@ -293,7 +301,7 @@ site/cgi-bin/modules/Products.pm
 site/cgi-bin/modules/SiteUser.pm
 site/cgi-bin/modules/SiteUsers.pm
 site/cgi-bin/modules/Squirrel/GPG.pm
-#site/cgi-bin/modules/Squirrel/ImageEditor.pm
+site/cgi-bin/modules/Squirrel/ImageEditor.pm
 site/cgi-bin/modules/Squirrel/PGP5.pm
 site/cgi-bin/modules/Squirrel/PGP6.pm
 site/cgi-bin/modules/Squirrel/Row.pm
@@ -305,40 +313,37 @@ site/cgi-bin/nuser.pl
 site/cgi-bin/page.fcgi
 site/cgi-bin/page.pl
 site/cgi-bin/printable.pl
-site/cgi-bin/search.pl
 site/cgi-bin/search.fcgi
+site/cgi-bin/search.pl
 site/cgi-bin/shop.fcgi
 site/cgi-bin/shop.pl
 site/cgi-bin/thumb.fcgi
 site/cgi-bin/thumb.pl
 site/cgi-bin/user.pl
-site/data/stopwords.txt
 site/data/db/bse_background_tasks.data
 site/data/db/bse_background_tasks.pkey
-site/data/db/bse_msg_base.pkey
 site/data/db/bse_msg_base.data
-site/data/db/bse_msg_defaults.pkey
+site/data/db/bse_msg_base.pkey
 site/data/db/bse_msg_defaults.data
+site/data/db/bse_msg_defaults.pkey
 site/data/db/sql_statements.data
 site/data/db/sql_statements.pkey
-site/docs/BSE::UI::Affiliate.html
-site/docs/Generate.html
-site/docs/Generate::Article.html
-site/docs/Generate::Catalog.html
-site/docs/Generate::Product.html
-site/docs/Makefile
-site/docs/TODO.html
-site/docs/TODO.pod
-site/docs/add.html
+site/data/stopwords.txt
 site/docs/access.html
 site/docs/access.pod
+site/docs/add.html
 site/docs/affiliate.html
+site/docs/bse-unicode.pod
 site/docs/bse.html
 site/docs/bse.pod
+site/docs/BSE::UI::Affiliate.html
+site/docs/bsedbschema.odt
+site/docs/bsedbschema.pdf
 site/docs/bugs.html
 site/docs/bugs.pod
 site/docs/config.html
 site/docs/config.pod
+site/docs/custom.pod
 site/docs/dynamic.html
 site/docs/dynamic.pod
 site/docs/formmail.html
@@ -346,15 +351,23 @@ site/docs/formmail.pod
 site/docs/future_plans.html
 site/docs/future_plans.pod
 site/docs/gen.html
+site/docs/Generate.html
+site/docs/Generate::Article.html
+site/docs/Generate::Catalog.html
+site/docs/Generate::Product.html
 site/docs/makedocs
 site/docs/makedocs.html
+site/docs/Makefile
+site/docs/paypal.pod
+site/docs/pod2htmd.tmp
+site/docs/pod2htmi.tmp
 site/docs/search.html
 site/docs/secure.html
 site/docs/secure.pod
 site/docs/shop.html
+site/docs/shopadmin.html
 site/docs/siteusers.html
 site/docs/siteusers.pod
-site/docs/shopadmin.html
 site/docs/standard.html
 site/docs/standard.pod
 site/docs/storages.html
@@ -363,6 +376,8 @@ site/docs/templates.html
 site/docs/templates.pod
 site/docs/thumbnails.html
 site/docs/thumbnails.pod
+site/docs/TODO.html
+site/docs/TODO.pod
 site/docs/upgrade_mysql.html
 site/docs/userupdate.html
 site/docs/userupdate.pod
@@ -407,6 +422,7 @@ site/htdocs/images/store/left_bottom_corner_line.gif
 site/htdocs/images/store/left_end_cap_solid.gif
 site/htdocs/images/store/price_cap.gif
 site/htdocs/images/store/quick_add.gif
+site/htdocs/images/store/quick_add_hover.gif
 site/htdocs/images/store/right_bottom_corner_line.gif
 site/htdocs/images/store/right_end_cap_solid.gif
 site/htdocs/images/titles/advanced_search.gif
@@ -416,7 +432,6 @@ site/htdocs/images/titles/the_shop.gif
 site/htdocs/images/titles/your_site.gif
 site/htdocs/images/trans_pixel.gif
 site/htdocs/images/videoclose.png
-# site/htdocs/js/admin_dragdrop.js
 site/htdocs/js/admin_messages.js
 site/htdocs/js/admin_prodopts.js
 site/htdocs/js/admin_tools.js
@@ -436,47 +451,46 @@ site/htdocs/js/slider.js
 site/htdocs/js/sound.js
 site/htdocs/js/swfobject.js
 site/htdocs/swf/flvplayer.swf
-#  site/htdocs/shop created by the Makefile
 site/templates/1/shop_multicat.tmpl
 site/templates/1/sitemap.tmpl
-# site/templates/admin/add_product.tmpl
+site/templates/admin/add_product.tmpl
 site/templates/admin/addattendee1.tmpl
 site/templates/admin/addattendee2.tmpl
 site/templates/admin/addgroup.tmpl
 site/templates/admin/adduser.tmpl
-# site/templates/admin/article_custom.tmpl
+site/templates/admin/article_custom.tmpl
 site/templates/admin/article_img.tmpl
 site/templates/admin/back/detail.tmpl
 site/templates/admin/back/list.tmpl
 site/templates/admin/base.tmpl
-site/templates/admin/catalog.tmpl  # embedded in the shopadmin catalog/product display
-# site/templates/admin/catalog_custom.tmpl
+site/templates/admin/catalog.tmpl	# embedded in the shopadmin catalog/product display
+site/templates/admin/catalog_custom.tmpl
 site/templates/admin/changepw.tmpl
 site/templates/admin/edit_0.tmpl
 site/templates/admin/edit_1.tmpl
-# site/templates/admin/edit_2.tmpl
-# site/templates/admin/edit_3.tmpl
-# site/templates/admin/edit_4.tmpl
-# site/templates/admin/edit_5.tmpl
 site/templates/admin/edit_catalog.tmpl
-# site/templates/admin/edit_dragdrop.tmpl
 site/templates/admin/edit_groups.tmpl
-# site/templates/admin/edit_kidsof.tmpl
 site/templates/admin/edit_prodopts.tmpl
 site/templates/admin/edit_product.tmpl
 site/templates/admin/edit_seminar.tmpl
-site/templates/admin/edit_semsessions.tmpl
 site/templates/admin/edit_semsessadd.tmpl
+site/templates/admin/edit_semsessions.tmpl
 site/templates/admin/edit_steps.tmpl
 site/templates/admin/error.tmpl
-site/templates/admin/filelist.tmpl
 site/templates/admin/file_edit.tmpl
+site/templates/admin/filelist.tmpl
 site/templates/admin/grouplist.tmpl
 site/templates/admin/helpicon.tmpl	Help icon template for admin templates
 site/templates/admin/image_edit.tmpl	Edit a single image
-site/templates/admin/interestemail.tmpl
-site/templates/admin/include/audithead.tmpl
 site/templates/admin/include/auditentry.tmpl
+site/templates/admin/include/audithead.tmpl
+site/templates/admin/interestemail.tmpl
+site/templates/admin/locations/add.tmpl
+site/templates/admin/locations/delete.tmpl
+site/templates/admin/locations/edit.tmpl
+site/templates/admin/locations/list.tmpl
+site/templates/admin/locations/view.tmpl
+site/templates/admin/locations/view_sessions.tmpl
 site/templates/admin/log/entry.tmpl
 site/templates/admin/log/log.tmpl
 site/templates/admin/logon.tmpl
@@ -485,15 +499,9 @@ site/templates/admin/memberupdate/preview.tmpl
 site/templates/admin/memberupdate/request.tmpl
 site/templates/admin/menu.tmpl
 site/templates/admin/menu_adv.tmpl
+site/templates/admin/menu_custom.tmpl
 site/templates/admin/modules.tmpl
 site/templates/admin/msgs/index.tmpl
-# site/templates/admin/menu_custom.tmpl
-site/templates/admin/locations/add.tmpl
-site/templates/admin/locations/delete.tmpl
-site/templates/admin/locations/edit.tmpl
-site/templates/admin/locations/list.tmpl
-site/templates/admin/locations/view.tmpl
-site/templates/admin/locations/view_sessions.tmpl
 site/templates/admin/order_detail.tmpl
 site/templates/admin/order_list.tmpl
 site/templates/admin/order_list_filled.tmpl
@@ -501,11 +509,11 @@ site/templates/admin/order_list_incomplete.tmpl
 site/templates/admin/order_list_unfilled.tmpl
 site/templates/admin/pregen/index.tmpl
 site/templates/admin/pregen/show.tmpl
-# site/templates/admin/product_custom.tmpl
 site/templates/admin/prodopt_delete.tmpl
 site/templates/admin/prodopt_edit.tmpl
 site/templates/admin/prodopt_value_delete.tmpl
 site/templates/admin/prodopt_value_edit.tmpl
+site/templates/admin/product_custom.tmpl
 site/templates/admin/product_detail.tmpl
 site/templates/admin/product_list.tmpl
 site/templates/admin/product_menu.tmpl
@@ -521,27 +529,30 @@ site/templates/admin/semsessiondel.tmpl
 site/templates/admin/semsessionedit.tmpl
 site/templates/admin/semsessionrollcall.tmpl
 site/templates/admin/showgroup.tmpl
-site/templates/admin/showgroupart.tmpl
 site/templates/admin/showgroup_del.tmpl
 site/templates/admin/showgroup_glob.tmpl
+site/templates/admin/showgroupart.tmpl
 site/templates/admin/showuser.tmpl
-site/templates/admin/showuserart.tmpl
 site/templates/admin/showuser_del.tmpl
 site/templates/admin/showuser_glob.tmpl
-# site/templates/admin/subs/add.tmpl
+site/templates/admin/showuserart.tmpl
+site/templates/admin/subs/add.tmpl
 site/templates/admin/subs/delete.tmpl
 site/templates/admin/subs/edit.tmpl
 site/templates/admin/subs/filter_preview.tmpl
 site/templates/admin/subs/list.tmpl
-site/templates/admin/subs/sending.tmpl
 site/templates/admin/subs/send_error.tmpl
 site/templates/admin/subs/send_form.tmpl
+site/templates/admin/subs/sending.tmpl
 site/templates/admin/subs/start_send.tmpl
 site/templates/admin/subscr/add.tmpl
 site/templates/admin/subscr/detail.tmpl
 site/templates/admin/subscr/detail_delete.tmpl
 site/templates/admin/subscr/edit.tmpl
 site/templates/admin/subscr/list.tmpl
+site/templates/admin/user_book_seminar.tmpl
+site/templates/admin/user_edit_seminar.tmpl
+site/templates/admin/user_unbook_seminar.tmpl
 site/templates/admin/userlist.tmpl
 site/templates/admin/users/add.tmpl
 site/templates/admin/users/add_group_file.tmpl
@@ -551,8 +562,8 @@ site/templates/admin/users/delete_group_file.tmpl
 site/templates/admin/users/delete_user_file.tmpl
 site/templates/admin/users/edit.tmpl
 site/templates/admin/users/edit_files.tmpl
-site/templates/admin/users/edit_groups.tmpl
 site/templates/admin/users/edit_group_file.tmpl
+site/templates/admin/users/edit_groups.tmpl
 site/templates/admin/users/edit_orders.tmpl
 site/templates/admin/users/edit_user_file.tmpl
 site/templates/admin/users/fileaccess.tmpl
@@ -570,16 +581,15 @@ site/templates/admin/users/list_low.tmpl
 site/templates/admin/users/view.tmpl
 site/templates/admin/users/view_bookings.tmpl
 site/templates/admin/users/view_confirm.tmpl
-site/templates/admin/user_book_seminar.tmpl
-site/templates/admin/user_edit_seminar.tmpl
-site/templates/admin/user_unbook_seminar.tmpl
 site/templates/admin/xbase.tmpl
 site/templates/affiliate.tmpl
+site/templates/article_edit.tmpl
 site/templates/base.tmpl
 site/templates/cart_base.tmpl
 site/templates/catalog.tmpl
 site/templates/catalog/multi.tmpl
 site/templates/catalog/shop_subcat.tmpl
+site/templates/checkout_base.tmpl
 site/templates/checkoutcard_base.tmpl
 site/templates/checkoutconfirm_base.tmpl
 site/templates/checkoutfinal_base.tmpl
@@ -595,14 +605,15 @@ site/templates/common/rssbase.tmpl
 site/templates/common/sidebar.tmpl
 site/templates/common/sidebar_section.tmpl
 site/templates/common/vidgallery.tmpl
-# site/templates/custom/checkout.include
-# site/templates/custom/order_detail.include
+site/templates/custom/checkout.include
+site/templates/custom/order_detail.include
 site/templates/custom/order_detail_payment.include
-# site/templates/custom/payment_type.include
+site/templates/custom/payment_type.include
 site/templates/custom/payment_type_email.include
-site/templates/error_base.tmpl
-site/templates/email/email.css
 site/templates/email/base.tmpl
+site/templates/email/email.css
+site/templates/error.tmpl
+site/templates/error_base.tmpl
 site/templates/extras.txt
 site/templates/formmail/defdone_base.tmpl
 site/templates/formmail/defemail.tmpl
@@ -641,6 +652,7 @@ site/templates/noartbase.tmpl
 site/templates/printable/printable.tmpl
 site/templates/printable/wap.tmpl
 site/templates/search_base.tmpl
+site/templates/section_edit.tmpl
 site/templates/seminars/seminar.tmpl
 site/templates/shop_help.tmpl
 site/templates/shop_sect.tmpl
@@ -659,10 +671,10 @@ site/templates/user/admin_book_seminar.tmpl
 site/templates/user/admin_edit_seminar.tmpl
 site/templates/user/admin_unbook_seminar.tmpl
 site/templates/user/alreadyblacklisted_base.tmpl
-site/templates/user/base_bookingdetail.tmpl
-site/templates/user/base_bookinglist.tmpl
 site/templates/user/base_bookcomplete.tmpl
 site/templates/user/base_bookconfirm.tmpl
+site/templates/user/base_bookingdetail.tmpl
+site/templates/user/base_bookinglist.tmpl
 site/templates/user/base_bookseminar.tmpl
 site/templates/user/base_cancelbooking.tmpl
 site/templates/user/base_editbooking.tmpl
@@ -698,14 +710,14 @@ site/templates/user/options_saved_base.tmpl
 site/templates/user/register_base.tmpl
 site/templates/user/sessiondeletenotify.tmpl
 site/templates/user/subdetail.tmpl
-site/templates/user/toosoon_base.tmpl
 site/templates/user/toomany_base.tmpl
+site/templates/user/toosoon_base.tmpl
 site/templates/user/unsuball_base.tmpl
 site/templates/user/unsubone_base.tmpl
 site/templates/user/userpage_base.tmpl
 site/templates/xbase.tmpl
-site/util/bseaddimages.pl
 site/util/bse_back.pl
+site/util/bse_mksvnversion.pl
 site/util/bse_msgcheck.pl	Scan for undefined message ids
 site/util/bse_nightly.pl
 site/util/bse_notify_files.pl
@@ -713,28 +725,56 @@ site/util/bse_s3.pl
 site/util/bse_session_clean.pl
 site/util/bse_storage.pl
 site/util/bse_thumb.pl
+site/util/bseaddimages.pl
 site/util/bsexlsprod.pl
+site/util/check_versions.pl
 site/util/gen.pl
-site/util/getpcode.pl	Example code
+site/util/getpcode.pl		Example code
 site/util/initial.pl
 site/util/loaddata.pl
+site/util/make_versions.pl
 site/util/mysql.str
-site/util/upgrade_mysql.pl
 site/util/update_title_summary.pl
+site/util/upgrade_mysql.pl
 t/BSE/Test.pm
-t/t00smoke.t	makes a request to most of the scripts
-t/t010template.t	Tests Squirrel::Template
-t/t011dhdates.t		Tests DevHelp::Date
-t/t050format.t	DevHelp::Formatter tests
+t/cfg/bse.cfg
+t/cfg/cfg/00start.cfg
+t/cfg/cfg/99end.cfg
+t/cfg/isafile.cfg
+t/cfg/t/varinc.cfg
+t/t000load.t
+t/t00smoke.t			makes a request to most of the scripts
+t/t010template.t		Tests Squirrel::Template
+t/t011dhdates.t			Tests DevHelp::Date
+t/t012validate.t
+t/t013country.t
+t/t050format.t			DevHelp::Formatter tests
 t/t060parms.t
-t/t070sqldates.t	Test SQL date tools
+t/t070sqldates.t		Test SQL date tools
 t/t080escape.t
+t/t081cfg.t
+t/t090tags.t
+t/t091iter.t
 t/t10edit.t
+t/t11save.t
+t/t12cat.t
+t/t13parent.t
+t/t13steps.t
 t/t20gen.t
-t/t21gencat.t	Tests catalog generation
-t/t30rules.t	Check for use strict and warnings
-t/t40images.t	Tests image management
-t/t50subscalc.t	Test subscriptions calculations
+t/t21gencat.t			Tests catalog generation
+t/t30rules.t			Check for use strict and warnings
+t/t40images.t			Tests image management
+t/t50subscalc.t			Test subscriptions calculations
+t/t60securepayxml.t
+t/t61fastway.t
+t/t62auspost.t
+t/t63nabtransactxml.t
+t/t70thumbim.t
+t/t80catalog.t
+t/t85message.t
+t/t90dyncat.t
+t/tags/bse.cfg
 t/templates/included.include	Used by t010template.t
 t/templates/wraptest.tmpl	Used by t010template.t
+test.cfg-dist
 test.cfg.base
