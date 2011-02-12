@@ -12,6 +12,7 @@ my $start_time = time;
 my $verbose;
 GetOptions("v:i" => \$verbose);
 !$verbose and defined $verbose and $verbose = 1;
+$verbose ||= 0;
 
 {
   bse_init("../cgi-bin");
