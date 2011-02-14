@@ -3,7 +3,7 @@ use strict;
 
 # automatically generated
 
-our $hash = "c7337f8cbea8942ac25dee9fd84f7995";
+our $hash = "260b4494ace81ced95daa421a868774c";
 
 our %versions =
   (
@@ -83,9 +83,9 @@ our %versions =
   "BSE::Permissions" => "1.000",
   "BSE::ProductImportXLS" => "1.000",
   "BSE::Report" => "1.000",
-  "BSE::Request" => "1.000",
-  "BSE::Request::Base" => "1.001",
-  "BSE::Request::Test" => "1.000",
+  "BSE::Request" => "1.001",
+  "BSE::Request::Base" => "1.002",
+  "BSE::Request::Test" => "1.001",
   "BSE::Search::BSE" => "1.000",
   "BSE::Search::Base" => "1.000",
   "BSE::Session" => "1.000",

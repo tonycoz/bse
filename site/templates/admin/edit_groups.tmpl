@@ -13,6 +13,8 @@
 <h2><a name="groups"></a>Groups</h2>
 <form method="post" action="<:script:>">
 <input type="hidden" name="id" value="<:article id:>" />
+<:csrfp admin_save_article hidden:>
+<input type="hidden" name="lastModified" value="<: old lastModified article lastModified :>" />
 <table border="0" cellpadding="6" cellspacing="1">
   <tr bgcolor="#FFFFFF"> 
     <th>Group</th>

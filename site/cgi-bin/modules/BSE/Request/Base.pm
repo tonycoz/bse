@@ -5,7 +5,7 @@ use BSE::Cfg;
 use BSE::Util::HTML;
 use Carp qw(cluck confess);
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub new {
   my ($class, %opts) = @_;
@@ -176,9 +176,12 @@ sub cfg {
 }
 
 sub session {
-  $_[0]{session} or die "Session has been deleted already\n";
+  my $self = shift;
 
-  return $_[0]{session};
+  $self->{session}
+    or $self->_make_session;
+
+  return $self->{session};
 }
 
 sub is_fastcgi {
