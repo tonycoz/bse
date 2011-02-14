@@ -75,7 +75,6 @@ site/cgi-bin/modules/BSE/Countries.pm
 site/cgi-bin/modules/BSE/Custom.pm
 site/cgi-bin/modules/BSE/CustomBase.pm
 site/cgi-bin/modules/BSE/DB.pm
-site/cgi-bin/modules/BSE/DB/MSSQL.pm
 site/cgi-bin/modules/BSE/DB/Mysql.pm
 site/cgi-bin/modules/BSE/Dynamic/Article.pm
 site/cgi-bin/modules/BSE/Dynamic/Catalog.pm
@@ -91,7 +90,6 @@ site/cgi-bin/modules/BSE/EmailBlackEntry.pm
 site/cgi-bin/modules/BSE/EmailBlacklist.pm
 site/cgi-bin/modules/BSE/EmailRequest.pm
 site/cgi-bin/modules/BSE/EmailRequests.pm
-site/cgi-bin/modules/BSE/FileEditor.pm
 site/cgi-bin/modules/BSE/FileHandler/Base.pm
 site/cgi-bin/modules/BSE/FileHandler/Default.pm
 site/cgi-bin/modules/BSE/FileHandler/FLV.pm
@@ -100,8 +98,6 @@ site/cgi-bin/modules/BSE/Formatter.pm
 site/cgi-bin/modules/BSE/Formatter/Article.pm
 site/cgi-bin/modules/BSE/Formatter/Subscription.pm
 site/cgi-bin/modules/BSE/Generate/Seminar.pm
-site/cgi-bin/modules/BSE/Handler/Base.pm
-site/cgi-bin/modules/BSE/Handler/Page.pm
 site/cgi-bin/modules/BSE/ImageHandler/Base.pm
 site/cgi-bin/modules/BSE/ImageHandler/Flash.pm
 site/cgi-bin/modules/BSE/ImageHandler/Img.pm
@@ -301,7 +297,6 @@ site/cgi-bin/modules/Products.pm
 site/cgi-bin/modules/SiteUser.pm
 site/cgi-bin/modules/SiteUsers.pm
 site/cgi-bin/modules/Squirrel/GPG.pm
-site/cgi-bin/modules/Squirrel/ImageEditor.pm
 site/cgi-bin/modules/Squirrel/PGP5.pm
 site/cgi-bin/modules/Squirrel/PGP6.pm
 site/cgi-bin/modules/Squirrel/Row.pm
