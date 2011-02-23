@@ -16,13 +16,14 @@ var BSEAPI = Class.create
 			    alert(e);
 			    };
        this.onFailure = function(error) { alert(error.message); };
-       this._load_csrfp();
+       this._load_csrfp(parameters);
        this.onConfig = parameters.onConfig;
-       this._load_config();
+       this._load_config(parameters);
      },
-     _load_csrfp: function () {
+     _load_csrfp: function (param) {
        this.get_csrfp
-       ({
+       (Object.extend
+	({
 	 id: -1,
 	  name: this._csrfp_names,
 	 onSuccess: function(csrfp) {
@@ -33,11 +34,12 @@ var BSEAPI = Class.create
 	   // ignore this
 	   this._csrfp = null;
 	 }
-       });
+	 }, param));
      },
-     _load_config: function() {
+     _load_config: function(param) {
 	  this.get_base_config
-	  ({
+	  (Object.extend
+	    ({
 	      onSuccess:function(conf) {
 		  this.conf = conf;
 		  if (this.onConfig)
@@ -45,7 +47,7 @@ var BSEAPI = Class.create
 	      }.bind(this),
 	      onFailure: function(err) {
 	      }
-	  });
+	     }, param));
       },
      // logon to the server
      // logon - logon name of user
@@ -964,8 +966,14 @@ var BSEAPI = Class.create
      _do_request: function(url, action, other_parms, success, failure) {
        if (action != null)
          other_parms[action] = 1;
+       var async = true;
+       if (other_parms.hasOwnProperty("_async")) {
+	 async = other_parms._async;
+	 delete other_parms._async;
+       }
        new Ajax.Request(url,
        {
+	 asynchronous: async,
 	 parameters: other_parms,
 	 onSuccess: function (success, failure, resp) {
 	   if (resp.responseJSON) {
