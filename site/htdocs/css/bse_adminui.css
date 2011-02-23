@@ -1,0 +1,191 @@
+#debug_log {
+}
+
+body {
+  font: 12px Arial;
+  margin: 0px;
+  background-color: #E0E0E0;
+}
+
+.bse_modal {
+  position: fixed;
+  top: 0px;
+  background-image: url(/images/50.png);
+  width: 100%;
+  height: 20em;
+}
+
+.bse_dialog .bse_title {
+  text-align: center;
+  font-weight: bold;
+  border-bottom: 1px solid #8080FF;
+}
+
+.bse_dialog .bse_alert {
+  background-color: #F00;
+  color: #FFF;
+}
+
+.bse_dialog {
+  position: absolute;
+  background-color: #F0F0FF;
+  padding: 5px;
+  border: 2px solid #FFF;
+}
+
+.bse_dialog .bse_required label:after {
+  content: "*";
+}
+
+.bse_dialog .bse_invalid { 
+  background-color: #FF8080;
+}
+
+.bse_error {
+  padding: 0px 3px;
+  font-weight: bold;
+  color: red;
+}
+
+.bse_dialog input,
+.bse_dialog textarea,
+.bse_dialog select {
+
+}
+
+.bse_field_wrapper{
+  margin-left: 200px;
+  margin-top: 10px;
+}
+
+.bse_dialog label {
+  margin-left: -190px;
+  float: left;
+}
+
+#base_wrapper {
+  width: 1010px;
+  border-left: 5px solid white;
+  border-right: 5px solid white;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: #F0F0FF;
+}
+
+#base_menubar {
+  background-color: #E0E0FF;
+  border-bottom: 1px solid #8080FF;
+  /*position: fixed;
+  width: 1000px; */
+}
+
+#base_menu_wrapper {
+  position: relative;
+  background-color: #C0C0FF;
+  width: 150px;
+  float: left;
+}
+
+#base_menu {
+  display: none;
+  background-color: #C0C0FF;
+  position: absolute;
+  top: 2em;
+  left: 1px;
+  /*border-top: 1px solid #000;*/
+}
+
+#base_menu_wrapper:hover #base_menu {
+  display: block;
+}
+
+#base_menu_current {
+  padding: 0.5em 1em;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 150px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#base_menu a,
+#base_logon_menu a {
+  display: block;
+  padding: 5px 1em;
+  /*border-bottom: 1px solid #000;
+  border-left: 1 px solid #000;
+  border-right: 1px solid #000;*/
+  text-decoration: none;
+  font-weight: bold;
+  white-space: nowrap;
+  width: 150px;
+  background-position: 150px;
+  background-repeat: no-repeat;
+}
+
+#base_menu a:hover,
+#base_logon_menu a:hover {
+  background-color: #E0E0FF;
+}
+
+#base_menu_item_debug {
+  background-image: url(/images/admin/ui/debug.png);
+}
+
+#base_menu_item_menu {
+  background-image: url(/images/admin/ui/menu.png);
+}
+
+#base_change_password {
+  background-image: url(/images/admin/ui/changepw.png);
+}
+
+#base_logon_wrapper {
+  position: relative;
+  background-color: #C0C0FF;
+  float: right;
+}
+
+#base_logon {
+  display: none;
+  font-weight: bold;
+  background-color: #C00000;
+  color: #FFFFFF;
+  float: right;
+  padding: 0.5em 1em;
+  cursor: pointer;
+}
+
+#base_logon_menu {
+  display: none;
+  background-color: #C0C0FF;
+  position: absolute;
+  right: 0px;
+  top: 100%;
+}
+
+#base_logon_wrapper:hover #base_logon_menu {
+  display: block;
+}
+
+.clearer { clear: both; }
+
+/* hide the various page components until initialized */
+#base_wrapper.hide #base_menubar,
+#base_wrapper.hide #base_work {
+  display: none;
+}
+
+#base_loading {
+  text-align: center;
+  font: bold 24px Arial;
+  padding-top: 10em;
+  padding-bottom: 10em;
+  color: #8080FF;
+}
+
+#base_messages div.message {
+  background-color: #C0C0C0;
+  padding: 2px 5px;
+}
+

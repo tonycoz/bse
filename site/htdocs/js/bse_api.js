@@ -15,14 +15,18 @@ var BSEAPI = Class.create
        this.onException = function(e) {
 			    alert(e);
 			    };
-       this.onFailure = function(error) { alert(error.message); };
-       this._load_csrfp();
+       this.onFailure = function(error) {
+	   alert(error.message);
+       };
+       this._load_csrfp(parameters);
        this.onConfig = parameters.onConfig;
-       this._load_config();
+       delete parameters.onConfig;
+       this._load_config(parameters);
      },
-     _load_csrfp: function () {
+     _load_csrfp: function (param) {
        this.get_csrfp
-       ({
+       (Object.extend
+	({
 	 id: -1,
 	  name: this._csrfp_names,
 	 onSuccess: function(csrfp) {
@@ -33,11 +37,12 @@ var BSEAPI = Class.create
 	   // ignore this
 	   this._csrfp = null;
 	 }
-       });
+	 }, param));
      },
-     _load_config: function() {
+     _load_config: function(param) {
 	  this.get_base_config
-	  ({
+	  (Object.extend
+	    ({
 	      onSuccess:function(conf) {
 		  this.conf = conf;
 		  if (this.onConfig)
@@ -45,7 +50,7 @@ var BSEAPI = Class.create
 	      }.bind(this),
 	      onFailure: function(err) {
 	      }
-	  });
+	     }, param));
       },
      // logon to the server
      // logon - logon name of user
@@ -126,6 +131,38 @@ var BSEAPI = Class.create
        {
 	 parameters: {
 	   a_logoff: 1
+	 },
+	 onSuccess: function (success, failure, resp) {
+	   if (resp.responseJSON) {
+             if(resp.responseJSON.success != 0) {
+	       success();
+             }
+             else {
+	       failure(this._wrap_json_failure(resp), resp);
+             }
+	   }
+	   else {
+	     failure(this._wrap_nojson_failure(resp), resp);
+	   }
+	 }.bind(this, success, failure),
+	 onFailure: function (failure, resp) {
+	   failure(this._wrap_req_failure(resp), resp);
+	 }.bind(this, failure),
+	 onException: this.onException
+       });
+     },
+     change_password: function(parameters) {
+       var success = parameters.onSuccess;
+       if (!success) this._badparm("change_password() missing onSuccess parameter");
+       var failure = parameters.onFailure;
+       if (!failure) failure = this.onFailure;
+       new Ajax.Request('/cgi-bin/admin/changepw.pl',
+       {
+	 parameters: {
+	     a_change: 1,
+	     oldpassword: parameters.oldpassword,
+	     newpassword: parameters.newpassword,
+	     confirm: parameters.newpassword
 	 },
 	 onSuccess: function (success, failure, resp) {
 	   if (resp.responseJSON) {
@@ -303,47 +340,7 @@ var BSEAPI = Class.create
      thumb_link: function(im, geoid) {
        return "/cgi-bin/thumb.pl?image="+im.id+"&g="+geoid+"&page="+im.articleId+"&f="+encodeURIComponent(im.image);
      },
-     can_drag_and_drop: function() {
-       // hopefully they're implemented at the same time
-       if (window.FormData != null)
-	 return true;
-
-       if (bse_use_file_api && window.FileReader != null)
-	 return true;
-
-       return false;
-     },
-     make_drop_zone: function(options) {
-       options.element.addEventListener
-       (
-	 "dragenter",
-	 function(options, e) {
-	   e.stopPropagation();
-	   e.preventDefault();
-	 }.bind(this, options),
-	 false
-       );
-       options.element.addEventListener
-       (
-	 "dragover",
-	 function(options, e) {
-	   e.stopPropagation();
-	   e.preventDefault();
-	 }.bind(this, options),
-	 false
-       );
-       options.element.addEventListener
-       (
-	 "drop",
-	 function(options, e) {
-	   e.stopPropagation();
-	   e.preventDefault();
-
-	   options.onDrop(e.dataTransfer.files);
-	 }.bind(this, options),
-	 false
-       );
-     },
+     
      // parameters:
      //  image - file input element (required)
      //  id - owner article of the new image (required)
@@ -964,8 +961,14 @@ var BSEAPI = Class.create
      _do_request: function(url, action, other_parms, success, failure) {
        if (action != null)
          other_parms[action] = 1;
+       var async = true;
+       if (other_parms.hasOwnProperty("_async")) {
+	 async = other_parms._async;
+	 delete other_parms._async;
+       }
        new Ajax.Request(url,
        {
+	 asynchronous: async,
 	 parameters: other_parms,
 	 onSuccess: function (success, failure, resp) {
 	   if (resp.responseJSON) {
@@ -1003,3 +1006,45 @@ var BSEAPI = Class.create
      _upload_id: 0
    });
 
+BSEAPI.can_drag_and_drop = function() {
+  // hopefully they're implemented at the same time
+  if (window.FormData != null)
+    return true;
+  
+  if (bse_use_file_api && window.FileReader != null)
+    return true;
+  
+  return false;
+};
+
+BSEAPI.make_drop_zone = function(options) {
+  options.element.addEventListener
+  (
+    "dragenter",
+    function(options, e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }.bind(this, options),
+    false
+  );
+  options.element.addEventListener
+  (
+    "dragover",
+    function(options, e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }.bind(this, options),
+    false
+  );
+  options.element.addEventListener
+  (
+    "drop",
+    function(options, e) {
+      e.stopPropagation();
+      e.preventDefault();
+      
+      options.onDrop(e.dataTransfer.files);
+    }.bind(this, options),
+    false
+  );
+};

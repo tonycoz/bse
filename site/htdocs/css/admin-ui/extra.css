@@ -1,0 +1,119 @@
+/* functions not covered by Adrian's base classes.
+   I don't want to modify the original, since he'll make refinements.
+*/
+.bse_modal {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    margin: 0;
+    padding: 0;
+    background-color: rgba(0,0,0,0.75);
+    z-index: 3;
+    overflow: visible;
+    height: 100%;
+    width: 100%;
+}
+
+#base_work {
+    color: #FFF;
+}
+
+.buttons>span span.spinner {
+  background: transparent url(/images/admin/ui/spinner.gif) no-repeat 100% 50%;
+}
+
+#nav li>span>span.item { 
+  display: block;
+  text-indent: 0em;
+  position: static;
+  width: auto;
+}
+
+#nav li>span>span.move {
+   	background: transparent url(/images/admin/ui/move_dk.png) no-repeat 50% 50%;
+              
+}
+
+#nav li>span>span.delete {
+	background-image: url(/images/admin/ui/delete_dk.png);
+}
+
+/* undo the CSS popup styling */
+#nav ul, #nav li>a>span, #nav li>span>span {
+  display: block;
+}
+
+.bse_field_error {
+  margin-top: 2em;
+  margin-left: -25em;
+  color: #F00;
+}
+
+.bse_image_field img.display {
+  width: 80px;
+  height: 80px;
+  border: 1px solid #CCC;
+  float: right;
+}
+
+div.window fieldset.bse_image_field > input[type=file] {
+  width: auto;
+}
+
+div.window fieldset.bse_image_field > div.more {
+  clear: both;
+  display: block;
+}
+
+div.window fieldset.bse_image_gallery div.bse_gallery_imagelist {
+  border: 1px solid #808080;
+  display: block;
+  height: 102px;
+}
+
+div.window fieldset.bse_image_gallery div.bse_gallery_imagelist .bse_gallery_image,
+div.window fieldset.bse_image_gallery div.bse_gallery_imagelist .bse_drop_target {
+  width: 81px;
+  height: 100px;
+  float: left;
+  border-right: 1px solid #808080;
+  position: relative;
+}
+
+.bse_gallery_image {
+  background-color: #FFF;
+}
+
+.bse_drop_target { 
+  background-color: #CFC;
+  font-weight: bold;
+  padding-top: 40px;
+  text-align: center;
+}
+
+div.window fieldset.bse_image_gallery div.bse_gallery_imagelist > .bse_gallery_image .name {
+  width: 80px;
+  position: absolute;
+  top: 80px;
+  display: block;
+  text-align: center;
+  overflow: hidden;
+  text-size: 70%;
+}
+
+div.window fieldset.bse_image_gallery div.bse_gallery_imagelist > .bse_gallery_image .delete {
+  top: 0px;
+  right: 0px;
+  position: absolute;
+  background-color: #CCC;
+}
+
+div.window fieldset.bse_image_gallery div.bse_gallery_imagelist > .bse_gallery_image .edit {
+  top: 1.5em;
+  right: 0px;
+  position: absolute;
+  background-color: #CCC;
+}
+
