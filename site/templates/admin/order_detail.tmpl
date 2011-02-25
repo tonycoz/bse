@@ -1,7 +1,4 @@
-<html><head><title>Order <:order id:> details</title>
-<link rel="stylesheet" href="/css/admin.css">
-</head>
-<body>
+<:wrap admin/base.tmpl title => [concatenate "Order " [order id] " details"]:> 
 <h1>Shop Administration</h1>
 <p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |
 <a href="<:adminurl shopadmin:>">Manage catalogs</a> |
@@ -15,86 +12,74 @@
 </p>
 <:ifMessage:><div class="message"><:message:></div><:or:><:eif:>
 <h2>Order details - No: #<:order id:></h2>
-<:ifOrder complete:><:or:><p><b><font size="+1">This order is incomplete and should not be filled.</font></b></p><:eif:>
-<table cellpadding="6" cellspacing="1" border="0">
+<:ifOrder complete:><:or:><p>This order is incomplete and should not be filled.</p><:eif:>
+<table class="editform orderdetail_head">
   <tr> 
-    <td align="left"><b>E-mail:</b></td>
-    <td><a href="mailto:<:order emailAddress:>"><:order emailAddress:></a></td>
-    <td>&nbsp;</td>
-    <td align="left"><b>Phone:</b></td>
-    <td><:order telephone:></td>
+    <th class="col_head">E-mail:</th>
+    <td class="col_value"><a href="mailto:<:order emailAddress:>"><:order emailAddress:></a></td>
+    <td rowspan="3">&nbsp;</td>
+    <th class="col_head">Phone:</th>
+    <td class="col_value"><:order telephone:></td>
   </tr>
   <tr> 
-    <td align="left"><b>Date:</b></td>
-    <td><:date order orderDate:></td>
-    <td>&nbsp;</td>
-    <td align="left"><b>Mobile:</b></td>
-    <td><:order delivMobile:></td>
+    <th class="col_head">Date:</th>
+    <td class="col_value"><:date order orderDate:></td>
+    <th class="col_head">Mobile:</th>
+    <td class="col_value"><:order delivMobile:></td>
   </tr>
   <tr> 
-    <td align="left"><b>Delivery:</b></td>
-    <td><:order delivFirstName:> <:order delivLastName:></td>
-    <td rowspan="6">&nbsp;&nbsp;</td>
-    <td align="left"><b>Billing:</b></td>
-    <td><:order billFirstName:> <:order billLastName:></td>
-  </tr>
-  <tr> 
-    <td rowspan="5">&nbsp;</td>
-    <td><:order delivOrganization:></td>
-    <td rowspan="5">&nbsp;</td>
-    <td><:order billOrganization:></td>
-  </tr>
-  <tr> 
-    <td><:order delivStreet:></td>
-    <td><:order billStreet:></td>
-  </tr>
-  <tr> 
-    <td><:order delivStreet2:></td>
-    <td><:order billStreet2:></td>
-  </tr>
-  <tr> 
-    <td><:order delivSuburb:> <:order delivState:> <:order delivPostCode:></td>
-    <td><:order billSuburb:> <:order billState:> <:order billPostCode:></td>
-  </tr>
-  <tr> 
-    <td><:order delivCountry:></td>
-    <td><:order billCountry:></td>
+    <th class="col_head">Delivery:</th>
+    <td class="col_value"><:order delivFirstName:> <:order delivLastName:>
+      <:ifOrder delivOrganization:><br /><:order delivOrganization:><:or:><:eif:>
+      <br /><:order delivStreet:>
+      <:ifOrder delivStreet2:><br /><:order delivStreet2:><:or:><:eif:>
+      <br /><:order delivSuburb:> <:order delivState:> <:order delivPostCode:>
+      <br /><:order delivCountry:></td>
+    <th class="col_head">Billing:</th>
+    <td class="col_value">
+      <:order billFirstName:> <:order billLastName:>
+      <:ifOrder billOrganization:><br /><:order billOrganization:><:eif:>
+      <br /><:order billStreet:>
+      <:ifOrder billStreet2:><br /><:order billStreet2:><:or:><:eif:>
+      <br /><:order billSuburb:> <:order billState:> <:order billPostCode:>
+      <br /><:order billCountry:>
+    </td>
   </tr>
   <:include custom/order_detail.include optional:><:include admin/include/custom/order_detail_custom.tmpl optional:><:include admin/include/order_detail_custom.tmpl optional:>
 </table>
 
-<br>
-      <table class="editform">
+<br />
+      <table class="editform orderdetail">
         <tr> 
-          <th width="100%">Description</th>
-          <th nowrap>Units</th>
-          <th nowrap>Unit Price</th>
-          <th nowrap>Extension</th>
-          <th nowrap>Unit Wsale</th>
-          <th nowrap>Ext Wsale</th>
-          <th nowrap>Unit GST</th>
-          <th nowrap>Ext GST</th>
+          <th class="col_description">Description</th>
+          <th class="col_units">Units</th>
+          <th class="col_unitprice">Unit Price</th>
+          <th class="col_extension">Extension</th>
+          <th class="col_unit_wsale">Unit Wsale</th>
+          <th class="col_ext_wsale">Ext Wsale</th>
+          <th class="col_unit_gst">Unit GST</th>
+          <th class="col_ext_gst">Ext GST</th>
 </tr>
 <:iterator begin items:>
         <tr> 
-          <td width="100%"><:ifOr [ifEq [item productId] -1] [ifEq [product id] ""]:><:item title:> (product deleted)<:or:><a href="<:adminurl shopadmin product_detail 1 id [product id]:>"><:product
+          <td class="col_description"><:ifOr [ifEq [item productId] -1] [ifEq [product id] ""]:><:item title:> (product deleted)<:or:><a href="<:adminurl shopadmin product_detail 1 id [product id]:>"><:product
             title:></a><:eif:> <:options:></td>
-          <td align=center nowrap><:item units:></td>
-          <td align=right nowrap><:money item price:></td>
-          <td align=right nowrap><:extension price:></td>
-          <td align=right nowrap><:money item wholesalePrice:></td>
-          <td align=right nowrap><:extension wholesalePrice:></td>
-          <td align=right nowrap><:money item gst:></td>
-          <td align=right nowrap><:extension gst:></td>
+          <td class="col_units"><:item units:></td>
+          <td class="col_unitprice"><:money item price:></td>
+          <td class="col_extension"><:extension price:></td>
+          <td class="col_unit_wsale"><:money item wholesalePrice:></td>
+          <td class="col_ext_wsale"><:extension wholesalePrice:></td>
+          <td class="col_unit_gst"><:money item gst:></td>
+          <td class="col_ext_gst"><:extension gst:></td>
 </tr>
 <:iterator end items:>
 <:if Cfg shop shipping:>
 <:if Order shipping_name:>
 
         <tr> 
-          <td colspan=3>
+          <td colspan="3" class="col_contact">
 <:if Eq [order shipping_name] "contact":>
-<b>Contact customer to make shipping arrangements</b>
+Contact customer to make shipping arrangements
 <:or Eq:>
 Shipping via <:order shipping_method:>
 <:eif Eq:>, 
@@ -106,22 +91,22 @@ Shipping via <:order shipping_method:>
     </form>
 
 </td>
-          <td align=right nowrap><:money order shipping_cost:></td>
+          <td class="col_extension"><:money order shipping_cost:></td>
           <td>&nbsp;</td>
-          <td align=right nowrap></td>
+          <td class="col_ext_wsale"></td>
           <td>&nbsp;</td>
-          <td align=right nowrap></td>
+          <td class="col_ext_gst"></td>
 </tr>
 <:or Order:><:eif Order:>
 <:or Cfg:>
 <:eif Cfg:>
-        <tr bgcolor="#FFFFFF"> 
-          <td colspan=3 align=right>Total:</td>
-          <td align=right nowrap><:money order total:></td>
+        <tr> 
+          <td colspan="3" class="col_total">Total:</td>
+          <td class="col_extension total"><:money order total:></td>
           <td>&nbsp;</td>
-          <td align=right nowrap><:money order wholesaleTotal:></td>
+          <td class="col_ext_wsale total"><:money order wholesaleTotal:></td>
           <td>&nbsp;</td>
-          <td align=right nowrap><:money order gst:></td>
+          <td class="col_ext_gst total"><:money order gst:></td>
 </tr>
 <:if Cfg shop shipping:><:or Cfg:>
 <tr>
@@ -195,6 +180,3 @@ Shipping via <:order shipping_method:>
 <:include admin/include/auditentry.tmpl:>
 <:iterator end auditlog:>
 </table>
-
-</table>
-</body></html>

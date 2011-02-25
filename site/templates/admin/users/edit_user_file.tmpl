@@ -1,11 +1,11 @@
-<:wrap admin/xbase.tmpl title=>"Site Member Files - Edit File":>
+<:wrap admin/base.tmpl title=>"Site Member Files - Edit File":>
 <h1>Edit Member File</h1>
 
 <:include admin/users/inc_user_menu.tmpl:>
 
 <:ifMessage:><div id="message"><:message:></div><:or:><:eif:>
 <div id="editfile">
-<form enctype="multipart/form-data" method="post">
+<form enctype="multipart/form-data" method="post" action="<:adminurl siteusers:>">
 <input type="hidden" name="id" value="<:siteuser id:>" />
 <input type="hidden" name="file_id" value="<:userfile id:>" />
 <:csrfp admin_user_edit_file hidden:>

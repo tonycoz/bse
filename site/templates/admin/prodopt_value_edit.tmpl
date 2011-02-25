@@ -1,4 +1,4 @@
-<:wrap admin/xbase.tmpl title => "Edit Product Option Value", menuitem=>none, showtitle=>1 :>
+<:wrap admin/base.tmpl title => "Edit Product Option Value", menuitem=>"none", showtitle=>"1" :>
 <:include admin/product_menu.tmpl:>
 <form action="<:script:>" method="post">
 <input type="hidden" name="id" value="<:article id:>" />
@@ -7,13 +7,15 @@
 <:csrfp admin_save_option_value hidden:>
 <table class="editform editformsmall">
 <tr>
-<th>Option:</th><td><:option name:></td></tr>
+  <th>Option:</th>
+  <td><:option name:></td>
+  <td></td>
+</tr>
 <tr>
 <th>Value:</th>
 <td><input type="text" name="value" value="<:old value option_value value:>" /></td><td class="help"><:error_img value:></td></tr>
 <tr>
-  <td class="buttons" colspan="2"><input type="submit" name="a_save_option_value" value="Save" /><input type="submit" value="Return to product options" /></td>
-  <td></td>
+  <td class="buttons" colspan="3"><input type="submit" name="a_save_option_value" value="Save" /><input type="submit" value="Return to product options" /></td>
 </tr>
 </table>
 </form>

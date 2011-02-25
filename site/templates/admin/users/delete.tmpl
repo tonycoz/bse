@@ -1,9 +1,9 @@
-<:wrap admin/xbase.tmpl title=>"Delete Site Member":>
+<:wrap admin/base.tmpl title=>"Delete Site Member":>
 <h1>Delete Site Member</h1>
 <:include admin/users/inc_user_menu.tmpl:>
 <p><b>THIS WILL PERMANENTLY REMOVE THE USER AND CANNOT BE UNDONE</b></p>
 
-<form method="POST" action="<:script:>" enctype="multipart/form-data">
+<form method="post" action="<:adminurl siteusers:>" enctype="multipart/form-data">
 <input type="hidden" name="id" value="<:siteuser id:>" />
 <:csrfp admin_siteuser_delete hidden:>
         <table class="editform editformtiny">

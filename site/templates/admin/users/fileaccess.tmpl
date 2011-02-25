@@ -1,18 +1,22 @@
-<:wrap admin/xbase.tmpl title=>"File Access Log":>
+<:wrap admin/base.tmpl title=>"File Access Log":>
 <h1>File Access Log</h1>
 <p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |</p>
-<:if Owner:><p>Only files owned by <a href="<:script:>?id=<:owner_id:>&amp;_t=files&amp;<:ifEq [owner_type] G:>a_editgroup=1<:or:>a_edit=1<:eif:>"><:owner_desc:></a> <a href="<:script:>?a_fileaccesslog=1&amp;<:page_args owner_id owner_type:>">(Remove this filter)</a></p><:or Owner:><:eif Owner:>
+<:if Owner:><p>Only files owned by <a href="<:script:>?id=<:owner id:>&amp;_t=files&amp;<:ifEq [owner_type] G:>a_editgroup=1<:or:>a_edit=1<:eif:>"><:owner_desc:></a> <a href="<:script:>?a_fileaccesslog=1&amp;<:page_args owner_id owner_type:>">(Remove this filter)</a></p><:or Owner:><:eif Owner:>
 <:ifSiteuser:><p>Files downloaded by <a href="<:script:>?a_edit=1&amp;id=<:siteuser id:>"><:siteuser userId:></a> <a href="<:script:>?a_fileaccesslog=1&amp;<:page_args siteuser_id:>">(Remove this filter)</a></p><:or:><:eif:>
 <:if File:><p>File <a href="<:script:>?<:ifEq [file owner_type] U:>a_edituserfile<:or:>a_editgroupfile<:eif:>=1&amp;id=<:file owner_id:>&amp;file_id=<:file id:>"><:file display_name:></a> <a href="<:script:>?a_fileaccesslog=1&amp;<:page_args file_id:>">(Remove this filter)</a></p><:or File:><:eif File:>
 <:ifCategory:>Files in category: <:category name:> <a href="<:script:>?a_fileaccesslog=1&amp;<:page_args category:>">(Remove this filter)</a><:or:><:eif:>
 
-<p>Page <:fileaccesses_pagenum:> of <:fileaccesses_pagecount:>
-<:ifFirstFileaccessesPage:>First Previous<:or:><a href="<:script:>?a_fileaccesslog=1&amp;p=1&amp;pp=<:fileaccesses_perpage:>">First</a> <a href="<:script:>?a_fileaccesslog=1&amp;p=<:prevFileaccessesPage:>&amp;pp=<:fileaccesses_perpage:>&amp;<:page_args:>">Previous</a><:eif:>
-<:iterator begin repeats [fileaccesses_pagecount]:>
-<:if Eq [repeat value] [fileaccesses_pagenum]:><:repeat value:><:or Eq:><a href="<:script:>?a_fileaccesslog=1&amp;p=<:repeat value:>&amp;pp=<:fileaccesses_perpage:>&amp;<:page_args:>"><:repeat value:></a><:eif Eq:>
-<:iterator end repeats:>
-<:ifLastFileaccessesPage:>Next Last<:or:><a href="<:script:>?a_fileaccesslog=1&amp;p=<:nextFileaccessesPage:>&amp;pp=<:fileaccesses_perpage:>&amp;<:page_args:>">Next</a> <a href="<:script:>?a_fileaccesslog=1&amp;p=<:fileaccesses_pagecount:>&amp;pp=<:fileaccesses_perpage:>&amp;<:page_args:>">Last</a><:eif:>
-</p>
+<div class="pagelist">Page <:fileaccesses_pagenum:> of <:fileaccesses_pagecount:>
+<:ifFirstFileaccessesPage:><span>First</span> <span>Previous</span><:or:><a href="<:script:>?a_fileaccesslog=1&amp;p=1&amp;pp=<:fileaccesses_perpage:>">First</a> <a href="<:script:>?a_fileaccesslog=1&amp;p=<:prevFileaccessesPage:>&amp;pp=<:fileaccesses_perpage:>&amp;<:page_args:>">Previous</a><:eif:>
+<:iterator begin fileaccesses_pagec:>
+<:switch:>
+<:case fileaccess_pagec gap:>...
+<:case fileaccess_pagec link:><a href="<:script:>?a_fileaccesslog=1&amp;p=<:fileaccess_pagec page:>&amp;pp=<:fileaccesses_perpage:>&amp;<:page_args:>"><:fileaccess_pagec page:></a>
+<:case default:><span><:fileaccess_pagec page:></span>
+<:endswitch:>
+<:iterator end fileaccesses_pagec:>
+<:ifLastFileaccessesPage:><span>Next</span> <span>Last</span><:or:><a href="<:script:>?a_fileaccesslog=1&amp;p=<:nextFileaccessesPage:>&amp;pp=<:fileaccesses_perpage:>&amp;<:page_args:>">Next</a> <a href="<:script:>?a_fileaccesslog=1&amp;p=<:fileaccesses_pagecount:>&amp;pp=<:fileaccesses_perpage:>&amp;<:page_args:>">Last</a><:eif:>
+</div>
 <form action="<:script:>"><:page_argsh from to:><p>Records from <input type="text" name="from" size="12" value="<:cgi from:>" /> to <input type="text" name="to" size="12" value="<:cgi to:>" /> <input type="submit" name="a_fileaccesslog" value="Go" /></form>
 
 <table class="editform" id="fileaccesslog">
@@ -26,6 +30,7 @@
     <th>Size</th>
     <th>Filters</th>
   </tr>
+<:if Fileaccesses:>
 <:iterator begin fileaccesses:>
   <tr>
     <td class="col_when_at"><:date "%d/%m/%Y %H:%M" fileaccess when_at:></td>
@@ -45,4 +50,9 @@
 </td>
   </tr>
 <:iterator end fileaccesses:>
+<:or Fileaccesses:>
+  <tr>
+    <td colspan="8" class="tablenote">No file accesses match your filters</td>
+  </tr>
+<:eif Fileaccesses:>
 </table>

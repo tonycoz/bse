@@ -1,4 +1,4 @@
-<:wrap admin/xbase.tmpl title=>"Delete Subscription: [subscription text_id]":>
+<:wrap admin/base.tmpl title=>[cat "Delete Subscription: " [subscription text_id]]:>
 <h1>Delete Subscription: <:subscription text_id:></h1>
 <p>
 | <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |
@@ -11,9 +11,9 @@
 <p><b><:message:></b></p>
 <:or:><:eif:> 
 
-<form action="<:script:>" method="POST">
+<form action="<:script:>" method="post">
 <input type="hidden" name="subscription_id" value="<:subscription subscription_id:>" />
-<table>
+<table class="editform editformsmall">
 <tr>
   <th>Identifier:</th>
   <td><:subscription text_id:></td>
@@ -31,7 +31,7 @@
   <td><:subscription max_lapsed:> Days</td>
 </tr>
 <tr>
-  <td colspan="2"><input type="submit" name="a_remove" value="Delete Subscription" /></td>
+  <td colspan="2" class="buttons"><input type="submit" name="a_remove" value="Delete Subscription" /></td>
 </tr>
 </table>
 </form>

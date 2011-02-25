@@ -3,7 +3,7 @@
 <:ifFormLogon:><p>| <a href="/cgi-bin/admin/logon.pl?a_logoff=1">Logoff <:adminuser logon:></a> | <a href="/cgi-bin/admin/changepw.pl">Change Password</a> |</p><:or:><:eif:>
 <:ifMessage:><p><b><:message:></b></p><:or:><:eif:>
 
-<table class="editform menu">
+<table class="menu">
 <tr>
   <th width="33%">Content</th>
   <th width="33%">Users</th>
@@ -79,6 +79,8 @@ href="/cgi-bin/admin/generate.pl?id=extras&amp;progress=1">verbose</a>)</li></ul
 
 <p><a href="<:adminurl report:>">Reports</a></p>
 
+<p><a href="<:adminurl log:>">Audit Log</a></p>
+
 <p><a href="/cgi-bin/admin/shopadmin.pl">Shop administration</a></p>
 
 <ul>
@@ -86,7 +88,7 @@ href="/cgi-bin/admin/generate.pl?id=extras&amp;progress=1">verbose</a>)</li></ul
 <:if UserCan shop_order_list :>
 <li><a
 href="/cgi-bin/admin/shopadmin.pl?order_list=1&amp;template=order_list_unfilled">View
-current orders</a> <br>(<a
+current orders</a> <br />(<a
 href="/cgi-bin/admin/shopadmin.pl?order_list=1">all</a> or <a
 href="/cgi-bin/admin/shopadmin.pl?order_list=1&amp;template=order_list_filled">filled</a>)</li>
 <:or UserCan:><:eif UserCan:>
@@ -109,7 +111,7 @@ href="/cgi-bin/admin/shopadmin.pl?order_list=1&amp;template=order_list_filled">f
 
       <form action="/cgi-bin/admin/admin.pl">
         Jump to: 
-        <input type=text name=id size=4>
-        <input type="submit" value="Jump!">
+        <input type="text" name="id" size="4" />
+        <input type="submit" value="Jump!" />
         (Article ID eg: 1 = Home) 
       </form>

@@ -1,4 +1,4 @@
-<:wrap admin/xbase.tmpl title=>"Edit [articleType] Image":>
+<:wrap admin/base.tmpl title=>[concatenate "Edit " [articleType] " Image"]:>
 <h1>Edit <:articleType:> Image</h1>
 <:ifMessage:> 
 <p><b><:message:></b></p>
@@ -14,29 +14,29 @@
 <input type="hidden" name="image_id" value="<: eimage id :>" />
 <input type="hidden" name="r" value="/cgi-bin/admin/add.pl?id=<:article id:>&amp;_t=img" />
 <:csrfp admin_save_image hidden:>
-<table cellpadding="6" border="0" cellspacing="1">
+<table class="editform editformsmall">
   <tr> 
-    <th align="left">Replacement image file:</th>
+    <th>Replacement image file:</th>
     <td><input type="file" name="image" size="40" /><br />(leave blank to keep the current image)</td>
-     <td nowrap="nowrap"><:help image image:> <:error_img image:></td>
+     <td class="help"><:help image image:> <:error_img image:></td>
   </tr>
   <tr> 
-    <th align="left">Alt text for image:</th>
+    <th>Alt text for image:</th>
     <td><input type="text" name="alt" value="<:old alt eimage alt:>" /></td>
-    <td nowrap="nowrap"><:help image alt:> <:error_img alt:></td>
+    <td class="help"><:help image alt:> <:error_img alt:></td>
   </tr>
   <tr> 
-    <th align="left">URL for image:</th>
+    <th>URL for image:</th>
     <td><input type="text" name="url" value="<:old url eimage url:>" size="60" /></td>
-    <td nowrap="nowrap"><:help image url:> <:error_img url:></td>
+    <td class="help"><:help image url:> <:error_img url:></td>
   </tr>
   <tr> 
-    <th align="left">Identifier for image:</th>
+    <th>Identifier for image:</th>
     <td><input type="text" name="name" value="<:old name eimage name:>" /></td>
-    <td nowrap="nowrap"><:help image name:> <:error_img name:></td>
+    <td class="help"><:help image name:> <:error_img name:></td>
   </tr>
   <tr> 
-    <th align="left">Storage:</th>
+    <th>Storage:</th>
             <td> 
 <select name="storage">
 <option value="">(Auto)</option>
@@ -45,10 +45,10 @@
 <:iterator end image_stores:>
 </select>
             </td>
-            <td nowrap="nowrap"><:help image name:> <:error_img name:></td>
+            <td class="help"><:help image name:> <:error_img name:></td>
           </tr>
   <tr> 
-    <td colspan="3" align="right">
+    <td colspan="3" class="buttons">
       <input type="submit" name="a_save_image" value="Save Image" />
     </td>
   </tr>

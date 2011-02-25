@@ -310,6 +310,13 @@ sub output_resultc {
     print STDERR "$ENV{SCRIPT_NAME}: ** No content supplied\n";
     print "** Internal error\n";
   }
+
+  if ($result->{content}
+      && $result->{type} =~ m(text/html|application/xhtml\+xml)
+      && $cfg->entry("html", "validate", 0)) {
+    require BSE::Util::ValidateHTML;
+    BSE::Util::ValidateHTML->validate($cfg, $result);
+  }
 }
 
 1;

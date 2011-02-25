@@ -1,4 +1,4 @@
-<:wrap admin/xbase.tmpl title=>"Delete Location: [location description]":>
+<:wrap admin/base.tmpl title=>"Delete Location: [location description]":>
 <h1>Delete Location: <:location description:></h1>
 <p>
 | <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |
@@ -11,15 +11,15 @@
 <p><b><:message:></b></p>
 <:or:><:eif:> 
 
-<form action="<:script:>" method="POST">
+<form action="<:script:>" method="post">
 <input type="hidden" name="id" value="<:location id:>" />
-<table>
+<table class="editform editformtiny">
 <tr>
   <th><:field description description:>:</th>
   <td><:location description:></td>
 </tr>
 <tr>
-  <td colspan="2"><input type="submit" name="a_locdelete" value="Delete Location" /></td>
+  <td colspan="2" class="buttons"><input type="submit" name="a_locdelete" value="Delete Location" /></td>
 </tr>
 </table>
 </form>

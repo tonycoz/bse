@@ -1,4 +1,4 @@
-<:wrap admin/xbase.tmpl title=>"Edit Site Member - Groups":>
+<:wrap admin/base.tmpl title=>"Edit Site Member - Groups":>
 <h1>Edit Site Member - Groups</h1>
 <p>
 | <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |
@@ -14,7 +14,7 @@
 
 <form method="post" action="<:script:>">
 <input type="hidden" name="id" value="<:siteuser id:>" />
-        <table cellpadding="6" border="0" cellspacing="1">
+        <table class="editform editformsmall">
   <tr>
     <th>Group Name</th>
     <th>Member</th>
@@ -31,11 +31,11 @@
 <:iterator end groups:>
 <:or Groups:>
   <tr>
-    <td colspan="2">There are no groups defined</td>
+    <td colspan="2" class="tablenote">There are no groups defined</td>
   </tr>
 <:eif Groups:>
           <tr> 
-            <td colspan="2" align="right"> 
+            <td colspan="2" class="buttons"> 
               <input type="submit" name="a_save" value="  Save User  " />
             </td>
           </tr>

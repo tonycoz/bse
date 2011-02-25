@@ -1,4 +1,4 @@
-<:wrap admin/xbase.tmpl title=>"[articleType] Options", showtitle=>1, menuitem=>prodopts, js=>"admin_prodopts.js":>
+<:wrap admin/base.tmpl title=>[cat "Options for product: " [article title]], showtitle=>1, menuitem=>prodopts, js=>"admin_prodopts.js":>
 <:ifMessage:><div id="message"><:message:></div><:or:><:eif:>
 <:include admin/product_menu.tmpl:>
 
@@ -8,7 +8,7 @@
 <div id="prodoptmenu">All options:
 <a id="sortoptions" href="<:script:>?a_option_reorder=1&amp;_t=prodopts&amp;id=<:article id:>&amp;_csrfp=<:csrfp admin_move_option:>&amp;option_ids=<:arithmetic join ",", map $_->{id}, sort { lc $a->{name} cmp lc $b->{name} } Products->getByPkey([article id])->db_options:>">Sort</a>
 <a id="reverseoptions" href="<:script:>?a_option_reorder=1&amp;_t=prodopts&amp;id=<:article id:>&amp;_csrfp=<:csrfp admin_move_option:>&amp;option_ids=<:arithmetic join ",", map $_->{id}, reverse Products->getByPkey([article id])->db_options:>">Reverse</a>
-<img src="/images/admin/busy.gif" id="busy_img" style="visibility: hidden" />
+<img src="/images/admin/busy.gif" id="busy_img" style="visibility: hidden" alt="busy" />
 </div>
 <:or UserCan:><:eif UserCan:>
 <div id="productoptions" <:ifUserCan bse_edit_prodopt_move:>class="moveable"<:or:><:eif:>>
@@ -55,6 +55,7 @@
 <input type="hidden" name="_t" value="prodopts" />
 <input type="hidden" name="id" value="<:article id:>" />
 <div class="prodoptmenu">Option: <input type="text" name="name" value="<:old name:>" maxlength="255" class="editor_field" title="Enter the name of your new option here" /><:error_img name:><input type="submit" name="a_add_option" value="Add New Option" class="editor_ok_button" /></div>
+</form>
 <div class="prodoptvalues">
 <div class="valueentry"><input type="text" name="value1" value="<:old value1:>" maxlength="255" class="editor_field" title="Enter some values here" /><:error_img value1:></div>
 <div class="valueentry odd"><input type="text" name="value2" value="<:old value2:>" maxlength="255" class="editor_field" /><:error_img value2:></div>
@@ -67,7 +68,7 @@
 <a href="#" onclick="javascript: document.getElementById('addoptionform').style.display='block'; return false;">Add an option</a>
 </div>
 <:or UserCan:><:eif UserCan:>
-<script>
+<script type="text/javascript">
 
 var prodopts = <:dboptionsjson:>;
 var reorder_values_csrf = '<:csrfp admin_move_option_value:>';

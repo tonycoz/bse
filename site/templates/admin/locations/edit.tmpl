@@ -1,4 +1,4 @@
-<:wrap admin/xbase.tmpl title=>"Edit Location":>
+<:wrap admin/base.tmpl title=>"Edit Location":>
 <h1>Edit Location</h1>
 <p>
 | <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |
@@ -14,97 +14,97 @@
 <tr>
   <th><:field description description:>:</th>
   <td><input type="text" name="description" value="<:old description location description:>" maxlength="<:field description maxlength:>" size="<:field description width:>" />*</td>
-  <td><:error_img description:><:help addlocation description:></td>
+  <td class="help"><:error_img description:><:help addlocation description:></td>
 </tr>
 <tr>
   <th><:field room description:>:</th>
   <td><input type="text" name="room" value="<:old room location room:>" maxlength="<:field room maxlength:>" size="<:field room width:>" /><:ifField room required:>*<:or:><:eif:></td>
-  <td><:error_img room:><:help addlocation room:></td>
+  <td class="help"><:error_img room:><:help addlocation room:></td>
 </tr>
 <tr>
   <th><:field street1 description:>:</th>
   <td><input type="text" name="street1" value="<:old street1 location street1:>" maxlength="<:field street1 maxlength:>" size="<:field street1 width:>" /><:ifField street1 required:>*<:or:><:eif:></td>
-  <td><:error_img street1:><:help addlocation street1:></td>
+  <td class="help"><:error_img street1:><:help addlocation street1:></td>
 </tr>
 <tr>
   <th><:field street2 description:>:</th>
   <td><input type="text" name="street2" value="<:old street2 location street2:>" maxlength="<:field street2 maxlength:>" size="<:field street2 width:>" /><:ifField street2 required:>*<:or:><:eif:></td>
-  <td><:error_img street2:><:help addlocation street2:></td>
+  <td class="help"><:error_img street2:><:help addlocation street2:></td>
 </tr>
 <tr>
   <th><:field suburb description:>:</th>
   <td><input type="text" name="suburb" value="<:old suburb location suburb:>" maxlength="<:field suburb maxlength:>" size="<:field suburb width:>" /><:ifField suburb required:>*<:or:><:eif:></td>
-  <td><:error_img suburb:><:help addlocation suburb:></td>
+  <td class="help"><:error_img suburb:><:help addlocation suburb:></td>
 </tr>
 <tr>
   <th><:field state description:>:</th>
   <td><input type="text" name="state" value="<:old state location state:>" maxlength="<:field state maxlength:>" size="<:field state width:>" /><:ifField state required:>*<:or:><:eif:></td>
-  <td><:error_img state:><:help addlocation state:></td>
+  <td class="help"><:error_img state:><:help addlocation state:></td>
 </tr>
 <tr>
   <th><:field country description:>:</th>
   <td><input type="text" name="country" value="<:old country location country:>" maxlength="<:field country maxlength:>" size="<:field country width:>" /><:ifField country required:>*<:or:><:eif:></td>
-  <td><:error_img country:><:help addlocation country:></td>
+  <td class="help"><:error_img country:><:help addlocation country:></td>
 </tr>
 <tr>
   <th><:field postcode description:>:</th>
   <td><input type="text" name="postcode" value="<:old postcode location postcode:>" maxlength="<:field postcode maxlength:>" size="<:field postcode width:>" /><:ifField postcode required:>*<:or:><:eif:></td>
-  <td><:error_img postcode:><:help addlocation postcode:></td>
+  <td class="help"><:error_img postcode:><:help addlocation postcode:></td>
 </tr>
 <tr>
   <th><:field public_notes description:>:</th>
-  <td><textarea name="public_notes" rows="<:field public_notes height:>" cols="<:field public_notes width:>" wrap="virtual"><:old public_notes location public_notes:></textarea></td>
-  <td><:error_img public_notes:><:help addlocation public_notes:></td>
+  <td><textarea name="public_notes" rows="<:field public_notes height:>" cols="<:field public_notes width:>"><:old public_notes location public_notes:></textarea></td>
+  <td class="help"><:error_img public_notes:><:help addlocation public_notes:></td>
 </tr>
 <tr>
   <th>Disabled:</th>
   <td><input type="checkbox" name="disabled" value="1" <:ifLocation disabled:>checked="checked" <:or:><:eif:>/><input type="hidden" name="save_disabled" value="1" /></td>
-  <td><:help addlocation disabled:></td>
+  <td class="help"><:help addlocation disabled:></td>
 </tr>
 <tr>
-  <th colspan="2">Bookings</th>
+  <th colspan="3">Bookings</th>
 </tr>
 <tr>
   <th><:field bookings_name description:>:</th>
   <td><input type="text" name="bookings_name" value="<:old bookings_name location bookings_name:>" maxlength="<:field bookings_name maxlength:>" size="<:field bookings_name width:>" /><:ifField bookings_name required:>*<:or:><:eif:></td>
-  <td><:error_img bookings_name:><:help addlocation bookings_name:></td>
+  <td class="help"><:error_img bookings_name:><:help addlocation bookings_name:></td>
 </tr>
 <tr>
   <th><:field bookings_phone description:>:</th>
   <td><input type="text" name="bookings_phone" value="<:old bookings_phone location bookings_phone:>" maxlength="<:field bookings_phone maxlength:>" size="<:field bookings_phone width:>" /><:ifField bookings_phone required:>*<:or:><:eif:></td>
-  <td><:error_img bookings_phone:><:help addlocation bookings_phone:></td>
+  <td class="help"><:error_img bookings_phone:><:help addlocation bookings_phone:></td>
 </tr>
 <tr>
   <th><:field bookings_fax description:>:</th>
   <td><input type="text" name="bookings_fax" value="<:old bookings_fax location bookings_fax:>" maxlength="<:field bookings_fax maxlength:>" size="<:field bookings_fax width:>" /><:ifField bookings_fax required:>*<:or:><:eif:></td>
-  <td><:error_img bookings_fax:><:help addlocation bookings_fax:></td>
+  <td class="help"><:error_img bookings_fax:><:help addlocation bookings_fax:></td>
 </tr>
 <tr>
   <th><:field bookings_url description:>:</th>
   <td><input type="text" name="bookings_url" value="<:old bookings_url location bookings_url:>" maxlength="<:field bookings_url maxlength:>" size="<:field bookings_url width:>" /><:ifField bookings_url required:>*<:or:><:eif:></td>
-  <td><:error_img bookings_url:><:help addlocation bookings_url:></td>
+  <td class="help"><:error_img bookings_url:><:help addlocation bookings_url:></td>
 </tr>
 <tr>
-  <th colspan="2">Facilities</th>
+  <th colspan="3">Facilities</th>
 </tr>
 <tr>
   <th><:field facilities_name description:>:</th>
   <td><input type="text" name="facilities_name" value="<:old facilities_name location facilities_name:>" maxlength="<:field facilities_name maxlength:>" size="<:field facilities_name width:>" /><:ifField facilities_name required:>*<:or:><:eif:></td>
-  <td><:error_img facilities_name:><:help addlocation facilities_name:></td>
+  <td class="help"><:error_img facilities_name:><:help addlocation facilities_name:></td>
 </tr>
 <tr>
   <th><:field facilities_phone description:>:</th>
   <td><input type="text" name="facilities_phone" value="<:old facilities_phone location facilities_phone:>" maxlength="<:field facilities_phone maxlength:>" size="<:field facilities_phone width:>" /><:ifField facilities_phone required:>*<:or:><:eif:></td>
-  <td><:error_img facilities_phone:><:help addlocation facilities_phone:></td>
+  <td class="help"><:error_img facilities_phone:><:help addlocation facilities_phone:></td>
 </tr>
 <tr>
   <th><:field admin_notes description:>:</th>
-  <td><textarea name="admin_notes" rows="<:field admin_notes height:>" cols="<:field admin_notes width:>" wrap="virtual"><:old admin_notes location admin_notes:></textarea></td>
-  <td><:error_img admin_notes:><:help addlocation admin_notes:></td>
+  <td><textarea name="admin_notes" rows="<:field admin_notes height:>" cols="<:field admin_notes width:>"><:old admin_notes location admin_notes:></textarea></td>
+  <td class="help"><:error_img admin_notes:><:help addlocation admin_notes:></td>
 </tr>
 
 <tr>
-  <td colspan="2"><input type="submit" name="a_locsave" value="Save Location" /></td>
+  <td colspan="2" class="buttons"><input type="submit" name="a_locsave" value="Save Location" /></td>
   <td>&nbsp;</td>
 </tr>
 </table>

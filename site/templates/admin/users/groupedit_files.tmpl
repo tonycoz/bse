@@ -1,4 +1,4 @@
-<:wrap admin/xbase.tmpl title=>"Group Files":>
+<:wrap admin/base.tmpl title=>"Group Files":>
 <h1>Group Files: <:group name:></h1>
 <:include admin/users/inc_group_menu.tmpl:>
 <p>| <:ifUserCan bse_members_group_add_file:><a href="/cgi-bin/admin/siteusers.pl?a_addgroupfileform=1&amp;id=<:group id:>">Add a file</a> |<:or:><:eif:>
@@ -28,11 +28,11 @@
     <td><:date groupfile modwhen:></td>
     <td><:groupfile title:></td>
     <td><:replace [groupfile body] ^([\w\W]{25})[\w\W]+ "$1 ...":></td>
-    <td><a href="<:script:>?a_delgroupfileform=1&amp;id=<:group id:>&amp;file_id=<:groupfile id:>">Delete</a></div> <a href="<:script:>?a_editgroupfile=1&amp;id=<:group id:>&amp;file_id=<:groupfile id:>">Edit</a> <a href="<:script:>?a_fileaccesslog=1&amp;file_id=<:groupfile id:>">Downloads</a></div></td>
+    <td><a href="<:script:>?a_delgroupfileform=1&amp;id=<:group id:>&amp;file_id=<:groupfile id:>">Delete</a> <a href="<:script:>?a_editgroupfile=1&amp;id=<:group id:>&amp;file_id=<:groupfile id:>">Edit</a> <a href="<:script:>?a_fileaccesslog=1&amp;file_id=<:groupfile id:>">Downloads</a></td>
   </tr>
   <:iterator end groupfiles:>
 <:or Groupfiles:>
-<tr><td colspan="8">There are no files attached to this group</td></tr>
+<tr><td colspan="8" class="tablenote">There are no files attached to this group</td></tr>
 <:eif Groupfiles:>
 </table>
 </div>

@@ -1,4 +1,4 @@
-<:wrap admin/xbase.tmpl title=>"Add Location":>
+<:wrap admin/base.tmpl title=>"Add Location":>
 <h1>Add Location</h1>
 <p>
 | <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |
@@ -52,7 +52,7 @@
 </tr>
 <tr>
   <th><:field public_notes description:>:</th>
-  <td><textarea name="public_notes" rows="<:field public_notes height:>" cols="<:field public_notes width:>" wrap="virtual"><:old public_notes:></textarea></td>
+  <td><textarea name="public_notes" rows="<:field public_notes height:>" cols="<:field public_notes width:>"><:old public_notes:></textarea></td>
   <td><:error_img public_notes:><:help addlocation public_notes:></td>
 </tr>
 <tr>
@@ -93,7 +93,7 @@
 </tr>
 <tr>
   <th><:field admin_notes description:>:</th>
-  <td><textarea name="admin_notes" rows="<:field admin_notes height:>" cols="<:field admin_notes width:>" wrap="virtual"><:old admin_notes:></textarea></td>
+  <td><textarea name="admin_notes" rows="<:field admin_notes height:>" cols="<:field admin_notes width:>"><:old admin_notes:></textarea></td>
   <td><:error_img admin_notes:><:help addlocation admin_notes:></td>
 </tr>
 

@@ -1,4 +1,4 @@
-<:wrap admin/xbase.tmpl title=>"Admin Site Members":>
+<:wrap admin/base.tmpl title=>"Admin Site Members" js => "admin_siteusers.js":>
 <h1>Admin Site Members</h1>
 <p>
 | <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | <a href="<:script:>?a_grouplist=1">Groups</a> |
@@ -10,63 +10,23 @@
 <:or:><:eif:> 
 
 <form method="get" action="<:script:>" id="search">
-        <table cellpadding="3" border="0" cellspacing="1" width="100%">
+<table class="siteusers">
   <tr>
-            <th bgcolor="#FFFFFF" nowrap> <a href="<:script:>?<:sorthelp id:>&amp;p=<:siteusers_pagenum:>&amp;pp=<:siteusers_perpage:>&amp;<:search_param:>">Id</a></th>
-            <th bgcolor="#FFFFFF" nowrap> <a href="<:script:>?<:sorthelp userId:>&amp;p=<:siteusers_pagenum:>&amp;pp=<:siteusers_perpage:>&amp;<:search_param:>">Logon</a></th>
-            <th bgcolor="#FFFFFF" nowrap> <a href="<:script:>?<:sorthelp name1:>&amp;p=<:siteusers_pagenum:>&amp;pp=<:siteusers_perpage:>&amp;<:search_param:>">First Name</a></th>
-            <th bgcolor="#FFFFFF" nowrap> <a href="<:script:>?<:sorthelp name2:>&amp;p=<:siteusers_pagenum:>&amp;pp=<:siteusers_perpage:>&amp;<:search_param:>">Last Name</a></th>
+            <th class="col_id"> <a href="<:script:>?<:sorthelp id:>&amp;p=<:siteusers_pagenum:>&amp;pp=<:siteusers_perpage:>&amp;<:search_param:>">Id</a></th>
+            <th class="col_userid"> <a href="<:script:>?<:sorthelp userId:>&amp;p=<:siteusers_pagenum:>&amp;pp=<:siteusers_perpage:>&amp;<:search_param:>">Logon</a></th>
+            <th class="col_name1"> <a href="<:script:>?<:sorthelp name1:>&amp;p=<:siteusers_pagenum:>&amp;pp=<:siteusers_perpage:>&amp;<:search_param:>">First Name</a></th>
+            <th class="col_name2"> <a href="<:script:>?<:sorthelp name2:>&amp;p=<:siteusers_pagenum:>&amp;pp=<:siteusers_perpage:>&amp;<:search_param:>">Last Name</a></th>
 	    <th>&nbsp;</th>
           </tr>
           <tr class="inline_form">
-            <td width="5%" align="center"><input type="text" name="id" size="6" id="id" value="<:cgi id:>" class="inline" /></td>
-            <td width="20%"><input type="text" name="userId" size="20" id="userId" value="<:cgi userId:>" class="inline" /></td>
-            <td width="33%"><input type="text" name="name1" size="40" id="name1" value="<:cgi name1:>" class="inline" /></td>
-            <td width="33%"><input type="text" name="name2" size="40" id="name2" value="<:cgi name2:>" class="inline" /></td>
+            <td class="col_id"><input type="text" name="id" size="6" id="id" value="<:cgi id:>" class="inline" /></td>
+            <td class="col_userid"><input type="text" name="userId" size="20" id="userId" value="<:cgi userId:>" class="inline" /></td>
+            <td class="col_name1"><input type="text" name="name1" size="40" id="name1" value="<:cgi name1:>" class="inline" /></td>
+            <td class="col_name2"><input type="text" name="name2" size="40" id="name2" value="<:cgi name2:>" class="inline" /></td>
 	    <td><input type="submit" value="Filter" /></td>
           </tr>
-          <tr> 
 <:ifAjax:></table><div id="results"><:or:><:eif:>
 <:include admin/users/list_low.tmpl:>
 </div>
-<:ifAjax:></form><:or:><:eif:>
+</form>
 
-<:if Ajax:>
-<script>
-function do_search () {
-     var f = $('search');
-     var par = '_t=low&id=' + encodeURIComponent(f.elements['id'].value);
-     par = par + '&userId=' + encodeURIComponent(f.elements['userId'].value);
-     par = par + '&name1=' + encodeURIComponent(f.elements['name1'].value);
-     par = par + '&name2=' + encodeURIComponent(f.elements['name2'].value);
-     var updater = new Ajax.Updater(
-       'results',
-       '/cgi-bin/admin/siteusers.pl',
-       {
-	method: 'get',
-	parameters: par,
-        asynchronous: true
-       });
-}
-new Form.Element.Observer($('id'), 0.5, 
-   function(term) {
-     do_search();
-   }
-);
-new Form.Element.Observer($('userId'), 0.5, 
-   function(term) {
-     do_search();
-   }
-);
-new Form.Element.Observer($('name1'), 0.5, 
-   function(term) {
-     do_search();
-   }
-);
-new Form.Element.Observer($('name2'), 0.5, 
-   function(term) {
-     do_search();
-   }
-);
-</script>
-<:or Ajax:><:eif Ajax:>

@@ -1,4 +1,4 @@
-<:wrap admin/xbase.tmpl title=>"Cancel Seminar Booking":>
+<:wrap admin/base.tmpl title=>"Cancel Seminar Booking":>
 <h1>Cancel Seminar Booking</h1>
 <p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | </p>
 <:ifMessage:>
@@ -30,7 +30,7 @@
     <td><:date "%I:%M %P" session when_at:></td>
   </tr>
   <tr>
-    <td colspan="3"><input type="submit" name="a_cancelbooking" value="Cancel Booking" /></td>
+    <td colspan="2"><input type="submit" name="a_cancelbooking" value="Cancel Booking" /></td>
   </tr>
 </table>
 </form>

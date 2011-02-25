@@ -1,4 +1,4 @@
-<:wrap admin/xbase.tmpl title=>"Add Subscription":>
+<:wrap admin/base.tmpl title=>"Add Subscription":>
 <h1>Add Subscription</h1>
 <p>
 | <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |
@@ -8,31 +8,30 @@
 <p><b><:message:></b></p>
 <:or:><:eif:> 
 
-<form action="<:script:>" method="post" name="addsub">
-<table>
+<form action="<:adminurl subadmin:>" method="post" name="addsub">
+<table class="editform editformsmall">
 <tr>
-  <th>Identifier:</th>
-  <td><input type="text" name="text_id" value="<:old text_id:>" /></td>
-  <td><:error_img text_id:><:help addsubscr text_id:></td>
+  <th><label for="text_id">Identifier:</label></th>
+  <td><input type="text" name="text_id" value="<:old text_id:>" id="text_id" accesskey="i" tabindex="10" /></td>
+  <td class="help"><:error_img text_id:><:help addsubscr text_id:></td>
 </tr>
 <tr>
-  <th>Title:</th>
-  <td><input type="text" name="title" value="<:old title:>" /></td>
-  <td><:error_img title:><:help addsubscr title:></td>
+  <th><label for="title">Title:</label></th>
+  <td><input type="text" name="title" value="<:old title:>" id="title" accesskey="t" tabindex="20" /></td>
+  <td class="help"><:error_img title:><:help addsubscr title:></td>
 </tr>
 <tr>
-  <th>Description:</th>
-  <td><input type="text" name="description" value="<:old description:>" /></td>
-  <td><:error_img description:><:help addsubscr description:></td>
+  <th><label for="description">Description:</label></th>
+  <td><input type="text" name="description" value="<:old description:>" id="description" accesskey="d" tabindex="30" /></td>
+  <td class="help"><:error_img description:><:help addsubscr description:></td>
 </tr>
 <tr>
-  <th>Max Lapsed:</th>
-  <td><input type="text" name="max_lapsed" value="<:old max_lapsed:>" /></td>
-  <td><:error_img max_lapsed:><:help addsubscr max_lapsed:></td>
+  <th><label for="max_lapsed">Max Lapsed</label>:</th>
+  <td><input type="text" name="max_lapsed" value="<:old max_lapsed:>" accesskey="m" tabindex="40" id="max_lapsed" /></td>
+  <td class="help"><:error_img max_lapsed:><:help addsubscr max_lapsed:></td>
 </tr>
 <tr>
-  <td colspan="2"><input type="submit" name="a_add" value="Add Subscription" /></td>
-  <td>&nbsp;</td>
+  <td colspan="3" class="buttons"><input type="submit" name="a_add" value="Add Subscription" tabindex="1000" /></td>
 </tr>
 </table>
 </form>

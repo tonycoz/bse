@@ -1,4 +1,4 @@
-<:wrap admin/xbase.tmpl title=>"Add Seminar Attendee":>
+<:wrap admin/base.tmpl title=>"Add Seminar Attendee":>
 <h1>Add Seminar Attendee - Select a Session</h1>
 <:ifMessage:>
 <p><b><:message:></b></p>
@@ -7,8 +7,7 @@
 <a href="<:script:>?id=<:siteuser id:>">Edit user</a> |
 </p>
 <p>Adding user <:siteuser userId:> as an attendee to:</p>
-<!-- leave this as get, since submitting it just displays a new page -->
-<form action="<:script:>" method="get" name="addattendee1">
+<form action="<:script:>" method="post" name="addattendee1">
 <input type="hidden" name="siteuser_id" value="<:siteuser id:>" />
 <input type="hidden" name="seminar_id" value="<:seminar id:>" />
 <:ifCgi r:><input type="hidden" name="r" value="<:cgi r:>" /><:or:><:eif:>
@@ -48,3 +47,4 @@
     <td colspan="3"><input type="submit" name="a_addattendsave" value="Select Session &gt;&gt;" /></td>
   </tr>
 </table>
+</form>

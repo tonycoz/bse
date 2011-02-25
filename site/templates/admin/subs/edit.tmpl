@@ -1,107 +1,90 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
+<:wrap admin/base.tmpl title => [cond [ifNew] "Add Newsletter" [cat "Edit Newsletter: " [subscription name]] ]:>
+<h1><:ifNew:>Add Newsletter<:or:>Edit Newsletter: <:subscription name:><:eif:></h1>
 
-  <title>Administration - <:ifNew:>add<:or:>Edit<:eif:> Subscription</title>
+<:ifMessage:><p class="message"><:message:></p><:or:><:eif:>
 
-  <link rel="stylesheet" type="text/css" href="/css/admin.css" />
-
-</head>
-
-<body>
-
-<h1><:ifNew:>Add<:or:>Edit<:eif:> Subscription</h1>
-
-<:ifMessage:><p><b><:message:></b></p><:or:><:eif:>
-
-<p>| <a href="/admin/">Admin menu</a> | <a href="<:script:>">Subscriptions List</a> 
+<p>| <a href="/admin/">Admin menu</a> | <a href="<:script:>">Newsletter List</a> 
   |</p>
 
-<form action="<:script:>" method="POST"><input type="hidden" name="id" value="<:subscription id:>">
-<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
-    <tr>
-      <td>
-        <table cellpadding="6" border="0" cellspacing="1">
-          <tr bgcolor="#FFFFFF"> 
-            <th align="left" nowrap>Name:</th>
-            <td> 
-              <input type="text" name="name" value="<:old name:>" size="40" />
-            </td>
-            <td nowrap><:help subs name:> <:ifError name:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error name:>" /><:or:><:eif:></td>
-          </tr>
-          <tr bgcolor="#FFFFFF"> 
-            <th align="left" nowrap>Title:</th>
-            <td> 
-              <input type="text" name="title" value="<:old title:>" size="40" />
-            </td>
-            <td nowrap><:help subs title:> <:ifError title:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error title:>" /><:or:><:eif:></td>
-          </tr>
-          <tr bgcolor="#FFFFFF"> 
-            <th align="left" valign="top" nowrap>Description:</th>
-            <td valign="top"> 
-              <textarea name="description" cols="60" rows="10" wrap="virtual"><:old description:></textarea>
-            </td>
-            <td valign="top" nowrap><:help subs description:> <:ifError description:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error description:>" /><:or:><:eif:></td>
-          </tr>
-          <tr bgcolor="#FFFFFF"> 
-            <th align="left" nowrap>Frequency:</th>
-            <td> 
-              <input type="text" name="frequency" value="<:old frequency:>" size="40" />
-            </td>
-            <td nowrap><:help subs frequency:> <:ifError frequency:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error frequency:>" /><:or:><:eif:></td>
-          </tr>
-          <tr bgcolor="#FFFFFF"> 
-            <th align="left" nowrap>HTML template:</th>
-            <td><:template html_template htmlemail 1:> </td>
-            <td nowrap><:help subs html_template:> <:ifError html_template:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error html_template:>" /><:or:><:eif:></td>
-          </tr>
-          <tr bgcolor="#FFFFFF"> 
-            <th align="left" nowrap>Text template:</th>
-            <td><:template text_template textemail:> </td>
-            <td nowrap><:help subs text_template:> <:ifError text_template:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error text_template:>" /><:or:><:eif:></td>
-          </tr>
-          <tr bgcolor="#FFFFFF"> 
-            <th align="left" nowrap>Visible:</th>
-            <td><input type="checkbox" name="visible" value="1"<:ifOld visible:> 
-              checked<:or:><:eif:> /> Make this subscription available</td>
-            <td nowrap><:help subs visible:></td>
-          </tr>
-          <tr bgcolor="#FFFFFF"> 
-            <th colspan="2">Archiving </th>
-            <td nowrap><:help subs archiving:></td>
-          </tr>
-          <tr bgcolor="#FFFFFF"> 
-            <th align="left" nowrap>Archive:</th>
-            <td><input type="checkbox" name="archive" value="1"<:ifOld archive:> 
-              checked<:or:><:eif:> /> Archive this subscription</td>
-            <td nowrap><:help subs archive:> </td>
-          </tr>
-          <tr bgcolor="#FFFFFF"> 
-            <th align="left" nowrap>Keywords:</th>
-            <td> 
-              <input type="text" name="keyword" value="<:old keyword:>" size="40" />
-            </td>
-            <td nowrap><:help subs keyword:></td>
-          </tr>
-          <tr bgcolor="#FFFFFF"> 
-            <th align="left" nowrap>Article template:</th>
-            <td><:template article_template:> </td>
-            <td nowrap><:help subs template:> <:ifError article_template:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error article_template:>" /><:or:><:eif:></td>
-          </tr>
-          <tr bgcolor="#FFFFFF"> 
-            <th align="left" nowrap>Archive parent:</th>
-            <td><:parent:> </td>
-            <td nowrap><:help subs parent:> <:ifError parentId:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error parentId:>" /><:or:><:eif:></td>
-          </tr>
-        </table>
-</td>
-</tr>
+<form action="<:script:>" method="post">
+<input type="hidden" name="id" value="<:subscription id:>" />
+<table class="editform editformsmall">
+  <tr> 
+    <th>Name:</th>
+    <td> 
+      <input type="text" name="name" value="<:old name:>" size="40" />
+    </td>
+    <td class="help"><:help subs name:> <:ifError name:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error name:>" /><:or:><:eif:></td>
+  </tr>
+  <tr> 
+    <th>Title:</th>
+    <td> 
+      <input type="text" name="title" value="<:old title:>" size="40" />
+    </td>
+    <td class="help"><:help subs title:> <:ifError title:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error title:>" /><:or:><:eif:></td>
+  </tr>
+  <tr> 
+    <th>Description:</th>
+    <td> 
+      <textarea name="description" cols="60" rows="10"><:old description:></textarea>
+    </td>
+    <td class="help"><:help subs description:> <:ifError description:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error description:>" /><:or:><:eif:></td>
+  </tr>
+  <tr> 
+    <th>Frequency:</th>
+    <td> 
+      <input type="text" name="frequency" value="<:old frequency:>" size="40" />
+    </td>
+    <td class="help"><:help subs frequency:> <:ifError frequency:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error frequency:>" /><:or:><:eif:></td>
+  </tr>
+  <tr> 
+    <th>HTML template:</th>
+    <td><:template html_template htmlemail 1:> </td>
+    <td class="help"><:help subs html_template:> <:ifError html_template:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error html_template:>" /><:or:><:eif:></td>
+  </tr>
+  <tr> 
+    <th>Text template:</th>
+    <td><:template text_template textemail:> </td>
+    <td class="help"><:help subs text_template:> <:ifError text_template:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error text_template:>" /><:or:><:eif:></td>
+  </tr>
+  <tr> 
+    <th align="left" nowrap>Visible:</th>
+    <td><input type="checkbox" name="visible" value="1"<:ifOld visible:> 
+               checked="checked"<:or:><:eif:> /> Make this subscription available</td>
+    <td class="help"><:help subs visible:></td>
+  </tr>
+  <tr> 
+    <th colspan="2">Archiving </th>
+    <td class="help"><:help subs archiving:></td>
+  </tr>
+  <tr> 
+    <th>Archive:</th>
+    <td><input type="checkbox" name="archive" value="1"<:ifOld archive:> 
+              checked="checked"<:or:><:eif:> /> Archive this subscription</td>
+    <td class="help"><:help subs archive:> </td>
+  </tr>
+  <tr> 
+    <th>Keywords:</th>
+    <td> 
+      <input type="text" name="keyword" value="<:old keyword:>" size="40" />
+    </td>
+    <td class="help"><:help subs keyword:></td>
+  </tr>
+  <tr> 
+    <th>Article template:</th>
+    <td><:template article_template:> </td>
+    <td class="help"><:help subs template:> <:ifError article_template:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error article_template:>" /><:or:><:eif:></td>
+  </tr>
+  <tr> 
+    <th>Archive parent:</th>
+    <td><:parent:> </td>
+    <td class="help"><:help subs parent:> <:ifError parentId:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error parentId:>" /><:or:><:eif:></td>
+  </tr>
+  <tr>
+    <td colspan="3" class="buttons">
+      <:ifNew:><input type="submit" name="addsave" value="Add Newsletter" /><:or:><input type="submit" name="editsave" value="Save Newsletter" /><:eif:>
+    </td>
+  </tr>
 </table>
-<p>
-    <:ifNew:><input type="submit" name="addsave" value="Add Subscription"><:or:><input type="submit" name="editsave" value="Update Subscription"><:eif:>
-  </p>
 </form>
 
-<p><font size="-1">BSE Release <:release:></font></p>
-</body>
-</html>

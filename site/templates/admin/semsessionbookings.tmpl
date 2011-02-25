@@ -1,4 +1,4 @@
-<:wrap admin/xbase.tmpl title=>"Seminar [seminar title] - Bookings":>
+<:wrap admin/base.tmpl title=>"Seminar [seminar title] - Bookings":>
 <h1>Seminar <:seminar title:> - Bookings</h1>
 <:ifMessage:>
 <p><b><:message:></b></p>
@@ -8,11 +8,12 @@
   <a href="<:script:>?id=<:seminar id:>&amp;_t=semsessions">Session list</a> |
 </p>
 
-<table>
+<table class="editform editformtiny">
   <tr>
     <th>Logon</th>
     <th>Name</th>
     <th>Email</th>
+    <th>Tools</th>
   </tr>
 <:if Bookedusers:>
 <:iterator begin bookedusers:>
@@ -28,7 +29,7 @@
 <:iterator end bookedusers:>
 <:or Bookedusers:>
   <tr>
-    <td colspan="3">There is no-one booked for this session</td>
+    <td colspan="4">There is no-one booked for this session</td>
   </tr>
 <:eif Bookedusers:>
 </table>

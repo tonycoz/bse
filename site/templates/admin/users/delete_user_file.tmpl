@@ -1,10 +1,10 @@
-<:wrap admin/xbase.tmpl title=>"Site Member Files - Delete File":>
+<:wrap admin/base.tmpl title=>"Site Member Files - Delete File":>
 <h1>Delete Member File</h1>
 
 <:include admin/users/inc_user_menu.tmpl:>
 <:ifMessage:><div id="message"><:message:></div><:or:><:eif:>
 <div id="delfile">
-<form enctype="multipart/form-data" method="post">
+<form enctype="multipart/form-data" method="post" action="<:adminurl siteusers:>">
 <input type="hidden" name="id" value="<:siteuser id:>" />
 <input type="hidden" name="file_id" value="<:userfile id:>" />
 <:csrfp admin_user_del_file hidden:>

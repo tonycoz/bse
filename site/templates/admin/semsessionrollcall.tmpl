@@ -1,4 +1,4 @@
-<:wrap admin/xbase.tmpl title=>"Seminar [seminar title] - Edit Session":>
+<:wrap admin/base.tmpl title=>[cat "Seminar " [seminar title] " - Edit Session"]:>
 <h1>Seminar <:seminar title:> - Edit Session</h1>
 <:ifMessage:>
 <p><b><:message:></b></p>
@@ -12,19 +12,19 @@
 <input type="hidden" name="id" value="<:seminar id:>" />
 <input type="hidden" name="session_id" value="<:session id:>" />
 <input type="hidden" name="r" value="<:script:>?id=<:seminar id:>&amp;_t=semsessions&amp;s=all" />
-<table>
+<table class="editform editformsmall sessionrollcall">
   <tr>
-    <th>Present</th>
-    <th>Logon</th>
-    <th>Name</th>
-    <th>Email</th>
+    <th class="col_present">Present</th>
+    <th class="col_logon">Logon</th>
+    <th class="col_name">Name</th>
+    <th class="col_email">Email</th>
   </tr>
 <:iterator begin rollusers:>
   <tr>
-    <td><input type="checkbox" name="roll_present_<:rolluser id:>" <:ifRolluser roll_present:>checked="checked"<:or:><:eif:> /></td>
-    <td><a href="/cgi-bin/admin/siteusers.pl?a_edit=1&amp;id=<:rolluser id:>"><:rolluser userId:></a></td>
-    <td><:rolluser name1:> <:rolluser name2:></td>
-    <td><a href="mailto:<:rolluser email:>"><:rolluser email:></a></td>
+    <td class="col_present"><input type="checkbox" name="roll_present_<:rolluser id:>" <:ifRolluser roll_present:>checked="checked"<:or:><:eif:> /></td>
+    <td class="col_logon"><a href="/cgi-bin/admin/siteusers.pl?a_edit=1&amp;id=<:rolluser id:>"><:rolluser userId:></a></td>
+    <td class="col_name"><:rolluser name1:> <:rolluser name2:></td>
+    <td class="col_email"><a href="mailto:<:rolluser email:>"><:rolluser email:></a></td>
   </tr>
   <tr>
     <!-- separate row to distinguish these from the save button -->
@@ -35,10 +35,11 @@
   </tr>
 <:iterator end rollusers:>
   <tr>
-    <td colspan="4"><input type="submit" name="a_takesessionrolesave" value="Take Roll" /></td>
+    <td colspan="4" class="buttons"><input type="submit" name="a_takesessionrolesave" value="Take Roll" /></td>
   </tr>
 </table>
-<script>
+</form>
+<script type="text/javascript">
 function set_all_roll(set_reset) {
   var f = document.rollcall;
   for (var i = 0; i < f.elements.length; i++) {

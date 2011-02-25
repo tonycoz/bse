@@ -1,4 +1,4 @@
-<:wrap admin/xbase.tmpl title=>"Seminar [seminar title] - Sessions":>
+<:wrap admin/base.tmpl title=>"Seminar [seminar title] - Sessions":>
 <h1>Seminar <:seminar title:> - Sessions</h1>
 <:ifMessage:>
 <p><b><:message:></b></p>
@@ -6,6 +6,7 @@
 <p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | <a href="<:script:>?id=<:seminar id:>">Edit seminar</a> | 
 Show: <:ifEq [cgi s] "all":><a href="<:script:>?id=<:seminar id:>&amp;_t=semsessions">Only new sessions</a><:or:><a href="<:script:>?id=<:seminar id:>&amp;_t=semsessions&amp;s=all">All sessions</a><:eif:> |
 <a href="<:script:>?id=<:seminar id:>&amp;_t=semsessadd">Add new session</a> |
+<a href="<:adminurl admin_seminar:>">Manage Locations</a> |
 </p>
 
 <table>

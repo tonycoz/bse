@@ -1,11 +1,11 @@
-<:wrap admin/xbase.tmpl title=>"Update Member Data":>
+<:wrap admin/base.tmpl title=>"Update Member Data":>
 <h1>Update Member Data</h1>
 <:ifMessage:>
 <p><b><:message:></b></p>
 <:or:><:eif:> 
-<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> 
+<p>| <a href="<:adminurl menu:>">Admin menu</a> 
 |</p>
-<form action="<:script:>" method="post" enctype="multipart/form-data" name="updatememberdata">
+<form action="<:adminurl userupdate:>" method="post" enctype="multipart/form-data" name="updatememberdata">
 <:ifCgi r:><input type="hidden" name="r" value="<:cgi r:>" /><:or:><:eif:>
 <table class="editform editformsmall">
   <tr>
@@ -23,7 +23,7 @@
     <td><input type="file" name="file" /></td>
     <td><:error_img file:></td>
   <tr>
-    <td colspan="3"><input type="submit" name="a_preview" value="Preview Import" /><input type="submit" name="a_import" value="Do Import" /></td>
+    <td colspan="3" class="buttons"><input type="submit" name="a_preview" value="Preview Import" /><input type="submit" name="a_import" value="Do Import" /></td>
   </tr>
 </table>
 </form>

@@ -1,22 +1,11 @@
-<html>
-<head>
-
-<title>
-    <: ifNew :>Add<: or :>Edit<: eif :> Catalog - Shop Administration
-</title>
-
-  <link rel="stylesheet" type="text/css" href="/css/admin.css">
-
-</head>
-
-<body>
-<h1>Shop Administration</h1>
+<:wrap admin/base.tmpl title => "Edit Catalog":>
+<h1>Edit Catalog:</h1>
 <:ifMessage:> 
 <p><b><:message:></b></p>
 <:or:><:eif:> 
 <p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | <:ifNew:><:or:><a href="<:article admin:>">See 
   catalog</a> | <:eif:><:editParent:> <a href="/cgi-bin/admin/shopadmin.pl">Manage 
-  catalogs</a> | <:if New:><:or New:><a href="<:script:>?id=<:article id:>&_t=steps">Manage 
+  catalogs</a> | <:if New:><:or New:><a href="<:script:>?id=<:article id:>&amp;_t=steps">Manage 
   step children/parents</a> | 
 <a href="<:script:>?id=<:article id:>&amp;_t=groups">Manage access</a> |
 <:eif New:></p>
@@ -27,16 +16,13 @@
 <:if Or [iadminuser_count] [iadmingroup_count]:>
       <form action="/cgi-bin/admin/adminusers.pl">
   <input type="hidden" name="id" value="<: article id:>" />
-  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
-  <tr>
-    <td>
-        <table cellpadding="6" cellspacing="1" border="0" width="100%">
+        <table>
           <tr>
-            <th nowrap="nowrap">
+            <th>
 
         <font size="2">Manage access:</font>
         </th>
-            <td bgcolor="#FFFFFF">
+            <td>
               <select name="adminid">
 <:iterator begin adminusers:>
 <option value="<:iadminuser id:>">User <:iadminuser logon:>
@@ -45,17 +31,14 @@
 <option value="<:iadmingroup id:>">Group <:iadmingroup name:>
 </option><:iterator end admingroups:>
               </select>
-              <input type="submit" name="a_showobjectart" value="Manage">
+              <input type="submit" name="a_showobjectart" value="Manage" />
       </td>
-            <td bgcolor="#FFFFFF"><:help access manage:>
+            <td class="help"><:help access manage:>
         </td>
           </tr>
         </table>
-    </td>
-   </tr>
-  </table>
       </form>
-<br>
+<br />
 <:or Or:><:eif Or:>
 <:eif:>
 
@@ -65,177 +48,171 @@
   <input type="hidden" name="level" value="<: level :>" />
   <input type="hidden" name="id" value="<: article id :>" />
 <:ifNew:><:csrfp admin_add_article hidden:><:or:><:csrfp admin_save_article hidden:><:eif:>
-  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" width="100%" class="table">
-    <tr>
-      <td>
-        <table cellpadding="6" border="0" cellspacing="1" width="100%">
+        <table class="editform">
           <tr> 
-            <th bgcolor="#FFFFFF" nowrap="nowrap" align="left"> Parent: </th>
-            <td bgcolor="#FFFFFF" width="100%"> 
+            <th> Parent: </th>
+            <td> 
               <:if FieldPerm parentid:><select name="parentid">
                 <option value="">Please Select a <: parentType :></option> <: list subsections :> 
               </select><:or FieldPerm:><:parent title:> (<:parent id:>)<:eif FieldPerm:>
             </td>
-            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help catalog parent:> <:error_img parentid:></td>
+            <td class="help"><:help catalog parent:> <:error_img parentid:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" nowrap="nowrap" align="left"> Catalog title: </th>
-            <td bgcolor="#FFFFFF" width="100%"> 
-              <:ifFieldPerm title:><input type="text" name="title" maxlength="64" size="64" value="<: old title default title :>"><:or:><:default title:><:eif:>
+            <th> Catalog title: </th>
+            <td> 
+              <:ifFieldPerm title:><input type="text" name="title" maxlength="64" size="64" value="<: old title default title :>" /><:or:><:default title:><:eif:>
             </td>
-            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help catalog title:> <:error_img title:></td>
+            <td class="help"><:help catalog title:> <:error_img title:></td>
           </tr>
           <:if Cfg "title alias" [concatenate level [article level]]:><tr>
-            <th nowrap="nowrap" bgcolor="#FFFFFF" align="left">Alias:</th>
-            <td bgcolor="#FFFFFF" width="100%">
+            <th>Alias:</th>
+            <td>
               <:if FieldPerm titleAlias:><input type="text" name="titleAlias" maxlength="<:cfg fields alias_size 60:>" size="60" value="<:old titleAlias article titleAlias:>" /><:or FieldPerm:><:article titleAlias:><:eif FieldPerm:>
             </td>
-            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help edit titleAlias:> <:error_img titleAlias:></td>
+            <td class="help"><:help edit titleAlias:> <:error_img titleAlias:></td>
           </tr><:or Cfg:><:eif Cfg:>
           <tr> 
-            <th nowrap="nowrap" bgcolor="#FFFFFF" align="left">Summary: 
+            <th>Summary: 
             </th>
-            <td bgcolor="#FFFFFF" width="100%"> 
+            <td> 
             <:ifFieldPerm summary:><input type="text" name="summary" maxlength="<:cfg fields summary_size 255:>" size="64" value="<: old summary default summary :>" />
             <:or:><:default summary:><:eif:></td>
-            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help edit summary:> <:error_img summary:></td>
+            <td class="help"><:help edit summary:> <:error_img summary:></td>
           </tr>
           <tr> 
-            <th valign="top" bgcolor="#FFFFFF" nowrap="nowrap" align="left"> Body:</th>
-            <td bgcolor="#FFFFFF" width="100%"> 
-              <:ifFieldPerm body:><textarea name="body" rows="10" cols="60" wrap="virtual"><: old body default body :></textarea><:or:><:bodytext article body:><:eif:>
+            <th> Body:</th>
+            <td> 
+              <:ifFieldPerm body:><textarea name="body" rows="10" cols="60"><: old body default body :></textarea><:or:><:bodytext article body:><:eif:>
             </td>
-            <td valign="top" nowrap="nowrap" bgcolor="#FFFFFF"><:help body body:> <:error_img
+            <td class="help"><:help body body:> <:error_img
             body:></td>
           </tr>
           <:if Cfgsection [concatenate level [article level] " menus"]:><tr> 
-            <th nowrap="nowrap" bgcolor="#FFFFFF" align="left">Menu:</th>
-            <td bgcolor="#FFFFFF" width="100%"> 
+            <th>Menu:</th>
+            <td> 
               <:if FieldPerm menu:><select name="menu" id="menu">
                 <:iterator begin cfgsection [concatenate level [article level] " menus"] sort=key:><option value="<:cfgentry key:>"<:if Eq [old menu] [cfgentry key]:> selected="selected"<:or Eq:><:eif Eq:>><:cfgentry value:></option><:iterator separator cfgsection:>
                 <:iterator end cfgsection:>
               </select><:or FieldPerm:><:article menu:><:eif FieldPerm:>
             </td>
-            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help article menu:> <:error_img menu:></td>
+            <td class="help"><:help article menu:> <:error_img menu:></td>
           </tr><:or Cfgsection:><:eif Cfgsection:>
 		  <tr> 
-            <th bgcolor="#FFFFFF" nowrap="nowrap" align="left"> Template: </th>
-            <td bgcolor="#FFFFFF" width="100%"> <:ifFieldPerm titleImage:><:templates:><:or:><:article titleImage:><:eif:> </td>
-            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help catalog template:> <:error_img template:></td>
+            <th> Template: </th>
+            <td> <:ifFieldPerm titleImage:><:templates:><:or:><:article titleImage:><:eif:> </td>
+            <td class="help"><:help catalog template:> <:error_img template:></td>
           </tr>
 		  <tr> 
-            <th bgcolor="#FFFFFF" nowrap="nowrap" align="left">List article:</th>
-            <td bgcolor="#FFFFFF" width="100%"> <:if FieldPerm listed:><:list listed:><:or FieldPerm:><:if Article listed:><:ifEq [article listed] "1":>Yes<:or:>In Sections, but not menu<:eif:><:or Article:>No<:eif Article:><:eif FieldPerm:> </td>
-            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help catalog list:> <:error_img listed:></td>
+            <th>List article:</th>
+            <td> <:if FieldPerm listed:><:list listed:><:or FieldPerm:><:if Article listed:><:ifEq [article listed] "1":>Yes<:or:>In Sections, but not menu<:eif:><:or Article:>No<:eif Article:><:eif FieldPerm:> </td>
+            <td class="help"><:help catalog list:> <:error_img listed:></td>
           </tr>
           <tr> 
-            <th nowrap bgcolor="#FFFFFF" align="left">Link alias: 
-            </th>
-            <td bgcolor="#FFFFFF" width="100%"> 
-            <:ifFieldPerm linkAlias:><input type="text" name="linkAlias" maxlength="<:cfg fields linkAlias_size 255:>" size="40" value="<: old linkAlias article linkAlias :>">
+            <th>Link alias:</th>
+            <td> 
+            <:ifFieldPerm linkAlias:><input type="text" name="linkAlias" maxlength="<:cfg fields linkAlias_size 255:>" size="40" value="<: old linkAlias article linkAlias :>" />
             <:or:><:default linkAlias:><:eif:></td>
-            <td nowrap bgcolor="#FFFFFF"><:help edit linkAlias:> <:error_img linkAlias:></td>
+            <td class="help"><:help edit linkAlias:> <:error_img linkAlias:></td>
           </tr>
 		  <tr>
-            <th nowrap="nowrap" bgcolor="#FFFFFF" align="left">Flags:</th>
-            <td bgcolor="#FFFFFF" width="100%"><:iterator begin flags:><:if FieldPerm flags:>
+            <th>Flags:</th>
+            <td><:iterator begin flags:><:if FieldPerm flags:>
               <input type="checkbox" name="flags" value="<:flag id:>" <:ifFlagSet [flag id]:>checked<:or:>
               <:eif:> /><:or FieldPerm:><:ifFlagSet [flag id]:>Yes<:or:>No<:eif:>
               <:eif FieldPerm:><:flag desc:><:iterator separator flags:><br /><:iterator end flags:></td>
-            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help edit flags:> <:error_img flags:></td>
+            <td class="help"><:help edit flags:> <:error_img flags:></td>
           </tr>
           <tr>
-            <th nowrap="nowrap" align="left" bgcolor="#FFFFFF">Page title:</th>
-            <td width="100%" bgcolor="#FFFFFF">
+            <th>Page title:</th>
+            <td>
               <:ifFieldPerm pageTitle:><input type="text" name="pageTitle" value='<:old pageTitle article pageTitle:>' size="60" maxlength="255" /> (alternate title)<:or:><:article pageTitle:><:eif:>
             </td>
-           <td nowrap="nowrap" bgcolor="#FFFFFF"><:help edit pageTitle:> <:error_img pageTitle:></td>
+           <td class="help"><:help edit pageTitle:> <:error_img pageTitle:></td>
           </tr>
           <tr>
-            <th nowrap="nowrap" align="left" bgcolor="#FFFFFF">Meta description:</th>
-            <td width="100%" bgcolor="#FFFFFF">
+            <th>Meta description:</th>
+            <td>
               <:ifFieldPerm metaDescription:><input type="text" name="metaDescription" value='<:old metaDescription article metaDescription:>' size="60" maxlength="255" /><:or:><:article metaDescription:><:eif:>
             </td>
-           <td nowrap="nowrap" bgcolor="#FFFFFF"><:help edit metaDescription:> <:error_img metaDescription:></td>
+           <td class="help"><:help edit metaDescription:> <:error_img metaDescription:></td>
           </tr>
           <tr>
-            <th nowrap="nowrap" align="left" bgcolor="#FFFFFF">Meta keywords:</th>
-            <td width="100%" bgcolor="#FFFFFF">
+            <th>Meta keywords:</th>
+            <td>
               <:ifFieldPerm metaKeywords:><input type="text" name="metaKeywords" value='<:old metaKeywords article metaKeywords:>' size="60" maxlength="255" /> (comma separated)<:or:><:article metaKeywords:><:eif:>
             </td>
-           <td nowrap="nowrap" bgcolor="#FFFFFF"><:help edit metaKeywords:> <:error_img metaKeywords:></td>
+           <td class="help"><:help edit metaKeywords:> <:error_img metaKeywords:></td>
           </tr>
           <tr>
-            <th nowrap="nowrap" align="left" bgcolor="#FFFFFF">Author name:</th>
-            <td width="100%" bgcolor="#FFFFFF" >
+            <th>Author name:</th>
+            <td>
               <:if FieldPerm author:><input type="text" name="author" value='<:ifCfg editor auto_author:><:old author adminuser name:><:or:><:old author:><:eif:>' size="40" maxlength="255" /><:or FieldPerm:><:article author:><:eif FieldPerm:>
             </td>
-            <td nowrap="nowrap" bgcolor="#FFFFFF" ><:help edit author:> <:error_img author:></td>
+            <td class="help"><:help edit author:> <:error_img author:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" nowrap="nowrap" align="left"> Release date: </th>
-            <td bgcolor="#FFFFFF" width="100%"> 
-              <:if FieldPerm release:><input type="text" name="release" value="<: old release date "%d/%m/%Y" default release :>" size="10" maxlength="10">
+            <th> Release date: </th>
+            <td> 
+              <:if FieldPerm release:><input type="text" name="release" value="<: old release date "%d/%m/%Y" default release :>" size="10" maxlength="10" />
               (dd/mm/yyyy<: ifNew :> - default is today<: or :><: eif :>)<:or FieldPerm:><: date "%d/%m/%Y" article release :><:eif FieldPerm:></td>
-            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help catalog release:> <:error_img release:></td>
+            <td class="help"><:help catalog release:> <:error_img release:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" nowrap="nowrap" align="left"> Expiry date: </th>
-            <td bgcolor="#FFFFFF" width="100%"> 
-              <:if FieldPerm expire:><input type="text" name="expire" value="<: old expire date "%d/%m/%Y" default expire :>" size="10" maxlength="10">
+            <th> Expiry date: </th>
+            <td> 
+              <:if FieldPerm expire:><input type="text" name="expire" value="<: old expire date "%d/%m/%Y" default expire :>" size="10" maxlength="10" />
               (dd/mm/yyyy - <: ifNew :>default is never, <: or :><: eif :>blank 
               for never expires)<:or FieldPerm:><: date "%d/%m/%Y" article expire :><:eif FieldPerm:></td>
-            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help catalog expire:> <:error_img expire:></td>
+            <td class="help"><:help catalog expire:> <:error_img expire:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" nowrap="nowrap" align="left"> Summary length: </th>
-            <td bgcolor="#FFFFFF" width="100%"> 
-              <:if FieldPerm summaryLength:><input type="text" name="summaryLength" size="10" maxlength="10" value="<: old summaryLength default summaryLength :>">
+            <th> Summary length: </th>
+            <td> 
+              <:if FieldPerm summaryLength:><input type="text" name="summaryLength" size="10" maxlength="10" value="<: old summaryLength default summaryLength :>" />
               (in characters - default inherited from parent catalog or shop, zero 
               for no summary)<:or FieldPerm:><: article summaryLength :><:eif FieldPerm:></td>
-            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help catalog summary:> <:error_img summaryLength:></td>
+            <td class="help"><:help catalog summary:> <:error_img summaryLength:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" nowrap="nowrap" align="left"> Display threshold: </th>
-            <td bgcolor="#FFFFFF" width="100%"> 
-              <:ifFieldPerm threshold:><input type="text" name="threshold" size="10" maxlength="10" value="<: old threshold default threshold :>"><:or:><: article threshold :><:eif:>
+            <th> Display threshold: </th>
+            <td> 
+              <:ifFieldPerm threshold:><input type="text" name="threshold" size="10" maxlength="10" value="<: old threshold default threshold :>" /><:or:><: article threshold :><:eif:>
             </td>
-            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help catalog threshold:> <:error_img threshold:></td>
+            <td class="help"><:help catalog threshold:> <:error_img threshold:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" nowrap="nowrap" align="left"> Keywords: </th>
-            <td bgcolor="#FFFFFF" width="100%"> 
-              <:ifFieldPerm keyword:><input type="text" name="keyword" maxlength="255" size="60" value="<: old keyword default keyword :>"><:or:><: article threshold :><:eif:>
+            <th> Keywords: </th>
+            <td> 
+              <:ifFieldPerm keyword:><input type="text" name="keyword" maxlength="255" size="60" value="<: old keyword default keyword :>" /><:or:><: article threshold :><:eif:>
               (comma separated) </td>
-            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help catalog keywords:> <:error_img keyword:></td>
+            <td class="help"><:help catalog keywords:> <:error_img keyword:></td>
           </tr>
           <tr> 
-            <th nowrap="nowrap" bgcolor="#FFFFFF" align="left">Always Dynamic:</th>
-            <td bgcolor="#FFFFFF" width="100%"> 
+            <th>Always Dynamic:</th>
+            <td> 
               <:ifFieldPerm force_dynamic:><input type="hidden" name="save_force_dynamic" value="1" /><input type="checkbox" name="force_dynamic" value="1" <:if Article force_dynamic :>checked="checked"<:or Article:><:eif Article:> />
               <:or:><:ifArticle force_dynamic :>Yes<:or Article:>No<:eif Article:><:eif:></td>
-            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help edit keywords:> <:error_img keyword:></td>
+            <td class="help"><:help edit keywords:> <:error_img keyword:></td>
           </tr>
 <:include admin/catalog_custom.tmpl optional:>
           <tr> 
-            <th bgcolor="#FFFFFF" nowrap="nowrap" align="left" valign="top">Thumbnail image:</th>
-            <td width="100%" valign="top" bgcolor="#FFFFFF"> 
+            <th>Thumbnail image:</th>
+            <td> 
               <:ifFieldPerm thumbImage:>
               <input type="file" name="thumbnail" /><:or:><:eif:>
               <:ifArticle thumbImage:><img src="/images/<:article thumbImage:>"> 
-              <:if FieldPerm thumbImage:><input type="checkbox" name="remove_thumb">
+              <:if FieldPerm thumbImage:><input type="checkbox" name="remove_thumb" />
             Remove<:or FieldPerm:><:eif FieldPerm:><:or:><:eif:></td>
-            <td valign="top" nowrap="nowrap" bgcolor="#FFFFFF"><:help catalog thumb:> <:error_img
+            <td class="help"><:help catalog thumb:> <:error_img
             thumbImage:></td>
           </tr>
           <:if Article id:> 
           <tr> 
-            <th nowrap="nowrap" bgcolor="#FFFFFF" align="left" valign="top"><a name="files"></a>Files:</th>
-            <td nowrap="nowrap" bgcolor="#FFFFFF" width="100%"> <:if Files:> 
-              <table cellpadding="0" cellspacing="0" border="0" bgcolor="#333333">
-                <tr><td> 
-                    <table cellpadding="5" cellspacing="1" border="0">
-                      <tr bgcolor="#FFFFFF"> 
+            <th><a name="files"></a>Files:</th>
+            <td> <:if Files:> 
+              <table class="filelist">
+                      <tr> 
                         <th>Filename</th>
                         <th>Size</th>
                         <th>Type</th>
@@ -244,44 +221,38 @@
                         <th>User</th>
                       </tr>
                       <:iterator begin files:> 
-                      <tr bgcolor="#FFFFFF"> 
-                        <td><:file displayName:></td>
-                        <td align="center"><:kb file sizeInBytes:></td>
-                        <td><:file contentType:></td>
-                        <td align="center"><:ifFile download:>Yes<:or:>No<:eif:></td>
-                        <td align="center"><:ifFile forSale:>Yes<:or:>No<:eif:></td>
-                        <td align="center"><:ifFile requireUser:>Yes<:or:>No<:eif:></td>
+                      <tr> 
+                        <td class="col_displayname"><:file displayName:></td>
+                        <td class="col_size"><:kb file sizeInBytes:></td>
+                        <td class="col_type"><:file contentType:></td>
+                        <td class="col_download"><:ifFile download:>Yes<:or:>No<:eif:></td>
+                        <td class="col_forsale"><:ifFile forSale:>Yes<:or:>No<:eif:></td>
+                        <td class="col_requireuser"><:ifFile requireUser:>Yes<:or:>No<:eif:></td>
                       </tr>
                       <:iterator end files:> 
                     </table>
-              </td></tr></table>
-              <p><a href="<:script:>?filelist=1&id=<:article id:>"><b>Manage Files</b></a>
+              <p><a href="<:script:>?filelist=1&amp;id=<:article id:>"><b>Manage Files</b></a>
               </p>
               <:or Files:>
-              <p>No files are attached to this article. <a href="<:script:>?filelist=1&id=<:article id:>"><b>Manage Files</b></a></p><:eif Files:>
+              <p>No files are attached to this article. <a href="<:script:>?filelist=1&amp;id=<:article id:>"><b>Manage Files</b></a></p><:eif Files:>
             </td>
-            <td nowrap="nowrap" bgcolor="#FFFFFF" valign="top"><:help edit files:> <:error_img
+            <td class="help"><:help edit files:> <:error_img
             files:></td>
           </tr>
           <tr> 
-            <th valign="top" bgcolor="#FFFFFF" nowrap="nowrap" align="left"> Images: 
-            </th>
-            <td align="center" bgcolor="#FFFFFF" width="100%"> <:if Images:> <:iterator begin 
-              images:> <img src="/images/<: image image :>" alt="<:image alt :>" width= 
-              <:image width:> height=<:image height:>> <:iterator separator images:> 
+            <th>Images:</th>
+            <td> <:if Images:> <:iterator begin 
+              images:> <img src="/images/<: image image :>" alt="<:image alt :>" width="<:image width:>" height="<:image height:>" /> <:iterator separator images:> 
               <hr noshade size="1">
               <: iterator end images :>
-              <p align="left"><a href="<:script:>?id=<:article id:>&showimages=1"><b>Manage Images</b></a></p>
-	      <:or Images:><p align="left">No images are attached to this article.  <a href="<:script:>?id=<:article id:>&showimages=1"><b>Manage Images</b></a></p>
+              <p><a href="<:script:>?id=<:article id:>&amp;showimages=1"><b>Manage Images</b></a></p>
+	      <:or Images:><p>No images are attached to this article.  <a href="<:script:>?id=<:article id:>&amp;showimages=1"><b>Manage Images</b></a></p>
 	      <:eif Images:>
 	    </td>
-            <td valign="top" nowrap="nowrap" bgcolor="#FFFFFF"><:help catalog images:> <:error_img
+            <td class="help"><:help catalog images:> <:error_img
             images:></td>
           <:or Article:><:eif Article:> 
         </table>
-      </td>
-    </tr>
-  </table>
 
   <p><: ifNew :>
     <input type="submit" name="save" value="Add Catalog" />
@@ -291,47 +262,40 @@
 <:if children:>
 <h2>Products / Sub-catalogs</h2>
 <a name="children"></a> 
-<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" width="100%" class="table">
-  <tr>
-      <td>
-      <table border=0 cellpadding="6" cellspacing="1" width="100%">
-        <tr bgcolor="#FFFFFF"> 
-          <th width="30%">Title</th>
-          <th width="70%">Summary</th>
-          <th>Listed</th>
-          <th nowrap="nowrap">Modify</th>
-		  <th nowrap="nowrap">Move</th>
+      <table class="editform children">
+        <tr> 
+          <th class="col_title">Title</th>
+          <th class="col_summry">Summary</th>
+          <th class="col_listed">Listed</th>
+          <th class="col_modify">Modify</th>
+		  <th class="col_move">Move</th>
         </tr>
 <:if UserCan edit_reorder_children:article:>
         <tr> 
-          <td colspan="5" bgcolor="#FFFFFF">Sort by: <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=title&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">            title</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=date&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">date</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&reverse=1&refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">reverse</a></td>
+          <td colspan="5">Sort by: <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&amp;sort=title&amp;refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">            title</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&amp;sort=date&amp;refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">date</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&amp;reverse=1&amp;refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">reverse</a></td>
         </tr>
 <:or UserCan:><:eif UserCan:>
         <:iterator begin children:> 
-        <tr bgcolor="#FFFFFF"> 
-          <td width="30%"><a href="<:child admin:>"><:child title:></a></td>
-          <td width="70%"><: summary child body :></td>
-          <td align="center"><: is child listed :></td>
-          <td nowrap="nowrap"> <: edit child Edit :> <:if UserCan edit_delete_article:child:><a href="/cgi-bin/admin/add.pl?id=<:child id:>&amp;remove=1&amp;_csrfp=<:csrfp admin_remove_article:>" onClick="return window.confirm('Are you sure you want to delete this <:ifMatch [child generator] "Product":>Product<:or:>Sub-catalog<:eif:>')">Delete</a><:or UserCan:><:eif UserCan:></td>
-	      <td nowrap="nowrap"><:movechild:></td>
+        <tr> 
+          <td class="col_title"><a href="<:child admin:>"><:child title:></a></td>
+          <td class="col_summary"><: summary child body :></td>
+          <td class="col_listed"><: is child listed :></td>
+          <td class="col_modify"> <: edit child Edit :> <:if UserCan edit_delete_article:child:><a href="/cgi-bin/admin/add.pl?id=<:child id:>&amp;remove=1&amp;_csrfp=<:csrfp admin_remove_article:>" onClick="return window.confirm('Are you sure you want to delete this <:ifMatch [child generator] "Product":>Product<:or:>Sub-catalog<:eif:>')">Delete</a><:or UserCan:><:eif UserCan:></td>
+	      <td class="col_move"><:movechild:></td>
         </tr>
         <:iterator separator children:> <:iterator end children:> 
       </table>
-</td>
-</tr>
-</table>
 <:or children:>
 <:eif children:>
 <:if HaveChildType:>
 <:if New:>
 <:or New:>
 <:if UserCan edit_add_child:article:>
-<p>
 <form action="/cgi-bin/admin/add.pl" method="get">
 <input type="hidden" name="parentid" value="<:article id:>" />
 <input type="hidden" name="type" value="Catalog" />
 
-    <input type="submit" value="Add Sub-catalog">
+    <input type="submit" value="Add Sub-catalog" />
 </form>
 <form action="/cgi-bin/admin/add.pl" method="get">
 <input type="hidden" name="parentid" value="<:article id:>" />
@@ -342,8 +306,5 @@
 <input type="hidden" name="parentid" value="<:article id:>" />
 <input type="hidden" name="type" value="Seminar" />
     <input type="submit" value="Add Seminar" />
-</form><:or UserCan:><:eif UserCan:></p>
+</form><:or UserCan:><:eif UserCan:>
 <:eif New:> <:or HaveChildType:> <:eif HaveChildType:> 
-<p><font size="-1">BSE Release <:release:></font></p>
-</body
-></html>

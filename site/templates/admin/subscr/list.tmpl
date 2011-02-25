@@ -1,4 +1,4 @@
-<:wrap admin/xbase.tmpl title=>"Admin Subscriptions":>
+<:wrap admin/base.tmpl title=>"Admin Subscriptions":>
 <h1>Admin Subscriptions</h1>
 <p>
 | <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |
@@ -15,41 +15,38 @@ It has nothing to do with the <a
 href="/cgi-bin/admin/subs.pl">newsletters system.</a></p>
 
 <p>Page <:subscriptions_pagenum:> of <:subscriptions_pagecount:>
-<:ifFirstSubscriptionsPage:>&lt;&lt;&lt;&lt; &lt;&lt;<:or:><a href="<:script:>?s=<:sortby:>&r=<:reverse:>&p=1&pp=<:subscriptions_perpage:>">&lt;&lt;&lt;&lt;</a> <a href="<:script:>?s=<:sortby:>&r=<:reverse:>&p=<:prevSubscriptionsPage:>&pp=<:subscriptions_perpage:>">&lt;&lt;</a><:eif:>
+<:ifFirstSubscriptionsPage:>&lt;&lt;&lt;&lt; &lt;&lt;<:or:><a href="<:script:>?s=<:sortby:>&r=<:reverse:>&p=1&pp=<:subscriptions_perpage:>">&lt;&lt;&lt;&lt;</a> <a href="<:script:>?s=<:sortby:>&amp;r=<:reverse:>&amp;p=<:prevSubscriptionsPage:>&amp;pp=<:subscriptions_perpage:>">&lt;&lt;</a><:eif:>
 <:iterator begin repeats [subscriptions_pagecount]:>
-<:if Eq [repeat value] [subscriptions_pagenum]:><:repeat value:><:or Eq:><a href="<:script:>?s=<:sortby:>&r=<:reverse:>&p=<:repeat value:>&pp=<:subscriptions_perpage:>"><:repeat value:></a><:eif Eq:>
+<:if Eq [repeat value] [subscriptions_pagenum]:><:repeat value:><:or Eq:><a href="<:script:>?s=<:sortby:>&amp;r=<:reverse:>&amp;p=<:repeat value:>&amp;pp=<:subscriptions_perpage:>"><:repeat value:></a><:eif Eq:>
 <:iterator end repeats:>
-<:ifLastSubscriptionsPage:>&gt;&gt; &gt;&gt;&gt;&gt;<:or:><a href="<:script:>?s=<:sortby:>&r=<:reverse:>&p=<:nextSubscriptionsPage:>&pp=<:subscriptions_perpage:>">&gt;&gt;</a> <a href="<:script:>?s=<:sortby:>&r=<:reverse:>&p=<:subscriptions_pagecount:>&pp=<:subscriptions_perpage:>">&gt;&gt;&gt;&gt;</a><:eif:>
+<:ifLastSubscriptionsPage:>&gt;&gt; &gt;&gt;&gt;&gt;<:or:><a href="<:script:>?s=<:sortby:>&amp;r=<:reverse:>&amp;p=<:nextSubscriptionsPage:>&amp;pp=<:subscriptions_perpage:>">&gt;&gt;</a> <a href="<:script:>?s=<:sortby:>&amp;r=<:reverse:>&amp;p=<:subscriptions_pagecount:>&amp;pp=<:subscriptions_perpage:>">&gt;&gt;&gt;&gt;</a><:eif:>
 </p>
 <form method="post" action="<:script:>">
-<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
-    <tr>
+  <table class="editform">
+    <tr> 
+      <th><a href="<:script:>?<:sorthelp text_id:>&amp;p=<:subscriptions_pagenum:>&amp;pp=<:subscriptions_perpage:>" accesskey="i">Id</a></th>
+      <th> <a href="<:script:>?<:sorthelp title:>&amp;p=<:subscriptions_pagenum:>&amp;pp=<:subscriptions_perpage:>" accesskey="t">Title</a></th>
+      <th> <a href="<:script:>?<:sorthelp description:>&amp;p=<:subscriptions_pagenum:>&amp;pp=<:subscriptions_perpage:>" accesskey="d">Description</a></th>
+      <th> <a href="<:script:>?<:sorthelp max_lapsed:>&amp;p=<:subscriptions_pagenum:>&amp;pp=<:subscriptions_perpage:>" accesskey="m">Max Lapse</a></th>
+      <th>&nbsp;</th>
+    </tr>
+    <:if Subscriptions:> <: iterator begin subscriptions :> 
+    <tr> 
+      <td> <a href="<:adminurl subadmin a_edit t subscription_id [isubscription subscription_id]:>"><:isubscription text_id:></a></td>
+      <td><:isubscription title:></td>
+      <td><:isubscription description:></td>
+      <td><:isubscription max_lapsed:></td>
       <td>
-        <table cellpadding="6" border="0" cellspacing="1">
-          <tr> 
-            <th bgcolor="#FFFFFF" nowrap> <a href="<:script:>?<:sorthelp text_id:>&p=<:subscriptions_pagenum:>&pp=<:subscriptions_perpage:>">Id</a></th>
-            <th bgcolor="#FFFFFF" nowrap> <a href="<:script:>?<:sorthelp title:>&p=<:subscriptions_pagenum:>&pp=<:subscriptions_perpage:>">Title</a></th>
-            <th bgcolor="#FFFFFF" nowrap> <a href="<:script:>?<:sorthelp description:>&p=<:subscriptions_pagenum:>&pp=<:subscriptions_perpage:>">Description</a></th>
-            <th bgcolor="#FFFFFF" nowrap> <a href="<:script:>?<:sorthelp max_lapsed:>&p=<:subscriptions_pagenum:>&pp=<:subscriptions_perpage:>">Max Lapse</a></th>
-	    <th bgcolor="#FFFFFF" nowrap>&nbsp;</th>
-          </tr>
-          <:if Subscriptions:> <: iterator begin subscriptions :> 
-          <tr bgcolor="#FFFFFF"> 
-            <td nowrap> <a href="<:script:>?a_edit=1&subscription_id=<:isubscription subscription_id:>"><:isubscription text_id:></a></td>
-            <td valign="top"><:isubscription title:></td>
-            <td valign="top"><:isubscription description:></td>
-            <td valign="top"><:isubscription max_lapsed:></td>
-	    <td><a href="<:script:>?a_detail=1&amp;subscription_id=<:isubscription subscription_id:>">Details</a> <:ifRemovable:><a href="<:script:>?a_detail=1&amp;t=delete&amp;subscription_id=<:isubscription subscription_id:>">Delete</a><:or:><:eif:></td>
+	<a href="<:adminurl subadmin a_edit t subscription_id [isubscription subscription_id]:>">Edit</a> 
+	<a href="<:adminurl subadmin a_detail t subscription_id [isubscription subscription_id]:>">Details</a>
+	<:ifRemovable:><a href="<:adminurl subadmin a_detail t subscription_id [isubscription subscription_id] t delete:>">Delete</a><:or:><:eif:></td>
           </tr>
           <: iterator end subscriptions :> 
           <:or Subscriptions:> 
-          <tr bgcolor="#FFFFFF"> 
-            <td colspan="5" align="center">Your system has no subscriptions.</td>
+          <tr> 
+            <td colspan="5" class="tablenote">Your system has no subscriptions.</td>
           </tr>
           <:eif Subscriptions:> 
         </table>
-</td>
-</tr>
-</table>
 </form>
 

@@ -2,9 +2,10 @@
 <style type="text/css">
 #show {
   width: 100%;
-  height: 90%;
+  height: 40em;
+  margin-left: -4em;
 }
 </style>
-<p>Viewing: <:template id:> | <a href="<:script:>">Return to list</a> | <a href="/cgi-bin/menu.pl">Admin Menu</a> |</p>
-<iframe id="show" src="<:script:>?a_display=1&amp;template=<:template id:>">
+<p>Viewing: <:template id:> | <a href="<:adminurl pregen:>">Return to list</a> | <a href="<:adminurl menu:>">Admin Menu</a> |</p>
+<iframe id="show" src="<:adminurl pregen a_display 1 template [template id]:>">
 </iframe>

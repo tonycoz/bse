@@ -1,14 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-
-  <title>Administration - Admin Users</title>
-
-  <link rel="stylesheet" type="text/css" href="/css/admin.css" />
-
-</head>
-
-<body>
+<:wrap admin/base.tmpl title => "Add new user":>
 <h1>Add new user</h1>
 
 <p>
@@ -21,48 +11,39 @@
 <:or:><:eif:> 
 <form method="POST" action="<:script:>">
 
-  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
-    <tr> 
-      <td> 
-        <table cellpadding="6" border="0" cellspacing="1">
+        <table>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">Logon: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>Logon: </th>
+            <td> 
               <input type="text" name="logon" value="<:old logon:>" />
             </td>
-            <td bgcolor="#FFFFFF"><:help adduser logon:> <:error_img logon:></td>
+            <td class="help"><:help adduser logon:> <:error_img logon:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">Name: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>Name: </th>
+            <td> 
               <input type="text" name="name" value="<:old name:>" />
             </td>
-            <td bgcolor="#FFFFFF"><:help adduser name:>  <:error_img name:></td>
+            <td class="help"><:help adduser name:>  <:error_img name:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left"> Password: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th> Password: </th>
+            <td> 
               <input type="password" name="password" />
               </td>
-            <td bgcolor="#FFFFFF"> <:help adduser password:>  <:error_img password:></td>
+            <td class="help"> <:help adduser password:>  <:error_img password:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left"> Confirm: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th> Confirm: </th>
+            <td> 
               <input type="password" name="confirm" />
             </td>
-            <td bgcolor="#FFFFFF"><:help adduser confirm:> <:error_img confirm:> </td>
+            <td><:help adduser confirm:> <:error_img confirm:> </td>
           </tr>
           <tr> 
-            <td bgcolor="#FFFFFF" colspan="3" align="right"> 
+            <td class="buttons" colspan="3"> 
               <input type="submit" name="a_adduser" value="  Add User  " />
             </td>
           </tr>
         </table>
-      </td>
-    </tr>
-  </table>
 </form>
-<p><font size="-1">BSE Release <:release:></font></p>
-</body
-></html>

@@ -1,65 +1,42 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
+<:wrap admin/base.tmpl title => "Delete Newsletter" :>
+<h1>Delete Newsletter</h1>
 
-  <title>Administration - Delete Subscription</title>
+<:ifMessage:><p class="message"><:message:></p><:or:><:eif:>
 
-  <link rel="stylesheet" type="text/css" href="/css/admin.css" />
-
-</head>
-
-<body>
-
-<h1>Delete Subscription</h1>
-
-<:ifMessage:><p><b><:message:></b></p><:or:><:eif:>
-
-<p>| <a href="/admin/">Admin menu</a> | <a href="<:script:>">Subscriptions List</a> 
+<p>| <a href="/admin/">Admin menu</a> | <a href="<:script:>">Newsletter List</a> 
   |</p>
 
-<form action="<:script:>" method="POST"><input type="hidden" name="id" value="<:subscription id:>">
-<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
+<form action="<:script:>" method="post">
+  <input type="hidden" name="id" value="<:subscription id:>" />
+  <table class="editform editformtiny"> 
+    <tr> 
+      <th>Name:</th>
+      <td><:subscription name:></td>
+      <td class="help"><:help subs name:> <:ifError name:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error name:>" /><:or:><:eif:></td>
+    </tr>
+    <tr> 
+      <th>Title:</th>
+      <td><:subscription title:></td>
+      <td class="help"><:help subs title:> <:ifError title:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error title:>" /><:or:><:eif:></td>
+    </tr>
+    <tr> 
+      <th>Description:</th>
+      <td> 
+	<:bodytext subscription description:>
+      </td>
+      <td class="help"><:help subs description:> </td>
+    </tr>
+    <tr> 
+      <th>Frequency:</th>
+      <td><:subscription frequency:></td>
+      <td class="help"><:help subs frequency:> </td>
+    </tr>
     <tr>
-      <td>
-        <table cellpadding="6" border="0" cellspacing="1">
-          <tr bgcolor="#FFFFFF"> 
-            <th align="left" nowrap>Name:</th>
-            <td> 
-              <:subscription name:>
-            </td>
-            <td nowrap><:help subs name:> <:ifError name:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error name:>" /><:or:><:eif:></td>
-          </tr>
-          <tr bgcolor="#FFFFFF"> 
-            <th align="left" nowrap>Title:</th>
-            <td> 
-              <:subscription title:>
-            </td>
-            <td nowrap><:help subs title:> <:ifError title:><img src="/images/admin/error.gif" width="16" height="16" alt="<:error title:>" /><:or:><:eif:></td>
-          </tr>
-          <tr bgcolor="#FFFFFF"> 
-            <th align="left" valign="top" nowrap>Description:</th>
-            <td valign="top"> 
-              <:bodytext subscription description:>
-            </td>
-            <td valign="top" nowrap><:help subs description:> </td>
-          </tr>
-          <tr bgcolor="#FFFFFF"> 
-            <th align="left" nowrap>Frequency:</th>
-            <td> 
-              <:subscription frequency:>
-            </td>
-            <td nowrap><:help subs frequency:> </td>
-          </tr>
-        </table>
-</td>
-</tr>
-</table>
-<p>
-    <input type="submit" name="delete" value="Delete Subscription">
-    <input type="submit" name="list" value="Back to List">
-  </p>
+      <td colspan="3" class="buttons">
+	<input type="submit" name="delete" value="Delete Newsletter" />
+	<input type="submit" name="list" value="Back to List">
+      </td>
+    </tr>
+  </table>
 </form>
 
-<p><font size="-1">BSE Release <:release:></font></p>
-</body>
-</html>

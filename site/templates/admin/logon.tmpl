@@ -6,33 +6,27 @@
 
 <form method="post" action="<:adminbase:><:script:>">
 <:if Cgi r:>
-<input type="hidden" name="r" value="<:cgi r:>">
+<input type="hidden" name="r" value="<:cgi r:>" />
 <:or Cgi:><:eif Cgi:>
-  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
-    <tr> 
-      <td> 
-        <table cellpadding="6" border="0" cellspacing="1">
+        <table class="editform editformtiny">
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">Logon: </th>
-            <td bgcolor="#FFFFFF"> 
-              <input type="text" name="logon" />
+            <th><label for="logon">Logon:</label> </th>
+            <td> 
+              <input type="text" name="logon" accesskey="l" tabindex="10" id="logon" class="focusme" />
             </td>
-            <td bgcolor="#FFFFFF"><:help logon logon:> <:error_img logon:></td>
+            <td class="help"><:help logon logon:> <:error_img logon:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left"> Password: </th>
-            <td bgcolor="#FFFFFF"> 
-              <input type="password" name="password" />
+            <th><label for="password">Password:</label></th>
+            <td> 
+              <input type="password" name="password" accesskey="p" tabindex="10" id="password" />
               </td>
-            <td bgcolor="#FFFFFF"> <:help logon password:> <:error_img password:></td>
+            <td class="help"> <:help logon password:> <:error_img password:></td>
           </tr>
           <tr> 
-            <td bgcolor="#FFFFFF" colspan="3" align="right"> 
-              <input type="submit" name="a_logon" value="  Logon  " />
+            <td colspan="3" class="buttons"> 
+              <input type="submit" name="a_logon" tabindex="30" value="  Logon  " />
             </td>
           </tr>
         </table>
-      </td>
-    </tr>
-  </table>
 </form>

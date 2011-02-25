@@ -1,10 +1,10 @@
-<:wrap admin/xbase.tmpl title=>"Group Files - Add File":>
+<:wrap admin/base.tmpl title=>"Group Files - Add File":>
 <h1>Add Group File</h1>
 
 <:include admin/users/inc_group_menu.tmpl:>
 <:ifMessage:><div id="message"><:message:></div><:or:><:eif:>
 <div id="addfile">
-<form enctype="multipart/form-data" method="post">
+<form enctype="multipart/form-data" method="post" action="<:adminurl siteusers:>">
 <input type="hidden" name="id" value="<:group id:>" />
 <:csrfp admin_group_add_file hidden:>
 <table class="editform editformsmall">

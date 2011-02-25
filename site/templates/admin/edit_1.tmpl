@@ -1,4 +1,4 @@
-<:wrap admin/xbase.tmpl title=>"Edit [articleType]":>
+<:wrap admin/base.tmpl title=>[cond [ifNew] [cat "New " [articleType]] [cat "Edit " [articleType] ": " [article title]]]:>
 <h1><:ifNew:>New<:or:>Edit<:eif:> <:articleType:></h1>
 <:if Message:> 
 <div id="message" <:ifError:>class="error"<:or:><:eif:>><:message:></div>
@@ -253,13 +253,12 @@
             <th>Images: 
             </th>
             <td id="images"><:if Images:> <:iterator begin 
-              images:> <img src="/images/<: image image :>" alt="<:image alt :>" width= 
-              <:image width:> height=<:image height:>> <:iterator separator images:> 
+              images:> <img src="/images/<: image image :>" alt="<:image alt :>" width="<:image width:>" height="<:image height:>" /> <:iterator separator images:> 
               <hr noshade size="1">
               <: iterator end images :>
-              <p align="left"><a href="<:script:>?id=<:article id:>&amp;_t=img"><b>Manage Images</b></a></p>
+              <p align="left"><a href="<:script:>?id=<:article id:>&amp;_t=img">Manage Images</a></p>
               <:or Images:>
-              No images are attached to this article.  <a href="<:script:>?id=<:article id:>&amp;_t=img"><b>Manage Images</b></a>
+              No images are attached to this article.  <a href="<:script:>?id=<:article id:>&amp;_t=img">Manage Images</a>
               <:eif Images:>
 	    </td>
             <td class="help"><:help edit images:> <:error_img

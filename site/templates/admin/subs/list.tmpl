@@ -1,45 +1,39 @@
-<:wrap admin/xbase.tmpl title=>"Subscriptions List":>
-<h1>Subscriptions List</h1>
+<:wrap admin/base.tmpl title=>"Newsletter List":>
+<h1>Newsletter List</h1>
 
-<:ifMessage:><p><b><:message:></b></p><:or:><:eif:>
+<:ifMessage:><p class="message"><:message:></p><:or:><:eif:>
 
 <p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |<:ifUserCan subs_add:>
-<a href="<:script:>?add=1">Add Subscription</a> |<:or:><:eif:></p>
+<a href="<:script:>?add=1">Add Newsletter</a> |<:or:><:eif:></p>
 
-<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
-    <tr>
-      <td>
-      <table cellpadding="6" border="0" cellspacing="1">
-        <tr bgcolor="#FFFFFF">
-      <th>Name</th>
-      <th>Title</th>
-      <th>Frequency</th>
-      <th>Visible</th>
-      <th>Last published</th>
-      <th># Recipients</th>
-          <th>Modify</th>
-    </tr>
+<table class="editform newsletters">
+  <tr>
+    <th class="col_name">Name</th>
+    <th class="col_title">Title</th>
+    <th class="col_frequency">Frequency</th>
+    <th class="col_visible">Visible</th>
+    <th class="col_last">Last published</th>
+    <th class="col_num"># Recipients</th>
+    <th class="col_tools">Modify</th>
+  </tr>
 <:if Subscriptions:>
 <:iterator begin subscriptions:>
-    <tr bgcolor="#FFFFFF">
-      <td><:subscription name:></td>
-      <td><:subscription title:></td>
-      <td><:subscription frequency:></td>
-      <td align="center"><:ifSubscription visible:>Yes<:or:>No<:eif:></td>
-      <td align="center"><:ifMatch [subscription lastSent] "0000-00-00":>Never<:or:><:date subscription lastSent:><:eif:></td>
-      <td align="center"><:recipient_count:></td>
-          <td nowrap> <:ifUserCan subs_edit:><a href="<:script:>?edit=1&id=<:subscription id:>"><b>Edit</b></a> <:or:><:eif:>
-            <:ifUserCan subs_delete:><a href="<:script:>?delconfirm=1&id=<:subscription id:>"><b>Delete</b></a>  <:or:><:eif:>
-            <:ifUserCan subs_send:><a href="<:script:>?start_send=1&id=<:subscription id:>"><b>Send</b></a><:or:><:eif:>
-          </td>
-    </tr>
+  <tr>
+    <td class="col_name"><:subscription name:></td>
+    <td class="col_title"><:subscription title:></td>
+    <td class="col_frequency"><:subscription frequency:></td>
+    <td class="col_visible"><:ifSubscription visible:>Yes<:or:>No<:eif:></td>
+    <td class="col_last"><:ifMatch [subscription lastSent] "0000-00-00":>Never<:or:><:date subscription lastSent:><:eif:></td>
+    <td class="col_num"><:recipient_count:></td>
+    <td class="col_tools"> <:ifUserCan subs_edit:><a href="<:script:>?edit=1&amp;id=<:subscription id:>">Edit</a> <:or:><:eif:>
+            <:ifUserCan subs_delete:><a href="<:script:>?delconfirm=1&amp;id=<:subscription id:>"><b>Delete</b></a>  <:or:><:eif:>
+            <:ifUserCan subs_send:><a href="<:script:>?start_send=1&amp;id=<:subscription id:>"><b>Send</b></a><:or:><:eif:>
+    </td>
+  </tr>
 <:iterator end subscriptions:>
 <:or Subscriptions:>
-    <tr bgcolor="#FFFFFF">
-      <td colspan="7" align="center">You don't have any subscriptions defined</td>
-    </tr>
+  <tr>
+    <td colspan="7" align="center">You don't have any subscriptions defined</td>
+  </tr>
 <:eif Subscriptions:>
-  </table>
-</td>
-</tr>
 </table>

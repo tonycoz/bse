@@ -260,6 +260,9 @@ site/cgi-bin/modules/BSE/Util/SQL.pm
 site/cgi-bin/modules/BSE/Util/Tags.pm
 site/cgi-bin/modules/BSE/Util/Thumb.pm
 site/cgi-bin/modules/BSE/Util/Valid.pm
+site/cgi-bin/modules/BSE/Util/ValidateHTML.pm
+site/cgi-bin/modules/BSE/Util/ValidateHTML/Tidy.pm
+site/cgi-bin/modules/BSE/Util/ValidateHTML/W3C.pm
 site/cgi-bin/modules/BSE/Validate.pm
 site/cgi-bin/modules/BSE/Version.pm
 site/cgi-bin/modules/BSE/WebUtil.pm
@@ -449,8 +452,10 @@ site/htdocs/images/trans_pixel.gif
 site/htdocs/images/videoclose.png
 site/htdocs/js/admin-ui/debug.js
 site/htdocs/js/admin-ui/menu.js
+site/htdocs/js/admin.js
 site/htdocs/js/admin_messages.js
 site/htdocs/js/admin_prodopts.js
+site/htdocs/js/admin_siteusers.js
 site/htdocs/js/admin_tools.js
 site/htdocs/js/bse.js
 site/htdocs/js/bse_adminui.js
@@ -475,7 +480,6 @@ site/htdocs/js/swfobject.js
 site/htdocs/swf/flvplayer.swf
 site/templates/1/shop_multicat.tmpl
 site/templates/1/sitemap.tmpl
-site/templates/admin/add_product.tmpl
 site/templates/admin/addattendee1.tmpl
 site/templates/admin/addattendee2.tmpl
 site/templates/admin/addgroup.tmpl
@@ -559,7 +563,6 @@ site/templates/admin/showuser.tmpl
 site/templates/admin/showuser_del.tmpl
 site/templates/admin/showuser_glob.tmpl
 site/templates/admin/showuserart.tmpl
-site/templates/admin/subs/add.tmpl
 site/templates/admin/subs/delete.tmpl
 site/templates/admin/subs/edit.tmpl
 site/templates/admin/subs/filter_preview.tmpl

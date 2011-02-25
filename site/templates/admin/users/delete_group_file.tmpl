@@ -1,10 +1,10 @@
-<:wrap admin/xbase.tmpl title=>"Group Files - Delete File":>
+<:wrap admin/base.tmpl title=>"Group Files - Delete File":>
 <h1>Delete Group File</h1>
 
 <:include admin/users/inc_group_menu.tmpl:>
 <:ifMessage:><div id="message"><:message:></div><:or:><:eif:>
 <div id="delfile">
-<form enctype="multipart/form-data" method="post">
+<form enctype="multipart/form-data" method="post" action="<:adminurl siteusers:>">
 <input type="hidden" name="id" value="<:group id:>" />
 <input type="hidden" name="file_id" value="<:groupfile id:>" />
 <:csrfp admin_group_del_file hidden:>

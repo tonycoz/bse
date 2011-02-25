@@ -1,4 +1,4 @@
-<:wrap admin/xbase.tmpl title=>"View Location":>
+<:wrap admin/base.tmpl title=>"View Location":>
 <h1>View Location</h1>
 <p>
 | <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |
@@ -9,97 +9,97 @@
 <p><b><:message:></b></p>
 <:or:><:eif:> 
 
-<table>
+<table class="editform editformtiny">
 <tr>
   <th><:field description description:>:</th>
   <td><:location description:></td>
-  <td><:help addlocation description:></td>
+  <td class="help"><:help addlocation description:></td>
 </tr>
 <tr>
   <th><:field room description:>:</th>
   <td><:location room:></td>
-  <td><:help addlocation room:></td>
+  <td class="help"><:help addlocation room:></td>
 </tr>
 <tr>
   <th><:field street1 description:>:</th>
   <td><:location street1:></td>
-  <td><:help addlocation street1:></td>
+  <td class="help"><:help addlocation street1:></td>
 </tr>
 <tr>
   <th><:field street2 description:>:</th>
   <td><:location street2:></td>
-  <td><:help addlocation street2:></td>
+  <td class="help"><:help addlocation street2:></td>
 </tr>
 <tr>
   <th><:field suburb description:>:</th>
   <td><:location suburb:></td>
-  <td><:help addlocation suburb:></td>
+  <td class="help"><:help addlocation suburb:></td>
 </tr>
 <tr>
   <th><:field state description:>:</th>
   <td><:location state:></td>
-  <td><:help addlocation state:></td>
+  <td class="help"><:help addlocation state:></td>
 </tr>
 <tr>
   <th><:field country description:>:</th>
   <td><:location country:></td>
-  <td><:help addlocation country:></td>
+  <td class="help"><:help addlocation country:></td>
 </tr>
 <tr>
   <th><:field postcode description:>:</th>
   <td><:location postcode:></td>
-  <td><:help addlocation postcode:></td>
+  <td class="help"><:help addlocation postcode:></td>
 </tr>
 <tr>
   <th><:field public_notes description:>:</th>
-  <td><textarea name="public_notes" rows="<:field public_notes height:>" cols="<:field public_notes width:>" wrap="virtual" readonly="readonly"><:location public_notes:></textarea></td>
-  <td><:help addlocation public_notes:></td>
+  <td><textarea name="public_notes" rows="<:field public_notes height:>" cols="<:field public_notes width:>" readonly="readonly"><:location public_notes:></textarea></td>
+  <td class="help"><:help addlocation public_notes:></td>
 </tr>
 <tr>
   <th>Disabled:</th>
-  <td><img src="/images/admin/<:ifLocation disabled:>checked.gif<:or:>unchecked.gif<:eif:>" /></td>
-  <td><:help addlocation disabled:></td>
+  <td><img src="/images/admin/<:ifLocation disabled:>checked.gif<:or:>unchecked.gif<:eif:>" alt="<:ifLocation disabled:>checked<:or:>unchecked<:eif:>" /></td>
+  <td class="help"><:help addlocation disabled:></td>
 </tr>
 <tr>
-  <th colspan="2">Bookings</th>
+  <th colspan="3">Bookings</th>
 </tr>
 <tr>
   <th><:field bookings_name description:>:</th>
   <td><:location bookings_name:></td>
-  <td><:help addlocation bookings_name:></td>
+  <td class="help"><:help addlocation bookings_name:></td>
 </tr>
 <tr>
   <th><:field bookings_phone description:>:</th>
   <td><:location bookings_phone:></td>
-  <td><:help addlocation bookings_phone:></td>
+  <td class="help"><:help addlocation bookings_phone:></td>
 </tr>
 <tr>
   <th><:field bookings_fax description:>:</th>
   <td><:location bookings_fax:></td>
-  <td><:help addlocation bookings_fax:></td>
+  <td class="help"><:help addlocation bookings_fax:></td>
 </tr>
 <tr>
   <th><:field bookings_url description:>:</th>
   <td><:location bookings_url:></td>
-  <td><:help addlocation bookings_url:></td>
+  <td class="help"><:help addlocation bookings_url:></td>
 </tr>
 <tr>
-  <th colspan="2">Facilities</th>
+  <th colspan="3">Facilities</th>
 </tr>
 <tr>
   <th><:field facilities_name description:>:</th>
   <td><:location facilities_name:></td>
-  <td><:help addlocation facilities_name:></td>
+  <td class="help"><:help addlocation facilities_name:></td>
 </tr>
 <tr>
   <th><:field facilities_phone description:>:</th>
   <td><:location facilities_phone:></td>
-  <td><:help addlocation facilities_phone:></td>
+  <td class="help"><:help addlocation facilities_phone:></td>
 </tr>
 <tr>
   <th><:field admin_notes description:>:</th>
-  <td><textarea name="admin_notes" rows="<:field admin_notes height:>" cols="<:field admin_notes width:>" wrap="virtual" readonly="readonly"><:location admin_notes:></textarea></td>
-  <td><:help addlocation admin_notes:></td>
+  <td><textarea name="admin_notes" rows="<:field admin_notes height:>" cols="<:field admin_notes width:>" readonly="readonly"><:location admin_notes:></textarea></td>
+  <td class="help"><:help addlocation admin_notes:></td>
 </tr>
 
 </table>

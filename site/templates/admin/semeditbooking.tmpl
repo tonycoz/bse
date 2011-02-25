@@ -1,4 +1,4 @@
-<:wrap admin/xbase.tmpl title=>"Edit Seminar Booking":>
+<:wrap admin/base.tmpl title=>"Edit Seminar Booking":>
 <h1>Edit Seminar Booking</h1>
 <p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | </p>
 <:ifMessage:>
@@ -12,30 +12,32 @@
   <tr>
     <th>Seminar:</th>
     <td><a href="<:seminar link:>"><:seminar title:></a></td>
+    <td class="help"></td>
   </tr>
   <tr>
     <th>Session:</th>
     <td><:session_popup:></td>
+    <td class="help"><:help semeditbooking session:></td>
   </tr>
 <:iterator begin options:>
   <tr>
    <th><:option desc:></th>
    <td><:option_popup:></td>
-   <td></td>
+   <td class="help"></td>
   </tr>
 <:iterator end options:>
   <tr>
    <th>Customer<br />Instructions:</th>
-   <td><textarea name="customer_instructions" cols="70" rows="10" /><:old customer_instructions booking customer_instructions:></textarea></td>
-   <td><:error_img customer_instructions:></td>
+   <td><textarea name="customer_instructions" cols="70" rows="10"><:old customer_instructions booking customer_instructions:></textarea></td>
+   <td class="help"><:help semeditbooking customer_instructions:><:error_img customer_instructions:></td>
   </tr>
   <tr>
    <th>Support<br />Notes:</th>
-   <td><textarea name="support_notes" cols="70" rows="10" /><:old support_notes booking support_notes:></textarea></td>
-   <td><:error_img support_notes:></td>
+   <td><textarea name="support_notes" cols="70" rows="10"><:old support_notes booking support_notes:></textarea></td>
+   <td class="help"><:help semeditbooking support_notes:><:error_img support_notes:></td>
   </tr>
   <tr>
-    <td colspan="3"><input type="submit" name="a_savebooking" value="Save Booking" /></td>
+    <td colspan="3" class="buttons"><input type="submit" name="a_savebooking" value="Save Booking" /></td>
   </tr>
 </table>
 </form>

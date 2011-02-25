@@ -225,6 +225,12 @@ stealing attacks.
 The salt used in generating the has for redirect_links.  Default: an
 empty string.
 
+=item validate
+
+If non-zero then any HTML output is validated with HTML::Tidy.
+Validation errors and warnings are sent to the audit log.  See [html
+tidy].
+
 =back
 
 =head2 [basic]
@@ -2435,6 +2441,29 @@ I<facility>-I<component>-I<module>-I<function>
 Controls sending an email for specific events or families of events.
 If the value is true, send an email for that event.  If the value
 contains an C<@> then the value is used as the recipient address.
+
+=back
+
+with the longer keys overriding the shorter keys, and defaulting to
+all actions being logged.
+
+=head2 [html tidy]
+
+Contains options to pass to HTML::Tidy.  Anything not listed below is
+passed directly to HTML::Tidy->new.
+
+=over
+
+=item *
+
+ignore_types - types of message to ignore separated by commas, any,
+all or none of info, warning, error.
+
+=item *
+
+ignore_text_I<key> - messages to ignore, I<key> is not used, just the
+value.
+
 
 =back
 

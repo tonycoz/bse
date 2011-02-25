@@ -1,5 +1,4 @@
-<:wrap admin/xbase.tmpl title=>"Site Member Seminar Bookings":>
-<h1>Site Member Seminar Bookings</h1>
+<:wrap admin/base.tmpl title=>[cat "Member Seminar Bookings for: " [siteuser userId]], showtitle => 1:>
 <p>
 | <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |
 <a href="/cgi-bin/admin/siteusers.pl">Site Members</a> |
@@ -12,24 +11,24 @@
 <p><b><:message:></b></p>
 <:or:><:eif:> 
 
-      <table border=0 cellpadding="6" cellspacing="1" width="100%">
-        <tr bgcolor="#FFFFFF"> 
-          <th>Id</th>
-          <th width="50%">Seminar</th>
-          <th width="50%">Location</th>
-          <th>Time</th>
-          <th>Date</th>
+      <table class="editform sembookings">
+        <tr> 
+          <th class="col_id">Id</th>
+          <th class="col_seminar">Seminar</th>
+          <th class="col_location">Location</th>
+          <th class="col_time">Time</th>
+          <th class="col_date">Date</th>
         </tr>
 <:if Bookings:>
         <:iterator begin bookings:> 
-        <tr bgcolor="#FFFFFF"> 
-          <td align="center" nowrap><a href="/cgi-bin/admin/add.pl?id=<:booking seminar_id:>"><:booking 
+        <tr> 
+          <td class="col_id"><a href="/cgi-bin/admin/add.pl?id=<:booking seminar_id:>"><:booking 
             seminar_id:></a></td>
-          <td><:booking title:></td>
-          <td><a href="/cgi-bin/admin/admin_seminar.pl?a_locview=1&amp;id=<:booking location_id:>"><:booking loc_description:></a></td>
-          <td nowrap="nowrap"><:date "%I:%M %p" booking when_at:></td>
-          <td nowrap="nowrap"><:date booking when_at:></td>
-          <td nowrap="nowrap">
+          <td class="col_seminar"><:booking title:></td>
+          <td class="col_location"><a href="/cgi-bin/admin/admin_seminar.pl?a_locview=1&amp;id=<:booking location_id:>"><:booking loc_description:></a></td>
+          <td class="col_time"><:date "%I:%M %p" booking when_at:></td>
+          <td class="col_date"><:date booking when_at:></td>
+          <td class="col_tools">
             <a href="/cgi-bin/admin/admin_seminar.pl?a_cancelbookingconfirm=1&amp;id=<:booking booking_id:>">Cancel</a>
             <a href="/cgi-bin/admin/admin_seminar.pl?a_editbooking=1&amp;id=<:booking booking_id:>">Edit</a>
           </td>
@@ -37,7 +36,7 @@
         <:iterator end bookings:> 
 <:or Bookings:>
         <tr>
-          <td colspan="5" align="center">No bookings found</td>
+          <td colspan="5" class="tablenote">No bookings found</td>
         </tr>
 <:eif Bookings:>
       </table>

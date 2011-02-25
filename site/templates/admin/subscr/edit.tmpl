@@ -1,4 +1,4 @@
-<:wrap admin/xbase.tmpl title=>"Edit Subscription":>
+<:wrap admin/base.tmpl title=>"Edit Subscription":>
 <h1>Edit Subscription</h1>
 <p>
 | <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |
@@ -8,32 +8,31 @@
 <p><b><:message:></b></p>
 <:or:><:eif:> 
 
-<form action="<:script:>" method="post" name="editsub">
+<form action="<:adminurl subadmin:>" method="post" name="editsub">
 <input type="hidden" name="subscription_id" value="<:subscription subscription_id:>" />
-<table>
+<table class="editform editformsmall">
 <tr>
   <th>Identifier:</th>
   <td><input type="text" name="text_id" value="<:old text_id subscription text_id:>" /></td>
-  <td><:error_img text_id:><:help addsubscr text_id:></td>
+  <td class="help"><:error_img text_id:><:help addsubscr text_id:></td>
 </tr>
 <tr>
   <th>Title:</th>
   <td><input type="text" name="title" value="<:old title subscription title:>" /></td>
-  <td><:error_img title:><:help addsubscr title:></td>
+  <td class="help"><:error_img title:><:help addsubscr title:></td>
 </tr>
 <tr>
   <th>Description:</th>
   <td><input type="text" name="description" value="<:old description subscription description:>" /></td>
-  <td><:error_img description:><:help addsubscr description:></td>
+  <td class="help"><:error_img description:><:help addsubscr description:></td>
 </tr>
 <tr>
   <th>Max Lapsed:</th>
   <td><input type="text" name="max_lapsed" value="<:old max_lapsed subscription max_lapsed:>" /></td>
-  <td><:error_img max_lapsed:><:help addsubscr max_lapsed:></td>
+  <td class="help"><:error_img max_lapsed:><:help addsubscr max_lapsed:></td>
 </tr>
 <tr>
-  <td colspan="2"><input type="submit" name="a_save" value="Save Subscription" /></td>
-  <td>&nbsp;</td>
+  <td colspan="3" class="buttons"><input type="submit" name="a_save" value="Save Subscription" /></td>
 </tr>
 </table>
 </form>

@@ -1,4 +1,4 @@
-<:wrap admin/xbase.tmpl title=>"Seminar [seminar title] - Delete Session":>
+<:wrap admin/base.tmpl title=>"Seminar [seminar title] - Delete Session":>
 <h1>Seminar <:seminar title:> - Delete Session</h1>
 <:ifMessage:>
 <p><b><:message:></b></p>
@@ -12,7 +12,7 @@
 <input type="hidden" name="id" value="<:seminar id:>" />
 <input type="hidden" name="session_id" value="<:session id:>" />
 <input type="hidden" name="r" value="<:script:>?id=<:seminar id:>&amp;_t=semsessions" />
-<table>
+<table class="editform editformtiny">
   <tr>
     <th>Location:</th>
     <td><:location description:></td>
@@ -40,9 +40,9 @@
   <tr>
     <th>Notify Booked Members</th>
     <td><input type="checkbox" name="notify" <:ifOld notify:>checked="checked"<:or:><:eif:> value="1" /> A notification email will be sent to users booked for this session if this is checked.</td>
-    <td>&nbsp;</td>
   </tr>
   <tr>
-    <td colspan="3"><input type="submit" name="a_delsemsession" value="Delete Session" /></td>
+    <td colspan="2" class="buttons"><input type="submit" name="a_delsemsession" value="Delete Session" /></td>
   </tr>
 </table>
+</form>

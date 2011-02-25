@@ -1,5 +1,4 @@
-<:wrap admin/xbase.tmpl title=>"Edit Site Member":>
-<h1>Edit Site Member</h1>
+<:wrap admin/base.tmpl title=> [concatenate "View Member: " [siteuser userId]], showtitle=>1:>
 <p>
 | <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |
 <a href="/cgi-bin/admin/siteusers.pl">Site Members</a> |
@@ -14,254 +13,247 @@
 <p><b><:message:></b></p>
 <:or:><:eif:> 
 
-  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
-    <tr> 
-      <td> 
         <table cellpadding="6" border="0" cellspacing="1">
 <:ifCfg "site users" nopassword:><:or:>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">Logon: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>Logon: </th>
+            <td> 
 	      <:siteuser userId:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser userId:></td>
+            <td class="help"><:help editsiteuser userId:></td>
           </tr>
 <:eif:>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">Email: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>Email: </th>
+            <td> 
               <a href="mailto:<:siteuser email:>"><:siteuser email:></a> (<:ifSiteuser confirmed:>confirmed<:or:><:if UserCan bse_members_confirm:><a href="<:script:>?a_view=1&amp;id=<:siteuser id:>&amp;_t=confirm&amp;r=<:script:>%3Fa_view=1%26id=<:siteuser id:>">unconfirmed</a><:or UserCan:>unconfirmed<:eif UserCan:><:eif:>)
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser email:></td>
+            <td class="help"><:help editsiteuser email:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">Disabled: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>Disabled: </th>
+            <td> 
               <:ifSiteuser disabled:>User disabled<:or:>User enabled<:eif:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser disabled:></td>
+            <td class="help"><:help editsiteuser disabled:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">First Name: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>First Name: </th>
+            <td> 
               <:siteuser name1:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser name1:></td>
+            <td class="help"><:help editsiteuser name1:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">Last Name: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>Last Name: </th>
+            <td> 
               <:siteuser name2:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser name2:></td>
+            <td class="help"><:help editsiteuser name2:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">address: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>address: </th>
+            <td> 
               <:siteuser address:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser address:></td>
+            <td class="help"><:help editsiteuser address:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">city: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>city: </th>
+            <td> 
               <:siteuser city:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser city:></td>
+            <td class="help"><:help editsiteuser city:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">state: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>state: </th>
+            <td> 
               <:siteuser state:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser state:></td>
+            <td class="help"><:help editsiteuser state:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">postcode: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>postcode: </th>
+            <td> 
               <:siteuser postcode:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser postcode:></td>
+            <td class="help"><:help editsiteuser postcode:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">telephone: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>telephone: </th>
+            <td> 
               <:siteuser telephone:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser telephone:></td>
+            <td class="help"><:help editsiteuser telephone:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">mobile: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>mobile: </th>
+            <td> 
               <:siteuser delivMobile:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser delivMobile:></td>
+            <td class="help"><:help editsiteuser delivMobile:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">facsimile: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>facsimile: </th>
+            <td> 
               <:siteuser facsimile:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser facsimile:></td>
+            <td class="help"><:help editsiteuser facsimile:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">country: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>country: </th>
+            <td> 
               <:siteuser country:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser country:></td>
+            <td class="help"><:help editsiteuser country:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">title: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>title: </th>
+            <td> 
               <:siteuser title:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser title:></td>
+            <td class="help"><:help editsiteuser title:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">organization: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>organization: </th>
+            <td> 
               <:siteuser organization:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser organization:></td>
+            <td class="help"><:help editsiteuser organization:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">billFirstName: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>billFirstName: </th>
+            <td> 
               <:siteuser billFirstName:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser billFirstName:></td>
+            <td class="help"><:help editsiteuser billFirstName:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">billLastName: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>billLastName: </th>
+            <td> 
               <:siteuser billLastName:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser billLastName:></td>
+            <td class="help"><:help editsiteuser billLastName:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">billStreet: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>billStreet: </th>
+            <td> 
               <:siteuser billStreet:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser billStreet:></td>
+            <td class="help"><:help editsiteuser billStreet:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">billSuburb: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>billSuburb: </th>
+            <td> 
               <:siteuser billSuburb:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser billSuburb:></td>
+            <td class="help"><:help editsiteuser billSuburb:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">billState: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>billState: </th>
+            <td> 
               <:siteuser billState:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser billState:></td>
+            <td class="help"><:help editsiteuser billState:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">billPostCode: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>billPostCode: </th>
+            <td> 
               <:siteuser billPostCode:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser billPostCode:></td>
+            <td class="help"><:help editsiteuser billPostCode:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">billCountry: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>billCountry: </th>
+            <td> 
               <:siteuser billCountry:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser billCountry:></td>
+            <td class="help"><:help editsiteuser billCountry:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">instructions: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>instructions: </th>
+            <td> 
               <:siteuser instructions:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser instructions:></td>
+            <td class="help"><:help editsiteuser instructions:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">billTelephone: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>billTelephone: </th>
+            <td> 
               <:siteuser billTelephone:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser billTelephone:></td>
+            <td class="help"><:help editsiteuser billTelephone:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">billMobile: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>billMobile: </th>
+            <td> 
               <:siteuser billMobile:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser billMobile:></td>
+            <td class="help"><:help editsiteuser billMobile:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">billFacsimile: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>billFacsimile: </th>
+            <td> 
               <:siteuser billFacsimile:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser billFacsimile:></td>
+            <td class="help"><:help editsiteuser billFacsimile:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">billEmail: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>billEmail: </th>
+            <td> 
               <:siteuser billEmail:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser billEmail:></td>
+            <td class="help"><:help editsiteuser billEmail:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">Affiliate Name: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th>Affiliate Name: </th>
+            <td> 
               <:siteuser affiliate_name:>
             </td>
-            <td bgcolor="#FFFFFF"><:help editsiteuser affiliate_name:></td>
+            <td class="help"><:help editsiteuser affiliate_name:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left" valign="top">Admin Notes: </th>
-            <td bgcolor="#FFFFFF"> 
-              <textarea name="adminNotes" wrap="soft" rows="5" cols="60" readonly="readonly"><:siteuser adminNotes:></textarea>
+            <th>Admin Notes: </th>
+            <td> 
+              <textarea name="adminNotes" rows="5" cols="60" readonly="readonly"><:siteuser adminNotes:></textarea>
             </td>
-            <td bgcolor="#FFFFFF" valign="top"><:help editsiteuser adminNotes:></td>
+            <td class="help"><:help editsiteuser adminNotes:></td>
           </tr>
 <:if Flags:>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left" valign="top">Flags: </th>
-            <td bgcolor="#FFFFFF">
+            <th>Flags: </th>
+            <td>
 	    <:iterator begin flags:>
 	    <img src="/images/admin/<:ifFlagSet [flag id]:>checked.gif<:or:>unchecked.gif<:eif:>" /> <:flag desc:>
 	    <:iterator separator flags:>
 	    <br />
 	    <:iterator end flags:>
             </td>
-            <td bgcolor="#FFFFFF" valign="top"><:help editsiteuser flags:></td>
+            <td class="help"><:help editsiteuser flags:></td>
           </tr>
 <:or Flags:><:eif Flags:>
 <:if Subscriptions:>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left" valign="top">Subscriptions: </th>
-            <td bgcolor="#FFFFFF">
+            <th>Subscriptions: </th>
+            <td>
 	    <:iterator begin subscriptions:>
 	    <img src="/images/admin/<:ifSubscribed:>checked.gif<:or:>unchecked.gif<:eif:>" /> <:subscription name:>
 	    <:iterator separator subscriptions:>
 	    <br />
 	    <:iterator end subscriptions:>
             </td>
-            <td bgcolor="#FFFFFF" valign="top"><:help editsiteuser subscriptions:></td>
+            <td class="help"><:help editsiteuser subscriptions:></td>
           </tr>
 <:or Subscriptions:><:eif Subscriptions:>
 <:iterator begin imagetemplates:>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left"> <:imagetemplate description:>: </th>
-            <td bgcolor="#FFFFFF"> 
+            <th> <:imagetemplate description:>: </th>
+            <td> 
               Alt: <:siteuser_image [imagetemplate id] alt:><br />
 	<:ifSiteuser_image [imagetemplate id]:><br /><img src="<:siteuser_image [imagetemplate id] url:>" /><:or:><:eif:>
               </td>
-            <td bgcolor="#FFFFFF"> <:help editsiteuser images:></td>
+            <td class="help"><:help editsiteuser images:></td>
           </tr>
 <:iterator end imagetemplates:>
 <:include admin/users/custom_view.tmpl optional:>
         </table>
-      </td>
-    </tr>
-  </table>
-</form>
