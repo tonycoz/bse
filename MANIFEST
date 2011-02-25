@@ -44,6 +44,7 @@ site/cgi-bin/admin/userupdate.pl
 site/cgi-bin/affiliate.pl
 site/cgi-bin/api.pl
 site/cgi-bin/bse.cfg
+site/cgi-bin/cfg/admin-ui.cfg
 site/cgi-bin/fileprogress.fcgi
 site/cgi-bin/fileprogress.pl
 site/cgi-bin/fmail.fcgi
@@ -251,6 +252,9 @@ site/cgi-bin/modules/BSE/Util/SQL.pm
 site/cgi-bin/modules/BSE/Util/Tags.pm
 site/cgi-bin/modules/BSE/Util/Thumb.pm
 site/cgi-bin/modules/BSE/Util/Valid.pm
+site/cgi-bin/modules/BSE/Util/ValidateHTML.pm
+site/cgi-bin/modules/BSE/Util/ValidateHTML/Tidy.pm
+site/cgi-bin/modules/BSE/Util/ValidateHTML/W3C.pm
 site/cgi-bin/modules/BSE/Validate.pm
 site/cgi-bin/modules/BSE/Version.pm
 site/cgi-bin/modules/BSE/WebUtil.pm
@@ -377,6 +381,7 @@ site/docs/upgrade_mysql.html
 site/docs/userupdate.html
 site/docs/userupdate.pod
 site/htdocs/a/.htaccess
+site/htdocs/admin/admin.html
 site/htdocs/admin/advanced.html
 site/htdocs/admin/help/access.html
 site/htdocs/admin/help/addgroup.html
@@ -427,10 +432,13 @@ site/htdocs/images/titles/the_shop.gif
 site/htdocs/images/titles/your_site.gif
 site/htdocs/images/trans_pixel.gif
 site/htdocs/images/videoclose.png
+site/htdocs/js/admin-ui/menu.js
 site/htdocs/js/admin_messages.js
 site/htdocs/js/admin_prodopts.js
+site/htdocs/js/admin_siteusers.js
 site/htdocs/js/admin_tools.js
 site/htdocs/js/bse.js
+site/htdocs/js/bse_adminui.js
 site/htdocs/js/bse_api.js
 site/htdocs/js/bse_flowplayer.js
 site/htdocs/js/builder.js

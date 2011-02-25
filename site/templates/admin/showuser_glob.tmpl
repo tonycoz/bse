@@ -1,14 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-
-  <title>Administration - Edit User</title>
-
-  <link rel="stylesheet" type="text/css" href="/css/admin.css" />
-
-</head>
-
-<body>
+<:wrap admin/base.tmpl title => "Global Permissions" :>
 <h1>Edit User <:user logon:></h1>
 <p>
 | <a href="/cgi-bin/admin/menu.pl">Admin menu</a>
@@ -16,8 +6,8 @@
 <a href="<:script:>?a_groups=1">Group list</a> |
 </p>
 <p>
-| <a href="<:script:>?a_showuser=1&userid=<:user id:>">User Details</a> | Global Permissions
-| <a href="<:script:>?a_showuserart=1&userid=<:user id:>&id=-1">Article Permissions</a> |
+| <a href="<:script:>?a_showuser=1&amp;userid=<:user id:>">User Details</a> | Global Permissions
+| <a href="<:script:>?a_showuserart=1&amp;userid=<:user id:>&amp;id=-1">Article Permissions</a> |
 </p>
 <:ifMessage:>
 <p><b><:message:></b></p>
@@ -27,32 +17,22 @@
 <input type=hidden name=userid value=<:user id:>>
 <input type=hidden name=savegperms value=1>
 <input type="hidden" name="_t" value="glob">
-  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
-    <tr> 
-      <td> 
-        <table cellpadding="6" border="0" cellspacing="1">
+        <table>
           <:iterator begin gperms:>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left"><:gperm brief:> </th>
-            <td bgcolor="#FFFFFF"> 
+            <th><:gperm brief:> </th>
+            <td> 
               <:if UserCan admin_user_save:><input type=checkbox name=gperms value=<:gperm id:> <:ifGperm_set gperm:>checked <:or:><:eif:>/><:or UserCan:><img src="/images/admin/<:ifGperm_set gperm:>checked<:or:>unchecked<:eif:>.gif"><:eif UserCan:>
             </td>
-            <td bgcolor="#FFFFFF"><img src="/images/admin/help.gif" title="<:gperm help:>" /></td>
+            <td><img src="/images/admin/help.gif" title="<:gperm help:>" /></td>
           </tr>
           <:iterator end gperms:>
 <:ifUserCan admin_user_save:>
           <tr> 
-            <td bgcolor="#FFFFFF" colspan="3" align="right"> 
+            <td colspan="3" class="buttons"> 
               <input type="submit" name="a_saveuser" value="  Save Permissions  " />
             </td>
           </tr>
 <:or:><:eif:>
         </table>
-      </td>
-    </tr>
-  </table>
 </form>
-  
-<p><font size="-1">BSE Release <:release:></font></p>
-</body
-></html>

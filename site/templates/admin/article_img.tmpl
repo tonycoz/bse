@@ -1,4 +1,4 @@
-<:wrap admin/xbase.tmpl title=>"Image Wizard" :>
+<:wrap admin/base.tmpl title=>"Image Wizard" :>
 <h1><:ifEq [article id] "-1":>Global<:or:><: articleType :><:eif:> Image Wizard</h1>
 <:ifMessage:> 
 <p><b><:message:> </b></p>
@@ -26,41 +26,38 @@
 <input type="hidden" name="imgtype" value="<: articleType :>" />
 <input type="hidden" name="_t" value="img" />
 <:csrfp admin_add_image hidden:>
-  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
-    <tr> 
-      <td> 
-        <table cellpadding="6" border="0" cellspacing="1">
+        <table>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">Image file to add:</th>
-            <td bgcolor="#FFFFFF"> 
+            <th>Image file to add:</th>
+            <td> 
               <input type="file" name="image" /> 
             </td>
-            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help image file:> <:error_img image:></td>
+            <td class="help"><:help image file:> <:error_img image:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">Alt text for image:</th>
-            <td bgcolor="#FFFFFF"> 
+            <th>Alt text for image:</th>
+            <td> 
               <input type="text" name="altIn" value="<:old altIn:>" />
             </td>
-            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help image alt:> <:error_img altIn:></td>
+            <td class="help"><:help image alt:> <:error_img altIn:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">URL for image:</th>
-            <td bgcolor="#FFFFFF"> 
+            <th>URL for image:</th>
+            <td> 
               <input type="text" name="url" value="<:old url:>" />
             </td>
-            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help image url:> <:error_img url:></td>
+            <td class="help"><:help image url:> <:error_img url:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">Identifier for image:</th>
-            <td bgcolor="#FFFFFF"> 
+            <th>Identifier for image:</th>
+            <td> 
               <input type="text" name="name" value="<:old name:>" />
             </td>
-            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help image name:> <:error_img name:></td>
+            <td class="help"><:help image name:> <:error_img name:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left">Storage:</th>
-            <td bgcolor="#FFFFFF"> 
+            <th>Storage:</th>
+            <td> 
 <select name="storage">
 <option value="">(Auto)</option>
 <:iterator begin image_stores:>
@@ -68,17 +65,14 @@
 <:iterator end image_stores:>
 </select>
             </td>
-            <td nowrap="nowrap" bgcolor="#FFFFFF"><:help image storage:> <:error_img storage:></td>
+            <td class="help"><:help image storage:> <:error_img storage:></td>
           </tr>
           <tr> 
-            <td bgcolor="#FFFFFF" colspan="3" align="right"> 
+            <td  colspan="3" class="buttons"> 
               <input type="submit" name="addimg" value="Add Image" />
             </td>
           </tr>
         </table>
-      </td>
-    </tr>
-  </table>
 </form>
 <:or UserCan:><:eif UserCan:>
 
@@ -91,68 +85,60 @@
 <:csrfp admin_save_images hidden:>
   <h2>Manage images</h2>
 
-<table width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="#000000" class="table">
-    <tr>
-      <td>
-        <table width="100%" border="0" cellpadding="6" cellspacing="1">
+        <table class="editform images">
           <:if Images:><:if Eq [article id] "-1":><:or Eq:><tr> 
-            <th valign="top" bgcolor="#FFFFFF" colspan="5">First Image Position</th>
+            <th colspan="5">First Image Position</th>
           </tr>
 		  <tr> 
-            <td bgcolor="#FFFFFF" colspan="5"> 
-              <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                <tr>
-                  <td width="100%" align="center"><input type="radio" name="imagePos" value="tl" <: ifEq [article imagePos] "tl":>checked<:or:><:eif:>
+            <td colspan="5"> 
+<input type="radio" name="imagePos" value="tl" <: ifEq [article imagePos] "tl":>checked<:or:><:eif:>
 	      />Top Left &nbsp;<input type="radio" name="imagePos" value="tr"  <: ifEq [article imagePos] "tr":>checked<:or:><:eif:>
 	      />Top Right &nbsp; <input type="radio" name="imagePos" value="bl"  <: ifEq [article imagePos] "bl":>checked<:or:><:eif:>
 	      />Bottom Left &nbsp; <input type="radio" name="imagePos" value="br"  <: ifEq [article imagePos] "br":>checked<:or:><:eif:>
-	      />Bottom Right</td>
-                  <td bgcolor="#FFFFFF"><:help image file:> </td>
-                </tr>
-              </table>
+	      />Bottom Right <:help image position:>
 
 	    </td>
           </tr><:eif Eq:>
 <:if Thumbs:>
-          <tr bgcolor="#FFFFFF"> 
+          <tr> 
             <th>Image</th>
             <th colspan="2"> &nbsp;</th>
-            <th nowrap="nowrap"> Modify</th>
-	    <th nowrap="nowrap"> Move</th>
+            <th class="col_modify"> Modify</th>
+	    <th class="col_move"> Move</th>
           </tr>
 <:iterator begin images:>
 	<tr>
-          <td rowspan="5" align="center" valign="center" bgcolor="#FFFFFF"><a href="#" onclick="window.open('<:image src:>', 'fullimage', 'width=<:arithmetic [image width]+20:>,height=<:arithmetic [image height] + 30:>,location=no,status=no,menubar=no,scrollbars=yes'); return false;"><:thumbimage editor:></a></th>
+          <td rowspan="5" class="col_thumbnail"><a href="#" onclick="window.open('<:image src:>', 'fullimage', 'width=<:arithmetic [image width]+20:>,height=<:arithmetic [image height] + 30:>,location=no,status=no,menubar=no,scrollbars=yes'); return false;"><:thumbimage editor:></a></th>
 	    <th>Alt text:</th>
-            <td valign="top" bgcolor="#FFFFFF"> 
+            <td class="col_field"> 
               <:ifUserCan edit_images_save:article:><input type="text" name="alt<:image id:>" value="<: oldi [concatenate alt [image id] ] 0 image alt :>" size="32" /><:or:><: image alt :><:eif:>
             </td>
-            <td valign="top" nowrap="nowrap" rowspan="5" bgcolor="#FFFFFF"> 
+            <td class="col_modify" rowspan="5"> 
               <:ifUserCan edit_images_delete:article:><b><a href="<:script:>?id=<:article id:>&amp;removeimg_<: image id :>=1&amp;_t=img&amp;_csrfp=<:csrfp admin_remove_image:>" onClick="return window.confirm('Are you sure you want to delete this Image')">Delete</a></b><:or:><:eif:>
 <:ifUserCan edit_images_save:article:><a href="<:script:>?a_edit_image=1&amp;id=<:article id:>&image_id=<: image id :>">Edit</a><:or:><:eif:></td>
-            <td nowrap="nowrap" bgcolor="#FFFFFF" rowspan="5"><:imgmove:></td>
+            <td class="col_move" rowspan="5"><:imgmove:></td>
 	  </tr>
 	  <tr>        
             <th>URL:</th>
-            <td valign="top" width="50%"  bgcolor="#FFFFFF" colspan="1"> 
+            <td class="col_field"> 
               <:ifUserCan edit_images_save:article:><input type="text" name="url<:image id:>" value="<: oldi [concatenate url [image id] ] 0 image url :>" size="32" /><:or:><: image url :><:eif:>
             </td>
           </tr>
           <tr>
 	    <th>Identifier:</th>
-            <td valign="top" nowrap="nowrap"  bgcolor="#FFFFFF" colspan="1"> 
+            <td class="col_field"> 
               <:ifUserCan edit_images_save:article:><input type="text" name="name<:image id:>" value="<: oldi [concatenate name [image id] ] 0 image name :>" size="32" /> <:error_img [concatenate "name" [image id] ]:><:or:><: image name :><:eif:>
             </td>
         </tr>
           <tr>
 	    <th>Image file:</th>
-            <td valign="top" nowrap="nowrap"  bgcolor="#FFFFFF" colspan="1"> 
+            <td class="col_field"> 
               <:ifUserCan edit_images_save:article:><input type="file" name="image<:image id:>" size="32" /> <:error_img [concatenate "image" [image id] ]:><:or:><: image displayName :><:eif:>
             </td>
         </tr>
           <tr>
 	    <th>Stored:</th>
-            <td valign="top" nowrap="nowrap"  bgcolor="#FFFFFF" colspan="1"> 
+            <td class="col_field"> 
               <:ifUserCan edit_images_save:article:><select name="storage<:image id:>">
 <option value="">(Auto)</option>
 <:iterator begin image_stores:>
@@ -163,43 +149,43 @@
         </tr>
 <:iterator end images:>          
 <:or Thumbs:>
-          <tr bgcolor="#FFFFFF"> 
+          <tr> 
             <th colspan="5">Image</th>
           </tr>
           <: iterator begin images :> 
-          <tr bgcolor="#FFFFFF"> 
-            <td align="center" colspan="5"><:image:></td>
+          <tr> 
+            <td class="col_image" colspan="5"><:image:></td>
           </tr>
-          <tr bgcolor="#FFFFFF"> 
+          <tr> 
             <th> Alt Text</th>
-            <th width="50%"> URL</th>
+            <th class="col_url"> URL</th>
             <th> Identifier</th>
-            <th nowrap="nowrap"> Modify</th>
-			<th nowrap="nowrap"> Move</th>
+            <th class="col_modify"> Modify</th>
+			<th class="col_move"> Move</th>
           </tr>
-          <tr bgcolor="#FFFFFF"> 
-            <td valign="top"> 
+          <tr> 
+            <td> 
               <:ifUserCan edit_images_save:article:><input type="text" name="alt<:image id:>" value="<: oldi [concatenate alt [image id] ] 0 image alt :>" size="32" /><:or:><: image alt :><:eif:>
             </td>
-            <td valign="top" width="50%"> 
+            <td class="col_url"> 
               <:ifUserCan edit_images_save:article:><input type="text" name="url<:image id:>" value="<: oldi [concatenate url [image id] ] 0 image url :>" size="32" /><:or:><: image url :><:eif:>
             </td>
-            <td valign="top" nowrap="nowrap"> 
+            <td class="col_identifier"> 
               <:ifUserCan edit_images_save:article:><input type="text" name="name<:image id:>" value="<: oldi [concatenate name [image id] ] 0 image name :>" size="32" /> <:error_img [concatenate "name" [image id] ]:><:or:><: image name :><:eif:>
             </td>
-            <td valign="bottom" nowrap="nowrap"> 
+            <td class="col_modify"> 
               <:ifUserCan edit_images_delete:article:><b><a href="<:script:>?id=<:article id:>&amp;removeimg_<: image id :>=1&amp;_t=img&amp;_csrfp=<:csrfp admin_remove_image:>" onClick="return window.confirm('Are you sure you want to delete this Image')">Delete</a></b><:or:><:eif:></td>
-            <td nowrap="nowrap"><:imgmove:></td>
+            <td class="col_move"><:imgmove:></td>
           </tr>
           <: iterator separator images :> 
-          <tr bgcolor="#FFFFFF"> 
+          <tr> 
             <td colspan="5">&nbsp;</td>
           </tr>
           <: iterator end images :> 
 <:eif Thumbs:>
 <:ifUserCan edit_images_save:article:>
           <tr> 
-            <td align="right" bgcolor="#FFFFFF" colspan="5"> 
+            <td colspan="5" class="buttons"> 
               <input type="submit" name="process" value="Save changes" />
             </td>
 	  </tr>
@@ -208,9 +194,6 @@
 		      are attached to this article<:eif Eq:></td>
           </tr><:eif Images:>
         </table>
-</td>
-</tr>
-</table>
 
   <p>
     <input type="submit" name="back" value=" &lt;&lt;  Back  " />

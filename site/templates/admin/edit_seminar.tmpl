@@ -1,7 +1,4 @@
-<html><head><title><:ifNew:>Add<:or:>Edit<:eif:> seminar - Shop administration</title>
-  <link rel="stylesheet" type="text/css" href="/css/admin.css">
-</head>
-<body>
+<:wrap admin/base.tmpl title => "Edit Seminar":>
 <h1>Shop Administration</h1>
 <:ifMessage:>
 <p><b><:message:></b></p>
@@ -23,16 +20,10 @@
 <:ifNew:><:or:><:if Or [iadminuser_count] [iadmingroup_count]:>
       <form action="/cgi-bin/admin/adminusers.pl">
   <input type="hidden" name="id" value="<: article id:>" />
-  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
-  <tr>
-    <td>
-        <table cellpadding="6" cellspacing="1" border="0" width="100%">
+        <table>
           <tr>
-            <th nowrap="nowrap">
-
-        <font size="2">Manage access:</font>
-        </th>
-            <td bgcolor="#FFFFFF">
+            <th>Manage access:</th>
+            <td>
               <select name="adminid">
 <:iterator begin adminusers:>
 <option value="<:iadminuser id:>">User <:iadminuser logon:>
@@ -41,15 +32,12 @@
 <option value="<:iadmingroup id:>">Group <:iadmingroup name:>
 </option><:iterator end admingroups:>
               </select>
-              <input type="submit" name="a_showobjectart" value="Manage">
+              <input type="submit" name="a_showobjectart" value="Manage" />
       </td>
-            <td bgcolor="#FFFFFF"><:help access manage:>
+            <td class="help"><:help access manage:>
         </td>
           </tr>
         </table>
-    </td>
-   </tr>
-  </table>
       </form>
 <br>
 <:or Or:><:eif Or:><:eif:>
@@ -354,9 +342,6 @@
             <td nowrap="nowrap" bgcolor="#FFFFFF"><:help product subscription_id:></td>
           </tr>
         </table>
-      </td>
-    </tr>
-  </table>
   <p><font size="-1">*These fields cannot be modified once this seminar has been
       included in an order.</font></p>
   <:if UserCan edit_save:article:>
@@ -364,7 +349,3 @@
     <:ifNew:><input type="submit" name="save" value="Add Seminar" /><:or:><input type="submit" name="save" value="Update Seminar" /><:eif:>
   </p><:or UserCan:><:eif UserCan:>
 </form>
-
-<p><font size="-1">BSE Release <:release:></font></p>
-</body>
-</html>

@@ -1,9 +1,9 @@
-<:wrap admin/xbase.tmpl title => "Shop Administration", menuitem=>edit, showtitle=>1 :>
+<:wrap admin/base.tmpl title => "Edit Product", menuitem=>edit :>
 <:ifMessage:>
 <p><b><:message:></b></p>
 <:or:><:eif:> 
+  <h1><:ifNew:>Add Product<:or:>Edit Product<:eif:></h1>
 <:include admin/product_menu.tmpl:>
-  <h2><:ifNew:>Add Product<:or:>Product Details<:eif:></h2>
 <:ifNew:><:or:><:if Or [iadminuser_count] [iadmingroup_count]:>
       <form action="/cgi-bin/admin/adminusers.pl">
   <input type="hidden" name="id" value="<: article id:>" />
@@ -26,7 +26,7 @@
           </tr>
         </table>
       </form>
-<br>
+<br />
 <:or Or:><:eif Or:><:eif:>
 <form action="<:script:>" enctype="multipart/form-data" method="post">
     <input type="hidden" name="lastModified" value="<: old lastModified article lastModified :>" />
@@ -43,7 +43,7 @@
           </tr>
 		  <tr> 
             <th>Title:</th>
-            <td><:ifFieldPerm title:><input type="text" name="title" value="<:old title default title:>" size="60"><:or:><:product title:><:eif:> </td>
+            <td><:ifFieldPerm title:><input type="text" name="title" value="<:old title default title:>" size="60" /><:or:><:product title:><:eif:> </td>
             <td class="help"><:help product title:> <:error_img title:></td>
           </tr>
           <:if Cfg "title alias" [concatenate level [article level]]:><tr>
@@ -55,26 +55,26 @@
           </tr><:or Cfg:><:eif Cfg:>
           <tr> 
             <th>Summary:</th>
-            <td><:ifFieldPerm summary:><input type="text" name="summary" value="<:old summary default summary:>" size=60><:or:><:product summary:><:eif:> </td>
+            <td><:ifFieldPerm summary:><input type="text" name="summary" value="<:old summary default summary:>" size="60" /><:or:><:product summary:><:eif:> </td>
             <td class="edit"><:help product summary:> <:error_img
             summary:></td>
           </tr>
           <tr> 
             <th>Description:</th>
-            <td><:ifFieldPerm description:><input type="text" name="description" value="<:old description default description:>" size=60><:or:><:product description:><:eif:> </td>
+            <td><:ifFieldPerm description:><input type="text" name="description" value="<:old description default description:>" size="60" /><:or:><:product description:><:eif:> </td>
             <td class="help"><:help product description:> <:error_img
             description:></td>
           </tr>
           <tr> 
             <th>Product Code:</th>
-            <td><:ifFieldPerm product_code:><input type="text" name="product_code" value="<:old product_code default product_code:>" size=60><:or:><:product product_code:><:eif:> </td>
+            <td><:ifFieldPerm product_code:><input type="text" name="product_code" value="<:old product_code default product_code:>" size="60" /><:or:><:product product_code:><:eif:> </td>
             <td class="help"><:help product product_code:> <:error_img
             product_code:></td>
           </tr>
           <tr> 
             <th> Body:</th>
             <td> 
-              <:ifFieldPerm body:><textarea name="body" rows="15" cols="60" wrap="virtual"><:old body default body:></textarea><:or:><:bodytext product body:><:eif:>
+              <:ifFieldPerm body:><textarea name="body" rows="15" cols="60" ><:old body default body:></textarea><:or:><:bodytext product body:><:eif:>
             </td>
             <td class="help"><:help body body:> <:error_img
             body:></td>
@@ -103,14 +103,14 @@
           <tr> 
             <th>Link alias:</th>
             <td> 
-            <:ifFieldPerm linkAlias:><input type="text" name="linkAlias" maxlength="<:cfg fields linkAlias_size 255:>" size="40" value="<: old linkAlias article linkAlias :>">
+            <:ifFieldPerm linkAlias:><input type="text" name="linkAlias" maxlength="<:cfg fields linkAlias_size 255:>" size="40" value="<: old linkAlias article linkAlias :>" />
             <:or:><:default linkAlias:><:eif:></td>
             <td class="help"><:help edit linkAlias:> <:error_img linkAlias:></td>
           </tr>
 		  <tr>
             <th>Flags:</th>
             <td><:iterator begin flags:><:if FieldPerm flags:>
-              <input type="checkbox" name="flags" value="<:flag id:>" <:ifFlagSet [flag id]:>checked<:or:>
+              <input type="checkbox" name="flags" value="<:flag id:>" <:ifFlagSet [flag id]:>checked="checked"<:or:>
               <:eif:> /><:or FieldPerm:><:ifFlagSet [flag id]:>Yes<:or:>No<:eif:>
               <:eif FieldPerm:><:flag desc:><:iterator separator flags:><br /><:iterator end flags:></td>
             <td class="help"><:help edit flags:> <:error_img flags:></td>
@@ -174,22 +174,22 @@
           </tr>
           <tr>
             <th>Weight:</th>
-            <td><:ifFieldPerm weight:><input type="text" name="weight" value="<:old weight default weight:>" size=7><:or:><:product weight:><:eif:> grams</td>
+            <td><:ifFieldPerm weight:><input type="text" name="weight" value="<:old weight default weight:>" size="7" /><:or:><:product weight:><:eif:> grams</td>
             <td class="help"><:help product weight:> <:error_img weight:></td>
           </tr>
           <tr>
             <th>Length:</th>
-            <td><:ifFieldPerm length:><input type="text" name="length" value="<:old length default length:>" size=7><:or:><:product length:><:eif:> mm</td>
+            <td><:ifFieldPerm length:><input type="text" name="length" value="<:old length default length:>" size="7" /><:or:><:product length:><:eif:> mm</td>
             <td class="help"><:help product length:> <:error_img length:></td>
           </tr>
           <tr>
             <th>Width:</th>
-            <td><:ifFieldPerm width:><input type="text" name="width" value="<:old width default width:>" size=7><:or:><:product width:><:eif:> mm</td>
+            <td><:ifFieldPerm width:><input type="text" name="width" value="<:old width default width:>" size="7" /><:or:><:product width:><:eif:> mm</td>
             <td class="help"><:help product width:> <:error_img width:></td>
           </tr>
           <tr>
             <th>Height</th>
-            <td><:ifFieldPerm height:><input type="text" name="height" value="<:old height default height:>" size=7><:or:><:product height:><:eif:> mm</td>
+            <td><:ifFieldPerm height:><input type="text" name="height" value="<:old height default height:>" size="7" /><:or:><:product height:><:eif:> mm</td>
             <td class="help"><:help product height:> <:error_img height:></td>
           </tr>
           <tr> 
@@ -278,10 +278,10 @@
                       </tr>
                       <:iterator end files:> 
                     </table>
-              <p><a href="<:script:>?filelist=1&id=<:article id:>"><b>Manage Files</b></a>
+              <p><a href="<:script:>?filelist=1&amp;id=<:article id:>"><b>Manage Files</b></a>
               </p>
               <:or Files:>
-              No files are attached to this article. <a href="<:script:>?filelist=1&id=<:article id:>"><b>Manage Files</b></a><:eif Files:>
+              No files are attached to this article. <a href="<:script:>?filelist=1&amp;id=<:article id:>"><b>Manage Files</b></a><:eif Files:>
             </td>
             <td class="help"><:help product 
               files:> <:error_img files:></td>
@@ -293,8 +293,8 @@
               <:image width:> height=<:image height:>> <:iterator separator images:> 
               <hr noshade size="1">
               <: iterator end images :>
-              <p align="left"><a href="<:script:>?id=<:article id:>&showimages=1"><b>Manage Images</b></a></p>
-	      <:or Images:>No images are attached to this article.  <a href="<:script:>?id=<:article id:>&showimages=1"><b>Manage Images</b></a>
+              <p align="left"><a href="<:script:>?id=<:article id:>&amp;showimages=1"><b>Manage Images</b></a></p>
+	      <:or Images:>No images are attached to this article.  <a href="<:script:>?id=<:article id:>&amp;showimages=1"><b>Manage Images</b></a>
 	      <:eif Images:>
             </td>
             <td class="help"><:help product images:> <:error_img
@@ -336,15 +336,11 @@
             </td>
             <td class="help"><:help product subscription_id:></td>
           </tr>
-        </table>
-  <p><font size="-1">*These fields cannot be modified once this product has been
-      included in an order.</font></p>
+  <tr><td colspan="3">*These fields cannot be modified once this product has been
+      included in an order.</td></tr>
   <:if UserCan edit_save:article:>
-  <p>
-    <:ifNew:><input type="submit" name="save" value="Add Product" /><:or:><input type="submit" name="save" value="Update Product" /><:eif:>
-  </p><:or UserCan:><:eif UserCan:>
+  <tr>
+    <td colspan="3" class="buttons"><:ifNew:><input type="submit" name="save" value="Add Product" /><:or:><input type="submit" name="save" value="Update Product" /><:eif:>
+  </td></tr><:or UserCan:><:eif UserCan:>
+        </table>
 </form>
-
-<p><font size="-1">BSE Release <:release:></font></p>
-</body>
-</html>

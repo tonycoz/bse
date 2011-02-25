@@ -4,7 +4,7 @@ use Squirrel::Template;
 use Carp qw(confess cluck);
 use Config ();
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub templater {
   my ($class, $cfg, $rsets) = @_;
@@ -303,6 +303,13 @@ sub output_resultc {
   else {
     print STDERR "$ENV{SCRIPT_NAME}: ** No content supplied\n";
     print "** Internal error\n";
+  }
+
+  if ($result->{content}
+      && $result->{type} =~ m(text/html|application/xhtml\+xml)
+      && $cfg->entry("html", "validate", 0)) {
+    require BSE::Util::ValidateHTML;
+    BSE::Util::ValidateHTML->validate($cfg, $result);
   }
 }
 

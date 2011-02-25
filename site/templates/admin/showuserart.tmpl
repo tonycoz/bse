@@ -1,14 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-
-  <title>Administration - Edit User - Article permissions</title>
-
-  <link rel="stylesheet" type="text/css" href="/css/admin.css" />
-
-</head>
-
-<body>
+<:wrap admin/base.tmpl title => "Edit User - Article Permissions":>
 <h1>Edit User <:user logon:></h1>
 <p>
 | <a href="/cgi-bin/admin/menu.pl">Admin menu</a>
@@ -16,73 +6,57 @@
 <a href="<:script:>?a_groups=1">Group list</a> |
 </p>
 <p>
-| <a href="<:script:>?a_showuser=1&userid=<:user id:>">User Details</a> 
-| <a href="<:script:>?a_showuser=1&userid=<:user id:>&_t=glob">Global Permissions</a>
+| <a href="<:script:>?a_showuser=1&amp;userid=<:user id:>">User Details</a> 
+| <a href="<:script:>?a_showuser=1&amp;userid=<:user id:>&amp;_t=glob">Global Permissions</a>
 | Article Permissions |
 </p>
-<:ifParent:><p>| <a href="<:script:>?a_showuserart=1&userid=<:user id:>&id=<:parent id:>">Parent permissions</a> |</p><:or:><:eif:>
+<:ifParent:><p>| <a href="<:script:>?a_showuserart=1&amp;userid=<:user id:>&amp;id=<:parent id:>">Parent permissions</a> |</p><:or:><:eif:>
 <:ifMessage:>
 <p><b><:message:></b></p>
 <:or:><:eif:> 
 
 <h2>Permissions for <:ifEq [article id] "-1":>the site<:or:>article <:article title:><:eif:></h2>
 
-<:if Eq [article id] "-1":><:or Eq:><p>/ <a href="<:script:>?a_showuserart=1&userid=<:user id:>&id=-1">Site</a> / <:iterator begin crumbs:> <a href="<:script:>?a_showuserart=1&userid=<:user id:>&id=<:crumb id:>"><:crumb title:></a> /<:iterator end crumbs:></p><:eif Eq:>
+<:if Eq [article id] "-1":><:or Eq:><p>/ <a href="<:script:>?a_showuserart=1&amp;userid=<:user id:>&amp;id=-1">Site</a> / <:iterator begin crumbs:> <a href="<:script:>?a_showuserart=1&amp;userid=<:user id:>&amp;id=<:crumb id:>"><:crumb title:></a> /<:iterator end crumbs:></p><:eif Eq:>
 
 <form method="POST" action="<:script:>">
 <input type=hidden name=userid value=<:user id:>>
 <input type=hidden name=saveaperms value=1>
 <input type=hidden name=id value=<:article id:>>
-  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
-    <tr> 
-      <td> 
-        <table cellpadding="6" border="0" cellspacing="1">
+        <table>
           <:iterator begin aperms:>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left"><:aperm brief:> </th>
-            <td bgcolor="#FFFFFF"> 
+            <th><:aperm brief:> </th>
+            <td> 
               <:if UserCan admin_user_save_artrights:><input type=checkbox name=aperms value=<:aperm id:> <:ifAperm_set aperm:>checked <:or:><:eif:>/><:or UserCan:><img src="/images/admin/<:ifAperm_set aperm:>checked<:or:>unchecked<:eif:>.gif"><:eif UserCan:>
             </td>
-            <td bgcolor="#FFFFFF"><img src="/images/admin/help.gif" title="<:aperm help:>" /></td>
+            <td class="help"><img src="/images/admin/help.gif" title="<:aperm help:>" /></td>
           </tr>
           <:iterator end aperms:>
 <:ifUserCan admin_user_save_artrights:>
           <tr> 
-            <td bgcolor="#FFFFFF" colspan="3" align="right"> 
+            <td colspan="3" class="buttons"> 
               <input type="submit" name="a_saveuserart" value="  Save User permissions  " />
             </td>
           </tr>
 <:or:><:eif:>
         </table>
-      </td>
-    </tr>
-  </table>
 </form>
 
 <:if Children:>
 <h2>Children</h2>
-<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
-  <tr>
-      <td>
-      <table border=0 cellpadding="6" cellspacing="1" width="100%">
-        <tr bgcolor="#FFFFFF"> 
+      <table>
+        <tr> 
           <th>Title</th>
           <th>Summary</th>
-          <th nowrap>Permissions</th>
+          <th>Permissions</th>
         </tr>
         <:iterator begin children:> 
-        <tr bgcolor="#FFFFFF"> 
+        <tr> 
           <td><a href="<:child admin:>"><:child title:></a></td>
           <td><: summary child body :></td>
-          <td nowrap><a href="<:script:>?a_showuserart=1&userid=<:user id:>&id=<:child id:>">Permissions</a></td>
+          <td><a href="<:script:>?a_showuserart=1&userid=<:user id:>&id=<:child id:>">Permissions</a></td>
         </tr>
         <:iterator separator children:> <:iterator end children:> 
       </table>
-</td>
-</tr>
-</table>
 <:or Children:><:eif Children:>
-  
-<p><font size="-1">BSE Release <:release:></font></p>
-</body
-></html>

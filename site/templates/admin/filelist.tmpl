@@ -1,4 +1,4 @@
-<:wrap admin/xbase.tmpl title=>"File Wizard":>
+<:wrap admin/base.tmpl title=>"File Wizard":>
 <h1><:ifEq [article id] "-1":>Global<:or:><: articleType :><:eif:> File Wizard</h1>
 <:ifMessage:>
 <p><b><:message:></b></p>
@@ -16,7 +16,7 @@
 <input type="hidden" name="id" value="<: article id :>" />
 <input type="hidden" name="_t" value="file" />
 <:csrfp admin_add_file hidden:>
-        <table class="editform editformsmall">
+        <table class="editformsmall">
           <tr> 
             <th>File to add:</th>
             <td> 
@@ -111,38 +111,38 @@
 <input type="hidden" name="_t" value="file" />
 <input type="hidden" name="save_file_flags" value="1" />
 <:csrfp admin_save_files hidden:>
-        <table id="filelist" class="editform">
+        <table id="filelist">
           <:if Files:><tr> 
-            <th nowrap="nowrap" bgcolor="#FFFFFF"> File</th>
-            <th nowrap="nowrap" bgcolor="#FFFFFF"> Description</th>
-            <th bgcolor="#FFFFFF" nowrap="nowrap"> Content-Type</th>
-            <th bgcolor="#FFFFFF">Notes</th>
+            <th> File</th>
+            <th> Description</th>
+            <th> Content-Type</th>
+            <th>Notes</th>
           </tr>
           <: iterator begin files :> 
-          <tr bgcolor="#FFFFFF"> 
-            <td nowrap="nowrap"  rowspan="2"> <:file displayName:><:ifUserCan edit_files_save:article:>
+          <tr> 
+            <td class="col_filename" rowspan="2"> <:file displayName:><:ifUserCan edit_files_save:article:>
             <br /><input type="file" name="file_<:file id:>" /><:error_img [concatenate file_ [file id]:>
 <:or:><:eif:>
 </td>
-            <td valign="top"> 
+            <td class="col_description"> 
               <:ifUserCan edit_files_save:article:><input name="description_<:file id:>" type="text" value="<: oldi [concatenate description_ [file id]] 0 file description :>" size="35" />
               <:or:><: file description :><:eif:>
             </td>
-            <td valign="top"> 
+            <td class="col_contenttype"> 
                <:ifUserCan edit_files_save:article:><input name="contentType_<:file id:>" type="text" value="<: oldi [concatenate contentType_ [file id]] 0 file contentType :>" size="20" />
                <:or:><: file contentType :><:eif:>
             </td>
-            <td valign="top" rowspan="3">
+            <td class="col_notes" rowspan="3">
               <:ifUserCan edit_files_save:article:><textarea name="notes_<:file id:>" cols="40" rows="5"><:oldi [concatenate notes_ [file id]] 0 file notes:></textarea><:or:><:replace [file notes] "
 " "<br />" :><:eif:>
             </td>
           </tr>
           <tr>
-            <td valign="top" nowrap="nowrap" bgcolor="#FFFFFF"> 
+            <td class="col_identifier"> 
                Identifier: <:ifUserCan edit_files_save:article:><input name="name_<:file id:>" type="text" value="<: oldi [concatenate name_ [file id]] 0 file name :>" size="20" /><:error_img [concatenate name_ [file id]]:>
                <:or:><: file name :><:eif:>
             </td>
-            <td valign="top" nowrap="nowrap" bgcolor="#FFFFFF"> 
+            <td class="col_storage"> 
                Storage: <:ifUserCan edit_files_save:article:><select name="storage_<:file id:>"><option value="">(Auto)</option>
 <:iterator begin file_stores:>
 <option value="<:file_store name:>" <:ifEq [oldi [concatenate storage_ [file id] ] 0 file storage] [file_store name]:>selected="selected"<:or:><:eif:>><:file_store description:></option>
@@ -150,7 +150,7 @@
                <:or:><: file storage :><:eif:>
             </td>
           </tr>
-          <tr bgcolor="#FFFFFF"> 
+          <tr> 
             <td colspan="3"> 
 <:if UserCan edit_files_save:article:><input type="checkbox" name="download_<:file id:>"
                     <:ifFile download:> checked<:or:><:eif:> /><:or UserCan:><img src="/images/admin/<:ifFile download:>checked.gif<:or:>unchecked.gif<:eif:>" width="16" height="16" /><:eif UserCan:>Download&nbsp;&nbsp;&nbsp;
@@ -179,19 +179,19 @@
             </td>
           </tr>
           <: iterator separator files :> 
-          <tr bgcolor="#FFFFFF"> 
+          <tr> 
             <td colspan="4">&nbsp;</td>
           </tr>
           <: iterator end files :> 
 <:ifUserCan edit_files_save:article:>
           <tr> 
-            <td colspan="4" align="right" valign="bottom" bgcolor="#FFFFFF"> 
+            <td colspan="4" class="buttons"> 
               <input type="submit" name="filesave" value="  Save changes  " />
             </td>
           </tr>
 <:or:><:eif:>
           <:or Files:> 
-          <tr bgcolor="#FFFFFF"> 
+          <tr> 
             <td colspan="3" align="center"><:if Eq [article id] "-1":>There are no global files.<:or Eq:>No files are attached to this article<:eif Eq:></td>
           </tr>
           <:eif Files:> 

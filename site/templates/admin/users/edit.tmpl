@@ -1,11 +1,11 @@
-<:wrap admin/xbase.tmpl title=>"Edit Site Member":>
+<:wrap admin/base.tmpl title=>"Edit Site Member":>
 <h1>Edit Site Member</h1>
 <:include admin/users/inc_user_menu.tmpl:>
 <:ifMessage:>
 <p><b><:message:></b></p>
 <:or:><:eif:> 
 
-<form method="POST" action="<:script:>" enctype="multipart/form-data">
+<form method="post" action="<:script:>" enctype="multipart/form-data">
 <input type="hidden" name="id" value="<:siteuser id:>" />
         <table class="editform editformtiny">
 <:ifCfg "site users" nopassword:><:or:>
@@ -218,7 +218,7 @@
           <tr> 
             <th>Admin Notes: </th>
             <td> 
-              <textarea name="adminNotes" wrap="soft" rows="5" cols="60"><:old adminNotes siteuser adminNotes:></textarea>
+              <textarea name="adminNotes" rows="5" cols="60"><:old adminNotes siteuser adminNotes:></textarea>
             </td>
             <td class="help"><:help editsiteuser adminNotes:>  <:error_img adminNotes:></td>
           </tr>

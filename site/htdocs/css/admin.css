@@ -19,8 +19,8 @@ th {  font-size: 12px; font-weight: bold; background-color: #606080; color: #FFF
 h3 {  font-size: 14px}
 h4 {  font-size: 12px}
 .version { font-size: 10px }
-input.inline { border-style: none; }
-tr.inline_form { background-color: #8080C0 }
+
+input.inline { width: 90%; }
 
 .bse_arrows img {
   border: none;
@@ -99,10 +99,12 @@ tr.inline_form { background-color: #8080C0 }
   padding: 2px 0;
 }
 
-.editform {
-  border: 1px solid #000;
+table { 
   border-collapse: collapse;
   vertical-align: baseline;
+}
+
+.editform {
   width: 100%;
 }
 
@@ -114,12 +116,12 @@ table.editformtiny {
   width: auto;
 }
 
-table.editform td, table.editform th {
+table td, table th {
   padding: 4px;
   border: 1px solid #000;
 }
 
-table.editform th {
+table th {
   color: #FFF;
   background-color: #606080;
   font-weight: bold;
@@ -127,38 +129,43 @@ table.editform th {
   white-space: nowrap;
 }
 
-table.editform td {
+table td {
   color: #000;
   background-color: #FFF;
 }
 
-table.editform tr.bad td {
+table tr.bad td {
   background-color: #FF8080;
 }
 
-table.editform tr.odd td {
+table tr.odd td {
   background-color: #E0E0FF;
 }
 
-table.editform td.help,
-table.editform td.check  {
+table td.help,
+table td.check  {
   white-space: nowrap;
-  width: 20px;
+  vertical-align: baseline;
+  /*width: 20px;*/
 }
 
-table.editform td textarea {
+img.bse_helpicon {
+  border: none;
+}
+
+table td textarea {
   width: 95%;
 }
 
-table.editform td input.wide {
+table td input.wide {
   width: 95%;
 }
 
-table.editform td.check { 
+table td.check { 
   text-align: center;
 }
 
-table.editform td.buttons { 
+table td.buttons { 
   text-align: right;
 }
 
@@ -474,6 +481,9 @@ img.bse_image_thumb {
   white-space: pre-wrap;
 }
 
+/* list of page numbers for paginated displays
+   use <span> for the current page
+ */
 div.pagelist {
   margin: 6px 0px;
 }
@@ -502,4 +512,79 @@ div.pagelist {
   border: 1px solid #000;
   color: #FFF;
   font-weight: bold;
+}
+
+.children .col_title { width: 30%; }
+.children .col_summary { width: 50%; }
+.children .col_listed { text-align: center; }
+.children .col_modify,
+.children .col_move {
+  white-space: nowrap;
+}
+
+.filelist .col_size,
+.filelist .col_download,
+.filelist .col_forsale,
+.filelist .col_requireuser { 
+  text-align: center;
+}
+
+.images .col_thumbnail {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.images .col_move,
+.images .col_modify {
+  vertical-align: baseline;
+  white-space: nowrap;
+}
+
+.images .col_field {
+  width: 50%;
+}
+
+table.siteusers {
+  width: 100%;
+}
+
+table.siteusers td.col_name1,
+table.siteusers td.col_name2 { 
+  width: 33%;
+  vertical-align: baseline;
+}
+
+table.siteusers td.col_id {
+  text-align: center;
+  width: 5%;
+  white-space: nowrap;
+}
+
+table.siteusers td.col_userid {
+  width: 20%;
+}
+
+table.productlist {
+  width: 100%;
+}
+
+table.productlist .col_id {
+  text-align: center;
+}
+
+table.productlist .col_name {
+  width: 100%;
+}
+
+table.productlist td.col_release,
+table.productlist td.col_expire,
+table.productlist td.col_modify { 
+  white-space: nowrap;
+}
+
+table.productlist td.col_retail,
+table.productlist td.col_wsale,
+table.productlist td.col_gst { 
+  white-space: nowrap;
+  text-align: right;
 }

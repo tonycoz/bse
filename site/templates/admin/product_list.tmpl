@@ -1,8 +1,4 @@
-<html><head><title>Products list - Shop administration</title>
-  <link rel="stylesheet" type="text/css" href="/css/admin.css">
-</head>
-
-<body>
+<:wrap admin/base.tmpl title => "Product list - Shop Administration":>
 <h1>Shop Administration</h1>
 <:ifMessage:><p><b><:message:></b></p>
 <:or:><:eif:> 
@@ -14,54 +10,44 @@
   ShowStepKids:> | </p>
 <:if Products:> 
 <h4>Products list</h4>
-<table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" width="100%" class="table">
-  <tr>
-    <td>
-      <table border=0 cellpadding="6" cellspacing="1" width="100%">
+      <table class="productlist">
         <tr> 
-          <th bgcolor="#FFFFFF" nowrap>Id</th>
-          <th bgcolor="#FFFFFF" width="100%">Name</th>
-          <th bgcolor="#FFFFFF" nowrap>Release</th>
-          <th bgcolor="#FFFFFF" nowrap>Expire</th>
-          <th bgcolor="#FFFFFF" nowrap>Retail</th>
-          <th bgcolor="#FFFFFF" nowrap>Wsale</th>
-          <th bgcolor="#FFFFFF" nowrap>GST</th>
-          <th bgcolor="#FFFFFF" nowrap>Modify</th>
-          <th bgcolor="#FFFFFF">Note</th>
+          <th class="col_id">Id</th>
+          <th class="col_name">Name</th>
+          <th class="col_release">Release</th>
+          <th class="col_expire">Expire</th>
+          <th class="col_retail">Retail</th>
+          <th class="col_wsale">Wsale</th>
+          <th class="col_gst">GST</th>
+          <th>Modify</th>
+          <th class="col_note">Note</th>
         </tr>
         <:iterator begin products:> 
-        <tr bgcolor="#FFFFFF"> 
-          <td align="center" nowrap><:product id:></td>
-          <td width="100%"><a href="<:product admin:>"><:product title:></a></td>
-          <td nowrap><:date product release:></td>
-          <td nowrap><:ifMatch [product expire] "9999-12-31":>Never<:or:><:date product expire:><:eif:></td>
-          <td align=right nowrap>$<:money product retailPrice:></td>
-          <td align=right nowrap>$<:money product wholesalePrice:></td>
-          <td align=right nowrap>$<:money product gst:></td>
-          <td nowrap><a href="/cgi-bin/admin/add.pl?id=<:product id:>">Edit</a> 
+        <tr> 
+          <td class="col_id"><:product id:></td>
+          <td class="col_name"><a href="<:product admin:>"><:product title:></a></td>
+          <td class="col_release"><:date product release:></td>
+          <td class="col_expire"><:ifMatch [product expire] "9999-12-31":>Never<:or:><:date product expire:><:eif:></td>
+          <td class="col_retail">$<:money product retailPrice:></td>
+          <td class="col_wsale">$<:money product wholesalePrice:></td>
+          <td class="col_gst">$<:money product gst:></td>
+          <td class="col_modify"><a href="/cgi-bin/admin/add.pl?id=<:product id:>">Edit</a> 
             <:if Product listed:> <a href="/cgi-bin/admin/add.pl?hide=1&amp;id=<:product id:>&amp;_csrfp=<:csrfp admin_save_article:>&amp;r=<:cfg site url:><:script:>">Hide</a> 
             <:or Product:> <a href="/cgi-bin/admin/add.pl?unhide=1&amp;id=<:product id:>&amp;_csrfp=<:csrfp admin_save_article:>&amp;r=<:cfg site url:><:script:>">Show</a> 
             <:eif Product:> <:move:> </td>
-          <td><:ifProduct listed:>&nbsp;<:or:>Hidden<:eif:></td>
+          <td class="col_note"><:ifProduct listed:>&nbsp;<:or:>Hidden<:eif:></td>
         </tr>
         <:iterator end products:> 
       </table>
-    </td>
-  </tr>
-</table>
 <:or Products:><:eif Products:>
 <:iterator begin catalogs:> <a name="cat<:catalog id:>"></a> 
 <h2>Catalog: <:catalog title:> <:movecat:></h2>
-<p><:embed catalog catalog.tmpl:></p>
-<p>&nbsp; </p>
-<hr noshade size="1">
+<:embed catalog catalog.tmpl:>
+<hr />
 <:iterator end catalogs:> 
-<:ifUserCan edit_add_child:[cfg articles shop]:><form action="/cgi-bin/admin/add.pl"><input type=hidden name=type value="Catalog">
-  <input type=hidden name=parentid value=3><input type=submit value="Add Catalog"></form>
+<:ifUserCan edit_add_child:[cfg articles shop]:><form action="/cgi-bin/admin/add.pl"><input type="hidden" name="type" value="Catalog" />
+  <input type="hidden" name="parentid" value="3" /><input type="submit" value="Add Catalog" /></form>
 <:if Eq [shop generator] "Generate::Catalog":>
-<form action="/cgi-bin/admin/add.pl"><input type="hidden" name="type" value="Product">
-  <input type="hidden" name="parentid" value="3"><input type="submit" value="Add Product"></form><:or Eq:><:eif Eq:>
+<form action="/cgi-bin/admin/add.pl"><input type="hidden" name="type" value="Product" />
+  <input type="hidden" name="parentid" value="3" /><input type="submit" value="Add Product" /></form><:or Eq:><:eif Eq:>
 <:or:><:eif:>
-<p><font size="-1">BSE Release <:release:></font></p>
-</body>
-</html>
