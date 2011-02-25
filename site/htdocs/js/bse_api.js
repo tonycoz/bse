@@ -12,7 +12,7 @@ var BSEAPI = Class.create
      initialize: function(parameters) {
 	  if (!parameters) parameters = {};
        this.initialized = true;
-       this.onException = function(obj, e) {
+       this.onException = function(e) {
 			    alert(e);
 			    };
        this.onFailure = function(error) { alert(error.message); };

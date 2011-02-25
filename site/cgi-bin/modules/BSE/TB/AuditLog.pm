@@ -6,11 +6,14 @@ use vars qw(@ISA $VERSION);
 use BSE::TB::AuditEntry;
 use Scalar::Util qw(blessed);
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub rowClass {
   return 'BSE::TB::AuditEntry';
 }
+
+# stop us recursing into here from BSE::ComposeMail
+my $mailing = 0;
 
 =item log
 
@@ -144,7 +147,32 @@ sub log {
   }
 
   require BSE::TB::AuditLog;
-  BSE::TB::AuditLog->make(%entry);
+  my $entry = BSE::TB::AuditLog->make(%entry);
+
+  if ($cfg->entry("mail audit log", $level_name)
+      && !$mailing) {
+    $mailing = 1;
+    eval {
+      require BSE::ComposeMail;
+      my $to = $cfg->entry("mail audit log", "to",
+			   $cfg->entry("shop", "from"));
+      if ($to) {
+	require BSE::Util::Tags;
+	my $mailer = BSE::ComposeMail->new(cfg => $cfg);
+	my %acts =
+	  (
+	   BSE::Util::Tags->static(undef, $cfg),
+	   entry => [ \&BSE::Util::Tags::tag_object, $entry ],
+	  );
+	$mailer->send(to => $to,
+		      subject => "BSE System Error",
+		      template => "admin/log/mail",
+		      acts => \%acts);
+      }
+    };
+    $mailing = 0;
+  }
+
   keys %opts
     and $class->crash("Unknown parameters ", join(",", keys %opts), " to log()");
 }

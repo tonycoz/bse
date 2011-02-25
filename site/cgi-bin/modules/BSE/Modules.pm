@@ -3,7 +3,7 @@ use strict;
 
 # automatically generated
 
-our $hash = "18495aa7dfec14fdae3a2d9291e7d301";
+our $hash = "d7720fb7401aa74924c5dc7acdf1f3b3";
 
 our %versions =
   (
@@ -47,6 +47,7 @@ our %versions =
   "BSE::EmailBlacklist" => "1.000",
   "BSE::EmailRequest" => "1.000",
   "BSE::EmailRequests" => "1.000",
+  "BSE::FileBehaviour" => "1.000",
   "BSE::FileHandler::Base" => "1.000",
   "BSE::FileHandler::Default" => "1.000",
   "BSE::FileHandler::FLV" => "1.000",
@@ -124,11 +125,13 @@ our %versions =
   "BSE::TB::ArticleFileMetas" => "1.000",
   "BSE::TB::ArticleFiles" => "1.000",
   "BSE::TB::AuditEntry" => "1.002",
-  "BSE::TB::AuditLog" => "1.001",
+  "BSE::TB::AuditLog" => "1.002",
   "BSE::TB::BackgroundTask" => "1.000",
   "BSE::TB::BackgroundTasks" => "1.000",
+  "BSE::TB::File" => "1.000",
   "BSE::TB::FileAccessLog" => "1.000",
   "BSE::TB::FileAccessLogEntry" => "1.000",
+  "BSE::TB::Files" => "1.000",
   "BSE::TB::Image" => "1.001",
   "BSE::TB::Images" => "1.000",
   "BSE::TB::Location" => "1.001",
@@ -164,6 +167,7 @@ our %versions =
   "BSE::Thumb::Imager::Colourize" => "1.000",
   "BSE::Thumb::Imager::RandomCrop" => "1.000",
   "BSE::ThumbLow" => "1.000",
+  "BSE::UI" => "1.000",
   "BSE::UI::API" => "1.000",
   "BSE::UI::AdminAudit" => "1.000",
   "BSE::UI::AdminDispatch" => "1.000",

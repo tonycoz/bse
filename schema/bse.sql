@@ -1161,3 +1161,53 @@ create table bse_audit_log (
   index ba_when(when_at),
   index ba_what(facility, component, module, function)
 );
+
+-- a more generic file container
+-- any future managed files belong here
+drop table if exists bse_files;
+create table bse_files (
+  id integer not null auto_increment primary key,
+
+  -- type of file, used to lookup a behaviour class
+  file_type varchar(20) not null,
+
+  -- id of the owner
+  owner_id integer not null,
+
+  -- name stored as
+  filename varchar(255) not null,
+
+  -- name displayed as
+  display_name varchar(255) not null,
+
+  content_type varchar(255) not null,
+
+  size_in_bytes integer not null,
+
+  when_uploaded datetime not null,
+
+  -- is the file public?
+  is_public integer not null,
+
+  -- name identifier for the file (where needed)
+  name varchar(80) null,
+
+  -- ordering
+  display_order integer not null,
+
+  -- where a user finds the file
+  src varchar(255) not null,
+
+  -- categories within a type
+  category varchar(255) not null default '',
+
+  -- for use with images
+  alt varchar(255) null,
+  width integer null,
+  height integer  null,
+  url varchar(255) null,
+
+  description text not null,
+
+  index owner(file_type, owner_id)
+);

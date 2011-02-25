@@ -88,6 +88,7 @@ site/cgi-bin/modules/BSE/EmailBlackEntry.pm
 site/cgi-bin/modules/BSE/EmailBlacklist.pm
 site/cgi-bin/modules/BSE/EmailRequest.pm
 site/cgi-bin/modules/BSE/EmailRequests.pm
+site/cgi-bin/modules/BSE/FileBehaviour.pm
 site/cgi-bin/modules/BSE/FileHandler/Base.pm
 site/cgi-bin/modules/BSE/FileHandler/Default.pm
 site/cgi-bin/modules/BSE/FileHandler/FLV.pm
@@ -171,8 +172,10 @@ site/cgi-bin/modules/BSE/TB/AuditEntry.pm
 site/cgi-bin/modules/BSE/TB/AuditLog.pm
 site/cgi-bin/modules/BSE/TB/BackgroundTask.pm
 site/cgi-bin/modules/BSE/TB/BackgroundTasks.pm
+site/cgi-bin/modules/BSE/TB/File.pm
 site/cgi-bin/modules/BSE/TB/FileAccessLog.pm
 site/cgi-bin/modules/BSE/TB/FileAccessLogEntry.pm
+site/cgi-bin/modules/BSE/TB/Files.pm
 site/cgi-bin/modules/BSE/TB/Image.pm
 site/cgi-bin/modules/BSE/TB/Images.pm
 site/cgi-bin/modules/BSE/TB/Location.pm
@@ -207,6 +210,7 @@ site/cgi-bin/modules/BSE/Thumb/Imager.pm
 site/cgi-bin/modules/BSE/Thumb/Imager/Colourize.pm
 site/cgi-bin/modules/BSE/Thumb/Imager/RandomCrop.pm
 site/cgi-bin/modules/BSE/ThumbLow.pm
+site/cgi-bin/modules/BSE/UI.pm
 site/cgi-bin/modules/BSE/UI/AdminAudit.pm
 site/cgi-bin/modules/BSE/UI/AdminDispatch.pm
 site/cgi-bin/modules/BSE/UI/AdminMessages.pm
@@ -486,6 +490,7 @@ site/templates/admin/locations/view.tmpl
 site/templates/admin/locations/view_sessions.tmpl
 site/templates/admin/log/entry.tmpl
 site/templates/admin/log/log.tmpl
+site/templates/admin/log/mail.tmpl
 site/templates/admin/logon.tmpl
 site/templates/admin/memberupdate/import.tmpl
 site/templates/admin/memberupdate/preview.tmpl

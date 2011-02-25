@@ -91,6 +91,7 @@ my $uploads = "$instbase/uploads";
 $conf{paths}{downloads} = $uploads;
 my $templates = "$instbase/templates";
 $conf{paths}{templates} = $templates;
+$conf{paths}{public_html} = "$instbase/htdocs";
 open TESTCONF, "< $conffile"
   or die "Could not open config file $conffile: $!";
 while (<TESTCONF>) {
