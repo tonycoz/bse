@@ -11,7 +11,7 @@ my $outname = shift
 
 my @files = sort grep /cgi-bin.*\.pm/, keys %$files;
 
-@files = grep !m(BSE/Modules\.pm$), @files;
+@files = grep !m(BSE/(Modules|Version)\.pm$), @files;
 
 my %versions;
 
