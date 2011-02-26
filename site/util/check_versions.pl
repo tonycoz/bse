@@ -5,6 +5,7 @@ my %vers;
 
 my @check = `git status -s`;
 chomp @check;
+s/^.. +// for @check;
 @check = sort grep /cgi-bin\/.*\.pm$/, @check;
 @check = grep !m(BSE/(Modules|Version)\.pm), @check;
 my @errors;
