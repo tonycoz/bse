@@ -5,7 +5,7 @@ DISTTAR=../$(DISTNAME).tar
 DISTTGZ=$(DISTTAR).gz
 WEBBASE=/home/httpd/html/bse
 
-MODULES=$(shell grep cgi-bin/.*\.pm MANIFEST | sed -e '/^\#/d' -e 's/[ \t].*//' )
+MODULES=$(shell grep cgi-bin/.*\.pm MANIFEST | sed -e '/^\#/d' -e 's/[ \t].*// -e /^site\/cgi-bin\/modules\/BSE\/Modules\.pm$/d' )
 
 help:
 	@echo make dist - build the tar.gz file and copy to distribution directory
@@ -21,7 +21,7 @@ dist: cleantree $(DISTTGZ)
 	cp $(DISTTGZ) $(WEBBASE)/dists/
 	cp site/docs/bse.html $(WEBBASE)/relnotes/bse-$(VERSION).html
 	cp site/docs/*.html $(WEBBASE)/docs
-	svn cp . http://svn.develop-help.com/devsvn/bse/tags/bse-$(VERSION)
+	git tag -m "$(VERSION) release" r$(VERSION)
 
 # make sure everything is committed
 cleantree:
@@ -29,7 +29,7 @@ cleantree:
 	  then echo '***' The debugger is still enabled ; \
 	  exit 1; \
 	fi
-	test -z "`svn status`" || ( echo "Uncommitted files in the tree"; exit 1 )
+	test -z "`git status -s`" || ( echo "Uncommitted files in the tree"; exit 1 )
 
 archive: $(DISTTGZ)
 
@@ -71,7 +71,7 @@ INSTALL.txt: INSTALL.pod
 
 INSTALL.html: INSTALL.pod
 	pod2html --infile=INSTALL.pod --outfile=INSTALL.html
-	-rm pod2html-dircache pod2html-itemcache
+	-rm pod2html-dircache pod2html-itemcache pod2htmd.tmp pod2htmi.tmp
 
 otherdocs:
 	cd site/docs ; make all
@@ -84,17 +84,7 @@ site/util/mysql.str: schema/bse.sql
 version: site/cgi-bin/modules/BSE/Version.pm
 
 site/cgi-bin/modules/BSE/Version.pm: Makefile
-	echo 'package BSE::Version;' >site/cgi-bin/modules/BSE/Version.pm
-	echo 'use strict;' >>site/cgi-bin/modules/BSE/Version.pm
-	echo  >>site/cgi-bin/modules/BSE/Version.pm
-	echo 'our $$VERSION = "$(VERSION)";' >>site/cgi-bin/modules/BSE/Version.pm
-	echo  >>site/cgi-bin/modules/BSE/Version.pm
-	echo 'sub version { $$VERSION }' >>site/cgi-bin/modules/BSE/Version.pm
-	echo  >>site/cgi-bin/modules/BSE/Version.pm
-	echo '1;' >>site/cgi-bin/modules/BSE/Version.pm
-
-svnversion:
-	perl site/util/bse_mksvnversion.pl $(VERSION) site/cgi-bin/modules/BSE/Version.pm
+	perl site/util/bse_mkgitversion.pl $(VERSION) site/cgi-bin/modules/BSE/Version.pm
 
 modversion: site/cgi-bin/modules/BSE/Modules.pm
 
@@ -113,7 +103,7 @@ testup: checkver distdir
 	cd `perl -lne 'do { print $$1; exit; } if /^base_dir\s*=\s*(.*)/' test.cfg`/util ; perl upgrade_mysql.pl -b ; perl loaddata.pl ../data/db
 
 checkver:
-	if [ -d .svn ] ; then perl site/util/check_versions.pl ; fi
+	if [ -d .git ] ; then perl site/util/check_versions.pl ; fi
 
 TEST_FILES=t/*.t
 

@@ -3,7 +3,7 @@ use strict;
 
 my %vers;
 
-my @check = `svn status`;
+my @check = `git status -s`;
 chomp @check;
 @check = sort grep /cgi-bin\/.*\.pm$/, @check;
 @check = grep !m(BSE/Modules\.pm), @check;
@@ -17,8 +17,8 @@ for my $check (@check) {
   my $ver = file_vers($check);
 
   unless ($type eq "A") {
-    my $svn = `svn cat $check`;
-    my $old_ver = content_vers($svn);
+    my $committed = `git show HEAD:$check`;
+    my $old_ver = content_vers($committed);
 
     if (defined $old_ver) {
       $old_ver eq $ver

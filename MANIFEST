@@ -7,8 +7,6 @@ localinst.perl			# simple test installer
 Makefile
 MANIFEST
 MANIFEST.SKIP
-pod2htmd.tmp
-pod2htmi.tmp
 README
 schema/article.txt
 schema/bse.sql
@@ -712,7 +710,7 @@ site/templates/user/unsubone_base.tmpl
 site/templates/user/userpage_base.tmpl
 site/templates/xbase.tmpl
 site/util/bse_back.pl
-site/util/bse_mksvnversion.pl
+site/util/bse_mkgitversion.pl
 site/util/bse_msgcheck.pl	Scan for undefined message ids
 site/util/bse_nightly.pl
 site/util/bse_notify_files.pl

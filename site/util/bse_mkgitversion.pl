@@ -9,10 +9,17 @@ my $output = shift
 $release =~ /^\d+\.\d+(_\d+)?$/
   or die "Invalid revision";
 
-my ($svn_rev_line) = grep /^Revision/, `svn info`;
-$svn_rev_line =~ /(\d+)/
-  or die "Invalid svn revision";
-my $svn_rev = $1;
+if (-d ".git") {
+  my ($git_desc) = `git describe`;
+  chomp $git_desc;
+
+  my @status = `git status -s`;
+  if (@status) {
+    $git_desc .= " +" . scalar(@status) . " local modifications";
+  }
+
+  $release .= " GIT $git_desc";
+}
 
 open VERSION, "> $output"
   or die "Cannot create $output: $!\n";
@@ -20,9 +27,9 @@ print VERSION <<EOS;
 package BSE::Version;
 use strict;
 
-my \$VERSION = "$release SVN r$svn_rev";
+my \$RELEASE = "$release";
 
-sub version { \$VERSION }
+sub version { \$RELEASE }
 
 1;
 EOS
