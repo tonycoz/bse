@@ -5,7 +5,8 @@ DISTTAR=../$(DISTNAME).tar
 DISTTGZ=$(DISTTAR).gz
 WEBBASE=/home/httpd/html/bse
 
-MODULES=$(shell grep cgi-bin/.*\.pm MANIFEST | sed -e '/^\#/d' -e 's/[ \t].*// -e /^site\/cgi-bin\/modules\/BSE\/Modules\.pm$/d' )
+MODULES=$(shell grep cgi-bin/.*\.pm MANIFEST | sed -e '/^\#/d' -e 's/[ \t].*//' -e '/^site\/cgi-bin\/modules\/BSE\/\(Modules\|Version\)\.pm/d' )
+VERSIONDEPS=$(shell perl site/util/bse_versiondeps.pl MANIFEST)
 
 help:
 	@echo make dist - build the tar.gz file and copy to distribution directory
@@ -83,7 +84,7 @@ site/util/mysql.str: schema/bse.sql
 
 version: site/cgi-bin/modules/BSE/Version.pm
 
-site/cgi-bin/modules/BSE/Version.pm: Makefile
+site/cgi-bin/modules/BSE/Version.pm: $(VERSIONDEPS)
 	perl site/util/bse_mkgitversion.pl $(VERSION) site/cgi-bin/modules/BSE/Version.pm
 
 modversion: site/cgi-bin/modules/BSE/Modules.pm

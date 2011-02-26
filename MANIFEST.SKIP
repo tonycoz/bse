@@ -5,6 +5,7 @@
 \.gitignore$
 ^\.svn/
 /\.svn/
+^\.git/
 ^test\.cfg$
 ^test-.*cfg$
 ^nswfitc\.cfg$
