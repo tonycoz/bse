@@ -5,7 +5,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 use Carp 'confess';
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub columns {
   return qw/id file_type owner_id filename display_name content_type
@@ -93,10 +93,10 @@ my %behaviours;
 sub file_behaviour {
   my ($self) = @_;
 
-  my $behaviour = $behaviours{$self->owner_type};
+  my $behaviour = $behaviours{$self->file_type};
 
   unless ($behaviour) {
-    my ($cfg) = BSE::Cfg->single->entry("file behaviour", $self->owner_type);
+    my ($cfg) = BSE::Cfg->single->entry("file behaviour", $self->file_type);
     my ($class, $load, $method) = split /,/, $cfg;
     $load ||= $class;
     $method ||= "new";
@@ -107,7 +107,7 @@ sub file_behaviour {
     require $load;
 
     $behaviour = $class->$method;
-    $behaviours{$class->owner_type} = $behaviour;
+    $behaviours{$self->file_type} = $behaviour;
   }
 
   return $behaviour;

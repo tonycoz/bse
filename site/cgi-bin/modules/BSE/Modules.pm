@@ -3,7 +3,7 @@ use strict;
 
 # automatically generated
 
-our $hash = "cfa7623fff2a35dcc837f0db92dc2c39";
+our $hash = "3d9297d71610c0cfabe02a3ac4c25214";
 
 our %versions =
   (
@@ -47,7 +47,7 @@ our %versions =
   "BSE::EmailBlacklist" => "1.000",
   "BSE::EmailRequest" => "1.000",
   "BSE::EmailRequests" => "1.000",
-  "BSE::FileBehaviour" => "1.001",
+  "BSE::FileBehaviour" => "1.002",
   "BSE::FileHandler::Base" => "1.000",
   "BSE::FileHandler::Default" => "1.000",
   "BSE::FileHandler::FLV" => "1.000",
@@ -128,7 +128,7 @@ our %versions =
   "BSE::TB::AuditLog" => "1.002",
   "BSE::TB::BackgroundTask" => "1.000",
   "BSE::TB::BackgroundTasks" => "1.000",
-  "BSE::TB::File" => "1.000",
+  "BSE::TB::File" => "1.001",
   "BSE::TB::FileAccessLog" => "1.000",
   "BSE::TB::FileAccessLogEntry" => "1.000",
   "BSE::TB::Files" => "1.001",

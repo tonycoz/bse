@@ -1,7 +1,7 @@
 package BSE::FileBehaviour;
 use strict;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub new {
   my ($class, %opts) = @_;
@@ -75,6 +75,22 @@ sub populate {
   }
 
   return 1;
+}
+
+sub file_url {
+  my ($self, $file) = @_;
+
+  if ($self->{url}) {
+    my $url = $self->{url};
+    unless ($self->unowned) {
+      $url =~ s/%\{owner_id\}/$file->owner_id/ge;
+    }
+    $url =~ s/%\{id\}/$file->id/ge;
+
+    return $url;
+  }
+
+  Carp::confess "Override file_url() or supply a url parameter";
 }
 
 package BSE::FileBehaviour::Image;
