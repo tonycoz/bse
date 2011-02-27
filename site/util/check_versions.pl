@@ -5,19 +5,18 @@ my %vers;
 
 my @check = `git status -s`;
 chomp @check;
-s/^.. +// for @check;
 @check = sort grep /cgi-bin\/.*\.pm$/, @check;
 @check = grep !m(BSE/(Modules|Version)\.pm), @check;
 my @errors;
 for my $check (@check) {
   $check =~ /^D/ and next;
-  $check =~ s/^(\S)\S*\s+//;
+  $check =~ s/^(..)\s+//;
   my $type = $1;
   -e $check or die "Cannot find file $check\n";
 
   my $ver = file_vers($check);
 
-  unless ($type eq "A") {
+  if ($type =~ "M") {
     my $committed = `git show HEAD:$check`;
     my $old_ver = content_vers($committed);
 
