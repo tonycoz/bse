@@ -1,7 +1,7 @@
 package BSE::FileBehaviour;
 use strict;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub new {
   my ($class, %opts) = @_;
@@ -99,6 +99,28 @@ sub image_file_message {
   return $self->{image_file_message} || "msg:bse/files/image_file_required";
 }
 
+package BSE::FileBehaviour::PDF;
+use strict;
+
+our @ISA = qw(BSE::FileBehaviour);
+
+sub validate {
+  my ($self, $attr, $rerror, $owner) = @_;
+
+  unless ($attr->{content_type} eq "application/pdf") {
+    $$rerror = $self->pdf_file_message;
+    return;
+  }
+
+  return 1;
+}
+
+sub image_file_message {
+  my ($self) = @_;
+
+  return $self->{pdf_file_message} || "msg:bse/files/pdf_file_required";
+}
+
 1;
 
 =head1 HEAD
@@ -106,6 +128,24 @@ sub image_file_message {
 BSE::FileBehaviour - abstract base class for defining BSE::TB::File behaviour
 
 =head1 DESCRIPTION
+
+Parameters to new:
+
+=over
+
+=item *
+
+unowned - set to true if the file type has no specific owner.
+
+=item *
+
+file_type - the file type value for the files
+
+=item *
+
+public - if new files of this type should be public.
+
+=back
 
 The following methods must be defined:
 

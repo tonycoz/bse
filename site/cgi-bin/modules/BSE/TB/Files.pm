@@ -6,7 +6,7 @@ use vars qw(@ISA $VERSION);
 use BSE::TB::File;
 use Carp ();
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub rowClass {
   return 'BSE::TB::File';
@@ -52,7 +52,7 @@ sub add_cgi_file {
   my $name = delete $opts{name}
     or Carp::confess "No name parameter";
   my $owner;
-  unless ($behaviour->unonwned) {
+  unless ($behaviour->unowned) {
     $owner = delete $opts{owner}
       or Carp::confess "No owner parameter";
   }
@@ -105,11 +105,11 @@ sub add_cgi_file {
   }
 
   my %file;
-  $file{display_name} = $file_name;
+  $file{display_name} = $file_name . "";
   $file{filename} = $out_name;
   $file{size_in_bytes} = $size;
   $file{file_type} = $behaviour->file_type;
-  $file{owner_id} = $owner->id;
+  $file{owner_id} = $behaviour->owner_id($owner);
   $file{is_public} = $public;
 
   for my $field (qw/alt url description category name/) {
