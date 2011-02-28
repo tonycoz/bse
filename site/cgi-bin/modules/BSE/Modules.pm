@@ -3,7 +3,7 @@ use strict;
 
 # automatically generated
 
-our $hash = "3d9297d71610c0cfabe02a3ac4c25214";
+our $hash = "ad45c0cd7a4554a55547ff0bf90a3e23";
 
 our %versions =
   (
@@ -167,7 +167,7 @@ our %versions =
   "BSE::Thumb::Imager::Colourize" => "1.000",
   "BSE::Thumb::Imager::RandomCrop" => "1.000",
   "BSE::ThumbLow" => "1.000",
-  "BSE::UI" => "1.000",
+  "BSE::UI" => "1.001",
   "BSE::UI::API" => "1.000",
   "BSE::UI::AdminAudit" => "1.000",
   "BSE::UI::AdminDispatch" => "1.000",

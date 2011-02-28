@@ -2,7 +2,7 @@ package BSE::UI;
 use strict;
 use BSE::Cfg;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub confess;
 
@@ -62,6 +62,7 @@ sub run_fcgi {
     1;
   } or fail("Loading module $file: $@", "load", $cfg);
 
+  require CGI::Fast;
   while (my $cgi = CGI::Fast->new) {
     my $req;
     eval {
