@@ -400,6 +400,7 @@ site/htdocs/admin/sadmin.html
 site/htdocs/css/admin.css
 site/htdocs/css/admin.css_natural
 site/htdocs/css/admin_messages.css
+site/htdocs/css/bse_adminui.css
 site/htdocs/css/sadmin.css
 site/htdocs/css/style-main.css
 site/htdocs/favicon.ico
@@ -411,6 +412,8 @@ site/htdocs/images/admin/help.gif
 site/htdocs/images/admin/move_down.gif
 site/htdocs/images/admin/move_up.gif
 site/htdocs/images/admin/nothumb.png
+site/htdocs/images/admin/ui/debug.png
+site/htdocs/images/admin/ui/menu.png
 site/htdocs/images/admin/unchecked.gif
 site/htdocs/images/filestatus/download.gif
 site/htdocs/images/filestatus/forSale.gif
@@ -432,6 +435,7 @@ site/htdocs/images/titles/the_shop.gif
 site/htdocs/images/titles/your_site.gif
 site/htdocs/images/trans_pixel.gif
 site/htdocs/images/videoclose.png
+site/htdocs/js/admin-ui/debug.js
 site/htdocs/js/admin-ui/menu.js
 site/htdocs/js/admin_messages.js
 site/htdocs/js/admin_prodopts.js

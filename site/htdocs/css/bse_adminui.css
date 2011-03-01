@@ -1,0 +1,82 @@
+#debug_log {
+  width: 40em;
+  float: right;
+  height: 80em;
+}
+
+body {
+  font: 12px Arial;
+  margin: 0px;
+  background-color: #E0E0E0;
+}
+
+#base_wrapper {
+  width: 1010px;
+  border-left: 5px solid white;
+  border-right: 5px solid white;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: #F0F0FF;
+}
+
+#base_menubar {
+  background-color: #E0E0FF;
+  border-bottom: 1px solid #8080FF;
+}
+
+#base_menu_wrapper {
+  position: relative;
+  background-color: #C0C0FF;
+  width: 150px;
+  float: left;
+}
+
+#base_menu {
+  display: none;
+  background-color: #C0C0FF;
+  position: absolute;
+  top: 2em;
+  left: 1px;
+  /*border-top: 1px solid #000;*/
+}
+
+#base_menu_wrapper:hover #base_menu {
+  display: block;
+}
+
+#base_menu_current {
+  padding: 0.5em 1em;
+  write-space: none;
+  overflow: hidden;
+  width: 150px;
+}
+
+#base_menu a {
+  display: block;
+  padding: 5px 1em;
+  /*border-bottom: 1px solid #000;
+  border-left: 1 px solid #000;
+  border-right: 1px solid #000;*/
+  text-decoration: none;
+  font-weight: bold;
+  white-space: nowrap;
+  width: 150px;
+}
+
+#base_menu a:hover {
+  background-color: #E0E0FF;
+}
+
+#base_menu_item_debug {
+  background-image: url(/images/admin/ui/debug.png);
+  background-position: 150px;
+  background-repeat: no-repeat;
+}
+
+#base_menu_item_menu {
+  background-image: url(/images/admin/ui/menu.png);
+  background-position: 150px;
+  background-repeat: no-repeat;
+}
+
+.clearer { clear: both; }

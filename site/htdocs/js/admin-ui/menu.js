@@ -2,7 +2,7 @@ var BSEMenuUI = Class.create
 (BSEUIBase,
 {
   order: function() { return "a"; },
-  display: function(ui, div, args) {
+  start: function(ui, div, args) {
     div.innerHTML = this.content.menu;
   },
   needed_content: function(ui, args) {
