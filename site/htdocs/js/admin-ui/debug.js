@@ -18,6 +18,7 @@ var BSEDebugUI = Class.create
     return { };
   },
   menu_text: function() { return "Debug"; },
+    logon: function() { return false; },
   _load_log: function(ui) {
     this._log.innerHTML = "";
     for (var i = 0; i < ui._log.length; ++i) {
