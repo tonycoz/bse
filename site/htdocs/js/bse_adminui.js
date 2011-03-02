@@ -7,7 +7,14 @@ var BSEAdminUI = Class.create
      this.api = new BSEAPI({onConfig: this._post_start.bind(this)});
    },
    register: function(name, obj) {
-     this.handlers.set(name, obj);
+     this.handlers.set
+       (name,
+	{ 
+	    key: name,
+	    value: obj,
+	    started: false,
+	    div: null
+	});
    },
    start: function() {},
    _post_start: function() {
@@ -16,8 +23,10 @@ var BSEAdminUI = Class.create
    _finish_load: function() {
      this._order_handlers();
      this._load_menu();
-     this._parse_frag();
-     this._select();
+     var sel = this._parse_frag();
+     this._select(sel);
+       $("base_wrapper").removeClassName("hide");
+       $("base_loading").style.display = "none";
    },
    _script_loaded: function() {
      if (this._scripts.length) {
@@ -37,6 +46,13 @@ var BSEAdminUI = Class.create
        to_load.push(ui_conf[i]);
      }
      this.load_scripts(to_load, this._finish_load.bind(this));
+   },
+   load_css: function(css) {
+       css.each(function (e) {
+		    var sty = new Element("link", { rel: "stylesheet", type: "text/css", href: "e" });
+		    var head = $$("head")[0];
+		    head.appendChild(scr);
+		});
    },
    load_scripts: function(scripts, onLoad) {
        scripts.each(function(a) { this._scripts.push(a); }.bind(this));
@@ -64,14 +80,14 @@ var BSEAdminUI = Class.create
 	 ui._script_loaded();
        }
      }.bind(scr, this);
+       this._log_entry("Loading script " + uri);
      var head = $$("head")[0];
      head.appendChild(scr);
    },
    _order_handlers: function() {
      // make an ordered list of the registered handlers
      // first a name / object list
-     var list = this.handlers.map
-     (function(e) { return { key: e.key, value: e.value }; });
+     var list = this.handlers.values();
      list.sort
        (function (a, b) {
 	  var aord = a.value.order();
@@ -88,21 +104,76 @@ var BSEAdminUI = Class.create
        function(menu, e) {
 	 var a = new Element("a", { href: "#" + e.key, id: "base_menu_item_"+ e.key });
 	 a.update(e.value.menu_text());
+	   a.observe("click", function(e, event) {
+			 this._select({ select: e, rest: ""});
+			 event.stop();
+			 return false;
+		     }.bind(this, e));
 	 menu.appendChild(a);
        }.bind(this, menu)
      );
    },
+     // parse location (or the default "menu") to find something to display
    _parse_frag: function() {
+       var frag = window.location.hash;
+       if (!frag) frag = "#menu";
+       frag = frag.replace(/^\#/, '');
+       var selname = "";
+       var rest = "";
+       var sel = null;
+       for (var i = 0; i < this.ordered.length; ++i) {
+	   var e = this.ordered[i];
+	   if (frag.substr(0, e.key.length) == e.key
+	       && /^(\/|$)/.match(frag.substr(e.key.length))
+	       && e.key.length > selname.length) {
+	       sel = e;
+	       rest = frag.substr(e.key.length);
+	       selname = e.key;
+	   }
+       }
+       if (sel == null) {
+	   this._log_entry("No entry found for " + frag);
+	   sel = this.ordered[0];
+	   rest = "";
+       }
+       return { select: sel, rest: rest };
    },
-   _select: function() {
+     // make something active
+   _select: function(what) {
+       if (this.current)
+	   this.current.div.style.display = "none";
+       if (what.select.started) {
+	   what.select.value.display(this, what.select.div);
+	   what.select.div.style.display = "block";
+       }
+       else {
+	   var id = what.select.key.replace(/\W+/g, "-");
+	   what.select.div = new Element("div", { id: id });
+	   what.select.value.start(this, what.select.div, what.rest);
+	   $("base_work").appendChild(what.select.div);
+	   what.select.started = true;
+	   this._log_entry("Started "+what.select.key);
+       }
+       this.current = what.select;
+       $("base_menu_current").update(this.current.value.menu_text());
+   },
+   _log_entry: function(text) {
+       this._log.push(text);
+       if (this._log.length > 1000)
+	   this._log.shift();
    }
  });
 
-var ui = new BSEAdminUI();
+var ui;
 
 var BSEUIBase = Class.create
 ({
    order: function() { alert("Missing order implmentation"); }
  });
 
-//document.observe("dom:loaded", ui.start.bind(ui));
+document.observe
+("dom:loaded",
+ function() {
+     ui = new BSEAdminUI();
+ }
+);

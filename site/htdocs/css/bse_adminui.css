@@ -1,7 +1,4 @@
 #debug_log {
-  width: 40em;
-  float: right;
-  height: 80em;
 }
 
 body {
@@ -22,6 +19,8 @@ body {
 #base_menubar {
   background-color: #E0E0FF;
   border-bottom: 1px solid #8080FF;
+  /*position: fixed;
+  width: 1000px; */
 }
 
 #base_menu_wrapper {
@@ -46,7 +45,7 @@ body {
 
 #base_menu_current {
   padding: 0.5em 1em;
-  write-space: none;
+  white-space: nowrap;
   overflow: hidden;
   width: 150px;
 }
@@ -61,6 +60,8 @@ body {
   font-weight: bold;
   white-space: nowrap;
   width: 150px;
+  background-position: 150px;
+  background-repeat: no-repeat;
 }
 
 #base_menu a:hover {
@@ -69,14 +70,24 @@ body {
 
 #base_menu_item_debug {
   background-image: url(/images/admin/ui/debug.png);
-  background-position: 150px;
-  background-repeat: no-repeat;
 }
 
 #base_menu_item_menu {
   background-image: url(/images/admin/ui/menu.png);
-  background-position: 150px;
-  background-repeat: no-repeat;
 }
 
 .clearer { clear: both; }
+
+/* hide the various page components until initialized */
+#base_wrapper.hide #base_menubar,
+#base_wrapper.hide #base_work {
+  display: none;
+}
+
+#base_loading {
+  text-align: center;
+  font: bold 24px Arial;
+  padding-top: 10em;
+  padding-bottom: 10em;
+  color: #8080FF;
+}
