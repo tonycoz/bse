@@ -1,6 +1,6 @@
 package Squirrel::Table;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 use Carp;
 use strict;
@@ -354,6 +354,27 @@ sub getColumnBy {
   my @rows;
   while (my $row = $sth->fetchrow_arrayref) {
     push @rows, $row->[0];
+  }
+
+  return wantarray ? @rows : \@rows;
+}
+
+sub getBy2 {
+  my ($self, $query, $opts) = @_;
+
+  my $rowClass = $self->rowClass;
+  my ($sql, @args) = $self->_make_sql([ $rowClass->columns ], $query, $opts);
+
+  $dh ||= BSE::DB->single;
+  my $sth = $dh->{dbh}->prepare($sql)
+    or confess "Cannot prepare generated $sql: ", $dh->{dbh}->errstr;
+
+  $sth->execute(@args)
+    or confess "Cannot execute $sql: ",$dh->{dbh}->errstr;
+
+  my @rows;
+  while (my $row = $sth->fetchrow_arrayref) {
+    push @rows, $rowClass->new(@$row);
   }
 
   return wantarray ? @rows : \@rows;
