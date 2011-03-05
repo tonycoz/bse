@@ -112,3 +112,13 @@ description: Returned from PayPal for an order that was already paid.  The payme
 
 id: bse/shop/paypal/badtoken
 description: The transaction token supplied by PayPal to paypalret doesn't match the token value stored in the order
+
+id: bse/files/
+description: File validation messages
+
+id: bse/files/image_file_required
+description: Message displayed when only an image file is accepted on upload, but the upload isn't an image
+
+id: bse/files/pdf_file_required
+description: Message displayed when only a PDF is accepted on upload, but the upload isn't a PDF
+

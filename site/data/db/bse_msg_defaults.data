@@ -59,7 +59,13 @@ id: bse/shop/paypal/cancelled
 message: PayPal payment cancelled
 
 id: bse/shop/paypal/badtoken
-message: The token returned by PayPal doesn't match the token generated for your order.
+message: The token returned by PayPal doesn't match the token generated for  order.
+
+id: bse/files/image_file_required
+message: File must be an image file
+
+id: bse/files/pdf_file_required
+message: File must be a PDF file
 
 id: test/test/multiline
 message: <<TEXT
