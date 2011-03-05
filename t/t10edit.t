@@ -21,7 +21,7 @@ check_form($ua->{content},
 	   parentid=>[ -1, 'select' ],
 	   id => [ '', 'hidden' ],
 	   template=> [ 'common/default.tmpl', 'select' ],
-	   body => [ '<maximum of 64Kb>', 'textarea' ],
+	   body => [ '', 'textarea' ],
 	   listed => [ 1, 'select' ],
 	  );
 $ua->field(title=>'Test Article');
