@@ -1,5 +1,6 @@
 #!perl -l
 use strict;
+use warnings;
 use ExtUtils::Manifest qw(maniread);
 
 my $mani_name = shift || "MANIFEST";
