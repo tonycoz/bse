@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 26;
+use Test::More tests => 27;
 
 ++$|;
 
@@ -108,8 +108,12 @@ my %bad_add =
   );
 $result = $payment->add_payment(%bad_add);
 ok($result, "got some sort of result");
-ok(!$result->{success}, "should fail");
-print "# bad add_payment: ",$result->{error}, "\n";
+{
+  local $TODO = "back end doesn't fail on bad expiry";
+  ok(!$result->{success}, "should fail on bad expiry");
+  isnt($result->{error}, "Successful", "should set error");
+  print "# bad add_payment: ",$result->{error}, "\n";
+}
 
 # try to fail one with a bad password
 my %cfg_bad =
