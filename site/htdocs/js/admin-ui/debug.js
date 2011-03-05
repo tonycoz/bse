@@ -7,6 +7,7 @@ var BSEDebugUI = Class.create
     this._log = new Element("div", { id: "debug_log" });
     div.appendChild(this._log);
     this._load_log(ui);
+    this.display(ui, div);
   },
   display: function(ui, div) {
     this._timer = setInterval(this._load_log.bind(this, ui), 1000);
