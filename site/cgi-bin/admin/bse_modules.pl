@@ -38,6 +38,8 @@ my @base_check =
       'URI::Escape' => 0,
       'HTML::Entities' => 0,
       'Image::Size' => 0,
+      'JSON' => 0,
+      'MIME::Lite' => 0,
      }
    },
    {
@@ -53,7 +55,6 @@ my @base_check =
     name => "Nport",
     modules => 
     {
-     'MIME::Lite' => 0,
      'Time::HiRes' => 0,
      'Date::Calc' => 0,
     },
@@ -68,7 +69,6 @@ my @base_check =
      'Date::Format' => 0,
      'Captcha::reCAPTCHA' => 0,
      'FLV::Info' => 0,
-     'JSON' => 0,
     },
    },
    {
