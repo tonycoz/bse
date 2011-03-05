@@ -107,9 +107,10 @@ checkver:
 	if [ -d .git ] ; then perl site/util/check_versions.pl ; fi
 
 TEST_FILES=t/*.t
+TEST_VERBOSE=0
 
 test: testup
-	perl -MTest::Harness=runtests -Isite/cgi-bin/modules -It -e 'runtests @ARGV' $(TEST_FILES)
+	perl '-MTest::Harness=runtests,$$verbose' -Isite/cgi-bin/modules -It -e '$$verbose=$(TEST_VERBOSE); runtests @ARGV' $(TEST_FILES)
 
 manicheck:
 	perl -MExtUtils::Manifest=manicheck -e 'manicheck()'
