@@ -412,41 +412,41 @@ sub remove_format {
     TRY: while (1) {
 	$self->remove(\$part)
 	  and next TRY;
-	$part =~ s#(?:acronym|abbr|dfn)\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#$3#ig
+	$part =~ s#(?:acronym|abbr|dfn)\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]*)\]#$3#ig
 	  and next TRY;
-	$part =~ s#(?:acronym|abbr|dfn|bdo)\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
+	$part =~ s#(?:acronym|abbr|dfn|bdo)\[([^|\]\[]+)\|([^\]\[]*)\]#$2#ig
 	  and next TRY;
-	$part =~ s#(?:acronym|abbr|dfn|bdo)\[(\|[^|\]\[]+)\]#$1#ig
+	$part =~ s#(?:acronym|abbr|dfn|bdo)\[\|([^|\]\[]*)\]#$1#ig
 	  and next TRY;
-	$part =~ s#(?:acronym|abbr|dfn)\[([^|\]\[]+)\]#$1#ig
+	$part =~ s#(?:acronym|abbr|dfn)\[([^|\]\[]*)\]#$1#ig
 	  and next TRY;
-	$part =~ s#(?:strong|em|samp|code|var|sub|sup|kbd|q|address|blockquote|b|i|tt|span)\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
+	$part =~ s#(?:strong|em|samp|code|var|sub|sup|kbd|q|address|blockquote|b|i|tt|span)\[([^|\]\[]+)\|([^\]\[]*)\]#$2#ig
 	  and next TRY;
-	$part =~ s#(?:strong|em|samp|code|var|sub|sup|kbd|q|address|blockquote|b|i|tt|span)\[\|([^\]\[]+)\]#$1#ig
+	$part =~ s#(?:strong|em|samp|code|var|sub|sup|kbd|q|address|blockquote|b|i|tt|span)\[\|([^\]\[]*)\]#$1#ig
 	  and next TRY;
-	$part =~ s#(?:strong|em|samp|code|var|sub|sup|kbd|q|address|blockquote|b|i|tt|span)\[([^\]\[]+)\]#$1#ig
+	$part =~ s#(?:strong|em|samp|code|var|sub|sup|kbd|q|address|blockquote|b|i|tt|span)\[([^\]\[]*)\]#$1#ig
 	  and next TRY;
-	$part =~ s#div\[([^\[\]\|]+)\|([^\[\]]+)\](?:\r?\n)?#$2#ig
+	$part =~ s#div\[([^\[\]\|]+)\|([^\[\]]*)\](?:\r?\n)?#$2#ig
 	  and next TRY;
-	$part =~ s#comment\[([^\[\]]+)\](?:\r?\n)?##ig
+	$part =~ s#comment\[([^\[\]]*)\](?:\r?\n)?##ig
 	  and next TRY;
-	$part =~ s#h([1-6])\[([^\[\]\|]+)\|([^\[\]]+)\](?:\r?\n)?#$3#ig
+	$part =~ s#h([1-6])\[([^\[\]\|]*)\|([^\[\]]+)\](?:\r?\n)?#$3#ig
 	  and next TRY;
-	$part =~ s#h([1-6])\[\|([^\[\]]+)\](?:\r?\n)?#$2#ig
+	$part =~ s#h([1-6])\[\|([^\[\]]*)\](?:\r?\n)?#$2#ig
 	  and next TRY;
-	$part =~ s#h([1-6])\[([^\[\]]+)\](?:\r?\n)?#$2#ig
+	$part =~ s#h([1-6])\[([^\[\]]*)\](?:\r?\n)?#$2#ig
 	  and next TRY;
-	$part =~ s#poplink\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
+	$part =~ s#poplink\[([^|\]\[]*)\|([^\]\[]+)\]#$2#ig
 	  and next TRY;
-	$part =~ s#poplink\[([^|\]\[]+)\]#$1#ig
+	$part =~ s#poplink\[([^|\]\[]*)\]#$1#ig
 	  and next TRY;
-	$part =~ s#link\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
+	$part =~ s#link\[([^|\]\[]*)\|([^\]\[]+)\]#$2#ig
 	  and next TRY;
-	$part =~ s#link\[([^|\]\[]+)\]#$1#ig
+	$part =~ s#link\[([^|\]\[]*)\]#$1#ig
 	  and next TRY;
-	$part =~ s#align\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
+	$part =~ s#align\[([^|\]\[]+)\|([^\]\[]*)\]#$2#ig
 	  and next TRY;
-	$part =~ s#font\[([^|\]\[]+)\|([^\]\[]+)\]#$2#ig
+	$part =~ s#font\[([^|\]\[]+)\|([^\]\[]*)\]#$2#ig
 	  and next TRY;
 	$part =~ s#hr\[([^|\]\[]*)\|([^\]\[]*)\]##ig
 	  and next TRY;
@@ -470,11 +470,11 @@ sub remove_format {
 	  and next TRY;
 	$part =~ s#hrcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]##ig
 	  and next TRY;
-	$part =~ s#image\[([^\]\[]+)\]##ig
+	$part =~ s#image\[([^\]\[]+)\] *##ig
 	  and next TRY;
-	$part =~ s#class\[([^\]\[\|]+)\|([^\]\[]+)\]#$2#ig
+	$part =~ s#class\[([^\]\[\|]+)\|([^\]\[]*)\]#$2#ig
 	  and next TRY;
-	$part =~ s#style\[([^\]\[\|]+)\|([^\]\[]+)\]#$2#ig
+	$part =~ s#style\[([^\]\[\|]+)\|([^\]\[]*)\]#$2#ig
 	  and next TRY;
 	$part =~ s!(?<=\W)\[([^\]\[]+)\]!\x01$1\x02!g
           and next TRY;

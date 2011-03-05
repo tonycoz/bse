@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 73;
+use Test::More tests => 96;
 
 sub format_test($$$;$);
 sub noformat_test($$$;$);
@@ -284,6 +284,32 @@ EOS
   noformat_test 'code[something [bar]]', 'something [bar]', 'nested []';
 
   noformat_test "abc comment[foo] def", "abc  def", "comment";
+
+  noformat_test 'class[foo|image[bar]]', '', 'class with image content';
+  noformat_test 'abbr[image[bar]]', '', 'abbr[] with image content';
+  noformat_test 'abbr[foo|image[bar]]', '', 'abbr[x|x] with image content';
+  noformat_test 'abbr[|image[bar]]', '', 'abbr[|x] with image content';
+  noformat_test 'strong[image[bar]]', '', 'strong[x] with image content';
+  noformat_test 'strong[|image[bar]]', '', 'strong[|x] with image content';
+  noformat_test 'strong[foo|image[bar]]', '', 'strong[x|x] with image content';
+
+  noformat_test 'div[foo|image[bar]]', '', 'div[x|x] with image content';
+  noformat_test 'comment[image[bar]]', '', 'comment[image[xx]] with image content';
+  noformat_test 'h1[foo|image[bar]]', '', 'h1[x|x] with image content';
+  noformat_test 'h1[|image[bar]]', '', 'h1[|x] with image content';
+  noformat_test 'h1[image[bar]]', '', 'h1[x] with image content';
+  
+  noformat_test 'poplink[xxx|image[bar]]', '', 'poplink[x|x] with image content';
+  noformat_test 'poplink[image[bar]]', '', 'poplink[x] with image content';
+  noformat_test 'link[xxx|image[bar]]', '', 'link[x|x] with image content';
+  noformat_test 'link[image[bar]]', '', 'link[x] with image content';
+  noformat_test 'align[xxx|image[bar]]', '', 'align[x|x] with image content';
+  noformat_test 'font[xxx|image[bar]]', '', 'font[x|x] with image content';
+  noformat_test 'hr[xxx|image[bar]]', '', 'hr[x|x] with image content';
+  noformat_test 'anchor[image[bar]]', '', 'anchor[x] with image content';
+  noformat_test '**image[bar]', '', '** list with image content';
+  noformat_test '%%image[bar]', '', '%% list with image content';
+  noformat_test '##image[bar]', '', '## list with image content';
 }
 
 sub format_test ($$$;$) {
