@@ -1,7 +1,10 @@
 =head1 NAME
 
-   BSE installation guide.
+BSE installation guide.
 
+=head1 DESCRIPTION
+
+Note: The installation process below is badly out of date.
 
 =head1 SYSTEM REQUIREMENTS
 
@@ -9,7 +12,7 @@
 
 =item *
 
-perl 5.005_03 or later
+perl 5.8.5 or later
 
 =item *
 
@@ -78,6 +81,14 @@ URI::Escape
 
 HTML::Entities
 
+=item *
+
+MIME::Lite
+
+=item *
+
+JSON
+
 =back
 
 and their dependants.  If you use the CPAN shell to install these then
@@ -104,6 +115,30 @@ LWP aka libwww-perl
 =item *
 
 Crypt::SSLeay
+
+=item *
+
+=back
+
+You may also want::
+
+=over
+
+=item *
+
+Imager - thumbnail displays - B<strongly recommended>
+
+=item *
+
+FLV::Info - parsing metadata from uploaded FLV video.
+
+=item *
+
+Net::Amazon::S3 - for maintaining content on the Amazon S3 CDN.
+
+=item *
+
+Captcha::reCAPTCHA - for displaying CAPTCHA's from Google reCAPTCHA.
 
 =back
 
@@ -154,7 +189,7 @@ The directories in the archive are:
   bse/site/templates       Sample page templates
   bse/site/data            Static site data (currently just the stopwords list)
   bse/site/docs            Documentation
-  bse/site/util            Utilities (currently just initial.pl)
+  bse/site/util            Utilities
 
 If you are running your own host, or have sufficient control over
 Apache, you may want to extract the archive in it's final directory
