@@ -148,6 +148,38 @@ var BSEAPI = Class.create
 	 onException: this.onException
        });
      },
+     change_password: function(parameters) {
+       var success = parameters.onSuccess;
+       if (!success) this._badparm("change_password() missing onSuccess parameter");
+       var failure = parameters.onFailure;
+       if (!failure) failure = this.onFailure;
+       new Ajax.Request('/cgi-bin/admin/changepw.pl',
+       {
+	 parameters: {
+	     a_change: 1,
+	     oldpassword: parameters.oldpassword,
+	     newpassword: parameters.newpassword,
+	     confirm: parameters.newpassword
+	 },
+	 onSuccess: function (success, failure, resp) {
+	   if (resp.responseJSON) {
+             if(resp.responseJSON.success != 0) {
+	       success();
+             }
+             else {
+	       failure(this._wrap_json_failure(resp), resp);
+             }
+	   }
+	   else {
+	     failure(this._wrap_nojson_failure(resp), resp);
+	   }
+	 }.bind(this, success, failure),
+	 onFailure: function (failure, resp) {
+	   failure(this._wrap_req_failure(resp), resp);
+	 }.bind(this, failure),
+	 onException: this.onException
+       });
+     },
      // fetch a tree of articles;
      // id - parent of tree to fetch
      // depth - optional depth of tree to fetch (default is large)

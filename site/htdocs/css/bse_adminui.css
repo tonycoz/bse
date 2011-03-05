@@ -21,6 +21,11 @@ body {
   border-bottom: 1px solid #8080FF;
 }
 
+.bse_dialog .bse_alert {
+  background-color: #F00;
+  color: #FFF;
+}
+
 .bse_dialog {
   position: absolute;
   background-color: #F0F0FF;
@@ -91,9 +96,12 @@ body {
   white-space: nowrap;
   overflow: hidden;
   width: 150px;
+  font-weight: bold;
+  cursor: pointer;
 }
 
-#base_menu a {
+#base_menu a,
+#base_logon_menu a {
   display: block;
   padding: 5px 1em;
   /*border-bottom: 1px solid #000;
@@ -107,7 +115,8 @@ body {
   background-repeat: no-repeat;
 }
 
-#base_menu a:hover {
+#base_menu a:hover,
+#base_logon_menu a:hover {
   background-color: #E0E0FF;
 }
 
@@ -117,6 +126,38 @@ body {
 
 #base_menu_item_menu {
   background-image: url(/images/admin/ui/menu.png);
+}
+
+#base_change_password {
+  background-image: url(/images/admin/ui/changepw.png);
+}
+
+#base_logon_wrapper {
+  position: relative;
+  background-color: #C0C0FF;
+  float: right;
+}
+
+#base_logon {
+  display: none;
+  font-weight: bold;
+  background-color: #C00000;
+  color: #FFFFFF;
+  float: right;
+  padding: 0.5em 1em;
+  cursor: pointer;
+}
+
+#base_logon_menu {
+  display: none;
+  background-color: #C0C0FF;
+  position: absolute;
+  right: 0px;
+  top: 100%;
+}
+
+#base_logon_wrapper:hover #base_logon_menu {
+  display: block;
 }
 
 .clearer { clear: both; }
@@ -133,4 +174,9 @@ body {
   padding-top: 10em;
   padding-bottom: 10em;
   color: #8080FF;
+}
+
+#base_messages div {
+  background-color: #C0C0C0;
+  padding: 2px 5px;
 }
