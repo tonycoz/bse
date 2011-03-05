@@ -3,7 +3,7 @@ use strict;
 
 # automatically generated
 
-our $hash = "d0bf7271228d2244ff8814e119c43345";
+our $hash = "bb38af64daa3f8fe780087460b3d670d";
 
 our %versions =
   (
@@ -227,7 +227,7 @@ our %versions =
   "DevHelp::Date" => "1.000",
   "DevHelp::DynSort" => "1.000",
   "DevHelp::FileUpload" => "1.000",
-  "DevHelp::Formatter" => "1.000",
+  "DevHelp::Formatter" => "1.001",
   "DevHelp::HTML" => "1.000",
   "DevHelp::LoaderData" => "1.000",
   "DevHelp::Payments::Inpho" => "1.000",

@@ -3,7 +3,7 @@ use strict;
 use DevHelp::HTML;
 use Carp 'confess';
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 use constant DEBUG => 0;
 
@@ -430,17 +430,17 @@ sub remove_format {
 	  and next TRY;
 	$part =~ s#comment\[([^\[\]]*)\](?:\r?\n)?##ig
 	  and next TRY;
-	$part =~ s#h([1-6])\[([^\[\]\|]*)\|([^\[\]]+)\](?:\r?\n)?#$3#ig
+	$part =~ s#h([1-6])\[([^\[\]\|]*)\|([^\[\]]*)\](?:\r?\n)?#$3#ig
 	  and next TRY;
 	$part =~ s#h([1-6])\[\|([^\[\]]*)\](?:\r?\n)?#$2#ig
 	  and next TRY;
 	$part =~ s#h([1-6])\[([^\[\]]*)\](?:\r?\n)?#$2#ig
 	  and next TRY;
-	$part =~ s#poplink\[([^|\]\[]*)\|([^\]\[]+)\]#$2#ig
+	$part =~ s#poplink\[([^|\]\[]*)\|([^\]\[]*)\]#$2#ig
 	  and next TRY;
 	$part =~ s#poplink\[([^|\]\[]*)\]#$1#ig
 	  and next TRY;
-	$part =~ s#link\[([^|\]\[]*)\|([^\]\[]+)\]#$2#ig
+	$part =~ s#link\[([^|\]\[]*)\|([^\]\[]*)\]#$2#ig
 	  and next TRY;
 	$part =~ s#link\[([^|\]\[]*)\]#$1#ig
 	  and next TRY;
