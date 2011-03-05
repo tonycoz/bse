@@ -4,7 +4,7 @@ use base "DevHelp::Cfg";
 use Carp qw(confess);
 use constant MAIN_CFG => 'bse.cfg';
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 my %cache;
 
@@ -157,6 +157,27 @@ sub admin_url {
   return $url;
 }
 
+=item content_base_path()
+
+Site document root.  Previously $Constants::CONTENTBASE.
+
+=cut
+
+sub content_base_path {
+  my ($self) = @_;
+
+  ref $self
+    or $self = $self->single;
+
+  my $path = $self->entryIfVar("paths", "public_html");
+  unless ($path) {
+    # backward compatibility
+    require Constants;
+    $path = $Constants::CONTENTBASE;
+  }
+
+  return $path;
+}
 
 1;
 

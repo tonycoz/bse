@@ -7,7 +7,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::TB::SiteCommon/;
 use Carp 'confess';
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub columns {
   return qw/id parentid displayOrder title titleImage body
@@ -139,7 +139,7 @@ sub link_to_filename {
   my $filename = $link;
   $filename =~ s!/\w*$!!;
   $filename =~ s{^\w+://[\w.-]+(?::\d+)?}{};
-  $filename = $Constants::CONTENTBASE . $filename;
+  $filename = $cfg->content_base_path() . $filename;
   $filename =~ s!//+!/!;
   
   return $filename;

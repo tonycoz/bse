@@ -89,6 +89,11 @@ Local Directory base for templates.  This is searched before the
 templates directory.  This can contain references like $(section/key)
 to other configuration entries.  Split on the system's PATH separator.
 
+=item public_html
+
+Web server document root.  Static pages are generated under this
+directory.  Default: $CONTENTBASE.
+
 =item images
 
 Where uploaded images are stored.  This is not yet completely
@@ -2214,13 +2219,14 @@ eg.
   [cookie names]
   userid=altuserid
 
-=item [siteuser updates]
+=head2 [siteuser updates]
 
 Each key identifies an update specification for userupdate.pl, the
 value is a description of the specification.
 
 See L<<[siteuser update I<specid>]>> for the rest of the import
 specification.
+
 
 =head2 [siteuser update I<specid>]
 

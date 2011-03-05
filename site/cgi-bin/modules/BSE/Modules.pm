@@ -3,14 +3,14 @@ use strict;
 
 # automatically generated
 
-our $hash = "bb38af64daa3f8fe780087460b3d670d";
+our $hash = "3251d97cb9746cd195fc02e45c940880";
 
 our %versions =
   (
   "AdminUtil" => "1.000",
   "Apache::Session::DBIreal" => "1.000",
   "Apache::Session::Store::DBIreal" => "1.000",
-  "Article" => "1.002",
+  "Article" => "1.003",
   "Articles" => "1.000",
   "BSE::API" => "1.000",
   "BSE::Admin::StepParents" => "1.000",
@@ -24,7 +24,7 @@ our %versions =
   "BSE::Cache::CHI" => "1.001",
   "BSE::Cache::Cache" => "1.000",
   "BSE::Cache::Memcached" => "1.000",
-  "BSE::Cfg" => "1.002",
+  "BSE::Cfg" => "1.003",
   "BSE::CfgInfo" => "1.000",
   "BSE::ChangePW" => "1.000",
   "BSE::ComposeMail" => "1.001",
@@ -37,7 +37,7 @@ our %versions =
   "BSE::Dynamic::Catalog" => "1.000",
   "BSE::Dynamic::Product" => "1.000",
   "BSE::Dynamic::Seminar" => "1.000",
-  "BSE::Edit::Article" => "1.003",
+  "BSE::Edit::Article" => "1.004",
   "BSE::Edit::Base" => "1.000",
   "BSE::Edit::Catalog" => "1.001",
   "BSE::Edit::Product" => "1.001",
@@ -212,7 +212,7 @@ our %versions =
   "BSE::Util::Valid" => "1.000",
   "BSE::Validate" => "1.000",
   "BSE::WebUtil" => "1.000",
-  "Constants" => "1.000",
+  "Constants" => "1.001",
   "Courier" => "1.000",
   "Courier::AustraliaPost" => "1.000",
   "Courier::AustraliaPost::Air" => "1.000",
@@ -259,7 +259,7 @@ our %versions =
   "Squirrel::Row" => "1.001",
   "Squirrel::Table" => "1.003",
   "Squirrel::Template" => "1.001",
-  "Util" => "1.000",
+  "Util" => "1.001",
   );
 
 our %file_versions =

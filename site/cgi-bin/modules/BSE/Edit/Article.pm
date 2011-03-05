@@ -13,7 +13,7 @@ use BSE::Util::ContentType qw(content_type);
 use DevHelp::Date qw(dh_parse_date dh_parse_sql_date);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 =head1 NAME
 
@@ -3367,7 +3367,7 @@ sub req_thumb {
   else {
     # grab the nothumb image
     my $uri = $cfg->entry('editor', 'default_thumbnail', '/images/admin/nothumb.png');
-    my $filebase = $Constants::CONTENTBASE;
+    my $filebase = $cfg->content_base_path;
     if (open IMG, "<$filebase/$uri") {
       binmode IMG;
       my $data = do { local $/; <IMG> };

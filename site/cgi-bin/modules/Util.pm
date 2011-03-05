@@ -5,12 +5,12 @@ require Exporter;
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(generate_article generate_all generate_button 
                 regen_and_refresh);
-use Constants qw($CONTENTBASE $GENERATE_BUTTON $SHOPID $AUTO_GENERATE);
+use Constants qw($GENERATE_BUTTON $SHOPID $AUTO_GENERATE);
 use Carp qw(confess);
 use BSE::WebUtil qw(refresh_to_admin);
 use BSE::Util::HTML;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 # returns non-zero if the Regenerate button should work
 sub generate_button {
@@ -203,7 +203,8 @@ sub generate_extras {
       # overidden, eg. the error template
       my $is_extras = $presets eq 'extras';
       my $dynamic = $cfg->entry($section, 'dynamic', !$is_extras);
-      my $outpath = $cfg->entry($section, 'content', $is_extras) ? $CONTENTBASE : $template_dir;
+      my $outpath = $cfg->entry($section, 'content', $is_extras) ? 
+	$cfg->content_base_path : $template_dir;
       my %acts;
       my $gen = Generate::Article->new(cfg=>$cfg, top=>\%article, 
 				       force_dynamic => $dynamic);

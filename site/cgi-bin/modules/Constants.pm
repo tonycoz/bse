@@ -1,7 +1,7 @@
 package Constants;
 use strict;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 # this needs to be re-organized
 use vars qw(@EXPORT_OK %EXPORT_TAGS @ISA $VERSION 
@@ -69,6 +69,7 @@ $BASEDIR = '/home/httpd/bsetest';
 # $TMPLDIR = $BASEDIR.'/templates/';
 
 # where the html is kept
+# set public_html in [paths] instead
 $CONTENTBASE = $BASEDIR.'/htdocs/';
 
 # where we keep images
