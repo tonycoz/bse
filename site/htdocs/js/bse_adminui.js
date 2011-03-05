@@ -211,6 +211,7 @@ var BSEAdminUI = Class.create
 		  this._show_current_logon();
 		  dlg.close();
 		  this._select(what);
+		  this.message(user.logon + " successfully logged on");
 	      }.bind(this, what, dlg),
 	      onFailure: function(dlg, result) {
 		  dlg.bse_error(result);
@@ -272,6 +273,8 @@ var BSEAdminUI = Class.create
      },
      _do_changepw: function(event) {
 	 event.stop();
+	 if (!this._userinfo.user)
+	     return;
 	 new BSEDialog
 	 ({
 	      fields:
