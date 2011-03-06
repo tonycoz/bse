@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 96;
+use Test::More tests => 97;
 
 sub format_test($$$;$);
 sub noformat_test($$$;$);
@@ -241,6 +241,16 @@ OUT
 ## two
 IN
 <ul><li>joe</li><li>bob</li></ul><ol><li>one</li><li>two</li></ol>
+OUT
+
+  format_test <<IN, <<OUT, 'spaces between', 'both';
+** joe
+ 
+** bob
+
+** jane
+IN
+<ul><li><p>joe</p></li><li><p>bob</p></li><li>jane</li></ul>
 OUT
 
   format_test 'indent[text]', '<ul>text</ul>', 'indent';

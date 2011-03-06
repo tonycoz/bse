@@ -3,7 +3,7 @@ use strict;
 use DevHelp::HTML;
 use Carp 'confess';
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 use constant DEBUG => 0;
 
@@ -86,7 +86,7 @@ sub _format_bullets {
   shift @points if @points and $points[0] eq '';
   return '' unless @points;
   for my $point (@points) {
-    $point =~ s!\n$!!
+    $point =~ s!\n *$!!
       and $point = "<p>$point</p>";
   }
   return "<ul><li>".join("</li><li>", @points)."</li></ul>";
@@ -104,7 +104,7 @@ sub _format_ol {
   shift @points if @points and $points[0] eq '';
   return '' unless @points;
   for my $point (@points) {
-    $point =~ s!\n$!!
+    $point =~ s!\n *$!!
       and $point = "<p>$point</p>";
   }
   my $ol = "<ol";
@@ -119,13 +119,13 @@ sub _format_lists {
   my $out = '';
 
   while (length $text) {
-    if ($text =~ s(^((?: *\#\#[^\n]+(?:\n(?!\*\*|\#\#|\%\%)[^\n]+)*(?:\n|$)\n?[^\S\n]*)+)\n?)()) {
+    if ($text =~ s(^((?: *\#\#[^\n]+(?:\n(?!\*\*|\#\#|\%\%)[^\n]+)*(?:\n *|$)\n?[^\S\n]*)+)\n?)()) {
       $out .= _format_ol($1);
     }
-    elsif ($text =~ s(^((?: *\*\*[^\n]+(?:\n(?!\*\*|\#\#|\%\%)[^\n]+)*(?:\n|$)\n?[^\S\n]*)+)\n?)()) {
+    elsif ($text =~ s(^((?: *\*\*[^\n]+(?:\n(?!\*\*|\#\#|\%\%)[^\n]+)*(?:\n *|$)\n?[^\S\n]*)+)\n?)()) {
       $out .= _format_bullets($1);
     }
-    elsif ($text =~ s(^((?: *%%[^\n]+(?:\n(?!\*\*|\#\#|\%\%)[^\n]+)*(?:\n|$)\n?[^\S\n]*)+)\n?)()) {
+    elsif ($text =~ s(^((?: *%%[^\n]+(?:\n(?!\*\*|\#\#|\%\%)[^\n]+)*(?:\n *|$)\n?[^\S\n]*)+)\n?)()) {
       $out .= _format_ol($1, 'a', '%%');
     }
     else {
