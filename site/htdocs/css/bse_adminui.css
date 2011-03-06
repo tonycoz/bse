@@ -176,7 +176,7 @@ body {
   color: #8080FF;
 }
 
-#base_messages div {
+#base_messages div.message {
   background-color: #C0C0C0;
   padding: 2px 5px;
 }
