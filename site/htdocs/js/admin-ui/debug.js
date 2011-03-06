@@ -1,7 +1,6 @@
 var BSEDebugUI = Class.create
 (BSEUIBase,
 {
-  order: function() { return "zzzzz"; },
   start: function(ui, div, args) {
     div.innerHTML = "";
     this._log = new Element("div", { id: "debug_log" });
@@ -18,8 +17,7 @@ var BSEDebugUI = Class.create
   needed_content: function(ui, args) {
     return { };
   },
-  menu_text: function() { return "Debug"; },
-    logon: function() { return false; },
+  logon: function() { return false; },
   _load_log: function(ui) {
     this._log.innerHTML = "";
     for (var i = 0; i < ui._log.length; ++i) {
@@ -30,4 +28,10 @@ var BSEDebugUI = Class.create
   }
 });
 
-ui.register("debug", new BSEDebugUI());
+ui.menu_item({
+  name: "debug",
+  object: new BSEDebugUI(),
+  text: "Debug",
+  order: "zzzz",
+  logon: false
+});

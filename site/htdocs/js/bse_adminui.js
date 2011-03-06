@@ -60,15 +60,30 @@ var BSEAdminUI = Class.create({
     this.api = new BSEAPI({onConfig: this._post_start.bind(this)});
     this._messages = new BSEAdminUI.Messages("base_messages");
   },
-  register: function(name, obj) {
+  menu_item: function(options) {
+    options = Object.extend(Object.extend({}, BSEAdminUI.MenuDefaults), options);
     this.handlers.set(
-      name,
+      options.name,
       { 
-	key: name,
-	value: obj,
+	options: options,
+	key: options.name,
+	value: options.object,
 	started: false,
-	div: null
+	div: null,
+	suboptions: new Hash
       });
+  },
+  submenu_item: function(options) {
+    options = Object.extend(Object.extend({}, BSEAdminUI.MenuDefaults), options);
+    this.handlers.get(options.parent).
+      set(options.name,
+	  {
+	    options: options,
+	    key: options.name,
+	    value: options.object,
+	    started: false,
+	    div: null
+	  });
   },
   start: function() {},
   _bind_static_events: function() {
@@ -110,8 +125,8 @@ var BSEAdminUI = Class.create({
     var list = this.handlers.values();
     list.sort(
       function (a, b) {
-	var aord = a.value.order();
-	var bord = b.value.order();
+	var aord = a.options.order;
+	var bord = b.options.order;
 	return aord < bord ? -1 : aord > bord ? 1 : 0;
       });
     this.ordered = list;
@@ -122,7 +137,7 @@ var BSEAdminUI = Class.create({
     this.ordered.each(
       function(menu, e) {
 	var a = new Element("a", { href: "#" + e.key, id: "base_menu_item_"+ e.key });
-	a.update(e.value.menu_text());
+	a.update(e.options.text);
 	a.observe("click", function(e, event) {
 	  this._select({ select: e, rest: ""});
 	  event.stop();
@@ -159,7 +174,7 @@ var BSEAdminUI = Class.create({
   // make something active, requiring a logon if the view 
   // requires it, which most do
   _select: function(what) {
-    if (what.select.value.logon()
+    if (what.select.options.logon
 	&& this.api.conf.access_control != 0) {
       if (this._userinfo) {
 	if (this._userinfo.user) {
@@ -229,7 +244,7 @@ var BSEAdminUI = Class.create({
       this._log_entry("Started "+what.select.key);
     }
     this.current = what.select;
-    $("base_menu_current").update(this.current.value.menu_text());
+    $("base_menu_current").update(this.current.options.text);
   },
   _log_entry: function(text) {
     var now = new Date;
@@ -336,6 +351,11 @@ var BSEUIBase = Class.create({
   order: function() { alert("Missing order implmentation"); },
   logon: function() { return true; }
 });
+
+BSEAdminUI.MenuDefaults =
+  {
+    logon: true
+  };
 
 document.observe(
   "dom:loaded",

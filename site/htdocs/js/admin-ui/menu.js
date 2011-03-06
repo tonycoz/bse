@@ -1,7 +1,6 @@
 var BSEMenuUI = Class.create
 (BSEUIBase,
 {
-  order: function() { return "a"; },
   start: function(ui, div, args) {
     div.innerHTML = "There will be a menu here";
   },
@@ -9,8 +8,12 @@ var BSEMenuUI = Class.create
     },
   needed_content: function(ui, args) {
     return { menu: "/admin/ui/menu.html" };
-  },
-  menu_text: function() { return "Main Menu"; }
+  }
 });
 
-ui.register("menu", new BSEMenuUI());
+ui.menu_item({
+  name: "menu",
+  object: new BSEMenuUI,
+  text: "Main Menu",
+  order: "a"
+});
