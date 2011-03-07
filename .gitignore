@@ -2,6 +2,7 @@ MANIFEST.bak
 test.cfg
 INSTALL.html
 INSTALL.txt
+site/cgi-bin/modules/BSE/Modules.pm
 site/cgi-bin/modules/BSE/Version.pm
 site/docs/BSE::UI::Affiliate.html
 site/docs/Generate.html

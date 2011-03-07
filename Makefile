@@ -5,6 +5,8 @@ DISTTAR=../$(DISTNAME).tar
 DISTTGZ=$(DISTTAR).gz
 WEBBASE=/home/httpd/html/bse
 
+BSEMODULES=site/cgi-bin/modules/BSE/Modules.pm
+
 MODULES=$(shell grep cgi-bin/.*\.pm MANIFEST | sed -e '/^\#/d' -e 's/[ \t].*//' -e '/^site\/cgi-bin\/modules\/BSE\/\(Modules\|Version\)\.pm/d' )
 VERSIONDEPS=$(shell perl site/util/bse_versiondeps.pl MANIFEST)
 
@@ -47,9 +49,10 @@ $(DISTTGZ): distdir
 
 # recent ExtUtils::Manifest don't copy the executable bit, fix that here
 
-distdir: docs dbinfo version modversion
+distdir: docs dbinfo version
 	-perl -MExtUtils::Command -e rm_rf $(DISTBUILD)
 	perl -MExtUtils::Manifest=manicopy,maniread -e "manicopy(maniread(), '$(DISTBUILD)')"
+	perl site/util/make_versions.pl $(DISTBUILD)/$(BSEMODULES)
 	mkdir $(DISTBUILD)/site/htdocs/shop
 	find $(DISTBUILD) -type f | xargs chmod u+w
 	for i in `cat MANIFEST` ; do if [ -x $$i ] ; then chmod a+x $(DISTBUILD)/$$i ; fi ; done
@@ -87,10 +90,10 @@ version: site/cgi-bin/modules/BSE/Version.pm
 site/cgi-bin/modules/BSE/Version.pm: $(VERSIONDEPS)
 	perl site/util/bse_mkgitversion.pl $(VERSION) site/cgi-bin/modules/BSE/Version.pm
 
-modversion: site/cgi-bin/modules/BSE/Modules.pm
+modversion: $(BSEMODULES)
 
-site/cgi-bin/modules/BSE/Modules.pm: $(MODULES) site/util/make_versions.pl
-	perl site/util/make_versions.pl site/cgi-bin/modules/BSE/Modules.pm
+$(BSEMODULES): $(MODULES) site/util/make_versions.pl
+	perl site/util/make_versions.pl $(BSEMODULES)
 
 # this is very rough
 testinst: distdir
