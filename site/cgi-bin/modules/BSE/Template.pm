@@ -4,7 +4,7 @@ use Squirrel::Template;
 use Carp qw(confess cluck);
 use Config ();
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub templater {
   my ($class, $cfg, $rsets) = @_;
@@ -21,7 +21,13 @@ sub templater {
     @dirs = @conf_dirs;
   }
 
-  return Squirrel::Template->new(template_dir => \@dirs);
+  my %opts =
+    (
+     template_dir => \@dirs,
+     utf8 => $cfg->utf8,
+     charset => $cfg->charset,
+    );
+  return Squirrel::Template->new(%opts);
 }
 
 sub get_page {
