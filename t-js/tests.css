@@ -1,0 +1,24 @@
+#tests {
+  font: 10px Arial;
+}
+
+#tests.passed {
+  background-color: #CFC;
+}
+
+#tests.failed {
+  background-color: #FCC;
+}
+
+.ok {
+  color: #080;
+}
+
+.fail {
+  color: #F00;
+  font-weight: bold;
+}
+
+.skip, .plan, .diag {
+  color: #444;
+}
