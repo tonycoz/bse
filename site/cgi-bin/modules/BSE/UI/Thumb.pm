@@ -5,7 +5,7 @@ use BSE::TB::Images;
 use BSE::CfgInfo qw(cfg_image_dir);
 use BSE::Util::Thumb;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub dispatch {
   my ($class, $req) = @_;
@@ -65,7 +65,7 @@ sub dispatch {
       return
 	{
 	 content => $data,
-	 type => $type,
+	 type => "image/$type",
 	 headers => [
 		     "Content-Length: ".length($data),
 		     "Cache-Control: max-age=3600",
@@ -94,7 +94,7 @@ sub dispatch {
     return
       {
        content => $data,
-       type => $type,
+       type => "image/$type",
        headers => [
 		   "Content-Length: ".length($data),
 		   "Cache-Control: max-age=3600",
