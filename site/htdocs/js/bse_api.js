@@ -5,7 +5,7 @@
 // TODO: start reporting
 // TODO: utf8 filenames
 // TODO: quotes in filenames(?)
-var bse_use_file_api = false;
+var bse_use_file_api = true;
 
 var BSEAPI = Class.create
   ({
@@ -305,7 +305,13 @@ var BSEAPI = Class.create
      },
      can_drag_and_drop: function() {
        // hopefully they're implemented at the same time
-       return bse_use_file_api && window.FileReader != null;
+       if (window.FormData != null)
+	 return true;
+
+       if (bse_use_file_api && window.FileReader != null)
+	 return true;
+
+       return false;
      },
      make_drop_zone: function(options) {
        options.element.addEventListener
@@ -629,6 +635,11 @@ var BSEAPI = Class.create
 	 url += "?";
        url += "_upload=" + parms.up_id;
 
+       if (window.FormData) {
+	 if (this._do_complex_formdata(url, action, parms, parameters))
+	   return;
+       }
+
        if (window.FileReader && bse_use_file_api) {
 	 if (this._do_complex_file_api(url, action, parms, parameters))
 	   return;
@@ -746,6 +757,63 @@ var BSEAPI = Class.create
 	 }
        }
      },
+    _file_progress_event: function(state, evt) {
+      if (evt.lengthComputable) {
+	var filename;
+	for (var i = 0; i < state.fileoffsets.length; ++i) {
+	  if (evt.loaded > state.fileoffsets[i][0])
+	    filename = state.fileoffsets[i][1];
+	}
+	state.last_filename = filename;
+	state.progress
+	(
+	  {
+	    done: evt.loaded,
+	    total: evt.total,
+	    filename: filename,
+	    complete: 0
+	  }
+	);
+      }
+    },
+    _file_load_event: function(state, evt) {
+      if (evt.lengthComputable) {
+	state.progress
+	(
+	  {
+	    done: evt.total,
+	    total: evt.total,
+	    filename: state.last_filename,
+	    complete: 1
+	  }
+	);
+      }
+    },
+    _file_readystatechange_event: function(state, event) {
+	 if (state.xhr.readyState == 4) {
+	   if (state.complete)
+	     state.complete();
+	   if (state.xhr.status == 200) {
+	     var data;
+	     try {
+	       data = state.xhr.responseText.evalJSON(false);
+	     } catch (e) {
+	       state.failure(this._wrap_nojson_failure(state.xhr));
+	       return;
+	     }
+
+	     if (data.success != null && data.success != 0 ) {
+	       state.success(data);
+	     }
+	     else {
+	       state.failure(this._wrap_json_failure({ responseJSON: data}));
+	     }
+	   }
+	   else {
+	     state.failure(this._wrap_req_failure(state.xhr));
+	   }
+	 }
+    },
      _build_api_req_data: function(state) {
        while (state.index < state.flat.length) {
 	 var entry = state.flat[state.index];
@@ -785,72 +853,18 @@ var BSEAPI = Class.create
 	 state.xhr.upload.addEventListener
 	   (
 	   "progress",
-	   function(state, evt) {
-	     if (evt.lengthComputable) {
-	       var filename;
-	       for (var i = 0; i < state.fileoffsets.length; ++i) {
-		 if (evt.loaded > state.fileoffsets[i][0])
-		   filename = state.fileoffsets[i][1];
-	       }
-	       state.last_filename = filename;
-	       state.progress
-	       (
-		 {
-		   done: evt.loaded,
-		   total: evt.total,
-		   filename: filename,
-		   complete: 0
-		 }
-	       );
-	     }
-	   }.bind(this, state),
+	    this._file_progress_event.bind(this, state),
 	   false
 	   );
 	 state.xhr.upload.addEventListener
 	   (
 	   "load",
-	   function(state, evt) {
-	     if (evt.lengthComputable) {
-	       state.progress
-	       (
-		 {
-		   done: evt.total,
-		   total: evt.total,
-		   filename: state.last_filename,
-		   complete: 1
-		 }
-	       );
-	     }
-	   }.bind(this, state),
+	     this._file_load_event.bind(this, state),
 	   false
 	   );
        }
        state.xhr.open("POST", state.url, true);
-       state.xhr.onreadystatechange = function(state, event) {
-	 if (state.xhr.readyState == 4) {
-	   if (state.complete)
-	     state.complete();
-	   if (state.xhr.status == 200) {
-	     var data;
-	     try {
-	       data = state.xhr.responseText.evalJSON(false);
-	     } catch (e) {
-	       state.failure(this._wrap_nojson_failure(state.xhr));
-	       return;
-	     }
-
-	     if (data.success != null && data.success != 0 ) {
-	       state.success(data);
-	     }
-	     else {
-	       state.failure(this._wrap_json_failure({ responseJSON: data}));
-	     }
-	   }
-	   else {
-	     state.failure(this._wrap_req_failure(state.xhr));
-	   }
-	 }
-       }.bind(this, state);
+       state.xhr.onreadystatechange = this._file_readystatechange_event.bind(this, state);
        state.xhr.setRequestHeader("Content-Type", "multipart/form-data; boundary="+state.sep);
        state.xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
        state.xhr.sendAsBinary(state.req_data);
@@ -877,6 +891,69 @@ var BSEAPI = Class.create
 
        return true;
      },
+    _do_complex_formdata: function(url, action, state, params) {
+      state.url = url;
+      if (action != null)
+	params[action] = 1;
+
+      state.fileoffsets = new Array();
+
+      var offset = 0;
+      var fd = new FormData();
+      for (var key in params) {
+	var val = params[key];
+	if (typeof(val) == "string" || typeof(val) == "number") {
+	  fd.append(key, val);
+	}
+	else {
+	  if (val.constructor == Array) {
+	    for (var i = 0; i < val.length; ++i) {
+	      fd.append(key, val);
+	    }
+	  }
+	  else if (val.constructor == File) {
+	    // file object
+	    fd.append(key, val);
+	  }
+	  else {
+	    // hopefully a file input
+	    for (var i = 0; i < val.files.length; ++i) {
+	      var file = val.files[i];
+	      state.fileoffsets.push([ offset, file.fileName ]);
+	      fd.append(key, file);
+	      offset += file.fileSize;
+	    }
+	  }
+	}
+      }
+
+      // FIXME: duplicate code (mostly)
+      state.xhr = new XMLHttpRequest();
+      if (state.start)
+	state.start();
+       if (state.progress && state.xhr.upload) {
+	 state.xhr.upload.addEventListener
+	   (
+	   "progress",
+	     this._file_progress_event.bind(this, state),
+	   false
+	   );
+	 state.xhr.upload.addEventListener
+	   (
+	   "load",
+	     this._file_load_event.bind(this, state),
+	   false
+	   );
+       }
+       state.xhr.open("POST", state.url, true);
+      state.xhr.onreadystatechange = this._file_readystatechange_event.bind(this, state);
+      // is this needed?
+      //state.xhr.setRequestHeader("Content-Type", "multipart/form-data; boundary="+state.sep);
+       state.xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+       state.xhr.send(fd);
+
+	return true;
+    },
      // in the future this might call a proxy
      _do_add_request: function(action, other_parms, success, failure) {
        this._do_request("/cgi-bin/admin/add.pl", action, other_parms, success, failure);
