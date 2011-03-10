@@ -583,3 +583,40 @@ BSEAdminUI.Messages = Class.create({
      });
   }
 });
+
+var BSEContentUI = Class.create
+(BSEUIBase,
+{
+  start: function(ui, div, args) {
+    div.innerHTML = "One day I'll do something";
+  },
+    display: function(ui, div) {
+    },
+  needed_content: function(ui, args) {
+    return { menu: "/admin/ui/menu.html" };
+  }
+});
+
+document.observe("dom:loaded", function() {
+  var handler = new BSEContentUI;
+  ui.menu_item({
+    name: "content",
+    object: handler,
+    text: "Content",
+    order: "b"
+  });
+  ui.menu_item({
+    name: "users",
+    object: handler,
+    text: "Users",
+    order: "c"
+  });
+  ui.menu_item({
+    name: "system",
+    object: handler,
+    text: "System",
+    order: "d"
+  });
+  
+});
+
