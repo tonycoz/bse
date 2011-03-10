@@ -10,7 +10,7 @@ body {
 .bse_modal {
   position: fixed;
   top: 0px;
-  background-color: #C0C0C0;
+  background-image: url(/images/50.png);
   width: 100%;
   height: 20em;
 }
