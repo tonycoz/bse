@@ -446,6 +446,7 @@ site/htdocs/js/bse_adminui.js
 site/htdocs/js/bse_api.js
 site/htdocs/js/bse_dialog.js
 site/htdocs/js/bse_flowplayer.js
+site/htdocs/js/bse_loader.js
 site/htdocs/js/bse_validate.js
 site/htdocs/js/builder.js
 site/htdocs/js/controls.js
