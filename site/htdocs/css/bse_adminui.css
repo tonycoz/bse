@@ -33,6 +33,14 @@ body {
   border: 2px solid #FFF;
 }
 
+.bse_dialog .bse_required label:after {
+  content: "*";
+}
+
+.bse_dialog .bse_invalid { 
+  background-color: #FF8080;
+}
+
 .bse_error {
   padding: 0px 3px;
   font-weight: bold;

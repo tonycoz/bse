@@ -444,7 +444,9 @@ site/htdocs/js/admin_tools.js
 site/htdocs/js/bse.js
 site/htdocs/js/bse_adminui.js
 site/htdocs/js/bse_api.js
+site/htdocs/js/bse_dialog.js
 site/htdocs/js/bse_flowplayer.js
+site/htdocs/js/bse_validate.js
 site/htdocs/js/builder.js
 site/htdocs/js/controls.js
 site/htdocs/js/date.js
@@ -745,6 +747,10 @@ site/util/make_versions.pl
 site/util/mysql.str
 site/util/update_title_summary.pl
 site/util/upgrade_mysql.pl
+t-js/01validate.html
+t-js/01validate.js
+t-js/test.js
+t-js/tests.css
 t/BSE/Test.pm
 t/cfg/bse.cfg
 t/cfg/cfg/00start.cfg
