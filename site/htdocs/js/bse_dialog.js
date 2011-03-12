@@ -10,9 +10,6 @@ var BSEDialog = Class.create({
 	modal_class: "bse_modal",
 	title_class: "bse_title",
 	error_class: "bse_error",
-	field_wrapper_class: "bse_field_wrapper",
-	field_error_class: "bse_field_error",
-	help_class: "bse_help",
 	submit_wrapper_class: "bse_submit_wrapper",
 	submit: "Submit",
 	cancel: false,
@@ -115,47 +112,6 @@ var BSEDialog = Class.create({
     this._elements.each(function(ele) {
       this.form.appendChild(ele);
     }.bind(this));
-  },
-  _build_field: function(f) {
-  },
-  _build_fieldx: function(f) {
-    var wrapper = new Element("div", { className: this.options.field_wrapper_class });
-    var label = new Element("label");
-    label.update(f.label);
-    wrapper.appendChild(label);
-    
-    switch (f.type) {
-    case "textarea":
-      var input = new Element("textarea", { name: f.name, value: f.value, cols: f.cols, rows: f.rows });
-      this.fields[f.name] = input;
-      wrapper.appendChild(input);
-      break;
-      
-    case "select":
-      var input = new Element("select", { name: f.name });
-      for (var i = 0; i < f.values.length; ++i) {
-	var val = f.values[i];
-	var def = f.value != null && f.value == val.key;
-	input.options[input.options.length] =
-	  new Option(val.label, val.value, def);
-      }
-      this.fields[f.name] = input;
-      wrapper.appendChild(input);
-      break;
-      
-    default:
-      var input = new Element("input", { name: f.name, type: f.type, value: f.value });
-      wrapper.appendChild(input);
-      this.fields[f.name] = input;
-      break;
-    }
-    var error = new Element("div", { className: this.options.field_error_class });
-    error.style.display = "none";
-    wrapper.appendChild(error);
-    this.field_wrapper_divs[f.name] = wrapper;
-    this.field_error_divs[f.name] = error;
-    
-    return wrapper;
   },
   _on_submit: function(event) {
     event.stop();
