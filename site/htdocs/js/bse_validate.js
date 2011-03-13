@@ -1,8 +1,19 @@
 var BSEValidator = Class.create({
+  initialize: function(options) {
+    this.options = Object.extend(
+      Object.extend({}, this.defaults()));
+  },
   _validator: function(rule) {
     return new BSEValidator.Rules[rule];
   },
-  validate_one: function(field, options, fields, errors) {
+  _format: function(message, field) {
+    return message.replace(/\$n/, field.description());
+  },
+  validate_one: function(field, fields, errors) {
+    if (field.required() && !field.has_value()) {
+      errors.set(field.name(), this._format(this.options.required_error, field));
+      return false;
+    }
     var rules = field.rules();
     var value = field.value();
     if (typeof(rules) == "string") {
@@ -10,6 +21,8 @@ var BSEValidator = Class.create({
     }
     for (var i = 0; i < rules.length; ++i) {
       var rule = rules[i];
+      if (rule == "")
+	continue;
       var rest = "";
       var m = /^([0-9a-z_]+):(.*)$/.exec(rule);
       if (m) {
@@ -18,7 +31,7 @@ var BSEValidator = Class.create({
       }
       var cls = this._validator(rule);
       try {
-	var result = cls.test(value, options, rest, fields);
+	var result = cls.test(value, this.options, rest, fields);
 	try {
 	  field.set_object(result);
 	}
@@ -33,12 +46,21 @@ var BSEValidator = Class.create({
     }
     return true;
   },
-  validate: function(fields, options, errors) {
-    fields.each(function(fields, options, errors, entry) {
-      this.validate_one(entry.value, options, fields, errors);
-    }.bind(this, fields, options, errors));
+  validate: function(fields, errors) {
+    fields.each(function(fields, errors, entry) {
+      this.validate_one(entry.value, fields, errors);
+    }.bind(this, fields, errors));
+
+    return errors.values().length == 0;
+  },
+  defaults: function() {
+    return BSEValidator.defaults;
   }
 });
+
+BSEValidator.defaults = {
+  required_error: "$n is required"
+};
 
 BSEValidator.Rules = {};
 
@@ -160,15 +182,6 @@ BSEValidator.Rules["future"].defaults =
   Object.extend({
     date_too_low_error: "$n must be be in the future"
   }, BSEValidator.Rules["date"].defaults);
-
-BSEValidator.Rules["required"] = Class.create(BSEValidator.Rules.Base, {
-  test: function(value, options) {
-    if (!/\S/.test(value))
-      throw new Error("$n is required");
-
-    return value;
-  }
-});
 
 BSEValidator.Rules["confirm"] = Class.create(BSEValidator.Rules.Base, {
   test: function(value, options, rest, fields) {

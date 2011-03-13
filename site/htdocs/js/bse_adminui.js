@@ -177,8 +177,8 @@ var BSEAdminUI = Class.create({
   },
   _on_logon_submit: function(what, dlg) {
     this.api.logon({
-      logon: dlg.values.logon,
-      password: dlg.values.password,
+      logon: dlg.field("logon").value(),
+      password: dlg.field("password").value(),
       onSuccess: function(what, dlg, user) {
 	this._userinfo.user = user;
 	this._show_current_logon();
@@ -265,6 +265,7 @@ var BSEAdminUI = Class.create({
 	  name: "confirm",
 	  label: "Confirm",
 	  type: "password",
+	  rules: "confirm:password",
 	  required: true
 	}
       ],
@@ -275,8 +276,8 @@ var BSEAdminUI = Class.create({
       onSubmit: function(dlg) {
 	this._log_entry("Sending change password");
 	this.api.change_password({
-	  oldpassword: dlg.values.old,
-	  newpassword: dlg.values.password,
+	  oldpassword: dlg.field("old").value(),
+	  newpassword: dlg.field("password").value(),
 	  onSuccess: function(dlg) {
 	    this._log_entry("Successfully changed password");
 	    dlg.close();

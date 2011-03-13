@@ -5,7 +5,7 @@ var BSEDialog = Class.create({
       {
 	modal: false,
 	title: "Missing title",
-	//validator: new BSEValidator,
+	validator: new BSEValidator,
 	top_class: "bse_dialog",
 	modal_class: "bse_modal",
 	title_class: "bse_title",
@@ -14,10 +14,14 @@ var BSEDialog = Class.create({
 	submit: "Submit",
 	cancel: false,
 	cancel_text: "Cancel",
-	onCancel: function(dlg) { dlg.close(); }
+	onCancel: function(dlg) { dlg.close(); },
+	dynamic_validation: true,
+	dynamic_interval: 1000
       },
       options);
     this._build();
+    if (this.options.dynamic_validation)
+      this._start_validation();
     this._show();
   },
   _reset_errors: function() {
@@ -30,9 +34,19 @@ var BSEDialog = Class.create({
   },
   field_errors: function(errors) {
     this._reset_errors();
-    for (var i in errors) {
-      this._fields.set_error(i, errors[i]);
+    if (errors.constructor == Hash) {
+      errors.each(function(entry) {
+	this._fields.set_error(entry.key, entry.value);
+      }.bind(this));
     }
+    else {
+      for (var i in errors) {
+	this._fields.set_error(i, errors[i]);
+      }
+    }
+  },
+  field: function(name) {
+    return this._values.get(name);
   },
   bse_error: function(error) {
     if (error.error_code == "FIELD") {
@@ -47,6 +61,8 @@ var BSEDialog = Class.create({
   },
   close: function() {
     this.top.remove();
+    if (this._interval)
+      window.clearInterval(this._interval);
   },
   _build: function() {
     var top;
@@ -104,22 +120,34 @@ var BSEDialog = Class.create({
   _add_fields: function(parent, fields) {
     this._fields = new BSEDialog.Fields(this.options);
     this._value_fields = this._fields.value_fields();
-    this._values = {};
+    this._values = new Hash();
     this._value_fields.each(function(field) {
-      this._values[field.name()] = field;
+      this._values.set(field.name(), field);
     }.bind(this));
     this._elements = this._fields.elements();
     this._elements.each(function(ele) {
       this.form.appendChild(ele);
     }.bind(this));
   },
+  _start_validation: function() {
+    if (this.options.validator) {
+      this._update_submit();
+      this._interval = window.setInterval(this._update_submit.bind(this), this.options.dynamic_interval);
+    }
+  },
+  _update_submit: function() {
+    var errors = new Hash();
+    this.submit.disabled = !this.options.validator.validate(this._values, errors);
+  },
   _on_submit: function(event) {
     event.stop();
-    var values = new Object;
-    for (var i in this._values) {
-      values[i] = this._values[i].value();
+    if (this.options.validator) {
+      var errors = new Hash();
+      if (!this.options.validator.validate(this._values, errors)) {
+	this.field_errors(errors);
+	return;
+      }
     }
-    this.values = values;
     this.options.onSubmit(this);
   },
   _on_cancel: function(event) {
@@ -171,12 +199,19 @@ BSEDialog.FieldTypes = {};
 // set_error(name, message) - set the error indicator for the named field
 // input() - return the underlying input tag (intended for use with file
 //      fields, many field types will not have a single input)
-// value() - return the value of the given field (only those returned by value_fields()
 // value_fields() return the fields that actually have a value.  For a field
 //   this is the child fields of the fieldset.  For value fields just return
 //   [ this ]
 // elements() returns the top-level elements for each field, for an input
 //   this is the wrapper div, for a field set, the fieldset itself
+//
+// Fields returned by value_fields() must also provide:
+// value() - return the value of the given field
+// description() - text description of the field
+// name() - name of the value
+// rules() - validation rules either as a ; separated string or an array
+// has_value() - returns true if the field has a non-empty value
+// required() - returns true if the field is marked required
 //
 BSEDialog.FieldTypes.Base = Class.create({
   _make_wrapper: function() {
@@ -217,6 +252,9 @@ BSEDialog.FieldTypes.Base = Class.create({
   description: function() {
     return null;
   },
+  required: function() {
+    return this.options.required;
+  },
   value_fields: function() {
     return [ this ];
   },
@@ -229,7 +267,9 @@ BSEDialog.FieldTypes.Base.defaults = {
   field_wrapper_class: "bse_field_wrapper",
   field_error_class: "bse_field_error",
   field_required_class: "bse_required",
-  field_invalid_class: "bse_invalid"
+  field_invalid_class: "bse_invalid",
+  rules: [],
+  required: false
 };
 
 BSEDialog.FieldTypes.input = Class.create(BSEDialog.FieldTypes.Base, {
@@ -238,7 +278,7 @@ BSEDialog.FieldTypes.input = Class.create(BSEDialog.FieldTypes.Base, {
     this._div = this._make_wrapper();
     this._input = this._make_input();
     this._label = this._make_label();
-    this._label.update(this.options.label);
+    this._label.update(this.description());
     this._error = this._make_error();
     
     this._div.appendChild(this._label);
@@ -263,8 +303,14 @@ BSEDialog.FieldTypes.input = Class.create(BSEDialog.FieldTypes.Base, {
   name: function() {
     return this.options.name;
   },
-  label: function() {
+  description: function() {
     return this.options.label || this.options.name;
+  },
+  rules: function() {
+    return this.options.rules;
+  },
+  has_value: function() {
+    return /\S/.test(this.value());
   },
   defaults: function() {
     return Object.extend(

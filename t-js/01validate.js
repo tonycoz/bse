@@ -19,7 +19,7 @@ function validation_check(test, validator, checker) {
 }
 
 document.observe("dom:loaded", function() {
-  plan(58);
+  plan(55);
   diag("Date validation");
   var date_val = new BSEValidator.Rules["date"]();
   ok(date_val, "make date validator");
@@ -141,45 +141,9 @@ document.observe("dom:loaded", function() {
     });
   }
 
-  // required validation
-  {
-    var req_val = new BSEValidator.Rules["required"]();
-    ok(req_val, "make required validator");
-    var tests =
-      [
-	{
-	  name: "empty",
-	  value: "",
-	  exception: true,
-	  message: /is required/
-	},
-	{
-	  name: "spaces",
-	  value: "  ",
-	  exception: true,
-	  message: /is required/
-	},
-	{
-	  name: "real value",
-	  value: "x",
-	  exception: false
-	},
-	{
-	  name: "real value with spaces",
-	  value: " x ",
-	  exception: false
-	}
-      ];
-    for (var i = 0; i < tests.length; ++i) {
-      validation_check(tests[i], req_val, function(a_value, test) {
-	is(a_value, test.value, "check result"+test.name);
-      });
-    }
-  }
-  
   var TestField = Class.create({
     initialize: function(options) {
-      this.options = options;
+      this.options = Object.extend({ required: false, rules: [] }, options);
     },
     value: function() {
       return this.options.value;
@@ -192,8 +156,55 @@ document.observe("dom:loaded", function() {
     },
     rules: function() {
       return this.options.rules;
+    },
+    has_value: function() {
+      return /\S/.test(this.value());
+    },
+    required: function() {
+      return this.options.required;
     }
   });
+
+  { // required
+    var fields = new Hash({
+      nr1: new TestField({
+	name: "nr1",
+	value: "",
+	description: "NotRequired1"
+      }),
+      nr2: new TestField({
+	name: "nr2",
+	value: " ",
+	description: "NotRequired2"
+      }),
+      r1: new TestField({
+	name: "r1",
+	value: "",
+	required: true,
+	description: "Required1"
+      }),
+      r2: new TestField({
+	name: "r2",
+	value: " ",
+	required: true,
+	description: "Required2"
+      }),
+      r3: new TestField({
+	name: "r3",
+	value: "x",
+	required: true,
+	description: "Required3"
+      })
+    });
+    var val = new BSEValidator();
+    var errors = new Hash();
+    ok(!val.validate(fields, errors), "should fail validation");
+    is(errors.get("nr1"), null, "no error for nr1");
+    is(errors.get("nr2"), null, "no error for nr2");
+    is(errors.get("r1"), "Required1 is required", "check error for r1");
+    is(errors.get("r2"), "Required2 is required", "check error for r2");
+    is(errors.get("r3"), null, "no error for r3");
+  }
 
   {
     // confirm
@@ -202,7 +213,8 @@ document.observe("dom:loaded", function() {
 	name: "password",
 	value: "abc",
 	description: "Password",
-	rules: "required",
+	rules: "",
+	required: true
       }),
       confirm: new TestField({
 	name: "confirm",
@@ -219,7 +231,7 @@ document.observe("dom:loaded", function() {
     });
     var val = new BSEValidator();
     var errors = new Hash();
-    val.validate(fields, {}, errors);
+    val.validate(fields, errors);
     is(errors.get("confirm"), null, "should be no error for confirm");
     is(errors.get("confirm2"), "Confirm2 must be the same as Password",
        "confirm2 should have an error");
