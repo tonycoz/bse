@@ -15,9 +15,12 @@ var BSEAPI = Class.create
        this.onException = function(e) {
 			    alert(e);
 			    };
-       this.onFailure = function(error) { alert(error.message); };
+       this.onFailure = function(error) {
+	   alert(error.message);
+       };
        this._load_csrfp(parameters);
        this.onConfig = parameters.onConfig;
+       delete parameters.onConfig;
        this._load_config(parameters);
      },
      _load_csrfp: function (param) {

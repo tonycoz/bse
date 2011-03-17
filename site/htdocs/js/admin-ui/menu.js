@@ -11,9 +11,7 @@ var BSEMenuUI = Class.create
   }
 });
 
-ui.menu_item({
+ui.register({
   name: "menu",
-  object: new BSEMenuUI,
-  text: "Main Menu",
-  order: "a"
+  object: new BSEMenuUI
 });

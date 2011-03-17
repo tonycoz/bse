@@ -16,66 +16,115 @@ var base_logon_fields =
 
 var BSEAdminUI = Class.create({
   initialize: function() {
-    this.handlers = new Hash();
-    this._scripts = [];
     this._log = [];
-    this._logged_on = false;
-    this._bind_static_events();
     this.api = new BSEAPI({onConfig: this._post_start.bind(this)});
-    this._messages = new BSEAdminUI.Messages("base_messages");
+    this._messages = new BSEAdminUI.Messages("message");
+    this._modules = new Hash();
+    this._loaded_scripts = new Hash();
   },
-  menu_item: function(options) {
-    options = Object.extend(Object.extend({}, BSEAdminUI.MenuDefaults), options);
-    this.handlers.set(
-      options.name,
-      { 
-	options: options,
-	key: options.name,
-	value: options.object,
-	started: false,
-	div: null,
-	suboptions: new Hash
-      });
+  register: function (options) {
+    var mod = this._modules.get(options.name);
+    if (mod) {
+      mod.object = options.object;
+      mod.options = Object.extend(
+	Object.extend({}, this.module_defaults()),
+	options);
+    }
+    else {
+      this._log_entry("Attempt to register unknown module " + options.name);
+    }
   },
-  submenu_item: function(options) {
-    options = Object.extend(Object.extend({}, BSEAdminUI.MenuDefaults), options);
-    this.handlers.get(options.parent).
-      set(options.name,
-	  {
-	    options: options,
-	    key: options.name,
-	    value: options.object,
-	    started: false,
-	    div: null
-	  });
+  module_defaults: function() {
+    return {
+      logon: true
+    };
   },
-  start: function() {},
-  _bind_static_events: function() {
-    $("base_logon").observe("click", this._do_logoff.bindAsEventListener(this));
-    $("base_change_password").observe("click", this._do_changepw.bindAsEventListener(this));
-  },
+  // menu_item: function(options) {
+  //   options = Object.extend(Object.extend({}, BSEAdminUI.MenuDefaults), options);
+  //   this.handlers.set(
+  //     options.name,
+  //     { 
+  // 	options: options,
+  // 	key: options.name,
+  // 	value: options.object,
+  // 	started: false,
+  // 	div: null,
+  // 	suboptions: new Hash
+  //     });
+  // },
+  // submenu_item: function(options) {
+  //   options = Object.extend(Object.extend({}, BSEAdminUI.MenuDefaults), options);
+  //   this.handlers.get(options.parent).
+  //     set(options.name,
+  // 	  {
+  // 	    options: options,
+  // 	    key: options.name,
+  // 	    value: options.object,
+  // 	    started: false,
+  // 	    div: null
+  // 	  });
+  // },
+  //start: function() {},
+  //_bind_static_events: function() {
+  //  $("base_logon").observe("click", this._do_logoff.bindAsEventListener(this));
+  //  $("base_change_password").observe("click", this._do_changepw.bindAsEventListener(this));
+  //},
   _post_start: function() {
-    this._load_scripts();
-  },
-  _finish_load: function() {
-    this._log_entry("Scripts loaded, proceeding");
-    this._order_handlers();
-    this._load_menu();
+    // each line is 
+    // text;script;sortorder
+    var ui_conf = this.api.conf.admin_ui;
+    var menu_items = [];
+    for (var i in ui_conf) {
+      var entry = ui_conf[i].split(/;/);
+      menu_items.push({
+	id: "base_menu_item_" + i,
+	text: entry[0],
+	_order: entry[2],
+	onClick: this._select.bind(this, { select: i, rest: ""})
+      });
+      this._modules.set(i, {
+	title: entry[0],
+	script: entry[1],
+	name: i,
+	loaded: false,
+	div: null,
+	object: null
+      });
+    }
+    menu_items.sort(function(a, b) {
+      return a._order < b._order ? -1 : a._order > b._order ? 1 : 0;
+    });
+
+    this._menu_items = menu_items;
+    this._main_menu = new BSEMenu({
+      title: menu_items[0].text,
+      current: true,
+      items: menu_items
+    });
+    $("nav").appendChild(this._main_menu.element());
+
     var sel = this._parse_frag(window.location.hash);
     this._select(sel);
-    $("base_wrapper").removeClassName("hide");
-    $("base_loading").style.display = "none";
   },
-  _load_scripts: function() {
-    var ui_conf = this.api.conf.admin_ui;
-    var to_load = new Array;
-    for (var i in ui_conf) {
-      to_load.push(ui_conf[i]);
-    }
-    this._log_entry("Loading configured scripts " + to_load.join(" "));
-    new BSELoader({ scripts: to_load,
-		    onLoaded: this._finish_load.bind(this) });
-  },
+  // _finish_load: function() {
+  //   this._log_entry("Scripts loaded, proceeding");
+  //   this._order_handlers();
+  //   this._load_menu();
+  //   var sel = this._parse_frag(window.location.hash);
+  //   this._select(sel);
+  //   $("base_wrapper").removeClassName("hide");
+  //   $("base_loading").style.display = "none";
+  // },
+  // _load_scripts: function() {
+  //   var ui_conf = this.api.conf.admin_ui;
+  //   var to_load = new Array;
+  //   for (var i in ui_conf) {
+  //     to_load.push(ui_conf[i]);
+  //   }
+  //   this._log_entry("Loading configured scripts " + to_load.join(" "));
+  //   new BSELoader({ scripts: to_load,
+  // 		    onLoaded: this._finish_load.bind(this) });
+  // },
   load_css: function(css) {
     css.each(function (e) {
       var sty = new Element("link", { rel: "stylesheet", type: "text/css", href: "e" });
@@ -83,62 +132,74 @@ var BSEAdminUI = Class.create({
       head.appendChild(scr);
     });
   },
-  _order_handlers: function() {
-    // make an ordered list of the registered handlers
-    // first a name / object list
-    var list = this.handlers.values();
-    list.sort(
-      function (a, b) {
-	var aord = a.options.order;
-	var bord = b.options.order;
-	return aord < bord ? -1 : aord > bord ? 1 : 0;
-      });
-    this.ordered = list;
-  },
-  _load_menu: function() {
-    var menu = $("base_menu");
-    menu.innerHTML = "";
-    this.ordered.each(
-      function(menu, e) {
-	var a = new Element("a", { href: "#" + e.key, id: "base_menu_item_"+ e.key });
-	a.update(e.options.text);
-	a.observe("click", function(e, event) {
-	  this._select({ select: e, rest: ""});
-	  event.stop();
-	  return false;
-	}.bind(this, e));
-	menu.appendChild(a);
-      }.bind(this, menu)
-    );
-  },
+  // _order_handlers: function() {
+  //   // make an ordered list of the registered handlers
+  //   // first a name / object list
+  //   var list = this.handlers.values();
+  //   list.sort(
+  //     function (a, b) {
+  // 	var aord = a.options.order;
+  // 	var bord = b.options.order;
+  // 	return aord < bord ? -1 : aord > bord ? 1 : 0;
+  //     });
+  //   this.ordered = list;
+  // },
+  // _load_menu: function() {
+  //   var menu = $("base_menu");
+  //   menu.innerHTML = "";
+  //   this.ordered.each(
+  //     function(menu, e) {
+  // 	var a = new Element("a", { href: "#" + e.key, id: "base_menu_item_"+ e.key });
+  // 	a.update(e.options.text);
+  // 	a.observe("click", function(e, event) {
+  // 	  this._select({ select: e, rest: ""});
+  // 	  event.stop();
+  // 	  return false;
+  // 	}.bind(this, e));
+  // 	menu.appendChild(a);
+  //     }.bind(this, menu)
+  //   );
+  // },
   // parse location (or the default "menu") to find something to display
   _parse_frag: function(frag) {
     if (!frag) frag = "#menu";
     frag = frag.replace(/^\#/, '');
-    var selname = "";
-    var rest = "";
-    var sel = null;
-    for (var i = 0; i < this.ordered.length; ++i) {
-      var e = this.ordered[i];
-      if (frag.substr(0, e.key.length) == e.key
-	  && /^(\/|$)/.match(frag.substr(e.key.length))
-	  && e.key.length > selname.length) {
-	sel = e;
-	rest = frag.substr(e.key.length);
-	selname = e.key;
-      }
+    var m = /^([a-z0-9]+)(?:\/(.*))$/.exec(frag);
+    if (m &&
+	this._modules.get(m[1]) != null) {
+      var rest = m[2] == null ? "" : m[2];
+
+      return { select: m[1], rest: rest };
     }
-    if (sel == null) {
-      this._log_entry("No entry found for " + frag);
-      sel = this.ordered[0];
-      rest = "";
+    else {
+      return { select: "menu", rest: "" };
     }
-    return { select: sel, rest: rest };
   },
   // make something active, requiring a logon if the view 
   // requires it, which most do
   _select: function(what) {
-    if (what.select.options.logon
+    var mod = this._modules.get(what.select);
+    if (mod == null) {
+      this._log_entry("attempt to select unknown " + what.select);
+      return;
+    }
+    if (!mod.loaded) {
+      var loader = new BSELoader({
+	scripts: [ mod.script ],
+	onLoaded: function(what, mod) {
+	  mod.loaded = true;
+	  if (mod.object) {
+	    this._select(what);
+	  }
+	  else {
+	    this._log_entry("Loaded " + what.select + " but no object registered");
+	  }
+	}.bind(this, what, mod)
+      });
+    }
+    if (!mod.object)
+      return;
+    if (mod.options.logon
 	&& this.api.conf.access_control != 0) {
       if (this._userinfo) {
 	if (this._userinfo.user) {
@@ -170,9 +231,16 @@ var BSEAdminUI = Class.create({
   _do_logon_and_select: function(what) {
     new BSEDialog({
       onSubmit: this._on_logon_submit.bind(this, what),
-      fields: base_logon_fields,
+      fields: [
+	{
+	  type: "frameset",
+	  legend: "Logon",
+	  submit: "Logon",
+	  fields: base_logon_fields,
+	},
+      ],
       modal: true,
-      title: "Logon"
+      title: "Administration"
     });
   },
   _on_logon_submit: function(what, dlg) {
@@ -195,20 +263,21 @@ var BSEAdminUI = Class.create({
   _do_select: function(what) {
     if (this.current)
       this.current.div.style.display = "none";
-    if (what.select.started) {
-      what.select.value.display(this, what.select.div);
-      what.select.div.style.display = "block";
+    var mod = this._modules.get(what.select);
+    if (mod.started) {
+      mod.object.display(this, what.select.div);
+      mod.div.style.display = "block";
     }
     else {
-      var id = what.select.key.replace(/\W+/g, "-");
-      what.select.div = new Element("div", { id: id });
-      what.select.value.start(this, what.select.div, what.rest);
-      $("base_work").appendChild(what.select.div);
-      what.select.started = true;
-      this._log_entry("Started "+what.select.key);
+      var id = mod.name.replace(/\W+/g, "-");
+      mod.div = new Element("div", { id: id });
+      mod.object.start(this, mod.div, what.rest);
+      $("base_work").appendChild(mod.div);
+      mod.started = true;
+      this._log_entry("Started "+mod.title);
     }
     this.current = what.select;
-    $("base_menu_current").update(this.current.options.text);
+    this._main_menu.setText(mod.title);
   },
   _log_entry: function(text) {
     var now = new Date;
@@ -354,39 +423,39 @@ BSEAdminUI.Messages = Class.create({
   }
 });
 
-var BSEContentUI = Class.create
-(BSEUIBase,
-{
-  start: function(ui, div, args) {
-    div.innerHTML = "One day I'll do something";
-  },
-    display: function(ui, div) {
-    },
-  needed_content: function(ui, args) {
-    return { menu: "/admin/ui/menu.html" };
-  }
-});
+// var BSEContentUI = Class.create
+// (BSEUIBase,
+// {
+//   start: function(ui, div, args) {
+//     div.innerHTML = "One day I'll do something";
+//   },
+//     display: function(ui, div) {
+//     },
+//   needed_content: function(ui, args) {
+//     return { menu: "/admin/ui/menu.html" };
+//   }
+// });
 
-document.observe("dom:loaded", function() {
-  var handler = new BSEContentUI;
-  ui.menu_item({
-    name: "content",
-    object: handler,
-    text: "Content",
-    order: "b"
-  });
-  ui.menu_item({
-    name: "users",
-    object: handler,
-    text: "Users",
-    order: "c"
-  });
-  ui.menu_item({
-    name: "system",
-    object: handler,
-    text: "System",
-    order: "d"
-  });
+// document.observe("dom:loaded", function() {
+//   var handler = new BSEContentUI;
+//   ui.menu_item({
+//     name: "content",
+//     object: handler,
+//     text: "Content",
+//     order: "b"
+//   });
+//   ui.menu_item({
+//     name: "users",
+//     object: handler,
+//     text: "Users",
+//     order: "c"
+//   });
+//   ui.menu_item({
+//     name: "system",
+//     object: handler,
+//     text: "System",
+//     order: "d"
+//   });
   
-});
+// });
 

@@ -1,24 +1,7 @@
 var BSEDialog = Class.create({
   initialize: function(options) {
-    this.options = Object.extend
-    (
-      {
-	modal: false,
-	title: "Missing title",
-	validator: new BSEValidator,
-	top_class: "bse_dialog",
-	modal_class: "bse_modal",
-	title_class: "bse_title",
-	error_class: "bse_error",
-	submit_wrapper_class: "bse_submit_wrapper",
-	submit: "Submit",
-	cancel: false,
-	cancel_text: "Cancel",
-	onCancel: function(dlg) { dlg.close(); },
-	dynamic_validation: true,
-	dynamic_interval: 1000
-      },
-      options);
+    this.options = Object.extend(
+      Object.extend({}, this.defaults()), options);
     this._build();
     if (this.options.dynamic_validation)
       this._start_validation();
@@ -76,43 +59,79 @@ var BSEDialog = Class.create({
       top = this.div;
     }
     this.top = top;
-    this.title = new Element("div", { className: this.options.title_class });
-    this.title.update(this.options.title);
-    this.div.appendChild(this.title);
-    this._error = new Element("div", { className: this.options.error_class });
-    this._error.style.display = "none";
-    this.div.appendChild(this.title);
-    this.div.appendChild(this._error);
     this.form = new Element("form", { action: "#" });
     this.form.observe("submit", this._on_submit.bind(this));
     this.div.appendChild(this.form);
+
+    var parent;
+    if (this.options.fieldset_wrapper) {
+      var fs = new Element("fieldset");
+      this.title = new Element("legend");
+      this.title.update(this.options.title);
+      fs.appendChild(this.title);
+      this.form.appendChild(fs);
+      parent = fs;
+    }
+    else {
+      parent = this.form;
+      this.title = new Element("div", { className: this.options.title_class });
+      this.title.update(this.options.title);
+      this.div.appendChild(this.title);
+    }
+    this._error = new Element("div", { className: this.options.error_class });
+    this._error.style.display = "none";
+    parent.appendChild(this._error);
     this.field_error_divs = {};
     this.field_wrapper_divs = {};
     this.fields = {};
-    this._add_fields(this.form, this.options.fields);
-    var sub_wrapper = new Element("div", { className: this.options.submit_wrapper_class });
+    this._add_fields(parent, this.options.fields);
+    var sub_wrapper = new Element("p", { className: this.options.submit_wrapper_class });
     if (this.options.cancel) {
-      this.cancel = new Element("input", { type: "submit", value: this.options.cancel_text, className: "cancel" });
+      this.cancel = this._make_cancel();
       this.cancel.observe("click", this._on_cancel.bindAsEventListener(this));
       sub_wrapper.appendChild(this.cancel);
     }
-    this.submit = new Element("input", { type: "submit", value: this.options.submit });
+    this.submit = this._make_submit();
     sub_wrapper.appendChild(this.submit);
     this.form.appendChild(sub_wrapper);
+  },
+  _make_cancel: function() {
+    var cancel = new Element("button", {
+      type: "button",
+      className: this.options.cancel_base_class
+    });
+    if (this.options.cancel_class)
+      cancel.addClassName(this.options.cancel_class);
+    cancel.update(this.options.cancel_text);
+
+    return cancel;
+  },
+  _make_submit: function() {
+    var submit = new Element("button", {
+      type: "submit",
+      className: this.options.submit_base_class
+    });
+    if (this.options.submit_class)
+      submit.addClassName(this.options.submit_class);
+    submit.update(this.options.submit);
+
+    return submit;
   },
   _show: function() {
     var body = $$("body")[0];
     body.appendChild(this.top);
-    var top_px = (document.viewport.getHeight() - this.div.getHeight()) / 2;
-    if (top_px < 20) {
-      this.div.style.overflowX = "scroll";
-      this.div.style.top = "10px";
-      this.div.style.height = (this.viewport.getHeight()-20) + "px";
+    if (this.options.position) {
+      var top_px = (document.viewport.getHeight() - this.div.getHeight()) / 2;
+      if (top_px < 20) {
+	this.div.style.overflowX = "scroll";
+	this.div.style.top = "10px";
+	this.div.style.height = (this.viewport.getHeight()-20) + "px";
+      }
+      else {
+	this.div.style.top = top_px + "px";
+      }
+      this.div.style.left = (document.viewport.getWidth() - this.div.getWidth()) / 2 + "px";
     }
-    else {
-      this.div.style.top = top_px + "px";
-    }
-    this.div.style.left = (document.viewport.getWidth() - this.div.getWidth()) / 2 + "px";
     if (this.wrapper) {
       this.wrapper.style.height = "100%";
     }
@@ -125,9 +144,9 @@ var BSEDialog = Class.create({
       this._values.set(field.name(), field);
     }.bind(this));
     this._elements = this._fields.elements();
-    this._elements.each(function(ele) {
-      this.form.appendChild(ele);
-    }.bind(this));
+    this._elements.each(function(parent, ele) {
+      parent.appendChild(ele);
+    }.bind(this, parent));
   },
   _start_validation: function() {
     if (this.options.validator) {
@@ -153,8 +172,33 @@ var BSEDialog = Class.create({
   _on_cancel: function(event) {
     event.stop();
     this.options.onCancel(this);
+  },
+  defaults: function() {
+    return BSEDialog.defaults;
   }
 });
+
+BSEDialog.defaults = {
+  modal: false,
+  title: "Missing title",
+  validator: new BSEValidator,
+  top_class: "window dialog",
+  modal_class: "bse_modal",
+  title_class: "bse_title",
+  error_class: "bse_error",
+  submit_wrapper_class: "buttons",
+  submit: "Submit",
+  cancel: false,
+  cancel_text: "Cancel",
+  onCancel: function(dlg) { dlg.close(); },
+  dynamic_validation: true,
+  dynamic_interval: 1000,
+  position: false,
+  fieldset_wrapper: true,
+  cancel_base_class: "button gray bigrounded cancel",
+  submit_base_class: "button green bigrounded"
+};
+
 
 // wraps one or more fields
 //
@@ -276,13 +320,15 @@ BSEDialog.FieldTypes.input = Class.create(BSEDialog.FieldTypes.Base, {
   initialize: function(options) {
     this.options = Object.extend(Object.extend({}, this.defaults()), options);
     this._div = this._make_wrapper();
+    var span = new Element("span");
     this._input = this._make_input();
     this._label = this._make_label();
     this._label.update(this.description());
     this._error = this._make_error();
     
+    span.appendChild(this._input);
     this._div.appendChild(this._label);
-    this._div.appendChild(this._input);
+    this._div.appendChild(span);
     this._div.appendChild(this._error);
   },
   _make_input: function() {
@@ -367,13 +413,16 @@ BSEDialog.FieldTypes.frameset = Class.create(BSEDialog.FieldTypes.Base, {
   initialize: function(options) {
     this.options = Object.extend(Object.extend({}, BSEDialog.FieldTypes.frameset.defaults), options);
     this._element = new Element("fieldset");
-    if (f.label) {
+    if (this.options.legend) {
       var legend = new Element("legend")
-      legend.update(f.label);
+      legend.update(this.options.legend);
       this._element.appendChild(legend);
     }
     
     this._fields = new BSEDialog.Fields(options);
+    this._fields.elements().each(function(ele) {
+      this._element.appendChild(ele);
+    }.bind(this));
   },
   value_fields: function() {
     return this._fields.value_fields();
@@ -383,6 +432,9 @@ BSEDialog.FieldTypes.frameset = Class.create(BSEDialog.FieldTypes.Base, {
   },
   set_error: function(name, message) {
     this._fields.set_error(name, message);
+  },
+  elements: function() {
+    return [ this._element ];
   }
 });
 
