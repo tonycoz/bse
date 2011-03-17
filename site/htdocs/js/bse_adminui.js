@@ -407,8 +407,7 @@ var BSEAdminUI = Class.create({
 var ui;
 
 var BSEUIBase = Class.create({
-  order: function() { alert("Missing order implmentation"); },
-  logon: function() { return true; }
+  undisplay: function(ui, div) {}
 });
 
 BSEAdminUI.MenuDefaults =
