@@ -425,25 +425,16 @@ document.observe(
 BSEAdminUI.Messages = Class.create({
   initialize: function(div) {
     this.div = $(div);
+    this.div.style.display = "none";
   },
   message: function(text) {
-    var msg_div = new Element("div", { style: "display: none" });
-    var real_div = new Element("div", { className: "message" });
-    real_div.update(text);
-    msg_div.appendChild(real_div);
-    this.div.appendChild(msg_div);
-    Effect.BlindDown(msg_div);
-    setTimeout(this._msg_done.bind(this, msg_div),
+    this.div.update(text);
+    Effect.Appear(this.div);
+    setTimeout(this._msg_done.bind(this),
 	       5000);
   },
-  _msg_done: function(msg_div) {
-    Effect.BlindUp(
-      msg_div,
-      {
-       afterFinish: function(msg_div) {
-	 msg_div.remove();
-       }.bind(this, msg_div)
-     });
+  _msg_done: function() {
+    Effect.Fade(this.div);
   }
 });
 
