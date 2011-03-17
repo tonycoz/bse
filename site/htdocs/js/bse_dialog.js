@@ -48,7 +48,9 @@ var BSEDialog = Class.create({
     }
   },
   close: function() {
-    this.top.remove();
+    this.div.remove();
+    if (this.wrapper)
+      this.wrapper.remove();
     if (this._interval)
       window.clearInterval(this._interval);
   },
@@ -124,7 +126,9 @@ var BSEDialog = Class.create({
   },
   _show: function() {
     var body = $$("body")[0];
-    body.insertBefore(this.top, body.firstChild);
+    body.insertBefore(this.div, body.firstChild);
+    if (this.wrapper)
+      body.insertBefore(this.wrapper, body.firstChild);
     if (this.options.position) {
       var top_px = (document.viewport.getHeight() - this.div.getHeight()) / 2;
       if (top_px < 20) {
@@ -137,9 +141,9 @@ var BSEDialog = Class.create({
       }
       this.div.style.left = (document.viewport.getWidth() - this.div.getWidth()) / 2 + "px";
     }
-    if (this.wrapper) {
-      this.wrapper.style.height = "100%";
-    }
+    //if (this.wrapper) {
+    //  this.wrapper.style.height = "100%";
+    //}
   },
   _add_fields: function(parent, fields) {
     this._fields = new BSEDialog.Fields(this.options);
