@@ -14,6 +14,7 @@ var BSEDialog = Class.create({
     this._reset_errors();
     this._error.update(msg);
     this._error.style.display = "block";
+    this._error_animate();
   },
   field_errors: function(errors) {
     this._reset_errors();
@@ -27,6 +28,10 @@ var BSEDialog = Class.create({
 	this._fields.set_error(i, errors[i]);
       }
     }
+    this._error_animate();
+  },
+  _error_animate: function() {
+    this.options.error_animate(this, this.div);
   },
   field: function(name) {
     return this._values.get(name);
@@ -119,7 +124,7 @@ var BSEDialog = Class.create({
   },
   _show: function() {
     var body = $$("body")[0];
-    body.appendChild(this.top);
+    body.insertBefore(this.top, body.firstChild);
     if (this.options.position) {
       var top_px = (document.viewport.getHeight() - this.div.getHeight()) / 2;
       if (top_px < 20) {
@@ -156,7 +161,7 @@ var BSEDialog = Class.create({
   },
   _update_submit: function() {
     var errors = new Hash();
-    this.submit.disabled = !this.options.validator.validate(this._values, errors);
+    this.submit.disabled = this.options.validator.validate(this._values, errors) ? "" : "disabled";
   },
   _on_submit: function(event) {
     event.stop();
@@ -195,8 +200,13 @@ BSEDialog.defaults = {
   dynamic_interval: 1000,
   position: false,
   fieldset_wrapper: true,
-  cancel_base_class: "button gray bigrounded cancel",
-  submit_base_class: "button green bigrounded"
+  cancel_base_class: "button bigrounded cancel",
+  cancel_class: "gray",
+  submit_base_class: "button bigrounded",
+  submit_class: "green",
+  error_animate: function(dlg, div) {
+    Effect.Shake(div);
+  }
 };
 
 
@@ -304,6 +314,12 @@ BSEDialog.FieldTypes.Base = Class.create({
   },
   defaults: function() {
     return BSEDialog.FieldTypes.Base.defaults;
+  },
+  set_object: function(object) {
+    this._object = object;
+  },
+  object: function() {
+    return this._object;
   }
 });
 

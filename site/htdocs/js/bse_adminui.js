@@ -70,6 +70,8 @@ var BSEAdminUI = Class.create({
   //  $("base_change_password").observe("click", this._do_changepw.bindAsEventListener(this));
   //},
   _post_start: function() {
+    if (this.api.conf.access_control != 0)
+      this._make_logon_menu();
     // each line is 
     // text;script;sortorder
     var ui_conf = this.api.conf.admin_ui;
@@ -105,6 +107,25 @@ var BSEAdminUI = Class.create({
 
     var sel = this._parse_frag(window.location.hash);
     this._select(sel);
+  },
+  _make_logon_menu: function() {
+    this._logon_menu = new BSEMenu({
+      title: "(none)",
+      current: true,
+      items: [
+	{
+	  id: "base_menu_user_logout",
+	  text: "Logoff",
+	  onClick: this._do_logoff.bind(this)
+	},
+	{
+	  id: "base_menu_user_changepw",
+	  text: "Change password",
+	  onClick: this._do_changepw.bind(this)
+	}
+      ]
+    });
+    $("nav").appendChild(this._logon_menu.element());
   },
   // _finish_load: function() {
   //   this._log_entry("Scripts loaded, proceeding");
@@ -228,6 +249,13 @@ var BSEAdminUI = Class.create({
       this._do_select(what);
     }
   },
+  _select_none: function() {
+    if (this.current) {
+      this.current.object.undisplay(this, this.current.div);
+      this.current.div.style.display = "none";
+      this.current = null;
+    }
+  },
   _do_logon_and_select: function(what) {
     new BSEDialog({
       onSubmit: this._on_logon_submit.bind(this, what),
@@ -235,12 +263,13 @@ var BSEAdminUI = Class.create({
 	{
 	  type: "frameset",
 	  legend: "Logon",
-	  submit: "Logon",
 	  fields: base_logon_fields,
 	},
       ],
       modal: true,
-      title: "Administration"
+      title: "Administration",
+      submit: "Logon",
+      submit_class: "blue"
     });
   },
   _on_logon_submit: function(what, dlg) {
@@ -270,13 +299,13 @@ var BSEAdminUI = Class.create({
     }
     else {
       var id = mod.name.replace(/\W+/g, "-");
-      mod.div = new Element("div", { id: id });
+      mod.div = new Element("div", { id: "app_"+id });
       mod.object.start(this, mod.div, what.rest);
       $("base_work").appendChild(mod.div);
       mod.started = true;
       this._log_entry("Started "+mod.title);
     }
-    this.current = what.select;
+    this.current = mod;
     this._main_menu.setText(mod.title);
   },
   _log_entry: function(text) {
@@ -286,26 +315,22 @@ var BSEAdminUI = Class.create({
       this._log.shift();
   },
   _show_current_logon: function() {
-    var div = $("base_logon");
     if (this._userinfo.user) {
-      div.update("Logoff " + this._userinfo.user.logon);
-      div.style.display = "block";
+      this._logon_menu.setText(this._userinfo.user.logon);
     }
     else {
-      div.update("");
-      div.style.display = "none";
+      this._logon_menu.setText("(none)");
     }
   },
   _do_logoff: function(event) {
-    event.stop();
-    this._select(this._parse_frag("#menu"));
-    $("base_logon").update("Logging off...");
+    //event.stop();
+    //$("base_logon").update("Logging off...");
+    this._select_none();
     this.api.logoff({
       onSuccess: function() {
-	var div = $("base_logon");
-	div.update("");
-	div.style.display = "none";
 	this._userinfo.user = null;
+	this._show_current_logon();
+	this._select(this._parse_frag("#menu"));
       }.bind(this),
       onFailure: function(result) {
 	this.alert(result.msg);
@@ -313,28 +338,28 @@ var BSEAdminUI = Class.create({
     });
   },
   _do_changepw: function(event) {
-    event.stop();
+    //event.stop();
     if (!this._userinfo.user)
       return;
     new BSEDialog({
       fields: [
 	{
-	  name: "old",
-	  label: "Current Password",
+	  name: "oldpassword",
+	  label: "Old Password",
 	  type: "password",
 	  required: true
 	},
 	{
-	  name: "password",
+	  name: "newpassword",
 	  label: "New Password",
 	  type: "password",
 	  required: true
 	},
 	{
 	  name: "confirm",
-	  label: "Confirm",
+	  label: "Confirm New Password",
 	  type: "password",
-	  rules: "confirm:password",
+	  rules: "confirm:newpassword",
 	  required: true
 	}
       ],
@@ -345,8 +370,8 @@ var BSEAdminUI = Class.create({
       onSubmit: function(dlg) {
 	this._log_entry("Sending change password");
 	this.api.change_password({
-	  oldpassword: dlg.field("old").value(),
-	  newpassword: dlg.field("password").value(),
+	  oldpassword: dlg.field("oldpassword").value(),
+	  newpassword: dlg.field("newpassword").value(),
 	  onSuccess: function(dlg) {
 	    this._log_entry("Successfully changed password");
 	    dlg.close();

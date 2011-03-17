@@ -1,5 +1,5 @@
 /* functions not covered by Adrian's base classes */
-bse_modal {
+.bse_modal {
     position: fixed;
     top: 0;
     right: 0;
@@ -8,8 +8,13 @@ bse_modal {
     margin: 0;
     padding: 0;
     background-color: rgba(0,0,0,0.75);
-    z-index: 2;
+    z-index: 3;
     overflow: visible;
     height: 100%;
     width: 100%;
+}
+
+#base_work.preview {
+    top: 6em;
+    color: #FFF;
 }

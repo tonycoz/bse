@@ -17,7 +17,6 @@ var BSEDebugUI = Class.create
   needed_content: function(ui, args) {
     return { };
   },
-  logon: function() { return false; },
   _load_log: function(ui) {
     this._log.innerHTML = "";
     for (var i = 0; i < ui._log.length; ++i) {
@@ -28,10 +27,8 @@ var BSEDebugUI = Class.create
   }
 });
 
-ui.menu_item({
+ui.register({
   name: "debug",
   object: new BSEDebugUI(),
-  text: "Debug",
-  order: "zzzz",
   logon: false
 });
