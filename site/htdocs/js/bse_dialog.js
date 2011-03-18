@@ -13,7 +13,7 @@ var BSEDialog = Class.create({
   error: function(msg) {
     this._reset_errors();
     this._error.update(msg);
-    this._error.style.display = "block";
+    this._error.show();
     this._error_animate();
   },
   field_errors: function(errors) {
@@ -86,7 +86,7 @@ var BSEDialog = Class.create({
       this.div.appendChild(this.title);
     }
     this._error = new Element("div", { className: this.options.error_class });
-    this._error.style.display = "none";
+    this._error.hide();
     parent.appendChild(this._error);
     this.field_error_divs = {};
     this.field_wrapper_divs = {};
@@ -284,7 +284,7 @@ BSEDialog.FieldTypes.Base = Class.create({
   },
   _make_error: function() {
     var err_div = new Element("div", { className: this.options.field_error_class });
-    err_div.style.display = "none";
+    err_div.hide();
     return err_div;
   },
   name: function() {
@@ -292,14 +292,14 @@ BSEDialog.FieldTypes.Base = Class.create({
   },
   clear_error: function() {
     this._error.update("");
-    this._error.style.display = "none";
+    this._error.hide();
     this.elements().each(function(ele) {
       ele.removeClassName(this.options.field_invalid_class);
     }.bind(this));
   },
   set_error: function(name, message) {
     this._error.update(message);
-    this._error.style.display = "block";
+    this._error.show();
     this.elements().each(function(ele) {
       ele.addClassName(this.options.field_invalid_class);
     }.bind(this));
