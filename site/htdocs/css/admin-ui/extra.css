@@ -1,4 +1,6 @@
-/* functions not covered by Adrian's base classes */
+/* functions not covered by Adrian's base classes.
+   I don't want to modify the original, since he'll make refinements.
+*/
 .bse_modal {
     position: fixed;
     top: 0;
@@ -16,4 +18,14 @@
 
 #base_work {
     color: #FFF;
+}
+
+.buttons>span span.spinner {
+  background: transparent url(/images/admin/ui/spinner.gif) no-repeat 100% 50%;
+}
+
+.bse_field_error {
+  margin-top: 2em;
+  margin-left: -25em;
+  color: #F00;
 }
