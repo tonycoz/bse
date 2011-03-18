@@ -54,6 +54,12 @@ var BSEDialog = Class.create({
     if (this._interval)
       window.clearInterval(this._interval);
   },
+  busy: function() {
+    this._spinner.show();
+  },
+  unbusy: function() {
+    this._spinner.hide();
+  },
   _build: function() {
     var top;
     this.div = new Element("div", { className: this.options.top_class });
@@ -92,7 +98,12 @@ var BSEDialog = Class.create({
     this.field_wrapper_divs = {};
     this.fields = {};
     this._add_fields(parent, this.options.fields);
-    var sub_wrapper = new Element("p", { className: this.options.submit_wrapper_class });
+    var button_p = new Element("p", { className: this.options.submit_wrapper_class });
+    var sub_wrapper = new Element("span");
+    this._spinner = new Element("span", {className: this.options.spinner_class });
+    this._spinner.hide();
+    this._spinner.update(this.options.spinner_text);
+    sub_wrapper.appendChild(this._spinner);
     if (this.options.cancel) {
       this.cancel = this._make_cancel();
       this.cancel.observe("click", this._on_cancel.bindAsEventListener(this));
@@ -100,7 +111,8 @@ var BSEDialog = Class.create({
     }
     this.submit = this._make_submit();
     sub_wrapper.appendChild(this.submit);
-    this.form.appendChild(sub_wrapper);
+    button_p.appendChild(sub_wrapper);
+    this.form.appendChild(button_p);
   },
   _make_cancel: function() {
     var cancel = new Element("button", {
@@ -210,7 +222,9 @@ BSEDialog.defaults = {
   submit_class: "green",
   error_animate: function(dlg, div) {
     Effect.Shake(div);
-  }
+  },
+  spinner_class: "spinner",
+  spinner_text: "Busy"
 };
 
 
