@@ -227,8 +227,8 @@ BSEDialog.Fields = Class.create({
       var cls = BSEDialog.FieldTypes[field.type || "text"];
       var fieldobj = new cls(field);
       fieldobj.value_fields().each(function(field) {
-	this._fields[fieldobj.name()] = fieldobj;
-      }.bind(this, fieldobj));
+	this._fields[field.name()] = field;
+      }.bind(this));
       this._value_fields = this._value_fields.concat(fieldobj.value_fields());
       this._elements = this._elements.concat(fieldobj.elements());
     }.bind(this));
