@@ -429,9 +429,9 @@ BSEDialog.FieldTypes.radio = Class.create(BSEDialog.FieldTypes.Base, {
   }
 });
 
-BSEDialog.FieldTypes.frameset = Class.create(BSEDialog.FieldTypes.Base, {
+BSEDialog.FieldTypes.fieldset = Class.create(BSEDialog.FieldTypes.Base, {
   initialize: function(options) {
-    this.options = Object.extend(Object.extend({}, BSEDialog.FieldTypes.frameset.defaults), options);
+    this.options = Object.extend(Object.extend({}, BSEDialog.FieldTypes.fieldset.defaults), options);
     this._element = new Element("fieldset");
     if (this.options.legend) {
       var legend = new Element("legend")
@@ -457,6 +457,9 @@ BSEDialog.FieldTypes.frameset = Class.create(BSEDialog.FieldTypes.Base, {
     return [ this._element ];
   }
 });
+
+BSEDialog.FieldTypes.fieldset.defaults = {
+};
 
 BSEDialog.FieldTypes.help = Class.create(BSEDialog.FieldTypes.Base, {
   initialize: function(options) {
