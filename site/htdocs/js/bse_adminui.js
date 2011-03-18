@@ -39,6 +39,18 @@ var BSEAdminUI = Class.create({
       logon: true
     };
   },
+  add_menu: function(name, menu) {
+    var mod = this._modules.get(name);
+    if (mod) {
+      mod.menus.push(menu);
+      if (this.current === mod) {
+	$("nav").appendChild(menu.element());
+      }
+    }
+    else {
+      this._log_entry("Attempt to register menu with unknown module " + name);
+    }
+  },
   // menu_item: function(options) {
   //   options = Object.extend(Object.extend({}, BSEAdminUI.MenuDefaults), options);
   //   this.handlers.set(
@@ -90,7 +102,8 @@ var BSEAdminUI = Class.create({
 	name: i,
 	loaded: false,
 	div: null,
-	object: null
+	object: null,
+	menus: []
       });
     }
     menu_items.sort(function(a, b) {
@@ -251,6 +264,9 @@ var BSEAdminUI = Class.create({
   },
   _select_none: function() {
     if (this.current) {
+      this.current.menus.each(function(menu) {
+	menu.element().remove();
+      });
       this.current.object.undisplay(this, this.current.div);
       this.current.div.style.display = "none";
       this.current = null;
@@ -261,7 +277,7 @@ var BSEAdminUI = Class.create({
       onSubmit: this._on_logon_submit.bind(this, what),
       fields: [
 	{
-	  type: "frameset",
+	  type: "fieldset",
 	  legend: "Logon",
 	  fields: base_logon_fields,
 	},
@@ -291,7 +307,7 @@ var BSEAdminUI = Class.create({
   // inner make something active
   _do_select: function(what) {
     if (this.current)
-      this.current.div.style.display = "none";
+      this._select_none();
     var mod = this._modules.get(what.select);
     if (mod.started) {
       mod.object.display(this, what.select.div);
@@ -305,6 +321,9 @@ var BSEAdminUI = Class.create({
       mod.started = true;
       this._log_entry("Started "+mod.title);
     }
+    mod.menus.each(function(menu) {
+      $("nav").appendChild(menu.element());
+    });
     this.current = mod;
     this._main_menu.setText(mod.title);
   },
@@ -401,6 +420,10 @@ var BSEAdminUI = Class.create({
   },
   message: function(text) {
     this._messages.message(text);
+  },
+  busy: function() {
+  },
+  unbusy: function() {
   }
 });
 
