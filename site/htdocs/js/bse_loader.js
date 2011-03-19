@@ -6,6 +6,9 @@ var BSELoader = Class.create({
   },
   _load_next_script: function() {
     var uri = this._scripts.shift();
+    if (BSELoader.cache_buster) {
+      uri = uri + "?" + Math.random();
+    }
     var scr = new Element("script", { src: uri, type: "text/javascript" });
     scr.loadDone = false;
     scr.onload = function(scr) {
@@ -34,3 +37,5 @@ var BSELoader = Class.create({
     }
   }
 });
+
+BSELoader.cache_buster = false;
