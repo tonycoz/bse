@@ -45,6 +45,7 @@ var BSEAdminUI = Class.create({
       mod.menus.push(menu);
       if (this.current === mod) {
 	$("nav").appendChild(menu.element());
+	menu.inDocument();
       }
     }
     else {
@@ -198,7 +199,7 @@ var BSEAdminUI = Class.create({
   _parse_frag: function(frag) {
     if (!frag) frag = "#menu";
     frag = frag.replace(/^\#/, '');
-    var m = /^([a-z0-9]+)(?:\/(.*))$/.exec(frag);
+    var m = /^([a-z0-9]+)(?:\/(.*))?$/.exec(frag);
     if (m &&
 	this._modules.get(m[1]) != null) {
       var rest = m[2] == null ? "" : m[2];
@@ -323,6 +324,7 @@ var BSEAdminUI = Class.create({
     }
     mod.menus.each(function(menu) {
       $("nav").appendChild(menu.element());
+      menu.inDocument();
     });
     this.current = mod;
     this._main_menu.setText(mod.title);
@@ -407,14 +409,14 @@ var BSEAdminUI = Class.create({
     new BSEDialog({
       fields: [
 	{
-	  type: help,
+	  type: "help",
 	  helptext: message
 	}
       ],
       title: "Alert!",
       modal: true,
       submit: "Dismiss",
-      top_class: "bse_title bse_alert",
+      //submit_class: "dismiss",
       onSubmit: function(dlg) { dlg.close(); }
     });
   },
