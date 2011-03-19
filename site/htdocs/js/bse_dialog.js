@@ -38,10 +38,10 @@ var BSEDialog = Class.create({
   },
   bse_error: function(error) {
     if (error.error_code == "FIELD") {
-	     this.field_errors(error.errors);
+      this.field_errors(error.errors);
     }
-    else if (error.msg) {
-      this.error(error.msg);
+    else if (error.message) {
+      this.error(error.message);
     }
     else {
       this.error(error_code);
@@ -478,10 +478,36 @@ BSEDialog.FieldTypes.fieldset.defaults = {
 BSEDialog.FieldTypes.help = Class.create(BSEDialog.FieldTypes.Base, {
   initialize: function(options) {
     this._element = new Element("div");
-    this._element.update(f.helptext);
+    this._element.update(options.helptext);
   },
   value_fields: function() {
     // nothing to see here, move along
     return [];
+  },
+  elements: function() {
+    return [ this._element ];
+  }
+});
+
+BSEDialog.AskYN = Class.create({
+  initialize: function(options) {
+    this.options = Object.extend({
+      submit: "Yes",
+      cancel: true,
+      cancel_text: "No",
+      cancel_class: "rosy",
+      modal: true
+    }, options);
+    this.options.fields = [
+      {
+	type: "help",
+	helptext: options.text
+      }
+    ];
+    if (this.options.onYes)
+      this.options.onSubmit = this.options.onYes;
+    if (this.options.onNo)
+      this.options.onCancel = this.options.onNo;
+    var dlg = new BSEDialog(this.options);
   }
 });
