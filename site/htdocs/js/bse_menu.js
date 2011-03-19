@@ -15,7 +15,7 @@ var BSEMenu = Class.create({
     this._element = new Element("li");
     if (this.options.current)
       this._element.addClassName(this.options.current_class);
-    this._title_element = new Element("a", { href: "#" });
+    this._title_element = new Element("span", { className: this.options.title_class });
     this._title_element.observe("click", function(ev) { ev.stop(); });
     this._title_element.update(this.options.title);
     this._element.appendChild(this._title_element);
@@ -29,6 +29,9 @@ var BSEMenu = Class.create({
   },
   defaults: function() {
     return BSEMenu.defaults;
+  },
+  inDocument: function() {
+    this._submenu.inDocument();
   }
 });
 
@@ -90,14 +93,25 @@ BSEMenu.Item = Class.create({
   },
   _make_element: function() {
     this._element = new Element("li");
-    this._link = new Element("a", { href: "#" });
+    this._wrapper = new Element("span");
+    this._element.appendChild(this._wrapper);
+    this._link = new Element("span", { className: this.options.item_class });
     this._link.update(this.options.text);
     this._link.observe("click", this._onclick.bind(this));
-    this._element.appendChild(this._link);
+    this._wrapper.appendChild(this._link);
     if (this.options.item_class)
       this._element.addClassName(this.options.item_class);
     if (this.options.id)
       this._element.id = this.options.id;
+
+    this.options.widgets.each(function(w) {
+      var ele = new Element("span", { className: w.className });
+      ele.observe("click", function(event, w) {
+	event.stop();
+	w.onClick();
+      }.bindAsEventListener(this, w));
+      this._wrapper.appendChild(ele);
+    }.bind(this));
 
     if (this.options.check)
       this.setChecked(this.options.checked);
@@ -114,6 +128,10 @@ BSEMenu.Item = Class.create({
     ev.stop();
     if (!this._disabled && this.options.onClick)
       this.options.onClick(this.original_options);
+  },
+  inDocument: function() {
+    if (this._submenu)
+      this._submenu.inDocument();
   }
 });
 
@@ -139,22 +157,80 @@ BSEMenu.SubMenu = Class.create({
       this._items = [];
       var items = this.options.items;
       for (i = 0; i < items.length; ++i) {
-	var item = new this.options.item_class(items[i]);
+	var item = this._make_item(items[i]);
 	ele.appendChild(item.element());
 	this._items.push(item);
       }
       this._element = ele;
     }
   },
+  _make_item: function(options) {
+    var item = new this.options.item_class(options);
+
+    return item;
+  },
   defaults: function() {
     return BSEMenu.SubMenu.defaults;
+  },
+  inDocument: function() {
+    this._items.each(function(item) { item.inDocument() });
+  }
+});
+
+BSEMenu.OrderedSubMenu = Class.create(BSEMenu.SubMenu, {
+  //_make_element: function($super) {
+  //  $super();
+
+  //},
+  defaults: function($super) {
+    return Object.extend(
+      Object.extend({}, $super()),
+      {
+	item_class: BSEMenu.OrderedItem
+      });
+  },
+  inDocument: function($super) {
+    $super();
+
+    var item_eles = [];
+    for (var i = 0; i < this._items.length; ++i) {
+      item_eles.push(this._items[i].move_handle());
+    }
+    Sortable.create(this._element.identify(), {
+      handles: item_eles
+    });		    
+  }
+});
+
+BSEMenu.OrderedItem = Class.create(BSEMenu.Item, {
+  defaults: function($super) {
+    return Object.extend(
+      Object.extend({}, $super()),
+      {
+	move_handle_class: "move",
+	move_handle_text: "Move"
+      });
+  },
+  _make_element: function($super) {
+    $super();
+
+    var handle = new Element("span", { className: this.options.move_handle_class });
+    handle.update(this.options.move_handle_text);
+    // avoid sending a click through
+    handle.observe("click", function(ev) { ev.stop; });
+    this._wrapper.appendChild(handle);
+    this._handle = handle;
+  },
+  move_handle: function() {
+    return this._handle;
   }
 });
 
 BSEMenu.defaults = {
   current: false,
   current_class: "current",
-  submenu_class: BSEMenu.SubMenu
+  submenu_class: BSEMenu.SubMenu,
+  title_class: "item"
 };
 
 BSEMenu.SubMenu.defaults = {
@@ -171,5 +247,7 @@ BSEMenu.Item.defaults = {
   unchecked_class: "unchecked",
   separate_class: "separate",
   disabled_class: "disabled",
-  submenu_class: BSEMenu.SubMenu
+  submenu_class: BSEMenu.SubMenu,
+  item_class: "item",
+  widgets: []
 };
