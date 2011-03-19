@@ -24,6 +24,22 @@
   background: transparent url(/images/admin/ui/spinner.gif) no-repeat 100% 50%;
 }
 
+#nav li>span>span.item { 
+  display: block;
+  text-indent: 0em;
+  position: static;
+  width: auto;
+}
+
+#nav li>span>span.move {
+   	background: transparent url(/images/admin/ui/move_dk.png) no-repeat 50% 50%;
+              
+}
+
+#nav li>span>span.delete {
+	background-image: url(/images/admin/ui/delete_dk.png);
+}
+
 .bse_field_error {
   margin-top: 2em;
   margin-left: -25em;
