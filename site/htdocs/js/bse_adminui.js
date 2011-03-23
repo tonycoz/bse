@@ -341,7 +341,11 @@ var BSEAdminUI = Class.create({
   },
   _show_current_logon: function() {
     if (this._userinfo.user) {
-      this._logon_menu.setText(this._userinfo.user.logon);
+      var user = this._userinfo.user;
+      if (/\S/.test(user.name))
+	this._logon_menu.setText(user.name); 
+      else
+	this._logon_menu.setText(user.logon);
     }
     else {
       this._logon_menu.setText("(none)");
