@@ -1,3 +1,41 @@
+var BSEMenuBar = Class.create({
+  initialize: function(options) {
+    this.options = Object.extend({
+      hide_timeout: 750
+    }, options);
+    this.menus = [];
+  },
+  add_menu: function(menu) {
+    this.menus.push(menu);
+    menu.element().observe("mouseover", function(ev, menu) {
+      if (this._current_menu)  {
+	if (this._current_menu == menu) {
+	  if (this._hide_timer)
+	    window.clearTimeout(this._hide_timer);
+	  return;
+	}
+	
+	this._current_menu.submenu().hide();
+	delete this._current_menu;
+      }
+
+      this._current_menu = menu;
+      this._current_menu.submenu().show();
+    }.bindAsEventListener(this, menu));
+    menu.element().observe("mouseleave", function(ev, menu) {
+      if (this._current_menu) {
+	if (this._hide_timer)
+	  window.clearTimeout(this._hide_timer);
+	this._hide_timer = window.setTimeout(function() {
+	  this._current_menu.submenu().hide();
+	  delete this._current_menu;
+	  delete this._hide_timer;
+	}.bind(this, menu), this.options.hide_timeout);
+      }
+    }.bindAsEventListener(this, menu));
+  }
+});
+
 // represents a top-level menu item
 // 
 var BSEMenu = Class.create({
@@ -23,6 +61,24 @@ var BSEMenu = Class.create({
     // caller provided their own content for the menu
     this._submenu = new this.options.submenu_class(this.options);
     this._element.appendChild(this._submenu.element());
+
+    // this._element.observe("mouseover", function(ev) {
+    //   ev.stop();
+    //   this._submenu.show();
+    //   if (this._hide_timer) {
+    // 	window.clearTimeout(this._hide_timer);
+    // 	delete this._hide_timer;
+    //   }
+    // }.bind(this));
+    // this._element.observe("mouseout", function(ev) {
+    //   ev.stop();
+    //   if (this._hide_timer)
+    // 	window.clearTimeout(this._hide_timer);
+    //   this._hide_timer = window.setTimeout(function() {
+    // 	this._submenu.hide();
+    // 	delete this._hide_timer;
+    //   }.bind(this), this.options.hide_timeout);
+    // }.bind(this));
   },
   setText: function(text) {
     this._title_element.update(text);
@@ -32,6 +88,15 @@ var BSEMenu = Class.create({
   },
   inDocument: function() {
     this._submenu.inDocument();
+  },
+  submenu: function() {
+    return this._submenu;
+  },
+  hide: function() {
+    return this._element.hide();
+  },
+  show: function() {
+    return this._element.show();
   }
 });
 
@@ -163,9 +228,23 @@ BSEMenu.SubMenu = Class.create({
       }
       this._element = ele;
     }
+    this._element.hide();
   },
   _make_item: function(options) {
     var item = new this.options.item_class(options);
+
+    item._element.observe("mouseover", function(ev, item) {
+      if (this._shown_submenu) {
+	if (item.submenu() && item.submenu() == this._shown_submenu)
+	  return;
+	this._shown_submenu.hide();
+	delete this._shown_submenu;
+      }
+      if (item.submenu()) {
+	item.submenu().show();
+	this._shown_submenu = item.submenu();
+      }
+    }.bindAsEventListener(this, item));
 
     return item;
   },
@@ -174,6 +253,16 @@ BSEMenu.SubMenu = Class.create({
   },
   inDocument: function() {
     this._items.each(function(item) { item.inDocument() });
+  },
+  show: function() {
+    this._element.show();
+  },
+  hide: function() {
+    this._element.hide();
+    if (this._shown_submenu) {
+      this._shown_submenu.hide();
+      delete this._shown_submenu;
+    }
   }
 });
 
@@ -230,7 +319,8 @@ BSEMenu.defaults = {
   current: false,
   current_class: "current",
   submenu_class: BSEMenu.SubMenu,
-  title_class: "item"
+  title_class: "item",
+  hide_timeout: 750
 };
 
 BSEMenu.SubMenu.defaults = {

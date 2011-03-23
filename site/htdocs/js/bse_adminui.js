@@ -21,6 +21,7 @@ var BSEAdminUI = Class.create({
     this._messages = new BSEAdminUI.Messages("message");
     this._modules = new Hash();
     this._loaded_scripts = new Hash();
+    this._menubar = new BSEMenuBar({});
   },
   register: function (options) {
     var mod = this._modules.get(options.name);
@@ -42,6 +43,7 @@ var BSEAdminUI = Class.create({
   add_menu: function(name, menu) {
     var mod = this._modules.get(name);
     if (mod) {
+      this._menubar.add_menu(menu);
       mod.menus.push(menu);
       if (this.current === mod) {
 	$("nav").appendChild(menu.element());
@@ -118,6 +120,7 @@ var BSEAdminUI = Class.create({
       items: menu_items
     });
     $("nav").appendChild(this._main_menu.element());
+    this._menubar.add_menu(this._main_menu);
 
     var sel = this._parse_frag(window.location.hash);
     this._select(sel);
@@ -140,6 +143,7 @@ var BSEAdminUI = Class.create({
       ]
     });
     $("nav").appendChild(this._logon_menu.element());
+    this._menubar.add_menu(this._logon_menu);
   },
   // _finish_load: function() {
   //   this._log_entry("Scripts loaded, proceeding");
