@@ -8,12 +8,11 @@ var BSEMenuBar = Class.create({
   add_menu: function(menu) {
     this.menus.push(menu);
     menu.element().observe("mouseover", function(ev, menu) {
+      if (this._hide_timer)
+	window.clearTimeout(this._hide_timer);
       if (this._current_menu)  {
-	if (this._current_menu == menu) {
-	  if (this._hide_timer)
-	    window.clearTimeout(this._hide_timer);
+	if (this._current_menu == menu) 
 	  return;
-	}
 	
 	this._current_menu.submenu().hide();
 	delete this._current_menu;
