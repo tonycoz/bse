@@ -6,7 +6,7 @@ use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 use BSE::CfgInfo qw(custom_class);
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 sub new {
   my ($class, $req) = @_;
@@ -50,6 +50,7 @@ sub tags {
      ifAncestor => 0,
      ifUserMemberOf => [ tag_ifUserMemberOf => $self ],
      dthumbimage => [ tag_dthumbimage => $self ],
+     dgthumbimage => [ tag_dgthumbimage => $self ],
      dyntarget => [ tag_dyntarget => $self ],
      $self->dyn_iterator('dynvimages', 'dynvimage'),
      dynvimage => [ tag_dynvimage => $self ],
@@ -893,6 +894,20 @@ sub tag_dthumbimage {
   return $self->_thumbimage_low($geometry, $im, $field, $self->{req}->cfg);
 }
 
+sub tag_dgthumbimage {
+  my ($self, $args, $acts, $func, $templater) = @_;
+
+  my ($geometry, $name, $field) = 
+    DevHelp::Tags->get_parms($args, $acts, $templater);
+
+  require BSE::TB::Images;
+  my ($im) = BSE::TB::Images->getBy(articleId => -1,
+				    name => $name)
+    or return "* no such global image $name *";
+  
+  return $self->_thumbimage_low($geometry, $im, $field, $self->{req}->cfg);
+}
+
 =item recaptcha
 
 Category: dynamic
@@ -1082,6 +1097,12 @@ index - a numeric image index, where 1 is the first image
 identifier - a literal image identifier
 
 =back
+
+=item dgthumbimage geometry name field
+
+=item dgthumbimage geometry name
+
+Format a thumbnail for a global image, in dynamic context.
 
 =back
 
