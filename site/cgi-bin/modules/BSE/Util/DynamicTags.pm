@@ -6,7 +6,7 @@ use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 use BSE::CfgInfo qw(custom_class);
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 sub new {
   my ($class, $req) = @_;
@@ -243,8 +243,9 @@ sub iter_dynlevel3s {
 }
 
 sub iter_dynallkids_of {
-  my ($self, $unused, $args, $acts, $templater) = @_;
+  my ($self, $unused, $args, $acts, $templater, $state) = @_;
 
+  $state->{parentid} = undef;
   my @ids = map { split } DevHelp::Tags->get_parms($args, $acts, $templater);
   for my $id (@ids) {
     unless ($id =~ /^\d+$|^-1$/) {
@@ -253,6 +254,8 @@ sub iter_dynallkids_of {
   }
   @ids = grep defined && /^\d+$|^-1$/,
     map ref() ? $_->{id} : $_, @ids;
+
+  @ids == 1 and $state->{parentid} = $ids[0];
 
   require Articles;
   return $self->access_filter(map Articles->all_visible_kids($_), @ids);
@@ -478,7 +481,7 @@ sub _dyn_iterate_reset {
   my $method = "iter_$state->{plural}";
   my $filter = $self->_get_filter(\$args);
   $$rdata = $self->
-    _do_filter($filter, $self->$method($state->{context}, $args, $acts, $templater));
+    _do_filter($filter, $self->$method($state->{context}, $args, $acts, $templater, $state));
   
   $$rindex = -1;
 
@@ -760,6 +763,17 @@ sub dyn_iterator_obj {
     );
 }
 
+sub _dyn_article_move {
+  my ($self, $state, $args, $acts, $func, $templater) = @_;
+
+  $state->{parentid}
+    or return '';
+
+  return $self->tag_dynmove($state->{rindex}, $state->{rdata},
+			    "stepparent=$state->{parentid}",
+			    $args, $acts, $templater);
+}
+
 sub dyn_article_iterator {
   my ($self, $plural, $single, $context, $rindex, $rdata) = @_;
 
@@ -798,6 +812,7 @@ sub dyn_article_iterator {
      "previous_$single" => [ _dyn_previous_article => $self, \%state ],
      "ifNext\u$single" => [ _dyn_ifNext => $self, \%state ],
      "ifPrevious\u$single" => [ _dyn_ifPrevious => $self, \%state ],
+     "move_$single" => [ _dyn_article_move => $self, \%state ],
     );
 }
 
@@ -1050,6 +1065,41 @@ sub iter_paidfiles {
     or return [];
 
   return [ $user->paid_files ];
+}
+
+sub admin_mode {
+  return 0;
+}
+
+sub tag_dynmove {
+  my ($self, $rindex, $rrdata, $url_prefix, $args, $acts, $templater) = @_;
+
+  return '' unless $self->admin_mode;
+
+  return '' unless $$rrdata && @$$rrdata > 1;
+
+  require BSE::Arrows;
+  *make_arrows = \&BSE::Arrows::make_arrows;
+
+  my ($img_prefix, $url_add) = 
+    DevHelp::Tags->get_parms($args, $acts, $templater);
+  defined $img_prefix or $img_prefix = '';
+  defined $url_add or $url_add = '';
+  my $refresh_to = $ENV{SCRIPT_NAME} . "?id=" . 
+    $self->{req}->get_article('dynarticle')->{id} . $url_add;
+  my $move = "$Constants::CGI_URI/admin/move.pl?";
+  $move .= $url_prefix . '&' if $url_prefix;
+  $move .= 'd=swap&id=' . $$$rrdata[$$rindex]{id} . '&';
+  my $down_url = '';
+  if ($$rindex < $#$$rrdata) {
+    $down_url = $move . 'other=' . $$$rrdata[$$rindex+1]{id};
+  }
+  my $up_url = '';
+  if ($$rindex > 0) {
+    $up_url = $move . 'other=' . $$$rrdata[$$rindex-1]{id};
+  }
+
+  return make_arrows($self->{req}->cfg, $down_url, $up_url, $refresh_to, $img_prefix);
 }
 
 1;

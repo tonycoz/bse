@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>132;
+use Test::More tests=>135;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
@@ -455,7 +455,7 @@ One
 EXPECTED
 
 dyn_template_test "dynallkidsof nested filtered cond", $parent, <<TEMPLATE, <<EXPECTED;
-<:iterator begin dynallkids_of $parent->{id}:><:dynofallkid title:><:if Dynallkids_of2 dynofallkid filter: [title] =~ /G/:><:iterator begin dynallkids_of2 dynofallkid filter: [title] =~ /G/:>
+<:iterator begin dynallkids_of dynarticle:><:dynofallkid title:><:if Dynallkids_of2 dynofallkid filter: [title] =~ /G/:><:iterator begin dynallkids_of2 dynofallkid filter: [title] =~ /G/:>
   <:dynofallkid2 title:><:iterator end dynallkids_of2:><:or Dynallkids_of2:>
   No G kids<:eif Dynallkids_of2:>
 <:iterator end dynallkids_of:>
@@ -468,6 +468,17 @@ Two
   Grandkid
 One
   No G kids
+
+EXPECTED
+
+dyn_template_test "dynallkids_of move_dynofallkid", $parent, <<TEMPLATE, <<EXPECTED;
+<:iterator begin dynallkids_of dynarticle:><:dynofallkid title:><:move_dynofallkid:>
+<:iterator end dynallkids_of:>
+TEMPLATE
+Parent
+Three
+Two
+One
 
 EXPECTED
 
