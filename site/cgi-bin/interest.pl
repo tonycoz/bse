@@ -65,15 +65,15 @@ $mailer->send(to=>$sendto, from=>$SHOP_FROM, subject=>$subject,
 BSE::Template->show_page('interest/confirm', $cfg, \%acts);
 
 sub error_page {
-  my ($id, $error, $template) = @_;
+  my ($id, $msg, $template) = @_;
 
-  $error = $cfg->entry(messages=>$id, $error) if $id;
-  $template ||= 'error';
+  $msg = $cfg->entry(messages=>$id, $msg) if $id;
+  $template ||= 'interest/error';
   my %acts;
   %acts =
     (
      BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
-     error => sub { CGI::escapeHTML($error) },
+     msg => sub { CGI::escapeHTML($msg) },
     );
   BSE::Template->show_page($template, $cfg, \%acts);
   exit;
