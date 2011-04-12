@@ -34,7 +34,7 @@ Column parentid;int(11);NO;0;
 Column displayOrder;int(11);NO;0;
 Column title;varchar(255);NO;;
 Column titleImage;varchar(64);NO;NULL;
-Column body;text;NO;NULL;
+Column body;longtext;NO;NULL;
 Column thumbImage;varchar(64);NO;;
 Column thumbWidth;int(11);NO;NULL;
 Column thumbHeight;int(11);NO;NULL;
@@ -522,7 +522,7 @@ Index PRIMARY;1;[id]
 Table sessions
 Column id;char(32);NO;NULL;
 Column a_session;blob;YES;NULL;
-Column whenChanged;timestamp;NO;CURRENT_TIMESTAMP;
+Column whenChanged;timestamp;NO;CURRENT_TIMESTAMP;on update CURRENT_TIMESTAMP
 Index PRIMARY;1;[id]
 Table site_users
 Column id;int(11);NO;NULL;auto_increment

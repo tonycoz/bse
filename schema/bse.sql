@@ -12,7 +12,7 @@ CREATE TABLE article (
   displayOrder integer not NULL default 0,
   title varchar(255) DEFAULT '' NOT NULL,
   titleImage varchar(64) not null,
-  body text NOT NULL,
+  body longtext NOT NULL,
 
   -- thumbnail image
   thumbImage varchar(64) not null default '',
