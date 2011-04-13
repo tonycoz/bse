@@ -11,7 +11,7 @@ use BSE::Util::HTML qw':default popup_menu';
 use BSE::Util::Tags qw(tag_article);
 use BSE::Request;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 my %actions =
   (
@@ -255,7 +255,7 @@ sub req_search {
      multiple => sub { @results != 1 },
      terms => sub { escape_html($words) },
      resultSeq => sub { $result_seq },
-     list => sub { popup_menu(-name=>'s', -id => 's',
+     list => sub { popup_menu(-name=>'s', -id => 'search_s',
 			      -values=>\@sections,
 			      -labels=>\%sections,
 			      -default=>$section) },

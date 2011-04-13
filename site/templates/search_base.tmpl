@@ -16,7 +16,7 @@
         <b>Keywords: </b></font></td>
       <td width="10">&nbsp;&nbsp; </td>
       <td width="100%"> 
-        <input type="text" name="q" id="qx" size="45" value="<:terms:>">
+        <input type="text" name="q" id="search_q" size="45" value="<:terms:>">
         &nbsp; 
         <input type="submit" id="search_submit" accesskey="s" value="Search" name="submit">
       </td>
@@ -32,7 +32,7 @@
       <td width="10">&nbsp; </td>
       <td width="100%"> <:list:> &nbsp; <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"> 
         <b>Date:&nbsp;&nbsp;</b></font> 
-        <select name="d">
+        <select name="d" id="search_d">
           <option value="ar" <:dateSelected ar:>>All Current</option>
           <option value="m7" <:dateSelected m7:>>Modified within last 7 days</option>
           <option value="m30" <:dateSelected m30:>>Modified within last 30 days</option>
@@ -46,7 +46,7 @@
     </tr>
     <tr>
       <td colspan="2"></td>
-      <td><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><input type="checkbox" name="match_all" value="1" <:ifCgi match_all:>checked="checked"<:or:><:eif:> /><b> Match all terms</b></font></td>
+      <td><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><input type="checkbox" name="match_all" id="search_match_all" value="1" <:ifCgi match_all:>checked="checked"<:or:><:eif:> /><b> Match all terms</b></font></td>
     </tr>
   </table>
 </form>
@@ -54,7 +54,7 @@
 <script type="text/javascript" language="javascript">
 //<![CDATA[
 function do_search() {
-  var query = $('qx').value;
+  var query = $('search_q').value;
   if (query != 'Enter search terms' && query != '') {
     $('search_form').request({
       parameters: { embed: '1'},
@@ -68,16 +68,16 @@ function do_search() {
   function on_load_search() {
     new Form.Observer($('search_form'), 1.5, do_search);
     $('search_submit').onclick = do_search;
-    $('qx').onfocus =
+    $('search_q').onfocus =
       function() {
-        if ($('q').value == 'Enter search terms') {
-          $('q').value = '';
+        if ($('search_q').value == 'Enter search terms') {
+          $('search_q').value = '';
         };
       }
-    $('qx').onblur =
+    $('search_q').onblur =
       function() {
-        if ($('qx').value == '') {
-          $('qx').value = 'Enter search terms';
+        if ($('search_q').value == '') {
+          $('search_q').value = 'Enter search terms';
         };
       }
     }
