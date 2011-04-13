@@ -373,7 +373,7 @@ Index genEmail;1;[genEmail]
 Table image
 Column id;mediumint(8) unsigned;NO;NULL;auto_increment
 Column articleId;int(11);NO;NULL;
-Column image;varchar(64);NO;;
+Column image;varchar(255);NO;;
 Column alt;varchar(255);NO;[Image];
 Column width;smallint(5) unsigned;YES;NULL;
 Column height;smallint(5) unsigned;YES;NULL;

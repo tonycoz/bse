@@ -13,7 +13,7 @@ use BSE::Util::ContentType qw(content_type);
 use DevHelp::Date qw(dh_parse_date dh_parse_sql_date);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 =head1 NAME
 
@@ -3064,33 +3064,32 @@ sub do_add_image {
   $imagename =~ tr/ //d;
   $imagename =~ /([\w.-]+)$/ and $basename = $1;
 
-  # create a filename that we hope is unique
-  my $filename = time. '_'. $basename;
-
   # for the sysopen() constants
   use Fcntl;
 
   my $imagedir = cfg_image_dir($cfg);
-  # loop until we have a unique filename
-  my $counter="";
-  $filename = time. '_' . $counter . '_' . $basename 
-    until sysopen( OUTPUT, "$imagedir/$filename", O_WRONLY| O_CREAT| O_EXCL)
-      || ++$counter > 100;
 
-  fileno(OUTPUT) or die "Could not open image file: $!";
-
+  require DevHelp::FileUpload;
+  my $msg;
+  my ($filename, $fh) =
+    DevHelp::FileUpload->make_img_filename($imagedir, $basename, \$msg);
+  unless ($filename) {
+    $errors->{image} = $msg;
+    return;
+  }
+print STDERR "Gen filename '$filename'\n";
   # for OSs with special text line endings
-  binmode OUTPUT;
+  binmode $fh;
 
   my $buffer;
 
   no strict 'refs';
 
   # read the image in from the browser and output it to our output filehandle
-  print OUTPUT $buffer while read $image, $buffer, 1024;
+  print $fh $buffer while read $image, $buffer, 1024;
 
   # close and flush
-  close OUTPUT
+  close $fh
     or die "Could not close image file $filename: $!";
 
   use Image::Size;

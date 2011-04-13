@@ -136,7 +136,7 @@ DROP TABLE IF EXISTS image;
 CREATE TABLE image (
   id mediumint(8) unsigned NOT NULL auto_increment,
   articleId integer not null,
-  image varchar(64) DEFAULT '' NOT NULL,
+  image varchar(255) DEFAULT '' NOT NULL,
   alt varchar(255) DEFAULT '[Image]' NOT NULL,
   width smallint(5) unsigned,
   height smallint(5) unsigned,
