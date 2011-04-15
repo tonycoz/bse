@@ -224,6 +224,7 @@ sub req_search {
      
      ifMatchfiles => sub { @files },
      matchfile_count => sub { @files },
+     matchfile_index => sub { $file_index },
      iterate_matchfiles_reset => sub { $file_index = -1 },
      iterate_matchfiles => sub { ++$file_index < @files },
      matchfile =>
