@@ -291,6 +291,14 @@ Column enabled;int(11);NO;0;
 Column default_value;int(11);YES;NULL;
 Index PRIMARY;1;[id]
 Index product_order;0;[product_id;display_order]
+Table bse_selected_files
+Column id;int(11);NO;NULL;auto_increment
+Column owner_id;int(11);NO;NULL;
+Column owner_type;varchar(20);NO;NULL;
+Column file_id;int(11);NO;NULL;
+Column display_order;int(11);NO;-1;
+Index PRIMARY;1;[id]
+Index only_one;1;[owner_id;owner_type;file_id]
 Table bse_seminar_bookings
 Column id;int(11);NO;NULL;auto_increment
 Column session_id;int(11);NO;NULL;

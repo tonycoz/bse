@@ -1211,3 +1211,19 @@ create table bse_files (
 
   index owner(file_type, owner_id)
 );
+
+-- a generic selection of files from a pool
+create table bse_selected_files (
+  id integer not null auto_increment primary key,
+
+  -- who owns this selection of files
+  owner_id integer not null,
+  owner_type varchar(20) not null,
+
+  -- one of the files
+  file_id integer not null,
+
+  display_order integer not null default -1,
+
+  unique only_one(owner_id, owner_type, file_id)
+) type = InnoDB;

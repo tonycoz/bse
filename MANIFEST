@@ -191,6 +191,8 @@ site/cgi-bin/modules/BSE/TB/ProductOption.pm
 site/cgi-bin/modules/BSE/TB/ProductOptions.pm
 site/cgi-bin/modules/BSE/TB/ProductOptionValue.pm
 site/cgi-bin/modules/BSE/TB/ProductOptionValues.pm
+site/cgi-bin/modules/BSE/TB/SelectedFile.pm
+site/cgi-bin/modules/BSE/TB/SelectedFiles.pm
 site/cgi-bin/modules/BSE/TB/Seminar.pm
 site/cgi-bin/modules/BSE/TB/SeminarBooking.pm
 site/cgi-bin/modules/BSE/TB/SeminarBookings.pm

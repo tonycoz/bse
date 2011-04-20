@@ -6,7 +6,7 @@ use vars qw(@ISA $VERSION);
 use BSE::TB::File;
 use Carp ();
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub rowClass {
   return 'BSE::TB::File';
@@ -213,6 +213,109 @@ sub save_cgi_file {
   }
 
   return $file;
+}
+
+=item selected_files
+
+Return the files selected out of a pool for a particular owner.
+
+Returns them in order.
+
+=cut
+
+sub selected_files {
+  my ($self, $owner_type, $owner_id) = @_;
+
+  my %files = map { $_->id() => $_ }
+    $self->getSpecial(selected_files => $owner_type, $owner_id);
+
+  my @order = $self->selected_file_ids($owner_type, $owner_id);
+
+  return map { $files{$_} ? $files{$_} : () } @order;
+}
+
+=item selected_file_ids
+
+Return the id of the files selected out of a pool for a particular
+owner.
+
+Returns them in order.
+
+=cut
+
+sub selected_file_ids {
+  my ($self, $owner_type, $owner_id) = @_;
+
+  require BSE::TB::SelectedFiles;
+  my @order = BSE::TB::SelectedFiles->getColumnBy
+    (
+     "file_id",
+     [ "and" =>
+       [ "=", "owner_id", $owner_id ],
+       [ "=", "owner_type", $owner_type ]
+     ],
+     { order => "display_order" }
+    );
+
+  return @order;
+}
+
+=item set_selected_files
+
+Set the list of selected files for a particular owner.
+
+Also sets the order.
+
+=cut
+
+sub set_selected_files {
+  my ($self, $owner_type, $owner_id, $files) = @_;
+
+  require BSE::TB::SelectedFiles;
+  BSE::DB->do_txn
+      (sub {
+	 my @ids = map { ref() ? $_->id : $_ } @$files;
+
+	 my %current = map { $_->file_id() => $_ }
+	   BSE::TB::SelectedFiles->getBy2
+	       (
+		[ "and" =>
+		  [ "=", "owner_id", $owner_id ],
+		  [ "=", "owner_type", $owner_type ],
+		]
+	       );
+
+	 my $display_order = 1;
+	 for my $id (@ids) {
+	   my $sel = delete $current{$id};
+	   if ($sel) {
+	     $sel->set_display_order($display_order);
+	     $sel->save;
+	   }
+	   else {
+	     $sel = BSE::TB::SelectedFiles->make
+	       (
+		owner_type => $owner_type,
+		owner_id => $owner_id,
+		file_id => $id,
+		display_order => $display_order,
+	       );
+	   }
+	   ++$display_order;
+	 }
+
+	 $_->remove for values %current;
+       });
+}
+
+=item selection_owner_removed
+
+=cut
+
+sub selection_owner_removed {
+  my ($self, $owner_type, $owner_id) = @_;
+
+  BSE::DB->single->run("SelectedFiles.remove_owner" => $owner_type, $owner_id);
 }
 
 1;

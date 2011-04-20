@@ -1,5 +1,5 @@
 --
-# VERSION=1.000
+# VERSION=1.001
 name: bse_siteuserSeminarBookingsDetail
 sql_statement: <<SQL
 select ar.*, pr.*, se.*, ss.*, sb.*,
@@ -440,3 +440,20 @@ where af.id = ?
   and od.paidFor <> 0
   and od.siteuser_id = ?
 SQL
+
+name: Files.selected_files
+sql_statement: <<SQL
+select bf.*
+from bse_files bf, bse_selected_files sf
+where sf.owner_type = ?
+  and sf.owner_id = ?
+  and sf.file_id = bf.id
+SQL
+
+name: SelectedFiles.remove_owner
+sql_statement: <<SQL
+delete from bse_selected_files
+ where owner_type = ?
+   and owner_id = ?
+SQL
+
