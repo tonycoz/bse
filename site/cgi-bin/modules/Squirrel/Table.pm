@@ -1,6 +1,6 @@
 package Squirrel::Table;
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 use Carp;
 use strict;
@@ -263,7 +263,14 @@ sub _make_sql {
   my %map;
   @map{@code_cols} = @db_cols;
 
-  my $sql = "select * from $table_name";
+  my @want_cols;
+  for my $log_col (@$cols) {
+    my $phy_col = $map{$log_col}
+      or confess "Unknown logical column $log_col";
+    push @want_cols, $phy_col;
+  }
+
+  my $sql = "select " . join(", ", @want_cols) . " from $table_name";
   my @args;
   if (@$query) {
     ((my $where), @args) = $self->_where_clause(\%map, @$query);
