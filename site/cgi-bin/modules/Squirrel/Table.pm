@@ -1,6 +1,6 @@
 package Squirrel::Table;
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 use Carp;
 use strict;
@@ -252,45 +252,6 @@ sub _getBy_sth {
   return $sth;
 }
 
-sub _where_clause {
-  my ($self, $map, @query) = @_;
-
-  if (ref $query[0]) {
-    unshift @query, "and";
-  }
-  my ($sql, @args);
-  my $op = shift @query;
-  if ($op =~ /^(and|or)$/) {
-    my @exprs;
-    for my $sub (@query) {
-      my ($expr, @subargs) = $self->_where_clause($map, @$sub);
-      push @exprs, $expr;
-      push @args, @subargs;
-    }
-    return ("(".join(" $op ", @exprs).")", @args);
-  }
-  elsif ($op =~ /^(=|<>|>=|<=|like|not like)$/) {
-    my $dbcol = $map->{$query[0]}
-      or confess "Unknown column $query[0]";
-    return ("$dbcol $op ?", $query[1] );
-  }
-  elsif ($op =~ /^(?:not )?null$/) {
-    my $dbcol = $map->{$query[0]}
-      or confess "Unknown column $query[0]";
-    return ("$dbcol $op", () );
-  }
-  elsif ($op eq "between") {
-    my $dbcol = $map->{$query[0]}
-      or confess "Unknown column $query[0]";
-    return ("$dbcol $op ? and ?", @query[0, 1] );
-  }
-  else {
-    my $dbcol = $map->{$op}
-      or confess "Unknown column $op";
-    return ("$dbcol = ?", $query[0]);
-  }
-}
-
 sub _make_sql {
   my ($self, $cols, $query, $options) = @_;
 
@@ -359,6 +320,14 @@ sub getColumnBy {
   return wantarray ? @rows : \@rows;
 }
 
+=item getBy2($query, $opts)
+
+Dynamically build a query.
+
+$query is a _where_clause() query as documented below.
+
+=cut
+
 sub getBy2 {
   my ($self, $query, $opts) = @_;
 
@@ -378,6 +347,101 @@ sub getBy2 {
   }
 
   return wantarray ? @rows : \@rows;
+}
+
+=item _where_clause(\%map, @query)
+
+Parameters:
+
+=over
+
+=item *
+
+map - maps logical field names to physical column names.
+
+=item *
+
+@query - one or more conditions
+
+=back
+
+Conditions can be in any of the following forms:
+
+=over
+
+=item *
+
+Boolean combination:
+
+  "and", [ cond ], [ cond ] ...
+  "or", [ cond ], [cond ] ...
+
+=item *
+
+Comparison:
+
+  "=", "column", $value
+  "<>", "column", $value
+  ">=", "column", $value
+  "<=", "column", $value
+  "like", "column", $value
+  "not like", "column", $value
+  "column", $value
+
+=item *
+
+Null comparison:
+
+  "null", "column"
+  "not null, "column"
+
+=item *
+
+Between:
+
+  "between", "column", $value1, $value2
+
+=back
+
+=cut
+
+sub _where_clause {
+  my ($self, $map, @query) = @_;
+
+  if (ref $query[0]) {
+    unshift @query, "and";
+  }
+  my ($sql, @args);
+  my $op = shift @query;
+  if ($op =~ /^(and|or)$/) {
+    my @exprs;
+    for my $sub (@query) {
+      my ($expr, @subargs) = $self->_where_clause($map, @$sub);
+      push @exprs, $expr;
+      push @args, @subargs;
+    }
+    return ("(".join(" $op ", @exprs).")", @args);
+  }
+  elsif ($op =~ /^(=|<>|>=|<=|like|not like)$/) {
+    my $dbcol = $map->{$query[0]}
+      or confess "Unknown column $query[0]";
+    return ("$dbcol $op ?", $query[1] );
+  }
+  elsif ($op =~ /^(?:not )?null$/) {
+    my $dbcol = $map->{$query[0]}
+      or confess "Unknown column $query[0]";
+    return ("$dbcol $op", () );
+  }
+  elsif ($op eq "between") {
+    my $dbcol = $map->{$query[0]}
+      or confess "Unknown column $query[0]";
+    return ("$dbcol $op ? and ?", @query[0, 1] );
+  }
+  else {
+    my $dbcol = $map->{$op}
+      or confess "Unknown column $op";
+    return ("$dbcol = ?", $query[0]);
+  }
 }
 
 sub getSpecial {
