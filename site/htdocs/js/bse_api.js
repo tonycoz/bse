@@ -340,47 +340,7 @@ var BSEAPI = Class.create
      thumb_link: function(im, geoid) {
        return "/cgi-bin/thumb.pl?image="+im.id+"&g="+geoid+"&page="+im.articleId+"&f="+encodeURIComponent(im.image);
      },
-     can_drag_and_drop: function() {
-       // hopefully they're implemented at the same time
-       if (window.FormData != null)
-	 return true;
-
-       if (bse_use_file_api && window.FileReader != null)
-	 return true;
-
-       return false;
-     },
-     make_drop_zone: function(options) {
-       options.element.addEventListener
-       (
-	 "dragenter",
-	 function(options, e) {
-	   e.stopPropagation();
-	   e.preventDefault();
-	 }.bind(this, options),
-	 false
-       );
-       options.element.addEventListener
-       (
-	 "dragover",
-	 function(options, e) {
-	   e.stopPropagation();
-	   e.preventDefault();
-	 }.bind(this, options),
-	 false
-       );
-       options.element.addEventListener
-       (
-	 "drop",
-	 function(options, e) {
-	   e.stopPropagation();
-	   e.preventDefault();
-
-	   options.onDrop(e.dataTransfer.files);
-	 }.bind(this, options),
-	 false
-       );
-     },
+     
      // parameters:
      //  image - file input element (required)
      //  id - owner article of the new image (required)
@@ -1046,3 +1006,45 @@ var BSEAPI = Class.create
      _upload_id: 0
    });
 
+BSEAPI.can_drag_and_drop = function() {
+  // hopefully they're implemented at the same time
+  if (window.FormData != null)
+    return true;
+  
+  if (bse_use_file_api && window.FileReader != null)
+    return true;
+  
+  return false;
+};
+
+BSEAPI.make_drop_zone = function(options) {
+  options.element.addEventListener
+  (
+    "dragenter",
+    function(options, e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }.bind(this, options),
+    false
+  );
+  options.element.addEventListener
+  (
+    "dragover",
+    function(options, e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }.bind(this, options),
+    false
+  );
+  options.element.addEventListener
+  (
+    "drop",
+    function(options, e) {
+      e.stopPropagation();
+      e.preventDefault();
+      
+      options.onDrop(e.dataTransfer.files);
+    }.bind(this, options),
+    false
+  );
+};

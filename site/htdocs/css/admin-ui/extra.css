@@ -50,3 +50,19 @@
   margin-left: -25em;
   color: #F00;
 }
+
+.bse_image_field img.display {
+  width: 50px;
+  height: 50px;
+  border: 1px solid #CCC;
+  float: right;
+}
+
+div.window fieldset.bse_image_field > input[type=file] {
+  width: auto;
+}
+
+div.window fieldset.bse_image_field > div.more {
+  clear: both;
+  display: block;
+}

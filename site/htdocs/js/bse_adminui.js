@@ -166,9 +166,9 @@ var BSEAdminUI = Class.create({
   // },
   load_css: function(css) {
     css.each(function (e) {
-      var sty = new Element("link", { rel: "stylesheet", type: "text/css", href: "e" });
+      var sty = new Element("link", { rel: "stylesheet", type: "text/css", href: e });
       var head = $$("head")[0];
-      head.appendChild(scr);
+      head.appendChild(sty);
     });
   },
   // _order_handlers: function() {
