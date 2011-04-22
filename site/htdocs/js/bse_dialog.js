@@ -535,12 +535,12 @@ BSEDialog.FieldTypes.image = Class.create(BSEDialog.FieldTypes.Base, {
 	  }
 	  this._dropped_file = file;
 	  if (window.URL && window.URL.createObjectURL) {
-	    this._image_display.src = window.URL.createObjectURL(file);
+	    this._update_thumb_dropped(window.URL.createObjectURL(file));
 	  }
 	  else if (window.FileReader) {
 	    var fr = new FileReader;
 	    fr.onload = function(fr) {
-	      this._image_display.src = fr.result;
+	      this._update_thumb_dropped(fr.result);
 	    }.bind(this, fr);
 	    fr.readAsDataURL(file);
 	  }
@@ -562,6 +562,7 @@ BSEDialog.FieldTypes.image = Class.create(BSEDialog.FieldTypes.Base, {
       fields.push({
 	label: "Alt",
 	type: "text",
+	name: "alt",
 	value: this.options.value.alt
       });
     }
@@ -569,6 +570,7 @@ BSEDialog.FieldTypes.image = Class.create(BSEDialog.FieldTypes.Base, {
       fields.push({
 	label: "Name",
 	type: "text",
+	name: "name",
 	value: this.options.value.name
       });
     }
@@ -576,6 +578,7 @@ BSEDialog.FieldTypes.image = Class.create(BSEDialog.FieldTypes.Base, {
       fields.push({
 	label: "Description",
 	type: "text",
+	name: "description",
 	value: this.options.value.description
       });
     }
@@ -612,6 +615,27 @@ BSEDialog.FieldTypes.image = Class.create(BSEDialog.FieldTypes.Base, {
     this._error = this._make_error();
     wrapper.appendChild(this._error);
   },
+  _update_thumb_dropped: function(url) {
+    // a bit hacky
+    var img = new Element("img");
+    img.onload = function(img) {
+      var canvas = new Element("canvas", {
+	width: 80,
+	height: 80
+      });
+
+      var ctx = canvas.getContext("2d");
+      var max_dim = img.width > img.height ? img.width : img.height;
+      var scale = 80 / max_dim;
+      var sc_width = img.width * scale;
+      var sc_height = img.height * scale;
+      var off_x = (80-sc_width)/2;
+      var off_y = (80-sc_height)/2;
+      ctx.drawImage(img, off_x, off_y, 80-off_x, 80-off_y);
+      this._image_display.src = canvas.toDataURL();
+    }.bind(this, img);
+    img.src = url
+  },
   default_options: function() {
     return {};
   },
@@ -634,6 +658,20 @@ BSEDialog.FieldTypes.image = Class.create(BSEDialog.FieldTypes.Base, {
       return this._dropped_file.fileName;
 
     return this._file_input.value;
+  },
+  object: function() {
+    var obj = {};
+    if (this._dropped_file)
+      obj.file = this._dropped_file;
+    else
+      obj.file = this._file_input;
+    if (this._extra_fields) {
+      this._extra_fields.value_fields().each(function(obj, field) {
+	obj[field.name()] = field.value();
+      }.bind(this, obj));
+    }
+
+    return obj;
   }
 });
 
