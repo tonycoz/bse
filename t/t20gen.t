@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>135;
+use Test::More tests=>137;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
@@ -56,6 +56,12 @@ is($kids[0]->section->{id}, $parent->{id}, "kids section should be the parent");
 
 my $top = Articles->getByPkey(1);
 ok($top, "grabbing Home page");
+
+template_test "cfg", $top, <<TEMPLATE, <<EXPECTED;
+<:cfg "no such section" somekey "default / value":>
+TEMPLATE
+default / value
+EXPECTED
 
 template_test "children_of", $top, <<TEMPLATE, <<EXPECTED;
 <:iterator begin children_of $parent->{id}:><:
