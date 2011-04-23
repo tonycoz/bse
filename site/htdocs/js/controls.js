@@ -1,8 +1,8 @@
-// script.aculo.us controls.js v1.8.2, Tue Nov 18 18:30:58 +0100 2008
+// script.aculo.us controls.js v1.9.0, Thu Dec 23 16:54:48 -0500 2010
 
-// Copyright (c) 2005-2008 Thomas Fuchs (http://script.aculo.us, http://mir.aculo.us)
-//           (c) 2005-2008 Ivan Krstic (http://blogs.law.harvard.edu/ivan)
-//           (c) 2005-2008 Jon Tirsen (http://www.tirsen.com)
+// Copyright (c) 2005-2010 Thomas Fuchs (http://script.aculo.us, http://mir.aculo.us)
+//           (c) 2005-2010 Ivan Krstic (http://blogs.law.harvard.edu/ivan)
+//           (c) 2005-2010 Jon Tirsen (http://www.tirsen.com)
 // Contributors:
 //  Richard Livsey
 //  Rahul Bhargava
@@ -511,22 +511,16 @@ Ajax.InPlaceEditor = Class.create({
     else if (Event.KEY_RETURN == e.keyCode)
       this.handleFormSubmission(e);
   },
-  // note: hand applied patch from:
-  // https://prototype.lighthouseapp.com/projects/8887/tickets/198-ajaxinplaceeditor-bug-on-cancel-in-ie7
   createControl: function(mode, handler, extraClasses) {
     var control = this.options[mode + 'Control'];
     var text = this.options[mode + 'Text'];
     if ('button' == control) {
       var btn = document.createElement('input');
-      btn.className = 'editor_' + mode + '_button';
-      if ('cancel' == mode) {
-        btn.type = 'button';
-        btn.onclick = this._boundCancelHandler;
-      }
-      else {
-        btn.type = 'submit';
-      }
+      btn.type = 'submit';
       btn.value = text;
+      btn.className = 'editor_' + mode + '_button';
+      if ('cancel' == mode)
+        btn.onclick = this._boundCancelHandler;
       this._form.appendChild(btn);
       this._controls[mode] = btn;
     } else if ('link' == control) {
