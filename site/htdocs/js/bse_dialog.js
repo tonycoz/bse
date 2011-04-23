@@ -100,6 +100,19 @@ var BSEDialog = Class.create({
     this._add_fields(parent, this.options.fields);
     var button_p = new Element("p", { className: this.options.submit_wrapper_class });
     var sub_wrapper = new Element("span");
+    this._progress = new Element("span", {
+      className: "progress"
+    });
+    this._progress.hide();
+    this._progress_status = new Element("span", {
+      className: "status"
+    });
+    this._progress.appendChild(this._progress_status);
+    this._progress_bar = new Element("span", {
+      className: "bar blue"
+    });
+    this._progress.appendChild(this._progress_bar);
+    button_p.appendChild(this._progress);
     this._spinner = new Element("span", {className: this.options.spinner_class });
     this._spinner.hide();
     this._spinner.update(this.options.spinner_text);
@@ -197,6 +210,32 @@ var BSEDialog = Class.create({
   },
   defaults: function() {
     return BSEDialog.defaults;
+  },
+  progress_start: function(note) {
+    if (note != null)
+      this.progress_note(note);
+    else
+      this._progress_status.update();
+    this._progress.show();
+    this._progress_width = this._progress.getWidth();
+    this._progress_bar.style.width = "0px";
+  },
+  progress: function(frac, note) {
+    if (frac != null) {
+      this._progress_bar.style.width = Math.floor(this._progress_width * frac) + "px";
+    }
+    if (note != null)
+      this.progress_note(note);
+    
+  },
+  progress_end: function() {
+    this._progress.hide();
+  },
+  progress_note: function(note) {
+    if (note != null)
+      this._progress_status.update(note);
+    else
+      this._progress_status.update();
   }
 });
 
