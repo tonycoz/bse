@@ -9,7 +9,7 @@ use Carp qw(confess);
 use BSE::Util::HTML;
 use BSE::Util::Tags qw(tag_article);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub edit_link {
   my ($self, $id) = @_;
@@ -71,6 +71,7 @@ sub baseActs {
 	 my @args =
 	   (
 	    -name      => $option->{id},
+	    -id        => $option->{id},
 	    -values    => $option->{values},
 	    -override  => 1,
 	   );
