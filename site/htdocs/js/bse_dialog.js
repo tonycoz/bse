@@ -153,6 +153,7 @@ var BSEDialog = Class.create({
       }
       this.div.style.left = (document.viewport.getWidth() - this.div.getWidth()) / 2 + "px";
     }
+    this._fields.inDocument();
     //if (this.wrapper) {
     //  this.wrapper.style.height = "100%";
     //}
@@ -237,9 +238,11 @@ BSEDialog.Fields = Class.create({
     this._fields = {};
     this._value_fields = [];
     this._elements = [];
+    this._fieldobjs = [];
     options.fields.each(function(field) {
       var cls = BSEDialog.FieldTypes[field.type || "text"];
       var fieldobj = new cls(field);
+      this._fieldobjs.push(fieldobj);
       fieldobj.value_fields().each(function(field) {
 	this._fields[field.name()] = field;
       }.bind(this));
@@ -260,6 +263,11 @@ BSEDialog.Fields = Class.create({
   },
   elements: function() {
     return this._elements;
+  },
+  inDocument: function() {
+    this._fieldobjs.each(function(f) {
+      f.inDocument();
+    });
   }
 });
 
@@ -338,6 +346,9 @@ BSEDialog.FieldTypes.Base = Class.create({
   },
   object: function() {
     return this._object;
+  },
+  // called when the field becomes part of the document
+  inDocument: function() {
   }
 });
 
@@ -469,6 +480,9 @@ BSEDialog.FieldTypes.fieldset = Class.create(BSEDialog.FieldTypes.Base, {
   },
   elements: function() {
     return [ this._element ];
+  },
+  inDocument: function() {
+    this._fields.inDocument();
   }
 });
 
