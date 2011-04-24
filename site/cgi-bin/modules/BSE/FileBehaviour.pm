@@ -1,7 +1,7 @@
 package BSE::FileBehaviour;
 use strict;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub new {
   my ($class, %opts) = @_;
@@ -131,7 +131,7 @@ sub validate {
   return 1;
 }
 
-sub image_file_message {
+sub pdf_file_message {
   my ($self) = @_;
 
   return $self->{pdf_file_message} || "msg:bse/files/pdf_file_required";
