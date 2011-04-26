@@ -72,7 +72,7 @@ sub error_page {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
+     $req->dyn_user_tags,
      msg => sub { CGI::escapeHTML($msg) },
     );
   BSE::Template->show_page($template, $cfg, \%acts);
