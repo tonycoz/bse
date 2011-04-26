@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>137;
+use Test::More tests=>141;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
@@ -61,6 +61,12 @@ template_test "cfg", $top, <<TEMPLATE, <<EXPECTED;
 <:cfg "no such section" somekey "default / value":>
 TEMPLATE
 default / value
+EXPECTED
+
+template_test "formats", $top, <<TEMPLATE, <<EXPECTED;
+<:arithmetic 10 |%05d:>
+TEMPLATE
+00010
 EXPECTED
 
 template_test "children_of", $top, <<TEMPLATE, <<EXPECTED;

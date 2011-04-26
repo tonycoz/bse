@@ -8,7 +8,7 @@ use vars qw(@EXPORT_OK @ISA);
 @ISA = qw(Exporter);
 require Exporter;
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 sub _get_parms {
   my ($acts, $args) = @_;
@@ -346,6 +346,9 @@ sub static {
 	 my $work = unescape_html($value);
 	 Encode::from_to($work, 'utf8', $workset);
 	 return $work;
+       }
+       elsif ($fmt =~ /%/) {
+	 return sprintf($fmt, $value);
        }
        return $value;
      },
