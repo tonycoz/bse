@@ -66,3 +66,54 @@ div.window fieldset.bse_image_field > div.more {
   clear: both;
   display: block;
 }
+
+div.window fieldset.bse_image_gallery div.bse_gallery_imagelist {
+  border: 1px solid #808080;
+  display: block;
+  height: 102px;
+}
+
+div.window fieldset.bse_image_gallery div.bse_gallery_imagelist .bse_gallery_image,
+div.window fieldset.bse_image_gallery div.bse_gallery_imagelist .bse_drop_target {
+  width: 81px;
+  height: 100px;
+  float: left;
+  border-right: 1px solid #808080;
+  position: relative;
+}
+
+.bse_gallery_image {
+  background-color: #FFF;
+}
+
+.bse_drop_target { 
+  background-color: #CFC;
+  font-weight: bold;
+  padding-top: 40px;
+  text-align: center;
+}
+
+div.window fieldset.bse_image_gallery div.bse_gallery_imagelist > .bse_gallery_image .name {
+  width: 80px;
+  position: absolute;
+  top: 80px;
+  display: block;
+  text-align: center;
+  overflow: hidden;
+  text-size: 70%;
+}
+
+div.window fieldset.bse_image_gallery div.bse_gallery_imagelist > .bse_gallery_image .delete {
+  top: 0px;
+  right: 0px;
+  position: absolute;
+  background-color: #CCC;
+}
+
+div.window fieldset.bse_image_gallery div.bse_gallery_imagelist > .bse_gallery_image .edit {
+  top: 1.5em;
+  right: 0px;
+  position: absolute;
+  background-color: #CCC;
+}
+
