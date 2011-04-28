@@ -1149,6 +1149,7 @@ sub _common_tags {
 	}
 	$req->set_article(product => $product);
       },
+      nocache => 1,
      ),
      $it->make
      (
@@ -1156,6 +1157,7 @@ sub _common_tags {
       plural => "orderfiles",
       code => [ iter_orderfiles => $self, \$order ],
       store => \$file,
+      nocache => 1,
      ),
      product => sub {
        $item or return "* Not in item iterator *";
@@ -1168,6 +1170,7 @@ sub _common_tags {
       plural => "prodfiles",
       code => [ files => $product ],
       store => \$file,
+      nocache => 1,
      ),
      ifFileAvail =>
      sub {
