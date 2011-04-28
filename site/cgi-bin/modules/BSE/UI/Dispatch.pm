@@ -2,7 +2,7 @@ package BSE::UI::Dispatch;
 use strict;
 use Carp 'confess';
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub new {
   my ($class, %opts) = @_;
@@ -105,7 +105,7 @@ sub error {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $req->cgi, $req->cfg),
+     $req->dyn_user_tags(),
      error_img => [ \&tag_error_img, $req->cfg, $errors ],
      msg => $msg,
      error => $msg, # so we can use the original error.tmpl
