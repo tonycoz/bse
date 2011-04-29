@@ -6,7 +6,7 @@ use vars qw(@ISA $VERSION);
 use BSE::TB::File;
 use Carp ();
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub rowClass {
   return 'BSE::TB::File';
@@ -271,6 +271,14 @@ Also sets the order.
 sub set_selected_files {
   my ($self, $owner_type, $owner_id, $files) = @_;
 
+  # make sure each file exists
+  for my $file (@$files) {
+    unless (ref $file) {
+      BSE::TB::Files->getByPkey($file)
+	  or Carp::confess "Bad file id $file";
+    }
+  }
+
   require BSE::TB::SelectedFiles;
   BSE::DB->do_txn
       (sub {
@@ -304,7 +312,9 @@ sub set_selected_files {
 	   ++$display_order;
 	 }
 
-	 $_->remove for values %current;
+	 for my $sel (values %current) {
+	   $sel->remove;
+	 }
        });
 }
 
