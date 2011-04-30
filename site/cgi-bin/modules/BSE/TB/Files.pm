@@ -6,7 +6,7 @@ use vars qw(@ISA $VERSION);
 use BSE::TB::File;
 use Carp ();
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 sub rowClass {
   return 'BSE::TB::File';
@@ -326,6 +326,23 @@ sub selection_owner_removed {
   my ($self, $owner_type, $owner_id) = @_;
 
   BSE::DB->single->run("SelectedFiles.remove_owner" => $owner_type, $owner_id);
+}
+
+=item owner_removed
+
+Should be called by an owner from it's remove() method to clean up
+files of that type.
+
+=cut
+
+sub owner_removed {
+  my ($self, $owner_type, $owner_id) = @_;
+
+  my @files = $self->getBy(file_type => $owner_type,
+			   owner_id => $owner_id);
+  for my $file (@files) {
+    $file->remove;
+  }
 }
 
 1;
