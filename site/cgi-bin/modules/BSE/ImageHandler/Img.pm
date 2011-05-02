@@ -4,7 +4,7 @@ use base 'BSE::ImageHandler::Base';
 use Carp qw(confess);
 use BSE::Util::HTML;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub format {
   my ($self, %opts) = @_;
@@ -132,7 +132,7 @@ sub _make_thumb_hash {
       $im{image} .= "&type.$im{type}";
     }
     else {
-      $im{image} .= "&" . $im->{image};
+      $im{image} .= "&" . $im->filename;
     }
 
 
