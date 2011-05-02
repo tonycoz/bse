@@ -2,25 +2,16 @@ package BSE::TB::Image;
 use strict;
 # represents an image from the database
 use Squirrel::Row;
+use BSE::ThumbCommon;
 use vars qw/@ISA/;
-@ISA = qw/Squirrel::Row/;
+@ISA = qw/Squirrel::Row BSE::ThumbCommon/;
 use Carp qw(confess);
-use BSE::Util::HTML qw(escape_html);
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub columns {
   return qw/id articleId image alt width height url displayOrder name
             storage src ftype/;
-}
-
-sub _handler_object {
-  my ($im, $cfg) = @_;
-
-  my $module = "BSE::ImageHandler::" . ucfirst($im->ftype);
-  (my $file = $module . ".pm") =~ s(::)(/)g;
-  require $file;
-  my $handler = $module->new(cfg => $cfg);
 }
 
 sub formatted {
@@ -53,21 +44,6 @@ sub inline {
     );
 }
 
-sub thumb {
-  my ($im, %opts) = @_;
-
-  my $cfg = delete $opts{cfg}
-    or confess "Missing cfg parameter";
-
-  my $handler = $im->_handler_object($cfg);
-
-  return $handler->thumb
-    (
-     image => $im,
-     %opts,
-    );
-}
-
 sub popimage {
   my ($im, %opts) = @_;
 
@@ -96,6 +72,33 @@ sub json_data {
   $data->{url} = $self->image_url;
 
   return $data;
+}
+
+sub dynamic_thumb_url {
+  my ($self, %opts) = @_;
+
+  my $geo = delete $opts{geo}
+    or Carp::confess("missing geo option");
+
+  return $self->thumb_base_url
+    . "?g=$geo&page=$self->{articleId}&image=$self->{id}";
+}
+
+sub thumb_base_url {
+  '/cgi-bin/thumb.pl';
+}
+
+sub full_filename {
+  my ($self) = @_;
+
+  return BSE::TB::Images->image_dir() . "/" . $self->image;
+}
+
+# compatibility with BSE::TB::File
+sub filename {
+  my ($self) = @_;
+
+  return $self->image;
 }
 
 1;

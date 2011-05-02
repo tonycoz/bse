@@ -1,16 +1,17 @@
 package BSE::TB::File;
 use strict;
 use Squirrel::Row;
+use BSE::ThumbCommon;
 use vars qw/@ISA/;
-@ISA = qw/Squirrel::Row/;
+@ISA = qw/Squirrel::Row BSE::ThumbCommon/;
 use Carp 'confess';
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub columns {
   return qw/id file_type owner_id filename display_name content_type
             size_in_bytes is_public name display_order src category
-            alt width height url description/;
+            alt width height url description ftype/;
 }
 
 sub table {
@@ -32,6 +33,7 @@ sub defaults {
      width => 0,
      height => 0,
      url => '',
+     ftype => "img",
     );
 }
 
@@ -119,6 +121,15 @@ sub json_data {
   my $data = $self->data_only;
 
   return $data;
+}
+
+sub dynamic_thumb_url {
+  my ($self, %opts) = @_;
+
+  my $geo = delete $opts{geo}
+    or Carp::confess("Missing geo parameter");
+
+  return "/cgi-bin/thumb.pl?s=file&g=$geo&image=$self->{id}";
 }
 
 1;

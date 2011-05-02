@@ -4,7 +4,7 @@ use BSE::TB::Images;
 use BSE::CfgInfo qw(cfg_image_dir);
 use BSE::StorageMgr::Thumbs;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 # returns a list of $url, $filename, $basename
 sub generate_thumb {
@@ -20,13 +20,13 @@ sub generate_thumb {
   my $cache_dir = $cfg->entry('paths', 'scalecache', "$image_dir/scaled");
   my $cache_base_url = $cfg->entry('paths', 'scalecacheurl', '/images/scaled');
 
-  my ($start_type) = $image->{image} =~ /\.(\w+)$/;
+  my ($start_type) = $image->filename =~ /\.(\w+)$/;
   $start_type ||= 'png';
 
   my ($width, $height, $type) = 
     $thumbs->thumb_dimensions_sized($geometry, @$image{qw/width height/}, $start_type);
   
-  my $basename = "$geometry_id-$image->{image}";
+  my $basename = "$geometry_id-" . $image->filename;
 
   if ($type eq 'jpeg' && $basename !~ /\.jpe?g$/i) {
     $basename .= ".jpg";
@@ -44,10 +44,10 @@ sub generate_thumb {
     $cache_url = $storage->url($basename);
   }
   else {
-    my $image_filename = "$image_dir/$image->{image}";
+    my $image_filename = $image->full_filename;
     unless (-e $image_filename) {
       warn "Image file $image_filename missing\n";
-      die "Image file $image->{image} missing\n";
+      die "Image file ", $image->filename, " missing\n";
     }
 
     my $error;

@@ -210,6 +210,7 @@ site/cgi-bin/modules/BSE/Template.pm
 site/cgi-bin/modules/BSE/Thumb/Imager.pm
 site/cgi-bin/modules/BSE/Thumb/Imager/Colourize.pm
 site/cgi-bin/modules/BSE/Thumb/Imager/RandomCrop.pm
+site/cgi-bin/modules/BSE/ThumbCommon.pm
 site/cgi-bin/modules/BSE/ThumbLow.pm
 site/cgi-bin/modules/BSE/UI.pm
 site/cgi-bin/modules/BSE/UI/AdminAudit.pm

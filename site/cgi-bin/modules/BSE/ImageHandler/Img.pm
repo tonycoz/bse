@@ -4,11 +4,7 @@ use base 'BSE::ImageHandler::Base';
 use Carp qw(confess);
 use BSE::Util::HTML;
 
-our $VERSION = "1.000";
-
-sub thumb_base_url {
-  '/cgi-bin/thumb.pl';
-}
+our $VERSION = "1.001";
 
 sub format {
   my ($self, %opts) = @_;
@@ -109,7 +105,6 @@ sub _make_thumb_hash {
     or return ( undef, "* invalid geometry string: $error *" );
 
   my %im = map { $_ => $im->{$_} } $im->columns;
-  my $base = $self->thumb_base_url;
 
   @im{qw/width height type original/} = 
     $thumbs->thumb_dimensions_sized($geometry, @$im{qw/width height/});
@@ -128,7 +123,10 @@ sub _make_thumb_hash {
       and print STDERR "  Generated $im{image}\n";
   }
   unless ($im{image}) {
-    $im{image} = "$base?g=$geo_id&page=$im->{articleId}&image=$im->{id}";
+    $im{image} = $im->dynamic_thumb_url
+      (
+       geo => $geo_id
+      );
 
     if (defined $im{type}) {
       $im{image} .= "&type.$im{type}";

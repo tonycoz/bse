@@ -1,10 +1,15 @@
 package BSE::ThumbCommon;
 use strict;
+use Carp ();
+
+our $VERSION = "1.000";
 
 # common code between article images and BSE::TB::File
 
 sub _handler_object {
   my ($im, $cfg) = @_;
+
+  $cfg ||= BSE::Cfg->single;
 
   my $module = "BSE::ImageHandler::" . ucfirst($im->ftype);
   (my $file = $module . ".pm") =~ s(::)(/)g;
@@ -15,8 +20,7 @@ sub _handler_object {
 sub thumb {
   my ($im, %opts) = @_;
 
-  my $cfg = delete $opts{cfg}
-    or confess "Missing cfg parameter";
+  my $cfg = delete $opts{cfg};
 
   my $handler = $im->_handler_object($cfg);
 

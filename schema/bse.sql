@@ -1209,6 +1209,8 @@ create table bse_files (
 
   description text not null,
 
+  ftype varchar(20) not null default 'img',
+
   index owner(file_type, owner_id)
 );
 

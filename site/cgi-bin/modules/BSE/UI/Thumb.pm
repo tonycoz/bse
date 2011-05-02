@@ -1,11 +1,10 @@
 package BSE::UI::Thumb;
 use strict;
 use base 'BSE::UI::Dispatch'; # for error
-use BSE::TB::Images;
 use BSE::CfgInfo qw(cfg_image_dir);
 use BSE::Util::Thumb;
 
-our $VERSION = "1.001";
+our $VERSION = "1.003";
 
 sub dispatch {
   my ($class, $req) = @_;
@@ -22,15 +21,25 @@ sub dispatch {
   my $geometry_id = $cgi->param('g');
   my $image_id = $cgi->param('image');
   my $article_id = $cgi->param('page');
+  my $source = $cgi->param("s") || "article";
   my $error;
   my $geometry = $cfg->entry('thumb geometries', $geometry_id)
     or return $class->error($req, "** cannot find thumb geometry $geometry_id **");
   $thumbs->validate_geometry($geometry, \$error)
     or return $class->error($req, "invalid geometry string: $error");
   
-  my $image = BSE::TB::Images->getByPkey($image_id);
-  $image && $image->{articleId} == $article_id
-    or return $class->error($req, "image not found");
+  my $image;
+  if ($source eq "article") {
+    require BSE::TB::Images;
+    $image = BSE::TB::Images->getByPkey($image_id);
+    $image && $image->{articleId} == $article_id
+      or return $class->error($req, "image not found");
+  }
+  elsif ($source eq "file") {
+    require BSE::TB::Files;
+    $image = BSE::TB::Files->getByPkey($image_id)
+      or return $class->error($req, "image not found");
+  }
 
   my $do_cache = $cfg->entry('basic', 'cache_thumbnails', 1);
   my $image_dir = cfg_image_dir($cfg);
@@ -38,7 +47,7 @@ sub dispatch {
   my $cache_dir = $cfg->entry('paths', 'scalecache', "$image_dir/scaled");
   my $cache_base_url = $cfg->entry('paths', 'scalecacheurl', '/images/scaled');
 
-  my ($start_type) = $image->{image} =~ /\.(\w+)$/;
+  my ($start_type) = $image->filename =~ /\.(\w+)$/;
   $start_type ||= 'png';
 
   my ($width, $height, $type) = 
@@ -79,7 +88,7 @@ sub dispatch {
   else {
     # not caching, just generate it
 
-    my $filename = "$image_dir/$image->{image}";
+    my $filename = $image->full_filename;
     -e $filename 
       or return $class->error($req, "image file missing");
     

@@ -207,6 +207,7 @@ Column width;int(11);YES;NULL;
 Column height;int(11);YES;NULL;
 Column url;varchar(255);YES;NULL;
 Column description;text;NO;NULL;
+Column ftype;varchar(20);NO;img;
 Index PRIMARY;1;[id]
 Index owner;0;[file_type;owner_id]
 Table bse_locations
