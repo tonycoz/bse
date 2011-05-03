@@ -6,12 +6,12 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::ThumbCommon/;
 use Carp 'confess';
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub columns {
   return qw/id file_type owner_id filename display_name content_type
-            size_in_bytes is_public name display_order src category
-            alt width height url description ftype/;
+            size_in_bytes when_uploaded is_public name display_order src
+	    category alt width height url description ftype/;
 }
 
 sub table {
