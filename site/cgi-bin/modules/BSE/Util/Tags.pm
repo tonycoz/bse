@@ -373,12 +373,7 @@ sub tag_arithmetic {
       : (++$not_found, $1)/ge;
 
   if ($not_found) {
-    if ($prefix eq '') {
-      return "<:arithmetic $arg:>";
-    }
-    else {
-      return "<:arithmetic $prefix: $arg:>";
-    }
+    die "UNIMPL\n";
   }
 
   # this may be made more restrictive
