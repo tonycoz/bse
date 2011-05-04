@@ -8,7 +8,7 @@ use vars qw(@EXPORT_OK @ISA);
 @ISA = qw(Exporter);
 require Exporter;
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 sub _get_parms {
   my ($acts, $args) = @_;
@@ -373,7 +373,7 @@ sub tag_arithmetic {
       : (++$not_found, $1)/ge;
 
   if ($not_found) {
-    die "UNIMPL\n";
+    die "ENOIMPL\n";
   }
 
   # this may be made more restrictive
