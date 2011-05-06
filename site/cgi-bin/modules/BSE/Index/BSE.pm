@@ -4,7 +4,7 @@ use base 'BSE::Index::Base';
 use BSE::DB;
 use Constants qw($DATADIR $MAXPHRASE);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub new {
   my ($class, %opts) = @_;
@@ -16,7 +16,29 @@ sub new {
     or die "No dropIndex member in BSE::DB";
   $self->{insertIndex} = $self->{dh}->stmt('insertIndex')
     or die "No insertIndex member in BSE::DB";
-  $self->{index} = {};
+
+  my $priority = $self->{cfg}->entry("search", "index_priority", "speed");
+  if ($priority eq "speed") {
+    $self->{index} = {};
+  }
+  elsif ($priority eq "memory") {
+    require DBM::Deep;
+    require File::Temp;
+    my $fh = File::Temp->new;
+    $self->{index} = DBM::Deep->new
+      (
+       fh => $fh,
+       locking => 0,
+       autoflush => 0,
+       data_sector_size => 256,
+      );
+    $self->{fh} = $fh;
+    $self->{filename} = $fh->filename;
+  }
+  else {
+    die "Unknown [search].index_priority of '$priority'\n";
+  }
+  $self->{priority} = $priority;
 
   $self->{decay_multiplier} = 0.4;
 
@@ -90,26 +112,28 @@ sub process {
     
     for my $phrase (map { "@words[$start..$_]" } $start..$end) {
       if (lc $phrase ne $phrase && !$seen->{lc $phrase}++) {
-	if (exists $self->{index}{lc $phrase}{$id}) {
+	my $temp = $self->{index}{lc $phrase};
+	if (exists $temp->{$id}) {
 	  $weights->{lc $phrase} *= $self->{decay_multiplier};
-	  $self->{index}{lc $phrase}{$id}[1] += 
-	    $score * $weights->{lc $phrase};
+	  $temp->{$id}[1] += $score * $weights->{lc $phrase};
 	}
 	else {
 	  $weights->{lc $phrase} = 1.0;
-	  $self->{index}{lc $phrase}{$id} = [ $sectionid, $score ];
+	  $temp->{$id} = [ $sectionid, $score ];
 	}
+	$self->{index}{lc $phrase} = $temp;
       }
       if (!$seen->{$phrase}++) {
-	if (exists $self->{index}{$phrase}{$id}) {
+	my $temp = $self->{index}{$phrase};
+	if (exists $temp->{$id}) {
 	  $weights->{$phrase} *= $self->{decay_multiplier};
-	  $self->{index}{$phrase}{$id}[1] += 
-	    $score * $weights->{$phrase};
+	  $temp->{$id}[1] += $score * $weights->{$phrase};
 	}
 	else {
 	  $weights->{$phrase} = 1.0;
-	  $self->{index}{$phrase}{$id} = [ $sectionid, $score ];
+	  $temp->{$id} = [ $sectionid, $score ];
 	}
+	$self->{index}{$phrase} = $temp;
       }
     }
   }
@@ -132,6 +156,12 @@ sub end_index {
     
     $insertIndex->execute($key, "@ids", "@sections", "@scores")
       or die "Cannot insert into index: ", $insertIndex->errstr;
+  }
+
+  if ($self->{priority} eq "memory") {
+    delete $self->{dbm};
+    delete $self->{fh};
+    unlink $self->{filename};
   }
 }
 

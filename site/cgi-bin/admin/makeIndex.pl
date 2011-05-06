@@ -8,13 +8,45 @@ use BSE::DB;
 use Generate;
 use BSE::Cfg;
 use BSE::WebUtil 'refresh_to_admin';
+use Time::HiRes qw(time);
 my $in_cgi = exists $ENV{REQUEST_METHOD};
+my $verbose;
+my $start = time();
+
+my $cfg;
+$| = 1;
 if ($in_cgi) {
+  # make sure the user can do this
+  require BSE::Request;
+  my $req = BSE::Request->new;
+  $cfg = $req->cfg;
+  if (!$req->check_admin_logon) {
+    my $url = $req->url("logon", { m => "You must logon to dump the database" });
+    $req->output_result($req->get_refresh($url));
+    exit;
+  }
+  elsif (!$req->user_can("bse_makeindex")) {
+    my $url = $req->url("menu", { m => "You don't have access to build the search index" });
+    $req->output_result($req->get_refresh($url));
+    exit;
+  }
+
+  $verbose = $req->cgi->param("verbose") || 0;
+  print "Content-Type: text/plain\n\n" if $verbose;
   #eval "use CGI::Carp qw(fatalsToBrowser)";
 }
+else {
+  require Getopt::Long;
+  Getopt::Long->import;
+  GetOptions("v:i" => \$verbose);
+  if (defined $verbose && !$verbose) {
+    $verbose = 1;
+  }
 
-my $cfg = BSE::Cfg->new;
-BSE::DB->init($cfg);
+  $cfg = BSE::Cfg->new;
+  BSE::DB->init($cfg);
+}
+
 my $urlbase = $cfg->entryVar('site', 'url');
 
 my $articles = 'Articles';
@@ -52,27 +84,40 @@ my $indexer_class = $cfg->entry('search', 'indexer', 'BSE::Index::BSE');
 (my $indexer_file = $indexer_class . ".pm") =~ s!::!/!g;
 require $indexer_file;
 # key is phrase, value is hashref with $id -> $sectionid
-my $indexer = $indexer_class->new(cfg => $cfg, scores => \%scores);
+my $indexer = $indexer_class->new
+  (
+   cfg => $cfg,
+   scores => \%scores,
+   verbose => $verbose,
+  );
+
 eval {
+  vnote($start, $verbose, "s1::Starting index");
   $indexer->start_index();
-  makeIndex($articles);
+  vnote($start, $verbose, "s2::Starting article scan");
+  makeIndex($articles, $start, $verbose);
+  vnote($start, $verbose, "f2::Populating search index");
   $indexer->end_index();
+  vnote($start, $verbose, "f1::Indexing complete");
 };
 if ($@) {
   print STDERR "Indexing error: $@\n";
 }
 
-if ($in_cgi) {
+if ($in_cgi && !$verbose) {
   refresh_to_admin($cfg, "/cgi-bin/admin/menu.pl");
 }
 
 sub makeIndex {
-  my $articles = shift;
+  my ($articles, $start, $verbose) = @_;
   my %dont_search;
   my %do_search;
   @dont_search{@SEARCH_EXCLUDE} = @SEARCH_EXCLUDE;
   @do_search{@SEARCH_INCLUDE} = @SEARCH_INCLUDE;
+  vnote($start, $verbose, "s::Loading article ids");
   my @ids = $articles->allids;
+  my $count = @ids;
+  vnote($start, $verbose, "c:$count:$count articles to index");
  INDEX: for my $id (@ids) {
     my @files;
     my $got_files;
@@ -97,6 +142,13 @@ sub makeIndex {
     next if $dont_search{$sectionid};
 
     $article = $gen->get_real_article($article);
+
+    unless ($article) {
+      vnote($start, $verbose, "e:$id:Full article for $id not found");
+      next;
+    }
+    
+    vnote($start, $verbose, "i:$id:Indexing '$article->{title}'");
     
     my %fields;
     for my $field (sort { $scores{$b} <=> $scores{$a} } keys %scores) {
@@ -126,5 +178,12 @@ sub makeIndex {
     }
     $indexer->process_article($article, $section, $indexas, \%fields);
   }
+  vnote($start, $verbose, "f::Article scan complete");
 }
 
+sub vnote {
+  my ($start, $verbose, @text) = @_;
+
+  $verbose or return;
+  printf "%.3f:%s\n", time() - $start, "@text";
+}

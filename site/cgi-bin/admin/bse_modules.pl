@@ -69,6 +69,7 @@ my @base_check =
      'Date::Format' => 0,
      'Captcha::reCAPTCHA' => 0,
      'FLV::Info' => 0,
+     'DBM::Deep' => 2,
     },
    },
    {

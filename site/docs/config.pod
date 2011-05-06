@@ -715,6 +715,20 @@ indexing.  Default: \w+
 The field specific word match regular expression for the built-in
 search indexer.  Default: the value of C<wordre>.
 
+=item indexer
+
+Module used to build the search index.  Default: BSE::Index::BSE.
+
+=item index_priority
+
+For C<BSE::Index::BSE>, the optimization priority.  The default of
+C<speed> builds the index in memory and is very fast, but can consume
+a lot of memory.  Otherwise, set this to C<memory> to reduce memory
+usage.
+
+C<memory> priority index building requires that the DBM::Deep module
+be installed.
+
 =back
 
 =head2 [search highlight]
