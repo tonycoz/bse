@@ -536,45 +536,29 @@ BSEDialog.FieldTypes.help = Class.create(BSEDialog.FieldTypes.Base, {
   }
 });
 
-BSEDialog.FieldTypes.image = Class.create(BSEDialog.FieldTypes.Base, {
+BSEDialog.FieldTypes.filecommon = Class.create(BSEDialog.FieldTypes.Base, {
   initialize: function(options) {
     this.options = Object.extend(Object.extend({}, this.default_options()), options);
     // general container
     var wrapper = new Element("fieldset", {
-      className: "bse_image_field"
+      className: this.options.wrapper_class
     });
     this._element = wrapper;
     var legend = new Element("legend");
     legend.update(this.options.label);
     wrapper.appendChild(legend);
 
-    var disp = new Element("img", {
-      className: "display"
-    });
-    this._image_display = disp;
     this.options.value = Object.extend({
       src: "",
       alt: "",
       name: "",
       description: "",
-      display_name: ""
+      display_name: "",
+      category: ""
     }, this.options.value || {});
-    if (this.options.value) {
-      if (this.options.value.src)
-	disp.src = this.options.value.src;
-      else if (this.options.value.file) {
-	new BSEDialog.ImagePlaceholder({
-	  file: this.options.value.file,
-	  onLoad: function(disp, ph) {
-	    disp.src = ph.src();
-	  }.bind(this, disp)
-	});
-      }
-	
-      disp.alt = this.options.value.alt;
-    }
+    this._display = this._make_display();
     
-    wrapper.appendChild(disp);
+    wrapper.appendChild(this._display);
     var file = new Element("input", {
       type: "file"
     });
@@ -583,64 +567,24 @@ BSEDialog.FieldTypes.image = Class.create(BSEDialog.FieldTypes.Base, {
 
     if (BSEAPI.can_drag_and_drop()) {
       BSEAPI.make_drop_zone({
-	element: disp,
+	element: this._display,
 	onDrop: function (files) {
 	  this.clear_error();
 	  var file = files[0];
-	  if (!/\.(jpe?g|png|gif)$/i.test(file.fileName)) {
-	    this.set_error("Only image files accepted");
+	  if (!this.validate_dropped_file(file))
 	    return;
-	  }
 	  this._dropped_file = file;
 	  this.value.display_name = file.fileName;
-	  if (window.URL && window.URL.createObjectURL) {
-	    this._update_thumb_dropped(window.URL.createObjectURL(file));
-	  }
-	  else if (window.FileReader) {
-	    var fr = new FileReader;
-	    fr.onload = function(fr) {
-	      this._update_thumb_dropped(fr.result);
-	    }.bind(this, fr);
-	    fr.readAsDataURL(file);
-	  }
+	  this.update_dropped_display(file);
 
 	  this._file_input.hide();
-	  this._dropped_name.update(this.value.display_name);
-	  this._dropped_name.show();
 	}.bind(this)
       });
-      this._dropped_name = new Element("span", {
-	className: "dropped_name"
-      });
-      this._dropped_name.hide();
-      wrapper.appendChild(this._dropped_name);
     }
 
-    var fields = new Array();
-    if (!this.options.hide_alt) {
-      fields.push({
-	label: "Alt",
-	type: "text",
-	name: "alt",
-	value: this.options.value.alt
-      });
-    }
-    if (!this.options.hide_name) {
-      fields.push({
-	label: "Name",
-	type: "text",
-	name: "name",
-	value: this.options.value.name
-      });
-    }
-    if (!this.options.hide_description) {
-      fields.push({
-	label: "Description",
-	type: "text",
-	name: "description",
-	value: this.options.value.description
-      });
-    }
+    this._more_display();
+
+    var fields = this._extra_fields();
 
     if (fields.length != 0) {
       var more = new Element("div", {
@@ -674,26 +618,37 @@ BSEDialog.FieldTypes.image = Class.create(BSEDialog.FieldTypes.Base, {
     this._error = this._make_error();
     wrapper.appendChild(this._error);
   },
-  _update_thumb_dropped: function(url) {
-    // a bit hacky
-    var img = new Element("img");
-    img.onload = function(img) {
-      var canvas = new Element("canvas", {
-	width: 80,
-	height: 80
+  _more_display: function() {
+  },
+  _extra_fields: function() {
+    var fields = new Array();
+    var fields = new Array();
+    if (!this.options.hide_alt) {
+      fields.push({
+	label: "Alt",
+	type: "text",
+	name: "alt",
+	value: this.options.value.alt
       });
+    }
+    if (!this.options.hide_name) {
+      fields.push({
+	label: "Name",
+	type: "text",
+	name: "name",
+	value: this.options.value.name
+      });
+    }
+    if (!this.options.hide_description) {
+      fields.push({
+	label: "Description",
+	type: "text",
+	name: "description",
+	value: this.options.value.description
+      });
+    }
 
-      var ctx = canvas.getContext("2d");
-      var max_dim = img.width > img.height ? img.width : img.height;
-      var scale = 80 / max_dim;
-      var sc_width = img.width * scale;
-      var sc_height = img.height * scale;
-      var off_x = (80-sc_width)/2;
-      var off_y = (80-sc_height)/2;
-      ctx.drawImage(img, off_x, off_y, 80-off_x*2, 80-off_y*2);
-      this._image_display.src = canvas.toDataURL();
-    }.bind(this, img);
-    img.src = url
+    return fields;
   },
   default_options: function() {
     return {};
@@ -735,6 +690,89 @@ BSEDialog.FieldTypes.image = Class.create(BSEDialog.FieldTypes.Base, {
     }
 
     return obj;
+  }
+});
+
+BSEDialog.FieldTypes.image = Class.create(BSEDialog.FieldTypes.filecommon, {
+  _make_display: function() {
+    var disp = new Element("img", {
+      className: "display",
+      width: this.options.placeholder_width,
+      height: this.options.placeholder_height
+    });
+    if (this.options.value) {
+      if (this.options.value.src)
+	disp.src = this.options.value.src;
+      else if (this.options.value.file) {
+	new BSEDialog.ImagePlaceholder({
+	  file: this.options.value.file,
+	  onLoad: function(disp, ph) {
+	    disp.src = ph.src();
+	  }.bind(this, disp)
+	});
+      }
+	
+      disp.alt = this.options.value.alt;
+    }
+
+    return disp;
+  },
+  _more_display: function() {
+    this._dropped_name = new Element("span", {
+      className: "dropped_name"
+    });
+    this._dropped_name.hide();
+    this._element.appendChild(this._dropped_name);
+  },
+  default_options: function($super) {
+    return Object.extend(Object.extend({}, $super()), {
+      wrapper_class: "bse_image_field",
+      placeholder_width: 80,
+      placeholder_height: 80
+    });
+  },
+  validate_dropped_file: function(file) {
+    if (!/\.(jpe?g|png|gif)$/i.test(file.fileName)) {
+      this.set_error("Only image files accepted");
+      return;
+    }
+
+    return true;
+  },
+  _update_thumb_dropped: function(url) {
+    // a bit hacky
+    var img = new Element("img");
+    img.onload = function(img) {
+      var canvas = new Element("canvas", {
+	width: 80,
+	height: 80
+      });
+
+      var ctx = canvas.getContext("2d");
+      var max_dim = img.width > img.height ? img.width : img.height;
+      var scale = 80 / max_dim;
+      var sc_width = img.width * scale;
+      var sc_height = img.height * scale;
+      var off_x = (80-sc_width)/2;
+      var off_y = (80-sc_height)/2;
+      ctx.drawImage(img, off_x, off_y, 80-off_x*2, 80-off_y*2);
+      this._display.src = canvas.toDataURL();
+    }.bind(this, img);
+    img.src = url
+  },
+  update_dropped_display: function(file) {
+    if (window.URL && window.URL.createObjectURL) {
+      this._update_thumb_dropped(window.URL.createObjectURL(file));
+    }
+    else if (window.FileReader) {
+      var fr = new FileReader;
+      fr.onload = function(fr) {
+	this._update_thumb_dropped(fr.result);
+      }.bind(this, fr);
+      fr.readAsDataURL(file);
+    }
+    this._dropped_name.update(this.value.display_name);
+    this._dropped_name.show();
   }
 });
 
