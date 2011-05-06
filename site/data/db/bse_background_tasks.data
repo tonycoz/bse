@@ -1,5 +1,5 @@
 --
-# VERSION=1.000
+# VERSION=1.001
 id: bse_gen
 description: Regenerate Site
 binname: perl util/gen.pl
@@ -47,4 +47,12 @@ long_desc: <<TEXT
 <pre>[basic]
 audit_log_age=60
 </pre>
+TEXT
+
+id: bse_make_index
+description: Rebuild the search index
+binname: perl cgi-bin/admin/makeIndex.pl
+bin_opts: -v
+long_desc: <<TEXT
+Rebuild the search index.
 TEXT

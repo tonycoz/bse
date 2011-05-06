@@ -5,7 +5,7 @@ use BSE::Util::SQL qw(now_sqldatetime);
 use Carp qw(confess);
 use Errno qw(EPERM EACCES);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub columns {
   return qw/id description modname binname bin_opts stoppable start_right running task_pid last_exit last_started last_completion long_desc/;
@@ -109,6 +109,9 @@ sub start {
     # child
     BSE::DB->forked;
   }
+
+  # so whatever we start doesn't think it's CGI
+  delete @ENV{qw/REQUEST_METHOD DOCUMENT_ROOT QUERY_STRING/};
 
   # child process
   my $null = $^O eq 'MSWin32' ? "NUL" : "/dev/null";
