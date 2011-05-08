@@ -18,7 +18,7 @@ use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
 use Carp qw(confess);
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -479,8 +479,10 @@ sub _partial_logon {
   my $session = $req->session;
   if ($session->{partial_logon} 
       && !$req->cfg->entryBool('custom', 'user_auth')) {
-    my $user = SiteUsers->getBy(userId => $session->{partial_logon});
-    $user->{disabled} and return;
+    my $user = SiteUsers->getByPkey($session->{partial_logon})
+      or return;
+    $user->{disabled}
+      and return;
     return $user;
   }
   return;
