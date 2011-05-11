@@ -776,6 +776,40 @@ BSEDialog.FieldTypes.image = Class.create(BSEDialog.FieldTypes.filecommon, {
   }
 });
 
+BSEDialog.FieldTypes.managed_file = Class.create(BSEDialog.FieldTypes.filecommon, {
+  _make_display: function() {
+    var disp = new Element("span", {
+      className: "display"
+    });
+    if (this.options.value && this.options.value.display_name) {
+      disp.update(this.options.value.display_name);
+    }
+    else if (BSEAPI.can_drag_and_drop()) {
+      disp.update("(Drop your file here)");
+    }
+
+    return disp;
+  },
+  default_options: function($super) {
+    return Object.extend(Object.extend({}, $super()), {
+      wrapper_class: "bse_file_field",
+      hide_alt: true
+    });
+  },
+  validate_dropped_file: function(file) {
+    if (this.options.filematch &&
+	!this.options.filematch.test(file.fileName)) {
+      this.set_error("Only " + this.options.filetype + " files accepted");
+      return;
+    }
+
+    return true;
+  },
+  update_dropped_display: function(file) {
+    this._display.update(this.value.display_name);
+  }
+});
+
 BSEDialog.FieldTypes.gallery = Class.create(BSEDialog.FieldTypes.Base, {
   initialize: function(options) {
     this.options = Object.extend(
