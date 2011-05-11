@@ -44,7 +44,7 @@ var BSEDialog = Class.create({
       this.error(error.message);
     }
     else {
-      this.error(error_code);
+      this.error(error.error_code);
     }
   },
   close: function() {
