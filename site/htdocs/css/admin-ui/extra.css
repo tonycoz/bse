@@ -119,3 +119,8 @@ div.window fieldset.bse_image_gallery div.bse_gallery_imagelist > .bse_gallery_i
   background-color: #CCC;
 }
 
+div.window {
+  margin-top: 0px;
+  position: relative;
+  top: 8em;
+}
