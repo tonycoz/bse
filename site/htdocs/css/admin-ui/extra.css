@@ -18,6 +18,8 @@
 
 #base_work {
     color: #FFF;
+    position: fixed;
+    bottom: 0px;
 }
 
 .buttons>span span.spinner {
