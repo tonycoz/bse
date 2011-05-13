@@ -5,7 +5,7 @@ use BSE::Mail;
 use Carp 'confess';
 use Digest::MD5 qw(md5_hex);
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 =head1 NAME
 
@@ -437,9 +437,11 @@ sub done {
     if (($inline_css eq "style" && $html_content =~ /<style/i)
 	|| $inline_css eq "force") {
       my $report_failure = $self->{cfg}->entry("mail", "inline_css_report", 1);
+      my %inline_opts = map { $_ => 1 } split /,/,
+	$self->{cfg}->entry("mail", "inline_css_flags", "");
       my $good = eval {
 	require CSS::Inliner;
-	my $inliner = CSS::Inliner->new;
+	my $inliner = CSS::Inliner->new(\%inline_opts);
 	local $SIG{__DIE__};
 	$inliner->read({html => $html_content});
 	$html_content = $inliner->inlinify;

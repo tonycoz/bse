@@ -455,6 +455,14 @@ If this is C<force> then we always attempt to inline CSS.
 
 If this is any other value then don't inline CSS.
 
+=item inline_css_flags
+
+A comma separated list of flags to supply to CSS::Inliner->new().
+Reasonable flags are C<strip_attrs> to strip C<id> and C<class>
+attributes, and C<leave_style> to leave the HTML style block in place.
+
+Default: no flags.
+
 =item inline_css_report
 
 If this is true and CSS inlining fails, log an error to the audit
