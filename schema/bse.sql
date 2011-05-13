@@ -1212,7 +1212,7 @@ create table bse_files (
   ftype varchar(20) not null default 'img',
 
   index owner(file_type, owner_id)
-);
+) type = InnoDB;
 
 -- a generic selection of files from a pool
 create table bse_selected_files (

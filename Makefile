@@ -82,7 +82,7 @@ otherdocs:
 
 dbinfo: site/util/mysql.str
 
-site/util/mysql.str: schema/bse.sql
+site/util/mysql.str: schema/bse.sql schema/mysql_build.pl
 	perl schema/mysql_build.pl >site/util/mysql.str
 
 version: site/cgi-bin/modules/BSE/Version.pm

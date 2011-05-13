@@ -46,13 +46,15 @@ if (keys %tables) {
 system "mysql -u$un -p$pw $db <$dist"
   and die "Error loading database";
 
-$tl = $dbh->prepare("show tables")
-  or die "prepare show tables ",$dbh->errstr;
+$tl = $dbh->prepare("show table status")
+  or die "prepare show table status ",$dbh->errstr;
 $tl->execute
-  or die "execute show tables ",$tl->errstr;
+  or die "execute show table status ",$tl->errstr;
 my @tables;
+my %engines;
 while (my $row = $tl->fetchrow_arrayref) {
   push(@tables, $row->[0]);
+  $engines{$row->[0]} = $row->[1];
 }
 undef $tl;
 
@@ -60,6 +62,7 @@ my @expected = qw(field type null key default extra);
 my @want =     qw(field type null default extra);
 for my $table (@tables) {
   print "Table $table\n";
+  print "Engine $engines{$table}\n";
   my $ti = $dbh->prepare("describe $table")
     or die "prepare describe $table: ",$dbh->errstr;
   $ti->execute()
