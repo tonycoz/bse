@@ -445,6 +445,22 @@ If non-zero then emails sent via the compose mail system that aren't
 being sent to a member record, will be sent as HTML, if the HTML
 template is available.
 
+=item inline_css
+
+If this is C<style> (the default) then use CSS::Inliner to attempt to
+inline CSS in mail if the text "<style" is found in the generated
+HTML.
+
+If this is C<force> then we always attempt to inline CSS.
+
+If this is any other value then don't inline CSS.
+
+=item inline_css_report
+
+If this is true and CSS inlining fails, log an error to the audit
+log. This is intended for use in debugging and should be disabled in
+production.  Default: false (disabled)
+
 =back
 
 =head2 [children of I<id>]

@@ -70,6 +70,7 @@ my @base_check =
      'Captcha::reCAPTCHA' => 0,
      'FLV::Info' => 0,
      'DBM::Deep' => 2,
+     'CSS::Inliner' => 3042,
     },
    },
    {

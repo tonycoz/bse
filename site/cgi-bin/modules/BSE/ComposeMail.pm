@@ -5,7 +5,7 @@ use BSE::Mail;
 use Carp 'confess';
 use Digest::MD5 qw(md5_hex);
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 =head1 NAME
 
@@ -116,7 +116,11 @@ sub start {
   $self->{attachments} = [];
   $self->{encrypt} = 0;
 
-  $self->{log} = {};
+  $self->{log} =
+    {
+     actor => "S",
+     component => "composemail::send",
+    };
   for my $key (keys %opts) {
     if ($key =~ /^log_(\w+)$/) {
       $self->{log}{$1} = $opts{$key};
@@ -428,6 +432,44 @@ sub done {
   else {
     my $html_content = BSE::Template->
       get_page($self->{html_template}, $self->{cfg}, \%acts);
+
+    my $inline_css = $self->{cfg}->entry("mail", "inline_css", "style");
+    if (($inline_css eq "style" && $html_content =~ /<style/i)
+	|| $inline_css eq "force") {
+      my $report_failure = $self->{cfg}->entry("mail", "inline_css_report", 1);
+      my $good = eval {
+	require CSS::Inliner;
+	my $inliner = CSS::Inliner->new;
+	local $SIG{__DIE__};
+	$inliner->read({html => $html_content});
+	$html_content = $inliner->inlinify;
+	1;
+      };
+      if (!$good && $report_failure) {
+	my $error = $@;
+	require BSE::TB::AuditLog;
+	my %log = %{$self->{log}};
+	my $dump = <<DUMP;
+HTML:
+======
+$html_content
+======
+Error:
+======
+$error
+======
+DUMP
+	BSE::TB::AuditLog->log
+	    (
+	     %log,
+	     msg => "Error inlining CSS",
+	     component => "composemail:done:inlinecss",
+	     level => "error",
+	     dump => $dump,
+	    );
+      }
+    }
+
     $message = $self->_build_mime_lite($content, $html_content, \@headers);
   }
   push @headers, $self->extra_headers;
@@ -443,7 +485,7 @@ sub done {
     if ($self->{cfg}->entry("audit log", "mail", 0)) {
       my %log_opts = %{$self->{log}};
       $log_opts{msg} ||= "Mail sent to $self->{to}";
-      $log_opts{component} ||= "composemail::send";
+      $log_opts{component} ||= "composemail:done:send";
       $log_opts{level} ||= "info";
       $log_opts{actor} ||= "S";
       $log_opts{dump} =$self->_log_dump($headers, $message);
@@ -455,7 +497,7 @@ sub done {
   else {
     my %log_opts = %{$self->{log}};
     $log_opts{msg} = "Error sending email: " . $mailer->errstr;
-    $log_opts{component} ||= "composemail:send";
+    $log_opts{component} ||= "composemail:done:send";
     $log_opts{level} ||= "error";
     $log_opts{actor} ||= "S";
     $log_opts{dump} = $self->_log_dump($headers, $message);

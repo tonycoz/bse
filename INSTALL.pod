@@ -140,6 +140,11 @@ Net::Amazon::S3 - for maintaining content on the Amazon S3 CDN.
 
 Captcha::reCAPTCHA - for displaying CAPTCHA's from Google reCAPTCHA.
 
+=item *
+
+CSS::Inliner - this is strongly desirable if you need the system to
+send email to the general public.
+
 =back
 
 =head1 PLANNING
