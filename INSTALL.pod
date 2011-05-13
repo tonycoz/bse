@@ -120,7 +120,7 @@ Crypt::SSLeay
 
 =back
 
-You may also want::
+You may also want:
 
 =over
 
