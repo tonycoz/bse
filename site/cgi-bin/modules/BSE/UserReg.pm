@@ -1658,9 +1658,8 @@ sub req_lost_password {
       $email_user = $custom->send_user_email_to($user, $cfg);
     };
   }
-  require 'BSE/Mail.pm';
-
-  my $mail = BSE::Mail->new(cfg=>$cfg);
+  require BSE::ComposeMail;
+  my $mail = BSE::ComposeMail->new(cfg => $cfg);
 
   my %mailacts;
   %mailacts =
@@ -1670,14 +1669,16 @@ sub req_lost_password {
      site => sub { $cfg->entryErr('site', 'url') },
      emailuser => [ \&tag_hash_plain, $email_user ],
     );
-  my $body = BSE::Template->get_page('user/lostpwdemail', $cfg, \%mailacts);
   my $from = $cfg->entry('confirmations', 'from') || 
     $cfg->entry('basic', 'emailfrom') || $SHOP_FROM;
   my $nopassword = $cfg->entryBool('site users', 'nopassword', 0);
   my $subject = $cfg->entry('basic', 'lostpasswordsubject') 
     || ($nopassword ? "Your options" : "Your password");
-  $mail->send(from=>$from, to=>$email_user->{email}, subject=>$subject,
-	      body=>$body)
+  $mail->send(template => 'user/lostpwdemail',
+		acts => \%mailacts,
+		from=>$from,
+		to=>$email_user->{email},
+		subject=>$subject)
     or return $self->req_show_lost_password($req,
 					$msgs->(lostmailerror=>
 						"Email error:".$mail->errstr,

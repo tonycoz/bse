@@ -6,7 +6,6 @@ use FindBin;
 use lib "$FindBin::Bin/modules";
 use Constants qw(:shop);
 use BSE::Session;
-use BSE::Mail;
 use BSE::Template;
 use BSE::Util::Tags;
 use BSE::Request;
@@ -34,8 +33,17 @@ if ($useremail !~ /.\@./) {
 }
 
 # in theory we have an email address at this point
-my $mailer = BSE::Mail->new(cfg=>$cfg);
-my $sendto = $cfg->entry('interest', 'notify', $SHOP_FROM);
+require BSE::ComposeMail;
+my $mailer = BSE::ComposeMail->new(cfg => $cfg);
+
+my $email = $cfg->entry('interest', 'notify', 
+			  $Constants::SHOP_FROM);
+$email ||= $cfg->entry('shop', 'from');
+unless ($email) {
+  print STDERR "No email configured for interest notify, set [interest].notify\n";
+  return;
+}
+#
 my $product = $cgi->param('product');
 defined($product) or $product = '';
 my $product_id = $cgi->param('product_id');
@@ -50,16 +58,14 @@ my %acts;
    email => sub { $useremail },
   );
 
-my $content = BSE::Template->get_page('admin/interestemail', $cfg, \%acts);
-
 my $subject = "User registered interest";
 $subject .= " in product '$product'" if $product;
-if ($content =~ s/^subject:\s+([^\n])\r?\n\r?//i) {
-  $subject = $1;
-}
 
-$mailer->send(to=>$sendto, from=>$SHOP_FROM, subject=>$subject, 
-	      body => $content)
+$mailer->send(template => 'admin/interestemail',
+    acts => \%acts,
+    to=>$email,
+    from=>$email,
+    subject=>$subject)
   or error_page('', "While sending email: ".$mailer->errstr);
 
 BSE::Template->show_page('interest/confirm', $cfg, \%acts);
