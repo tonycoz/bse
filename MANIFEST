@@ -718,7 +718,7 @@ site/templates/user/email_unbook_seminar.tmpl
 site/templates/user/logon_base.tmpl
 site/templates/user/lostemailsent_base.tmpl
 site/templates/user/lostpassword_base.tmpl
-site/templates/user/lostpwdemail_base.tmpl
+site/templates/user/lostpwdemail.tmpl
 site/templates/user/nopassword_base.tmpl
 site/templates/user/notify_file.tmpl
 site/templates/user/notify_file_html.tmpl

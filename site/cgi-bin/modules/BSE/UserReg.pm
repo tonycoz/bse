@@ -18,7 +18,7 @@ use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
 use Carp qw(confess);
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -1664,6 +1664,7 @@ sub req_lost_password {
   my %mailacts;
   %mailacts =
     (
+     BSE::Util::Tags->static(\%mailacts, $cfg),
      user => sub { $user->{$_[0]} },
      host => sub { $ENV{REMOTE_ADDR} },
      site => sub { $cfg->entryErr('site', 'url') },
