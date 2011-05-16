@@ -17,7 +17,7 @@ use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 
-our $VERSION = "1.008";
+our $VERSION = "1.009";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -1026,16 +1026,14 @@ sub req_payment {
       if ($sub) {
 	$subscribing_to{$sub->{text_id}} = $sub;
       }
-      
+
       if ($item->{session_id}) {
 	require BSE::TB::SeminarSessions;
 	my $session = BSE::TB::SeminarSessions->getByPkey($item->{session_id});
 	my $options = join(",", @{$item->{options}});
-	eval {
-	  $session->add_attendee($user, 
-				 instructions => $order->{instructions},
-				 options => $options);
-	};
+	$session->add_attendee($user, 
+			       customer_instructions => $order->{instructions},
+			       options => $options);
       }
     }
   }
