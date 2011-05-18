@@ -18,7 +18,7 @@ use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
 use Carp qw(confess);
 
-our $VERSION = "1.008";
+our $VERSION = "1.009";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -1020,6 +1020,7 @@ sub req_register {
 	 to => $user,
 	 extraacts =>
 	 {
+      host => sub { $ENV{REMOTE_ADDR} },
 	  user => [ \&tag_hash_plain, $user ],
 	 },
 	);
@@ -1925,13 +1926,17 @@ sub send_conf_request {
     );
   my $email_template = 
     $nopassword ? 'user/email_confirm_nop' : 'user/email_confirm';
-  my $body = BSE::Template->get_page($email_template, $cfg, \%confacts);
-  
-  my $mail = BSE::Mail->new(cfg=>$cfg);
+
+  require BSE::ComposeMail;
+  my $mail = BSE::ComposeMail->new(cfg => $cfg);
+
   my $subject = $cfg->entry('confirmations', 'subject') 
     || 'Subscription Confirmation';
-  unless ($mail->send(from=>$from, to=>$user->{email}, subject=>$subject,
-		      body=>$body)) {
+  unless ($mail->send(template => $email_template,
+	acts => \%confacts,
+	from=>$from,
+	to=>$user->{email},
+	subject=>$subject)) {
     # a problem sending the mail
     $acts{mailerror} = sub { escape_html($mail->errstr) };
     BSE::Template->show_page('user/email_conferror', $cfg, \%acts);
