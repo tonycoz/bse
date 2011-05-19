@@ -8,7 +8,7 @@ use vars qw(@EXPORT_OK @ISA);
 @ISA = qw(Exporter);
 require Exporter;
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 sub _get_parms {
   my ($acts, $args) = @_;
@@ -242,12 +242,8 @@ sub static {
        $sum += $_ for @items;
        $sum;
      },
-     concatenate =>
-     sub {
-       my ($arg, $acts, $name, $templater) = @_;
-       my @items = DevHelp::Tags->get_parms($arg, $acts, $templater);
-       join '', @items;
-     },
+     concatenate => \&tag_concatenate,
+     cat => \&tag_concatenate,
      arithmetic => \&tag_arithmetic,
      match =>
      sub {
@@ -309,6 +305,8 @@ sub static {
      # the following is so you can embed a report in another report, since
      # report conflicts with a tag name used within reports
      subreport => [ \&tag_report, $cfg ],
+
+     cond => \&tag_cond,
 
      (
       $static_ajax 
@@ -1088,6 +1086,60 @@ sub tag_article_plain {
   }
 
   return $value;
+}
+
+=item tag cond
+
+Usage:
+
+  cond test truevalue falsevalue
+
+Does [] replacement, if test is a true value, returns I<truevalue>,
+otherwise returns I<falsevalue>.
+
+eg.
+
+  <:wrap foo.tmpl title => [cond [ifNew] "Create" "Edit" ] :>
+
+=cut
+
+sub tag_cond {
+  my ($args, $acts, $tagname, $templater) = @_;
+
+  my ($cond, $true, $false) = 
+    DevHelp::Tags->get_parms($args, $acts, $templater);
+
+  defined $true or $true = "";
+  defined $false or $false = "";
+
+  return $cond ? $true : $false;
+}
+
+=item tag concatenate
+
+=item tag cat
+
+Usage:
+
+  concatenate args...
+  cat args...
+
+Returns the concatenation of the supplied strings.
+
+Does [] replacement.
+
+eg.
+
+  <:cfg [cat "myprefix " [cgi foo]] key "":>
+
+=cut
+
+sub tag_concatenate {
+  my ($arg, $acts, $name, $templater) = @_;
+
+  my @items = DevHelp::Tags->get_parms($arg, $acts, $templater);
+
+  return join '', @items;
 }
 
 sub tag_number {

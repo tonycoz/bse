@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>141;
+use Test::More tests=>144;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
@@ -165,11 +165,23 @@ template_test "concatenate", $top, <<TEMPLATE, <<EXPECTED;
 <:concatenate one "two " three:>
 <:concatenate one [concatenate "two " three]:>
 <:concatenate [concatenate "one" [concatenate "two" "three"]]:>
+<:cat [cat "one" "two"] [concatenate "three" "four"]:>
 TEMPLATE
 onetwo
 onetwo three
 onetwo three
 onetwothree
+onetwothreefour
+EXPECTED
+
+template_test "cond", $top, <<TEMPLATE, <<EXPECTED;
+<:cond 1 "true" false:>
+<:cond 0 true false:>
+<:cond "" true false:>
+TEMPLATE
+true
+false
+false
 EXPECTED
 
 template_test "match", $top, <<'TEMPLATE', <<EXPECTED;
