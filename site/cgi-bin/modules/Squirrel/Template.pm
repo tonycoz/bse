@@ -9,7 +9,9 @@ BEGIN {
   }
 }
 
-our $VERSION = "1.001";
+use constant DEBUG_GET_PARMS => 0;
+
+our $VERSION = "1.002";
 
 sub new {
   my ($class, %opts) = @_;
@@ -379,6 +381,76 @@ sub tag_param {
   $params->{$arg};
 }
 
+my $parms_re = qr/\s*\[\s*(\w+)
+	                (
+	                 (?:\s+
+			  (?:
+			   [^\s\[\]]+
+                           |
+			   \"[^"]*\"
+			   |
+			   \[[^\]\[]+?\]
+                           |
+                           \[(?:[^\]\[]*\[[^\]\[]*\])+[^\]\[]*\]
+			  )
+			 )*
+                        )
+	            \s*\]\s*/x;
+
+sub get_parms {
+  my ($templater, $args, $acts, $keep_unknown) = @_;
+
+  my $orig = $args;
+
+  print STDERR "** Entered get_parms -$args-\n" if DEBUG_GET_PARMS;
+  my @out;
+  defined $args or Carp::cluck("undefined \$args");
+  while (length $args) {
+    if ($args =~ s/^$parms_re//x) {
+      my ($func, $subargs) = ($1, $2);
+      $subargs = '' unless defined $subargs;
+      if (exists $acts->{$func}) {
+	print STDERR "  Evaluating [$func $subargs]\n" if DEBUG_GET_PARMS;
+	my $value = $templater->perform($acts, $func, $subargs);
+	defined $value or die "ENOIMPL";
+	print STDERR "    Result '$value'\n" if DEBUG_GET_PARMS;
+	push(@out, $value);
+      }
+      else {
+	print STDERR "  Unknown function '$func' for '$orig'\n" 
+	  if DEBUG_GET_PARMS;
+	if (DEBUG_GET_PARMS) {
+	  print STDERR "  Available functions: ", join(",", sort keys %$acts),"\n";
+	  
+	}
+	if ($keep_unknown) {
+	  push @out, [ $func, $subargs ];
+	}
+	else {
+	  die "ENOIMPL '$func $subargs' in '$orig'\n";
+	}
+      }
+    }
+    elsif ($args =~ s/^\s*\"((?:[^\"\\]|\\[\\\"]|\\)*)\"\s*//) {
+      my $out = $1;
+      $out =~ s/\\([\\\"])/$1/g;
+      print STDERR "  Adding quoted string '$out'\n" if DEBUG_GET_PARMS;
+      push(@out, $out);
+    }
+    elsif ($args =~ s/^\s*(\S+)\s*//) {
+      print STDERR "  Adding unquoted string '$1'\n" if DEBUG_GET_PARMS;
+      push(@out, $1);
+    }
+    else {
+      print STDERR "  Left over text '$args'\n" if DEBUG_GET_PARMS;
+      last;
+    }
+  }
+  print STDERR "  Result (",join("|", @out),")\n" if DEBUG_GET_PARMS;
+
+  @out;
+}
+
 sub replace_template {
   my ($self, $template, $acts, $iter) = @_;
 
@@ -412,19 +484,9 @@ sub replace_template {
 
 	if (defined $params) {
 	  while ($params =~ s/^\s*(\w+)\s*=>\s*\"([^\"]+)\"//
-		 || $params =~ s/^\s*(\w+)\s*=>\s*([^\s,]+)//) {
+		 || $params =~ s/^\s*(\w+)\s*=>\s*($parms_re)//) {
 	    my ($name, $value) = ($1, $2);
-	    $value =~ s/(\[\s*
-                         (\w+)  # tag name
-                           (?:  # followed optionally by
-                            \s+  # white space
-                              (  # and some parameters
-                                ([^\]\s]
-                                  (?:[^\]\[]*[^\]\s])?
-                                )
-                              )
-                            )?
-                         \s*\])/ $self->perform($acts, $2, $3, $1) /egsx;
+	    $value =~ s/^($parms_re)/ $self->perform($acts, $2, $3, $1) /egs;
 
 	    $params{$name} = $value;
 	    $params =~ s/\s*,\s*//;
