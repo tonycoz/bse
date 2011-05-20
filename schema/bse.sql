@@ -1229,3 +1229,31 @@ create table bse_selected_files (
 
   unique only_one(owner_id, owner_type, file_id)
 ) type = InnoDB;
+
+drop table if exists bse_price_tiers;
+create table bse_price_tiers (
+  id integer not null auto_increment primary key,
+
+  description text not null,
+
+  group_id integer null,
+
+  from_date date null,
+  to_date date null,
+
+  display_order integer null null
+);
+
+drop table if exists bse_price_tier_prices;
+
+create table bse_price_tier_prices (
+  id integer not null auto_increment primary key,
+
+  tier_id integer not null,
+  product_id integer not null,
+
+  retailPrice integer not null,
+
+  unique tier_product(tier_id, product_id)
+);
+

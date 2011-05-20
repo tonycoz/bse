@@ -13,7 +13,7 @@ use BSE::Util::ContentType qw(content_type);
 use DevHelp::Date qw(dh_parse_date dh_parse_sql_date);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
-our $VERSION = "1.005";
+our $VERSION = "1.007";
 
 =head1 NAME
 
@@ -1536,6 +1536,12 @@ sub make_link {
   $link;
 }
 
+sub save_columns {
+  my ($self, $table_object) = @_;
+
+  return $table_object->rowClass->columns;
+}
+
 sub save_new {
   my ($self, $req, $article, $articles) = @_;
 
@@ -1545,7 +1551,7 @@ sub save_new {
   my $cgi = $req->cgi;
   my %data;
   my $table_object = $self->table_object($articles);
-  my @columns = $table_object->rowClass->columns;
+  my @columns = $self->save_columns($table_object);
   $self->save_thumbnail($cgi, undef, \%data);
   for my $name (@columns) {
     $data{$name} = $cgi->param($name) 
@@ -1682,8 +1688,11 @@ sub save_new {
       or $data{$col} = $self->default_value($req, \%data, $col);
   }
 
-  shift @columns;
-  $article = $table_object->add(@data{@columns});
+  my @cols = $table_object->rowClass->columns;
+  shift @cols;
+  $article = $table_object->add(@data{@cols});
+
+  $self->save_new_more($req, $article, \%data);
 
   # we now have an id - generate the links
 
@@ -1759,6 +1768,16 @@ sub _article_data {
   return $article_data;
 }
 
+sub save_more {
+  my ($self, $req, $article, $data) = @_;
+  # nothing to do here
+}
+
+sub save_new_more {
+  my ($self, $req, $article, $data) = @_;
+  # nothing to do here
+}
+
 =item save
 
 Error codes:
@@ -1795,7 +1814,9 @@ sub save {
   my $old_dynamic = $article->is_dynamic;
   my $cgi = $req->cgi;
   my %data;
-  for my $name ($article->columns) {
+  my $table_object = $self->table_object($articles);
+  my @save_cols = $self->save_columns($table_object);
+  for my $name (@save_cols) {
     $data{$name} = $cgi->param($name) 
       if defined($cgi->param($name)) and $name ne 'id' && $name ne 'parentid'
 	&& $req->user_can("edit_field_edit_$name", $article);
@@ -1955,6 +1976,8 @@ sub save {
       Util::generate_low($articles, $regen, $self->{cfg});
     }
   }
+
+  $self->save_more($req, $article, \%data);
 
   if ($req->is_ajax) {
     return $req->json_content

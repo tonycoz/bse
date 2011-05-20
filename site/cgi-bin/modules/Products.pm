@@ -5,7 +5,7 @@ use vars qw(@ISA $VERSION);
 @ISA = qw(Squirrel::Table);
 use Product;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub rowClass {
   return 'Product';
@@ -49,6 +49,19 @@ sub visible_step_children {
   my $today = now_sqldate();
   
   return Products->getSpecial(visibleStep => $id, $today);
+}
+
+{
+  my $tiers;
+  sub pricing_tiers {
+    unless ($tiers) {
+      require BSE::TB::PriceTiers;
+      $tiers = [ sort { $a->display_order <=> $b->display_order }
+		 BSE::TB::PriceTiers->all ];
+    }
+
+    return @$tiers;
+  }
 }
 
 1;

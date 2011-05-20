@@ -55,7 +55,7 @@
             <td bgcolor="#666666" align="left"> &nbsp;&nbsp;<font size="2" face="Verdana, Arial, Helvetica, sans-serif" color="#FFFFFF"> 
               <b>Price:</b></font> &nbsp;&nbsp;</td>
             <td bgcolor="#FFFFFF"> &nbsp; <font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#000000"> 
-              <b>$<:money product retailPrice:> </b>(inc GST)</font> </td>
+              <b>$<:if Dynamic:><:money price dynarticle:> <:ifPrice dynarticle discountpc:><:price dynarticle discountpc:>% off!<:or:><:eif:><:or Dynamic:><:money product retailPrice:><:eif Dynamic:></b>(inc GST)</font> </td>
           </tr>
         </table>
       </td>

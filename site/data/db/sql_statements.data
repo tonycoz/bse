@@ -1,5 +1,5 @@
 --
-# VERSION=1.001
+# VERSION=1.002
 name: bse_siteuserSeminarBookingsDetail
 sql_statement: <<SQL
 select ar.*, pr.*, se.*, ss.*, sb.*,
@@ -457,3 +457,8 @@ delete from bse_selected_files
    and owner_id = ?
 SQL
 
+name: bseRemoveProductPrices
+sql_statement: <<SQL
+delete from bse_price_tier_prices
+where product_id = ?
+SQL

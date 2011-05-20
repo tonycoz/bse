@@ -5,7 +5,7 @@ use Articles;
 use vars qw/@ISA/;
 @ISA = qw/Article/;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 # subscription_usage values
 use constant SUBUSAGE_START_ONLY => 1;
@@ -154,6 +154,9 @@ sub remove {
   # remove any wishlist items
   BSE::DB->run(bseRemoveProductFromWishlists => $self->id);
 
+  # remove any tiered prices
+  BSE::DB->run(bseRemoveProductPrices => $self->id);
+
   return $self->SUPER::remove($cfg);
 }
 
@@ -163,6 +166,97 @@ sub has_sale_files {
   my ($row) = BSE::DB->query(bseProductHasSaleFiles => $self->{id});
 
   return $row->{have_sale_files};
+}
+
+sub prices {
+  my ($self) = @_;
+
+  require BSE::TB::PriceTierPrices;
+  my @prices = BSE::TB::PriceTierPrices->getBy(product_id => $self->id);
+}
+
+=item set_prices($prices)
+
+Set tiered pricing for the product.
+
+I<$prices> is a hashref mapping tier ids to prices in cents.
+
+If a tier doesn't have a price in I<$prices> it's removed from the
+product.
+
+=cut
+
+sub set_prices {
+  my ($self, $prices) = @_;
+
+  my %current = map { $_->tier_id => $_ } $self->prices;
+  for my $tier_id (keys %$prices) {
+    my $current = delete $current{$tier_id};
+    if ($current) {
+      $current->set_retailPrice($prices->{$tier_id});
+      $current->save;
+    }
+    else {
+      BSE::TB::PriceTierPrices->make
+	  (
+	   tier_id => $tier_id,
+	   product_id => $self->id,
+	   retailPrice => $prices->{$tier_id},
+	  );
+    }
+  }
+
+  # remove any spares
+  for my $price (values %current) {
+    $price->remove;
+  }
+}
+
+=item price(user => $user, date => $sql_date)
+
+=item price(user => $user)
+
+Return the retail price depending on the user and date
+and optionally the tier object (in list context).
+
+If no tier matches then the undef is returned at the tier object.
+
+=cut
+
+sub price {
+  my ($self, %opts) = @_;
+
+  my $user = delete $opts{user};
+  my $date = delete $opts{date} || BSE::Util::SQL::now_sqldate();
+  my @tiers = Products->pricing_tiers;
+  my %prices = map { $_->tier_id => $_ } $self->prices;
+
+  my $price;
+  my $found_tier;
+  for my $tier (@tiers) {
+    if ($prices{$tier->id}
+	&& $tier->match($user, $date)) {
+      $price = $prices{$tier->id}->retailPrice;
+      $found_tier = $tier;
+      last;
+    }
+  }
+
+  defined $price or $price = $self->retailPrice;
+
+  return wantarray ? ( $price, $found_tier ) : $price;
+}
+
+sub update_dynamic {
+  my ($self, $cfg) = @_;
+
+  my @tiers = Products->pricing_tiers;
+  if (@tiers) {
+    $self->set_cached_dynamic(1);
+    return;
+  }
+
+  return $self->SUPER::update_dynamic($cfg);
 }
 
 package BSE::CfgProductOption;

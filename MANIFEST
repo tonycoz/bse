@@ -188,6 +188,10 @@ site/cgi-bin/modules/BSE/TB/OrderItems.pm
 site/cgi-bin/modules/BSE/TB/Orders.pm
 site/cgi-bin/modules/BSE/TB/OwnedFile.pm
 site/cgi-bin/modules/BSE/TB/OwnedFiles.pm
+site/cgi-bin/modules/BSE/TB/PriceTier.pm
+site/cgi-bin/modules/BSE/TB/PriceTierPrice.pm
+site/cgi-bin/modules/BSE/TB/PriceTierPrices.pm
+site/cgi-bin/modules/BSE/TB/PriceTiers.pm
 site/cgi-bin/modules/BSE/TB/ProductOption.pm
 site/cgi-bin/modules/BSE/TB/ProductOptions.pm
 site/cgi-bin/modules/BSE/TB/ProductOptionValue.pm

@@ -3,7 +3,7 @@ use strict;
 use base 'Squirrel::Table';
 use BSE::TB::SiteUserGroup;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 use constant SECT_QUERY_GROUPS => "Query Groups";
 use constant SECT_QUERY_GROUP_PREFIX => 'Query group ';
@@ -73,6 +73,12 @@ sub getByName {
   else {
     return $class->getBy(name => $name);
   }
+}
+
+sub getById {
+  my ($self, $id) = @_;
+
+  return $id > 0 ? $self->getByPkey($id) : $self->getQueryGroup(BSE::Cfg->single, $id);
 }
 
 package BSE::TB::SiteUserQueryGroup;

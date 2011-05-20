@@ -43,6 +43,23 @@
 	  <td><font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FFFFFF"><b>Qty:</b></font></td>
 <:or:><:eif:>
           </tr>
+<:if Dynamic:>
+          <:iterator begin dynallprods:> 
+          <tr valign="middle" align="center" bgcolor="#FFFFFF"> 
+            <td width="100%" align="left"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><a href="<:url dynallprod:>"><:dynallprod 
+              description:></a></font> <:dynmoveallprod:></td>
+<:if Dynallprod retailPrice:>
+            <td align="right"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>$<:money price dynallprod:></b></font></td>
+<:ifAnd [cfg shop order_from_catalog] [ifEq [ifDynAnyProductOptions dynallprod] "0"]:>
+<td nowrap="nowrap"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><input type="text" name="qty<:dynallprod id:>" size="4" /><input type="image" src="/images/store/quick_add.gif" alt="+" name="a_addsingle<:dynallprod id:>" /></font></td>
+<:or:><:eif:>
+<:or Dynallprod:>
+            <td align="center"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#999999"><b>TBA</b></font></td>
+<:eif Dynallprod:>
+          </tr>
+
+          <:iterator end dynallprods:> 
+<:or Dynamic:>
           <:iterator begin allprods:> 
           <tr valign="middle" align="center" bgcolor="#FFFFFF"> 
             <td width="100%" align="left"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><a href="<:url allprod:>"><:allprod 
@@ -58,6 +75,7 @@
           </tr>
 
           <:iterator end allprods:> 
+<:eif Dynamic:>
 <:ifCfg shop order_from_catalog:>
 <tr>
   <td colspan="3" align="right" bgcolor="#FFFFFF"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><input type="submit" name="a_addmultiple" value="Add" /></font></td>

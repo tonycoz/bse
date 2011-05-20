@@ -6,7 +6,7 @@ use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 use BSE::CfgInfo qw(custom_class);
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 sub new {
   my ($class, $req) = @_;
@@ -59,6 +59,8 @@ sub tags {
      dyncatmsg => [ tag_dyncatmsg => $self, $req ],
      $self->dyn_iterator("userfiles", "userfile"),
      $self->dyn_iterator_obj("paidfiles", "paidfile"),
+     price => [ tag_price => $self ],
+     ifTieredPricing => [ tag_ifTieredPricing => $self ],
      $self->_custom_tags,
     );
 }
@@ -1100,6 +1102,77 @@ sub tag_dynmove {
   }
 
   return make_arrows($self->{req}->cfg, $down_url, $up_url, $refresh_to, $img_prefix);
+}
+
+=item price
+
+Return the price of a product.
+
+One of two parameters:
+
+=over
+
+=item *
+
+I<product> - the product to fetch the price for.  This can be a name
+or [] evaluating to a product id.
+
+=item *
+
+I<field> - "price" to fetch the price, "discount" to fetch the
+difference from the base price, "discountpc" to fetch the discount in
+percent (whole number).  Returns the price if no I<field> is
+specified.
+
+=back
+
+=cut
+
+sub tag_price {
+  my ($self, $args, $acts, $func, $templater) = @_;
+
+  my ($id, $field) = $templater->get_parms($args, $acts);
+  $field ||= "price";
+
+  my $work;
+  if ($id =~ /^[0-9]+$/) {
+    require Products;
+    $work = Products->getByPkey($id)
+      or return "** unknown product $id **";
+  }
+  else {
+    $work = $self->{req}->get_article($id)
+      or return "** unknown product name $id **";
+  }
+
+  my ($price, $tier) = $work->price(user => scalar $self->{req}->siteuser);
+
+  if ($field eq "price") {
+    return $price;
+  }
+  elsif ($field eq "discount") {
+    return $work->retailPrice - $price;
+  }
+  elsif ($field eq "discountpc") {
+    $work->retailPrice or return "";
+    return sprintf("%.0f", ($work->retailPrice - $price) / $work->retailPrice * 100);
+  }
+  else {
+    return "** unknown field $field **";
+  }
+}
+
+=item ifTieredPricing
+
+Conditional to check if there's tiered pricing.
+
+=cut
+
+sub tag_ifTieredPricing {
+  require Products;
+  my @tiers = Products->pricing_tiers;
+
+  return scalar @tiers;
 }
 
 1;

@@ -57,6 +57,12 @@ sub update_dynamic {
   # conditional in case something strange is in the config file
   my $dynamic = $cfg->entry('basic', 'all_dynamic', 0) ? 1 : 0;
 
+  if (!$dynamic && $self->generator =~ /\bCatalog\b/) {
+    require Products;
+    my @tiers = Products->pricing_tiers;
+    @tiers and $dynamic = 1;
+  }
+
   $dynamic or $dynamic = $self->{force_dynamic};
 
   $dynamic or $dynamic = $self->is_access_controlled;

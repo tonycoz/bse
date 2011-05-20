@@ -17,7 +17,7 @@ use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 
-our $VERSION = "1.009";
+our $VERSION = "1.010";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -204,7 +204,7 @@ sub req_add {
       { 
        productId => $product->{id}, 
        units => $quantity, 
-       price=>$product->{retailPrice},
+       price=>$product->price(user => scalar $req->siteuser),
        options=>$options,
        %$extras,
       };
@@ -273,7 +273,7 @@ sub req_addsingle {
       { 
        productId => $addid, 
        units => $quantity, 
-       price=>$product->{retailPrice},
+       price=>$product->price(user => scalar $req->siteuser),
        options=>$options,
        %$extras,
       };
@@ -401,7 +401,7 @@ sub req_addmultiple {
 	{ 
 	 productId => $product->{id},
 	 units => $addition->{quantity}, 
-	 price=>$product->{retailPrice},
+	 price=>$product->price(user => scalar $req->siteuser),
 	 options=>[],
 	 %{$addition->{extras}},
 	};
@@ -1643,7 +1643,8 @@ sub _build_items {
       for my $col (@prodcols) {
 	$work{$col} = $product->$col() unless exists $work{$col};
       }
-      $work{extended_retailPrice} = $work{units} * $work{retailPrice};
+      $work{price} = $product->price(user => scalar $req->siteuser);
+      $work{extended_retailPrice} = $work{units} * $work{price};
       $work{extended_gst} = $work{units} * $work{gst};
       $work{extended_wholesale} = $work{units} * $work{wholesalePrice};
       

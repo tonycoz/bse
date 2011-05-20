@@ -9,7 +9,7 @@ use BSE::Util::HTML;
 use BSE::CfgInfo 'product_options';
 use BSE::Util::Tags qw(tag_hash);
 
-our $VERSION = "1.001";
+our $VERSION = "1.004";
 
 =head1 NAME
 
@@ -146,6 +146,70 @@ sub tag_dboption_move {
   return BSE::Arrows::make_arrows($req->cfg, $down_url, $up_url, $refresh, $args, id => $my_id, id_prefix => "prodoptmove");
 }
 
+sub tag_tier_price {
+  my ($self, $rtier, $rprices, $product) = @_;
+
+  unless ($rprices->{loaded}) {
+    %$rprices = map { $_->tier_id => $_ } $product->prices
+      if $product->{id};
+    $rprices->{loaded} = 1;
+  }
+
+  $$rtier or return '** no current tier **';
+
+  exists $rprices->{$$rtier->id}
+    or return '';
+
+  return $rprices->{$$rtier->id}->retailPrice;
+}
+
+sub save_more {
+  my ($self, $req, $article, $data) = @_;
+
+  $self->_save_price_tiers($req, $article, $data);
+  $self->SUPER::save_more($req, $article, $data);
+}
+
+sub save_new_more {
+  my ($self, $req, $article, $data) = @_;
+
+  $self->_save_price_tiers($req, $article, $data);
+  $self->SUPER::save_new_more($req, $article, $data);
+}
+
+sub _save_price_tiers {
+  my ($self, $req, $article, $data) = @_;
+
+  $data->{save_pricing_tiers}
+    or return;
+
+  $req->user_can('edit_field_edit_retailPrice', $data)
+    or return;
+
+  my @tiers = Products->pricing_tiers;
+  my %prices;
+  for my $tier (@tiers) {
+    my $key = "tier_price_" . $tier->id;
+    if (exists $data->{$key} && $data->{$key} =~ /\S/) {
+      $prices{$tier->id} = $data->{$key} * 100;
+    }
+  }
+  $article->set_prices(\%prices);
+}
+
+sub save_columns {
+  my ($self, $table_object) = @_;
+
+  my @cols = $self->SUPER::save_columns($table_object);
+  my @tiers = Products->pricing_tiers;
+  if (@tiers) {
+    push @cols, "save_pricing_tiers";
+    push @cols, map { "tier_price_" . $_->id } @tiers;
+  }
+
+  return @cols;
+}
+
 =head1 Edit tags
 
 These a tags available on admin/edit_* pages specific to products.
@@ -183,6 +247,19 @@ by default.
 
 dboptionsjson - returns the product options as JSON.
 
+=item *
+
+iterator begin price_tiers ... price_tier I<field> ... iterator end price_tiers
+
+Iterate over the configured price tiers.
+
+=item *
+
+tier_price
+
+Return the price at the current price_tier.  Returns an empty string
+if there's no price at this tier.
+
 =back
 
 =cut
@@ -202,6 +279,9 @@ sub low_edit_tags {
   my $dboption_value_index;
   my $current_option_value;
   my $it = BSE::Util::Iterate->new;
+  my @tiers;
+  my $price_tier;
+  my %prices;
   return 
     (
      product => [ $tag_hash, $article ],
@@ -240,6 +320,15 @@ sub low_edit_tags {
       tag_dboptionvalue_move =>
       $self, $req, $article, \@dboption_values, \$dboption_value_index
      ],
+     $it->make
+     (
+      single => "price_tier",
+      plural => "price_tiers",
+      code => [ pricing_tiers => "Products" ],
+      data => \@tiers,
+      store => \$price_tier,
+     ),
+     tier_price => [ tag_tier_price => $self, \$price_tier, \%prices, $article ],
     );
 }
 
@@ -320,6 +409,18 @@ sub _validate_common {
   if (defined $data->{subscription_usage}) {
     unless ($data->{subscription_usage} =~ /^[123]$/) {
       $errors->{subscription_usage} = "Invalid subscription usage";
+    }
+  }
+
+  if ($data->{save_pricing_tiers}) {
+    my @tiers = Products->pricing_tiers;
+    for my $tier (@tiers) {
+      my $key = "tier_price_" . $tier->id;
+      my $value = $data->{$key};
+      defined $value or next;
+      if ($value =~ /\S/ && $value !~ /^\d+(\.\d{1,2})?\s*/) {
+	$errors->{$key} = 'Pricing tier "' . $tier->description . '" price invalid';
+      }
     }
   }
 
