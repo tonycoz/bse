@@ -6,7 +6,7 @@ use constant CFG_DEPTH => 5; # unused so far
 use constant CACHE_AGE => 30;
 use constant VAR_DEPTH => 10;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 my %cache;
 
@@ -311,6 +311,7 @@ sub _load_file {
 
   open CFG, "< $file"
     or return;
+  binmode CFG, ":encoding(utf-8)";
   my $section;
   while (<CFG>) {
     chomp;

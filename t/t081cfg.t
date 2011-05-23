@@ -8,7 +8,7 @@ BEGIN {
     or plan skip_all => "Cannot load BSE::Cfg";
 }
 
-plan tests => 11;
+plan tests => 13;
 
 #ok(chdir "t/cfg", "chdir to cfg dir");
 my $cfg = eval { BSE::Cfg->new(path => "t/cfg") };
@@ -21,6 +21,10 @@ is($cfg->entry("isafile", "key"), "value", "value from include");
 
 # values from directory includes, conflict resolution
 is($cfg->entry("conflict", "keya"), "valuez", "conflict resolution");
+
+# utf8
+is($cfg->entry("utf8", "omega"), "\x{2126}", "check utf8 parsed");
+is($cfg->entry("utf8", "omega2"), "\x{2126}", "check utf8 parsed from include");
 
 # missing values
 is($cfg->entry("unknown", "keya"), undef, "missing value no default");

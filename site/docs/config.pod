@@ -13,6 +13,8 @@ Keeping configuration information in Constants.pm makes it difficult
 to perform upgrades and makes it impossible to use tools such as
 mod_perl, at least if you want more than one site on the machine.
 
+F<bse.cfg> is read as a utf-8 encoded file.
+
 =head1 CONFIGURATION ENTRIES
 
 =head2 [site]
