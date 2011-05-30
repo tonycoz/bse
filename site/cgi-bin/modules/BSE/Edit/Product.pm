@@ -9,7 +9,7 @@ use BSE::Util::HTML;
 use BSE::CfgInfo 'product_options';
 use BSE::Util::Tags qw(tag_hash);
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 =head1 NAME
 
@@ -183,7 +183,7 @@ sub _save_price_tiers {
   $data->{save_pricing_tiers}
     or return;
 
-  $req->user_can('edit_field_edit_retailPrice', $data)
+  $req->user_can('edit_field_edit_retailPrice', $article)
     or return;
 
   my @tiers = Products->pricing_tiers;
