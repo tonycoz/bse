@@ -1012,7 +1012,7 @@ sub audit {
 
   require BSE::TB::AuditLog;
 
-  $opts{actor} ||= $self->user;
+  $opts{actor} ||= $self->user || "U";
 
   return BSE::TB::AuditLog->log(%opts);
 }

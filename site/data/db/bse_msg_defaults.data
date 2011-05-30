@@ -1,5 +1,5 @@
 ---
-# VERSION=1.000
+# VERSION=1.001
 # defaults for the following
 language_code: en
 priority: 0
@@ -33,6 +33,15 @@ message: Unknown language code - no entry found in [languages]
 
 id: bse/admin/message/badmultiline
 message: Message $1:s may contain only a single line of text
+
+id: bse/admin/shop/saveorder/saved
+message: Order saved successfully
+
+id: bse/admin/shop/saveorder/nochanges
+message: No changes to save
+
+id: bse/admin/shop/saveorder/badmethod
+message: Unknown shipping method '$1:s'
 
 id: bse/shop/cart/empty
 message: Cart emptied

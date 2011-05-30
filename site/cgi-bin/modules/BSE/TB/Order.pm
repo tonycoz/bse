@@ -6,7 +6,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 use Carp 'confess';
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub columns {
   return qw/id
@@ -28,7 +28,7 @@ sub columns {
            ccStatus2 ccTranId complete delivOrganization billOrganization
            delivStreet2 billStreet2 purchase_order shipping_method
            shipping_name shipping_trace
-	   paypal_token paypal_tran_id/;
+	   paypal_token paypal_tran_id freight_tracking/;
 }
 
 sub defaults {
@@ -80,6 +80,7 @@ sub defaults {
      shipping_method => '',
      shipping_name => '',
      shipping_trace => undef,
+     freight_tracking => "",
     );
 }
 

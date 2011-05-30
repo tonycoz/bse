@@ -12,14 +12,14 @@ use Constants qw(:shop $SHOPID $PRODUCTPARENT
 use BSE::TB::Images;
 use Articles;
 use BSE::Sort;
-use BSE::Util::Tags qw(tag_hash);
+use BSE::Util::Tags qw(tag_hash tag_error_img);
 use BSE::Util::Iterate;
 use BSE::WebUtil 'refresh_to_admin';
 use BSE::Util::HTML qw(:default popup_menu);
 use BSE::Arrows;
 use BSE::Shop::Util qw(:payment order_item_opts nice_options);
 
-our $VERSION = "1.001";
+our $VERSION = "1.004";
 
 my %actions =
   (
@@ -32,6 +32,7 @@ my %actions =
    order_filled => 'shop_order_filled',
    order_paid => 'shop_order_paid',
    order_unpaid => 'shop_order_unpaid',
+   order_save => 'shop_order_save',
    product_detail => '',
    product_list => '',
    paypal_refund => 'bse_shop_order_refund_paypal',
@@ -570,14 +571,29 @@ sub tag_siteuser {
   return escape_html($value);
 }
 
+sub tag_shipping_method_select {
+  my ($self, $order) = @_;
+
+  my @methods = BSE::TB::Orders->dummy_shipping_methods;
+
+  return popup_menu
+    (
+     -name => "shipping_name",
+     -values => [ map $_->{id}, @methods ],
+     -labels => { map { $_->{id} => $_->{name} } @methods },
+     -id => "shipping_name",
+     -default => $order->shipping_name,
+    );
+}
+
 sub req_order_detail {
-  my ($class, $req, $message) = @_;
+  my ($class, $req, $errors) = @_;
 
   my $cgi = $req->cgi;
   my $id = $cgi->param('id');
   if ($id and
       my $order = BSE::TB::Orders->getByPkey($id)) {
-    $message ||= $cgi->param('m') || '';
+    my $message = $req->message($errors);
     my @lines = $order->items;
     my @products = map { Products->getByPkey($_->{productId}) } @lines;
     my $line_index = -1;
@@ -585,12 +601,12 @@ sub req_order_detail {
     my @options;
     my $option_index = -1;
     my $siteuser;
+    my $it = BSE::Util::Iterate->new;
+
     my %acts;
     %acts =
       (
-       BSE::Util::Tags->basic(\%acts, $cgi, $req->cfg),
-       BSE::Util::Tags->admin(\%acts, $req->cfg),
-       BSE::Util::Tags->secure($req),
+       $req->admin_tags,
        item => sub { escape_html($lines[$line_index]{$_[0]}) },
        iterate_items_reset => sub { $line_index = -1 },
        iterate_items => 
@@ -616,8 +632,17 @@ sub req_order_detail {
        option => sub { escape_html($options[$option_index]{$_[0]}) },
        ifOptions => sub { @options },
        options => sub { nice_options(@options) },
-       message => sub { $message },
+       message => $message,
+       error_img => [ \&tag_error_img, $errors ],
        siteuser => [ \&tag_siteuser, $order, \$siteuser, ],
+       $it->make
+       (
+	single => "shipping_method",
+	plural => "shipping_methods",
+	code => [ dummy_shipping_methods => "BSE::TB::Orders" ],
+       ),
+       shipping_method_select =>
+       [ tag_shipping_method_select => $class, $order ],
       );
 
     return $req->dyn_response('admin/order_detail', \%acts);
@@ -721,6 +746,112 @@ sub req_paypal_refund {
     $req->flash_error("Missing or invalid order id");
     return $self->req_order_list($req);
   }
+}
+
+=item order_save
+
+Make changes to an order, only a limited set of fields can be changed.
+
+Parameters:
+
+=over
+
+=item *
+
+id - id of the order.  Required.
+
+=item *
+
+shipping_method - if automated shipping calculations are disabled, the
+id of the dummy shipping method to set for the order.
+
+=item *
+
+freight_tracking - the freight tracking code for the shipment.
+
+=back
+
+Requires csrfp token C<shop_order_save>.
+
+=cut
+
+sub req_order_save {
+  my ($self, $req) = @_;
+
+  $req->check_csrf("shop_order_save")
+    or return $self->req_product_list($req, "Bad or missing csrf token: " . $req->csrf_error);
+
+  my $cgi = $req->cgi;
+  my $id = $cgi->param("id");
+  $id && $id =~ /^[0-9]+$/
+    or return $self->req_product_list($req, "No order id supplied");
+
+  my $order = BSE::TB::Orders->getByPkey($id)
+    or return $self->req_product_list($req, "No such order id");
+
+  my %errors;
+  my $save = 0;
+
+  my $new_freight_tracking = 0;
+  my $code = $cgi->param("freight_tracking");
+  if (defined $code && $code ne $order->freight_tracking) {
+    $order->set_freight_tracking($code);
+    ++$new_freight_tracking;
+    ++$save;
+  }
+
+  my $new_shipping_name = 0;
+  unless ($req->cfg->entry("shop", "shipping", 0)) {
+    my $shipping_name = $cgi->param("shipping_name");
+    if (defined $shipping_name
+	&& $shipping_name ne $order->shipping_name) {
+      my @ship = BSE::TB::Orders->dummy_shipping_methods();
+      my ($entry) = grep $_->{id} eq $shipping_name, @ship;
+      if ($entry) {
+	$order->set_shipping_name($entry->{id});
+	$order->set_shipping_method($entry->{name});
+	++$new_shipping_name;
+	++$save;
+      }
+      else {
+	$errors{shipping_method} = "msg:bse/admin/shop/saveorder/badmethod:$shipping_name";
+      }
+    }
+  }
+
+  keys %errors
+    and return $self->req_order_detail($req, \%errors);
+
+  if ($save) {
+    $order->save;
+    $req->flash("msg:bse/admin/shop/saveorder/saved");
+
+    if ($new_freight_tracking) {
+      $req->audit
+	(
+	 component => "shopadmin:orders:saveorder",
+	 object => $order,
+	 msg => "New freight tracking code set: '" . $order->freight_tracking . "'",
+	 level => "info",
+	);
+    }
+    if ($new_shipping_name) {
+      $req->audit
+	(
+	 component => "shopadmin:orders:saveorder",
+	 object => $order,
+	 msg => "New shippping method set: '" . $order->shipping_name . "/" . $order->shipping_method . "'",
+	 level => "info",
+	);
+    }
+  }
+  else {
+    $req->flash("msg:bse/admin/shop/saveorder/nochanges");
+  }
+
+  my $url = $cgi->param("r") || $req->url("shopadmin", { a_order_detail => 1, id => $order->id });
+
+  return $req->get_refresh($url);
 }
 
 #####################

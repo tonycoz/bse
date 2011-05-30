@@ -41,6 +41,21 @@ description: Article editor messages
 id: bse/admin/edit/uplabelsect
 description: label in parent list to make article a section
 
+id: bse/admin/shop/
+description: Shop Administration
+
+id: bse/admin/shop/saveorder/
+description: Save changes to an order
+
+id: bse/admin/shop/saveorder/saved
+description: Displayed on a successful save with some changes
+
+id: bse/admin/shop/saveorder/nochanges
+description: Displayed on a save that makes no changes
+
+id: bse/admin/shop/saveorder/badmethod
+description: Invalid shipping method
+
 id: test/
 description: <<TEXT
 Test category

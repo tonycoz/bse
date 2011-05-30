@@ -74,7 +74,7 @@
 </tr>
 <:iterator begin items:>
         <tr> 
-          <td width="100%"><:ifOr [ifEq [item productId] -1] [ifEq [product id] ""]:><:item title:> (product deleted)<:or:><a href="<:script:>?product_detail=1&amp;id=<:product id:>"><:product
+          <td width="100%"><:ifOr [ifEq [item productId] -1] [ifEq [product id] ""]:><:item title:> (product deleted)<:or:><a href="<:adminurl shopadmin product_detail 1 id [product id]:>"><:product
             title:></a><:eif:> <:options:></td>
           <td align=center nowrap><:item units:></td>
           <td align=right nowrap><:money item price:></td>
@@ -85,15 +85,23 @@
           <td align=right nowrap><:extension gst:></td>
 </tr>
 <:iterator end items:>
+<:if Cfg shop shipping:>
 <:if Order shipping_name:>
 
         <tr> 
-          <td colspan=3 align=right>
+          <td colspan=3>
 <:if Eq [order shipping_name] "contact":>
 <b>Contact customer to make shipping arrangements</b>
 <:or Eq:>
-Shipping via <:order shipping_method:>:
-<:eif Eq:>
+Shipping via <:order shipping_method:>
+<:eif Eq:>, 
+	        <form method="post" action="<:adminurl shopadmin a_order_save 1:>">
+    <input type="hidden" name="id" value="<:order id:>" />
+    <:csrfp shop_order_save hidden:>
+    <label>tracking code: <input type="text" name="freight_tracking" value="<:order freight_tracking:>" /></label>
+    <input type="submit" name="a_order_save" value="Save" />
+    </form>
+
 </td>
           <td align=right nowrap><:money order shipping_cost:></td>
           <td>&nbsp;</td>
@@ -102,6 +110,8 @@ Shipping via <:order shipping_method:>:
           <td align=right nowrap></td>
 </tr>
 <:or Order:><:eif Order:>
+<:or Cfg:>
+<:eif Cfg:>
         <tr bgcolor="#FFFFFF"> 
           <td colspan=3 align=right>Total:</td>
           <td align=right nowrap><:money order total:></td>
@@ -110,6 +120,20 @@ Shipping via <:order shipping_method:>:
           <td>&nbsp;</td>
           <td align=right nowrap><:money order gst:></td>
 </tr>
+<:if Cfg shop shipping:><:or Cfg:>
+<tr>
+  <td colspan="3">
+    <form method="post" action="<:adminurl shopadmin a_order_save 1:>">
+    <input type="hidden" name="id" value="<:order id:>" />
+    <:csrfp shop_order_save hidden:>
+    <label>Shipping method: <:shipping_method_select:></label>
+    <label>tracking code: <input type="text" name="freight_tracking" value="<:order freight_tracking:>" /></label>
+    <input type="submit" name="a_order_save" value="Save" />
+    </form>
+  </td>
+  <td colspan="5"></td>
+</tr>
+<:eif Cfg:>
 </table>
 <:switch:>
 <:case Eq [order paidFor] "0":>

@@ -330,6 +330,8 @@ create table orders (
   
   paypal_tran_id varchar(255) null,
 
+  freight_tracking varchar(255) not null default '',
+
   primary key (id),
   index order_cchash(ccNumberHash),
   index order_userId(userId, orderDate)
