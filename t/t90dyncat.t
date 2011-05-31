@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>17;
+use Test::More tests => 23;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
@@ -141,6 +141,38 @@ TEMPLATE
 $parent2->{id}
 $parent3->{id}
 
+EXPECTED
+
+dyn_template_test "empty dyncart", $parent, <<TEMPLATE, <<EXPECTED;
+<:iterator begin dyncart:><:
+dyncartitem title:> <:money dyncartitem price:>
+<:iterator end dyncart:>
+Total: <:money dyncarttotalcost:>
+TEMPLATE
+
+Total: 0.00
+EXPECTED
+
+# fake an item in the cart
+$req->session->{cart} =
+  [
+   {
+    productId => $prods[0]{id},
+    units => 1,
+    price => scalar $prods[0]->price(),
+    title => scalar $prods[0]->title,
+   }
+  ];
+
+dyn_template_test "nonempty dyncart", $parent, <<TEMPLATE, <<EXPECTED;
+<:iterator begin dyncart:><:
+dyncartitem title:> <:money dyncartitem price:>
+<:iterator end dyncart:>
+Total: <:money dyncarttotalcost:>
+TEMPLATE
+prod3 20.00
+
+Total: 20.00
 EXPECTED
 
 $prod4->remove($cfg);

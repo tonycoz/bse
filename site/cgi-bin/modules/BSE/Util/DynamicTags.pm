@@ -6,7 +6,7 @@ use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 use BSE::CfgInfo qw(custom_class);
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 sub new {
   my ($class, $req) = @_;
@@ -845,7 +845,8 @@ sub _cart {
   for my $item (@$cart) {
     require Products;
     my $product = Products->getByPkey($item->{productId});
-    my $extended = $product->{retailPrice} * $item->{units};
+    my $extended = $product->price(user => scalar $self->{req}->siteuser) 
+      * $item->{units};
     my $link = $product->link;
     $link =~ /^\w+:/ 
       or $link = $self->{req}->cfg->entryErr('site', 'url') . $link;
