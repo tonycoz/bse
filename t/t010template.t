@@ -25,6 +25,7 @@ SKIP: {
      strref => \$str,
      str => $str,
      with_upper => \&tag_with_upper,
+     cat => \&tag_cat,
     );
   template_test("<:str:>", "ABC", "simple", \%acts);
   template_test("<:strref:>", "ABC", "scalar ref", \%acts);
@@ -41,7 +42,7 @@ TEMPLATE
 		"cond1", \%acts);
   template_test('<:if Eq [str] "ABC":>YES<:or Eq:>NO<:eif Eq:>', "YES", 
 		"cond2", \%acts);
-  template_test('<:wrap wraptest.tmpl title=>"foo [str]":>Alpha', <<OUTPUT,
+  template_test('<:wrap wraptest.tmpl title=>[cat "foo " [str]]:>Alpha', <<OUTPUT,
 <title>foo ABC</title>
 Alpha
 OUTPUT
@@ -161,4 +162,10 @@ sub tag_with_upper {
   my ($args, $text) = @_;
 
   return uc($text);
+}
+
+sub tag_cat {
+  my ($args, $acts, $func, $templater) = @_;
+
+  return join "", $templater->get_parms($args, $acts);
 }
