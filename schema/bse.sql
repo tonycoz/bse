@@ -1164,6 +1164,7 @@ create table bse_audit_log (
 
 -- a more generic file container
 -- any future managed files belong here
+drop table if exists bse_selected_files;
 drop table if exists bse_files;
 create table bse_files (
   id integer not null auto_increment primary key,
