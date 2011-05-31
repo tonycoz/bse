@@ -217,7 +217,7 @@ TEMPLATE
 4
 4
 2.78
-<:arithmetic 2+3+[undefinedtag x]+2+[undefinedtag2]:>
+<:arithmetic 2+[add 1 2]+[undefinedtag x]+[add 1 1]+[undefinedtag2]:>
 EXPECTED
 
 template_test "nobodytext", $kids[0], <<'TEMPLATE', <<EXPECTED;
