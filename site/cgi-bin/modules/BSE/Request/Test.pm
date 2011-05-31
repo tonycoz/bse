@@ -2,7 +2,7 @@ package BSE::Request::Test;
 use strict;
 use base 'BSE::Request::Base';
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub new {
   my ($class, %opts) = @_;
@@ -20,7 +20,9 @@ sub _make_cgi {
 }
 
 sub _make_session {
-  return {};
+  my ($self) = @_;
+
+  $self->{session} = {};
 }
 
 sub is_ajax {
