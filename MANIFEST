@@ -664,6 +664,7 @@ site/templates/interest/error_base.tmpl
 site/templates/location.tmpl
 site/templates/lowmap.tmpl
 site/templates/mailconfirm.tmpl
+site/templates/mailconfirm_html.tmpl
 site/templates/mailorder.tmpl
 site/templates/menu/menu.tmpl
 site/templates/menu/menu1.tmpl
@@ -703,6 +704,7 @@ site/templates/user/base_bookseminar.tmpl
 site/templates/user/base_cancelbooking.tmpl
 site/templates/user/base_editbooking.tmpl
 site/templates/user/base_orderdetail.tmpl
+site/templates/user/base_orderdetaila.tmpl
 site/templates/user/base_redirect.tmpl
 site/templates/user/base_userpage_files.tmpl
 site/templates/user/base_userpage_orders.tmpl
@@ -731,6 +733,7 @@ site/templates/user/options_base.tmpl
 site/templates/user/options_billing_base.tmpl
 site/templates/user/options_images_base.tmpl
 site/templates/user/options_saved_base.tmpl
+site/templates/user/orderdetaillow.tmpl
 site/templates/user/register_base.tmpl
 site/templates/user/sessiondeletenotify.tmpl
 site/templates/user/subdetail.tmpl

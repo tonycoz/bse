@@ -18,7 +18,7 @@ use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
 use Carp qw(confess);
 
-our $VERSION = "1.011";
+our $VERSION = "1.012";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -45,6 +45,8 @@ my %actions =
    nopassword => 'nopassword',
    image => 'req_image',
    orderdetail => 'req_orderdetail',
+   orderdetaila => 'req_orderdetaila',
+   oda => 1,
    wishlist => 'req_wishlist',
    downufile => 'req_downufile',
    file_metadata => "req_file_metadata",
@@ -1255,12 +1257,30 @@ sub tag_detail_ifFileAvail {
   return 1;
 }
 
+=item orderdetail
+
+Display an order detail for an order for the currently logged in user.
+
+Parameters:
+
+=over
+
+=item *
+
+id - order id (the logged in user must own this order)
+
+=back
+
+See _orderdetail_low for tags.
+
+Template: user/orderdetail
+
+=cut
+
 sub req_orderdetail {
   my ($self, $req, $message) = @_;
 
-  my $cfg = $req->cfg;
   my $cgi = $req->cgi;
-  my $session = $req->session;
 
   my $result;
   my $user = $self->_get_user($req, 'userpage', \$result)
@@ -1275,6 +1295,89 @@ sub req_orderdetail {
     or undef $order;
   $order
     or return $self->req_userpage($req, "No such order");
+
+  return $self->_orderdetail_low($req, $order, $message, "user/orderdetail", 0);
+}
+
+=item orderdetaila
+
+=item oda
+
+Display an order detail for an order identified by the order's
+randomId.
+
+Parameters:
+
+=over
+
+=item *
+
+id - order randomId
+
+=back
+
+See _orderdetail_low for tags.
+
+Template: user/orderdetaila
+
+=cut
+
+sub req_orderdetaila {
+  my ($self, $req, $message) = @_;
+
+  my $cgi = $req->cgi;
+
+  my $result;
+  my $order_id = $cgi->param('id');
+  my $order;
+  if (defined $order_id && $order_id =~ /^[a-f0-9]{32,}$/) {
+    require BSE::TB::Orders;
+    ($order) = BSE::TB::Orders->getBy(randomId => $order_id);
+  }
+  $order
+    or return $self->req_show_logon($req, "No such order");
+
+  return $self->_orderdetail_low($req, $order, $message, "user/orderdetaila", 1);
+}
+
+*req_oda = \&req_orderdetaila;
+
+=item _orderdetail_low
+
+Common tags for orderdetail and orderdetaila.
+
+=over
+
+=item *
+
+order I<field> - field from the order.
+
+=item *
+
+iterator items
+
+=item *
+
+item I<field> - access to the items in the order
+
+=item *
+
+iterator orderfiles
+
+orderfile I<field> - access to files bought in the order.  Note: the
+user will need to logon to download forSale files, even from the
+anonymous order detail page.
+
+=back
+
+=cut
+
+sub _orderdetail_low {
+  my ($self, $req, $order, $message, $template, $anon) = @_;
+
+  my $cfg = $req->cfg;
+  my $cgi = $req->cgi;
+
   $message ||= $cgi->param('message') || '';
 
   my $must_be_paid = $cfg->entryBool('downloads', 'must_be_paid', 0);
@@ -1306,11 +1409,10 @@ sub req_orderdetail {
      ifFileAvail =>
      [ \&tag_detail_ifFileAvail, $order, \$current_file, 
        $must_be_paid, $must_be_filled ],
+     ifAnon => !!$anon,
     );
 
-  my $base_template = 'user/orderdetail';
-
-  return $req->dyn_response($base_template, \%acts);
+  return $req->dyn_response($template, \%acts);
 }
 
 sub req_download {

@@ -1,0 +1,82 @@
+<:wrap email/base.tmpl:>
+<p>You have created an order with <:siteName:>:</p>
+
+<p>To stay up to date on the status of your order, see:</p>
+
+<p><a href="<:target user oda id [order randomId] |h:>"><:target user oda id [order randomId] |h:></a></p>
+
+<p>Order: <:order id |%06d:></p>
+
+<table>
+<tr>
+<thDelivery:</th>
+<td> <:order delivFirstName |h:> <:order delivLastName |h:><br />
+<:order delivStreet |h:><br />
+<:order delivSuburb |h:> <:order delivPostCode |h:> <:order delivState |h:><br />
+<:order delivCountry |h:></td>
+</tr>
+<tr>
+  <th>Phone:</th>
+  <td><:order telephone |h:></td>
+</tr>
+<:ifOrder delivMobile:>
+<tr>
+  <th>Mobile:</th>
+  <td><:order delivMobile |h:></td>
+</tr>
+<:or:><:eif:>
+<:ifOrder facsimile:>
+<tr>
+  <th>Fax:</th>
+  <td><:order facsimile |h:></td>
+</tr>
+<:or:><:eif:>
+<tr>
+  <th>Email:</th>
+  <td><:order emailAddress |h:></td>
+</tr>
+</table>
+
+<table>
+<tr>
+  <th>Product</th
+  <th>Units</th>
+  <th>Price</th>
+  <th>Extended</th>
+</tr>
+<:iterator begin items:>
+  <td><:product title |h:>
+<:if Options:>
+   <br /><:options |h:><:or Options:><:eif Options:></td>
+  <td><:item units:></td>
+  <td><:item price |m:></td>
+  <td><:extended price|m:></td>
+</tr>
+<:iterator end items:>
+<tr>
+  <td colspan="3">Shipping:</td>
+  <td><:order shipping_cost |m:></td>
+</tr>
+<tr>
+  <td>Total:</td>
+  <td><:order total |m:></td>
+</tr>
+</table>
+
+<:ifEq [order paymentType] "0" :>Paid by credit card.
+<:if Order ccOnline
+:><p>Processed online.</p>
+<p>Receipt No.  : <:order ccReceipt |h:></p>
+<:or Order
+:><:eif Order:><:or:><:eif
+:><:ifEq [order paymentType] "1" :><p>Will be paid by cheque</p><:or
+:><:eif:><:ifEq [order paymentType] "2"
+:><p>We will call you to arrange for payment</p><:or:><:eif:><:ifEq [order paymentType] "4"
+:><p>Paid by PayPal, transaction id <:order paypal_tran_id |h:></p><:or:><:eif:><:
+include custom/payment_type_email.include:>
+<:ifOrder shipping_method:>
+<p>To be shipped by: <:order shipping_method:></p>
+<:or:><:eif:>
+<:if Order instructions:>
+<p>Special Instructions: <:order instructions |h:></p>
+<:or Order:><:eif Order:>

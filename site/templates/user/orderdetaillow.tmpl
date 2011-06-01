@@ -1,0 +1,92 @@
+<div align="center"> 
+<h1>Order Detail: <:order id:></h1>
+<:if Anon:><:or Anon:>
+<p><a href="<:script:>?userpage=1">Back to order list</a></p>
+<:eif Anon:>
+   
+  <table width="100%" cellpadding="0" cellspacing="1">
+	<:if Message:> 
+    <tr> 
+      <th  align="center"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:message:></font></b></th>
+    </tr>
+    <:or Message:><:eif Message:> 
+    <tr> 
+      <td bgcolor="#CCCCCC"> <table width="100%" cellpadding="3" cellspacing="1">
+          <tr> 
+            <th align="center" nowrap width="25%" bgcolor="#666666"><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#CCCCCC">Order 
+              No:</font><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#FFFFFF"> 
+              <:order id:></font></th>
+            <th align="center" width="25%" nowrap bgcolor="#666666"><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#CCCCCC">Date:</font><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#FFFFFF"> 
+              <:date order orderDate:></font></th>
+            <th align="center" width="25%" nowrap bgcolor="<:ifOrder filled:>#CC0033<:or:>#66CC00<:eif:>"><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="<:ifOrder filled:>#CCCCCC<:or:>#000000<:eif:>">Status:</font><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#FFFFFF"> 
+              <:ifOrder filled:>Complete<:or:>Processing<:eif:></font></th>
+            <th align="center" width="25%" nowrap bgcolor="#FF7F00"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Total:</font><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#FFFFFF"> 
+              $<:money order total:></font></th>
+          </tr>
+        </table>
+        <:if Items:> <table width="100%" cellpadding="3" cellspacing="1">
+          <tr bgcolor="#EEEEEE"> 
+            <th width="100%" align="left"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Product</font></th>
+            <th><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Quantity</font></th>
+            <th><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Unit</font></th>
+          </tr>
+          <:iterator begin items:> 
+          <tr bgcolor="#FFFFFF"> 
+            <td width="100%"><a href="<:product link:>"><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:product 
+              title:></font></a></td>
+            <td align="center"><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:item 
+              units:></font></td>
+            <td align="right"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">$<:money 
+              item price:></font></td>
+          </tr>
+          <:iterator end items:> 
+<:if Cfg shop shipping:>
+<:if Order shipping_name:>
+     	 <tr bgcolor="#FFFFFF">
+	   <td colspan="2">Shipping via <:order shipping_method:>
+<:ifOrder freight_tracking:>, tracking code <:order freight_tracking:><:or:><:eif:>
+	  </td>
+	  <td align="right">$<:money order shipping_cost:></td>
+	</tr>
+<:or Order:><:eif Order:>
+<:or Cfg:>
+<:if Order shipping_name:>
+     	 <tr bgcolor="#FFFFFF">
+	   <td colspan="3">Shipping via <:order shipping_method:>
+<:ifOrder freight_tracking:>, tracking code <:order freight_tracking:><:or:><:eif:>
+	  </td>
+	</tr>
+<:eif Cfg:>
+        </table>
+        <:if Orderfiles:> <table width="100%" cellpadding="3" cellspacing="1">
+          <tr bgcolor="#CCCCCC"> 
+            <th colspan="4"><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#666666"><:if 
+              Order filled:>Files available<:or Order:><:ifCfg downloads must_be_filled:>Files 
+              available when order status is &#145;Complete&#146;<:or:>Files<:eif:><:eif 
+              Order:></font></th>
+          </tr>
+          <tr bgcolor="#EEEEEE"> 
+            <th width="50%" align="left"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Description</font></th>
+            <th nowrap width="50%" align="left" colspan="2"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">File</font></th>
+            <th><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Size</font></th>
+          </tr>
+          <:iterator begin orderfiles:> 
+          <tr bgcolor="#FFFFFF"> 
+            <td width="50%"><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:orderfile 
+              description:></font></td>
+            <td nowrap width="50%"><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:if 
+              FileAvail:><a href="/cgi-bin/user.pl?download=1&file=<:orderfile id:>&order=<:order id:>&item=<:orderfile item_id:>"><:orderfile 
+              displayName:></a><:or FileAvail:><:orderfile displayName:><:eif 
+              FileAvail:></font></td>
+            <td><:if FileAvail:><a href="/cgi-bin/user.pl?download=1&file=<:orderfile id:>&order=<:order id:>&item=<:orderfile item_id:>"><img src="/images/filestatus/download.gif" width="15" height="15" alt="Download now" title="Download now" border="0"></a><:or 
+              FileAvail:><img src="/images/filestatus/locked.gif" width="15" height="15" alt="Locked" title="Locked"><:eif 
+              FileAvail:></td>
+            <td align="right"><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:kb 
+              orderfile sizeInBytes:></font></td>
+          </tr>
+          <:iterator end orderfiles:> 
+        </table>
+        <:or Orderfiles:><:eif Orderfiles:> <:or Items:><:eif Items:> </td>
+    </tr>
+  </table>
+</div>
