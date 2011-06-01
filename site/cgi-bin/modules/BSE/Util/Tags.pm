@@ -8,7 +8,7 @@ use vars qw(@EXPORT_OK @ISA);
 @ISA = qw(Exporter);
 require Exporter;
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 sub _get_parms {
   my ($acts, $args) = @_;
@@ -307,6 +307,8 @@ sub static {
      subreport => [ \&tag_report, $cfg ],
 
      cond => \&tag_cond,
+
+     target => \&tag_target,
 
      (
       $static_ajax 
@@ -1113,6 +1115,33 @@ sub tag_cond {
   defined $false or $false = "";
 
   return $cond ? $true : $false;
+}
+
+=item tag target
+
+Usage:
+
+=over
+
+target I<script> I<target> I<parameters>...
+
+=back
+
+Does [] replacement, returns a url as with dyntarget.
+
+eg.
+
+  <:target user orderdetaila id [order randomId]:>
+
+=cut
+
+sub tag_target {
+  my ($args, $acts, $tagname, $templater) = @_;
+
+  my ($script, $target, @opts) =
+    DevHelp::Tags->get_parms($args, $acts, $templater);
+
+  return BSE::Cfg->single->user_url($script, $target, @opts);
 }
 
 =item tag concatenate
