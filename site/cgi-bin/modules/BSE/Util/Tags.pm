@@ -8,7 +8,7 @@ use vars qw(@EXPORT_OK @ISA);
 @ISA = qw(Exporter);
 require Exporter;
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 sub _get_parms {
   my ($acts, $args) = @_;
@@ -717,7 +717,7 @@ sub iter_auditlog {
 
   my (@args) = DevHelp::Tags->get_parms($args, $acts, $templater);
   require BSE::TB::AuditLog;
-  return sort { $b->id cmp $a->id }
+  return sort { $b->id <=> $a->id }
     BSE::TB::AuditLog->getBy(@args);
 }
 
