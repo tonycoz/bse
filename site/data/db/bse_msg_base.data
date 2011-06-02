@@ -54,7 +54,10 @@ id: bse/admin/shop/saveorder/nochanges
 description: Displayed on a save that makes no changes
 
 id: bse/admin/shop/saveorder/badmethod
-description: Invalid shipping method
+description: Invalid shipping method, $1 is the supplied method id
+
+id: bse/admin/shop/saveorder/badstage
+description: Invalid order stage, $1 is the supplied stage id
 
 id: test/
 description: <<TEXT
@@ -127,6 +130,33 @@ description: Returned from PayPal for an order that was already paid.  The payme
 
 id: bse/shop/paypal/badtoken
 description: The transaction token supplied by PayPal to paypalret doesn't match the token value stored in the order
+
+id: bse/shop/orderstages/
+description: Descriptions of the order stages
+
+id: bse/shop/orderstages/incomplete
+description: The incomplete order stage
+
+id: bse/shop/orderstages/unprocessed
+description: The unprocessed order stage
+
+id: bse/shop/orderstages/backorder
+description: The backorderorder stage
+
+id: bse/shop/orderstages/picked
+description: The picked order stage
+
+id: bse/shop/orderstages/shipped
+description: The shipped order stage
+
+id: bse/shop/orderstages/cancelled
+description: The cancelled order stage
+
+id: bse/shop/orderstages/stalled
+description: The stalled order stage
+
+id: bse/shop/orderstages/returned
+description: The stalled returned stage
 
 id: bse/files/
 description: File validation messages

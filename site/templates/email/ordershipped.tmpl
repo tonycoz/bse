@@ -1,0 +1,14 @@
+Your order <:order id |%05d:> has been shipped.
+<:ifOrder freight_tracking
+:>It has tracking code <:order freight_tracking:>
+
+<:or:><:eif
+:>
+Item                                                      Units    Price
+<:iterator begin orderitems:>
+<:orderitem title |%-60s:>
+                                                         <:orderitem units |%6d:> <:money orderitem price |%8s:>
+<:iterator end orderitems:>
+<:ifOrder shipping_cost
+:>Shipping:                                                       <:money order shipping_cost |%8s:><:or:><:eif:>
+Total:                                                          <:money order total |%8s:>

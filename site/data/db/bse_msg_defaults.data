@@ -1,5 +1,5 @@
 ---
-# VERSION=1.001
+# VERSION=1.002
 # defaults for the following
 language_code: en
 priority: 0
@@ -43,6 +43,9 @@ message: No changes to save
 id: bse/admin/shop/saveorder/badmethod
 message: Unknown shipping method '$1:s'
 
+id: bse/admin/shop/saveorder/badstage
+message: Unknown order stage '$1:s'
+
 id: bse/shop/cart/empty
 message: Cart emptied
 
@@ -69,6 +72,30 @@ message: PayPal payment cancelled
 
 id: bse/shop/paypal/badtoken
 message: The token returned by PayPal doesn't match the token generated for  order.
+
+id: bse/shop/orderstages/incomplete
+message: Not completed by customer
+
+id: bse/shop/orderstages/unprocessed
+message: Awaiting processing
+
+id: bse/shop/orderstages/backorder
+message: One or more items on backorder
+
+id: bse/shop/orderstages/picked
+message: Items picked and packed
+
+id: bse/shop/orderstages/shipped
+message: Shipped
+
+id: bse/shop/orderstages/cancelled
+message: Cancelled
+
+id: bse/shop/orderstages/stalled
+message: Stalled on customer response
+
+id: bse/shop/orderstages/returned
+message: Returned
 
 id: bse/files/image_file_required
 message: File must be an image file

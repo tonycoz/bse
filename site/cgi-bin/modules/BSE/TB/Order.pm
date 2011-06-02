@@ -6,7 +6,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 use Carp 'confess';
 
-our $VERSION = "1.002";
+our $VERSION = "1.004";
 
 sub columns {
   return qw/id
@@ -28,7 +28,11 @@ sub columns {
            ccStatus2 ccTranId complete delivOrganization billOrganization
            delivStreet2 billStreet2 purchase_order shipping_method
            shipping_name shipping_trace
-	   paypal_token paypal_tran_id freight_tracking/;
+	   paypal_token paypal_tran_id freight_tracking stage/;
+}
+
+sub table {
+  return "orders";
 }
 
 sub defaults {
@@ -36,6 +40,13 @@ sub defaults {
   require Digest::MD5;
   return
     (
+     billFirstName => "",
+     billLastName => "",
+     billStreet => "",
+     billSuburb => "",
+     billState => "",
+     billPostCode => "",
+     billCountry => "",
      total => 0,
      wholesaleTotal => 0,
      gst => 0,
@@ -80,7 +91,10 @@ sub defaults {
      shipping_method => '',
      shipping_name => '',
      shipping_trace => undef,
+     paypal_token => "",
+     paypal_tran_id => "",
      freight_tracking => "",
+     stage => "incomplete",
     );
 }
 
@@ -118,6 +132,12 @@ returns the SiteUser object of the user who made this order.
 
 sub siteuser {
   my ($self) = @_;
+
+  if ($self->siteuser_id) {
+    require SiteUsers;
+    my $user = SiteUsers->getByPkey($self->siteuser_id);
+    $user and return $user;
+  }
 
   $self->{userId} or return;
 
@@ -327,6 +347,124 @@ sub deliv_country_code {
   else {
     require BSE::Countries;
     return BSE::Countries::bse_country_code($self->delivCountry);
+  }
+}
+
+=item stage
+
+Return the order stage.
+
+If the stage is empty, guess from the order flags.
+
+=cut
+
+sub stage {
+  my ($self) = @_;
+
+  if ($self->{stage} ne "") {
+    return $self->{stage};
+  }
+
+  if (!$self->complete) {
+    return "incomplete";
+  }
+  elsif ($self->filled) {
+    return "shipped";
+  }
+  else {
+    return "unprocessed";
+  }
+}
+
+sub stage_description {
+  my ($self, $lang) = @_;
+
+  return BSE::TB::Orders->stage_label($self->stage, $lang);
+}
+
+=item mail_recipient
+
+Return a value suitable for BSE::ComposeMail's to parameter.
+
+=cut
+
+sub mail_recipient {
+  my ($self) = @_;
+
+  my $user = $self->siteuser;
+
+  if ($user && $user->email eq $self->emailAddress) {
+    return $user;
+  }
+
+  return $self->emailAddress;
+}
+
+sub send_shipped_email {
+  my ($self) = @_;
+
+  my $to = $self->mail_recipient;
+  require BSE::ComposeMail;
+  my $mailer = BSE::ComposeMail->new(cfg => BSE::Cfg->single);
+  require BSE::Util::Tags;
+  require BSE::Util::Iterate;
+  my $it = BSE::Util::Iterate::Objects->new;
+  my %acts =
+    (
+     BSE::Util::Tags->mail_tags(),
+     order => [ \&BSE::Util::Tags::tag_object_plain, $self ],
+     $it->make
+     (
+      single => "orderitem",
+      plural => "orderitems",
+      code => [ items => $self ],
+     ),
+    );
+
+  $mailer->send
+    (
+     to => $to,
+     subject => "Your order has shipped",
+     template => "email/ordershipped",
+     acts => \%acts,
+     log_msg => "Notify customer order has shipped",
+     log_object => $self,
+     log_component => "shopadmin:orders:saveorder",
+    );
+}
+
+sub new_stage {
+  my ($self, $who, $stage, $stage_note) = @_;
+
+  unless ($stage ne $self->stage
+	  || defined $stage_note && $stage_note =~ /\S/) {
+    return;
+  }
+
+  my $old_stage = $self->stage;
+  my $msg = "Set to stage '$stage'";
+  if (defined $stage_note && $stage_note =~ /\S/) {
+    $msg .= ": $stage_note";
+  }
+  require BSE::TB::AuditLog;
+  BSE::TB::AuditLog->log
+    (
+     component => "shopadmin:orders:saveorder",
+     object => $self,
+     msg => $msg,
+     level => "info",
+     actor => $who || "U"
+    );
+
+  if ($stage ne $old_stage) {
+    $self->set_stage($stage);
+    if ($stage eq "shipped") {
+      $self->send_shipped_email();
+      $self->set_filled(1);
+    }
+    else {
+      $self->set_filled(0);
+    }
   }
 }
 

@@ -547,6 +547,7 @@ Column shipping_trace;text;YES;NULL;
 Column paypal_token;varchar(255);YES;NULL;
 Column paypal_tran_id;varchar(255);YES;NULL;
 Column freight_tracking;varchar(255);NO;;
+Column stage;varchar(20);NO;;
 Index PRIMARY;1;[id]
 Index order_cchash;0;[ccNumberHash]
 Index order_userId;0;[userId;orderDate]

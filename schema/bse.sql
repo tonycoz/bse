@@ -332,6 +332,8 @@ create table orders (
 
   freight_tracking varchar(255) not null default '',
 
+  stage varchar(20) not null default '',
+
   primary key (id),
   index order_cchash(ccNumberHash),
   index order_userId(userId, orderDate)

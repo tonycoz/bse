@@ -12,14 +12,14 @@ use Constants qw(:shop $SHOPID $PRODUCTPARENT
 use BSE::TB::Images;
 use Articles;
 use BSE::Sort;
-use BSE::Util::Tags qw(tag_hash tag_error_img);
+use BSE::Util::Tags qw(tag_hash tag_error_img tag_object_plain tag_object);
 use BSE::Util::Iterate;
 use BSE::WebUtil 'refresh_to_admin';
 use BSE::Util::HTML qw(:default popup_menu);
 use BSE::Arrows;
 use BSE::Shop::Util qw(:payment order_item_opts nice_options);
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 my %actions =
   (
@@ -586,6 +586,21 @@ sub tag_shipping_method_select {
     );
 }
 
+sub tag_stage_select {
+  my ($self, $req, $order) = @_;
+
+  my @stages = BSE::TB::Orders->settable_stages;
+  
+  my %stage_labels = BSE::TB::Orders->stage_labels;
+  return popup_menu
+    (
+     -name => "stage",
+     -values => \@stages,
+     -default => $order->stage,
+     -labels => \%stage_labels,
+    );
+}
+
 sub req_order_detail {
   my ($class, $req, $errors) = @_;
 
@@ -620,7 +635,7 @@ sub req_order_detail {
 	 }
 	 return 0;
        },
-       order => [ \&tag_hash, $order ],
+       order => [ \&tag_object, $order ],
        extension =>
        sub {
 	 sprintf("%.2f", $lines[$line_index]{units} * $lines[$line_index]{$_[0]}/100.0)
@@ -643,6 +658,9 @@ sub req_order_detail {
        ),
        shipping_method_select =>
        [ tag_shipping_method_select => $class, $order ],
+       stage_select =>
+       [ tag_stage_select => $class, $req, $order ],
+       stage_description => escape_html($order->stage_description($req->language)),
       );
 
     return $req->dyn_response('admin/order_detail', \%acts);
@@ -752,7 +770,7 @@ sub req_paypal_refund {
 
 Make changes to an order, only a limited set of fields can be changed.
 
-Parameters:
+Parameters, all optional:
 
 =over
 
@@ -768,6 +786,11 @@ id of the dummy shipping method to set for the order.
 =item *
 
 freight_tracking - the freight tracking code for the shipment.
+
+=item *
+
+stage - order stage, one of unprocessed, backorder, picked, shipped,
+cancelled.
 
 =back
 
@@ -819,13 +842,25 @@ sub req_order_save {
     }
   }
 
+  my $new_stage = 0;
+  my ($stage) = $cgi->param("stage");
+  my ($stage_note) = $cgi->param("stage_note");
+  if (defined $stage && $stage ne $order->stage
+     || defined $stage_note && $stage_note =~ /\S/) {
+    my @stages = BSE::TB::Orders->settable_stages;
+    if (grep $_ eq $stage, @stages) {
+      ++$new_stage;
+      ++$save;
+    }
+    else {
+      $errors{stage} = "msg:bse/admin/shop/saveorder/badstage:$stage";
+    }
+  }
+
   keys %errors
     and return $self->req_order_detail($req, \%errors);
 
   if ($save) {
-    $order->save;
-    $req->flash("msg:bse/admin/shop/saveorder/saved");
-
     if ($new_freight_tracking) {
       $req->audit
 	(
@@ -844,6 +879,12 @@ sub req_order_save {
 	 level => "info",
 	);
     }
+    if ($new_stage) {
+      $order->new_stage(scalar $req->user, $stage, $stage_note);
+    }
+
+    $order->save;
+    $req->flash("msg:bse/admin/shop/saveorder/saved");
   }
   else {
     $req->flash("msg:bse/admin/shop/saveorder/nochanges");

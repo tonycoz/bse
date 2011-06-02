@@ -135,6 +135,16 @@ Shipping via <:order shipping_method:>
 </tr>
 <:eif Cfg:>
 </table>
+<p>Order progress: <:stage_description:> <a href="#" onclick="document.getElementById('update_stage').style.display='block'; this.style.display='none'; return false;">update</a></p>
+
+<form id="update_stage" action="<:adminurl shopadmin:>" style="display: none" method="post">
+  <input type="hidden" name="id" value="<:order id:>" />
+  <:csrfp shop_order_save hidden:>
+  <:stage_select:>
+  <label>Log note: <input type="text" name="stage_note" size="40" /> (optional)</label>
+  <input type="submit" name="a_order_save" value="Save" />
+</form>
+
 <:switch:>
 <:case Eq [order paidFor] "0":>
 <p>This order hasn't been paid</p>

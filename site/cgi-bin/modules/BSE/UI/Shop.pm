@@ -17,7 +17,7 @@ use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 
-our $VERSION = "1.010";
+our $VERSION = "1.012";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -686,7 +686,9 @@ sub req_order {
   my %errors;
   my %values;
   for my $name (keys %fields) {
-    ($values{$name}) = $cgi->param($name);
+    my ($value) = $cgi->param($name);
+    defined $value or $value = "";
+    $values{$name} = $value;
   }
 
   my @required = 
@@ -840,6 +842,7 @@ my %nostore =
    cardNumber => 1,
    cardExpiry => 1,
    delivery_in => 1,
+   cardVerify => 1,
   );
 
 sub req_payment {
@@ -955,21 +958,21 @@ sub req_payment {
     
     my @items = $class->_build_items($req, \@products);
     
-    my @columns = BSE::TB::Order->columns;
-    my %columns; 
-    @columns{@columns} = @columns;
-    
-    for my $col (@columns) {
-      defined $order_values->{$col} or $order_values->{$col} = '';
-    }
-    
-    my @data = @{$order_values}{@columns};
-    shift @data;
-    
     if ($session->{order_work}) {
       $order = BSE::TB::Orders->getByPkey($session->{order_work});
     }
     if ($order && !$order->{complete}) {
+      my @columns = BSE::TB::Order->columns;
+      my %columns; 
+      @columns{@columns} = @columns;
+      
+      for my $col (@columns) {
+	defined $order_values->{$col} or $order_values->{$col} = '';
+      }
+      
+      my @data = @{$order_values}{@columns};
+      shift @data;
+    
       print STDERR "Recycling order $order->{id}\n";
       
       my @allbutid = @columns;
@@ -983,7 +986,7 @@ sub req_payment {
       };
     }
     else {
-      $order = BSE::TB::Orders->add(@data)
+      $order = BSE::TB::Orders->make(%$order_values)
 	or die "Cannot add order";
     }
     
@@ -1112,7 +1115,8 @@ sub req_payment {
   }
 
   # order complete
-  $order->{complete} = 1;
+  $order->set_complete(1);
+  $order->set_stage("unprocessed");
   $order->save;
 
   $class->_finish_order($req, $order);
@@ -1678,7 +1682,7 @@ sub _fillout_order {
   }
   $values->{total} = $total;
   $values->{gst} = $total_gst;
-  $values->{wholesale} = $total_wholesale;
+  #$values->{wholesale} = $total_wholesale;
 
   my $prompt_ship = $cfg->entry("shop", "shipping", 0);
   if ($prompt_ship) {
@@ -1714,7 +1718,7 @@ sub _fillout_order {
       $values->{shipping_name} = $courier->name;
       $values->{shipping_cost} = $cost;
       $values->{shipping_trace} = $courier->trace;
-      $values->{delivery_in} = $courier->delivery_in();
+      #$values->{delivery_in} = $courier->delivery_in();
       $values->{total} += $values->{shipping_cost};
     }
     else {
