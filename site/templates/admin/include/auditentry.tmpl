@@ -3,6 +3,6 @@
   <td class="col_level"><:auditentry level_name:></td>
   <td class="col_actor"><:auditentry actor_name:>
 </td>
-   <td class="col_what"><:auditentry component:>/<:auditentry module:>/<:auditentry function:></td>
+   <td class="col_what"><:ifEq [auditentry facility] "bse":><:or:><:auditentry facility:>: <:eif:><:auditentry component:>/<:auditentry module:>/<:auditentry function:></td>
    <td class="col_msg"><:auditentry msg:></td>
 </tr>

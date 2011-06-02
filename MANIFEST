@@ -602,6 +602,7 @@ site/templates/admin/users/inc_user_menu.tmpl
 site/templates/admin/users/list.tmpl
 site/templates/admin/users/list_low.tmpl
 site/templates/admin/users/view.tmpl
+site/templates/admin/users/view_activity.tmpl
 site/templates/admin/users/view_bookings.tmpl
 site/templates/admin/users/view_confirm.tmpl
 site/templates/admin/xbase.tmpl
