@@ -2375,6 +2375,41 @@ in the audit log when [audit log].mail is enabled.
 
 =back
 
+=head2 [mail audit log]
+
+This enables sent when an event is logged in the audit log.  Warning:
+for common events this will result in large amounts of email.
+
+=over
+
+=item *
+
+to - the email address to send the email to
+
+=item *
+
+emerg, alert, crit, error, warning, notice, info, debug - if present
+and true then events at these levels result in an email.  If the value
+contains an C<@> then the value is used as the recipient address.
+
+=item *
+
+I<facility>-I<component>
+
+=item *
+
+I<facility>-I<component>-I<module>
+
+=item *
+
+I<facility>-I<component>-I<module>-I<function>
+
+Controls sending an email for specific events or families of events.
+If the value is true, send an email for that event.  If the value
+contains an C<@> then the value is used as the recipient address.
+
+=back
+
 =head1 AUTHOR
 
 Tony Cook <tony@develop-help.com>
