@@ -5,7 +5,7 @@ use BSE::Mail;
 use Carp 'confess';
 use Digest::MD5 qw(md5_hex);
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 =head1 NAME
 
@@ -103,6 +103,7 @@ sub start {
   unless (defined $self->{allow_html}) {
     if (ref $self->{to}) {
       # being sent to a site user, use their setting
+      $opts{log_object} ||= $self->{to};
       $self->{allow_html} = $self->{to}->allow_html_email;
       $self->{to} = $self->{to}{email};
     }
