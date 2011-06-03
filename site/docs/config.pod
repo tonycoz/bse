@@ -2412,7 +2412,7 @@ contains an C<@> then the value is used as the recipient address.
 
 =head2 [email I<token>]
 
-Controls emails sent via F<cgi-bin/admin/sendemail.pm>.
+Controls emails sent via F<cgi-bin/admin/sendemail.pl>.
 
 =over
 
