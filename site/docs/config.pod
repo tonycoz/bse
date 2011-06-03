@@ -2410,6 +2410,41 @@ contains an C<@> then the value is used as the recipient address.
 
 =back
 
+=head2 [email I<token>]
+
+Controls emails sent via F<cgi-bin/admin/sendemail.pm>.
+
+=over
+
+=item *
+
+template - plain text template
+
+=item *
+
+html_template - HTML template (defaults to the value of I<template>
+followed by C<_html>
+
+=item *
+
+subject - subject of the email, can be overridden with the
+C<set_subject> tag.
+
+=item *
+
+from - from email address, defaults to the shop from address
+
+=item *
+
+from_name - from name
+
+=item *
+
+allow_html - controls whether HTML is allowed.  By default this is
+based on the user's settings.
+
+=back
+
 =head1 AUTHOR
 
 Tony Cook <tony@develop-help.com>
