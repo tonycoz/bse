@@ -5,7 +5,7 @@ use BSE::Mail;
 use Carp 'confess';
 use Digest::MD5 qw(md5_hex);
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 =head1 NAME
 
@@ -610,5 +610,40 @@ sub tag_set_subject {
 
   return '';
 }
+
+sub send_simple {
+  my ($class, %opts) = @_;
+
+  my $cfg = BSE::Cfg->single;
+  my $mailer = $class->new(cfg => $cfg);
+
+  my $id = $opts{id}
+    or confess "No mail id provided";
+
+  my $section = "email $id";
+
+  for my $key (qw/subject template html_template allow_html from from_name/) {
+    my $value = $cfg->entry($section, $key);
+    defined $value and $opts{$key} = $value;
+  }
+  unless (defined $opts{acts}) {
+    require BSE::Util::Tags;
+    BSE::Util::Tags->import(qw/tag_hash_plain/);
+    my %acts =
+      (
+       BSE::Util::Tags->static(undef, $cfg),
+      );
+    if ($opts{extraacts}) {
+      %acts = ( %acts, %{$opts{extraacts}} );
+    }
+    $opts{acts} = \%acts;
+  }
+
+  $mailer->send(%opts)
+    or print STDERR "Error sending mail $id: ", $mailer->errstr, "\n";
+
+  return 1;
+}
+
 
 1;

@@ -5,7 +5,7 @@ use BSE::Cfg;
 use BSE::Util::HTML;
 use Carp qw(cluck confess);
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub new {
   my ($class, %opts) = @_;
@@ -770,35 +770,21 @@ Send a simple email.
 sub send_email {
   my ($self, %opts) = @_;
 
+  my $acts = $opts{acts} || {};
+  my %acts =
+    (
+     $self->dyn_user_tags,
+     %$acts,
+    );
+  if ($opts{extraacts}) {
+    %acts = ( %acts, %{$opts{extraacts}} );
+  }
   require BSE::ComposeMail;
-  my $mailer = BSE::ComposeMail->new(cfg => $self->cfg);
-
-  my $id = $opts{id}
-    or confess "No mail id provided";
-
-  my $section = "email $id";
-
-  for my $key (qw/subject template html_template allow_html from from_name/) {
-    my $value = $self->{cfg}->entry($section, $key);
-    defined $value and $opts{$key} = $value;
-  }
-  unless (defined $opts{acts}) {
-    require BSE::Util::Tags;
-    BSE::Util::Tags->import(qw/tag_hash_plain/);
-    my %acts =
-      (
-       $self->dyn_user_tags
-      );
-    if ($opts{extraacts}) {
-      %acts = ( %acts, %{$opts{extraacts}} );
-    }
-    $opts{acts} = \%acts;
-  }
-
-  $mailer->send(%opts)
-    or print STDERR "Error sending mail $id: ", $mailer->errstr, "\n";
-
-  return 1;
+  return BSE::ComposeMail->send_simple
+    (
+     %opts,
+     acts => \%acts
+    );
 }
 
 =item is_ssl
