@@ -8,7 +8,7 @@ use Constants qw($SHOP_FROM);
 use Carp qw(confess);
 use BSE::Util::SQL qw/now_datetime now_sqldate sql_normal_date sql_add_date_days/;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -680,6 +680,50 @@ sub link {
   my ($self) = @_;
 
   return BSE::Cfg->single->admin_url(siteusers => { a_edit => 1, id => $self->id });
+}
+
+=item send_registration_notify(remote_addr => $ip_address)
+
+Send an email to the customer with registration information.
+
+Template: user/email_register
+
+Basic static tags and:
+
+=over
+
+=item *
+
+host - IP address of the machine that registered the user.
+
+=item *
+
+user - the user registered.
+
+=back
+
+=cut
+
+sub send_registration_notify {
+  my ($self, %opts) = @_;
+
+  defined $opts{remote_addr}
+    or confess "Missing remote_addr parameter";
+
+  require BSE::ComposeMail;
+  require BSE::Util::Tags;
+  BSE::ComposeMail->send_simple
+      (
+       id => 'notify_register_customer', 
+       template => 'user/email_register',
+       subject => 'Thank you for registering',
+       to => $self,
+       extraacts =>
+       {
+	host => $opts{remote_addr},
+	user => [ \&BSE::Util::Tags::tag_hash_plain, $self ],
+       },
+      );
 }
 
 1;

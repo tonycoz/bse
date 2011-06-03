@@ -1269,7 +1269,15 @@ Default: New user {userId} registered
 If non-zero then email id C<notify_register_customer> will be sent to
 new user on registration.  By default this uses template
 user/email_register, subject "Thank you for registering" which can be
-overridden in [email notify_register_customer]
+overridden in [email notify_register_customer] or via the
+C<set_subject> tag.
+
+=item notify_register_customer_admin
+
+If non-zero then the behaviour described for
+C<notify_register_customer> will take place when a new member is added
+by an administrator.  Defaults to the value of
+C<notify_register_customer>.
 
 =back
 
