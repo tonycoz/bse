@@ -2375,6 +2375,26 @@ in the audit log when [audit log].mail is enabled.
 
 =back
 
+=head2 [audit log I<facility>]
+
+Most commonly C<[audit log bse]>.  Controls whether given events or
+families of events are logged.
+
+The key is one of:
+
+=over
+
+=item I<component>
+
+=item I<component>C<:>I<module>
+
+=item I<component>C<:>I<module>C<:>I<function>
+
+=back
+
+with the longer keys overriding the shorter keys, and defaulting to
+all actions being logged.
+
 =head2 [mail audit log]
 
 This enables sent when an event is logged in the audit log.  Warning:
