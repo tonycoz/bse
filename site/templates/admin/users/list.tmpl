@@ -2,7 +2,7 @@
 <h1>Admin Site Members</h1>
 <p>
 | <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | <a href="<:script:>?a_grouplist=1">Groups</a> |
-<:if UserCan siteuser_add :>
+<:if UserCan bse_members_user_add :>
 <a href="<:script:>?a_addform=1">Add Member</a> |<:or UserCan:><:eif UserCan:>
 </p>
 <:ifMessage:>
