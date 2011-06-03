@@ -13,7 +13,7 @@ use constant SITEUSER_GROUP_SECT => 'BSE Siteuser groups validation';
 use BSE::Template;
 use DevHelp::Date qw(dh_parse_date_sql dh_parse_time_sql);
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 my %actions =
   (
@@ -751,6 +751,16 @@ sub req_add {
   };
   if ($user) {
     my $subs = $class->save_subs($req, $user);
+
+    $req->audit
+      (
+       actor => $req->user || "U",
+       object => $user,
+       component => "members::add",
+       msg => "New user created",
+       level => "info",
+      );
+
     my $msg;
     if ($nopassword) {
       my $code;

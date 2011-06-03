@@ -8,7 +8,7 @@ use Constants qw($SHOP_FROM);
 use Carp qw(confess);
 use BSE::Util::SQL qw/now_datetime now_sqldate sql_normal_date sql_add_date_days/;
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -723,6 +723,8 @@ sub send_registration_notify {
 	host => $opts{remote_addr},
 	user => [ \&BSE::Util::Tags::tag_hash_plain, $self ],
        },
+       log_msg => "Registration email to " . $self->email,
+       log_component => "member:register:notifyuser",
       );
 }
 
