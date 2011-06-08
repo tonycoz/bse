@@ -19,7 +19,7 @@ use BSE::Util::HTML qw(:default popup_menu);
 use BSE::Arrows;
 use BSE::Shop::Util qw(:payment order_item_opts nice_options);
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 my %actions =
   (
@@ -737,7 +737,8 @@ sub _set_order_paid {
       $order->save();
     }
 
-    return BSE::Template->get_refresh("$ENV{SCRIPT_NAME}?a_order_detail=1&id=$id", $req->cfg);
+    return $req->get_refresh
+      ($req->url("shopadmin", { a_order_detail => 1, id => $id }));
   }
   else {
     return $class->req_order_list($req);
