@@ -9,7 +9,7 @@ use overload
   "&{}" => sub { my $self = $_[0]; return sub { $self->_old_msg(@_) } },
   "bool" => sub { 1 };
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 my $single;
 
@@ -55,6 +55,8 @@ sub new {
 sub text {
   my ($self, $lang, $msgid, $parms, $def) = @_;
 
+  $msgid =~ s/^msg://;
+
   ref $self or $self = $self->new;
 
   my $msg = $self->_get_replaced($lang, $msgid, $parms);
@@ -75,6 +77,8 @@ sub text {
 
 sub html {
   my ($self, $lang, $msgid, $parms, $def) = @_;
+
+  $msgid =~ s/^msg://;
 
   ref $self or $self = $self->new;
 
