@@ -4,11 +4,11 @@ use HTML::Entities;
 use DevHelp::Tags;
 use BSE::Util::HTML qw(:default escape_xml);
 use vars qw(@EXPORT_OK @ISA);
-@EXPORT_OK = qw(tag_error_img tag_hash tag_hash_plain tag_hash_mbcs tag_article tag_article_plain tag_object);
+@EXPORT_OK = qw(tag_error_img tag_hash tag_hash_plain tag_hash_mbcs tag_article tag_article_plain tag_object tag_object_plain);
 @ISA = qw(Exporter);
 require Exporter;
 
-our $VERSION = "1.008";
+our $VERSION = "1.009";
 
 sub _get_parms {
   my ($acts, $args) = @_;
@@ -931,10 +931,15 @@ sub tag_hash_plain {
   $value;
 }
 
+my %bad_methods = map { $_ => 1 } qw(remove new add save);
+
 sub tag_object {
   my ($object, $args, $acts, $func) = @_;
 
   $object or return '';
+
+  $bad_methods{$args}
+    and return "** $args method not available **";
 
   $object->can($args)
     or return "** $func has no method $args **";
@@ -943,6 +948,23 @@ sub tag_object {
   defined $value or return "";
 
   return escape_html($value);
+}
+
+sub tag_object_plain {
+  my ($object, $args, $acts, $func) = @_;
+
+  $object or return '';
+
+  $bad_methods{$args}
+    and return "** $args method not available **";
+
+  $object->can($args)
+    or return "** $func has no method $args **";
+
+  my $value = $object->$args();
+  defined $value or return "";
+
+  return $value;
 }
 
 sub tag_today {
@@ -1203,6 +1225,20 @@ sub tag_number {
   else {
     return $int;
   }
+}
+
+=item mail_tags()
+
+Return base tags suitable for email templates.
+
+Currently returns the basic static tags.
+
+=cut
+
+sub mail_tags {
+  my ($class) = @_;
+
+  return $class->static(undef, BSE::Cfg->single);
 }
 
 1;
