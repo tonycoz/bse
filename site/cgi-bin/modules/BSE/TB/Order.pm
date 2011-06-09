@@ -6,7 +6,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 use Carp 'confess';
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 sub columns {
   return qw/id
@@ -400,6 +400,75 @@ sub mail_recipient {
   return $self->emailAddress;
 }
 
+=item mail_tags
+
+Return mail template tags suitable for an order
+
+=cut
+
+sub mail_tags {
+  my ($self) = @_;
+
+  require BSE::Util::Tags;
+  require BSE::Util::Iterate;
+  require BSE::TB::OrderItems;
+  my $it = BSE::Util::Iterate::Objects::Text->new;
+  my %item_cols = map { $_ => 1 } BSE::TB::OrderItem->columns;
+  my %products;
+  my $current_item;
+  return
+    (
+     order => [ \&BSE::Util::Tags::tag_object_plain, $self ],
+     $it->make
+     (
+      single => "item",
+      plural => "items",
+      code => [ items => $self ],
+      store => \$current_item,
+     ),
+     extended => sub {
+       my ($args) = @_;
+
+       $current_item
+	 or return '* only usable in items iterator *';
+
+       $item_cols{$args}
+	 or return "* unknown item column $args *";
+
+       return $current_item->$args() * $current_item->units;
+     },
+     $it->make
+     (
+      single => "option",
+      plural => "options",
+      code => sub {
+	$current_item
+	  or return;
+	return $current_item->option_hashes
+      },
+      nocache => 1,
+     ),
+     options => sub {
+       $current_item
+	 or return '* only in the items iterator *';
+       return $current_item->nice_options;
+     },
+     product => sub {
+       $current_item
+	 or return '* only usable in items *';
+
+       require Products;
+       my $id = $current_item->productId;
+       $products{$id} ||= Products->getByPkey($id);
+
+       my $product = $products{$id}
+	 or return '';
+
+       return BSE::Util::Tags::tag_article_plain($product, BSE::Cfg->single, $_[0]);
+     },
+    );
+}
+
 sub send_shipped_email {
   my ($self) = @_;
 
@@ -412,13 +481,7 @@ sub send_shipped_email {
   my %acts =
     (
      BSE::Util::Tags->mail_tags(),
-     order => [ \&BSE::Util::Tags::tag_object_plain, $self ],
-     $it->make
-     (
-      single => "orderitem",
-      plural => "orderitems",
-      code => [ items => $self ],
-     ),
+     $self->mail_tags,
     );
 
   $mailer->send

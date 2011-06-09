@@ -17,7 +17,7 @@ use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 
-our $VERSION = "1.014";
+our $VERSION = "1.015";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -1407,53 +1407,8 @@ sub _send_order {
      custom_class($cfg)
      ->order_mail_actions(\%acts, $order, \@items, \@products, 
 			  $session->{custom}, $cfg),
-     BSE::Util::Tags->static(\%acts, $cfg),
-     iterate_items_reset => sub { $item_index = -1; },
-     iterate_items => 
-     sub { 
-       if (++$item_index < @items) {
-	 $option_index = -1;
-	 @options = order_item_opts($req,
-				    $items[$item_index], 
-				    $products[$item_index]);
-	 return 1;
-       }
-       return 0;
-     },
-     item=> sub { $items[$item_index]{$_[0]}; },
-     product => 
-     sub { 
-       my $value = $products[$item_index]{$_[0]};
-       defined($value) or $value = '';
-       $value;
-     },
-     order => sub { $order->{$_[0]} },
-     extended => 
-     sub {
-       $items[$item_index]{units} * $items[$item_index]{$_[0]};
-     },
-     _format =>
-     sub {
-       my ($value, $fmt) = @_;
-       if ($fmt =~ /^m(\d+)/) {
-	 return sprintf("%$1s", sprintf("%.2f", $value/100));
-       }
-       elsif ($fmt =~ /%/) {
-	 return sprintf($fmt, $value);
-       }
-       elsif ($fmt =~ /^\d+$/) {
-	 return substr($value . (" " x $fmt), 0, $fmt);
-       }
-       else {
-	 return $value;
-       }
-     },
-     iterate_options_reset => sub { $option_index = -1 },
-     iterate_options => sub { ++$option_index < @options },
-     option => sub { escape_html($options[$option_index]{$_[0]}) },
-     ifOptions => sub { @options },
-     options => sub { nice_options(@options) },
-     with_wrap => \&tag_with_wrap,
+     BSE::Util::Tags->mail_tags(),
+     $order->mail_tags(),
      ifSubscribingTo => [ \&tag_ifSubscribingTo, \%subscribing_to ],
     );
 
@@ -1516,19 +1471,6 @@ sub _send_order {
   }
   $mailer->send(%opts)
     or print STDERR "Error sending order to customer: ",$mailer->errstr,"\n";
-}
-
-sub tag_with_wrap {
-  my ($args, $text) = @_;
-
-  my $margin = $args =~ /^\d+$/ && $args > 30 ? $args : 70;
-
-  require Text::Wrap;
-  # do it twice to prevent a warning
-  $Text::Wrap::columns = $margin;
-  $Text::Wrap::columns = $margin;
-
-  return Text::Wrap::fill('', '', split /\n/, $text);
 }
 
 sub _refresh_logon {

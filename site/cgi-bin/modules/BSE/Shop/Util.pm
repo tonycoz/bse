@@ -7,7 +7,7 @@ use vars qw(@ISA @EXPORT_OK);
                 payment_types order_item_opts
  PAYMENT_CC PAYMENT_CHEQUE PAYMENT_CALLME PAYMENT_MANUAL PAYMENT_PAYPAL/;
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 our %EXPORT_TAGS =
   (
@@ -205,27 +205,8 @@ sub cart_item_opts {
 
 sub order_item_opts {
   my ($req, $order_item, $product) = @_;
-  
-  if (length $order_item->{options}) {
-    my @values = split /,/, $order_item->options;
-    return map
-      +{
-	id => $_->{id},
-	value => $_->{value},
-	desc => $_->{desc},
-	label => $_->{display},
-       }, $product->option_descs($req->cfg, \@values);
-  }
-  else {
-    my @options = $order_item->option_list;
-    return map
-      +{
-	id => $_->original_id,
-	value => $_->value,
-	desc => $_->name,
-	label => $_->display
-       }, @options;
-  }
+
+  return $order_item->option_hashes;
 }
 
 sub nice_options {

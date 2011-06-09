@@ -8,7 +8,7 @@ use vars qw(@EXPORT_OK @ISA);
 @ISA = qw(Exporter);
 require Exporter;
 
-our $VERSION = "1.009";
+our $VERSION = "1.010";
 
 sub _get_parms {
   my ($acts, $args) = @_;
@@ -1238,7 +1238,46 @@ Currently returns the basic static tags.
 sub mail_tags {
   my ($class) = @_;
 
-  return $class->static(undef, BSE::Cfg->single);
+  return 
+    (
+     $class->static(undef, BSE::Cfg->single),
+     _format =>
+     sub {
+       my ($value, $fmt) = @_;
+       if ($fmt =~ /^m(\d+)/) {
+	 return sprintf("%$1s", sprintf("%.2f", $value/100));
+       }
+       elsif ($fmt =~ /%/) {
+	 return sprintf($fmt, $value);
+       }
+       elsif ($fmt =~ /^\d+$/) {
+	 return substr($value . (" " x $fmt), 0, $fmt);
+       }
+       elsif ($fmt eq "h") {
+	 return escape_html($value);
+       }
+       elsif ($fmt eq "u") {
+	 return escape_uri($value);
+       }
+       else {
+	 return $value;
+       }
+     },
+     with_wrap => \&tag_with_wrap,
+    );
+}
+
+sub tag_with_wrap {
+  my ($args, $text) = @_;
+
+  my $margin = $args =~ /^\d+$/ && $args > 30 ? $args : 70;
+
+  require Text::Wrap;
+  # do it twice to prevent a warning
+  $Text::Wrap::columns = $margin;
+  $Text::Wrap::columns = $margin;
+
+  return Text::Wrap::fill('', '', split /\n/, $text);
 }
 
 1;

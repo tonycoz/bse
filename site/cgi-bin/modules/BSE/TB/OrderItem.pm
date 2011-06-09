@@ -5,7 +5,7 @@ use Squirrel::Row;
 use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub columns {
   return qw/id productId orderId units price wholesalePrice gst options
@@ -43,6 +43,41 @@ sub product {
     and return;
   require Products;
   return Products->getByPkey($self->productId);
+}
+
+sub option_hashes {
+  my ($self) = @_;
+
+  my $product = $self->product;
+  if (length $self->{options}) {
+    my @values = split /,/, $self->options;
+    return map
+      +{
+	id => $_->{id},
+	value => $_->{value},
+	desc => $_->{desc},
+	label => $_->{display},
+       }, $product->option_descs(BSE::Cfg->single, \@values);
+  }
+  else {
+    my @options = $self->option_list;
+    return map
+      +{
+	id => $_->original_id,
+	value => $_->value,
+	desc => $_->name,
+	label => $_->display
+       }, @options;
+  }
+}
+
+sub nice_options {
+  my ($self) = @_;
+
+  my @options = $self->option_hashes
+    or return '';
+
+  return '('.join(", ", map("$_->{desc} $_->{label}", @options)).')';
 }
 
 1;

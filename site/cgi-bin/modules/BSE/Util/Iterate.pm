@@ -4,7 +4,7 @@ use base 'DevHelp::Tags::Iterate';
 use BSE::Util::HTML;
 use Carp 'confess';
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub escape {
   escape_html($_[1]);
@@ -155,5 +155,11 @@ sub item {
 
   return tag_object($item, $args);
 }
+
+package BSE::Util::Iterate::Objects::Text;
+use vars qw(@ISA);
+@ISA = 'DevHelp::Tags::Iterate';
+
+# base class has all the behaviour we want
 
 1;
