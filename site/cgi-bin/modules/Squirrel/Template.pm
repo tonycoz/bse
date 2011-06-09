@@ -484,7 +484,8 @@ sub replace_template {
 
 	if (defined $params) {
 	  while ($params =~ s/^\s*(\w+)\s*=>\s*\"([^\"]+)\"//
-		 || $params =~ s/^\s*(\w+)\s*=>\s*($parms_re)//) {
+		 || $params =~ s/^\s*(\w+)\s*=>\s*($parms_re)//
+		 || $params =~ s/^\s*(\w+)\s*=>\s*([^\s,]+)//) {
 	    my ($name, $value) = ($1, $2);
 	    $value =~ s/^($parms_re)/ $self->perform($acts, $2, $3, $1) /egs;
 

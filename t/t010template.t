@@ -42,11 +42,17 @@ TEMPLATE
 		"cond1", \%acts);
   template_test('<:if Eq [str] "ABC":>YES<:or Eq:>NO<:eif Eq:>', "YES", 
 		"cond2", \%acts);
-  template_test('<:wrap wraptest.tmpl title=>[cat "foo " [str]]:>Alpha', <<OUTPUT,
+  template_test(<<TEMPLATE, <<OUTPUT, "wrap", \%acts, "in");
+<:wrap wraptest.tmpl title=>[cat "foo " [str]], menu => 1, showtitle => "abc" :>Alpha
+<:param menu:>
+<:param showtitle:>
+TEMPLATE
 <title>foo ABC</title>
 Alpha
+1
+abc
 OUTPUT
-		"wrap", \%acts);
+
   my $switch = <<IN;
 <:switch:>ignored<:case Eq [strref] "ABC":>ONE<:case Eq [strref] "XYZ":>TWO<:
 case default:>DEF<:endswitch:>
