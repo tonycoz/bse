@@ -13,7 +13,7 @@ use constant SITEUSER_GROUP_SECT => 'BSE Siteuser groups validation';
 use BSE::Template;
 use DevHelp::Date qw(dh_parse_date_sql dh_parse_time_sql);
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 my %actions =
   (
@@ -557,8 +557,13 @@ sub req_delete {
   my $user = SiteUsers->getByPkey($id)
     or return $class->req_list($req, "No user $id found");
 
-  $req->audit(object => $user,
-	      action => "delete");
+  $req->audit
+    (
+     component => "members::delete",
+     object => $user,
+     level => "info",
+     msg => "Member " . $user->userId . " (" . $user->id . ") deleted",
+    );
 
   my $desc = $user->describe;
 
