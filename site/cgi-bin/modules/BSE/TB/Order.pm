@@ -6,7 +6,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 use Carp 'confess';
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 sub columns {
   return qw/id
@@ -97,8 +97,6 @@ sub defaults {
      stage => "incomplete",
     );
 }
-
-sub table { "orders" }
 
 sub address_columns {
   return qw/
@@ -400,25 +398,47 @@ sub mail_recipient {
   return $self->emailAddress;
 }
 
-=item mail_tags
+=item _tags
 
-Return mail template tags suitable for an order
+Internal method with the common code between tags() and mail_tags().
 
 =cut
 
-sub mail_tags {
-  my ($self) = @_;
+sub _tags {
+  my ($self, $escape) = @_;
 
   require BSE::Util::Tags;
-  require BSE::Util::Iterate;
   require BSE::TB::OrderItems;
-  my $it = BSE::Util::Iterate::Objects::Text->new;
+  require BSE::Util::Iterate;
+  my $it;
+  my $art;
+  my $esc;
+  my $obj;
+  if ($escape) {
+    require BSE::Util::HTML;
+    $it = BSE::Util::Iterate::Objects->new;
+    $art = \&BSE::Util::Tags::tag_article;
+    $obj = \&BSE::Util::Tags::tag_object;
+    $esc = \&BSE::Util::HTML::escape_html;
+  }
+  else {
+    $it = BSE::Util::Iterate::Objects::Text->new;
+    $art = \&BSE::Util::Tags::tag_article_plain;
+    $obj = \&BSE::Util::Tags::tag_object_plain;
+    $esc = sub { return $_[0] };
+  }
+
+  my $cfg = BSE::Cfg->single;
+  my $must_be_paid = $cfg->entryBool('downloads', 'must_be_paid', 0);
+  my $must_be_filled = $cfg->entryBool('downloads', 'must_be_filled', 0);
+
   my %item_cols = map { $_ => 1 } BSE::TB::OrderItem->columns;
   my %products;
   my $current_item;
+  my $current_file;
   return
     (
-     order => [ \&BSE::Util::Tags::tag_object_plain, $self ],
+     order => [ $obj, $self ],
      $it->make
      (
       single => "item",
@@ -451,7 +471,7 @@ sub mail_tags {
      options => sub {
        $current_item
 	 or return '* only in the items iterator *';
-       return $current_item->nice_options;
+       return $esc->($current_item->nice_options);
      },
      product => sub {
        $current_item
@@ -464,9 +484,66 @@ sub mail_tags {
        my $product = $products{$id}
 	 or return '';
 
-       return BSE::Util::Tags::tag_article_plain($product, BSE::Cfg->single, $_[0]);
+       return $art->($product, $cfg, $_[0]);
+     },
+     $it->make
+     (
+      single => 'orderfile',
+      plural => 'orderfiles',
+      code => [ files => $self ],
+      store => \$current_file,
+     ),
+     $it->make
+     (
+      single => "prodfile",
+      plural => "prodfiles",
+      code => sub {
+       $current_item
+	 or return '* only usable in items *';
+
+       require Products;
+       my $id = $current_item->productId;
+       $products{$id} ||= Products->getByPkey($id);
+
+       my $product = $products{$id}
+	 or return '';
+
+       return $product->files;
+      },
+      store => \$current_file,
+     ),
+     ifFileAvail => sub {
+       $current_file or return 0;
+       $current_file->{forSale} or return 1;
+
+       return 0 if $must_be_paid && !$self->{paidFor};
+       return 0 if $must_be_filled && !$self->{filled};
+
+       return 1;
      },
     );
+}
+
+=item mail_tags
+
+=cut
+
+sub mail_tags {
+  my ($self) = @_;
+
+  return $self->_tags(0);
+}
+
+=item tags
+
+Return template tags suitable for an order (non-mail)
+
+=cut
+
+sub tags {
+  my ($self) = @_;
+
+  return $self->_tags(1);
 }
 
 sub send_shipped_email {
@@ -476,8 +553,6 @@ sub send_shipped_email {
   require BSE::ComposeMail;
   my $mailer = BSE::ComposeMail->new(cfg => BSE::Cfg->single);
   require BSE::Util::Tags;
-  require BSE::Util::Iterate;
-  my $it = BSE::Util::Iterate::Objects->new;
   my %acts =
     (
      BSE::Util::Tags->mail_tags(),

@@ -18,7 +18,7 @@ use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
 use Carp qw(confess);
 
-our $VERSION = "1.012";
+our $VERSION = "1.013";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -1396,19 +1396,8 @@ sub _orderdetail_low {
   %acts =
     (
      $req->dyn_user_tags(),
-     order => [ \&tag_hash, $order ],
+     $order->tags(),
      message => sub { escape_html($message) },
-     $it->make_iterator
-     (undef, 'item', 'items', \@items, undef, undef, \$current_item),
-     $it->make_iterator
-     (undef, 'orderfile', 'orderfiles', \@files, undef, undef, \$current_file),
-     product => [ \&tag_detail_product, \$current_item, \%products ],
-     $it->make_iterator
-     ([ \&iter_detail_prodfiles, \$current_item, \@files ],
-      'prodfile', 'prodfiles', undef, undef, \$current_file),
-     ifFileAvail =>
-     [ \&tag_detail_ifFileAvail, $order, \$current_file, 
-       $must_be_paid, $must_be_filled ],
      ifAnon => !!$anon,
     );
 
