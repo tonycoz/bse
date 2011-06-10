@@ -599,7 +599,7 @@ Table site_users
 Engine MyISAM
 Column id;int(11);NO;NULL;auto_increment
 Column userId;varchar(40);NO;NULL;
-Column password;varchar(40);NO;NULL;
+Column password;varchar(255);NO;NULL;
 Column email;varchar(255);NO;NULL;
 Column keepAddress;int(11);NO;1;
 Column whenRegistered;datetime;NO;NULL;
@@ -655,6 +655,7 @@ Column billStreet2;varchar(127);NO;;
 Column billOrganization;varchar(127);NO;;
 Column customInt1;int(11);YES;NULL;
 Column customInt2;int(11);YES;NULL;
+Column password_type;varchar(20);NO;plain;
 Index PRIMARY;1;[id]
 Index affiliate_name;0;[affiliate_name]
 Index userId;1;[userId]

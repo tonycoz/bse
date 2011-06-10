@@ -8,7 +8,7 @@ use Constants qw($SHOP_FROM);
 use Carp qw(confess);
 use BSE::Util::SQL qw/now_datetime now_sqldate sql_normal_date sql_add_date_days/;
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -28,11 +28,73 @@ sub columns {
             affiliate_name delivMobile billMobile
             delivStreet2 billStreet2
             billOrganization
-            customInt1 customInt2/;
+            customInt1 customInt2 password_type/;
 }
 
 sub table {
   return "site_users";
+}
+
+sub defaults {
+  require BSE::Util::SQL;
+  return
+    (
+     keepAddress => 1, # what am I for - appears unused
+     whenRegistered => BSE::Util::SQL::now_datetime(),
+     lastLogon => BSE::Util::SQL::now_datetime(),
+     name1 => "",
+     name2 => "",
+     address => "",
+     city => "",
+     state => "",
+     postcode => "",
+     telephone => "",
+     facsimile => "",
+     country => "",
+     wantLetter => 0, # also unused
+     confirmed => 0,
+     confirmSecret => "",
+     waitingForConfirmation => 0,
+     textOnlyMail => 0,
+     title => "",
+     organization => "",
+     referral => 0,
+     otherReferral => "",
+     prompt => 0,
+     otherPrompt => "",
+     profession => 0,
+     otherProfession => "",
+     previousLogon => BSE::Util::SQL::now_datetime(),
+     billFirstName => "",
+     billLastName => "",
+     billStreet => "",
+     billSuburb => "",
+     billState => "", 
+     billPostCode => "",
+     billCountry => "",
+     instructions => "",
+     billTelephone => "",
+     billFacsimile => "", 
+     billEmail => "",
+     adminNotes => "",
+     disabled => 0,
+     flags => "",
+     customText1 => undef,
+     customText2 => undef,
+     customText3 => undef,
+     customStr1 => undef,
+     customStr2 => undef,
+     customStr3 => undef,
+     affiliate_name => "",
+     delivMobile => "",
+     billMobile => "",
+     delivStreet2 => "",
+     billStreet2 => "",
+     billOrganization => "",
+     customInt1 => "",
+     customInt2 => "",
+     #password_type
+    );
 }
 
 sub valid_fields {
@@ -726,6 +788,36 @@ sub send_registration_notify {
        log_msg => "Registration email to " . $self->email,
        log_component => "member:register:notifyuser",
       );
+}
+
+sub changepw {
+  my ($self, $password, $who) = @_;
+
+  require BSE::Passwords;
+
+  my ($hash, $type) = BSE::Passwords->new_password_hash($password);
+
+  $self->set_password($hash);
+  $self->set_password_type($type);
+
+  require BSE::TB::AuditLog;
+  BSE::TB::AuditLog->log
+      (
+       component => "siteusers::changepw",
+       object => $self,
+       actor => $who,
+       level => "info",
+       msg => "Change password",
+      );
+
+  1;
+}
+
+sub check_password {
+  my ($self, $password, $error) = @_;
+
+  require BSE::Passwords;
+  return BSE::Passwords->check_password_hash($self->password, $self->password_type, $password, $error);
 }
 
 1;

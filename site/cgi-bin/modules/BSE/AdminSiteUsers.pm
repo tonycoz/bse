@@ -13,7 +13,7 @@ use constant SITEUSER_GROUP_SECT => 'BSE Siteuser groups validation';
 use BSE::Template;
 use DevHelp::Date qw(dh_parse_date_sql dh_parse_time_sql);
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 my %actions =
   (
@@ -443,7 +443,9 @@ sub req_save {
     $user->{userId} = $email if $nopassword;
     ++$newemail;
   }
-  $user->{password} = $newpass if !$nopassword && $newpass;
+  if (!$nopassword && $newpass) {
+    $user->changepw($newpass, $req->user || "U");
+  }
   
   $user->{affiliate_name} = $aff_name if defined $aff_name;
   
@@ -634,9 +636,6 @@ sub req_add {
   my %user;
   my @cols = SiteUser->columns;
   shift @cols;
-  for my $field (@cols) {
-    $user{$field} = '';
-  }
 
   my $custom = custom_class($cfg);
   my @required = $custom->siteuser_add_required($req);
@@ -752,7 +751,7 @@ sub req_add {
 
   my $user;
   eval {
-    $user = SiteUsers->add(@user{@cols});
+    $user = SiteUsers->make(%user);
   };
   if ($user) {
     my $subs = $class->save_subs($req, $user);

@@ -18,7 +18,7 @@ use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
 use Carp qw(confess);
 
-our $VERSION = "1.013";
+our $VERSION = "1.014";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -162,8 +162,14 @@ sub req_logon {
   my $password = $cgi->param("password");
   unless (keys %errors) {
     $user = SiteUsers->getBy(userId => $userid);
-    unless ($user && $user->{password} eq $password) {
-      $errors{_} = $msgs->(baduserpass=>"Invalid username or password");
+    my $error = "INVALID";
+    unless ($user && $user->check_password($password, \$error)) {
+      if ($error eq "INVALID") {
+	$errors{_} = $msgs->(baduserpass=>"Invalid username or password");
+      }
+      else {
+	$errors{_} = $msgs->(passwordload => "Error loading password module");
+      }
     }
   }
   if (!keys %errors && $user->{disabled}) {
@@ -660,7 +666,8 @@ sub req_saveopts {
     
     if (defined $newpass && length $newpass) {
       if ($oldpass) {
-	if ($oldpass ne $user->{password}) {
+	my $error;
+	if (!$user->check_password($oldpass, \$error)) {
 	  sleep 5; # yeah, it's ugly
 	  $errors{old_password} = $msgs->(optsbadold=>"You need to enter your old password to change your password")
 	}
@@ -732,7 +739,9 @@ sub req_saveopts {
     $user->{userId} = $email if $nopassword;
     ++$newemail;
   }
-  $user->{password} = $newpass if !$nopassword && $newpass;
+  if (!$nopassword && $newpass) {
+    $user->changepw($newpass, $user);
+  }
 
   $user->{affiliate_name} = $aff_name if defined $aff_name;
   
@@ -990,7 +999,7 @@ sub req_register {
 
   my $user;
   eval {
-    $user = SiteUsers->add(@user{@cols});
+    $user = SiteUsers->make(%user);
   };
   if ($user) {
     my $custom = custom_class($cfg);

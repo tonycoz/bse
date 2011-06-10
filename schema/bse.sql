@@ -549,7 +549,7 @@ create table site_users (
   id integer not null auto_increment,
 
   userId varchar(40) not null,
-  password varchar(40) not null,
+  password varchar(255) not null,
   email varchar(255) not null,
 
   keepAddress integer not null default 1,
@@ -636,6 +636,8 @@ create table site_users (
 
   customInt1 integer,
   customInt2 integer,
+
+  password_type varchar(20) not null default 'plain',
 
   primary key (id),
   unique (userId),

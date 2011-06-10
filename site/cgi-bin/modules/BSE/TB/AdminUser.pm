@@ -2,7 +2,7 @@ package BSE::TB::AdminUser;
 use strict;
 use base qw(BSE::TB::AdminBase);
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub columns {
   return ($_[0]->SUPER::columns,
@@ -46,7 +46,7 @@ sub check_password {
   my ($self, $password, $error) = @_;
 
   require BSE::Passwords;
-  return BSE::Passwords->check_password_hash($self->password, $self->password_type, $password, \$error);
+  return BSE::Passwords->check_password_hash($self->password, $self->password_type, $password, $error);
 }
 
 sub link {
