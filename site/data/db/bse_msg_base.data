@@ -32,6 +32,24 @@ description: Message displayed for an invalid affiliate name
 id: bse/user/optsrequired
 description: Message displayed for a required field during registration or when saving user details
 
+id: bse/user/nolostid
+description: Displayed if the lost handler doesn't receive an id.
+
+id: bse/user/passwordlen
+description: Displayed when a new password is too short, $1 is the min length
+
+id: bse/user/lostsaved
+description: Displayed when a new password is saved during account recovery
+
+id: bse/user/lost/
+description: Lost password errors
+
+id: bse/user/lost/unknownid
+description: Displayed if the supplied lost password id isn't known
+
+id: bse/user/lost/expired
+description: Displayed if the supplied lost password has expired
+
 id: bse/admin/
 description: BSE Administration
 

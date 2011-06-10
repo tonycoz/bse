@@ -706,6 +706,7 @@ site/templates/user/base_bookinglist.tmpl
 site/templates/user/base_bookseminar.tmpl
 site/templates/user/base_cancelbooking.tmpl
 site/templates/user/base_editbooking.tmpl
+site/templates/user/base_lost_prompt.tmpl
 site/templates/user/base_orderdetail.tmpl
 site/templates/user/base_orderdetaila.tmpl
 site/templates/user/base_redirect.tmpl

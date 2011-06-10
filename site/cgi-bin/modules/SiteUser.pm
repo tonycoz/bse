@@ -8,7 +8,7 @@ use Constants qw($SHOP_FROM);
 use Carp qw(confess);
 use BSE::Util::SQL qw/now_datetime now_sqldate sql_normal_date sql_add_date_days/;
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -28,7 +28,8 @@ sub columns {
             affiliate_name delivMobile billMobile
             delivStreet2 billStreet2
             billOrganization
-            customInt1 customInt2 password_type/;
+            customInt1 customInt2 password_type
+            lost_today lost_date lost_id/;
 }
 
 sub table {
@@ -93,7 +94,10 @@ sub defaults {
      billOrganization => "",
      customInt1 => "",
      customInt2 => "",
-     #password_type
+     #password_type,
+     lost_today => 0,
+     lost_date => undef,
+     lost_id => undef,
     );
 }
 
@@ -791,7 +795,7 @@ sub send_registration_notify {
 }
 
 sub changepw {
-  my ($self, $password, $who) = @_;
+  my ($self, $password, $who, %log) = @_;
 
   require BSE::Passwords;
 
@@ -808,6 +812,7 @@ sub changepw {
        actor => $who,
        level => "info",
        msg => "Change password",
+       %log,
       );
 
   1;
@@ -818,6 +823,94 @@ sub check_password {
 
   require BSE::Passwords;
   return BSE::Passwords->check_password_hash($self->password, $self->password_type, $password, $error);
+}
+
+=item lost_password
+
+Call to send a lost password email.
+
+=cut
+
+sub lost_password {
+  my ($self, $error) = @_;
+
+  my $cfg = BSE::Cfg->single;
+  require BSE::CfgInfo;
+  my $custom = BSE::CfgInfo::custom_class($cfg);
+  my $email_user = $self;
+  my $to = $self;
+  if ($custom->can('send_user_email_to')) {
+    eval {
+      $email_user = $custom->send_user_email_to($self, $cfg);
+    };
+    $to = $email_user->{email};
+  }
+  else {
+    require BSE::Util::SQL;
+    my $lost_limit = $cfg->entry("lost password", "daily_limit", 3);
+    my $today = BSE::Util::SQL::now_sqldate();
+    my $lost_today = 0;
+    if ($self->lost_date
+	&& $self->lost_date eq $today) {
+      $lost_today = $self->lost_today;
+    }
+    if ($lost_today+1 > $lost_limit) {
+      $$error = "Too many password recovery attempts today, please try again tomorrow";
+      return;
+    }
+    $self->set_lost_date($today);
+    $self->set_lost_today($lost_today+1);
+    $self->set_lost_id(BSE::Util::Secure::make_secret($cfg));
+  }
+
+  require BSE::ComposeMail;
+  my $mail = BSE::ComposeMail->new(cfg => $cfg);
+
+  require BSE::Util::Tags;
+  my %mailacts;
+  %mailacts =
+    (
+     BSE::Util::Tags->mail_tags(),
+     user => [ \&BSE::Util::Tags::tag_object_plain, $self ],
+     host => $ENV{REMOTE_ADDR},
+     site => $cfg->entryErr('site', 'url'),
+     emailuser => [ \&BSE::Util::Tags::tag_hash_plain, $email_user ],
+    );
+  my $from = $cfg->entry('confirmations', 'from') || 
+    $cfg->entry('basic', 'emailfrom') || $SHOP_FROM;
+  my $nopassword = $cfg->entryBool('site users', 'nopassword', 0);
+  my $subject = $cfg->entry('basic', 'lostpasswordsubject') 
+    || ($nopassword ? "Your options" : "Your password");
+  unless ($mail->send
+	  (
+	   template => 'user/lostpwdemail',
+	   acts => \%mailacts,
+	   from=>$from,
+	   to => $to,
+	   subject=>$subject,
+	   log_msg => "Sending lost password recovery email",
+	   log_component => "siteusers:lost:send",
+	   log_object => $self,
+	  )) {
+    $$error = $mail->errstr;
+    return;
+  }
+  $self->save;
+
+  return $email_user;
+}
+
+sub check_password_rules {
+  my ($class, $password, $error) = @_;
+
+  my $cfg = BSE::Cfg->single;
+  my $min_pass_length = $cfg->entry('basic', 'minpassword') || 4;
+  if (length $password < $min_pass_length) {
+    $$error = [ "passwordlen", $min_pass_length ];
+    return;
+  }
+
+  return 1;
 }
 
 1;

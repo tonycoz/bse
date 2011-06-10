@@ -1,0 +1,37 @@
+<:wrap base.tmpl:>
+<div align="center">
+  <table>
+    <tr> 
+      <th colspan="2" align="center"> 
+        <p><b><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><:if Cfg "site users" nopassword:><:or Cfg:>Account Recovery<:eif Cfg:></font></b></p>
+      </th>
+    </tr>
+    <form action="/cgi-bin/user.pl" method="post">
+<input type="hidden" name="id" value="<:lostid:>" />
+<:ifMessage:>
+      <tr> 
+        <td colspan="2" align="center"><font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+          <b><:message:></b> </font></td>
+      </tr><:or:><:eif:>
+      <tr> 
+        <th>New Password:</th>
+        <td> 
+          <input type="password" name="password" value="" size="40" id="password" accesskey="p" tabindex="10" />
+	</td>
+	<td><:error_img password:></td>
+      </tr>
+      <tr> 
+        <th>Confirm Password:</th>
+        <td> 
+          <input type="password" name="confirm" value="" size="40" id="confirm" accesskey="c" tabindex="20" />
+	</td>
+	<td><:error_img confirm:></td>
+      </tr>
+      <tr> 
+        <td colspan="3" align="right"> 
+          <input type="submit" name="a_lost_save" value="Save Password" tabindex="30" />
+        </td>
+      </tr>
+    </form>
+  </table>
+</div>

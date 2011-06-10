@@ -639,6 +639,14 @@ create table site_users (
 
   password_type varchar(20) not null default 'plain',
 
+  -- for password recovery
+  -- number of attempts today
+  lost_today integer not null default 0,
+  -- what today refers to
+  lost_date date null,
+  -- the hash the customer needs to supply to change their password
+  lost_id varchar(32) null,
+
   primary key (id),
   unique (userId),
   index (affiliate_name)

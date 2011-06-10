@@ -656,6 +656,9 @@ Column billOrganization;varchar(127);NO;;
 Column customInt1;int(11);YES;NULL;
 Column customInt2;int(11);YES;NULL;
 Column password_type;varchar(20);NO;plain;
+Column lost_today;int(11);NO;0;
+Column lost_date;date;YES;NULL;
+Column lost_id;varchar(32);YES;NULL;
 Index PRIMARY;1;[id]
 Index affiliate_name;0;[affiliate_name]
 Index userId;1;[userId]

@@ -2502,6 +2502,22 @@ based on the user's settings.
 
 =back
 
+=head2 [lost password]
+
+=over
+
+=item *
+
+daily_limit - the number of recovery attempts permitted per day.
+Default: 3.
+
+=item *
+
+age_limit - the id included in the email is valid for this many days.
+Default: 7.
+
+=back
+
 =head1 AUTHOR
 
 Tony Cook <tony@develop-help.com>

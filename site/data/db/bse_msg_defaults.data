@@ -13,6 +13,21 @@ message: Please enter your password
 id: bse/user/baduserpass
 message: Invalid username or password
 
+id: bse/user/nolostid
+message: No id supplied for password recovery
+
+id: bse/user/passwordlen
+message: New password must be at least %1:s characters
+
+id: bse/user/lostsaved
+message: Your new password has been saved, please logon
+
+id: bse/user/lost/unknownid
+message: Unknown identifier for account recovery.  Please try again.
+
+id: bse/user/lost/expired
+message: Your account recovery URL is too old.  Please try again.
+
 id: bse/admin/edit/uplabelsect
 message: -- move up a level -- become a section
 

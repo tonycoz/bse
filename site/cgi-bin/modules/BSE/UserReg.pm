@@ -18,7 +18,7 @@ use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
 use Carp qw(confess);
 
-our $VERSION = "1.014";
+our $VERSION = "1.015";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -37,6 +37,8 @@ my %actions =
    download_file=>'download_file',
    show_lost_password => 'show_lost_password',
    lost_password => 'lost_password',
+   lost => 1,
+   lost_save => 1,
    subinfo => 'subinfo',
    blacklist => 'blacklist',
    confirm => 'confirm',
@@ -114,6 +116,9 @@ sub req_show_logon {
   elsif ($message) {
     $message = escape_html($message);
     $errors = {};
+  }
+  else {
+    $message = $req->message();
   }
   my %acts;
   %acts =
@@ -672,12 +677,10 @@ sub req_saveopts {
 	  $errors{old_password} = $msgs->(optsbadold=>"You need to enter your old password to change your password")
 	}
 	else {
-	  my $min_pass_length = $cfg->entry('basic', 'minpassword') || 4;
 	  my $error;
-	  if (length $newpass < $min_pass_length) {
-	    $errors{password} = $msgs->(optspasslen=>
-					"The password must be at least $min_pass_length characters",
-					$min_pass_length);
+	  if (!SiteUser->check_password_rules($newpass, \$error)) {
+	    my ($code, @more) = @$error;
+	    $errors{password} = $req->catmsg("msg:bse/user/$code", \@more)
 	  }
 	  elsif (!defined $confirm || length $confirm == 0) {
 	    $errors{confirm_password} = $msgs->(optsconfpass=>"Please enter a confirmation password");
@@ -1753,39 +1756,10 @@ sub req_lost_password {
   keys %errors
     and return $self->req_show_lost_password($req, \%errors);
 
-  my $custom = custom_class($cfg);
-  my $email_user = $user;
-  if ($custom->can('send_user_email_to')) {
-    eval {
-      $email_user = $custom->send_user_email_to($user, $cfg);
-    };
-  }
-  require BSE::ComposeMail;
-  my $mail = BSE::ComposeMail->new(cfg => $cfg);
-
-  my %mailacts;
-  %mailacts =
-    (
-     BSE::Util::Tags->static(\%mailacts, $cfg),
-     user => sub { $user->{$_[0]} },
-     host => sub { $ENV{REMOTE_ADDR} },
-     site => sub { $cfg->entryErr('site', 'url') },
-     emailuser => [ \&tag_hash_plain, $email_user ],
-    );
-  my $from = $cfg->entry('confirmations', 'from') || 
-    $cfg->entry('basic', 'emailfrom') || $SHOP_FROM;
-  my $nopassword = $cfg->entryBool('site users', 'nopassword', 0);
-  my $subject = $cfg->entry('basic', 'lostpasswordsubject') 
-    || ($nopassword ? "Your options" : "Your password");
-  $mail->send(template => 'user/lostpwdemail',
-		acts => \%mailacts,
-		from=>$from,
-		to=>$email_user->{email},
-		subject=>$subject)
-    or return $self->req_show_lost_password($req,
-					$msgs->(lostmailerror=>
-						"Email error:".$mail->errstr,
-						$mail->errstr));
+  my $error;
+  my $email_user = $user->lost_password(\$error)
+    or return $self->req_show_lost_password
+      ($req, $msgs->(lostmailerror=> "Email error: .$error", $error));
   $message = $message ? escape_html($message) : $req->message;
   my %acts;
   %acts = 
@@ -2355,5 +2329,80 @@ sub req_downufile {
     )
       or return $self->error($req, $msg);
 }
+
+sub req_lost {
+  my ($self, $req, $errors) = @_;
+
+  my ($id) = $self->rest;
+  $id ||= $req->cgi->param("id");
+  $id
+    or return $self->req_show_logon($req, $req->catmsg("msg:bse/user/nolostid"));
+
+  my $error;
+  my $user = SiteUsers->lost_password_next($id, \$error)
+    or return $self->req_show_logon($req, { _ => "msg:bse/user/lost/$error" });
+
+  my $message = $req->message($errors);
+
+  my %acts =
+    (
+     $req->dyn_user_tags,
+     lostid => $id,
+     error_img => [ \&tag_error_img, $req->cfg, $errors ],
+     message => $message,
+    );
+
+  return $req->response("user/lost_prompt", \%acts);
+}
+
+my %lost_fields =
+  (
+   password =>
+   {
+    description => "New Password",
+    required => 1,
+   },
+   confirm =>
+   {
+    description => "Confirm Password",
+    rules => "confirm",
+    required => 1,
+   },
+  );
+
+sub req_lost_save {
+  my ($self, $req) = @_;
+
+  my ($id) = $self->rest;
+  $id ||= $req->cgi->param("id");
+  $id
+    or return $self->req_show_logon($req, $req->catmsg("msg:bse/user/nolostid"));
+
+  my %errors;
+  $req->validate(fields => \%lost_fields,
+		 errors => \%errors);
+  my $password = $req->cgi->param("password");
+  unless ($errors{password}) {
+    my $error;
+    unless (SiteUser->check_password_rules($password, \$error)) {
+      my ($errorid, @more) = @$error;
+      $errors{password} = $req->catmsg("msg:bse/user/$errorid", \@more)
+    }
+  }
+
+  keys %errors
+    and return $self->req_lost($req, \%errors);
+
+  my $error;
+
+  my $user = SiteUsers->lost_password_save($id, $password, \$error)
+    or return $self->req_show_logon($req, "msg:bse/user/lost/$error");
+
+  $req->flash("msg:bse/user/lostsaved");
+
+  return $req->get_refresh($req->cfg->user_url("user", "show_logon"));
+}
+
+
 
 1;
