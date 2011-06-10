@@ -608,7 +608,6 @@ site/templates/admin/users/view.tmpl
 site/templates/admin/users/view_activity.tmpl
 site/templates/admin/users/view_bookings.tmpl
 site/templates/admin/users/view_confirm.tmpl
-site/templates/admin/xbase.tmpl
 site/templates/affiliate.tmpl
 site/templates/article_edit.tmpl
 site/templates/base.tmpl
