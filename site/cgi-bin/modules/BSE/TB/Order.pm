@@ -6,7 +6,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 use Carp 'confess';
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 sub columns {
   return qw/id
@@ -411,18 +411,21 @@ sub _tags {
   require BSE::TB::OrderItems;
   require BSE::Util::Iterate;
   my $it;
+  my $ith;
   my $art;
   my $esc;
   my $obj;
   if ($escape) {
     require BSE::Util::HTML;
     $it = BSE::Util::Iterate::Objects->new;
+    $ith = BSE::Util::Iterate->new;
     $art = \&BSE::Util::Tags::tag_article;
     $obj = \&BSE::Util::Tags::tag_object;
     $esc = \&BSE::Util::HTML::escape_html;
   }
   else {
     $it = BSE::Util::Iterate::Objects::Text->new;
+    $ith = BSE::Util::Iterate::Text->new;
     $art = \&BSE::Util::Tags::tag_article_plain;
     $obj = \&BSE::Util::Tags::tag_object_plain;
     $esc = sub { return $_[0] };
@@ -486,14 +489,14 @@ sub _tags {
 
        return $art->($product, $cfg, $_[0]);
      },
-     $it->make
+     $ith->make
      (
       single => 'orderfile',
       plural => 'orderfiles',
       code => [ files => $self ],
       store => \$current_file,
      ),
-     $it->make
+     $ith->make
      (
       single => "prodfile",
       plural => "prodfiles",
