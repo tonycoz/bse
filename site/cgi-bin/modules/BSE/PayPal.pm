@@ -5,7 +5,7 @@ use BSE::Util::HTML;
 use BSE::Shop::Util qw(:payment);
 use Carp qw(confess);
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 use constant DEF_TEST_WS_URL => "https://api-3t.sandbox.paypal.com/nvp";
 use constant DEF_TEST_REFRESH_URL => "https://www.sandbox.paypal.com/webscr";
@@ -278,14 +278,17 @@ sub _populate_from_order {
   $params->{CURRENCYCODE} = _order_currency($order);
 
   my $index = 0;
+  my $item_total = 0;
   for my $item ($order->items) {
     $params->{"L_NAME$index"} = $item->title;
     $params->{"L_AMT$index"} = _format_amt($item->price);
     $params->{"L_QTY$index"} = $item->units;
     $params->{"L_NUMBER$index"} = $item->product_code
       if $item->product_code;
+    $item_total += $item->units * $item->price;
     ++$index;
   }
+  $params->{ITEMAMT} = _format_amt($item_total);
   $params->{SHIPPINGAMT} = _format_amt($order->shipping_cost)
     if $order->shipping_cost;
 
