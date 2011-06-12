@@ -18,7 +18,7 @@ use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
 use Carp qw(confess);
 
-our $VERSION = "1.017";
+our $VERSION = "1.018";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -1137,11 +1137,12 @@ sub _common_tags {
   my $must_be_filled = $cfg->entryBool('downloads', 'must_be_filled', 0);
 
   my $it = BSE::Util::Iterate->new(req => $req);
+  my $ito = BSE::Util::Iterate::Objects->new();
   return
     (
      $req->dyn_user_tags(),
      user => [ \&tag_hash, $user ],
-     $it->make
+     $ito->make
      (
       data => \@orders,
       single => 'order',
