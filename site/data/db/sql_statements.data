@@ -437,7 +437,6 @@ from article_files af, order_item oi, orders od
 where af.id = ?
   and af.articleId = oi.productId
   and oi.orderId = od.id
-  and od.paidFor <> 0
   and od.siteuser_id = ?
 SQL
 
