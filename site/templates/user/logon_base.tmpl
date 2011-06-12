@@ -6,7 +6,11 @@
         <p><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>User 
           Logon</b></font></p>
       </th>
+    </tr> <:if Message:> 
+    <tr> 
+      <td colspan="2" align="center"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:message:></font></b></td>
     </tr>
+    <:or Message:><:eif Message:> 
     <:if User:> 
     <tr> 
       <td nowrap><font face="Verdana, Arial, Helvetica, sans-serif" size="2">You 
@@ -17,11 +21,7 @@
         </form>
       </td>
     </tr>
-    <:or User:> <:if Message:> 
-    <tr> 
-      <td colspan="2" align="center"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:message:></font></b></td>
-    </tr>
-    <:or Message:><:eif Message:> 
+    <:or User:>
     <form action="/cgi-bin/user.pl" method="post">
       <:if Cgi r:> 
       <input type="hidden" name="r" value="<:cgi r:>">
