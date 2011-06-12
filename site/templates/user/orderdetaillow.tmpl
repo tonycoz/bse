@@ -1,8 +1,9 @@
 <div align="center"> 
-<h1>Order Detail: <:order id:></h1>
 <:if Anon:><:or Anon:>
+<:include include/usermenu.tmpl:>
 <p><a href="<:script:>?userpage=1">Back to order list</a></p>
 <:eif Anon:>
+<h1>Order Detail: <:order id:></h1>
    
   <table width="100%" cellpadding="0" cellspacing="1">
 	<:if Message:> 

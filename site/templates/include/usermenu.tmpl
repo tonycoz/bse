@@ -2,7 +2,7 @@
 <a href="<:script:>">Your Page</a>
 <a href="<:script:>?show_opts=1">Your Profile</a>
 <a href="<:script:>?_t=wishlist">Your Wishlist</a>
-<a href="<:script:>?_t=orders">Your Orders</a>
+<:ifOrders:><a href="<:script:>?_t=orders">Your Orders</a><:or:><:eif:>
 <:ifUserfiles:>
 <a href="<:script:>?_t=files">Your Files</a>
 <:or:><:eif:>
