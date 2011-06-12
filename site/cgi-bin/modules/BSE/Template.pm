@@ -4,7 +4,7 @@ use Squirrel::Template;
 use Carp qw(confess cluck);
 use Config ();
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub templater {
   my ($class, $cfg, $rsets) = @_;
@@ -39,27 +39,12 @@ sub get_page {
 
   my $out;
   if ($base_template) {
-    eval {
-      $out = $obj->show_page(undef, $file, $acts);
-    };
-    if ($@) {
-      if ($@ =~ /Cannot find template/) {
-	print STDERR "Could not find requested template $file, trying $base_template\n";
-	$file = $cfg->entry('templates', $base_template) || $base_template;
-	$file =~ /\.\w+$/ or $file .= ".tmpl";
-	$out = $obj->show_page(undef, $file, $acts);
-      }
-      else {
-	print STDERR "** Eval error: $@\n";
-	$out = "<html><body>There was an error producing this page - please contect the webmaster.</body></html>\n";
-      }
+    unless ($class->find_source($template, $cfg)) {
+      $template = $base_template;
     }
   }
-  else {
-    $out = $obj->show_page(undef, $file, $acts);
-  }
 
-  $out;
+  return $obj->show_page(undef, $file, $acts);
 }
 
 sub replace {
