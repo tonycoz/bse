@@ -28,6 +28,15 @@ message: Unknown identifier for account recovery.  Please try again.
 id: bse/user/lost/expired
 message: Your account recovery URL is too old.  Please try again.
 
+id: bse/user/downloaderror/nouser
+message: Please logon to download ordered files
+
+id: bse/user/downloaderror/unpaid
+message: You haven't paid the order containing this file
+
+id: bse/user/downloaderror/unfilled
+message: The order containing this file hasn't been filled.  Please contact us.
+
 id: bse/admin/edit/uplabelsect
 message: -- move up a level -- become a section
 

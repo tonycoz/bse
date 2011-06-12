@@ -6,7 +6,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 use Carp 'confess';
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub columns {
   return qw/id articleId displayName filename sizeInBytes description 
@@ -327,15 +327,47 @@ sub metafields {
   return ( @fields, @handler_fields );
 }
 
-sub downloadable_by {
+sub user_orders_for {
   my ($self, $user) = @_;
+
+  require BSE::TB::Orders;
+  return BSE::TB::Orders->getSpecial(fileOrdersByUser => $self->id, $user->id);
+}
+
+sub downloadable_by {
+  my ($self, $user, $error) = @_;
 
   $self->forSale
     or return 1;
 
-  my ($entry) = BSE::DB->single->query(bseFileAvailableFor => $self->id, $user->id);
+  unless ($user) {
+    $$error = 'nouser';
+    return;
+  }
 
-  return defined $entry;
+  my @orders = $self->user_orders_for($user);
+  unless (@orders) {
+    $$error = 'noorder';
+    return;
+  }
+
+  if (BSE::TB::ArticleFiles->downloads_must_be_paid) {
+    @orders = grep $_->paidFor, @orders;
+    unless (@orders) {
+      $$error = 'unpaid';
+      return;
+    }
+  }
+
+  if (BSE::TB::ArticleFiles->downloads_must_be_filled) {
+    @orders = grep $_->filled, @orders;
+    unless (@orders) {
+      $$error = 'unfilled';
+      return;
+    }
+  }
+
+  return 1;
 }
 
 1;

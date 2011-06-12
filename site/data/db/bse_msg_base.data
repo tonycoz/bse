@@ -1,5 +1,5 @@
 --
-# VERSION=1.000
+# VERSION=1.001
 id: bse/
 description: BSE messages
 
@@ -49,6 +49,21 @@ description: Displayed if the supplied lost password id isn't known
 
 id: bse/user/lost/expired
 description: Displayed if the supplied lost password has expired
+
+id: bse/user/downloaderror/
+description: Reasons the user can't download a file
+
+id: bse/user/downloaderror/nouser
+description: No user logged on for a forSale file
+
+id: bse/user/downloaderror/noorder
+description: User hasn't ordered the product containing this file
+
+id: bse/user/downloaderror/unpaid
+description: No order containing this file has been paid for (if must_be_paid set)
+
+id: bse/user/downloaderror/unfilled
+description: No order containing this file has been filled (if must_be_filled set)
 
 id: bse/admin/
 description: BSE Administration

@@ -5,7 +5,7 @@ use vars qw/@ISA/;
 use Carp 'confess';
 @ISA = qw(BSE::DB);
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 use vars qw($VERSION $MAX_CONNECTION_AGE);
 
@@ -185,8 +185,8 @@ EOS
    'select * from article_files where articleId = ? order by displayOrder desc',
    getArticleFileByPkey => 'select * from article_files where id = ?',
 
-   orderFiles =><<SQL,
-select distinct af.*, oi.id as item_id
+   "ArticleFiles.orderFiles" =><<SQL,
+select distinct af.*
 from article_files af, order_item oi
 where af.articleId = oi.productId and oi.orderId = ?
 order by oi.id, af.displayOrder desc

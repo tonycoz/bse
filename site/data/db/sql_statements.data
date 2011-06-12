@@ -430,9 +430,9 @@ where af.forSale <> 0
 order by af.displayName
 SQL
 
-name: bseFileAvailableFor
+name: Orders.fileOrdersByUser
 sql_statement: <<SQL
-select af.id
+select distinct od.*
 from article_files af, order_item oi, orders od
 where af.id = ?
   and af.articleId = oi.productId

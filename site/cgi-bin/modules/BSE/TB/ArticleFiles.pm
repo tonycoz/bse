@@ -6,7 +6,7 @@ use vars qw(@ISA $VERSION);
 use BSE::TB::ArticleFile;
 use Carp qw(confess);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub rowClass {
   return 'BSE::TB::ArticleFile';
@@ -93,6 +93,14 @@ sub all_metametadata {
   }
 
   return @metafields;
+}
+
+sub downloads_must_be_paid {
+  return BSE::Cfg->single->entryBool('downloads', 'must_be_paid', 0);
+}
+
+sub downloads_must_be_filled {
+  return BSE::Cfg->single->entryBool('downloads', 'must_be_filled', 0);
 }
 
 1;

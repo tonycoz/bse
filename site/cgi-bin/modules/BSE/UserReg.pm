@@ -18,7 +18,7 @@ use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
 use Carp qw(confess);
 
-our $VERSION = "1.015";
+our $VERSION = "1.016";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -1114,7 +1114,7 @@ sub iter_orderfiles {
 
   $$rorder or return;
 
-  return BSE::DB->query(orderFiles => $$rorder->id);
+  return $$rorder->files;
 }
 
 sub _common_tags {
@@ -1416,61 +1416,69 @@ sub _orderdetail_low {
   return $req->dyn_response($template, \%acts);
 }
 
-sub req_download {
-  my ($self, $req) = @_;
+sub _common_download {
+  my ($self, $req, $file) = @_;
 
   my $cfg = $req->cfg;
-  my $cgi = $req->cgi;
-  my $session = $req->session;
-
+  my $user = $req->siteuser;
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
-  my $result;
-  my $user = $self->_get_user($req, 'show_opts', \$result)
-    or return $result;
 
-  my $orderid = $cgi->param('order')
-    or return _refresh_userpage($cfg, $msgs->('noorderid', "No order id supplied"));
-  require BSE::TB::Orders;
-  my $order = BSE::TB::Orders->getByPkey($orderid)
-    or return _refresh_userpage($cfg, $msgs->('nosuchorder',
-					"No such order $orderid", $orderid));
-  unless (length $order->{userId}
-	  && $order->{userId} eq $user->{userId}) {
-    return _refresh_userpage($cfg, $msgs->("notyourorder",
-				     "Order $orderid isn't yours", $orderid));
+  $cfg->entryBool('downloads', 'require_logon', 0) && !$user
+    and return $self->req_show_logon($req,
+			  $msgs->('downloadlogonall', 
+				  "You must be logged on to download files"));
+    
+  $file->{requireUser} && !$user
+    and return $self->req_show_logon($req,
+			  $msgs->('downloadlogon',
+				  "You must be logged on to download this file"));
+  if ($file->forSale) {
+    my $error;
+    unless ($file->downloadable_by($user, \$error)) {
+      return $self->req_show_logon($req, { _ => "msg:bse/user/downloaderror/$error"});
+    }
   }
-  my $itemid = $cgi->param('item')
-    or return _refresh_userpage($cfg, $msgs->('noitemid', "No item id supplied"));
-  require BSE::TB::OrderItems;
-  my ($item) = grep $_->{id} == $itemid,
-  BSE::TB::OrderItems->getBy(orderId=>$order->{id})
-    or return _refresh_userpage($cfg, $msgs->(notinorder=>"Not part of that order"));
-  require BSE::TB::ArticleFiles;
-  my @files = BSE::TB::ArticleFiles->getBy(articleId=>$item->{productId})
-    or return _refresh_userpage($cfg, $msgs->(nofilesonline=>"No files in this line"));
-  my $fileid = $cgi->param('file')
-    or return _refresh_userpage($cfg, $msgs->(nofileid=>"No file id supplied"));
-  my ($file) = grep $_->{id} == $fileid, @files
-    or return _refresh_userpage($cfg, $msgs->(nosuchfile=>"No such file in that line item"));
-  
-  my $must_be_paid = $cfg->entryBool('downloads', 'must_be_paid', 0);
-  my $must_be_filled = $cfg->entryBool('downloads', 'must_be_filled', 0);
-  if ($must_be_paid && !$order->{paidFor} && $file->{forSale}) {
-    return _refresh_userpage($cfg, $msgs->("paidfor", 
-				     "Order not marked as paid for"));
+
+  # check the user has access to this file (RT#531)
+  my $article;
+  if ($file->{articleId} != -1) {
+    require Articles;
+    $article ||= Articles->getByPkey($file->{articleId})
+      or return $self->req_show_logon($req,
+				  $msgs->('downloadarticle',
+					  "Could not load article for file"));
+    if ($article->is_dynamic && !$req->siteuser_has_access($article)) {
+      if ($req->siteuser) {
+	return $self->req_userpage($req, $msgs->('downloadnoaccess',
+					     "You do not have access to this article"));
+      }
+      else {
+	my $cfg = $req->cfg;
+	my $refresh = "/cgi-bin/user.pl?file=" . $file->id;
+	my $logon =
+	  $cfg->entry('site', 'url') . "/cgi-bin/user.pl?show_logon=1&r=".escape_uri($refresh)."&message=You+need+to+logon+download+this+file";
+	return $req->get_refresh($logon);
+	return;
+      }
+    }
   }
-  if ($must_be_filled && !$order->{filled} && $file->{forSale}) {
-    return _refresh_userpage($cfg, $msgs->("filled", 
-				     "Order not marked as filled"));
+
+  # this this file is on an external storage, and qualifies for
+  # external storage send the user to get it from there
+  if ($file->{src} && $file->{storage} ne 'local'
+      && !$file->{forSale} && !$file->{requireUser}
+      && (!$article || !$article->is_access_controlled)) {
+    return $req->get_refresh($file->{src});
   }
   
   my $filebase = $cfg->entryVar('paths', 'downloads');
   my $filename = "$filebase/$file->{filename}";
   -r $filename
-    or return _refresh_userpage($cfg, 
+    or return $self->req_show_logon($req, 
 	       $msgs->(openfile =>
 		       "Sorry, cannot open that file.  Contact the webmaster.",
 		       $!));
+
   my %result =
     (
      # downloads over https of non-HTML to IE causes a confusing error
@@ -1495,6 +1503,83 @@ sub req_download {
   return \%result;
 }
 
+sub req_download {
+  my ($self, $req) = @_;
+
+  my $cfg = $req->cfg;
+  my $cgi = $req->cgi;
+  my $session = $req->session;
+
+  my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
+  my $result;
+  my $user = $self->_get_user($req, 'show_opts', \$result)
+    or return $result;
+
+  my $orderid = $cgi->param('order')
+    or return _refresh_userpage($cfg, $msgs->('noorderid', "No order id supplied"));
+  require BSE::TB::Orders;
+  my $order = BSE::TB::Orders->getByPkey($orderid)
+    or return _refresh_userpage($cfg, $msgs->('nosuchorder',
+					"No such order $orderid", $orderid));
+  unless (length $order->{userId}
+	  && $order->{userId} eq $user->{userId}) {
+    return _refresh_userpage($cfg, $msgs->("notyourorder",
+				     "Order $orderid isn't yours", $orderid));
+  }
+
+  require BSE::TB::ArticleFiles;
+  my $fileid = $cgi->param('file')
+    or return _refresh_userpage($cfg, $msgs->(nofileid=>"No file id supplied"));
+  my $file = BSE::TB::ArticleFiles->getByPkey($fileid);
+  my @items = $order->items;
+  unless ($file && grep($_->productId == $file->articleId, @items)) {
+    return _refresh_userpage($cfg, $msgs->(nosuchfile=>"No such file in that line item"));
+  }
+
+  return $self->_common_download($req, $file);
+
+  # my $must_be_paid = $cfg->entryBool('downloads', 'must_be_paid', 0);
+  # my $must_be_filled = $cfg->entryBool('downloads', 'must_be_filled', 0);
+  # if ($must_be_paid && !$order->{paidFor} && $file->{forSale}) {
+  #   return _refresh_userpage($cfg, $msgs->("paidfor", 
+  # 				     "Order not marked as paid for"));
+  # }
+  # if ($must_be_filled && !$order->{filled} && $file->{forSale}) {
+  #   return _refresh_userpage($cfg, $msgs->("filled", 
+  # 				     "Order not marked as filled"));
+  # }
+  
+  # my $filebase = $cfg->entryVar('paths', 'downloads');
+  # my $filename = "$filebase/$file->{filename}";
+  # -r $filename
+  #   or return _refresh_userpage($cfg, 
+  # 	       $msgs->(openfile =>
+  # 		       "Sorry, cannot open that file.  Contact the webmaster.",
+  # 		       $!));
+  # my %result =
+  #   (
+  #    # downloads over https of non-HTML to IE causes a confusing error
+  #    # if cache-control is "no-cache".  Avoid setting that.
+  #    no_cache_dynamic => 0,
+  #   );
+  # my @headers;
+  # $result{content_filename} = $filename;
+  # push @headers, "Content-Length: $file->{sizeInBytes}";
+  # if ($file->{download}) {
+  #   $result{type} = "application/octet-stream";
+  #   push @headers,
+  #     qq/Content-Disposition: attachment; filename=$file->{displayName}/;
+  # }
+  # else {
+  #   $result{type} = $file->{contentType};
+  #   push @headers,
+  #     qq/Content-Disposition: inline; filename=$file->{displayName}/;
+  # }
+  # $result{headers} = \@headers;
+
+  # return \%result;
+}
+
 sub req_download_file {
   my ($self, $req) = @_;
 
@@ -1514,115 +1599,11 @@ sub req_download_file {
     or return $self->req_show_logon($req, 
 			 $msgs->('nofileid', "No file id supplied"));
   require BSE::TB::ArticleFiles;
-  my $file;
-  my $article;
-  my $article_id = $cgi->param('page');
-  if ($article_id) {
-    require Articles;
-    if ($article_id eq '-1') {
-      ($file) = grep $_->{name} eq $fileid, Articles->global_files;
-    }
-    elsif ($article_id =~ /\A\d+\z/) {
-      $article = Articles->getByPkey($article_id)
-	or return $self->req_show_logon($req,
-					$msgs->('nosucharticle', "No such article"));
-    }
-    elsif ($article_id =~ /\A[a-zA-Z0-9-_]+\z/) {
-      ($article) = Articles->getBy(linkAlias => $article_id)
-	or return $self->req_show_logon($req,
-					$msgs->('nosucharticle', "No such article"));
-    }
-    else {
-      return $self->req_show_logon($req, $msgs->('invalidarticle', "Invalid article id"));
-    }
-
-    ($file) = grep $_->{name} eq $fileid, $article->files;
-  }
-  else {
-    $file = BSE::TB::ArticleFiles->getByPkey($fileid);
-  }
-  $file
+  my $file = BSE::TB::ArticleFiles->getByPkey($fileid)
     or return $self->req_show_logon($req,
 				      $msgs->('nosuchfile', "No such download"));
-  $cfg->entryBool('downloads', 'require_logon', 0) && !$user
-    and return $self->req_show_logon($req,
-			  $msgs->('downloadlogonall', 
-				  "You must be logged on to download files"));
-    
-  $file->{requireUser} && !$user
-    and return $self->req_show_logon($req,
-			  $msgs->('downloadlogon',
-				  "You must be logged on to download this file"));
-  if ($file->forSale) {
-    unless ($user && $file->downloadable_by($user)) {
-      return $self->req_show_logon($req,
-				   $msgs->('downloadforsale',
-					   "This file can only be downloaded as part of an order"));
-    }
-  }
 
-  # check the user has access to this file (RT#531)
-  if ($file->{articleId} != -1) {
-    require Articles;
-    $article ||= Articles->getByPkey($file->{articleId})
-      or return $self->req_show_logon($req,
-				  $msgs->('downloadarticle',
-					  "Could not load article for file"));
-    if ($article->is_dynamic && !$req->siteuser_has_access($article)) {
-      if ($req->siteuser) {
-	return $self->req_userpage($req, $msgs->('downloadnoaccess',
-					     "You do not have access to this article"));
-      }
-      else {
-	my $cfg = $req->cfg;
-	my $refresh = "/cgi-bin/user.pl?file=$fileid";
-	my $logon =
-	  $cfg->entry('site', 'url') . "/cgi-bin/user.pl?show_logon=1&r=".escape_uri($refresh)."&message=You+need+to+logon+download+this+file";
-	refresh_to($logon);
-	return;
-      }
-    }
-  }
-
-  # this this file is on an external storage, and qualifies for
-  # external storage send the user to get it from there
-  if ($file->{src} && $file->{storage} ne 'local'
-      && !$file->{forSale} && !$file->{requireUser}
-      && (!$article || !$article->is_access_controlled)) {
-    refresh_to($file->{src});
-    return;
-  }
-  
-  my $filebase = $cfg->entryVar('paths', 'downloads');
-  my $filename = "$filebase/$file->{filename}";
-  -r $filename
-    or return $self->req_show_logon($req, 
-	       $msgs->(openfile =>
-		       "Sorry, cannot open that file.  Contact the webmaster.",
-		       $!));
-
-  my %result =
-    (
-     # downloads over https of non-HTML to IE causes a confusing error
-     # if cache-control is "no-cache".  Avoid setting that.
-     no_cache_dynamic => 0,
-    );
-  my @headers;
-  $result{content_filename} = $filename;
-  push @headers, "Content-Length: $file->{sizeInBytes}";
-  if ($file->{download}) {
-    $result{type} = "application/octet-stream";
-    push @headers,
-      qq/Content-Disposition: attachment; filename=$file->{displayName}/;
-  }
-  else {
-    $result{type} = $file->{contentType};
-    push @headers,
-      qq/Content-Disposition: inline; filename=$file->{displayName}/;
-  }
-  $result{headers} = \@headers;
-
-  return \%result;
+  return $self->_common_download($req, $file);
 }
 
 sub req_file_metadata {

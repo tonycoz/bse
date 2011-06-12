@@ -75,7 +75,7 @@
             <td width="50%"><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:orderfile 
               description:></font></td>
             <td nowrap width="50%"><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:if 
-              FileAvail:><a href="/cgi-bin/user.pl?download=1&file=<:orderfile id:>&order=<:order id:>&item=<:orderfile item_id:>"><:orderfile 
+              FileAvail:><a href="<:orderfile url:>"><:orderfile 
               displayName:></a><:or FileAvail:><:orderfile displayName:><:eif 
               FileAvail:></font></td>
             <td><:if FileAvail:><a href="/cgi-bin/user.pl?download=1&file=<:orderfile id:>&order=<:order id:>&item=<:orderfile item_id:>"><img src="/images/filestatus/download.gif" width="15" height="15" alt="Download now" title="Download now" border="0"></a><:or 
