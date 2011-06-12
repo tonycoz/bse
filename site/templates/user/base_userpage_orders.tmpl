@@ -56,7 +56,7 @@
             <th align="center" width="25%" nowrap bgcolor="#666666"><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#CCCCCC">Date:</font><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#FFFFFF"> 
               <:date order orderDate:></font></th>
             <th align="center" width="25%" nowrap bgcolor="<:ifOrder filled:>#CC0033<:or:>#66CC00<:eif:>"><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="<:ifOrder filled:>#CCCCCC<:or:>#000000<:eif:>">Status:</font><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#FFFFFF"> 
-              <:ifOrder filled:>Complete<:or:>Processing<:eif:></font></th>
+              <:dyncatmsg [order stage_description_id]:></font></th>
             <th align="center" width="25%" nowrap bgcolor="#FF7F00"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Total:</font><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#FFFFFF"> 
               $<:money order total:></font></th>
           </tr>

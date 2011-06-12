@@ -5,7 +5,7 @@ use vars qw(@ISA $VERSION);
 @ISA = qw(Squirrel::Table);
 use BSE::TB::Order;
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 sub rowClass {
   return 'BSE::TB::Order';
@@ -79,7 +79,13 @@ sub stage_label {
   require BSE::Message;
   my $msgs = BSE::Message->new;
 
-  return $msgs->text($lang, "msg:bse/shop/orderstages/$stage", [], $stage);
+  return $msgs->text($lang, $self->stage_label_id($stage), [], $stage);
+}
+
+sub stage_label_id {
+  my ($self, $stage) = @_;
+
+  return "msg:bse/shop/orderstages/$stage";
 }
 
 1;

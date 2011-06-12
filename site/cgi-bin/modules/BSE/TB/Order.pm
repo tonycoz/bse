@@ -6,7 +6,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 use Carp 'confess';
 
-our $VERSION = "1.008";
+our $VERSION = "1.009";
 
 sub columns {
   return qw/id
@@ -379,6 +379,12 @@ sub stage_description {
   my ($self, $lang) = @_;
 
   return BSE::TB::Orders->stage_label($self->stage, $lang);
+}
+
+sub stage_description_id {
+  my ($self) = @_;
+
+  return BSE::TB::Orders->stage_label_id($self->stage);
 }
 
 =item mail_recipient
