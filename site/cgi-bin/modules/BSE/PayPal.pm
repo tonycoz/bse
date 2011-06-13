@@ -5,7 +5,7 @@ use BSE::Util::HTML;
 use BSE::Shop::Util qw(:payment);
 use Carp qw(confess);
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 use constant DEF_TEST_WS_URL => "https://api-3t.sandbox.paypal.com/nvp";
 use constant DEF_TEST_REFRESH_URL => "https://www.sandbox.paypal.com/webscr";
@@ -187,6 +187,7 @@ sub pay_order {
   $order->set_paypal_token("");
   $order->set_paidFor(1);
   $order->set_paymentType(PAYMENT_PAYPAL);
+  $order->set_stage("unprocessed");
   $order->set_complete(1);
   $order->save;
   BSE::TB::AuditLog->log
