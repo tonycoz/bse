@@ -40,3 +40,11 @@ To be shipped by: <:order shipping_method:>
 <:if Order instructions:>
 <:with begin wrap:>Special Instruction: <:order instructions:><:with end wrap:>
 <:or Order:><:eif Order:>
+
+<:if Orderfiles:>
+<:iterator begin orderfiles:>
+File                                               Available
+-------------------------------------------------- ---------
+<:orderfile displayName |50:> <:ifFileAvail:>Yes<:or:>No<:eif:>
+<:iterator end orderfiles:>
+<:or Orderfiles:><:eif Orderfiles:>
