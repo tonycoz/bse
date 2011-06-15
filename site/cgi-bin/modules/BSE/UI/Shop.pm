@@ -17,7 +17,7 @@ use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 
-our $VERSION = "1.015";
+our $VERSION = "1.016";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -569,8 +569,13 @@ sub req_checkout {
       $shipping_method = $sel_cour->description();
       $shipping_name = $sel_cour->name;
       unless (defined $shipping_cost) {
-	$shipping_error = $sel_cour->error_message;
+	$shipping_error = "$shipping_method: " . $sel_cour->error_message;
 	$errors->{shipping_name} = $shipping_error;
+
+	# use the last one, which should be the Null shipper
+	$sel_cour = $couriers[-1];
+	$sel_cn = $sel_cour->name;
+	$shipping_method = $sel_cour->description;
       }
     }
     
