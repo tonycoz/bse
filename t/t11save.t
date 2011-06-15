@@ -3,7 +3,9 @@ use strict;
 use BSE::Test qw(make_ua base_url);
 use JSON;
 use DevHelp::HTML;
-use Test::More tests => 193;
+use Test::More tests => 241;
+
+$| = 1;
 
 my $ua = make_ua;
 my $baseurl = base_url;
@@ -49,6 +51,8 @@ SKIP:
       delete $data->{article}{$field};
     }
     is_deeply($data->{article}, \%temp, "check it matches what we saved");
+    ok($data->{article}{tags}, "has a tags member");
+    is_deeply($data->{article}{tags}, [], "which is an empty array ref");
   }
 
   my @fields = grep 
@@ -77,6 +81,28 @@ SKIP:
     }
   }
 
+  my $tag_name1 = "YHUIOP";
+  my $tag_name2 = "zyx: alpha";
+  { # save tags
+    my %reqdata =
+      (
+       save => 1,
+       id => $art->{id},
+       _save_tags => 1,
+       tags => [ $tag_name2, " $tag_name1 " ],
+       lastModified => $art->{lastModified},
+      );
+    my $data = do_req($add_url, \%reqdata, "set tags");
+  SKIP:
+    {
+      $data or skip("Not json from setting tags", 2);
+      ok($data->{success}, "success flag set");
+      is_deeply($data->{article}{tags}, [ $tag_name1, $tag_name2 ],
+		"check tags saved");
+      $art = $data->{article};
+    }
+  }
+
   { # grab the tree
     my %tree_req =
       (
@@ -92,6 +118,118 @@ SKIP:
     ok($art->{title}, "entries have a title");
     ok(defined $art->{listed}, "entries have a listed");
     ok($art->{lastModified}, "entries have a lastModified");
+  }
+
+  { # grab the tags
+    my %tag_req =
+      (
+       a_tags => 1,
+       id => -1,
+      );
+    my $data = do_req($add_url, \%tag_req, "fetch tags");
+  SKIP:
+    {
+      $data or skip("not a json response", 4);
+      ok($data->{tags}, "it has tags");
+      my ($xyz_tag) = grep $_->{name} eq $tag_name2, @{$data->{tags}};
+      ok($xyz_tag, "check we found the tag we set");
+      is($xyz_tag->{cat}, "zyx", "check cat");
+      is($xyz_tag->{val}, "alpha", "check val");
+    }
+  }
+
+  my $tag1;
+  my $tag2;
+  { # grab them with article ids
+    my %tag_req =
+      (
+       a_tags => 1,
+       id => -1,
+       showarts => 1,
+      );
+    my $data = do_req($add_url, \%tag_req, "fetch tags");
+  SKIP:
+    {
+      $data or skip("not a json response", 6);
+      ok($data->{tags}, "it has tags");
+      ($tag1) = grep $_->{name} eq $tag_name1, @{$data->{tags}};
+      ($tag2) = grep $_->{name} eq $tag_name2, @{$data->{tags}};
+      ok($tag2, "check we found the tag we set");
+      is($tag2->{cat}, "zyx", "check cat");
+      is($tag2->{val}, "alpha", "check val");
+      ok($tag2->{articles}, "has articles");
+      ok(grep($_ == $art->{id}, @{$tag2->{articles}}),
+	      "has our article id in it");
+    }
+  }
+
+ SKIP:
+  { # delete a tag globally
+    $tag2
+      or skip("didn't find the tag we want to remove", 6);
+    my %del_req =
+      (
+       a_tagdelete => 1,
+       id => -1,
+       tag_id => $tag2->{id},
+      );
+    my $data = do_req($add_url, \%del_req, "delete tag");
+  SKIP:
+    {
+      $data or skip("not a json response", 7);
+      ok($data->{success}, "successful");
+
+      # refetch tag list and make sure it's gone
+      my %get_req =
+	(
+	 a_tags => 1,
+	 id => -1,
+	);
+      my $tags_data = do_req($add_url, \%get_req, "refetch tags");
+      my ($tag) = grep $_->{name} eq $tag_name2, @{$data->{tags}};
+      ok(!$tag, "should be gone");
+
+      # try to delete it again
+      my $redel_data = do_req($add_url, \%del_req, "delete should fail");
+      $redel_data
+	or skip("not a json response", 3);
+      ok(!$redel_data->{success}, "should fail");
+      is($redel_data->{error_code}, "FIELD", "check error code");
+      ok($redel_data->{errors}{tag_id}, "and error message on field");
+    }
+  }
+
+  { # rename a tag
+    my %ren_req =
+      (
+       a_tagrename => 1,
+       id => -1,
+       tag_id => $tag1->{id},
+       name => $tag_name2, # rename over just removed tag
+      );
+
+    my $data = do_req($add_url, \%ren_req, "rename tag");
+  SKIP:
+    {
+      $data
+	or skip("not a json response", 4);
+      ok($data->{success}, "successful");
+      ok($data->{tag}, "returned updated tag");
+      is($data->{tag}{name}, $tag_name2, "check name saved");
+    }
+  }
+
+  { # refetch the article to check the tags
+    my %fetch_req =
+      (
+       a_article => 1,
+       id => $art->{id},
+      );
+    my $data = do_req($add_url, \%fetch_req, "fetch just saved")
+      or skip("no json", 2);
+    ok($data->{success}, "check success");
+    is_deeply($data->{article}{tags}, [ $tag_name2 ],
+	      "check the tags");
   }
 
   # error handling on save
@@ -311,14 +449,47 @@ SKIP:
   }
 }
 
+SKIP:
+{ # tag cleanup
+  my %clean_req =
+    (
+     a_tagcleanup => 1,
+     id => -1,
+    );
+  my $data = do_req($add_url, \%clean_req, "tag cleanup");
+  $data
+    or skip("no json response", 2);
+  ok($data->{success}, "successful");
+  ok($data->{count}, "should have cleaned up something");
+}
+
 sub do_req {
   my ($url, $req_data, $comment) = @_;
 
-  my $content = join "&", map "$_=" . escape_uri($req_data->{$_}), keys %$req_data;
+  my @entries;
+  for my $key (keys %$req_data) {
+    my $value = $req_data->{$key};
+    if (ref $value) {
+      for my $val (@$value) {
+	push @entries, "$key=" . escape_uri($val);
+      }
+    }
+    else {
+      push @entries, "$key=" . escape_uri($value);
+    }
+  }
+  my $content = join("&", @entries);
+
+  print <<EOS;
+# Request:
+# URL: $add_url
+# Content: $content
+EOS
+
   my $req = HTTP::Request->new(POST => $add_url, \@ajax_hdr);
 
   $req->content($content);
-  
+
   my $resp = $ua->request($req);
   ok($resp->is_success, "$comment successful at http level");
   my $data = eval { from_json($resp->decoded_content) };

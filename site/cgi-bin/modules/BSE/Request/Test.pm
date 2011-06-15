@@ -2,7 +2,7 @@ package BSE::Request::Test;
 use strict;
 use base 'BSE::Request::Base';
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub new {
   my ($class, %opts) = @_;
@@ -29,25 +29,33 @@ sub is_ajax {
   $_[0]{is_ajax};
 }
 
-package BSE::Request::Base::Test;
+package BSE::Request::Test::CGI;
+use Carp qw(confess);
 
 sub param {
   my $self = shift;
   if (@_) {
     my $name = shift;
     if (@_) {
+      die "Unabled to delete $name key in test";
     }
     else {
-      if (ref $self->{$name}) {
-	if (wantarray) {
-	  return @{$self->{$name}};
+      my $value = $self->{$name};
+      if (defined $value) {
+	if (ref $value) {
+	  if (wantarray) {
+	    return @{$self->{$name}};
+	  }
+	  else {
+	    return $self->{$name}[-1];
+	  }
 	}
 	else {
-	  return $self->{$name}[-1];
+	  return $value;
 	}
       }
       else {
-	return $self->{$name};
+	return;
       }
     }
   }

@@ -1,4 +1,4 @@
-<:wrap admin/base.tmpl title => "Edit Catalog":>
+<:wrap admin/base.tmpl title => "Edit Catalog", js => "admin_edit.js":>
 <h1>Edit Catalog:</h1>
 <:ifMessage:> 
 <p><b><:message:></b></p>
@@ -181,20 +181,7 @@
             </td>
             <td class="help"><:help catalog threshold:> <:error_img threshold:></td>
           </tr>
-          <tr> 
-            <th> Keywords: </th>
-            <td> 
-              <:ifFieldPerm keyword:><input type="text" name="keyword" maxlength="255" size="60" value="<: old keyword default keyword :>" /><:or:><: article threshold :><:eif:>
-              (comma separated) </td>
-            <td class="help"><:help catalog keywords:> <:error_img keyword:></td>
-          </tr>
-          <tr> 
-            <th>Always Dynamic:</th>
-            <td> 
-              <:ifFieldPerm force_dynamic:><input type="hidden" name="save_force_dynamic" value="1" /><input type="checkbox" name="force_dynamic" value="1" <:if Article force_dynamic :>checked="checked"<:or Article:><:eif Article:> />
-              <:or:><:ifArticle force_dynamic :>Yes<:or Article:>No<:eif Article:><:eif:></td>
-            <td class="help"><:help edit keywords:> <:error_img keyword:></td>
-          </tr>
+<:include admin/include/edit_common.tmpl:>
 <:include admin/catalog_custom.tmpl optional:>
           <tr> 
             <th>Thumbnail image:</th>

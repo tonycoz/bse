@@ -1,0 +1,52 @@
+<:wrap base.tmpl:> <:embed start:><:admin:>
+<:ifDynamic:><:or:><p>I need to be dynamic</p><:eif:>
+<:iterator begin dynallprods tags:[lcgi tags] paged:pp=10 :><:iterator end dynallprods:>
+<p>Page count: <:dynallprods_pagecount:></p>
+<:if Eq [dynallprods_pagecount] 1:><:or Eq:>
+<div class="pagelist">Pages:
+  <:ifDynallprods_prevpage:><a href="<:url dynarticle:><:cond [ifMatch [url dynarticle] "\\?"] & ? :>p=<:dynallprods_prevpage:>&amp;tags=<:lcgi tags |u:>&amp;pp=<:dynallprods_perpage:>">&lt; &lt; Previous</a>
+  <:or:><span>&lt; &lt; Previous</span><:eif:>
+  <:ifDynallprods_nextpage:><a href="<:url dynarticle:><:cond [ifMatch [url dynarticle] "\\?"] & ? :>p=<:dynallprods_nextpage:>&amp;tags=<:lcgi tags |u:>&amp;pp=<:dynallprods_perpage:>">Next &gt; &gt;</a>
+  <:or:><span>Next &gt; &gt;</span><:eif:>
+<:iterator begin dynallprods_pagec:>
+  <:if Dynallprod_pagec current:>
+    <span><:dynallprod_pagec page:></span>
+  <:or Dynallprod_pagec:>
+    <a href="<:url dynarticle:><:cond [ifMatch [url dynarticle] "\\?"] & ? :>p=<:dynallprod_pagec page:>&amp;tags=<:lcgi tags |u:>&amp;pp=<:dynallprods_perpage:>"><:dynallprod_pagec page:></a>
+  <:eif Dynallprod_pagec:>
+<:iterator end dynallprods_pagec:>
+</div>
+<:eif Eq:>
+<:if Dyntags [lcgi tags]:>
+<p>Selected:
+<:iterator begin dyntags [lcgi tags] :>
+  <a href="<:url dynarticle:><:cond [ifMatch [url dynarticle] "\\?"] & ? :>p=<:dynallprods_page:>&amp;tags=<:deltag [dyntag name] [lcgi tags] |u:>&amp;pp=<:dynallprods_perpage:>"><:dyntag name:></a>
+<:iterator end dyntags:>
+</p>
+<:or Dyntags:><:eif Dyntags:>
+<:if Dynunused_tagcats dynallprods:>
+<div>Refine (<:dynallprod_totalcount:> products found):</div>
+<div class="unusedtags">
+<:iterator begin dynunused_tagcats dynallprods:>
+<div><:ifDynunused_tagcat nocat:><:or:><:dynunused_tagcat name:>:<:eif:>
+<:iterator begin dynunused_tags:><a href="<:url dynarticle:><:cond [ifMatch [url dynarticle] "\\?"] & ? :>p=<:dynallprods_page:>&amp;tags=<:lcgi tags |u:>/<:dynunused_tag name |u:>&amp;pp=<:dynallprods_perpage:>"><:dynunused_tag val:></a> <:iterator end dynunused_tags:></div>
+<:iterator end dynunused_tagcats:>
+</div>
+<:or Dynunused_tagcats:><:eif Dynunused_tagcats:>
+<:switch:><:case dynallprod_count tags:[lcgi tags] paged:pp=10 :>
+<form method="post" action="/cgi-bin/shop.pl">
+<input type="hidden" name="r" value="<:url dynarticle:><:cond [ifMatch [url dynarticle] "\\?"] & ? :>p=<:dynallprods_page:>&amp;tags=<:lcgi tags |u:>&amp;pp=<:dynallprods_perpage:>" />
+<div id="products">
+<:iterator begin dynallprods tags:[lcgi tags] paged:pp=10 :>
+<div class="product">
+<div><:dynallprod title:><span class="price">$<:money price dynallprod:></span></div>
+<a href="<:dyntarget shop add id [dynallprod id]:>&amp;r=<:url dynarticle |U:><:cond [ifMatch [url dynarticle] "\?"] %26 %3F:>tags=<:lcgi tags|u:>%26p=<:dynallprods_page:>" class="add">Add to cart</a>
+<:dthumbimage dynallprod editor hero,1 :>
+</div>
+<:iterator end dynallprods:>
+</div>
+</form>
+<:case default:>
+<div>No matches</div>
+<:endswitch:>
+<:embed end:>

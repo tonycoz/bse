@@ -36,7 +36,7 @@ else {
 	   qr!User\s+Logon!s);
 }
 fetch_ok($ua, "shop admin page", "$baseurl/cgi-bin/admin/shopadmin.pl",
-	 qr!Shop\s+administration!s);
+	 qr!Shop\s+Administration!s);
 fetch_ok($ua, "add article form", "$baseurl/cgi-bin/admin/add.pl",
 	 qr!New\s+Page\sLev3!s);
 fetch_ok($ua, "add catalog form", "$baseurl/cgi-bin/admin/add.pl?type=Catalog",
@@ -52,7 +52,7 @@ fetch_ok($ua, "user list", "$baseurl/cgi-bin/admin/adminusers.pl",
 fetch_ok($ua, "group list", "$baseurl/cgi-bin/admin/adminusers.pl?a_groups=1",
 	 qr!Admin\sGroups!s);
 fetch_ok($ua, "subscriptions", "$baseurl/cgi-bin/admin/subs.pl",
-	 qr/Subscriptions\s+List/);
+	 qr/Newsletter\s+List/);
 fetch_ok($ua, "reports", "$baseurl/cgi-bin/admin/report.pl",
 	 qr/Reports/);
 # does a refresh unless the user is logged on

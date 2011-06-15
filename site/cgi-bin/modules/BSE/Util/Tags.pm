@@ -8,7 +8,7 @@ use vars qw(@EXPORT_OK @ISA);
 @ISA = qw(Exporter);
 require Exporter;
 
-our $VERSION = "1.010";
+our $VERSION = "1.013";
 
 sub _get_parms {
   my ($acts, $args) = @_;
@@ -490,6 +490,9 @@ sub basic {
        my @value = $cgi->param($_[0]);
        escape_html("@value");
      },
+     lcgi => [ tag_lcgi => $class, $cgi ],
+     deltag => [ tag_deltag => $class ],
+     ifTagIn => [ tag_ifTagIn => $class ],
      old => [ \&tag_old, $cgi ],
      oldi => [ \&tag_oldi, $cgi ],
      $it->make_iterator(\&DevHelp::Tags::iter_get_repeat, 'repeat', 'repeats'),
@@ -500,6 +503,66 @@ sub basic {
      ifAjax => [ \&tag_ifAjax, $cfg ],
      $it->make_iterator([ \&iter_cfgsection, $cfg ], 'dyncfgentry', 'dyncfgsection'),
     );
+}
+
+sub tag_lcgi {
+  my ($self, $cgi, $args) = @_;
+
+  $cgi or return '';
+  my $sep = "/";
+  if ($args =~ s/^\"([^\"\w]+)\"\s+//) {
+    $sep = $1;
+  }
+
+  return escape_html(join $sep, $cgi->param($args));
+}
+
+sub tag_deltag {
+  my ($self, $args, $acts, $func, $templater) = @_;
+
+  my $sep = "/";
+  if ($args =~ s/^\"([^\"\w]+)\"\s+//) {
+    $sep = $1;
+  }
+
+  require BSE::TB::Tags;
+  my ($del, @tags) = $templater->get_parms($args, $acts);
+  my $error;
+  my %del = map { BSE::TB::Tags->canon_name($_, \$error) => 1 }
+    split /\Q$sep/, $del;
+
+  return join $sep,
+    grep !$del{lc $_},
+      map BSE::TB::Tags->name($_, \$error),
+	map { split /\Q$sep/ }
+	  @tags;
+}
+
+sub tag_ifTagIn {
+  my ($self, $args, $acts, $func, $templater) = @_;
+
+  my $sep = "/";
+  if ($args =~ s/^\"([^\"\w]+)\"\s+//) {
+    $sep = $1;
+  }
+
+  require BSE::TB::Tags;
+  my $error;
+  my ($check, @tags) = $templater->get_parms($args, $acts);
+  @tags = map BSE::TB::Tags->name($_, \$error),
+    map { split /\Q$sep/ }
+      @tags;
+
+  $check = BSE::TB::Tags->canon_name($check, \$error)
+    or return 0;
+
+  for my $tag (@tags) {
+    if (lc $tag eq $check) {
+      return 1;
+    }
+  }
+
+  return 0;
 }
 
 sub common {

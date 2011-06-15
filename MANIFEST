@@ -211,6 +211,12 @@ site/cgi-bin/modules/BSE/TB/SiteUserGroups.pm
 site/cgi-bin/modules/BSE/TB/Subscription.pm
 site/cgi-bin/modules/BSE/TB/Subscription/Calc.pm
 site/cgi-bin/modules/BSE/TB/Subscriptions.pm
+site/cgi-bin/modules/BSE/TB/Tag.pm
+site/cgi-bin/modules/BSE/TB/TagMember.pm
+site/cgi-bin/modules/BSE/TB/TagMembers.pm
+site/cgi-bin/modules/BSE/TB/TagOwner.pm
+site/cgi-bin/modules/BSE/TB/TagOwners.pm
+site/cgi-bin/modules/BSE/TB/Tags.pm
 site/cgi-bin/modules/BSE/Template.pm
 site/cgi-bin/modules/BSE/Thumb/Imager.pm
 site/cgi-bin/modules/BSE/Thumb/Imager/Colourize.pm
@@ -453,6 +459,7 @@ site/htdocs/images/videoclose.png
 site/htdocs/js/admin-ui/debug.js
 site/htdocs/js/admin-ui/menu.js
 site/htdocs/js/admin.js
+site/htdocs/js/admin_edit.js
 site/htdocs/js/admin_messages.js
 site/htdocs/js/admin_prodopts.js
 site/htdocs/js/admin_siteusers.js
@@ -510,6 +517,8 @@ site/templates/admin/helpicon.tmpl	Help icon template for admin templates
 site/templates/admin/image_edit.tmpl	Edit a single image
 site/templates/admin/include/auditentry.tmpl
 site/templates/admin/include/audithead.tmpl
+site/templates/admin/include/edit_common.tmpl
+site/templates/admin/include/site_menu.tmpl
 site/templates/admin/interestemail.tmpl
 site/templates/admin/locations/add.tmpl
 site/templates/admin/locations/delete.tmpl
@@ -576,6 +585,7 @@ site/templates/admin/subscr/detail.tmpl
 site/templates/admin/subscr/detail_delete.tmpl
 site/templates/admin/subscr/edit.tmpl
 site/templates/admin/subscr/list.tmpl
+site/templates/admin/tags.tmpl
 site/templates/admin/user_book_seminar.tmpl
 site/templates/admin/user_edit_seminar.tmpl
 site/templates/admin/user_unbook_seminar.tmpl
@@ -615,6 +625,7 @@ site/templates/cart_base.tmpl
 site/templates/catalog.tmpl
 site/templates/catalog/multi.tmpl
 site/templates/catalog/shop_subcat.tmpl
+site/templates/catalog/tagged.tmpl
 site/templates/checkout_base.tmpl
 site/templates/checkoutcard_base.tmpl
 site/templates/checkoutconfirm_base.tmpl

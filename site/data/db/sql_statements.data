@@ -1,5 +1,5 @@
 --
-# VERSION=1.002
+# VERSION=1.003
 name: bse_siteuserSeminarBookingsDetail
 sql_statement: <<SQL
 select ar.*, pr.*, se.*, ss.*, sb.*,
@@ -460,4 +460,57 @@ name: bseRemoveProductPrices
 sql_statement: <<SQL
 delete from bse_price_tier_prices
 where product_id = ?
+SQL
+
+name: TagMembers.removeByTag
+sql_statement: <<SQL
+delete from bse_tag_members
+where owner_type = ?
+  and owner_id = ?
+  and tag_id = ?
+SQL
+
+name: TagMembers.remove_owned_by
+sql_statement: <<SQL
+delete from bse_tag_members
+where owner_type = ?
+  and owner_id = ?
+SQL
+
+name: Tags.object_tags
+sql_statement: <<SQL
+select t.*
+from bse_tags t, bse_tag_members tm
+where t.id = tm.tag_id
+  and tm.owner_type = ?
+  and tm.owner_id = ?
+order by t.cat, t.val
+SQL
+
+name: Tag_ids.by_owner
+sql_statement: <<SQL
+select tag_id as "id"
+from bse_tag_members
+where owner_type = ?
+  and owner_id = ?
+SQL
+
+name: TagMembers.deleteTag
+sql_statement: <<SQL
+delete from bse_tag_members
+where tag_id = ?
+SQL
+
+name: Articles.byTag
+sql_statement: <<SQL
+select a.*
+from article a, bse_tag_members m
+where a.id = m.owner_id
+  and m.tag_id = ?
+SQL
+
+name: bseTagsCleanup
+sql_statement: <<SQL
+delete from bse_tags
+where id not in (select tag_id from bse_tag_members);
 SQL

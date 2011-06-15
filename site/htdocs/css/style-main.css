@@ -146,3 +146,28 @@ form td.submit { text-align: right; }
   /*border: 1px solid #44F;*/
 }
 
+div.unusedtags {
+  padding-left: 1em;
+  padding-bottom: 0.5em;
+}
+
+div.pagelist {
+  padding: 2px 0px;
+}
+
+div.pagelist a,
+div.pagelist span {
+  padding: 2px 4px;
+}
+
+div.pagelist span {
+  background-color: #E8E8E9;
+}
+
+div.pagelist a {
+  background-color: #FFF0E0;
+}
+
+div.pagelist a:hover {
+  background-color: #FFE0C0;
+}

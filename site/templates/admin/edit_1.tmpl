@@ -1,4 +1,4 @@
-<:wrap admin/base.tmpl title=>[cond [ifNew] [cat "New " [articleType]] [cat "Edit " [articleType] ": " [article title]]]:>
+<:wrap admin/base.tmpl title=>[cond [ifNew] [cat "New " [articleType]] [cat "Edit " [articleType] ": " [article title]]], js => "admin_edit.js":>
 <h1><:ifNew:>New<:or:>Edit<:eif:> <:articleType:></h1>
 <:if Message:> 
 <div id="message" <:ifError:>class="error"<:or:><:eif:>><:message:></div>
@@ -46,7 +46,7 @@
 <:eif:>
   <form enctype="multipart/form-data" method="post" action="<:script:>" name="edit">
 
-    <input type="hidden" name="lastModified" value="<: old lastModified article lastModified :>" />
+    <input type="hidden" name="lastModified" value="<:article lastModified :>" />
     <input type="hidden" name="type" value="Article" />
     <input type="hidden" name="level" value="<: level :>" />
     <input type="hidden" name="id" value="<: article id :>" />
@@ -190,20 +190,7 @@
             </td>
             <td class="help"><:help edit threshold:> <:error_img threshold:></td>
           </tr>
-          <tr> 
-            <th>Keywords:</th>
-            <td> 
-              <:ifFieldPerm keyword:><input type="text" name="keyword" maxlength="255" size="60" value="<: old keyword default keyword :>" />
-              (comma separated)<:or:><: article threshold :><:eif:></td>
-            <td class="help"><:help edit keywords:> <:error_img keyword:></td>
-          </tr>
-          <tr> 
-            <th>Always Dynamic:</th>
-            <td> 
-              <:ifFieldPerm force_dynamic:><input type="hidden" name="save_force_dynamic" value="1" /><input type="checkbox" name="force_dynamic" value="1" <:if Article force_dynamic :>checked="checked"<:or Article:><:eif Article:> />
-              <:or:><:ifArticle force_dynamic :>Yes<:or Article:>No<:eif Article:><:eif:></td>
-            <td class="help"><:help edit keywords:> <:error_img keyword:></td>
-          </tr>
+<:include admin/include/edit_common.tmpl:>
 <:include admin/article_custom.tmpl optional:>
           <tr> 
             <th>Thumbnail image:</th>

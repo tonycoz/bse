@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests => 23;
+use Test::More tests => 83;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
@@ -17,7 +17,21 @@ require BSE::TB::ProductOptionValues;
 require BSE::API;
 require BSE::Dynamic::Catalog;
 require BSE::Request::Test;
-my $req = BSE::Request::Test->new(cfg => $cfg);
+
+$| = 1;
+
+my %cgi =
+  (
+   test1 => "one",
+   test2 => [ qw/two three/ ],
+   test3 => "Size: Medium",
+   test4 => [ "Size: Medium", "Colour: Red" ],
+   test5 => "Size:Medium/Colour:Red/Style:Pretty",
+   test6 => "/Size:Medium//Colour:Red/",
+   pp => 5,
+   p => 2,
+  );
+my $req = BSE::Request::Test->new(cfg => $cfg, params => \%cgi);
 my $gen = BSE::Dynamic::Catalog->new($req);
 BSE::API->import(qw/bse_make_catalog bse_make_product bse_add_step_child/);
 
@@ -33,6 +47,7 @@ my $parent = bse_make_catalog
 ok($parent, "made a catalog");
 is($parent->{generator}, "Generate::Catalog", "check generator");
 
+sleep 1;
 my $parent2 = bse_make_catalog
   (
    cfg => $cfg,
@@ -54,9 +69,10 @@ my $parent3 = bse_make_catalog
 
 # add some products
 my @prods;
+my %prods;
 my $price = 1000;
 my %prod_order;
-for my $title (qw/prod1 prod2 prod3/) {
+for my $title (qw/prod1 prod2 prod3 prod4 prod5 prod6 prod7 prod8 prod9 prod10/) {
   my $prod = bse_make_product
     (
      cfg => $cfg,
@@ -68,6 +84,7 @@ for my $title (qw/prod1 prod2 prod3/) {
     );
   ok($prod, "make product $title/$prod->{id}");
   unshift @prods, $prod;
+  $prods{$prod->title} = $prod;
   $prod_order{$prod->{displayOrder}} = 1;
   $price += 500;
 }
@@ -93,7 +110,7 @@ BSE::TB::ProductOptionValues->make
    display_order => $order++,
   );
 
-is(scalar keys %prod_order, 3, "make sure display orders unique");
+is(scalar keys %prod_order, 10, "make sure display orders unique");
 
 my $prod4 = bse_make_product
   (
@@ -121,6 +138,33 @@ bse_add_step_child
    child => $parent2
   );
 
+{
+  my %tags =
+    (
+     prod1 => [ "Size: Small", "Colour: Red", "ABC" ],
+     prod2 => [ "Size: Small", "Colour: Blue" ],
+     prod3 => [ "Size: Small", "Colour: Green", "ABC" ],
+     prod4 => [ "Size: Medium", "Colour: Red" ],
+     prod5 => [ "Size: Medium", "Colour: Blue", "Colour: Purple" ],
+     prod6 => [ "Size: Medium", "Colour: Green" ],
+     prod7 => [ "Size: Medium", "Colour: Black" ],
+     prod8 => [ "Size: Large", "Colour: Red" ],
+     prod9 => [ "Size: Large", "Colour: Blue" ],
+     prod10 => [ "Size: Large", "Colour: Green", "XYZ" ],
+    );
+  # set some tags
+  for my $key (sort keys %tags) {
+    my $error;
+    ok($prods{$key}->set_tags($tags{$key}, \$error),
+       "set tags on $key")
+      or print("# error: $error");
+
+    my @set = sort @{$tags{$key}};
+    my @tags = sort $prods{$key}->tags;
+    is_deeply(\@set, \@tags, "check tags set for $key");
+  }
+}
+
 dyn_template_test "dynallprods", $parent, <<TEMPLATE, <<EXPECTED;
 <:iterator begin dynallprods:><:
 dynallprod id:><:ifDynAnyProductOptions:> options<:or:><:eif:>
@@ -130,6 +174,108 @@ $prod4->{id}
 $prods[0]{id}
 $prods[1]{id}
 $prods[2]{id} options
+$prods[3]{id}
+$prods[4]{id}
+$prods[5]{id}
+$prods[6]{id}
+$prods[7]{id}
+$prods[8]{id}
+$prods[9]{id}
+
+EXPECTED
+
+dyn_template_test "dynallprods tag filter", $parent, <<TEMPLATE, <<EXPECTED;
+<:iterator begin dynallprods tags: "Size: Small" :><:
+dynallprod title:>
+<:iterator end dynallprods:>
+TEMPLATE
+prod3
+prod2
+prod1
+
+EXPECTED
+
+dyn_template_test "dynallprods tag filter cgi", $parent, <<TEMPLATE, <<EXPECTED;
+<:iterator begin dynallprods tags: [lcgi test3] :><:
+dynallprod title:>
+<:iterator end dynallprods:>
+TEMPLATE
+prod7
+prod6
+prod5
+prod4
+
+EXPECTED
+
+dyn_template_test "dynallprods tag filter", $parent, <<TEMPLATE, <<EXPECTED;
+<:iterator begin dynunused_tagcats dynallprods tags: "Size: Small" :><:
+ifDynunused_tagcat nocat:><:or:><:
+dynunused_tagcat name:>:
+<:eif
+:><:iterator begin dynunused_tags:> <:dynunused_tag val:> (<:dynunused_tag count:>)
+<:iterator end dynunused_tags:><:iterator end dynunused_tagcats :>
+TEMPLATE
+ ABC (2)
+Colour:
+ Blue (1)
+ Green (1)
+ Red (1)
+
+EXPECTED
+
+dyn_template_test "unused tags no highlander", $parent, <<TEMPLATE, <<EXPECTED;
+<:iterator begin dynunused_tagcats dynallprods tags: "Colour: Blue" :><:
+ifDynunused_tagcat nocat:><:or:><:
+dynunused_tagcat name:>:
+<:eif
+:><:iterator begin dynunused_tags:> <:dynunused_tag val:> (<:dynunused_tag count:>)
+<:iterator end dynunused_tags:><:iterator end dynunused_tagcats :>
+TEMPLATE
+Colour:
+ Purple (1)
+Size:
+ Large (1)
+ Medium (1)
+ Small (1)
+
+EXPECTED
+
+dyn_template_test "unused tags highlander", $parent, <<TEMPLATE, <<EXPECTED;
+<:iterator begin dynunused_tagcats dynallprods onlyone tags: "Colour: Blue" :><:
+ifDynunused_tagcat nocat:><:or:><:
+dynunused_tagcat name:>:
+<:eif
+:><:iterator begin dynunused_tags:> <:dynunused_tag val:> (<:dynunused_tag count:>)
+<:iterator end dynunused_tags:><:iterator end dynunused_tagcats :>
+TEMPLATE
+Size:
+ Large (1)
+ Medium (1)
+ Small (1)
+
+EXPECTED
+
+dyn_template_test "dyntags", $parent, <<TEMPLATE, <<EXPECTED;
+<:iterator begin dyntags "Size:  Small/Colour: Red/XYZ" :><:
+dyntag name:>|<:dyntag cat:>|<:dyntag val:>|
+<:iterator end dyntags :>
+<:iterator begin dyntags [lcgi test5] :><:
+dyntag name:>|<:dyntag cat:>|<:dyntag val:>|
+<:iterator end dyntags :>
+<:iterator begin dyntags [lcgi test6] :><:
+dyntag name:>|<:dyntag cat:>|<:dyntag val:>|
+<:iterator end dyntags :>
+TEMPLATE
+Size: Small|Size|Small|
+Colour: Red|Colour|Red|
+XYZ||XYZ|
+
+Size: Medium|Size|Medium|
+Colour: Red|Colour|Red|
+Style: Pretty|Style|Pretty|
+
+Size: Medium|Size|Medium|
+Colour: Red|Colour|Red|
 
 EXPECTED
 
@@ -157,10 +303,10 @@ EXPECTED
 $req->session->{cart} =
   [
    {
-    productId => $prods[0]{id},
+    productId => $prods{prod3}{id},
     units => 1,
-    price => scalar $prods[0]->price(),
-    title => scalar $prods[0]->title,
+    price => scalar $prods{prod3}->price(),
+    title => scalar $prods{prod3}->title,
    }
   ];
 
@@ -175,6 +321,105 @@ prod3 20.00
 Total: 20.00
 EXPECTED
 
+dyn_template_test "cgi", $parent, <<TEMPLATE, <<EXPECTED;
+><:cgi unknown:><
+><:cgi test1:><
+><:cgi test2:><
+TEMPLATE
+><
+>one<
+>two three<
+EXPECTED
+
+dyn_template_test "lcgi", $parent, <<TEMPLATE, <<EXPECTED;
+><:lcgi unknown:><
+><:lcgi test1:><
+><:lcgi test2:><
+><:lcgi "," test1:><
+><:lcgi "," test2:><
+><:lcgi ")(" test2:><
+TEMPLATE
+><
+>one<
+>two/three<
+>one<
+>two,three<
+>two)(three<
+EXPECTED
+
+dyn_template_test "deltag", $parent, <<TEMPLATE, <<EXPECTED;
+><:deltag "Size: Medium" [lcgi test4]:><
+><:deltag "Size:Medium" [lcgi test4]:><
+><:deltag "Size:Medium/Colour:Red" [lcgi test5]:><
+><:deltag "Size:Medium" [lcgi test5]:><
+<:iterator begin dyntags [lcgi test5]
+:><:dyntag name:> - <:deltag [dyntag name] [lcgi test5]:>
+<:iterator end dyntags:>
+TEMPLATE
+>Colour: Red<
+>Colour: Red<
+>Style: Pretty<
+>Colour: Red/Style: Pretty<
+Size: Medium - Colour: Red/Style: Pretty
+Colour: Red - Size: Medium/Style: Pretty
+Style: Pretty - Size: Medium/Colour: Red
+
+EXPECTED
+
+dyn_template_test "ifTagIn", $parent, <<TEMPLATE, <<EXPECTED;
+<:ifTagIn "Size:medium" [lcgi test5]:>1<:or:>0<:eif:>
+<:ifTagIn "Size: Huge" [lcgi test5]:>1<:or:>0<:eif:>
+<:ifTagIn "Size: Medium" [lcgi test5]:>1<:or:>0<:eif:>
+<:ifTagIn "DEF" [lcgi test5]:>1<:or:>0<:eif:>
+TEMPLATE
+1
+0
+1
+0
+EXPECTED
+
+dyn_template_test "paged default", $parent, <<TEMPLATE, <<EXPECTED;
+<:iterator begin dynallprods paged: :><:iterator end dynallprods:>
+Current page: <:dynallprods_page:>
+Page count: <:dynallprods_pagecount:>
+Next page: <:dynallprods_nextpage:>
+Previous page: <:dynallprods_prevpage:>
+Total count: <:dynallprod_totalcount:>
+Count: <:dynallprod_count paged: :>
+First number this page: <:dynallprods_firstnumber:>
+Last number this page: <:dynallprods_lastnumber:>
+Perpage: <:dynallprods_perpage:>
+Pages: <:iterator begin dynallprods_pagec
+:><:dynallprod_pagec page
+:><:ifDynallprod_pagec current:>c<:or:><:eif
+:><:ifDynallprod_pagec first:>f<:or:><:eif
+:><:ifDynallprod_pagec last:>l<:or:><:eif
+:><:ifDynallprod_pagec next:>n<:dynallprod_pagec next:><:or:><:eif
+:><:ifDynallprod_pagec prev:>p<:dynallprod_pagec prev:><:or:><:eif:> <:iterator end dynallprods_pagec
+:>
+<:iterator begin dynallprods paged:
+:><:dynallprod_number:> <:dynallprod title:>
+<:iterator end dynallprods:>
+TEMPLATE
+
+Current page: 2
+Page count: 3
+Next page: 3
+Previous page: 1
+Total count: 11
+Count: 5
+First number this page: 6
+Last number this page: 10
+Perpage: 5
+Pages: 1fn2 2cn3p1 3lp2 
+6 prod6
+7 prod5
+8 prod4
+9 prod3
+10 prod2
+
+EXPECTED
+
 $prod4->remove($cfg);
 for my $prod (@prods) {
   $prod->remove($cfg);
@@ -183,6 +428,7 @@ $parent3->remove($cfg);
 $parent2->remove($cfg);
 $parent->remove($cfg);
 
+# produces three test results
 sub dyn_template_test($$$$) {
   my ($tag, $article, $template, $expected) = @_;
 

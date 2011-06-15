@@ -2,7 +2,7 @@ package BSE::UI::Dispatch;
 use strict;
 use Carp 'confess';
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub new {
   my ($class, %opts) = @_;
@@ -117,20 +117,7 @@ sub error {
 sub _field_error {
   my ($self, $req, $errors) = @_;
 
-  my %errors = %$errors;
-  for my $key (keys %errors) {
-    if ($errors{$key} =~ /^msg:/) {
-      $errors{$key} = $req->_str_msg($errors{$key});
-    }
-  }
-
-  return $req->json_content
-    (
-     success => 0,
-     error_code => "FIELD",
-     errors => \%errors,
-     message => "Fields failed validation",
-    );
+  return $req->field_error($errors);
 }
 
 sub controller_id {

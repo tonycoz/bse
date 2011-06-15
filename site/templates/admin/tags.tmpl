@@ -1,0 +1,31 @@
+<:wrap admin/base.tmpl title => "System Article Tags", showtitle => 1 :>
+<:ifMessage:><p class="message"><:message:></p><:or:><:eif:>
+<:include admin/include/site_menu.tmpl:>
+<p>| <a href="<:script:>?id=-1&amp;a_tags=1<:ifCgi showarts:><:or:>&amp;showarts=1<:eif:>"><:ifCgi showarts:>Hide<:or:>Show<:eif:> articles for each tag</a> |
+<a href="<:script:>?id=-1&amp;a_tagcleanup=1">Cleanup unused tags</a> |
+</p>
+<form action="<:script:>"><input type="hidden" name="id" value="-1" />Filter Category: <input type="text" name="cat" value="<:cgi cat:>" /> <label><input type="checkbox" name="nocat" <:ifCgi nocat:>checked="checked" <:or:><:eif:>/>Uncategorized only</label> <input type="submit" name="a_tags" value="Filter" /></form>
+<ul>
+<:iterator begin systags:>
+<li class="tag" id="tag_<:systag id:>"><form action="<:script:>#tag_<:systag id:>" method="post">
+<input type="hidden" name="id" value="-1" />
+<input type="hidden" name="tag_id" value="<:systag id:>" />
+<input type="text" name="name" value="<:ifAnd [cgi a_tagsave] [ifEq [cgi tag_id] [systag id]]:><:cgi name:><:or:><:systag name:><:eif:>" />
+<:ifEq [cgi tag_id] [systag id]:><:error_img name:><:or:><:eif:>
+<input type="submit" name="a_tagrename" value="Save" />
+<input type="submit" name="a_tagdelete" value="Delete" />
+</form>
+<:if Cgi showarts:>
+<:if Systagarts:>
+<ul>
+<:iterator begin systagarts:>
+<li><a href="<:script:>?id=<:systagart id:>"><:systagart title:></a></li>
+<:iterator end systagarts:>
+</ul>
+<:or Systagarts:>
+<p>No articles use this tag.</p>
+<:eif Systagarts:>
+<:or Cgi:><:eif Cgi:>
+</li>
+<:iterator end systags:>
+</ul>

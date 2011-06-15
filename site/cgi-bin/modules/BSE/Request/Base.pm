@@ -5,7 +5,7 @@ use BSE::Cfg;
 use BSE::Util::HTML;
 use Carp qw(cluck confess);
 
-our $VERSION = "1.003";
+our $VERSION = "1.005";
 
 sub new {
   my ($class, %opts) = @_;
@@ -887,6 +887,25 @@ sub json_content {
   }
 
   return $json_result;
+}
+
+sub field_error {
+  my ($self, $errors) = @_;
+
+  my %errors = %$errors;
+  for my $key (keys %errors) {
+    if ($errors{$key} =~ /^msg:/) {
+      $errors{$key} = $self->_str_msg($errors{$key});
+    }
+  }
+
+  return $self->json_content
+    (
+     success => 0,
+     error_code => "FIELD",
+     errors => \%errors,
+     message => "Fields failed validation",
+    );
 }
 
 =item get_csrf_token($name)

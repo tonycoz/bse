@@ -13,7 +13,7 @@ use BSE::Util::ContentType qw(content_type);
 use DevHelp::Date qw(dh_parse_date dh_parse_sql_date);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
-our $VERSION = "1.007";
+our $VERSION = "1.009";
 
 =head1 NAME
 
@@ -1122,6 +1122,15 @@ sub tag_image {
   }
 }
 
+sub iter_tags {
+  my ($self, $article) = @_;
+
+  $article->{id}
+    or return;
+
+  return $article->tag_objects;
+}
+
 sub low_edit_tags {
   my ($self, $acts, $request, $article, $articles, $msg, $errors) = @_;
 
@@ -1165,6 +1174,7 @@ sub low_edit_tags {
   my @groups;
   my $current_group;
   my $it = BSE::Util::Iterate->new;
+  my $ito = BSE::Util::Iterate::Objects->new;
   return
     (
      $request->admin_tags,
@@ -1266,6 +1276,12 @@ sub low_edit_tags {
      $it->make_iterator([ iter_file_stores => $self], 
 			'file_store', 'file_stores'),
      ifGroupRequired => [ \&tag_ifGroupRequired, $article, \$current_group ],
+     $ito->make
+     (
+      single => "tag",
+      plural => "tags",
+      code => [ iter_tags => $self, $article ],
+     ),
     );
 }
 
@@ -1568,6 +1584,21 @@ sub save_new {
     $errors{parentid} = "Invalid parent selection (template bug)";
   }
   $self->validate(\%data, $articles, \%errors);
+
+  my $save_tags = $cgi->param("_save_tags");
+  my @tags;
+  if ($save_tags) {
+    @tags = grep /\S/, $cgi->param("tags");
+    my $error;
+    for my $tag (@tags) {
+      BSE::TB::Tags->valid_name($tag, \$error)
+	  or last;
+    }
+    if ($error) {
+      $errors{tags} = "msg:bse/admin/edit/badtag/$error";
+    }
+  }
+
   if (keys %errors) {
     if ($req->is_ajax) {
       return $req->json_content
@@ -1709,6 +1740,11 @@ sub save_new {
     $article = $articles->getByPkey($article->{id});
   }
 
+  if ($save_tags) {
+    my $error;
+    $article->set_tags(\@tags, \$error);
+  }
+
   use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
@@ -1763,6 +1799,10 @@ sub _article_data {
   $article_data->{files} =
     [
      map $_->data_only, $article->files,
+    ];
+  $article_data->{tags} =
+    [
+     $article->tags, # just the names
     ];
 
   return $article_data;
@@ -1845,6 +1885,20 @@ sub save {
   if (exists $article->{template} &&
       $article->{template} =~ m|\.\.|) {
     $errors{template} = "Please only select templates from the list provided";
+  }
+
+  my $save_tags = $cgi->param("_save_tags");
+  my @tags;
+  if ($save_tags) {
+    @tags = grep /\S/, $cgi->param("tags");
+    my $error;
+    for my $tag (@tags) {
+      BSE::TB::Tags->valid_name($tag, \$error)
+	  or last;
+    }
+    if ($error) {
+      $errors{tags} = "msg:bse/admin/edit/badtag/$error";
+    }
   }
   $self->validate_old($article, \%data, $articles, \%errors, scalar $req->is_ajax)
     or return $self->_service_error($req, $article, $articles, undef, \%errors, "FIELD");
@@ -1947,6 +2001,11 @@ sub save {
   }
 
   $article->save();
+
+  if ($save_tags) {
+    my $error;
+    $article->set_tags(\@tags, \$error);
+  }
 
   # fix the kids too
   my @extra_regen;

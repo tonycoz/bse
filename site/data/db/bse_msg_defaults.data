@@ -40,6 +40,33 @@ message: The order containing this file hasn't been filled.  Please contact us.
 id: bse/admin/edit/uplabelsect
 message: -- move up a level -- become a section
 
+id: bse/admin/edit/tags/saved
+message: Tag renamed from '%1:s' to '%2:s'
+
+id: bse/admin/edit/tags/removed
+message: Tag '%1:s' removed.
+
+id: bse/admin/edit/tags/cleanup
+message: Deleted %1:d unused tags
+
+id: bse/admin/edit/tags/invalid_empty
+message: Tags must have a non-empty name
+
+id: bse/admin/edit/tags/invalid_badchars
+message: Tags cannot contain control characters, backslash (\) or forward slash (/)
+
+id: bse/admin/edit/tags/bad_id
+message: Invalid tag id
+
+id: bse/admin/edit/tags/unknown
+message: Unknown tag id
+
+id: bse/admin/edit/tags/duplicate
+message: There is already a tag with name '%1:s'
+
+id: bse/admin/edit/tags/nochange
+message: No changes to save
+
 id: bse/admin/message/noid
 message: Missing id parameter
 

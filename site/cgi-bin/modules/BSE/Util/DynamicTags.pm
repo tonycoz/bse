@@ -6,20 +6,50 @@ use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 use BSE::CfgInfo qw(custom_class);
 
-our $VERSION = "1.007";
+our $VERSION = "1.017";
+
+=head1 NAME
+
+BSE::Util::DynamicTags - common dynamic page tags for BSE.
+
+=head1 SYNOPSIS
+
+  # in the code
+  my %acts =
+    (
+     $req->dyn_user_tags(),
+     ...
+    );
+
+  # in the page
+
+  <:usr userId:>
+  ...
+
+=head1 DESCRIPTION
+
+This module defines the common set of tags available on public dynamic
+pages.
+
+=head1 METHODS
+
+=over
+
+=item new
+
+Create a new tags object, accepts a single parameter which is a
+L<BSE::Request> object.
+
+=cut
 
 sub new {
   my ($class, $req) = @_;
   return bless { req => $req }, $class;
 }
 
-=item Common dynamic tags
+=item tags
 
-=over
-
-=item *
-
-paid_files, paid_file - iterates over the files the user has paid for.
+Returns the common tags.
 
 =back
 
@@ -43,7 +73,10 @@ sub tags {
      $self->dyn_article_iterator('dynallkids_of3', 'dynofallkid3'),
      $self->dyn_article_iterator('dynchildren_of', 'dynofchild'),
      $self->dyn_iterator('dyncart', 'dyncartitem'),
-     $self->dyn_article_iterator('wishlist', 'wishlistentry', $req),
+     $self->dyn_article_iterator('wishlist', 'wishlistentry'),
+     $self->dyn_iterator('dynunused_tagcats', 'dynunused_tagcat'),
+     $self->dyn_iterator('dynunused_tags', 'dynunused_tag'),
+     $self->dyn_iterator('dyntags', 'dyntag'),
      url => [ tag_url => $self ],
      dyncarttotalcost => [ tag_dyncarttotal => $self, 'total_cost' ],
      dyncarttotalunits => [ tag_dyncarttotal => $self, 'total_units' ],
@@ -74,17 +107,59 @@ sub _custom_tags {
   return custom_class($self->cfg)->dynamic_tags($self->req);
 }
 
+=item cfg
+
+Return a cfg object.
+
+=cut
+
 sub cfg {
   return $_[0]{req}->cfg;
 }
+
+=item cgi
+
+Return the cgi object.
+
+=cut
 
 sub cgi {
   return $_[0]{req}->cgi;
 }
 
+=item req
+
+Return the request object.
+
+=cut
+
 sub req {
   return $_[0]{req};
 }
+
+=item admin_mode
+
+Return true if in admin mode.
+
+=cut
+
+sub admin_mode {
+  return 0;
+}
+
+=head1 COMMON DYNAMIC TAGS
+
+=over
+
+=item ifUser
+=synopsis <:if User:><:user userId:><:or:>Not logged in<:eif:>
+
+With parameters, check if there is a user currenly logged in.
+
+Without, check if the given attribute of the currently logged in user
+is a true perl value.
+
+=cut
 
 sub tag_ifUser {
   my ($req, $args) = @_;
@@ -99,6 +174,15 @@ sub tag_ifUser {
   }
 }
 
+=item user
+
+Retrieve an attribute from the currently logged in user.
+
+Returns an empty string if the user isn't logged in or if the
+attribute is unknown.
+
+=cut
+
 sub tag_user {
   my ($req, $args) = @_;
 
@@ -110,6 +194,14 @@ sub tag_user {
 
   escape_html($siteuser->{$args});
 }
+
+=item ifUserCanSee
+=synopsis <:ifUserCanSee 3:><a href="/shop/">See the shop</a><:or:><:eif:>
+
+Tests if the currently logged in siteuser has access to the named or
+numbered article.
+
+=cut
 
 sub tag_ifUserCanSee {
   my ($req, $args) = @_;
@@ -134,6 +226,14 @@ sub tag_ifUserCanSee {
   $req->siteuser_has_access($article);
 }
 
+=item ifUserMemberOf
+
+Test if the currently logged in user is a member of the named group.
+
+Accepts [] style parameters.
+
+=cut
+
 sub tag_ifUserMemberOf {
   my ($self, $args, $acts, $func, $templater) = @_;
 
@@ -157,6 +257,15 @@ sub tag_ifUserMemberOf {
   return $group->contains_user($user);
 }
 
+=item dyntarget
+=synopsis <:dyntarget user a_logon 1:>
+
+Generate a url to the specified script with the given parameters.
+
+Accepts [] style parameters.
+
+=cut
+
 sub tag_dyntarget {
   my ($self, $args, $acts, $func, $templater) = @_;
 
@@ -170,6 +279,14 @@ sub tag_dyntarget {
 
   return escape_html($req->user_url($script, $target, @options));
 }
+
+=item url
+=synopsis <:url dynofallkid:>
+
+Generate a link to the specified article, taking admin mode into
+account.
+
+=cut
 
 sub tag_url {
   my ($self, $name, $acts, $func, $templater) = @_;
@@ -194,6 +311,12 @@ sub tag_url {
   return escape_html($value);
 }
 
+=item iterator dynlevel1s
+
+Iterate over level 1 articles.
+
+=cut
+
 sub iter_dynlevel1s {
   my ($self, $unused, $args) = @_;
 
@@ -207,6 +330,12 @@ sub iter_dynlevel1s {
 
   return $result;
 }
+
+=item iterator dynlevel2s
+
+Iterate over the children of the dynlevel1 article.
+
+=cut
 
 sub iter_dynlevel2s {
   my ($self, $unused, $args) = @_;
@@ -226,6 +355,12 @@ sub iter_dynlevel2s {
   return $result;
 }
 
+=item iterator dynlevel3s
+
+Iterate over the children of the dynlevel2 article.
+
+=cut
+
 sub iter_dynlevel3s {
   my ($self, $unused, $args) = @_;
 
@@ -243,6 +378,15 @@ sub iter_dynlevel3s {
 
   return $result;
 }
+
+=item dynallkids_of
+
+Also dynallkids_of2, dynallkids_of3
+
+Iterate over all children of the each of the specified article names
+or ids.
+
+=cut
 
 sub iter_dynallkids_of {
   my ($self, $unused, $args, $acts, $templater, $state) = @_;
@@ -266,6 +410,13 @@ sub iter_dynallkids_of {
 *iter_dynallkids_of2 = \&iter_dynallkids_of;
 *iter_dynallkids_of3 = \&iter_dynallkids_of;
 
+=item dynchildren_of
+
+Iterate over direct children of each of the specified article names or
+ids.
+
+=cut
+
 sub iter_dynchildren_of {
   my ($self, $unused, $args, $acts, $templater) = @_;
 
@@ -281,6 +432,12 @@ sub iter_dynchildren_of {
   return $self->access_filter( map Articles->listedChildren($_), @ids);
 }
 
+=item iterator dyncart
+
+Iterate over the contents of the cart.
+
+=cut
+
 sub iter_dyncart {
   my ($self, $unused, $args) = @_;
 
@@ -289,6 +446,12 @@ sub iter_dyncart {
 
   return $cart->{cart};
 }
+
+=item dyncarttotal
+
+The total cost of the items in the cart, in cents.
+
+=cut
 
 sub tag_dyncarttotal {
   my ($self, $field, $args) = @_;
@@ -415,12 +578,183 @@ sub _find_articles {
   return;
 }
 
-sub iter_wishlist {
-  my ($self, $req) = @_;
+=item iterator wishlist
 
-  my $user = $req->siteuser
+Iterate over the items in the logged in user's wishlist.
+
+=cut
+
+sub iter_wishlist {
+  my ($self) = @_;
+
+  my $user = $self->req->siteuser
     or return [];
   return [ $user->wishlist ];
+}
+
+=item iterator dynunused_tagcats
+
+Iterate over the the tag categories of unused tags in the articles
+selected by the given tags: and filter: parameters.
+
+You must supply a tags: filter, even if it's just "".
+
+There will be an iteration with an empty I<name> for each tag without
+a category.
+
+If a parameter "onlyone" is supplied then the list of tag categories
+will not include tag categories that appear in the tags filter.
+
+Each entry has:
+
+=over
+
+=item * name - name of the category
+
+=item * nocat - a category-less tag
+
+=item * ind - a unique key for this category.
+
+=back
+
+=cut
+
+sub iter_dynunused_tagcats {
+  my ($self, $unused, $args, $acts, $templater, $state) = @_;
+
+  unless ($args =~ s/^(\w+)\s*//) {
+    print STDERR "dynunused_tagcats: missing iterator name\n";
+    return [];
+  }
+
+  my $iter = $1;
+  my $method = "iter_$iter";
+  unless ($self->can($method)) {
+    print STDERR "* Unknown iterator $iter *\n";
+    return [];
+  }
+
+  my $only_one = $args =~ s/^\s*onlyone\s+//;
+
+  my $context = $self->{context}{$iter};
+  my %state =
+    (
+     plural => $iter,
+     single => "unknown",
+     context => $context,
+    );
+
+  my $filter = $self->{filter};
+  my $selected_tags = $filter->{tags};
+  my $ignored = $self->_do_filter(\%state, $filter, $self->$method($context, $args, $acts, $templater, \%state));
+  keys %$filter
+    or $self->{filter} = undef;
+
+  my %selected_cats = map { $_ => 1 }
+    map { lc ((BSE::TB::Tags->split_name($_))[0]) }
+      @{$selected_tags || []};
+
+  my %cats;
+  my $tags = $self->{tags}{$iter};
+ TAG:
+  for my $tag (keys %$tags) {
+    my $count = $tags->{$tag};
+    my ($cat, $val) = BSE::TB::Tags->split_name($tag);
+    my $ind = lc(length $cat ? "$cat:" : $val);
+    my $can_cat = lc $cat;
+
+    if ($only_one && length $cat && $selected_cats{$can_cat}) {
+      next TAG;
+    }
+
+    unless ($cats{$ind}) {
+      $cats{$ind} =
+	{
+	 name => $cat,
+	 ind => $ind,
+	 vals => [],
+	 nocat => (length($cat) == 0),
+	};
+    }
+    push @{$cats{$ind}{vals}}, 
+      {
+       name => $tag,
+       val => $val,
+       cat => $cat,
+       count => $count,
+      };
+  }
+
+  # sort each value set
+  for my $cat (values %cats) {
+    my $newvals =  [ sort { lc($a->{val}) cmp lc($b->{val}) } @{$cat->{vals}} ];
+    $cat->{vals} = $newvals;
+  }
+
+  my $cats =
+    [
+     sort
+     {
+       $b->{nocat} <=> $a->{nocat}
+	 || $a->{ind} cmp $b->{ind}
+     } values %cats
+    ];
+
+  return $cats;
+}
+
+=item iterator dynunsed_tags
+
+Iterate over the unused tags in a category from dynunused_tagcats.
+
+Each entry has:
+
+=over
+
+=item * name - the full name of the tag, including category
+
+=item * cat - the category only
+
+=item * val - the value only
+
+=back
+
+=cut
+
+sub iter_dynunused_tags {
+  my ($self, $unused, $args) = @_;
+
+  my $cat = $self->{current}{dynunused_tagcats}
+    or return;
+
+  return $cat->{vals};
+}
+
+=item dyntags
+=synopsis <:iterator begin dyntags [lcgi tags]:>
+
+Iterate over a list of tags.
+
+=cut
+
+sub iter_dyntags {
+  my ($self, $unused, $args, $acts, $templater) = @_;
+
+  my @tags = grep /\S/, map { split '/' } $templater->get_parms($args, $acts);
+
+  my @out;
+  for my $tag (@tags) {
+    my ($cat, $val) = BSE::TB::Tags->split_name($tag);
+
+    push @out,
+      {
+       name => BSE::TB::Tags->make_name($cat, $val),
+       cat => $cat,
+       val => $val
+      };
+  }
+
+  return \@out;
 }
 
 sub access_filter {
@@ -436,440 +770,53 @@ sub access_filter {
   return [ grep $req->siteuser_has_access($_), @articles ];
 }
 
-my $cols_re; # cache for below
-
-sub _get_filter {
-  my ($self, $rargs) = @_;
-
-  if ($$rargs =~ s/filter:\s+(.*)\z//s) {
-    my $expr = $1;
-    my $orig_expr = $expr;
-    unless ($cols_re) {
-      require Articles;
-      my $cols_expr = '(' . join('|', Article->columns) . ')';
-      $cols_re = qr/\[$cols_expr\]/;
-    }
-    $expr =~ s/$cols_re/\$article->{$1}/g;
-    $expr =~ s/ARTICLE/\$article/g;
-    #print STDERR "Expr $expr\n";
-    my $filter;
-    $filter = eval 'sub { my $article = shift; '.$expr.'; }';
-    if ($@) {
-      print STDERR "** Failed to compile filter expression >>$expr<< built from >>$orig_expr<<\n";
-      return;
-    }
-
-    return $filter;
-  }
-  else {
-    return;
-  }
-}
-
-sub _do_filter {
-  my ($self, $filter, $articles) = @_;
-
-  $filter
-    or return $articles;
-
-  return [ grep $filter->($_), @$articles ];
-}
-
-sub _dyn_iterate_reset {
-  my ($self, $state, $args, $acts, $name, $templater) = @_;
-
-  my $rindex = $state->{rindex};
-  my $rdata = $state->{rdata};
-  my $method = "iter_$state->{plural}";
-  my $filter = $self->_get_filter(\$args);
-  $$rdata = $self->
-    _do_filter($filter, $self->$method($state->{context}, $args, $acts, $templater, $state));
-  
-  $$rindex = -1;
-
-  $state->{previous} = undef;
-  $state->{item} = undef;
-  if (@$$rdata) {
-    $state->{next} = $$rdata->[0];
-  }
-  else {
-    $state->{next} = undef;
-  }
-
-  1;
-}
-
-sub _dyn_iterate {
-  my ($self, $state) = @_;
-
-  my $rindex = $state->{rindex};
-  my $rdata = $state->{rdata};
-  my $single = $state->{single};
-  if (++$$rindex < @$$rdata) {
-    $state->{previous} = $state->{item};
-    $state->{item} = $state->{next};
-    if ($$rindex < $#$$rdata) {
-      $state->{next} = $$rdata->[$$rindex+1];
-    }
-    else {
-      $state->{next} = undef;
-    }
-    $self->{req}->set_article("previous_$single" => $state->{previous});
-    $self->{req}->set_article($single => $state->{item});
-    $self->{req}->set_article("next_$single" => $state->{next});
-    return 1;
-  }
-  else {
-    $self->{req}->set_article($single => undef);
-    return;
-  }
-}
-
-sub _dyn_item_low {
-  my ($self, $item, $args) = @_;
-
-  $item or return '';
-  my $value = $item->{$args};
-  defined $value 
-    or return '';
-
-  return escape_html($value);
-}
-
-sub _dyn_item {
-  my ($self, $state, $args) = @_;
+=item dthumbimage
 
-  my $rindex = $state->{rindex};
-  my $rdata = $state->{rdata};
-  my $item = $state->{item};
-  unless ($state->{item}) {
-    return "** $state->{single} only usable inside iterator $state->{plural} **";
-  }
+Either:
 
-  return $self->_dyn_item_low($item, $args);
-}
+=over
 
-sub _dyn_next {
-  my ($self, $state, $args) = @_;
+C<< dynthumbimage I<article> I<geometry> I<image> I<field> >>
 
-  return $self->_dyn_item_low($state->{next}, $args);
-}
+or
 
-sub _dyn_previous {
-  my ($self, $state, $args) = @_;
+C<< dthumbimage I<article> I<geometry> I<image> >>
 
-  return $self->_dyn_item_low($state->{previous}, $args);
-}
+=back
 
-sub _dyn_item_object_low {
-  my ($self, $item, $args, $state) = @_;
+Similar to thumbimage/gthumbimage, this allows you to retrieve images
+from a given article, which article can either be a number or a named
+article in the current context.
 
-  $item
-    or return '';
-  $item->can($args)
-    or return "* $args not valid for $state->{single} *";
-  my $value = $item->$args;
-  defined $value 
-    or return '';
+geometry and field are as for the static thumbimage tag.
 
-  return escape_html($value);
-}
+image is a comma separated list of match operators, eg:
 
-sub _dyn_item_object {
-  my ($self, $state, $args) = @_;
+  <:dthumbimage result search search,/^display_$/,1 :>
 
-  unless ($state->{item}) {
-    return "** $state->{single} only usable inside iterator $state->{plural} **";
-  }
+on a search page will display either the image with an id of search,
+the first image found with an identifier starting with "display_" or
+the first image of the article.
 
-  return $self->_dyn_item_object_low($state->{item}, $args, $state);
-}
+Possible match operators are:
 
-sub _dyn_next_obj {
-  my ($self, $state, $args) = @_;
+=over
 
-  return $self->_dyn_item_object_low($state->{next}, $args, $state);
-}
+=item *
 
-sub _dyn_previous_obj {
-  my ($self, $state, $args) = @_;
+/regexp/ - a regular expression matched against the image identifier
 
-  return $self->_dyn_item_object_low($state->{previous}, $args, $state);
-}
+=item *
 
-sub _dyn_ifNext {
-  my ($self, $state) = @_;
+index - a numeric image index, where 1 is the first image
 
-  return defined $state->{next};
-}
+=item *
 
-sub _dyn_ifPrevious {
-  my ($self, $state) = @_;
+identifier - a literal image identifier
 
-  return defined $state->{previous};
-}
+=back
 
-sub _dyn_article {
-  my ($self, $state, $args) = @_;
-
-  my $rindex = $state->{rindex};
-  my $rdata = $state->{rdata};
-  unless ($state->{item}) {
-    return "** $state->{single} only usable inside iterator $state->{plural} **";
-  }
-
-  my $item = $state->{item}
-    or return '';
-
-  return tag_article($item, $self->{req}->cfg, $args);
-}
-
-sub _dyn_next_article {
-  my ($self, $state, $args) = @_;
-
-  $state->{next} or return '';
-
-  return tag_article($state->{next}, $self->{req}->cfg, $args);
-}
-
-sub _dyn_previous_article {
-  my ($self, $state, $args) = @_;
-
-  $state->{previous} or return '';
-
-  return tag_article($state->{previous}, $self->{req}->cfg, $args);
-}
-
-sub _dyn_index {
-  my ($self, $rindex, $rdata, $single) = @_;
-
-  if ($$rindex < 0 || $$rindex >= @$$rdata) {
-    return "** $single only valid inside iterator **";
-  }
-
-  return $$rindex;
-}
-
-sub _dyn_number {
-  my ($self, $rindex, $rdata, $single) = @_;
-
-  if ($$rindex < 0 || $$rindex >= @$$rdata) {
-    return "** $single only valid inside iterator **";
-  }
-
-  return 1 + $$rindex;
-}
-
-sub _dyn_count {
-  my ($self, $rdata, $rindex, $plural, $context, $args, $acts, $name, 
-      $templater) = @_;
-
-  my $filter = $self->_get_filter(\$args);
-  my $method = "iter_$plural";
-  my $data = $self->_do_filter($filter, $self->$method($context, $args, $acts, $templater));
-
-  return scalar @$data;
-}
-
-sub _dyn_if_first {
-  my ($self, $rindex, $rdata) = @_;
-
-  $$rindex == 0;
-}
-
-sub _dyn_if_last {
-  my ($self, $rindex, $rdata) = @_;
-
-  $$rindex == $#$$rdata;
-}
-
-sub dyn_iterator {
-  my ($self, $plural, $single, $context, $rindex, $rdata) = @_;
-
-  my $method = $plural;
-  my $index;
-  defined $rindex or $rindex = \$index;
-  my $data;
-  defined $rdata or $rdata = \$data;
-  my %state =
-    (
-     plural => $plural,
-     single => $single,
-     rindex => $rindex,
-     rdata => $rdata,
-     context => $context,
-    );
-  return
-    (
-     "iterate_${plural}_reset" =>
-     [ _dyn_iterate_reset => $self, \%state ],
-     "iterate_$plural" =>
-     [ _dyn_iterate => $self, \%state ],
-     $single => 
-     [ _dyn_item => $self, \%state ],
-     "${single}_index" =>
-     [ _dyn_index => $self, $rindex, $rdata, $single ],
-     "${single}_number" =>
-     [ _dyn_number => $self, $rindex, $rdata ],
-     "${single}_count" =>
-     [ _dyn_count => $self, $rindex, $rdata, $plural, $context ],
-     "if\u$plural" =>
-     [ _dyn_count => $self, $rindex, $rdata, $plural, $context ],
-     "ifLast\u$single" => [ _dyn_if_last => $self, $rindex, $rdata ],
-     "ifFirst\u$single" => [ _dyn_if_first => $self, $rindex, $rdata ],
-     "next_$single" => [ _dyn_next => $self, \%state ],
-     "previous_$single" => [ _dyn_previous => $self, \%state ],
-     "ifNext\u$single" => [ _dyn_ifNext => $self, \%state ],
-     "ifPrevious\u$single" => [ _dyn_ifPrevious => $self, \%state ],
-    );
-}
-
-sub dyn_iterator_obj {
-  my ($self, $plural, $single, $context, $rindex, $rdata) = @_;
-
-  my $method = $plural;
-  my $index;
-  defined $rindex or $rindex = \$index;
-  my $data;
-  defined $rdata or $rdata = \$data;
-  my %state =
-    (
-     plural => $plural,
-     single => $single,
-     rindex => $rindex,
-     rdata => $rdata,
-     context => $context,
-    );
-  return
-    (
-     "iterate_${plural}_reset" =>
-     [ _dyn_iterate_reset => $self, \%state ],
-     "iterate_$plural" =>
-     [ _dyn_iterate => $self, \%state ],
-     $single => 
-     [ _dyn_item_object => $self, \%state ],
-     "${single}_index" =>
-     [ _dyn_index => $self, $rindex, $rdata, $single ],
-     "${single}_number" =>
-     [ _dyn_number => $self, $rindex, $rdata ],
-     "${single}_count" =>
-     [ _dyn_count => $self, $rindex, $rdata, $plural, $context ],
-     "if\u$plural" =>
-     [ _dyn_count => $self, $rindex, $rdata, $plural, $context ],
-     "ifLast\u$single" => [ _dyn_if_last => $self, $rindex, $rdata ],
-     "ifFirst\u$single" => [ _dyn_if_first => $self, $rindex, $rdata ],
-     "next_$single" => [ _dyn_next_obj => $self, \%state ],
-     "previous_$single" => [ _dyn_previous_obj => $self, \%state ],
-     "ifNext\u$single" => [ _dyn_ifNext => $self, \%state ],
-     "ifPrevious\u$single" => [ _dyn_ifPrevious => $self, \%state ],
-    );
-}
-
-sub _dyn_article_move {
-  my ($self, $state, $args, $acts, $func, $templater) = @_;
-
-  $state->{parentid}
-    or return '';
-
-  return $self->tag_dynmove($state->{rindex}, $state->{rdata},
-			    "stepparent=$state->{parentid}",
-			    $args, $acts, $templater);
-}
-
-sub dyn_article_iterator {
-  my ($self, $plural, $single, $context, $rindex, $rdata) = @_;
-
-  my $method = $plural;
-  my $index;
-  defined $rindex or $rindex = \$index;
-  my $data;
-  defined $rdata or $rdata = \$data;
-  my %state =
-    (
-     plural => $plural,
-     single => $single,
-     rindex => $rindex,
-     rdata => $rdata,
-     context => $context,
-    );
-  return
-    (
-     "iterate_${plural}_reset" =>
-     [ _dyn_iterate_reset => $self, \%state ],
-     "iterate_$plural" =>
-     [ _dyn_iterate => $self, \%state],
-     $single => 
-     [ _dyn_article => $self, \%state ],
-     "${single}_index" =>
-     [ _dyn_index => $self, $rindex, $rdata, $single ],
-     "${single}_number" =>
-     [ _dyn_number => $self, $rindex, $rdata ],
-     "${single}_count" =>
-     [ _dyn_count => $self, $rindex, $rdata, $plural, $context ],
-     "if\u$plural" =>
-     [ _dyn_count => $self, $rindex, $rdata, $plural, $context ],
-     "ifLast\u$single" => [ _dyn_if_last => $self, $rindex, $rdata ],
-     "ifFirst\u$single" => [ _dyn_if_first => $self, $rindex, $rdata ],
-     "next_$single" => [ _dyn_next_article => $self, \%state ],
-     "previous_$single" => [ _dyn_previous_article => $self, \%state ],
-     "ifNext\u$single" => [ _dyn_ifNext => $self, \%state ],
-     "ifPrevious\u$single" => [ _dyn_ifPrevious => $self, \%state ],
-     "move_$single" => [ _dyn_article_move => $self, \%state ],
-    );
-}
-
-sub get_cached {
-  my ($self, $id) = @_;
-
-  return $self->{_cache}{$id};
-}
-
-sub set_cached {
-  my ($self, $id, $value) = @_;
-
-  $self->{_cache}{$id} = $value;
-}
-
-sub _cart {
-  my ($self) = @_;
-
-  my $dyncart = $self->get_cached('cart');
-  $dyncart and return $dyncart;
-
-  my $cart = $self->{req}->session->{cart}
-    or return { cart => [], total_cost => 0, total_units => 0 };
-
-  my @cart;
-  my $total_cost = 0;
-  my $total_units = 0;
-  for my $item (@$cart) {
-    require Products;
-    my $product = Products->getByPkey($item->{productId});
-    my $extended = $product->price(user => scalar $self->{req}->siteuser) 
-      * $item->{units};
-    my $link = $product->link;
-    $link =~ /^\w+:/ 
-      or $link = $self->{req}->cfg->entryErr('site', 'url') . $link;
-    push @cart,
-      {
-       ( map { $_ => $product->{$_} } $product->columns ),
-       %$item,
-       extended => $extended,
-       link => $link,
-      };
-    $total_cost += $extended;
-    $total_units += $item->{units};
-  }
-  my $result = 
-    {
-     cart => \@cart,
-     total_cost => $total_cost,
-     total_units => $total_units,
-    };
-  $self->set_cached(cart => $result);
-
-  return $result;
-}
+=cut
 
 sub tag_dthumbimage {
   my ($self, $args) = @_;
@@ -911,6 +858,20 @@ sub tag_dthumbimage {
   
   return $self->_thumbimage_low($geometry, $im, $field, $self->{req}->cfg);
 }
+
+=item dgthumbimage
+
+=over
+
+C<<dgthumbimage I<geometry> I<name> I<field> >>
+
+C<<dgthumbimage I<geometry> I<name> >>
+
+=back
+
+Format a thumbnail for a global image, in dynamic context.
+
+=cut
 
 sub tag_dgthumbimage {
   my ($self, $args, $acts, $func, $templater) = @_;
@@ -1061,6 +1022,12 @@ sub iter_userfiles {
   return [];
 }
 
+=item iterator paid_files
+
+Iterates over the files the user has paid for.
+
+=cut
+
 sub iter_paidfiles {
   my ($self, $unused, $args) = @_;
 
@@ -1068,10 +1035,6 @@ sub iter_paidfiles {
     or return [];
 
   return [ $user->paid_files ];
-}
-
-sub admin_mode {
-  return 0;
 }
 
 sub tag_dynmove {
@@ -1176,58 +1139,709 @@ sub tag_ifTieredPricing {
   return scalar @tiers;
 }
 
-1;
+=back
 
-=head1 NAME
+=head2 Dynamic iterator filter syntax
 
-BSE::Util::DynamicTags - basic dynamic page tags
-
-=head1 REFERENCE
+There a two types filters:
 
 =over
 
-=item dthumbimage article geometry image field
+=item * code filters - filters specified as perl code
 
-=item dthumbimage article geometry image
-
-Similar to thumbimage/gthumbimage, this allows you to retrieve images
-from a given article, which article can either be a number or a named
-article in the current context.
-
-geometry and field are as for the static thumbimage tag.
-
-image is a comma separated list of match operators, eg:
-
-  <:dthumbimage result search search,/^display_$/,1 :>
-
-on a search page will display either the image with an id of search,
-the first image found with an identifier starting with "display_" or
-the first image of the article.
-
-Possible match operators are:
-
-=over
-
-=item *
-
-/regexp/ - a regular expression matched against the image identifier
-
-=item *
-
-index - a numeric image index, where 1 is the first image
-
-=item *
-
-identifier - a literal image identifier
+=item * tag filters - filtering on tags (articles only)
 
 =back
 
-=item dgthumbimage geometry name field
+=head3 Code filters
 
-=item dgthumbimage geometry name
+Specified as:
 
-Format a thumbnail for a global image, in dynamic context.
+=over
+
+C<< filter: I<perl code> >>
+
+=back
+
+The text C<ARTICLE> is replaced with the article being tested.
+
+The text C<<[I<column-name>]>> is replaced with that attribute of the
+article.
+
+=head3 Tag filters
+
+Should be a simple [] expression specifying the tags to filter on:
+
+=over
+
+C<tags: [lcgi tags]>
 
 =back
 
 =cut
+
+my $cols_re; # cache for below
+
+sub _get_filter {
+  my ($self, $state, $rargs, $acts, $templater) = @_;
+
+  my %filter;
+
+  if ($$rargs =~ s/tags:\s*(.*)\z//s) {
+    my $expr = $1;
+    my @match = $templater->get_parms($expr, $acts);
+
+    # always add the tags filter even if no tags were listed
+    # this means the other tag stuff continues to work
+    my @tags = grep length, map split('/'), @match;
+
+    $filter{tags} = \@tags;
+  }
+
+  if ($$rargs =~ s/filter:\s+(.*)\z//s) {
+    my $expr = $1;
+    my $orig_expr = $expr;
+    unless ($cols_re) {
+      require Articles;
+      my $cols_expr = '(' . join('|', Article->columns) . ')';
+      $cols_re = qr/\[$cols_expr\]/;
+    }
+    $expr =~ s/$cols_re/\$article->{$1}/g;
+    $expr =~ s/ARTICLE/\$article/g;
+    #print STDERR "Expr $expr\n";
+    my $filter;
+    $filter = eval 'sub { my $article = shift; '.$expr.'; }';
+    if ($@) {
+      print STDERR "** Failed to compile filter expression >>$expr<< built from >>$orig_expr<<\n";
+      return;
+    }
+
+    $filter{code} = $filter;
+  }
+
+  return \%filter;
+}
+
+sub _do_filter {
+  my ($self, $state, $filter, $articles) = @_;
+
+  $filter
+    or return $articles;
+
+  if (my $code = delete $filter->{code}) {
+    $articles = [ grep $code->($_), @$articles ];
+  }
+
+  if (my $tags = delete $filter->{tags}) {
+    my @out;
+    my %extras;
+
+  ARTICLE:
+    for my $art (@$articles) {
+      my %tags = map { $_ => 1 } $art->tags;
+      for my $tag (@$tags) {
+	$tags{$tag}
+	  or next ARTICLE;
+	delete $tags{$tag};
+      }
+      push @out, $art;
+      ++$extras{$_} for keys %tags; # as long as they exist
+    }
+    $self->{tags}{$state->{plural}} = \%extras;
+
+    $articles = \@out;
+  }
+
+  return $articles;
+}
+
+my $paged_re =
+  qr(
+      \bpaged:
+	(?:(\w+)=)?  # optional per page variable
+	([0-9]+)?    # optional per page default
+	(?:,(\w+))?  # optional page selector
+   )x;
+
+sub _get_paged {
+  my ($self, $state, $rargs) = @_;
+
+  my $paged;
+  if ($$rargs =~ s/$paged_re//) {
+    $paged =
+      {
+       pp => $1 || "pp",
+       perpage => $2 || 20,
+       p => $3 || "p",
+      };
+  }
+
+  return $paged;
+}
+
+sub _do_paged {
+  my ($self, $state, $paged, $articles) = @_;
+
+  $state->{totalcount} = @$articles;
+
+  unless ($paged) {
+    $state->{page} = 1;
+    $state->{pagecount} = 1;
+    $state->{poffset} = 0;
+    $state->{perpage} = @$articles;
+    $state->{nextpage} = '';
+    $state->{prevpage} = '';
+    $state->{firstnumber} = 1;
+    $state->{lastnumber} = @$articles;
+    return $articles;
+  }
+
+  my ($page) = $self->cgi->param($paged->{p});
+  defined $page or $page = 1;
+  $page =~ /^[0-9]+$/ or $page = 1;
+  $page >= 1 or $page = 1;
+
+  my ($pp) = $self->cgi->param($paged->{pp});
+  defined $pp or $pp = $paged->{perpage};
+  $pp =~ /^[0-9]+$/ or $pp = 20;
+  $pp = int($pp);
+  $pp >= 1 or $pp = 20;
+  $state->{perpage} = $pp;
+
+  $state->{pagecount} = int((@$articles + $pp - 1) / $pp);
+  $state->{pagecount} == 0 and $state->{pagecount} = 1;
+  $page <= $state->{pagecount} or $page = $state->{pagecount};
+
+  $state->{page} = $page;
+  $state->{nextpage} = $page < $state->{pagecount} ? $page + 1 : '';
+  $state->{prevpage} = $page > 1 ? $page - 1 : '';
+  $state->{poffset} = ($page - 1) * $pp;
+  $state->{firstnumber} = 1 + $state->{poffset};
+  my $end = $state->{poffset} + $pp - 1;
+  $state->{lastnumber} = 1 + $end;
+  $end < @$articles or $end = $#$articles;
+
+  return [ @$articles[$state->{poffset} .. $end] ];
+}
+
+=head2 Common dynamic iterator tags
+
+=over
+
+=item *
+
+I<single> I<field> - access to the fields of the current item in the
+iteration.
+
+=item *
+
+I<single>C<_index> - the current index (zero-based) of the iteration.
+
+=item *
+
+I<single>C<_number> - the current number (one-based) of the iteration.
+
+=item *
+
+I<single>C<_count> I<...> - the number of items matched
+
+=item *
+
+C<if>I<Plural> I<...> - test if there are any items matched.
+
+=item *
+
+C<ifLast>I<Single> - test if this is the last item in the iteration.
+
+=item *
+
+C<ifFirst>I<Single> - test if this is the first item in the iteration.
+
+=item *
+
+C<next_>I<single> I<field> - retrieve values from the next item in the
+iteration.
+
+=item *
+
+C<previous_>I<single> I<field> - retrieve values from the previous
+item in the iteration.
+
+=item *
+
+C<ifNext>I<Single> - test if there is a next item in the iteration.
+
+=item *
+
+C<ifPrevious>I<Single> - test if there is a previous item in the
+iteration.
+
+=back
+
+For article iterators only:
+
+=over
+
+=item *
+
+C<move_>I<single> - in admin mode, a UI element to allow the article
+to be moved up/down one position.
+
+=back
+
+=cut
+
+sub _dyn_iterate_populate {
+  my ($self, $state, $args, $acts, $name, $templater) = @_;
+
+  my $method = "iter_$state->{plural}";
+  my $paged = $self->_get_paged($state, \$args);
+  local $self->{filter} = $self->_get_filter($state, \$args, $acts, $templater);
+  my $items = $self->_do_filter
+    ($state, $self->{filter}, $self->$method
+     ($state->{context}, $args, $acts, $templater, $state));
+
+  return $self->_do_paged($state, $paged, $items);
+}
+
+sub _dyn_iterate_reset {
+  my ($self, $state, $args, $acts, $name, $templater) = @_;
+
+  my $rindex = $state->{rindex};
+  my $rdata = $state->{rdata};
+  $$rdata = $self->_dyn_iterate_populate($state, $args, $acts, $name, $templater);
+  $$rindex = -1;
+
+  $state->{previous} = undef;
+  $state->{item} = undef;
+  if (@$$rdata) {
+    $state->{next} = $$rdata->[0];
+  }
+  else {
+    $state->{next} = undef;
+  }
+
+  1;
+}
+
+sub _dyn_iterate {
+  my ($self, $state) = @_;
+
+  my $rindex = $state->{rindex};
+  my $rdata = $state->{rdata};
+  my $single = $state->{single};
+  if (++$$rindex < @$$rdata) {
+    $state->{previous} = $state->{item};
+    $state->{item} = $state->{next};
+    if ($$rindex < $#$$rdata) {
+      $state->{next} = $$rdata->[$$rindex+1];
+    }
+    else {
+      $state->{next} = undef;
+    }
+    $self->{req}->set_article("previous_$single" => $state->{previous});
+    $self->{req}->set_article($single => $state->{item});
+    $self->{req}->set_article("next_$single" => $state->{next});
+    $self->{current}{$state->{plural}} = $state->{item};
+    return 1;
+  }
+  else {
+    $self->{req}->set_article($single => undef);
+    $self->{current}{$state->{plural}} = undef;
+    return;
+  }
+}
+
+sub _dyn_item_low {
+  my ($self, $item, $args) = @_;
+
+  $item or return '';
+  my $value = $item->{$args};
+  defined $value 
+    or return '';
+
+  return escape_html($value);
+}
+
+sub _dyn_item {
+  my ($self, $state, $args) = @_;
+
+  my $rindex = $state->{rindex};
+  my $rdata = $state->{rdata};
+  my $item = $state->{item};
+  unless ($state->{item}) {
+    return "** $state->{single} only usable inside iterator $state->{plural} **";
+  }
+
+  return $self->_dyn_item_low($item, $args);
+}
+
+sub _dyn_next {
+  my ($self, $state, $args) = @_;
+
+  return $self->_dyn_item_low($state->{next}, $args);
+}
+
+sub _dyn_previous {
+  my ($self, $state, $args) = @_;
+
+  return $self->_dyn_item_low($state->{previous}, $args);
+}
+
+sub _dyn_item_object_low {
+  my ($self, $item, $args, $state) = @_;
+
+  $item
+    or return '';
+  $item->can($args)
+    or return "* $args not valid for $state->{single} *";
+  my $value = $item->$args;
+  defined $value 
+    or return '';
+
+  return escape_html($value);
+}
+
+sub _dyn_item_object {
+  my ($self, $state, $args) = @_;
+
+  unless ($state->{item}) {
+    return "** $state->{single} only usable inside iterator $state->{plural} **";
+  }
+
+  return $self->_dyn_item_object_low($state->{item}, $args, $state);
+}
+
+sub _dyn_next_obj {
+  my ($self, $state, $args) = @_;
+
+  return $self->_dyn_item_object_low($state->{next}, $args, $state);
+}
+
+sub _dyn_previous_obj {
+  my ($self, $state, $args) = @_;
+
+  return $self->_dyn_item_object_low($state->{previous}, $args, $state);
+}
+
+sub _dyn_ifNext {
+  my ($self, $state) = @_;
+
+  return defined $state->{next};
+}
+
+sub _dyn_ifPrevious {
+  my ($self, $state) = @_;
+
+  return defined $state->{previous};
+}
+
+sub _dyn_article {
+  my ($self, $state, $args) = @_;
+
+  my $rindex = $state->{rindex};
+  my $rdata = $state->{rdata};
+  unless ($state->{item}) {
+    return "** $state->{single} only usable inside iterator $state->{plural} **";
+  }
+
+  my $item = $state->{item}
+    or return '';
+
+  return tag_article($item, $self->{req}->cfg, $args);
+}
+
+sub _dyn_next_article {
+  my ($self, $state, $args) = @_;
+
+  $state->{next} or return '';
+
+  return tag_article($state->{next}, $self->{req}->cfg, $args);
+}
+
+sub _dyn_previous_article {
+  my ($self, $state, $args) = @_;
+
+  $state->{previous} or return '';
+
+  return tag_article($state->{previous}, $self->{req}->cfg, $args);
+}
+
+sub _dyn_index {
+  my ($self, $state) = @_;
+
+  my $rindex = $state->{rindex};
+  if ($$rindex < 0 || $$rindex >= @${$state->{rdata}}) {
+    return "** $state->{single} only valid inside iterator **";
+  }
+
+  return $state->{poffset} + $$rindex;
+}
+
+sub _dyn_number {
+  my ($self, $state) = @_;
+
+  my $rindex = $state->{rindex};
+  if ($$rindex < 0 || $$rindex >= @${$state->{rdata}}) {
+    return "** $state->{single} only valid inside iterator **";
+  }
+
+  return $state->{poffset} + 1 + $$rindex;
+}
+
+sub _dyn_count {
+  my ($self, $state, $args, $acts, $name, $templater) = @_;
+
+  my $data = $self->_dyn_iterate_populate($state, $args, $acts, $name, $templater);
+
+  return scalar @$data;
+}
+
+sub _dyn_if_first {
+  my ($self, $rindex, $rdata) = @_;
+
+  $$rindex == 0;
+}
+
+sub _dyn_if_last {
+  my ($self, $rindex, $rdata) = @_;
+
+  $$rindex == $#$$rdata;
+}
+
+sub dyn_iterator {
+  my ($self, $plural, $single, $context, $rindex, $rdata) = @_;
+
+  my $method = $plural;
+  my $index;
+  defined $rindex or $rindex = \$index;
+  my $data;
+  defined $rdata or $rdata = \$data;
+  my %state =
+    (
+     plural => $plural,
+     single => $single,
+     rindex => $rindex,
+     rdata => $rdata,
+     context => $context,
+     poffset => 0,
+    );
+  return
+    (
+     "iterate_${plural}_reset" =>
+     [ _dyn_iterate_reset => $self, \%state ],
+     "iterate_$plural" =>
+     [ _dyn_iterate => $self, \%state ],
+     $single => 
+     [ _dyn_item => $self, \%state ],
+     "${single}_index" =>
+     [ _dyn_index => $self, \%state ],
+     "${single}_number" =>
+     [ _dyn_number => $self, \%state ],
+     "${single}_count" =>
+     [ _dyn_count => $self, \%state ],
+     "if\u$plural" =>
+     [ _dyn_count => $self, \%state ],
+     "ifLast\u$single" => [ _dyn_if_last => $self, $rindex, $rdata ],
+     "ifFirst\u$single" => [ _dyn_if_first => $self, $rindex, $rdata ],
+     "next_$single" => [ _dyn_next => $self, \%state ],
+     "previous_$single" => [ _dyn_previous => $self, \%state ],
+     "ifNext\u$single" => [ _dyn_ifNext => $self, \%state ],
+     "ifPrevious\u$single" => [ _dyn_ifPrevious => $self, \%state ],
+    );
+}
+
+sub dyn_iterator_obj {
+  my ($self, $plural, $single, $context, $rindex, $rdata) = @_;
+
+  my $method = $plural;
+  my $index;
+  defined $rindex or $rindex = \$index;
+  my $data;
+  defined $rdata or $rdata = \$data;
+  my %state =
+    (
+     plural => $plural,
+     single => $single,
+     rindex => $rindex,
+     rdata => $rdata,
+     context => $context,
+     poffset => 0,
+    );
+  return
+    (
+     "iterate_${plural}_reset" =>
+     [ _dyn_iterate_reset => $self, \%state ],
+     "iterate_$plural" =>
+     [ _dyn_iterate => $self, \%state ],
+     $single => 
+     [ _dyn_item_object => $self, \%state ],
+     "${single}_index" =>
+     [ _dyn_index => $self, \%state ],
+     "${single}_number" =>
+     [ _dyn_number => $self, \%state ],
+     "${single}_count" =>
+     [ _dyn_count => $self, \%state ],
+     "if\u$plural" =>
+     [ _dyn_count => $self, \%state ],
+     "ifLast\u$single" => [ _dyn_if_last => $self, $rindex, $rdata ],
+     "ifFirst\u$single" => [ _dyn_if_first => $self, $rindex, $rdata ],
+     "next_$single" => [ _dyn_next_obj => $self, \%state ],
+     "previous_$single" => [ _dyn_previous_obj => $self, \%state ],
+     "ifNext\u$single" => [ _dyn_ifNext => $self, \%state ],
+     "ifPrevious\u$single" => [ _dyn_ifPrevious => $self, \%state ],
+    );
+}
+
+sub _dyn_article_move {
+  my ($self, $state, $args, $acts, $func, $templater) = @_;
+
+  $state->{parentid}
+    or return '';
+
+  return $self->tag_dynmove($state->{rindex}, $state->{rdata},
+			    "stepparent=$state->{parentid}",
+			    $args, $acts, $templater);
+}
+
+sub dyn_article_iterator {
+  my ($self, $plural, $single, $context, $rindex, $rdata) = @_;
+
+  my $method = $plural;
+  my $index;
+  defined $rindex or $rindex = \$index;
+  my $data;
+  defined $rdata or $rdata = \$data;
+  my %state =
+    (
+     plural => $plural,
+     single => $single,
+     rindex => $rindex,
+     rdata => $rdata,
+     context => $context,
+     poffset => 0,
+    );
+  $self->{context}{$plural} = $context;
+
+  require BSE::Util::Iterate;
+  my $it = BSE::Util::Iterate->new;
+  return
+    (
+     "iterate_${plural}_reset" =>
+     [ _dyn_iterate_reset => $self, \%state ],
+     "iterate_$plural" =>
+     [ _dyn_iterate => $self, \%state],
+     $single => 
+     [ _dyn_article => $self, \%state ],
+     "${single}_index" =>
+     [ _dyn_index => $self, \%state ],
+     "${single}_number" =>
+     [ _dyn_number => $self, \%state ],
+     "${single}_count" =>
+     [ _dyn_count => $self, \%state ],
+     "if\u$plural" =>
+     [ _dyn_count => $self, \%state ],
+     "ifLast\u$single" => [ _dyn_if_last => $self, $rindex, $rdata ],
+     "ifFirst\u$single" => [ _dyn_if_first => $self, $rindex, $rdata ],
+     "next_$single" => [ _dyn_next_article => $self, \%state ],
+     "previous_$single" => [ _dyn_previous_article => $self, \%state ],
+     "ifNext\u$single" => [ _dyn_ifNext => $self, \%state ],
+     "ifPrevious\u$single" => [ _dyn_ifPrevious => $self, \%state ],
+     "move_$single" => [ _dyn_article_move => $self, \%state ],
+     "${plural}_page" => [ _dyn_state => $self, \%state, "page" ],
+     "${plural}_perpage" => [ _dyn_state => $self, \%state, "perpage" ],
+     "${plural}_nextpage" => [ _dyn_state => $self, \%state, "nextpage" ],
+     "${plural}_prevpage" => [ _dyn_state => $self, \%state, "prevpage" ],
+     "${plural}_pagecount" => [ _dyn_state => $self, \%state, "pagecount" ],
+     "${single}_totalcount" => [ _dyn_state => $self, \%state, "totalcount" ],
+     "${plural}_firstnumber" => [ _dyn_state => $self, \%state, "firstnumber" ],
+     "${plural}_lastnumber" => [ _dyn_state => $self, \%state, "lastnumber" ],
+     $it->make
+     (
+      single => "${single}_pagec",
+      plural => "${plural}_pagec",
+      code => [ _dyn_iter_pages => $self, \%state ],
+     ),
+    );
+}
+
+sub _dyn_state {
+  my ($self, $state, $name) = @_;
+
+  return $state->{$name};
+}
+
+sub _dyn_iter_pages {
+  my ($self, $state) = @_;
+
+  my @pages;
+  for my $page (1 .. $state->{pagecount}) {
+    push @pages,
+      {
+       page => $page,
+       first => $page == 1,
+       last => $page == $state->{pagecount},
+       current => $page == $state->{page},
+       next => $page == $state->{pagecount} ? '' : $page+1,
+       prev => $page == 1 ? '' : $page-1,
+      };
+  }
+
+  return @pages;
+}
+
+sub get_cached {
+  my ($self, $id) = @_;
+
+  return $self->{_cache}{$id};
+}
+
+sub set_cached {
+  my ($self, $id, $value) = @_;
+
+  $self->{_cache}{$id} = $value;
+}
+
+sub _cart {
+  my ($self) = @_;
+
+  my $dyncart = $self->get_cached('cart');
+  $dyncart and return $dyncart;
+
+  my $cart = $self->{req}->session->{cart}
+    or return { cart => [], total_cost => 0, total_units => 0 };
+
+  my @cart;
+  my $total_cost = 0;
+  my $total_units = 0;
+  for my $item (@$cart) {
+    require Products;
+    my $product = Products->getByPkey($item->{productId});
+    my $extended = $product->price(user => scalar $self->{req}->siteuser) 
+      * $item->{units};
+    my $link = $product->link;
+    $link =~ /^\w+:/ 
+      or $link = $self->{req}->cfg->entryErr('site', 'url') . $link;
+    push @cart,
+      {
+       ( map { $_ => $product->{$_} } $product->columns ),
+       %$item,
+       extended => $extended,
+       link => $link,
+      };
+    $total_cost += $extended;
+    $total_units += $item->{units};
+  }
+  my $result = 
+    {
+     cart => \@cart,
+     total_cost => $total_cost,
+     total_units => $total_units,
+    };
+  $self->set_cached(cart => $result);
+
+  return $result;
+}
+
+1;
+

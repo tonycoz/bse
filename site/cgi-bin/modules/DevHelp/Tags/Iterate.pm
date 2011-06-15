@@ -2,7 +2,7 @@ package DevHelp::Tags::Iterate;
 use strict;
 use Carp qw(confess);
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 sub new {
   my ($class, %opts) = @_;
@@ -284,7 +284,7 @@ sub make_paged {
   my $perpage = ref $state{perpage_parm} ? ${$state{perpage_parm}} : $state{perpage_parm};
   unless ($perpage =~ /^\d+$/) {
     my ($name, $count) = $perpage =~ /^(\w+)=(\d+)$/
-      or confess "Invalid perpage '$perpage'";
+      or confess "Invalid perpage_parm '$perpage'";
     $name ||= 'pp';
     $count ||= 10;
     my $work = $state{cgi}->param($name);

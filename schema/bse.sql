@@ -1,3 +1,6 @@
+drop table if exists bse_tag_members;
+drop table if exists bse_tags;
+
 -- represents sections, articles
 DROP TABLE IF EXISTS article;
 CREATE TABLE article (
@@ -1272,3 +1275,25 @@ create table bse_price_tier_prices (
   unique tier_product(tier_id, product_id)
 );
 
+create table bse_tags (
+  id integer not null auto_increment primary key,
+
+  -- typically "BA" for BSE article
+  owner_type char(2) not null,
+  cat varchar(80) not null,
+  val varchar(80) not null,
+
+  unique cat_val(owner_type, cat, val)
+);
+
+create table bse_tag_members (
+  id integer not null auto_increment primary key,
+
+  -- typically BA for BSE article
+  owner_type char(2) not null,
+  owner_id integer not null,
+  tag_id integer not null,
+
+  unique art_tag(owner_id, tag_id),
+  index by_tag(tag_id)
+);

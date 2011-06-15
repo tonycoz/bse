@@ -74,6 +74,36 @@ description: Article editor messages
 id: bse/admin/edit/uplabelsect
 description: label in parent list to make article a section
 
+id: bse/admin/edit/tags/
+description: System tags management
+
+id: bse/admin/edit/tags/saved
+description: flashed when a tag is renamed successfully.  $1 - old name, $2 - new name
+
+id: bse/admin/edit/tags/removed
+description: flashed when a tag is removed successfully.  $1 - tag name
+
+id: bse/admin/edit/tags/cleanup
+description: flashed after tags are cleaned up
+
+id: bse/admin/edit/tags/invalid_empty
+description: field error if the tag name is empty
+
+id: bse/admin/edit/tags/invalid_badchars
+description: field error if the tag name contains invalid characters
+
+id: bse/admin/edit/tags/bad_id
+description: tag_id field error if the tag id isn't present or isn't numeric
+
+id: bse/admin/edit/tags/unknown
+description: tag_id field error if the tag id supplied doesn't exist
+
+id: bse/admin/edit/tags/duplicate
+description: name field error if you try to rename a tag to match another
+
+id: bse/admin/edit/tags/nochange
+description: name field error if no change is saved
+
 id: bse/admin/shop/
 description: Shop Administration
 

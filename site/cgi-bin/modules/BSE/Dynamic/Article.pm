@@ -5,7 +5,7 @@ use BSE::Template;
 use BSE::Util::HTML;
 use base qw(BSE::Util::DynamicTags);
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub new {
   my ($class, $req, %opts) = @_;
@@ -23,6 +23,7 @@ sub new {
 sub generate {
   my ($self, $article, $template) = @_;
 
+  $self->{article} = $article;
   my %acts;
   if ($self->{admin}) {
     %acts = ( $self->tags($article), BSE::Util::Tags->secure($self->{req}) );
@@ -48,6 +49,10 @@ sub generate {
   $result->{headers} = \@headers;
 
   return $result;
+}
+
+sub article {
+  $_[0]{article};
 }
 
 sub tags {

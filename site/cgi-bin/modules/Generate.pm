@@ -11,7 +11,7 @@ use BSE::Util::Iterate;
 use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 my $excerptSize = 300;
 
@@ -865,7 +865,8 @@ sub baseActs {
      sub {
        my ($name, $acts, $func, $templater) = @_;
        my $item = $self->{admin_links} ? 'admin' : 'link';
-       $acts->{$name} or return "<:url $name:>";
+       $acts->{$name}
+	 or die "ENOIMPL\n";
        my $url = $templater->perform($acts, $name, $item);
        if (!$self->{admin} && $self->{admin_links}) {
 	 $url .= $url =~ /\?/ ? "&" : "?";

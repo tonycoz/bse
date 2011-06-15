@@ -2,7 +2,7 @@ package BSE::Dynamic::Catalog;
 use strict;
 use base 'BSE::Dynamic::Article';
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 # no specific behavious yet
 
@@ -16,12 +16,12 @@ sub tags {
   return
     (
      $self->SUPER::tags($article),
-     $self->dyn_article_iterator('dynallprods', 'dynallprod', $article,
+     $self->dyn_article_iterator('dynallprods', 'dynallprod', undef,
 				 \$allprod_index, \$allprod_data),
      dynmoveallprod =>
      [ tag_dynmove => $self, \$allprod_index, \$allprod_data, 
        "stepparent=$article->{id}" ],
-     $self->dyn_article_iterator('dynallcats', 'dynallcat', $article,
+     $self->dyn_article_iterator('dynallcats', 'dynallcat', undef,
 				 \$allcat_index, \$allcat_data),
      dynmoveallcat =>
      [ tag_dynmove => $self, \$allcat_index, \$allcat_data,
@@ -31,13 +31,13 @@ sub tags {
 }
 
 sub iter_dynallprods {
-  my ($self, $article, $args) = @_;
+  my ($self, $unused, $args) = @_;
 
   my $result = $self->get_cached('dynallprods');
   $result
     and return $result;
 
-  $result = $self->access_filter($article->all_visible_products);
+  $result = $self->access_filter($self->article->all_visible_products);
 
   $self->set_cached(dynallprods => $result);
 
@@ -45,13 +45,13 @@ sub iter_dynallprods {
 }
 
 sub iter_dynallcats {
-  my ($self, $article, $args) = @_;
+  my ($self, $unused, $args) = @_;
 
   my $result = $self->get_cached('dynallcats');
   $result
     and return $result;
 
-  $result = $self->access_filter($article->all_visible_catalogs);
+  $result = $self->access_filter($self->article->all_visible_catalogs);
 
   $self->set_cached(dynallcats => $result);
 

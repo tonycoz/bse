@@ -3,11 +3,12 @@ use strict;
 # represents an article from the database
 use Squirrel::Row;
 use BSE::TB::SiteCommon;
+use BSE::TB::TagOwner;
 use vars qw/@ISA/;
-@ISA = qw/Squirrel::Row BSE::TB::SiteCommon/;
+@ISA = qw/Squirrel::Row BSE::TB::SiteCommon BSE::TB::TagOwner/;
 use Carp 'confess';
 
-our $VERSION = "1.003";
+our $VERSION = "1.005";
 
 sub columns {
   return qw/id parentid displayOrder title titleImage body
@@ -187,6 +188,8 @@ sub remove {
 
   $cfg or confess "No \$cfg supplied to ", ref $self, "->remove";
 
+  $self->remove_tags;
+
   $self->remove_images($cfg);
 
   for my $file ($self->files) {
@@ -290,6 +293,10 @@ sub is_linked {
   my ($self) = @_;
 
   return $self->flags !~ /D/;
+}
+
+sub tag_owner_type {
+  return "BA";
 }
 
 1;
