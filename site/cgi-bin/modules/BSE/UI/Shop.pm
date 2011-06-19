@@ -17,7 +17,7 @@ use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 
-our $VERSION = "1.017";
+our $VERSION = "1.018";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -1196,6 +1196,7 @@ sub req_orderdone {
   my $location;
   require BSE::Util::Iterate;
   my $it = BSE::Util::Iterate::Objects->new(cfg => $req->cfg);
+  my $message = $req->message();
   my %acts;
   %acts =
     (
@@ -1251,7 +1252,7 @@ sub req_orderdone {
      #ifSubscribingTo => [ \&tag_ifSubscribingTo, \%subscribing_to ],
      session => [ \&tag_session, \$item, \$sem_session ],
      location => [ \&tag_location, \$item, \$location ],
-     msg => '',
+     msg => $message,
      delivery_in => $order->{delivery_in},
      shipping_cost => $order->{shipping_cost},
      shipping_method => $order->{shipping_method},
@@ -1449,8 +1450,9 @@ sub _send_order {
       $mailer->encrypt_body(%crypt_opts);
     }
 
-    $mailer->done
-      or print STDERR "Error sending order to admin: ",$mailer->errstr,"\n";
+    unless ($mailer->done) {
+      $req->flash_error("Could not mail order to admin: " . $mailer->errstr);
+    }
 
     delete @acts{qw/cardNumber cardExpiry cardVerify/};
   }

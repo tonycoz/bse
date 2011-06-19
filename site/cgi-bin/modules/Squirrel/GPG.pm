@@ -3,7 +3,7 @@ use strict;
 use IO::File;
 use POSIX ();
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub new {
   return bless {}, $_[0];
@@ -31,6 +31,8 @@ sub encrypt {
 sub _encrypt {
   my ($self, $recips, $data, %opts) = @_;
 
+  $self->{dump} = '';
+  $self->{debug} = $opts{debug};
   my @recips = ref $recips ? @$recips : ( $recips );
   my $cmd = $opts{gpg} || 'gpg';
   $cmd .= ' ';
@@ -49,67 +51,104 @@ sub _encrypt {
     $cmd .= "-r '$_' ";
   }
   $cmd .= "--no-tty ";
-  # do the deed
-  my $child = open CHILD, "-|";
-  defined $child or do { $self->{error} = "Cannot fork: $!"; return };
-  unless ($child) {
-    $cmd .= "--passphrase-fd 0 " if $opts{sign};
-    if ($opts{home}) {
-      $ENV{HOME} = $opts{home};
+  $cmd .= "--passphrase-fd 0 " if $opts{sign};
+
+  my $home = $ENV{HOME};
+  local $ENV{HOME} = $home;
+
+  if ($opts{home}) {
+    $ENV{HOME} = $opts{home};
+  }
+  else {
+    my @uinfo = getpwuid $<;
+    if (@uinfo) {
+      $ENV{HOME} = $uinfo[7];
+      $self->_debug("HOME set to $ENV{HOME}\n");
     }
     else {
-      my @uinfo = getpwuid $<;
-      if (@uinfo) {
-        $ENV{HOME} = $uinfo[7];
-        print STDERR "HOME set to $ENV{HOME}\n" if $opts{debug};
+      $self->_debug("Could not get user info for $<\n");
+    }
+  }
+
+  $self->_debug("GPG command: $cmd\n");
+  if (eval { require IPC::Run; 1;}) {
+    require Text::ParseWords;
+    my @cmd = Text::ParseWords::shellwords($cmd);
+    my $in  = '';
+    if ($opts{sign}) {
+      $in = $opts{passphrase};
+    }
+    my ($out, $err) = ("", "");
+    my $run = IPC::Run::run(\@cmd, \$in, \$out, \$err);
+    $self->{dump} .= $err;
+    if ($run) {
+      return $out;
+    }
+    else {
+      ($self->{error}) = split /\n/, $err;
+      $self->{error} ||= "Unknown error";
+      return;
+    }
+  }
+  else {
+    # do the deed
+    my $child = open CHILD, "-|";
+    defined $child or do { $self->{error} = "Cannot fork: $!"; return };
+    unless ($child) {
+      if (open PGP, "| $cmd 2>&1") {
+	select(PGP); $| = 1; select(STDOUT);
+	print PGP $opts{passphrase}, "\n" if $opts{sign};
+	print PGP $data;
+	close PGP
+	  or do { print "*ERROR* $?/$!\n"; POSIX::_exit(1); };
       }
       else {
-        print STDERR "Could not get user info for $<\n" if $opts{debug};
+	++$|;
+	print "*ERROR* $!\n";
+	POSIX::_exit(1);
       }
+      
+      POSIX::_exit(0); # finish the child
     }
-    print STDERR "GPG command: $cmd\n" if $opts{debug};
-    if (open PGP, "| $cmd 2>&1") {
-      select(PGP); $| = 1; select(STDOUT);
-      print PGP $opts{passphrase}, "\n" if $opts{sign};
-      print PGP $data;
-      close PGP
-	or do { print "*ERROR* $?/$!\n"; POSIX::_exit(1); };
+    
+    # ... and back in the parent process
+    my @data = <CHILD>;
+    my $result = close CHILD;
+    print STDERR "GPG Output", @data if $opts{debug};
+    if ($opts{stripwarn} && $data[0] =~ /^\w+: Warning:/) {
+      shift @data;
     }
-    else {
-      ++$|;
-      print "*ERROR* $!\n";
-      POSIX::_exit(1);
-    }
-
-    POSIX::_exit(0); # finish the child
-  }
-
-  # ... and back in the parent process
-  my @data = <CHILD>;
-  my $result = close CHILD;
-  print STDERR "GPG Output", @data if $opts{debug};
-  if ($opts{stripwarn} && $data[0] =~ /^\w+: Warning:/) {
-    shift @data;
-  }
-  if (!$result) {
-    # something went wrong, try to figure out what
-    if ($? >> 8) {
-      # first child returned non-zero
-      my @errors = grep /^\*ERROR*/, @data;
-      if (@errors) {
-	$self->{error} = substr($errors[0], 7);
+    if (!$result) {
+      # something went wrong, try to figure out what
+      if ($? >> 8) {
+	# first child returned non-zero
+	my @errors = grep /^\*ERROR*/, @data;
+	if (@errors) {
+	  $self->{error} = substr($errors[0], 7);
+	}
+	else {
+	  $self->{error} = "Unknown error";
+	}
       }
       else {
-	$self->{error} = "Unknown error";
+	$self->{error} = "Unknown error: $!";
       }
+      return undef;
     }
-    else {
-      $self->{error} = "Unknown error: $!";
-    }
-    return undef;
-  }
 
-  return join('', @data);
+    return join('', @data);
+  }
+}
+
+sub _debug {
+  my ($self, $msg) = @_;
+
+  print STDERR $msg if $self->{debug};
+  $self->{dump} .= $msg;
+}
+
+sub dump {
+  return $_[0]{dump};
 }
 
 1;

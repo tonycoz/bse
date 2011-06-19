@@ -5,7 +5,7 @@ use BSE::Mail;
 use Carp 'confess';
 use Digest::MD5 qw(md5_hex);
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 =head1 NAME
 
@@ -427,6 +427,8 @@ sub done {
     my $text_type = 'text/plain';
     if ($self->{encrypt}) {
       $content = $self->_encrypt($content, \$text_type);
+      $content
+	or return;
     }
     $message = $self->_build_internal($content, $text_type, \@headers);
   }
@@ -546,8 +548,21 @@ sub _encrypt {
 
   my $recip = $self->{crypt_recipient} || $self->{to};
 
-  my $result = $encryptor->encrypt($recip, $content, %opts)
-    or die "Cannot encrypt ",$encryptor->error;
+  my $result = $encryptor->encrypt($recip, $content, %opts);
+  unless ($result) {
+    my $dump = $encryptor->can("dump") ? $encryptor->dump : "See error log";
+    require BSE::TB::AuditLog;
+    BSE::TB::AuditLog->log
+	(
+	 %{$self->{log}},
+	 msg => "Error encrypting content: " . $encryptor->error,
+	 level => "crit",
+	 component => "composemail:done:encrypt",
+	 dump => $dump,
+	);
+    $self->{errstr} = "Error encrypting: " . $encryptor->error;
+    return;
+  }
 
   if ($cfg->entry('shop', 'crypt_content_type', 0)) {
     $$rtype = 'application/pgp; format=text; x-action=encrypt';
