@@ -17,7 +17,7 @@ use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 
-our $VERSION = "1.016";
+our $VERSION = "1.017";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -968,6 +968,7 @@ sub req_payment {
     }
     if ($order && !$order->{complete}) {
       my @columns = BSE::TB::Order->columns;
+      shift @columns; # don't set id
       my %columns; 
       @columns{@columns} = @columns;
       
