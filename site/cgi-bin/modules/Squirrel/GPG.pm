@@ -3,7 +3,7 @@ use strict;
 use IO::File;
 use POSIX ();
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub new {
   return bless {}, $_[0];
@@ -76,8 +76,9 @@ sub _encrypt {
     my @cmd = Text::ParseWords::shellwords($cmd);
     my $in  = '';
     if ($opts{sign}) {
-      $in = $opts{passphrase};
+      $in = $opts{passphrase} . "\n";
     }
+    $in .= $data;
     my ($out, $err) = ("", "");
     my $run = IPC::Run::run(\@cmd, \$in, \$out, \$err);
     $self->{dump} .= $err;
