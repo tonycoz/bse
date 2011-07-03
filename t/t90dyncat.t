@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests => 83;
+use Test::More tests => 86;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
@@ -163,6 +163,9 @@ bse_add_step_child
     my @tags = sort $prods{$key}->tags;
     is_deeply(\@set, \@tags, "check tags set for $key");
   }
+
+  my $error;
+  $parent->set_tags([ "Brand: Foo", "Class: Network" ], \$error);
 }
 
 dyn_template_test "dynallprods", $parent, <<TEMPLATE, <<EXPECTED;
@@ -182,6 +185,12 @@ $prods[7]{id}
 $prods[8]{id}
 $prods[9]{id}
 
+EXPECTED
+
+dyn_template_test "article tags", $parent, <<TEMPLATE, <<EXPECTED;
+<:dynarticle tags:>
+TEMPLATE
+Brand: Foo/Class: Network
 EXPECTED
 
 dyn_template_test "dynallprods tag filter", $parent, <<TEMPLATE, <<EXPECTED;
