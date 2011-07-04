@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests => 86;
+use Test::More tests => 92;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
@@ -263,6 +263,47 @@ Size:
  Small (1)
 
 EXPECTED
+
+dyn_template_test "unused tags unfiltered", $parent, <<TEMPLATE, <<EXPECTED;
+<:iterator begin dynunused_tagcats dynallprods tags: "" :><:
+ifDynunused_tagcat nocat:><:or:><:
+dynunused_tagcat name:>:
+<:eif
+:><:iterator begin dynunused_tags:> <:dynunused_tag val:> (<:dynunused_tag count:>)
+<:iterator end dynunused_tags:><:iterator end dynunused_tagcats :>
+TEMPLATE
+ ABC (2)
+ XYZ (1)
+Colour:
+ Black (1)
+ Blue (3)
+ Green (3)
+ Purple (1)
+ Red (3)
+Size:
+ Large (3)
+ Medium (4)
+ Small (3)
+
+EXPECTED
+
+dyn_template_test "unused tags cat filtered", $parent, <<TEMPLATE, <<EXPECTED;
+<:iterator begin dynunused_tagcats dynallprods category:"Colour" tags: "" :><:
+ifDynunused_tagcat nocat:><:or:><:
+dynunused_tagcat name:>:
+<:eif
+:><:iterator begin dynunused_tags:> <:dynunused_tag val:> (<:dynunused_tag count:>)
+<:iterator end dynunused_tags:><:iterator end dynunused_tagcats :>
+TEMPLATE
+Colour:
+ Black (1)
+ Blue (3)
+ Green (3)
+ Purple (1)
+ Red (3)
+
+EXPECTED
+
 
 dyn_template_test "dyntags", $parent, <<TEMPLATE, <<EXPECTED;
 <:iterator begin dyntags "Size:  Small/Colour: Red/XYZ" :><:

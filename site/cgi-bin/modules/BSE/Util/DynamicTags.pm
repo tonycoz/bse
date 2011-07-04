@@ -6,7 +6,7 @@ use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 use BSE::CfgInfo qw(custom_class);
 
-our $VERSION = "1.017";
+our $VERSION = "1.018";
 
 =head1 NAME
 
@@ -605,6 +605,9 @@ a category.
 If a parameter "onlyone" is supplied then the list of tag categories
 will not include tag categories that appear in the tags filter.
 
+If a filter C<<category: I<expression> >> is supplied, then only
+category names matching I<expression> will be included.
+
 Each entry has:
 
 =over
@@ -635,6 +638,11 @@ sub iter_dynunused_tagcats {
   }
 
   my $only_one = $args =~ s/^\s*onlyone\s+//;
+
+  my $only_cat;
+  if ($args =~ s/\bcategory:\s*(.*)$//) {
+    ($only_cat) = $templater->get_parms($1, $acts);
+  }
 
   my $context = $self->{context}{$iter};
   my %state =
@@ -667,22 +675,24 @@ sub iter_dynunused_tagcats {
       next TAG;
     }
 
-    unless ($cats{$ind}) {
-      $cats{$ind} =
+    if (!$only_cat || $cat =~ /$only_cat/) {
+      unless ($cats{$ind}) {
+	$cats{$ind} =
+	  {
+	   name => $cat,
+	   ind => $ind,
+	   vals => [],
+	   nocat => (length($cat) == 0),
+	  };
+      }
+      push @{$cats{$ind}{vals}}, 
 	{
-	 name => $cat,
-	 ind => $ind,
-	 vals => [],
-	 nocat => (length($cat) == 0),
+	 name => $tag,
+	 val => $val,
+	 cat => $cat,
+	 count => $count,
 	};
     }
-    push @{$cats{$ind}{vals}}, 
-      {
-       name => $tag,
-       val => $val,
-       cat => $cat,
-       count => $count,
-      };
   }
 
   # sort each value set
