@@ -412,6 +412,11 @@ login name of the user.  BSE's back-end doesn't use this cookie, its
 only use is for Javascript to enable/disable user interface elements.
 Default: 1.
 
+=item dynamic_access_filter
+
+If set to 0, dynamic article iterators will no access control filter
+their results.  Default: 1.
+
 =back
 
 =head2 [mail]

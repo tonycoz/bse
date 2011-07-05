@@ -6,7 +6,7 @@ require BSE::TB::TagOwners;
 @ISA = qw(Squirrel::Table BSE::TB::TagOwners);
 use Article;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub rowClass {
   return 'Article';
@@ -83,6 +83,18 @@ sub all_visible_kids {
   my %kids = map { $_->{id}, $_ } @stepkids, @normalkids;
 
   return @kids{ sort { $order{$b} <=> $order{$a} } keys %kids };
+}
+
+sub all_visible_kid_tags {
+  my ($self, $id) = @_;
+
+  require BSE::TB::Tags;
+  require BSE::TB::TagMembers;
+  return
+    {
+     tags => [ BSE::TB::Tags->getSpecial(allkids => $id, $id) ],
+     members => [ BSE::TB::TagMembers->getSpecial(allkids => $id, $id) ],
+    };
 }
 
 sub global_files {

@@ -2,7 +2,7 @@ package BSE::Dynamic::Catalog;
 use strict;
 use base 'BSE::Dynamic::Article';
 
-our $VERSION = "1.001";
+our $VERSION = "1.003";
 
 # no specific behavious yet
 
@@ -42,6 +42,18 @@ sub iter_dynallprods {
   $self->set_cached(dynallprods => $result);
 
   return $result
+}
+
+sub tags_for_dynallprods {
+  my ($self) = @_;
+
+  my $result = $self->get_cached('dynallprods_tags');
+  unless ($result) {
+    $result = $self->article->all_visible_product_tags;
+    $self->set_cached(dynallprods_tags => $result);
+  }
+
+  return $result;
 }
 
 sub iter_dynallcats {

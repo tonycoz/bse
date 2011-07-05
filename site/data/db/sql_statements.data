@@ -514,3 +514,85 @@ sql_statement: <<SQL
 delete from bse_tags
 where id not in (select tag_id from bse_tag_members);
 SQL
+
+name: TagMembers.allprods
+sql_statement: <<SQL
+select *
+from bse_tag_members
+where owner_type = 'BA'
+  and owner_id in
+  (select id
+     from article
+     where parentid = ? 
+       and listed != 0
+       and generator = 'Generate::Product'
+  union
+   select op.childId
+     from other_parents op, article a
+      where op.parentId = ?
+        and op.childId = a.id
+        and a.generator = 'Generate::Product'
+   )
+SQL
+
+name: Tags.allprods
+sql_statement: <<SQL
+select distinct t.*
+from bse_tags t, bse_tag_members m
+where t.id = m.tag_id
+ and m.owner_type = 'BA'
+ and m.owner_id in
+  (select id
+     from article
+     where parentid = ? 
+       and listed <> 0
+       and generator = 'Generate::Product'
+  union
+   select op.childId
+     from other_parents op, article a
+      where op.parentId = ?
+        and op.childId = a.id
+	and a.listed <> 0
+        and a.generator = 'Generate::Product')
+SQL
+
+name: TagMembers.allkids
+sql_statement: <<SQL
+select *
+from bse_tag_members
+where owner_type = 'BA'
+  and owner_id in
+  (select id
+     from article
+     where parentid = ? 
+       and listed <> 0
+  union
+   select op.childId
+     from other_parents op, article a
+      where op.parentId = ?
+        and op.childId = a.id
+        and a.listed <> 0
+   )
+SQL
+
+name: Tags.allkids
+sql_statement: <<SQL
+select distinct t.*
+from bse_tags t, bse_tag_members m
+where t.id = m.tag_id
+ and m.owner_type = 'BA'
+ and m.owner_id in
+  (select id
+     from article
+     where parentid = ? 
+       and listed <> 0
+
+  union
+   select op.childId
+     from other_parents op, article a
+      where op.parentId = ?
+        and op.childId = a.id
+        and a.listed <> 0
+  )
+SQL
+

@@ -2,7 +2,7 @@ package BSE::TB::SiteCommon;
 use strict;
 use Carp qw(confess);
 
-our $VERSION = "1.000";
+our $VERSION = "1.003";
 
 sub step_parents {
   my ($self) = @_;
@@ -74,11 +74,24 @@ sub all_visible_kids {
   Articles->all_visible_kids($self->{id});
 }
 
+sub all_visible_kid_tags {
+  my ($self) = @_;
+
+  Articles->all_visible_kid_tags($self->{id});
+}
+
 sub all_visible_products {
   my ($self) = @_;
 
   require Products;
   Products->all_visible_children($self->{id});
+}
+
+sub all_visible_product_tags {
+  my ($self) = @_;
+
+  require Products;
+  Products->all_visible_product_tags($self->{id});
 }
 
 sub all_visible_catalogs {

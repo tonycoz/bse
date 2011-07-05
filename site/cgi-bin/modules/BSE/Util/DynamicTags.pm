@@ -6,7 +6,7 @@ use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 use BSE::CfgInfo qw(custom_class);
 
-our $VERSION = "1.018";
+our $VERSION = "1.024";
 
 =head1 NAME
 
@@ -23,7 +23,7 @@ BSE::Util::DynamicTags - common dynamic page tags for BSE.
 
   # in the page
 
-  <:usr userId:>
+  <:user userId:>
   ...
 
 =head1 DESCRIPTION
@@ -50,8 +50,6 @@ sub new {
 =item tags
 
 Returns the common tags.
-
-=back
 
 =cut
 
@@ -146,6 +144,8 @@ Return true if in admin mode.
 sub admin_mode {
   return 0;
 }
+
+=back
 
 =head1 COMMON DYNAMIC TAGS
 
@@ -407,8 +407,49 @@ sub iter_dynallkids_of {
   return $self->access_filter(map Articles->all_visible_kids($_), @ids);
 }
 
+sub tags_for_dynallkids_of {
+  my ($self, $unused, $args, $acts, $templater) = @_;
+
+  my @ids = map { split } DevHelp::Tags->get_parms($args, $acts, $templater);
+  for my $id (@ids) {
+    unless ($id =~ /^\d+$|^-1$/) {
+      $id = $self->{req}->get_article($id);
+    }
+  }
+  @ids = grep defined && /^\d+$|^-1$/,
+    map ref() ? $_->{id} : $_, @ids;
+
+  @ids
+    or return { tags => [], members => [] };
+
+  require Articles;
+  if (@ids == 1) {
+    return Articles->all_visible_kid_tags($ids[0]);
+  }
+  else {
+    my %tags;
+    my @members;
+    for my $id (@ids) {
+      my $more_tags = Articles->all_visible_kid_tags($id);
+      for my $tag (@{$more_tags->{tags}}) {
+	$tags{$tag->id} = $tag;
+      }
+      push @members, @{$more_tags->{members}};
+    }
+
+    return
+      {
+       tags => [ values %tags ],
+       members => \@members,
+      };
+  }
+}
+
 *iter_dynallkids_of2 = \&iter_dynallkids_of;
 *iter_dynallkids_of3 = \&iter_dynallkids_of;
+
+*tags_for_dynallkids_of2 = \&tags_dynallkids_of;
+*tags_for_dynallkids_of3 = \&tags_dynallkids_of;
 
 =item dynchildren_of
 
@@ -597,6 +638,14 @@ sub iter_wishlist {
 Iterate over the the tag categories of unused tags in the articles
 selected by the given tags: and filter: parameters.
 
+Usage:
+
+=over
+
+C<<iterator begin dynunused_tagcats I<iterator-name> I<onlyone-opt> I<iterator arguments> tags:I<tags-filter> >>
+
+=back
+
 You must supply a tags: filter, even if it's just "".
 
 There will be an iteration with an empty I<name> for each tag without
@@ -626,18 +675,32 @@ sub iter_dynunused_tagcats {
   my ($self, $unused, $args, $acts, $templater, $state) = @_;
 
   unless ($args =~ s/^(\w+)\s*//) {
-    print STDERR "dynunused_tagcats: missing iterator name\n";
+    print STDERR "* dynunused_tagcats: missing iterator name *\n";
     return [];
   }
 
   my $iter = $1;
+
   my $method = "iter_$iter";
   unless ($self->can($method)) {
     print STDERR "* Unknown iterator $iter *\n";
     return [];
   }
+  
+  my $tags_method = "tags_for_$iter";
+
+  my $filter = $self->{filter};
+  my $selected_tags = $filter->{tags};
+  unless ($selected_tags) {
+    print STDERR "* dynunused_tagcats($iter): no tags: supplied *\n";
+    return [];
+  }
 
   my $only_one = $args =~ s/^\s*onlyone\s+//;
+  my $tags;
+  my %selected_cats = map { $_ => 1 }
+    map { lc ((BSE::TB::Tags->split_name($_))[0]) }
+      @{$selected_tags || []};
 
   my $only_cat;
   if ($args =~ s/\bcategory:\s*(.*)$//) {
@@ -652,18 +715,55 @@ sub iter_dynunused_tagcats {
      context => $context,
     );
 
-  my $filter = $self->{filter};
-  my $selected_tags = $filter->{tags};
-  my $ignored = $self->_do_filter(\%state, $filter, $self->$method($context, $args, $acts, $templater, \%state));
-  keys %$filter
-    or $self->{filter} = undef;
+  if ($self->can($tags_method)
+      && !$self->cfg->entry('basic', 'dynamic_access_filter', 1)
+      && !$filter->{filter}) {
+    my $info = $self->$tags_method($context, $args, $acts, $templater);
+    my @tag_ids;
+    my $all_found = 1;
+    my %named = map { lc $_->name => $_ } @{$info->{tags}};
+    my %name_by_id = map { $_->id => $_->name } @{$info->{tags}};
 
-  my %selected_cats = map { $_ => 1 }
-    map { lc ((BSE::TB::Tags->split_name($_))[0]) }
-      @{$selected_tags || []};
+    # find which article ids have the tags we need
+  TAGS:
+    for my $tag_name (@$selected_tags) {
+      my $tag = $named{lc $tag_name};
+      unless ($tag) {
+	# no articles can match an unknown tag, so there's no unused tags
+	return [];
+      }
+      push @tag_ids, $tag->{id};
+    }
+    my %lookup;
+    for my $member (@{$info->{members}}) {
+      $lookup{$member->{owner_id}}{$member->{tag_id}} = $name_by_id{$member->{tag_id}};
+    }
+
+    my %extras;
+  ARTICLE:
+    for my $article_id (keys %lookup) {
+      my $tags = $lookup{$article_id} || {};
+      for my $tag_id (@tag_ids) {
+	delete $tags->{$tag_id}
+	  or next ARTICLE;
+      }
+      ++$extras{$_} for values %$tags;
+    }
+    $tags = \%extras;
+
+    delete $filter->{tags};
+  }
+  else {
+    my $ignored = $self->_do_filter
+      (\%state, $filter, $args, $acts, $templater, $self->$method
+       ($context, $args, $acts, $templater, \%state));
+    keys %$filter
+      or $self->{filter} = undef;
+
+    $tags = $self->{tags}{$iter};
+  }
 
   my %cats;
-  my $tags = $self->{tags}{$iter};
  TAG:
   for my $tag (keys %$tags) {
     my $count = $tags->{$tag};
@@ -776,6 +876,9 @@ sub access_filter {
 
   $admin_sees_all && $self->{admin} and 
     return \@articles;
+
+  $req->cfg->entry('basic', 'dynamic_access_filter', 1)
+    or return \@articles;
 
   return [ grep $req->siteuser_has_access($_), @articles ];
 }
@@ -1233,7 +1336,7 @@ sub _get_filter {
 }
 
 sub _do_filter {
-  my ($self, $state, $filter, $articles) = @_;
+  my ($self, $state, $filter, $args, $acts, $templater, $articles) = @_;
 
   $filter
     or return $articles;
@@ -1246,20 +1349,81 @@ sub _do_filter {
     my @out;
     my %extras;
 
-  ARTICLE:
-    for my $art (@$articles) {
-      my %tags = map { $_ => 1 } $art->tags;
-      for my $tag (@$tags) {
-	$tags{$tag}
-	  or next ARTICLE;
-	delete $tags{$tag};
+    my $tags_method = "tags_for_$state->{plural}";
+
+    if ($self->can($tags_method)) {
+      # should have:
+      # tags - tags used for these articles
+      # members - member objects for these articles
+      my $info = $self->$tags_method($state->{context}, $args, $acts, $templater);
+
+      my @tag_ids;
+      my $all_found = 1;
+      my %named = map { lc $_->name => $_ } @{$info->{tags}};
+      my %name_by_id = map { $_->id => $_->name } @{$info->{tags}};
+    TAGS:
+      for my $tag_name (@$tags) {
+	my $tag = $named{lc $tag_name};
+	unless ($tag) {
+	  $all_found = 0;
+	  last TAGS;
+	}
+	#push @tags, $tag;
+	push @tag_ids, $tag->{id};
       }
-      push @out, $art;
-      ++$extras{$_} for keys %tags; # as long as they exist
+
+      if ($all_found) {
+	# build a lookup table
+	my %lookup;
+	for my $member (@{$info->{members}}) {
+	  $lookup{$member->{owner_id}}{$member->{tag_id}} = $name_by_id{$member->{tag_id}};
+	}
+
+      ARTICLE:
+	for my $art (@$articles) {
+	  my $tags = $lookup{$art->id} || {};
+	  for my $tag_id (@tag_ids) {
+	    delete $tags->{$tag_id}
+	      or next ARTICLE;
+	  }
+	  push @out, $art;
+	  ++$extras{$_} for values %$tags;
+	}
+      }
     }
-    $self->{tags}{$state->{plural}} = \%extras;
+    else {
+      my @tag_ids;
+      my @tags;
+      my $all_found = 1;
+    TAGS:
+      for my $tag_name (@$tags) {
+	my $tag = Articles->getTagByName($tag_name);
+	unless ($tag) {
+	  # can't find a tag that doesn't exist
+	  $all_found = 0;
+	  last TAGS;
+	}
+	push @tags, $tag;
+	push @tag_ids, $tag->id;
+      }
+      if ($all_found) {
+      ARTICLE:
+	for my $art (@$articles) {
+	  my %tags = map { $_->id => $_ } $art->tag_objects;
+	  for my $tag_id (@tag_ids) {
+	    $tags{$tag_id}
+	      or next ARTICLE;
+	    delete $tags{$tag_id};
+	  }
+	  push @out, $art;
+	  ++$extras{$_} for map $_->name, values %tags; # as long as they exist
+	}
+      }
+    }
 
     $articles = \@out;
+
+    $self->{tags}{$state->{plural}} = \%extras;
   }
 
   return $articles;
@@ -1408,7 +1572,7 @@ sub _dyn_iterate_populate {
   my $paged = $self->_get_paged($state, \$args);
   local $self->{filter} = $self->_get_filter($state, \$args, $acts, $templater);
   my $items = $self->_do_filter
-    ($state, $self->{filter}, $self->$method
+    ($state, $self->{filter}, $args, $acts, $templater, $self->$method
      ($state->{context}, $args, $acts, $templater, $state));
 
   return $self->_do_paged($state, $paged, $items);

@@ -1,5 +1,15 @@
 <:wrap base.tmpl:> <:embed start:><:admin:>
 <:ifDynamic:><:or:><p>I need to be dynamic</p><:eif:>
+<ul><:iterator begin inlines 9:><:iterator begin dynunused_tagcats dynallkids_of 9 category:"Color" tags: "" :><:iterator begin dynunused_tags:>
+  <li class="platform<:ifMatch [lcgi tags] [dynunused_tag name]:>
+ focus<:or:><:eif:>">
+    <a href="<:url inline:><:cond [ifMatch [url inline] "\\?"] &amp; ?:>tags=/<:dynunused_tag name |u:>">
+      <:dynunused_tag val:>
+      <span><:dynunused_tag count:></span>
+    </a>
+  </li><:iterator end dynunused_tags:><:iterator end dynunused_tagcats:><:iterator end inlines:>
+</ul>
+
 <:iterator begin dynallprods tags:[lcgi tags] paged:pp=10 :><:iterator end dynallprods:>
 <p>Page count: <:dynallprods_pagecount:></p>
 <:if Eq [dynallprods_pagecount] 1:><:or Eq:>
@@ -24,10 +34,10 @@
 <:iterator end dyntags:>
 </p>
 <:or Dyntags:><:eif Dyntags:>
-<:if Dynunused_tagcats dynallprods:>
+<:if Dynunused_tagcats dynallprods tags:[lcgi tags]:>
 <div>Refine (<:dynallprod_totalcount:> products found):</div>
 <div class="unusedtags">
-<:iterator begin dynunused_tagcats dynallprods:>
+<:iterator begin dynunused_tagcats dynallprods tags:[lcgi tags]:>
 <div><:ifDynunused_tagcat nocat:><:or:><:dynunused_tagcat name:>:<:eif:>
 <:iterator begin dynunused_tags:><a href="<:url dynarticle:><:cond [ifMatch [url dynarticle] "\\?"] & ? :>p=<:dynallprods_page:>&amp;tags=<:lcgi tags |u:>/<:dynunused_tag name |u:>&amp;pp=<:dynallprods_perpage:>"><:dynunused_tag val:></a> <:iterator end dynunused_tags:></div>
 <:iterator end dynunused_tagcats:>

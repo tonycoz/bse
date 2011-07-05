@@ -5,7 +5,7 @@ use BSE::Cfg;
 use BSE::Util::HTML;
 use Carp qw(cluck confess);
 
-our $VERSION = "1.005";
+our $VERSION = "1.007";
 
 sub new {
   my ($class, %opts) = @_;
@@ -502,6 +502,34 @@ sub configure_fields {
   $cfg_fields;
 }
 
+sub _article_parent {
+  my ($self, $article) = @_;
+
+  my $id = $article->parentid;
+  $id > 0
+    or return;
+
+  $self->{_cached_article} ||= {};
+  my $cache = $self->{_cached_article};
+
+  $cache->{$id}
+    or $cache->{$id} = $article->parent;
+
+  return $cache->{$id};
+}
+
+sub _article_group_ids {
+  my ($self, $article) = @_;
+
+  my $id = $article->id;
+  $self->{_cached_groupids} ||= {};
+  my $cache = $self->{_cached_groupids};
+  $cache->{$id}
+    or $cache->{$id} = [ $article->group_ids ];
+
+  return @{$cache->{$id}};
+}
+
 sub _have_group_access {
   my ($req, $user, $group_ids, $membership) = @_;
 
@@ -535,7 +563,7 @@ sub _siteuser_has_access {
     return 0;
   }
 
-  my @group_ids = $article->group_ids;
+  my @group_ids = $req->_article_group_ids($article);
   if ($article->{inherit_siteuser_rights}
       && $article->{parentid} != -1) {
     if (@group_ids) {
@@ -545,12 +573,12 @@ sub _siteuser_has_access {
 	return 1;
       }
       else {
-	return $req->siteuser_has_access($article->parent, $user, 0);
+	return $req->siteuser_has_access($req->_article_parent($article), $user, 0);
       }
     }
     else {
       # ask parent
-      return $req->siteuser_has_access($article->parent, $user, $default);
+      return $req->siteuser_has_access($req->_article_parent($article), $user, $default);
     }
   }
   else {

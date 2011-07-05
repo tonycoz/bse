@@ -17,6 +17,9 @@ require BSE::TB::ProductOptionValues;
 require BSE::API;
 require BSE::Dynamic::Catalog;
 require BSE::Request::Test;
+use Carp qw(confess);
+
+$SIG{__DIE__} = sub { confess @_ };
 
 $| = 1;
 
