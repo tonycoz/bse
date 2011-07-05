@@ -2,7 +2,13 @@ package BSE::UI;
 use strict;
 use BSE::Cfg;
 
-our $VERSION = "1.001";
+my $time = sub { time };
+
+if (eval { require Time::HiRes; 1 }) {
+  $time = \&Time::HiRes::time;
+}
+
+our $VERSION = "1.002";
 
 sub confess;
 
@@ -13,6 +19,8 @@ sub run {
   (my $file = $ui_class . ".pm") =~ s(::)(/)g;
 
   my $cfg = $opts{cfg} || BSE::Cfg->new;
+
+  my $start = $time->();
 
   my $req;
   eval {
@@ -41,6 +49,8 @@ sub run {
     my $cfg = $req->cfg;
     undef $req; # release any locks
     if ($result) {
+      $cfg->entry("basic", "times", 0)
+	and _show_times($start, $result);
       require BSE::Template;
       BSE::Template->output_resultc($cfg, $result);
     }
@@ -64,6 +74,7 @@ sub run_fcgi {
 
   require CGI::Fast;
   while (my $cgi = CGI::Fast->new) {
+    my $start = $time->();
     my $req;
     eval {
       require BSE::Request;
@@ -88,6 +99,9 @@ sub run_fcgi {
       my $cfg = $req->cfg;
       undef $req; # release any locks
       if ($result) {
+	$cfg->entry("basic", "times", 0)
+	  and _show_times($start, $result);
+
 	require BSE::Template;
 	BSE::Template->output_resultc($cfg, $result);
       }
@@ -101,6 +115,31 @@ sub confess {
   require Carp;
 
   goto &Carp::confess;
+}
+
+sub _show_times {
+  my ($start, $result) = @_;
+
+  if ($result->{type} =~ m(^text/html) && $result->{content}) {
+    my %mem = qw(VmPeak unknown VmSize unknown);
+
+    $mem{time} = sprintf("%.1f", 1000 * ($time->() - $start));
+    if (open my $meminfo, "<", "/proc/$$/status") {
+      while (my $line = <$meminfo>) {
+	chomp $line;
+	$line =~ /(\w+):\s+(.*)/ and $mem{$1} = $2;
+      }
+      close $meminfo;
+    }
+    $result->{content} =~ s/<!--pagegen:(\w+)-->/$mem{$1} || "unknown"/ge;
+    if ($result->{headers}) {
+      my $length = length $result->{content};
+      for my $header (@{$result->{headers}}) {
+	$header =~ s/(Content-Length: ).*/$1$length/
+	  and last;
+      }
+    }
+  }
 }
 
 sub fail {
