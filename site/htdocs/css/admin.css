@@ -717,3 +717,11 @@ span.accesskeyx {
   width: 45%;
 }
 
+span.bse_capswarning {
+  position: absolute;
+  padding: 2px;
+  color: #F00;
+  background-color: #FFF;
+  font-weight: bold;
+  border: 1px solid #F00;
+}

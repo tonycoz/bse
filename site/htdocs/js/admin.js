@@ -29,4 +29,41 @@ document.observe("dom:loaded", function() {
   });
 
   $$(".focusme:first").each(function(element) { element.focus() });
+
+  // warn if a user has caps on typing into a password field
+  $$("input[type=password]").each(function(ele) {
+    var state = { iscaps: null };
+    ele.observe("keypress", function(ev, state) {
+      var s = String.fromCharCode(ev.keyCode || ev.which);
+      
+      var iscaps = state.iscaps;
+      if (ev.which == 20) {
+	if (iscaps != null)
+	  iscaps = !iscaps;
+      }
+      else if (s.toUpperCase() !== s.toLowerCase()) {
+	iscaps = ((s.toUpperCase() === s
+		   && !ev.shiftKey)
+		  || (s.toLowerCase() === s
+		      && ev.shiftKey));
+      }
+      if (iscaps && !state.iscaps) {
+	if (!state.span) {
+	  state.span = new Element("span", { className: "bse_capswarning" });
+	  state.span.update("Check Caps Lock");
+	}
+	ele.parentNode.insertBefore(state.span, this.nextSibling);
+      }
+      else if (state.iscaps && !iscaps) {
+	state.span.remove();
+      }
+      state.iscaps = iscaps;
+    }.bindAsEventListener(ele, state));
+    ele.observe("blur", function(ev, state) {
+      if (state.iscaps) {
+	state.span.remove();
+	state.iscaps = null;
+      }
+    }.bindAsEventListener(ele, state));
+  });
 });
