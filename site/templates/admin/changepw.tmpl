@@ -5,39 +5,33 @@
 <p><b><:message:></b></p>
 <:or:><:eif:> 
 
-<form method="POST" action="<:script:>">
-  <table border="0" cellspacing="0" cellpadding="0" bgcolor="#000000" class="table">
-    <tr> 
-      <td> 
-        <table cellpadding="6" border="0" cellspacing="1">
+<form method="post" action="<:script:>">
+        <table>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left"> Old Password: </th>
-            <td bgcolor="#FFFFFF"> 
-              <input type="password" name="oldpassword" />
+            <th><label for="oldpassword">Old Password:</label></th>
+            <td> 
+              <input type="password" name="oldpassword" id="oldpassword" accesskey="o" tabindex="100" />
               </td>
-            <td bgcolor="#FFFFFF"> <:help changepw oldpassword:> <:error_img oldpassword:></td>
+            <td class="help"><:help changepw oldpassword:> <:error_img oldpassword:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left"> New Password: </th>
-            <td bgcolor="#FFFFFF"> 
-              <input type="password" name="newpassword" />
+            <th><label for="newpassword">New Password:</label> </th>
+            <td> 
+              <input type="password" name="newpassword" id="newpassword" accesskey="n" tabindex="110" />
               </td>
-            <td bgcolor="#FFFFFF"> <:help changepw newpassword:> <:error_img newpassword:></td>
+            <td class="help"> <:help changepw newpassword:> <:error_img newpassword:></td>
           </tr>
           <tr> 
-            <th bgcolor="#FFFFFF" align="left"> Confirm New Password: </th>
-            <td bgcolor="#FFFFFF"> 
-              <input type="password" name="confirm" />
+            <th><label for="confirm">Confirm New Password:</label></th>
+            <td> 
+              <input type="password" name="confirm" id="confirm" accesskey="c" tabindex="120" />
               </td>
-            <td bgcolor="#FFFFFF"> <:help changepw confirm:> <:error_img confirm:></td>
+            <td class="help"> <:help changepw confirm:> <:error_img confirm:></td>
           </tr>
           <tr> 
-            <td bgcolor="#FFFFFF" colspan="3" align="right"> 
-              <input type="submit" name="a_change" value="  Save Password  " />
+            <td class="buttons" colspan="3"> 
+              <input type="submit" name="a_change" value="  Save Password  " tabindex="200" />
             </td>
           </tr>
         </table>
-      </td>
-    </tr>
-  </table>
 </form>
