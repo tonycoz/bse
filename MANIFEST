@@ -466,6 +466,7 @@ site/htdocs/js/admin_prodopts.js
 site/htdocs/js/admin_siteusers.js
 site/htdocs/js/admin_tools.js
 site/htdocs/js/bse.js
+site/htdocs/js/bse_adminpage.js
 site/htdocs/js/bse_adminui.js
 site/htdocs/js/bse_api.js
 site/htdocs/js/bse_dialog.js
@@ -492,6 +493,9 @@ site/templates/admin/addattendee1.tmpl
 site/templates/admin/addattendee2.tmpl
 site/templates/admin/addgroup.tmpl
 site/templates/admin/adduser.tmpl
+site/templates/admin/adminmenu/article.tmpl
+site/templates/admin/adminmenu/catalog.tmpl
+site/templates/admin/adminmenu/product.tmpl
 site/templates/admin/article_custom.tmpl
 site/templates/admin/article_img.tmpl
 site/templates/admin/back/detail.tmpl

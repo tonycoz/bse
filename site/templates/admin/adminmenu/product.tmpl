@@ -1,0 +1,14 @@
+<table class="admin_buttons">
+  <tr>
+    <td><form action="<:adminurl add:>"><input type="submit" value="Edit Product" /><input type="hidden" name="id" value="<:article id:>" /></form></td>
+<td><form action="<:adminurl menu:>"><input type="submit" value="Admin menu" /></form></td>
+<td><form action="<:adminurl shopadmin:>"><input type="hidden" name="product_list" value="1" /><input type="submit" value="Full product list"></form></td>
+<:ifUserCan bse_regen_article:article :>
+<td><form method="post" action="<:adminurl generate:>"><input type="hidden" name="id" value="<:article id:>"><input type="submit" value="Regenerate" /></form></td>
+<:or:><:eif:>
+<td><form action="<:adminurl admin:>" target="_blank"><input type="submit" value="Display" /><input type="hidden" name="id" value=<:article id:>" /><input type=hidden name="admin" value="0" /></form></td>
+<td id="admin_messages_flag"></td>
+</tr></table>
+<script type="text/javascript">var admin_article_id = <:article id:>;</script>
+<div id="admin_messages" style="display: none"></div>
+<script type="text/javascript" src="/js/bse_adminpage.js"></script>

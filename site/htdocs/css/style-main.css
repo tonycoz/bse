@@ -171,3 +171,22 @@ div.pagelist a {
 div.pagelist a:hover {
   background-color: #FFE0C0;
 }
+
+input.admin_warning_flag {
+  background-color: #F44;
+  color: #FFF;
+  font-weight: bold;
+}
+
+.admin_buttons form {
+  display: inline;
+}
+
+div#admin_messages {
+  position: absolute;
+  max-height: 8em;
+  overflow: auto;
+  background-color: #FCC;
+  border: 1px dashed #F00;
+  padding: 2px 5px;
+}
