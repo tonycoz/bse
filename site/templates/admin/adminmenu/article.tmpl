@@ -8,7 +8,7 @@
 <:ifUserCan bse_regen_article:article :>
 <td><form method="post" action="<:adminurl generate:>"><input type="hidden" name="id" value="<:article id:>"><input type="submit" value="Regenerate" /></form></td>
 <:or:><:eif:>
-<td><form action="<:adminurl admin:>" target="_blank"><input type="submit" value="Display" /><input type="hidden" name="id" value=<:article id:>" /><input type=hidden name="admin" value="0" /></form></td>
+<td><form action="<:adminurl admin:>" target="_blank"><input type="submit" value="Display" /><input type="hidden" name="id" value="<:article id:>" /><input type=hidden name="admin" value="0" /></form></td>
 <td id="admin_messages_flag"></td>
 </tr></table>
 <script type="text/javascript">var admin_article_id = <:article id:>;</script>
