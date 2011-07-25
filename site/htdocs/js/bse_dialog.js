@@ -842,6 +842,8 @@ BSEDialog.FieldTypes.gallery = Class.create(BSEDialog.FieldTypes.Base, {
 	src: im.src
       };
     });
+    this._error = this._make_error();
+    this._element.appendChild(this._error);
     this._autoid = 1;
     this._populate_images();
   },
