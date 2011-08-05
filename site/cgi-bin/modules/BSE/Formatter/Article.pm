@@ -4,19 +4,30 @@ use base 'BSE::Formatter';
 use BSE::Util::HTML;
 use Digest::MD5 qw(md5_hex);
 
-our $VERSION = "1.000";
+our $VERSION = "1.002";
 
-sub link {
-  my ($self, $url, $text) = @_;
+sub rewrite_url {
+  my ($self, $url, $text, $type) = @_;
+
+  my $cfg = $self->{gen}{cfg};
+
+  if ($cfg) {
+    my %replace = $cfg->entries("link replacement");
+    for my $key (sort keys %replace) {
+      my ($from, $to) = split /;/, $replace{$key};
+      $url =~ s/^\Q$from/$to/i
+	and last;
+    }
+  }
 
   if ($self->{redirect_links} =~ /[^\W\d]/) {
     my $noredir_types = join '|', map quotemeta, split /,/, $self->{redirect_links};
     if ($url =~ /^($noredir_types):/) {
-      return $self->SUPER::link($url, $text);
+      return $self->SUPER::rewrite_url($url, $text, $type);
     }
   }
   elsif (!$self->{redirect_links} || $url =~ /^mailto:/ || $url =~ /^\#/) {
-    return $self->SUPER::link($url, $text);
+    return $self->SUPER::rewrite_url($url, $text, $type);
   }
 
   # formatter converted & to &amp; but we want them as & so they undergo
@@ -31,7 +42,7 @@ sub link {
     $new_url .= '&amp;title=' . escape_uri($text);
   }
 
-  return $self->SUPER::link($new_url, $text);
+  return $self->SUPER::rewrite_url($new_url, $text, $type);
 }
 
 1;

@@ -2523,6 +2523,17 @@ Default: 7.
 
 =back
 
+=head2 [link replacement]
+
+For formatted text, this is a list of URL prefixes to replace.
+
+The key is a sort key, replacements are checked in alphabetical order.
+
+The value is the original prefix, followed by ";", followed by the
+replacement.
+
+Replacement is performed case-insenitively.  Regexp metacharacters
+
 =head1 AUTHOR
 
 Tony Cook <tony@develop-help.com>
