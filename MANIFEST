@@ -255,6 +255,7 @@ site/cgi-bin/modules/BSE/UI/Tellafriend.pm
 site/cgi-bin/modules/BSE/UI/Thumb.pm
 site/cgi-bin/modules/BSE/UI/User.pm
 site/cgi-bin/modules/BSE/UI/UserCommon.pm
+site/cgi-bin/modules/BSE/URL.pm
 site/cgi-bin/modules/BSE/UserReg.pm
 site/cgi-bin/modules/BSE/Util/ContentType.pm
 site/cgi-bin/modules/BSE/Util/DynamicTags.pm

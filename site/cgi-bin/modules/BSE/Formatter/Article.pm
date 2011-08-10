@@ -4,21 +4,15 @@ use base 'BSE::Formatter';
 use BSE::Util::HTML;
 use Digest::MD5 qw(md5_hex);
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub rewrite_url {
   my ($self, $url, $text, $type) = @_;
 
   my $cfg = $self->{gen}{cfg};
 
-  if ($cfg) {
-    my %replace = $cfg->entries("link replacement");
-    for my $key (sort keys %replace) {
-      my ($from, $to) = split /;/, $replace{$key};
-      $url =~ s/^\Q$from/$to/i
-	and last;
-    }
-  }
+  require BSE::URL;
+  $url = BSE::URL->rewrite_url($cfg, $url);
 
   if ($self->{redirect_links} =~ /[^\W\d]/) {
     my $noredir_types = join '|', map quotemeta, split /,/, $self->{redirect_links};
