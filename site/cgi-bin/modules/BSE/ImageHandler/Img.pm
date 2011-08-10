@@ -4,7 +4,7 @@ use base 'BSE::ImageHandler::Base';
 use Carp qw(confess);
 use BSE::Util::HTML;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub format {
   my ($self, %opts) = @_;
@@ -37,6 +37,8 @@ sub format {
   $html .= qq! />!;
   $url ||= $im->{url};
   if ($url) {
+    require BSE::URL;
+    $url = BSE::URL->rewrite_url($cfg, $url);
     $url = escape_html($url);
     $html = qq!<a href="$url">$html</a>!;
   }
@@ -67,7 +69,9 @@ sub inline {
 	.qq! alt="$image->{alt}" align="$align" hspace="10" vspace="10" />!;
   }
   if ($image->{url}) {
-    $html = qq!<a href="$image->{url}">$html</a>!;
+    require BSE::URL;
+    my $url = BSE::URL->rewrite_url($self->cfg, $image->{url});
+    $html = qq!<a href="$url">$html</a>!;
   }
   
   return $html;
