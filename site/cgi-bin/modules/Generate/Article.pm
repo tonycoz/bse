@@ -6,7 +6,7 @@ use Constants qw(%LEVEL_DEFAULTS $CGI_URI $ADMIN_URI $IMAGES_URI
 use BSE::TB::Images;
 use vars qw(@ISA);
 use Generate;
-use Util qw(generate_button);
+use BSE::Regen qw(generate_button);
 use BSE::Util::Tags qw(tag_article);
 use BSE::TB::ArticleFiles;
 @ISA = qw/Generate/;
@@ -15,7 +15,7 @@ use BSE::Arrows;
 use Carp 'confess';
 use BSE::Util::Iterate;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 my $excerptSize = 300;
 

@@ -7,7 +7,7 @@ use lib "$FindBin::Bin/../modules";
 use Articles;
 use CGI qw(:standard);
 use Constants;
-use Util qw(generate_button regen_and_refresh);
+use BSE::Regen qw(generate_button regen_and_refresh generate_article);
 use BSE::WebUtil qw(refresh_to_admin);
 use Carp 'verbose';
 use BSE::Request;
@@ -46,7 +46,6 @@ if (generate_button()) {
     $callback = sub { print "<div>",escape_html($_[0]),"</div>" };
   }
   if (defined $id) {
-    use Util 'generate_article';
     my $article;
     my $can;
     if ($id eq 'extras') {

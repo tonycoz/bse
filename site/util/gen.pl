@@ -3,7 +3,7 @@ use strict;
 use Getopt::Long;
 use FindBin;
 use lib "$FindBin::Bin/../cgi-bin/modules";
-use Util qw/generate_all generate_article/;
+use BSE::Regen qw/generate_all generate_article/;
 use BSE::API qw(bse_init bse_cfg);
 use Articles;
 

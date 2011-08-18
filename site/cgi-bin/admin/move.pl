@@ -12,6 +12,7 @@ use CGI::Carp 'fatalsToBrowser';
 use BSE::Request;
 use Constants;
 use BSE::WebUtil qw/refresh_to refresh_to_admin/;
+use BSE::Regen 'generate_article';
 
 my $req = BSE::Request->new;
 
@@ -48,7 +49,6 @@ if (defined $cgi->param('stepchild')) {
       ($two->{childDisplayOrder}, $one->{childDisplayOrder});
     $one->save;
     $two->save;
-    use Util 'generate_article';
     generate_article('Articles', $article);
   }
 }
@@ -75,7 +75,6 @@ elsif (defined $cgi->param('stepparent')) {
     ($one->{$onename}, $two->{$twoname}) = ($two->{$twoname}, $one->{$onename});
     $one->save;
     $two->save;
-    use Util 'generate_article';
     generate_article('Articles', $article);
   }
 }
@@ -134,7 +133,6 @@ else {
     }
     
     $article->save();
-    use Util 'generate_article';
     generate_article('Articles', $article);
   }
 }

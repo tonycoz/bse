@@ -1,4 +1,4 @@
-package Util;
+package BSE::Regen;
 use strict;
 use vars qw(@ISA @EXPORT_OK);
 require Exporter;

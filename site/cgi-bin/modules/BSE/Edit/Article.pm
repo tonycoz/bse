@@ -10,11 +10,12 @@ use BSE::CfgInfo qw(custom_class admin_base_url cfg_image_dir);
 use BSE::Util::Iterate;
 use BSE::Template;
 use BSE::Util::ContentType qw(content_type);
+use BSE::Regen 'generate_article';
 use DevHelp::Date qw(dh_parse_date dh_parse_sql_date);
 use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
-our $VERSION = "1.011";
+our $VERSION = "1.012";
 
 =head1 NAME
 
@@ -1772,7 +1773,6 @@ sub save_new {
     $article->set_tags(\@tags, \$error);
   }
 
-  use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
   if ($req->is_ajax) {
@@ -2054,7 +2054,6 @@ sub save {
     $article = $articles->getByPkey($article->{id});
   }
 
-  use Util 'generate_article';
   if ($Constants::AUTO_GENERATE) {
     generate_article($articles, $article);
     for my $regen_id (@extra_regen) {
@@ -2397,7 +2396,6 @@ sub add_stepkid {
     Articles->reorder_child($article->id, $child->id, $after_id);
   }
 
-  use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
   if ($req->is_ajax) {
@@ -2478,7 +2476,6 @@ sub del_stepkid {
   if ($@) {
     return $self->_service_error($req, $article, $articles, $@, {}, "DELETE");
   }
-  use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
   if ($req->is_ajax) {
@@ -2528,7 +2525,6 @@ sub save_stepkids {
     };
     $@ and return $self->refresh($article, $cgi, '', $@);
   }
-  use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
   return $self->refresh($article, $cgi, 'step', 'Stepchild information saved');
@@ -2682,7 +2678,6 @@ sub add_stepparent {
   };
   $@ and return $self->refresh($article, $cgi, 'step', $@);
 
-  use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
   return $self->refresh($article, $cgi, 'stepparents', 'Stepparent added');
@@ -2719,7 +2714,6 @@ sub del_stepparent {
   };
   $@ and return $self->refresh($article, $cgi, 'stepparents', $@);
 
-  use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
   return $self->refresh($article, $cgi, 'stepparents', 'Stepparent deleted');
@@ -2765,7 +2759,6 @@ sub save_stepparents {
     $@ and return $self->refresh($article, $cgi, '', $@);
   }
 
-  use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
   return $self->refresh($article, $cgi, 'stepparents', 
@@ -3007,7 +3000,6 @@ sub save_image_changes {
   }
   
   if ($changes_found) {
-    use Util 'generate_article';
     generate_article($articles, $article) if $Constants::AUTO_GENERATE;
   }
     
@@ -3290,7 +3282,6 @@ sub add_image {
   $errors{flash}
     and $req->flash($errors{flash});
 
-  use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
   if ($cgi->param('_service')) {
@@ -3358,7 +3349,6 @@ sub remove_img {
   unlink "$imagedir$image->{image}";
   $image->remove;
 
-  use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
   if ($req->want_json_response) {
@@ -3392,7 +3382,6 @@ sub move_img_up {
   $to->save;
   $from->save;
 
-  use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
   return $self->refresh($article, $req->cgi, undef, 'Image moved');
@@ -3419,7 +3408,6 @@ sub move_img_down {
   $to->save;
   $from->save;
 
-  use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
   return $self->refresh($article, $req->cgi, undef, 'Image moved');
@@ -3885,7 +3873,6 @@ sub fileadd {
   $@
     and $req->flash($@);
 
-  use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
   $self->_refresh_filelist($req, $article);
@@ -3919,7 +3906,6 @@ sub fileswap {
     }
   }
 
-  use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
   $self->refresh($article, $req->cgi, undef, 'File moved');
@@ -3951,7 +3937,6 @@ sub filedel {
     }
   }
 
-  use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
   $self->_refresh_filelist($req, $article, 'File deleted');
@@ -4128,7 +4113,6 @@ sub filesave {
     $file->save;
   }
 
-  use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
   $self->_refresh_filelist($req, $article);
@@ -4567,7 +4551,6 @@ sub req_save_file {
     unlink "$download_path/$old_name";
   }
 
-  use Util 'generate_article';
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
   $self->_refresh_filelist($req, $article);
@@ -4675,7 +4658,6 @@ sub unhide {
     $article->{listed} = 1;
     $article->save;
 
-    use Util 'generate_article';
     generate_article($articles, $article) if $Constants::AUTO_GENERATE;
   }
   return $self->refresh($article, $req->cgi, undef, 'Article unhidden');
@@ -4692,7 +4674,6 @@ sub hide {
     $article->{listed} = 0;
     $article->save;
 
-    use Util 'generate_article';
     generate_article($articles, $article) if $Constants::AUTO_GENERATE;
   }
   my $r = $req->cgi->param('r');
