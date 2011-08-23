@@ -3,7 +3,16 @@ use strict;
 use BSE::Test qw(make_ua base_url);
 use JSON;
 use DevHelp::HTML;
-use Test::More tests => 241;
+use Test::More;
+use Article;
+
+my @cols = Article->columns;
+
+my $base = 241;
+
+my $count = $base + (@cols - 45) * 4;
+
+plan tests => $count;
 
 $| = 1;
 
