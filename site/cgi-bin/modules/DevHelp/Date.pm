@@ -6,14 +6,14 @@ use vars qw(@EXPORT_OK %EXPORT_TAGS @ISA);
 @EXPORT_OK = 
   qw(dh_parse_date dh_parse_date_sql dh_parse_time dh_parse_time_sql
      dh_parse_sql_date dh_parse_sql_datetime dh_strftime_sql_datetime
-     dh_valid_date);
+     dh_valid_date dh_strftime);
 %EXPORT_TAGS =
   (
    all => \@EXPORT_OK,
    sql => [ grep /_sql$/, @EXPORT_OK ],
   );
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 use constant SECS_PER_DAY => 24 * 60 * 60;
 
@@ -185,8 +185,25 @@ sub dh_strftime_sql_datetime {
   $year -= 1900;
   --$month;
 
-  require POSIX;
-  return POSIX::strftime($format, $sec, $min, $hour, $day, $month, $year);
+  my @dt = ( $sec, $min, $hour, $day, $month, $year );
+
+  return dh_strftime($format, @dt);
+}
+
+sub dh_strftime {
+  my ($format, @dt) = @_;
+
+  if ($dt[5] < 7000) { # year
+    # fix the day of week
+    require POSIX;
+    @dt = localtime POSIX::mktime(@dt);
+  }
+
+  # hack in %F support
+  $format =~ s/(?<!%)((?:%%)*)%F/$1%Y-%m-%d/g;
+
+  require Date::Format;
+  return Date::Format::strftime($format, \@dt);
 }
 
 =item dh_valid_date($year, $month, $day)

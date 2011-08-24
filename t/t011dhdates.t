@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests=>45;
+use Test::More tests=>46;
 
 my $gotmodule;
 BEGIN { $gotmodule = use_ok('DevHelp::Date', ':all'); }
@@ -87,5 +87,9 @@ SKIP:
      "30/06/2005", "dh_strftime_sql_datetime");
 
   is(dh_strftime_sql_datetime("%a %U %j %d/%m/%Y", "2005-06-30 12:00:05"),
-     "Thu 26 181 30/06/2005", "dh_strftime_sql_datetime");
+     "Thu 26 181 30/06/2005", "dh_strftime_sql_datetime dow check");
+
+  is(dh_strftime("%a %U %j %F %T", 20, 5, 12, 30, 5, 105),
+     "Thu 26 181 2005-06-30 12:05:20",
+     "dh_strftime");
 }

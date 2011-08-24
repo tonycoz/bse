@@ -8,7 +8,7 @@ use vars qw(@EXPORT_OK @ISA);
 @ISA = qw(Exporter);
 require Exporter;
 
-our $VERSION = "1.014";
+our $VERSION = "1.015";
 
 sub _get_parms {
   my ($acts, $args) = @_;
@@ -39,26 +39,10 @@ sub _get_parms {
 }
 
 sub bse_strftime {
-  my ($cfg, $fmt, $sec, $min, $hour, $day, $month, $year, $wday, $yday, $isdst) = @_;
+  my ($cfg, $fmt, @when) = @_;
 
-  require POSIX;
-
-  my $result = 
-    eval {
-      require Date::Format;
-      my @when = ( $sec, $min, $hour, $day, $month, $year, $wday, $wday, $isdst );
-      if ($year < 7000) {
-	# fix the day of week
-	@when = localtime POSIX::mktime(@when);
-      }
-      # hack in %F support
-      $fmt =~ s/(?<!%)((?:%%)*)%F/$1%Y-%m-%d/g;
-      return Date::Format::strftime($fmt, \@when);
-    };
-  defined $result
-    and return $result;
-
-  return POSIX::strftime($fmt, $sec, $min, $hour, $day, $month, $year, $wday, $wday, $isdst);
+  require DevHelp::Date;
+  return DevHelp::Date::dh_strftime($fmt, @when);
 }
 
 
