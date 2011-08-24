@@ -11,10 +11,11 @@ use Carp qw(confess croak);
 use Fcntl qw(:seek);
 use Cwd;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 my %acticle_defaults =
   (
+   body => "",
    titleImage => '',
    thumbImage => '',
    thumbWidth => 0,
@@ -47,6 +48,7 @@ my %acticle_defaults =
    menu => '',
    titleAlias => '',
    linkAlias => '',
+   category => '',
   );
 
 my %product_defaults =
@@ -149,8 +151,6 @@ sub bse_make_product {
 
   defined $opts{title} && length $opts{title}
     or confess "Missing title option\n";
-  defined $opts{body} && length $opts{body}
-    or confess "Missing body option\n";
   defined $opts{retailPrice} && $opts{retailPrice} =~ /^\d+$/
     or confess "Missing or invalid retailPrice\n";
 
@@ -189,8 +189,6 @@ sub bse_make_catalog {
 
   defined $opts{title} && length $opts{title}
     or confess "Missing title option\n";
-  defined $opts{body} && length $opts{body}
-    or confess "Missing body option\n";
 
   $opts{summary} ||= $opts{title};
   unless ($opts{displayOrder}) {
