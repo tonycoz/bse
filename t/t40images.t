@@ -40,6 +40,8 @@ click_ok($ua, "add an image", 'addimg', qr/New image added/);
 
 ok($ua->form_name('add'), "add form again");
 
+sleep 1; # avoid the rare duplicate display order
+
 $form = $ua->current_form;
 ok($file = $form->find_input("image"), "get file field");
 $file->filename("t101.jpg");
@@ -191,7 +193,7 @@ follow_ok($ua, "global images", "Global Images", qr/Global Image Wizard/);
 # since there may have been other global images, we need to be a bit 
 # more careful here
 my $links = $ua->links;
-my @links = grep $_->text eq 'Delete', @$links;
+my @links = grep defined($_->text) && $_->text eq 'Delete', @$links;
 print "# link #", scalar(@links), "\n";
 follow_ok($ua, "delete global image", 
 	  { n=>scalar(@links), text=>"Delete" }, 
