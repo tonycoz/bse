@@ -8,9 +8,9 @@ use Article;
 
 my @cols = Article->columns;
 
-my $base = 241;
+my $base = 113;
 
-my $count = $base + (@cols - 45) * 4;
+my $count = $base + (@cols - 13) * 4;
 
 plan tests => $count;
 
