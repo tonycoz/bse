@@ -13,7 +13,7 @@ use vars qw(@EXPORT_OK %EXPORT_TAGS @ISA);
    sql => [ grep /_sql$/, @EXPORT_OK ],
   );
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 use constant SECS_PER_DAY => 24 * 60 * 60;
 
@@ -186,8 +186,7 @@ sub dh_strftime_sql_datetime {
   --$month;
 
   require POSIX;
-  return POSIX::strftime($format, $sec, $min, $hour, $day, $month, $year, 
-			 0, 0);
+  return POSIX::strftime($format, $sec, $min, $hour, $day, $month, $year);
 }
 
 =item dh_valid_date($year, $month, $day)

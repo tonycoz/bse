@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests=>44;
+use Test::More tests=>45;
 
 my $gotmodule;
 BEGIN { $gotmodule = use_ok('DevHelp::Date', ':all'); }
@@ -85,4 +85,7 @@ SKIP:
 	    [ ], "invalid parse SQL date time");
   is(dh_strftime_sql_datetime("%d/%m/%Y", "2005-06-30 12:00:05"),
      "30/06/2005", "dh_strftime_sql_datetime");
+
+  is(dh_strftime_sql_datetime("%a %U %j %d/%m/%Y", "2005-06-30 12:00:05"),
+     "Thu 26 181 30/06/2005", "dh_strftime_sql_datetime");
 }
