@@ -4,16 +4,18 @@ use BSE::Test ();
 use Test::More tests=>80;
 use File::Spec;
 use FindBin;
-my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
-ok(chdir $cgidir, "switch to CGI directory");
-push @INC, 'modules';
-require BSE::Cfg;
-my $cfg = BSE::Cfg->new;
-# create some articles to test with
-use BSE::DB;
-require Articles;
-require Products;
+BEGIN {
+  my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
+  ok(chdir $cgidir, "switch to CGI directory");
+  push @INC, 'modules';
+}
+use BSE::API qw(bse_init bse_cfg bse_make_catalog bse_make_product);
+
+bse_init(".");
+
+my $cfg = bse_cfg();
 require BSE::Util::SQL;
+use DevHelp::Date qw(dh_strftime_sql_datetime);
 
 BSE::DB->init($cfg);
 
@@ -226,11 +228,14 @@ TEMPLATE
 One
 EXPECTED
 
-template_test "date", $parent, <<'TEMPLATE', <<EXPECTED;
+{
+  my $mod = dh_strftime_sql_datetime("%a %d/%m/%Y", $parent->lastModified);
+  template_test "date", $parent, <<'TEMPLATE', <<EXPECTED;
 <:date "%a %d/%m/%Y" article lastModified:>
 TEMPLATE
-Thu 23/09/2004
+$mod
 EXPECTED
+}
 
 template_test "strepeats", $parent, <<'TEMPLATE', <<EXPECTED;
 <:iterator begin strepeats [arithmetic 1+1]:><:strepeat index:> <:strepeat value:>
@@ -279,43 +284,10 @@ for my $kid (reverse @kids, $stepkid) {
 $parent->remove($cfg);
 ok(1, "removed parent");
 
-my $display_order;
 sub add_article {
   my (%parms) = @_;
-  $display_order ||= 1000;
-  my %defaults = 
-    (
-     parentid=>-1, title=>'Test Parent',
-     titleImage => '', body=>'Test parent b[body]',
-     thumbImage => '', thumbWidth => 0, thumbHeight => 0,
-     imagePos => 'tr', release=>sql_datetime(time-86400), expire=>'2999-12-31',
-     keyword=>'', template=>'common/default.tmpl', link=>'', admin=>'',
-     threshold => 5, summaryLength => 100, generator=>'Generate::Article',
-     level => 1, listed=>1, lastModified => sql_datetime(time), flags=>'',
-     lastModifiedBy=>'t21gencat', created=>sql_datetime(time),
-     createdBy=>'t21gencat', author=>'', pageTitle=>'',
-     cached_dynamic => 0, force_dynamic=>0, inherit_siteuser_rights => 1,
-     metaDescription => '',  metaKeywords => '',
-     summary => '', menu => "", titleAlias => "",
-     linkAlias => "",
-    );
-  for my $key (%defaults) {
-    unless (exists $parms{$key}) {
-      $parms{$key} = $defaults{$key};
-    }
-  }
 
-  my $sing_type = $parms{_single} || 'Article';
-  my $agg_type = $parms{_aggregate} || 'Articles';
-  $parms{displayOrder} = $display_order;
-  my @artcols = $sing_type->columns;
-  my $article = $agg_type->add(@parms{@artcols[1..$#artcols]});
-  # use consistent links to ensure that the links remain consistent, even 
-  # if they are incorrect
-  $article->{link} = "/a/$display_order.html";
-  $article->{admin} = "/cgi-bin/admin/admin.pl?id=$article->{id}";
-  $article->save;
-  $display_order += 100;
+  my $article = bse_make_article(cfg => $cfg, parentid => -1, %parms);
 
   $article;
 }
@@ -325,38 +297,13 @@ sub add_catalog {
 
   # this won't put the catalogs in the shop area, but that isn't needed 
   # for this case.
-  return add_article(template=>'catalog.tmpl', 
-		     generator=>'Generate::Catalog', 
-		     %parms);
+  return bse_make_catalog(cfg => $cfg, body => "", %parms);
 }
 
 sub add_product {
   my (%parms) = @_;
 
-  # this won't put the catalogs in the shop area, but that isn't needed 
-  # for this case.
-  return add_article(template=>'shopitem.tmpl', 
-		     generator=>'Generate::Product', 
-		     _single => 'Product',
-		     _aggregate => 'Products',
-		     description => $parms{title} || '',
-		     wholesalePrice => 0,
-		     leadTime=> 0,
-		     gst => int($parms{retailPrice} / 11),
-		     options => '',
-		     subscription_id => -1,
-		     subscription_period => 0,
-		     subscription_usage => 3,
-		     subscription_required => -1,
-		     product_code => '',
-		     menu => "",
-		     titleAlias => "",
-		     linkAlias => "",
-		     weight => 0,
-		     width => 0,
-		     height => 0,
-		     length => 0,
-		     %parms);
+  return bse_make_product(cfg => $cfg, %parms);
 }
 
 sub template_test($$$$) {

@@ -4,17 +4,20 @@ use BSE::Test ();
 use Test::More tests=>144;
 use File::Spec;
 use FindBin;
-my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
-ok(chdir $cgidir, "switch to CGI directory");
-push @INC, 'modules';
-require BSE::Cfg;
-my $cfg = BSE::Cfg->new;
-use BSE::DB;
-BSE::DB->init($cfg);
-# create some articles to test with
-require Articles;
-require BSE::Util::SQL;
-BSE::Util::SQL->import(qw/sql_datetime/);
+BEGIN {
+  my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
+  ok(chdir $cgidir, "switch to CGI directory");
+  push @INC, 'modules';
+}
+use BSE::API qw(bse_init bse_cfg bse_make_article);
+
+bse_init(".");
+
+my $cfg = bse_cfg();
+
+use BSE::Util::SQL qw/sql_datetime/;
+use DevHelp::Date qw(dh_strftime_sql_datetime);
+
 sub template_test($$$$);
 sub dyn_template_test($$$$);
 
@@ -248,11 +251,14 @@ TEMPLATE
 One - alpha, beta, gamma, delta, epsilon
 EXPECTED
 
-template_test "date", $parent, <<'TEMPLATE', <<EXPECTED;
+{
+  my $formatted = dh_strftime_sql_datetime("%a %d/%m/%Y", $parent->lastModified);
+  template_test "date", $parent, <<'TEMPLATE', <<EXPECTED;
 <:date "%a %d/%m/%Y" article lastModified:>
 TEMPLATE
-Thu 23/09/2004
+$formatted
 EXPECTED
+}
 
 use POSIX;
 template_test "today", $parent, <<'TEMPLATE', strftime("%Y-%m-%d %d-%b-%Y\n", localtime);
@@ -269,10 +275,11 @@ SKIP:
     and skip("No Date::Format", 3);
 
   my $today = Date::Format::strftime("%a %o %B %Y", [ localtime ]);
+  my $mod = dh_strftime_sql_datetime("%A %o %B %Y", $parent->lastModified);
   template_test "date/today w/Date::Format", $parent, <<'TEMPLATE', <<EXPECTED;
 <:date "%A %o %B %Y" article lastModified:> <:today "%a %o %B %Y":>
 TEMPLATE
-Thursday 23rd September 2004 $today
+$mod $today
 EXPECTED
 }
 
@@ -296,17 +303,21 @@ TEMPLATE
 
 EXPECTED
 
-template_test "quotedreplace", $parent, <<'TEMPLATE', <<EXPECTED;
+{
+  my $mod_iso = dh_strftime_sql_datetime("%FT%T%z", $parent->lastModified);
+  (my $mod_iso2 = $mod_iso) =~ s/(\d\d)$/:$1/;
+  template_test "quotedreplace", $parent, <<'TEMPLATE', <<EXPECTED;
 <:date "%FT%T%z" article lastModified:>
 <meta name="DC.title" content="<:article title:>" />
 <meta name="DC.date" content="<:replace [date "%FT%T%z" article lastModified] "(\d\d)$" ":$1":>" />
 <meta name="DC.format" content="<:cfg site format "text/html":>" />
 TEMPLATE
-2004-09-23T06:00:00+1000
+$mod_iso
 <meta name="DC.title" content="Parent" />
-<meta name="DC.date" content="2004-09-23T06:00:00+10:00" />
+<meta name="DC.date" content="$mod_iso2" />
 <meta name="DC.format" content="text/html" />
 EXPECTED
+}
 
 template_test "report", $parent, <<'TEMPLATE', <<EXPECTED;
 <:report bse_test test/testrep 2:>
@@ -520,39 +531,10 @@ for my $kid (reverse @kids) {
 $parent->remove($cfg);
 ok(1, "removed parent");
 
-my $display_order;
 sub add_article {
   my (%parms) = @_;
-  $display_order ||= 1000;
-  my %defaults = 
-    (
-     parentid=>-1, displayOrder => 1000, title=>'Test Parent',
-     titleImage => '', body=>'Test parent b[body]',
-     thumbImage => '', thumbWidth => 0, thumbHeight => 0,
-     imagePos => 'tr', release=>sql_datetime(time-86400), expire=>'2999-12-31',
-     keyword=>'', template=>'common/default.tmpl', link=>'', admin=>'',
-     threshold => 5, summaryLength => 100, generator=>'Generate::Article',
-     level => 1, listed=>1, lastModified => sql_datetime(time), flags=>'',
-     lastModifiedBy=>'t20gen', created=>sql_datetime(time),
-     createdBy=>'t20gen', author=>'', pageTitle=>'',
-     cached_dynamic => 0, force_dynamic=>0, inherit_siteuser_rights => 1,
-     metaDescription => '',  metaKeywords => '',
-     summary => '', menu => '', titleAlias => '', linkAlias => '',
-    );
-  for my $key (%defaults) {
-    unless (exists $parms{$key}) {
-      $parms{$key} = $defaults{$key};
-    }
-  }
-  $parms{displayOrder} = $display_order;
-  my @artcols = Article->columns;
-  my $article = Articles->add(@parms{@artcols[1..$#artcols]});
-  # use consistent links to ensure that the links remain consistent, even 
-  # if they are incorrect
-  $article->{link} = "/a/$article->{id}.html";
-  $article->{admin} = "/cgi-bin/admin/admin.pl?id=$article->{id}";
-  $article->save;
-  $display_order += 100;
+
+  my $article = bse_make_article(cfg => $cfg, parentid => -1, %parms);
 
   $article;
 }
