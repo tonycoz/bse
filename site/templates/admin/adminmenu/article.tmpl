@@ -1,6 +1,6 @@
 <table class="admin_buttons">
   <tr>
-    <td><form action="<:adminurl add:>"><input type="submit" value="Edit Article" /><input type="hidden" name="id" value="<:article id:>" /></form></td>
+    <td><form action="<:adminurl add:>" name="edit"><input type="submit" value="Edit Article" /><input type="hidden" name="id" value="<:article id:>" /></form></td>
 <td><form action="<:adminurl menu:>"><input type="submit" value="Admin menu" /></form></td>
 <:ifUserCan bse_edit_add_child:article:>
 <td><form action="<:adminurl add:>"><input type="hidden" name="parentid" value="<:article id:>" /><input type="submit" value="Add child" /></form></td>
