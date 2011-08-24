@@ -40,6 +40,7 @@ my @base_check =
       'Image::Size' => 0,
       'JSON' => 0,
       'MIME::Lite' => 0,
+      'Date::Format' => 0,
      }
    },
    {

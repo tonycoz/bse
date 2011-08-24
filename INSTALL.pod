@@ -89,6 +89,10 @@ MIME::Lite
 
 JSON
 
+=item *
+
+Date::Format
+
 =back
 
 and their dependants.  If you use the CPAN shell to install these then
