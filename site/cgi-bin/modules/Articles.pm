@@ -6,7 +6,7 @@ require BSE::TB::TagOwners;
 @ISA = qw(Squirrel::Table BSE::TB::TagOwners);
 use Article;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub rowClass {
   return 'Article';
@@ -177,6 +177,25 @@ sub all_tags {
      ],
      { order => "cat, val" },
     );
+}
+
+sub categories {
+  my $cfg = BSE::Cfg->single;
+
+  my @cat_ids = split /,/, $cfg->entry("article categories", "ids", "");
+  grep $_ eq "", @cat_ids
+    or unshift @cat_ids, "";
+
+  my @cats;
+  for my $id (@cat_ids) {
+    my $section = length $id ? "article category $id" : "article category empty";
+    my $def_name = length $id ? ucfirst $id : "(None)";
+    my $name = $cfg->entry($section, "name",
+			   $cfg->entry("article categories", $id, $def_name));
+    push @cats, +{ id => $id, name => $name };
+  }
+  
+  return @cats;
 }
 
 1;

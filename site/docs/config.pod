@@ -2534,6 +2534,37 @@ replacement.
 
 Replacement is performed case-insenitively.  Regexp metacharacters
 
+=head2 [article categories]
+
+=over
+
+=item *
+
+ids - a comma separated list of category ids.  There are (currently)
+no restrictions on the contents of these ids, but alphanumerics are
+recommended to simplify templates.
+
+=item *
+
+I<id> - a description for a particular category id.  Overridden by the
+C<name> key in C<< [article category I<id>] >>.  Default: ucfirst of
+the id.
+
+=back
+
+=head2 [article category I<id>]
+
+=over
+
+=item *
+
+name - name of the article category.
+
+=back
+
+Other keys may be used as desired, eg. to make it simpler to configure
+article behaviour based on the category.
+
 =head1 AUTHOR
 
 Tony Cook <tony@develop-help.com>

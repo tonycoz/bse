@@ -56,6 +56,7 @@ my @prebuilt =
     summary => '',
     menu => 0,
     titleAlias => '',
+    category => '',
    },
    {
     # the invisible subsection for what's hot
@@ -95,6 +96,7 @@ my @prebuilt =
     summary => '',
     menu => 0,
     titleAlias => '',
+    category => '',
    },
    {
     id=>3,
@@ -133,6 +135,7 @@ my @prebuilt =
     summary => '',
     menu => 0,
     titleAlias => '',
+    category => '',
    },
    {
     id=>4,
@@ -171,6 +174,7 @@ my @prebuilt =
     summary => '',
     menu => 0,
     titleAlias => '',
+    category => '',
    },
    {
     id=>5,
@@ -209,6 +213,7 @@ my @prebuilt =
     summary => '',
     menu => 0,
     titleAlias => '',
+    category => '',
    },
    {
     id=>6,
@@ -477,6 +482,7 @@ EOS
     summary => '',
     menu => 0,
     titleAlias => '',
+    category => '',
    },
    {
     id=>7,
@@ -519,6 +525,7 @@ EOS
     summary => '',
     menu => 0,
     titleAlias => '',
+    category => '',
    },
    {
     id=>8,
@@ -561,6 +568,7 @@ EOS
     summary => '',
     menu => 0,
     titleAlias => '',
+    category => '',
    },
   );
 

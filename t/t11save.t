@@ -8,7 +8,7 @@ use Article;
 
 my @cols = Article->columns;
 
-my $base = 113;
+my $base = 119;
 
 my $count = $base + (@cols - 13) * 4;
 
@@ -87,6 +87,26 @@ SKIP:
       ok($data->{success}, "success flag is set");
       ok($data->{article}, "has an article object");
       $art = $data->{article};
+    }
+  }
+
+  { # try to set a bad value for category
+    my %req_data = 
+      (
+       save => 1,
+       id => $art->{id},
+       category => "A" . rand(),
+       lastModified => $art->{lastModified},
+      );
+    my $data = do_req($add_url, \%req_data, "save bad category");
+  SKIP:
+    {
+      $data or skip("Not json from setting bad category", 4);
+      ok(!$data->{success}, "shouldn't be successful");
+      ok(!$data->{article}, "should be no article object");
+      is($data->{error_code}, "FIELD", "should be a field error");
+      ok($data->{errors} && $data->{errors}{category},
+	 "should be an error message for category");
     }
   }
 

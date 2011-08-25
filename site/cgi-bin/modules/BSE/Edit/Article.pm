@@ -11,9 +11,10 @@ use BSE::Util::Iterate;
 use BSE::Template;
 use BSE::Util::ContentType qw(content_type);
 use DevHelp::Date qw(dh_parse_date dh_parse_sql_date);
+use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
-our $VERSION = "1.009";
+our $VERSION = "1.010";
 
 =head1 NAME
 
@@ -538,6 +539,12 @@ sub extra_templates {
   @templates;
 }
 
+sub categories {
+  my ($self, $articles) = @_;
+
+  return $articles->categories;
+}
+
 sub edit_parent {
   my ($article) = @_;
 
@@ -825,6 +832,19 @@ sub tag_movechild {
   }
 
   return make_arrows($req->cfg, $down_url, $up_url, $refresh_url, $img_prefix);
+}
+
+sub tag_category {
+  my ($self, $articles, $article) = @_;
+
+  my @cats = $self->categories($articles);
+
+  my %labels = map { $_->{id}, $_->{name} } @cats;
+
+  return popup_menu(-name => 'category',
+		    -values => [ map $_->{id}, @cats ],
+		    -labels => \%labels,
+		    -default => $article->{category});
 }
 
 sub tag_edit_link {
@@ -1276,6 +1296,7 @@ sub low_edit_tags {
      $it->make_iterator([ iter_file_stores => $self], 
 			'file_store', 'file_stores'),
      ifGroupRequired => [ \&tag_ifGroupRequired, $article, \$current_group ],
+     category => [ tag_category => $self, $articles, $article ],
      $ito->make
      (
       single => "tag",
@@ -1449,6 +1470,12 @@ sub _validate_common {
     unless ($data->{linkAlias} =~ /\A[a-zA-Z0-9-_]+\z/
 	    && $data->{linkAlias} =~ /[A-Za-z]/) {
       $errors->{linkAlias} = "Link alias must contain only alphanumerics and contain at least one letter";
+    }
+  }
+
+  if (defined $data->{category}) {
+    unless (first { $_->{id} eq $data->{category} } $self->categories($articles)) {
+      $errors->{category} = "msg:bse/admin/edit/category/unknown";
     }
   }
 }
@@ -1692,7 +1719,7 @@ sub save_new {
 # end adrian
 
   $self->fill_new_data($req, \%data, $articles);
-  for my $col (qw(titleImage imagePos template keyword menu titleAlias linkAlias body author summary)) {
+  for my $col (qw(titleImage imagePos template keyword menu titleAlias linkAlias body author summary category)) {
     defined $data{$col} 
       or $data{$col} = $self->default_value($req, \%data, $col);
   }
@@ -4694,6 +4721,7 @@ my %defaults =
    linkAlias => '',
    author => '',
    summary => '',
+   category => '',
   );
 
 sub default_value {

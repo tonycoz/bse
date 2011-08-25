@@ -80,6 +80,7 @@ Column summaryx;text;NO;NULL;
 Column menu;smallint(5);NO;0;
 Column titleAlias;varchar(60);NO;;
 Column linkAlias;varchar(255);NO;;
+Column category;varchar(40);NO;;
 Index PRIMARY;1;[id]
 Index article_alias;0;[linkAlias]
 Index article_date_index;0;[release;expire;id]

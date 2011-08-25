@@ -102,6 +102,8 @@ CREATE TABLE article (
 
   -- alias used to generate links
   linkAlias varchar(255) not null default '',
+
+  category varchar(40) not null default '',
   
   PRIMARY KEY (id),
 

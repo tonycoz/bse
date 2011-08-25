@@ -8,7 +8,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::TB::SiteCommon BSE::TB::TagOwner/;
 use Carp 'confess';
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 sub columns {
   return qw/id parentid displayOrder title titleImage body
@@ -19,7 +19,8 @@ sub columns {
     customInt1 customInt2 customInt3 customInt4 
     lastModifiedBy created createdBy author pageTitle
     force_dynamic cached_dynamic inherit_siteuser_rights
-    metaDescription metaKeywords summary menu titleAlias linkAlias/;
+    metaDescription metaKeywords summary menu titleAlias linkAlias
+    category/;
 }
 
 sub table {

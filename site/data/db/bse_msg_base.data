@@ -104,6 +104,12 @@ description: name field error if you try to rename a tag to match another
 id: bse/admin/edit/tags/nochange
 description: name field error if no change is saved
 
+id: bse/admin/edit/category
+description: Category field errors
+
+id: bse/admin/edit/category/unknown
+description: if an unknown article category is received
+
 id: bse/admin/shop/
 description: Shop Administration
 

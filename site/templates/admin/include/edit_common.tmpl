@@ -25,3 +25,9 @@
               <:or:><:ifArticle force_dynamic :>Yes<:or Article:>No<:eif Article:><:eif:></td>
             <td class="help"><:help edit keywords:> <:error_img keyword:></td>
           </tr>
+          <tr> 
+            <th>Category:</th>
+            <td> 
+              <:if FieldPerm category:><:category:><:or FieldPerm:><: article category :><:eif FieldPerm:></td>
+            <td class="help"><:help edit category:> <:error_img category:></td>
+          </tr>
