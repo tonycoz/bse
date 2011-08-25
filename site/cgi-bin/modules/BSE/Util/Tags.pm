@@ -8,7 +8,7 @@ use vars qw(@EXPORT_OK @ISA);
 @ISA = qw(Exporter);
 require Exporter;
 
-our $VERSION = "1.015";
+our $VERSION = "1.016";
 
 sub _get_parms {
   my ($acts, $args) = @_;
@@ -45,6 +45,33 @@ sub bse_strftime {
   return DevHelp::Date::dh_strftime($fmt, @when);
 }
 
+=item iterator cfgsection "section"
+
+Iterate over the keys in a config file section.  Sets the cfgentry tag.
+
+Can be sorted or filtered with a L<BSE::Sort> specification.  If only
+numeric keys are present, then sorting/filtering on the key will be
+performed numerically.  Similarly for values.
+
+=item cfgentry I<field>
+
+An entry in a configuration section being iterated by cfgsection.
+
+I<field> can be:
+
+=over
+
+=item *
+
+key - the key in the section.
+
+=item *
+
+value - the value of the key.
+
+=back
+
+=cut
 
 sub iter_cfgsection {
   my ($cfg, $args, $acts, $tag_name, $templater) = @_;
