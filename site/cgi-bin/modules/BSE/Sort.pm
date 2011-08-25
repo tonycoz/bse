@@ -5,7 +5,7 @@ require 'Exporter.pm';
 @ISA = qw(Exporter);
 @EXPORT = qw(bse_sort);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 my %backwhacked =
   (
@@ -14,6 +14,33 @@ my %backwhacked =
    r => "\r",
    '"' => '"',
   );
+
+=item bse_sort(\%types, $spec, @data)
+
+Sort and/or filter the supplied list in C<@data> based on the
+sort/filter specification in C<$spec> using the column types in
+C<%types>
+
+C<$spec> is a string containing either or both of a sort specification
+followed by a filter specification.
+
+A sort specification is C<sort=> followed by a comma separated list of
+columns to sort.  A column name can have a preceding C<+> to indicate
+(the default) ascending sort, or C<-> for a descending sort.
+
+A filter specification is a space separated list of comparisons.
+
+Each comparison is a column name, operator and value.
+
+Possible operators are the standard numeric operators and C<=~>.
+
+The type of comparison (numeric or string) depends on whether the
+value is a number or a quoted string.
+
+The value for the C<=~> operator must be a regexp formatted as
+C</regexp/flags>.
+
+=cut
 
 sub bse_sort {
   my ($types, $opts, @data) = @_;

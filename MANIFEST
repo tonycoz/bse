@@ -805,6 +805,7 @@ t/t010template.t		Tests Squirrel::Template
 t/t011dhdates.t			Tests DevHelp::Date
 t/t012validate.t
 t/t013country.t
+t/t014bsesort.t
 t/t050format.t			DevHelp::Formatter tests
 t/t060parms.t
 t/t070sqldates.t		Test SQL date tools
