@@ -2565,6 +2565,43 @@ name - name of the article category.
 Other keys may be used as desired, eg. to make it simpler to configure
 article behaviour based on the category.
 
+=head2 [article menu]
+
+This section can be used to add new menu items to the menu displayed
+on article edit pages.
+
+The keys are used for sorting only.
+
+The value is comma-separated:
+
+=over
+
+=item *
+
+target script name
+
+=item *
+
+target identifier, to be set to 1 on making a request to the script.
+
+=item *
+
+the label for the item in the menu.
+
+=back
+
+eg.
+
+  sample,a_foo,Sample Item
+
+will generate a link like:
+
+  <a href="/cgi-bin/admin/sample.pl?id=10&amp;a_foo=1">Sample Item</a>
+
+where 10 is the id of the article being edited.
+
+Keys with a prefix of C<bse_> are reserved for BSE internal use.
+
 =head1 AUTHOR
 
 Tony Cook <tony@develop-help.com>

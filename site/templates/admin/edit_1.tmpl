@@ -3,16 +3,7 @@
 <:if Message:> 
 <div id="message" <:ifError:>class="error"<:or:><:eif:>><:message:></div>
 <:or Message:><:eif Message:> 
-<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | <:ifNew:><:or:><:if Eq
-   [article id] [cfg articles shop]:><a href="<:article admin:>">See shop</a><:or
-    Eq:><a href="<:article admin:>">See article</a><:eif Eq:> | <:eif:><:editParent:> 
-  <:if Eq [article id] [cfg articles shop]:><a href="/cgi-bin/admin/shopadmin.pl">Manage
-   catalogs</a> |<:or Eq:><:eif Eq:><:if New:><:or New:> <a href="<:script:>?id=<:article id:>&amp;_t=steps">Manage
-    step children/parents</a> | 
-<a href="<:script:>?id=<:article id:>&amp;_t=groups">Manage access</a> |
-<a href="<:script:>?id=<:article id:>&amp;_t=img"><b>Manage Images</b></a> |
-<a href="<:script:>?id=<:article id:>&amp;_t=file"><b>Manage Files</b></a> |
-<:eif New:></p>
+<:include admin/include/article_menu.tmpl:>
 
   <h2><:articleType:> Details</h2>
 

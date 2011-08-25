@@ -1,0 +1,17 @@
+<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | <:ifNew:><:or:><:if Eq
+   [article id] [cfg articles shop]:><a href="<:article admin:>">See shop</a><:or
+    Eq:><a href="<:article admin:>">See article</a><:eif Eq:> | <:eif:><:editParent:> 
+  <:if Eq [article id] [cfg articles shop]:><a href="/cgi-bin/admin/shopadmin.pl">Manage
+   catalogs</a> |<:or Eq:><:eif Eq:><:if New:><:or New:> <a href="<:script:>?id=<:article id:>&amp;_t=steps">Manage
+    step children/parents</a> | 
+<a href="<:script:>?id=<:article id:>&amp;_t=groups">Manage access</a> |
+<a href="<:script:>?id=<:article id:>&amp;_t=img">Manage Images</a> |
+<a href="<:script:>?id=<:article id:>&amp;_t=file">Manage Files</a> |
+<:iterator begin cfgsection "article menu" sort=key:>
+<:if Match [cfgentry value] "^\w+,[^,]*,.+$" :>
+<a href="<:adminurl [match [cfgentry value] "^(\w+),[^,]*,.*$" $1] id [article id]:><:match [cfgentry value] "^\w+,([^,]+)," "&$1=1":>"><:match [cfgentry value] "^\w+,[^,]*,(.*)$" $1:></a> |
+<:or Match:>
+Bad [article menu] value "<:cfgentry value:>" for key "<:cfgentry key:>".
+<:eif Match:>
+<:iterator end cfgsection:>
+<:eif New:></p>
