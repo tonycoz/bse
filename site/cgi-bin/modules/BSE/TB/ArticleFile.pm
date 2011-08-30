@@ -6,7 +6,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 use Carp 'confess';
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 sub columns {
   return qw/id articleId displayName filename sizeInBytes description 
@@ -368,6 +368,144 @@ sub downloadable_by {
   }
 
   return 1;
+}
+
+sub update {
+  my ($self, %opts) = @_;
+
+  my $actor = $opts{_actor}
+    or confess "Missing _actor parameter";
+
+  my $warnings = $opts{_warnings}
+    or confess "Missing _warnings parameter";
+
+  my $cfg = BSE::Cfg->single;
+  my $file_dir = BSE::TB::ArticleFiles->download_path($cfg);
+  my $old_storage = $self->storage;
+  my $delete_file;
+  if ($opts{filename} || $opts{file}) {
+    my $src_filename = delete $opts{filename};
+    my $filename;
+    if ($src_filename) {
+      if ($src_filename =~ /^\Q$file_dir\E/) {
+	# created in the right place, use it
+	$filename = $src_filename;
+      }
+      else {
+	open my $in_fh, "<", $src_filename
+	  or die "Cannot open $src_filename: $!\n";
+	binmode $in_fh;
+
+	require DevHelp::FileUpload;
+	my $msg;
+	($filename) = DevHelp::FileUpload->
+	  make_img_copy($file_dir, $opts{displayName}, \$msg)
+	    or die "$msg\n";
+      }
+    }
+    elsif ($opts{file}) {
+      my $file = delete $opts{file};
+      require DevHelp::FileUpload;
+      my $msg;
+      ($filename) = DevHelp::FileUpload->
+	make_fh_copy($file, $file_dir, $opts{displayName}, \$msg)
+	  or die "$msg\n";
+    }
+
+    my $fullpath = $file_dir . '/' . $filename;
+    $self->set_filename($filename);
+    $self->set_sizeInBytes(-s $fullpath);
+    $self->setDisplayName($opts{displayName});
+
+    unless ($opts{contentType}) {
+      require BSE::Util::ContentType;
+      $self->set_contentType(BSE::Util::ContentType::content_type($cfg, $opts{displayName}));
+    }
+
+    $self->set_handler($cfg);
+  }
+
+  my $type = delete $opts{contentType};
+  if (defined $type) {
+    $self->set_contentType($type);
+  }
+
+  my $name = $opts{name};
+  $self->id != -1 || defined $name && $name =~ /\S/
+    or die "name is required for global files\n";
+  if (defined $name && $name =~ /\S/) {
+    $name =~ /^\w+$/
+      or die "name must be a single word\n";
+    my ($other) = BSE::TB::ArticleFiles->getBy(articleId => $self->id,
+					       name => $name);
+    $other && $other->id != $self->id
+      and die "Duplicate file name (identifier)\n";
+
+    $self->set_name($name);
+  }
+
+  $self->save;
+
+  my $mgr = BSE::TB::ArticleFiles->file_manager($cfg);
+  if ($delete_file) {
+    if ($old_storage ne "local") {
+      $mgr->unstore($delete_file);
+    }
+    unlink "$file_dir/$delete_file";
+
+    $old_storage = "local";
+  }
+
+  my $storage = delete $opts{storage} || '';
+
+  my $new_storage;
+  eval {
+    $new_storage = 
+      $mgr->select_store($self->filename, $storage, $self);
+    if ($old_storage ne $new_storage) {
+      # handles both new images (which sets storage to local) and changing
+      # the storage for old images
+      my $src = $mgr->store($self->filename, $new_storage, $self);
+      $self->set_src($src);
+      $self->set_storage($new_storage);
+      $self->save;
+    }
+    1;
+  } or do {
+    my $msg = $@;
+    chomp $msg;
+    require BSE::TB::AuditLog;
+    BSE::TB::AuditLog->log
+      (
+       component => "admin:edit:saveimage",
+       level => "warn",
+       object => $self,
+       actor => $actor,
+       msg => "Error saving file to storage $new_storage: $msg",
+      );
+    push @$warnings, "msg:bse/admin/edit/file/save/savetostore:$msg";
+  };
+
+  if ($self->storage ne $old_storage && $old_storage ne "local") {
+    eval {
+      $mgr->unstore($self->filename, $old_storage);
+      1;
+    } or do {
+      my $msg = $@;
+      chomp $msg;
+      require BSE::TB::AuditLog;
+      BSE::TB::AuditLog->log
+	(
+	 component => "admin:edit:savefile",
+	 level => "warn",
+	 object => $self,
+	 actor => $actor,
+	 msg => "Error saving file to storage $new_storage: $msg",
+	);
+      push @$warnings, "msg:bse/admin/edit/file/save/delfromstore:$msg";
+    };
+  }
+
 }
 
 1;

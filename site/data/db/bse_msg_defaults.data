@@ -1,5 +1,5 @@
 ---
-# VERSION=1.002
+# VERSION=1.003
 # defaults for the following
 language_code: en
 priority: 0
@@ -36,6 +36,24 @@ message: You haven't paid the order containing this file
 
 id: bse/user/downloaderror/unfilled
 message: The order containing this file hasn't been filled.  Please contact us.
+
+id: bse/admin/edit/image/save/nameformat
+message: Image identifiers must be a letter or underscore followed by zero or more letters, underscores or digits
+
+id: bse/admin/edit/image/save/namedup
+message: Duplicate image identifier '$1'
+
+id: bse/admin/edit/image/save/savetostore
+message: Could not save image to external store: $1
+
+id: bse/admin/edit/image/save/delfromstore
+message: Could not delete image from external store: $1
+
+id: bse/admin/edit/file/save/savetostore
+message: Could not save file to external store: $1
+
+id: bse/admin/edit/file/save/delfromstore
+message: Could not delete file from external store: $1
 
 id: bse/admin/edit/uplabelsect
 message: -- move up a level -- become a section

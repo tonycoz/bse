@@ -1,7 +1,7 @@
 package BSE::Cache::Cache;
 use strict;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 # BSE cache interface for Cache interface compatible caches.
 
@@ -34,11 +34,18 @@ sub set {
 sub get {
   my ($self, $key) = @_;
 
-  my $entry = $self->{cache}->entry($key);
-  $entry->exists
-    or return;
+  my $result;
+  eval {
+    my $entry = $self->{cache}->entry($key);
+    $entry->exists
+      or return;
 
-  return $entry->thaw;
+    $result = $entry->thaw;
+  } or do {
+    return;
+  };
+
+  return $result;
 }
 
 sub delete {

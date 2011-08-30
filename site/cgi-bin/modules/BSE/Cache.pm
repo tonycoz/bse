@@ -1,7 +1,7 @@
 package BSE::Cache;
 use strict;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub load {
   my ($class, $cfg) = @_;
@@ -11,8 +11,27 @@ sub load {
   defined $cache_class
     or return;
   ( my $cache_mod_file = $cache_class . ".pm" ) =~ s(::)(/)g;
-  require $cache_mod_file;
-  return $cache_class->new($cfg);
+  my $result = eval {
+    require $cache_mod_file;
+    return $cache_class->new($cfg);
+  };
+  unless ($result) {
+    require BSE::TB::AuditLog;
+    BSE::TB::AuditLog->log
+	(
+	 component => "cache::load",
+	 level => "error",
+	 actor => "S",
+	 msg => "Failed to load or create cache object: $@",
+	 dump => <<EOS
+Class: $cache_class
+Module: $cache_mod_file
+Error: $@
+EOS
+	);
+  }
+
+  return $result;
 }
 
 1;

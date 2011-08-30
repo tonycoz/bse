@@ -799,6 +799,7 @@ t/cfg/cfg/00start.cfg
 t/cfg/cfg/99end.cfg
 t/cfg/isafile.cfg
 t/cfg/t/varinc.cfg
+t/data/t101.jpg
 t/t000load.t
 t/t00smoke.t			makes a request to most of the scripts
 t/t010template.t		Tests Squirrel::Template
@@ -818,6 +819,7 @@ t/t11save.t
 t/t12cat.t
 t/t13parent.t
 t/t13steps.t
+t/t15api.t
 t/t20gen.t
 t/t21gencat.t			Tests catalog generation
 t/t30rules.t			Check for use strict and warnings

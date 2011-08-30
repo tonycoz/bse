@@ -14,7 +14,7 @@ use DevHelp::Date qw(dh_parse_date dh_parse_sql_date);
 use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
-our $VERSION = "1.010";
+our $VERSION = "1.011";
 
 =head1 NAME
 
@@ -3115,14 +3115,12 @@ sub _service_success {
     };
 }
 
+# FIXME: eliminate this method and call get_ftype directly
 sub _image_ftype {
   my ($self, $type) = @_;
 
-  if ($type eq 'CWS' || $type eq 'SWF') {
-    return "flash";
-  }
-
-  return "img";
+  require BSE::TB::Images;
+  return BSE::TB::Images->get_ftype($type);
 }
 
 sub do_add_image {
@@ -3186,7 +3184,7 @@ sub do_add_image {
     $errors->{image} = $msg;
     return;
   }
-print STDERR "Gen filename '$filename'\n";
+
   # for OSs with special text line endings
   binmode $fh;
 
@@ -3323,9 +3321,8 @@ sub add_image {
 sub _image_manager {
   my ($self) = @_;
 
-  require BSE::StorageMgr::Images;
-
-  return BSE::StorageMgr::Images->new(cfg => $self->cfg);
+  require BSE::TB::Images;
+  return BSE::TB::Images->storage_manager;
 }
 
 # remove an image

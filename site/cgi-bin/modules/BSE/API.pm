@@ -1,17 +1,16 @@
 package BSE::API;
 use strict;
-use vars qw(@ISA @EXPORT_OK);
 use BSE::Util::SQL qw(sql_datetime now_sqldatetime);
 use BSE::DB;
 use BSE::Cfg;
-require Exporter;
-@ISA = qw(Exporter);
-@EXPORT_OK = qw(bse_init bse_cfg bse_make_product bse_make_catalog bse_encoding bse_add_image bse_add_step_child bse_add_owned_file bse_delete_owned_file bse_replace_owned_file bse_make_article bse_add_step_parent);
+use Exporter qw(import);
+our @EXPORT_OK = qw(bse_init bse_cfg bse_make_product bse_make_catalog bse_encoding bse_add_image bse_save_image bse_add_step_child bse_add_owned_file bse_delete_owned_file bse_replace_owned_file bse_make_article bse_add_step_parent);
+our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 use Carp qw(confess croak);
 use Fcntl qw(:seek);
 use Cwd;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 my %acticle_defaults =
   (
@@ -49,6 +48,7 @@ my %acticle_defaults =
    titleAlias => '',
    linkAlias => '',
    category => '',
+   parentid => -1,
   );
 
 my %product_defaults =
@@ -224,8 +224,6 @@ sub bse_make_article {
 
   defined $opts{title} && length $opts{title}
     or confess "Missing title option\n";
-  defined $opts{body} && length $opts{body}
-    or confess "Missing body option\n";
 
   $opts{summary} ||= $opts{title};
   unless ($opts{displayOrder}) {
@@ -299,24 +297,70 @@ sub bse_add_image {
   my $editor;
   ($editor, $article) = _load_editor_class($article, $cfg);
 
-  my %image;
-  my $file = delete $opts{file};
-  $file
-    or croak "Missing image filename";
-  open IN, "< $file"
-    or croak "Failed opening image file $file: $!";
-  binmode IN;
+  my $fh;
+
+  my $filename = delete $opts{file};
+  if ($filename) {
+    open $fh, "< $filename"
+      or croak "Failed opening image file $filename: $!";
+    binmode $fh;
+  }
+  elsif ($opts{fh}) {
+    $filename = $opts{display_name}
+      or confess "No image display name supplied with fh";
+    $fh = $opts{fh};
+  }
+  else {
+    confess "Missing fh or file parameter";
+  }
   my %errors;
 
   $editor->do_add_image
     (
      $cfg,
      $article,
-     *IN,
+     $fh,
      %opts,
-     errors => \%errors,
-     filename => $file,
+     errors => $opts{errors} || \%errors,
+     filename => $filename,
     );
+}
+
+sub bse_language {
+  return $cfg->entry("site", "language", "en_AU");
+}
+
+{
+  my $msgs;
+
+  sub bse_msg_text {
+    my ($lang, $id, $parms, $def) = @_;
+
+    unless ($msgs) {
+      require BSE::Message;
+      $msgs = BSE::Message->new;
+    }
+
+    return $msgs->text($lang, $id, $parms, $def);
+  }
+}
+
+sub bse_save_image {
+  my ($image, %opts) = @_;
+
+  my @warn;
+  my $result = $image->update
+    (
+     _language => bse_language(),
+     _actor => "S",
+     _warnings => \@warn,
+     %opts,
+    );
+  if (@warn) {
+    warn "$_\n" for @warn;
+  }
+
+  return $result;
 }
 
 sub _load_editor_class {

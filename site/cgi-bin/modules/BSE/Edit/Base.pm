@@ -1,14 +1,13 @@
 package BSE::Edit::Base;
 use strict;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 # one day I might put something useful here
 sub new {
   my ($class, %parms) = @_;
 
-  $parms{cfg}
-    or die "Missing cfg parameter";
+  $parms{cfg} ||= BSE::Cfg->single;
 
   return bless \%parms, $class;
 }

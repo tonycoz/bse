@@ -6,7 +6,7 @@ use constant CFG_DEPTH => 5; # unused so far
 use constant CACHE_AGE => 30;
 use constant VAR_DEPTH => 10;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 my %cache;
 
@@ -218,22 +218,22 @@ sub entryVar {
   $value;
 }
 
-=item entryIfVar($section, $key)
+=item entryIfVar($section, $key, $def)
 
-Same as entryVar(), except that it returns undef if there is no value
+Same as entryVar(), except that it returns $def if there is no value
 for the given section/key.
 
 =cut
 
 sub entryIfVar {
-  my ($self, $section, $key) = @_;
+  my ($self, $section, $key, $def) = @_;
 
   my $value = $self->entry($section, $key);
   if (defined $value) {
-    $value = $self->entryVar($section, $key);
+    return $self->entryVar($section, $key);
   }
 
-  $value;
+  return $def;
 }
 
 =item entryBool($section, $key, [ $def ])

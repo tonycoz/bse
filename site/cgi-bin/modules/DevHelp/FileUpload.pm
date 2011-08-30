@@ -3,7 +3,7 @@ use strict;
 use IO::File;
 use File::Copy;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 =head1 NAME
 
@@ -47,6 +47,32 @@ sub make_img_copy {
     
   close $fh;
   undef $fh;
+
+  return $newname;
+}
+
+=item DevHelp::FileUpload->make_fh_copy($fh, $imgdir, $name, \$msg)
+
+=cut
+
+sub make_fh_copy {
+  my ($class, $fh, $imgdir, $name, $rmsg) = @_;
+
+  my ($newname, $out_fh) = $class->make_img_filename($imgdir, $name, $rmsg)
+    or return;
+
+  # $fh might be a CGI.pm special that confuses File::Copy
+  local $/ = \8192;
+  binmode $fh;
+  binmode $out_fh;
+  while (my $block = <$fh>) {
+    print $out_fh $block;
+  }
+  unless (close $out_fh) {
+    $$rmsg = "Cannot write work file: $!";
+    unlink "$imgdir/$newname";
+    return;
+  }
 
   return $newname;
 }

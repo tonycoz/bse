@@ -71,6 +71,36 @@ description: BSE Administration
 id: bse/admin/edit/
 description: Article editor messages
 
+id: bse/admin/edit/image/
+description: Article editor image messages
+
+id: bse/admin/edit/image/save/
+description: Messages from saving images
+
+id: bse/admin/edit/image/save/namedup
+description: Message for a duplicate image name ($1 - the offending name)
+
+id: bse/admin/edit/image/save/nameformat
+description: Message for an invalid name ($1 - the offending name)
+
+id: bse/admin/edit/image/save/delfromstore
+description: If the image couldn't be deleted from an external store ($1 - the back end error message)
+
+id: bse/admin/edit/image/save/savetostore
+description: If the image couldn't saved to an external store ($1 - the back end error message)
+
+id: bse/admin/edit/file/
+description: Article file manipulation
+
+id: bse/admin/edit/file/save/
+description: Saving an article file
+
+id: bse/admin/edit/file/save/savetostore
+description: If the file couldn't saved to an external store ($1 - the back end error message)
+
+id: bse/admin/edit/file/save/delfromstore
+description: If the image couldn't be deleted from an external store ($1 - the back end error message)
+
 id: bse/admin/edit/uplabelsect
 description: label in parent list to make article a section
 
