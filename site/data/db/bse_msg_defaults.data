@@ -41,19 +41,19 @@ id: bse/admin/edit/image/save/nameformat
 message: Image identifiers must be a letter or underscore followed by zero or more letters, underscores or digits
 
 id: bse/admin/edit/image/save/namedup
-message: Duplicate image identifier '$1'
+message: Duplicate image identifier '%1:s'
 
 id: bse/admin/edit/image/save/savetostore
-message: Could not save image to external store: $1
+message: Could not save image to external store: %1:s
 
 id: bse/admin/edit/image/save/delfromstore
-message: Could not delete image from external store: $1
+message: Could not delete image from external store: %1:s
 
 id: bse/admin/edit/file/save/savetostore
-message: Could not save file to external store: $1
+message: Could not save file to external store: %1:s
 
 id: bse/admin/edit/file/save/delfromstore
-message: Could not delete file from external store: $1
+message: Could not delete file from external store: %1:s
 
 id: bse/admin/edit/uplabelsect
 message: -- move up a level -- become a section
