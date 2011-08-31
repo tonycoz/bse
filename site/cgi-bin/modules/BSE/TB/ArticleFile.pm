@@ -6,7 +6,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 use Carp 'confess';
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 sub columns {
   return qw/id articleId displayName filename sizeInBytes description 
@@ -213,7 +213,8 @@ sub inline {
   defined $field or $field = "";
 
   if ($field && exists $file->{$field}) {
-    return escape_html($file->{$field});
+    require BSE::Util::HTML;
+    return BSE::Util::HTML::escape_html($file->{$field});
   }
   elsif ($field =~ /^meta\.(\w+)$/) {
     my $name = $1;
@@ -233,7 +234,7 @@ sub inline {
       return $eurl;
     }
     my $class = $file->{download} ? "file_download" : "file_inline";
-    my $html = qq!<a class="$class" href="$eurl">! . escape_html($file->{displayName}) . '</a>';
+    my $html = qq!<a class="$class" href="$eurl">! . BSE::Util::HTML::escape_html($file->{displayName}) . '</a>';
     return $html;
   }
   else {
