@@ -11,6 +11,7 @@ my @errors;
 for my $check (@check) {
   $check =~ /^D/ and next;
   $check =~ s/^(..)\s+//;
+  $check =~ s/.* -> //; # renames
   my $type = $1;
   -e $check or die "Cannot find file $check\n";
 

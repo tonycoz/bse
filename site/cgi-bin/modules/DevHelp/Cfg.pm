@@ -6,7 +6,7 @@ use constant CFG_DEPTH => 5; # unused so far
 use constant CACHE_AGE => 30;
 use constant VAR_DEPTH => 10;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 my %cache;
 
@@ -476,7 +476,8 @@ sub _error {
   my ($self, $msg) = @_;
 
   $self->{error} = $msg;
-  die "$msg\n";
+  require Carp;
+  confess "$msg\n";
 }
 
 

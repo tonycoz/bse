@@ -6,6 +6,9 @@
   margin-left: -4em;
 }
 </style>
-<p>Viewing: <:template id:> | <a href="<:adminurl pregen:>">Return to list</a> | <a href="<:adminurl menu:>">Admin Menu</a> |</p>
+<p>Viewing: <:template id:> | <a href="<:adminurl pregen:>">Return to list</a> | <a href="<:adminurl generate r [adminurl pregen a_show 1 template [template id] |z] id [cat "extra:" [template id]] m 1 |x:>">Regenerate <:template id:> </a> | <a href="<:adminurl menu:>">Admin Menu</a>
+ |</p>
+<:ifMessage:><p><:message:></p><:or:><:eif:>
+
 <iframe id="show" src="<:adminurl pregen a_display 1 template [template id]:>">
 </iframe>

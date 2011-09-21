@@ -126,6 +126,7 @@ site/cgi-bin/modules/BSE/Passwords.pm
 site/cgi-bin/modules/BSE/PayPal.pm
 site/cgi-bin/modules/BSE/Permissions.pm
 site/cgi-bin/modules/BSE/ProductImportXLS.pm
+site/cgi-bin/modules/BSE/Regen.pm
 site/cgi-bin/modules/BSE/Report.pm
 site/cgi-bin/modules/BSE/Request.pm
 site/cgi-bin/modules/BSE/Request/Base.pm
@@ -322,7 +323,6 @@ site/cgi-bin/modules/Squirrel/PGP6.pm
 site/cgi-bin/modules/Squirrel/Row.pm
 site/cgi-bin/modules/Squirrel/Table.pm
 site/cgi-bin/modules/Squirrel/Template.pm
-site/cgi-bin/modules/Util.pm
 site/cgi-bin/nuser.fcgi
 site/cgi-bin/nuser.pl
 site/cgi-bin/page.fcgi

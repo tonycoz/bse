@@ -4,7 +4,7 @@ use base qw(BSE::UI::Dispatch);
 use BSE::CfgInfo qw(admin_base_url);
 use Carp qw(confess);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 # checks we're coming from HTTPS
 sub check_secure {
@@ -59,13 +59,7 @@ sub check_action {
     # time to logon
     # if this was a GET, try to refresh back to it after logon
     if ($req->is_ajax || $req->cgi->param("_")) {
-      $$rresult = $req->json_content
-	(
-	 success => 0,
-	 error_code => "LOGON",
-	 message => "Access forbidden: user not logged on",
-	 errors => {},
-	);
+      $$rresult = $req->logon_error;
     }
     else {
       my %extras =

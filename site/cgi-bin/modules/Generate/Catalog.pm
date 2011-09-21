@@ -1,6 +1,6 @@
 package Generate::Catalog;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 use strict;
 use Generate;
@@ -8,7 +8,7 @@ use Products;
 use base 'Generate::Article';
 use BSE::Template;
 use Constants qw($CGI_URI $IMAGES_URI $ADMIN_URI);
-use Util qw(generate_button);
+use BSE::Regen qw(generate_button);
 use OtherParents;
 use DevHelp::HTML;
 use BSE::Arrows;
