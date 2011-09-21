@@ -334,7 +334,7 @@ EXPECTED
 template_test "body", $parent, <<'TEMPLATE', <<EXPECTED;
 <:body:>
 TEMPLATE
-<p>parent article <a href="$base_securl/shop/index.html" title="The Shop" class="doclink">foo</a></p>
+<p>parent article <a href="$base_securl/shop/" title="The Shop" class="doclink">foo</a></p>
 EXPECTED
 
 # not actually generation tests, but chekcs that the is_step_ancestor works
