@@ -8,7 +8,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::TB::SiteCommon BSE::TB::TagOwner/;
 use Carp 'confess';
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 sub columns {
   return qw/id parentid displayOrder title titleImage body
@@ -145,9 +145,14 @@ sub link_to_filename {
   length $link or return;
 
   my $filename = $link;
-  $filename =~ s!/\w*$!!;
+
+  # remove any appended title,
+  $filename =~ s!(.)/\w+$!$1!;
   $filename =~ s{^\w+://[\w.-]+(?::\d+)?}{};
   $filename = $cfg->content_base_path() . $filename;
+  if ($filename =~ m(/$)) {
+    $filename .= $cfg->entry("basic", "index_file", "index.html");
+  }
   $filename =~ s!//+!/!;
   
   return $filename;

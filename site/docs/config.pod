@@ -1,3 +1,4 @@
+
 =head1 NAME
 
 config.pod - documents BSE configuration file options
@@ -416,6 +417,11 @@ Default: 1.
 
 If set to 0, dynamic article iterators will no access control filter
 their results.  Default: 1.
+
+=item index_file
+
+The name of the file to generate for static articles when the link is
+terminated by "/".  Default: C<index.html>.
 
 =back
 
