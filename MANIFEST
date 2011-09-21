@@ -799,6 +799,7 @@ t/cfg/cfg/00start.cfg
 t/cfg/cfg/99end.cfg
 t/cfg/isafile.cfg
 t/cfg/t/varinc.cfg
+t/data/govhouse.jpg
 t/data/t101.jpg
 t/t000load.t
 t/t00smoke.t			makes a request to most of the scripts
