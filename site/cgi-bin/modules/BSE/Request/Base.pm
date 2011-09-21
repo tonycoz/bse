@@ -5,7 +5,7 @@ use BSE::Cfg;
 use BSE::Util::HTML;
 use Carp qw(cluck confess);
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 sub new {
   my ($class, %opts) = @_;
@@ -933,6 +933,24 @@ sub field_error {
      error_code => "FIELD",
      errors => \%errors,
      message => "Fields failed validation",
+    );
+}
+
+=item logon_error
+
+Standard structure of an "admin user not logged on" error returned as
+JSON content.
+
+=cut
+
+sub logon_error {
+  my ($self) = @_;
+  return $self->json_content
+    (
+     success => 0,
+     error_code => "LOGON",
+     message => "Access forbidden: user not logged on",
+     errors => {},
     );
 }
 

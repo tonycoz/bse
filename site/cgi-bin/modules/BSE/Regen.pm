@@ -4,13 +4,13 @@ use vars qw(@ISA @EXPORT_OK);
 require Exporter;
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(generate_article generate_all generate_button 
-                regen_and_refresh);
+                regen_and_refresh generate_extras pregenerate_list generate_one_extra generate_base content_one_extra response_one_extra);
 use Constants qw($GENERATE_BUTTON $SHOPID $AUTO_GENERATE);
 use Carp qw(confess);
 use BSE::WebUtil qw(refresh_to_admin);
 use BSE::Util::HTML;
 
-our $VERSION = "1.001";
+our $VERSION = "1.003";
 
 # returns non-zero if the Regenerate button should work
 sub generate_button {
@@ -90,53 +90,219 @@ sub generate_article {
   }
 }
 
-# generates search.tmpl from search_base.tmpl
-sub generate_search {
-  my ($articles, $cfg) = @_;
+sub _cfg_presets {
+  my ($cfg, $article, $type) = @_;
 
-  $cfg ||= BSE::Cfg->single;
+  my $section = "$type settings";
+
+  require Articles;
+  for my $field (Article->columns) {
+    if ($cfg->entry($section, $field)) {
+      $article->{$field} = $cfg->entryVar($section, $field);
+    }
+  }
+}
+
+sub _search_presets {
+  my ($cfg) = @_;
 
   # build a dummy article
   use Constants qw($SEARCH_TITLE $SEARCH_TITLE_IMAGE $CGI_URI);
+  require Articles;
   my %article = map { $_, '' } Article->columns;
   @article{qw(id parentid title titleImage displayOrder link level listed force_dynamic)} =
     (-4, -1, $SEARCH_TITLE, $SEARCH_TITLE_IMAGE, 0, $CGI_URI."/search.pl", 0, 1, 1);
 
   $article{link} = $cfg->entryErr('site', 'url') . $article{link};
-  require 'Generate/Article.pm';
-  my $gen = Generate::Article->new(cfg=>$cfg, top => \%article, 
-				   force_dynamic => 1);
 
-  my %acts;
-  %acts = $gen->baseActs($articles, \%acts, \%article);
-  my $content = BSE::Template->get_page('search_base', $cfg, \%acts);
-  my $tmpldir = $cfg->entryVar('paths', 'templates');
-  my $outname = "$tmpldir/search.tmpl.work";
-  my $finalname = "$tmpldir/search.tmpl";
-  _write_text($outname, $content, $cfg);
-  rename $outname, $finalname
-    or die "Cannot rename $outname to $finalname: $!";
+  _cfg_presets($cfg, \%article, "search");
+
+  return \%article;
 }
 
-sub generate_shop {
-  my ($articles, $cfg) = @_;
-  my @pages =
-    (
-     'cart', 'checkoutnew', 'checkoutfinal', 'checkoutcard', 'checkoutconfirm',
-     'checkoutpay',
-    );
-  require 'Generate/Article.pm';
-  my $shop_base = $articles->getByPkey($SHOPID);
+sub _shop_presets {
+  my ($cfg) = @_;
+
+  require Articles;
+  my $shop_base = Articles->getByPkey($SHOPID);
   my $shop = { map { $_ => $shop_base->{$_} } $shop_base->columns };
   $shop->{link} =~ /^\w+:/
     or $shop->{link} = $cfg->entryErr('site', 'url') . $shop->{link};
   $shop->{id} = -3; # some random negative number
-  my $gen = Generate::Article->new(cfg=>$cfg, top=>$shop, force_dynamic => 1);
-  for my $name (@pages) {
-    my %acts;
-    %acts = $gen->baseActs($articles, \%acts, $shop);
-    # different url behaviour - point the user at the http version
-    # of the site if the url contains no scheme
+
+  _cfg_presets($cfg, $shop, "shop");
+
+  return $shop;
+}
+
+sub _extras_presets {
+  my ($cfg, $presets) = @_;
+
+  require Articles;
+  my %article = map { $_, '' } Article->columns;
+  $article{displayOrder} = 1;
+  $article{id} = -5;
+  $article{parentid} = -1;
+  $article{link} = $cfg->entryErr('site', 'url');
+  _cfg_presets($cfg, \%article, $presets);
+
+  return \%article;
+}
+
+my %builtin_extras =
+  (
+   search => [ "search" ],
+   shop =>
+   [
+    'cart', 'checkoutnew', 'checkoutfinal', 'checkoutcard', 'checkoutconfirm',
+    'checkoutpay',
+   ],
+  );
+
+my %abs_urls =
+  (
+   shop => 1,
+   search => 0,
+  );
+
+my %builtin_lookup;
+
+{
+  for my $type (keys %builtin_extras) {
+    for my $name (@{$builtin_extras{$type}}) {
+      $builtin_lookup{$name} = $type;
+    }
+  }
+}
+
+sub _extras_cfg {
+  my ($cfg, $extra) = @_;
+
+  my %result;
+  if ($builtin_extras{$extra->{set}}) {
+    $result{abs_urls} = $abs_urls{$extra->{set}};
+  }
+  else {
+    $result{abs_urls} = $cfg->entry("$extra->{type} settings", "abs_urls", 0);
+  }
+
+  return \%result;
+}
+
+sub pregenerate_list {
+  my ($cfg) = @_;
+
+  my $template_dir = $cfg->entryVar('paths', 'templates');
+
+  # this will change to a directory that can be safely blown away
+  my $pregen_path = $template_dir;
+
+  my @result =
+    (
+     (
+      map
+      +{
+	name => "$_.tmpl",
+	base => $_ . "_base.tmpl",
+	type => $builtin_lookup{$_},
+	set => $builtin_lookup{$_},
+	sort => 0,
+	outpath => $pregen_path,
+	abs_urls => $abs_urls{$builtin_lookup{$_}},
+	dynamic => 1,
+       }, keys %builtin_lookup
+     ),
+    );
+
+  # cfg pregen
+  my %pregen = $cfg->entries('pregenerate');
+  for my $out (keys %pregen) {
+    my ($type, $input) = split ',', $pregen{$out}, 2;
+    push @result,
+      +{
+	name => $out,
+	base => $input,
+	type => $type,
+	set => "pregen",
+	sort => 1,
+	outpath => $pregen_path,
+	dynamic => 1,
+       };
+  }
+
+  # extras file
+  if (open my $extras, "$template_dir/extras.txt") {
+    while (<$extras>) {
+      chomp;
+      next if /^\s*#/;
+      if (/^(\S+)\s+(\S+)/) {
+	push @result,
+	  {
+	   name => $2,
+	   base => $1,
+	   type => "extras",
+	   set => "extras",
+	   sort => 2,
+	   outpath => $cfg->content_base_path,
+	   dynamic => 0,
+	  };
+      }
+    }
+    close $extras;
+  }
+
+  return sort {
+    $a->{sort} <=> $b->{sort}
+      || $a->{set} cmp $b->{set}
+	|| $a->{type} cmp $b->{type}
+	  || lc $a->{name} cmp lc $b->{name}
+    } @result;
+}
+
+sub _make_extra_art {
+  my ($cfg, $extra) = @_;
+
+  if ($extra->{set} eq "shop") {
+    return _shop_presets($cfg);
+  }
+  elsif ($extra->{set} eq "search") {
+    return _search_presets($cfg);
+  }
+  elsif ($extra->{set} eq "pregen"
+	 || $extra->{set} eq "extras") {
+    return _extras_presets($cfg, $extra->{type});
+  }
+  else {
+    confess "Unknown extras set $extra->{set}";
+  }
+}
+
+sub _make_extra_gen {
+  my ($cfg, $extra) = @_;
+
+  my $article = _make_extra_art($cfg, $extra);
+  require Generate::Article;
+  my %opts =
+    (
+     cfg => $cfg,
+     top => $article,
+    );
+  if ($extra->{set} eq "extras") {
+    $opts{force_dynamic} = 1;
+  }
+  require Generate::Article;
+  my $gen = Generate::Article->new(%opts);
+
+  return ($article, $gen);
+}
+
+sub _common_one_extra {
+  my ($articles, $extra, $cfg) = @_;
+
+  my ($article, $gen) = _make_extra_gen($cfg, $extra);
+  my %acts;
+  %acts = $gen->baseActs($articles, \%acts, $article);
+  if (_extras_cfg($cfg, $extra)->{abs_urls}) {
     my $oldurl = $acts{url};
     $acts{url} =
       sub {
@@ -148,85 +314,89 @@ sub generate_shop {
         }
         return $value;
       };
-    my $content = BSE::Template->get_page("${name}_base", $cfg, \%acts);
-    my $tmpldir = $cfg->entryVar('paths', 'templates');
-    my $outname = "$tmpldir/$name.tmpl.work";
-    my $finalname = "$tmpldir/$name.tmpl";
-    _write_text($outname, $content, $cfg);
-    unlink $finalname;
-    rename $outname, $finalname
-      or die "Cannot rename $outname to $finalname: $!";
   }
+
+  my $content = BSE::Template->get_page($extra->{base}, $cfg, \%acts);
+  return wantarray ? ( $content, $article ) : $content;
 }
 
-sub generate_extras {
-  my ($articles, $cfg, $callback) = @_;
+sub response_one_extra {
+  my ($articles, $extra) = @_;
 
-  use BSE::Cfg;
-  $cfg ||= BSE::Cfg->new;
-  my $template_dir = $cfg->entryVar('paths', 'templates');
+  my $cfg = BSE::Cfg->single;
+  my $content = _common_one_extra($articles, $extra, $cfg);
 
-  open EXTRAS, "$template_dir/extras.txt"
-    or return;
-  my @extras;
-  while (<EXTRAS>) {
-    chomp;
-    next if /^\s*#/;
-    if (/^(\S+)\s+(\S+)/) {
-      push(@extras, [ $1, $2 ]);
-    }
-  }
-  close EXTRAS;
+  return BSE::Template->make_response($content, BSE::Template->get_type($cfg, $extra->{template}));
+}
 
-  my %entries = $cfg->entries('pregenerate');
+sub content_one_extra {
+  my ($articles, $extra) = @_;
+
+  my $cfg = BSE::Cfg->single;
+  return _common_one_extra($articles, $extra, $cfg);
+}
+
+sub generate_one_extra {
+  my ($articles, $extra) = @_;
+
+  my $cfg = BSE::Cfg->single;
+  my $content = _common_one_extra($articles, $extra, $cfg);
+  my $outname = $extra->{outpath} . "/". $extra->{name};
+  my $workname = $outname . ".work";
+  _write_text($workname, $content, $cfg);
+  unlink $outname;
+  rename $workname, $outname
+    or die "Cannot rename $workname to $outname: $!";
+}
+
+sub generate_base {
+  my %opts = @_;
+
+  my $cfg = delete $opts{cfg} || BSE::Cfg->single;
+
+  my $articles = delete $opts{articles} || "Articles";
+  my $extras = delete $opts{extras} || [ pregenerate_list($cfg) ];
+
+  my $progress = delete $opts{progress} || sub {};
+
+  my @extras = sort
+    {
+      $a->{sort} <=> $b->{sort}
+	|| $a->{type} cmp $b->{type}
+	  || lc $a->{name} cmp lc $b->{name}
+    } @$extras;
+
+  my $count = @extras;
+  $progress->({ type => "extras", count => $count, info => "count" }, "$count base pages");
+  my $set = "";
+  my $type = "";
+  my ($gen, $article);
+  my %acts;
   for my $extra (@extras) {
-    my ($in, $out) = @$extra;
-    $entries{$out} = 'extras,' . $in;
-  }
-  if (keys %entries) {
-    require 'Generate/Article.pm';
-    for my $out (keys %entries) {
-      my ($presets, $input) = split ',', $entries{$out}, 2;
-      my $section = "$presets settings";
-      $callback->("$input to $out with $presets") if $callback;
-      my %article = map { $_, '' } Article->columns;
-      $article{displayOrder} = 1;
-      $article{id} = -5;
-      $article{parentid} = -1;
-      $article{link} = $cfg->entryErr('site', 'url');
-      for my $field (Article->columns) {
-	if ($cfg->entry($section, $field)) {
-	  $article{$field} = $cfg->entryVar($section, $field);
-	}
+    if ($extra->{set} ne $set || $extra->{type} ne $type) {
+      ($article, $gen) = _make_extra_gen($cfg, $extra);
+      %acts = $gen->baseActs($articles, \%acts, $article);
+      if (_extras_cfg($cfg, $extra)->{abs_urls}) {
+	my $oldurl = $acts{url};
+	$acts{url} =
+	  sub {
+	    my $value = $oldurl->(@_);
+	    $value =~ /^<:/ and return $value;
+	    unless ($value =~ /^\w+:/) {
+	      # put in the base site url
+	      $value = $cfg->entryErr('site', 'url').$value;
+	    }
+	    return $value;
+	  };
       }
-      # by default all of these are handled as dynamic, but it can be 
-      # overidden, eg. the error template
-      my $is_extras = $presets eq 'extras';
-      my $dynamic = $cfg->entry($section, 'dynamic', !$is_extras);
-      my $outpath = $cfg->entry($section, 'content', $is_extras) ? 
-	$cfg->content_base_path : $template_dir;
-      my %acts;
-      my $gen = Generate::Article->new(cfg=>$cfg, top=>\%article, 
-				       force_dynamic => $dynamic);
-      %acts = $gen->baseActs($articles, \%acts, \%article);
-      my $oldurl = $acts{url};
-      $acts{url} =
-	sub {
-	  my $value = $oldurl->(@_);
-	  $value =~ /^<:/ and return $value;
-	  unless ($value =~ /^\w+:/) {
-	    # put in the base site url
-	    $value = $cfg->entryErr('site', 'url').$value;
-	  }
-	  return $value;
-	};
-      my $content = BSE::Template->get_page($input, $cfg, \%acts);
-      my $finalname = $outpath . '/'. $out;
-      my $outname = $finalname . '.work';
-      _write_text($outname, $content, $cfg);
-      unlink $finalname;
-      rename $outname, $finalname
-	or die "Cannot rename $outname to $finalname: $!";
+      $progress->($extra, "Generating $extra->{name}");
+      my $content = BSE::Template->get_page($extra->{base}, $cfg, \%acts);
+      my $outname = $extra->{outpath} . "/". $extra->{name};
+      my $workname = $outname . ".work";
+      _write_text($workname, $content, $cfg);
+      unlink $outname;
+      rename $workname, $outname
+	or die "Cannot rename $workname to $outname: $!";
     }
   }
 }
@@ -257,98 +427,18 @@ sub generate_all {
     }
   }
 
-  $callback->("Generating search base") if $callback;
-  generate_search($articles, $cfg);
-
-  $callback->("Generating shop base pages") if $callback;
-  generate_shop($articles, $cfg);
-
-  $callback->("Generating extra pages") if $callback;
-  generate_extras($articles, $cfg, $callback);
+  my $last_section = "";
+  my $progress = $callback ? sub {
+    my $data = shift;
+    if (!$data->{count} && $data->{set} ne $last_section) {
+      $callback->("Regenerating $data->{set} pages");
+      $last_section = $data->{set};
+    }
+    $callback->("  @_")
+  } : undef;
+  generate_base(cfg => $cfg, articles => $articles, progress => $progress);
 
   $callback->("Total of ".(time()-$allstart)." seconds") if $callback;
-}
-
-=item regen_and_refresh($articles, $article, $generate, $refreshto, $cfg, $progress)
-
-An error checking wrapper around the page regeneration code.
-
-In some cases IIS appears to lock the static pages, which was causing
-various problems.  Here we catch the error and let the user know what
-is going on.
-
-If $article is set to undef then everything is regenerated.
-
-$cfg should be an initialized BSE::Cfg object
-
-$progress should be either missing, undef or a code reference.
-
-$generate is typically 1 or $AUTO_GENERATE
-
-Returns 1 if the regeneration was performed successfully.
-
-=cut
-
-sub regen_and_refresh {
-  my ($articles, $article, $generate, $refreshto, $cfg, $progress) = @_;
-
-  if ($generate) {
-    eval {
-      if ($article) {
-	if ($article eq 'extras') {
-	  $progress->("Generating search base") if $progress;
-	  generate_search($articles, $cfg);
-	  
-	  $progress->("Generating shop base pages") if $progress  ;
-	  generate_shop($articles, $cfg);
-	  
-	  $progress->("Generating extra pages") if $progress;
-	  generate_extras($articles, $cfg, $progress);
-	}
-	else {
-	  generate_article($articles, $article, $cfg);
-	}
-      }
-      else {
-	generate_all($articles, $cfg, $progress);
-      }
-    };
-    if ($@) {
-      if ($progress) {
-	$progress->($@);
-      }
-      else {
-	my $error = $@;
-	require 'BSE/Util/Tags.pm';
-	require 'BSE/Template.pm';
-	my %acts;
-	%acts =
-	  (
-	   BSE::Util::Tags->basic(\%acts, undef, $cfg),
-	   ifArticle => sub { $article },
-	   article => 
-	   sub { 
-	     if (ref $article) {
-	       return escape_html($article->{$_[0]});
-	     }
-	     else {
-	       return 'extras';
-	     }
-	   },
-	   error => sub { escape_html($error) },
-	  );
-	BSE::Template->show_page('admin/regenerror', $cfg, \%acts);
-	
-	return 0;
-      }
-    }
-  }
-
-  unless ($progress) {
-    refresh_to_admin($cfg, $refreshto);
-  }
-
-  return 1;
 }
 
 sub _write_text {

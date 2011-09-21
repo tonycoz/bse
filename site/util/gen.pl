@@ -3,7 +3,7 @@ use strict;
 use Getopt::Long;
 use FindBin;
 use lib "$FindBin::Bin/../cgi-bin/modules";
-use BSE::Regen qw/generate_all generate_article/;
+use BSE::Regen qw/generate_all generate_article generate_base pregenerate_list generate_one_extra/;
 use BSE::API qw(bse_init bse_cfg);
 use Articles;
 
@@ -23,6 +23,7 @@ $| = 1;
 
 if (@ARGV) {
   Squirrel::Table->caching(1);
+  my @extras_cache;
   print "Generating @ARGV\n" if $verbose;
   for my $articleid (@ARGV) {
     my ($start, $end);
@@ -47,8 +48,31 @@ if (@ARGV) {
 	}
       }
       elsif ($id eq 'extras') {
-	Util::generate_extras($articles, $cfg, 
-			      $verbose ? sub { print $_[0], "\n" } : undef);
+	generate_base(cfg => $cfg, 
+		      progress => $verbose ? sub { print $_[1], "\n" } : undef);
+      }
+      elsif ($id =~ /^extra:(.*)$/) {
+	my $name = $1;
+
+	@extras_cache = pregenerate_list($cfg)
+	  unless @extras_cache;
+
+	my @extras;
+	if ($name =~ m(^/(.*)/$)) {
+	  my $re_text = $1;
+	  my $re = eval { qr/$re_text/ }
+	    or die "Could not compile re /$re_text/: $@";
+	  @extras = grep $_->{name} =~ $re, @extras_cache
+	    or print "$re_text matched no extras\n";
+	}
+	else {
+	  @extras = grep $_->{name} eq $name, @extras_cache
+	    or print "Cannot find extra $name\n";
+	}
+	for my $extra (@extras) {
+	  print "  $extra->{name}\n" if $verbose;
+	  generate_one_extra($articles, $extra);
+	}
       }
     }
   }
@@ -80,8 +104,17 @@ gen.pl - generate all or part of the site from the command-line
   # generate articles 100 through 200 and 300 through 400
   perl gen.pl 100-200 300-400
 
+  # generate only article 10, verbosely
+  perl gen.pl -v 10
+
   # generate extras and base pages
   perl gen.pl extras
+
+  # generate a specific extra
+  perl gen.pl extra:search.tmpl
+
+  # generate a set of matching extras
+  perl gen.pl extra:/^checkout/
 
 =head1 DESCRIPTION
 

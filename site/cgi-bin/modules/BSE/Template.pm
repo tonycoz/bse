@@ -4,7 +4,7 @@ use Squirrel::Template;
 use Carp qw(confess cluck);
 use Config ();
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub templater {
   my ($class, $cfg, $rsets) = @_;
@@ -108,11 +108,19 @@ sub get_response {
 
   my $content = $class->get_page($template, $cfg, $acts,
 				 $base_template, $rsets);
-  if ($class->utf8($cfg)) {
-    my $charset = $class->charset($cfg);
+
+  return $class->make_response($content, $class->get_type($cfg, $template));
+}
+
+sub make_response {
+  my ($class, $content, $type) = @_;
+
+  if ($type =~ /\bcharset=([\w-]+)/) {
+    my $charset = $1;
 
     require Encode;
     Encode->import();
+    my $cfg = BSE::Cfg->single;
     my $check = $cfg->entry("utf8", "check", Encode::FB_DEFAULT());
     $check = oct($check) if $check =~ /^0/;
 
@@ -121,12 +129,12 @@ sub get_response {
 
   my $result =
     {
-     type => $class->get_type($cfg, $template),
+     type => $type,
      content => $content,
     };
   push @{$result->{headers}}, "Content-Length: ".length($result->{content});
 
-  $result;
+  return $result;
 }
 
 sub get_refresh {

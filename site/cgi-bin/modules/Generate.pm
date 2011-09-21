@@ -11,7 +11,7 @@ use BSE::Util::Iterate;
 use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 my $excerptSize = 300;
 
@@ -764,7 +764,7 @@ sub baseActs {
   my @level3; # filled as we move through the subsections
   my $level3_index = -1;
 
-  my $cfg = $self->{cfg} || BSE::Cfg->new;
+  my $cfg = $self->{cfg} || BSE::Cfg->single;
   my %extras = $cfg->entriesCS('extra tags');
   for my $key (keys %extras) {
     # follow any links
