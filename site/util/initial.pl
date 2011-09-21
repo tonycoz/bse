@@ -32,7 +32,7 @@ my @prebuilt =
     lastModified=>"$nowDatetime",
     keyword=>'',
     template=>'index.tmpl',
-    link=>$ROOT_URI . 'index.html',
+    link=>$ROOT_URI . '',
     admin=>$CGI_URI.'/admin/admin.pl?id=1',
     threshold=>10000, # needs to be high
     summaryLength => 1000, # should be ignored
@@ -111,7 +111,7 @@ my @prebuilt =
     lastModified=>"$nowDatetime",
     keyword=>'shop',
     template=>'shop_sect.tmpl',
-    link=>$securlbase.$SHOP_URI.'/index.html',
+    link=>$securlbase.$SHOP_URI.'/',
     admin=>$CGI_URI.'/admin/admin.pl?id=3',
     threshold=>1000, # ignored
     summaryLength=>1000, # ignored
