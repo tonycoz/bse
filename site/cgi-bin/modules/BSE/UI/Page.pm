@@ -3,9 +3,10 @@ use strict;
 use Articles;
 use BSE::Util::HTML qw(escape_uri);
 use BSE::UI::Dispatch;
+use BSE::Template;
 our @ISA = qw(BSE::UI::Dispatch);
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 # we don't do anything fancy on dispatch yet, so don't use the 
 # dispatch classes
@@ -101,7 +102,6 @@ sub dispatch {
   if (!$article->is_dynamic 
       && ($cfg->entry('basic', 'alias_static_redirect', 1)
 	  || $cgi->param('redirect'))) {
-    require BSE::Template;
     return BSE::Template->get_refresh($article->{link}, $cfg);
   }
 
