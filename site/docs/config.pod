@@ -359,6 +359,13 @@ correct URL.  Default: 1.
 If this is non-zero then the title is cleaned up (all but
 alphanumerics removed) and appended to the alias URL generated.
 
+=item alias_recursive
+
+If this is non-zero then the link is formed by the C<alias_prefix>,
+followed by slash (C</>) separated aliases from the ancestors starting
+from the section, followed by the C<alias_suffix>.  You may need to
+change your redirect handling if you enable this.  Default: Off.
+
 =item default_popupimage
 
 This is the default popup image class for the popimage[] and

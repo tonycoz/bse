@@ -6,7 +6,7 @@ use BSE::UI::Dispatch;
 use BSE::Template;
 our @ISA = qw(BSE::UI::Dispatch);
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 # we don't do anything fancy on dispatch yet, so don't use the 
 # dispatch classes
@@ -19,46 +19,88 @@ sub dispatch {
   my $id;
   my $found_by_id = 0;
   my @more_headers;
-  if ($self->action) {
-    my $action = $self->action;
-    if ($action =~ /^\d+$/) {
-      $article = Articles->getByPkey($action)
-	or return $self->error($req, "unknown article id $action");
-      $found_by_id = 1;
-    }
-    elsif ($action =~ /^[\w-]+$/) {
-      $article = Articles->getBy(linkAlias => $action)
-	or return $self->error($req, "Unknown article alias '$action'");
-    }
+  my $dump = "";
+
+  my $page = $self->action;
+  unless ($page) {
+    ($page) = $cgi->param("page");
   }
-  else {
-    $id = $cgi->param('page');
+  unless ($page) {
+    ($page) = $cgi->param("alias");
+  }
+  unless ($page) {
     my $prefix = $cfg->entry('basic', 'alias_prefix', '');
-    if ($id) {
-      $id && $id =~ /^\d+$/
-	or return $self->error($req, "page parameter not valid");
-      $article = Articles->getByPkey($id)
-	or return $self->error($req, "unknown article id $id");
-      $found_by_id = 1;
-    }
-    elsif (my $alias = $cgi->param('alias')) {
-      $article = Articles->getBy(linkAlias => $alias)
-	or return $self->error($req, "Unknown article alias '$alias'");
-    }
-    elsif ($ENV{REDIRECT_URL} && $ENV{SCRIPT_URL} =~ m(^\Q$prefix\E/)) {
+
+    if ($ENV{REDIRECT_URL} && $ENV{SCRIPT_URL} =~ m(^\Q$prefix\E/)) {
       (my $url = $ENV{SCRIPT_URL}) =~ s(^\Q$prefix\E/)();
-      my ($alias) = $url =~ /^([a-zA-Z0-9_]+)/
+      ($page) = $url =~ m(^([a-zA-Z0-9_/-]+))
 	or return $self->error($req, "Missing document $ENV{SCRIPT_URL}");
-
-      $article = Articles->getBy(linkAlias => $alias)
-	or return $self->error($req, "Unknown article alias '$alias'");
-
-      # have the client treat this as successful, though an error is
-      # still written to the Apache error log
-      push @more_headers, "Status: 200";
     }
   }
+  unless ($page) {
+    if ($ENV{PATH_INFO} && $ENV{PATH_INFO} =~ m(^/([A-Za-z0-9_/-]+)$)) {
+      $page = $1;
+    }
+  }
+
+  unless ($page) {
+    my $dump = "Environment:\n";
+    for my $key (keys %ENV) {
+      $dump .= " $key: $ENV{$key}\n";
+    }
+    $dump .= "\nParam:\n";
+    for my $key ($cgi->param) {
+      $dump .= "  $key:\n";
+      my @values = $cgi->param($key);
+      for my $val (@values) {
+	if (length($val) > 60) {
+	  substr($val, 60) = "...";
+	}
+	$val =~ s((["']))(\\$1)g;
+	$dump .= qq(    "$val"\n);
+      }
+    }
+    $req->audit
+      (
+       component => "page::param",
+       msg => "No page, alias or path specifying a page found",
+       level => "error",
+       dump => $dump,
+      );
+    return $self->error($req, "No page or alias specified");
+  }
+
+  if ($page) {
+    $dump .= "Page lookup: '$page'\n";
+    if ($page =~ /^[0-9]+$/) {
+      $article = Articles->getByPkey($page)
+	or return $self->error($req, "unknown article id $page");
+      $found_by_id = 1;
+    }
+    elsif ($page =~ m(^[a-zA-Z0-9/_-]+$)) {
+      my $alias = $page;
+      if ($cfg->entry("basic", "alias_suffix", 1)) {
+	$alias =~ s((/[0-9a-zA-Z_-]+)$)();
+	$dump .= "Stripped title suffix '$1'\n";
+      }
+      if ($cfg->entry("basic", "alias_recursive") &&
+	  $alias =~ m(/([0-9a-zA-Z_-]+)$)) {
+	$alias = $1;
+	$dump .= "Removed recursive prefix\n";
+      }
+      $dump .= "Looking for alias: $alias\n";
+      ($article) = Articles->getBy(linkAlias => $alias);
+    }
+  }
+
   unless ($article) {
+    $req->audit
+      (
+       component => "page::param",
+       msg => "No article '$page' found",
+       level => "error",
+       dump => $dump,
+      );
     if ($cfg->entry('debug', 'nopage')) {
       print STDERR "Request to page.pl with no page or alias - ";
       if ($ENV{HTTP_REFERER}) {
@@ -68,7 +110,7 @@ sub dispatch {
 	print STDERR "No referer\n";
       }
     }
-    return $self->error($req, "No page or page alias specified for display");
+    return $self->error($req, "Page id or alias specified for display not found");
   }
 
   unless ($article->is_linked) {
@@ -167,7 +209,7 @@ sub dispatch {
   unless (defined $template) {
     $debug_jit && !$dynamic_pregen
       and print STDERR "** JIT: $id - pregen page not found but JIT off\n";
-    
+
     $template = $self->_generate_pregen($req, $article, $srcname);
   }
 
@@ -208,7 +250,7 @@ sub _generate_pregen {
     print STDERR "** PAGE: $article->{id} - cannot create $srcname: $!\n";
   }
 
-  $content;
+  return $content;
 }
 
 1;

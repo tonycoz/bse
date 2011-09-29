@@ -8,7 +8,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::TB::SiteCommon BSE::TB::TagOwner/;
 use Carp 'confess';
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 sub columns {
   return qw/id parentid displayOrder title titleImage body
@@ -280,19 +280,31 @@ sub link {
 
   $cfg ||= BSE::Cfg->single;
 
-  if ($self->{linkAlias} && $cfg->entry('basic', 'use_alias', 1)) {
-    my $prefix = $cfg->entry('basic', 'alias_prefix', '');
-    my $link = $prefix . '/' . $self->{linkAlias};
-    if ($cfg->entry('basic', 'alias_suffix', 1)) {
-      my $title = $self->{title};
-      $title =~ tr/a-zA-Z0-9/_/cs;
-      $link .= '/' . $title;
-    }
-    return $link;
-  }
-  else {
+  unless ($self->{linkAlias} && $cfg->entry('basic', 'use_alias', 1)) {
     return $self->{link};
   }
+
+  my $prefix = $cfg->entry('basic', 'alias_prefix', '');
+  my $link;
+  if ($cfg->entry('basic', 'alias_recursive')) {
+    my @steps = $self->{linkAlias};
+    my $article = $self;
+    while ($article = $article->parent) {
+      if ($article->{linkAlias}) {
+	unshift @steps, $article->{linkAlias};
+      }
+    }
+    $link = join('/', $prefix, @steps);
+  }
+  else {
+    $link = $prefix . '/' . $self->{linkAlias};
+  }
+  if ($cfg->entry('basic', 'alias_suffix', 1)) {
+    my $title = $self->{title};
+    $title =~ tr/a-zA-Z0-9/_/cs;
+    $link .= '/' . $title;
+  }
+  return $link;
 }
 
 sub is_linked {
