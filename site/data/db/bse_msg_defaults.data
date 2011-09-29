@@ -49,6 +49,15 @@ message: Could not save image to external store: %1:s
 id: bse/admin/edit/image/save/delfromstore
 message: Could not delete image from external store: %1:s
 
+id: bse/admin/edit/file/save/success_count
+message: Saved changes to %1:d files
+
+id: bse/admin/edit/file/save/success_none
+message: No changes found to save
+
+id: bse/admin/edit/file/save/success
+message: Saved changes to file '%1:s'
+
 id: bse/admin/edit/file/save/savetostore
 message: Could not save file to external store: %1:s
 

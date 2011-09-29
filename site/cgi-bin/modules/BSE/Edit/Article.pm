@@ -15,7 +15,7 @@ use DevHelp::Date qw(dh_parse_date dh_parse_sql_date);
 use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
-our $VERSION = "1.012";
+our $VERSION = "1.013";
 
 =head1 NAME
 
@@ -1273,6 +1273,12 @@ sub low_edit_tags {
       single => "file_meta",
       nocache => 1,
      ),
+     ifFileExists => sub {
+       @files && $file_index >= 0 && $file_index < @files
+	 or return 0;
+
+       return -f ($files[$file_index]->full_filename($cfg));
+     },
      file_display => [ tag_file_display => $self, \@files, \$file_index ],
      DevHelp::Tags->make_iterator2
      (\&iter_admin_users, 'iadminuser', 'adminusers'),
@@ -3961,9 +3967,11 @@ sub filesave {
   my @old_files;
   my @new_files;
   my %store_anyway;
+  my $change_count = 0;
   my @content_changed;
   for my $file (@files) {
     my $id = $file->{id};
+    my $orig = $file->data_only;
     my $desc = $cgi->param("description_$id");
     defined $desc and $file->{description} = $desc;
     my $type = $cgi->param("contentType_$id");
@@ -4054,6 +4062,15 @@ sub filesave {
 	$errors{"file_$id"} = "Filename too long";
       }
     }
+
+    my $new = $file->data_only;
+  COLUMN:
+    for my $col ($file->columns) {
+      if ($new->{$col} ne $orig->{$col}) {
+	++$change_count;
+	last COLUMN;
+      }
+    }
   }
   for my $name (keys %names) {
     if (@{$names{$name}} > 1) {
@@ -4068,7 +4085,12 @@ sub filesave {
 
     return $self->edit_form($req, $article, $articles, undef, \%errors);
   }
-  $req->flash('File information saved');
+  if ($change_count) {
+    $req->flash("msg:bse/admin/edit/file/save/success_count", [ $change_count ]);
+  }
+  else {
+    $req->flash("msg:bse/admin/edit/file/save/success_none");
+  }
   my $mgr = $self->_file_manager($self->cfg);
   for my $file (@files) {
     $file->save;
@@ -4516,7 +4538,7 @@ sub req_save_file {
   $file->set_handler($self->cfg);
   $file->save;
 
-  $req->flash('File information saved');
+  $req->flash("msg:bse/admin/edit/file/save/success", [ $file->displayName ]);
   my $mgr = $self->_file_manager($self->cfg);
 
   my $storage = $cgi->param('storage');

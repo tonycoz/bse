@@ -347,6 +347,13 @@ img.bse_image_thumb {
   color: red;
 }
 
+span.alert {
+  padding-left: 18px;
+  background: url(/images/admin/alert.png) center left no-repeat;
+  color: red;
+  font-weight: bold;
+}
+
 .wind
 {
   border: 1px solid #888;

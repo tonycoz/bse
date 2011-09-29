@@ -95,6 +95,15 @@ description: Article file manipulation
 id: bse/admin/edit/file/save/
 description: Saving an article file
 
+id: bse/admin/edit/file/save/success_count
+description: Successfully saved changes to several files (%1 is the count)
+
+id: bse/admin/edit/file/save/success_none
+description: Successfully saved changes, but there were no changes
+
+id: bse/admin/edit/file/save/success
+description: Successfully saved changes to a single file (%1 is the new display name)
+
 id: bse/admin/edit/file/save/savetostore
 description: If the file couldn't saved to an external store ($1 - the back end error message)
 
