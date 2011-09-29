@@ -657,7 +657,6 @@ site/templates/custom/payment_type_email.include
 site/templates/email/base.tmpl
 site/templates/email/email.css
 site/templates/email/ordershipped.tmpl
-site/templates/error.tmpl
 site/templates/error_base.tmpl
 site/templates/extras.txt
 site/templates/formmail/defdone_base.tmpl
