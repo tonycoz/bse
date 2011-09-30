@@ -167,6 +167,12 @@ description: Invalid shipping method, $1 is the supplied method id
 id: bse/admin/shop/saveorder/badstage
 description: Invalid order stage, $1 is the supplied stage id
 
+id: bse/admin/logon
+description: Logon tool messages
+
+id: bse/admin/logon/logoff
+description: Flashed when the admin user logs off, $1 is the logon name
+
 id: test/
 description: <<TEXT
 Test category

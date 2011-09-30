@@ -127,6 +127,9 @@ message: Unknown shipping method '$1:s'
 id: bse/admin/shop/saveorder/badstage
 message: Unknown order stage '$1:s'
 
+id: bse/admin/logon/logoff
+message: Administrative user '%1:s' logged off
+
 id: bse/shop/cart/empty
 message: Cart emptied
 

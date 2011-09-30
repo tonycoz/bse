@@ -2,7 +2,7 @@ package BSE::TB::AuditEntry;
 use strict;
 use base qw(Squirrel::Row);
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 sub columns {
   return qw/id 
@@ -113,6 +113,13 @@ my %types =
     action => "a_view",
     format => "Member %d",
     class => "SiteUsers",
+   },
+   "BSE::TB::AdminUser" =>
+   {
+    target => "adminusers",
+    action => "a_showuser",
+    format => "Admin: %d",
+    class => "BSE::TB::AdminUsers",
    },
   );
 

@@ -4,7 +4,7 @@ use BSE::Util::Tags qw(tag_error_img);
 use BSE::Util::HTML;
 use BSE::CfgInfo 'admin_base_url';
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 my %actions =
   (
@@ -31,21 +31,9 @@ sub dispatch {
 }
 
 sub req_logon_form {
-  my ($class, $req, $msg, $errors) = @_;
+  my ($class, $req, $errors) = @_;
 
-  $errors ||= {};
-  if ($msg) {
-    $msg = escape_html($msg);
-  }
-  else {
-    if (keys %$errors) {
-      $msg = join("<br />", map escape_html($_), values %$errors);
-    }
-    else {
-      $msg = $req->cgi->param('m');
-      defined $msg or $msg = '';
-    }
-  }
+  my $msg = (!$errors || ref $errors) ? $req->message($errors) : escape_html($errors);
 
   my %acts;
   %acts =
@@ -60,25 +48,25 @@ sub req_logon_form {
 }
 
 sub _service_error {
-  my ($self, $req, $error, $errors, $error_code) = @_;
+  my ($self, $req, $errors, $error_code) = @_;
 
   $error_code ||= "UNKNOWN";
 
   if ($req->cgi->param('_service')) {
     my $body = '';
     $body .= "Result: failure\n";
-    if ($errors) {
+    if (ref $errors) {
       for my $field (keys %$errors) {
-	my $text = $error->{$field};
+	my $text = $errors->{$field};
 	$text =~ tr/\n/ /;
 	$body .= "Field-Error: $field - $text\n";
       }
-      my $text = join ('/', values %$error);
+      my $text = join ('/', values %$errors);
       $text =~ tr/\n/ /;
       $body .= "Error: $text\n";
     }
     else {
-      $body .= "Error: $error\n";
+      $body .= "Error: $errors\n";
     }
     return
       {
@@ -91,14 +79,17 @@ sub _service_error {
       (
        {
 	success => 0,
-	errors => $errors,
-	msg => $error,
+	(
+	 ref $errors
+	 ? ( errors => $errors )
+	 : ( msg => $errors )
+	),
 	error_code => $error_code,
        }
       );
   }
   else {
-    return $self->req_logon_form($req, $error, $errors);
+    return $self->req_logon_form($req, $errors);
   }
 }
 
@@ -129,7 +120,7 @@ sub req_logon {
   defined $password && length $password
     or $errors{password} = "Please enter your password";
   %errors
-    and return $class->_service_error($req, undef, \%errors, "FIELD");
+    and return $class->_service_error($req, \%errors, "FIELD");
   require BSE::TB::AdminUsers;
   my $user = BSE::TB::AdminUsers->getBy(logon=>$logon);
   my $match;
@@ -138,12 +129,30 @@ sub req_logon {
     $match = $user->check_password($password, \$error);
     if (!$match && $error eq "LOAD") {
       $errors{logon} = "Could not load password check module for type ".$user->password_type;
-      return $class->_service_error($req, undef, \%errors, "FIELD");
+      return $class->_service_error($req, \%errors, "FIELD");
     }
   }
-  $user && $match
-    or return $class->_service_error($req, "Invalid logon or password", {}, "INVALID");
+  unless ($user && $match) {
+    $req->audit
+      (
+       component => "adminlogon:logon:failure",
+       level => "error",
+       msg => "Failed logon attempt",
+       actor => "U",
+       object => $user,
+       dump => "Logon: $logon",
+      );
+    return $class->_service_error($req, "Invalid logon or password", "INVALID");
+  }
   $req->session->{adminuserid} = $user->{id};
+  $req->audit
+    (
+     component => "adminlogon:logon:success",
+     level => "info",
+     msg => "User '" . $user->logon . "' successfully logged in",
+     actor => $user,
+     object => $user,
+    );
   delete $req->session->{csrfp};
 
   if ($cgi->param('_service')) {
@@ -174,6 +183,20 @@ sub req_logon {
 
 sub req_logoff {
   my ($class, $req) = @_;
+
+  $req->check_admin_logon; # populate the logon info
+  my $user = $req->user;
+  if ($user) {
+    $req->audit
+      (
+       component => "adminlogon:logoff:success",
+       object => $req->user,
+       actor => $req->user,
+       msg => "User '" . $user->logon . "' logged off",
+       level => "info",
+      );
+    $req->flash("msg:bse/admin/logon/logoff", [ $user->logon ]);
+  }
 
   delete $req->session->{adminuserid};
   delete $req->session->{csrfp};

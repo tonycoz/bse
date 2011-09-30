@@ -2,7 +2,7 @@ package BSE::TB::AdminUser;
 use strict;
 use base qw(BSE::TB::AdminBase);
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub columns {
   return ($_[0]->SUPER::columns,
@@ -53,6 +53,12 @@ sub link {
   my ($self) = @_;
 
   return BSE::Cfg->single->admin_url(adminusers => { a_showuser => 1, userid => $self->id });
+}
+
+sub describe {
+  my ($self) = @_;
+
+  return "Admin: " . $self->logon;
 }
 
 1;

@@ -4,7 +4,7 @@ use BSE::Util::Tags qw(tag_error_img);
 use BSE::Util::HTML;
 use base 'BSE::UI::AdminDispatch';
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 my %actions =
   (
@@ -65,8 +65,17 @@ sub req_change {
     $errors{oldpassword} = "Enter your current password";
   }
   else {
-    $user->check_password($oldpw)
-      or $errors{oldpassword} = "Your old password is incorrect";
+    unless ($user->check_password($oldpw)) {
+      $req->audit
+	(
+	 component => "adminchangepw:changepw:badpassword",
+	 msg => "User '".$user->logon."' supplied an incorrect old password when changing their password",
+	 object => $user,
+	 actor => $user,
+	 level => "error",
+	);
+      $errors{oldpassword} = "Your old password is incorrect";
+    }
   }
   if (!defined $newpw || $newpw eq '') {
     $errors{newpassword} = "Enter a new password";
@@ -83,6 +92,15 @@ sub req_change {
       and return $class->_field_error($req, \%errors);
     return $class->req_form($req, undef, \%errors);
   }
+
+  $req->audit
+    (
+     component => "adminchangepw:changepw:success",
+     msg => "User '".$user->logon."' successfully changed their password",
+     object => $user,
+     actor => $user,
+     level => "info",
+    );
 
   $user->changepw($newpw);
   $user->save;
