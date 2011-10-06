@@ -15,7 +15,7 @@ use DevHelp::Date qw(dh_parse_date dh_parse_sql_date);
 use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
-our $VERSION = "1.013";
+our $VERSION = "1.014";
 
 =head1 NAME
 
@@ -2064,7 +2064,7 @@ sub save {
     generate_article($articles, $article);
     for my $regen_id (@extra_regen) {
       my $regen = $articles->getByPkey($regen_id);
-      Util::generate_low($articles, $regen, $self->{cfg});
+      BSE::Regen::generate_low($articles, $regen, $self->{cfg});
     }
   }
 
@@ -4871,10 +4871,10 @@ sub req_ajax_save_body {
 
    if ($Constants::AUTO_GENERATE) {
      require Util;
-     Util::generate_article($articles, $article);
+     generate_article($articles, $article);
      for my $regen_id (@extra_regen) {
        my $regen = $articles->getByPkey($regen_id);
-       Util::generate_low($articles, $regen, $self->{cfg});
+       BSE::Regen::generate_low($articles, $regen, $self->{cfg});
      }
    }
  
@@ -4969,10 +4969,10 @@ sub req_ajax_set {
 
    if ($Constants::AUTO_GENERATE) {
      require Util;
-     Util::generate_article($articles, $article);
+     generate_article($articles, $article);
      for my $regen_id (@extra_regen) {
        my $regen = $articles->getByPkey($regen_id);
-       Util::generate_low($articles, $regen, $self->{cfg});
+       BSE::Regen::generate_low($articles, $regen, $self->{cfg});
      }
    }
  

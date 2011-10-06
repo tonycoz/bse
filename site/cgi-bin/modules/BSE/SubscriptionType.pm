@@ -5,7 +5,7 @@ use Squirrel::Row;
 use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub columns {
   return qw/id name title description frequency keyword archive 
@@ -413,10 +413,10 @@ sub send {
     $article->{link} = $link;
     $article->setAdmin("$CGI_URI/admin/admin.pl?id=$article->{id}");
     $article->save;
-    require 'Util.pm';
+    require BSE::Regen;
     
     $callback->('general', undef, "Generating article");
-    Util::generate_article('Articles', $article, $cfg);
+    BSE::Regen::generate_article('Articles', $article, $cfg);
   }
 
   use BSE::Util::SQL qw/now_datetime/;
