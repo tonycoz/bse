@@ -32,38 +32,39 @@ document.observe("dom:loaded", function() {
 
   // warn if a user has caps on typing into a password field
   $$("input[type=password]").each(function(ele) {
-    var state = { iscaps: null };
-    ele.observe("keypress", function(ev, state) {
+    var iscaps = null;
+    var span = null;
+    ele.observe("keypress", function(ev) {
       var s = String.fromCharCode(ev.keyCode || ev.which);
       
-      var iscaps = state.iscaps;
+      var new_iscaps = iscaps;
       if (ev.which == 20) {
-	if (iscaps != null)
-	  iscaps = !iscaps;
+	if (new_iscaps != null)
+	  new_iscaps = !new_iscaps;
       }
       else if (s.toUpperCase() !== s.toLowerCase()) {
-	iscaps = ((s.toUpperCase() === s
+	new_iscaps = ((s.toUpperCase() === s
 		   && !ev.shiftKey)
 		  || (s.toLowerCase() === s
 		      && ev.shiftKey));
       }
-      if (iscaps && !state.iscaps) {
-	if (!state.span) {
-	  state.span = new Element("span", { className: "bse_capswarning" });
-	  state.span.update("Check Caps Lock");
+      if (new_iscaps && !iscaps) {
+	if (!span) {
+	  span = new Element("span", { className: "bse_capswarning" });
+	  span.update("Check Caps Lock");
 	}
-	ele.parentNode.insertBefore(state.span, this.nextSibling);
+	ele.parentNode.insertBefore(span, this.nextSibling);
       }
-      else if (state.iscaps && !iscaps) {
-	state.span.remove();
+      else if (iscaps && !new_iscaps) {
+	span.remove();
       }
-      state.iscaps = iscaps;
-    }.bindAsEventListener(ele, state));
-    ele.observe("blur", function(ev, state) {
-      if (state.iscaps) {
-	state.span.remove();
-	state.iscaps = null;
+      iscaps = new_iscaps;
+    }.bindAsEventListener(ele));
+    ele.observe("blur", function(ev) {
+      if (iscaps) {
+	span.remove();
+	iscaps = null;
       }
-    }.bindAsEventListener(ele, state));
+    }.bindAsEventListener(ele));
   });
 });
