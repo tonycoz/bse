@@ -1,7 +1,7 @@
 package BSE::Edit::Site;
 use strict;
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 use base 'BSE::Edit::Article';
 use BSE::TB::Site;
@@ -126,7 +126,10 @@ sub req_tagshow {
      (
       single => "systagart",
       plural => "systagarts",
-      code => sub { Articles->getByTag($tag) },
+      code => sub { 
+	return sort { lc $a->title cmp lc $b->title }
+	  Articles->getByTag($tag);
+      },
       nocache => 1,
      ),
      $self->low_edit_tags(\%acts, $req, $article, $articles, $msg, $errors),
