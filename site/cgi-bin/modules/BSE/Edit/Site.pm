@@ -1,7 +1,7 @@
 package BSE::Edit::Site;
 use strict;
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 use base 'BSE::Edit::Article';
 use BSE::TB::Site;
@@ -74,11 +74,16 @@ sub req_tagshow {
   my $cat = $cgi->param("cat");
   my $nocat = $cgi->param("nocat");
   my @opts;
-  if ($cat) {
-    push @opts, [ like => "cat", "$cat%" ];
-  }
-  elsif ($nocat) {
+  if ($nocat) {
     push @opts, [ "=" => "cat", "" ];
+    if ($cat) {
+      push @opts, [ like => "val", "$cat%" ];
+    }
+  }
+  else {
+    if ($cat) {
+      push @opts, [ like => "cat", "$cat%" ];
+    }
   }
   my @tags = Articles->all_tags(@opts);
 

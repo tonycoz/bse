@@ -1,10 +1,10 @@
 <:wrap admin/base.tmpl title => "System Article Tags", showtitle => 1 :>
 <:ifMessage:><p class="message"><:message:></p><:or:><:eif:>
 <:include admin/include/site_menu.tmpl:>
-<p>| <a href="<:script:>?id=-1&amp;a_tags=1<:ifCgi showarts:><:or:>&amp;showarts=1<:eif:>"><:ifCgi showarts:>Hide<:or:>Show<:eif:> articles for each tag</a> |
+<p>| <a href="<:script:>?id=-1&amp;a_tags=1<:ifCgi showarts:><:or:>&amp;showarts=1<:eif:>&amp;cat=<:cgi cat:>&amp;p=<:systags_pagenum:>&amp;pp=<:systags_perpage:><:ifCgi nocat:>&amp;nocat=1<:or:><:eif:>"><:ifCgi showarts:>Hide<:or:>Show<:eif:> articles for each tag</a> |
 <a href="<:script:>?id=-1&amp;a_tagcleanup=1">Cleanup unused tags</a> |
 </p>
-<form action="<:script:>"><input type="hidden" name="id" value="-1" />Filter Category: <input type="text" name="cat" value="<:cgi cat:>" /> <label><input type="checkbox" name="nocat" <:ifCgi nocat:>checked="checked" <:or:><:eif:>/>Uncategorized only</label> <input type="submit" name="a_tags" value="Filter" /></form>
+<form action="<:script:>"><input type="hidden" name="id" value="-1" /><:ifCgi showarts:><input type="hidden" name="showarts" value="1" /><:or:><:eif:>Filter Category: <input type="text" name="cat" value="<:cgi cat:>" /> <label><input type="checkbox" name="nocat" <:ifCgi nocat:>checked="checked" <:or:><:eif:>/>Uncategorized only</label> <input type="submit" name="a_tags" value="Filter" /></form>
 <ul>
 <:iterator begin systags:>
 <li class="tag" id="tag_<:systag id:>"><form action="<:script:>#tag_<:systag id:>" method="post">
@@ -29,3 +29,18 @@
 </li>
 <:iterator end systags:>
 </ul>
+
+<div class="pagelist">Page <:systags_pagenum:> of <:systags_pagecount:>
+<:if FirstSystagsPage
+:>&lt;&lt;&lt;&lt; &lt;&lt;<:or FirstSystagsPage
+:><a href="<:script:>?a_tags=1&amp;id=-1&amp;p=1&amp;pp=<:systags_perpage:><:ifCgi showarts:>&amp;showarts=1<:or:><:eif:><:ifCgi nocat:>&amp;nocat=1<:or:><:eif:>&amp;cat=<:cgi cat |u:>">&lt;&lt;&lt;&lt;</a>
+<a href="<:script:>?a_tags=1&amp;id=-1&amp;p=<:prevSystagsPage:>&amp;pp=<:systags_perpage:><:ifCgi showarts:>&amp;showarts=1<:or:><:eif:><:ifCgi nocat:>&amp;nocat=1<:or:><:eif:>&amp;cat=<:cgi cat |u:>">&lt;&lt;</a><:eif FirstSystagsPage:>
+<:iterator begin systags_pagec:>
+<:switch:>
+<:case systag_pagec gap:>...
+<:case systag_pagec link:><a href="<:script:>?a_tags=1&amp;id=-1&amp;p=<:systag_pagec page:>&amp;pp=<:systags_perpage:><:ifCgi showarts:>&amp;showarts=1<:or:><:eif:><:ifCgi nocat:>&amp;nocat=1<:or:><:eif:>&amp;cat=<:cgi cat |u:>"><:systag_pagec page:></a>
+<:case default:><span><:systag_pagec page:></span>
+<:endswitch:>
+<:iterator end systags_pagec:>
+<:if LastSystagsPage:>&gt;&gt; &gt;&gt;&gt;&gt;<:or LastSystagsPage:><a href="<:script:>?a_tags=1&amp;id=-1&amp;p=<:nextSystagsPage:>&amp;pp=<:systags_perpage:><:ifCgi showarts:>&amp;showarts=1<:or:><:eif:><:ifCgi nocat:>&amp;nocat=1<:or:><:eif:>&amp;cat=<:cgi cat |u:>">&gt;&gt;</a> <a href="<:script:>?a_tags=1&amp;id=-1&amp;p=<:systags_pagecount:>&amp;pp=<:systags_perpage:><:ifCgi showarts:>&amp;showarts=1<:or:><:eif:><:ifCgi nocat:>&amp;nocat=1<:or:><:eif:>&amp;cat=<:cgi cat |u:>">&gt;&gt;&gt;&gt;</a><:eif LastSystagsPage:>
+</div>
