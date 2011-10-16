@@ -15,7 +15,7 @@ use DevHelp::Date qw(dh_parse_date dh_parse_sql_date);
 use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
-our $VERSION = "1.014";
+our $VERSION = "1.015";
 
 =head1 NAME
 
@@ -1589,7 +1589,10 @@ sub make_link {
 sub save_columns {
   my ($self, $table_object) = @_;
 
-  return $table_object->rowClass->columns;
+  my @columns = $table_object->rowClass->columns;
+  shift @columns;
+
+  return @columns;
 }
 
 sub save_new {
@@ -1755,6 +1758,13 @@ sub save_new {
 
   my @cols = $table_object->rowClass->columns;
   shift @cols;
+
+  # fill out anything else from defaults
+  for my $col (@columns) {
+    exists $data{$col}
+      or $data{$col} = $self->default_value($req, \%data, $col);
+  }
+
   $article = $table_object->add(@data{@cols});
 
   $self->save_new_more($req, $article, \%data);

@@ -3,7 +3,8 @@ use strict;
 use BSE::Test qw(make_ua base_url);
 use JSON;
 use DevHelp::HTML;
-use Test::More tests => 18;
+use Test::More tests => 24;
+use Data::Dumper;
 
 my $ua = make_ua;
 my $baseurl = base_url;
@@ -17,6 +18,7 @@ my $cat = do_add($add_url,
 		 { 
 		  parentid => 3,
 		  title => "Test Catalog",
+		  type => "Catalog",
 		 }, "make test catalog");
 
 is($cat->{generator}, "Generate::Catalog", "make sure it's a catalog");
@@ -29,6 +31,21 @@ my $art = do_add($add_url,
 		 }, "make test article");
 
 is($art->{generator}, "Generate::Article", "make sure it's an article");
+
+my $prod;
+{
+  # make a product
+  my $result = do_add
+    ($add_url,
+     {
+      type => "Product",
+      parentid => $cat->{id},
+      title => "Some Product",
+     }, "make test product");
+  is($result->{generator}, "Generate::Product",
+     "check generator");
+  $prod = $result;
+}
 
 {
   # attempt to reparent the article under the catalog, should fail
@@ -57,6 +74,7 @@ is($art->{generator}, "Generate::Article", "make sure it's an article");
     and print "# $result->{error_code}: $result->{message}\n";
 }
 
+do_req($add_url, { remove => 1, id => $prod->{id} }, "remove product");
 do_req($add_url, { remove => 1, id => $art->{id} }, "remove article");
 do_req($add_url, { remove => 1, id => $cat->{id} }, "remove catalog");
 
@@ -72,7 +90,7 @@ sub do_req {
   ok($resp->is_success, "$comment successful at http level");
   my $data = eval { from_json($resp->decoded_content) };
   ok($data, "$comment response decoded as json")
-    or print "# $@\n";
+    or print "# $@: ", $resp->decoded_content, "\n";
 
   return $data;
 }
@@ -90,6 +108,8 @@ sub do_add {
     if (ok($result->{success} && $result->{article}, "check success and article")) {
       return $result->{article};
     }
+
+    print STDERR Dumper($result);
   };
 
   return;

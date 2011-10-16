@@ -9,7 +9,7 @@ use BSE::Util::HTML;
 use BSE::CfgInfo 'product_options';
 use BSE::Util::Tags qw(tag_hash);
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 =head1 NAME
 
@@ -433,7 +433,7 @@ sub validate {
   my $ok = $self->SUPER::validate($data, $articles, $errors);
   $self->_validate_common($data, $articles, $errors);
 
-  for my $field (qw(title description body)) {
+  for my $field (qw(title)) {
     unless ($data->{$field} =~ /\S/) {
       $errors->{$field} = "No $field entered";
     }
@@ -598,11 +598,15 @@ sub shop_article { 1 }
 my %defaults =
   (
    options => '',
+   description => '',
    subscription_id => -1,
    subscription_required => -1,
    subscription_period => 1,
    subscription_usage => 3,
+   leadTime => 0,
    retailPrice => 0,
+   wholesalePrice => 0,
+   gst => 0,
    product_code => '',
    weight => 0,
    length => 0,
