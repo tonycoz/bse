@@ -15,7 +15,7 @@ use DevHelp::Date qw(dh_parse_date dh_parse_sql_date);
 use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
-our $VERSION = "1.015";
+our $VERSION = "1.016";
 
 =head1 NAME
 
@@ -3048,7 +3048,7 @@ Otherwise display the normal edit page with the error.
 =cut
 
 sub _service_error {
-  my ($self, $req, $article, $articles, $msg, $error, $code) = @_;
+  my ($self, $req, $article, $articles, $msg, $error, $code, $method) = @_;
 
   unless ($article) {
     my $mymsg;
@@ -3105,7 +3105,8 @@ sub _service_error {
     return $json_result;
   }
   else {
-    return $self->edit_form($req, $article, $articles, $msg, $error);
+    $method ||= "edit_form";
+    return $self->$method($req, $article, $articles, $msg, $error);
   }
 }
 
