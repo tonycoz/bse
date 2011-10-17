@@ -9,7 +9,7 @@ use BSE::Util::HTML;
 use BSE::CfgInfo 'product_options';
 use BSE::Util::Tags qw(tag_hash);
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 =head1 NAME
 
@@ -749,7 +749,6 @@ sub req_add_option {
   my $order = time;
   my @values;
   for my $value_key (sort grep /^value/, keys %option_fields) {
-    print STDERR "fetching $value_key\n";
     my ($value) = $cgi->param($value_key);
     if (defined $value && $value =~ /\S/) {
       my $entry = BSE::TB::ProductOptionValues->make
@@ -965,7 +964,7 @@ sub req_save_option {
   my %errors;
   my $option = $self->_get_option($req, $article, \%errors);
   keys %errors
-    and return $self->_service_error($req, $article, $articles, undef, \%errors);
+    and return $self->_service_error($req, $article, $articles, undef, \%errors, 'FIELD', "req_edit_option");
   $req->validate(fields => \%option_name,
 		 errors => \%errors);
   my @values = $option->values;
@@ -978,8 +977,22 @@ sub req_save_option {
     grep $_->{id} == $default_value, @values
       or $errors{default_value} = "Unknown value selected as default";
   }
+
+  $DB::single = 1;
+  my @new_values;
+  my $index = 1;
+  while ($index < 10 && defined $cgi->param("newvalue$index")) {
+    my $field = "newvalue$index";
+    my $value = $cgi->param($field);
+    $req->validate(fields => { $field => \%option_value },
+		   errors => \%errors);
+    push @new_values, $value;
+
+    ++$index;
+  }
+
   keys %errors
-    and return $self->_service_error($req, $article, $articles, undef, \%errors);
+    and return $self->_service_error($req, $article, $articles, undef, \%errors, "FIELD", "req_edit_option");
 
   my $name = $cgi->param("name");
   defined $name
@@ -998,6 +1011,15 @@ sub req_save_option {
       $value->save;
     }
   }
+  my $order = @values ? $values[-1]->display_order : time;
+  for my $value (@new_values) {
+    BSE::TB::ProductOptionValues->make
+	(
+	 product_option_id => $option->id,
+	 value => $value,
+	 display_order => ++$order,
+	);
+  }
 
   $req->is_ajax
     and return $req->json_content
@@ -1007,7 +1029,8 @@ sub req_save_option {
        values => [ map $_->data_only, @values ],
       );
 
-  return $self->refresh($article, $req->cgi, undef, "Option saved");
+  return $self->refresh($article, $req->cgi, undef,
+			"Option '" . $option->name . "' saved");
 }
 
 =item a_delconf_option

@@ -1,9 +1,10 @@
-<:wrap admin/base.tmpl title => "Edit Product Option", menuitem=>"none", showtitle=>"1" :>
+<:wrap admin/base.tmpl title => "Edit Product Option", menuitem=>"none", showtitle=>"1", js => "admin_editprodopt.js" :>
 <:include admin/product_menu.tmpl:>
 <form action="<:script:>" method="post">
 <input type="hidden" name="id" value="<:article id:>" />
 <input type="hidden" name="option_id" value="<:option id:>" />
 <input type="hidden" name="_t" value="prodopts" />
+<input type="hidden" name="newvaluecount" id="newvaluecount" value="<:ifCgi newvaluecount:><:cgi newvaluecount:><:or:>0<:eif:>" />
 <:csrfp admin_save_option hidden:>
 <input type="hidden" name="save_enabled" value="1" />
 <table class="editform editformsmall">
@@ -19,7 +20,7 @@
 </tr>
 <tr>
   <th>Values:</th>
-<td>
+<td id="product_option_values">
 <table class="editform">
 <tr>
   <td colspan="2"></td>
@@ -33,6 +34,12 @@
 </tr>
 <:iterator end dboptionvalues:>
 </table>
+<:if Cgi newvaluecount:>
+<:iterator begin repeats [cgi newvaluecount]:>
+<div><label for="newvalue<:repeat value:>">Value:</label>
+<input type="text" name="newvalue<:repeat value:>" value="<:cgi [cat newvalue [repeat value]]:>" /><:error_img [cat newvalue [repeat value]]:></div>
+<:iterator end repeats:>
+<:or Cgi:><:eif Cgi:>
 </td>
 <td class="help"></td>
 </tr>

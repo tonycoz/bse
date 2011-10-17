@@ -463,6 +463,7 @@ site/htdocs/js/admin-ui/debug.js
 site/htdocs/js/admin-ui/menu.js
 site/htdocs/js/admin.js
 site/htdocs/js/admin_edit.js
+site/htdocs/js/admin_editprodopt.js
 site/htdocs/js/admin_messages.js
 site/htdocs/js/admin_prodopts.js
 site/htdocs/js/admin_siteusers.js
