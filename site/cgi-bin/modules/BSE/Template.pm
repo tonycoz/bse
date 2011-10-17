@@ -4,7 +4,7 @@ use Squirrel::Template;
 use Carp qw(confess cluck);
 use Config ();
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 sub templater {
   my ($class, $cfg, $rsets) = @_;
@@ -30,17 +30,26 @@ sub templater {
   return Squirrel::Template->new(%opts);
 }
 
-sub get_page {
-  my ($class, $template, $cfg, $acts, $base_template, $rsets) = @_;
+sub _get_filename {
+  my ($class, $cfg, $template) = @_;
 
   my $file = $cfg->entry('templates', $template) || $template;
   $file =~ /\.\w+$/ or $file .= ".tmpl";
+
+  return $file;
+}
+
+sub get_page {
+  my ($class, $template, $cfg, $acts, $base_template, $rsets) = @_;
+
+  my $file = $class->_get_filename($cfg, $template);
   my $obj = $class->templater($cfg, $rsets);
 
   my $out;
   if ($base_template) {
     unless ($class->find_source($template, $cfg)) {
       $template = $base_template;
+      $file = $class->_get_filename($cfg, $template);
     }
   }
 
