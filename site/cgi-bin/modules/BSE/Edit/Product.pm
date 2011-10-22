@@ -9,7 +9,7 @@ use BSE::Util::HTML;
 use BSE::CfgInfo 'product_options';
 use BSE::Util::Tags qw(tag_hash);
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 =head1 NAME
 
@@ -210,6 +210,15 @@ sub save_columns {
   return @cols;
 }
 
+sub iter_dboptions {
+  my ($self, $article) = @_;
+
+  $article->{id}
+    or return;
+
+  return $article->db_options;
+}
+
 =head1 Edit tags
 
 These a tags available on admin/edit_* pages specific to products.
@@ -297,7 +306,7 @@ sub low_edit_tags {
       store => \$current_option,
       data => \@dboptions,
       index => \$dboption_index,
-      code => [ db_options => $article ],
+      code => [ iter_dboptions => $self, $article ],
      ),
      dboption_move =>
      [

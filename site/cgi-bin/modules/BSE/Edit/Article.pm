@@ -15,7 +15,7 @@ use DevHelp::Date qw(dh_parse_date dh_parse_sql_date);
 use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
-our $VERSION = "1.016";
+our $VERSION = "1.017";
 
 =head1 NAME
 
@@ -1349,6 +1349,9 @@ sub iter_groups {
 
 sub tag_ifGroupRequired {
   my ($article, $rgroup) = @_;
+
+  $article->{id}
+    or return 0;
 
   $$rgroup or return 0;
 
