@@ -9,7 +9,7 @@ use BSE::Util::HTML;
 use BSE::CfgInfo 'product_options';
 use BSE::Util::Tags qw(tag_hash);
 
-our $VERSION = "1.008";
+our $VERSION = "1.009";
 
 =head1 NAME
 
@@ -375,6 +375,8 @@ sub validate_parent {
 
 sub _validate_common {
   my ($self, $data, $articles, $errors) = @_;
+
+  $self->SUPER::_validate_common($data, $articles, $errors);
 
   for my $col (keys %money_fields) {
     my $value = $data->{$col};

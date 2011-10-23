@@ -3,7 +3,7 @@ use strict;
 use BSE::Test qw(make_ua base_url);
 use JSON;
 use DevHelp::HTML;
-use Test::More tests => 24;
+use Test::More tests => 34;
 use Data::Dumper;
 
 my $ua = make_ua;
@@ -45,6 +45,35 @@ my $prod;
   is($result->{generator}, "Generate::Product",
      "check generator");
   $prod = $result;
+}
+
+{
+  # fail to make a product (empty title)
+  my $result = do_req
+    ($add_url,
+     {
+      type => "Product",
+      parentid => $cat->{id},
+      title => "",
+      save => 1,
+     }, "fail to make a product");
+  ok(!$result->{success}, "yep, it failed");
+  is($result->{error_code}, "FIELD", "and correct error code");
+  ok($result->{errors}{title}, "has a title error");
+}
+
+{ # fail to set empty title for a product
+  my $result = do_req
+    ($add_url,
+     {
+      id => $prod->{id},
+      title => "",
+      lastModified => $prod->{lastModified},
+      save => 1,
+     }, "fail to set title to empty");
+  ok(!$result->{success}, "yep, it failed");
+  is($result->{error_code}, "FIELD", "and correct error code");
+  ok($result->{errors}{title}, "has a title error");
 }
 
 {
