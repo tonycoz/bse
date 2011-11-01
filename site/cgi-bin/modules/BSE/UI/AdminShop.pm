@@ -19,7 +19,7 @@ use BSE::Util::HTML qw(:default popup_menu);
 use BSE::Arrows;
 use BSE::Shop::Util qw(:payment order_item_opts nice_options);
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 my %actions =
   (
@@ -436,7 +436,7 @@ sub order_list_low {
 
   my $from = $cgi->param('from');
   my $to = $cgi->param('to');
-  use BSE::Util::SQL qw/now_sqldate sql_to_date date_to_sql/;
+  use BSE::Util::SQL qw/now_sqldate sql_to_date date_to_sql sql_date/;
   use BSE::Util::Valid qw/valid_date/;
   my $today = now_sqldate();
   for my $what ($from, $to) {
@@ -452,6 +452,7 @@ sub order_list_low {
       }
     }
   }
+  $from ||= sql_date(time() - 30 * 86_400);
   my $message = $cgi->param('m');
   defined $message or $message = '';
   $message = escape_html($message);
@@ -909,21 +910,6 @@ sub display_date {
     return sprintf("%02d/%02d/%04d", $day, $month, $year);
   }
   return $date;
-}
-
-# convert a user entered date from dd/mm/yyyy to ANSI sql format
-# we try to parse flexibly here
-sub sql_date {
-  my $str = shift;
-  my ($year, $month, $day);
-
-  # look for a date
-  if (($day, $month, $year) = ($$str =~ m!(\d+)/(\d+)/(\d+)!)) {
-    $year += 2000 if $year < 100;
-
-    return $$str = sprintf("%04d-%02d-%02d", $year, $month, $day);
-  }
-  return undef;
 }
 
 sub money_to_cents {
