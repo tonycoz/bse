@@ -10,7 +10,7 @@ use Carp qw(confess);
 use BSE::WebUtil qw(refresh_to_admin);
 use BSE::Util::HTML;
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 # returns non-zero if the Regenerate button should work
 sub generate_button {
@@ -287,7 +287,7 @@ sub _make_extra_gen {
      cfg => $cfg,
      top => $article,
     );
-  if ($extra->{set} eq "extras") {
+  if ($extra->{dynamic}) {
     $opts{force_dynamic} = 1;
   }
   require Generate::Article;
