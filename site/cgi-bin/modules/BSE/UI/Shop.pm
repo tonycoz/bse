@@ -17,7 +17,7 @@ use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 
-our $VERSION = "1.019";
+our $VERSION = "1.020";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -869,6 +869,19 @@ my %nostore =
    cardVerify => 1,
   );
 
+my %bill_ccmap =
+  (
+   # hash of CC payment parameter names to arrays of billing address fields
+   firstname => "billFirstName",
+   lastname => "billLastName",
+   address1 => "billStreet",
+   address2 => "billStreet2",
+   postcode => "billPostCode",
+   state => "billState",
+   suburb => "billSuburb",
+   email => "billEmail",
+  );
+
 sub req_payment {
   my ($class, $req, $errors) = @_;
 
@@ -1073,6 +1086,7 @@ sub req_payment {
   if ($paymentType == PAYMENT_CC) {
     my $ccNumber = $cgi->param('cardNumber');
     my $ccExpiry = $cgi->param('cardExpiry');
+    my $ccName   = $cgi->param('cardHolder');
     
     if ($ccprocessor) {
       my $cc_class = credit_card_class($cfg);
@@ -1085,12 +1099,23 @@ sub req_payment {
       my $expiry = sprintf("%04d%02d", $year, $month);
       my $verify = $cgi->param('cardVerify');
       defined $verify or $verify = '';
-      my $result = $cc_class->payment(orderno=>$order->{id},
-				      amount => $order->{total},
-				      cardnumber => $ccNumber,
-				      expirydate => $expiry,
-				      cvv => $verify,
-				      ipaddress => $ENV{REMOTE_ADDR});
+      my %more;
+      while (my ($cc_field, $order_field) = each %bill_ccmap) {
+	if ($order->$order_field()) {
+	  $more{$cc_field} = $order->$order_field();
+	}
+      }
+      my $result = $cc_class->payment
+	(
+	 orderno => $order->{id},
+	 amount => $order->{total},
+	 cardnumber => $ccNumber,
+	 nameoncard => $ccName,
+	 expirydate => $expiry,
+	 cvv => $verify,
+	 ipaddress => $ENV{REMOTE_ADDR},
+	 %more,
+	);
       unless ($result->{success}) {
 	use Data::Dumper;
 	print STDERR Dumper($result);

@@ -15,7 +15,7 @@ sub payment {
 
   my $cfg = $self->{cfg};
 
-  for my $name (qw/orderno amount cardnumber expirydate ipaddress cvv/) {
+  for my $name (qw/orderno amount cardnumber nameoncard expirydate ipaddress cvv/) {
     defined $args{$name}
       or confess "Missing $name argument";
   }

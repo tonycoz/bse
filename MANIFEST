@@ -294,6 +294,7 @@ site/cgi-bin/modules/DevHelp/Formatter.pm
 site/cgi-bin/modules/DevHelp/HTML.pm
 site/cgi-bin/modules/DevHelp/LoaderData.pm
 site/cgi-bin/modules/DevHelp/Payments.pod
+site/cgi-bin/modules/DevHelp/Payments/Eway.pm
 site/cgi-bin/modules/DevHelp/Payments/Inpho.pm
 site/cgi-bin/modules/DevHelp/Payments/SecurePay.pm
 site/cgi-bin/modules/DevHelp/Payments/SecurePayXML.pm
@@ -831,6 +832,7 @@ t/t60securepayxml.t
 t/t61fastway.t
 t/t62auspost.t
 t/t63nabtransactxml.t
+t/t64eway.t
 t/t70thumbim.t
 t/t80catalog.t
 t/t85message.t
