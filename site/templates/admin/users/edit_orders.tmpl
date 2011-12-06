@@ -1,45 +1,39 @@
 <:wrap admin/base.tmpl title=>"Site Member Orders":>
 <h1>Site Member Orders</h1>
 <p>
-| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |
-<a href="/cgi-bin/admin/siteusers.pl">Site Members</a> |
+| <a href="<:adminurl menu:>">Admin menu</a> |
+<a href="<:adminurl siteusers:>">Site Members</a> |
 <a href="mailto:<:siteuser email:>">Email</a> |
-<:ifUserCan bse_members_user_edit:><a href="/cgi-bin/admin/siteusers.pl?a_edit=1&amp;id=<:siteuser id:>">Edit User</a> |<:or:><:eif:>
-<a href="/cgi-bin/admin/siteusers.pl?a_view=1&amp;id=<:siteuser id:>">User Details</a> |</p>
+<:ifUserCan bse_members_user_edit:><a href="<:adminurl siteusers a_edit 1 id [siteuser id]:>">Edit User</a> |<:or:><:eif:>
+<a href="<:adminurl siteusers a_view 1 id [siteuser id]:>">User Details</a> |</p>
 
 <:ifMessage:>
 <p><b><:message:></b></p>
 <:or:><:eif:> 
 
-<table bgcolor="#000000" cellpadding="0" cellspacing="0" border="0" width="100%" class="table">
-  <tr>
-<td>
-      <table border=0 cellpadding="6" cellspacing="1" width="100%">
-        <tr bgcolor="#FFFFFF"> 
-          <th>Id</th>
-          <th width="100%">Name</th>
-          <th>Status</th>
-          <th>Date</th>
-          <th>Total</th>
-          <th>GST</th>
-          <th>Details</th>
+      <table class="editform orderlist">
+        <tr> 
+          <th class="col_id">Id</th>
+          <th class="col_name">Name</th>
+          <th class="col_status">Status</th>
+          <th class="col_date">Date</th>
+          <th class="col_total">Total</th>
+          <th class="col_gst">GST</th>
+          <th class="col_details">Details</th>
         </tr>
         <:iterator begin userorders:> 
-        <tr bgcolor="#FFFFFF"> 
-          <td align="center" nowrap><a href="<:script:>?id=<:userorder id:>&order_detail=1"><:userorder 
+        <tr> 
+          <td class="col_id"><a href="<:adminurl shopadmin order_detail 1 id [userorder id]:>"><:userorder 
             id:></a></td>
-          <td width="100%"><:userorder delivFirstName:> <:userorder delivLastName:> <:ifUserorder 
+          <td class="col_name"><:ifUserorder billFirstName:><:userorder billFirstName:> <:userorder billLastName:><:or:><:userorder delivFirstName:> <:userorder delivLastName:><:eif:> <:ifUserorder 
             userId:><font color="#CCCCCC">&#8212; (logged in)</font><:or:><:eif:></td>
           <td nowrap bgcolor="<:ifUserorder filled:>#CC0033<:or:>#66CC00<:eif:>"><:ifUserorder 
             filled:><font color="#999999">Completed</font><:or:><font color="#FFFFFF">Processing</font><:eif:></td>
-          <td nowrap><:date userorder orderDate:></td>
-          <td align=right nowrap>$<:money userorder total:></td>
-          <td align=right nowrap>$<:money userorder gst:></td>
-          <td nowrap> <a href="/cgi-bin/admin/shopadmin.pl?id=<:userorder id:>&order_detail=1">Order 
+          <td class="col_date"><:date userorder orderDate:></td>
+          <td class="col_total">$<:money userorder total:></td>
+          <td class="col_gst">$<:money userorder gst:></td>
+          <td class="col_tools"> <a href="<:adminurl shopadmin id [userorder id] order_detail 1:>">Order 
             details </a> </td>
         </tr>
         <:iterator end userorders:> 
       </table>
-</td>
-</tr>
-</table>

@@ -953,6 +953,25 @@ field.  If this is set then the delivCountry is supplied as is to
 various parts of the system, otherwise it is translated from a country
 name to a country code.  Default: 0.
 
+=item require_fields
+
+A comma separated list of extra fields to require during checkout.
+This is in addition to the usual fields required during checkout.
+Default: none.
+
+=item require_delivery
+
+If true, and the C<need_delivery> CGI parameter is true, treat the
+following delivery fields as required during checkout: delivFirstName
+delivLastName delivStreet delivSuburb delivState delivPostCode
+delivCountry.  Default: true.
+
+=item require_delivery_fields
+
+If C<require_delivery> is true, and the C<need_delivery> CGI parameter
+is true, add the comma separated fields listed here to the required
+checkout fields list.  Default: none.
+
 =back
 
 =head2 [shipping]

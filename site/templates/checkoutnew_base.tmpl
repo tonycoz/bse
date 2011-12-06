@@ -150,7 +150,7 @@ function BSE_validateForm {
     <br>
 <:eif User:>
 <form action="<:dyntarget shop:>" method="POST" onSubmit="BSE_validateForm();return document.MM_returnValue">
-  <font face="Verdana, Arial, Helvetica, sans-serif" size="3"> <b>Shipping Details:</b></font> 
+  <font face="Verdana, Arial, Helvetica, sans-serif" size="3"> <b>Billing Details:</b></font> 
   <hr noshade size="1">
   <table border="0" cellspacing="0" cellpadding="0">
     <:if Message:> 
@@ -160,113 +160,6 @@ function BSE_validateForm {
       </td>
     </tr>
     <:or Message:><:eif Message:> 
-    <tr> 
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> First 
-        Name:</font></td>
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-        <input type="Text" name="delivFirstName" size=34 value="<:old delivFirstName:>"><:error_img delivFirstName:>
-        *</font></td>
-    </tr>
-    <tr> 
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Last Name:</font></td>
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-        <input type="Text" name="delivLastName" size=34 value="<:old delivLastName:>"><:error_img delivLastName:>
-        *</font></td>
-    </tr>
-    <tr> 
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Organization:</font></td>
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-        <input type="Text" name="delivOrganization" size=34 value="<:old delivOrganization:>" /><:error_img delivOrganization:>
-        *</font></td>
-    </tr>
-    <tr> 
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Address:</font></td>
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-        <input type="Text" name="delivStreet" size=34 value="<:old delivStreet:>" /><:error_img delivStreet:>
-        *</font></td>
-    </tr>
-    <tr> 
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> </font></td>
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-        <input type="Text" name="delivStreet2" size=34 value="<:old delivStreet2:>" /><:error_img delivStreet2:>
-        </font></td>
-    </tr>
-    <tr> 
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> City:</font></td>
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-        <input type="Text" name="delivSuburb" size=34 value="<:old delivSuburb:>" /><:error_img delivSuburb:>
-        *</font></td>
-    </tr>
-    <tr> 
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Postcode:</font></td>
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-        <input type="Text" name="delivPostCode" size=10 value="<:old delivPostCode:>" /><:error_img delivPostCode:>
-        *</font></td>
-    </tr>
-    <tr> 
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> State:</font></td>
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-        <input type="Text" name="delivState" size=10 value="<:old delivState:>" /><:error_img delivState:>
-        *</font></td>
-    </tr>
-    <tr> 
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Country:</font></td>
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-        <input type="Text" name="delivCountry" size=20 value="<:old delivCountry:>" /><:error_img delivCountry:>
-        *</font></td>
-    </tr>
-    <tr> 
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Telephone:</font></td>
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-        <input type="Text" name="telephone" size=20 value="<:old telephone:>" /><:error_img telephone:>
-        *</font></td>
-    </tr>
-    <tr> 
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Mobile:</font></td>
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-        <input type="Text" name="delivMobile" size=20 value="<:old delivMobile:>" /><:error_img delivMobile:>
-        </font></td>
-    </tr>
-    <tr> 
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Facsimile:</font></td>
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-        <input type="Text" name="facsimile" size=20 value="<:old facsimile:>" /><:error_img facsimile:>
-        </font></td>
-    </tr>
-    <tr> 
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> E-mail:</font></td>
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-        <input type="Text" name="emailAddress" size=34 value="<:old emailAddress:>"><:error_img emailAddress:>
-        *</font></td>
-    </tr>
-    <tr> 
-      <td valign="top"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Special<br />Instructions:</font></td>
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-        <textarea name="instructions" rows="5" cols="40" wrap="virtual"><:old instructions:></textarea></font><:error_img instructions:></td>
-    </tr>
-<:if Shipping:>
-    <tr>
-      <td valign="top"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Shipping<br /> method:</font></td>
-      <td><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:shipping_select:></font><:error_img shipping_name:> *
-</td>
-    </tr>
-<:or Shipping:><:eif Shipping:>
-    <tr> 
-      <td valign="top"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Purchase<br />Order:</font></td>
-      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-        <input type="text" name="purchase_order" value="<:old purchase_order:>" /></font><:error_img purchase_order:></td>
-    </tr>
-    <tr> 
-      <td colspan="2"> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-        * Required information for order to be shipped</font></td>
-    </tr>
-  </table>
-  <p>&nbsp; </p>
- <:if Cgi need_billing:>
-  <font face="Verdana, Arial, Helvetica, sans-serif" size="3"><input type="checkbox" name="need_billing" checked="checked" onClick="this.form.checkupdate.click()" /> <b>Billing Details:</b></font> 
-   
-  <hr size="1" noshade>
-  <table border="0" cellspacing="0" cellpadding="0">
     <tr> 
       <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> First 
         Name:</font></td>
@@ -346,10 +239,117 @@ function BSE_validateForm {
         <input type="Text" name="billFacsimile" size=20 value="<:old billFacsimile:>" /><:error_img billFacsimile:>
         *</font></td>
     </tr>
+    <tr> 
+      <td valign="top"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Special<br />Instructions:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <textarea name="instructions" rows="5" cols="40" wrap="virtual"><:old instructions:></textarea></font><:error_img instructions:></td>
+    </tr>
+<:if Shipping:>
+    <tr>
+      <td valign="top"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Shipping<br /> method:</font></td>
+      <td><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:shipping_select:></font><:error_img shipping_name:> *
+</td>
+    </tr>
+<:or Shipping:><:eif Shipping:>
+    <tr> 
+      <td valign="top"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Purchase<br />Order:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <input type="text" name="purchase_order" value="<:old purchase_order:>" /></font><:error_img purchase_order:></td>
+    </tr>
+    <tr> 
+      <td colspan="2"> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        * Required information for order to be shipped</font></td>
+    </tr>
+  </table>
+  <p>&nbsp; </p>
+ <:if Cgi need_delivery:>
+  <font face="Verdana, Arial, Helvetica, sans-serif" size="3"><input type="checkbox" name="need_delivery" checked="checked" onClick="this.form.checkupdate.click()" /> <b>Shipping Details:</b></font> 
+   
+  <hr size="1" noshade>
+  <table border="0" cellspacing="0" cellpadding="0">
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> First 
+        Name:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <input type="Text" name="delivFirstName" size=34 value="<:old delivFirstName:>"><:error_img delivFirstName:>
+        *</font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Last Name:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <input type="Text" name="delivLastName" size=34 value="<:old delivLastName:>"><:error_img delivLastName:>
+        *</font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Organization:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <input type="Text" name="delivOrganization" size=34 value="<:old delivOrganization:>" /><:error_img delivOrganization:>
+        *</font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Address:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <input type="Text" name="delivStreet" size=34 value="<:old delivStreet:>" /><:error_img delivStreet:>
+        *</font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> </font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <input type="Text" name="delivStreet2" size=34 value="<:old delivStreet2:>" /><:error_img delivStreet2:>
+        </font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> City:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <input type="Text" name="delivSuburb" size=34 value="<:old delivSuburb:>" /><:error_img delivSuburb:>
+        *</font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Postcode:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <input type="Text" name="delivPostCode" size=10 value="<:old delivPostCode:>" /><:error_img delivPostCode:>
+        *</font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> State:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <input type="Text" name="delivState" size=10 value="<:old delivState:>" /><:error_img delivState:>
+        *</font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Country:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <input type="Text" name="delivCountry" size=20 value="<:old delivCountry:>" /><:error_img delivCountry:>
+        *</font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Telephone:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <input type="Text" name="telephone" size=20 value="<:old telephone:>" /><:error_img telephone:>
+        *</font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Mobile:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <input type="Text" name="delivMobile" size=20 value="<:old delivMobile:>" /><:error_img delivMobile:>
+        </font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Facsimile:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <input type="Text" name="facsimile" size=20 value="<:old facsimile:>" /><:error_img facsimile:>
+        </font></td>
+    </tr>
+    <tr> 
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> E-mail:</font></td>
+      <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
+        <input type="Text" name="emailAddress" size=34 value="<:old emailAddress:>"><:error_img emailAddress:>
+        *</font></td>
+    </tr>
   </table>
   <p>&nbsp; </p>
  <:or Cgi:>
-   <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"> <input type="checkbox" name="need_billing" onClick="this.form.checkupdate.click()" /> Billing details different to shipping</font></p>
+   <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"> <input type="checkbox" name="need_delivery" onClick="this.form.checkupdate.click()" /> Delivery details different to billing</font></p>
  <:eif Cgi:>
 <:include custom/checkout.include optional:>
   <p>

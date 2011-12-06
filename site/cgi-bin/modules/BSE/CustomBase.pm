@@ -1,7 +1,7 @@
 package BSE::CustomBase;
 use strict;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub new {
   my ($class, %params) = @_;
@@ -52,7 +52,16 @@ sub recalc {
 sub required_fields {
   my ($class, $q, $state, $cfg) = @_;
 
-  qw(name1 name2 address city postcode country telephone email);
+  my @fields = qw(name1 name2 address city postcode country billTelephone email);
+  push @fields, split /,/, $cfg->entry("shop", "require_fields", "");
+  if ($q->param("need_delivery")) {
+    if ($cfg->entry("shop", "require_delivery", 1)) {
+      push @fields, qw(delivFirstName delivLastName delivStreet delivSuburb delivState delivPostCode delivCountry);
+    }
+    push @fields, split /,/, $cfg->entry("shop", "require_delivery_fields", "");
+  }
+
+  return @fields;
 }
 
 sub purchase_actions {

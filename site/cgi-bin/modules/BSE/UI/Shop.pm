@@ -17,7 +17,7 @@ use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 
-our $VERSION = "1.018";
+our $VERSION = "1.019";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -43,17 +43,18 @@ my %actions =
    emptycart => 1,
   );
 
+# map of SiteUser field names to order field names - mostly
 my %field_map = 
   (
-   name1 => 'delivFirstName',
-   name2 => 'delivLastName',
-   address => 'delivStreet',
-   organization => 'delivOrganization',
-   city => 'delivSuburb',
-   postcode => 'delivPostCode',
-   state => 'delivState',
-   country => 'delivCountry',
-   email => 'emailAddress',
+   name1 => 'billFirstName',
+   name2 => 'billLastName',
+   address => 'billStreet',
+   organization => 'billOrganization',
+   city => 'billSuburb',
+   postcode => 'billPostCode',
+   state => 'billState',
+   country => 'billCountry',
+   email => 'billEmail',
    cardHolder => 'ccName',
    cardType => 'ccType',
   );
@@ -525,10 +526,8 @@ sub req_checkout {
     # Get a list of couriers
     my $sel_cn = $old->("shipping_name") || "";
     my %fake_order;
-    my %fields = BSE::TB::Order->valid_fields($cfg);
-    for my $name (keys %fields) {
-      $fake_order{$name} = $old->($name);
-    }
+    my %fields = $class->_order_fields($req);
+    $class->_order_hash($req, \%fake_order, \%fields);
     my $country = $fake_order{delivCountry} || bse_default_country($cfg);
     my $country_code = bse_country_code($country);
     my $suburb = $fake_order{delivSuburb};
@@ -660,6 +659,42 @@ sub req_remove_item {
   return BSE::Template->get_refresh($req->user_url(shop => 'cart'), $req->cfg);
 }
 
+sub _order_fields {
+  my ($self, $req) = @_;
+
+  my %fields = BSE::TB::Order->valid_fields($req->cfg);
+  my $cust_class = custom_class($req->cfg);
+  my @required = 
+    $cust_class->required_fields($req->cgi, $req->session->{custom}, $req->cfg);
+
+  for my $name (@required) {
+    $field_map{$name} and $name = $field_map{$name};
+
+    $fields{$name}{required} = 1;
+  }
+
+  return %fields;
+}
+
+sub _order_hash {
+  my ($self, $req, $values, $fields) = @_;
+
+  my $cgi = $req->cgi;
+  for my $name (keys %$fields) {
+    my ($value) = $cgi->param($name);
+    defined $value or $value = "";
+    $values->{$name} = $value;
+  }
+
+  unless ($cgi->param("need_delivery")) {
+    my $map = BSE::TB::Order->billing_to_delivery_map;
+    keys %$map; # reset iterator
+    while (my ($billing, $delivery) = each %$map) {
+      $values->{$delivery} = $values->{$billing};
+    }
+  }
+}
+
 # saves order and refresh to payment page
 sub req_order {
   my ($class, $req) = @_;
@@ -682,28 +717,12 @@ sub req_order {
     return $class->_refresh_logon($req, $msg, $id);
   }
 
-  # some basic validation, in case the user switched off javascript
-  my $cust_class = custom_class($cfg);
-
-  my %fields = BSE::TB::Order->valid_fields($cfg);
+  my %fields = $class->_order_fields($req);
   my %rules = BSE::TB::Order->valid_rules($cfg);
   
   my %errors;
   my %values;
-  for my $name (keys %fields) {
-    my ($value) = $cgi->param($name);
-    defined $value or $value = "";
-    $values{$name} = $value;
-  }
-
-  my @required = 
-    $cust_class->required_fields($cgi, $req->session->{custom}, $cfg);
-
-  for my $name (@required) {
-    $field_map{$name} and $name = $field_map{$name};
-
-    $fields{$name}{required} = 1;
-  }
+  $class->_order_hash($req, \%values, \%fields);
 
   dh_validate_hash(\%values, \%errors, { rules=>\%rules, fields=>\%fields },
 		   $cfg, 'Shop Order Validation');
@@ -1456,9 +1475,10 @@ sub _send_order {
 
     delete @acts{qw/cardNumber cardExpiry cardVerify/};
   }
-  my $to = $order->emailAddress;
+  my $to_email = $order->billEmail;
   my $user = $req->siteuser;
-  if ($user && $user->email eq $to) {
+  my $to = $to_email;
+  if ($user && $user->email eq $to_email) {
     $to = $user;
   }
   my $mailer = BSE::ComposeMail->new(cfg => $cfg);
@@ -1471,7 +1491,7 @@ sub _send_order {
      acts => \%acts,
      log_component => "shop:sendorder:mailbuyer",
      log_object => $order,
-     log_msg => "Order $order->{id} sent to purchaser ".$order->emailAddress,
+     log_msg => "Order $order->{id} sent to purchaser $to_email",
     );
   my $bcc_order = $cfg->entry("shop", "bcc_email");
   if ($bcc_order) {

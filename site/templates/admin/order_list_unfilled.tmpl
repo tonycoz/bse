@@ -1,8 +1,8 @@
 <:wrap admin/base.tmpl title => "Order list - Shop administration":>
 <h1>Shop Administration</h1>
-<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | <a href="<:script:>">Manage catalogs</a> 
-  | <a href="<:script:>?order_list=1&amp;template=order_list_filled">Filled orders</a> [ <:order_count filter= filled!=0:> ]
-  | <a href="<:script:>?order_list=1">All orders</a>  [ <:order_count filter= id!=0:> ] |</p>
+<p>| <a href="<:adminurl menu:>">Admin menu</a> | <a href="<:adminurl shopadmin:>">Manage catalogs</a> 
+  | <a href="<:adminurl shopadmin order_list 1 template order_list_filled:>">Filled orders</a> [ <:order_count filter= filled!=0:> ]
+  | <a href="<:adminurl shopadmin order_list 1:>">All orders</a>  [ <:order_count filter= id!=0:> ] |</p>
 <h2>Order list - Unfilled orders</h2>
 
       <table class="editform orderlist">
@@ -29,14 +29,14 @@
         </tr>
         <:iterator begin orders filter= filled==0 :> 
         <tr> 
-          <td class="col_id"><a href="<:script:>?id=<:order id:>&amp;order_detail=1"><:order 
+          <td class="col_id"><a href="<:adminurl shopadmin id [order id] order_detail 1:>"><:order 
             id:></a></td>
-          <td class="col_name"><:order delivFirstName:> <:order delivLastName:> <:ifOrder 
+          <td class="col_name"><:ifOrder billFirstName:><:order billFirstName:> <:order billLastName:><:or:><:order delivFirstName:> <:order delivLastName:><:eif:> <:ifOrder 
             userId:><font color="#CCCCCC">&#8212; (logged in)</font><:or:><:eif:></td>
           <td class="col_date"><:date order orderDate:></td>
           <td class="col_total">$<:money order total:></td>
           <td class="col_total">$<:money order gst:></td>
-          <td class="col_tools"> <a href="<:script:>?id=<:order id:>&amp;order_detail=1">Order 
+          <td class="col_tools"> <a href="<:adminurl shopadmin id [order id] order_detail 1:>">Order 
             details </a></td>
         </tr>
         <:iterator end orders:> 

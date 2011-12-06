@@ -1,6 +1,6 @@
-<:wrap admin/base.tmpl title => [concatenate "Order " [order id] " details"]:> 
+<:wrap admin/base.tmpl title => [concatenate "Order " [order id] " details"] bodyid => bse-order-detail :> 
 <h1>Shop Administration</h1>
-<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |
+<p>| <a href="<:adminurl menu:>">Admin menu</a> |
 <a href="<:adminurl shopadmin:>">Manage catalogs</a> |
 <a href="<:adminurl shopadmin order_list 1:>">Manage orders</a> |
 <a href="<:adminurl shopadmin order_list 1 template order_list_unfilled:>">Unfilled 
@@ -8,43 +8,69 @@
 <a href="<:adminurl shopadmin order_list 1 template order_list_filled:>">Filled 
   orders</a> |
 <:ifSiteuser id:><a href="<:adminurl siteusers a_edit 1 id [siteuser id]:>">Edit Member</a> |
-<a href="<:adminurl siteusers a_edit=1 id [siteuser id] _t orders:>">Other member orders</a> |<:or:><:eif:>
+<a href="<:adminurl siteusers a_edit 1 id [siteuser id] _t orders:>">Other member orders</a> |<:or:><:eif:>
 </p>
 <:ifMessage:><div class="message"><:message:></div><:or:><:eif:>
 <h2>Order details - No: #<:order id:></h2>
+<h3>Received: <span class="date order-date" data-datetime="<:date "%y-%m-%dT%H:%M:%S" order orderDate:>"><:date "%d/%m/%Y %I:%M%P" order orderDate:></span></h3>
+<:ifOrder purchase_order:>
+<h3 class="purchase-order">Purchase Order: <span class="purchase-order"><:order purchase_order:></span></h3>
+<:or:><:eif:>
 <:ifOrder complete:><:or:><p>This order is incomplete and should not be filled.</p><:eif:>
 <table class="editform orderdetail_head">
+  <tr>
+    <th colspan="2" class="col_typehead">Billing</th>
+    <td rowspan="6">&nbsp;</td>
+    <th colspan="2" class="col_typehead">Delivery</th>
+  </tr>
   <tr> 
     <th class="col_head">E-mail:</th>
+    <td class="col_value"><a href="mailto:<:order billEmail:>"><:order billEmail:></a></td>
+    <th class="col_head">Email:</th>
     <td class="col_value"><a href="mailto:<:order emailAddress:>"><:order emailAddress:></a></td>
-    <td rowspan="3">&nbsp;</td>
+  </tr>
+  <tr> 
     <th class="col_head">Phone:</th>
-    <td class="col_value"><:order telephone:></td>
+    <td class="col_value"><a href="tel:<:order billTelephone:>"><:order billTelephone:></a></td>
+    <th class="col_head">Phone:</th>
+    <td class="col_value"><a href="tel:<:order telephone:>"><:order telephone:></a></td>
   </tr>
   <tr> 
-    <th class="col_head">Date:</th>
-    <td class="col_value"><:date order orderDate:></td>
     <th class="col_head">Mobile:</th>
-    <td class="col_value"><:order delivMobile:></td>
+    <td class="col_value"><a href="tel:<:order billMobile:>"><:order billMobile:></a></td>
+    <th class="col_head">Mobile:</th>
+    <td class="col_value"><a href="tel:<:order delivMobile:>"><:order delivMobile:></a></td>
   </tr>
   <tr> 
-    <th class="col_head">Delivery:</th>
+    <th class="col_head">Facsimile:</th>
+    <td class="col_value"><a href="fax:<:order billFacsimile:>"><:order billFacsimile:></a></td>
+    <th class="col_head">Facsimile:</th>
+    <td class="col_value"><a href="fax:<:order facsimile:>"><:order facsimile:></a></td>
+  </tr>
+  <tr> 
+    <th class="col_head">Address:</th>
+    <td class="col_value">
+      <:order billFirstName:> <:order billLastName:>
+      <:ifOrder billOrganization:><br /><:order billOrganization:><:or:><:eif:>
+      <br /><:order billStreet:>
+      <:ifOrder billStreet2:><br /><:order billStreet2:><:or:><:eif:>
+      <br /><:order billSuburb:> <:order billState:> <:order billPostCode:>
+      <br /><:order billCountry:>
+    </td>
+    <th class="col_head">Address:</th>
     <td class="col_value"><:order delivFirstName:> <:order delivLastName:>
       <:ifOrder delivOrganization:><br /><:order delivOrganization:><:or:><:eif:>
       <br /><:order delivStreet:>
       <:ifOrder delivStreet2:><br /><:order delivStreet2:><:or:><:eif:>
       <br /><:order delivSuburb:> <:order delivState:> <:order delivPostCode:>
       <br /><:order delivCountry:></td>
-    <th class="col_head">Billing:</th>
-    <td class="col_value">
-      <:order billFirstName:> <:order billLastName:>
-      <:ifOrder billOrganization:><br /><:order billOrganization:><:eif:>
-      <br /><:order billStreet:>
-      <:ifOrder billStreet2:><br /><:order billStreet2:><:or:><:eif:>
-      <br /><:order billSuburb:> <:order billState:> <:order billPostCode:>
-      <br /><:order billCountry:>
-    </td>
   </tr>
+<:ifOrder instructions:>
+  <tr>
+    <th>Special Instructions:</th>
+    <td colspan="4" class="col_instructions"><:order instructions:></td>
+  </tr>
+<:or:><:eif:>
   <:include custom/order_detail.include optional:><:include admin/include/custom/order_detail_custom.tmpl optional:><:include admin/include/order_detail_custom.tmpl optional:>
 </table>
 

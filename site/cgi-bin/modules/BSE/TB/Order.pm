@@ -6,7 +6,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 use Carp 'confess';
 
-our $VERSION = "1.009";
+our $VERSION = "1.010";
 
 sub columns {
   return qw/id
@@ -122,6 +122,35 @@ sub payment_columns {
            ccStatus2 ccTranId/;
 }
 
+=item billing_to_delivery_map
+
+Return a hashref where the key is a billing field and the value is the
+corresponding delivery field.
+
+=cut
+
+{
+  my %billing_to_delivery =
+    (
+     billEmail => "emailAddress",
+     billFirstName => "delivFirstName",
+     billLastName => "delivLastName",
+     billStreet => "delivStreet",
+     billStreet2 => "delivStreet2",
+     billSuburb => "delivSuburb",
+     billState => "delivState",
+     billPostCode => "delivPostCode",
+     billCountry => "delivCountry",
+     billTelephone => "telephone",
+     billFacsimile => "facsimile",
+     billOrganization => "delivOrganization",
+    );
+
+  sub billing_to_delivery_map {
+    return \%billing_to_delivery;
+  }
+}
+
 =item siteuser
 
 returns the SiteUser object of the user who made this order.
@@ -221,14 +250,14 @@ sub valid_fields {
      facsimile => { description => 'Facsimile Number',
 		    rules => 'phone' },
      emailAddress => { description => 'Email Address',
-		       rules=>'email;required' },
+		       rules=>'email' },
      instructions => { description => 'Instructions' },
      billTelephone => { description => 'Billing Telephone Number', 
 			rules=>'phone' },
      billFacsimile => { description => 'Billing Facsimile Number',
 			rules=>'phone' },
      billEmail => { description => 'Billing Email Address',
-		    rules => 'email' },
+		    rules => 'email;required' },
      delivMobile => { description => 'Delivery Mobile Number',
 		      rules => 'phone' },
      billMobile => { description => 'Billing Mobile Number',
@@ -387,22 +416,24 @@ sub stage_description_id {
   return BSE::TB::Orders->stage_label_id($self->stage);
 }
 
-=item mail_recipient
+=item delivery_mail_recipient
 
-Return a value suitable for BSE::ComposeMail's to parameter.
+Return a value suitable for BSE::ComposeMail's to parameter for the
+shipping email address.
 
 =cut
 
-sub mail_recipient {
+sub delivery_mail_recipient {
   my ($self) = @_;
 
   my $user = $self->siteuser;
+  my $email = $self->emailAddress || $self->billEmail;
 
-  if ($user && $user->email eq $self->emailAddress) {
+  if ($user && $user->email eq $email) {
     return $user;
   }
 
-  return $self->emailAddress;
+  return $email;
 }
 
 =item _tags
@@ -556,7 +587,7 @@ sub tags {
 sub send_shipped_email {
   my ($self) = @_;
 
-  my $to = $self->mail_recipient;
+  my $to = $self->delivery_mail_recipient;
   require BSE::ComposeMail;
   my $mailer = BSE::ComposeMail->new(cfg => BSE::Cfg->single);
   require BSE::Util::Tags;
@@ -565,8 +596,7 @@ sub send_shipped_email {
      BSE::Util::Tags->mail_tags(),
      $self->mail_tags,
     );
-
-  $mailer->send
+  my %opts =
     (
      to => $to,
      subject => "Your order has shipped",
@@ -576,6 +606,12 @@ sub send_shipped_email {
      log_object => $self,
      log_component => "shopadmin:orders:saveorder",
     );
+  if ($self->emailAddress && $self->billEmail
+      && lc $self->emailAddress ne $self->billEmail) {
+    $opts{cc} = $self->billEmail;
+  }
+
+  $mailer->send(%opts);
 }
 
 sub new_stage {
