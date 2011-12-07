@@ -962,9 +962,9 @@ Default: none.
 =item require_delivery
 
 If true, and the C<need_delivery> CGI parameter is true, treat the
-following delivery fields as required during checkout: delivFirstName
-delivLastName delivStreet delivSuburb delivState delivPostCode
-delivCountry.  Default: true.
+following delivery fields as required during checkout: delivFirstName,
+delivLastName, delivStreet, delivSuburb, delivPostCode and delivCountry.
+Default: true.
 
 =item require_delivery_fields
 

@@ -1,7 +1,7 @@
 package BSE::CustomBase;
 use strict;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub new {
   my ($class, %params) = @_;
@@ -56,7 +56,7 @@ sub required_fields {
   push @fields, split /,/, $cfg->entry("shop", "require_fields", "");
   if ($q->param("need_delivery")) {
     if ($cfg->entry("shop", "require_delivery", 1)) {
-      push @fields, qw(delivFirstName delivLastName delivStreet delivSuburb delivState delivPostCode delivCountry);
+      push @fields, qw(delivFirstName delivLastName delivStreet delivSuburb delivPostCode delivCountry);
     }
     push @fields, split /,/, $cfg->entry("shop", "require_delivery_fields", "");
   }
