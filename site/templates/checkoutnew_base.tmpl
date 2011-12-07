@@ -262,7 +262,7 @@ function BSE_validateForm {
     </tr>
   </table>
   <p>&nbsp; </p>
- <:if Cgi need_delivery:>
+ <:if NeedDelivery:>
   <font face="Verdana, Arial, Helvetica, sans-serif" size="3"><input type="checkbox" name="need_delivery" checked="checked" onClick="this.form.checkupdate.click()" /> <b>Shipping Details:</b></font> 
    
   <hr size="1" noshade>
@@ -325,7 +325,7 @@ function BSE_validateForm {
     <tr> 
       <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Telephone:</font></td>
       <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-        <input type="Text" name="telephone" size=20 value="<:old telephone:>" /><:error_img telephone:>
+        <input type="Text" name="delivTelephone" size=20 value="<:old delivTelephone:>" /><:error_img delivTelephone:>
         *</font></td>
     </tr>
     <tr> 
@@ -337,7 +337,7 @@ function BSE_validateForm {
     <tr> 
       <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> Facsimile:</font></td>
       <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
-        <input type="Text" name="facsimile" size=20 value="<:old facsimile:>" /><:error_img facsimile:>
+        <input type="Text" name="delivFacsimile" size=20 value="<:old delivFacsimile:>" /><:error_img delivFacsimile:>
         </font></td>
     </tr>
     <tr> 
@@ -348,9 +348,9 @@ function BSE_validateForm {
     </tr>
   </table>
   <p>&nbsp; </p>
- <:or Cgi:>
+ <:or NeedDelivery:>
    <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"> <input type="checkbox" name="need_delivery" onClick="this.form.checkupdate.click()" /> Delivery details different to billing</font></p>
- <:eif Cgi:>
+ <:eif NeedDelivery:>
 <:include custom/checkout.include optional:>
   <p>
     <input type="submit" value="Update" name="checkupdate" />

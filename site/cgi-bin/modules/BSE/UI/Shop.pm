@@ -17,7 +17,7 @@ use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 
-our $VERSION = "1.021";
+our $VERSION = "1.022";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -470,6 +470,8 @@ sub req_checkout {
   my $cfg = $req->cfg;
   my $cgi = $req->cgi;
 
+  my $need_delivery = ( $olddata ? $cgi->param("need_delivery") : $req->session->{order_need_delivery} ) || 0;
+
   $class->update_quantities($req);
   my @cart = @{$req->session->{cart}};
 
@@ -500,7 +502,7 @@ sub req_checkout {
     my $field = $_[0];
     my $value;
 
-    if ($olddata && defined($cgi->param($field))) {
+    if ($olddata) {
       $value = $cgi->param($field);
     }
     elsif ($order_info && defined $order_info->{$field}) {
@@ -615,6 +617,7 @@ sub req_checkout {
      shipping_method => escape_html($shipping_method),
      shipping_error => escape_html($shipping_error),
      shipping_name => $shipping_name,
+     ifNeedDelivery => $need_delivery,
     );
   $req->session->{custom} = \%custom_state;
   my $tmp = $acts{total};
@@ -739,6 +742,7 @@ sub req_order {
     or return $class->req_checkout($req, $msg, 1);
 
   $req->session->{order_info} = \%values;
+  $req->session->{order_need_delivery} = $cgi->param("need_delivery");
   $req->session->{order_info_confirmed} = 1;
 
   # skip payment page if nothing to pay
