@@ -6,7 +6,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 use Carp 'confess';
 
-our $VERSION = "1.010";
+our $VERSION = "1.011";
 
 sub columns {
   return qw/id
@@ -142,6 +142,7 @@ corresponding delivery field.
      billPostCode => "delivPostCode",
      billCountry => "delivCountry",
      billTelephone => "telephone",
+     billMobile => "delivMobile",
      billFacsimile => "facsimile",
      billOrganization => "delivOrganization",
     );

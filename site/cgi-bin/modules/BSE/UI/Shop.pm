@@ -17,7 +17,7 @@ use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 
-our $VERSION = "1.020";
+our $VERSION = "1.021";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -55,6 +55,9 @@ my %field_map =
    state => 'billState',
    country => 'billCountry',
    email => 'billEmail',
+   telephone => 'billTelephone',
+   facsimile => 'billFacsimile',
+   delivMobile => 'billMobile',
    cardHolder => 'ccName',
    cardType => 'ccType',
   );
@@ -494,20 +497,16 @@ sub req_checkout {
   my $order_info = $req->session->{order_info};
 
   my $old = sub {
+    my $field = $_[0];
     my $value;
 
-    if ($olddata) {
-      $value = $cgi->param($_[0]);
-      unless (defined $value) {
-      $value = $user->{$_[0]}
-        if $user;
-      }
+    if ($olddata && defined($cgi->param($field))) {
+      $value = $cgi->param($field);
     }
-    elsif ($order_info && defined $order_info->{$_[0]}) {
-      $value = $order_info->{$_[0]};
+    elsif ($order_info && defined $order_info->{$field}) {
+      $value = $order_info->{$field};
     }
     else {
-      my $field = $_[0];
       $rev_field_map{$field} and $field = $rev_field_map{$field};
       $value = $user && defined $user->{$field} ? $user->{$field} : '';
     }
