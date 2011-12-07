@@ -6,7 +6,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 use Carp 'confess';
 
-our $VERSION = "1.011";
+our $VERSION = "1.012";
 
 sub columns {
   return qw/id
@@ -299,7 +299,7 @@ sub valid_payment_fields {
       rules => 'creditcardexpirysingle',
      },
      cardHolder => { description => "Credit Card Holder" },
-     cardType => { description => "Credit Card Type" },
+     ccType => { description => "Credit Card Type" },
      cardVerify => 
      { 
       description => 'Card Verification Value',

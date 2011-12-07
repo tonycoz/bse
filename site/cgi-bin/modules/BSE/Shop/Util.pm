@@ -7,7 +7,7 @@ use vars qw(@ISA @EXPORT_OK);
                 payment_types order_item_opts
  PAYMENT_CC PAYMENT_CHEQUE PAYMENT_CALLME PAYMENT_MANUAL PAYMENT_PAYPAL/;
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 our %EXPORT_TAGS =
   (
@@ -237,25 +237,12 @@ sub total {
 
 *shop_total = \&total;
 
-# map some form fields to order field names
-my %field_map = 
-  (
-   name1 => 'delivFirstName',
-   name2 => 'delivLastName',
-   address => 'delivStreet',
-   city => 'delivSuburb',
-   postcode => 'delivPostCode',
-   state => 'delivState',
-   country => 'delivCountry',
-   email => 'emailAddress',
-   cardHolder => 'ccName',
-   cardType => 'ccType',
-  );
 # paranoia, don't store these
 my %nostore =
   (
    cardNumber => 1,
    cardExpiry => 1,
+   cardHolder => 1,
   );
 
 sub load_order_fields {
@@ -296,7 +283,7 @@ sub load_order_fields {
   @columns{@columns} = @columns;
 
   for my $field ($q->param()) {
-    $order->{$field_map{$field} || $field} = $q->param($field)
+    $order->{$field} = $q->param($field)
       unless $nostore{$field};
   }
 

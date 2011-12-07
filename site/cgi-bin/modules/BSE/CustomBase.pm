@@ -1,7 +1,7 @@
 package BSE::CustomBase;
 use strict;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub new {
   my ($class, %params) = @_;
@@ -49,10 +49,19 @@ sub recalc {
   my ($class, $q, $items, $products, $state, $cfg) = @_;
 }
 
+=item required_fields($cgi, $state, $cfg)
+
+Return a list of order field names that must have a non-blank value.
+
+Previously this could return SiteUser field names, this is no longer
+true.
+
+=cut
+
 sub required_fields {
   my ($class, $q, $state, $cfg) = @_;
 
-  my @fields = qw(name1 name2 address city postcode country billTelephone email);
+  my @fields = qw(billFirstName billLastName billStreet billSuburb billPostCode billCountry billTelephone billEmail);
   push @fields, split /,/, $cfg->entry("shop", "require_fields", "");
   if ($q->param("need_delivery")) {
     if ($cfg->entry("shop", "require_delivery", 1)) {

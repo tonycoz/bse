@@ -17,7 +17,7 @@ use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 
-our $VERSION = "1.022";
+our $VERSION = "1.023";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -57,9 +57,8 @@ my %field_map =
    email => 'billEmail',
    telephone => 'billTelephone',
    facsimile => 'billFacsimile',
-   delivMobile => 'billMobile',
-   cardHolder => 'ccName',
-   cardType => 'ccType',
+   delivMobile => 'billMobile', # temporary hack
+   unknown1 => 'delivMobile', # more hackery
   );
 
 my %rev_field_map = reverse %field_map;
@@ -670,8 +669,6 @@ sub _order_fields {
     $cust_class->required_fields($req->cgi, $req->session->{custom}, $req->cfg);
 
   for my $name (@required) {
-    $field_map{$name} and $name = $field_map{$name};
-
     $fields{$name}{required} = 1;
   }
 
@@ -870,6 +867,7 @@ my %nostore =
    cardExpiry => 1,
    delivery_in => 1,
    cardVerify => 1,
+   cardHolder => 1,
   );
 
 my %bill_ccmap =
@@ -968,8 +966,7 @@ sub req_payment {
 
     for my $field (keys %fields) {
       unless ($nostore{$field}) {
-	my $target = $field_map{$field} || $field;
-	($order_values->{$target}) = $cgi->param($field);
+	($order_values->{$field}) = $cgi->param($field);
       }
     }
 
