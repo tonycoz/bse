@@ -339,6 +339,9 @@ create table orders (
 
   stage varchar(20) not null default '',
 
+  -- truncated credit card number
+  ccPAN varchar(4) not null default '',
+
   primary key (id),
   index order_cchash(ccNumberHash),
   index order_userId(userId, orderDate)

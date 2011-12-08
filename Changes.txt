@@ -1,0 +1,17 @@
+BSE 0.20 (unreleased)
+========
+
+ - store a truncated card number for credit card payments (both online
+   and email).  Reinstate storage of the card holder name in ccName.
+   ccNumberHash is no longer populated.
+
+ - ifNeedDelivery (checkoutnew_base.tmpl) wasn't being reset on order
+   submission.
+
+Template updates:
+
+- checkoutpay_base.tmpl - the name of the cardHolder payment field is
+  now ccName.
+
+- admin/order_detail.tmpl - order ccPAN can be used to display the
+  truncated card number.

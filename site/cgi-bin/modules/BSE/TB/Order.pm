@@ -6,7 +6,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 use Carp 'confess';
 
-our $VERSION = "1.012";
+our $VERSION = "1.013";
 
 sub columns {
   return qw/id
@@ -28,7 +28,7 @@ sub columns {
            ccStatus2 ccTranId complete delivOrganization billOrganization
            delivStreet2 billStreet2 purchase_order shipping_method
            shipping_name shipping_trace
-	   paypal_token paypal_tran_id freight_tracking stage/;
+	   paypal_token paypal_tran_id freight_tracking stage ccPAN/;
 }
 
 sub table {
@@ -95,6 +95,7 @@ sub defaults {
      paypal_tran_id => "",
      freight_tracking => "",
      stage => "incomplete",
+     ccPAN => "",
     );
 }
 
@@ -298,7 +299,7 @@ sub valid_payment_fields {
       description => "Credit Card Expiry Date",
       rules => 'creditcardexpirysingle',
      },
-     cardHolder => { description => "Credit Card Holder" },
+     ccName => { description => "Credit Card Holder" },
      ccType => { description => "Credit Card Type" },
      cardVerify => 
      { 
@@ -648,6 +649,16 @@ sub new_stage {
       $self->set_filled(0);
     }
   }
+}
+
+sub set_ccPANTruncate {
+  my ($self, $pan) = @_;
+
+  if (length $pan > 4) {
+    $pan = substr($pan, -4);
+  }
+
+  $self->set_ccPAN($pan);
 }
 
 1;

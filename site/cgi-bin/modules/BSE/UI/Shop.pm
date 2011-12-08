@@ -17,7 +17,7 @@ use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 
-our $VERSION = "1.023";
+our $VERSION = "1.024";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -867,7 +867,7 @@ my %nostore =
    cardExpiry => 1,
    delivery_in => 1,
    cardVerify => 1,
-   cardHolder => 1,
+   ccName => 1,
   );
 
 my %bill_ccmap =
@@ -1086,7 +1086,7 @@ sub req_payment {
   if ($paymentType == PAYMENT_CC) {
     my $ccNumber = $cgi->param('cardNumber');
     my $ccExpiry = $cgi->param('cardExpiry');
-    my $ccName   = $cgi->param('cardHolder');
+    my $ccName   = $cgi->param('ccName');
     
     if ($ccprocessor) {
       my $cc_class = credit_card_class($cfg);
@@ -1138,14 +1138,16 @@ sub req_payment {
       $order->{ccStatus2}	    = 0;
       $order->{ccStatusText}  = '';
       $order->{ccTranId}	    = $result->{transactionid};
+      $order->set_ccPANTruncate($ccNumber);
       defined $order->{ccTranId} or $order->{ccTranId} = '';
       $order->{paidFor}	    = 1;
     }
     else {
       $ccNumber =~ tr/0-9//cd;
-      $order->{ccNumberHash} = md5_hex($ccNumber);
       $order->{ccExpiryHash} = md5_hex($ccExpiry);
+      $order->set_ccPANTruncate($ccNumber);
     }
+    $order->set_ccName($ccName);
   }
   elsif ($paymentType == PAYMENT_PAYPAL) {
     require BSE::PayPal;
@@ -1190,7 +1192,7 @@ sub _finish_order {
   $self->_send_order($req, $order);
 
   # empty the cart ready for the next order
-  delete @{$req->session}{qw/order_info order_info_confirmed cart order_work/};
+  delete @{$req->session}{qw/order_info order_info_confirmed order_need_delivery cart order_work/};
 }
 
 sub req_orderdone {

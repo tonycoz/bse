@@ -7,7 +7,7 @@ use vars qw(@ISA @EXPORT_OK);
                 payment_types order_item_opts
  PAYMENT_CC PAYMENT_CHEQUE PAYMENT_CALLME PAYMENT_MANUAL PAYMENT_PAYPAL/;
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 our %EXPORT_TAGS =
   (
@@ -242,7 +242,6 @@ my %nostore =
   (
    cardNumber => 1,
    cardExpiry => 1,
-   cardHolder => 1,
   );
 
 sub load_order_fields {
@@ -254,7 +253,7 @@ sub load_order_fields {
   my $cust_class = custom_class($cfg);
 
   my @required = $cust_class->required_fields($q, $session->{custom});
-  push(@required, qw(cardHolder cardExpiry)) if $wantcard;
+  push(@required, qw(ccName cardExpiry)) if $wantcard;
   for my $field (@required) {
     defined($q->param($field)) && length($q->param($field))
       or do { $$error = "Field $field is required"; return 0 };
@@ -449,7 +448,7 @@ sub payment_types {
       id => PAYMENT_CC, 
       name => 'CC', 
       desc => 'Credit Card',
-      require => [ qw/cardNumber cardExpiry cardHolder/ ],
+      require => [ qw/cardNumber cardExpiry ccName/ ],
      },
      {
       id => PAYMENT_CHEQUE, 

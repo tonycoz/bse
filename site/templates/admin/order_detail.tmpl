@@ -172,6 +172,12 @@ Shipping via <:order shipping_method:>
 <:ifOrder ccTranId:>
 <tr><th>Transaction Id:</th><td><:order ccTranId:></td></tr>
 <:or:><:eif:>
+<:ifOrder ccName:>
+<tr><th>Card Holder:</th><td><:order ccName:></td>
+<:or:><:eif:>
+<:ifOrder ccPAN:>
+<tr><th>Card Number (partial):</th><td>...<:order ccPAN:></td>
+<:or:><:eif:>
 </table>
 <:or Order:>
 <p>This transaction <b>FAILED</b>.</p>
@@ -184,6 +190,16 @@ Shipping via <:order shipping_method:>
 </table>
 <:eif Order:>
 <:case Eq [order paymentType] "0":><p>Payment made by credit card.  Credit card details can be found in the encrypted email you received when the customer made the order.</p>
+<:if Or [order ccPAN] [order ccName]:>
+<table>
+<:ifOrder ccName:>
+<tr><th>Card Holder</th><td><:order ccName:></td>
+<:or:><:eif:>
+<:ifOrder ccPAN:>
+<tr><th>Card Number (partial)</th><td>...<:order ccPAN:></td>
+<:or:><:eif:>
+</table>
+<:or Or:><:eif Or:>
 <:case Eq [order paymentType] "1":><p>Payment will be made by cheque.</p>
 <:case Eq [order paymentType] "2":><p>Contact the customer to arrange for payment.</p>
 <:case Eq [order paymentType] "3":><p>Paid manually (staff marked this order paid) - you can <a href="<:adminurl shopadmin a_order_unpaid 1 id [order id]:>">unmark it</a></p>
