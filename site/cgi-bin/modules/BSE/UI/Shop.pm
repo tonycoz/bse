@@ -17,7 +17,7 @@ use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 
-our $VERSION = "1.024";
+our $VERSION = "1.025";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -527,7 +527,7 @@ sub req_checkout {
     my $sel_cn = $old->("shipping_name") || "";
     my %fake_order;
     my %fields = $class->_order_fields($req);
-    $class->_order_hash($req, \%fake_order, \%fields);
+    $class->_order_hash($req, \%fake_order, \%fields, user => 1);
     my $country = $fake_order{delivCountry} || bse_default_country($cfg);
     my $country_code = bse_country_code($country);
     my $suburb = $fake_order{delivSuburb};
@@ -676,11 +676,18 @@ sub _order_fields {
 }
 
 sub _order_hash {
-  my ($self, $req, $values, $fields) = @_;
+  my ($self, $req, $values, $fields, %opts) = @_;
 
   my $cgi = $req->cgi;
+  my $user = $req->siteuser;
   for my $name (keys %$fields) {
     my ($value) = $cgi->param($name);
+    if (!defined $value && $opts{user}) {
+      my $field = $rev_field_map{$name} || $name;
+      if ($user->can($field)) {
+	$value = $user->$field();
+      }
+    }
     defined $value or $value = "";
     $values->{$name} = $value;
   }
