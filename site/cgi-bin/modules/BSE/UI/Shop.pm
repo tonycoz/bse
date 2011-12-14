@@ -17,7 +17,7 @@ use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 
-our $VERSION = "1.027";
+our $VERSION = "1.028";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -29,7 +29,6 @@ my %actions =
    checkout => 1,
    checkupdate => 1,
    recheckout => 1,
-   confirm => 1,
    recalc=>1,
    recalculate => 1,
    #purchase => 1,
