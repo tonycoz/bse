@@ -26,6 +26,9 @@ Please read any NOTES below carefully.
 
  - Data::UUID 1.148 is now required
 
+ - remove target entry for the shop confirm action, which was
+   otherwise removed years ago. RT #1280.
+
 Template updates:
 
  - checkoutpay_base.tmpl - the name of the cardHolder payment field is
