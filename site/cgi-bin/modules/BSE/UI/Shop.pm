@@ -17,7 +17,7 @@ use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 
-our $VERSION = "1.028";
+our $VERSION = "1.029";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -60,6 +60,7 @@ my %field_map =
    email => 'billEmail',
    delivFacsimile => 'facsimile',
    delivTelephone => 'telephone',
+   delivEmail => 'emailAddress',
   );
 
 my %rev_field_map = reverse %field_map;
