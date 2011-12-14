@@ -1,6 +1,8 @@
 BSE 0.20 (unreleased)
 ========
 
+Please read any NOTES below carefully.
+
  - store a truncated card number for credit card payments (both online
    and email).  Reinstate storage of the card holder name in ccName.
    ccNumberHash is no longer populated.
@@ -8,10 +10,40 @@ BSE 0.20 (unreleased)
  - ifNeedDelivery (checkoutnew_base.tmpl) wasn't being reset on order
    submission.
 
+ - the site_users table has been refactored into the bse_siteusers
+   table, removing the bill* fields and adding deliv* fields.  Other
+   obsolete fields have also been removed.
+
+   NOTE: To preserve your registered users on upgrade, run the
+   provided schema/site_users_to_members.sql SQL through the mysql
+   tool.  This will create entries in bse_siteusers corresponding to
+   those in your original site_users table.  You MUST start with an
+   empty bse_siteusers table or the script will throw an error.
+
+   NOTE: Any configuration such as report definitions, query group
+   definitions should now refer to bse_siteusers instead of
+   site_users.
+
+ - Data::UUID 1.148 is now required
+
 Template updates:
 
-- checkoutpay_base.tmpl - the name of the cardHolder payment field is
-  now ccName.
+ - checkoutpay_base.tmpl - the name of the cardHolder payment field is
+   now ccName.
 
-- admin/order_detail.tmpl - order ccPAN can be used to display the
-  truncated card number.
+ - admin/order_detail.tmpl - order ccPAN can be used to display the
+   truncated card number.
+
+ - user/options_billing_base.tmpl and its generated template have been
+   renamed with s/billing/delivery/ since it now contains delivery
+   details.  The link to it from user/options(_base).tmpl has also
+   been updated.
+
+ - user/options_base.tmpl, user/register_base.tmpl,
+   admin/users/(add,edit,view).tmpl have been updated to match the new
+   site users schema.
+
+Internals:
+
+ - Squirrel::Table->make now looks for default_I<colname> when looking
+   for default values for a column.

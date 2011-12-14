@@ -54,18 +54,25 @@
             <td class="help"><:help editsiteuser name2:>  <:error_img name2:></td>
           </tr>
           <tr> 
-            <th>address: </th>
+            <th>Address: </th>
             <td> 
-              <input type="text" name="address" value="<:old address siteuser address:>" size="60" /><:ifRequired address:>*<:or:><:eif:>
+              <input type="text" name="street" value="<:old street siteuser street:>" size="60" /><:ifRequired street:>*<:or:><:eif:>
             </td>
-            <td class="help"><:help editsiteuser address:>  <:error_img address:></td>
+            <td class="help"><:help editsiteuser street:>  <:error_img street:></td>
           </tr>
           <tr> 
-            <th>city: </th>
+            <th></th>
             <td> 
-              <input type="text" name="city" value="<:old city siteuser city:>" /><:ifRequired city:>*<:or:><:eif:>
+              <input type="text" name="street2" value="<:old street2 siteuser street2:>" size="60" /><:ifRequired street2:>*<:or:><:eif:>
             </td>
-            <td><:help editsiteuser city:>  <:error_img city:></td>
+            <td class="help"><:help editsiteuser street2:>  <:error_img street2:></td>
+          </tr>
+          <tr> 
+            <th>Suburb: </th>
+            <td> 
+              <input type="text" name="suburb" value="<:old suburb siteuser suburb:>" /><:ifRequired suburb:>*<:or:><:eif:>
+            </td>
+            <td><:help editsiteuser suburb:>  <:error_img suburb:></td>
           </tr>
           <tr> 
             <th>state: </th>
@@ -82,6 +89,13 @@
             <td class="help"><:help editsiteuser postcode:>  <:error_img postcode:></td>
           </tr>
           <tr> 
+            <th>country: </th>
+            <td> 
+              <input type="text" name="country" value="<:old country siteuser country:>" size="60" /><:ifRequired country:>*<:or:><:eif:>
+            </td>
+            <td class="help"><:help editsiteuser country:>  <:error_img country:></td>
+          </tr>
+          <tr> 
             <th>telephone: </th>
             <td> 
               <input type="text" name="telephone" value="<:old telephone siteuser telephone:>" /><:ifRequired telephone:>*<:or:><:eif:>
@@ -91,9 +105,9 @@
           <tr> 
             <th>mobile: </th>
             <td> 
-              <input type="text" name="delivMobile" value="<:old delivMobile siteuser delivMobile:>" /><:ifRequired delivMobile:>*<:or:><:eif:>
+              <input type="text" name="mobile" value="<:old mobile siteuser mobile:>" /><:ifRequired mobile:>*<:or:><:eif:>
             </td>
-            <td class="help"><:help editsiteuser delivMobile:>  <:error_img delivMobile:></td>
+            <td class="help"><:help editsiteuser mobile:>  <:error_img mobile:></td>
           </tr>
           <tr> 
             <th>facsimile: </th>
@@ -101,13 +115,6 @@
               <input type="text" name="facsimile" value="<:old facsimile siteuser facsimile:>" /><:ifRequired facsimile:>*<:or:><:eif:>
             </td>
             <td class="help"><:help editsiteuser facsimile:>  <:error_img facsimile:></td>
-          </tr>
-          <tr> 
-            <th>country: </th>
-            <td> 
-              <input type="text" name="country" value="<:old country siteuser country:>" size="60" /><:ifRequired country:>*<:or:><:eif:>
-            </td>
-            <td class="help"><:help editsiteuser country:>  <:error_img country:></td>
           </tr>
           <tr> 
             <th>title: </th>
@@ -123,54 +130,71 @@
             </td>
             <td class="help"><:help editsiteuser organization:>  <:error_img organization:></td>
           </tr>
+	  <tr>
+	    <th colspan="2">Delivery</th>
+	  </tr>
           <tr> 
-            <th>billFirstName: </th>
+            <th>First Name: </th>
             <td> 
-              <input type="text" name="billFirstName" value="<:old billFirstName siteuser billFirstName:>" size="60" /><:ifRequired billFirstName:>*<:or:><:eif:>
+              <input type="text" name="delivFirstName" value="<:old delivFirstName siteuser delivFirstName:>" size="60" /><:ifRequired delivFirstName:>*<:or:><:eif:>
             </td>
-            <td class="help"><:help editsiteuser billFirstName:>  <:error_img billFirstName:></td>
+            <td class="help"><:help editsiteuser delivFirstName:>  <:error_img delivFirstName:></td>
           </tr>
           <tr> 
-            <th>billLastName: </th>
+            <th>Last Name: </th>
             <td> 
-              <input type="text" name="billLastName" value="<:old billLastName siteuser billLastName:>" size="60" /><:ifRequired billLastName:>*<:or:><:eif:>
+              <input type="text" name="delivLastName" value="<:old delivLastName siteuser delivLastName:>" size="60" /><:ifRequired delivLastName:>*<:or:><:eif:>
             </td>
-            <td class="help"><:help editsiteuser billLastName:>  <:error_img billLastName:></td>
+            <td class="help"><:help editsiteuser delivLastName:>  <:error_img delivLastName:></td>
           </tr>
           <tr> 
-            <th>billStreet: </th>
+            <th>Organization: </th>
             <td> 
-              <input type="text" name="billStreet" value="<:old billStreet siteuser billStreet:>" size="60" /><:ifRequired billStreet:>*<:or:><:eif:>
+              <input type="text" name="delivOrganization" value="<:old delivOrganization siteuser delivOrganization:>" size="60" /><:ifRequired delivOrganization:>*<:or:><:eif:>
             </td>
-            <td class="help"><:help editsiteuser billStreet:>  <:error_img billStreet:></td>
+            <td class="help"><:help editsiteuser delivOrganization:>  <:error_img delivOrganization:></td>
           </tr>
           <tr> 
-            <th>billSuburb: </th>
+            <th>Address: </th>
             <td> 
-              <input type="text" name="billSuburb" value="<:old billSuburb siteuser billSuburb:>" /><:ifRequired billSuburb:>*<:or:><:eif:>
+              <input type="text" name="delivStreet" value="<:old delivStreet siteuser delivStreet:>" size="60" /><:ifRequired delivStreet:>*<:or:><:eif:>
             </td>
-            <td><:help editsiteuser billSuburb:>  <:error_img billSuburb:></td>
+            <td class="help"><:help editsiteuser delivStreet:>  <:error_img delivStreet:></td>
           </tr>
           <tr> 
-            <th>billState: </th>
+            <th></th>
             <td> 
-              <input type="text" name="billState" value="<:old billState siteuser billState:>" /><:ifRequired billState:>*<:or:><:eif:>
+              <input type="text" name="delivStreet2" value="<:old delivStreet2 siteuser delivStreet2:>" size="60" /><:ifRequired delivStreet2:>*<:or:><:eif:>
             </td>
-            <td class="help"><:help editsiteuser billState:>  <:error_img billState:></td>
+            <td class="help"><:help editsiteuser delivStreet2:>  <:error_img delivStreet2:></td>
           </tr>
           <tr> 
-            <th>billPostCode: </th>
+            <th>Suburb: </th>
             <td> 
-              <input type="text" name="billPostCode" value="<:old billPostCode siteuser billPostCode:>" /><:ifRequired billPostCode:>*<:or:><:eif:>
+              <input type="text" name="delivSuburb" value="<:old delivSuburb siteuser delivSuburb:>" /><:ifRequired delivSuburb:>*<:or:><:eif:>
             </td>
-            <td class="help"><:help editsiteuser billPostCode:>  <:error_img billPostCode:></td>
+            <td><:help editsiteuser delivSuburb:>  <:error_img delivSuburb:></td>
           </tr>
           <tr> 
-            <th>billCountry: </th>
+            <th>State: </th>
             <td> 
-              <input type="text" name="billCountry" value="<:old billCountry siteuser billCountry:>" /><:ifRequired billCountry:>*<:or:><:eif:>
+              <input type="text" name="delivState" value="<:old delivState siteuser delivState:>" /><:ifRequired delivState:>*<:or:><:eif:>
             </td>
-            <td class="help"><:help editsiteuser billCountry:>  <:error_img billCountry:></td>
+            <td class="help"><:help editsiteuser delivState:>  <:error_img delivState:></td>
+          </tr>
+          <tr> 
+            <th>PostCode: </th>
+            <td> 
+              <input type="text" name="delivPostCode" value="<:old delivPostCode siteuser delivPostCode:>" /><:ifRequired delivPostCode:>*<:or:><:eif:>
+            </td>
+            <td class="help"><:help editsiteuser delivPostCode:>  <:error_img delivPostCode:></td>
+          </tr>
+          <tr> 
+            <th>Country: </th>
+            <td> 
+              <input type="text" name="delivCountry" value="<:old delivCountry siteuser delivCountry:>" /><:ifRequired delivCountry:>*<:or:><:eif:>
+            </td>
+            <td class="help"><:help editsiteuser delivCountry:>  <:error_img delivCountry:></td>
           </tr>
           <tr> 
             <th>instructions: </th>
@@ -180,32 +204,32 @@
             <td class="help"><:help editsiteuser instructions:>  <:error_img instructions:></td>
           </tr>
           <tr> 
-            <th>billTelephone: </th>
+            <th>Telephone: </th>
             <td> 
-              <input type="text" name="billTelephone" value="<:old billTelephone siteuser billTelephone:>" /><:ifRequired billTelephone:>*<:or:><:eif:>
+              <input type="text" name="delivTelephone" value="<:old delivTelephone siteuser delivTelephone:>" /><:ifRequired delivTelephone:>*<:or:><:eif:>
             </td>
-            <td class="help"><:help editsiteuser billTelephone:>  <:error_img billTelephone:></td>
+            <td class="help"><:help editsiteuser delivTelephone:>  <:error_img delivTelephone:></td>
           </tr>
           <tr> 
-            <th>billMobile: </th>
+            <th>Mobile: </th>
             <td> 
-              <input type="text" name="billMobile" value="<:old billMobile siteuser billMobile:>" /><:ifRequired billMobile:>*<:or:><:eif:>
+              <input type="text" name="delivMobile" value="<:old delivMobile siteuser delivMobile:>" /><:ifRequired delivMobile:>*<:or:><:eif:>
             </td>
-            <td class="help"><:help editsiteuser billMobile:>  <:error_img billMobile:></td>
+            <td class="help"><:help editsiteuser delivMobile:>  <:error_img delivMobile:></td>
           </tr>
           <tr> 
-            <th>billFacsimile: </th>
+            <th>Facsimile: </th>
             <td> 
-              <input type="text" name="billFacsimile" value="<:old billFacsimile siteuser billFacsimile:>" /><:ifRequired billFacsimile:>*<:or:><:eif:>
+              <input type="text" name="delivFacsimile" value="<:old delivFacsimile siteuser delivFacsimile:>" /><:ifRequired delivFacsimile:>*<:or:><:eif:>
             </td>
-            <td class="help"><:help editsiteuser billFacsimile:>  <:error_img billFacsimile:></td>
+            <td class="help"><:help editsiteuser delivFacsimile:>  <:error_img delivFacsimile:></td>
           </tr>
           <tr> 
-            <th>billEmail: </th>
+            <th>Email: </th>
             <td> 
-              <input type="text" name="billEmail" value="<:old billEmail siteuser billEmail:>" /><:ifRequired billEmail:>*<:or:><:eif:>
+              <input type="text" name="delivEmail" value="<:old delivEmail siteuser delivEmail:>" /><:ifRequired delivEmail:>*<:or:><:eif:>
             </td>
-            <td class="help"><:help editsiteuser billEmail:>  <:error_img billEmail:></td>
+            <td class="help"><:help editsiteuser delivEmail:>  <:error_img delivEmail:></td>
           </tr>
           <tr> 
             <th>Affiliate Name: </th>

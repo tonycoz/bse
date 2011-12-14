@@ -552,33 +552,35 @@ create table subscribed_users (
 
 -- contains web site users
 -- there will be a separate admin users table at some point
-drop table if exists site_users;
-create table site_users (
+drop table if exists bse_siteusers;
+create table bse_siteusers (
   id integer not null auto_increment,
+
+  idUUID varchar(40) not null,
 
   userId varchar(40) not null,
   password varchar(255) not null,
+  password_type varchar(20) not null default 'plain',
+
   email varchar(255) not null,
 
-  keepAddress integer not null default 1,
   whenRegistered datetime not null,
   lastLogon datetime not null,
 
   -- used to fill in the checkout form
+  title varchar(127),
   name1 varchar(127),
   name2 varchar(127),
-  address varchar(127),
-  city varchar(127),
+  street varchar(127),
+  street2 varchar(127),
+  suburb varchar(127),
   state varchar(40),
   postcode varchar(40),
+  country varchar(127),
   telephone varchar(80),
   facsimile varchar(80),
-  country varchar(127),
-
-  -- the user wants to receive the site newsletter if any
-  -- this should default to NO
-  -- this is probably ignored for now
-  wantLetter integer not null default 0,
+  mobile varchar(80) not null default '',
+  organization varchar(127),
 
   -- if this is non-zero, we have permission to send email to this
   -- user
@@ -593,31 +595,25 @@ create table site_users (
 
   textOnlyMail integer not null,
 
-  title varchar(127),
-  organization varchar(127),
-  
-  referral integer,
-  otherReferral varchar(127) not null,
-  prompt integer,
-  otherPrompt varchar(127) not null,
-  profession integer not null,
-  otherProfession varchar(127) not null,
-
   previousLogon datetime not null,
 
-  -- used for billing information on the checkout form
-  billFirstName varchar(127) not null default '',
-  billLastName varchar(127) not null default '',
-  billStreet varchar(127) not null default '',
-  billSuburb varchar(127) not null default '',
-  billState varchar(40) not null default '',
-  billPostCode varchar(40) not null default '',
-  billCountry varchar(127) not null default '',
+  -- used for shipping information on the checkout form
+  delivTitle varchar(127),
+  delivEmail varchar(255) not null default '',
+  delivFirstName varchar(127) not null default '',
+  delivLastName varchar(127) not null default '',
+  delivStreet varchar(127) not null default '',
+  delivStreet2 varchar(127) not null default '',
+  delivSuburb varchar(127) not null default '',
+  delivState varchar(40) not null default '',
+  delivPostCode varchar(40) not null default '',
+  delivCountry varchar(127) not null default '',
+  delivTelephone varchar(80) not null default '',
+  delivFacsimile varchar(80) not null default '',
+  delivMobile varchar(80) not null default '',
+  delivOrganization varchar(127),
 
   instructions text not null default '',
-  billTelephone varchar(80) not null default '',
-  billFacsimile varchar(80) not null default '',
-  billEmail varchar(255) not null default '',
 
   adminNotes text not null default '',
 
@@ -625,27 +621,7 @@ create table site_users (
 
   flags varchar(80) not null default '',
 
-  customText1 text,
-  customText2 text,
-  customText3 text,
-  customStr1 varchar(255),
-  customStr2 varchar(255),
-  customStr3 varchar(255),
-
   affiliate_name varchar(40) not null default '',
-
-  delivMobile varchar(80) not null default '',
-  billMobile varchar(80) not null default '',
-
-  delivStreet2 varchar(127) not null default '',
-  billStreet2 varchar(127) not null default '',
-
-  billOrganization varchar(127) not null default '',
-
-  customInt1 integer,
-  customInt2 integer,
-
-  password_type varchar(20) not null default 'plain',
 
   -- for password recovery
   -- number of attempts today
@@ -655,9 +631,22 @@ create table site_users (
   -- the hash the customer needs to supply to change their password
   lost_id varchar(32) null,
 
+  customText1 text,
+  customText2 text,
+  customText3 text,
+  customStr1 varchar(255),
+  customStr2 varchar(255),
+  customStr3 varchar(255),
+
+  customInt1 integer,
+  customInt2 integer,
+
+  customWhen1 datetime,
+
   primary key (id),
   unique (userId),
-  index (affiliate_name)
+  index (affiliate_name),
+  unique (idUUID)
 );
 
 -- this is used to track email addresses that we've sent subscription

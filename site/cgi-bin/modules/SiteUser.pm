@@ -8,97 +8,102 @@ use Constants qw($SHOP_FROM);
 use Carp qw(confess);
 use BSE::Util::SQL qw/now_datetime now_sqldate sql_normal_date sql_add_date_days/;
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
 use constant OWNER_TYPE => "U";
 
 sub columns {
-  return qw/id userId password email keepAddress whenRegistered lastLogon
-            name1 name2 address city state postcode telephone facsimile 
-            country wantLetter confirmed confirmSecret waitingForConfirmation
-            textOnlyMail title organization referral otherReferral
-            prompt otherPrompt profession otherProfession previousLogon
-            billFirstName billLastName billStreet billSuburb billState 
-            billPostCode billCountry instructions billTelephone billFacsimile 
-            billEmail adminNotes disabled flags
+  return qw/id idUUID userId password password_type email whenRegistered
+	    lastLogon
+	    title name1 name2 street street2
+	    suburb state postcode country
+	    telephone facsimile mobile organization
+            confirmed confirmSecret waitingForConfirmation
+            textOnlyMail previousLogon
+            delivTitle delivEmail delivFirstName delivLastName delivStreet
+	    delivStreet2 delivSuburb delivState delivPostCode delivCountry
+	    delivTelephone delivFacsimile delivMobile delivOrganization
+	    instructions adminNotes disabled flags
+	    affiliate_name lost_today lost_date lost_id
             customText1 customText2 customText3
             customStr1 customStr2 customStr3
-            affiliate_name delivMobile billMobile
-            delivStreet2 billStreet2
-            billOrganization
-            customInt1 customInt2 password_type
-            lost_today lost_date lost_id/;
+            customInt1 customInt2 customWhen1
+            /;
 }
 
 sub table {
-  return "site_users";
+  return "bse_siteusers";
 }
 
 sub defaults {
   require BSE::Util::SQL;
   return
     (
-     keepAddress => 1, # what am I for - appears unused
+     # idUUID handled by default_idUUID()
+     # userId - required
+     # password - required (and generates password and password_type)
+     # password_type - generated
+     # email - required
      whenRegistered => BSE::Util::SQL::now_datetime(),
      lastLogon => BSE::Util::SQL::now_datetime(),
+     title => "",
      name1 => "",
      name2 => "",
-     address => "",
-     city => "",
+     street => "",
+     street2 => "",
+     suburb => "",
      state => "",
      postcode => "",
+     country => "",
      telephone => "",
      facsimile => "",
-     country => "",
-     wantLetter => 0, # also unused
+     mobile => "",
+     organization => "",
      confirmed => 0,
      confirmSecret => "",
      waitingForConfirmation => 0,
      textOnlyMail => 0,
-     title => "",
-     organization => "",
-     referral => 0,
-     otherReferral => "",
-     prompt => 0,
-     otherPrompt => "",
-     profession => 0,
-     otherProfession => "",
      previousLogon => BSE::Util::SQL::now_datetime(),
-     billFirstName => "",
-     billLastName => "",
-     billStreet => "",
-     billSuburb => "",
-     billState => "", 
-     billPostCode => "",
-     billCountry => "",
+     delivTitle => "",
+     delivEmail => "",
+     delivFirstName => "",
+     delivLastName => "",
+     delivStreet => "",
+     delivStreet2 => "",
+     delivSuburb => "",
+     delivState => "", 
+     delivPostCode => "",
+     delivCountry => "",
+     delivTelephone => "",
+     delivFacsimile => "", 
+     delivMobile => "",
+     delivOrganization => "",
      instructions => "",
-     billTelephone => "",
-     billFacsimile => "", 
-     billEmail => "",
      adminNotes => "",
      disabled => 0,
      flags => "",
+     affiliate_name => "",
+     lost_today => 0,
+     lost_date => undef,
+     lost_id => undef,
      customText1 => undef,
      customText2 => undef,
      customText3 => undef,
      customStr1 => undef,
      customStr2 => undef,
      customStr3 => undef,
-     affiliate_name => "",
-     delivMobile => "",
-     billMobile => "",
-     delivStreet2 => "",
-     billStreet2 => "",
-     billOrganization => "",
      customInt1 => "",
      customInt2 => "",
-     #password_type,
-     lost_today => 0,
-     lost_date => undef,
-     lost_id => undef,
+     customWhen1 => "",
     );
+}
+
+sub default_idUUID {
+  require Data::UUID;
+  my $ug = Data::UUID->new;
+  return $ug->create_str;
 }
 
 sub valid_fields {
@@ -108,58 +113,49 @@ sub valid_fields {
     (
      email => { rules=>'email', description=>'Email Address',
 		maxlen => 255},
+     title => { description => 'Title', rules => 'dh_one_line', maxlen => 127 },
      name1 => { description=>'First Name', rules=>"dh_one_line", maxlen=>127 },
-     name2 => { description=>'Surname', rules=>"dh_one_line", maxlen=>127 },
-     address => { description => 'Address', rules=>"dh_one_line", maxlen=>127 },
-     city => { description=>'City/Suburb', rules=>"dh_one_line", maxlen=>127 },
+     name2 => { description=>'Last Name', rules=>"dh_one_line", maxlen=>127 },
+     street => { description => 'Address', rules=>"dh_one_line", maxlen=>127 },
+     street2 => { description => 'Address', rules=>"dh_one_line", maxlen=>127 },
+     suburb => { description=>'City/Suburb', rules=>"dh_one_line", maxlen=>127 },
      state => { description => 'State', rules=>"dh_one_line", maxlen=>40 },
      postcode => { rules=>'postcode', description=>'Post Code', maxlen=>40 },
+     country => { description=>'Country', rules=>"dh_one_line", maxlen=>127 },
      telephone => { rules=>'phone', description=>'Telephone', maxlen=>80 },
      facsimile => { rules=>'phone', description=>'Facsimile', maxlen=>80 },
-     country => { description=>'Country', rules=>"dh_one_line", maxlen=>127 },
-     title => { description=>'Title', rules=>"dh_one_line", maxlen=>127  },
+     mobile => { description => "Mobile", rules=>"phone", maxlen => 80 },
      organization => { description=>'Organization', rules=>"dh_one_line", 
 		       maxlen=>127  },
-     delivMobile => { description => "Mobile", rules=>"phone",
-		      maxlen => 80 },
-     delivStreet2 => { description => 'Address2', rules => "dh_one_line",
-		       maxlen=> 127 },
      textOnlyEmail => { description => "Text Only Email", type=>"boolean" },
-     referral => { description=>'Referral', rules=>"natural"  },
-     otherReferral => { description=>'Other Referral', rules=>"dh_one_line",
-		      maxlen=>127},
-     prompt => { description=>'Prompt', rules=>"natural" },
-     otherPrompt => { description => 'Other Prompt', rules=>"dh_one_line",
-		    maxlen=>127 },
-     profession => { description => 'Profession', rules=>"natural" },
-     otherProfession => { description=>'Other Profession',
-			  rules=>"dh_one_line", maxlen=>127 },
-     billFirstName => { description=>"Billing First Name",
+     delivTitle => { description=>"Delivery Title",
 			rules=>"dh_one_line", maxlen=>127 },
-     billLastName => { descriptin=>"Billing Last Name", rules=>"dh_one_line" },
-     billStreet => { description => "Billing Street Address",
-		     rules=>"dh_one_line", maxlen=>127 },
-     billStreet2 => { description => 'Billing Street Address 2', 
-		      rules => "dh_one_line", maxlen=> 127 },
-     billSuburb => { description => "Billing Suburb", rules=>"dh_one_line", 
-		     maxlen=>127 },
-     billState => { description => "Billing State", rules=>"dh_one_line", 
-		    maxlen=>40 },
-     billPostCode => { description => "Billing Post Code", rules=>"postcode", 
-		       maxlen=>40 },
-     billCountry => { description => "Billing Country", rules=>"dh_one_line", 
-		      maxlen=>127 },
-     instructions => { description => "Delivery Instructions" },
-     billTelephone => { description => "Billing Phone", rules=>"phone", 
-			maxlen=>80 },
-     billFacsimile => { description => "Billing Facsimie", rules=>"phone", 
-			maxlen=>80 },
-     billEmail => { description => "Billing Email", rules=>"email", 
+     delivEmail => { description => "Delivery Email", rules=>"email", 
 		    maxlen=>255 },
-     billMobile => { description => "Billing Mobile", rules=>"phone",
+     delivFirstName => { description=>"Delivery First Name",
+			rules=>"dh_one_line", maxlen=>127 },
+     delivLastName => { descriptin=>"Delivery Last Name", rules=>"dh_one_line" },
+     delivStreet => { description => "Delivery Street Address",
+		     rules=>"dh_one_line", maxlen=>127 },
+     delivStreet2 => { description => 'Delivery Street Address 2', 
+		      rules => "dh_one_line", maxlen=> 127 },
+     delivSuburb => { description => "Delivery Suburb", rules=>"dh_one_line", 
+		     maxlen=>127 },
+     delivState => { description => "Delivery State", rules=>"dh_one_line", 
+		    maxlen=>40 },
+     delivPostCode => { description => "Delivery Post Code", rules=>"postcode", 
+		       maxlen=>40 },
+     delivCountry => { description => "Delivery Country", rules=>"dh_one_line", 
+		      maxlen=>127 },
+     delivTelephone => { description => "Delivery Phone", rules=>"phone", 
+			maxlen=>80 },
+     delivFacsimile => { description => "Delivery Facsimie", rules=>"phone", 
+			maxlen=>80 },
+     delivMobile => { description => "Delivery Mobile", rules=>"phone",
 		     maxlen => 80 },
-     billOrganization => { description => "Billing Organization",
+     delivOrganization => { description => "Delivery Organization",
 			   rules=>"dh_one_line", maxlen => 127 },
+     instructions => { description => "Delivery Instructions" },
      customText1 => { description => "Custom Text 1" },
      customText2 => { description => "Custom Text 2" },
      customText3 => { description => "Custom Text 3" },

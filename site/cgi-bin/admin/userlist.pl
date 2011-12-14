@@ -36,21 +36,21 @@ sub do_dump {
   my @parms;
   if (defined $min and length $min) {
     if (defined $max and length $max) {
-      $sql = "select * from site_users where $field >= ? and $field <= ?";
+      $sql = "select * from bse_siteusers where $field >= ? and $field <= ?";
       @parms = ( $min, $max );
     }
     else {
-      $sql = "select * from site_users where $field >= ?";
+      $sql = "select * from bse_siteusers where $field >= ?";
       @parms = ( $min );
     }
   }
   else {
     if (defined $max and length $max) {
-      $sql = "select * from site_users where $field <= ?";
+      $sql = "select * from bse_siteusers where $field <= ?";
       @parms = ( $max );
     }
     else {
-      $sql = 'select * from site_users';
+      $sql = 'select * from bse_siteusers';
     }
   }
   

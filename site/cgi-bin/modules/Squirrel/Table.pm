@@ -1,6 +1,6 @@
 package Squirrel::Table;
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 use Carp;
 use strict;
@@ -526,13 +526,15 @@ sub query {
 sub make {
   my ($self, %values) = @_;
 
-  my @cols = $self->rowClass->columns;
-  my %defaults = $self->rowClass->defaults;
+  my $row_class = $self->rowClass;
+  my @cols = $row_class->columns;
+  my %defaults = $row_class->defaults;
   shift @cols; # presumably the generated private key
-  my $bases = $self->rowClass->bases;
+  my $bases = $row_class->bases;
   my @values;
   for my $col (@cols) {
     my $value;
+    my $def_method = "default_$col";
     # a defined test is inappropriate here, the caller might want to
     # set a column to null.
     if (exists $values{$col}) {
@@ -540,6 +542,9 @@ sub make {
     }
     elsif (exists $defaults{$col}) {
       $value = $defaults{$col};
+    }
+    elsif ($row_class->can($def_method)) {
+      $value = $row_class->$def_method();
     }
     elsif ($bases->{$col}) {
       # populated elsewhere

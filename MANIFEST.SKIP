@@ -20,3 +20,4 @@
 ^site/cgi-bin/modules/BSE/FileEditor\.pm$
 ^site/cgi-bin/modules/BSE/Modules\.pm$
 ^site/cgi-bin/modules/Squirrel/ImageEditor\.pm$
+^\.?\#

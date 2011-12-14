@@ -18,7 +18,7 @@ use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
 use Carp qw(confess);
 
-our $VERSION = "1.018";
+our $VERSION = "1.019";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -757,8 +757,6 @@ sub req_saveopts {
 
   $user->{textOnlyMail} = 0 
     if $cgi->param('saveTextOnlyMail') && !defined $cgi->param('textOnlyMail');
-  $user->{keepAddress} = 0 
-    if $cgi->param('saveKeepAddress') && !defined $cgi->param('keepAddress');
   $user->save;
 
   # subscriptions
@@ -876,9 +874,6 @@ sub req_register {
   my %user;
   my @cols = SiteUser->columns;
   shift @cols;
-  for my $field (@cols) {
-    $user{$field} = '';
-  }
 
   my %errors;
   my %fields = SiteUser->valid_fields($cfg);
@@ -972,7 +967,7 @@ sub req_register {
     if ($cfg->entryBool('site users', "require_$col")) {
       unless (defined $value && $value ne '') {
 	my $disp = $cfg->entry('site users', "display_$col", "\u$col");
-	
+
 	$errors{$col} = $msgs->(regrequired => "$disp is a required field", 
 				$col, $disp);
       }
@@ -990,10 +985,6 @@ sub req_register {
   }
 
   $user{email} = $email;
-  $user{lastLogon} = $user{whenRegistered} = 
-    $user{previousLogon} = now_datetime;
-  $user{keepAddress} = 0;
-  $user{wantLetter} = 0;
   $user{affiliate_name} = $aff_name;
   if ($nopassword) {
     use BSE::Util::Secure qw/make_secret/;
@@ -1050,7 +1041,7 @@ sub req_register {
     }
   }
   else {
-    $self->req_show_register($req, $msgs->(regdberr=> "Database error $@"));
+    return $self->req_show_register($req, $msgs->(regdberr=> "Database error $@"));
   }
 
   return;

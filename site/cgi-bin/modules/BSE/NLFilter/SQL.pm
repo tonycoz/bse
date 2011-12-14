@@ -2,7 +2,7 @@ package BSE::NLFilter::SQL;
 use strict;
 use Carp 'confess';
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub new {
   my ($class, %opts) = @_;
@@ -97,7 +97,7 @@ c:
 
   [section name]
   ; the 1=0 makes the leading "or " valid on the other fragments
-  prefix=select id from site_users where 1=0
+  prefix=select id from bse_siteusers where 1=0
   suffix=
   leadinga=or userId like 'a%'
   leadingb=or userId like 'b%'
@@ -108,7 +108,7 @@ c:
 There is nothing preventing joins or more complex SQL.
 
 The only requirement is that the SQL result set includes a single
-column which is the id from the site_users table for that user.
+column which is the id from the bse_siteusers table for that user.
 
 You will need to edit the admin/subs/send_filter.tmpl template to add
 form elements to accept the CGI parameters above.  For our example we

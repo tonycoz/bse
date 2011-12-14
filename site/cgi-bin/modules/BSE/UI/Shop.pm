@@ -17,7 +17,7 @@ use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 
-our $VERSION = "1.025";
+our $VERSION = "1.026";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -48,17 +48,17 @@ my %field_map =
   (
    name1 => 'billFirstName',
    name2 => 'billLastName',
-   address => 'billStreet',
-   organization => 'billOrganization',
-   city => 'billSuburb',
+   street => 'billStreet',
+   street2 => 'billStreet2',
+   suburb => 'billSuburb',
    postcode => 'billPostCode',
    state => 'billState',
    country => 'billCountry',
-   email => 'billEmail',
    telephone => 'billTelephone',
    facsimile => 'billFacsimile',
-   delivMobile => 'billMobile', # temporary hack
-   unknown1 => 'delivMobile', # more hackery
+   mobile => 'billMobile',
+   organization => 'billOrganization',
+   email => 'billEmail',
   );
 
 my %rev_field_map = reverse %field_map;
@@ -497,11 +497,20 @@ sub req_checkout {
 
   my $order_info = $req->session->{order_info};
 
+  my $billing_map = BSE::TB::Order->billing_to_delivery_map;
+  my %delivery_map = reverse %$billing_map;
+
+  if ($order_info && !$need_delivery) {
+    # if need delivery is off, remove any delivery fields
+    my $map = BSE::TB::Order->billing_to_delivery_map;
+    delete @{$order_info}{keys %delivery_map};
+  }
+
   my $old = sub {
     my $field = $_[0];
     my $value;
 
-    if ($olddata) {
+    if ($olddata && defined($cgi->param($field))) {
       $value = $cgi->param($field);
     }
     elsif ($order_info && defined $order_info->{$field}) {
@@ -523,18 +532,26 @@ sub req_checkout {
   my $shipping_name = '';
   my $prompt_ship = $cfg->entry("shop", "shipping", 0);
   if ($prompt_ship) {
+    my $work_order;
+    $work_order = $order_info unless $olddata;
+    unless ($work_order) {
+      my %fake_order;
+      my %fields = $class->_order_fields($req);
+      $class->_order_hash($req, \%fake_order, \%fields, user => 1);
+      $work_order = \%fake_order;
+    }
+
     # Get a list of couriers
     my $sel_cn = $old->("shipping_name") || "";
-    my %fake_order;
-    my %fields = $class->_order_fields($req);
-    $class->_order_hash($req, \%fake_order, \%fields, user => 1);
-    my $country = $fake_order{delivCountry} || bse_default_country($cfg);
+    my $country_field = $need_delivery ? "delivCountry" : "billCountry";
+    my $country = $old->($country_field)
+      || bse_default_country($cfg);
     my $country_code = bse_country_code($country);
-    my $suburb = $fake_order{delivSuburb};
-    my $postcode = $fake_order{delivPostCode};
+    my $suburb = $old->($need_delivery ? "delivSuburb" : "billSuburb");
+    my $postcode = $old->($need_delivery ? "delivPostCode" : "billPostCode");
 
     $country_code
-      or $errors->{delivCountry} = "Unknown country name $country";
+      or $errors->{$country_field} = "Unknown country name $country";
 
     my @couriers = BSE::Shipping->get_couriers($cfg);
 
@@ -554,7 +571,7 @@ sub req_checkout {
       $sel_cn = $sel_cour->name;
     }
     if ($sel_cour and $postcode and $suburb and $country_code) {
-      my @parcels = BSE::Shipping->package_order($cfg, \%fake_order, \@items);
+      my @parcels = BSE::Shipping->package_order($cfg, $order_info, \@items);
       $shipping_cost = $sel_cour->calculate_shipping
 	(
 	 parcels => \@parcels,

@@ -41,6 +41,7 @@ my @base_check =
       'JSON' => 0,
       'MIME::Lite' => 0,
       'Date::Format' => 0,
+      'Data::UUID' => '1.148',
      }
    },
    {

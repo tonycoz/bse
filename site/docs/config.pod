@@ -1209,9 +1209,9 @@ You cannot use this to control access to the shop.
 
 =item require_name2
 
-=item require_address
+=item require_street
 
-=item require_city
+=item require_suburb
 
 =item require_state
 
@@ -1692,7 +1692,7 @@ values are the name of the query group.  For example:
   1=some name
 
   [query group some name]
-  sql=select id from site_users where id = ? and name1 like '%some%'
+  sql=select id from bse_siteusers where id = ? and name1 like '%some%'
 
 Each entry also has a corresponding [Query Group I<name>] section.
 

@@ -6,7 +6,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 use Carp 'confess';
 
-our $VERSION = "1.013";
+our $VERSION = "1.014";
 
 sub columns {
   return qw/id
@@ -211,41 +211,41 @@ sub valid_fields {
 
   my %fields =
     (
-     delivFirstName => { description=>'Delivery First Name', 
+     delivFirstName => { description=>'Delivery First Name',
 			 rules=>'dh_one_line' },
-     delivLastName => { description => 'Delivery Last Name', 
+     delivLastName => { description => 'Delivery Last Name',
 			 rules=>'dh_one_line'  },
-     delivOrganization => { description => 'Delivery Organization', 
+     delivOrganization => { description => 'Delivery Organization',
 			    rules=>'dh_one_line'  },
-     delivStreet => { description => 'Delivery Street', 
+     delivStreet => { description => 'Delivery Street',
 			 rules=>'dh_one_line'  },
-     delivStreet2 => { description => 'Delivery Street 2', 
+     delivStreet2 => { description => 'Delivery Street 2',
 			 rules=>'dh_one_line'  },
-     delivState => { description => 'Delivery State', 
+     delivState => { description => 'Delivery State',
 			 rules=>'dh_one_line'  },
-     delivSuburb => { description => 'Delivery Suburb', 
+     delivSuburb => { description => 'Delivery Suburb',
 			 rules=>'dh_one_line'  },
-     delivPostCode => { description => 'Delivery Post Code', 
+     delivPostCode => { description => 'Delivery Post Code',
 			 rules=>'dh_one_line;dh_int_postcode'  },
-     delivCountry => { description => 'Delivery Country', 
+     delivCountry => { description => 'Delivery Country',
 			 rules=>'dh_one_line'  },
-     billFirstName => { description => 'Billing First Name', 
+     billFirstName => { description => 'Billing First Name',
 			 rules=>'dh_one_line'  },
-     billLastName => { description => 'Billing Last Name', 
+     billLastName => { description => 'Billing Last Name',
 			 rules=>'dh_one_line'  },
-     billOrganization => { description => 'Billing Organization', 
+     billOrganization => { description => 'Billing Organization',
 			   rules=>'dh_one_line'  },
-     billStreet => { description => 'Billing Street', 
+     billStreet => { description => 'Billing Street',
 			 rules=>'dh_one_line'  },
-     billStreet2 => { description => 'Billing Street 2', 
+     billStreet2 => { description => 'Billing Street 2',
 			 rules=>'dh_one_line'  },
-     billSuburb => { description => 'Billing Suburb', 
+     billSuburb => { description => 'Billing Suburb',
 			 rules=>'dh_one_line'  },
-     billState => { description => 'Billing State', 
+     billState => { description => 'Billing State',
 			 rules=>'dh_one_line'  },
-     billPostCode => { description => 'Billing Post Code', 
+     billPostCode => { description => 'Billing Post Code',
 			 rules=>'dh_one_line;dh_int_postcode'  },
-     billCountry => { description => 'Billing First Name', 
+     billCountry => { description => 'Billing First Name',
 			 rules=>'dh_one_line'  },
      telephone => { description => 'Telephone Number',
 		    rules => "phone" },
@@ -254,7 +254,7 @@ sub valid_fields {
      emailAddress => { description => 'Email Address',
 		       rules=>'email' },
      instructions => { description => 'Instructions' },
-     billTelephone => { description => 'Billing Telephone Number', 
+     billTelephone => { description => 'Billing Telephone Number',
 			rules=>'phone' },
      billFacsimile => { description => 'Billing Facsimile Number',
 			rules=>'phone' },
@@ -289,20 +289,20 @@ sub valid_payment_fields {
 
   my %fields =
     (
-     cardNumber => 
-     { 
+     cardNumber =>
+     {
       description => "Credit Card Number",
       rules=>"creditcardnumber",
      },
-     cardExpiry => 
+     cardExpiry =>
      {
       description => "Credit Card Expiry Date",
       rules => 'creditcardexpirysingle',
      },
      ccName => { description => "Credit Card Holder" },
      ccType => { description => "Credit Card Type" },
-     cardVerify => 
-     { 
+     cardVerify =>
+     {
       description => 'Card Verification Value',
       rules => 'creditcardcvv',
      },
@@ -325,7 +325,7 @@ sub clear_items {
 
   confess "Attempt to clear items on completed order $self->{id}"
     if $self->{complete};
-  
+
   BSE::DB->run(deleteOrdersItems => $self->{id});
 }
 
@@ -346,7 +346,7 @@ sub add_item {
       $options = delete $opts{options};
     }
   }
-  
+
   require BSE::TB::OrderItems;
   my %item =
     (

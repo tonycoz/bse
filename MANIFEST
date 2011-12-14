@@ -13,6 +13,7 @@ schema/article.txt
 schema/bse.sql
 schema/mssql.sql
 schema/mysql_build.pl		# builds site/util/mysql.str
+schema/site_users_to_members.sql
 site/cgi-bin/admin/add.pl
 site/cgi-bin/admin/admin.pl
 site/cgi-bin/admin/admin_seminar.pl
@@ -754,7 +755,7 @@ site/templates/user/nopassword_base.tmpl
 site/templates/user/notify_file.tmpl
 site/templates/user/notify_file_html.tmpl
 site/templates/user/options_base.tmpl
-site/templates/user/options_billing_base.tmpl
+site/templates/user/options_delivery_base.tmpl
 site/templates/user/options_images_base.tmpl
 site/templates/user/options_saved_base.tmpl
 site/templates/user/orderdetaillow.tmpl

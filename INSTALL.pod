@@ -93,6 +93,10 @@ JSON
 
 Date::Format
 
+=item *
+
+Data::UUID
+
 =back
 
 and their dependants.  If you use the CPAN shell to install these then

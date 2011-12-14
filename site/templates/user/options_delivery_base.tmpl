@@ -23,7 +23,7 @@
   <table width="250">
     <tr> 
       <th colspan="2" height="20" class="thead"> 
-        <p>User Options - Billing</p>
+        <p>User Options - Delivery</p>
       </th>
     </tr>
 <:if Partial_logon:><:or Partial_logon:>
@@ -53,7 +53,7 @@
           <a href="<:script:>?show_opts=1">Return to Main Options</a></td>
       </tr>
     <form action="/cgi-bin/user.pl" method="post">
-    <input type="hidden" name="_t" value="billing" />
+    <input type="hidden" name="_t" value="delivery" />
     <:if Cfg "site users" nopassword:>
     <input type="hidden" name="u" value="<:user id:>" />
     <input type="hidden" name="p" value="<:user password:>" />
@@ -69,79 +69,79 @@
       <tr> 
         <th>First Name:</th>
         <td width="100%" nowrap="nowrap"> 
-          <input type="text" name="billFirstName" value="<:last billFirstName:>" size="40" maxlength="127" /><:error_img billFirstName:>
+          <input type="text" name="delivFirstName" value="<:last delivFirstName:>" size="40" maxlength="127" /><:error_img delivFirstName:>
         </td>
       </tr>
       <tr> 
         <th>Last Name:</th>
         <td width="100%" nowrap="nowrap"> 
-          <input type="text" name="billLastName" value="<:last billLastName:>" size="40" maxlength="127" /><:error_img billLastName:>
+          <input type="text" name="delivLastName" value="<:last delivLastName:>" size="40" maxlength="127" /><:error_img delivLastName:>
         </td>
       </tr>
       <tr> 
         <th>Organization:</th>
         <td width="100%" nowrap="nowrap"> 
-          <input type="text" name="billOrganization" value="<:last billOrganization:>" size="40" maxlength="127" /><:error_img billOrganization:>
+          <input type="text" name="delivOrganization" value="<:last delivOrganization:>" size="40" maxlength="127" /><:error_img delivOrganization:>
         </td>
       </tr>
       <tr> 
         <th>Street:</th>
         <td width="100%" nowrap="nowrap"> 
-          <input type="text" name="billStreet" value="<:last billStreet:>" size="40" maxlength="127" /><:error_img billStreet:>
+          <input type="text" name="delivStreet" value="<:last delivStreet:>" size="40" maxlength="127" /><:error_img delivStreet:>
         </td>
       </tr>
       <tr> 
         <th></th>
         <td width="100%" nowrap="nowrap"> 
-          <input type="text" name="billStreet2" value="<:last billStreet2:>" size="40" maxlength="127" /><:error_img billStreet2:>
+          <input type="text" name="delivStreet2" value="<:last delivStreet2:>" size="40" maxlength="127" /><:error_img delivStreet2:>
         </td>
       </tr>
       <tr> 
         <th>Suburb:</th>
         <td width="100%" nowrap="nowrap"> 
-          <input type="text" name="billSuburb" value="<:last billSuburb:>" size="40" maxlength="127" /><:error_img billSuburb:>
+          <input type="text" name="delivSuburb" value="<:last delivSuburb:>" size="40" maxlength="127" /><:error_img delivSuburb:>
         </td>
       </tr>
       <tr> 
         <th>State:</th>
         <td width="100%" nowrap="nowrap"> 
-          <input type="text" name="billState" value="<:last billState:>" size="40" maxlength="127" /><:error_img billState:>
+          <input type="text" name="delivState" value="<:last delivState:>" size="40" maxlength="127" /><:error_img delivState:>
         </td>
       </tr>
       <tr> 
         <th>Post Code:</th>
         <td width="100%" nowrap="nowrap"> 
-          <input type="text" name="billPostCode" value="<:last billPostCode:>" size="40" maxlength="127" /><:error_img billPostCode:>
+          <input type="text" name="delivPostCode" value="<:last delivPostCode:>" size="40" maxlength="127" /><:error_img delivPostCode:>
         </td>
       </tr>
       <tr> 
         <th>Country:</th>
         <td width="100%" nowrap="nowrap"> 
-          <input type="text" name="billCountry" value="<:last billCountry:>" size="40" maxlength="127" /><:error_img billCountry:>
+          <input type="text" name="delivCountry" value="<:last delivCountry:>" size="40" maxlength="127" /><:error_img delivCountry:>
         </td>
       </tr>
       <tr> 
         <th>Telephone:</th>
         <td width="100%" nowrap="nowrap"> 
-          <input type="text" name="billTelephone" value="<:last billTelephone:>" size="40" maxlength="127" /><:error_img billTelephone:>
+          <input type="text" name="delivTelephone" value="<:last delivTelephone:>" size="40" maxlength="127" /><:error_img delivTelephone:>
         </td>
       </tr>
       <tr> 
         <th>Mobile:</th>
         <td width="100%" nowrap="nowrap"> 
-          <input type="text" name="billMobile" value="<:last billMobile:>" size="40" maxlength="127" /><:error_img billMobile:>
+          <input type="text" name="delivMobile" value="<:last delivMobile:>" size="40" maxlength="127" /><:error_img delivMobile:>
         </td>
       </tr>
       <tr> 
         <th>Facsimile:</th>
         <td width="100%" nowrap="nowrap"> 
-          <input type="text" name="billFacsimile" value="<:last billFacsimile:>" size="40" maxlength="127" /><:error_img billFacsimile:>
+          <input type="text" name="delivFacsimile" value="<:last delivFacsimile:>" size="40" maxlength="127" /><:error_img delivFacsimile:>
         </td>
       </tr>
       <tr> 
         <th>Email:</th>
         <td width="100%" nowrap="nowrap"> 
-          <input type="text" name="billEmail" value="<:last billEmail:>" size="40" maxlength="127" /><:error_img billEmail:>
+          <input type="text" name="delivEmail" value="<:last delivEmail:>" size="40" maxlength="127" /><:error_img delivEmail:>
         </td>
       </tr>
       <tr> 

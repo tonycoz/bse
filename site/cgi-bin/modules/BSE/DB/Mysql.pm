@@ -5,7 +5,7 @@ use vars qw/@ISA/;
 use Carp 'confess';
 @ISA = qw(BSE::DB);
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 use vars qw($VERSION $MAX_CONNECTION_AGE);
 
@@ -205,17 +205,17 @@ SQL
    'SiteUsers.removeSub'=>
    'delete from subscribed_users where userId = ? and subId = ?',
    'SiteUsers.subRecipients' => <<EOS,
-select si.* from site_users si, subscribed_users su
+select si.* from bse_siteusers si, subscribed_users su
   where confirmed <> 0 and disabled = 0 and si.id = su.userId and su.subId = ?
 EOS
-   SiteUsers => 'select * from site_users',
+   SiteUsers => 'select * from bse_siteusers',
    'SiteUsers.allSubscribers' => <<SQL,
 select distinct su.* 
-  from site_users su, orders od, order_item oi
+  from bse_siteusers su, orders od, order_item oi
   where su.id = od.siteuser_id and od.id = oi.orderId 
         and oi.subscription_id <> -1
 SQL
-   siteuserAllIds => 'select id from site_users',
+   siteuserAllIds => 'select id from bse_siteusers',
    getBSESiteuserImage => <<SQL,
 select * from bse_siteuser_images
   where siteuser_id = ? and image_id = ?
@@ -244,7 +244,7 @@ SQL
    deleteSubscriptionType =>
    'delete from subscription_types where id = ?',
    subRecipientCount => <<EOS,
-select count(*) as "count" from site_users si, subscribed_users su
+select count(*) as "count" from bse_siteusers si, subscribed_users su
   where confirmed <> 0 and disabled = 0 and si.id = su.userId and su.subId = ?
 EOS
    'SubscriptionTypes.userSubscribedTo' => <<'EOS',
@@ -387,7 +387,7 @@ select od.id, od.userId, od.orderDate, od.siteuser_id,
 SQL
    subscriptionUserSummary => <<SQL,
 select su.*, us.*
-  from site_users su, bse_user_subscribed us
+  from bse_siteusers su, bse_user_subscribed us
 where su.id = us.siteuser_id and us.subscription_id = ?
 SQL
    subscriptionProductCount => <<SQL,
@@ -496,7 +496,7 @@ select *
   where seminar_id = ? and location_id = ? and when_at > ?
 SQL
    'SiteUsers.sessionBookings' => <<SQL,
-select su.* from site_users su, bse_seminar_bookings sb
+select su.* from bse_siteusers su, bse_seminar_bookings sb
   where sb.session_id = ? and su.id = sb.siteuser_id
 SQL
    cancelSeminarSessionBookings => <<SQL,
@@ -517,7 +517,7 @@ SQL
    seminarSessionRollCallEntries => <<SQL,
 select bo.roll_present, su.id, su.userId, su.name1, su.name2, su.email,
     bo.id as booking_id
-  from bse_seminar_bookings bo, site_users su
+  from bse_seminar_bookings bo, bse_siteusers su
 where bo.session_id = ? and bo.siteuser_id = su.id
 SQL
   updateSessionRollPresent => <<SQL,

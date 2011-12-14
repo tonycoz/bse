@@ -218,7 +218,7 @@ seminar.locations=1
 #report total_sales.bse_rights=blah|edit_foo,blah
 
 query groups.1=name starts with t
-query group name starts with t.sql=select id from site_users where id = ? and name1 like "t%"
+query group name starts with t.sql=select id from bse_siteusers where id = ? and name1 like "t%"
 
 shop.free_products=1
 

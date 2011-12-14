@@ -13,7 +13,7 @@ use constant SITEUSER_GROUP_SECT => 'BSE Siteuser groups validation';
 use BSE::Template;
 use DevHelp::Date qw(dh_parse_date_sql dh_parse_time_sql);
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 my %actions =
   (
@@ -463,8 +463,6 @@ sub req_save {
 
   $user->{textOnlyMail} = 0 
     if $cgi->param('saveTextOnlyMail') && !defined $cgi->param('textOnlyMail');
-  $user->{keepAddress} = 0 
-    if $cgi->param('saveKeepAddress') && !defined $cgi->param('keepAddress');
   $user->{disabled} = 0
     if $cgi->param('saveDisabled') && !defined $cgi->param('disabled');
   $user->save;
@@ -736,10 +734,6 @@ sub req_add {
   }
 
   $user{email} = $email;
-  $user{lastLogon} = $user{whenRegistered} = 
-    $user{previousLogon} = now_datetime;
-  $user{keepAddress} = 0;
-  $user{wantLetter} = 0;
   $user{affiliate_name} = $aff_name;
   if ($nopassword) {
     use BSE::Util::Secure qw/make_secret/;
@@ -800,7 +794,7 @@ sub req_add {
     return BSE::Template->get_refresh($r, $cfg);
   }
   else {
-    $class->req_add($req, "Database error $@");
+    $class->req_addform($req, "Database error $@");
   }
 }
 
