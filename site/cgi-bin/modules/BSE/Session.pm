@@ -4,7 +4,7 @@ use CGI::Cookie;
 use BSE::DB;
 use BSE::CfgInfo qw/custom_class/;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub _session_require {
   my ($cfg) = @_;
@@ -148,6 +148,15 @@ sub send_cookie {
   }
 }
 
+sub clear {
+  my ($class, $session) = @_;
+
+  my $tie = tied(%$session);
+  if ($tie) {
+    $tie->delete();
+  }
+}
+
 1;
 
 =head1 NAME
@@ -161,6 +170,8 @@ BSE::Session - wrapper around Apache::Session for BSE.
   my %session;
   my $cfg = BSE::Cfg->new;
   BSE::Session->tie_it(\%session, $cfg);
+
+  BSE::Session->clear($session);
 
 =head1 DESCRIPTION
 

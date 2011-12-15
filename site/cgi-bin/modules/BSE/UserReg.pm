@@ -18,7 +18,7 @@ use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
 use Carp qw(confess);
 
-our $VERSION = "1.019";
+our $VERSION = "1.020";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -215,7 +215,7 @@ sub req_logon {
   }
   $self->_send_user_cookie($user);
 
-  _got_user_refresh($session, $cgi, $cfg);
+  return _got_user_refresh($session, $cgi, $cfg);
 }
 
 sub _got_user_refresh {
@@ -317,7 +317,6 @@ sub req_logoff {
 
   my $cfg = $req->cfg;
   my $cgi = $req->cgi;
-  my $session = $req->session;
 
   my $nopassword = $cfg->entryBool('site users', 'nopassword', 0);
 
@@ -326,22 +325,21 @@ sub req_logoff {
   }
 
   my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
-  my $userid = $session->{userid}
+  my $userid = $req->session->{userid}
     or return $self->req_show_logon($req, 
 				$msgs->(notloggedon=>"You aren't logged on"));
 
-  delete $session->{userid};
-  $session->{cart} = [];
-  $self->_send_user_cookie();
+  my $session_id = $req->session->{_session_id};
+  $req->clear_session;
 
   my $custom = custom_class($cfg);
   if ($custom->can('siteuser_logout')) {
-    $custom->siteuser_logout($session->{_session_id}, $cfg);
+    $custom->siteuser_logout($session_id, $cfg);
   }
 
-  _got_user_refresh($session, $cgi, $cfg);
+  my $session = $req->session;
 
-  return;
+  return _got_user_refresh($session, $cgi, $cfg);
 }
 
 sub tag_if_subscribed_register {
@@ -797,8 +795,7 @@ sub req_saveopts {
 
     $self->_send_user_cookie($user);
 
-    _got_user_refresh($session, $cgi, $cfg);
-    return;
+    return _got_user_refresh($session, $cgi, $cfg);
   }
 
   my $url = $cgi->param('r');
@@ -1032,13 +1029,13 @@ sub req_register {
 	);
     }
 
-    _got_user_refresh($session, $cgi, $cfg);
-
     $custom->siteusers_changed($cfg);
 
     if ($cfg->entry('site users', 'notify_register', 0)) {
       $self->_notify_registration($req, $user);
     }
+
+    return _got_user_refresh($session, $cgi, $cfg);
   }
   else {
     return $self->req_show_register($req, $msgs->(regdberr=> "Database error $@"));
