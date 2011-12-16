@@ -18,7 +18,7 @@ use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
 use Carp qw(confess);
 
-our $VERSION = "1.020";
+our $VERSION = "1.021";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -204,22 +204,33 @@ sub req_logon {
     return $self->req_show_opts($req, undef, \%errors);
   }
 
-  $session->{userid} = $user->id;
   $user->{previousLogon} = $user->{lastLogon};
   $user->{lastLogon} = now_datetime;
   $user->save;
+
+  my $cart = delete $session->{cart};
+  undef $session;
+  $req->clear_session;
+  $session = $req->session;
+
+  $session->{cart} = $cart;
+  $session->{userid} = $user->id;
 
   if ($custom->can('siteuser_login')) {
     $custom->siteuser_login($session->{_session_id}, $session->{userid}, 
 			    $cfg, $session);
   }
+
   $self->_send_user_cookie($user);
 
-  return _got_user_refresh($session, $cgi, $cfg);
+  return $self->_got_user_refresh($req);
 }
 
 sub _got_user_refresh {
-  my ($session, $cgi, $cfg) = @_;
+  my ($self, $req) = @_;
+
+  my $cfg = $req->cfg;
+  my $session = $req->session;
 
   my $baseurl = $cfg->entryVar('site', 'url');
   my $securl = $cfg->entryVar('site', 'secureurl');
@@ -253,29 +264,33 @@ sub _got_user_refresh {
       $onbase = 0;
     }
   }
-  my $refresh = $cgi->param('r');
+  my $refresh = $req->cgi->param('r');
   unless ($refresh) {
     if ($session->{userid}) {
-      $refresh = "$ENV{SCRIPT_NAME}?userpage=1";
+      $refresh = $cfg->user_url("user", "userpage");
     }
     else {
-      $refresh = "$ENV{SCRIPT_NAME}?show_logon=1";
+      $refresh = $cfg->user_url("user", "show_logon");
     }
   }
   if ($need_magic) {
-    my $url = $onbase ? $securl : $baseurl;
+    my $base = $onbase ? $securl : $baseurl;
     my $finalbase = $onbase ? $baseurl : $securl;
     $refresh = $finalbase . $refresh unless $refresh =~ /^\w+:/;
+    my $sessionid = $session->{_session_id};
+    require BSE::SessionSign;
+    my $sig = BSE::SessionSign->make($sessionid);
+    my $url = $cfg->user_url("user", undef,
+			     -base => $base,
+			     setcookie => $sessionid,
+			     s => $sig,
+			     r => $refresh);
     print STDERR "Heading to $url to setcookie\n" if $debug;
-    $url .= "$ENV{SCRIPT_NAME}?setcookie=".$session->{_session_id};
-    $url .= "&r=".escape_uri($refresh);
-    refresh_to($url);
+    return $req->get_refresh($url);
   }
   else {
-    refresh_to($refresh);
+    return $req->get_refresh($refresh);
   }
-
-  return;
 }
 
 sub req_setcookie {
@@ -290,6 +305,16 @@ sub req_setcookie {
   my $cookie = $cgi->param('setcookie')
     or return $self->req_show_logon($req, 
 				$msgs->(nocookie=>"No cookie provided"));
+  my $sig = $cgi->param("s")
+    or return $self->req_show_logon($req,
+				    $msgs->(nosig => "No signature for setcookie"));
+
+  require BSE::SessionSign;
+  my $error;
+  unless (BSE::SessionSign->check($cookie, $sig, \$error)) {
+    return $self->req_show_logon($req,
+				    $msgs->(badsig => "Invalid signature for setcookie"));
+  }
   print STDERR "Setting sessionid to $cookie for $ENV{HTTP_HOST}\n";
   my %newsession;
   BSE::Session->change_cookie($session, $cfg, $cookie, \%newsession);
@@ -337,9 +362,7 @@ sub req_logoff {
     $custom->siteuser_logout($session_id, $cfg);
   }
 
-  my $session = $req->session;
-
-  return _got_user_refresh($session, $cgi, $cfg);
+  return $self->_got_user_refresh($req);
 }
 
 sub tag_if_subscribed_register {
@@ -795,7 +818,7 @@ sub req_saveopts {
 
     $self->_send_user_cookie($user);
 
-    return _got_user_refresh($session, $cgi, $cfg);
+    return $self->_got_user_refresh($req);
   }
 
   my $url = $cgi->param('r');
@@ -1035,7 +1058,7 @@ sub req_register {
       $self->_notify_registration($req, $user);
     }
 
-    return _got_user_refresh($session, $cgi, $cfg);
+    return $self->_got_user_refresh($req);
   }
   else {
     return $self->req_show_register($req, $msgs->(regdberr=> "Database error $@"));

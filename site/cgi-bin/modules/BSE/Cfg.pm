@@ -4,7 +4,7 @@ use base "DevHelp::Cfg";
 use Carp qw(confess);
 use constant MAIN_CFG => 'bse.cfg';
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 my %cache;
 
@@ -103,14 +103,14 @@ sub user_url {
 
   my $secure = $script =~ /^(shop|user)$/;
   $secure = $cfg->entry("secure user url", $script, $secure);
-  my $base = $secure ? $cfg->entryVar('site', 'secureurl') : '';
+  my $base;
   my $template;
   if ($target) {
     if ($script eq 'nuser') {
       $template = "/cgi-bin/nuser.pl/user/TARGET";
     }
     else {
-      $template = "$base/cgi-bin/$script.pl?a_TARGET=1";
+      $template = "/cgi-bin/$script.pl?a_TARGET=1";
     }
     $template = $cfg->entry('targets', $script, $template);
     $template =~ s/TARGET/$target/;
@@ -120,21 +120,30 @@ sub user_url {
       $template = "/cgi-bin/nuser.pl/user";
     }
     else {
-      $template = "$base/cgi-bin/$script.pl";
+      $template = "/cgi-bin/$script.pl";
     }
     $template = $cfg->entry('targets', $script.'_n', $template);
   }
   if (@options) {
-    $template .= $template =~ /\?/ ? '&' : '?';
     my @entries;
     while (my ($key, $value) = splice(@options, 0, 2)) {
       require BSE::Util::HTML;
-      push @entries, "$key=" . BSE::Util::HTML::escape_uri($value);
+      if ($key eq '-base') {
+	$base = $value;
+      }
+      else {
+	push @entries, "$key=" . BSE::Util::HTML::escape_uri($value);
+      }
     }
-    $template .= join '&', @entries;
+    if (@entries) {
+      $template .= $template =~ /\?/ ? '&' : '?';
+      $template .= join '&', @entries;
+    }
   }
 
-  return $template;
+  $base ||= $secure ? $cfg->entryVar('site', 'secureurl') : '';
+
+  return $base . $template;
 }
 
 sub admin_url {

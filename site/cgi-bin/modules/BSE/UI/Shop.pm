@@ -17,7 +17,7 @@ use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 
-our $VERSION = "1.029";
+our $VERSION = "1.030";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -2028,17 +2028,23 @@ sub _add_refresh {
 	print STDERR "not on base host ('$ENV{SERVER_NAME}' cmp '$basehost' '$protocol cmp '$baseprot'  $baseport cmp $port\n" if $debug;
 	$onbase = 0;
       }
-      my $url = $onbase ? $secure_url : $base_url;
+      my $base = $onbase ? $secure_url : $base_url;
       my $finalbase = $onbase ? $base_url : $secure_url;
       $refresh = $finalbase . $refresh unless $refresh =~ /^\w+:/;
+      my $sessionid = $req->session->{_session_id};
+      require BSE::SessionSign;
+      my $sig = BSE::SessionSign->make($sessionid);
+      my $url = $cfg->user_url("user", undef,
+			       -base => $base,
+			       setcookie => $sessionid,
+			       s => $sig,
+			       r => $refresh);
       print STDERR "Heading to $url to setcookie\n" if $debug;
-      $url .= "/cgi-bin/user.pl?setcookie=".$req->session->{_session_id};
-      $url .= "&r=".CGI::escape($refresh);
-      return BSE::Template->get_refresh($url, $cfg);
+      return $req->get_refresh($url);
     }
   }
 
-  return BSE::Template->get_refresh($refresh, $cfg);
+  return $req->get_refresh($refresh);
 }
 
 sub _same_options {
