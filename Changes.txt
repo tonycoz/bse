@@ -29,6 +29,16 @@ Please read any NOTES below carefully.
  - remove target entry for the shop confirm action, which was
    otherwise removed years ago. RT #1280.
 
+ - logon now starts a new session, preserving the cart.  As a
+   side-effect this logs out the admin user, though this may
+   change.  RT #1279.
+
+ - passing a new session id between the SSL and non-SSL versions of
+   the site is now validated.  RT #1279.
+
+ - delete the session data for a site users session when they logoff.
+   As a side effect this will log out the admin user.
+
 Template updates:
 
  - checkoutpay_base.tmpl - the name of the cardHolder payment field is
@@ -45,6 +55,10 @@ Template updates:
  - user/options_base.tmpl, user/register_base.tmpl,
    admin/users/(add,edit,view).tmpl have been updated to match the new
    site users schema.
+
+ - user/logon_base.tmpl, user/register_base.tmpl - updated the
+   "nothing is more permanent that a temporary solution" link text for
+   logon, register and recover password.
 
 Internals:
 
