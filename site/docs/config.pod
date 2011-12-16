@@ -61,6 +61,14 @@ against HTTP_X_FORWARDED_SERVER instead of SERVER_NAME.
 
 Default: no front-end server configured.
 
+=item secret
+
+A secret used (currently) for hashing cookie values passed between the
+secure and non-secure parts of the site.  This must be set.  A
+suitable value can be created with:
+
+  openssl rand -base64 32
+
 =back
 
 =head2 [paths]

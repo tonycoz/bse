@@ -36,6 +36,13 @@ Please read any NOTES below carefully.
  - passing a new session id between the SSL and non-SSL versions of
    the site is now validated.  RT #1279.
 
+   NOTE: This requires that [site].secret be set to a value specific
+   to your site.  Running:
+
+     openssl rand -base64 32
+
+   generates a suitable value.
+
  - delete the session data for a site users session when they logoff.
    As a side effect this will log out the admin user.
 
