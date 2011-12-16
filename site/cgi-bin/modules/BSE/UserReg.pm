@@ -18,7 +18,7 @@ use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
 use Carp qw(confess);
 
-our $VERSION = "1.021";
+our $VERSION = "1.022";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -328,7 +328,7 @@ sub req_setcookie {
   my $userid = $newsession{userid};
   my $user;
   if ($userid) {
-    $user = SiteUsers->getBy(userId => $userid);
+    $user = SiteUsers->getByPkey($userid);
   }
   $self->_send_user_cookie($user);
 
