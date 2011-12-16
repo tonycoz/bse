@@ -50,11 +50,9 @@
           <table width="100%" border="0" cellspacing="0" cellpadding="0">
             <tr> 
               <td align="left" nowrap><br>
-                <a href="/cgi-bin/user.pl?show_lost_password=1"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Lost 
-                your password?</font></a></td>
+                <a href="<:target user show_lost_password:>">Recover password</a></td>
               <td align="right" nowrap><br>
-                <a href="/cgi-bin/user.pl?show_register=1<:ifCgi r:>&r=<:cgi r |u:><:or:><:eif:>"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Not 
-                yet registered?</font></a></td>
+                <a href="<:target user show_register:><:ifCgi r:>&amp;r=<:cgi r |u:><:or:><:eif:>">Register</a></td>
             </tr>
             <:eif User:> 
           </table>

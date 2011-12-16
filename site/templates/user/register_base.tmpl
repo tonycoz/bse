@@ -199,11 +199,9 @@
           <table width="100%" border="0" cellspacing="0" cellpadding="0">
             <tr> 
               <td align="left" nowrap="nowrap"> <br>
-                <a href="/cgi-bin/user.pl?show_lost_password=1"><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:if Cfg "site users" nopassword:>Send your options link<:or Cfg:>Lost 
-                your password?<:eif Cfg:></font></a></td>
+                <a href="<:target user show_lost_password:>"><:if Cfg "site users" nopassword:>Send your options link<:or Cfg:>Recover your password<:eif Cfg:></a></td>
               <:if Cfg "site users" nopassword:><:or Cfg:><td align="right" nowrap="nowrap"><br>
-                <a href="/cgi-bin/user.pl?show_logon=1<:ifCgi r:>&amp;r=<:cgi r:><:or:><:eif:>"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Already 
-                registered?</font></a></td><:eif Cfg:>
+                <a href="<:target user show_logon:><:ifCgi r:>&amp;r=<:cgi r:><:or:><:eif:>">Logon</a></td><:eif Cfg:>
             </tr>
           </table>
         </td>
