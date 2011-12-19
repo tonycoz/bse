@@ -4,7 +4,7 @@ use XML::LibXML;
 use LWP::UserAgent;
 use Carp qw(confess);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 use constant LIVE_URL => "https://www.eway.com.au/gateway_cvn/xmlpayment.asp";
 use constant
@@ -326,3 +326,87 @@ sub _limit {
 }
 
 1;
+
+=head1 NAME
+
+  DevHelp::Payments::Eway - card payment driver for eway.com.au
+
+=head1 SYNOPSIS
+
+  [shop]
+  cardprocessor=DevHelp::Payments::Eway
+
+  [eway payments]
+  ; test mode
+  test=1
+  ; test_url=https://www.eway.com.au/gateway_cvn/xmltest/testpage.asp
+  ; test_merchantid=87654321
+
+  ; production mode
+  test=0
+  merchantid=...
+  ; url=https://www.eway.com.au/gateway_cvn/xmlpayment.asp
+
+  ; common:
+  prefix=
+  timeout=60
+
+=head1 DESCRIPTION
+
+This is a credit card processing driver for BSE that works with
+eway.com.au.
+
+=head1 CONFIGURATION
+
+The following parameters can be set in the C<[eway payments]> section:
+
+=over
+
+=item test
+
+If non-zero test transactions are performed, using the test
+configuration.  If test is zero live transactions are performed.
+C<test> must be set.
+
+=item merchantid
+
+The merchant id supplied by eway, used for live transactions.
+Required for live processing.
+
+=item testmerchantid
+
+The merchant id used for test transactions.  Defaults to 87654321.
+
+=item prefix
+
+The prefix used on order numbers supplied to eway.
+
+=item url
+
+The eway url for live transactions.  Default:
+https://www.eway.com.au/gateway_cvn/xmlpayment.asp
+
+=item test_url
+
+The eway url for test transctions.  Default:
+https://www.eway.com.au/gateway_cvn/xmltest/testpage.asp
+
+=item timeout
+
+The timeout for requests made to eway in sections.  Default: 60.
+
+=item debug
+
+If non-zero then debugging information is sent to STDERR.  Default: 0
+
+=back
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=head1 LICENSE
+
+The same terms as perl itself.
+
+=cut
