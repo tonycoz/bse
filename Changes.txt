@@ -46,6 +46,9 @@ Please read any NOTES below carefully.
  - delete the session data for a site users session when they logoff.
    As a side effect this will log out the admin user.
 
+ - allow dynamic content pages to display flashed messages with the
+   message tag.  Note that not all actions flash a message.
+
 Template updates:
 
  - checkoutpay_base.tmpl - the name of the cardHolder payment field is
@@ -66,6 +69,8 @@ Template updates:
  - user/logon_base.tmpl, user/register_base.tmpl - updated the
    "nothing is more permanent that a temporary solution" link text for
    logon, register and recover password.
+
+ - shopitem.tmpl - display the flashed message, if any.
 
 Internals:
 
