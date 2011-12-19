@@ -5,6 +5,13 @@
       title:></b></font></td>
     <td height="24">&nbsp;</td>
   </tr>
+<:if Dynamic:>
+  <:if Message:>
+  <tr>
+    <td class="message"><:message:></td>
+  </tr>
+  <:or Message:><:eif Message:>
+<:or Dynamic:><:eif Dynamic:>
   <tr> 
     <td bgcolor="#999999" colspan="2" height="1"><img src="/images/trans_pixel.gif" width="24" height="1" border="0"></td>
   </tr>

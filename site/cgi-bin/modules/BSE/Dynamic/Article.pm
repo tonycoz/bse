@@ -5,7 +5,7 @@ use BSE::Template;
 use BSE::Util::HTML;
 use base qw(BSE::Util::DynamicTags);
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub new {
   my ($class, $req, %opts) = @_;
@@ -62,6 +62,7 @@ sub tags {
   my $allkid_index;
   my $allkid_data;
   my $section; # managed by tag_dynsection
+  my $message;
   return
     (
      $self->SUPER::tags(),
@@ -77,6 +78,7 @@ sub tags {
      [ tag_dynmove => $self, \$allkid_index, \$allkid_data, 
        "stepparent=$article->{id}" ],
      url => [ tag_url => $self, $article ],
+     message => [ tag_message => $self, \$message ],
     );
 }
 
@@ -197,6 +199,22 @@ sub tag_dynsection {
   }
 
   return tag_article($$rsection, $self->{req}->cfg, $args);
+}
+
+=item message
+
+Returns any saved message content.
+
+=cut
+
+sub tag_message {
+  my ($self, $rmessage) = @_;
+
+  unless (defined $$rmessage) {
+    $$rmessage = $self->{req}->message;
+  }
+
+  return $$rmessage;
 }
 
 sub get_real_article {
