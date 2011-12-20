@@ -10,7 +10,7 @@ use Carp qw(confess);
 use BSE::WebUtil qw(refresh_to_admin);
 use BSE::Util::HTML;
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 # returns non-zero if the Regenerate button should work
 sub generate_button {
@@ -154,7 +154,7 @@ my %builtin_extras =
    search => [ "search" ],
    shop =>
    [
-    'cart', 'checkoutnew', 'checkoutfinal', 'checkoutcard', 'checkoutconfirm',
+    'cart', 'checkoutnew', 'checkoutfinal',
     'checkoutpay',
    ],
   );

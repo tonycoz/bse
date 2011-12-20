@@ -639,8 +639,6 @@ site/templates/catalog/multi.tmpl
 site/templates/catalog/shop_subcat.tmpl
 site/templates/catalog/tagged.tmpl
 site/templates/checkout_base.tmpl
-site/templates/checkoutcard_base.tmpl
-site/templates/checkoutconfirm_base.tmpl
 site/templates/checkoutfinal_base.tmpl
 site/templates/checkoutnew_base.tmpl
 site/templates/checkoutpay_base.tmpl

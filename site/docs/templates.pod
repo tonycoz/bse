@@ -434,15 +434,13 @@ F<cgi-bin/search.pl>)
 
 =item *
 
-F<cart_base.tmpl>, F<checkout_base.tmpl>, F<checkoutcard_base.tmpl>
+F<cart_base.tmpl>, F<checkout_base.tmpl>, F<checkoutpay_base.tmpl>
 and F<checkoutfinal_base.tmpl> are used to generated menus and other
 generic content into F<cart.tmpl>, F<checkout.tmpl>,
-F<checkoutcard.tmpl> and F<checkoutfinal.tmpl> respectively.
+F<checkoutpay.tmpl> and F<checkoutfinal.tmpl> respectively.
 
-These are the shopping cart, checkout page, pre-purchase and completed
-order pages respectively, used by F<cgi-bin/shop.pl>.  The
-F<checkoutcard.tmpl> page only needs to be used if you use the
-I<prePurchase> target in shop.pl.
+These are the shopping cart, checkout page, payment and completed
+order pages respectively, used by F<cgi-bin/shop.pl>.
 
 =back
 
