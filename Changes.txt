@@ -72,6 +72,8 @@ Template updates:
 
  - shopitem.tmpl - display the flashed message, if any.
 
+ - removed the unused checkoutcard and checkoutconfirm templates
+
 Internals:
 
  - Squirrel::Table->make now looks for default_I<colname> when looking
