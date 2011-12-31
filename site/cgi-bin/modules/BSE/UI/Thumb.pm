@@ -4,7 +4,7 @@ use base 'BSE::UI::Dispatch'; # for error
 use BSE::CfgInfo qw(cfg_image_dir);
 use BSE::Util::Thumb;
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 sub dispatch {
   my ($class, $req) = @_;
@@ -22,6 +22,8 @@ sub dispatch {
   my $image_id = $cgi->param('image');
   my $article_id = $cgi->param('page');
   my $source = $cgi->param("s") || "article";
+  my $cache = $cgi->param("cache");
+  defined $cache or $cache = 1;
   my $error;
   my $geometry = $cfg->entry('thumb geometries', $geometry_id)
     or return $class->error($req, "** cannot find thumb geometry $geometry_id **");
@@ -41,7 +43,7 @@ sub dispatch {
       or return $class->error($req, "image not found");
   }
 
-  my $do_cache = $cfg->entry('basic', 'cache_thumbnails', 1);
+  my $do_cache = $cfg->entry('basic', 'cache_thumbnails', 1) && $cache;
   my $image_dir = cfg_image_dir($cfg);
   
   my $cache_dir = $cfg->entry('paths', 'scalecache', "$image_dir/scaled");
@@ -74,7 +76,7 @@ sub dispatch {
       return
 	{
 	 content => $data,
-	 type => "image/$type",
+	 type => $type,
 	 headers => [
 		     "Content-Length: ".length($data),
 		     "Cache-Control: max-age=3600",
@@ -103,7 +105,7 @@ sub dispatch {
     return
       {
        content => $data,
-       type => "image/$type",
+       type => $type,
        headers => [
 		   "Content-Length: ".length($data),
 		   "Cache-Control: max-age=3600",

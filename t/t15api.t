@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
-use BSE::Test ();
-use Test::More tests => 16;
+use BSE::Test qw(make_ua base_url);
+use Test::More tests => 20;
 use File::Spec;
 use Carp qw(confess);
 
@@ -12,6 +12,8 @@ BEGIN {
 }
 
 BEGIN { use_ok("BSE::API", ":all") }
+
+my $ua = make_ua();
 
 my $base_cgi = File::Spec->catdir(BSE::Test::base_dir(), "cgi-bin");
 ok(bse_init($base_cgi),   "initialize api")
@@ -61,6 +63,30 @@ my $im2;
      "save new image content (by fh)");
   is_deeply(\%errors, {}, "no errors");
   like($im2->src, qr(^/), "src should start with /, assuming no storage");
+}
+
+{
+  # check we can retrieve the image
+  my $src = base_url() . $im2->image_url;
+  my $imres = $ua->get($src);
+  open my $fh, "<", "t/data/govhouse.jpg"
+    or die "Cannot open t/data/govhouse.jpg: $!";
+  binmode $fh;
+  my $orig = do { local $/; <$fh> };
+  close $fh;
+  ok($imres->is_success, "got some data");
+  is($imres->decoded_content, $orig, "check it matches");
+}
+
+{
+  # check thumbnailing
+  my $thumb_url = base_url() . $im2->dynamic_thumb_url(geo => "editor");
+  $thumb_url .= "&cache=0";
+  print "# $thumb_url\n";
+  my $thumb_res = $ua->get($thumb_url);
+  ok($thumb_res->is_success, "successful fetch");
+  like($thumb_res->content_type, qr(^image/[a-z]+$), "check content type");
+  print "# ", $thumb_res->content_type, "\n";
 }
 
 ok($art->remove($cfg), "remove article");
