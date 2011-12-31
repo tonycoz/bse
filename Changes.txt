@@ -1,3 +1,12 @@
+BSE 0.21 - unreleased
+========
+
+Bug fixes:
+
+ - thumb.pl would return content types with doubled image/ prefixes,
+   eg. image/image/jpeg
+
+
 BSE 0.20 - 22 Dec 2011
 ========
 
