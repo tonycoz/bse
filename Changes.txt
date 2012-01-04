@@ -11,6 +11,9 @@ Bug fixes:
    future release of BSE.
    https://rt4.develop-help.com/Ticket/Display.html?id=1209
 
+ - verbose output of generate.pl is now based on the template
+   admin/generate.tmpl
+
 BSE 0.20 - 22 Dec 2011
 ========
 
