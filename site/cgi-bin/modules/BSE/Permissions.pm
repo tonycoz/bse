@@ -1,7 +1,7 @@
 package BSE::Permissions;
 use strict;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 # these are the permissions that are checked beyond just whether the permissions DB allows them
 my @checks =
@@ -399,7 +399,8 @@ sub check_edit_delete_article {
     $$rmsg = "This article has children.  You must delete the children first (or change their parents)";
     return;
   }
-  if (grep $_ == $article->{id}, @Constants::NO_DELETE) {
+  if (grep($_ == $article->{id}, @Constants::NO_DELETE)
+     || $self->{cfg}->entry("undeletable articles", $article->{id})) {
     $$rmsg = "Sorry, these pages are essential to the site structure - they cannot be deleted";
     return;
   }

@@ -1,7 +1,7 @@
 package Constants;
 use strict;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 # this needs to be re-organized
 use vars qw(@EXPORT_OK %EXPORT_TAGS @ISA $VERSION 
@@ -168,6 +168,7 @@ $SEARCH_TITLE_IMAGE = "";
 # articles that cannot be deleted
 # you don't need to include the shop ids here, they are always 
 # protected
+# This is deprecated, use [undeletable articles] instead
 @NO_DELETE = ( 1, 2, 5 );
 
 # you can use the following to add local body formatting tags without

@@ -15,7 +15,7 @@ use DevHelp::Date qw(dh_parse_date dh_parse_sql_date);
 use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
-our $VERSION = "1.017";
+our $VERSION = "1.018";
 
 =head1 NAME
 
@@ -4606,7 +4606,8 @@ sub can_remove {
     $$rcode = "CHILDREN";
     return;
   }
-  if (grep $_ == $article->{id}, @Constants::NO_DELETE) {
+  if (grep($_ == $article->{id}, @Constants::NO_DELETE)
+     || $req->cfg->entry("undeletable articles", $article->{id})) {
     $$rmsg = "Sorry, these pages are essential to the site structure - they cannot be deleted";
     $$rcode = "ESSENTIAL";
     return;

@@ -2642,6 +2642,18 @@ where 10 is the id of the article being edited.
 
 Keys with a prefix of C<bse_> are reserved for BSE internal use.
 
+=head2 [undeletable articles]
+
+Keys are the ids of articles that may not be deleted.
+
+This applies if the value of the entry is a true perl value.
+
+  [undeletable articles]
+  1=home page
+  2=more home page
+  ; article 3 is deletable
+  3=
+
 =head1 AUTHOR
 
 Tony Cook <tony@develop-help.com>
