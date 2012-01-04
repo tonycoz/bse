@@ -1,0 +1,20 @@
+<:wrap admin/base.tmpl title => "Regenarate site":>
+
+<h1>Regenerating</h1>
+
+<:iterator begin messages:>
+<:switch:>
+<:case RegenError:>
+<p class="error message"><:message:></p>
+<:case Head:>
+<h2><:message:></h2>
+<:case default:>
+<div><:message:></div>
+<:endswitch:>
+<:iterator end messages:>
+
+<p><a href="<:adminurl menu:>">Return to admin menu</a></p>
+
+<p><font size="-1">BSE Release <:release:></font></p>
+</body>
+</html>

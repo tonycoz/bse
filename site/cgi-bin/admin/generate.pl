@@ -48,27 +48,29 @@ if ($cgi->param("r")) {
 
 my $type_name;
 my $progress = $cgi->param('progress');
+my ($suffix, $permessage);
+my %acts;
+my $callback;
 my $good = eval {
   if (generate_button()) {
-    my $callback;
     if ($progress) {
       $| = 1;
-      my $charset = $cfg->charset;
-      print <<HTML;
-Content-Type: text/html; charset=$charset
+      %acts = $req->admin_tags;
+      my $temp_result = $req->response("admin/generate", \%acts);
+      (my ($prefix), $permessage, $suffix) =
+	split /<:\s*iterator\s+(?:begin|end)\s+messages\s*:>/, $temp_result->{content};
 
-<?xml version="1.0" encoding="$charset"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd" >
-<html>
-  <head>
-    <title>Regenerating your site</title>
-    <link rel="stylesheet" href="/css/admin.css" type="text/css" />
-  </head>
-  <body id="regen">
-  <h1>Regenerating</h1>
-HTML
-      $callback = sub { print "<div>",escape_html($_[0]),"</div>" };
+      my $charset = $cfg->charset;
+      print "Content-Type: ", $temp_result->{type}, "\n";
+      print "\n";
+      print $prefix;
+      $acts{message} = "";
+      $acts{ifHead} = 0;
+      $acts{ifRegenError} = 0;
+      $callback = sub {
+	$acts{message} = escape_html($_[0]);
+	print BSE::Template->replace($permessage, $cfg, \%acts);
+      };
     }
     if (defined $id) {
       my $article;
@@ -95,7 +97,9 @@ HTML
 			$callback or return;
 			if (!$data->{count} &&
 			    $data->{set} ne $last_set) {
-			  print "<h2>Regenerating $data->{set} pages</h2>\n";
+			  local $acts{ifHead} = 1;
+			  $acts{message} = "Regenerating $data->{set} pages";
+			  print BSE::Template->replace($permessage, $cfg, \%acts);
 			  $last_set = $data->{set};
 			}
 			$callback->($note);
@@ -108,8 +112,9 @@ HTML
 	my ($extra) = grep $_->{name} eq $name, @extras
 	  or die { error_code => "EXTRANOTFOUND", message => "No extra named $name found" };
 
-	print "<p>Generating ", escape_html($extra->{name}), "</p>\n"
-	  if $progress;
+	if ($progress) {
+	  $callback->("Generating $extra->{name}");
+	}
 	generate_one_extra($articles, $extra);
 	$type_name = "of extra $extra->{name}";
       }
@@ -153,7 +158,8 @@ unless ($good) {
     # page build error of some sort
     if ($progress) {
       # just do it inline
-      print qq(<p class="error">Error during regeneration: ) . escape_html($error) . "</p>\n";
+      local $acts{ifRegenError} = 1;
+      $callback->("Error during regeneration: $error");
     }
     elsif ($req->want_json_response) {
       my $result =
@@ -174,8 +180,7 @@ unless ($good) {
 }
 
 if ($progress) {
-  print qq!<p>Done <a href="/cgi-bin/admin/menu.pl">Return to admin menu</a></p>\n!;
-  print "</body></html>\n";
+  print $suffix;
 }
 else {
   if (!$error && $baseurl eq $cfg->admin_url("menu") || $cgi->param("m")) {
@@ -229,6 +234,35 @@ C<m> - normally, on a successful regeneration, a success message is
 flashed only if the redirect URL is the admin menu.  If C<m> is
 supplied and true this forces the success message to be flashed for
 any redirect URL.
+
+=back
+
+=head1 OUTPUT
+
+C<generate.pl>'s verbose output uses the template
+F<admin/generate.tmpl>.  Beyond the base admin tags the following tags
+are available:
+
+=over
+
+=item *
+
+iterator begin messages ... iterator end messages - this isn't a
+normal iterator, they're just used to split the result into a prefix,
+per message template and suffix.  Don't expect common iterator utility
+tags to work here.
+
+=item *
+
+message - the message content to display
+
+=item *
+
+ifHead - true if the message is intended as a heading
+
+=item *
+
+ifRegenError - true if the message is a fatal regeneration error.
 
 =back
 
