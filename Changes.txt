@@ -1,18 +1,20 @@
 BSE 0.21 - unreleased
 ========
 
-Bug fixes:
+ - verbose output of generate.pl is now based on the template
+   admin/generate.tmpl
 
- - thumb.pl would return content types with doubled image/ prefixes,
-   eg. image/image/jpeg
+ - add the referer tag to all dynamic pages
 
  - added [undeletable articles] to bse.cfg as a supplement to
    @NO_DELETE.  @NO_DELETE is now deprecated and may be removed in a
    future release of BSE.
    https://rt4.develop-help.com/Ticket/Display.html?id=1209
 
- - verbose output of generate.pl is now based on the template
-   admin/generate.tmpl
+Bug fixes:
+
+ - thumb.pl would return content types with doubled image/ prefixes,
+   eg. image/image/jpeg
 
 BSE 0.20 - 22 Dec 2011
 ========
