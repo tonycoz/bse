@@ -8,7 +8,7 @@ use vars qw(@EXPORT_OK @ISA);
 @ISA = qw(Exporter);
 require Exporter;
 
-our $VERSION = "1.016";
+our $VERSION = "1.017";
 
 sub _get_parms {
   my ($acts, $args) = @_;
@@ -495,6 +495,7 @@ sub basic {
      sub {
        $ENV{SCRIPT_NAME}
      },
+     referer => \&tag_referer,
      cgi =>
      sub {
        $cgi or return '';
@@ -574,6 +575,20 @@ sub tag_ifTagIn {
   }
 
   return 0;
+}
+
+=item tag referer
+
+Returns $ENV{HTTP_REFERER} or an empty string if not set.
+
+=cut
+
+sub tag_referer {
+  my $value = $ENV{HTTP_REFERER};
+
+  defined $value or return "";
+
+  return escape_html($value);
 }
 
 sub common {
