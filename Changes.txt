@@ -16,6 +16,9 @@ Bug fixes:
  - thumb.pl would return content types with doubled image/ prefixes,
    eg. image/image/jpeg
 
+ - update BSE::AdminUsers to use more modern admin tags
+   https://rt4.develop-help.com/Ticket/Display.html?id=1234 (partial)
+
 BSE 0.20 - 22 Dec 2011
 ========
 
