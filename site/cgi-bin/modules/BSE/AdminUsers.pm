@@ -6,7 +6,7 @@ use BSE::Util::HTML qw(:default popup_menu);
 use BSE::CfgInfo qw(admin_base_url);
 use BSE::Template;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 my %actions =
   (
@@ -135,27 +135,15 @@ sub common_tags {
   my ($class, $req, $msg, $errors) = @_;
 
   $errors ||= +{};
-  $msg ||= $req->cgi->param('m');
-  if ($msg) {
-    $msg = escape_html($msg);
-  }
-  else {
-    if (values %$errors) {
-      $msg = "<p>".join("<br />", map escape_html($_),grep $_, values %$errors)."</p>";
-    }
-    else {
-      $msg = '';
-    }
-  }
+  $msg ||= $req->message($errors);
+
   my @users;
   my $user_index;
   my @groups;
   my $group_index;
   return
     (
-     BSE::Util::Tags->basic(undef, $req->cgi, $req->cfg),
-     BSE::Util::Tags->secure($req),
-     BSE::Util::Tags->admin(undef, $req->cfg),
+     $req->admin_tags,
      message => $msg,
      DevHelp::Tags->make_iterator2
      ([ \&iter_get_users, $req ], 'iuser', 'users', \@users, \$user_index),
