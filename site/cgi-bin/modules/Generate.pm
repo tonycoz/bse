@@ -11,7 +11,7 @@ use BSE::Util::Iterate;
 use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 my $excerptSize = 300;
 
@@ -386,8 +386,11 @@ sub iter_all_kids_of {
 }
 
 sub iter_inlines {
-  my ($args, $acts, $name, $templater) = @_;
+  my ($self, $state, $args, $acts, $name, $templater) = @_;
 
+  my $filter = $self->_get_filter(\$args);
+
+  $state->{parentid} = undef;
   my @ids = map { split } DevHelp::Tags->get_parms($args, $acts, $templater);
   for my $id (@ids) {
     unless ($id =~ /^\d+$/) {
@@ -395,7 +398,9 @@ sub iter_inlines {
     }
   }
   @ids = grep /^\d+$/, @ids;
-  map Articles->getByPkey($_), @ids;
+  @ids == 1 and $state->{parentid} = $ids[0];
+
+  $self->_do_filter($filter, map Articles->getByPkey($_), @ids);
 }
 
 sub iter_gimages {
@@ -928,7 +933,11 @@ sub baseActs {
 		    plural => 'allkids_of5',
 		    nocache => 1,
 		    state => 1 ), 
-     $art_it->make_iterator( \&iter_inlines, 'inline', 'inlines' ),
+     $art_it->make( code => [ iter_inlines => $self ],
+		    single => 'inline',
+		    plural => 'inlines',
+		    nocache => 1,
+		    state => 1 ), 
      gimage => 
      sub {
        my ($args, $acts, $func, $templater) = @_;

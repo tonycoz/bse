@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>144;
+use Test::More tests=>147;
 use File::Spec;
 use FindBin;
 BEGIN {
@@ -111,6 +111,13 @@ template_test "inlines", $top, <<TEMPLATE, <<EXPECTED;
 inline title:><:iterator end inlines:>
 TEMPLATE
 OneTwoThree
+EXPECTED
+
+template_test "inlines filtered", $top, <<TEMPLATE, <<EXPECTED;
+<:iterator begin inlines @kidids filter: [title] =~ /^T/ :><:
+inline title:><:iterator end inlines:>
+TEMPLATE
+TwoThree
 EXPECTED
 
 template_test "ifancestor positive", $kids[0], <<TEMPLATE, <<EXPECTED;
