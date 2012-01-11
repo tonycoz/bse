@@ -25,6 +25,9 @@ Bug fixes:
    https://rt4.develop-help.com/Ticket/Display.html?id=1234 (partial)
    (Adrian Oldham for BSE::ChangePW)
 
+ - with [site].secureadmin enabled, refreshes to the secure admin url
+   could cause a 500 error.
+
 BSE 0.20 - 22 Dec 2011
 ========
 
