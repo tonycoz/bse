@@ -4,7 +4,7 @@ use base qw(BSE::UI::Dispatch);
 use BSE::CfgInfo qw(admin_base_url);
 use Carp qw(confess);
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 # checks we're coming from HTTPS
 sub check_secure {
@@ -46,7 +46,7 @@ sub check_secure {
   my $target = ($ENV{SCRIPT_NAME} =~ /(\w+)\.pl$/)[0] or die;
   my $action = $class->action_prefix . $class->default_action;
   my $url = $req->url($target => { $action => 1, did_admin_url_dispatch => 1 });
-  $$rresult = BSE::Template->get_refresh($url, $req->cfg);
+  $$rresult = $req->get_refresh($url);
 
   return;
 }
