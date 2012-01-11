@@ -4,7 +4,7 @@ require Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(content_type);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 my %types =
   (
@@ -68,12 +68,15 @@ my %types =
    asf  video/x-ms-asf
    avi  video/avi
    flc  video/flc
+   m4v  video/mp4
    moov video/quicktime
    mov  video/quicktime
    mp4  video/mp4
    mpeg video/mpeg
    mpg  video/mpeg
+   webm video/webm
    wmv  video/x-ms-wmv
+   ogv  video/ogg
    3gp  video/3gpp
    aa   audio/audible
    aif  audio/aiff
