@@ -4,7 +4,7 @@ use BSE::Util::Tags qw(tag_error_img);
 use BSE::Util::HTML;
 use base 'BSE::UI::AdminDispatch';
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 my %actions =
   (
@@ -40,10 +40,9 @@ sub req_form {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(undef, $req->cgi, $req->cfg),
-     BSE::Util::Tags->admin(undef, $req->cfg),
-     BSE::Util::Tags->secure($req),
+     $req->admin_tags(),
      message => $msg,
+     ifError => 1, # all messages we display are errors
      error_img => [ \&tag_error_img, $req->cfg, $errors ],
     );
 
