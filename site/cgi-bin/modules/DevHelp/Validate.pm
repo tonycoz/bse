@@ -6,7 +6,7 @@ use vars qw(@EXPORT_OK @ISA);
 @ISA = qw(Exporter);
 use Carp qw(confess);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 my %built_ins =
   (
@@ -346,19 +346,19 @@ sub validate_field {
 	  }
 	}
       }
+      if (defined $rule->{nomatch}) {
+	my $match = $rule->{nomatch};
+	if ($data =~ /$match/) {
+	  $errors->{$field} = _make_error($field, $info, $rule);
+	  last RULE;
+	}
+      }
       if ($data !~ /\S/ && !$rule->{required}) {
 	next RULE;
       }
       if ($rule->{match}) {
 	my $match = $rule->{match};
 	unless ($data =~ /$match/) {
-	  $errors->{$field} = _make_error($field, $info, $rule);
-	  last RULE;
-	}
-      }
-      if (defined $rule->{nomatch}) {
-	my $match = $rule->{nomatch};
-	if ($data =~ /$match/) {
 	  $errors->{$field} = _make_error($field, $info, $rule);
 	  last RULE;
 	}

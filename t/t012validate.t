@@ -1,8 +1,35 @@
 #!perl -w
 use strict;
-use Test::More tests => 9;
+use Test::More tests => 16;
 
 BEGIN { use_ok('DevHelp::Validate'); }
+
+{
+  my %built_ins =
+    (
+     oneline =>
+     {
+      rules => "dh_one_line"
+     },
+    );
+  my $val = DevHelp::Validate::Hash->new(fields => \%built_ins);
+  ok($val, "got built-ins validation object");
+  {
+    my %errors;
+    ok($val->validate({ oneline => "abc" }, \%errors), "valid oneline");
+    is_deeply(\%errors, {}, "no errors set");
+  }
+  {
+    my %errors;
+    ok(!$val->validate({ oneline => "\x0D" }, \%errors), "invalid oneline (CR)");
+    ok($errors{oneline}, "message for oneline");
+  }
+  {
+    my %errors;
+    ok(!$val->validate({ oneline => "\x0A" }, \%errors), "invalid oneline (LF)");
+    ok($errors{oneline}, "message for oneline");
+  }
+}
 
 {
   my %simple_date =
