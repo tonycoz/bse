@@ -12,7 +12,7 @@ fetch_ok($ua, "generate all", "$baseurl/cgi-bin/admin/generate.pl",
 	"html", "Title: BSE - Administration Centre");
 fetch_ok($ua, "generate all verbose", 
 	 "$baseurl/cgi-bin/admin/generate.pl?progress=1",
-	 "Regenerating your site.*Return to admin menu");
+	 "Regenerating.*Return to admin menu");
 fetch_ok($ua, "index", "$baseurl/", "Home");
 fetch_ok($ua, "shop", "$baseurl/shop/", "The Shop - Catalogue Items");
 fetch_ok($ua, "shop cart", "$baseurl/cgi-bin/shop.pl",
