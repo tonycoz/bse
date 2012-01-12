@@ -28,6 +28,9 @@ Bug fixes:
  - with [site].secureadmin enabled, refreshes to the secure admin url
    could cause a 500 error.
 
+ - check nomatch fields even for blank fields.  Otherwise a field with
+   a LF or CR would not be caught by the dh_one_line validation rule.
+
 BSE 0.20 - 22 Dec 2011
 ========
 
