@@ -24,7 +24,8 @@ unless ($req->check_admin_logon()) {
     $req->output_result($req->logon_error);
   }
   else {
-    $req->output_result($cfg->admin_url("logon"));
+    $req->flash_error("msg:bse/admin/logon/needlogon");
+    $req->output_result($req->get_refresh($cfg->admin_url("logon")));
   }
   exit;
 }

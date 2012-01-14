@@ -130,6 +130,9 @@ message: Unknown order stage '$1:s'
 id: bse/admin/logon/logoff
 message: Administrative user '%1:s' logged off
 
+id: bse/admin/logon/needlogon
+message: You need to logon to access that function
+
 id: bse/shop/cart/empty
 message: Cart emptied
 

@@ -173,6 +173,9 @@ description: Logon tool messages
 id: bse/admin/logon/logoff
 description: Flashed when the admin user logs off, $1 is the logon name
 
+id: bse/admin/logon/needlogon
+description: Generic message when the user attempts something without being logged on
+
 id: test/
 description: <<TEXT
 Test category
