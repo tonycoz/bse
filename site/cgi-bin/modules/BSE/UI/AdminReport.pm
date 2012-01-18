@@ -5,7 +5,7 @@ use BSE::Util::Tags;
 use BSE::Report;
 use BSE::Util::HTML;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 my %actions =
   (
@@ -39,11 +39,10 @@ sub req_list_reports {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $req->cgi, $req->cfg),
-     BSE::Util::Tags->admin(\%acts, $req->cfg),
-     BSE::Util::Tags->secure($req),
+     $req->admin_tags(),
      $reports->list_tags(),
      message => escape_html($msg),
+     ifError => 1, # all messages we display are errors
     );
   
   return $req->dyn_response('admin/reports/list', \%acts);
@@ -76,11 +75,10 @@ sub req_prompt {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $req->cgi, $req->cfg),
-     BSE::Util::Tags->admin(\%acts, $req->cfg),
-     BSE::Util::Tags->secure($req),
+     $req->admin_tags(),
      $reports->prompt_tags($repname, $req->cgi, BSE::DB->single),
      message => $msg,
+     ifError => 1, # all messages we display are errors
     );
 
   my $template = $reports->prompt_template($repname) || 'admin/reports/prompt';
@@ -119,9 +117,7 @@ sub req_show {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $req->cgi, $req->cfg),
-     BSE::Util::Tags->admin(\%acts, $req->cfg),
-     BSE::Util::Tags->secure($req),
+     $req->admin_tags(),
      $reports->show_tags2($repname, BSE::DB->single, \$msg, \@params, %show_opts),
     );
 
