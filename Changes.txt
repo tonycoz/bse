@@ -21,9 +21,10 @@ Bug fixes:
  - thumb.pl would return content types with doubled image/ prefixes,
    eg. image/image/jpeg
 
- - update BSE::AdminUsers, BSE::ChangePW to use more modern admin tags
+ - update BSE::AdminUsers, BSE::ChangePW, BSE::UI::AdminReport to use
+   more modern admin tags
    https://rt4.develop-help.com/Ticket/Display.html?id=1234 (partial)
-   (Adrian Oldham for BSE::ChangePW)
+   (Adrian Oldham for BSE::ChangePW, BSE::UI::AdminReport)
 
  - with [site].secureadmin enabled, refreshes to the secure admin url
    could cause a 500 error.
