@@ -149,13 +149,35 @@ sub user_url {
 sub admin_url {
   my ($self, $action, $params, $name) = @_;
 
+  return $self->admin_url2($action, undef, $params, $name);
+}
+
+sub admin_url2 {
+  my ($self, $action, $target, $params, $name) = @_;
+
   require BSE::CfgInfo;
+  my $add_target;
   my $url = BSE::CfgInfo::admin_base_url($self);
-  if ($self->entry("nadmin controllers", $action)) {
+  if ($self->entry("admin url", $action)) {
+    $url .= $self->entry("admin url", $action);
+    $url .= "/" . $target if $target;
+  }
+  elsif ($self->entry("admin controllers", $action)) {
+    $url .= $self->entry("site", "adminscript", "/cgi-bin/admin/bseadmin.pl");
+    $url .= "/" . $action;
+    $url .= "/" . $target if $target;
+  }
+  elsif ($self->entry("nadmin controllers", $action)) {
     $url .= "/cgi-bin/admin/nadmin.pl/$action";
+    $add_target++ if $target;
   }
   else {
     $url .= "/cgi-bin/admin/$action.pl";
+    $add_target++ if $target;
+  }
+  if ($add_target) {
+    $params ||= {};
+    $params = { %$params, "a_$target" => 1 };
   }
   if ($params && keys %$params) {
     require BSE::Util::HTML;
