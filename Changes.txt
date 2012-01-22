@@ -16,6 +16,17 @@ BSE 0.21 - unreleased
  - added some more extension to content type mappings for video
    formats (Adrian Oldham)
 
+ - the shopadmin order list targets are now much more efficient - they
+   no longer load the entire order table, are paginated, and let the
+   data do the selection of matching records.
+
+   NOTE: this removes some backward compatibility - iterator filters
+   no longer work and a new tag, all_order_count can be used to fetch
+   order counts.  Extra search parameters have been provided to filter
+   the results.
+
+ - added a new adminurl2 tag where the second parameter is a target.
+
 Bug fixes:
 
  - thumb.pl would return content types with doubled image/ prefixes,
@@ -31,6 +42,14 @@ Bug fixes:
 
  - check nomatch fields even for blank fields.  Otherwise a field with
    a LF or CR would not be caught by the dh_one_line validation rule.
+
+Templates:
+
+ - admin/order_list*.tmpl - see the order list re-work above.
+
+Internals:
+
+ - added a getCount() method to retrieve a count of matching records.
 
 BSE 0.20 - 22 Dec 2011
 ========
