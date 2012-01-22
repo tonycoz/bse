@@ -4,7 +4,7 @@ use base "DevHelp::Cfg";
 use Carp qw(confess);
 use constant MAIN_CFG => 'bse.cfg';
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 my %cache;
 
@@ -169,7 +169,7 @@ sub admin_url2 {
   }
   elsif ($self->entry("nadmin controllers", $action)) {
     $url .= "/cgi-bin/admin/nadmin.pl/$action";
-    $add_target++ if $target;
+    $url .= "/$target" if $target;
   }
   else {
     $url .= "/cgi-bin/admin/$action.pl";
