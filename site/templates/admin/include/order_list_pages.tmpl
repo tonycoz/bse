@@ -1,0 +1,11 @@
+<div class="pagelist">Page <:orders_pagenum:> of <:orders_pagecount:>
+<:ifFirstOrdersPage:><span>&lt;&lt;&lt;&lt;</span> <span>&lt;&lt;</span><:or:><a href="<:adminurl2 shopadmin [param target] pp [orders_perpage] p 1:>&amp;<:search_param:>">&lt;&lt;&lt;&lt;</a> <a href="<:adminurl2 shopadmin [param target] pp [orders_perpage] p [prevOrdersPage]:>&amp;<:search_param:>">&lt;&lt;</a><:eif:>
+<:iterator begin orders_pagec:>
+<:switch:>
+<:case order_pagec gap:>...
+<:case order_pagec link:><a href="<:adminurl2 shopadmin [param target] pp [orders_perpage]:>&amp;p=<:order_pagec page:>&amp;<:search_param:>"><:order_pagec page:></a>
+<:case default:><span><:order_pagec page:></span>
+<:endswitch:>
+<:iterator end orders_pagec:>
+<:ifLastOrdersPage:><span>&gt;&gt;</span> <span>&gt;&gt;&gt;&gt;</span><:or:><a href="<:adminurl2 shopadmin [param target] pp [orders_perpage] p [nextOrdersPage]:>&amp;<:search_param:>">&gt;&gt;</a> <a href="<:adminurl2 shopadmin [param target] pp [orders_perpage] p [orders_pagecount]:>&amp;<:search_param:>">&gt;&gt;&gt;&gt;</a><:eif:>
+</div>

@@ -1,8 +1,9 @@
-<:wrap admin/base.tmpl title => "Order list - Shop administration":>
+<:wrap admin/base.tmpl title => "Order list - Shop administration", target => order_list:>
 <h1>Shop Administration</h1>
 <p>| <a href="<:adminurl menu:>">Admin menu</a> | <a href="<:adminurl shopadmin:>">Manage catalogs</a> 
-  | <a href="<:adminurl shopadmin order_list 1 template order_list_unfilled:>">Unfilled orders</a>  [ <:order_count filter= filled==0 :> ]
-  | <a href="<:adminurl shopadmin order_list 1 template order_list_filled:>">Filled orders</a>   [ <:order_count filter= filled!=0 :> ]
+  | <a href="<:adminurl2 shopadmin order_list_unfilled:>">Unfilled orders</a>  [ <:all_order_count [ filled => 0 ] :> ]
+  | <a href="<:adminurl2 shopadmin order_list_filled:>">Filled orders</a>   [ <:all_order_count ['<>', filled => 0] :> ]
+  | <a href="<:adminurl2 shopadmin order_list_incomplete:>" title="Orders the customer did not complete">Incomplete orders</a>   [ <:all_order_count [complete => 0] :> ]
   |</p>
 <h2>Order list</h2>
 
@@ -18,8 +19,8 @@
         </tr>
         <tr> 
           <td colspan="7"> 
-            <form action="<:script:>" method="post">
-              <input type="hidden" name="order_list" value="1" />
+            <form action="<:adminurl shopadmin:>">
+              <input type="hidden" name="a_order_list" value="1" />
               From date: 
               <input type="text" size="10" name="from" value="<:cgi from:>" />
               To date: 
@@ -44,3 +45,4 @@
         </tr>
         <:iterator end orders:> 
       </table>
+<:include admin/include/order_list_pages.tmpl:>

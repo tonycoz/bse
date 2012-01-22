@@ -531,6 +531,7 @@ site/templates/admin/include/article_menu.tmpl
 site/templates/admin/include/auditentry.tmpl
 site/templates/admin/include/audithead.tmpl
 site/templates/admin/include/edit_common.tmpl
+site/templates/admin/include/order_list_pages.tmpl
 site/templates/admin/include/site_menu.tmpl
 site/templates/admin/interestemail.tmpl
 site/templates/admin/locations/add.tmpl

@@ -1,8 +1,8 @@
-<:wrap admin/base.tmpl title => "Order list - Shop administration":>
+<:wrap admin/base.tmpl title => "Order list - Shop administration", target => order_list_unfilled:>
 <h1>Shop Administration</h1>
 <p>| <a href="<:adminurl menu:>">Admin menu</a> | <a href="<:adminurl shopadmin:>">Manage catalogs</a> 
-  | <a href="<:adminurl shopadmin order_list 1 template order_list_filled:>">Filled orders</a> [ <:order_count filter= filled!=0:> ]
-  | <a href="<:adminurl shopadmin order_list 1:>">All orders</a>  [ <:order_count filter= id!=0:> ] |</p>
+  | <a href="<:adminurl2 shopadmin order_list_filled:>">Filled orders</a> [ <:all_order_count [ '<>', filled => 0 ] :> ]
+  | <a href="<:adminurl2 shopadmin order_list:>">All orders</a>  [ <:all_order_count:> ] |</p>
 <h2>Order list - Unfilled orders</h2>
 
       <table class="editform orderlist">
@@ -16,28 +16,28 @@
         </tr>
         <tr> 
           <td colspan="6"> 
-            <form action="<:script:>" method="post">
-              <input type="hidden" name="order_list2" value="1" />
-              <input type="hidden" name="template2" value="order_list_unfilled" />
+            <form action="<:adminurl shopadmin:>">
+	      <input type="hidden" name="a_order_list_unfilled" value="1" />
               From date: 
-              <input type="text" size="10" name="from2" value="<:cgi from:>" />
+              <input type="text" size="10" name="from" value="<:cgi from:>" />
               To date: 
-              <input type="text" size="10" name="to2" value="<:cgi to:>" />
+              <input type="text" size="10" name="to" value="<:cgi to:>" />
               <input type=submit value="Filter orders" name="submit2" />
             </form>
           </td>
         </tr>
         <:iterator begin orders filter= filled==0 :> 
         <tr> 
-          <td class="col_id"><a href="<:adminurl shopadmin id [order id] order_detail 1:>"><:order 
+          <td class="col_id"><a href="<:adminurl2 shopadmin order_detail id [order id]:>"><:order 
             id:></a></td>
           <td class="col_name"><:ifOrder billFirstName:><:order billFirstName:> <:order billLastName:><:or:><:order delivFirstName:> <:order delivLastName:><:eif:> <:ifOrder 
             userId:><font color="#CCCCCC">&#8212; (logged in)</font><:or:><:eif:></td>
           <td class="col_date"><:date order orderDate:></td>
           <td class="col_total">$<:money order total:></td>
           <td class="col_total">$<:money order gst:></td>
-          <td class="col_tools"> <a href="<:adminurl shopadmin id [order id] order_detail 1:>">Order 
+          <td class="col_tools"> <a href="<:adminurl2 shopadmin order_detail id [order id]:>">Order 
             details </a></td>
         </tr>
         <:iterator end orders:> 
       </table>
+<:include admin/include/order_list_pages.tmpl:>

@@ -1,22 +1,16 @@
-<html><head><title>Incomplete order list - Shop administration</title>
-<link rel="stylesheet" href="/css/admin.css">
-</head>
-<body>
+<:wrap admin/base.tmpl title => "Incomplete order list - Shop administration", target => order_list_incomplete:>
 <h1>Shop Administration</h1>
 <p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | <a href="<:script:>">Manage catalogs</a> 
-  | <a href="<:script:>?order_list=1&template=order_list_filled">Filled orders</a> [ <:order_count filter= filled!=0:> ]
-  | <a href="<:script:>?order_list=1">All orders</a>  [ <:order_count filter= id!=0:> ] |</p>
+  | <a href="<:adminurl2 shopadmin order_list_filled:>">Filled orders</a> [ <:all_order_count [ '<>', filled => 0 ]:> ]
+  | <a href="<:adminurl2 shopadmin order_list:>">All orders</a>  [ <:all_order_count [ '<>', complete => 0 ]:> ] |</p>
 <h2>Order list - Incomplete orders</h2>
 
 <p><b>These orders had failures during online credit card processing
 and the user did not go back to fix the problem.  These orders should
-not be processes and are visible only for completeness.</b></p>
+not be processed and are visible only for completeness.</b></p>
 
-<table bgcolor="#000000" cellpadding="0" cellspacing="0" border="0" width="100%" class="table">
-  <tr>
-<td>
-      <table border=0 cellpadding="6" cellspacing="1" width="100%">
-        <tr bgcolor="#FFFFFF"> 
+<table class="editform orderlist">
+        <tr> 
           <th>Id</th>
           <th width="100%">Name</th>
           <th>Date</th>
@@ -24,36 +18,30 @@ not be processes and are visible only for completeness.</b></p>
           <th>GST</th>
           <th>Details</th>
         </tr>
-        <tr bgcolor="#FFFFFF"> 
+        <tr> 
           <td colspan="6"> 
-            <form action="<:script:>" method="POST">
-              <input type="hidden" name="order_list2" value="1">
-              <input type="hidden" name="template2" value="order_list_incomplete">
+            <form action="<:adminurl shopadmin:>">
+              <input type="hidden" name="a_order_list_incomplete" value="1">
               From date: 
-              <input type="text" size="10" name="from2" value="<:cgi from:>">
+              <input type="text" size="10" name="from" value="<:cgi from:>">
               To date: 
-              <input type="text" size="10" name="to2" value="<:cgi to:>">
+              <input type="text" size="10" name="to" value="<:cgi to:>">
               <input type=submit value="Filter orders" name="submit2">
             </form>
           </td>
         </tr>
-        <:iterator begin orders filter= filled==0 :> 
-        <tr bgcolor="#FFFFFF"> 
-          <td align="center" nowrap><a href="<:script:>?id=<:order id:>&order_detail=1"><:order 
+        <:iterator begin orders:> 
+        <tr> 
+          <td class="col_id"><a href="<:adminurl2 shopadmin order_detail id [order id]:>"><:order 
             id:></a></td>
-          <td width="100%"><:order delivFirstName:> <:order delivLastName:> <:ifOrder 
+          <td class="col_name"><:order delivFirstName:> <:order delivLastName:> <:ifOrder 
             userId:><font color="#CCCCCC">&#8212; (logged in)</font><:or:><:eif:></td>
-          <td nowrap><:date order orderDate:></td>
-          <td align=right nowrap>$<:money order total:></td>
-          <td align=right nowrap>$<:money order gst:></td>
-          <td nowrap> <a href="<:script:>?id=<:order id:>&order_detail=1">Order 
+          <td class="col_date"><:date order orderDate:></td>
+          <td class="col_total">$<:money order total:></td>
+          <td class="col_gst">$<:money order gst:></td>
+          <td class="col_tools"> <a href="<:adminurl2 shopadmin order_detail id [order id]:>">Order 
             details </a></td>
         </tr>
         <:iterator end orders:> 
-      </table>
-</td>
-</tr>
 </table>
-<p><font size="-1">BSE Release <:release:></font></p>
-</body>
-</html>
+<:include admin/include/order_list_pages.tmpl:>

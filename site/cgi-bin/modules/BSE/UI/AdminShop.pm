@@ -19,7 +19,7 @@ use BSE::Util::HTML qw(:default popup_menu);
 use BSE::Arrows;
 use BSE::Shop::Util qw(:payment order_item_opts nice_options);
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 my %actions =
   (
@@ -426,13 +426,43 @@ sub product_form {
   return $req->dyn_response($template, \%acts);
 }
 
+=item tag all_order_count
+X<tags, shop admin, all_order_count>C<all_order_count>
+
+Returns a count of orders matching a set of conditions.
+
+=cut
+
+sub tag_all_order_count {
+  my ($args, $acts, $funcname, $templater) = @_;
+
+  my $query;
+  if ($args =~ /\S/) {
+    if (eval "\$query = [ $args ]; 1 ") {
+      return BSE::TB::Orders->getCount($query);
+    }
+    else {
+      return "<!-- error handling args: $@ -->";
+    }
+  }
+  else {
+    return BSE::TB::Orders->getCount();
+  }
+}
+
 #####################
 # order management
 
 sub order_list_low {
-  my ($req, $template, $title, @orders) = @_;
+  my ($req, $template, $title, $conds, $options) = @_;
 
   my $cgi = $req->cgi;
+
+  $options ||= {};
+  my $order = delete $options->{order};
+  defined $order or $order = 'id desc';
+  my $datelimit = delete $options->{datelimit};
+  defined $datelimit or $datelimit = 1;
 
   my $from = $cgi->param('from');
   my $to = $cgi->param('to');
@@ -452,42 +482,63 @@ sub order_list_low {
       }
     }
   }
-  $from ||= sql_date(time() - 30 * 86_400);
-  my $message = $cgi->param('m');
-  defined $message or $message = '';
-  $message = escape_html($message);
+  if ($datelimit) {
+    $from ||= sql_date(time() - 30 * 86_400);
+  }
   if (defined $from || defined $to) {
     $from ||= '1900-01-01';
     $to ||= '2999-12-31';
     $cgi->param('from', sql_to_date($from));
     $cgi->param('to', sql_to_date($to));
-    $to = $to."Z";
-    @orders = grep $from le $_->{orderDate} && $_->{orderDate} le $to,
-    @orders;
+    push @$conds,
+      [ between => 'orderDate', $from, $to." 23:59:59" ];
   }
-  my @orders_work;
-  my $order_index = -1;
+  my @ids = BSE::TB::Orders->getColumnBy
+    (
+     "id",
+     $conds,
+     { order => $order }
+    );
+
+  my $search_param;
+  {
+    my @param;
+    for my $key (qw(from to)) {
+      my $value = $cgi->param($key);
+      if (defined $value) {
+	push @param, "$key=" . escape_uri($value);
+      }
+    }
+    $search_param = join('&amp;', map escape_html($_), @param);
+  }
+
+  my $message = $cgi->param('m');
+  defined $message or $message = '';
+  $message = escape_html($message);
+
+  my $it = BSE::Util::Iterate::Objects->new;
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $cgi, $req->cfg),
-     BSE::Util::Tags->admin(\%acts, $req->cfg),
-     BSE::Util::Tags->secure($req),
-     #order=> sub { escape_html($orders_work[$order_index]{$_[0]}) },
-     DevHelp::Tags->make_iterator2
-     ( [ \&iter_orders, \@orders ],
-       'order', 'orders', \@orders_work, \$order_index, 'NoCache'),
-     script => sub { $ENV{SCRIPT_NAME} },
+     $req->admin_tags,
+     $it->make_paged
+     (
+      data => \@ids,
+      fetch => [ getByPkey => 'BSE::TB::Orders' ],
+      cgi => $req->cgi,
+      single => "order",
+      plural => "orders",
+      session => $req->session,
+      name => "orderlist",
+      perpage_parm => "pp=50",
+     ),
      title => sub { $title },
      ifHaveParam => sub { defined $cgi->param($_[0]) },
      ifParam => sub { $cgi->param($_[0]) },
-     cgi => 
-     sub { 
-       my $value = $cgi->param($_[0]);
-       defined $value or $value = '';
-       escape_html($value);
-     },
      message => $message,
+     ifError => 0,
+     all_order_count => \&tag_all_order_count,
+     search_param => $search_param,
     );
   $req->dyn_response("admin/$template", \%acts);
 }
@@ -498,62 +549,111 @@ sub iter_orders {
   return bse_sort({ id => 'n', total => 'n', filled=>'n' }, $args, @$orders);
 }
 
+=item target order_list
+X<shopadmin targets, order_list>X<order_list target>
+
+List all completed orders.
+
+By default limits to the last 30 days.
+
+=cut
+
 sub req_order_list {
   my ($class, $req) = @_;
 
-  my $orders = BSE::TB::Orders->new;
-  my @orders = sort { $b->{orderDate} cmp $a->{orderDate} } 
-    grep $_->{complete}, $orders->all;
   my $template = $req->cgi->param('template');
   unless (defined $template && $template =~ /^\w+$/) {
     $template = 'order_list';
   }
 
-  return order_list_low($req, $template, 'Order list', @orders);
+  my @conds = 
+    (
+     [ '<>', complete => 0 ],
+    );
+
+  return order_list_low($req, $template, 'Order list', \@conds);
 }
+
+=item target order_list_filled
+X<shopadmin targets, order_list_filled>X<order_list_filled target>
+
+List all filled orders.
+
+By default limits to the last 30 days.
+
+=cut
 
 sub req_order_list_filled {
   my ($class, $req) = @_;
 
-  my $orders = BSE::TB::Orders->new;
-  my @orders = sort { $b->{orderDate} cmp $a->{orderDate} } 
-    grep $_->{complete} && $_->{filled} && $_->{paidFor}, $orders->all;
+  my @conds =
+    (
+     [ '<>', complete => 0 ],
+     [ '<>', filled => 0 ],
+     #[ '<>', paidFor => 0 ],
+    );
 
-  return order_list_low($req, 'order_list_filled', 'Order list - Filled orders', @orders);
+  return order_list_low($req, 'order_list_filled', 'Order list - Filled orders',
+		       \@conds);
 }
+
+=item target order_list_unfilled
+X<shopadmin targets, order_list_unfilled>X<order_list_unfilled target>
+
+List completed but unfilled orders.
+
+Unlike the other order lists, this lists oldest order first, and does
+not limit to the last 30 days.
+
+=cut
 
 sub req_order_list_unfilled {
   my ($class, $req) = @_;
 
-  my $orders = BSE::TB::Orders->new;
-  my @orders = sort { $b->{orderDate} cmp $a->{orderDate} } 
-    grep $_->{complete} && !$_->{filled} && $_->{paidFor}, $orders->all;
+  my @conds =
+    (
+     [ '<>', complete => 0 ],
+     [ filled => 0 ],
+    );
 
   return order_list_low($req, 'order_list_unfilled', 
-			'Order list - Unfilled orders', @orders);
-
+			'Order list - Unfilled orders',
+			\@conds, { order => 'id asc', datelimit => 0 });
 }
 
 sub req_order_list_unpaid {
   my ($class, $req) = @_;
 
-  my $orders = BSE::TB::Orders->new;
-  my @orders = sort { $b->{orderDate} cmp $a->{orderDate} } 
-    grep $_->{complete} && !$_->{paidFor}, $orders->all;
+  my @conds =
+    (
+     [ '<>', complete => 0 ],
+     [ paidFor => 0 ],
+    );
 
   return order_list_low($req, 'order_list_unpaid', 
-			'Order list - Incomplete orders', @orders);
+			'Order list - Unpaid orders', \@conds);
 }
+
+=item target order_list_incomplete
+X<shopadmin targets, order_list_incomplete>X<order_list_incomplete>
+
+List incomplete orders, ie. orders that the user abandoned before the
+payment step was complete.
+
+By default limits to the last 30 days.
+
+=cut
 
 sub req_order_list_incomplete {
   my ($class, $req) = @_;
 
-  my $orders = BSE::TB::Orders->new;
-  my @orders = sort { $b->{orderDate} cmp $a->{orderDate} } 
-    grep !$_->{complete}, $orders->all;
+  my @conds =
+    (
+     [ complete => 0 ]
+    );
 
   return order_list_low($req, 'order_list_incomplete', 
-			'Order list - Incomplete orders', @orders);
+			'Order list - Incomplete orders', \@conds);
 }
 
 sub tag_siteuser {
