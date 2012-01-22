@@ -8,7 +8,7 @@ use vars qw(@EXPORT_OK @ISA);
 @ISA = qw(Exporter);
 require Exporter;
 
-our $VERSION = "1.017";
+our $VERSION = "1.018";
 
 sub _get_parms {
   my ($acts, $args) = @_;
@@ -115,6 +115,27 @@ sub tag_adminurl {
   my ($script, %params) = DevHelp::Tags->get_parms($args, $acts, $templater);
 
   return escape_html($cfg->admin_url($script, \%params));
+}
+
+=item tag adminurl2
+X<tags, admin, adminurl2>X<adminurl2 tag>
+
+Link to an admin target given a target as a separate parameter.
+
+Set target to '-' if there is no target.
+
+=cut
+
+sub tag_adminurl2 {
+  my ($cfg, $args, $acts, $tag_name, $templater) = @_;
+
+  my ($script, $target, %params) = DevHelp::Tags->get_parms($args, $acts, $templater);
+
+  if (defined $target and $target eq '-') {
+    undef $target;
+  }
+
+  return escape_html($cfg->admin_url2($script, $target, \%params));
 }
 
 sub static {
@@ -309,6 +330,7 @@ sub static {
      },
      adminbase => [ \&tag_adminbase, $cfg ],
      adminurl => [ \&tag_adminurl, $cfg ],
+     adminurl2 => [ \&tag_adminurl2, $cfg ],
      help => [ \&tag_help, $cfg, 'user' ],
      $it->make_iterator(\&DevHelp::Tags::iter_get_repeat, 'strepeat', 'strepeats'),
      report => [ \&tag_report, $cfg ],
