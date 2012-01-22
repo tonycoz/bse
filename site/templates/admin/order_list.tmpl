@@ -19,14 +19,7 @@
         </tr>
         <tr> 
           <td colspan="7"> 
-            <form action="<:adminurl shopadmin:>">
-              <input type="hidden" name="a_order_list" value="1" />
-              From date: 
-              <input type="text" size="10" name="from" value="<:cgi from:>" />
-              To date: 
-              <input type="text" size="10" name="to" value="<:cgi to:>" />
-              <input type=submit value="Filter orders" name="submit" />
-            </form>
+<:include admin/include/order_list_filter.tmpl:>
           </td>
         </tr>
         <:iterator begin orders:> 
@@ -46,3 +39,4 @@
         <:iterator end orders:> 
       </table>
 <:include admin/include/order_list_pages.tmpl:>
+<!-- <:query:> -->

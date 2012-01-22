@@ -1,0 +1,11 @@
+            <form action="<:adminurl shopadmin:>">
+              <input type="hidden" name="a_<:param target:>" value="1" />
+              From date: 
+              <input type="text" size="10" name="from" value="<:cgi from:>" />
+              To date: 
+              <input type="text" size="10" name="to" value="<:cgi to:>" />
+	      Name: <input type="text" name="name" value="<:cgi name:>" />
+	      Email: <input type="text" name="emailAddress" value="<:cgi emailAddress:>" />
+	      Stage: <:stage_select:>
+              <input type=submit value="Filter orders" name="submit" />
+            </form>

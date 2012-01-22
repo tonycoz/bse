@@ -19,7 +19,7 @@ use BSE::Util::HTML qw(:default popup_menu);
 use BSE::Arrows;
 use BSE::Shop::Util qw(:payment order_item_opts nice_options);
 
-our $VERSION = "1.008";
+our $VERSION = "1.009";
 
 my %actions =
   (
@@ -493,6 +493,32 @@ sub order_list_low {
     push @$conds,
       [ between => 'orderDate', $from, $to." 23:59:59" ];
   }
+
+  my @simple_search_fields = qw/userId billEmail billFirstName billLastName billOrganization/;
+  for my $key (@simple_search_fields) {
+    my $value = $cgi->param($key);
+    if (defined $value && $value =~ /\S/) {
+      push @$conds, [ like => $key => '%' . $value . '%' ];
+    }
+  }
+
+  my @stage = grep /\S/, map split (",", $_), $cgi->param("stage");
+  if (@stage) {
+    push @$conds,
+      [ or =>
+	map [ stage => $_ ], @stage
+      ];
+  }
+
+  my $name = $cgi->param("name");
+  if (defined $name && $name =~ /\S/) {
+    push @$conds,
+      [ or =>
+	map [ like => $_ => '%' . $name . '%' ],
+	qw(billFirstName billLastName billEmail userId)
+      ];
+  }
+
   my @ids = BSE::TB::Orders->getColumnBy
     (
      "id",
@@ -503,9 +529,8 @@ sub order_list_low {
   my $search_param;
   {
     my @param;
-    for my $key (qw(from to)) {
-      my $value = $cgi->param($key);
-      if (defined $value) {
+    for my $key (qw(from to stage name), @simple_search_fields) {
+      for my $value (grep /\S/, $cgi->param($key)) {
 	push @param, "$key=" . escape_uri($value);
       }
     }
@@ -539,8 +564,38 @@ sub order_list_low {
      ifError => 0,
      all_order_count => \&tag_all_order_count,
      search_param => $search_param,
+     query => sub {
+       require JSON;
+       my $json = JSON->new;
+       return $json->encode($conds);
+     },
+     stage_select => [ \&tag_stage_select_search, $req ],
     );
   $req->dyn_response("admin/$template", \%acts);
+}
+
+=item tag stage_select (search)
+
+stage_select for order list filtering.
+
+=cut
+
+sub tag_stage_select_search {
+  my ($req) = @_;
+
+  my @stages = BSE::TB::Orders->settable_stages;
+  unshift @stages, "";
+  
+  my %stage_labels = BSE::TB::Orders->stage_labels;
+  $stage_labels{""} = "(No stage filter)";
+  my $stage = $req->cgi->param("stage") || "";
+  return popup_menu
+    (
+     -name => "stage",
+     -values => \@stages,
+     -default => $stage,
+     -labels => \%stage_labels,
+    );
 }
 
 sub iter_orders {
