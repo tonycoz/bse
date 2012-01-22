@@ -1,6 +1,6 @@
 package Squirrel::Table;
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 use Carp;
 use strict;
@@ -327,6 +327,44 @@ sub getColumnBy {
   return wantarray ? @rows : \@rows;
 }
 
+=item getCount($query)
+
+Get a count of rows matching the given query.
+
+=cut
+
+sub getCount {
+  my ($self, $query) = @_;
+
+  $query ||= [];
+
+  my $table_name = $self->rowClass->table
+    or confess "No table_name defined";
+
+  my @db_cols = $self->rowClass->db_columns;
+  my @code_cols = $self->rowClass->columns;
+  my %map;
+  @map{@code_cols} = @db_cols;
+  my ($where, @args) = $self->_where_clause(\%map, @$query);
+
+  my $sql = "select count(*) from $table_name";
+  $where and $sql = "$sql where $where";
+
+  $dh ||= BSE::DB->single;
+  my $sth = $dh->dbh->prepare($sql)
+    or confess "Cannot prepare generated $sql: ", $dh->dbh->errstr;
+
+  $sth->execute(@args)
+    or confess "Cannot execute $sql: ", $sth->errstr;
+
+  my $row = $sth->fetchrow_arrayref
+    or return;
+
+  $sth->finish;
+
+  return $row->[0];
+}
+
 =item getBy2($query, $opts)
 
 Dynamically build a query.
@@ -415,6 +453,8 @@ Between:
 sub _where_clause {
   my ($self, $map, @query) = @_;
 
+  @query
+    or return;
   if (ref $query[0]) {
     unshift @query, "and";
   }
@@ -442,7 +482,7 @@ sub _where_clause {
   elsif ($op eq "between") {
     my $dbcol = $map->{$query[0]}
       or confess "Unknown column $query[0]";
-    return ("$dbcol $op ? and ?", @query[0, 1] );
+    return ("$dbcol $op ? and ?", @query[1, 2] );
   }
   else {
     my $dbcol = $map->{$op}
