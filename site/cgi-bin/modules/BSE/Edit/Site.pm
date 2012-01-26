@@ -1,7 +1,7 @@
 package BSE::Edit::Site;
 use strict;
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 use base 'BSE::Edit::Article';
 use BSE::TB::Site;
@@ -179,7 +179,7 @@ sub req_tagrename {
       return $req->field_error(\%errors);
     }
     else {
-      return $self->req_tags($req, $article, $articles, undef, \%errors);
+      return $self->req_tagshow($req, $article, $articles, undef, \%errors);
     }
   }
 
@@ -222,7 +222,7 @@ sub req_tagdelete {
       return $req->field_error(\%errors);
     }
     else {
-      return $self->req_tags($req, $article, $articles, undef, \%errors);
+      return $self->req_tagshow($req, $article, $articles, undef, \%errors);
     }
   }
 
