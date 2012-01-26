@@ -47,6 +47,10 @@ Bug fixes:
    deleting a tag that doesn't exist would result in a 500 error.
    https://rt4.develop-help.com/Ticket/Display.html?id=1287
 
+ - setting an unfilled order's stage to "shipped" now sets whoFilled
+   and whenFilled for the order.
+   https://rt4.develop-help.com/Ticket/Display.html?id=1286
+
 Templates:
 
  - admin/order_list*.tmpl - see the order list re-work above.
