@@ -6,7 +6,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 use Carp 'confess';
 
-our $VERSION = "1.014";
+our $VERSION = "1.015";
 
 sub columns {
   return qw/id
@@ -642,6 +642,12 @@ sub new_stage {
   if ($stage ne $old_stage) {
     $self->set_stage($stage);
     if ($stage eq "shipped") {
+      if (!$self->filled) {
+	require BSE::Util::SQL;
+
+	$self->set_whoFilled($who ? $who->logon : "-unknown-");
+	$self->set_whenFilled(BSE::Util::SQL::now_datetime());
+      }
       $self->send_shipped_email();
       $self->set_filled(1);
     }
