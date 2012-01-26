@@ -43,6 +43,10 @@ Bug fixes:
  - check nomatch fields even for blank fields.  Otherwise a field with
    a LF or CR would not be caught by the dh_one_line validation rule.
 
+ - saving a tag from the tag manager without changing the name or
+   deleting a tag that doesn't exist would result in a 500 error.
+   https://rt4.develop-help.com/Ticket/Display.html?id=1287
+
 Templates:
 
  - admin/order_list*.tmpl - see the order list re-work above.
