@@ -2,16 +2,16 @@
 <h2>Add Member Group</h2>
 <p>
 | 
-<a href="/cgi-bin/admin/menu.pl">Admin menu</a>
+<a href="<:adminurl menu:>">Admin menu</a>
 |
-<a href="<:script:>">Member List</a>
+<a href="<:adminurl2 siteusers list:>">Member List</a>
 |
-<a href="<:script:>?a_grouplist=1">Group List</a>
+<a href="<:adminurl2 siteusers grouplist:>">Group List</a>
 |
 </p>
-<:ifMsg:><p><:msg:></p><:or:><:eif:>
+<:include admin/include/message.tmpl:>
 
-<form method="post" action="<:script:>" name="addgroup">
+<form method="post" action="<:adminurl siteusers:>" name="addgroup">
 <table>
 <tr>
   <th>Group Name:</th>
@@ -19,8 +19,7 @@
   <td><:error_img name:></td>
 </tr>
 <tr>
-  <td colspan="2"><input type="submit" name="a_addgroup" value="Add Group" /></td>
-  <td>&nbsp;</td>
+  <td colspan="3" class="buttons"><input type="submit" name="a_addgroup" value="Add Group" /></td>
 </tr>
 </table>
 </form>

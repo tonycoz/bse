@@ -113,7 +113,7 @@ id: bse/admin/message/unknownlang
 message: Unknown language code - no entry found in [languages]
 
 id: bse/admin/message/badmultiline
-message: Message $1:s may contain only a single line of text
+message: Message %1:s may contain only a single line of text
 
 id: bse/admin/shop/saveorder/saved
 message: Order saved successfully
@@ -122,16 +122,58 @@ id: bse/admin/shop/saveorder/nochanges
 message: No changes to save
 
 id: bse/admin/shop/saveorder/badmethod
-message: Unknown shipping method '$1:s'
+message: Unknown shipping method '%1:s'
 
 id: bse/admin/shop/saveorder/badstage
-message: Unknown order stage '$1:s'
+message: Unknown order stage '%1:s'
 
 id: bse/admin/logon/logoff
 message: Administrative user '%1:s' logged off
 
 id: bse/admin/logon/needlogon
 message: You need to logon to access that function
+
+id: bse/admin/siteusers/usersaved
+message: User '%1:{userId}s' saved
+
+id: bse/admin/siteusers/userdeleted
+message: User '%1:s' deleted
+
+id: bse/admin/siteusers/usercreated
+message: User '%1:{userId}s' created
+
+id: bse/admin/siteusers/groupcreated
+message: Group '%1:{name}s' created
+
+id: bse/admin/siteusers/groupdeleted
+message: Group '%1:s' deleted
+
+id: bse/admin/siteusers/groupsaved
+message: Group '%1:{name}s' saved
+
+id: bse/admin/siteusers/userfilecreated
+message: File '%2:{display_name}s' added to member %1:{userId}s
+
+id: bse/admin/siteusers/userfilesaved
+message: File '%2:{display_name}s' saved
+
+id: bse/admin/siteusers/userfiledeleted
+message: File '%2:s' deleted from member %1:{userId}s
+
+id: bse/admin/siteusers/groupfilecreated
+message: File '%2:{display_name}s' added to group %1:{name}s
+
+id: bse/admin/siteusers/groupfilesaved
+message: File '%2:{display_name}s' saved
+
+id: bse/admin/siteusers/groupfiledeleted
+message: File '%2:s' deleted from group %1:{name}s
+
+id: bse/admin/siteusers/confirmed
+message: Email address '%1:{email}s' confirmed for user '%1:{userId}s'
+
+id: bse/admin/siteusers/membershipsaved
+message: Membership saved for group '%1:{name}s'
 
 id: bse/shop/cart/empty
 message: Cart emptied

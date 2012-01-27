@@ -13,7 +13,7 @@ use constant SITEUSER_GROUP_SECT => 'BSE Siteuser groups validation';
 use BSE::Template;
 use DevHelp::Date qw(dh_parse_date_sql dh_parse_time_sql);
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 my %actions =
   (
@@ -81,12 +81,8 @@ sub req_list {
   my ($class, $req, $msg) = @_;
   
   my $cgi = $req->cgi;
-  if ($msg) {
-    $msg = escape_html($msg);
-  }
-  else {
-    $msg = join("<br />", map escape_html($_), $cgi->param('m'));
-  }
+  $msg = $req->message($msg);
+
   my @users = SiteUsers->all;
   my $id = $cgi->param('id');
   defined $id or $id = '';
@@ -533,8 +529,9 @@ sub req_save {
   }
   
   my $r = $cgi->param('r');
+  $req->flash("msg:bse/admin/siteusers/usersaved", [ $user ]);
   unless ($r) {
-    $r = $req->url('siteusers', { list => 1, m => "User saved" });
+    $r = $req->cfg->admin_url2('siteusers', 'list');
   }
   $r .= "&m=".escape_uri($_) for @msgs;
 
@@ -565,16 +562,15 @@ sub req_delete {
      msg => "Member " . $user->userId . " (" . $user->id . ") deleted",
     );
 
-  my $desc = $user->describe;
+  my $logon = $user->userId;
 
   $user->remove($req->cfg);
 
-  my @msgs = "Deleted $desc";
+  $req->flash("msg:bse/admin/siteusers/userdeleted", [ $logon ]);
   my $r = $cgi->param('r');
   unless ($r) {
-    $r = $req->url('siteusers', { list => 1 });
+    $r = $req->cfg->admin_url2('siteusers', 'list');
   }
-  $r .= "&m=".escape_uri($_) for @msgs;
 
   return $req->get_refresh($r);
 }
@@ -759,6 +755,8 @@ sub req_add {
        level => "info",
       );
 
+    $req->flash("msg:bse/admin/siteusers/usercreated", [ $user ]);
+
     my $msg;
     if ($nopassword) {
       my $code;
@@ -787,8 +785,7 @@ sub req_add {
 
     my $r = $cgi->param('r');
     unless ($r) {
-      $r = $req->url('siteusers', { list => 1, 
-				    'm' => "User $user->{userId} added" });
+      $r = $req->cfg->admin_url2('siteusers', 'list');
     }
     $r .= "&m=".escape_uri($msg) if $msg;
     return BSE::Template->get_refresh($r, $cfg);
@@ -915,6 +912,7 @@ sub req_addgroupform {
      $req->admin_tags,
      msg=>$msg,
      message=>$msg,
+     ifError => 1,
      error_img => [ \&tag_error_img, $req->cfg, $errors ],
     );
 
@@ -932,16 +930,22 @@ sub req_addgroup {
   $req->validate(errors=>\%errors,
 		 fields=>\%fields,
 		 rules=>\%rules,
-		 section=>SITEUSER_GROUP_SECT)
-    or return $class->req_addgroupform($req, \%errors);
-
+		 section=>SITEUSER_GROUP_SECT);
   my $cgi = $req->cgi;
   my $name = $cgi->param('name');
+  unless ($errors{name}) {
+    my ($other) = BSE::TB::SiteUserGroups->getBy(name => $name);
+    $other and $errors{name} = "Group '$name' already exists";
+  }
+  keys %errors
+    and return $class->req_addgroupform($req, \%errors);
+
   my $group = BSE::TB::SiteUserGroups->add($name);
 
+  $req->flash("msg:bse/admin/siteusers/groupcreated", [ $group ]);
   my $r = $cgi->param('r');
   unless ($r) {
-    $r = $req->url('siteusers', { a_grouplist => 1, m => "Group created" });
+    $r = $req->cfg->admin_url2('siteusers', "grouplist");
   }
   return BSE::Template->get_refresh($r, $req->cfg);
 }
@@ -973,9 +977,10 @@ sub req_savegroup {
   $group->{name} = $cgi->param('name');
   $group->save;
 
+  $req->flash("msg:bse/admin/siteusers/groupsaved", [ $group ]);
   my $r = $cgi->param('r');
   unless ($r) {
-    $r = $req->url('siteusers', { a_grouplist => 1, m => "Group saved" });
+    $r = $req->cfg->admin_url2('siteusers', 'grouplist');
   }
   return BSE::Template->get_refresh($r, $req->cfg);
 }
@@ -1023,11 +1028,13 @@ sub req_deletegroup {
   my $group = _get_group($req, \$msg)
     or return $class->req_grouplist($req, { id=>$msg });
 
+  my $name = $group->name;
   $group->remove;
 
   my $r = $req->cgi->param('r');
+  $req->flash("msg:bse/admin/siteusers/groupdeleted", [ $name ]);
   unless ($r) {
-    $r = $req->url('siteusers', { a_grouplist => 1, m => "Group deleted" });
+    $r = $req->cfg->admin_url2('siteusers', "grouplist");
   }
   return BSE::Template->get_refresh($r, $req->cfg);
 }
@@ -1100,9 +1107,10 @@ sub req_savegroupmembers {
     }
   }
 
+  $req->flash("msg:bse/admin/siteusers/membershipsaved", [ $group ]);
   my $r = $cgi->param('r');
   unless ($r) {
-    $r = $req->url('siteusers', { a_grouplist => 1, m => "Membership saved" });
+    $r = $req->cfg->admin_url2('siteusers', 'grouplist');
   }
   return BSE::Template->get_refresh($r, $req->cfg);
 }
@@ -1124,9 +1132,10 @@ sub req_confirm {
   $siteuser->{confirmed} = 1;
   $siteuser->save;
 
+  $req->flash("msg:bse/admin/siteusers/confirmed", [ $siteuser ]);
   my $r = $cgi->param('r');
   unless ($r) {
-    $r = $req->url('siteusers', { list => 1, m => "User confirmed" });
+    $r = $req->cfg->admin_url2('siteusers', 'list');
   }
 
   return BSE::Template->get_refresh($r, $req->cfg);
@@ -1290,8 +1299,9 @@ sub req_adduserfile {
   }
 
   my $r = $cgi->param('r');
+  $req->flash("msg:bse/admin/siteusers/userfilecreated", [ $user, $owned_file ]);
   unless ($r) {
-    $r = $req->url('siteusers', { a_edit => 1, _t => "files", id => $user->id, m => "File created" });
+    $r = $req->cfg->admin_url2('siteusers', 'edit', { _t => "files", id => $user->id });
   }
 
   return BSE::Template->get_refresh($r, $req->cfg);
@@ -1431,9 +1441,10 @@ sub req_saveuserfile {
   $good
     or return $self->req_edituserfile($req, { _ => $@ });
   
+  $req->flash("msg:bse/admin/siteusers/userfilesaved", [ $siteuser, $file ]);
   my $r = $cgi->param('r');
   unless ($r) {
-    $r = $req->url('siteusers', { a_edit => 1, _t => "files", id => $siteuser->id, m => "File saved" });
+    $r = $req->cfg->admin_url2('siteusers', 'edit', { _t => "files", id => $siteuser->id });
   }
 
   return BSE::Template->get_refresh($r, $req->cfg);
@@ -1452,6 +1463,7 @@ sub req_deluserfile {
   my $file = _get_user_file($req, $siteuser, \$msg)
     or return $self->req_list($req, $msg);
 
+  my $display_name = $file->display_name;
   require BSE::API;
   BSE::API->import("bse_delete_owned_file");
   my $good = eval { bse_delete_owned_file($req->cfg, $file); };
@@ -1459,9 +1471,10 @@ sub req_deluserfile {
   $good
     or return $self->req_deluserfileform($req, { _ => $@ });
 
+  $req->flash("msg:bse/admin/siteusers/userfiledeleted", [ $siteuser, $display_name ]);
   my $r = $req->cgi->param('r');
   unless ($r) {
-    $r = $req->url('siteusers', { a_edit => 1, _t => "files", id => $siteuser->id, m => "File removed" });
+    $r = $req->cfg->admin_url2('siteusers', 'edit', { _t => "files", id => $siteuser->id });
   }
 
   return BSE::Template->get_refresh($r, $req->cfg);
@@ -1554,8 +1567,9 @@ sub req_addgroupfile {
   }
 
   my $r = $cgi->param('r');
+  $req->flash("msg:bse/admin/siteusers/groupfilecreated", [ $group, $owned_file ]);
   unless ($r) {
-    $r = $req->url('siteusers', { a_editgroup => 1, _t => "files", id => $group->id, m => "File created" });
+    $r = $req->cfg->admin_url2('siteusers', 'editgroup', { _t => "files", id => $group->id });
   }
 
   return BSE::Template->get_refresh($r, $req->cfg);
@@ -1695,9 +1709,10 @@ sub req_savegroupfile {
   $good
     or return $self->req_editgroupfile($req, { _ => $@ });
   
+  $req->flash("msg:bse/admin/siteusers/groupfilesaved", [ $group, $file ]);
   my $r = $cgi->param('r');
   unless ($r) {
-    $r = $req->url('siteusers', { a_editgroup => 1, _t => "files", id => $group->id, m => "File saved" });
+    $r = $req->cfg->admin_url2('siteusers', 'editgroup', { _t => "files", id => $group->id });
   }
 
   return BSE::Template->get_refresh($r, $req->cfg);
@@ -1716,6 +1731,8 @@ sub req_delgroupfile {
   my $file = _get_group_file($req, $group, \$msg)
     or return $self->req_list($req, $msg);
 
+  my $display_name = $file->display_name;
+
   require BSE::API;
   BSE::API->import("bse_delete_owned_file");
   my $good = eval { bse_delete_owned_file($req->cfg, $file); };
@@ -1723,9 +1740,10 @@ sub req_delgroupfile {
   $good
     or return $self->req_delgroupfileform($req, { _ => $@ });
 
+  $req->flash("msg:bse/admin/siteusers/groupfiledeleted", [ $group, $display_name ]);
   my $r = $req->cgi->param('r');
   unless ($r) {
-    $r = $req->url('siteusers', { a_editgroup => 1, _t => "files", id => $group->id, m => "File removed" });
+    $r = $req->cfg->admin_url2('siteusers', 'editgroup', { _t => "files", id => $group->id });
   }
 
   return BSE::Template->get_refresh($r, $req->cfg);

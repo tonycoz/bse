@@ -1,5 +1,5 @@
 --
-# VERSION=1.001
+# VERSION=1.002
 id: bse/
 description: BSE messages
 
@@ -143,7 +143,7 @@ description: name field error if you try to rename a tag to match another
 id: bse/admin/edit/tags/nochange
 description: name field error if no change is saved
 
-id: bse/admin/edit/category
+id: bse/admin/edit/category/
 description: Category field errors
 
 id: bse/admin/edit/category/unknown
@@ -167,7 +167,7 @@ description: Invalid shipping method, $1 is the supplied method id
 id: bse/admin/shop/saveorder/badstage
 description: Invalid order stage, $1 is the supplied stage id
 
-id: bse/admin/logon
+id: bse/admin/logon/
 description: Logon tool messages
 
 id: bse/admin/logon/logoff
@@ -175,6 +175,51 @@ description: Flashed when the admin user logs off, $1 is the logon name
 
 id: bse/admin/logon/needlogon
 description: Generic message when the user attempts something without being logged on
+
+id: bse/admin/siteusers/
+description: Siteuser administration messages
+
+id: bse/admin/siteusers/usersaved
+description: User saved (%1 is the user object)
+
+id: bse/admin/siteusers/userdeleted
+description: User deleted (%1 is the user logon)
+
+id: bse/admin/siteusers/usercreated
+description: User created (%1 is the user)
+
+id: bse/admin/siteusers/groupcreated
+description: Group created (%1 is the group object)
+
+id: bse/admin/siteusers/groupsaved
+description: Group created (%1 is the group object)
+
+id: bse/admin/siteusers/groupdeleted
+description: Group deleted (%1 is the group name)
+
+id: bse/admin/siteusers/userfilecreated
+description: User file added (%1 is the user object, %2 is the file object)
+
+id: bse/admin/siteusers/userfilesaved
+description: User file saved (%1 is the user object, %2 is the file object)
+
+id: bse/admin/siteusers/userfiledeleted
+description: User file deleted (%1 is the user object, %2 is the file display name)
+
+id: bse/admin/siteusers/groupfilecreated
+description: Group file added (%1 is the group object, %2 is the file object)
+
+id: bse/admin/siteusers/groupfilesaved
+description: Group file saved (%1 is the group object, %2 is the file object)
+
+id: bse/admin/siteusers/groupfiledeleted
+description: Group file deleted (%1 is the group object, %2 is the file display name)
+
+id: bse/admin/siteusers/confirmed
+description: User email confirmed (%1 is the user object)
+
+id: bse/admin/siteusers/membershipsaved
+description: Group membership saved (%1 is the group object)
 
 id: test/
 description: <<TEXT

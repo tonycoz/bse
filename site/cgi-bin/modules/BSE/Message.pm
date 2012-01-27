@@ -9,7 +9,7 @@ use overload
   "&{}" => sub { my $self = $_[0]; return sub { $self->_old_msg(@_) } },
   "bool" => sub { 1 };
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 my $single;
 
@@ -134,7 +134,7 @@ sub _get_replaced {
     or return;
 
   $parms ||= [];
-  $msg->{message} =~ s/%(%|[0-9]+:[-+ #0]?[0-9]*(?:\.[0-9]+)?[duoxXfFeEgGs])/
+  $msg->{message} =~ s/%(%|[0-9]+:(?:\{\w+\})?[-+ #0]?[0-9]*(?:\.[0-9]+)?[duoxXfFeEgGs])/
     $1 eq "%" ? "%" : $self->_value($msg, $1, $parms)/ge;
 
   return $msg;
@@ -147,12 +147,20 @@ sub _value {
   $index >= 1 && $index <= @$parms
     or return "(bad index $index in %$code)";
 
+  my $method = "describe";
+  if ($format =~ s/^\{(\w+)\}//) {
+    my $work = $1;
+    unless ($work =~ /^(remove|save|new)$/) {
+      $method = $work;
+    }
+  }
+
   my $value = $parms->[$index-1];
-  if (ref $index) {
+  if (ref $value) {
     local $@;
-    my $good = eval { $value = $value->describe; 1; };
+    my $good = eval { $value = $value->$method; 1; };
     unless ($good) {
-      return "(Bad parameter $index - ref but no describe)";
+      return "(Bad parameter $index - ref but no $method)";
     }
   }
 
