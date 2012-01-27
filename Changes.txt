@@ -27,6 +27,9 @@ BSE 0.21 - unreleased
 
  - added a new adminurl2 tag where the second parameter is a target.
 
+ - siteusers.pl now flashes all success messages, and success message
+   text is fetched from the messages table
+
 Bug fixes:
 
  - thumb.pl would return content types with doubled image/ prefixes,
