@@ -51,6 +51,19 @@ Bug fixes:
    and whenFilled for the order.
    https://rt4.develop-help.com/Ticket/Display.html?id=1286
 
+ - an empty title (but no missing) when saving a user or group file no
+   longer defaults that to the file display name.
+   https://rt4.develop-help.com/Ticket/Display.html?id=1303
+
+ - validation errors are now correctly displayed for adding a user or
+   group file
+   https://rt4.develop-help.com/Ticket/Display.html?id=1302
+
+ - supplying an empty content type when saving a user or group file
+   now resets the content type to that derived from the file's display
+   name.
+   https://rt4.develop-help.com/Ticket/Display.html?id=1304
+
 Templates:
 
  - admin/order_list*.tmpl - see the order list re-work above.
