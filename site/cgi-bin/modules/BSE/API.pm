@@ -10,7 +10,7 @@ use Carp qw(confess croak);
 use Fcntl qw(:seek);
 use Cwd;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 my %acticle_defaults =
   (
@@ -392,7 +392,7 @@ sub bse_add_owned_file {
   defined $opts{display_name} && $opts{display_name} =~ /\S/
     or croak "bse_add_owned_file: display_name must be non-blank";
 
-  defined $opts{title} && $opts{title} =~ /\S/
+  defined $opts{title}
     or $opts{title} = $opts{display_name};
   
   unless ($opts{content_type}) {
