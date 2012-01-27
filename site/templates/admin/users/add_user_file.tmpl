@@ -8,5 +8,6 @@
 <:ifUserCan bse_members_user_edit:><a href="/cgi-bin/admin/siteusers.pl?a_edit=1&amp;id=<:siteuser id:>">Edit User</a> |<:or:><:eif:>
 <a href="/cgi-bin/admin/siteusers.pl?a_view=1&amp;id=<:siteuser id:>">User Details</a> |</p>
 
-<:ifMessage:><div id="message"><:message:></div><:or:><:eif:>
+<:if Message:><div class="message<:ifError:> error<:or:><:eif:>"><:message:></div><:or Message:><:eif Message:>
+
 <:include admin/users/inc_add_user_file.tmpl:>

@@ -2,7 +2,7 @@
 <h1>Add Group File</h1>
 
 <:include admin/users/inc_group_menu.tmpl:>
-<:ifMessage:><div id="message"><:message:></div><:or:><:eif:>
+<:if Message:><div class="message<:ifError:> error<:or:><:eif:>"><:message:></div><:or Message:><:eif Message:>
 <div id="addfile">
 <form enctype="multipart/form-data" method="post" action="<:adminurl siteusers:>">
 <input type="hidden" name="id" value="<:group id:>" />

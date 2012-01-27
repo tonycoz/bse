@@ -13,7 +13,7 @@ use constant SITEUSER_GROUP_SECT => 'BSE Siteuser groups validation';
 use BSE::Template;
 use DevHelp::Date qw(dh_parse_date_sql dh_parse_time_sql);
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 my %actions =
   (
@@ -1210,12 +1210,15 @@ sub req_adduserfileform {
   my $siteuser = _get_user($req, \$msg)
     or return $self->req_list($req, $msg);
 
+  $msg = $req->message($errors);
+
   my %acts =
     (
      $req->admin_tags,
      message => $msg,
      siteuser => [ \&tag_hash, $siteuser ],
      error_img => [ \&tag_error_img, $req->cfg, $errors ],
+     ifError => 1,
      userfile_category => [ tag_userfile_category => $self, $req, undef ],
     );
 
@@ -1251,7 +1254,7 @@ sub req_adduserfile {
   }
 
   keys %errors
-    and return $self->req_adduserfileform($req, undef, \%errors);
+    and return $self->req_adduserfileform($req, \%errors);
 
   require BSE::API;
   BSE::API->import("bse_add_owned_file");
@@ -1471,12 +1474,15 @@ sub req_addgroupfileform {
   my $group = _get_group($req, \$msg)
     or return $self->req_list($req, $msg);
 
+  $msg = $req->message($errors);
+
   my %acts =
     (
      $req->admin_tags,
      message => $msg,
      group => [ \&tag_hash, $group ],
      error_img => [ \&tag_error_img, $req->cfg, $errors ],
+     ifError => 1,
      userfile_category => [ tag_userfile_category => $self, $req, undef ],
     );
 
@@ -1512,7 +1518,7 @@ sub req_addgroupfile {
   }
 
   keys %errors
-    and return $self->req_addgroupfileform($req, undef, \%errors);
+    and return $self->req_addgroupfileform($req, \%errors);
 
   require BSE::API;
   BSE::API->import("bse_add_owned_file");
