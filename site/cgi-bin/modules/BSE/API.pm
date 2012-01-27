@@ -10,7 +10,7 @@ use Carp qw(confess croak);
 use Fcntl qw(:seek);
 use Cwd;
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 my %acticle_defaults =
   (
@@ -473,6 +473,11 @@ sub bse_replace_owned_file {
     defined $opts{$field}
       and $owned_file->{$field} = $opts{$field};
   }
+  if ($owned_file->{content_type} eq "") {
+    require BSE::Util::ContentType;
+    $owned_file->set_content_type(BSE::Util::ContentType::content_type($cfg, $owned_file->{display_name}));
+  }
+
   $owned_file->save;
   $old_name
     and unlink "$file_dir/$old_name";
