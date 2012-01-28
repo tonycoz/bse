@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 20;
+use Test::More tests => 23;
 
 sub template_test($$$$;$);
 
@@ -26,6 +26,7 @@ SKIP: {
      str => $str,
      with_upper => \&tag_with_upper,
      cat => \&tag_cat,
+     ifFalse => 0,
     );
   template_test("<:str:>", "ABC", "simple", \%acts);
   template_test("<:strref:>", "ABC", "scalar ref", \%acts);
@@ -95,6 +96,91 @@ IN
 <:switch:><:case ifUnknown:>Equal
 <:endswitch:>
 OUT
+
+  { # using - for removing whitespace
+    template_test(<<IN, <<OUT, "space value", \%acts, "both");
+<foo>
+<:-str-:>
+</foo>
+<foo>
+<:str-:>
+</foo>
+<foo>
+<:str:>
+</foo>
+IN
+<foo>ABC</foo>
+<foo>
+ABC</foo>
+<foo>
+ABC
+</foo>
+OUT
+
+    template_test(<<IN, <<OUT, "space simple cond", \%acts, "both");
+<foo>
+<:-ifStr:>TRUE<:or-:><:eif-:>
+</foo>
+<foo2>
+<:-ifStr-:>
+TRUE
+<:-or:><:eif-:>
+</foo2>
+<foo3>
+<:-ifStr-:>
+TRUE
+<:-or-:>
+<:-eif-:>
+</foo3>
+<foo4>
+<:-ifFalse-:>TRUE<:-or-:>FALSE<:-eif-:>
+</foo4>
+<foo5>
+<:-ifFalse-:>
+TRUE
+<:-or-:>
+FALSE
+<:-eif-:>
+</foo5>
+<foo6>
+<:ifFalse:>
+TRUE
+<:or:>
+FALSE
+<:eif:>
+</foo6>
+IN
+<foo>TRUE</foo>
+<foo2>TRUE</foo2>
+<foo3>TRUE</foo3>
+<foo4>FALSE</foo4>
+<foo5>FALSE</foo5>
+<foo6>
+
+FALSE
+
+</foo6>
+OUT
+
+    template_test(<<IN, <<OUT, "space iterator", \%acts, "both");
+<foo>
+<:-iterator begin repeat 1 5 -:>
+<:-repeat-:>
+<:-iterator end repeat -:>
+</foo>
+<foo2>
+<:-iterator begin repeat 1 5 -:>
+<:-repeat-:>
+<:-iterator separator repeat -:>
+,
+<:-iterator end repeat -:>
+</foo2>
+IN
+<foo>12345</foo>
+<foo2>1,2,3,4,5</foo2>
+OUT
+
+  }
 }
 
 sub template_test ($$$$;$) {

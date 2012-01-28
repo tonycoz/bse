@@ -11,7 +11,10 @@ BEGIN {
 
 use constant DEBUG_GET_PARMS => 0;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
+
+my $tag_head = qr/(?:\s+<:-|<:-?)/;
+my $tag_tail = qr/(?:-:>\s*|:>)/;
 
 sub new {
   my ($class, %opts) = @_;
@@ -324,11 +327,11 @@ sub switch {
 
   print STDERR "** switch\n" if DEBUG;
 
-  my @cases = split /(?=<:\s*case\s)/s, $content;
-  shift @cases if @cases && $cases[0] !~ /<:\s*case\s/;
+  my @cases = split /(?=$tag_head\s*case\s)/s, $content;
+  shift @cases if @cases && $cases[0] !~ /$tag_head\s*case\s/;
   my $case;
   while ($case = shift @cases) {
-    my ($cond, $data) = $case =~ /<:\s*case\s+(.*?):>(.*)/s;
+    my ($cond, $data) = $case =~ /$tag_head\s*case\s+(.*?)$tag_tail(.*)/s;
 
     if ($cond eq 'default') {
       print STDERR "  returning default\n" if DEBUG;
@@ -358,7 +361,7 @@ sub switch {
     if ($@) {
       my $msg = $@;
       if ($msg =~ /^ENOIMPL\b/) {
-	s/^<:case\s/<:XcaseX / for $case, @cases;
+	s/^($tag_head)case\s/${1}XcaseX / for $case, @cases;
 	return "<:XswitchX:>$case".join("", @cases)."<:XendswitchX:>";
       }
 
@@ -508,7 +511,7 @@ sub replace_template {
   if ($self->{template_dir} && !$acts->{include}) {
     my $loops = 0;
     1 while $template =~
-            s!<:
+            s!$tag_head
                 \s*
                 include
                 \s+
@@ -518,7 +521,7 @@ sub replace_template {
                   ([\w,]+)
                 )?
                 \s*
-               :>
+               $tag_tail
              ! 
                $self->include($1,$2) 
              !gex
@@ -532,55 +535,55 @@ sub replace_template {
   if ($iter && 
       (my ($before, $row, $after) =
       $template =~ m/^(.*)
-           <:\s+iterator\s+begin\s+:>
+           $tag_head\s+iterator\s+begin\s+$tag_tail
             (.*)
-           <:\s+iterator\s+end\s+:>
+           $tag_head\s+iterator\s+end\s+$tag_tail
             (.*)/sx)) {
     until ($iter->EOF) {
       my $temp = $row;
-      $temp =~ s/(<:\s*(\w+)(?:\s+([^:]*?)):>)/ $self->perform($acts, $2, $3, $1) /egx;
+      $temp =~ s/($tag_head\s*(\w+)(?:\s+([^:]*?))$tag_tail)/ $self->perform($acts, $2, $3, $1) /egx;
       $before .= $temp;
     }
     $template = $before . $after;
   }
 
   # more general iterators
-  $template =~ s/(<:\s*(iterator|with)\s+begin\s+(\w+)(?:\s+(.*?))?\s*:>
+  $template =~ s/($tag_head\s*(iterator|with)\s+begin\s+(\w+)(?:\s+(.*?))?\s*$tag_tail
                   (.*?)
 		    (?: 
-		     <:\s*\2\s+separator\s+\3\s*:>
+		     $tag_head\s*\2\s+separator\s+\3\s*$tag_tail
                       (.*?)
 		     ) ?
-                 <:\s*\2\s+end\s+\3\s*:>)/
+                 $tag_head\s*\2\s+end\s+\3\s*$tag_tail)/
                    $self->$2($3, $4, $5, $6, $acts, $1) /segx;
 
   # conditionals
   my $nesting = 0; # prevents loops if result is an if statement
-  1 while $template =~ s/(<:\s*if\s+(\w+))(?:\s+(.*?))?:>
+  1 while $template =~ s/($tag_head\s*if\s+(\w+))(?:\s+(.*?))?$tag_tail
                           (.*?)
-                         (<:\s*or\s+\2\s*:>)
+                         ($tag_head\s*or\s+\2\s*$tag_tail)
                           (.*?)
-                         (<:\s*eif\s+\2\s*:>)/
+                         ($tag_head\s*eif\s+\2\s*$tag_tail)/
                         $self->cond($2, $3, $acts, $1, $4, $5, $6, $7) /sgex
 			  && ++$nesting < 5;
-  $template =~ s/(<:\s*if([A-Z]\w*))(?:\s+(.*?))?:>
+  $template =~ s/($tag_head\s*if([A-Z]\w*))(?:\s+(.*?))?$tag_tail
                   (.*?)
-                 (<:\s*or\s*:>)
+                 ($tag_head\s*or\s*$tag_tail)
                   (.*?)
-                 (<:\s*eif\s*:>)/
+                 ($tag_head\s*eif\s*$tag_tail)/
                 $self->cond($2, $3, $acts, $1, $4, $5, $6, $7) /sgex;
 
   $nesting = 0;
-  1 while $template =~ s/<:\s*switch\s*:>
-                         ((?:(?!<:\s*switch).)*?)
-                         <:\s*endswitch\s*:>/
+  1 while $template =~ s/$tag_head\s*switch\s*$tag_tail
+                         ((?:(?!<:-?\s*switch).)*?)
+                         $tag_head\s*endswitch\s*$tag_tail/
 			   $self->switch($1, $acts)/segx
 			     && ++$nesting < 5;
-  $template =~ s/<:XswitchX:>/<:switch:>/g;
-  $template =~ s/<:XendswitchX:>/<:endswitch:>/g;
-  $template =~ s/<:XcaseX /<:case /g;
+  $template =~ s/($tag_head)XswitchX($tag_tail)/${1}switch$2/g;
+  $template =~ s/($tag_head)XendswitchX($tag_tail)/${1}endswitch$2/g;
+  $template =~ s/($tag_head)XcaseX /${1}case /g;
 
-  $template =~ s/(<:\s*(\w+)(?:\s+(.*?\s*(?:\|\S+?)?))?:>)/ 
+  $template =~ s/($tag_head\s*(\w+)(?:\s+(.*?\s*(?:\|\S+?)?))?$tag_tail)/ 
     $self->perform($acts, $2, $3, $1) /segx;
 
   # replace any wrap parameters
