@@ -71,6 +71,10 @@ Templates:
 
  - admin/order_list*.tmpl - see the order list re-work above.
 
+ - you can now use <:- and -:> as tag delimiters to consume whitespace
+   on the left and right of the tag.  This doesn't occur for wrap, but
+   should for other tags.
+
 Internals:
 
  - added a getCount() method to retrieve a count of matching records.
