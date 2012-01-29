@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 23;
+use Test::More tests => 24;
 
 sub template_test($$$$;$);
 
@@ -178,6 +178,18 @@ OUT
 IN
 <foo>12345</foo>
 <foo2>1,2,3,4,5</foo2>
+OUT
+
+    template_test(<<IN, <<OUT, "space switch", \%acts, "both");
+<foo>
+<:- switch:>
+
+ <:- case default:>FOO
+<:- endswitch:>
+</foo>
+IN
+<foo>FOO
+</foo>
 OUT
 
   }

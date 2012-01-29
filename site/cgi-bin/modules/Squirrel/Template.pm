@@ -327,7 +327,7 @@ sub switch {
 
   print STDERR "** switch\n" if DEBUG;
 
-  my @cases = split /(?=$tag_head\s*case\s)/s, $content;
+  my @cases = grep /\S/, split /(?=$tag_head\s*case\s)/s, $content;
   shift @cases if @cases && $cases[0] !~ /$tag_head\s*case\s/;
   my $case;
   while ($case = shift @cases) {
