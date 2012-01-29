@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 24;
+use Test::More tests => 25;
 
 sub template_test($$$$;$);
 
@@ -192,6 +192,26 @@ IN
 </foo>
 OUT
 
+    template_test(<<IN, <<OUT, "space complex", \%acts, "both");
+<div class="window">
+  <h1><:str:></h1>
+  <ul class="children list">
+    <:iterator begin repeat 1 5:>
+    <:- switch:>
+    <:- case False:>
+    <li class="error message"><:repeat:></li>
+    <:case str:>
+  </ul>
+  <h2><:repeat:></h2>
+  <ul class="children list">
+    <:- case default:>
+    <li><:repeat:></li>
+    <:- endswitch:>
+    <:iterator end repeat:>
+  </ul>
+</div>
+IN
+OUT
   }
 }
 
