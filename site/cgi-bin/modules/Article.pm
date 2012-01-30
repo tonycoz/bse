@@ -8,7 +8,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::TB::SiteCommon BSE::TB::TagOwner/;
 use Carp 'confess';
 
-our $VERSION = "1.009";
+our $VERSION = "1.010";
 
 sub columns {
   return qw/id parentid displayOrder title titleImage body
@@ -346,6 +346,13 @@ sub is_released {
   my $self = shift;
 
   return $self->release le _expire_release_datetime();
+}
+
+sub restricted_methods {
+  my ($self, $name) = @_;
+
+  return $self->SUPER::restricted_methods($name)
+    || $name =~ /^(?:update_|remove_|add_)/;
 }
 
 1;

@@ -2,7 +2,7 @@ package Squirrel::Row;
 require 5.005;
 use strict;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 use Carp;
 use BSE::DB;
@@ -286,6 +286,12 @@ sub _create_methods {
       *{"${class}::$col"} = sub { $_[0]{$work_col} };
     }
   }
+}
+
+sub restricted_method {
+  my ($self, $name) = @_;
+
+  return $name =~ /^(?:remove|save|new|set|set_.*|_.*)$/;
 }
 
 1;

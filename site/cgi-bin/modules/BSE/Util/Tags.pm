@@ -8,7 +8,7 @@ use vars qw(@EXPORT_OK @ISA);
 @ISA = qw(Exporter);
 require Exporter;
 
-our $VERSION = "1.018";
+our $VERSION = "1.019";
 
 sub _get_parms {
   my ($acts, $args) = @_;
@@ -1208,9 +1208,9 @@ sub tag_article_plain {
   my ($article, $cfg, $args) = @_;
 
   my $value;
-  if ($args eq 'link'
-     && ref($article) ne 'HASH') {
-    $value = $article->link($cfg);
+  if (ref($article) ne 'HASH'
+     && !$article->restricted_method($args)) {
+    $value = $article->$args($cfg);
   }
   elsif ($args eq 'tags') {
     return join("/", $article->tags);

@@ -15,7 +15,7 @@ use DevHelp::Date qw(dh_parse_date dh_parse_sql_date);
 use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
-our $VERSION = "1.019";
+our $VERSION = "1.020";
 
 =head1 NAME
 
@@ -1200,7 +1200,7 @@ sub low_edit_tags {
   return
     (
      $request->admin_tags,
-     article => [ \&tag_article, $article, $cfg ],
+     article => sub { tag_article($article, $cfg, $_[0]) },
      old => [ \&tag_old, $article, $cgi ],
      default => [ \&tag_default, $self, $request, $article ],
      articleType => [ \&tag_art_type, $article->{level}, $cfg ],
