@@ -9,7 +9,7 @@ use BSE::Util::Iterate;
 use BSE::TB::Subscriptions;
 use BSE::Util::HTML;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 my %rights =
   (
@@ -46,9 +46,7 @@ sub req_list {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $req->cgi, $req->cfg),
-     BSE::Util::Tags->admin(\%acts, $req->cfg),
-     BSE::Util::Tags->secure($req),
+     $req->admin_tags,
      msg => $msg,
      message => $msg,
      $it->make_paged_iterator('isubscription', 'subscriptions', \@subs, undef,
@@ -71,9 +69,7 @@ sub req_addform {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $req->cgi, $req->cfg),
-     BSE::Util::Tags->admin(\%acts, $req->cfg),
-     BSE::Util::Tags->secure($req),
+     $req->admin_tags,
      msg => $msg,
      message => $msg,
      error_img => [ \&tag_error_img, $req->cfg, $errors ],
@@ -127,9 +123,7 @@ sub req_edit {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $req->cgi, $req->cfg),
-     BSE::Util::Tags->admin(\%acts, $req->cfg),
-     BSE::Util::Tags->secure($req),
+     $req->admin_tags,
      msg => $msg,
      message => $msg,
      error_img => [ \&tag_error_img, $req->cfg, $errors ],
@@ -192,9 +186,7 @@ sub req_detail {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $req->cgi, $req->cfg),
-     BSE::Util::Tags->admin(\%acts, $req->cfg),
-     BSE::Util::Tags->secure($req),
+     $req->admin_tags,
      msg => $msg,
      message => $msg,
      subscription => [ \&tag_hash, $sub ],

@@ -15,7 +15,7 @@ use BSE::Arrows;
 use Carp 'confess';
 use BSE::Util::Iterate;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 my $excerptSize = 300;
 
@@ -186,9 +186,7 @@ sub tag_admin {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->static(\%acts, $cfg),
-     BSE::Util::Tags->admin(\%acts, $cfg),
-     BSE::Util::Tags->secure($self->{request}),
+     $self->{request}->admin_tags,
      article => [ \&tag_article, $article, $cfg ],
      parent => [ \&tag_article, $parent, $cfg ],
      ifParent => $parent,

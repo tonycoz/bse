@@ -11,7 +11,7 @@ use constant SECT_LOCATION_VALIDATION => "BSE Location Validation";
 use BSE::CfgInfo 'product_options';
 use DevHelp::Date qw(dh_strftime_sql_datetime);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 my %rights =
   (
@@ -56,9 +56,7 @@ sub req_loclist {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $req->cgi, $req->cfg),
-     BSE::Util::Tags->admin(\%acts, $req->cfg),
-     BSE::Util::Tags->secure($req),
+     $req->admin_tags,
      msg => $msg,
      message => $msg,
      $it->make_paged_iterator('ilocation', 'locations', \@locations, undef,
@@ -105,9 +103,7 @@ sub req_locaddform {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $req->cgi, $req->cfg),
-     BSE::Util::Tags->admin(\%acts, $req->cfg),
-     BSE::Util::Tags->secure($req),
+     $req->admin_tags,
      msg => $msg,
      message => $msg,
      error_img => [ \&tag_error_img, $req->cfg, $errors ],
@@ -169,9 +165,7 @@ sub _loc_show_common {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $req->cgi, $req->cfg),
-     BSE::Util::Tags->admin(\%acts, $req->cfg),
-     BSE::Util::Tags->secure($req),
+     $req->admin_tags,
      msg => $msg,
      message => $msg,
      error_img => [ \&tag_error_img, $req->cfg, $errors ],
@@ -311,9 +305,7 @@ sub req_addattendseminar {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $req->cgi, $req->cfg),
-     BSE::Util::Tags->admin(\%acts, $req->cfg),
-     BSE::Util::Tags->secure($req),
+     $req->admin_tags,
      $it->make_iterator(undef, 'seminar', 'seminars', \@seminars),
      siteuser => [ \&tag_hash, $siteuser ],
      msg => $msg,
@@ -363,9 +355,7 @@ sub req_addattendsession {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $req->cgi, $req->cfg),
-     BSE::Util::Tags->admin(\%acts, $req->cfg),
-     BSE::Util::Tags->secure($req),
+     $req->admin_tags,
      siteuser => [ \&tag_hash, $siteuser ],
      seminar => [ \&tag_hash, $seminar ],
      msg => $msg,
@@ -538,9 +528,7 @@ sub req_cancelbookingconfirm {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $req->cgi, $req->cfg),
-     BSE::Util::Tags->admin(\%acts, $req->cfg),
-     BSE::Util::Tags->secure($req),
+     $req->admin_tags,
      siteuser => [ \&tag_hash, $siteuser ],
      session  => [ \&tag_hash, $session  ],
      seminar  => [ \&tag_hash, $seminar ],
@@ -647,9 +635,7 @@ sub req_editbooking {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $req->cgi, $req->cfg),
-     BSE::Util::Tags->admin(\%acts, $req->cfg),
-     BSE::Util::Tags->secure($req),
+     $req->admin_tags,
      siteuser => [ \&tag_hash, $siteuser ],
      session  => [ \&tag_hash, $session  ],
      seminar  => [ \&tag_hash, $seminar ],

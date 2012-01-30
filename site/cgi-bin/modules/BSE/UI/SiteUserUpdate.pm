@@ -11,7 +11,7 @@ use BSE::Util::Secure qw/make_secret/;
 use BSE::SubscribedUsers;
 use BSE::CfgInfo qw(custom_class);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 my %rights =
   (
@@ -105,9 +105,7 @@ sub req_importform {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $req->cgi, $req->cfg),
-     BSE::Util::Tags->admin(\%acts, $req->cfg),
-     BSE::Util::Tags->secure($req),
+     $req->admin_tags,
      error_img => [ \&tag_error_img, $req->cfg, $errors ],
      $it->make_iterator(undef, 'importspec', 'importspecs', \@specs),
      message => $msg,
@@ -186,9 +184,7 @@ sub req_preview {
   my $curline;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
-     BSE::Util::Tags->admin(\%acts, $cfg),
-     BSE::Util::Tags->secure($req),
+     $req->admin_tags,
      line_error => [ \&tag_error_img, $cfg, \%line_errors ],
      $it->make_iterator(undef, 'line', 'lines', \@data, undef, undef, \$curline),
      line_error_count => $line_error_count,
@@ -307,9 +303,7 @@ sub req_import {
   my $curline;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $cgi, $cfg),
-     BSE::Util::Tags->admin(\%acts, $cfg),
-     BSE::Util::Tags->secure($req),
+     $req->admin_tags,
      line_error => [ \&tag_error_img, $cfg, \%line_errors ],
      $it->make_iterator(undef, 'line', 'lines', \@data, undef, undef, \$curline),
      line_error_count => $line_error_count,

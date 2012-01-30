@@ -19,7 +19,7 @@ use BSE::Util::HTML qw(:default popup_menu);
 use BSE::Arrows;
 use BSE::Shop::Util qw(:payment order_item_opts nice_options);
 
-our $VERSION = "1.010";
+our $VERSION = "1.011";
 
 my %actions =
   (
@@ -359,9 +359,7 @@ sub product_form {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $cgi, $req->cfg),
-     BSE::Util::Tags->admin(\%acts, $req->cfg),
-     BSE::Util::Tags->secure($req),
+     $req->admin_tags,
      catalogs => 
      sub {
        return popup_menu(-name=>'parentid',

@@ -8,7 +8,7 @@ use BSE::Util::HTML qw(:default popup_menu);
 use BSE::Util::Iterate;
 use base 'BSE::UI::AdminDispatch';
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 my %actions =
   (
@@ -64,11 +64,9 @@ sub req_list {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $q, $cfg),
+     $req->admin_tags,
      BSE::Util::Tags->make_iterator(\@subs, 'subscription', 'subscriptions',
 				    \$subindex),
-     BSE::Util::Tags->secure($req),
-     BSE::Util::Tags->admin(\%acts, $cfg),
      message => escape_html($message),
      recipient_count => [ \&tag_list_recipient_count, \@subs, \$subindex ],
     );
@@ -191,8 +189,7 @@ sub sub_form {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $q, $cfg),
-     BSE::Util::Tags->admin(\%acts, $cfg),
+     $req->admin_tags,
      old =>
      sub {
        escape_html($old ? $q->param($_[0]) :
@@ -394,8 +391,7 @@ sub req_send_form {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $q, $cfg),
-     BSE::Util::Tags->admin(\%acts, $cfg),
+     $req->admin_tags,
      subscription => [ \&tag_hash, $sub ],
      message => sub { '' },
      ifError => sub { 0 },
@@ -544,8 +540,7 @@ sub req_filter_preview {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $q, $cfg),
-     BSE::Util::Tags->admin(\%acts, $cfg),
+     $req->admin_tags,
      subscription => [ \&tag_hash, $sub ],
      (map {;
        "filter$_" => [ \&tag_hash, $filter_res[$_-1] ],
@@ -572,8 +567,7 @@ sub _send_errors {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $req->cgi, $req->cfg),
-     BSE::Util::Tags->admin(\%acts, $req->cfg),
+     $req->admin_tags,
      subscription => [ \&tag_hash, $sub ],
      BSE::Util::Tags->make_iterator(\@errors, 'error', 'errors'),
     );
@@ -693,8 +687,7 @@ sub req_send_test {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $q, $cfg),
-     BSE::Util::Tags->admin(\%acts, $cfg),
+     $req->admin_tags,
      subscription => [ \&tag_hash, $sub ],
      message => sub { $acts_message },
      user => sub { $acts_user ? escape_html($acts_user->{$_[0]}) : '' },
@@ -768,8 +761,7 @@ sub req_send {
   my %acts;
   %acts =
     (
-     BSE::Util::Tags->basic(\%acts, $q, $cfg),
-     BSE::Util::Tags->admin(\%acts, $cfg),
+     $req->admin_tags,
      subscription => [ \&tag_hash, $sub ],
      message => sub { $acts_message },
      user => sub { $acts_user ? escape_html($acts_user->{$_[0]}) : '' },
