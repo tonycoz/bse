@@ -196,7 +196,7 @@ OUT
 <div class="window">
   <h1><:str:></h1>
   <ul class="children list">
-    <:iterator begin repeat 1 5:>
+    <:iterator begin repeat 1 2:>
     <:- switch:>
     <:- case False:>
     <li class="error message"><:repeat:></li>
@@ -211,6 +211,20 @@ OUT
   </ul>
 </div>
 IN
+<div class="window">
+  <h1>ABC</h1>
+  <ul class="children list">
+    
+  </ul>
+  <h2>1</h2>
+  <ul class="children list">
+    
+  </ul>
+  <h2>2</h2>
+  <ul class="children list">
+    
+  </ul>
+</div>
 OUT
   }
 }
