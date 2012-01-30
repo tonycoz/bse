@@ -35,6 +35,8 @@ BSE 0.21 - unreleased
 
  - more consistently use tag_article on the admin side of the site.
 
+ - make tag_article smarter so it can call more methods
+
  - consistently use admin_tags instead of the old collection of admin
    tag methods.
 
