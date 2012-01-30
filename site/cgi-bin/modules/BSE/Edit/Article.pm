@@ -1,7 +1,7 @@
 package BSE::Edit::Article;
 use strict;
 use base qw(BSE::Edit::Base);
-use BSE::Util::Tags qw(tag_error_img);
+use BSE::Util::Tags qw(tag_error_img tag_article);
 use BSE::Util::SQL qw(now_sqldate now_sqldatetime);
 use BSE::Permissions;
 use BSE::Util::HTML qw(:default popup_menu);
@@ -15,7 +15,7 @@ use DevHelp::Date qw(dh_parse_date dh_parse_sql_date);
 use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
-our $VERSION = "1.018";
+our $VERSION = "1.019";
 
 =head1 NAME
 
@@ -1196,10 +1196,11 @@ sub low_edit_tags {
   my $current_group;
   my $it = BSE::Util::Iterate->new;
   my $ito = BSE::Util::Iterate::Objects->new;
+  my $ita = BSE::Util::Iterate::Article->new(req => $request);
   return
     (
      $request->admin_tags,
-     article => [ $tag_hash, $article ],
+     article => [ \&tag_article, $article, $cfg ],
      old => [ \&tag_old, $article, $cgi ],
      default => [ \&tag_default, $self, $request, $article ],
      articleType => [ \&tag_art_type, $article->{level}, $cfg ],
@@ -1219,9 +1220,14 @@ sub low_edit_tags {
      imgmove => [ \&tag_imgmove, $request, $article, \$image_index, \@images ],
      message => $msg,
      ifError => $if_error,
-     DevHelp::Tags->make_iterator2
-     ([ \&iter_get_kids, $article, $articles ], 
-      'child', 'children', \@children, \$child_index),
+     $ita->make
+     (
+      code => [ \&iter_get_kids, $article, $articles ], 
+      single => 'child',
+      plural => 'children',
+      data => \@children,
+      index => \$child_index,
+     ),
      ifchildren => \&tag_if_children,
      childtype => [ \&tag_art_type, $article->{level}+1, $cfg ],
      ifHaveChildType => [ \&tag_if_have_child_type, $article->{level}, $cfg ],
@@ -1231,8 +1237,14 @@ sub low_edit_tags {
      templates => [ \&tag_templates, $self, $article, $cfg, $cgi ],
      titleImages => [ \&tag_title_images, $self, $article, $cfg, $cgi ],
      editParent => [ \&tag_edit_parent, $article ],
-     DevHelp::Tags->make_iterator2
-     ([ \&iter_allkids, $article ], 'kid', 'kids', \@allkids, \$allkid_index),
+     $ita->make
+     (
+      code => [ \&iter_allkids, $article ],
+      single => 'kid',
+      plural => 'kids',
+      data => \@allkids,
+      index => \$allkid_index,
+     ),
      ifStepKid => 
      [ \&tag_if_step_kid, $article, \@allkids, \$allkid_index, \%stepkids ],
      stepkid => [ \&tag_step_kid, $article, \@allkids, \$allkid_index, 
@@ -1246,9 +1258,14 @@ sub low_edit_tags {
      ifPossibles => 
      [ \&tag_if_possible_stepkids, \%stepkids, $request, $article, 
        \@possstepkids, $articles, $cgi ],
-     DevHelp::Tags->make_iterator2
-     ( [ \&iter_get_stepparents, $article ], 'stepparent', 'stepparents', 
-       \@stepparents, \$stepparent_index),
+     $ita->make
+     (
+      code => [ \&iter_get_stepparents, $article ],
+      single => 'stepparent',
+      plural => 'stepparents',
+      data => \@stepparents,
+      index => \$stepparent_index,
+     ),
      ifStepParents => \&tag_ifStepParents,
      stepparent_targ => 
      [ \&tag_stepparent_targ, $article, \@stepparent_targs, 
@@ -1288,7 +1305,7 @@ sub low_edit_tags {
      error => [ $tag_hash, $errors ],
      error_img => [ \&tag_error_img, $cfg, $errors ],
      ifFieldPerm => [ \&tag_if_field_perm, $request, $article ],
-     parent => [ $tag_hash, $parent ],
+     parent => [ \&tag_article, $parent, $cfg ],
      DevHelp::Tags->make_iterator2
      ([ \&iter_flags, $self ], 'flag', 'flags' ),
      ifFlagSet => [ \&tag_if_flag_set, $article ],

@@ -12,14 +12,14 @@ use Constants qw(:shop $SHOPID $PRODUCTPARENT
 use BSE::TB::Images;
 use Articles;
 use BSE::Sort;
-use BSE::Util::Tags qw(tag_hash tag_error_img tag_object_plain tag_object);
+use BSE::Util::Tags qw(tag_hash tag_error_img tag_object_plain tag_object tag_article);
 use BSE::Util::Iterate;
 use BSE::WebUtil 'refresh_to_admin';
 use BSE::Util::HTML qw(:default popup_menu);
 use BSE::Arrows;
 use BSE::Shop::Util qw(:payment order_item_opts nice_options);
 
-our $VERSION = "1.009";
+our $VERSION = "1.010";
 
 my %actions =
   (
@@ -102,9 +102,8 @@ sub embedded_catalog {
      sub { 
        $list_index >= 0 && $list_index < @list
 	 or return '** outside products iterator **';
-       my $value = $list[$list_index]{$_[0]};
-       defined $value or return '';
-       return escape_html($value)
+       my $product = $list[$list_index];
+       return tag_article($product, $req->cfg, $_[0]);
      },
      ifProducts => sub { @list },
      iterate_subcats_reset =>
@@ -112,7 +111,7 @@ sub embedded_catalog {
        $subcat_index = -1;
      },
      iterate_subcats => sub { ++$subcat_index < @subcats },
-     subcat => sub { escape_html($subcats[$subcat_index]{$_[0]}) },
+     subcat => sub { tag_article($subcats[$subcat_index], $req->cfg, $_[0]) },
      ifSubcats => sub { @subcats },
      hiddenNote => 
      sub { $list[$list_index]{listed} == 0 ? "Hidden" : "&nbsp;" },
@@ -210,7 +209,7 @@ sub req_product_list {
   %acts =
     (
      $req->admin_tags,
-     catalog=> sub { escape_html($catalogs[$catalog_index]{$_[0]}) },
+     catalog=> sub { tag_article($catalogs[$catalog_index], $req->cfg, $_[0]) },
      iterate_catalogs => sub { ++$catalog_index < @catalogs  },
      shopid=>sub { $shopid },
      shop => [ \&tag_hash, $shop ],
@@ -370,7 +369,7 @@ sub product_form {
                          -labels=>{ map { @$_{qw/id display/} } @catalogs },
                          -default=>($product->{parentid} || $PRODUCTPARENT));
      },
-     product => [ \&tag_hash, $product ],
+     product => [ \&tag_article, $product, $req->cfg ],
      action => sub { $action },
      message => sub { $message },
      script=>sub { $ENV{SCRIPT_NAME} },

@@ -2,8 +2,9 @@ package BSE::Edit::Catalog;
 use strict;
 use base 'BSE::Edit::Article';
 use BSE::Util::HTML;
+use BSE::Util::Tags qw(tag_article);
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub base_template_dirs {
   return ( "catalog" );

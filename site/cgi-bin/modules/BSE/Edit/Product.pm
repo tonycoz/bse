@@ -7,9 +7,9 @@ use BSE::Template;
 use BSE::Util::Iterate;
 use BSE::Util::HTML;
 use BSE::CfgInfo 'product_options';
-use BSE::Util::Tags qw(tag_hash);
+use BSE::Util::Tags qw(tag_hash tag_article);
 
-our $VERSION = "1.009";
+our $VERSION = "1.010";
 
 =head1 NAME
 
@@ -293,7 +293,7 @@ sub low_edit_tags {
   my %prices;
   return 
     (
-     product => [ $tag_hash, $article ],
+     product => [ \&tag_article, $article, $cfg ],
      $self->SUPER::low_edit_tags($acts, $req, $article, $articles, $msg,
 				$errors),
      alloptions => join(",", sort keys %$product_opts),
