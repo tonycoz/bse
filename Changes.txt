@@ -33,6 +33,8 @@ BSE 0.21 - unreleased
  - added is_released and is_expired methods to Article.  This should
    be visible to article tags in templates.
 
+ - more consistently use tag_article on the admin side of the site.
+
 Bug fixes:
 
  - thumb.pl would return content types with doubled image/ prefixes,
