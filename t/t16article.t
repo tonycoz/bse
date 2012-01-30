@@ -1,6 +1,8 @@
 #!perl -w
 use strict;
-use Test::More tests => 6;
+use Test::More tests => 12;
+use BSE::Test ();
+use File::Spec;
 
 use_ok("Article");
 
@@ -39,6 +41,40 @@ use_ok("Article");
     }, "Test::Cfg";
   is(Article->link_to_filename($cfg, "/"), "/test/htdocs/default.htm",
      "check cfg link to filename");
+}
+
+{
+  my $base_cgi = File::Spec->catdir(BSE::Test::base_dir(), "cgi-bin");
+  
+  use_ok("BSE::API");
+  
+  BSE::API::bse_init($base_cgi);
+  my $cfg = BSE::API::bse_cfg();
+
+  {
+    my $now = time;
+    use POSIX qw(strftime);
+    my $today = strftime("%Y-%m-%d", localtime $now);
+    my $yesterday = strftime("%Y-%m-%d", localtime($now - 86_400));
+    my $tomorrow = strftime("%Y-%m-%d", localtime($now + 86_400));
+    my $tomorrow2 = strftime("%Y-%m-%d", localtime($now + 2*86_400));
+    my $art = BSE::API::bse_make_article
+      (
+       cfg => $cfg,
+       title => "t16article.t",
+       release => $today,
+       expire => $tomorrow,
+      );
+    ok($art, "make an article");
+    ok($art->is_released, "check successful is released");
+    ok(!$art->is_expired, "check false is expired");
+    $art->set_release($tomorrow);
+    ok(!$art->is_released, "check false is released");
+    $art->set_expire($yesterday);
+    ok($art->is_expired, "check true is expired");
+
+    $art->remove($cfg);
+  }
 }
 
 package Test::Cfg;

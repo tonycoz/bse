@@ -8,7 +8,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::TB::SiteCommon BSE::TB::TagOwner/;
 use Carp 'confess';
 
-our $VERSION = "1.008";
+our $VERSION = "1.009";
 
 sub columns {
   return qw/id parentid displayOrder title titleImage body
@@ -315,6 +315,37 @@ sub is_linked {
 
 sub tag_owner_type {
   return "BA";
+}
+
+# the time used for expiry/release comparisons
+sub _expire_release_datetime {
+  my ($year, $month, $day) = (localtime)[5,4,3];
+  my $today = sprintf("%04d-%02d-%02d 00:00:00ZZZ", $year+1900, $month+1, $day);
+}
+
+=item is_expired
+
+Returns true if the article expiry date has passed.
+
+=cut
+
+sub is_expired {
+  my $self = shift;
+
+  return $self->expire lt _expire_release_datetime();
+}
+
+=item is_released
+
+Returns true if the article release date has passed (ie. the article
+has been released.)
+
+=cut
+
+sub is_released {
+  my $self = shift;
+
+  return $self->release le _expire_release_datetime();
 }
 
 1;
