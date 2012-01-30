@@ -35,6 +35,9 @@ BSE 0.21 - unreleased
 
  - more consistently use tag_article on the admin side of the site.
 
+ - consistently use admin_tags instead of the old collection of admin
+   tag methods.
+
 Bug fixes:
 
  - thumb.pl would return content types with doubled image/ prefixes,
