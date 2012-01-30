@@ -30,6 +30,9 @@ BSE 0.21 - unreleased
  - siteusers.pl now flashes all success messages, and success message
    text is fetched from the messages table
 
+ - added is_released and is_expired methods to Article.  This should
+   be visible to article tags in templates.
+
 Bug fixes:
 
  - thumb.pl would return content types with doubled image/ prefixes,
