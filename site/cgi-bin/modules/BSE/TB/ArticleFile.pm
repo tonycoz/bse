@@ -6,7 +6,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 use Carp 'confess';
 
-our $VERSION = "1.005";
+our $VERSION = "1.007";
 
 sub columns {
   return qw/id articleId displayName filename sizeInBytes description 
@@ -42,8 +42,16 @@ sub defaults {
 sub full_filename {
   my ($self, $cfg) = @_;
 
+  $cfg ||= BSE::Cfg->single;
+
   my $downloadPath = BSE::TB::ArticleFiles->download_path($cfg);
   return $downloadPath . "/" . $self->{filename};
+}
+
+sub file_exists {
+  my ($self, $cfg) = @_;
+
+  return -f $self->full_filename($cfg);
 }
 
 sub remove {
