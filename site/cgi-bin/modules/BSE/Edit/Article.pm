@@ -15,7 +15,7 @@ use DevHelp::Date qw(dh_parse_date dh_parse_sql_date);
 use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
-our $VERSION = "1.021";
+our $VERSION = "1.022";
 
 =head1 NAME
 
@@ -295,7 +295,7 @@ sub possible_parents {
       else {
 	if ($req->user_can('edit_add_child')) {
 	  push @values, -1;
-	  $labels{-1} = $req->catmsg("bse/admin/edit/uplabelsect");
+	  $labels{-1} = $req->catmsg("msg:bse/admin/edit/uplabelsect");
 	}
       }
     }
