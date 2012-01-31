@@ -2,7 +2,7 @@ package BSE::TB::Site;
 use strict;
 use base qw(BSE::TB::SiteCommon);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 # like an article, but doesn't exist in the database
 
@@ -33,6 +33,12 @@ sub data_only {
     {
      map { $_ => $self->{$_} } grep /^[^_]/, keys %$self
     };
+}
+
+sub restricted_method {
+  my ($self, $name) = @_;
+
+  return $name =~ /^new$/;
 }
 
 1;
