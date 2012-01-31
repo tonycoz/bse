@@ -8,7 +8,7 @@ use vars qw(@EXPORT_OK @ISA);
 @ISA = qw(Exporter);
 require Exporter;
 
-our $VERSION = "1.020";
+our $VERSION = "1.021";
 
 sub _get_parms {
   my ($acts, $args) = @_;
@@ -1047,18 +1047,7 @@ my %bad_methods = map { $_ => 1 } qw(remove new add save);
 sub tag_object {
   my ($object, $args, $acts, $func) = @_;
 
-  $object or return '';
-
-  $bad_methods{$args}
-    and return "** $args method not available **";
-
-  $object->can($args)
-    or return "** $func has no method $args **";
-
-  my $value = $object->$args();
-  defined $value or return "";
-
-  return escape_html($value);
+  return escape_html(tag_object_plain($object, $args, $acts, $func));
 }
 
 sub tag_object_plain {
@@ -1071,6 +1060,11 @@ sub tag_object_plain {
 
   $object->can($args)
     or return "** $func has no method $args **";
+
+  if ($object->can("restricted_method")) {
+    $object->restricted_method($args)
+      and return "** $func method is restricted **";
+  }
 
   my $value = $object->$args();
   defined $value or return "";
