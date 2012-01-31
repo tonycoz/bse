@@ -40,6 +40,15 @@ BSE 0.21 - unreleased
  - consistently use admin_tags instead of the old collection of admin
    tag methods.
 
+ - tag_object (used for object style tags) now checks
+   restricted_method() if implemented for the object.
+
+ - the editor file iterator is now an object iterator, and the efile
+   tag on the file edit page is now an object tag
+
+ - add file_exists to BSE::TB::Article::File
+   https://rt4.develop-help.com/Ticket/Display.html?id=1288
+
 Bug fixes:
 
  - thumb.pl would return content types with doubled image/ prefixes,
