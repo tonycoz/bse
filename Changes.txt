@@ -86,6 +86,9 @@ Bug fixes:
    name.
    https://rt4.develop-help.com/Ticket/Display.html?id=1304
 
+ - fix the message id for the "move up a level to section" message in
+   the possible parents drop down.
+
 Templates:
 
  - admin/order_list*.tmpl - see the order list re-work above.
