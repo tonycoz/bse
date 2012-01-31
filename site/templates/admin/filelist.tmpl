@@ -123,7 +123,7 @@
             <td class="col_filename" rowspan="2"> <:file displayName:><:ifUserCan edit_files_save:article:>
             <br /><input type="file" name="file_<:file id:>" /><:error_img [concatenate file_ [file id]:>
 <:or:><:eif:>
-<:ifFileExists:><:or:><br /><span class="alert">This file is missing!</span><:eif:>
+<:ifFile file_exists:><:or:><br /><span class="alert">This file is missing!</span><:eif:>
 </td>
             <td class="col_description"> 
               <:ifUserCan edit_files_save:article:><input name="description_<:file id:>" type="text" value="<: oldi [concatenate description_ [file id]] 0 file description :>" size="35" />

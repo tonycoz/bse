@@ -22,7 +22,7 @@
           <tr> 
             <th align="left">Replacement file:</th>
             <td> 
-              <:efile displayName:><br /><input type="file" name="file" size="40" /><br />Choose a file to replace the current file or leave blank to keep the current file.
+              <:efile displayName:><:ifEfile file_exists:><:or:><br /><span class="alert">This file is missing!</span><:eif:><br /><input type="file" name="file" size="40" /><br />Choose a file to replace the current file or leave blank to keep the current file.
             </td>
             <td class="help"><:help file file:> <:error_img file:></td>
           </tr>

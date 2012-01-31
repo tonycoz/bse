@@ -1,7 +1,7 @@
 package BSE::Edit::Article;
 use strict;
 use base qw(BSE::Edit::Base);
-use BSE::Util::Tags qw(tag_error_img tag_article);
+use BSE::Util::Tags qw(tag_error_img tag_article tag_object);
 use BSE::Util::SQL qw(now_sqldate now_sqldatetime);
 use BSE::Permissions;
 use BSE::Util::HTML qw(:default popup_menu);
@@ -15,7 +15,7 @@ use DevHelp::Date qw(dh_parse_date dh_parse_sql_date);
 use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
-our $VERSION = "1.020";
+our $VERSION = "1.021";
 
 =head1 NAME
 
@@ -1279,8 +1279,14 @@ sub low_edit_tags {
      stepparent_possibles =>
      [ \&tag_stepparent_possibles, $cgi, $request, $article, $articles, 
        \@stepparent_targs, \@stepparentpossibles, ],
-     DevHelp::Tags->make_iterator2
-     ([ iter_files => $self, $article ], 'file', 'files', \@files, \$file_index ),
+     $ito->make
+     (
+      code => [ iter_files => $self, $article ],
+      single => 'file',
+      plural => 'files',
+      data => \@files,
+      index => \$file_index,
+     ),
      movefiles => 
      [ \&tag_movefiles, $self, $request, $article, \@files, \$file_index ],
      $it->make
@@ -4353,7 +4359,7 @@ sub req_edit_file {
     (
      $self->low_edit_tags(\%acts, $req, $article, $articles, undef,
 			  $errors),
-     efile => [ \&tag_hash, $file ],
+     efile => [ \&tag_object, $file ],
      error_img => [ \&tag_error_img, $req->cfg, $errors ],
      ifOldChecked =>
      [ \&tag_old_checked, $errors, $cgi, $file ],
