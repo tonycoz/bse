@@ -89,6 +89,9 @@ Bug fixes:
  - fix the message id for the "move up a level to section" message in
    the possible parents drop down.
 
+ - error_img would produce an inline stack trace from an internal
+   error on a failed logon. (logon.pl)
+
 Templates:
 
  - admin/order_list*.tmpl - see the order list re-work above.
