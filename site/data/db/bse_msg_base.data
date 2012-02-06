@@ -149,6 +149,18 @@ description: Category field errors
 id: bse/admin/edit/category/unknown
 description: if an unknown article category is received
 
+id: bse/admin/generic/
+description: General messages
+
+id: bse/admin/generic/accessdenied (%1 - required access)
+description: Displayed when the user doesn't have access due to permissions
+
+id: bse/admin/makeindex/
+description: makeIndex messages
+
+id: bse/admin/makeindex/complete
+description: Index completion message
+
 id: bse/admin/shop/
 description: Shop Administration
 

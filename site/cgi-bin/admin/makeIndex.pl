@@ -1,189 +1,228 @@
 #!/usr/bin/perl -w
+# -d:ptkdb
+BEGIN { $ENV{DISPLAY} = '192.168.32.195:0.0' }
 use strict;
 use FindBin;
 use lib "$FindBin::Bin/../modules";
-use Articles;
-use Constants qw($BASEDIR $MAXPHRASE $DATADIR @SEARCH_EXCLUDE @SEARCH_INCLUDE $SEARCH_LEVEL);
-use BSE::DB;
-use Generate;
-use BSE::Cfg;
-use BSE::WebUtil 'refresh_to_admin';
-use Time::HiRes qw(time);
-my $in_cgi = exists $ENV{REQUEST_METHOD};
-my $verbose;
-my $start = time();
+use BSE::Request;
+use BSE::Index;
+use BSE::Util::HTML;
+use Carp 'confess';
 
-my $cfg;
-$| = 1;
-if ($in_cgi) {
-  # make sure the user can do this
-  require BSE::Request;
+$SIG{__DIE__} = sub { confess $@ };
+
+{
   my $req = BSE::Request->new;
-  $cfg = $req->cfg;
-  if (!$req->check_admin_logon) {
-    my $url = $req->url("logon", { m => "You must logon to dump the database" });
-    $req->output_result($req->get_refresh($url));
-    exit;
-  }
-  elsif (!$req->user_can("bse_makeindex")) {
-    my $url = $req->url("menu", { m => "You don't have access to build the search index" });
-    $req->output_result($req->get_refresh($url));
-    exit;
-  }
 
-  $verbose = $req->cgi->param("verbose") || 0;
-  print "Content-Type: text/plain\n\n" if $verbose;
-  #eval "use CGI::Carp qw(fatalsToBrowser)";
-}
-else {
-  require Getopt::Long;
-  Getopt::Long->import;
-  GetOptions("v:i" => \$verbose);
-  if (defined $verbose && !$verbose) {
-    $verbose = 1;
-  }
-
-  $cfg = BSE::Cfg->new;
-  BSE::DB->init($cfg);
-}
-
-my $urlbase = $cfg->entryVar('site', 'url');
-
-my $articles = 'Articles';
-
-# scores depending on where the term appears
-# these may need some tuning
-# preferably, keep these to single digits
-my %scores =
-  (
-   title=>5,
-   body=>3,
-   keyword=>4,
-   pageTitle=>5,
-   author=>4,
-   file_displayName => 2,
-   file_description=>2,
-   file_notes => 1,
-   summary => 0,
-   description => 0,
-   product_code => 0,
-  );
-
-for my $name (keys %scores) {
-  my $score = $cfg->entry('search index scores', $name);
-  if (defined($score) && $score =~ /^\d+$/) {
-    $scores{$name} = $score;
+  if (has_access($req)) {
+    do_regen($req);
   }
 }
 
-# if the level of the article is higher than this, store it's parentid 
-# instead
-my $max_level = $SEARCH_LEVEL;
+sub has_access {
+  my ($req) = @_;
 
-my $indexer_class = $cfg->entry('search', 'indexer', 'BSE::Index::BSE');
-(my $indexer_file = $indexer_class . ".pm") =~ s!::!/!g;
-require $indexer_file;
-# key is phrase, value is hashref with $id -> $sectionid
-my $indexer = $indexer_class->new
-  (
-   cfg => $cfg,
-   scores => \%scores,
-   verbose => $verbose,
-  );
-
-eval {
-  vnote($start, $verbose, "s1::Starting index");
-  $indexer->start_index();
-  vnote($start, $verbose, "s2::Starting article scan");
-  makeIndex($articles, $start, $verbose);
-  vnote($start, $verbose, "f2::Populating search index");
-  $indexer->end_index();
-  vnote($start, $verbose, "f1::Indexing complete");
-};
-if ($@) {
-  print STDERR "Indexing error: $@\n";
-}
-
-if ($in_cgi && !$verbose) {
-  refresh_to_admin($cfg, "/cgi-bin/admin/menu.pl");
-}
-
-sub makeIndex {
-  my ($articles, $start, $verbose) = @_;
-  my %dont_search;
-  my %do_search;
-  @dont_search{@SEARCH_EXCLUDE} = @SEARCH_EXCLUDE;
-  @do_search{@SEARCH_INCLUDE} = @SEARCH_INCLUDE;
-  vnote($start, $verbose, "s::Loading article ids");
-  my @ids = $articles->allids;
-  my $count = @ids;
-  vnote($start, $verbose, "c:$count:$count articles to index");
- INDEX: for my $id (@ids) {
-    my @files;
-    my $got_files;
-    # find the section
-    my $article = $articles->getByPkey($id);
-    next unless ($article->{listed} || $article->{flags} =~ /I/);
-    next unless $article->is_linked;
-    next if $article->{flags} =~ /[CN]/;
-    my $section = $article;
-    while ($section->{parentid} >= 1) {
-      $section = $articles->getByPkey($section->{parentid});
-      next INDEX if $section->{flags} =~ /C/;
+  my $cfg = $req->cfg;
+  my ($code, $msg, $url);
+  if ($req->check_admin_logon()) {
+    unless ($req->user_can("bse_makeindex")) {
+      ($code, $msg) = ( "ACCESS", [ "msg:bse/admin/generic/accessdenied", [ "bse_makeindex" ] ] );
     }
-    my $id = $article->{id};
-    my $indexas = $article->{level} > $max_level ? $article->{parentid} : $id;
-    my $sectionid = $section->{id};
-    eval "use $article->{generator}";
-    $@ and die $@;
-    my $gen = $article->{generator}->new(top=>$article, cfg=>$cfg);
-    next unless $gen->visible($article) or $do_search{$sectionid};
-    
-    next if $dont_search{$sectionid};
-
-    $article = $gen->get_real_article($article);
-
-    unless ($article) {
-      vnote($start, $verbose, "e:$id:Full article for $id not found");
-      next;
+  }
+  else {
+    ($code, $msg, $url) = ( "LOGON", [ "msg:bse/admin/logon/needlogon" ], $cfg->admin_url("logon") );
+  }
+  if ($code) {
+    $url ||= $cfg->admin_url("menu");
+    if ($req->want_json_response) {
+      if (ref $msg) {
+	$msg = $req->catmsg(@$msg);
+      }
+      $req->output_result
+	($req->json_content
+	 ({
+	   success => 0,
+	   error_code => $code,
+	   message => $msg,
+	   errors => {},
+	  }));
     }
-    
-    vnote($start, $verbose, "i:$id:Indexing '$article->{title}'");
-    
-    my %fields;
-    for my $field (sort { $scores{$b} <=> $scores{$a} } keys %scores) {
+    else {
+      $req->flash_error(@$msg);
+      $req->output_result($req->get_refresh($url));
+    }
+    return;
+  }
 
-      next unless $scores{$field};
-      # strip out markup
-      my $text;
-      if (exists $article->{$field}) {
-	$text = $article->{$field};
+  return 1;
+}
+
+sub do_regen {
+  my ($req) = @_;
+
+  my $outputcb = sub {
+    my $text = shift;
+    defined $text or confess "undef output";
+    if ($req->charset) {
+      require Encode;
+      Encode->import;
+      $text = Encode::encode($req->charset, $text, Encode::FB_DEFAULT());
+    }
+    print $text;
+  };
+
+  my $cgi = $req->cgi;
+  my $cfg = $req->cfg;
+  my $verbose = $cgi->param("verbose") || 0;
+  my $type = $cgi->param("type") || "html";
+  my ($suffix, $permessage);
+  my %acts;
+  my ($errorcb, $notecb);
+  if ($verbose) {
+    ++$|;
+    if ($type eq "html") {
+      require BSE::Template;
+      %acts = $req->admin_tags;
+      my $temp_result = BSE::Template->get_page("admin/makeindex", $req->cfg, \%acts);
+      (my ($prefix), $permessage, $suffix) =
+	split /<:\s*iterator\s+(?:begin|end)\s+messages\s*:>/, $temp_result;
+      print "Content-Type: ", BSE::Template->html_type($cfg), "\n\n";
+      $outputcb->($prefix);
+      my $out = sub {
+	my ($error, @msg) = @_;
+	$acts{ifError} = $error;
+	$acts{message} = escape_html(join("", @msg));
+	$outputcb->(BSE::Template->replace($permessage, $req->cfg, \%acts));
+      };
+      $errorcb = sub {
+	my (@msg) = @_;
+	
+	$out->(1, @_);
+      };
+      $notecb = sub {
+	$out->(0, @_);
+      };
+    }
+    else {
+      my $charset = $cfg->charset;
+      print "Content-Type: text/plain; charset=$charset\n\n";
+      $errorcb = $notecb = sub {
+	my @msg = @_;
+	$outputcb->(join("", @msg, "\n"));
+      }
+    }
+  }
+  
+  my $good = eval {
+    my $indexer = BSE::Index->new
+      (
+       error => $errorcb,
+       note => $notecb,
+      );
+    $indexer->do_index();
+    
+    1;
+  };
+  if ($good) {
+    if ($verbose) {
+      my $msg = $req->catmsg("msg:bse/admin/makeindex/complete");
+      $notecb->($msg);
+      $outputcb->($suffix) if defined $suffix;
+    }
+    else {
+      if ($req->want_json_response) {
+	$req->output_result
+	  ($req->json_content
+	   ({
+	     success => 1,
+	    })
+	  );
       }
       else {
-	if ($field =~ /^file_(.*)/) {
-          my $file_field = $1;
-          @files = $article->files unless $got_files++;
-          $text = join "\n", map $_->{$file_field}, @files;
-	}
+	my $url = $cgi->param("r") || $cfg->admin_url("menu");
+	$req->flash("msg:bse/admin/makeindex/complete");
+	$req->output_result($req->get_refresh($url));
       }
-      #next if $text =~ m!^\<html\>!i; # I don't know how to do this (yet)
-      if ($field eq 'body') {
-	$gen->remove_block($articles, [], \$text);
-	$text =~ s/[abi]\[([^\]]+)\]/$1/g;
-      }
-
-      next unless defined $text;
-
-      $fields{$field} = $text;
     }
-    $indexer->process_article($article, $section, $indexas, \%fields);
   }
-  vnote($start, $verbose, "f::Article scan complete");
+  else {
+    my $msg = $@;
+    if ($verbose) {
+      $errorcb->($msg);
+    }
+    else {
+      if ($req->want_json_response) {
+	$req->output_result
+	  ($req->json_content
+	   ({
+	     success => 0,
+	     error_code => "UNKNOWN",
+	     message => $msg,
+	     errors => {},
+	    }));
+      }
+      else {
+	my $url = $cfg->admin_url("menu");
+
+	$req->flash_error($msg);
+	$req->output_result($req->get_refresh($url));
+      }
+    }
+  };
 }
 
-sub vnote {
-  my ($start, $verbose, @text) = @_;
 
-  $verbose or return;
-  printf "%.3f:%s\n", time() - $start, "@text";
-}
+=head1 NAME
+
+makeIndex.pl - regenerate the search index (CGI only)
+
+=head1 SYNOPSIS
+
+  http//example.com/cgi-bin/admin/makeIndex.pl
+  http//example.com/cgi-bin/admin/makeIndex.pl?verbose=1
+  http//example.com/cgi-bin/admin/makeIndex.pl?verbose=1&type=text
+
+=head1 DESCRIPTION
+
+Regenerates the BSE search index using the currently configured search
+engine indexing module.
+
+Parameters:
+
+=over
+
+=item *
+
+C<verbose> - if a true perl value, display progress to the user, see
+C<type> for the format of the progress.
+
+If false, perform the indexing silently, flash a completion message
+and refresh to the url indicated by the C<r> parameter, or the admin
+menu by default.
+
+=item *
+
+C<type> - the type of output when C<verbose> is true.  The default,
+"html", produces HTML output based on the template
+C<admin/makeindex.tmpl>.
+
+Otherwise produce C<text/plain> output in the current BSE character
+set.
+
+=item *
+
+C<r> - the URL to refresh to after non-verbose search index regen.
+Defaults to the main admin menu.
+
+=back
+
+=head1 SEE ALSO
+
+bse_makeindex.pl, BSE::Index
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=cut
+

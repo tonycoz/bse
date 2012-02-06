@@ -1,5 +1,5 @@
 --
-# VERSION=1.001
+# VERSION=1.002
 id: bse_gen
 description: Regenerate Site
 binname: perl util/gen.pl
@@ -51,7 +51,7 @@ TEXT
 
 id: bse_make_index
 description: Rebuild the search index
-binname: perl cgi-bin/admin/makeIndex.pl
+binname: perl util/bse_makeindex.pl
 bin_opts: -v
 long_desc: <<TEXT
 Rebuild the search index.

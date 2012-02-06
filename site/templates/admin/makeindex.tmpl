@@ -1,0 +1,18 @@
+<:wrap admin/base.tmpl title => "Regenarate Search Index":>
+
+<h1>Regenerating Search Index</h1>
+
+<:iterator begin messages:>
+<:switch:>
+<:case Error:>
+<p class="error message"><:message:></p>
+<:case default:>
+<div><:message:></div>
+<:endswitch:>
+<:iterator end messages:>
+
+<p><a href="<:adminurl menu:>">Return to admin menu</a></p>
+
+<p><font size="-1">BSE Release <:release:></font></p>
+</body>
+</html>

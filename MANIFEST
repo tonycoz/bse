@@ -109,6 +109,7 @@ site/cgi-bin/modules/BSE/ImportSourceXLS.pm
 site/cgi-bin/modules/BSE/ImportTargetArticle.pm
 site/cgi-bin/modules/BSE/ImportTargetBase.pm
 site/cgi-bin/modules/BSE/ImportTargetProduct.pm
+site/cgi-bin/modules/BSE/Index.pm
 site/cgi-bin/modules/BSE/Index/Base.pm
 site/cgi-bin/modules/BSE/Index/BSE.pm
 site/cgi-bin/modules/BSE/Jobs/AuditClean.pm
@@ -546,6 +547,7 @@ site/templates/admin/log/entry.tmpl
 site/templates/admin/log/log.tmpl
 site/templates/admin/log/mail.tmpl
 site/templates/admin/logon.tmpl
+site/templates/admin/makeindex.tmpl
 site/templates/admin/memberupdate/import.tmpl
 site/templates/admin/memberupdate/preview.tmpl
 site/templates/admin/memberupdate/request.tmpl
@@ -772,6 +774,7 @@ site/templates/user/unsubone_base.tmpl
 site/templates/user/userpage_base.tmpl
 site/templates/xbase.tmpl
 site/util/bse_back.pl
+site/util/bse_makeindex.pl
 site/util/bse_mkgitversion.pl
 site/util/bse_msgcheck.pl	Scan for undefined message ids
 site/util/bse_nightly.pl

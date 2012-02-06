@@ -175,6 +175,12 @@ message: Email address '%1:{email}s' confirmed for user '%1:{userId}s'
 id: bse/admin/siteusers/membershipsaved
 message: Membership saved for group '%1:{name}s'
 
+id: bse/admin/generic/accessdenied
+message: You don't have access to this function (%1:s)
+
+id: bse/admin/makeindex/complete
+message: Search index rebuild complete
+
 id: bse/shop/cart/empty
 message: Cart emptied
 
