@@ -49,6 +49,13 @@ BSE 0.21 - unreleased
  - add file_exists to BSE::TB::Article::File
    https://rt4.develop-help.com/Ticket/Display.html?id=1288
 
+ - refactored makeIndex.pl into makeIndex.pl (web) and
+   util/bse_makeindex.pl (console).
+   Output from these is now encoded using the default BSE encoding.
+   makeIndex.pl can now produce HTML output using admin/makeindex.tmpl
+   The bse_make_index background process now uses the console version.
+   https://rt4.develop-help.com/Ticket/Display.html?id=1301
+
 Bug fixes:
 
  - thumb.pl would return content types with doubled image/ prefixes,
@@ -179,6 +186,10 @@ Template updates:
  - shopitem.tmpl - display the flashed message, if any.
 
  - removed the unused checkoutcard and checkoutconfirm templates
+
+ - added admin/generate.tmpl for generate.pl progress output.
+
+ - added admin/makeindex.tmpl for search index verbose output
 
 Internals:
 
