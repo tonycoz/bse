@@ -4,7 +4,7 @@ use Squirrel::Template;
 use Carp qw(confess cluck);
 use Config ();
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 sub templater {
   my ($class, $cfg, $rsets) = @_;
@@ -27,6 +27,11 @@ sub templater {
      utf8 => $cfg->utf8,
      charset => $cfg->charset,
     );
+  if ($cfg->entry("basic", "cache_templates")) {
+    require BSE::Cache;
+    $opts{cache} = BSE::Cache->load($cfg);
+  }
+
   return Squirrel::Template->new(%opts);
 }
 

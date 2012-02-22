@@ -22,3 +22,4 @@
 ^site/cgi-bin/modules/Squirrel/ImageEditor\.pm$
 ^\.?\#
 /\.?\#
+^cover_db/

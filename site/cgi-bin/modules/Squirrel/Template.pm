@@ -1,6 +1,10 @@
 package Squirrel::Template;
 use vars qw($VERSION);
 use strict;
+use Squirrel::Template::Tokenizer;
+use Squirrel::Template::Parser;
+use Squirrel::Template::Deparser;
+use Squirrel::Template::Processor;
 use Carp qw/cluck confess/;
 BEGIN {
   unless ( defined &DEBUG ) {
@@ -11,7 +15,7 @@ BEGIN {
 
 use constant DEBUG_GET_PARMS => 0;
 
-our $VERSION = "1.003";
+our $VERSION = "1.010";
 
 my $tag_head = qr/(?:\s+<:-|<:-?)/;
 my $tag_tail = qr/(?:-:>\s*|:>)/;
@@ -20,6 +24,8 @@ sub new {
   my ($class, %opts) = @_;
 
   $opts{errout} = \*STDOUT;
+  $opts{param} = [];
+  $opts{wraps} = [];
 
   return bless \%opts, $class;
 }
@@ -106,6 +112,9 @@ sub low_perform {
     }
     # otherwise fall through
   }
+  elsif ($func eq "param") {
+    return $self->tag_param($args);
+  }
 
   return $self->{verbose} ? "** unknown function $func **" : $orig;
 }
@@ -141,143 +150,6 @@ sub perform {
   return $value;
 }
 
-sub iterator {
-  my ($self, $name, $args, $input, $sep, $acts, $orig) = @_;
-
-  $args = '' unless defined $args;
-  $sep = '' unless defined $sep;
-
-  print STDERR "iterator $name $args\n" if DEBUG;
-
-  if (my $entry = $acts->{"iterate_$name"}) {
-    $args =~ s/^\s+|\s+$//g;
-
-    my $reset = $acts->{"iterate_${name}_reset"};
-    my ($resetf, @rargs);
-    if ($reset) {
-      if (ref $reset eq 'ARRAY') {
-	($resetf, @rargs) = @$reset;
-      }
-      else {
-	$resetf = $reset;
-      }
-    }
-
-    my ($entryf, @eargs);
-    if (ref $entry eq 'ARRAY') {
-      ($entryf, @eargs) = @$entry;
-    }
-    else {
-      $entryf = $entry;
-    }
-
-    if ($resetf) {
-      if (ref $resetf) {
-	print STDERR "  resetting (func)\n" if DEBUG > 1;
-	$resetf->(@rargs, $args, $acts, $name, $self);
-      }
-      else {
-	my $obj = shift @rargs;
-	print STDERR "  resetting (method) $obj->$resetf\n" if DEBUG > 1;
-	$obj->$resetf(@rargs, $args, $acts, $name, $self);
-      }
-      print STDERR "  reset done\n" if DEBUG > 1;
-    }
-    my $eobj;
-    ref $entryf or $eobj = shift @eargs;
-    my $result = '';
-    while ($eobj ? $eobj->$entryf(@eargs, $name, $args) 
-	   : $entryf->(@eargs, $name, $args)) {
-      $result .= $self->replace_template($sep, $acts) if length $result;
-      $result .= $self->replace_template($input, $acts);
-    }
-    return $result;
-  }
-  else {
-    return $self->{verbose} ? "** No iterator $name **" : $orig;
-  }
-}
-
-sub with {
-  my ($self, $name, $args, $input, $sep, $acts, $orig) = @_;
-
-  $args = '' unless defined $args;
-  if (my $entry = $acts->{"with_$name"}) {
-    my $code;
-    my @args;
-    my $replace = 1;
-    if (ref $entry eq 'CODE') {
-      $code = $entry;
-    }
-    elsif (ref $entry eq 'ARRAY') {
-      ($code, @args) = @$entry;
-    }
-    elsif (ref $entry eq 'HASH') {
-      $code = $entry->{code};
-      @args = @{$entry->{args}} if $entry->{args};
-      $replace = $entry->{replace} if exists $entry->{replace};
-    }
-    else {
-      print STDERR "Cannot use '$entry' as a with_$name handler\n";
-      return $orig;
-    }
-
-    my $result = $input;
-    if ($replace) {
-      $result = $self->replace_template($result, $acts);
-    }
-
-    return $code->(@args, $args, $result, $sep, $acts, $name, $self);
-  }
-  else {
-    return $orig;
-  }
-}
-
-sub cond {
-  my ($self, $name, $args, $acts, $start, $true, $else, $false, $endif) = @_;
-
-  defined $args or $args = '';
-  print STDERR "cond $name $args\n" if DEBUG;
-
-  local $SIG{__DIE__};
-  my $result =
-    eval {
-      if (exists $acts->{"if$name"}) {
-	print STDERR " found cond if$name\n" if DEBUG > 1;
-	my $cond = $self->low_perform($acts, "if$name", $args, '');
-	return $cond ? $true : $false;
-      }
-      elsif (exists $acts->{lcfirst $name}) {
-	print STDERR " found cond $name\n" if DEBUG > 1;
-	my $cond = $self->low_perform($acts, lcfirst $name, $args, '');
-	return $cond ? $true : $false;
-      }
-      else {
-	print STDERR " not found\n" if DEBUG > 1;
-	$true = $self->replace_template($true, $acts) if length $true;
-	$false = $self->replace_template($false, $acts) if length $false;
-	length $args and $args = " " . $args;
-	return "$start$args:>$true$else$false$endif";
-      }
-    };
-  if ($@) {
-    my $msg = $@;
-    if ($msg =~ /\bENOIMPL\b/) {
-      print STDERR "Cond ENOIMPL\n" if DEBUG;
-      $true = $self->replace_template($true, $acts) if length $true;
-      $false = $self->replace_template($false, $acts) if length $false;
-      length $args and $args = " " . $args;
-      return "$start$args:>$true$else$false$endif";
-    }
-    print STDERR "Eval error in cond: $msg\n";
-    $msg =~ s/([<>&])/"&#".ord($1).";"/ge;
-    return "<!-- ** $msg ** -->";
-  }
-
-  return $result;
-}
-
 sub find_template {
   my ($self, $name) = @_;
 
@@ -302,86 +174,37 @@ sub include {
 
   my $filename = $self->find_template($name);
   unless ($filename) {
-    return '' if $options eq 'optional';
+    return wantarray ? ('', '' ) : '' if $options eq 'optional';
 
     print STDERR "** Could not find include code $name\n";
-    return "** cannot find include $name in path **";
+    my $error = "cannot find include $name in path";
+    return wantarray ? ( $error, undef, 1 ) : "* $error *";
   }
 
   print STDERR "Found $filename\n" if DEBUG;
 
   my $error;
   my $data = $self->_slurp($filename, \$error)
-    or return "* $error *";
+    or return wantarray ? ( $error, $filename, 1 ) : "* $error *";
   print STDERR "Included $filename >>$data<<\n"
       if DEBUG;
 
   $data = "<!-- included $filename -->$data<!-- endinclude $filename -->"
       if DEBUG;
 
-  return $data;
-}
-
-sub switch {
-  my ($self, $content, $acts) = @_;
-
-  print STDERR "** switch\n" if DEBUG;
-
-  my @cases = grep /\S/, split /(?=$tag_head\s*case\s)/s, $content;
-  shift @cases if @cases && $cases[0] !~ /$tag_head\s*case\s/;
-  my $case;
-  while ($case = shift @cases) {
-    my ($cond, $data) = $case =~ /$tag_head\s*case\s+(.*?)$tag_tail(.*)/s;
-
-    if ($cond eq 'default') {
-      print STDERR "  returning default\n" if DEBUG;
-      return $data;
-    }
-
-    my ($func, $args) = split ' ', $cond, 2;
-
-    print STDERR "  testing $func $args\n" if DEBUG;
-
-    local $SIG{__DIE__};
-    my $result = 
-      eval {
-	if (exists $acts->{"if$func"}) {
-	  print STDERR "   found cond if$func\n" if DEBUG > 1;
-	  return $self->low_perform($acts, "if$func", $args, '');
-	}
-	elsif (exists $acts->{lcfirst $func}) {
-	  print STDERR "   found cond $func\n" if DEBUG > 1;
-	  return $self->low_perform($acts, lcfirst $func, $args, '');
-	}
-	else {
-	  print STDERR "   not found\n" if DEBUG > 1;
-	  die "ENOIMPL\n";
-	}
-      };
-    if ($@) {
-      my $msg = $@;
-      if ($msg =~ /^ENOIMPL\b/) {
-	s/^($tag_head)case\s/${1}XcaseX / for $case, @cases;
-	return "<:XswitchX:>$case".join("", @cases)."<:XendswitchX:>";
-      }
-
-      print STDERR "Eval error in cond: $msg\n";
-      $msg =~ s/([<>&])/"&#".ord($1).";"/ge;
-      return "<!-- switch cond $cond ** $msg ** -->";
-    }
-    print STDERR "    result ",!!$result,"\n" if DEBUG > 1;
-    return $data if $result;
-  }
-
-  return '';
+  return wantarray ? ($data, $filename) : $data;
 }
 
 sub tag_param {
-  my ($params, $arg) = @_;
+  my ($self, $arg) = @_;
 
-  exists $params->{$arg} or return "";
+  for my $param (@{$self->{param}}) {
+    if (exists $param->{$arg}) {
+      return $param->{$arg};
+    }
+  }
 
-  $params->{$arg};
+  return "";
 }
 
 my $parms_re = qr/\s*\[\s*(\w+)
@@ -399,6 +222,14 @@ my $parms_re = qr/\s*\[\s*(\w+)
 			 )*
                         )
 	            \s*\]\s*/x;
+
+sub parms_re {
+  return $parms_re;
+}
+
+# dummy
+sub tag_summary {
+}
 
 sub get_parms {
   my ($templater, $args, $acts, $keep_unknown) = @_;
@@ -454,147 +285,125 @@ sub get_parms {
   @out;
 }
 
-sub replace_template {
-  my ($self, $template, $acts, $iter) = @_;
+sub errors {
+  my ($self) = @_;
 
-  print STDERR "** >> replace_template\n" if DEBUG;
+  return @{$self->{errors}};
+}
 
-  defined $template
-    or confess "Template must be defined";
+sub start_wrap {
+  my ($self, $args) = @_;
 
-  # add any wrappers
-  my %params;
-  if ($self->{template_dir}) {
-    my $wrap_count = 0;
-    while ($template =~ /^(\s*<:\s*wrap\s+(\S+?)(?:\s+(\S.*?))?:>)/i) {
-      my $name = $2;
-      my $wrapper = $self->find_template($name);
-      unless ($wrapper) {
-	print STDERR "WARNING: Unknown wrap name: $name\n";
-	last;
-      }
-      unless (++$wrap_count < 10) {
-	print STDERR "WARNING: Exceeded wrap count trying to load $wrapper\n";
-	last;
-      }
-      my $params = $3;
-      my $error;
-      if (my $wraptext = $self->_slurp($wrapper, \$error)) {
-        $template = substr($template, length $1);
-        $wraptext =~ s/<:\s*wrap\s+here\s*:>/$template/i
-          and $template = $wraptext
-            or last;
+  if (@{$self->{param}} >= 10) {
+    return;
+  }
 
-	if (defined $params) {
-	  while ($params =~ s/^\s*(\w+)\s*=>\s*\"([^\"]+)\"//
-		 || $params =~ s/^\s*(\w+)\s*=>\s*($parms_re)//
-		 || $params =~ s/^\s*(\w+)\s*=>\s*([^\s,]+)//) {
-	    my ($name, $value) = ($1, $2);
-	    $value =~ s/^($parms_re)/ $self->perform($acts, $2, $3, $1) /egs;
+  unshift @{$self->{param}}, $args;
 
-	    $params{$name} = $value;
-	    $params =~ s/\s*,\s*//;
-	  }
-	  $params =~ /^\s*$/
-	    or print STDERR "WARNING: Extra data after parameters '$params'\n";
-	}
+  return 1;
+}
+
+sub end_wrap {
+  my ($self) = @_;
+
+  shift @{$self->{param}};
+
+  return 11;
+}
+
+sub parse {
+  my ($self, $template, $name) = @_;
+
+  my $t = Squirrel::Template::Tokenizer->new($template, $name || "<string>",
+					     $self);
+  my $p = Squirrel::Template::Parser->new($t, $self);
+
+  my $node = $p->parse;
+
+  push @{$self->{errors}}, $p->errors;
+
+  return $node;
+}
+
+sub parse_filename {
+  my ($self, $filename) = @_;
+
+  my $key = "Squirrel::Template::file:$filename";
+  my ($date, $size);
+
+  if ($self->{cache}) {
+    ($date, $size) = (stat $filename)[9, 7];
+
+    my $cached = $self->{cache}->get($key);
+    if ($cached) {
+      if ($cached->[0] == $date && $cached->[1] == $size) {
+	#print STDERR "Found cached $key / $date / $size\n";
+	return $cached->[2];
       }
       else {
-	print "ERROR: Unable to load wrapper $wrapper: $error\n";
+	#print STDERR "Cached but old $key / $date / $size\n";
+	$self->{cache}->delete($key);
       }
     }
   }
 
-  my $oldparam_tag = $acts->{param};
-  local $acts->{param} = $oldparam_tag || [ \&tag_param, \%params ];
+  my $message;
+  my $text;
 
-  if ($self->{template_dir} && !$acts->{include}) {
-    my $loops = 0;
-    1 while $template =~
-            s!$tag_head
-                \s*
-                include
-                \s+
-                ((?:\w+/)*\w+(?:\.\w+)?)
-                (?:
-                  \s+
-                  ([\w,]+)
-                )?
-                \s*
-               $tag_tail
-             ! 
-               $self->include($1,$2) 
-             !gex
-	       && ++$loops < 10;
-  }
+  if (($text, $message) = $self->_slurp($filename)) {
+    unless ($message) {
+      my $parsed;
 
-  print STDERR "Template text post include:\n---$template---\n"
-    if DEBUG;
+      ($parsed, $message) = $self->parse($text, $filename);
 
-  # the basic iterator
-  if ($iter && 
-      (my ($before, $row, $after) =
-      $template =~ m/^(.*)
-           $tag_head\s+iterator\s+begin\s+$tag_tail
-            (.*)
-           $tag_head\s+iterator\s+end\s+$tag_tail
-            (.*)/sx)) {
-    until ($iter->EOF) {
-      my $temp = $row;
-      $temp =~ s/($tag_head\s*(\w+)(?:\s+([^:]*?))$tag_tail)/ $self->perform($acts, $2, $3, $1) /egx;
-      $before .= $temp;
+      if ($parsed && $self->{cache}) {
+	#print STDERR "Set $key / $date / $size\n";
+	$self->{cache}->set($key => [ $date, $size, $parsed ]);
+      }
+
+      return ($parsed, $message);
     }
-    $template = $before . $after;
   }
 
-  # more general iterators
-  $template =~ s/($tag_head\s*(iterator|with)\s+begin\s+(\w+)(?:\s+(.*?))?\s*$tag_tail
-                  (.*?)
-		    (?: 
-		     $tag_head\s*\2\s+separator\s+\3\s*$tag_tail
-                      (.*?)
-		     ) ?
-                 $tag_head\s*\2\s+end\s+\3\s*$tag_tail)/
-                   $self->$2($3, $4, $5, $6, $acts, $1) /segx;
+  return (undef, $message);
+}
 
-  # conditionals
-  my $nesting = 0; # prevents loops if result is an if statement
-  1 while $template =~ s/($tag_head\s*if\s+(\w+))(?:\s+(.*?))?$tag_tail
-                          (.*?)
-                         ($tag_head\s*or\s+\2\s*$tag_tail)
-                          (.*?)
-                         ($tag_head\s*eif\s+\2\s*$tag_tail)/
-                        $self->cond($2, $3, $acts, $1, $4, $5, $6, $7) /sgex
-			  && ++$nesting < 5;
-  $template =~ s/($tag_head\s*if([A-Z]\w*))(?:\s+(.*?))?$tag_tail
-                  (.*?)
-                 ($tag_head\s*or\s*$tag_tail)
-                  (.*?)
-                 ($tag_head\s*eif\s*$tag_tail)/
-                $self->cond($2, $3, $acts, $1, $4, $5, $6, $7) /sgex;
+sub parse_file {
+  my ($self, $name) = @_;
 
-  $nesting = 0;
-  1 while $template =~ s/$tag_head\s*switch\s*$tag_tail
-                         ((?:(?!<:-?\s*switch).)*?)
-                         $tag_head\s*endswitch\s*$tag_tail/
-			   $self->switch($1, $acts)/segx
-			     && ++$nesting < 5;
-  $template =~ s/($tag_head)XswitchX($tag_tail)/${1}switch$2/g;
-  $template =~ s/($tag_head)XendswitchX($tag_tail)/${1}endswitch$2/g;
-  $template =~ s/($tag_head)XcaseX /${1}case /g;
+  my $message;
+  my $filename = $self->find_template($name);
+  if ($filename) {
+    return $self->parse_filename($filename);
+  }
+  else {
+    $message = "File $name not found";
+  }
 
-  $template =~ s/($tag_head\s*(\w+)(?:\s+(.*?\s*(?:\|\S+?)?))?$tag_tail)/ 
-    $self->perform($acts, $2, $3, $1) /segx;
+  return (undef, $message);
+}
 
-  # replace any wrap parameters
-  # now done elsewhere
-  #$template =~ s/(<:\s*param\s+(\w+)\s*:>)/
-  #  exists $params{$2} ? $params{$2} : $1 /eg;
+sub replace {
+  my ($self, $parsed, $acts) = @_;
 
+  $self->{errors} = [];
 
-  print STDERR "** << replace_template\n" if DEBUG;
+  my $oldparam_tag = $acts->{param};
+  local $acts->{param} = $oldparam_tag || [ tag_param => $self ];
 
-  return $template;
+  my $processor = Squirrel::Template::Processor->new($acts, $self);
+
+  return wantarray
+    ? $processor->process($parsed)
+      : join("", $processor->process($parsed));
+}
+
+sub replace_template {
+  my ($self, $template, $acts, $iter, $name) = @_;
+
+  my $parsed = $self->parse($template, $name);
+
+  return scalar $self->replace($parsed, $acts, $name);
 }
 
 sub show_page {
@@ -618,17 +427,19 @@ sub show_page {
     $file
       or die "Cannot find template $page";
   }
-  my $error;
-  my $template = $self->_slurp($file, $error)
-    or die "Cannot open template $file: $!";
 
-  my $result = $self->replace_template($template, $acts, $iter);
+  my ($parsed, $error) = $self->parse_filename($file);
+
+  $error
+    and die $error;
+
+  my $result = scalar $self->replace($parsed, $acts, $file);
+
   print STDERR "<< show_page\n" if DEBUG;
 
   return $result;
 }
 
-1;
 
 __END__
 
@@ -638,13 +449,24 @@ __END__
 
 =head1 SYNOPSIS
 
+  use Squirrel::Template;
+  my $templater = Squirrel::Template->new(template_dir => $some_dir);
+  my $result = $templater->show_page($base, $filename, \%acts, undef, $alt);
+  my $result = $templater->replace_template($text, \%acts, undef, $display_name);
+  my @errors = $templater->errors;
+  my @args = $templater->get_parms($args, \%acts, $keep_unknown)
+
 =head1 DESCRIPTION
+
+BSE's template engine.
 
 =head1 METHODS
 
 =over 4
 
-=item $templ = Squirrel::Template->new(%opts);
+=item new()
+
+  $templater = Squirrel::Template->new(%opts);
 
 Create a new templating object.
 
@@ -659,99 +481,337 @@ message rather than being left in place.
 
 =item template_dir
 
-Used by the wrapper mechanism to find wrapper templates.  See
-L<WRAPPING> below.  This can be either a scalar, or a reference to an
-array of locations to search for the wrapper.  This is also used for
-the <:include filename:> mechanism.
+Used to find wrapper and include templates.  This can be either a
+scalar, or a reference to an array of locations to search for the
+wrapper.
+
+=item utf8
+
+If this is true then the template engine works in unicode internally.
+Template files are read into memory using the charecter set specified
+by C<charset>.
+
+=item charset
+
+Ignored unless C<utf8> is true.  Specifies the character encoding used
+by template files.  Defaults to C<"utf-8">.
+
+=item cache
+
+A BSE::Cache object to use for caching compiled templates.  Note that
+templates are currently only cached by filename.
 
 =back
 
-=item $text = $templ->show_page($base, $template, $acts, $iter)
+=item show_page()
+
+  $text = $templ->show_page($base, $template, \%acts, $iter)
 
 Performs template replacement on the text from the file $template in
 directory $base.
 
-=item $text = $templ->replace_template($intext, $acts, $iter)
+=item replace_template()
 
-Performs template replacement on $intext.
+  $text = $templ->replace_template($intext, \%acts, $iter, $name)
 
-=back
+Performs template replacement on C<$intext> using the tags in
+C<%acts>.  C<$iter> is accepted only for backward compatibility and it
+no longer used.  Errors are reported as if C<$intext> had been read
+from a file called C<$name>.
 
-=head1 TEMPLATES
+=item errors()
 
-=over 4
+Return errors from the last show_page() or replace_template().
 
-=item <: name args :>
+This can include:
 
-Replaced with $acts->{name}->(args)
-
-=item <: iterator begin name args :> text <: iterator separator name :> separator <: iterator end name :>
-
-Replaced with repeated templating of text separated by separator while
-$acts->{iterator_name}->($args, $name) is true.
-
-
-=item <: iterator begin name args :> text <: iterator end name :>
-
-Replaced with repeated templating of text while
-$acts->{iterate_name}->($args, $name) is true.
-
-This may be nested or repeated.
-
-=item <: iterator begin :> text <: iterator end :>
-
-Replaced with repeated templating of text while $iter->EOF is true.
-
-=item <: ifname args :> true <: or :> false <: eif :>
-
-Emits true if $acts->{ifname}->($args) is true, otherwise the false text.
-
-=item <: if name args :> true <: or name :> false <: eif name :>
-
-Emits true if $acts->{ifname}->($args) is true, otherwise the false text.
-
-Has the advantage that it can be nested (the other form doesn't
-support nesting - this isn't a proper parser.
-
-=back
-
-=head1 WRAPPING
-
-If you define the template_dir option when you create your templating
-object, then a mechnism to wrap the current template with another is
-enabled.
-
-For the wrapping to occur:
-
-=over 4
+=over
 
 =item *
 
-The template specified in the call to replace_template() or
-show_page() needs to start with:
-
-<: wrap I<templatename> :>
+tokenization errors - an unknown token was found in the template
 
 =item *
 
-The template specified in the <: wrap ... :> tag must exist in the
-directory specified by the I<template_dir> option.
+parsing errors - mismatched if/eif, etc
 
 =item *
 
-The template specified in the <: wrap ... :> tag must contain a:
+processing errors - die from tag handlers, etc
 
-   <: wrap here :>
+=item *
 
-tag.
+file errors - missing include or wrap files, and recursion from those.
 
 =back
 
-The current template text is then replaced with the contents of the
-template specified by I<templatename>, with the <: wrap here :>
-replaced by the original template text.
+Returns a list of error tokens, each of which is an array reference
+with:
 
-This is then repeated for the new template text.
+=over
+
+=item *
+
+The text "error".
+
+=item *
+
+An template text that caused the error.  This may be blank some cases.
+
+=item *
+
+The line number.
+
+=item *
+
+The filename.  If you called replace_template() this will be the
+C<$name> supplied to replace_template().
+
+=item *
+
+An error message.
+
+=back
+
+=item get_parms()
+
+  my @args = get_parms($args, $acts, $keep_unknown)
+
+Does simple and stupid processing of C<$args> parsing it for a list of
+arguments.
+
+Possible arguments that are parsed are:
+
+=over
+
+=item *
+
+C<[> I<tagname> I<arguments> C<]> - return the results of calling the
+specified tag.  Only a limited amount of nesting is parsed.
+
+=item *
+
+C<">I<text>C<"> - quoted text.  No escaping is done on the text.
+
+=item *
+
+I<text> - plain text not containing any C<[> or C<]>.
+
+=back
+
+Returns a list of parsed arguments.
+
+If I<tagname> in C<$args> isn't defined, dies with an C<ENOIMPL\n>
+message.
+
+=back
+
+=head1 TEMPLATE SYNTAX
+
+In general, if the tag has no definition the original tag directive is
+left in place.  If the tag has sub-components (like C<if> or
+C<iterate>) tag replacement is done on the sub-components.
+
+Template directives start with C<< <: >>, if a C<-> is found
+immediately after the C<:> any whitespace before the tag is also
+replaced.
+
+Template directives end with C<< :> >>, if a C<-> if found immediately
+before the C<:> any whitespace after the tag is also replaced.
+
+eg.
+
+  <: tag foo -:>  sample  <:-  tag bar :>
+
+is treated the same as:
+
+  <: tag foo :>sample<: tag bar :>
+
+Directives available in templates:
+
+=over
+
+=item  *
+
+C<< <: I<name> I<args> :> >>
+
+Replaced with the value of the tag.  See L</Simple tag evaluation>.
+
+=item *
+
+C<< <: iterator begin I<name> I<args> :> I<text> <: iterator separator I<name> :> I<separator> <: iterator end I<name> :> >>
+
+C<< <: iterator begin I<name> I<args> :> I<text> <: iterator end I<name> :> >>
+
+Replaced with repeated templating of I<text> separated by I<separator>.
+
+See L</Iterator tag evaluation>.
+
+=item *
+
+C<< <: ifI<Name> I<args> :> I<true> <: or :> I<false> <: eif :> >>
+
+C<< <: if I<Name> I<args> :> I<true> <: or I<Name> :> I<false> <: eif I<Name> :> >>
+
+Emits I<true> if the tag evaluates to a true value, otherwise the
+I<false> text.  See L</Conditional tag evaluation>.
+
+Note that only the C<if> now requires the C<Name>.  The C<or> and
+C<eif> may include the name, but it is not required.  If the C<Name>
+is supplied it must match the C<if> C<Name> or an error will be
+returned.
+
+=item *
+
+C<< <: with begin I<name> I<args> :> I<replaced> <: with end I<name> :> >>
+
+Calls C<< $acts->{"with_I<name>"}->($args, $replaced, "", \%acts,
+I<$name>, $templaer) >> where C<$replaced> is the processed text and
+inserts that.
+
+=item *
+
+C<< <: # I<your comment> :> >>
+
+A comment, not included in the output.
+
+=item *
+
+C<< <:switch:><:case I<Name> I<optional-args> :>I<content> ... <:endswitch:> >>
+
+Replaced with the first matching conditional where C<< <:case I<Name>
+I<optional-args> :> >> is treated like an C<if>.
+
+A C<< <:case default:> >> is always true.
+
+=item *
+
+C<< <: include I<filename> I<options> :> >>
+
+Replaced with the content of the supplied filename.
+
+If the file I<filename> is not found, this results in an error being
+inserted (and reported via L</errors()>) unless I<options> contains
+C<optional>.
+
+No more than 10 levels of include can be nested.
+
+=item *
+
+C<< <: wrap I<templatename> :> I<wrapped> <:endwrap:> >>
+
+C<< <: wrap I<templatename> I<name> => I<value>, ... :> I<wrapped> <:endwrap> >>
+
+The C<< <:endwrap:> >> is optional.  A wrapper will be terminated by
+end of file if not otherwise terminated.
+
+Processes I<templatename> as a template.  Within that template C<< <:
+wrap here :> >> will be replaced with I<wrapped>.
+
+The values specified by the C<< I<name> => I<value> >> are used to
+populate the value of the built-in param tag.
+
+Wrapping can be nested up to 10 levels.
+
+=item *
+
+C<< <: wrap here :> >>
+
+Returns the wrapped content within a wrapper template.  Returns an
+error if not within a wrapper template.
+
+=back
+
+=head1 TAG EVALUATION
+
+=head2 Simple tag evaluation
+
+Tag definitions in C<%acts> can be in any of five forms:
+
+=over
+
+=item *
+
+A simple scalar - the value of the scalar is returned.
+
+=item *
+
+A scalar reference - the referred to scalar is returned.
+
+=item *
+
+A code reference - the code reference is called as:
+
+  $code->($args, \%acts, $tagname, $templater)
+
+=item *
+
+An array reference starting with a code reference, followed by
+arguments, eg C<< [ \&tag_sometag, $foo, $bar ] >>.  This is called
+as:
+
+  $code->($foo, $bar, \%acts, $tagname, $templater)
+
+=item *
+
+An array reference starting with a scalar, followed by an object or
+class name, followed by arguments, eg C<< [ method => $obj, $foo, $bar
+] >>.  This is called as:
+
+  $obj->$method($foo, $bar, \%acts, $tagname, $templater)
+
+=back
+
+A warning is produced if the tag returns an undef value.
+
+=head2 Conditional tag evaluation
+
+Given a C<< ifI<SomeName> >>, does L</Simple tag evaluation> on the
+first tag of C<< ifI<SomeName> >> or C<< I<someName> >> found.
+
+Unlike simple tag evaluation this does not warn if the result is undef.
+
+=head2 Iterator tag evaluation
+
+This uses two members of C<%acts>:
+
+=over
+
+=item *
+
+C<< iterate_I<name>_reset >> - called to start iteration.  Optional
+but recommended.
+
+=item *
+
+C<< iterate_I<name> >> - called until it returns false for each
+iteration.
+
+=back
+
+Either can be any of:
+
+=over
+
+=item *
+
+a code reference - called as:
+
+  $code->($args, \%acts, $name, $templater)
+
+=item *
+
+an array reference starting with a code reference:
+
+  $arrayref->[0]->(@{$arrayref}[1 .. $#$arrayref], \%acts, $name, $templater);
+
+=item *
+
+an array reference starting with a scalar:
+
+  $arrayref->[1]->$method(@{$arrayref}[2 .. $#$arrayref], \%acts, $name, $templater);
+
+=back
 
 =head1 SPECIAL ACTIONS
 
@@ -770,6 +830,16 @@ function.
 
 =head1 SEE ALSO
 
-  Squirrel::Row(3p), Squirel::Table(3p)
+Squirrel::Row(3p), Squirel::Table(3p)
+
+=head1 HISTORY
+
+Started as a quick hack from seeing the hacky template replacement
+done by an employer.
+
+It grew.
+
+Largely rewritten in 2012 to avoid processing the same string a few
+hundred times.
 
 =cut

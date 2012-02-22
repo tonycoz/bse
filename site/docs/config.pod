@@ -438,6 +438,12 @@ their results.  Default: 1.
 The name of the file to generate for static articles when the link is
 terminated by "/".  Default: C<index.html>.
 
+=item cache_templates
+
+If true, BSE will cache compiled templates using the configured BSE
+cache, if any.  Depending on the configured cache this may slow things
+down.  Default: disabled.
+
 =back
 
 =head2 [mail]

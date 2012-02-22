@@ -109,7 +109,7 @@ testup: checkver distdir
 checkver:
 	if [ -d .git ] ; then perl site/util/check_versions.pl ; fi
 
-TEST_FILES=t/*.t
+TEST_FILES=t/*.t t/*/*.t
 TEST_VERBOSE=0
 
 test: testup

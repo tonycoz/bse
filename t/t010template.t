@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 25;
+use Test::More tests => 41;
 
 sub template_test($$$$;$);
 
@@ -12,6 +12,7 @@ SKIP: {
 
   my $flag = 0;
   my $str = "ABC";
+  my $str2 = "DEF";
   my ($repeat_limit, $repeat_value);
 
   my %acts =
@@ -24,9 +25,12 @@ SKIP: {
      repeat => \$repeat_value,
      strref => \$str,
      str => $str,
+     str2 => $str2,
      with_upper => \&tag_with_upper,
      cat => \&tag_cat,
      ifFalse => 0,
+     dead => sub { die "foo\n" },
+     noimpl => sub { die "ENOIMPL\n" },
     );
   template_test("<:str:>", "ABC", "simple", \%acts);
   template_test("<:strref:>", "ABC", "scalar ref", \%acts);
@@ -43,6 +47,13 @@ TEMPLATE
 		"cond1", \%acts);
   template_test('<:if Eq [str] "ABC":>YES<:or Eq:>NO<:eif Eq:>', "YES", 
 		"cond2", \%acts);
+  template_test("<:dead:>", "* foo\n *", "dead", \%acts);
+  template_test("<:noimpl:>", "<:noimpl:>", "noimpl", \%acts);
+  template_test("<:unknown:>", "<:unknown:>", "unknown tag", \%acts);
+  template_test("<:ifDead:><:str:><:or:><:str2:><:eif:>",
+		"* foo\n *<:ifDead:>ABC<:or:>DEF<:eif:>", "ifDead", \%acts);
+  template_test("<:ifNoimpl:><:str:><:or:><:str2:><:eif:>",
+		"<:ifNoimpl:>ABC<:or:>DEF<:eif:>", "ifNoimpl", \%acts);
   template_test(<<TEMPLATE, <<OUTPUT, "wrap", \%acts, "in");
 <:wrap wraptest.tmpl title=>[cat "foo " [str]], menu => 1, showtitle => "abc" :>Alpha
 <:param menu:>
@@ -52,6 +63,97 @@ TEMPLATE
 Alpha
 1
 abc
+OUTPUT
+
+  template_test(<<TEMPLATE, <<OUTPUT, "wrap", \%acts, "both");
+Before
+<:wrap wraptest.tmpl title=>[cat "foo " [str]], menu => 1, showtitle => "abc" -:>
+Alpha
+<:param menu:>
+<:param showtitle:>
+<:-endwrap-:>
+After
+TEMPLATE
+Before
+<title>foo ABC</title>
+Alpha
+1
+abc
+After
+OUTPUT
+
+  template_test(<<TEMPLATE, <<OUTPUT, "wrap with too much parameter text", \%acts, "in");
+<:wrap wraptest.tmpl title=>[cat "foo " [str]], menu => 1, showtitle => "abc" junk :>Alpha
+<:param menu:>
+<:param showtitle:>
+TEMPLATE
+* WARNING: Extra data after parameters ' junk' *<title>foo ABC</title>
+Alpha
+1
+abc
+OUTPUT
+
+  template_test(<<TEMPLATE, <<OUTPUT, "wrap recursive", \%acts, "both");
+<:wrap wrapself.tmpl title=>[cat "foo " [str]], menu => 1, showtitle => "abc" :>Alpha
+<:param menu:>
+<:param showtitle:>
+TEMPLATE
+* Error starting wrap: Too many levels of wrap for 'wrapself.tmpl' *<title>foo ABC</title>
+<title>foo ABC</title>
+<title>foo ABC</title>
+<title>foo ABC</title>
+<title>foo ABC</title>
+<title>foo ABC</title>
+<title>foo ABC</title>
+<title>foo ABC</title>
+<title>foo ABC</title>
+<title>foo ABC</title>
+Alpha
+1
+abc
+OUTPUT
+
+  template_test(<<TEMPLATE, <<OUTPUT, "wrap unknown", \%acts, "both");
+<:wrap unknown.tmpl:>
+Body
+TEMPLATE
+* Loading wrap: File unknown.tmpl not found *
+OUTPUT
+
+  template_test(<<TEMPLATE, <<OUTPUT, "unwrapped wrap here", \%acts, "both");
+before
+<:wrap here:>
+after
+TEMPLATE
+before
+* wrap here without being wrapped *
+after
+OUTPUT
+
+  # undefined iterator - replacement should happen on the inside
+  template_test(<<TEMPLATE, <<OUTPUT, "undefined iterator", \%acts);
+<:iterator begin unknown:>
+<:if Eq "1" "1":>TRUE<:or:>FALSE<:eif:>
+<:iterator separator unknown:>
+<:if Eq "1" "0":>TRUE<:or:>FALSE<:eif:>
+<:iterator end unknown:>
+TEMPLATE
+<:iterator begin unknown:>
+TRUE
+<:iterator separator unknown:>
+FALSE
+<:iterator end unknown:>
+OUTPUT
+
+  template_test(<<TEMPLATE, <<OUTPUT, "multi wrap", \%acts, "in");
+<:wrap wrapinner.tmpl title => "ABC":>
+Test
+TEMPLATE
+<title>ABC</title>
+
+<head1>ABC</head1>
+
+Test
 OUTPUT
 
   my $switch = <<IN;
@@ -72,15 +174,40 @@ IN
   $str = "ABC";
   template_test($switch2, "ONE", "switch without ignored", \%acts, "both");
 
-  template_test(<<IN, <<OUT, "unimplemented switch", \%acts, "both");
+  template_test(<<IN, <<OUT, "unimplemented switch (by die)", \%acts, "both");
 <foo><:strref bar |h:></foo><:switch:><:case Eq [strref] "XYZ":>FAIL<:case Eq [unknown] "ABC":><:endswitch:>
 IN
 <foo>ABC</foo><:switch:><:case Eq [unknown] "ABC":><:endswitch:>
 OUT
 
+  template_test(<<IN, <<OUT, "unimplemented switch (by missing)", \%acts, "both");
+<foo><:strref bar |h:></foo><:switch:><:case Eq [strref] "XYZ":>FAIL<:case Unknown:><:str:><:case Eq [unknown] "ABC":><:str2:><:endswitch:>
+IN
+<foo>ABC</foo><:switch:><:case Unknown:>ABC<:case Eq [unknown] "ABC":>DEF<:endswitch:>
+OUT
+
+  template_test(<<IN, <<OUT, "switch with die in case and unknown", \%acts, "both");
+<:switch:><:case Eq [strref] "XYZ":>FAIL<:case Dead:><:str:><:case Eq [unknown] "ABC":><:str2:><:endswitch:>
+IN
+* foo
+ *<:switch:><:case Eq [unknown] "ABC":>DEF<:endswitch:>
+OUT
+
+  template_test(<<IN, <<OUT, "switch with die no matches", \%acts, "both");
+<:switch:><:case Eq [strref] "XYZ":>FAIL<:case Dead:><:str:><:case False:><:str2:><:endswitch:>
+IN
+* foo
+ *
+OUT
+
   template_test("<:with begin upper:>Alpha<:with end upper:>", "ALPHA", "with", \%acts);
+
+  template_test("<:with begin unknown:>Alpha<:str:><:with end unknown:>", <<EOS, "with", \%acts, "out");
+<:with begin unknown:>AlphaABC<:with end unknown:>
+EOS
+
   template_test("<:include doesnt/exist optional:>", "", "optional include", \%acts);
-  template_test("<:include doesnt/exist:>", "** cannot find include doesnt/exist in path **", "failed include", \%acts);
+  template_test("<:include doesnt/exist:>", "* cannot find include doesnt/exist in path *", "failed include", \%acts);
   template_test("x<:include included.include:>z", "xyz", "include", \%acts);
 
   template_test <<IN, <<OUT, "nested in undefined if", \%acts;
