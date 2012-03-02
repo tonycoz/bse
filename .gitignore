@@ -36,3 +36,5 @@ site/docs/upgrade_mysql.html
 site/docs/userupdate.html
 .#*
 *~
+
+/cover_db
