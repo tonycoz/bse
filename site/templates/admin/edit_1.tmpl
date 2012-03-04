@@ -251,7 +251,7 @@
   <:if UserCan edit_save:article:><input type="submit" name="save" value="Update <: articleType:>" /><:or UserCan:><:eif UserCan:>
    <:eif:></p>
   </form>
-<:if children:> <:ifEq [article id] [cfg articles shop]:> 
+<:if Children:> <:ifEq [article id] [cfg articles shop]:> 
 <h2>Catalogs</h2>
 <:or:> 
 <h2><: childtype :></h2>
@@ -280,8 +280,8 @@
         </tr>
         <:iterator separator children:> <:iterator end children:> 
       </table>
-<:or children:>
-<:eif children:>
+<:or Children:>
+<:eif Children:>
 <:if HaveChildType:>
 <:if New:>
 <:or New:>
