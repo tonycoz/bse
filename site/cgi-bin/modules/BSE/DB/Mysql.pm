@@ -5,7 +5,7 @@ use vars qw/@ISA/;
 use Carp 'confess';
 @ISA = qw(BSE::DB);
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 use vars qw($VERSION $MAX_CONNECTION_AGE);
 
@@ -378,7 +378,7 @@ SQL
 select count(*) as "count" from order_item where subscription_id = ?
 SQL
    subscriptionOrderSummary => <<SQL,
-select od.id, od.userId, od.orderDate, od.siteuser_id, 
+select od.id, od.userId, od.orderDate, od.siteuser_id, od.billFirstName, od.billLastName, od.filled, 
     sum(oi.subscription_period * oi.units) as "subscription_period"
   from orders od, order_item oi
   where oi.subscription_id = ? and od.id = oi.orderId and od.complete <> 0
