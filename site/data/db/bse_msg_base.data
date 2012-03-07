@@ -152,8 +152,8 @@ description: if an unknown article category is received
 id: bse/admin/generic/
 description: General messages
 
-id: bse/admin/generic/accessdenied (%1 - required access)
-description: Displayed when the user doesn't have access due to permissions
+id: bse/admin/generic/accessdenied
+description: Displayed when the user doesn't have access due to permissions (%1 - required access)
 
 id: bse/admin/makeindex/
 description: makeIndex messages
