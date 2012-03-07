@@ -3,7 +3,7 @@ DISTNAME=bse-$(VERSION)
 DISTBUILD=$(DISTNAME)
 DISTTAR=../$(DISTNAME).tar
 DISTTGZ=$(DISTTAR).gz
-WEBBASE=/home/httpd/html/bse
+WEBBASE=/home/tony/www/bse
 
 BSEMODULES=site/cgi-bin/modules/BSE/Modules.pm
 
