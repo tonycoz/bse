@@ -54,6 +54,15 @@ my @base_check =
     },
    },
    {
+    name => "EWay payments",
+    modules =>
+    {
+     'XML::LibXML' => 0,
+     'LWP::UserAgent' => 0,
+     'Crypt::SSLeay' => 0,
+    },
+   },
+   {
     name => "Nport",
     modules => 
     {
