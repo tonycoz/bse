@@ -64,6 +64,8 @@ BSE 0.21 - unreleased
    article record and always return a link to admin.pl for that
    article.
 
+ - add a missing comma to BSE::UI, preventing a warning.
+
 Bug fixes:
 
  - thumb.pl would return content types with doubled image/ prefixes,

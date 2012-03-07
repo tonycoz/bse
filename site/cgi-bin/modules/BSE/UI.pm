@@ -8,7 +8,7 @@ if (eval { require Time::HiRes; 1 }) {
   $time = \&Time::HiRes::time;
 }
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub confess;
 
@@ -82,7 +82,7 @@ sub run_fcgi {
 	(
 	 cfg => $cfg,
 	 cgi => $cgi,
-	 fastcgi => $FCGI::global_request->IsFastCGI
+	 fastcgi => scalar $FCGI::global_request->IsFastCGI,
 	 %{$opts{req_params} || {}},
 	);
       1;
