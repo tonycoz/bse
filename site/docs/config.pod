@@ -444,6 +444,16 @@ If true, BSE will cache compiled templates using the configured BSE
 cache, if any.  Depending on the configured cache this may slow things
 down.  Default: disabled.
 
+=item auto_images
+
+By default, if the author doesn't use any image tags, BSE will insert
+any unnamed article images into the body text of an article.  You can
+disable this on a per-article basis in the image tool, or disable it
+globally by setting C<auto_images> to 0.
+
+An alternative is to set C<imagePos> in C<[article defaults]> to
+C<xx> which will default articles to not auto-inserting images.
+
 =back
 
 =head2 [mail]

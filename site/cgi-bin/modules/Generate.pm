@@ -11,7 +11,7 @@ use BSE::Util::Iterate;
 use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 my $excerptSize = 300;
 
@@ -236,7 +236,10 @@ sub format_body {
 
   # we don't format named images
   my @images = grep $_->{name} eq '', @$images;
-  if ($auto_images && @images) {
+  if ($auto_images
+      && @images
+      && $self->{cfg}->entry('basic', 'auto_images', 1)
+      && $imagePos ne 'xx') {
     # the first image simply goes where we're told to put it
     # the imagePos is [tb][rl] (top|bottom)(right|left)
     my $align = $imagePos =~ /r/ ? 'right' : 'left';

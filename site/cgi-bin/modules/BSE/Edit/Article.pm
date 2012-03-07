@@ -15,7 +15,7 @@ use DevHelp::Date qw(dh_parse_date dh_parse_sql_date);
 use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
-our $VERSION = "1.022";
+our $VERSION = "1.023";
 
 =head1 NAME
 
@@ -2874,7 +2874,7 @@ sub save_image_changes {
   my $cgi = $req->cgi;
   my $image_pos = $cgi->param('imagePos');
   if ($image_pos 
-      && $image_pos =~ /^(?:tl|tr|bl|br)$/
+      && $image_pos =~ /^(?:tl|tr|bl|br|xx)$/
       && $image_pos ne $article->{imagePos}) {
     $article->{imagePos} = $image_pos;
     $article->save;

@@ -86,19 +86,21 @@
   <h2>Manage images</h2>
 
         <table class="editform images">
-          <:if Images:><:if Eq [article id] "-1":><:or Eq:><tr> 
+          <:if Images:><:if Eq [article id] "-1":><:or Eq:><:if Cfg basic auto_images 1:><tr> 
             <th colspan="5">First Image Position</th>
           </tr>
 		  <tr> 
             <td colspan="5"> 
-<input type="radio" name="imagePos" value="tl" <: ifEq [article imagePos] "tl":>checked<:or:><:eif:>
-	      />Top Left &nbsp;<input type="radio" name="imagePos" value="tr"  <: ifEq [article imagePos] "tr":>checked<:or:><:eif:>
-	      />Top Right &nbsp; <input type="radio" name="imagePos" value="bl"  <: ifEq [article imagePos] "bl":>checked<:or:><:eif:>
-	      />Bottom Left &nbsp; <input type="radio" name="imagePos" value="br"  <: ifEq [article imagePos] "br":>checked<:or:><:eif:>
-	      />Bottom Right <:help image position:>
+<input type="radio" name="imagePos" value="tl" <: ifEq [article imagePos] "tl":>checked<:eif:> />Top Left &nbsp;
+<input type="radio" name="imagePos" value="tr"  <: ifEq [article imagePos] "tr":>checked<:eif:> />Top Right &nbsp;
+<input type="radio" name="imagePos" value="bl"  <: ifEq [article imagePos] "bl":>checked<:eif:> />Bottom Left &nbsp;
+<input type="radio" name="imagePos" value="br"  <: ifEq [article imagePos] "br":>checked<:eif:> />Bottom Right
+<input type="radio" name="imagePos" value="xx"  <: ifEq [article imagePos] "xx":>checked<:eif:> />Don't automatically insert images
+
+<:help image position:>
 
 	    </td>
-          </tr><:eif Eq:>
+          </tr><:eif Cfg:><:eif Eq:>
 <:if Thumbs:>
           <tr> 
             <th>Image</th>
