@@ -1,6 +1,10 @@
 BSE 0.21 - unreleased
 ========
 
+ - Squirrel::Template has largely been rewritten performing a parsing
+   then a processing step rather than doing many, many s/// over the
+   template text.
+
  - verbose output of generate.pl is now based on the template
    admin/generate.tmpl
 
@@ -104,8 +108,15 @@ Templates:
  - admin/order_list*.tmpl - see the order list re-work above.
 
  - you can now use <:- and -:> as tag delimiters to consume whitespace
-   on the left and right of the tag.  This doesn't occur for wrap, but
-   should for other tags.
+   on the left and right of the tag.
+
+ - Squirrel::Template now documents the template syntax more regularly.
+
+ - Squirrel::Template is now much faster in most cases.
+
+ - admin/subscr/detail - the subscription orders iterator now includes
+   the billFirstName, billLastName and filled fields from the
+   order. (Adrian Oldham)
 
 Internals:
 
