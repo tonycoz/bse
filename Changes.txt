@@ -1,4 +1,4 @@
-BSE 0.21 - unreleased
+BSE 0.21 - 07 Mar 2012
 ========
 
  - Squirrel::Template has largely been rewritten performing a parsing
