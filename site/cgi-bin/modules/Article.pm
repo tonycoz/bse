@@ -8,7 +8,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::TB::SiteCommon BSE::TB::TagOwner/;
 use Carp 'confess';
 
-our $VERSION = "1.010";
+our $VERSION = "1.011";
 
 sub columns {
   return qw/id parentid displayOrder title titleImage body
@@ -305,6 +305,12 @@ sub link {
     $link .= '/' . $title;
   }
   return $link;
+}
+
+sub admin {
+  my ($self) = @_;
+
+  return BSE::Cfg->single->admin_url("admin", { id => $self->id });
 }
 
 sub is_linked {

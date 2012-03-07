@@ -3,7 +3,7 @@ use strict;
 use BSE::Util::HTML;
 use Carp 'confess';
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 use base 'DevHelp::Formatter';
 
@@ -184,7 +184,7 @@ sub doclink {
   my $admin = $self->{gen}{admin_links};
   my $url;
   if ($admin) {
-    $url = $art->{admin};
+    $url = $art->admin;
     if (!$self->{gen}{admin}) {
       $url .= $url =~ /\?/ ? "&" : "?";
       $url .= "admin=0&admin_links=1";

@@ -60,6 +60,10 @@ BSE 0.21 - unreleased
    The bse_make_index background process now uses the console version.
    https://rt4.develop-help.com/Ticket/Display.html?id=1301
 
+ - admin-mode article links now ignore the admin value stored in the
+   article record and always return a link to admin.pl for that
+   article.
+
 Bug fixes:
 
  - thumb.pl would return content types with doubled image/ prefixes,
