@@ -4,6 +4,10 @@
 | <a href="/cgi-bin/admin/menu.pl">Admin menu</a> |
 <:if UserCan bse_subs_list :>
 <a href="<:script:>?a_list=1">List Subscriptions</a> |<:or UserCan:><:eif UserCan:>
+<:if And [ifUserCan bse_subscr_delete] [subscription is_removable]:>
+<a href="<:adminurl2 subadmin detail subscription_id [subscription subscription_id] t delete:>">Delete</a>
+<:eif:>
+</p>
 <:ifMessage:>
 <p><b><:message:></b></p>
 <:or:><:eif:> 

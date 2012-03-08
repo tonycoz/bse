@@ -1,7 +1,7 @@
 package BSE::UI::SubAdmin;
 use strict;
 use base qw(BSE::UI::AdminDispatch);
-use BSE::Util::Tags qw(tag_hash tag_error_img);
+use BSE::Util::Tags qw(tag_hash tag_error_img tag_object);
 use BSE::Util::DynSort qw(sorter tag_sorthelp);
 use DevHelp::Validate qw(dh_validate);
 use BSE::Template;
@@ -9,7 +9,7 @@ use BSE::Util::Iterate;
 use BSE::TB::Subscriptions;
 use BSE::Util::HTML;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 my %rights =
   (
@@ -40,7 +40,7 @@ sub req_list {
 	   session=>$req->session,
            name=>'subs', fields=> { subscription_id => {numeric => 1 },
 				     max_lapsed => { numeric => 1}});
-  my $it = BSE::Util::Iterate->new;
+  my $it = BSE::Util::Iterate::Objects->new;
   my $current_sub;
 
   my %acts;
@@ -127,7 +127,7 @@ sub req_edit {
      msg => $msg,
      message => $msg,
      error_img => [ \&tag_error_img, $req->cfg, $errors ],
-     subscription => [ \&tag_hash, $sub ],
+     subscription => [ \&tag_object, $sub ],
     );
 
   return $req->dyn_response('admin/subscr/edit', \%acts);
@@ -189,7 +189,7 @@ sub req_detail {
      $req->admin_tags,
      msg => $msg,
      message => $msg,
-     subscription => [ \&tag_hash, $sub ],
+     subscription => [ \&tag_object, $sub ],
      ifRemovable => [ \&tag_ifRemovable, \$sub ],
      $it->make_iterator
      ([ \&iter_products, $sub ], 'product', 'products'),
