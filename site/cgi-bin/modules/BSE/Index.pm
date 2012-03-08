@@ -4,9 +4,9 @@ use Time::HiRes qw(time);
 use Constants qw($BASEDIR $MAXPHRASE $DATADIR @SEARCH_EXCLUDE @SEARCH_INCLUDE $SEARCH_LEVEL);
 use Articles;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
-my %scores =
+my %default_scores =
   (
    title=>5,
    body=>3,
@@ -24,7 +24,14 @@ my %scores =
 sub new {
   my ($class, %opts) = @_;
 
-  $opts{scores} ||= \%scores;
+  unless ($opts{scores}) {
+    my $scores = { %default_scores };
+    my $cfg = BSE::Cfg->single;
+    for my $field (keys %$scores) {
+      $scores->{$field} = $cfg->entry("search index scores", $field, $scores->{$field});
+    }
+    $opts{scores} = $scores;
+  }
   $opts{start} = time;
   $opts{max_level} ||= $SEARCH_LEVEL;
 
@@ -119,9 +126,10 @@ sub make_index {
     $self->vnote("i:$id:Indexing '$article->{title}'");
 
     my %fields;
-    for my $field (sort { $scores{$b} <=> $scores{$a} } keys %scores) {
+    my $scores = $self->{scores};
+    for my $field (sort { $scores->{$b} <=> $scores->{$a} } keys %$scores) {
 
-      next unless $scores{$field};
+      next unless $self->{scores}{$field};
       # strip out markup
       my $text;
       if (exists $article->{$field}) {
