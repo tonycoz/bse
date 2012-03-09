@@ -56,12 +56,12 @@
             money item price :></b></font></td>
         </tr>
         <:iterator end items:> 
-        <:if shipping_cost:>
+        <:if Shipping_cost:>
         <tr valign="middle" align="center" bgcolor="#FFFFFF"> 
-          <td colspan=2 width="100%" align="left">&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Shipping charges (for <:shipping_method:><:if delivery_in:>, delivery in <:delivery_in:> days<:or delivery_in:><:eif delivery_in:>)</font></td>
+          <td colspan=2 width="100%" align="left">&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Shipping charges (for <:shipping_method:><:if Delivery_in:>, delivery in <:delivery_in:> days<:or Delivery_in:><:eif Delivery_in:>)</font></td>
           <td align="right"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>$<:money shipping_cost:></b></font></td>
         </tr>
-        <:or shipping_cost:><:eif shipping_cost:>
+        <:or Shipping_cost:><:eif Shipping_cost:>
       </table>
     </td>
   </tr>

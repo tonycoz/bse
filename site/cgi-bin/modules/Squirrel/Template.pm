@@ -15,7 +15,7 @@ BEGIN {
 
 use constant DEBUG_GET_PARMS => 0;
 
-our $VERSION = "1.010";
+our $VERSION = "1.011";
 
 my $tag_head = qr/(?:\s+<:-|<:-?)/;
 my $tag_tail = qr/(?:-:>\s*|:>)/;
@@ -26,6 +26,7 @@ sub new {
   $opts{errout} = \*STDOUT;
   $opts{param} = [];
   $opts{wraps} = [];
+  $opts{errors} = [];
 
   return bless \%opts, $class;
 }
@@ -289,6 +290,12 @@ sub errors {
   my ($self) = @_;
 
   return @{$self->{errors}};
+}
+
+sub clear_errors {
+  my ($self) = @_;
+
+  $self->{errors} = [];
 }
 
 sub start_wrap {

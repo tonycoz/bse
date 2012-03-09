@@ -246,7 +246,7 @@
      <: or :>
     <:if UserCan edit_save:article:><input type="submit" name="save" value="Update Catalog" /><:or UserCan:><:eif UserCan:><:eif:></p>
   </form>
-<:if children:>
+<:if Children:>
 <h2>Products / Sub-catalogs</h2>
 <a name="children"></a> 
       <table class="editform children">
@@ -270,10 +270,9 @@
           <td class="col_modify"> <: edit child Edit :> <:if UserCan edit_delete_article:child:><a href="/cgi-bin/admin/add.pl?id=<:child id:>&amp;remove=1&amp;_csrfp=<:csrfp admin_remove_article:>" onClick="return window.confirm('Are you sure you want to delete this <:ifMatch [child generator] "Product":>Product<:or:>Sub-catalog<:eif:>')">Delete</a><:or UserCan:><:eif UserCan:></td>
 	      <td class="col_move"><:movechild:></td>
         </tr>
-        <:iterator separator children:> <:iterator end children:> 
+        <:iterator end children:> 
       </table>
-<:or children:>
-<:eif children:>
+<:eif Children:>
 <:if HaveChildType:>
 <:if New:>
 <:or New:>

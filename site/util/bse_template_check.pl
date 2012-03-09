@@ -29,8 +29,30 @@ my $templater = Squirrel::Template->new
    template_dir => \@includes,
   );
 
-my $file = shift
+@ARGV
   or usage("No filename supplied");
-my $p = $templater->parse_file($file);
-print $_->[3], ":", $_->[2], ": ", $_->[4], "\n" for $templater->errors;
+my $errors;
+for my $file (@ARGV) {
+  print "$file:\n" if $verbose || @ARGV > 1;
+  my $p = $templater->parse_file($file);
+  my @errors = $templater->errors;
+  if (@errors) {
+    $errors = 1;
+    print "  ", $_->[3], ":", $_->[2], ": ", $_->[4], "\n" for @errors;
+    $templater->clear_errors;
+  }
+  else {
+    print "  No errors\n" if $verbose;
+  }
+}
+
+exit 1 if $errors;
+
+sub usage {
+  die <<EOS;
+Usage: $0 [ -I directory ] file...
+
+Check each file specified for correct template syntax, reporting any errors.
+EOS
+}
 

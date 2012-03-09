@@ -643,7 +643,6 @@ site/templates/admin/users/view_activity.tmpl
 site/templates/admin/users/view_bookings.tmpl
 site/templates/admin/users/view_confirm.tmpl
 site/templates/affiliate.tmpl
-site/templates/article_edit.tmpl
 site/templates/base.tmpl
 site/templates/cart_base.tmpl
 site/templates/catalog.tmpl
@@ -712,9 +711,7 @@ site/templates/noartbase.tmpl
 site/templates/printable/printable.tmpl
 site/templates/printable/wap.tmpl
 site/templates/search_base.tmpl
-site/templates/section_edit.tmpl
 site/templates/seminars/seminar.tmpl
-site/templates/shop_help.tmpl
 site/templates/shop_sect.tmpl
 site/templates/shopitem.tmpl
 site/templates/sidebar/afflink.tmpl
@@ -824,6 +821,7 @@ t/t011dhdates.t			Tests DevHelp::Date
 t/t012validate.t
 t/t013country.t
 t/t014bsesort.t
+t/t020checktemplates.t
 t/t050format.t			DevHelp::Formatter tests
 t/t060parms.t
 t/t070sqldates.t		Test SQL date tools
@@ -859,6 +857,7 @@ t/templater/20parse.t
 t/templates/included.include	Used by t010template.t
 t/templates/included.recursive
 t/templates/wrapinner.tmpl
+t/templates/wrapself.tmpl
 t/templates/wraptest.tmpl	Used by t010template.t
 test.cfg-dist
 test.cfg.base
