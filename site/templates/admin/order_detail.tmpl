@@ -88,7 +88,7 @@
 </tr>
 <:iterator begin items:>
         <tr> 
-          <td class="col_description"><:ifOr [ifEq [item productId] -1] [ifEq [product id] ""]:><:item title:> (product deleted)<:or:><a href="<:adminurl shopadmin product_detail 1 id [product id]:>"><:product
+          <td class="col_description"><:ifOr [ifEq [item productId] -1] [ifEq [product id] ""]:><:item title:> (product deleted)<:or:><a href="<:product admin:>"><:product
             title:></a><:eif:> <:options:></td>
           <td class="col_units"><:item units:></td>
           <td class="col_unitprice"><:money item price:></td>

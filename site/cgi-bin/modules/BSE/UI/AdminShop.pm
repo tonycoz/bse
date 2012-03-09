@@ -19,7 +19,7 @@ use BSE::Util::HTML qw(:default popup_menu);
 use BSE::Arrows;
 use BSE::Shop::Util qw(:payment order_item_opts nice_options);
 
-our $VERSION = "1.011";
+our $VERSION = "1.012";
 
 my %actions =
   (
@@ -793,7 +793,7 @@ sub req_order_detail {
        sub {
 	 sprintf("%.2f", $lines[$line_index]{units} * $lines[$line_index]{$_[0]}/100.0)
        },
-       product => sub { escape_html($products[$line_index]{$_[0]}) },
+       product => sub { tag_article($products[$line_index], $req->cfg, $_[0]) },
        script => sub { $ENV{SCRIPT_NAME} },
        iterate_options_reset => sub { $option_index = -1 },
        iterate_options => sub { ++$option_index < @options },
