@@ -15,7 +15,7 @@ use DevHelp::Date qw(dh_parse_date dh_parse_sql_date);
 use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
-our $VERSION = "1.023";
+our $VERSION = "1.024";
 
 =head1 NAME
 
@@ -565,6 +565,7 @@ sub iter_allkids {
 sub _load_step_kids {
   my ($article, $step_kids) = @_;
 
+  require OtherParents;
   my @stepkids = OtherParents->getBy(parentId=>$article->{id}) if $article->{id};
   %$step_kids = map { $_->{childId} => $_ } @stepkids;
   $step_kids->{loaded} = 1;
