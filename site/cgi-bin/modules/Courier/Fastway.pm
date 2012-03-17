@@ -1,6 +1,6 @@
 package Courier::Fastway;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 use strict;
 use Courier;
@@ -110,6 +110,10 @@ sub calculate_shipping {
 	      and exists $result->{totalprice}) {
 	    my $cost = $self->_extract_price($result->{price});
 	    my $extra = $self->_extract_price($result->{totalprice});
+	    unless ($cost) {
+	      $self->{error} = "Service not available";
+	      return;
+	    }
 	    $extra and $cost += $extra;
 	    $total_cost += $cost;
 	    $self->{days} = $props->{days};
