@@ -5,6 +5,10 @@ Bug fixes:
 
  - the search index builder was ignoring configured field scores.
 
+ - the customer is no longer asked to select a shipper and shipping is
+   set to zero for orders where all products have zero weight.
+   https://rt4.develop-help.com/Ticket/Display.html?id=1328
+
 Enhancements:
 
  - automatic image insertion can now be disabled globally or on a
