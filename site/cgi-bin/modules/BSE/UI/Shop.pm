@@ -17,7 +17,7 @@ use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 
-our $VERSION = "1.030";
+our $VERSION = "1.031";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -455,6 +455,19 @@ sub tag_ifUser {
   }
 }
 
+sub _any_physical_products {
+  my $prods = shift;
+
+  for my $prod (@$prods) {
+    if ($prod->weight) {
+      return 1;
+      last;
+    }
+  }
+
+  return 0;
+}
+
 sub req_checkout {
   my ($class, $req, $message, $olddata) = @_;
 
@@ -533,78 +546,95 @@ sub req_checkout {
   my $shipping_error = '';
   my $shipping_name = '';
   my $prompt_ship = $cfg->entry("shop", "shipping", 0);
+
+  my $physical = _any_physical_products(\@cart_prods);
+
   if ($prompt_ship) {
-    my $work_order;
-    $work_order = $order_info unless $olddata;
-    unless ($work_order) {
-      my %fake_order;
-      my %fields = $class->_order_fields($req);
-      $class->_order_hash($req, \%fake_order, \%fields, user => 1);
-      $work_order = \%fake_order;
-    }
-
-    # Get a list of couriers
     my $sel_cn = $old->("shipping_name") || "";
-    my $country_field = $need_delivery ? "delivCountry" : "billCountry";
-    my $country = $old->($country_field)
-      || bse_default_country($cfg);
-    my $country_code = bse_country_code($country);
-    my $suburb = $old->($need_delivery ? "delivSuburb" : "billSuburb");
-    my $postcode = $old->($need_delivery ? "delivPostCode" : "billPostCode");
-
-    $country_code
-      or $errors->{$country_field} = "Unknown country name $country";
-
-    my @couriers = BSE::Shipping->get_couriers($cfg);
-
-    if ($country_code and $postcode) {
-      @couriers = grep $_->can_deliver(country => $country_code,
-				       suburb => $suburb,
-				       postcode => $postcode), @couriers;
-    }
-    
-    my ($sel_cour) = grep $_->name eq $sel_cn, @couriers;
-    # if we don't match against the list (perhaps because of a country
-    # change) the first item in the list will be selected by the
-    # browser anyway, so select it ourselves and display an
-    # appropriate shipping cost for the item
-    unless ($sel_cour) {
-      $sel_cour = $couriers[0];
-      $sel_cn = $sel_cour->name;
-    }
-    if ($sel_cour and $postcode and $suburb and $country_code) {
-      my @parcels = BSE::Shipping->package_order($cfg, $order_info, \@items);
-      $shipping_cost = $sel_cour->calculate_shipping
-	(
-	 parcels => \@parcels,
-	 suburb => $suburb,
-	 postcode => $postcode,
-	 country => $country_code,
-	 products => \@cart_prods,
-	 items => \@items,
-	);
-      $delivery_in = $sel_cour->delivery_in();
-      $shipping_method = $sel_cour->description();
-      $shipping_name = $sel_cour->name;
-      unless (defined $shipping_cost) {
-	$shipping_error = "$shipping_method: " . $sel_cour->error_message;
-	$errors->{shipping_name} = $shipping_error;
-
-	# use the last one, which should be the Null shipper
-	$sel_cour = $couriers[-1];
-	$sel_cn = $sel_cour->name;
-	$shipping_method = $sel_cour->description;
+    if ($physical) {
+      my $work_order;
+      $work_order = $order_info unless $olddata;
+      unless ($work_order) {
+	my %fake_order;
+	my %fields = $class->_order_fields($req);
+	$class->_order_hash($req, \%fake_order, \%fields, user => 1);
+	$work_order = \%fake_order;
       }
-    }
+      
+      # Get a list of couriers
+      my $country_field = $need_delivery ? "delivCountry" : "billCountry";
+      my $country = $old->($country_field)
+	|| bse_default_country($cfg);
+      my $country_code = bse_country_code($country);
+      my $suburb = $old->($need_delivery ? "delivSuburb" : "billSuburb");
+      my $postcode = $old->($need_delivery ? "delivPostCode" : "billPostCode");
+      
+      $country_code
+	or $errors->{$country_field} = "Unknown country name $country";
+      
+      my @couriers = BSE::Shipping->get_couriers($cfg);
+      
+      if ($country_code and $postcode) {
+	@couriers = grep $_->can_deliver(country => $country_code,
+					 suburb => $suburb,
+					 postcode => $postcode), @couriers;
+      }
+      
+      my ($sel_cour) = grep $_->name eq $sel_cn, @couriers;
+      # if we don't match against the list (perhaps because of a country
+      # change) the first item in the list will be selected by the
+      # browser anyway, so select it ourselves and display an
+      # appropriate shipping cost for the item
+      unless ($sel_cour) {
+	$sel_cour = $couriers[0];
+	$sel_cn = $sel_cour->name;
+      }
+      if ($sel_cour and $postcode and $suburb and $country_code) {
+	my @parcels = BSE::Shipping->package_order($cfg, $order_info, \@items);
+	$shipping_cost = $sel_cour->calculate_shipping
+	  (
+	   parcels => \@parcels,
+	   suburb => $suburb,
+	   postcode => $postcode,
+	   country => $country_code,
+	   products => \@cart_prods,
+	   items => \@items,
+	  );
+	$delivery_in = $sel_cour->delivery_in();
+	$shipping_method = $sel_cour->description();
+	$shipping_name = $sel_cour->name;
+	unless (defined $shipping_cost) {
+	  $shipping_error = "$shipping_method: " . $sel_cour->error_message;
+	  $errors->{shipping_name} = $shipping_error;
+	  
+	  # use the last one, which should be the Null shipper
+	  $sel_cour = $couriers[-1];
+	  $sel_cn = $sel_cour->name;
+	  $shipping_method = $sel_cour->description;
+	}
+      }
     
-    $shipping_select = popup_menu
-      (
-       -name => "shipping_name",
-       -id => "shipping_name",
-       -values => [ map $_->name, @couriers ],
-       -labels => { map { $_->name => $_->description } @couriers },
-       -default => $sel_cn,
-      );
+      $shipping_select = popup_menu
+	(
+	 -name => "shipping_name",
+	 -id => "shipping_name",
+	 -values => [ map $_->name, @couriers ],
+	 -labels => { map { $_->name => $_->description } @couriers },
+	 -default => $sel_cn,
+	);
+    }
+    else {
+      $sel_cn = $shipping_name = "none";
+      $shipping_method = "Nothing to ship!";
+      $shipping_select = popup_menu
+	(
+	 -name => "shipping_name",
+	 -id => "shipping_name",
+	 -values => [ "none" ],
+	 -labels => { none => $shipping_method },
+	 -default => $sel_cn,
+	);
+    }
   }
 
   if (!$message && keys %$errors) {
@@ -635,6 +665,7 @@ sub req_checkout {
      shipping_method => escape_html($shipping_method),
      shipping_error => escape_html($shipping_error),
      shipping_name => $shipping_name,
+     ifPhysical => $physical,
      ifNeedDelivery => $need_delivery,
     );
   $req->session->{custom} = \%custom_state;
@@ -1709,45 +1740,53 @@ sub _fillout_order {
 
   my $prompt_ship = $cfg->entry("shop", "shipping", 0);
   if ($prompt_ship) {
-    my ($courier) = BSE::Shipping->get_couriers($cfg, $cgi->param("shipping_name"));
-    my $country_code = bse_country_code($values->{delivCountry});
-    if ($courier) {
-      unless ($courier->can_deliver(country => $country_code,
-				    suburb => $values->{delivSuburb},
-				    postcode => $values->{delivPostCode})) {
-	$cgi->param("courier", undef);
-	$$rmsg =
-	  "Can't use the selected courier ".
-            "(". $courier->description(). ") for this order.";
+    if (_any_physical_products($products)) {
+      my ($courier) = BSE::Shipping->get_couriers($cfg, $cgi->param("shipping_name"));
+      my $country_code = bse_country_code($values->{delivCountry});
+      if ($courier) {
+	unless ($courier->can_deliver(country => $country_code,
+				      suburb => $values->{delivSuburb},
+				      postcode => $values->{delivPostCode})) {
+	  $cgi->param("courier", undef);
+	  $$rmsg =
+	    "Can't use the selected courier ".
+	      "(". $courier->description(). ") for this order.";
+	  return;
+	}
+	my @parcels = BSE::Shipping->package_order($cfg, $values, $items);
+	my $cost = $courier->calculate_shipping
+	  (
+	   parcels => \@parcels,
+	   country => $country_code,
+	   suburb => $values->{delivSuburb},
+	   postcode => $values->{delivPostCode},
+	   products => $products,
+	   items => $items,
+	  );
+	if (!$cost and $courier->name() ne 'contact') {
+	  my $err = $courier->error_message();
+	  $$rmsg = "Error calculating shipping cost";
+	  $$rmsg .= ": $err" if $err;
+	  return;
+	}
+	$values->{shipping_method} = $courier->description();
+	$values->{shipping_name} = $courier->name;
+	$values->{shipping_cost} = $cost;
+	$values->{shipping_trace} = $courier->trace;
+	#$values->{delivery_in} = $courier->delivery_in();
+	$values->{total} += $values->{shipping_cost};
+      }
+      else {
+	# XXX: What to do?
+	$$rmsg = "Error: no usable courier found.";
 	return;
       }
-      my @parcels = BSE::Shipping->package_order($cfg, $values, $items);
-      my $cost = $courier->calculate_shipping
-	(
-	 parcels => \@parcels,
-	 country => $country_code,
-	 suburb => $values->{delivSuburb},
-	 postcode => $values->{delivPostCode},
-	 products => $products,
-	 items => $items,
-       );
-      if (!$cost and $courier->name() ne 'contact') {
-	my $err = $courier->error_message();
-	$$rmsg = "Error calculating shipping cost";
-	$$rmsg .= ": $err" if $err;
-	return;
-      }
-      $values->{shipping_method} = $courier->description();
-      $values->{shipping_name} = $courier->name;
-      $values->{shipping_cost} = $cost;
-      $values->{shipping_trace} = $courier->trace;
-      #$values->{delivery_in} = $courier->delivery_in();
-      $values->{total} += $values->{shipping_cost};
     }
     else {
-      # XXX: What to do?
-      $$rmsg = "Error: no usable courier found.";
-      return;
+      $values->{shipping_method} = "Nothing to ship!";
+      $values->{shipping_name} = "none";
+      $values->{shipping_cost} = 0;
+      $values->{shipping_trace} = "All products have zero weight.";
     }
   }
 

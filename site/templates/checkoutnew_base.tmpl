@@ -244,13 +244,13 @@ function BSE_validateForm {
       <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
         <textarea name="instructions" rows="5" cols="40" wrap="virtual"><:old instructions:></textarea></font><:error_img instructions:></td>
     </tr>
-<:if Shipping:>
+<:if And [ifShipping] [ifPhysical]:>
     <tr>
       <td valign="top"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Shipping<br /> method:</font></td>
       <td><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:shipping_select:></font><:error_img shipping_name:> *
 </td>
     </tr>
-<:or Shipping:><:eif Shipping:>
+<:eif:>
     <tr> 
       <td valign="top"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Purchase<br />Order:</font></td>
       <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 

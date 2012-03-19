@@ -104,6 +104,9 @@
 
         <tr> 
           <td colspan="3" class="col_contact">
+<:if Eq [order shipping_name] "none":>
+Nothing to ship.
+<:or:>
 <:if Eq [order shipping_name] "contact":>
 Contact customer to make shipping arrangements
 <:or Eq:>
@@ -115,7 +118,7 @@ Shipping via <:order shipping_method:>
     <label>tracking code: <input type="text" name="freight_tracking" value="<:order freight_tracking:>" /></label>
     <input type="submit" name="a_order_save" value="Save" />
     </form>
-
+<:eif:>
 </td>
           <td class="col_extension"><:money order shipping_cost:></td>
           <td>&nbsp;</td>
