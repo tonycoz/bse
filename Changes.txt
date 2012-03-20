@@ -20,6 +20,13 @@ Templates:
  - admin/order_detail.tmpl - the product tag now uses tag_article as
    it should.
 
+ - admin/subscr/list - isubscription is now an object tag, giving
+   access to the is_removable method
+   https://rt4.develop-help.com/Ticket/Display.html?id=1323
+
+ - admin/subscr/edit, admin/subscr/detail - subscription is now an
+   object tag
+
 BSE 0.21 - 07 Mar 2012
 ========
 
