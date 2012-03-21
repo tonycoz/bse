@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 35;
+use Test::More tests => 42;
 use Squirrel::Template;
 use Squirrel::Template::Constants qw(:token);
 
@@ -79,6 +79,13 @@ test_tokens("<:ifFoo args:><:if Bar more args:>",
 	     [ if => "<:if Bar more args:>", 1, "<string>", "Bar", "more args" ],
 	     [ eof => "", 1, "<string>" ],
 	    ], "tight cond");
+
+test_tokens("<:if!Foo bar:><:if!Foo:>",
+	    [
+	     [ ifnot => "<:if!Foo bar:>", 1, "<string>", "Foo", "bar"],
+	     [ ifnot => "<:if!Foo:>", 1, "<string>", "Foo", ""],
+	     [ eof => "", 1, "<string>" ],
+	    ], "notcond");
 
 test_tokens("<:include notfoundfile:>",
 	    [
@@ -177,6 +184,8 @@ test_tokens(<<EOS,
 <:switch:>
 <:case Foo y -:>
 <:case Bar x:>
+<:case !Quux:>
+<:case !Qaax z:>
 <:case default:>
 <:endswitch -:>
 EOS
@@ -186,10 +195,14 @@ EOS
 	     [ case => "<:case Foo y -:>\n", 2, "<string>", "Foo", "y" ],
 	     [ case => "<:case Bar x:>", 3, "<string>", "Bar", "x" ],
 	     [ content => "\n", 3, "<string>" ],
-	     [ case => "<:case default:>", 4, "<string>", "default", "" ],
+	     [ casenot => "<:case !Quux:>", 4, "<string>", "Quux", "" ],
 	     [ content => "\n", 4, "<string>" ],
-	     [ endswitch => "<:endswitch -:>\n", 5, "<string>", "" ],
-	     [ eof => "", 6, "<string>" ],
+	     [ casenot => "<:case !Qaax z:>", 5, "<string>", "Qaax", "z" ],
+	     [ content => "\n", 5, "<string>" ],
+	     [ case => "<:case default:>", 6, "<string>", "default", "" ],
+	     [ content => "\n", 6, "<string>" ],
+	     [ endswitch => "<:endswitch -:>\n", 7, "<string>", "" ],
+	     [ eof => "", 8, "<string>" ],
 	    ], "switch");
 
 test_tokens(<<EOS,
@@ -217,6 +230,43 @@ EOS
 	     [ content => " beta\n", 1, "<string>" ],
 	     [ eof => "", 2, "<string>" ],
 	    ], "wrap here");
+
+test_tokens("<:= some expression:>",
+	    [
+	     [ expr => "<:= some expression:>", 1, "<string>", "some expression" ],
+	     [ eof => "", 1, "<string>" ],
+	    ], "expr tag");
+
+test_tokens("<: .set varname = some value:>",
+	    [
+	     [ set => "<: .set varname = some value:>", 1, "<string>", "varname", "some value" ],
+	     [ eof => "", 1, "<string>" ],
+	    ], "set tag");
+test_tokens("<:.if some.expression:>",
+	    [
+	     [ e_if => "<:.if some.expression:>", 1, "<string>", "some.expression" ],
+	     [ eof => "", 1, "<string>" ],
+	    ], ".if tag");
+
+test_tokens("<:.define some/code:>",
+	    [
+	     [ define => "<:.define some/code:>", 1, "<string>", "some/code" ],
+	     [ eof => "", 1, "<string>" ],
+	    ], ".define tag");
+
+test_tokens("<:.call some/code, a=1, b=2:><:.call other :>",
+	    [
+	     [ call => "<:.call some/code, a=1, b=2:>", 1, "<string>", "some/code", "a=1, b=2" ],
+	     [ call => "<:.call other :>", 1, "<string>", "other", "" ],
+	     [ eof => "", 1, "<string>" ],
+	    ], ".define tag");
+
+test_tokens("<:.end:><:.end if:>",
+	    [
+	     [ end => "<:.end:>", 1, "<string>", "" ],
+	     [ end => "<:.end if:>", 1, "<string>", "if" ],
+	     [ eof => "", 1, "<string>" ],
+	    ], ".end tag");
 
 test_tokens(<<EOS,
 <: rubbish
