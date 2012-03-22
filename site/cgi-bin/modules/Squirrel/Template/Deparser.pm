@@ -2,7 +2,7 @@ package Squirrel::Template::Deparser;
 use strict;
 use Squirrel::Template::Constants qw(:node);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub deparse {
   my ($class, $item) = @_;
@@ -26,6 +26,14 @@ sub deparse_cond {
       . "<:or:>"
 	. $class->deparse($item->[NODE_COND_FALSE])
 	  . "<:eif:>";
+}
+
+sub deparse_condnot {
+  my ($class, $item) = @_;
+
+  return $item->[NODE_ORIG]
+    . $class->deparse($item->[NODE_COND_TRUE])
+      . "<:eif:>";
 }
 
 sub deparse_iterator {

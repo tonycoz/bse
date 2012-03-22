@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 41;
+use Test::More tests => 45;
 
 sub template_test($$$$;$);
 
@@ -54,6 +54,14 @@ TEMPLATE
 		"* foo\n *<:ifDead:>ABC<:or:>DEF<:eif:>", "ifDead", \%acts);
   template_test("<:ifNoimpl:><:str:><:or:><:str2:><:eif:>",
 		"<:ifNoimpl:>ABC<:or:>DEF<:eif:>", "ifNoimpl", \%acts);
+
+  template_test("<:if!False:>FOO<:eif:>", "FOO", "if!False", \%acts);
+  template_test("<:if!Str:>FOO<:eif:>", "", "if!Str", \%acts);
+  template_test("<:if!Dead:><:str:><:eif:>",
+		"* foo\n *<:if!Dead:>ABC<:eif:>", "if!Dead", \%acts);
+  template_test("<:if!Noimpl:><:str:><:eif:>",
+		"<:if!Noimpl:>ABC<:eif:>", "if!Noimpl", \%acts);
+
   template_test(<<TEMPLATE, <<OUTPUT, "wrap", \%acts, "in");
 <:wrap wraptest.tmpl title=>[cat "foo " [str]], menu => 1, showtitle => "abc" :>Alpha
 <:param menu:>

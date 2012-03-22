@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 34;
+use Test::More tests => 37;
 use Squirrel::Template;
 
 sub test_parse($$$);
@@ -152,6 +152,30 @@ test_parse("<:if Foo:>TRUE<:eif Foo:>",
 	     [ empty => "", 1, "<string>" ],
 	     [ eif => "<:eif Foo:>", 1, "<string>", "Foo" ],
 	   ], "if with no or, eif name matches");
+
+test_parse("<:if !Foo:>TRUE<:eif:>",
+	   [ condnot => "<:if !Foo:>", 1, "<string>", "Foo", "",
+	     [ content => "TRUE", 1, "<string>" ],
+	     undef, undef,
+	     [ eif => "<:eif:>", 1, "<string>", "" ],
+	   ], "if! base");
+
+test_parse("<:if !Foo:>TRUE<:eif Foo:>",
+	   [ condnot => "<:if !Foo:>", 1, "<string>", "Foo", "",
+	     [ content => "TRUE", 1, "<string>" ],
+	     undef, undef,
+	     [ eif => "<:eif Foo:>", 1, "<string>", "Foo" ],
+	   ], "if! with labelled eif");
+
+test_parse("<:if !Foo:>TRUE<:eif Bar:>",
+	   [ comp => "", 1, "<string>",
+	     [ condnot => "<:if !Foo:>", 1, "<string>", "Foo", "",
+	       [ content => "TRUE", 1, "<string>" ],
+	       undef, undef,
+	       [ eif => "<:eif Bar:>", 1, "<string>", "Bar" ],
+	     ],
+	     [ error => "", 1, "<string>", "'eif' for 'if !Foo' starting <string>:1 expected but found 'eif Bar'" ],
+	   ], "if! with mis-labelled eif");
 
 test_parse(<<EOS,
 <:iterator begin foo:>LOOP

@@ -2,7 +2,7 @@ package Squirrel::Template::Parser;
 use strict;
 use Squirrel::Template::Constants qw(:token :node);
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 use constant TOK => 0;
 use constant TMPLT => 1;
@@ -52,6 +52,9 @@ sub _parse_content {
     }
     elsif ($type eq 'if') {
       push @result, $self->_parse_if($token);
+    }
+    elsif ($type eq 'ifnot') {
+      push @result, $self->_parse_ifnot($token);
     }
     elsif ($type eq 'itbegin') {
       push @result, $self->_parse_iterator($token);
@@ -186,6 +189,33 @@ sub _parse_if {
   }
   else {
     return $if;
+  }
+}
+
+sub _parse_ifnot {
+  my ($self, $ifnot) = @_;
+
+  my $true = $self->_parse_content;
+  my $eif = $self->[TOK]->get;
+  my @errors;
+  if ($eif->[TOKEN_TYPE] eq 'eif') {
+    if ($eif->[TOKEN_TAG_NAME] ne "" && $eif->[TOKEN_TAG_NAME] ne $ifnot->[TOKEN_TAG_NAME]) {
+      push @errors, $self->_error($eif, "'eif' for 'if !$ifnot->[TOKEN_TAG_NAME]' starting $ifnot->[TOKEN_FILENAME]:$ifnot->[TOKEN_LINE] expected but found 'eif $eif->[TOKEN_TAG_NAME]'");
+    }
+    # fall through
+  }
+  else {
+    push @errors, $self->_error($eif, "Expected 'eif' tag for if ! starting $ifnot->[TOKEN_FILENAME]:$ifnot->[TOKEN_LINE] but found $eif->[TOKEN_TYPE]");
+    $self->[TOK]->unget($eif);
+    $eif = $self->_dummy($eif, eif => "<:eif:>");
+  }
+
+  @{$ifnot}[NODE_TYPE, NODE_COND_TRUE, NODE_COND_EIF] = ( "condnot", $true, $eif );
+  if (@errors) {
+    return $self->_comp($ifnot, @errors);
+  }
+  else {
+    return $ifnot;
   }
 }
 
