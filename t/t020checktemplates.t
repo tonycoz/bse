@@ -1,5 +1,6 @@
 #!perl
 use strict;
+use warnings;
 use Test::More;
 use ExtUtils::Manifest qw(maniread);
 use Squirrel::Template;
