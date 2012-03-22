@@ -15,7 +15,7 @@ BEGIN {
 
 use constant DEBUG_GET_PARMS => 0;
 
-our $VERSION = "1.011";
+our $VERSION = "1.012";
 
 my $tag_head = qr/(?:\s+<:-|<:-?)/;
 my $tag_tail = qr/(?:-:>\s*|:>)/;
@@ -658,7 +658,11 @@ See L</Iterator tag evaluation>.
 
 C<< <: ifI<Name> I<args> :> I<true> <: or :> I<false> <: eif :> >>
 
+C<< <: ifI<Name> I<args> :> I<true> <: eif :> >>
+
 C<< <: if I<Name> I<args> :> I<true> <: or I<Name> :> I<false> <: eif I<Name> :> >>
+
+C<< <: if I<Name> I<args> :> I<true> <: eif I<Name> :> >>
 
 Emits I<true> if the tag evaluates to a true value, otherwise the
 I<false> text.  See L</Conditional tag evaluation>.
@@ -667,6 +671,15 @@ Note that only the C<if> now requires the C<Name>.  The C<or> and
 C<eif> may include the name, but it is not required.  If the C<Name>
 is supplied it must match the C<if> C<Name> or an error will be
 returned.
+
+=item *
+
+C<< <: if!I<Name> I<args> :> I<false> <: eif :> >>
+
+C<< <: if !I<Name> I<args> :> I<false> <: eif I<Name> :> >>
+
+Emits I<false> if the tag evaluates to a false value.  See
+L</Conditional tag evaluation>.
 
 =item *
 

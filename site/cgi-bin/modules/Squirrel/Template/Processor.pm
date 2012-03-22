@@ -2,7 +2,7 @@ package Squirrel::Template::Processor;
 use strict;
 use Squirrel::Template::Constants qw(:node);
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 use constant ACTS => 0;
 use constant TMPLT => 1;
@@ -80,6 +80,39 @@ sub _process_cond {
   }
   else {
     return (@errors, $node->[NODE_ORIG], $self->process($node->[NODE_COND_TRUE]), $node->[NODE_COND_OR][NODE_ORIG], $self->process($node->[NODE_COND_FALSE]), $node->[NODE_COND_EIF][NODE_ORIG]);
+  }
+}
+
+sub _process_condnot {
+  my ($self, $node) = @_;
+
+  local $SIG{__DIE__};
+  my $acts = $self->[ACTS];
+  my $cond;
+  my $name = $node->[NODE_TAG_NAME];
+  my @errors;
+  my $result =
+    eval {
+      if (exists $acts->{"if$name"}) {
+	#print STDERR " found cond if$name\n" if DEBUG > 1;
+	$cond = !!$self->[TMPLT]->low_perform($acts, "if$name", $node->[NODE_TAG_ARGS], undef);
+      }
+      elsif (exists $acts->{lcfirst $name}) {
+	#print STDERR " found cond $name\n" if DEBUG > 1;
+	$cond = !!$self->[TMPLT]->low_perform($acts, lcfirst $name, $node->[NODE_TAG_ARGS], undef);
+      }
+    };
+  if ($@) {
+    my $msg = $@;
+    if ($msg !~ /\bENOIMPL\b/) {
+      @errors = $self->_error($node, $msg);
+    }
+  }
+  if (defined $cond) {
+    return (@errors, $cond ? "" : $self->process($node->[NODE_COND_TRUE]));
+  }
+  else {
+    return (@errors, $node->[NODE_ORIG], $self->process($node->[NODE_COND_TRUE]), $node->[NODE_COND_EIF][NODE_ORIG]);
   }
 }
 
