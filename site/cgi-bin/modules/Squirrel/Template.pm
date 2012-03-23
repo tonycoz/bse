@@ -15,7 +15,7 @@ BEGIN {
 
 use constant DEBUG_GET_PARMS => 0;
 
-our $VERSION = "1.012";
+our $VERSION = "1.013";
 
 my $tag_head = qr/(?:\s+<:-|<:-?)/;
 my $tag_tail = qr/(?:-:>\s*|:>)/;
@@ -701,6 +701,9 @@ C<< <:switch:><:case I<Name> I<optional-args> :>I<content> ... <:endswitch:> >>
 
 Replaced with the first matching conditional where C<< <:case I<Name>
 I<optional-args> :> >> is treated like an C<if>.
+
+A case may also be C<< <:case !I<Name> :> >>, in which the case
+matches the same as an C<< if !I<Name> >>.
 
 A C<< <:case default:> >> is always true.
 

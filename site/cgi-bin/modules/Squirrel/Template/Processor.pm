@@ -2,7 +2,7 @@ package Squirrel::Template::Processor;
 use strict;
 use Squirrel::Template::Constants qw(:node);
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 use constant ACTS => 0;
 use constant TMPLT => 1;
@@ -275,7 +275,8 @@ sub _process_switch {
   for my $i (0 .. $#$cases) {
     my ($case, $content) = @{$cases->[$i]};
 
-    my ($func, $args) = @{$case}[NODE_TAG_NAME, NODE_TAG_ARGS];
+    my ($type, $func, $args) =
+      @{$case}[NODE_TYPE, NODE_TAG_NAME, NODE_TAG_ARGS];
 
     if ($func eq "default") {
       return $self->process($content);
@@ -314,7 +315,7 @@ sub _process_switch {
       }
       push @errors, $self->_error($case, $msg);
     }
-    if ($result) {
+    if ($type eq 'case' ? $result : !$result) {
       return (@errors, $self->process($content));
     }
   }

@@ -2,7 +2,7 @@ package Squirrel::Template::Parser;
 use strict;
 use Squirrel::Template::Constants qw(:token :node);
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 use constant TOK => 0;
 use constant TMPLT => 1;
@@ -305,7 +305,7 @@ sub _parse_switch {
   my $tok;
   CASE:
   while ($tok = $self->[TOK]->get) {
-    if ($tok->[TOKEN_TYPE] eq 'case') {
+    if ($tok->[TOKEN_TYPE] eq 'case' || $tok->[TOKEN_TYPE] eq 'casenot') {
       my $case = $self->_parse_content;
       push @cases, [ $tok, $case ];
     }

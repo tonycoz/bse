@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 45;
+use Test::More tests => 46;
 
 sub template_test($$$$;$);
 
@@ -206,6 +206,12 @@ OUT
 IN
 * foo
  *
+OUT
+
+  template_test(<<IN, <<OUT, "switch with case !", \%acts, "both");
+<:switch:><:case !Str:>NOT STR<:case !False:>FALSE<:endswitch:>
+IN
+FALSE
 OUT
 
   template_test("<:with begin upper:>Alpha<:with end upper:>", "ALPHA", "with", \%acts);
