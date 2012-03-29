@@ -1,9 +1,9 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 46;
+use Test::More tests => 95;
 
-sub template_test($$$$;$);
+sub template_test($$$$;$$);
 
 my $gotmodule = require_ok('Squirrel::Template');
 
@@ -31,6 +31,21 @@ SKIP: {
      ifFalse => 0,
      dead => sub { die "foo\n" },
      noimpl => sub { die "ENOIMPL\n" },
+    );
+  my %vars =
+    (
+     a =>
+     {
+      b =>
+      {
+       c => "CEE"
+      }
+     },
+     str => $str,
+     somelist => [ 'a' .. 'f' ],
+     somehash => { qw(a 11 b 12 c 14 e 8) },
+     num1 => 101,
+     num2 => 202,
     );
   template_test("<:str:>", "ABC", "simple", \%acts);
   template_test("<:strref:>", "ABC", "scalar ref", \%acts);
@@ -368,10 +383,72 @@ IN
 </div>
 OUT
   }
+
+  template_test("<:= str :>", "ABC", "simple exp", \%acts, "", \%vars);
+  template_test("<:= a.b.c :>", "CEE", "hash methods", \%acts, "", \%vars);
+  template_test(<<IN, <<OUT, "simple set", \%acts, "both", \%vars);
+<:.set d = "test" -:><:= d :>
+IN
+test
+OUT
+  my @expr_tests =
+    (
+     [ 'num1 + num2', 303 ],
+     [ 'num1 - num2', -101 ],
+     [ 'num1 + num2 * 2', 505 ],
+     [ 'num2 mod 5', '2' ],
+     [ 'num1 / 5', '20.2' ],
+     [ 'num1 div 5', 20 ],
+     [ '+num1', 101 ],
+     [ '-(num1 + num2)', -303 ],
+     [ '"hello " _ str', 'hello ABC' ],
+     [ 'num1 < num2', 1 ],
+     [ 'num1 < 101', '' ],
+     [ 'num1 < 100', '' ],
+     [ 'num1 > num2', '' ],
+     [ 'num2 > num1', 1 ],
+     [ 'num1 > 101', '' ],
+     [ 'num1 == 101.0', '1' ],
+     [ 'num1 == 101', '1' ],
+     [ 'num1 == 100', '' ],
+     [ 'num1 != 101', '' ],
+     [ 'num1 != "101.0"', '' ],
+     [ 'num1 != 100', 1 ],
+     [ 'num1 >= 101', 1 ],
+     [ 'num1 >= 100', 1 ],
+     [ 'num1 >= 102', '' ],
+     [ 'num1 <= 101', 1 ],
+     [ 'num1 <= 100', '' ],
+     [ 'num1 <= 102', '1' ],
+     [ 'str eq "ABC"', '1' ],
+     [ 'str eq "AB"', '' ],
+     [ 'str ne "AB"', '1' ],
+     [ 'str ne "ABC"', '' ],
+     [ 'str.lower', 'abc' ],
+     [ 'somelist.size', 6 ],
+     [ '[ 4, 2, 3 ].first', 4 ],
+     [ '[ 1, 4, 9 ].join(",")', "1,4,9" ],
+     [ '[ "xx", "aa" .. "ad", "zz" ].join(" ")', "xx aa ab ac ad zz" ],
+     [ '1 ? "TRUE" : "FALSE"', 'TRUE' ],
+     [ '0 ? "TRUE" : "FALSE"', 'FALSE' ],
+     [ '[ 1 .. 4 ][2]', 3 ],
+     [ 'somelist[2]', "c" ],
+     [ 'somehash["b"]', "12" ],
+     [ 'not 1', '' ],
+     [ 'not 1 or 1', 1 ],
+     [ 'not 1 and 1', "" ],
+     [ '"xabcy" =~ /abc/', 1 ],
+     [ '[ "abc" =~ /(.)(.)/ ][1]', "b" ],
+    );
+  for my $test (@expr_tests) {
+    my ($expr, $result) = @$test;
+
+    template_test("<:= $expr :>", $result, "expr: $expr", \%acts, "", \%vars);
+  }
 }
 
-sub template_test ($$$$;$) {
-  my ($in, $out, $desc, $acts, $stripnl) = @_;
+sub template_test ($$$$;$$) {
+  my ($in, $out, $desc, $acts, $stripnl, $vars) = @_;
 
   $stripnl ||= 'none';
   $in =~ s/\n$// if $stripnl eq 'in' || $stripnl eq 'both';
@@ -379,7 +456,7 @@ sub template_test ($$$$;$) {
 
   my $templater = Squirrel::Template->new(template_dir=>'t/templates');
 
-  my $result = $templater->replace_template($in, $acts);
+  my $result = $templater->replace_template($in, $acts, undef, "test", $vars);
 
   is($result, $out, $desc);
 }

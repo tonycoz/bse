@@ -233,7 +233,7 @@ EOS
 
 test_tokens("<:= some expression:>",
 	    [
-	     [ expr => "<:= some expression:>", 1, "<string>", "some expression" ],
+	     [ expr => "<:= some expression:>", 1, "<string>", "some expression", "" ],
 	     [ eof => "", 1, "<string>" ],
 	    ], "expr tag");
 

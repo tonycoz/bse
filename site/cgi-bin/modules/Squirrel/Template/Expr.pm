@@ -1,7 +1,226 @@
 package Squirrel::Template::Expr;
 use strict;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
+
+package Squirrel::Template::Expr::Eval;
+use Scalar::Util ();
+use constant TMPL => 0;
+
+sub new {
+  my ($class, $templater) = @_;
+
+  return bless [ $templater ], $class;
+}
+
+sub _wrapped {
+  my ($self, $val) = @_;
+
+  if (ref($val)) {
+    if (Scalar::Util::blessed($val)) {
+      return $val;
+    }
+    else {
+      my $type = Scalar::Util::reftype($val);
+      if ($type eq "ARRAY") {
+	return Squirrel::Template::Expr::WrapArray->new($val);
+      }
+      elsif ($type eq "HASH") {
+	return Squirrel::Template::Expr::WrapHash->new($val);
+      }
+      elsif ($type eq "CODE") {
+	return Squirrel::Template::Expr::WrapCode->new($val);
+      }
+    }
+  }
+  else {
+    return Squirrel::Template::Expr::WrapScalar->new($val);
+  }
+}
+
+sub _process_var {
+  return $_[0][TMPL]->get_var($_[1][1]);
+}
+
+sub _process_add {
+  return $_[0]->process($_[1][1]) + $_[0]->process($_[1][2]);
+}
+
+sub _process_subtract {
+  return $_[0]->process($_[1][1]) - $_[0]->process($_[1][2]);
+}
+
+sub _process_mult {
+  return $_[0]->process($_[1][1]) * $_[0]->process($_[1][2]);
+}
+
+sub _process_fdiv {
+  return $_[0]->process($_[1][1]) / $_[0]->process($_[1][2]);
+}
+
+sub _process_div {
+  return int($_[0]->process($_[1][1]) / $_[0]->process($_[1][2]));
+}
+
+sub _process_mod {
+  return $_[0]->process($_[1][1]) % $_[0]->process($_[1][2]);
+}
+
+# string relops
+sub _process_eq {
+  return $_[0]->process($_[1][1]) eq $_[0]->process($_[1][2]);
+}
+
+sub _process_ne {
+  return $_[0]->process($_[1][1]) ne $_[0]->process($_[1][2]);
+}
+
+sub _process_gt {
+  return $_[0]->process($_[1][1]) gt $_[0]->process($_[1][2]);
+}
+
+sub _process_lt {
+  return $_[0]->process($_[1][1]) lt $_[0]->process($_[1][2]);
+}
+
+sub _process_ge {
+  return $_[0]->process($_[1][1]) ge $_[0]->process($_[1][2]);
+}
+
+sub _process_le {
+  return $_[0]->process($_[1][1]) le $_[0]->process($_[1][2]);
+}
+
+# number relops
+sub _process_neq {
+  return $_[0]->process($_[1][1]) == $_[0]->process($_[1][2]);
+}
+
+sub _process_nne {
+  return $_[0]->process($_[1][1]) != $_[0]->process($_[1][2]);
+}
+
+sub _process_ngt {
+  return $_[0]->process($_[1][1]) > $_[0]->process($_[1][2]);
+}
+
+sub _process_nlt {
+  return $_[0]->process($_[1][1]) < $_[0]->process($_[1][2]);
+}
+
+sub _process_nge {
+  return $_[0]->process($_[1][1]) >= $_[0]->process($_[1][2]);
+}
+
+sub _process_nle {
+  return $_[0]->process($_[1][1]) <= $_[0]->process($_[1][2]);
+}
+
+sub _process_match {
+  return $_[0]->process($_[1][1]) =~ $_[0]->process($_[1][2]);
+}
+
+sub _process_notmatch {
+  return $_[0]->process($_[1][1]) !~ $_[0]->process($_[1][2]);
+}
+
+sub _process_cond {
+  return $_[0]->process($_[1][1]) ? $_[0]->process($_[1][2]) : $_[0]->process($_[1][3]);
+}
+
+sub _process_uminus {
+  return - ($_[0]->process($_[1][1]));
+}
+
+sub _process_concat {
+  return $_[0]->process($_[1][1]) . $_[0]->process($_[1][2]);
+}
+
+sub _process_const {
+  return $_[1][1];
+}
+
+sub _process_call {
+  my ($self, $node, $ctx) = @_;
+
+  my $val = $self->process($node->[2]);
+  my $args = $self->process_list($node->[3]);
+  my $method = $node->[1];
+  if (Scalar::Util::blessed($val)) {
+    $val->can($method)
+      or die [ error => "No such method $method" ];
+    if ($val->can("restricted_method")) {
+      $val->restricted_method($method)
+	and die [ error => "method $method is restricted" ];
+    }
+    return $ctx && $ctx eq 'LIST' ? $val->$method(@$args)
+      : scalar($val->$method(@$args));
+  }
+  else {
+    my $wrapped = $self->_wrapped($val);
+    return $wrapped->call($method, $args, $ctx);
+  }
+}
+
+sub _process_list {
+  my ($self, $node) = @_;
+
+  return $self->process_list($node->[1], 'LIST');
+}
+
+sub _process_range {
+  my ($self, $node, $ctx) = @_;
+
+  my $start = $self->process($node->[1]);
+  my $end = $self->process($node->[2]);
+
+  return $ctx eq 'LIST' ? ( $start .. $end ) : [ $start .. $end ];
+}
+
+sub _process_subscript {
+  my ($self, $node) = @_;
+
+  my $list = $self->process($node->[1]);
+  my $index = $self->process($node->[2]);
+  Scalar::Util::blessed($list)
+      and die [ error => "Cannot subscript an object" ];
+  my $type = Scalar::Util::reftype($list);
+  if ($type eq "HASH") {
+    return $list->{$index};
+  }
+  elsif ($type eq "ARRAY") {
+    return $list->[$index];
+  }
+  else {
+    die [ error => "Cannot subscript a $type" ];
+  }
+}
+
+sub _process_not {
+  return !$_[0]->process($_[1][1]);
+}
+
+sub _process_or {
+  return $_[0]->process($_[1][1]) || $_[0]->process($_[1][2]);
+}
+
+sub _process_and {
+  return $_[0]->process($_[1][1]) && $_[0]->process($_[1][2]);
+}
+
+sub process {
+  my ($self, $node, $ctx) = @_;
+
+  my $method = "_process_$node->[0]";
+  $self->can($method) or die "No handler for $node->[0]";
+  return $self->$method($node, $ctx);
+}
+
+sub process_list {
+  my ($self, $list) = @_;
+
+  return [ map $self->process($_, 'LIST'), @$list ];
+}
 
 package Squirrel::Template::Expr::Parser;
 
@@ -21,19 +240,53 @@ sub parse {
 sub _parse_expr {
   my ($self, $tok) = @_;
 
-  return $self->_parse_or($tok);
+  return $self->_parse_cond($tok);
 }
 
 my %ops =
   (
-   "op+" => "+",
-   "op-" => "-",
-   "op*" => "*",
-   "op/" => "/",
+   "op+" => "add",
+   "op-" => "subtract",
+   "op*" => "mult",
+   "op/" => "fdiv",
    "div" => "div",
    "mod" => "mod",
    "op_" => "concat",
+
+   "opeq" => "eq",
+   "opne" => "ne",
+   "oplt" => "lt",
+   "opgt" => "gt",
+   "ople" => "le",
+   "opge" => "ge",
+
+   "op==" => "neq",
+   "op!=" => "nne",
+   "op<" => "nlt",
+   "op>" => "ngt",
+   "op<=" => "nle",
+   "op>=" => "nge",
+   'op=~' => "match",
+   'op!~' => "notmatch",
   );
+
+sub _parse_cond {
+  my ($self, $tok) = @_;
+
+  my $result = $self->_parse_or($tok);
+  if ($tok->peektype eq 'op?') {
+    $tok->get;
+    my $true = $self->_parse_or($tok);
+    my $colon = $tok->get;
+    $colon->[0] eq 'op:'
+      or die [ error => "Expected : for ? : operator but found $tok->[1]" ];
+    my $false = $self->_parse_or($tok);
+
+    $result = [ cond => $result, $true, $false ];
+  }
+
+  return $result;
+}
 
 sub _parse_or {
   my ($self, $tok) = @_;
@@ -71,7 +324,7 @@ sub _parse_rel {
   while ($relops{$nexttype}) {
     my $op = $tok->get;
     my $other = $self->_parse_additive($tok);
-    $result = [ substr($nexttype, 2), $result, $other ];
+    $result = [ $ops{$nexttype}, $result, $other ];
     $nexttype = $tok->peektype;
   }
   return $result;
@@ -220,6 +473,16 @@ sub _parse_primary {
   my $t = $tok->get('TERM');
   if ($t->[0] eq 'str' || $t->[0] eq 'num') {
     return [ const => $t->[2] ];
+  }
+  elsif ($t->[0] eq 're') {
+    my $str = $t->[2];
+    my $opts = $t->[3];
+    my $sub = eval "sub { my \$str = shift; qr/\$str/$opts; }";
+    my $re;
+    $sub and $re = eval { $sub->($str) };
+    $re
+      or die [ error => "Cannot compile /$t->[2]/$opts: $@" ];
+    return [ const => $re ];
   }
   elsif ($t->[0] eq 'id') {
     return [ var => $t->[2] ];
@@ -370,6 +633,222 @@ sub _vianame {
     die [ error => "Unknown \\N name '$name'" ];
   }
   return chr($code);
+}
+
+package Squirrel::Template::Expr::WrapBase;
+
+sub new {
+  my ($class, $item) = @_;
+
+  return bless [ $item ], $class;
+}
+
+{
+  package Squirrel::Template::Expr::WrapScalar;
+  our @ISA = qw(Squirrel::Template::Expr::WrapBase);
+
+  my %methods =
+    (
+     length => sub {
+       my ($item, $args) = @_;
+
+       @$args == 0
+	 or die [ error => "scalar.length takes no parameters" ];
+
+       return length $item;
+     },
+     upper => sub {
+       my ($item, $args) = @_;
+
+       @$args == 0
+	 or die [ error => "scalar.upper takes no parameters" ];
+
+       return uc $item;
+     },
+     lower => sub {
+       my ($item, $args) = @_;
+
+       @$args == 0
+	 or die [ error => "scalar.lower takes no parameters" ];
+
+       return lc $item;
+     },
+     defined => sub {
+       my ($item, $args) = @_;
+
+       @$args == 0
+	 or die [ error => "scalar.defined takes no parameters" ];
+
+       return defined $item;
+     },
+     trim => sub {
+       my ($item, $args) = @_;
+
+       @$args == 0
+	 or die [ error => "scalar.defined takes no parameters" ];
+
+       $item =~ s/\A\s+//;
+       $item =~ s/\s+\z//;
+
+       return $item;
+     },
+     split => sub {
+       my ($item, $args) = @_;
+
+       my $split = @$args ? $args->[0] : " ";
+       my $limit = @$args >= 2 ? $args->[1] : 0;
+
+       return [ split $split, $item, $limit ];
+     },
+    );
+
+  sub call {
+    my ($self, $method, $args) = @_;
+
+    if ($methods{$method}) {
+      return $methods{$method}->($self->[0], $args);
+    }
+    die [ error => "No method $method for scalars" ];
+  }
+}
+
+{
+  package Squirrel::Template::Expr::WrapCode;
+  our @ISA = qw(Squirrel::Template::Expr::WrapBase);
+
+  sub call {
+    my ($self, $method, $args) = @_;
+
+    return $self->[0]->($method, @$args);
+  }
+}
+
+{
+  package Squirrel::Template::Expr::WrapArray;
+  our @ISA = qw(Squirrel::Template::Expr::WrapBase);
+
+  my $list_make_key = sub {
+    my ($item, $field) = @_;
+
+    if (Scalar::Util::blessed($item)) {
+      return $item->can($field) ? $item->$field() : "";
+    }
+    else {
+      return exists $item->{$field} ? $item->{$field} : "";
+    }
+  };
+
+  my %methods =
+    (
+     size => sub {
+       my ($item, $args) = @_;
+
+       @$args == 0
+	 or die [ error => "list.size takes no parameters" ];
+
+       return scalar @$item;
+     },
+     sort => sub {
+       my ($item, $args) = @_;
+
+       @$item <= 1
+	 and return [ @$item ]; # nothing to sort
+
+       if (@$args == 0) {
+	 return [ sort @$item ];
+       }
+       elsif (@$args == 1) {
+	 my $key = $args->[0];
+	 return sort {
+	   $list_make_key->($a, $key) cmp $list_make_key->($b, $key)
+	 } @$item;
+       }
+       else {
+	 die [ error => "list.sort takes 0 or 1 parameters" ];
+       }
+     },
+     reverse => sub {
+       my ($item, $args) = @_;
+
+       @$args == 0
+	 or die [ error => "list.reverse takes no parameters" ];
+
+       return [ reverse @$item ];
+     },
+     join => sub {
+       my ($item, $args) = @_;
+
+       my $join = @$args ? $args->[0] : "";
+
+       return join($join, @$item);
+     },
+     last => sub {
+       my ($item, $args) = @_;
+
+       @$args == 0
+	 or die [ error => "list.last takes no parameters" ];
+
+       return @$item ? $item->[-1] : ();
+     },
+     first => sub {
+       my ($item, $args) = @_;
+
+       @$args == 0
+	 or die [ error => "list.first takes no parameters" ];
+
+       return @$item ? $item->[0] : ();
+     },
+    );
+
+  sub call {
+    my ($self, $method, $args) = @_;
+
+    if ($methods{$method}) {
+      return $methods{$method}->($self->[0], $args);
+    }
+    die [ error => "Unknown method $method for lists" ];
+  }
+}
+
+{
+  package Squirrel::Template::Expr::WrapHash;
+  our @ISA = qw(Squirrel::Template::Expr::WrapBase);
+
+  my %methods =
+    (
+     size => sub {
+       my ($item) = @_;
+       return scalar keys %$item;
+     },
+     keys => sub {
+       my ($item) = @_;
+
+       return [ keys %$item ];
+     },
+     values => sub {
+       my ($item) = @_;
+
+       return [ values %$item ];
+     },
+     list => sub {
+       my ($item) = @_;
+
+       return [ map {; key => $_, value => $item->{$_} } sort keys %$item ];
+     },
+    );
+
+  sub call {
+    my ($self, $method, $args) = @_;
+
+    if ($methods{$method}) {
+      return $methods{$method}->($self->[0], $args);
+    }
+    elsif (exists $self->[0]{$method}) {
+      return $self->[0]{$method};
+    }
+
+    die [ error => "Unknown method $method for hashes" ];
+  }
 }
 
 1;

@@ -2,7 +2,7 @@ package Squirrel::Template::Parser;
 use strict;
 use Squirrel::Template::Constants qw(:token :node);
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 use constant TOK => 0;
 use constant TMPLT => 1;
@@ -49,6 +49,12 @@ sub _parse_content {
     print STDERR "NEXT: $type\n" if TRACE;
     if ($type eq 'content' || $type eq 'tag' || $type eq 'wraphere') {
       push @result, $token;
+    }
+    elsif ($type eq 'expr') {
+      push @result, $self->_parse_expr($token);
+    }
+    elsif ($type eq 'set') {
+      push @result, $self->_parse_set($token);
     }
     elsif ($type eq 'if') {
       push @result, $self->_parse_if($token);
@@ -140,6 +146,41 @@ sub _comp {
   }
 
   return \@result;
+}
+
+sub _parse_expr {
+  my ($self, $expr) = @_;
+
+  my $parser = Squirrel::Template::Expr::Parser->new;
+  my $parsed;
+  if (eval { $parsed = $parser->parse($expr->[TOKEN_EXPR_EXPR]); 1 }) {
+    $expr->[NODE_EXPR_EXPR] = $parsed;
+    return $expr;
+  }
+  elsif (ref $@) {
+    return $self->_error($expr, $@->[1]);
+  }
+  else {
+    return $self->_error($expr, $@);
+  }
+}
+
+sub _parse_set {
+  my ($self, $set) = @_;
+
+  my $parser = Squirrel::Template::Expr::Parser->new;
+  my $parsed;
+  if (eval { $parsed = $parser->parse($set->[TOKEN_SET_EXPR]); 1 }) {
+    $set->[NODE_SET_VAR] = [ split /\./, $set->[TOKEN_SET_VAR] ];
+    $set->[NODE_SET_EXPR] = $parsed;
+    return $set;
+  }
+  elsif (ref $@) {
+    return $self->_error($set, $@->[1]);
+  }
+  else {
+    return $self->_error($set, $@);
+  }
 }
 
 sub _parse_if {
