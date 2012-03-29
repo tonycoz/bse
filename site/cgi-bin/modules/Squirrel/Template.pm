@@ -5,6 +5,8 @@ use Squirrel::Template::Tokenizer;
 use Squirrel::Template::Parser;
 use Squirrel::Template::Deparser;
 use Squirrel::Template::Processor;
+use Squirrel::Template::Expr;
+
 use Carp qw/cluck confess/;
 BEGIN {
   unless ( defined &DEBUG ) {
@@ -15,7 +17,7 @@ BEGIN {
 
 use constant DEBUG_GET_PARMS => 0;
 
-our $VERSION = "1.013";
+our $VERSION = "1.014";
 
 my $tag_head = qr/(?:\s+<:-|<:-?)/;
 my $tag_tail = qr/(?:-:>\s*|:>)/;
@@ -318,6 +320,36 @@ sub end_wrap {
   return 11;
 }
 
+sub start_scope {
+  my ($self, $vars) = @_;
+
+  push @{$self->{scopes}}, $vars || {};
+}
+
+sub end_scope {
+  my ($self) = @_;
+
+  pop @{$self->{scopes}};
+}
+
+sub get_var {
+  my ($self, $name) = @_;
+
+  for my $scope (reverse @{$self->{scopes}}) {
+    if (exists $scope->{$name}) {
+      return $scope->{$name};
+    }
+  }
+
+  return;
+}
+
+sub set_var {
+  my ($self, $name, $value) = @_;
+
+  $self->{scopes}[-1]{$name} = $value;
+}
+
 sub parse {
   my ($self, $template, $name) = @_;
 
@@ -391,9 +423,13 @@ sub parse_file {
 }
 
 sub replace {
-  my ($self, $parsed, $acts) = @_;
+  my ($self, $parsed, $acts, $vars) = @_;
 
   $self->{errors} = [];
+
+  $self->{scopes} = [];
+  push @{$self->{scopes}}, $vars if $vars;
+  push @{$self->{scopes}}, { globals => {} };
 
   my $oldparam_tag = $acts->{param};
   local $acts->{param} = $oldparam_tag || [ tag_param => $self ];
@@ -406,15 +442,15 @@ sub replace {
 }
 
 sub replace_template {
-  my ($self, $template, $acts, $iter, $name) = @_;
+  my ($self, $template, $acts, $iter, $name, $vars) = @_;
 
   my $parsed = $self->parse($template, $name);
 
-  return scalar $self->replace($parsed, $acts, $name);
+  return scalar $self->replace($parsed, $acts, $vars);
 }
 
 sub show_page {
-  my ($self, $base, $page, $acts, $iter, $alt) = @_;
+  my ($self, $base, $page, $acts, $iter, $alt, $vars) = @_;
 
   print STDERR ">> show_page\n" if DEBUG;
   print STDERR "  page $page\n" if DEBUG && $page;
@@ -440,7 +476,7 @@ sub show_page {
   $error
     and die $error;
 
-  my $result = scalar $self->replace($parsed, $acts, $file);
+  my $result = scalar $self->replace($parsed, $acts, $vars);
 
   print STDERR "<< show_page\n" if DEBUG;
 

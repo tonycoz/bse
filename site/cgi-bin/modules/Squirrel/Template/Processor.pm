@@ -2,17 +2,25 @@ package Squirrel::Template::Processor;
 use strict;
 use Squirrel::Template::Constants qw(:node);
 
-our $VERSION = "1.008";
+our $VERSION = "1.009";
 
 use constant ACTS => 0;
 use constant TMPLT => 1;
 use constant PARMS => 2;
 use constant WRAPPED => 3;
+use constant EVAL => 4;
 
 sub new {
   my ($class, $acts, $tmplt, $wrapped) = @_;
 
-  return bless [ $acts, $tmplt, {}, $wrapped ];
+  return bless 
+    [
+     $acts,
+     $tmplt,
+     {},
+     $wrapped,
+     Squirrel::Template::Expr::Eval->new($tmplt)
+    ], $class;
 }
 
 # return an error node matching the supplied node
@@ -41,6 +49,67 @@ sub _process_empty {
   my ($self, $node) = @_;
 
   return;
+}
+
+sub _process_expr {
+  my ($self, $node) = @_;
+
+  my @errors;
+  my $value = "";
+  unless (eval { $value = $self->[EVAL]->process($node->[NODE_EXPR_EXPR]); 1 }) {
+    push @errors, $self->_error($node, ref $@ ? $@->[1] : $@ );
+  }
+  if (length $value && $node->[NODE_EXPR_FORMAT]) {
+    $value = $self->format($value, $node->[NODE_EXPR_FORMAT]);
+  }
+  return ( @errors, $value );
+}
+
+sub _process_set {
+  my ($self, $node) = @_;
+
+  my @errors;
+  my $value = "";
+  if (eval { $value = $self->[EVAL]->process($node->[NODE_SET_EXPR]); 1 }) {
+    my @var = @{$node->[NODE_SET_VAR]};
+    if (@var > 1) {
+      my $top_name = shift @var;
+      my $var = $self->[TMPLT]->get_var($top_name);
+      unless ($var) {
+	$var = {};
+	$self->[TMPLT]->set_var($top_name, $var);
+      }
+      my @seen = $top_name;
+      while (@var > 1) {
+	my $subkey = shift @var;
+	Scalar::Util::blessed($var)
+	    and die [ error => "Cannot set values in an object ".join(".", @seen) ];
+	my $type = reftype $var;
+	if ($type eq 'HASH') {
+	  exists $type->{$subkey}
+	    or die [ error => "$subkey not found in ".join(".", @seen) ];
+	  $var = $var->{$subkey};
+	  push @seen, $subkey;
+	}
+	else {
+	  die [ error => "Only hashes supported for now" ];
+	}
+      }
+      Scalar::Util::blessed($var)
+	  and die [ error => "Cannot set values in an object ".join(".", @seen) ];
+      reftype $var eq 'HASH'
+	or die [ error => "Only hashes supported for now" ];
+      $var->{$var[0]} = $value;
+    }
+    else {
+      $self->[TMPLT]->set_var($var[0] => $value);
+    }
+  }
+  else {
+    push @errors, $self->_error($node, ref $@ ? $@->[1] : $@ );
+  }
+
+  return @errors;
 }
 
 sub _process_error {
