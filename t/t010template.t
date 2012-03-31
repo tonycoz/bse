@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 95;
+use Test::More tests => 96;
 
 sub template_test($$$$;$$);
 
@@ -439,6 +439,7 @@ OUT
      [ 'not 1 and 1', "" ],
      [ '"xabcy" =~ /abc/', 1 ],
      [ '[ "abc" =~ /(.)(.)/ ][1]', "b" ],
+     [ '{ "a": 11, "b": 12, "c": 20 }["b"]', 12 ],
     );
   for my $test (@expr_tests) {
     my ($expr, $result) = @$test;
