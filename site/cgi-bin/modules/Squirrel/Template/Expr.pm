@@ -5,6 +5,12 @@ our $VERSION = "1.001";
 
 package Squirrel::Template::Expr::Eval;
 use Scalar::Util ();
+use Squirrel::Template::Expr::WrapScalar;
+use Squirrel::Template::Expr::WrapHash;
+use Squirrel::Template::Expr::WrapArray;
+use Squirrel::Template::Expr::WrapCode;
+use Squirrel::Template::Expr::WrapClass;
+
 use constant TMPL => 0;
 
 sub new {
@@ -175,6 +181,19 @@ sub _process_range {
   my $end = $self->process($node->[2]);
 
   return $ctx eq 'LIST' ? ( $start .. $end ) : [ $start .. $end ];
+}
+
+sub _process_hash {
+  my ($self, $node) = @_;
+
+  my %result;
+  for my $pair (@{$node->[1]}) {
+    my $key = $self->process($pair->[0]);
+    my $value = $self->process($pair->[1]);
+    $result{$key} = $value;
+  }
+
+  return \%result;
 }
 
 sub _process_subscript {
@@ -494,6 +513,27 @@ sub _parse_primary {
       or die [ error => "Expected ] but got $close->[0]" ];
     return [ list => $list ];
   }
+  elsif ($t->[0] eq 'op{') {
+    my @pairs;
+    if ($tok->peektype eq 'op}') {
+      $tok->get; # discard '}'
+    }
+    else {
+      my $next;
+      do {
+	my $key = $self->_parse_additive($tok);
+	my $colon = $tok->get;
+	$colon->[0] eq 'op:'
+	  or die [ error => "Expected : in hash but found $colon->[1]" ];
+	my $value = $self->_parse_expr($tok);
+	push @pairs, [ $key, $value ];
+      } while ($next = $tok->get and $next->[0] eq 'op,');
+      $next->[0] eq 'op}'
+	or die [ error => "Expected , or } but found $tok->[1]" ];
+    }
+
+    return [ hash => \@pairs ];
+  }
   elsif ($t->[0] eq 're') {
     return [ re => $t->[2], $t->[3] ];
   }
@@ -552,7 +592,7 @@ sub get {
 	 $self->[TEXT] =~ s!\A(\s*/((?:[^/\\]|\\.)+)/([ismx]*\s)?\s*)!!) {
     push @$queue, [ re => $1, $2, $3 || "" ];
   }
-  elsif ($self->[TEXT] =~ s/\A(\s*(not|eq|ne|le|lt|ge|gt|<=|>=|[!=]\=|\=\~|[_\?:,\[\]\(\)<>=!.*\/+-])\s*)//) {
+  elsif ($self->[TEXT] =~ s/\A(\s*(not|eq|ne|le|lt|ge|gt|<=|>=|[!=]\=|\=\~|[_\?:,\[\]\(\)<>=!.*\/+\{\}-])\s*)//) {
     push @$queue, [ "op$2" => $1 ];
   }
   elsif ($self->[TEXT] =~ s/\A(\s*([A-Za-z_][a-zA-Z_0-9]*)\s*)//) {
