@@ -330,6 +330,13 @@ site/cgi-bin/modules/Squirrel/Table.pm
 site/cgi-bin/modules/Squirrel/Template.pm
 site/cgi-bin/modules/Squirrel/Template/Constants.pm
 site/cgi-bin/modules/Squirrel/Template/Deparser.pm
+site/cgi-bin/modules/Squirrel/Template/Expr.pm
+site/cgi-bin/modules/Squirrel/Template/Expr/WrapArray.pm
+site/cgi-bin/modules/Squirrel/Template/Expr/WrapBase.pm
+site/cgi-bin/modules/Squirrel/Template/Expr/WrapClass.pm
+site/cgi-bin/modules/Squirrel/Template/Expr/WrapCode.pm
+site/cgi-bin/modules/Squirrel/Template/Expr/WrapHash.pm
+site/cgi-bin/modules/Squirrel/Template/Expr/WrapScalar.pm
 site/cgi-bin/modules/Squirrel/Template/Parser.pm
 site/cgi-bin/modules/Squirrel/Template/Processor.pm
 site/cgi-bin/modules/Squirrel/Template/Tokenizer.pm
