@@ -149,10 +149,13 @@ sub _process_const {
 sub _process_call {
   my ($self, $node, $ctx) = @_;
 
+  $ctx ||= "";
+
   my $val = $self->process($node->[2]);
   my $args = $self->process_list($node->[3]);
   my $method = $node->[1];
-  if (Scalar::Util::blessed($val)) {
+  if (Scalar::Util::blessed($val)
+      && !$val->isa("Squirrel::Template::Expr::WrapBase")) {
     $val->can($method)
       or die [ error => "No such method $method" ];
     if ($val->can("restricted_method")) {
