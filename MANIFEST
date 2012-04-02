@@ -861,6 +861,7 @@ t/tags/bse.cfg
 t/templater/00load.t
 t/templater/10token.t
 t/templater/20parse.t
+t/templater/30expr.t
 t/templates/included.include	Used by t010template.t
 t/templates/included.recursive
 t/templates/wrapinner.tmpl
