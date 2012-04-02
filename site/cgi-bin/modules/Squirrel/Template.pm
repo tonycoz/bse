@@ -341,7 +341,7 @@ sub get_var {
     }
   }
 
-  return;
+  die "ENOIMPL\nVariable $name not defined";
 }
 
 sub set_var {
