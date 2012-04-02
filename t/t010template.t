@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 96;
+use Test::More tests => 99;
 
 sub template_test($$$$;$$);
 
@@ -46,6 +46,7 @@ SKIP: {
      somehash => { qw(a 11 b 12 c 14 e 8) },
      num1 => 101,
      num2 => 202,
+     testclass => Squirrel::Template::Expr::WrapClass->new("TestClass"),
     );
   template_test("<:str:>", "ABC", "simple", \%acts);
   template_test("<:strref:>", "ABC", "scalar ref", \%acts);
@@ -384,6 +385,11 @@ IN
 OUT
   }
 
+  template_test("<:= unknown :>", "<:= unknown :>", "unknown", \%acts, "", \%vars);
+  template_test(<<TEMPLATE, "2", "multi-statement", \%acts, "", \%vars);
+<:.set foo = [] :><:% foo.push(1); foo.push(2) :><:= foo.size() -:>
+TEMPLATE
+
   template_test("<:= str :>", "ABC", "simple exp", \%acts, "", \%vars);
   template_test("<:= a.b.c :>", "CEE", "hash methods", \%acts, "", \%vars);
   template_test(<<IN, <<OUT, "simple set", \%acts, "both", \%vars);
@@ -440,6 +446,7 @@ OUT
      [ '"xabcy" =~ /abc/', 1 ],
      [ '[ "abc" =~ /(.)(.)/ ][1]', "b" ],
      [ '{ "a": 11, "b": 12, "c": 20 }["b"]', 12 ],
+     [ 'testclass.foo', "[TestClass.foo]" ],
     );
   for my $test (@expr_tests) {
     my ($expr, $result) = @$test;
@@ -525,4 +532,10 @@ sub tag_cat {
   my ($args, $acts, $func, $templater) = @_;
 
   return join "", $templater->get_parms($args, $acts);
+}
+
+package TestClass;
+
+sub foo {
+  return "[TestClass.foo]";
 }
