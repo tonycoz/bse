@@ -99,6 +99,22 @@ sub _do_pop {
   return pop @{$self->[0]};
 }
 
+sub _do_push {
+  my ($self, $args) = @_;
+
+  push @{$self->[0]}, @$args;
+
+  return scalar(@{$self->[0]});
+}
+
+sub _do_unshift {
+  my ($self, $args) = @_;
+
+  unshift @{$self->[0]}, @$args;
+
+  return scalar(@{$self->[0]});
+}
+
 sub call {
   my ($self, $method, $args) = @_;
 
