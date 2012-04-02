@@ -85,6 +85,9 @@ sub get {
       elsif ($body =~ /\A=\s+(\S.*?)(?:\s+\|\s*(\w+))?\z/s) {
 	push @$queue, [ expr => $tag, $line, $name, $1, $2 || "" ];
       }
+      elsif ($body =~ /\A%\s+(\S.*?)(?:\s+\|\s*(\w+))?\z/s) {
+	push @$queue, [ stmt => $tag, $line, $name, $1, $2 || "" ];
+      }
       elsif ($body =~ /\A\.set\s+([a-zA-Z][a-zA-Z0-9]*(?:\.[a-zA-Z][a-zA-Z0-9]*)*)\s*=\s*(\S.*)\z/s) {
 	push @$queue, [ set => $tag, $line, $name, $1, $2 ];
       }

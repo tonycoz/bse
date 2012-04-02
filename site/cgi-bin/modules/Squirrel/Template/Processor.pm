@@ -51,16 +51,41 @@ sub _process_empty {
   return;
 }
 
+sub _process_stmt {
+  my ($self, $node) = @_;
+
+  my @errors;
+  my $value = "";
+  unless (eval {
+    for my $expr (@{$node->[NODE_EXPR_EXPR]}) {
+      $self->[EVAL]->process($expr);
+    }
+    1;
+  }) {
+    my $msg = $@;
+
+    return $node->[NODE_ORIG] if $msg =~ /\bENOIMPL\b/;
+
+    push @errors, $self->_error($node, ref $msg ? $msg->[1] : $msg );
+  }
+
+  return ( @errors );
+}
+
 sub _process_expr {
   my ($self, $node) = @_;
 
   my @errors;
   my $value = "";
   unless (eval { $value = $self->[EVAL]->process($node->[NODE_EXPR_EXPR]); 1 }) {
-    push @errors, $self->_error($node, ref $@ ? $@->[1] : $@ );
+    my $msg = $@;
+
+    return $node->[NODE_ORIG] if $msg =~ /\bENOIMPL\b/;
+
+    push @errors, $self->_error($node, ref $msg ? $msg->[1] : $msg );
   }
   if (length $value && $node->[NODE_EXPR_FORMAT]) {
-    $value = $self->format($value, $node->[NODE_EXPR_FORMAT]);
+    $value = $self->[TMPLT]->format($value, $node->[NODE_EXPR_FORMAT]);
   }
   return ( @errors, $value );
 }
