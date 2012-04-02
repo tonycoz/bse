@@ -507,7 +507,10 @@ sub _parse_primary {
     return [ var => $t->[2] ];
   }
   elsif ($t->[0] eq 'op[') {
-    my $list = $self->_parse_list($tok);
+    my $list = [];
+    if ($tok->peektype ne 'op]') {
+      $list = $self->_parse_list($tok);
+    }
     my $close = $tok->get;
     $close->[0] eq 'op]'
       or die [ error => "Expected ] but got $close->[0]" ];
