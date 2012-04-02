@@ -256,6 +256,12 @@ sub parse {
   return $self->_parse_expr($tokenizer);
 }
 
+sub parse_tokens {
+  my ($self, $tokenizer) = @_;
+
+  return $self->_parse_expr($tokenizer);
+}
+
 sub _parse_expr {
   my ($self, $tok) = @_;
 
@@ -595,7 +601,7 @@ sub get {
 	 $self->[TEXT] =~ s!\A(\s*/((?:[^/\\]|\\.)+)/([ismx]*\s)?\s*)!!) {
     push @$queue, [ re => $1, $2, $3 || "" ];
   }
-  elsif ($self->[TEXT] =~ s/\A(\s*(not|eq|ne|le|lt|ge|gt|<=|>=|[!=]\=|\=\~|[_\?:,\[\]\(\)<>=!.*\/+\{\}-])\s*)//) {
+  elsif ($self->[TEXT] =~ s/\A(\s*(not|eq|ne|le|lt|ge|gt|<=|>=|[!=]\=|\=\~|[_\?:,\[\]\(\)<>=!.*\/+\{\};-])\s*)//) {
     push @$queue, [ "op$2" => $1 ];
   }
   elsif ($self->[TEXT] =~ s/\A(\s*([A-Za-z_][a-zA-Z_0-9]*)\s*)//) {

@@ -53,6 +53,9 @@ sub _parse_content {
     elsif ($type eq 'expr') {
       push @result, $self->_parse_expr($token);
     }
+    elsif ($type eq 'stmt') {
+      push @result, $self->_parse_stmt($token);
+    }
     elsif ($type eq 'set') {
       push @result, $self->_parse_set($token);
     }
@@ -162,6 +165,35 @@ sub _parse_expr {
   }
   else {
     return $self->_error($expr, $@);
+  }
+}
+
+sub _parse_stmt {
+  my ($self, $stmt) = @_;
+
+  my $parser = Squirrel::Template::Expr::Parser->new;
+  my $tokens = Squirrel::Template::Expr::Tokenizer->new($stmt->[TOKEN_EXPR_EXPR]);
+  my @list;
+  my $parsed;
+  my $good = eval {
+    push @list, $parser->parse_tokens($tokens);
+    while ($tokens->peektype eq "op;") {
+      $tokens->get;
+      push @list, $parser->parse_tokens($tokens);
+    }
+    $tokens->peektype eq "eof"
+      or die [ error => "Expected ; or end, but found ".$tokens->peektype ];
+    1;
+  };
+  if ($good) {
+    $stmt->[NODE_EXPR_EXPR] = \@list;
+    return $stmt;
+  }
+  elsif (ref $@) {
+    return $self->_error($stmt, $@->[1]);
+  }
+  else {
+    return $self->_error($stmt, $@);
   }
 }
 
