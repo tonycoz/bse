@@ -2,6 +2,8 @@ package Squirrel::Template::Expr::WrapClass;
 use strict;
 use base qw(Squirrel::Template::Expr::WrapBase);
 
+our $VERSION = "1.000";
+
 sub call {
   my ($self, $method, $args, $ctx) = @_;
   if ($self->[0]->can("restricted_method")) {

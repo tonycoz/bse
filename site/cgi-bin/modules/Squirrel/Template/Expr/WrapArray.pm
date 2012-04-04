@@ -3,6 +3,8 @@ use strict;
 use base qw(Squirrel::Template::Expr::WrapBase);
 use Scalar::Util ();
 
+our $VERSION = "1.000";
+
 my $list_make_key = sub {
   my ($item, $field) = @_;
 
