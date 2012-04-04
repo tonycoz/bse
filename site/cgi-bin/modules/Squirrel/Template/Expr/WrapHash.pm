@@ -2,7 +2,7 @@ package Squirrel::Template::Expr::WrapHash;
 use strict;
 use base qw(Squirrel::Template::Expr::WrapBase);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub _do_size {
   my ($self) = @_;
@@ -42,8 +42,16 @@ sub call {
   if ($self->can($real_method)) {
     return $self->$real_method($args);
   }
+  elsif (exists $self->[0]{$method}) {
+    my $item = $self->[0]{$method};
+    if (!Scalar::Util::blessed($item)
+	&& Scalar::Util::reftype($item) eq 'CODE') {
+      return $item->(@$args);
+    }
+    return $item;
+  }
   else {
-    return $self->[0]{$method};
+    return undef;
   }
 
   die [ error => "Unknown method $method for hashes" ];
