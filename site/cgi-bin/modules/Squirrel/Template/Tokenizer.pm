@@ -2,7 +2,7 @@ package Squirrel::Template::Tokenizer;
 use strict;
 use Squirrel::Template::Constants qw(:token);
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 use constant QUEUE => 0;
 use constant TEXT => 1;
@@ -103,8 +103,8 @@ sub get {
       elsif ($body =~ /\A\.end(?:\s+(\w+))?\z/) {
 	push @$queue, [ end => $tag, $line, $name, defined $1 ? $1 : "" ];
       }
-      elsif ($body =~ /\A\.call\s+([^,]+)(?:\s*,\s*(\S.*))?\z/) {
-	push @$queue, [ call => $tag, $line, $name, $1, defined $2 ? $2 : "" ];
+      elsif ($body =~ /\A\.call\s+(\S.*)?\z/) {
+	push @$queue, [ call => $tag, $line, $name, $1 ];
       }
       elsif ($body =~ /\Aiterator\s+begin\s+(\w+)\s*(?:\s+(\S.*))?\z/s) {
 	push @$queue, [ itbegin => $tag, $line, $name, $1, defined $2 ? $2 : '' ];

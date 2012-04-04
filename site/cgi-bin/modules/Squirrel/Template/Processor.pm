@@ -2,7 +2,7 @@ package Squirrel::Template::Processor;
 use strict;
 use Squirrel::Template::Constants qw(:node);
 
-our $VERSION = "1.009";
+our $VERSION = "1.010";
 
 use constant ACTS => 0;
 use constant TMPLT => 1;
@@ -135,6 +135,47 @@ sub _process_set {
   }
 
   return @errors;
+}
+
+sub _process_define {
+  my ($self, $define) = @_;
+
+  $self->[TMPLT]->define_macro($define->[NODE_DEFINE_NAME], $define->[NODE_DEFINE_CONTENT]);
+
+  return;
+}
+
+sub _process_call {
+  my ($self, $node) = @_;
+
+  my $parsed;
+  my %args;
+  my @result;
+  if (eval {
+    my $name = $self->[EVAL]->process($node->[NODE_CALL_NAME]);
+    for my $arg (@{$node->[NODE_CALL_LIST]}) {
+      my $key = $self->[EVAL]->process($arg->[0]);
+      my $value = $self->[EVAL]->process($arg->[1]);
+      $args{$key} = $value;
+    }
+
+    $parsed = $self->[TMPLT]->get_macro($name);
+    if (!$parsed) {
+      ($parsed, my $message) = $self->[TMPLT]->parse_file($name);
+      $parsed
+	or die "ENOIMPL - $name not found\n";
+    }
+    1;
+  }) {
+    $self->[TMPLT]->start_scope(\%args);
+    @result = $self->process($parsed);
+    $self->[TMPLT]->end_scope();
+  }
+  else {
+    @result = $node->[NODE_ORIG];
+  }
+
+  return @result;
 }
 
 sub _process_error {

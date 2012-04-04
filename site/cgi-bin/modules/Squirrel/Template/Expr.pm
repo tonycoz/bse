@@ -1,7 +1,7 @@
 package Squirrel::Template::Expr;
 use strict;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 package Squirrel::Template::Expr::Eval;
 use Scalar::Util ();
@@ -256,7 +256,14 @@ sub parse {
   my ($self, $text) = @_;
 
   my $tokenizer = Squirrel::Template::Expr::Tokenizer->new($text);
-  return $self->_parse_expr($tokenizer);
+  my $result = $self->_parse_expr($tokenizer);
+
+  my $last = $tokenizer->get;
+  unless ($last->[0] eq 'eof') {
+    die [ error => "Expected eof but found $last->[0]" ];
+  }
+
+  return $result;
 }
 
 sub parse_tokens {

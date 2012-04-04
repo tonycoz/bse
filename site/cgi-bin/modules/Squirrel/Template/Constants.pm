@@ -2,7 +2,7 @@ package Squirrel::Template::Constants;
 use strict;
 use Exporter qw(import);
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub _define_sequence {
   my ($keys, $start) = @_;
@@ -25,6 +25,8 @@ my @token_expr = qw(TOKEN_EXPR_EXPR);
 _define_sequence(\@token_expr, 4);
 my @token_set = qw(TOKEN_SET_VAR TOKEN_SET_EXPR);
 _define_sequence(\@token_set, 4);
+my @token_end = qw(TOKEN_END_TYPE);
+_define_sequence(\@token_end, 4);
 
 my @node_base = qw(NODE_TYPE NODE_ORIG NODE_LINE NODE_FILENAME NODE_TAG_NAME NODE_TAG_ARGS);
 _define_sequence(\@node_base, 0);
@@ -46,14 +48,20 @@ my @node_expr = qw(NODE_EXPR_EXPR NODE_EXPR_FORMAT);
 _define_sequence(\@node_expr, 4);
 my @node_set = qw(NODE_SET_VAR NODE_SET_EXPR);
 _define_sequence(\@node_set, 4);
+my @node_define = qw(NODE_DEFINE_NAME NODE_DEFINE_END NODE_DEFINE_CONTENT);
+_define_sequence(\@node_define, 4);
+my @node_call = qw(NODE_CALL_NAME NODE_CALL_LIST);
+_define_sequence(\@node_call, 4);
 
 our %EXPORT_TAGS =
   (
-   token => [ @token_base, @token_generic, @token_error, @token_expr, @token_set ],
+   token => [ @token_base, @token_generic, @token_error, @token_expr,
+	      @token_set, @token_end ],
    node =>
    [
     @node_base, @node_iter, @node_cond, @node_comp, @node_with,
-    @node_wrap, @node_switch, @node_error, @node_expr, @node_set
+    @node_wrap, @node_switch, @node_error, @node_expr, @node_set,
+    @node_define, @node_call,
    ],
   );
 

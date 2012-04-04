@@ -2,7 +2,7 @@ package Squirrel::Template::Parser;
 use strict;
 use Squirrel::Template::Constants qw(:token :node);
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 use constant TOK => 0;
 use constant TMPLT => 1;
@@ -59,6 +59,9 @@ sub _parse_content {
     elsif ($type eq 'set') {
       push @result, $self->_parse_set($token);
     }
+    elsif ($type eq 'call') {
+      push @result, $self->_parse_call($token);
+    }
     elsif ($type eq 'if') {
       push @result, $self->_parse_if($token);
     }
@@ -79,6 +82,9 @@ sub _parse_content {
     }
     elsif ($type eq 'error') {
       push @result, $self->_parse_error($token);
+    }
+    elsif ($type eq 'define') {
+      push @result, $self->_parse_define($token);
     }
     elsif ($type eq 'comment') {
       # discard comments
@@ -408,7 +414,7 @@ sub _parse_wrap {
 
   my $content = $self->_parse_content;
   my $end = $self->[TOK]->get;
-  $end or $DB::single = 1;
+
   my $error;
   if ($end->[TOKEN_TYPE] eq 'endwrap') {
     # nothing to do
@@ -428,6 +434,78 @@ sub _parse_wrap {
   else {
     return $start;
   }
+}
+
+sub _parse_define {
+  my ($self, $define) = @_;
+
+  my $content = $self->_parse_content;
+  my $end = $self->[TOK]->get;
+  my $error;
+  if ($end->[TOKEN_TYPE] eq 'end') {
+    if ($end->[TOKEN_END_TYPE] && $end->[TOKEN_END_TYPE] ne 'define') {
+      $error = $self->_error($end, "Expected '.end' or '.end define' for .define started $define->[TOKEN_FILENAME]:$define->[TOKEN_LINE] but found '.end $end->[TOKEN_END_TYPE]'");
+    }
+  }
+  else {
+    $self->[TOK]->unget($end);
+    $error = $self->_error($end, "Expected '.end' for .define started $define->[TOKEN_FILENAME]:$define->[TOKEN_LINE] but found $end->[TOKEN_TYPE]");
+    $end = $self->_empty($end);
+  }
+  @{$define}[NODE_DEFINE_END, NODE_DEFINE_CONTENT] = ( $end, $content );
+
+  if ($error) {
+    return $self->_comp($define, $error);
+  }
+  else {
+    return $define;
+  }
+}
+
+sub _parse_call {
+  my ($self, $call) = @_;
+
+  my $tokens = Squirrel::Template::Expr::Tokenizer->new($call->[TOKEN_EXPR_EXPR]);
+
+  my $error;
+  my $parser = Squirrel::Template::Expr::Parser->new;
+  my $name_expr;
+  unless (eval { $name_expr = $parser->parse_tokens($tokens); 1 }) {
+    return $self->_error($call, "Could not parse expression: ".$@->[1]);
+  }
+
+  my @result;
+  my $next = $tokens->get;
+  my @args;
+  if ($next->[0] eq 'op,') {
+    unless (eval {
+      while ($next->[0] eq 'op,') {
+	my $key;
+	my $value;
+	$key = $parser->parse_tokens($tokens);
+	my $colon = $tokens->get;
+	$colon->[0] eq 'op:'
+	  or die [ error => "Expected : but found $colon->[0]" ];
+	$value = $parser->parse_tokens($tokens);
+	push @args, [ $key, $value ];
+	$next = $tokens->get;
+      }
+
+      if ($next->[0] ne 'eof') {
+	die [ error => "Expected , or eof but found $next->[0]" ];
+      }
+      1;
+    }) {
+      return $self->_error($call, ref $@ ? $@->[0] : $@);
+    }
+  }
+  elsif ($next->[0] ne 'eof') {
+    $error = $self->_error($call, "Expected , or end of expression but found $next->[0]");
+  }
+
+  @{$call}[NODE_CALL_NAME, NODE_CALL_LIST] = ( $name_expr, \@args );
+
+  return $error ? $self->_comp($call, $error) : $call;
 }
 
 sub _parse_error {
