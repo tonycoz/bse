@@ -1,3 +1,15 @@
+Template re-re-work:
+
+ - new, faster, more regular processing internal to tags:
+   - variables supplied by code, similarly to TT, Mason
+   - macro definitions
+   - call macros or files with parameters and localized variables
+
+  TODO:
+    - documentation
+    - integration into BSE template processing
+    - preloaded template
+
 BSE 0.22 - unreleased
 ========
 

@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 99;
+use Test::More tests => 102;
 
 sub template_test($$$$;$$);
 
@@ -453,7 +453,24 @@ OUT
 
     template_test("<:= $expr :>", $result, "expr: $expr", \%acts, "", \%vars);
   }
+
+  template_test(<<IN, "", "define no use", \%acts, "both", \%vars);
+<:-.define foo:>
+<:.end-:>
+<:-.define bar:>
+<:.end define-:>
+IN
+  template_test(<<IN, "avalue", "define with call", \%acts, "both", \%vars);
+<:-.define foo:>
+<:-= avar -:>
+<:.end-:>
+<:.call "foo", "avar":"avalue"-:>
+IN
+  template_test(<<IN, "other value", "external call", \%acts, "", \%vars);
+<:.call "called.tmpl", "avar":"other value"-:>
+IN
 }
+
 
 sub template_test ($$$$;$$) {
   my ($in, $out, $desc, $acts, $stripnl, $vars) = @_;

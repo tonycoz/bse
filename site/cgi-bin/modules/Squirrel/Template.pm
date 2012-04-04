@@ -17,7 +17,7 @@ BEGIN {
 
 use constant DEBUG_GET_PARMS => 0;
 
-our $VERSION = "1.014";
+our $VERSION = "1.015";
 
 my $tag_head = qr/(?:\s+<:-|<:-?)/;
 my $tag_tail = qr/(?:-:>\s*|:>)/;
@@ -350,6 +350,23 @@ sub set_var {
   $self->{scopes}[-1]{$name} = $value;
 }
 
+sub define_macro {
+  my ($self, $name, $content) = @_;
+
+  $self->{defines}{$name} = $content;
+
+  return 1;
+}
+
+sub get_macro {
+  my ($self, $name, $content) = @_;
+
+  my $content = $self->{defines}{$name}
+    or return;
+
+  return $content;
+}
+
 sub parse {
   my ($self, $template, $name) = @_;
 
@@ -425,11 +442,13 @@ sub parse_file {
 sub replace {
   my ($self, $parsed, $acts, $vars) = @_;
 
-  $self->{errors} = [];
+  local $self->{errors} = [];
 
-  $self->{scopes} = [];
+  local $self->{scopes} = [];
   push @{$self->{scopes}}, $vars if $vars;
   push @{$self->{scopes}}, { globals => {} };
+
+  local $self->{defines} = {};
 
   my $oldparam_tag = $acts->{param};
   local $acts->{param} = $oldparam_tag || [ tag_param => $self ];
