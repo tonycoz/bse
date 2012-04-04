@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 102;
+use Test::More tests => 103;
 
 sub template_test($$$$;$$);
 
@@ -469,6 +469,16 @@ IN
   template_test(<<IN, "other value", "external call", \%acts, "", \%vars);
 <:.call "called.tmpl", "avar":"other value"-:>
 IN
+  template_test(<<IN, <<OUT, "simple .for", \%acts, "", \%vars);
+<:.for x in [ "a" .. "d" ] -:>
+Value: <:= x :> Index: <:= loop.index :> Count: <:= loop.count:> Prev: <:= loop.prev :> Next: <:= loop.next :> Even: <:= loop.even :> Odd: <:= loop.odd :> Parity: <:= loop.parity :>
+<:.end-:>
+IN
+Value: a Index: 0 Count: 1 Prev:  Next: b Even:  Odd: 1 Parity: odd
+Value: b Index: 1 Count: 2 Prev: a Next: c Even: 1 Odd:  Parity: even
+Value: c Index: 2 Count: 3 Prev: b Next: d Even:  Odd: 1 Parity: odd
+Value: d Index: 3 Count: 4 Prev: c Next:  Even: 1 Odd:  Parity: even
+OUT
 }
 
 

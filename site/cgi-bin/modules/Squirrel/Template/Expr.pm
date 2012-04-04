@@ -1,7 +1,7 @@
 package Squirrel::Template::Expr;
 use strict;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 package Squirrel::Template::Expr::Eval;
 use Scalar::Util ();
@@ -475,7 +475,7 @@ sub _parse_call {
       $tok->get;
       my $name = $tok->get;
       $name->[0] eq 'id'
-	or die [ error => "Expected method name after '.'" ];
+	or die [ error => "Expected method name after '.' but found $name->[1]" ];
       my $list = [];
       if ($tok->peektype eq 'op(') {
 	$list = $self->_parse_paren_list($tok, "method");
@@ -611,7 +611,7 @@ sub get {
 	 $self->[TEXT] =~ s!\A(\s*/((?:[^/\\]|\\.)+)/([ismx]*\s)?\s*)!!) {
     push @$queue, [ re => $1, $2, $3 || "" ];
   }
-  elsif ($self->[TEXT] =~ s/\A(\s*(not|eq|ne|le|lt|ge|gt|<=|>=|[!=]\=|\=\~|[_\?:,\[\]\(\)<>=!.*\/+\{\};-])\s*)//) {
+  elsif ($self->[TEXT] =~ s/\A(\s*(not\b|eq\b|ne\b|le\b|lt\b|ge\b|gt\b|<=|>=|[!=]\=|\=\~|[_\?:,\[\]\(\)<>=!.*\/+\{\};-])\s*)//) {
     push @$queue, [ "op$2" => $1 ];
   }
   elsif ($self->[TEXT] =~ s/\A(\s*([A-Za-z_][a-zA-Z_0-9]*)\s*)//) {

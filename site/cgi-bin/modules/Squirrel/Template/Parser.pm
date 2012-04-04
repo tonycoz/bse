@@ -2,7 +2,7 @@ package Squirrel::Template::Parser;
 use strict;
 use Squirrel::Template::Constants qw(:token :node);
 
-our $VERSION = "1.008";
+our $VERSION = "1.009";
 
 use constant TOK => 0;
 use constant TMPLT => 1;
@@ -70,6 +70,9 @@ sub _parse_content {
     }
     elsif ($type eq 'itbegin') {
       push @result, $self->_parse_iterator($token);
+    }
+    elsif ($type eq "for") {
+      push @result, $self->_parse_for($token);
     }
     elsif ($type eq 'withbegin') {
       push @result, $self->_parse_with($token);
@@ -372,6 +375,38 @@ sub _parse_with {
   }
   else {
     return $start;
+  }
+}
+
+sub _parse_for {
+  my ($self, $for) = @_;
+
+  my $content = $self->_parse_content;
+  my $end = $self->[TOK]->get;
+  my $error;
+  if ($end->[TOKEN_TYPE] eq 'end') {
+    if ($end->[TOKEN_END_TYPE] && $end->[TOKEN_END_TYPE] ne 'for') {
+      $error = $self->_error($end, "Expected '.end' or '.end for' for .for started $for->[TOKEN_FILENAME]:$for->[TOKEN_LINE] but found '.end $end->[TOKEN_END_TYPE]'");
+    }
+  }
+  else {
+    $self->[TOK]->unget($end);
+    $error = $self->_error($end, "Expected '.end' for .for started $for->[TOKEN_FILENAME]:$for->[TOKEN_LINE] but found $end->[TOKEN_TYPE]");
+    $end = $self->_empty($end);
+  }
+  my $list_expr;
+  my $parser = Squirrel::Template::Expr::Parser->new;
+  unless (eval { $list_expr = $parser->parse($for->[TOKEN_FOR_EXPR]); 1 }) {
+    return $self->_error($for, "Could not parse list for .for: " . (ref $@ ? $@->[0] : $@));
+  }
+  @{$for}[NODE_FOR_EXPR, NODE_FOR_END, NODE_FOR_CONTENT] =
+    ( $list_expr, $end, $content );
+
+  if ($error) {
+    return $self->_comp($for, $error);
+  }
+  else {
+    return $for;
   }
 }
 
