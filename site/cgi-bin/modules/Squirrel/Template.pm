@@ -17,7 +17,7 @@ BEGIN {
 
 use constant DEBUG_GET_PARMS => 0;
 
-our $VERSION = "1.015";
+our $VERSION = "1.016";
 
 my $tag_head = qr/(?:\s+<:-|<:-?)/;
 my $tag_tail = qr/(?:-:>\s*|:>)/;
@@ -330,6 +330,12 @@ sub end_scope {
   my ($self) = @_;
 
   pop @{$self->{scopes}};
+}
+
+sub top_scope {
+  my ($self) = @_;
+
+  return $self->{scopes}[-1];
 }
 
 sub get_var {

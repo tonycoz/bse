@@ -1,8 +1,9 @@
 package Squirrel::Template::Processor;
 use strict;
 use Squirrel::Template::Constants qw(:node);
+use Scalar::Util ();
 
-our $VERSION = "1.010";
+our $VERSION = "1.011";
 
 use constant ACTS => 0;
 use constant TMPLT => 1;
@@ -84,7 +85,9 @@ sub _process_expr {
 
     push @errors, $self->_error($node, ref $msg ? $msg->[1] : $msg );
   }
-  if (length $value && $node->[NODE_EXPR_FORMAT]) {
+  defined $value
+    or $value = '';
+  if ($node->[NODE_EXPR_FORMAT]) {
     $value = $self->[TMPLT]->format($value, $node->[NODE_EXPR_FORMAT]);
   }
   return ( @errors, $value );
@@ -173,6 +176,83 @@ sub _process_call {
   }
   else {
     @result = $node->[NODE_ORIG];
+  }
+
+  return @result;
+}
+
+sub _process_for {
+  my ($self, $node) = @_;
+
+  my $list;
+  unless (eval {
+    $list = $self->[EVAL]->process($node->[NODE_FOR_EXPR]); 1;
+  }) {
+    my $msg = $@;
+    if ($msg =~ /\bENOIMPL\b/) {
+      return
+	(
+	 $node->[NODE_ORIG],
+	 $self->process($node->[NODE_FOR_CONTENT]),
+	 $node->[NODE_FOR_END][NODE_ORIG]
+	);
+    }
+    else {
+      return $self->_error($node, $@);
+    }
+  }
+
+  if (ref $list) {
+    Scalar::Util::blessed($list)
+	and return $self->_error($node, ".for expression cannot be a blessed object");
+
+    if (Scalar::Util::reftype($list) eq "ARRAY") {
+      # nothing to do
+    }
+    elsif (Scalar::Util::reftype($list) eq "HASH") {
+      my @work = map +{ key => $_, value => $list->{$_} }, keys %$list;
+      $list = \@work;
+    }
+    else {
+      return $self->_error($node, ".for expression cannot be a blessed object");
+    }
+  }
+  else {
+    $list = [ $list ];
+  }
+
+  my $index = 0;
+  my %loop =
+    (
+     first => @$list ? $list->[0] : undef,
+     last => @$list ? $list->[-1] : undef,
+     size => scalar @$list,
+     is_last => sub { $index == @$list },
+     is_first => sub { $index == 0 },
+     count => sub { $index + 1 },
+     index => sub { $index },
+
+     # the parity/odd/even are based on counting from 1, $index counts
+     # from zero
+     parity => sub { $index % 2 ? "even" : "odd" },
+     odd => sub { $index % 2 == 0 },
+     even => sub { $index % 2 != 0 },
+
+     prev => sub { $index > 0 ? $list->[$index-1] : undef },
+     next => sub { $index < $#$list ? $list->[$index+1] : undef },
+     list => $list,
+    );
+  my $name = $node->[NODE_FOR_NAME];
+
+  my $scope = $self->[TMPLT]->top_scope;
+  local $scope->{$name};
+  local $scope->{loop} = \%loop;
+
+  my @result;
+  for my $current (@$list) {
+    $scope->{$name} = $current;
+    push @result, $self->process($node->[NODE_FOR_CONTENT]);
+    ++$index;
   }
 
   return @result;
