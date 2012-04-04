@@ -365,7 +365,7 @@ sub define_macro {
 }
 
 sub get_macro {
-  my ($self, $name, $content) = @_;
+  my ($self, $name) = @_;
 
   my $content = $self->{defines}{$name}
     or return;
