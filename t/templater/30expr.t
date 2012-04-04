@@ -68,24 +68,24 @@ test_tok("+ - == != > >= < <= eq ne lt le gt ge . _",
 	 ], "operators");
 
 test_parse("1+1",
-	   [ "+",
+	   [ "add",
 	     [ const => 1 ],
 	     [ const => 1 ],
 	   ], "add");
 
 test_parse("a+b*c",
-	   [ "+",
+	   [ "add",
 	     [ var => "a" ],
-	     [ "*",
+	     [ "mult",
 	       [ var => "b" ],
 	       [ var => "c" ],
 	     ]
 	   ], "bin + and *");
 
 test_parse("a-b/c",
-	   [ "-",
+	   [ "subtract",
 	     [ var => "a" ],
-	     [ "/",
+	     [ "fdiv",
 	       [ var => "b" ],
 	       [ var => "c" ],
 	     ]
@@ -101,9 +101,9 @@ test_parse("a div b mod c",
 	   ], "div and mod");
 
 test_parse("a/(b*c)",
-	   [ "/",
+	   [ "fdiv",
 	     [ var => "a" ],
-	     [ "*",
+	     [ "mult",
 	       [ var => "b" ],
 	       [ var => "c" ],
 	     ]
@@ -122,7 +122,7 @@ test_parse("a[b]",
 	   ], "subscript");
 
 test_parse("+a * -b",
-	   [ "*",
+	   [ "mult",
 	     [ var => "a" ],
 	     [ uminus =>
 	       [ var => "b" ],
@@ -139,7 +139,7 @@ test_parse("!a and not b or c < d",
 		 [ var => "b" ],
 	       ],
 	     ],
-	     [ "<" =>
+	     [ "nlt" =>
 	       [ var => "c" ],
 	       [ var => "d" ],
 	     ]
@@ -182,14 +182,14 @@ test_parse("a.b.c().d(1).e(1,2)",
 	     ]
 	   ], "method calls");
 
-test_parse("a.b =~ /a.*\\/b/",
-	   [ "=~" =>
+test_parse('a.b =~ /a.*\/b/',
+	   [ "match" =>
 	     [ call =>
 	       "b",
 	       [ var => "a" ],
 	       []
 	     ],
-	     [ re => "a.*\\/b", "" ],
+	     [ const => qr(a.*\/b) ],
 	   ], "regexp match");
 
 sub test_tok {
