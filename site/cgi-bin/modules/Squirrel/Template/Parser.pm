@@ -2,7 +2,7 @@ package Squirrel::Template::Parser;
 use strict;
 use Squirrel::Template::Constants qw(:token :node);
 
-our $VERSION = "1.009";
+our $VERSION = "1.010";
 
 use constant TOK => 0;
 use constant TMPLT => 1;
@@ -50,51 +50,15 @@ sub _parse_content {
     if ($type eq 'content' || $type eq 'tag' || $type eq 'wraphere') {
       push @result, $token;
     }
-    elsif ($type eq 'expr') {
-      push @result, $self->_parse_expr($token);
-    }
-    elsif ($type eq 'stmt') {
-      push @result, $self->_parse_stmt($token);
-    }
-    elsif ($type eq 'set') {
-      push @result, $self->_parse_set($token);
-    }
-    elsif ($type eq 'call') {
-      push @result, $self->_parse_call($token);
-    }
-    elsif ($type eq 'if') {
-      push @result, $self->_parse_if($token);
-    }
-    elsif ($type eq 'ifnot') {
-      push @result, $self->_parse_ifnot($token);
-    }
-    elsif ($type eq 'itbegin') {
-      push @result, $self->_parse_iterator($token);
-    }
-    elsif ($type eq "for") {
-      push @result, $self->_parse_for($token);
-    }
-    elsif ($type eq 'withbegin') {
-      push @result, $self->_parse_with($token);
-    }
-    elsif ($type eq 'switch') {
-      push @result, $self->_parse_switch($token);
-    }
-    elsif ($type eq 'wrap') {
-      push @result, $self->_parse_wrap($token);
-    }
-    elsif ($type eq 'error') {
-      push @result, $self->_parse_error($token);
-    }
-    elsif ($type eq 'define') {
-      push @result, $self->_parse_define($token);
-    }
-    elsif ($type eq 'comment') {
-      # discard comments
-    }
     else {
-      $self->[TOK]->unget($token);
-      last TOKEN;
+      my $method = "_parse_$type";
+      if ($self->can($method)) {
+	push @result, $self->$method($token);
+      }
+      else {
+	$self->[TOK]->unget($token);
+	last TOKEN;
+      }
     }
   }
 
@@ -301,7 +265,7 @@ sub _parse_ifnot {
   }
 }
 
-sub _parse_iterator {
+sub _parse_itbegin {
   my ($self, $start) = @_;
 
   my $name = $start->[TOKEN_TAG_NAME];
@@ -352,7 +316,7 @@ sub _parse_iterator {
   }
 }
 
-sub _parse_with {
+sub _parse_withbegin {
   my ($self, $start) = @_;
 
   my $name = $start->[TOKEN_TAG_NAME];
@@ -549,6 +513,12 @@ sub _parse_error {
   push @{$self->[ERRORS]}, $error;
 
   return $error;
+}
+
+sub _parse_comment {
+  my ($self, $comment) = @_;
+
+  return;
 }
 
 sub errors {
