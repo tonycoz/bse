@@ -256,8 +256,8 @@ test_tokens("<:.define some/code:>",
 
 test_tokens("<:.call some/code, a=1, b=2:><:.call other :>",
 	    [
-	     [ call => "<:.call some/code, a=1, b=2:>", 1, "<string>", "some/code", "a=1, b=2" ],
-	     [ call => "<:.call other :>", 1, "<string>", "other", "" ],
+	     [ call => "<:.call some/code, a=1, b=2:>", 1, "<string>", "some/code, a=1, b=2" ],
+	     [ call => "<:.call other :>", 1, "<string>", "other" ],
 	     [ eof => "", 1, "<string>" ],
 	    ], ".define tag");
 
