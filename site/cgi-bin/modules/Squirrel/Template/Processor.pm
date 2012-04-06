@@ -3,7 +3,7 @@ use strict;
 use Squirrel::Template::Constants qw(:node);
 use Scalar::Util ();
 
-our $VERSION = "1.011";
+our $VERSION = "1.012";
 
 use constant ACTS => 0;
 use constant TMPLT => 1;
@@ -536,6 +536,47 @@ sub _process_switch {
   }
 
   return @errors;
+}
+
+sub _process_ext_if {
+  my ($self, $node) = @_;
+
+  my @conds = @{$node->[NODE_EXTIF_CONDS]};
+  while (my $cond = shift @conds) {
+    my $result;
+    if (eval { $result = $self->[EVAL]->process($cond->[2]); 1 }) {
+      if ($result) {
+	return $self->process($cond->[1]);
+      }
+    }
+    else {
+      my $msg = $@;
+      if (!ref $msg && $msg =~ /\bENOIMPL\b/) {
+	unshift @conds, $cond;
+
+	my $prefix = '';
+	if (@conds < @{$node->[NODE_EXTIF_CONDS]}) {
+	  $prefix = "<:.if 0 :>";
+	}
+
+	return
+	  (
+	   $prefix,
+	   (
+	    map { $_->[0][NODE_ORIG], $self->process($_->[1]) } @conds
+	   ),
+	   $node->[NODE_EXTIF_ELSE][0][NODE_ORIG],
+	   $self->process($node->[NODE_EXTIF_ELSE][1]),
+	   $node->[NODE_EXTIF_END][NODE_ORIG]
+	  );
+      }
+      else {
+	return $self->_error($node, ref $msg ? $msg->[1] : $msg);
+      }
+    }
+  }
+
+  return $self->process($node->[NODE_EXTIF_ELSE][1]);
 }
 
 sub _process_comp {

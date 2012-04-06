@@ -2,7 +2,7 @@ package Squirrel::Template::Constants;
 use strict;
 use Exporter qw(import);
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 sub _define_sequence {
   my ($keys, $start) = @_;
@@ -29,6 +29,8 @@ my @token_end = qw(TOKEN_END_TYPE);
 _define_sequence(\@token_end, 4);
 my @token_for = qw(TOKEN_FOR_NAME TOKEN_FOR_EXPR);
 _define_sequence(\@token_for, 4);
+my @token_ext = qw(TOKEN_EXT_EXPR);
+_define_sequence(\@token_ext, 4);
 
 my @node_base = qw(NODE_TYPE NODE_ORIG NODE_LINE NODE_FILENAME NODE_TAG_NAME NODE_TAG_ARGS);
 _define_sequence(\@node_base, 0);
@@ -56,16 +58,18 @@ my @node_call = qw(NODE_CALL_NAME NODE_CALL_LIST);
 _define_sequence(\@node_call, 4);
 my @node_for = qw(NODE_FOR_NAME NODE_FOR_EXPR NODE_FOR_END NODE_FOR_CONTENT);
 _define_sequence(\@node_for, 4);
+my @node_extif = qw(NODE_EXTIF_CONDS NODE_EXTIF_ELSE NODE_EXTIF_END);
+_define_sequence(\@node_extif, 4);
 
 our %EXPORT_TAGS =
   (
    token => [ @token_base, @token_generic, @token_error, @token_expr,
-	      @token_set, @token_end, @token_for ],
+	      @token_set, @token_end, @token_for, @token_ext ],
    node =>
    [
     @node_base, @node_iter, @node_cond, @node_comp, @node_with,
     @node_wrap, @node_switch, @node_error, @node_expr, @node_set,
-    @node_define, @node_call, @node_for
+    @node_define, @node_call, @node_for, @node_extif
    ],
   );
 

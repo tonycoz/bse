@@ -244,7 +244,7 @@ test_tokens("<: .set varname = some value:>",
 	    ], "set tag");
 test_tokens("<:.if some.expression:>",
 	    [
-	     [ e_if => "<:.if some.expression:>", 1, "<string>", "some.expression" ],
+	     [ ext_if => "<:.if some.expression:>", 1, "<string>", "some.expression" ],
 	     [ eof => "", 1, "<string>" ],
 	    ], ".if tag");
 
