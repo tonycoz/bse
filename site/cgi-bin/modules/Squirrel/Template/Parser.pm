@@ -2,7 +2,7 @@ package Squirrel::Template::Parser;
 use strict;
 use Squirrel::Template::Constants qw(:token :node);
 
-our $VERSION = "1.010";
+our $VERSION = "1.011";
 
 use constant TOK => 0;
 use constant TMPLT => 1;
@@ -505,6 +505,55 @@ sub _parse_call {
   @{$call}[NODE_CALL_NAME, NODE_CALL_LIST] = ( $name_expr, \@args );
 
   return $error ? $self->_comp($call, $error) : $call;
+}
+
+sub _parse_ext_if {
+  my ($self, $if) = @_;
+
+  my @conds;
+  my @errors;
+  my $content = $self->_parse_content;
+  push @conds, [ $if, $content];
+  my $next = $self->[TOK]->get;
+  while ($next->[TOKEN_TYPE] eq 'ext_elsif') {
+    my $content = $self->_parse_content;
+    push @conds, [ $next, $content ];
+    $next = $self->[TOK]->get;
+  }
+  my $else;
+  my $else_content;
+  my $end;
+  if ($next->[TOKEN_TYPE] eq 'ext_else') {
+    $else = $next;
+    $else_content = $self->_parse_content;
+    $next = $self->[TOK]->get;
+  }
+  else {
+    $else = $else_content = $self->_empty($next);
+  }
+  if ($next->[TOKEN_TYPE] eq 'end') {
+    if ($next->[TOKEN_END_TYPE] ne "" && $next->[TOKEN_END_TYPE] ne 'if') {
+      push @errors, $self->_error($next, "Expected '.end' or '.end if' for .if started $if->[TOKEN_FILENAME]:$if->[TOKEN_LINE] but found '.end $next->[TOKEN_END_TYPE]'");
+    }
+    $end = $next;
+  }
+  else {
+    $self->[TOK]->unget($next);
+    $end = $self->empty($next);
+  }
+
+  my $parser = Squirrel::Template::Expr::Parser->new;
+  for my $cond (@conds) {
+    unless (eval { $cond->[2] = $parser->parse($cond->[0][TOKEN_EXT_EXPR]); 1 }) {
+      $cond->[2] = [ const => "", "" ];
+      push @errors, $self->_error($cond->[0], ref $@ ? $@->[1] : $@);
+    }
+  }
+
+  @{$if}[NODE_EXTIF_CONDS, NODE_EXTIF_ELSE, NODE_EXTIF_END] =
+    ( \@conds, [ $else, $else_content ], $end );
+
+  return @errors ? $self->_comp($if, @errors) : $if;
 }
 
 sub _parse_error {

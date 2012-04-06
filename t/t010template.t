@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 103;
+use Test::More tests => 105;
 
 sub template_test($$$$;$$);
 
@@ -478,6 +478,26 @@ Value: a Index: 0 Count: 1 Prev:  Next: b Even:  Odd: 1 Parity: odd
 Value: b Index: 1 Count: 2 Prev: a Next: c Even: 1 Odd:  Parity: even
 Value: c Index: 2 Count: 3 Prev: b Next: d Even:  Odd: 1 Parity: odd
 Value: d Index: 3 Count: 4 Prev: c Next:  Even: 1 Odd:  Parity: even
+OUT
+  template_test(<<IN, <<OUT, "simple .if", \%acts, "", \%vars);
+<:.if "a" eq "b" :>FAIL<:.else:>SUCCESS<:.end:>
+<:.if "a" eq "a" :>SUCCESS<:.else:>FAIL<:.end:>
+<:.if "a" eq "c" :>FAIL1<:.elsif "a" eq "a":>SUCCESS<:.else:>FAIL2<:.end:>
+IN
+SUCCESS
+SUCCESS
+SUCCESS
+OUT
+  template_test(<<IN, <<OUT, "unknown .if", \%acts, "", \%vars);
+<:.if unknown:>TRUE<:.end:>
+<:.if "a" eq "a":>TRUE<:.elsif unknown:>TRUE<:.end:>
+<:.if "a" eq "b" :>TRUE<:.elsif unknown:>TRUE<:.end:>
+<:.if "a" ne "a" :>TRUE<:.elsif 0:>ELIF<:.elsif unknown:>TRUE<:.end:>
+IN
+<:.if unknown:>TRUE<:.end:>
+TRUE
+<:.if 0 :><:.elsif unknown:>TRUE<:.end:>
+<:.if 0 :><:.elsif unknown:>TRUE<:.end:>
 OUT
 }
 
