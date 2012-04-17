@@ -7,6 +7,8 @@ use Squirrel::Template::Deparser;
 use Squirrel::Template::Processor;
 use Squirrel::Template::Expr;
 
+use constant MAX_SCOPES => 50;
+
 use Carp qw/cluck confess/;
 BEGIN {
   unless ( defined &DEBUG ) {
@@ -17,7 +19,7 @@ BEGIN {
 
 use constant DEBUG_GET_PARMS => 0;
 
-our $VERSION = "1.017";
+our $VERSION = "1.018";
 
 my $tag_head = qr/(?:\s+<:-|<:-?)/;
 my $tag_tail = qr/(?:-:>\s*|:>)/;
@@ -332,15 +334,26 @@ sub end_wrap {
 }
 
 sub start_scope {
-  my ($self, $vars) = @_;
+  my ($self, $context, $vars) = @_;
+
+  if (@{$self->{scopes}} >= MAX_SCOPES) {
+    die "Too many scope levels\n";
+  }
 
   push @{$self->{scopes}}, $vars || {};
+  push @{$self->{scope_contexts}}, $context;
 }
 
 sub end_scope {
   my ($self) = @_;
 
   pop @{$self->{scopes}};
+}
+
+sub backtrace {
+  my ($self) = @_;
+
+  return @{$self->{scope_contexts}};
 }
 
 sub top_scope {
@@ -464,6 +477,7 @@ sub replace {
   local $self->{scopes} = [];
   push @{$self->{scopes}}, $vars if $vars;
   push @{$self->{scopes}}, { globals => {} };
+  local $self->{scope_contexts} = [];
 
   local $self->{defines} = {};
 

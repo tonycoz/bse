@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 105;
+use Test::More tests => 106;
 
 sub template_test($$$$;$$);
 
@@ -499,8 +499,65 @@ TRUE
 <:.if 0 :><:.elsif unknown:>TRUE<:.end:>
 <:.if 0 :><:.elsif unknown:>TRUE<:.end:>
 OUT
-}
 
+  template_test(<<IN, <<OUT, "stack overflow on .call", \%acts, "", \%vars);
+<:.define foo:>
+<:-.call "foo"-:>
+<:.end:>
+<:-.call "foo"-:>
+IN
+Error opening scope for call: Too many scope levels
+Backtrace:
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:3
+OUT
+}
 
 sub template_test ($$$$;$$) {
   my ($in, $out, $desc, $acts, $stripnl, $vars) = @_;
