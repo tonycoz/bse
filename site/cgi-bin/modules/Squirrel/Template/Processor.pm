@@ -3,7 +3,7 @@ use strict;
 use Squirrel::Template::Constants qw(:node);
 use Scalar::Util ();
 
-our $VERSION = "1.012";
+our $VERSION = "1.013";
 
 use constant ACTS => 0;
 use constant TMPLT => 1;
@@ -154,8 +154,9 @@ sub _process_call {
   my $parsed;
   my %args;
   my @result;
+  my $name;
   if (eval {
-    my $name = $self->[EVAL]->process($node->[NODE_CALL_NAME]);
+    $name = $self->[EVAL]->process($node->[NODE_CALL_NAME]);
     for my $arg (@{$node->[NODE_CALL_LIST]}) {
       my $key = $self->[EVAL]->process($arg->[0]);
       my $value = $self->[EVAL]->process($arg->[1]);
@@ -170,9 +171,18 @@ sub _process_call {
     }
     1;
   }) {
-    $self->[TMPLT]->start_scope(\%args);
-    @result = $self->process($parsed);
-    $self->[TMPLT]->end_scope();
+    my $ctx = ".call '$name' from $node->[NODE_FILENAME]:$node->[NODE_LINE]";
+    if (eval { $self->[TMPLT]->start_scope($ctx, \%args), 1 }) {
+      @result = $self->process($parsed);
+      $self->[TMPLT]->end_scope();
+    }
+    else {
+      my $error = $@;
+      chomp $error;
+      push @result,
+	"Error opening scope for call: $error\nBacktrace:\n",
+	  map {; "  ", $_, "\n" } ( reverse $self->[TMPLT]->backtrace );
+    }
   }
   else {
     @result = $node->[NODE_ORIG];
