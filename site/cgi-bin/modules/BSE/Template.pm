@@ -4,7 +4,7 @@ use Squirrel::Template;
 use Carp qw(confess cluck);
 use Config ();
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 sub templater {
   my ($class, $cfg, $rsets) = @_;
@@ -26,6 +26,17 @@ sub templater {
      template_dir => \@dirs,
      utf8 => $cfg->utf8,
      charset => $cfg->charset,
+     formats =>
+     {
+      html => sub {
+	require BSE::Util::HTML;
+	return BSE::Util::HTML::escape_html($_[0]);
+      },
+      uri => sub {
+	require BSE::Util::HTML;
+	return BSE::Util::HTML::escape_uri($_[0]);
+      },
+     },
     );
   if ($cfg->entry("basic", "cache_templates")) {
     require BSE::Cache;
@@ -45,7 +56,7 @@ sub _get_filename {
 }
 
 sub get_page {
-  my ($class, $template, $cfg, $acts, $base_template, $rsets) = @_;
+  my ($class, $template, $cfg, $acts, $base_template, $rsets, $vars) = @_;
 
   my $file = $class->_get_filename($cfg, $template);
   my $obj = $class->templater($cfg, $rsets);
@@ -58,7 +69,7 @@ sub get_page {
     }
   }
 
-  return $obj->show_page(undef, $file, $acts);
+  return $obj->show_page(undef, $file, $acts, undef, undef, $vars);
 }
 
 sub replace {
@@ -118,10 +129,10 @@ sub show_literal {
 }
 
 sub get_response {
-  my ($class, $template, $cfg, $acts, $base_template, $rsets) = @_;
+  my ($class, $template, $cfg, $acts, $base_template, $rsets, $vars) = @_;
 
   my $content = $class->get_page($template, $cfg, $acts,
-				 $base_template, $rsets);
+				 $base_template, $rsets, $vars);
 
   return $class->make_response($content, $class->get_type($cfg, $template));
 }
