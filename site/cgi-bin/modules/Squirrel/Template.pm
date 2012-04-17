@@ -17,7 +17,7 @@ BEGIN {
 
 use constant DEBUG_GET_PARMS => 0;
 
-our $VERSION = "1.016";
+our $VERSION = "1.017";
 
 my $tag_head = qr/(?:\s+<:-|<:-?)/;
 my $tag_tail = qr/(?:-:>\s*|:>)/;
@@ -228,6 +228,17 @@ my $parms_re = qr/\s*\[\s*(\w+)
 
 sub parms_re {
   return $parms_re;
+}
+
+sub format {
+  my ($self, $text, $format) = @_;
+
+  unless ($self->{formats}{$format}) {
+    push @{$self->{errors}}, "Unknown formatter '$format'";
+    return "$text*Unknown formatter '$format'";
+  }
+
+  return $self->{formats}{$format}->($text);
 }
 
 # dummy
