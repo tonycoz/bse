@@ -4,7 +4,7 @@ use BSE::Util::Tags qw(tag_error_img);
 use BSE::Util::HTML;
 use BSE::CfgInfo 'admin_base_url';
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 my %actions =
   (
@@ -37,6 +37,9 @@ sub req_logon_form {
 
   $errors ||= {};
   $errors = ref $errors ? $errors : { _ => $errors };
+
+  $req->set_variable(errors => $errors);
+  $req->set_variable(message => $msg);
 
   my %acts;
   %acts =
