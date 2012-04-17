@@ -5,7 +5,7 @@ use BSE::Cfg;
 use BSE::Util::HTML;
 use Carp qw(cluck confess);
 
-our $VERSION = "1.008";
+our $VERSION = "1.009";
 
 sub new {
   my ($class, %opts) = @_;
@@ -22,6 +22,7 @@ sub new {
 
   $opts{cgi} ||= $self->_make_cgi;
   $opts{fastcgi} ||= 0;
+  $opts{vars} = {};
 
   return $self;
 }
@@ -288,27 +289,45 @@ sub output_result {
   BSE::Template->output_result($req, $result);
 }
 
-# one day, this will mark the message as an error
-sub flash_error {
-  my ($self, @msg) = @_;
-
-  return $self->flash(@msg);
-}
-
 sub flash {
   my ($self, @msg) = @_;
 
-  my $msg;
+  return $self->flash_notice(@msg);
+}
+
+sub flash_error {
+  my ($self, @msg) = @_;
+
+  return $self->flashext({ class => "error" }, @msg);
+}
+
+sub flash_notice {
+  my ($self, @msg) = @_;
+
+  return $self->flashext({ class => "notice" }, @msg);
+}
+
+sub flashext {
+  my ($self, $opts, @msg) = @_;
+
+  my %entry =
+    (
+     class => $opts->{class} || "notice",
+     type => "text",
+    );
   if ($msg[0] =~ /^msg:/) {
-    $msg = $self->catmsg(@msg);
+    $entry{text} = $self->catmsg(@msg);
+    $entry{html} = $self->htmlmsg(@msg);
   }
   else {
-    $msg = "@msg";
+    $entry{text} = "@msg";
+    $entry{html} = escape_html($entry{text});
   }
 
   my @flash;
   @flash = @{$self->session->{flash}} if $self->session->{flash};
-  push @flash, $msg;
+  push @flash, \%entry;
+
   $self->session->{flash} = \@flash;
 }
 
@@ -325,49 +344,109 @@ sub _str_msg {
   return $msg;
 }
 
-sub message {
-  my ($req, $errors) = @_;
+sub _str_msg_html {
+  my ($req, $msg) = @_;
 
-  my $msg = '';
-  my @lines;
+  if ($msg =~ /^(msg:[\w-]+(?:\/[\w-]+)+)(?::(.*))?$/) {
+    my $id = $1;
+    my $params = $2;
+    my @params = defined $params ? split(/:/, $params) : ();
+    $msg = $req->htmlmsg($id, \@params);
+  }
+
+  return $msg;
+}
+
+sub messages {
+  my ($self, $errors) = @_;
+
+  my @messages;
+  push @messages, @{$self->{messages}} if $self->{messages};
   if ($errors and keys %$errors) {
     # do any translation needed
     for my $key (keys %$errors) {
       my @msgs = ref $errors->{$key} ? @{$errors->{$key}} : $errors->{$key};
 
       for my $msg (@msgs) {
-	$msg = $req->_str_msg($msg);
+	$msg = $self->_str_msg($msg);
       }
       $errors->{$key} = ref $errors->{$key} ? \@msgs : $msgs[0];
     }
 
-    my @fields = $req->cgi->param;
+    my @fields = $self->cgi->param;
     my %work = %$errors;
     for my $field (@fields) {
       if (my $entry = delete $work{$field}) {
-	push @lines, ref($entry) ? grep $_, @$entry : $entry;
+	push @messages,
+	  map +{
+		type => "text",
+		text => $_,
+		class => "error",
+		html => escape_html($_),
+	       }, ref($entry) ? grep $_, @$entry : $entry;
       }
     }
     for my $entry (values %work) {
       if (ref $entry) {
-	push @lines, grep $_, @$entry;
+	push @messages, map
+	  +{
+	    type => "text",
+	    text => $_,
+	    class => "error",
+	    html => escape_html($_)
+	   }, grep $_, @$entry;
       }
       else {
-	push @lines, $entry;
+	push @messages,
+	  {
+	   type => "text",
+	   text => $entry,
+	   class => "error",
+	   html => escape_html($entry),
+	  };
       }
     }
-    my %seen;
-    @lines = grep !$seen{$_}++, @lines; # don't need duplicates
   }
-  if (!$req->{nosession} && $req->session->{flash}) {
-    push @lines, @{$req->session->{flash}};
-    delete $req->session->{flash};
+  if (!$self->{nosession} && $self->session->{flash}) {
+    push @messages, @{$self->session->{flash}};
+    delete $self->session->{flash};
   }
-  if (!@lines && $req->cgi->param('m')) {
-    push @lines, map $req->_str_msg($_), $req->cgi->param("m");
+  if (!@messages && $self->cgi->param('m')) {
+    push @messages, map
+      +{
+	type => "text",
+	text => $self->_str_msg($_),
+	class => "unknown",
+	html => $self->_str_msg_html($_),
+       }, $self->cgi->param("m");
   }
 
-  return join "<br />", map escape_html($_), @lines;
+  my %seen;
+  @messages = grep !$seen{$_->{html}}++, @messages; # don't need duplicates
+
+  $self->{messages} = \@messages;
+
+  return \@messages;
+}
+
+sub message {
+  my ($self, $errors) = @_;
+
+  my $messages = $self->messages($errors);
+
+  return join "<br />",
+    map { $_->{type} eq 'html' ? $_->{text} : escape_html($_->{text}) } @$messages
+}
+
+sub _set_vars {
+  my ($self) = @_;
+
+  require Scalar::Util;
+  $self->{vars}{request} = $self;
+  Scalar::Util::weaken($self->{vars}{request});
+  $self->set_variable(cgi => $self->cgi);
+  $self->set_variable(cfg => $self->cfg);
+  $self->set_variable(assert_dynamic => 1);
 }
 
 sub dyn_response {
@@ -383,6 +462,9 @@ sub dyn_response {
     unshift @search, $template;
   }
 
+  $req->set_variable(template => $template);
+  $req->_set_vars();
+
   require BSE::Template;
   my @sets;
   if ($template =~ m!^admin/!) {
@@ -390,7 +472,7 @@ sub dyn_response {
   }
 
   return BSE::Template->get_response($template, $req->cfg, $acts,
-				     $base_template, \@sets);
+				     $base_template, \@sets, $req->{vars});
 }
 
 sub response {
@@ -402,8 +484,11 @@ sub response {
     @sets = $req->template_sets;
   }
 
+  $req->set_variable(template => $template);
+  $req->_set_vars();
+
   return BSE::Template->get_response($template, $req->cfg, $acts, 
-				     $template, \@sets);
+				     $template, \@sets, $req->{vars});
 }
 
 # get the current site user if one is logged on
@@ -644,6 +729,7 @@ sub DESTROY {
 sub set_article {
   my ($self, $name, $article) = @_;
 
+  $self->set_variable($name, $article);
   if ($article) {
     $self->{articles}{$name} = $article;
   }
@@ -666,6 +752,12 @@ sub get_article {
     or return;
 
   $article;
+}
+
+sub set_variable {
+  my ($self, $name, $value) = @_;
+
+  $self->{vars}{$name} = $value;
 }
 
 sub text {
@@ -1135,6 +1227,37 @@ sub catmsg {
     or return "* bad message id - missing leading msg: *";
 
   my $result = $self->message_catalog->text($lang, $id, $params, $default);
+  unless ($result) {
+    $result = "Unknown message id $id";
+  }
+
+  return $result;
+}
+
+=item htmlmsg($id)
+
+=item htmlmsg($id, \@params)
+
+=item htmlmsg($id, \@params, $default)
+
+=item htmlmsg($id, \@params, $default, $lang)
+
+Retrieve a message from the message catalog, performing substitution.
+
+This retrieves the html version of the message only.
+
+=cut
+
+sub htmlmsg {
+  my ($self, $id, $params, $default, $lang) = @_;
+
+  defined $lang or $lang = $self->language;
+  defined $params or $params = [];
+
+  $id =~ s/^msg://
+    or return "* bad message id - missing leading msg: *";
+
+  my $result = $self->message_catalog->html($lang, $id, $params, $default);
   unless ($result) {
     $result = "Unknown message id $id";
   }
