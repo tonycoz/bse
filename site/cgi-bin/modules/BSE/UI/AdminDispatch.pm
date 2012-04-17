@@ -4,7 +4,7 @@ use base qw(BSE::UI::Dispatch);
 use BSE::CfgInfo qw(admin_base_url);
 use Carp qw(confess);
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 # checks we're coming from HTTPS
 sub check_secure {
@@ -62,10 +62,8 @@ sub check_action {
       $$rresult = $req->logon_error;
     }
     else {
-      my %extras =
-	(
-	 'm' => 'You must logon to use this function'
-	);
+      my %extras;
+      $req->flash_error('You must logon to use this function');
       if ($ENV{REQUEST_METHOD} eq 'GET') {
 	my $rurl = admin_base_url($req->cfg) . $ENV{SCRIPT_NAME};
 	$rurl .= "?" . $ENV{QUERY_STRING} if $ENV{QUERY_STRING};
