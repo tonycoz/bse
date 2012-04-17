@@ -2,7 +2,7 @@ package Squirrel::Template::Expr::WrapHash;
 use strict;
 use base qw(Squirrel::Template::Expr::WrapBase);
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub _do_size {
   my ($self) = @_;
@@ -44,7 +44,8 @@ sub call {
   }
   elsif (exists $self->[0]{$method}) {
     my $item = $self->[0]{$method};
-    if (!Scalar::Util::blessed($item)
+    if (ref $item 
+	&& !Scalar::Util::blessed($item)
 	&& Scalar::Util::reftype($item) eq 'CODE') {
       return $item->(@$args);
     }
