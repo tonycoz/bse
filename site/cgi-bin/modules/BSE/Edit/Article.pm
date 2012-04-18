@@ -15,7 +15,7 @@ use DevHelp::Date qw(dh_parse_date dh_parse_sql_date);
 use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
-our $VERSION = "1.024";
+our $VERSION = "1.025";
 
 =head1 NAME
 
@@ -1173,6 +1173,8 @@ sub low_edit_tags {
   else {
     $parent = { title=>"How did we get here?", id=>0 };
   }
+  $request->set_article(article => $article);
+  $request->set_variable(ifnew => !$article->{id});
   my $cfg = $self->{cfg};
   my $mbcs = $cfg->entry('html', 'mbcs', 0);
   my $tag_hash = $mbcs ? \&tag_hash_mbcs : \&tag_hash;
