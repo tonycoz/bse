@@ -2,7 +2,7 @@ package Squirrel::Template::Expr::WrapScalar;
 use strict;
 use base qw(Squirrel::Template::Expr::WrapBase);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub _do_length  {
   my ($self, $args) = @_;
@@ -82,3 +82,66 @@ sub call {
 }
 
 1;
+
+=head1 NAME
+
+Squirrel::Template::Expr::WrapScalar - provide methods for scalars
+
+=head1 SYNOPSIS
+
+  len = somescalar.length;
+  upper = somescalar.upper;
+  lower = somescalar.lower;
+  defd = somescalar.defined;
+  trimmed = somescalar.trim;
+  split = somescalar.split;
+  split = somescalar.split(":");
+  split = somescalar.split(":", count);
+  formatted = somescalar.format("%05d");
+
+=head1 DESCRIPTION
+
+Provides virtual methods for scalars in L<Squirrel::Template>
+expressions.
+
+=head1 SCALAR METHODS
+
+=over
+
+=item length
+
+Return the length of the string in characters.
+
+=item upper
+
+Return the string in upper case
+
+=item lower
+
+Return the string in lower case.
+
+=item defined
+
+Return true if the string has a defined value.
+
+=item split
+
+=item split(sep)
+
+=item split(sep, count)
+
+Return a list object of the string split on the regular expression
+C<sep>, returning up to C<count> objects.  C<sep> defaults to C<" ">,
+C<count> defaults to C<0>.  A count of C<0> returns as many elements
+as are found but removes any trailing empty length elements.  A
+negative C<count> returns all elements.
+
+=head1 SEE ALSO
+
+L<Squirrel::Template::Expr>, L<Squirrel::Template>
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=back

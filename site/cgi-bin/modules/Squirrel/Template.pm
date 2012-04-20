@@ -19,7 +19,7 @@ BEGIN {
 
 use constant DEBUG_GET_PARMS => 0;
 
-our $VERSION = "1.019";
+our $VERSION = "1.020";
 
 my $tag_head = qr/(?:\s+<:-|<:-?)/;
 my $tag_tail = qr/(?:-:>\s*|:>)/;
@@ -711,6 +711,161 @@ message.
 =back
 
 =head1 TEMPLATE SYNTAX
+
+This syntax provides mechanisms similar to those provided by Template
+Toolkit or Mason, while retaining the older syntax below.
+
+See L<Squirrel::Template::Expr> for information on expression syntax.
+
+=over
+
+=item *
+
+C<< <:= I<expression> :> >>
+
+C<< <:= I<expression> | I<format> :> >>
+
+Replaced with the result of evaluating I<expression> and formatted by
+the formatter specified by I<format>.
+
+=item *
+
+C<< <:% I<expression> ; ... :> >>
+
+A list of expressions, evaluated in order.  The expression results are
+discarded.
+
+=item *
+
+C<< <:.if I<expression> :>
+I<content>
+<:.elsif I<expression> :>
+I<content>
+<:.else :>
+I<content>
+<:.end:> >>
+
+Evaluate each expression in turn and return the matching content.
+C<.elsif> clauses can be repeated as desired.  The C<.else> clause is
+optional.  The C<.end> token can be C<.end if>.
+
+=item *
+
+C<< <:.set I<variable> = I<expression> :> >>
+
+Set the specified variable to the value of the expression.
+
+=item *
+
+C<< <:.for I<variable-name> in I<expression> :> I<content> <:.end:> >>
+
+Loop over the contents of the specified list.
+
+Also sets the C<loop> variable to a hash containing useful
+information, see L</The loop variable> below.
+
+If you're calling a perl method on an object directly, you will
+typically want to surround the call with [] to process the call in
+list content:
+
+  <:.for i in [ article.children ]:>
+
+The C<.end> token can also be C<.end for>.
+
+=item *
+
+C<< <:.define I<name> :> I<content> <:.end:> >>
+
+Define a macro called I<name> with the specified content.  The C<.end>
+token can be C<.end define>.
+
+eg.
+
+  <:.define somename:>
+  some content
+  <:.end define:>
+
+=item *
+
+C<< <:.call I<name-expression> :> >>
+
+C<< <:.call I<name-expression>, I<variable-name-expression>:I<expression>, ...:> >>
+
+Call the named macro, or if there is no such macro, the named template
+file setting specified variables to the given values.
+
+eg.
+
+  <:# call foo, setting bar to "hello" :>
+  <:.call "foo", "bar":"hello":>
+
+While I<variable-name-expression> is currently an expression, it
+should be limited to a quoted identifier.
+
+Changes to any top level variables are scoped to inside the called
+macro or file.
+
+=back
+
+=head1 The loop variable
+
+Each C<.for> loop defines a C<loop> variable.  If you have nested
+loops, you can define an alias to the variable, eg:
+
+  <:.for i in outer:>
+    <:.set outerloop = loop:>
+    <:.for j in inner:>
+      <:= outerloop.count :>
+    <:.end:>
+  <:.end:>
+
+The following values are set in C<loop>
+
+=over
+
+=item *
+
+first, last - the first and last values in the list.  These may be
+undef if the list is empty.
+
+=item *
+
+size - the number of elements in the list
+
+=item *
+
+is_last, is_first - true if the current element is the last or first
+element respectively.
+
+=item *
+
+count - the index of the current element, starting from 1.
+
+=item *
+
+index - the index of the current element, starting from 0.
+
+=item *
+
+parity - "odd" or "even".  The first element is "even".
+
+=item *
+
+odd, even - true if the parity is "odd" or "even", respectively.
+
+=item *
+
+prev, next - the previous or next element respectively, if any.
+
+=item *
+
+list - the list argument to C<.for>.
+
+=back
+
+=head1 OLD TEMPLATE SYNTAX
+
+This is the older template syntax that is retained for compatibility.
 
 In general, if the tag has no definition the original tag directive is
 left in place.  If the tag has sub-components (like C<if> or

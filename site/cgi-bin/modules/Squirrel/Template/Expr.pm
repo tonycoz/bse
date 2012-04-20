@@ -1,7 +1,7 @@
 package Squirrel::Template::Expr;
 use strict;
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 package Squirrel::Template::Expr::Eval;
 use Scalar::Util ();
@@ -695,3 +695,270 @@ sub _vianame {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Squirrel::Template::Expr - expression handling for Squirrel::Template
+
+=head1 SYNOPSIS
+
+  # code that uses it
+  my $parser = Squirrel::Template::Expr::Parser->new;
+
+  my $expr = $parser->parse($expr_text);
+
+  my $tokens = Squirrel::Template::Expr::Tokenizer->new($expr_text);
+
+  my $expr = $parser->parse_tokens($tokenizer);
+  # and possibly process more tokens here
+
+  my $eval = Squirrel::Template::Expr::Parser->new($templater);
+
+  my $value = $eval->process($expr);
+  my $value = $eval->process($expr, "LIST");
+
+  my $arrayref = $eval->process(\@exprs);
+
+  # Expressions
+
+  <:= somevalue + 10 :>
+  <:.if somevalue == 10 :>
+
+=head1 DESCRIPTION
+
+Squirrel::Template::Expr provides expression parsing and evaluation
+for newer style tags for L<Squirrel::Template>.
+
+=head1 EXPRESSION SYNTAX
+
+=head2 Operators
+
+Listed highest precedence first.
+
+=over
+
+=item *
+
+C<<[ I<list> ]>>, C<<{ I<key>:I<value>, ... }>>, literals
+
+C<<[ I<list> ]>> allows you to build lists objects.  Within C<[ ... ]>
+you can use the C<..> operator to produce a list of numerically or
+alphabetically ascending values per Perl's magic increment.
+
+eg.
+
+  [ "a", "c" .. "z" ]
+  [ 1 .. 10 ]
+
+Method calls within C<<[ ... ]>> are done in perl's list context.
+
+C<<{ ... }>> allows you to build hash objects.
+
+eg.
+
+  { "somekey":somevariable, somekeyinvar:"somevalue" }
+
+See L</Literals> for literals
+
+=item *
+
+method calls - methods are called as:
+
+  object.method;
+
+or
+
+  object.method(arguments)
+
+and may be chained.
+
+Virtual methods are defined for hashes, arrays and scalars, see
+L<Squirrel::Template::Expr::WrapHash>,
+L<Squirrel::Template::Expr::WrapArray>,
+L<Squirrel::Template::Expr::WrapScalar>,
+L<Squirrel::Template::Expr::WrapCode> and
+L<Squirrel::Template::Expr::WrapClass>.
+
+=item *
+
+unary -, unary +, unary !, unary not
+
+=item *
+
+* / div mod - simple arithmetic operators.  C<div> returns the integer
+portion of dividing the first operand by the second.  C<mod> returns
+the remainder of integer division.
+
+=item *
+
++ - _ - arithmetic addition and subtraction. C<_> does string
+concatenation.
+
+=item *
+
+eq ne le lt ge gt == != > < >= <= =~ !~ - relational operators as per
+Perl.
+
+=item *
+
+and - boolean and, with shortcut.
+
+=item *
+
+or - boolean or, with shortcut.
+
+=item *
+
+Conditional (C<< I<cond> ? I<true> : I<false> >>) - return the value
+of I<true> or I<false> depending on I<cond>.
+
+=back
+
+=head2 Literals
+
+Numbers can be represented in several formats:
+
+=over
+
+=item *
+
+simple decimal - C<100>, C<3.14159>, C<1e10>.
+
+=item *
+
+hex - C<0x64>
+
+=item *
+
+octal - C<0o144>
+
+=item *
+
+binary - C<0b1100100>
+
+=back
+
+Strings can be either " or ' delimited.
+
+Simple quote delimited strings allow no escaping, and may not contain
+single quotes.  The contents are treated literally.
+
+Double quoted strings allow escaping as follows:
+
+=over
+
+=item *
+
+Any of C<\">, C<\n>, C<\\>, C<\t> are treated as in C or perl,
+replaced with double quote, newline, backslash or tab respectively.
+
+=item *
+
+C<<\x{I<hex-digits>}>> is replaced with the unicode code-point
+indicated by the hex number.
+
+=item *
+
+C<< \xI<hex-digit>I<hex-digit> >> is replaced by the unicode
+code-point indicated by the 2-digit hex number.
+
+=item *
+
+C<< \N{ I<unicode-character-name> } >> is replaced by the unicode
+character named.
+
+=back
+
+=head1 Squirrel::Template::Expr::Parser
+
+Squirrel::Template::Expr::Parser provides parsing for expressions.
+
+=head1 Methods
+
+=over
+
+=item new()
+
+Create a new parser object.
+
+=item parse($text)
+
+Parse C<$text> as an expression.  Parsing must reach the end of the
+text or an exception will be thrown.
+
+=item parse_tokens($tokenizer)
+
+Process tokens from C<$tokenizer>, a
+L</Squirrel::Template::Expr::Tokenizer> object.  The caller can call
+these method several times with the same C<$tokenizer> to parse
+components of a statement, and should ensure the eof token is visible
+after the final component.
+
+=back
+
+=head1 Squirrel::Template::Expr::Tokenizer
+
+Split text into tokens.  Token parsing is occasionally context
+sensitive.
+
+=head2 Methods
+
+=over
+
+=item new($text)
+
+Create a new tokenizer for parsing C<$text>.
+
+=item get()
+
+=item get($context)
+
+Retrieve a token from the stream, consuming it.  If a term is expected
+$context should be set to C<'TERM'>.
+
+=item unget()
+
+Push a token back into the stream.
+
+=item peek()
+
+=item peek($context)
+
+Retrieve the next token from the stream without consuming it.
+
+=item peektype()
+
+=item peektype($context)
+
+Retrieve the type of the next token from the stream without consuming
+it.
+
+=back
+
+=head1 Squirrel::Template::Expr::Eval
+
+Used to evaluate an expression returned by
+Squirrel::Template::Expr::parse().
+
+=head2 Methods
+
+=over
+
+=item new($templater)
+
+Create a new evaluator.  C<$templater> should be a
+L<Squirrel::Template> object.
+
+=back
+
+=head1 SEE ALSO
+
+L<Squirrel::Template>
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=cut

@@ -3,7 +3,7 @@ use strict;
 use base qw(Squirrel::Template::Expr::WrapBase);
 use Scalar::Util ();
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 my $list_make_key = sub {
   my ($item, $field) = @_;
@@ -128,3 +128,95 @@ sub call {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Squirrel::Template::Expr::WrapArray - provide virtual methods for arrays
+
+=head1 SYNOPSIS
+
+  somearray.size
+  sorted = somearray.sort()
+  sorted = somearray.sort(key)
+  reversed = somearray.reverse
+  joined = somearray.join()
+  joined = somearray.join(":")
+  last = somearray.last
+  first = somearray.first
+  first = somearray.shift # modifies somearray
+  somearray.push(avalue);
+  last = somearray.pop # modifies somearray
+  somearray.unshift(avalue);
+
+=head1 DESCRIPTION
+
+This class provides virtual methods for arrays (well, array
+references) in L<Squirrel::Template>'s expression language.
+
+=head1 METHODS
+
+=over
+
+=item size
+
+The number of elements in the list.
+
+=item sorted()
+
+The elements sorted by name.
+
+=item sorted(fieldname)
+
+The elements sorted as objects calling C<fieldname>.
+
+=item reversed
+
+The elements in reverse order.
+
+=item join()
+
+A string with the elements concatenated together.
+
+=item join(sep)
+
+A string with the elements concatenated together, separated by C<sep>.
+
+=item last
+
+The last element in the array, or undef.
+
+=item first
+
+The first element in the array, or undef.
+
+=item shift
+
+Remove the first element from the list and return that.
+
+=item push(element,...)
+
+Add the given elements to the end of the array.  returns the new size
+of the array.
+
+=item pop
+
+Remove the last element from the list and return that.
+
+=item unshift(element,...)
+
+Add the given elements to the start of the array.  returns the new
+size of the array.
+
+=back
+
+=head1 SEE ALSO
+
+L<Squirrel::Template::Expr>, L<Squirrel::Template>
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=cut
