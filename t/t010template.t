@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 106;
+use Test::More tests => 107;
 
 sub template_test($$$$;$$);
 
@@ -469,6 +469,9 @@ IN
   template_test(<<IN, "other value", "external call", \%acts, "", \%vars);
 <:.call "called.tmpl", "avar":"other value"-:>
 IN
+  template_test(<<IN, "This was preloaded", "call preloaded", \%acts, "both", \%vars);
+<:.call "preloaded"-:>
+IN
   template_test(<<IN, <<OUT, "simple .for", \%acts, "", \%vars);
 <:.for x in [ "a" .. "d" ] -:>
 Value: <:= x :> Index: <:= loop.index :> Count: <:= loop.count:> Prev: <:= loop.prev :> Next: <:= loop.next :> Even: <:= loop.even :> Odd: <:= loop.odd :> Parity: <:= loop.parity :>
@@ -566,7 +569,11 @@ sub template_test ($$$$;$$) {
   $in =~ s/\n$// if $stripnl eq 'in' || $stripnl eq 'both';
   $out =~ s/\n$// if $stripnl eq 'out' || $stripnl eq 'both';
 
-  my $templater = Squirrel::Template->new(template_dir=>'t/templates');
+  my $templater = Squirrel::Template->new
+    (
+     template_dir=>'t/templates',
+     preload => "preload.tmpl"
+    );
 
   my $result = $templater->replace_template($in, $acts, undef, "test", $vars);
 

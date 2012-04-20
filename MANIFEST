@@ -865,6 +865,7 @@ t/templater/30expr.t
 t/templates/called.tmpl
 t/templates/included.include	Used by t010template.t
 t/templates/included.recursive
+t/templates/preload.tmpl
 t/templates/wrapinner.tmpl
 t/templates/wrapself.tmpl
 t/templates/wraptest.tmpl	Used by t010template.t

@@ -19,7 +19,7 @@ BEGIN {
 
 use constant DEBUG_GET_PARMS => 0;
 
-our $VERSION = "1.018";
+our $VERSION = "1.019";
 
 my $tag_head = qr/(?:\s+<:-|<:-?)/;
 my $tag_tail = qr/(?:-:>\s*|:>)/;
@@ -485,6 +485,17 @@ sub replace {
   local $acts->{param} = $oldparam_tag || [ tag_param => $self ];
 
   my $processor = Squirrel::Template::Processor->new($acts, $self);
+
+  if ($self->{preload}) {
+    my ($parsed, $error) = $self->parse_file($self->{preload});
+    if ($parsed) {
+      # process and discard, just for definitions, initializations
+      $processor->process($parsed);
+    }
+    elsif ($error) {
+      push @{$self->{errors}}, [ error => "", 0, $self->{preload}, $error ];
+    }
+  }
 
   return wantarray
     ? $processor->process($parsed)

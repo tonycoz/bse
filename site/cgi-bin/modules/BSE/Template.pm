@@ -43,6 +43,8 @@ sub templater {
     $opts{cache} = BSE::Cache->load($cfg);
   }
 
+  $opts{preload} = $cfg->entry("basic", "preload_template");
+
   return Squirrel::Template->new(%opts);
 }
 
