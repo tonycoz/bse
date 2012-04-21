@@ -3,7 +3,7 @@ use strict;
 use Squirrel::Template::Constants qw(:node);
 use Scalar::Util ();
 
-our $VERSION = "1.013";
+our $VERSION = "1.014";
 
 use constant ACTS => 0;
 use constant TMPLT => 1;
@@ -601,7 +601,7 @@ sub _process_tag {
   my $name = $node->[NODE_TAG_NAME];
   my $replaced = 0;
   my $tag_method = "tag_$name";
-  if ($self->[ACTS]{$name} || $self->[TMPLT]->can($tag_method)) {
+  if (exists $self->[ACTS]{$name} || $self->[TMPLT]->can($tag_method)) {
     my $value;
     if (eval { $value = $self->[TMPLT]->low_perform($self->[ACTS], $name, $node->[NODE_TAG_ARGS], $node->[NODE_ORIG]); 1 }) {
       return $value;
