@@ -444,6 +444,13 @@ If true, BSE will cache compiled templates using the configured BSE
 cache, if any.  Depending on the configured cache this may slow things
 down.  Default: disabled.
 
+=item preload_template
+
+Preload the named template, searching the template search part.  Any
+text that would normally be produced by the preloaded template is
+ignored.  This can be useful for common definitions and variables for
+use in many templates.  Default: none.
+
 =item auto_images
 
 By default, if the author doesn't use any image tags, BSE will insert

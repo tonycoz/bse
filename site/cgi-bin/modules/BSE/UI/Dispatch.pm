@@ -2,7 +2,7 @@ package BSE::UI::Dispatch;
 use strict;
 use Carp 'confess';
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 sub new {
   my ($class, %opts) = @_;
@@ -64,6 +64,7 @@ sub dispatch {
 
   ref $self and $self->{action} = $action;
   ref $self and $self->{rest} = $rest;
+  $req->set_variable(action => $action);
 
   my $method = "req_$action";
   $self->$method($req, @extras);

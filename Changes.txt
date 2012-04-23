@@ -1,3 +1,5 @@
+Template re-re-work:
+
 BSE 0.22 - unreleased
 ========
 
@@ -14,6 +16,15 @@ Enhancements:
  - automatic image insertion can now be disabled globally or on a
    per-article basis.
    https://rt4.develop-help.com/Ticket/Display.html?id=1331
+
+ - templating re-re-work:
+   - still backward compatible
+   - new, faster, more regular processing internal to tags:
+     - variables supplied by code, similarly to TT, Mason
+     - macro definitions
+     - call macros or files with parameters and localized variables
+   - integration into BSE itself still limited, but one step at a
+     time.
 
 Templates:
 

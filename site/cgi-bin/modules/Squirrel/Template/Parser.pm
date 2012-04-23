@@ -2,7 +2,7 @@ package Squirrel::Template::Parser;
 use strict;
 use Squirrel::Template::Constants qw(:token :node);
 
-our $VERSION = "1.004";
+our $VERSION = "1.011";
 
 use constant TOK => 0;
 use constant TMPLT => 1;
@@ -50,30 +50,15 @@ sub _parse_content {
     if ($type eq 'content' || $type eq 'tag' || $type eq 'wraphere') {
       push @result, $token;
     }
-    elsif ($type eq 'if') {
-      push @result, $self->_parse_if($token);
-    }
-    elsif ($type eq 'itbegin') {
-      push @result, $self->_parse_iterator($token);
-    }
-    elsif ($type eq 'withbegin') {
-      push @result, $self->_parse_with($token);
-    }
-    elsif ($type eq 'switch') {
-      push @result, $self->_parse_switch($token);
-    }
-    elsif ($type eq 'wrap') {
-      push @result, $self->_parse_wrap($token);
-    }
-    elsif ($type eq 'error') {
-      push @result, $self->_parse_error($token);
-    }
-    elsif ($type eq 'comment') {
-      # discard comments
-    }
     else {
-      $self->[TOK]->unget($token);
-      last TOKEN;
+      my $method = "_parse_$type";
+      if ($self->can($method)) {
+	push @result, $self->$method($token);
+      }
+      else {
+	$self->[TOK]->unget($token);
+	last TOKEN;
+      }
     }
   }
 
@@ -139,6 +124,70 @@ sub _comp {
   return \@result;
 }
 
+sub _parse_expr {
+  my ($self, $expr) = @_;
+
+  my $parser = Squirrel::Template::Expr::Parser->new;
+  my $parsed;
+  if (eval { $parsed = $parser->parse($expr->[TOKEN_EXPR_EXPR]); 1 }) {
+    $expr->[NODE_EXPR_EXPR] = $parsed;
+    return $expr;
+  }
+  elsif (ref $@) {
+    return $self->_error($expr, $@->[1]);
+  }
+  else {
+    return $self->_error($expr, $@);
+  }
+}
+
+sub _parse_stmt {
+  my ($self, $stmt) = @_;
+
+  my $parser = Squirrel::Template::Expr::Parser->new;
+  my $tokens = Squirrel::Template::Expr::Tokenizer->new($stmt->[TOKEN_EXPR_EXPR]);
+  my @list;
+  my $parsed;
+  my $good = eval {
+    push @list, $parser->parse_tokens($tokens);
+    while ($tokens->peektype eq "op;") {
+      $tokens->get;
+      push @list, $parser->parse_tokens($tokens);
+    }
+    $tokens->peektype eq "eof"
+      or die [ error => "Expected ; or end, but found ".$tokens->peektype ];
+    1;
+  };
+  if ($good) {
+    $stmt->[NODE_EXPR_EXPR] = \@list;
+    return $stmt;
+  }
+  elsif (ref $@) {
+    return $self->_error($stmt, $@->[1]);
+  }
+  else {
+    return $self->_error($stmt, $@);
+  }
+}
+
+sub _parse_set {
+  my ($self, $set) = @_;
+
+  my $parser = Squirrel::Template::Expr::Parser->new;
+  my $parsed;
+  if (eval { $parsed = $parser->parse($set->[TOKEN_SET_EXPR]); 1 }) {
+    $set->[NODE_SET_VAR] = [ split /\./, $set->[TOKEN_SET_VAR] ];
+    $set->[NODE_SET_EXPR] = $parsed;
+    return $set;
+  }
+  elsif (ref $@) {
+    return $self->_error($set, $@->[1]);
+  }
+  else {
+    return $self->_error($set, $@);
+  }
+}
+
 sub _parse_if {
   my ($self, $if) = @_;
 
@@ -189,7 +238,34 @@ sub _parse_if {
   }
 }
 
-sub _parse_iterator {
+sub _parse_ifnot {
+  my ($self, $ifnot) = @_;
+
+  my $true = $self->_parse_content;
+  my $eif = $self->[TOK]->get;
+  my @errors;
+  if ($eif->[TOKEN_TYPE] eq 'eif') {
+    if ($eif->[TOKEN_TAG_NAME] ne "" && $eif->[TOKEN_TAG_NAME] ne $ifnot->[TOKEN_TAG_NAME]) {
+      push @errors, $self->_error($eif, "'eif' for 'if !$ifnot->[TOKEN_TAG_NAME]' starting $ifnot->[TOKEN_FILENAME]:$ifnot->[TOKEN_LINE] expected but found 'eif $eif->[TOKEN_TAG_NAME]'");
+    }
+    # fall through
+  }
+  else {
+    push @errors, $self->_error($eif, "Expected 'eif' tag for if ! starting $ifnot->[TOKEN_FILENAME]:$ifnot->[TOKEN_LINE] but found $eif->[TOKEN_TYPE]");
+    $self->[TOK]->unget($eif);
+    $eif = $self->_dummy($eif, eif => "<:eif:>");
+  }
+
+  @{$ifnot}[NODE_TYPE, NODE_COND_TRUE, NODE_COND_EIF] = ( "condnot", $true, $eif );
+  if (@errors) {
+    return $self->_comp($ifnot, @errors);
+  }
+  else {
+    return $ifnot;
+  }
+}
+
+sub _parse_itbegin {
   my ($self, $start) = @_;
 
   my $name = $start->[TOKEN_TAG_NAME];
@@ -240,7 +316,7 @@ sub _parse_iterator {
   }
 }
 
-sub _parse_with {
+sub _parse_withbegin {
   my ($self, $start) = @_;
 
   my $name = $start->[TOKEN_TAG_NAME];
@@ -266,6 +342,38 @@ sub _parse_with {
   }
 }
 
+sub _parse_for {
+  my ($self, $for) = @_;
+
+  my $content = $self->_parse_content;
+  my $end = $self->[TOK]->get;
+  my $error;
+  if ($end->[TOKEN_TYPE] eq 'end') {
+    if ($end->[TOKEN_END_TYPE] && $end->[TOKEN_END_TYPE] ne 'for') {
+      $error = $self->_error($end, "Expected '.end' or '.end for' for .for started $for->[TOKEN_FILENAME]:$for->[TOKEN_LINE] but found '.end $end->[TOKEN_END_TYPE]'");
+    }
+  }
+  else {
+    $self->[TOK]->unget($end);
+    $error = $self->_error($end, "Expected '.end' for .for started $for->[TOKEN_FILENAME]:$for->[TOKEN_LINE] but found $end->[TOKEN_TYPE]");
+    $end = $self->_empty($end);
+  }
+  my $list_expr;
+  my $parser = Squirrel::Template::Expr::Parser->new;
+  unless (eval { $list_expr = $parser->parse($for->[TOKEN_FOR_EXPR]); 1 }) {
+    return $self->_error($for, "Could not parse list for .for: " . (ref $@ ? $@->[0] : $@));
+  }
+  @{$for}[NODE_FOR_EXPR, NODE_FOR_END, NODE_FOR_CONTENT] =
+    ( $list_expr, $end, $content );
+
+  if ($error) {
+    return $self->_comp($for, $error);
+  }
+  else {
+    return $for;
+  }
+}
+
 sub _parse_switch {
   my ($self, $start) = @_;
 
@@ -275,7 +383,7 @@ sub _parse_switch {
   my $tok;
   CASE:
   while ($tok = $self->[TOK]->get) {
-    if ($tok->[TOKEN_TYPE] eq 'case') {
+    if ($tok->[TOKEN_TYPE] eq 'case' || $tok->[TOKEN_TYPE] eq 'casenot') {
       my $case = $self->_parse_content;
       push @cases, [ $tok, $case ];
     }
@@ -305,7 +413,7 @@ sub _parse_wrap {
 
   my $content = $self->_parse_content;
   my $end = $self->[TOK]->get;
-  $end or $DB::single = 1;
+
   my $error;
   if ($end->[TOKEN_TYPE] eq 'endwrap') {
     # nothing to do
@@ -327,12 +435,139 @@ sub _parse_wrap {
   }
 }
 
+sub _parse_define {
+  my ($self, $define) = @_;
+
+  my $content = $self->_parse_content;
+  my $end = $self->[TOK]->get;
+  my $error;
+  if ($end->[TOKEN_TYPE] eq 'end') {
+    if ($end->[TOKEN_END_TYPE] && $end->[TOKEN_END_TYPE] ne 'define') {
+      $error = $self->_error($end, "Expected '.end' or '.end define' for .define started $define->[TOKEN_FILENAME]:$define->[TOKEN_LINE] but found '.end $end->[TOKEN_END_TYPE]'");
+    }
+  }
+  else {
+    $self->[TOK]->unget($end);
+    $error = $self->_error($end, "Expected '.end' for .define started $define->[TOKEN_FILENAME]:$define->[TOKEN_LINE] but found $end->[TOKEN_TYPE]");
+    $end = $self->_empty($end);
+  }
+  @{$define}[NODE_DEFINE_END, NODE_DEFINE_CONTENT] = ( $end, $content );
+
+  if ($error) {
+    return $self->_comp($define, $error);
+  }
+  else {
+    return $define;
+  }
+}
+
+sub _parse_call {
+  my ($self, $call) = @_;
+
+  my $tokens = Squirrel::Template::Expr::Tokenizer->new($call->[TOKEN_EXPR_EXPR]);
+
+  my $error;
+  my $parser = Squirrel::Template::Expr::Parser->new;
+  my $name_expr;
+  unless (eval { $name_expr = $parser->parse_tokens($tokens); 1 }) {
+    return $self->_error($call, "Could not parse expression: ".$@->[1]);
+  }
+
+  my @result;
+  my $next = $tokens->get;
+  my @args;
+  if ($next->[0] eq 'op,') {
+    unless (eval {
+      while ($next->[0] eq 'op,') {
+	my $key;
+	my $value;
+	$key = $parser->parse_tokens($tokens);
+	my $colon = $tokens->get;
+	$colon->[0] eq 'op:'
+	  or die [ error => "Expected : but found $colon->[0]" ];
+	$value = $parser->parse_tokens($tokens);
+	push @args, [ $key, $value ];
+	$next = $tokens->get;
+      }
+
+      if ($next->[0] ne 'eof') {
+	die [ error => "Expected , or eof but found $next->[0]" ];
+      }
+      1;
+    }) {
+      return $self->_error($call, ref $@ ? $@->[0] : $@);
+    }
+  }
+  elsif ($next->[0] ne 'eof') {
+    $error = $self->_error($call, "Expected , or end of expression but found $next->[0]");
+  }
+
+  @{$call}[NODE_CALL_NAME, NODE_CALL_LIST] = ( $name_expr, \@args );
+
+  return $error ? $self->_comp($call, $error) : $call;
+}
+
+sub _parse_ext_if {
+  my ($self, $if) = @_;
+
+  my @conds;
+  my @errors;
+  my $content = $self->_parse_content;
+  push @conds, [ $if, $content];
+  my $next = $self->[TOK]->get;
+  while ($next->[TOKEN_TYPE] eq 'ext_elsif') {
+    my $content = $self->_parse_content;
+    push @conds, [ $next, $content ];
+    $next = $self->[TOK]->get;
+  }
+  my $else;
+  my $else_content;
+  my $end;
+  if ($next->[TOKEN_TYPE] eq 'ext_else') {
+    $else = $next;
+    $else_content = $self->_parse_content;
+    $next = $self->[TOK]->get;
+  }
+  else {
+    $else = $else_content = $self->_empty($next);
+  }
+  if ($next->[TOKEN_TYPE] eq 'end') {
+    if ($next->[TOKEN_END_TYPE] ne "" && $next->[TOKEN_END_TYPE] ne 'if') {
+      push @errors, $self->_error($next, "Expected '.end' or '.end if' for .if started $if->[TOKEN_FILENAME]:$if->[TOKEN_LINE] but found '.end $next->[TOKEN_END_TYPE]'");
+    }
+    $end = $next;
+  }
+  else {
+    $self->[TOK]->unget($next);
+    $end = $self->empty($next);
+  }
+
+  my $parser = Squirrel::Template::Expr::Parser->new;
+  for my $cond (@conds) {
+    unless (eval { $cond->[2] = $parser->parse($cond->[0][TOKEN_EXT_EXPR]); 1 }) {
+      $cond->[2] = [ const => "", "" ];
+      push @errors, $self->_error($cond->[0], ref $@ ? $@->[1] : $@);
+    }
+  }
+
+  @{$if}[NODE_EXTIF_CONDS, NODE_EXTIF_ELSE, NODE_EXTIF_END] =
+    ( \@conds, [ $else, $else_content ], $end );
+
+  return @errors ? $self->_comp($if, @errors) : $if;
+}
+
 sub _parse_error {
   my ($self, $error) = @_;
 
   push @{$self->[ERRORS]}, $error;
 
   return $error;
+}
+
+sub _parse_comment {
+  my ($self, $comment) = @_;
+
+  return;
 }
 
 sub errors {

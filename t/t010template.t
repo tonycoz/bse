@@ -1,9 +1,9 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 41;
+use Test::More tests => 107;
 
-sub template_test($$$$;$);
+sub template_test($$$$;$$);
 
 my $gotmodule = require_ok('Squirrel::Template');
 
@@ -32,6 +32,22 @@ SKIP: {
      dead => sub { die "foo\n" },
      noimpl => sub { die "ENOIMPL\n" },
     );
+  my %vars =
+    (
+     a =>
+     {
+      b =>
+      {
+       c => "CEE"
+      }
+     },
+     str => $str,
+     somelist => [ 'a' .. 'f' ],
+     somehash => { qw(a 11 b 12 c 14 e 8) },
+     num1 => 101,
+     num2 => 202,
+     testclass => Squirrel::Template::Expr::WrapClass->new("TestClass"),
+    );
   template_test("<:str:>", "ABC", "simple", \%acts);
   template_test("<:strref:>", "ABC", "scalar ref", \%acts);
   $str = "DEF";
@@ -54,6 +70,14 @@ TEMPLATE
 		"* foo\n *<:ifDead:>ABC<:or:>DEF<:eif:>", "ifDead", \%acts);
   template_test("<:ifNoimpl:><:str:><:or:><:str2:><:eif:>",
 		"<:ifNoimpl:>ABC<:or:>DEF<:eif:>", "ifNoimpl", \%acts);
+
+  template_test("<:if!False:>FOO<:eif:>", "FOO", "if!False", \%acts);
+  template_test("<:if!Str:>FOO<:eif:>", "", "if!Str", \%acts);
+  template_test("<:if!Dead:><:str:><:eif:>",
+		"* foo\n *<:if!Dead:>ABC<:eif:>", "if!Dead", \%acts);
+  template_test("<:if!Noimpl:><:str:><:eif:>",
+		"<:if!Noimpl:>ABC<:eif:>", "if!Noimpl", \%acts);
+
   template_test(<<TEMPLATE, <<OUTPUT, "wrap", \%acts, "in");
 <:wrap wraptest.tmpl title=>[cat "foo " [str]], menu => 1, showtitle => "abc" :>Alpha
 <:param menu:>
@@ -198,6 +222,12 @@ OUT
 IN
 * foo
  *
+OUT
+
+  template_test(<<IN, <<OUT, "switch with case !", \%acts, "both");
+<:switch:><:case !Str:>NOT STR<:case !False:>FALSE<:endswitch:>
+IN
+FALSE
 OUT
 
   template_test("<:with begin upper:>Alpha<:with end upper:>", "ALPHA", "with", \%acts);
@@ -354,18 +384,198 @@ IN
 </div>
 OUT
   }
+
+  template_test("<:= unknown :>", "<:= unknown :>", "unknown", \%acts, "", \%vars);
+  template_test(<<TEMPLATE, "2", "multi-statement", \%acts, "", \%vars);
+<:.set foo = [] :><:% foo.push(1); foo.push(2) :><:= foo.size() -:>
+TEMPLATE
+
+  template_test("<:= str :>", "ABC", "simple exp", \%acts, "", \%vars);
+  template_test("<:= a.b.c :>", "CEE", "hash methods", \%acts, "", \%vars);
+  template_test(<<IN, <<OUT, "simple set", \%acts, "both", \%vars);
+<:.set d = "test" -:><:= d :>
+IN
+test
+OUT
+  my @expr_tests =
+    (
+     [ 'num1 + num2', 303 ],
+     [ 'num1 - num2', -101 ],
+     [ 'num1 + num2 * 2', 505 ],
+     [ 'num2 mod 5', '2' ],
+     [ 'num1 / 5', '20.2' ],
+     [ 'num1 div 5', 20 ],
+     [ '+num1', 101 ],
+     [ '-(num1 + num2)', -303 ],
+     [ '"hello " _ str', 'hello ABC' ],
+     [ 'num1 < num2', 1 ],
+     [ 'num1 < 101', '' ],
+     [ 'num1 < 100', '' ],
+     [ 'num1 > num2', '' ],
+     [ 'num2 > num1', 1 ],
+     [ 'num1 > 101', '' ],
+     [ 'num1 == 101.0', '1' ],
+     [ 'num1 == 101', '1' ],
+     [ 'num1 == 100', '' ],
+     [ 'num1 != 101', '' ],
+     [ 'num1 != "101.0"', '' ],
+     [ 'num1 != 100', 1 ],
+     [ 'num1 >= 101', 1 ],
+     [ 'num1 >= 100', 1 ],
+     [ 'num1 >= 102', '' ],
+     [ 'num1 <= 101', 1 ],
+     [ 'num1 <= 100', '' ],
+     [ 'num1 <= 102', '1' ],
+     [ 'str eq "ABC"', '1' ],
+     [ 'str eq "AB"', '' ],
+     [ 'str ne "AB"', '1' ],
+     [ 'str ne "ABC"', '' ],
+     [ 'str.lower', 'abc' ],
+     [ 'somelist.size', 6 ],
+     [ '[ 4, 2, 3 ].first', 4 ],
+     [ '[ 1, 4, 9 ].join(",")', "1,4,9" ],
+     [ '[ "xx", "aa" .. "ad", "zz" ].join(" ")', "xx aa ab ac ad zz" ],
+     [ '1 ? "TRUE" : "FALSE"', 'TRUE' ],
+     [ '0 ? "TRUE" : "FALSE"', 'FALSE' ],
+     [ '[ 1 .. 4 ][2]', 3 ],
+     [ 'somelist[2]', "c" ],
+     [ 'somehash["b"]', "12" ],
+     [ 'not 1', '' ],
+     [ 'not 1 or 1', 1 ],
+     [ 'not 1 and 1', "" ],
+     [ '"xabcy" =~ /abc/', 1 ],
+     [ '[ "abc" =~ /(.)(.)/ ][1]', "b" ],
+     [ '{ "a": 11, "b": 12, "c": 20 }["b"]', 12 ],
+     [ 'testclass.foo', "[TestClass.foo]" ],
+    );
+  for my $test (@expr_tests) {
+    my ($expr, $result) = @$test;
+
+    template_test("<:= $expr :>", $result, "expr: $expr", \%acts, "", \%vars);
+  }
+
+  template_test(<<IN, "", "define no use", \%acts, "both", \%vars);
+<:-.define foo:>
+<:.end-:>
+<:-.define bar:>
+<:.end define-:>
+IN
+  template_test(<<IN, "avalue", "define with call", \%acts, "both", \%vars);
+<:-.define foo:>
+<:-= avar -:>
+<:.end-:>
+<:.call "foo", "avar":"avalue"-:>
+IN
+  template_test(<<IN, "other value", "external call", \%acts, "", \%vars);
+<:.call "called.tmpl", "avar":"other value"-:>
+IN
+  template_test(<<IN, "This was preloaded", "call preloaded", \%acts, "both", \%vars);
+<:.call "preloaded"-:>
+IN
+  template_test(<<IN, <<OUT, "simple .for", \%acts, "", \%vars);
+<:.for x in [ "a" .. "d" ] -:>
+Value: <:= x :> Index: <:= loop.index :> Count: <:= loop.count:> Prev: <:= loop.prev :> Next: <:= loop.next :> Even: <:= loop.even :> Odd: <:= loop.odd :> Parity: <:= loop.parity :>
+<:.end-:>
+IN
+Value: a Index: 0 Count: 1 Prev:  Next: b Even:  Odd: 1 Parity: odd
+Value: b Index: 1 Count: 2 Prev: a Next: c Even: 1 Odd:  Parity: even
+Value: c Index: 2 Count: 3 Prev: b Next: d Even:  Odd: 1 Parity: odd
+Value: d Index: 3 Count: 4 Prev: c Next:  Even: 1 Odd:  Parity: even
+OUT
+  template_test(<<IN, <<OUT, "simple .if", \%acts, "", \%vars);
+<:.if "a" eq "b" :>FAIL<:.else:>SUCCESS<:.end:>
+<:.if "a" eq "a" :>SUCCESS<:.else:>FAIL<:.end:>
+<:.if "a" eq "c" :>FAIL1<:.elsif "a" eq "a":>SUCCESS<:.else:>FAIL2<:.end:>
+IN
+SUCCESS
+SUCCESS
+SUCCESS
+OUT
+  template_test(<<IN, <<OUT, "unknown .if", \%acts, "", \%vars);
+<:.if unknown:>TRUE<:.end:>
+<:.if "a" eq "a":>TRUE<:.elsif unknown:>TRUE<:.end:>
+<:.if "a" eq "b" :>TRUE<:.elsif unknown:>TRUE<:.end:>
+<:.if "a" ne "a" :>TRUE<:.elsif 0:>ELIF<:.elsif unknown:>TRUE<:.end:>
+IN
+<:.if unknown:>TRUE<:.end:>
+TRUE
+<:.if 0 :><:.elsif unknown:>TRUE<:.end:>
+<:.if 0 :><:.elsif unknown:>TRUE<:.end:>
+OUT
+
+  template_test(<<IN, <<OUT, "stack overflow on .call", \%acts, "", \%vars);
+<:.define foo:>
+<:-.call "foo"-:>
+<:.end:>
+<:-.call "foo"-:>
+IN
+Error opening scope for call: Too many scope levels
+Backtrace:
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:1
+  .call 'foo' from test:3
+OUT
 }
 
-sub template_test ($$$$;$) {
-  my ($in, $out, $desc, $acts, $stripnl) = @_;
+sub template_test ($$$$;$$) {
+  my ($in, $out, $desc, $acts, $stripnl, $vars) = @_;
 
   $stripnl ||= 'none';
   $in =~ s/\n$// if $stripnl eq 'in' || $stripnl eq 'both';
   $out =~ s/\n$// if $stripnl eq 'out' || $stripnl eq 'both';
 
-  my $templater = Squirrel::Template->new(template_dir=>'t/templates');
+  my $templater = Squirrel::Template->new
+    (
+     template_dir=>'t/templates',
+     preload => "preload.tmpl"
+    );
 
-  my $result = $templater->replace_template($in, $acts);
+  my $result = $templater->replace_template($in, $acts, undef, "test", $vars);
 
   is($result, $out, $desc);
 }
@@ -433,4 +643,10 @@ sub tag_cat {
   my ($args, $acts, $func, $templater) = @_;
 
   return join "", $templater->get_parms($args, $acts);
+}
+
+package TestClass;
+
+sub foo {
+  return "[TestClass.foo]";
 }

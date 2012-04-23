@@ -330,6 +330,13 @@ site/cgi-bin/modules/Squirrel/Table.pm
 site/cgi-bin/modules/Squirrel/Template.pm
 site/cgi-bin/modules/Squirrel/Template/Constants.pm
 site/cgi-bin/modules/Squirrel/Template/Deparser.pm
+site/cgi-bin/modules/Squirrel/Template/Expr.pm
+site/cgi-bin/modules/Squirrel/Template/Expr/WrapArray.pm
+site/cgi-bin/modules/Squirrel/Template/Expr/WrapBase.pm
+site/cgi-bin/modules/Squirrel/Template/Expr/WrapClass.pm
+site/cgi-bin/modules/Squirrel/Template/Expr/WrapCode.pm
+site/cgi-bin/modules/Squirrel/Template/Expr/WrapHash.pm
+site/cgi-bin/modules/Squirrel/Template/Expr/WrapScalar.pm
 site/cgi-bin/modules/Squirrel/Template/Parser.pm
 site/cgi-bin/modules/Squirrel/Template/Processor.pm
 site/cgi-bin/modules/Squirrel/Template/Tokenizer.pm
@@ -854,8 +861,11 @@ t/tags/bse.cfg
 t/templater/00load.t
 t/templater/10token.t
 t/templater/20parse.t
+t/templater/30expr.t
+t/templates/called.tmpl
 t/templates/included.include	Used by t010template.t
 t/templates/included.recursive
+t/templates/preload.tmpl
 t/templates/wrapinner.tmpl
 t/templates/wrapself.tmpl
 t/templates/wraptest.tmpl	Used by t010template.t

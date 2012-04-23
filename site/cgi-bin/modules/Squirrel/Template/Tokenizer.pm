@@ -2,7 +2,7 @@ package Squirrel::Template::Tokenizer;
 use strict;
 use Squirrel::Template::Constants qw(:token);
 
-our $VERSION = "1.002";
+our $VERSION = "1.009";
 
 use constant QUEUE => 0;
 use constant TEXT => 1;
@@ -47,8 +47,8 @@ sub get {
     return;
   }
 
-  if ($self->[TEXT] =~ s/\A(.*?)(($tag_head)\s*(.*?)\s*($tag_tail))//s) {
-    my ($content, $tag, $head, $body, $tail) = ($1, $2, $3, $4, $5);
+  if ($self->[TEXT] =~ s/\A(.*?)(($tag_head)\s*)//s) {
+    my ($content, $tag_start, $head) = ($1, $2, $3);
 
     if (length $content) {
       push @$queue, [ "content", $content, $line, $name ];
@@ -56,78 +56,114 @@ sub get {
       $line = $self->[LINE];
     }
 
-    $self->[LINE] += $tag =~ tr/\n//;
-    if ($body =~ /\A($simple_re)(?:\s+(\S.*))?\z/s) {
-      push @$queue, [ $1 => $tag, $line, $name, defined $2 ? $2 : '' ];
-    }
-    elsif ($body =~ m!\Ainclude\s+([\w/.-]+)(?:\s+([\w,]+))?\z!) {
-      if (@{$self->[INCLUDES]} <= 10) {
-	my ($newtext, $filename, $error) = $self->[TMPLT]->include($1, $2);
-	if ($error) {
-	  push @$queue, [ error => $tag, $line, $name, $newtext ];
+    if ($self->[TEXT] =~ s/\A((.*?)\s*($tag_tail))//s) {
+      my ($tag_end, $body, $tail) = ($1, $2, $3);
+      my $tag = $tag_start . $tag_end;
+
+      $self->[LINE] += $tag =~ tr/\n//;
+      if ($body =~ /\A($simple_re)(?:\s+(\S.*))?\z/s) {
+	push @$queue, [ $1 => $tag, $line, $name, defined $2 ? $2 : '' ];
+      }
+      elsif ($body =~ m!\Ainclude\s+([\w/.-]+)(?:\s+([\w,]+))?\z!) {
+	if (@{$self->[INCLUDES]} <= 10) {
+	  my ($newtext, $filename, $error) = $self->[TMPLT]->include($1, $2);
+	  if ($error) {
+	    push @$queue, [ error => $tag, $line, $name, $newtext ];
+	  }
+	  else {
+	    if (length $newtext) {
+	      push @{$self->[INCLUDES]}, [ @{$self}[TEXT, NAME, LINE] ];
+	      @{$self}[TEXT, NAME, LINE] = ( $newtext, $filename, 1 );
+	    }
+	    return $self->get if !@$queue && length $self->[TEXT];
+	  }
 	}
 	else {
-	  if (length $newtext) {
-	    push @{$self->[INCLUDES]}, [ @{$self}[TEXT, NAME, LINE] ];
-	    @{$self}[TEXT, NAME, LINE] = ( $newtext, $filename, 1 );
-	  }
-	  return $self->get if !@$queue && length $self->[TEXT];
+	  push @$queue, [ error => $tag, $line, $name, 'Too many levels of includes' ];
 	}
       }
+      elsif ($body =~ /\A=\s+(\S.*?)(?:\s+\|\s*(\w*))?\z/s) {
+	push @$queue, [ expr => $tag, $line, $name, $1, $2 || "" ];
+      }
+      elsif ($body =~ /\A%\s+(\S.*?)(?:\s+\|\s*(\w+))?\z/s) {
+	push @$queue, [ stmt => $tag, $line, $name, $1, $2 || "" ];
+      }
+      elsif ($body =~ /\A\.set\s+([a-zA-Z][a-zA-Z0-9]*(?:\.[a-zA-Z][a-zA-Z0-9]*)*)\s*=\s*(\S.*)\z/s) {
+	push @$queue, [ set => $tag, $line, $name, $1, $2 ];
+      }
+      elsif ($body =~ /\A\.(while|if|elsif|switch)\s+(\S.*)\z/s) {
+	push @$queue, [ "ext_$1" => $tag, $line, $name, $2 ];
+      }
+      elsif ($body =~ /\A\.else\z/s) {
+	push @$queue, [ "ext_else" => $tag, $line, $name ];
+      }
+      elsif ($body =~ /\A\.for\s+([a-zA-Z_][a-zA-Z0-9_]*)\s+in\s+(\S.*)\z/s) {
+	push @$queue, [ for => $tag, $line, $name, $1, $2 ];
+      }
+      elsif ($body =~ /\A\.define\s+(\S.*)\z/s) {
+	push @$queue, [ define => $tag, $line, $name, $1 ];
+      }
+      elsif ($body =~ /\A\.end(?:\s+(\w+))?\z/) {
+	push @$queue, [ end => $tag, $line, $name, defined $1 ? $1 : "" ];
+      }
+      elsif ($body =~ /\A\.call\s+(\S.*)?\z/) {
+	push @$queue, [ call => $tag, $line, $name, $1 ];
+      }
+      elsif ($body =~ /\Aiterator\s+begin\s+(\w+)\s*(?:\s+(\S.*))?\z/s) {
+	push @$queue, [ itbegin => $tag, $line, $name, $1, defined $2 ? $2 : '' ];
+      }
+      elsif ($body =~ /\Aiterator\s+separator(?:\s+(\w+))\z/) {
+	push @$queue, [ itsep => $tag, $line, $name, $1 ];
+      }
+      elsif ($body =~ /\Aiterator\s+end(?:\s+(\w+))\z/) {
+	push @$queue, [ itend => $tag, $line, $name, $1 ];
+      }
+      elsif ($body =~ /\Awith\s+begin\s+(\w+)\s*(?:\s+(\S.*))?\z/s) {
+	push @$queue, [ withbegin => $tag, $line, $name, $1, defined $2 ? $2 : '' ];
+      }
+      elsif ($body =~ s/\Awith\s+end(?:\s+(\w+))?\z//) {
+	push @$queue, [ withend => $tag, $line, $name, $1 ];
+      }
+      elsif ($body =~ /\Aif\s*([A-Z]\w+)(?:\s+(\S.*))?\z/s) {
+	push @$queue, [ if => $tag, $line, $name, $1, defined $2 ? $2 : '' ];
+      }
+      elsif ($body =~ /\Aif\s*!([A-Z]\w+)(?:\s+(\S.*))?\z/s) {
+	push @$queue, [ ifnot => $tag, $line, $name, $1, defined $2 ? $2 : '' ];
+      }
+      elsif ($body =~ /\Acase\s+(\w+)(?:\s+(\S.*))?\z/) {
+	push @$queue, [ case => $tag, $line, $name, $1, defined $2 ? $2 : '' ];
+      }
+      elsif ($body =~ /\Acase\s+!(\w+)(?:\s+(\S.*))?\z/) {
+	push @$queue, [ casenot => $tag, $line, $name, $1, defined $2 ? $2 : '' ];
+      }
+      elsif ($body =~ /\Awrap\s+here\z/) {
+	push @$queue, [ wraphere => $tag, $line, $name ];
+      }
+      elsif ($body =~ m!\Awrap\s+([\w/.-]+)(?:\s+(\S.*))?\z!s) {
+	push @$queue, [ wrap => $tag, $line, $name, $1, defined $2 ? $2 : '' ];
+      }
+      elsif ($body =~ /\A($reserved_re)\b/) {
+	push @$queue, [ error => $tag, $line, $name, "Syntax error: incorrect use of '$1'" ];
+      }
+      elsif ($body =~ /\A(\w+)(?:\s+(\S.*))?\z/s) {
+	push @$queue, [ tag => $tag, $line, $name, $1, defined $2 ? $2 : '' ];
+      }
+      elsif ($body =~ /\A\#\s*(.*)\z/s) {
+	push @$queue, [ comment => $tag, $line, $name, $1 ];
+      }
       else {
-	push @$queue, [ error => $tag, $line, $name, 'Too many levels of includes' ];
+	my $start = length $body > 20 ? substr($body, 0, 17) . "..." : $body;
+	push @$queue, [ error => $tag, $line, $name, "Syntax error: unknown tag start '$start'" ];
       }
     }
-    elsif ($body =~ /\Aiterator\s+begin\s+(\w+)\s*(?:\s+(\S.*))?\z/s) {
-      push @$queue, [ itbegin => $tag, $line, $name, $1, defined $2 ? $2 : '' ];
-    }
-    elsif ($body =~ /\Aiterator\s+separator(?:\s+(\w+))\z/) {
-      push @$queue, [ itsep => $tag, $line, $name, $1 ];
-    }
-    elsif ($body =~ /\Aiterator\s+end(?:\s+(\w+))\z/) {
-      push @$queue, [ itend => $tag, $line, $name, $1 ];
-    }
-    elsif ($body =~ /\Awith\s+begin\s+(\w+)\s*(?:\s+(\S.*))?\z/s) {
-      push @$queue, [ withbegin => $tag, $line, $name, $1, defined $2 ? $2 : '' ];
-    }
-    elsif ($body =~ s/\Awith\s+end(?:\s+(\w+))?\z//) {
-      push @$queue, [ withend => $tag, $line, $name, $1 ];
-    }
-    elsif ($body =~ /\Aif\s*([A-Z]\w+)(?:\s+(\S.*))?\z/s) {
-      push @$queue, [ if => $tag, $line, $name, $1, defined $2 ? $2 : '' ];
-    }
-    elsif ($body =~ /\Acase\s+(\w+)(?:\s+(\S.*))?\z/) {
-      push @$queue, [ case => $tag, $line, $name, $1, defined $2 ? $2 : '' ];
-    }
-    elsif ($body =~ /\Awrap\s+here\z/) {
-      push @$queue, [ wraphere => $tag, $line, $name ];
-    }
-    elsif ($body =~ m!\Awrap\s+([\w/.-]+)(?:\s+(\S.*))?\z!s) {
-      push @$queue, [ wrap => $tag, $line, $name, $1, defined $2 ? $2 : '' ];
-    }
-    elsif ($body =~ /\A($reserved_re)\b/) {
-      push @$queue, [ error => $tag, $line, $name, "Syntax error: incorrect use of '$1'" ];
-    }
-    elsif ($body =~ /\A(\w+)(?:\s+(\S.*))?\z/s) {
-      push @$queue, [ tag => $tag, $line, $name, $1, defined $2 ? $2 : '' ];
-    }
-    elsif ($body =~ /\A\#\s*(.*)\z/s) {
-      push @$queue, [ comment => $tag, $line, $name, $1 ];
-    }
     else {
-      my $start = length $body > 20 ? substr($body, 0, 17) . "..." : $body;
-      push @$queue, [ error => $tag, $line, $name, "Syntax error: unknown tag start '$start'" ];
+      my ($name_maybe) = $self->[TEXT] =~ /\A([.=]?\w+)/;
+      my $tag = $tag_start . $self->[TEXT];
+      $self->[TEXT] = "";
+      my $tag_name = $name_maybe || "(no name found)";
+      push @$queue, [ error => $tag, $self->[LINE], $name, "Unclosed tag '$tag_name'" ];
+      $self->[LINE] += $tag =~ tr/\n//;
     }
-  }
-  elsif ($self->[TEXT] =~ s/\A(.*?)(($tag_head)\s*(.*))\z//s) {
-    my ($content, $tag, $head, $name_maybe) = ($1, $2, $3, $4);
-    if (length $content) {
-      push @$queue, [ "content", $content, $line, $name ];
-      $self->[LINE] += $content =~ tr/\n//;
-    }
-    my $tag_name = $name_maybe =~ /^(\.?\w+)/ ? $1 : "(no name found)";
-    push @$queue, [ error => $tag, $self->[LINE], $name, "Unclosed tag '$tag_name'" ];
-    $self->[LINE] += $tag =~ tr/\n//;
   }
   else {
     my $text = $self->[TEXT];
