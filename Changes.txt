@@ -11,6 +11,10 @@ Bug fixes:
    set to zero for orders where all products have zero weight.
    https://rt4.develop-help.com/Ticket/Display.html?id=1328
 
+ - template engine: template tags implemented as a literal were no
+   replaced when that literal was false. (4a446ac3)
+   https://rt4.develop-help.com/Ticket/Display.html?id=1342
+
 Enhancements:
 
  - automatic image insertion can now be disabled globally or on a
