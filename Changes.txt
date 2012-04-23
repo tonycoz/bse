@@ -1,5 +1,3 @@
-Template re-re-work:
-
 BSE 0.22 - unreleased
 ========
 
