@@ -15,7 +15,7 @@ use DevHelp::Date qw(dh_parse_date dh_parse_sql_date);
 use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
-our $VERSION = "1.025";
+our $VERSION = "1.026";
 
 =head1 NAME
 
@@ -3529,6 +3529,30 @@ sub req_thumb {
   }
 }
 
+=item edit_image
+
+Display a form to allow editing an image.
+
+Tags:
+
+=over
+
+=item *
+
+eimage - the image being edited
+
+=item *
+
+normal article edit tags.
+
+=back
+
+Variables:
+
+eimage - the image being edited.
+
+=cut
+
 sub req_edit_image {
   my ($self, $req, $article, $articles, $errors) = @_;
 
@@ -3542,6 +3566,8 @@ sub req_edit_image {
   $req->user_can(edit_images_save => $article)
     or return $self->edit_form($req, $article, $articles,
 			       "You don't have access to save image information for this article");
+
+  $req->set_variable(eimage => $image);
 
   my %acts;
   %acts =

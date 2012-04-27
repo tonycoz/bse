@@ -34,6 +34,10 @@ Enhancements:
 
  - bsexlsprod.pl can now update tiered pricing
 
+ - make the eimage variable available on the admin/image_edit template
+   and use it to display a thumbnail.
+   https://rt4.develop-help.com/Ticket/Display.html?id=1290
+
 Templates:
 
  - admin/order_detail.tmpl - the product tag now uses tag_article as
