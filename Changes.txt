@@ -28,6 +28,12 @@ Enhancements:
    - integration into BSE itself still limited, but one step at a
      time.
 
+ - briefly documented bsexlsprod.pl (site/docs/bse_import.pod)
+
+ - bsexlsprod.pl can now update article tags
+
+ - bsexlsprod.pl can now update tiered pricing
+
 Templates:
 
  - admin/order_detail.tmpl - the product tag now uses tag_article as
