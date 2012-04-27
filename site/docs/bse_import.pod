@@ -1,0 +1,168 @@
+=head1 NAME
+
+bse_import.pod - importing products into BSE
+
+=head1 DESCRIPTION
+
+=head1 CONFIGURATION
+
+Section C<< [import profile I<profilename>] >>.
+
+=over
+
+=item *
+
+map_I<fieldname> = input column number (starting from 1)
+
+=item *
+
+set_I<fieldname> = set the given field to a value
+
+=item *
+
+xform_I<fieldname> - code to proceess the column, with $_ set to
+value from map / set, $product set to a hash with the other values
+set.  Result is the value in $_.  Run after map_* and set_*.
+
+=item *
+
+file_path - path_sep (almost always ":") separated list of locations
+to search for image files
+
+=item *
+
+source - type of input format, default and currently only XLS.
+
+=item *
+
+target - type of output record, default Product, can currently be
+Article or Product.
+
+=item *
+
+cat1, cat2, cat3 - catalog names
+
+=back
+
+=head2 XLS source
+
+Configuration:
+
+=over
+
+=item *
+
+sheet - sheet number to import from
+
+=item *
+
+skiprows - number of rows to skip (eg. header rows)
+
+=back
+
+=head2 Article imports
+
+=head3 Configuration
+
+=over
+
+=item *
+
+codes - use the "code_field" to identify the existing article.
+Default false.
+
+=item *
+
+code_field - the name of the input field to identify an existing
+article or title.  Default "product_code" for products, "linkAlias"
+for articles.
+
+=item *
+
+ignore_missing - ignore missing image files.  Default: 1.
+
+=item *
+
+reset_images - reset images for an article being imported.  Default: 0.
+
+=item *
+
+reset_steps - reset step parents for an article being imported.  Default: 0.
+
+=back
+
+=head3 Special article field names
+
+=over
+
+=item *
+
+image1_file .. image10_file - name of an image file found in 
+
+=item *
+
+imageI<N>_alt, imageI<N>_name, imageI<N>_url, imageI<N>_storage - set
+the appropriate fields for an image
+
+=item *
+
+step1 .. step10 - step parent id or linkAlias
+
+=item *
+
+tags - / separated list of article tags
+
+=back
+
+=head2 Product imports
+
+=head3 Configuration
+
+All article config also applies here.
+
+=over
+
+=item *
+
+price_dollar - prices are in dollars (default: 0)
+
+=item *
+
+product_template - template name for products (default: system default)
+
+=item *
+
+catalog_template - template for catalogs (default: system default)
+
+=item *
+
+prodopt_value_sep - separator for product options (default: "!")
+
+=item *
+
+reset_prodopts - reset product options when updating a product (true)
+
+=back
+
+=head3 Special product field names
+
+A mapping for C<retailPrice> is B<required>.
+
+=over
+
+=item *
+
+tier_price_I<N> - price for tier id I<N>
+
+=item *
+
+prodopt1_name .. prodopt5_name - names of product options
+
+=item *
+
+prodopt1_values .. prodopt5_values - values for the product option
+(separated by ! by default, see prodopt_value_sep.
+
+=back
+
+=cut

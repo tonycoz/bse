@@ -6,7 +6,7 @@ use Articles;
 use Products;
 use OtherParents;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub new {
   my ($class, %opts) = @_;
@@ -89,6 +89,15 @@ sub make_leaf {
 
 sub fill_leaf {
   my ($self, $importer, $leaf, %entry) = @_;
+
+  if ($entry{tags}) {
+print "Setting tags $leaf->{id}: $entry{tags}\n";
+    my @tags = split '/', $entry{tags};
+    my $error;
+    unless ($leaf->set_tags(\@tags, \$error)) {
+      die "Error setting tags: $error";
+    }
+  }
 
   return 1;
 }

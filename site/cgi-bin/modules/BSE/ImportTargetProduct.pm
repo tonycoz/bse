@@ -6,8 +6,9 @@ use Articles;
 use Products;
 use BSE::TB::ProductOptions;
 use BSE::TB::ProductOptionValues;
+use BSE::TB::PriceTiers;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub new {
   my ($class, %opts) = @_;
@@ -25,6 +26,8 @@ sub new {
   my $map = $importer->maps;
   defined $map->{retailPrice}
     or die "No retailPrice mapping found\n";
+
+  $self->{price_tiers} = +{ map { $_->id => $_ } BSE::TB::PriceTiers->all };
 
   return $self;
 }
@@ -114,6 +117,20 @@ sub fill_leaf {
 	);
     }
   }
+
+  my %prices;
+  for my $tier_id (keys %{$self->{price_tiers}}) {
+    my $price = $entry{"tier_price_$tier_id"};
+    if (defined $price && $price =~ /\d/) {
+      $price =~ s/\$//; # in case
+      $price *= 100 if $self->{price_dollar};
+
+      $prices{$tier_id} = $price;
+    }
+  }
+
+  $leaf->set_prices(\%prices);
+
   return $self->SUPER::fill_leaf($importer, $leaf, %entry);
 }
 

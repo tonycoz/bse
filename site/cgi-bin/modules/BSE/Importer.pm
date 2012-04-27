@@ -2,7 +2,7 @@ package BSE::Importer;
 use strict;
 use Config;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub new {
   my ($class, %opts) = @_;
@@ -49,7 +49,13 @@ sub new {
     (my $out = $xform) =~ s/^xform_//;
     $map{$out}
       or die "Xform for $out but no mapping\n";
-    my $code = "sub { (local \$_, my \$product) = \@_; \n".$ids{$xform}."\n; return \$_ }";
+    my $code = <<EOS;
+sub { (local \$_, my \$product) = \@_;
+#line 1 "Xform $xform code"
+$ids{$xform};
+return \$_
+}
+EOS
     my $sub = eval $code;
     $sub
       or die "Compilation error for $xform code: $@\n";
