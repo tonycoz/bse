@@ -38,6 +38,8 @@ Enhancements:
    and use it to display a thumbnail.
    https://rt4.develop-help.com/Ticket/Display.html?id=1290
 
+ - add the Courier::FixedAU shipping driver.
+
 Templates:
 
  - admin/order_detail.tmpl - the product tag now uses tag_article as

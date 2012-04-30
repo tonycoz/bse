@@ -289,6 +289,7 @@ site/cgi-bin/modules/Courier/AustraliaPost/Standard.pm
 site/cgi-bin/modules/Courier/Fastway.pm
 site/cgi-bin/modules/Courier/Fastway/Road.pm
 site/cgi-bin/modules/Courier/Fastway/Satchel.pm
+site/cgi-bin/modules/Courier/FixedAU.pm
 site/cgi-bin/modules/Courier/Null.pm
 site/cgi-bin/modules/DevHelp/Cfg.pm
 site/cgi-bin/modules/DevHelp/Date.pm
