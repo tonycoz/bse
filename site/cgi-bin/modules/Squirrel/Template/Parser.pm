@@ -2,7 +2,7 @@ package Squirrel::Template::Parser;
 use strict;
 use Squirrel::Template::Constants qw(:token :node);
 
-our $VERSION = "1.011";
+our $VERSION = "1.012";
 
 use constant TOK => 0;
 use constant TMPLT => 1;
@@ -539,7 +539,7 @@ sub _parse_ext_if {
   }
   else {
     $self->[TOK]->unget($next);
-    $end = $self->empty($next);
+    $end = $self->_empty($next);
   }
 
   my $parser = Squirrel::Template::Expr::Parser->new;
