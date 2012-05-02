@@ -5,7 +5,7 @@ use BSE::Cfg;
 use BSE::Util::HTML;
 use Carp qw(cluck confess);
 
-our $VERSION = "1.009";
+our $VERSION = "1.010";
 
 sub new {
   my ($class, %opts) = @_;
@@ -352,6 +352,9 @@ sub _str_msg_html {
     my $params = $2;
     my @params = defined $params ? split(/:/, $params) : ();
     $msg = $req->htmlmsg($id, \@params);
+  }
+  else {
+    $msg = escape_html($msg);
   }
 
   return $msg;
