@@ -13,6 +13,10 @@ Bug fixes:
    replaced when that literal was false. (4a446ac3)
    https://rt4.develop-help.com/Ticket/Display.html?id=1342
 
+ - the body text markup doclink[] accepts link aliases, but didn't
+   allow for "-" in the alias.  All "-" and document aliases are
+   permitted.
+
 Enhancements:
 
  - automatic image insertion can now be disabled globally or on a

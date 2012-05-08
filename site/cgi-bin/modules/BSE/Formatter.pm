@@ -3,7 +3,7 @@ use strict;
 use BSE::Util::HTML;
 use Carp 'confess';
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 use base 'DevHelp::Formatter';
 
@@ -316,13 +316,13 @@ sub replace {
     and return 1;
   $$rpart =~ s#gimage\[([^\]\[]+)\]# $self->gimage($1) #ige
     and return 1;
-  $$rpart =~ s#popdoclink\[(\w+)\|([^\]\[]+)\]# $self->doclink($1, $2, "_blank", 'popdoclink') #ige
+  $$rpart =~ s#popdoclink\[([\w-]+)\|([^\]\[]+)\]# $self->doclink($1, $2, "_blank", 'popdoclink') #ige
     and return 1;
-  $$rpart =~ s#popdoclink\[(\w+)\]# $self->doclink($1, undef, "_blank", 'popdoclink') #ige
+  $$rpart =~ s#popdoclink\[([\w-]+)\]# $self->doclink($1, undef, "_blank", 'popdoclink') #ige
     and return 1;
-  $$rpart =~ s#doclink\[(\w+)\|([^\]\[]+)\]# $self->doclink($1, $2, undef, 'doclink') #ige
+  $$rpart =~ s#doclink\[([\w-]+)\|([^\]\[]+)\]# $self->doclink($1, $2, undef, 'doclink') #ige
     and return 1;
-  $$rpart =~ s#doclink\[(\w+)\]# $self->doclink($1,  undef, undef, 'doclink') #ige
+  $$rpart =~ s#doclink\[([\w-]+)\]# $self->doclink($1,  undef, undef, 'doclink') #ige
     and return 1;
 
   $$rpart =~ s#popformlink\[(\w+)\|([^\]\[]+)\]#
