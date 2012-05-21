@@ -17,6 +17,10 @@ Bug fixes:
    allow for "-" in the alias.  All "-" and document aliases are
    permitted.
 
+ - shopadmin order_paid and order_unpaid are now recorded in the audit
+   log instead of being added to special instructions.
+   https://rt4.develop-help.com/Ticket/Display.html?id=1326
+
 Enhancements:
 
  - automatic image insertion can now be disabled globally or on a
@@ -44,10 +48,23 @@ Enhancements:
 
  - add the Courier::FixedAU shipping driver.
 
+ - that an order was manually paid is now recorded separately from the
+   payment type.
+   https://rt4.develop-help.com/Ticket/Display.html?id=1325
+
+ - the shopadmin order_paid target now accepts a paymentType variable
+   to optionally set a new payment type on manual payment
+   https://rt4.develop-help.com/Ticket/Display.html?id=1325
+
+ - the shopadmin order_paid and order_unpaid now require csfrp tokens.
+
 Templates:
 
  - admin/order_detail.tmpl - the product tag now uses tag_article as
    it should.
+
+ - admin/order_detail.tmpl - added order, payment_types and
+   payment_type_desc as template variables.
 
  - admin/subscr/list - isubscription is now an object tag, giving
    access to the is_removable method
