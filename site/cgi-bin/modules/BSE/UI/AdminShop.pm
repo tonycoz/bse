@@ -17,9 +17,9 @@ use BSE::Util::Iterate;
 use BSE::WebUtil 'refresh_to_admin';
 use BSE::Util::HTML qw(:default popup_menu);
 use BSE::Arrows;
-use BSE::Shop::Util qw(:payment order_item_opts nice_options);
+use BSE::Shop::Util qw(:payment order_item_opts nice_options payment_types);
 
-our $VERSION = "1.012";
+our $VERSION = "1.013";
 
 my %actions =
   (
@@ -754,6 +754,30 @@ sub tag_stage_select {
     );
 }
 
+=item target order_detail
+
+Display the details of an order.
+
+Variables set:
+
+=over
+
+=item *
+
+order - the order being displayed
+
+=item *
+
+payment_types - a list of configured payment types
+
+=item *
+
+payment_type_desc - a description of the current payment type
+
+=back
+
+=cut
+
 sub req_order_detail {
   my ($class, $req, $errors) = @_;
 
@@ -771,6 +795,11 @@ sub req_order_detail {
     my $siteuser;
     my $it = BSE::Util::Iterate->new;
 
+    $req->set_variable(order => $order);
+    my @pay_types = payment_types();
+    $req->set_variable(payment_types => \@pay_types);
+    my ($pay_type) = grep $_->{id} == $order->paymentType, @pay_types;
+    $req->set_variable(payment_type_desc => $pay_type ? $pay_type->{desc} : "Unknown");
     my %acts;
     %acts =
       (
@@ -855,16 +884,41 @@ sub req_order_filled {
   }
 }
 
-sub req_order_paid {
-  my ($class, $req) = @_;
+=item target order_paid
 
-  return $class->_set_order_paid($req, 1);
+Mark the order identified by C<id> as paid.
+
+Optionally accepts C<paymentType> which replaces the current payment
+type.
+
+Requires csrfp token C<shop_order_paid>.
+
+=cut
+
+sub req_order_paid {
+  my ($self, $req) = @_;
+
+  $req->check_csrf("shop_order_paid")
+    or return $self->req_order_list($req, "Bad or missing csrf token: " . $req->csrf_error);
+
+  return $self->_set_order_paid($req, 1);
 }
 
-sub req_order_unpaid {
-  my ($class, $req) = @_;
+=item target order_unpaid
 
-  return $class->_set_order_paid($req, 0);
+Mark the order identified by C<id> as unpaid.
+
+Requires csrfp token C<shop_order_unpaid>.
+
+=cut
+
+sub req_order_unpaid {
+  my ($self, $req) = @_;
+
+  $req->check_csrf("shop_order_unpaid")
+    or return $self->req_order_list($req, "Bad or missing csrf token: " . $req->csrf_error);
+
+  return $self->_set_order_paid($req, 0);
 }
 
 sub _set_order_paid {
@@ -875,18 +929,37 @@ sub _set_order_paid {
       my $order = BSE::TB::Orders->getByPkey($id)) {
     if ($order->paidFor != $value) {
       if ($value) {
-	$order->set_paymentType(PAYMENT_MANUAL);
+	my $pay_type = $req->cgi->param("paymentType");
+	if (defined $pay_type && $pay_type =~ /^[0-9]+$/) {
+	  $order->set_paymentType($pay_type);
+	}
+	$order->set_paid_manually(1);
       }
       else {
-	$order->paymentType == PAYMENT_MANUAL
+	$order->is_manually_paid
 	  or return $class->req_order_detail($req, "You can only unpay manually paid orders");
       }
 
       $order->set_paidFor($value);
-      my $user = $req->user;
-      my $name = $user ? $user->logon : "--unknown--";
-      require POSIX;
-      $order->{instructions} .= "\nMarked " . ($value ? "paid" : "unpaid" ) . " by $name " . POSIX::strftime("%H:%M %d/%m/%Y", localtime);
+
+      if ($value) {
+	$req->audit
+	  (
+	   component => "shopadmin:order:paid",
+	   level => "info",
+	   object => $order,
+	   msg => "Order " . $order->id . " marked paid",
+	  );
+      }
+      else {
+	$req->audit
+	  (
+	   component => "shopadmin:order:unpaid",
+	   level => "info",
+	   object => $order,
+	   msg => "Order " . $order->id . " marked unpaid",
+	  );
+      }
       $order->save();
     }
 

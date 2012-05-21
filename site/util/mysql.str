@@ -630,6 +630,7 @@ Column paypal_tran_id;varchar(255);YES;NULL;
 Column freight_tracking;varchar(255);NO;;
 Column stage;varchar(20);NO;;
 Column ccPAN;varchar(4);NO;;
+Column paid_manually;int(11);NO;0;
 Index PRIMARY;1;[id]
 Index order_cchash;0;[ccNumberHash]
 Index order_userId;0;[userId;orderDate]

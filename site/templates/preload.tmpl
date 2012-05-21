@@ -1,0 +1,11 @@
+<:# utility definitions :>
+<:-.define make_select-:>
+  <select name="<:= name :>">
+  <:-.for i in list -:>
+    <option value="<:= i[id] |html :>"
+      <:- .if i[id] eq default :> selected="selected"<:.end if -:>
+    >
+    <:= i[desc] | html :>
+  <:-.end for-:>
+  </select>
+<:-.end define -:>

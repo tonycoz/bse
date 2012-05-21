@@ -139,6 +139,7 @@ site/cgi-bin/modules/BSE/Search/BSE.pm
 site/cgi-bin/modules/BSE/Session.pm
 site/cgi-bin/modules/BSE/SessionSign.pm
 site/cgi-bin/modules/BSE/Shipping.pm
+site/cgi-bin/modules/BSE/Shop/PaymentTypes.pm
 site/cgi-bin/modules/BSE/Shop/Util.pm
 site/cgi-bin/modules/BSE/Sort.pm
 site/cgi-bin/modules/BSE/Storage/AmazonS3.pm
@@ -717,6 +718,7 @@ site/templates/menu/menu4.tmpl
 site/templates/menu/menu5.tmpl
 site/templates/meta/flv_flowplaylist.tmpl
 site/templates/noartbase.tmpl
+site/templates/preload.tmpl
 site/templates/printable/printable.tmpl
 site/templates/printable/wap.tmpl
 site/templates/search_base.tmpl

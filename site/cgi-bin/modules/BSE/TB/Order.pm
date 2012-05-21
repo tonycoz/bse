@@ -5,8 +5,9 @@ use Squirrel::Row;
 use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 use Carp 'confess';
+use BSE::Shop::PaymentTypes;
 
-our $VERSION = "1.015";
+our $VERSION = "1.016";
 
 sub columns {
   return qw/id
@@ -28,7 +29,8 @@ sub columns {
            ccStatus2 ccTranId complete delivOrganization billOrganization
            delivStreet2 billStreet2 purchase_order shipping_method
            shipping_name shipping_trace
-	   paypal_token paypal_tran_id freight_tracking stage ccPAN/;
+	   paypal_token paypal_tran_id freight_tracking stage ccPAN
+	   paid_manually/;
 }
 
 sub table {
@@ -96,6 +98,7 @@ sub defaults {
      freight_tracking => "",
      stage => "incomplete",
      ccPAN => "",
+     paid_manually => 0,
     );
 }
 
@@ -120,7 +123,7 @@ sub payment_columns {
   return qw/ccNumberHash ccName ccExpiryHash ccType
            paidFor paymentReceipt paymentType
            ccOnline ccSuccess ccReceipt ccStatus ccStatusText
-           ccStatus2 ccTranId/;
+           ccStatus2 ccTranId ccPAN paid_manually/;
 }
 
 =item billing_to_delivery_map
@@ -665,6 +668,20 @@ sub set_ccPANTruncate {
   }
 
   $self->set_ccPAN($pan);
+}
+
+=item is_manually_paid
+
+Returns true if the order is marked as manually paid, either through
+the older PAYMENT_MANUAL paymentType value or via the newer flag.
+
+=cut
+
+sub is_manually_paid {
+  my ($self) = @_;
+
+  return $self->paidFor &&
+    ($self->paid_manually || $self->paymentType == PAYMENT_MANUAL);
 }
 
 1;

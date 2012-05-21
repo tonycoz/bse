@@ -342,6 +342,9 @@ create table orders (
   -- truncated credit card number
   ccPAN varchar(4) not null default '',
 
+  -- true if the order was paid manually
+  paid_manually integer not null default 0,
+
   primary key (id),
   index order_cchash(ccNumberHash),
   index order_userId(userId, orderDate)
