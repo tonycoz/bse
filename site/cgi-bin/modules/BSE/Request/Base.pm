@@ -5,7 +5,7 @@ use BSE::Cfg;
 use BSE::Util::HTML;
 use Carp qw(cluck confess);
 
-our $VERSION = "1.010";
+our $VERSION = "1.011";
 
 sub new {
   my ($class, %opts) = @_;
@@ -365,7 +365,7 @@ sub messages {
 
   my @messages;
   push @messages, @{$self->{messages}} if $self->{messages};
-  if ($errors and keys %$errors) {
+  if ($errors and ref $errors && keys %$errors) {
     # do any translation needed
     for my $key (keys %$errors) {
       my @msgs = ref $errors->{$key} ? @{$errors->{$key}} : $errors->{$key};
@@ -409,6 +409,15 @@ sub messages {
 	  };
       }
     }
+  }
+  elsif ($errors && !ref $errors) {
+    push @messages,
+      {
+       type => "text",
+       text => $errors,
+       class => "error",
+       html => escape_html($errors),
+      };
   }
   if (!$self->{nosession} && $self->session->{flash}) {
     push @messages, @{$self->session->{flash}};
