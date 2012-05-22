@@ -19,7 +19,7 @@ use BSE::Util::HTML qw(:default popup_menu);
 use BSE::Arrows;
 use BSE::Shop::Util qw(:payment order_item_opts nice_options payment_types);
 
-our $VERSION = "1.013";
+our $VERSION = "1.014";
 
 my %actions =
   (
@@ -933,7 +933,6 @@ sub _set_order_paid {
 	if (defined $pay_type && $pay_type =~ /^[0-9]+$/) {
 	  $order->set_paymentType($pay_type);
 	}
-	$order->set_paid_manually(1);
       }
       else {
 	$order->is_manually_paid
@@ -941,6 +940,11 @@ sub _set_order_paid {
       }
 
       $order->set_paidFor($value);
+
+      # we want to reset paid_manually if we reset paidFor, so if the
+      # customer pays via the public interface the order doesn't get
+      # treated as manually paid
+      $order->set_paid_manually($value);
 
       if ($value) {
 	$req->audit
