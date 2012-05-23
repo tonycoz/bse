@@ -21,6 +21,11 @@ Bug fixes:
    log instead of being added to special instructions.
    https://rt4.develop-help.com/Ticket/Display.html?id=1326
 
+ - the scale() thumbnail operator, when used with a background would
+   paste rather than rubthrough() the source, leaving tranparent areas
+   black.  If a fill is supplied, it is now always used for
+   transparent images.
+
 Enhancements:
 
  - automatic image insertion can now be disabled globally or on a
