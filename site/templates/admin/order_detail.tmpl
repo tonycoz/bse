@@ -198,7 +198,7 @@ This order has been manually marked paid via <:= payment_type_desc | html :>
 <table>
 <tr><th>Status:</th><td><:order ccStatus:></td>
 <tr><th>Error:</th><td><:order ccStatusText:></td>
-<:.if order ccStatus2:>
+<:.if order.ccStatus2:>
 <tr><th>More status</th><td><:order ccStatus2:></td>
 <:.end if:>
 </table>
