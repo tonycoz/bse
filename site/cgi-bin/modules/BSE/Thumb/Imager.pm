@@ -3,7 +3,7 @@ use strict;
 use constant CFG_SECTION => 'imager thumb driver';
 use Config;
 
-our $VERSION = "1.000";
+our $VERSION = "1.002";
 
 my %handlers =
   (
@@ -454,12 +454,15 @@ sub do {
   
   my $result = $scaled;
   if ($geo->{fill} && 
-      ($scaled->getwidth < $geo->{width} || $scaled->getheight < $geo->{height})) {
+      (($scaled->getwidth < $geo->{width}
+	|| $scaled->getheight < $geo->{height})
+       || $scaled->getchannels == 2
+       || $scaled->getchannels == 4)) {
     $result = Imager->new(xsize => $geo->{width}, ysize => $geo->{height});
     $result->box(color => $geo->{fill}, filled => 1);
-    $result->paste(left => ($geo->{width} - $scaled->getwidth) / 2,
-		   top => ($geo->{height} - $scaled->getheight) / 2 ,
-		   img => $scaled);
+    $result->rubthrough(tx => ($geo->{width} - $scaled->getwidth) / 2,
+			ty => ($geo->{height} - $scaled->getheight) / 2 ,
+			src => $scaled);
   }
 
   return $result;

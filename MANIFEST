@@ -873,5 +873,10 @@ t/templates/preload.tmpl
 t/templates/wrapinner.tmpl
 t/templates/wrapself.tmpl
 t/templates/wraptest.tmpl	Used by t010template.t
+t/thumb/00load.t
+t/thumb/10scale.t
+t/thumb/data/scale40x30.png
+t/thumb/data/scale40x30fill.png
+t/thumb/data/simple.png
 test.cfg-dist
 test.cfg.base
