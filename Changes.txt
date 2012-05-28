@@ -26,6 +26,9 @@ Bug fixes:
    black.  If a fill is supplied, it is now always used for
    transparent images.
 
+ - generate the correct refresh URL when the user isn't logged on
+   attempting to request an admin page.
+
 Enhancements:
 
  - automatic image insertion can now be disabled globally or on a
