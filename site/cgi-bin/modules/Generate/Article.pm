@@ -15,7 +15,7 @@ use BSE::Arrows;
 use Carp 'confess';
 use BSE::Util::Iterate;
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 my $excerptSize = 300;
 
@@ -61,7 +61,8 @@ sub generate_low {
   my %acts;
   %acts = $self -> baseActs($articles, \%acts, $article, $embedded);
 
-  my $page = BSE::Template->replace($template, $self->{cfg}, \%acts);
+  my $page = BSE::Template->replace($template, $self->{cfg}, \%acts,
+				    $self->variables);
 
   %acts = (); # try to destroy any circular refs
 
@@ -362,6 +363,8 @@ sub baseActs {
 
   my $cfg = $self->{cfg} || BSE::Cfg->single;
 
+  $self->set_variable(article => $article);
+  $self->set_variable(embedded => $embedded);
   # used to generate the list (or not) of children to this article
   my $child_index = -1;
   my @children = $articles->listedChildren($article->{id});

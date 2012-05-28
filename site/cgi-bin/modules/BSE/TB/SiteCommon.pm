@@ -2,7 +2,26 @@ package BSE::TB::SiteCommon;
 use strict;
 use Carp qw(confess);
 
-our $VERSION = "1.003";
+our $VERSION = "1.005";
+
+=head1 NAME
+
+BSE::TB::SiteCommon - methods common to the site and article objects
+
+=head1 SYNOPSIS
+
+  my @steps = $article->set_parents;
+  my @sections = $site->children;
+
+=head1 DESCRIPTION
+
+Provides methods common to the Article and BSE::TB::Site objects.
+
+=head1 USEFUL METHODS
+
+=over
+
+=cut
 
 sub step_parents {
   my ($self) = @_;
@@ -100,6 +119,37 @@ sub all_visible_catalogs {
   return grep $_->{generator} eq "Generate::Catalog", $self->all_visible_kids;
 }
 
+sub visible_kids {
+  my ($self) = @_;
+
+  return Articles->listedChildren($self->{id});
+}
+
+=item menu_kids
+
+Returns a list of children meant to be listed in menus.
+
+=cut
+
+sub menu_kids {
+  my ($self) = @_;
+
+  return grep $_->listed_in_menu, $self->visible_kids;
+}
+
+
+=item menu_kids
+
+Returns a list of allkids meant to be listed in menus.
+
+=cut
+
+sub all_menu_kids {
+  my ($self) = @_;
+
+  return grep $_->listed_in_menu, $self->all_visible_kids;
+}
+
 sub images {
   my ($self) = @_;
   require BSE::TB::Images;
@@ -109,7 +159,7 @@ sub images {
 sub children {
   my ($self) = @_;
 
-  return sort { $b->{displayOrder} <=> $b->{displayOrder} } 
+  return sort { $b->{displayOrder} <=> $a->{displayOrder} } 
     Articles->children($self->{id});
 }
 
@@ -324,3 +374,13 @@ sub set_image_order {
 }
 
 1;
+
+__END__
+
+=back
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=cut

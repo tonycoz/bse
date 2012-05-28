@@ -76,11 +76,17 @@ template_test "children_of", $top, <<TEMPLATE, <<EXPECTED;
 <:iterator begin children_of $parent->{id}:><:
 ofchild title:>
 <:iterator end children_of:>
+<:-.set myart = articles.getByPkey($parent->{id}):>
+<:-.for a in [ myart.visible_kids ]:>
+<:-= a.title |html :>
+<:.end for-:>
 TEMPLATE
 Three
 Two
 One
-
+Three
+Two
+One
 EXPECTED
 
 template_test "allkids_of", $top, <<TEMPLATE, <<EXPECTED;

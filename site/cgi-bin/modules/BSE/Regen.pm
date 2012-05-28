@@ -10,7 +10,7 @@ use Carp qw(confess);
 use BSE::WebUtil qw(refresh_to_admin);
 use BSE::Util::HTML;
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 # returns non-zero if the Regenerate button should work
 sub generate_button {
@@ -316,7 +316,9 @@ sub _common_one_extra {
       };
   }
 
-  my $content = BSE::Template->get_page($extra->{base}, $cfg, \%acts);
+  my $content = BSE::Template->get_page($extra->{base}, $cfg, \%acts,
+					undef, undef, $gen->variables);
+
   return wantarray ? ( $content, $article ) : $content;
 }
 
@@ -390,7 +392,8 @@ sub generate_base {
 	  };
       }
       $progress->($extra, "Generating $extra->{name}");
-      my $content = BSE::Template->get_page($extra->{base}, $cfg, \%acts);
+      my $content = BSE::Template->get_page($extra->{base}, $cfg, \%acts,
+					    undef, undef, $gen->variables);
       my $outname = $extra->{outpath} . "/". $extra->{name};
       my $workname = $outname . ".work";
       _write_text($workname, $content, $cfg);

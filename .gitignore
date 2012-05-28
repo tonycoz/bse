@@ -4,6 +4,9 @@ INSTALL.html
 INSTALL.txt
 site/cgi-bin/modules/BSE/Modules.pm
 site/cgi-bin/modules/BSE/Version.pm
+site/docs/Article.html
+site/docs/BSE::TB::SiteCommon.html
+site/docs/BSE::TB::TagOwner.html
 site/docs/BSE::UI::Affiliate.html
 site/docs/Generate.html
 site/docs/Generate::Article.html

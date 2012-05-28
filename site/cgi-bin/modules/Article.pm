@@ -8,7 +8,29 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::TB::SiteCommon BSE::TB::TagOwner/;
 use Carp 'confess';
 
-our $VERSION = "1.011";
+our $VERSION = "1.012";
+
+=head1 NAME
+
+Article - article objects for BSE.
+
+=head1 SYNOPSIS
+
+  use BSE::API qw(bse_make_article);
+
+  my $article = bse_make_article(...)
+
+  my $article = Articles->getByPkey($id);
+
+=head1 DESCRIPTION
+
+Implements the base article object for BSE.
+
+=head1 USEFUL METHODS
+
+=over
+
+=cut
 
 sub columns {
   return qw/id parentid displayOrder title titleImage body
@@ -32,6 +54,12 @@ sub numeric {
      customInt1 customInt2 customInt3 customInt4 menu);
 }
 
+=item section
+
+Return the article's section.
+
+=cut
+
 sub section {
   my ($self) = @_;
 
@@ -43,6 +71,12 @@ sub section {
 
   return $section;
 }
+
+=item parent
+
+Return the article's parent.
+
+=cut
 
 sub parent {
   my ($self) = @_;
@@ -73,6 +107,12 @@ sub update_dynamic {
 
   $self->{cached_dynamic} = $dynamic;
 }
+
+=item is_dynamic
+
+Return true if the article is rendered dynamically.
+
+=cut
 
 sub is_dynamic {
   $_[0]{cached_dynamic};
@@ -307,6 +347,12 @@ sub link {
   return $link;
 }
 
+=item admin
+
+Return the admin link for the article.
+
+=cut
+
 sub admin {
   my ($self) = @_;
 
@@ -354,6 +400,57 @@ sub is_released {
   return $self->release le _expire_release_datetime();
 }
 
+=item listed_in_menu
+
+Return true if the article should be listed in menus.
+
+=cut
+
+sub listed_in_menu {
+  my $self = shift;
+
+  return $self->listed == 1;
+}
+
+=item ancestors
+
+Returns a list of ancestors of self.
+
+=cut
+
+sub ancestors {
+  my ($self) = @_;
+
+  unless ($self->{_ancestors}) {
+    my @ancestors;
+    my $work = $self;
+    while ($work->parentid != -1) {
+      $work = $work->parent;
+      push @ancestors, $work;
+    }
+
+    $self->{_ancestors} = \@ancestors;
+  }
+
+  return @{$self->{_ancestors}};
+}
+
+=item is_descendant_of($ancestor)
+
+Return true if the supplied article is a descendant of self.
+
+=cut
+
+sub is_descendant_of {
+  my ($self, $ancestor) = @_;
+
+  for my $anc ($self->ancestors) {
+    return 1 if $anc->id == $ancestor->id;
+  }
+
+  return 0;
+}
+
 sub restricted_methods {
   my ($self, $name) = @_;
 
@@ -362,3 +459,21 @@ sub restricted_methods {
 }
 
 1;
+
+__END__
+
+=back
+
+=head1 BASE CLASSES
+
+L<BSE::TB::SiteCommon>
+
+L<BSE::TB::TagOwner>
+
+L<Squirrel::Row>
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=cut

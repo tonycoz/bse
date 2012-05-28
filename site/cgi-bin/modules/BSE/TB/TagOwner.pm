@@ -6,7 +6,40 @@ use strict;
 use BSE::TB::Tags;
 use BSE::TB::TagMembers;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
+
+=head1 NAME
+
+BSE::TB::TagOwner - mixin for objects with tags
+
+=head1 SYNOPSIS
+
+  my $article = ...;
+
+  $article->set_tags([ qw/tag1 tag2/ ], \$error);
+  $article->remove_tags;
+
+  my @tags = $article->tag_objects;
+  my @tag_names = $article->tags;
+  my @tag_ids = $article->tag_ids;
+
+  if ($article->has_tags([ "tag1", "tag2" ])) {
+    ...
+  }
+
+=head1 DESCRIPTION
+
+This class is a mix-in that implements tags for the mixed-into object.
+
+=head1 METHODS PROVIDED
+
+=over
+
+=item set_tags(\@tags, \$error)
+
+Set the specified tags on the object, replacing all existing tags.
+
+=cut
 
 sub set_tags {
   my ($self, $rtags, $rerror) = @_;
@@ -69,12 +102,23 @@ sub set_tags {
   return 1;
 }
 
-# remove all tags
+=item remove_tags
+
+Remove all tags from the object.
+
+=cut
+
 sub remove_tags {
   my ($self) = @_;
 
   BSE::TB::TagMembers->remove_owned_by($self);
 }
+
+=item tag_objects
+
+Return all existing tags on the object as tag objects.
+
+=cut
 
 sub tag_objects {
   my ($self) = @_;
@@ -82,17 +126,35 @@ sub tag_objects {
   return BSE::TB::Tags->getSpecial(object_tags => $self->tag_owner_type, $self->id);
 }
 
+=item tags
+
+Returns all existing tags on the object as tag names.
+
+=cut
+
 sub tags {
   my ($self) = @_;
 
   return map $_->name, $self->tag_objects;
 }
 
+=item tag_ids
+
+Returns all existing tags on the object as tag ids.
+
+=cut
+
 sub tag_ids {
   my ($self) = @_;
 
   return map $_->{id}, BSE::DB->single->run("Tag_ids.by_owner", $self->tag_owner_type, $self->id);
 }
+
+=item has_tags(\@tags)
+
+Check that all of the specified tags are on the object.
+
+=cut
 
 sub has_tags {
   my ($self, $rtags) = @_;
@@ -116,3 +178,30 @@ sub has_tags {
 }
 
 1;
+
+__END__
+
+=back
+
+=head1 REQUIRED METHODS
+
+These need to be implemented by the class that wants tags.
+
+=over
+
+=item tag_owner_type
+
+Return a short constant string identifying owner class of the tags.
+
+=item id
+
+The numeric id of the specific owner object of the tags.
+
+=back
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=cut
+

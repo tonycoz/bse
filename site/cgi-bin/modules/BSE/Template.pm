@@ -4,7 +4,7 @@ use Squirrel::Template;
 use Carp qw(confess cluck);
 use Config ();
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 sub templater {
   my ($class, $cfg, $rsets) = @_;
@@ -75,11 +75,11 @@ sub get_page {
 }
 
 sub replace {
-  my ($class, $source, $cfg, $acts) = @_;
+  my ($class, $source, $cfg, $acts, $vars) = @_;
 
   my $obj = $class->templater($cfg);
 
-  $obj->replace_template($source, $acts);
+  $obj->replace_template($source, $acts, undef, undef, $vars);
 }
 
 sub charset {

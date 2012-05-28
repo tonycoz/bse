@@ -7,7 +7,10 @@ use strict;
 my @targets =
   (
    'access.html',
+   'Article.html',
    'bse.html',
+   'BSE::TB::SiteCommon.html',
+   'BSE::TB::TagOwner.html',
    'bugs.html',
    'templates.html',
    'Generate.html',

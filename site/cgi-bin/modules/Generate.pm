@@ -8,10 +8,11 @@ use BSE::Util::HTML;
 use BSE::Util::Tags qw(tag_article);
 use BSE::CfgInfo qw(custom_class);
 use BSE::Util::Iterate;
+use BSE::TB::Site;
 use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 my $excerptSize = 300;
 
@@ -24,11 +25,54 @@ sub new {
   }
   $opts{maxdepth} = $EMBED_MAX_DEPTH unless exists $opts{maxdepth};
   $opts{depth} = 0 unless $opts{depth};
-  return bless \%opts, $class;
+  $opts{vars} =
+    {
+     cfg => $opts{cfg},
+     bse =>
+     {
+      site => BSE::TB::Site->new,
+      url => 
+      ($opts{admin} || $opts{admin_links}
+       ? sub { $_[0]->admin }
+       : sub { $_[0]->link }
+      ),
+      admin => $opts{admin},
+      admin_links => $opts{admin_links},
+      dumper => sub {
+	require Data::Dumper;
+	return escape_html(Data::Dumper::Dumper(shift));
+      },
+     },
+    };
+  my $self = bless \%opts, $class;
+  $self->set_variable_class(articles => "Articles");
+
+  return $self;
 }
 
 sub cfg {
   $_[0]{cfg};
+}
+
+sub set_variable {
+  my ($self, $name, $value) = @_;
+
+  $self->{vars}{$name} = $value;
+
+  return 1;
+}
+
+sub set_variable_class {
+  my ($self, $name, $class) = @_;
+
+  require Squirrel::Template;
+  $self->set_variable($name => Squirrel::Template::Expr::WrapClass->new($class));
+}
+
+sub variables {
+  my ($self) = @_;
+
+  return $self->{vars};
 }
 
 # replace commonly used characters

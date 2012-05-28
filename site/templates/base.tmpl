@@ -113,55 +113,55 @@
 <:include include/cart_sidebar.tmpl:>
 <:or Cfg:><:eif Cfg:>
 <:or Dynamic:>
-            <:iterator begin level1:>  
+	    <:.set level1_menu = [ bse.site.menu_kids ] :>
+            <:.for level1 in level1_menu :>  
             <table width="100%" border="0" cellspacing="0" cellpadding="0">
               <tr> 
                 <td> 
                   <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                    <:if Ancestor level1:>
+                    <:.if article.is_descendant_of(level1):>
                     <tr> 
-                      <td height="19" width="100%" nowrap bgcolor="#999999">&nbsp;<:ifLevel1 link:><a href="<:url level1:>"><:or:><:eif:><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#FFFFFF"><:level1 
-                        title:></font></b><:ifLevel1 link:></a><:or:><:eif:> </td>
+                      <td height="19" width="100%" nowrap bgcolor="#999999">&nbsp;<:.if level1.link:><a href="<:= bse.url(level1) |html:>"><:.end if:><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#FFFFFF"><:= level1.title
+			|html :></font></b><:.if level1.link:></a><:.end if:> </td>
                     </tr>
-                    <:or Ancestor:>
+                    <:.else:>
                     <tr> 
-                      <td height="19" width="100%" nowrap bgcolor="#CCCCCC">&nbsp;<:ifLevel1 link:><a href="<:url level1:>"><:or:><:eif:><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:level1 
-                        title:></font></b><:ifLevel1 link:></a><:or:><:eif:> </td>
+                      <td height="19" width="100%" nowrap bgcolor="#CCCCCC">&nbsp;<:.if level1.link:><a href="<:= bse.url(level1) :>"><:.end if:><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:= level1.title |html:></font></b><:.if level1.link:></a><:.end if:> </td>
                     </tr>
-                    <:eif Ancestor:>
+                    <:.end if:>
                   </table>
                 </td>
               </tr>
-              <:if Ancestor level1:>
+              <:.if article.is_descendant_of(level1) :>
                <tr> 
                 <td>
-                 <:if Level2:> 
+		 <:.set level2_menu = [ level1.menu_kids ] :>
+		  <:# = bse.dumper(level2_menu) :>
+                 <:.if level2_menu.size != 0:> 
                   <table width="100%" border="0" cellspacing="0" cellpadding="3">
-                    <:iterator begin level2:>
-                    <:ifAncestor level2:>
+                    <:.for level2 in level2_menu:>
+                    <:.if article.is_descendant_of(level2) :>
                      <tr> 
-                      <td bgcolor="#FFFFFF"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><a href="<:url level2:>"><:level2 title:></a></font> 
+                      <td bgcolor="#FFFFFF"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><a href="<:= bse.url(level2) |html:>"><:= level2.title |html:></a></font> 
                         </td>
                      </tr>
-                     <:or:>
+                     <:.else:>
                      <tr> 
-                      <td bgcolor="#EEEEEE"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><a href="<:url level2:>"><:level2 title:></a></font> 
+                      <td bgcolor="#EEEEEE"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><a href="<:= bse.url(level2) |html:>"><:= level2.title |html:></a></font> 
                         </td>
                      </tr>
-                     <:eif:>
-                        <:iterator end level2:>
+                     <:.end if:>
+                        <:.end for:>
                   </table>
-            <:or Level2:> 
-            <:eif Level2:>
+            <:.end if:>
                 </td>
               </tr>
-<:or Ancestor:>
-<:eif Ancestor:>
+<:.end if:>
               <tr> 
                 <td><img src="/images/trans_pixel.gif" width="1" height="1" alt="spacer"></td>
               </tr>
             </table>
-<:iterator separator level1:><:iterator end level1:> 
+<:.end for:>
 <:eif Dynamic:>
             <:embed 5:> </td>
         </tr>
