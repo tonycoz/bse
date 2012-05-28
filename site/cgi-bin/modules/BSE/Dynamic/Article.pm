@@ -5,7 +5,7 @@ use BSE::Template;
 use BSE::Util::HTML;
 use base qw(BSE::Util::DynamicTags);
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 sub new {
   my ($class, $req, %opts) = @_;
@@ -32,9 +32,11 @@ sub generate {
     %acts = $self->tags($article);
   }
 
+  # FIXME: this should be done through the request object
+  $self->{req}->_set_vars();
   my $result =
     {
-     content => BSE::Template->replace($template, $self->{req}->cfg, \%acts),
+     content => BSE::Template->replace($template, $self->{req}->cfg, \%acts, $self->{req}->{vars}),
      type => BSE::Template->get_type($self->{req}->cfg, $article->{template}),
     };
 
