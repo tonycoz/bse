@@ -437,15 +437,18 @@ sub ancestors {
 
 =item is_descendant_of($ancestor)
 
-Return true if the supplied article is a descendant of self.
+Return true if self is a decsendant of the supplied article or article
+id.
 
 =cut
 
 sub is_descendant_of {
   my ($self, $ancestor) = @_;
 
+  my $ancestor_id = ref $ancestor ? $ancestor->id : $ancestor;
+
   for my $anc ($self->ancestors) {
-    return 1 if $anc->id == $ancestor->id;
+    return 1 if $anc->id == $ancestor_id;
   }
 
   return 0;
