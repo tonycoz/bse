@@ -8,7 +8,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::TB::SiteCommon BSE::TB::TagOwner/;
 use Carp 'confess';
 
-our $VERSION = "1.012";
+our $VERSION = "1.013";
 
 =head1 NAME
 
@@ -44,6 +44,98 @@ sub columns {
     metaDescription metaKeywords summary menu titleAlias linkAlias
     category/;
 }
+
+=item id
+
+=item parentid
+
+=item displayOrder
+
+=item title
+
+=item titleImage
+
+=item body
+
+=item thumbImage
+
+=item thumbWidth
+
+=item thumbHeight
+
+=item imagePos
+
+=item release
+
+=item expire
+
+=item keyword
+
+=item template
+
+=item threshold
+
+=item summaryLength
+
+=item generator
+
+=item level
+
+=item listed
+
+=item lastModified
+
+=item flags
+
+=item customDate1
+
+=item customDate2
+
+=item customStr1
+
+=item customStr2
+
+=item customInt1
+
+=item customInt2
+
+=item customInt3
+
+=item customInt4
+
+=item lastModifiedBy
+
+=item created
+
+=item createdBy
+
+=item author
+
+=item pageTitle
+
+=item force_dynamic
+
+=item cached_dynamic
+
+=item inherit_siteuser_rights
+
+=item metaDescription
+
+=item metaKeywords
+
+=item summary
+
+=item menu
+
+=item titleAlias
+
+=item linkAlias
+
+=item category
+
+Simple column accessors.
+
+=cut
 
 sub table {
   'article';
@@ -118,6 +210,13 @@ sub is_dynamic {
   $_[0]{cached_dynamic};
 }
 
+=item is_accessible_to($group)
+
+Return true if the article is accessible to the supplied siteuser
+group or group id.
+
+=cut
+
 sub is_accessible_to {
   my ($self, $group) = @_;
 
@@ -147,6 +246,12 @@ sub remove_group_id {
 
   BSE::DB->single->run(articleDeleteSiteUserGroup => $self->{id}, $id);
 }
+
+=item is_access_controlled
+
+Return true if the article is access controlled.
+
+=cut
 
 sub is_access_controlled {
   my ($self) = @_;
@@ -255,6 +360,12 @@ sub remove {
   $self->SUPER::remove();
 }
 
+=item all_parents
+
+Return a list of all parents.
+
+=cut
+
 sub all_parents {
   my ($self) = @_;
 
@@ -358,6 +469,12 @@ sub admin {
 
   return BSE::Cfg->single->admin_url("admin", { id => $self->id });
 }
+
+=item is_linked
+
+Return true if the article can be linked to.
+
+=cut
 
 sub is_linked {
   my ($self) = @_;
