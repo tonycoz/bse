@@ -1,6 +1,6 @@
 package Generate::Catalog;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 use strict;
 use Generate;
@@ -258,7 +258,8 @@ HTML
       return $value;
     };
 
-  return BSE::Template->replace($template, $self->{cfg}, \%acts);
+  return BSE::Template->replace($template, $self->{cfg}, \%acts,
+				$self->variables);
 }
 
 sub generate {

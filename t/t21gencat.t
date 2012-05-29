@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>80;
+use Test::More tests=>83;
 use File::Spec;
 use FindBin;
 BEGIN {
@@ -267,6 +267,12 @@ template_test "ifUnderThreshold parent allprods", $parent, <<TEMPLATE, <<EXPECTE
 <:ifUnderThreshold allprods:>1<:or:>0<:eif:>
 TEMPLATE
 0
+EXPECTED
+
+template_test "variables", $parent, <<TEMPLATE, <<EXPECTED;
+<:= article.title :>
+TEMPLATE
+Test catalog
 EXPECTED
 
 BSE::Admin::StepParents->del($parent, $stepkid);
