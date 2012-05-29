@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test qw(make_ua base_url);
-use Test::More tests => 20;
+use Test::More tests => 24;
 use File::Spec;
 use Carp qw(confess);
 
@@ -24,6 +24,14 @@ ok($cfg, "we have a cfg object");
 my $art = bse_make_article(cfg => $cfg,
 			   title => "API test");
 ok($art, "make a basic article");
+
+my $child = bse_make_article(cfg => $cfg,
+			     title => "API test child",
+			     parentid => $art->id);
+ok($child, "make a child article");
+
+ok($child->is_descendant_of($art), "check decendant by object");
+ok($child->is_descendant_of($art->id), "check decendant by id");
 
 my $im1 = bse_add_image($cfg, $art, file => "t/data/t101.jpg");
 ok($im1, "add an image, just a filename");
@@ -89,4 +97,5 @@ my $im2;
   print "# ", $thumb_res->content_type, "\n";
 }
 
+ok($child->remove($cfg), "remove child");
 ok($art->remove($cfg), "remove article");
