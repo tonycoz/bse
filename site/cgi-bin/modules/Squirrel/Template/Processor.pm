@@ -237,7 +237,7 @@ sub _process_for {
      first => @$list ? $list->[0] : undef,
      last => @$list ? $list->[-1] : undef,
      size => scalar @$list,
-     is_last => sub { $index == @$list },
+     is_last => sub { $index == $#$list },
      is_first => sub { $index == 0 },
      count => sub { $index + 1 },
      index => sub { $index },
