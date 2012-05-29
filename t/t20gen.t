@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>147;
+use Test::More tests=>150;
 use File::Spec;
 use FindBin;
 BEGIN {
@@ -467,6 +467,33 @@ contentB
 <:or Or:><:eif Or:><:endswitch:>
 EXPECTED
 
+# tags
+template_test "bse.categorize_tags", $parent, <<'TEMPLATE', <<'EXPECTED';
+<:.set tags = [
+  { "cat":"One", "val":"A", "name":"One: A" },
+  { "cat":"One", "val":"B", "name":"One: B" },
+  { "cat":"Two", "val":"C", "name":"Two: C" },
+  { "cat":"", "val":"D", "name":"D" }
+  ] -:>
+<:.set tagcats = bse.categorize_tags(tags) -:>
+<:.for tagcat in tagcats -:>
+Category: <:= tagcat.name:>
+<:.for tag in tagcat.tags :>  Tag: <:= tag.val:>
+<:.end for:>
+<:.end for -:>
+TEMPLATE
+Category: 
+  Tag: D
+
+Category: One
+  Tag: A
+  Tag: B
+
+Category: Two
+  Tag: C
+
+EXPECTED
+
 ############################################################
 # dynamic stuff
 require BSE::Dynamic::Article;
@@ -572,11 +599,11 @@ sub template_test($$$$) {
       $content =
 	$gen->generate_low($template, $article, 'Articles', 0);
     };
-    ok($content, "$tag: generate content");
+    ok(defined $content, "$tag: generate content");
     diag $@ unless $content;
   }
  SKIP: {
-     skip "$tag: couldn't gen content", 1 unless $content;
+     skip "$tag: couldn't gen content", 1 unless defined $content;
      is($content, $expected, "$tag: comparing");
    }
 }

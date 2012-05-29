@@ -9,10 +9,11 @@ use BSE::Util::Tags qw(tag_article);
 use BSE::CfgInfo qw(custom_class);
 use BSE::Util::Iterate;
 use BSE::TB::Site;
+use BSE::Variables;
 use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 my $excerptSize = 300;
 
@@ -28,21 +29,7 @@ sub new {
   $opts{vars} =
     {
      cfg => $opts{cfg},
-     bse =>
-     {
-      site => BSE::TB::Site->new,
-      url => 
-      ($opts{admin} || $opts{admin_links}
-       ? sub { $_[0]->admin }
-       : sub { $_[0]->link }
-      ),
-      admin => $opts{admin},
-      admin_links => $opts{admin_links},
-      dumper => sub {
-	require Data::Dumper;
-	return escape_html(Data::Dumper::Dumper(shift));
-      },
-     },
+     bse => BSE::Variables->variables(%opts),
     };
   my $self = bless \%opts, $class;
   $self->set_variable_class(articles => "Articles");

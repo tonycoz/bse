@@ -5,7 +5,7 @@ use BSE::Cfg;
 use BSE::Util::HTML;
 use Carp qw(cluck confess);
 
-our $VERSION = "1.011";
+our $VERSION = "1.012";
 
 sub new {
   my ($class, %opts) = @_;
@@ -459,6 +459,8 @@ sub _set_vars {
   $self->set_variable(cgi => $self->cgi);
   $self->set_variable(cfg => $self->cfg);
   $self->set_variable(assert_dynamic => 1);
+  require BSE::Variables;
+  $self->set_variable(bse => BSE::Variables->variables);
 }
 
 sub dyn_response {

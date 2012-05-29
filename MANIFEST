@@ -278,6 +278,7 @@ site/cgi-bin/modules/BSE/Util/ValidateHTML.pm
 site/cgi-bin/modules/BSE/Util/ValidateHTML/Tidy.pm
 site/cgi-bin/modules/BSE/Util/ValidateHTML/W3C.pm
 site/cgi-bin/modules/BSE/Validate.pm
+site/cgi-bin/modules/BSE/Variables.pm
 site/cgi-bin/modules/BSE/Version.pm
 site/cgi-bin/modules/BSE/WebUtil.pm
 site/cgi-bin/modules/Constants.pm
@@ -367,9 +368,12 @@ site/docs/access.html
 site/docs/access.pod
 site/docs/add.html
 site/docs/affiliate.html
+site/docs/Article.html
 site/docs/bse-unicode.pod
 site/docs/bse.html
 site/docs/bse.pod
+site/docs/BSE::TB::SiteCommon.html
+site/docs/BSE::TB::TagOwner.html
 site/docs/BSE::UI::Affiliate.html
 site/docs/bse_import.pod
 site/docs/bsedbschema.odt
@@ -404,6 +408,12 @@ site/docs/shopadmin.html
 site/docs/siteusers.html
 site/docs/siteusers.pod
 site/docs/Squirrel::Template.html
+site/docs/Squirrel::Template::Expr.html
+site/docs/Squirrel::Template::Expr::WrapArray.html
+site/docs/Squirrel::Template::Expr::WrapClass.html
+site/docs/Squirrel::Template::Expr::WrapCode.html
+site/docs/Squirrel::Template::Expr::WrapHash.html
+site/docs/Squirrel::Template::Expr::WrapScalar.html
 site/docs/standard.html
 site/docs/standard.pod
 site/docs/storages.html
