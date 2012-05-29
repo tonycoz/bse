@@ -1,8 +1,9 @@
 package BSE::Variables;
 use strict;
 use Scalar::Util qw(blessed);
+use BSE::TB::Site;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub variables {
   my ($self, %opts) = @_;
