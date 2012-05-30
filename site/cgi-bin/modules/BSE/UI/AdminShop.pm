@@ -19,7 +19,7 @@ use BSE::Util::HTML qw(:default popup_menu);
 use BSE::Arrows;
 use BSE::Shop::Util qw(:payment order_item_opts nice_options payment_types);
 
-our $VERSION = "1.014";
+our $VERSION = "1.015";
 
 my %actions =
   (
@@ -727,7 +727,7 @@ sub tag_siteuser {
 sub tag_shipping_method_select {
   my ($self, $order) = @_;
 
-  my @methods = BSE::TB::Orders->dummy_shipping_methods;
+  my @methods = all_shippers();
 
   return popup_menu
     (
@@ -836,7 +836,7 @@ sub req_order_detail {
        (
 	single => "shipping_method",
 	plural => "shipping_methods",
-	code => [ dummy_shipping_methods => "BSE::TB::Orders" ],
+	code => \&all_shippers,
        ),
        shipping_method_select =>
        [ tag_shipping_method_select => $class, $order ],
@@ -1055,21 +1055,19 @@ sub req_order_save {
   }
 
   my $new_shipping_name = 0;
-  unless ($req->cfg->entry("shop", "shipping", 0)) {
-    my $shipping_name = $cgi->param("shipping_name");
-    if (defined $shipping_name
-	&& $shipping_name ne $order->shipping_name) {
-      my @ship = BSE::TB::Orders->dummy_shipping_methods();
-      my ($entry) = grep $_->{id} eq $shipping_name, @ship;
-      if ($entry) {
-	$order->set_shipping_name($entry->{id});
-	$order->set_shipping_method($entry->{name});
-	++$new_shipping_name;
-	++$save;
-      }
-      else {
-	$errors{shipping_method} = "msg:bse/admin/shop/saveorder/badmethod:$shipping_name";
-      }
+  my $shipping_name = $cgi->param("shipping_name");
+  if (defined $shipping_name
+      && $shipping_name ne $order->shipping_name) {
+    my @ship = all_shippers();
+    my ($entry) = grep $_->{id} eq $shipping_name, @ship;
+    if ($entry) {
+      $order->set_shipping_name($entry->{id});
+      $order->set_shipping_method($entry->{name});
+      ++$new_shipping_name;
+      ++$save;
+    }
+    else {
+      $errors{shipping_method} = "msg:bse/admin/shop/saveorder/badmethod:$shipping_name";
     }
   }
 
@@ -1163,6 +1161,24 @@ sub epoch_to_sql_datetime {
   my ($time) = @_;
 
   return strftime('%Y-%m-%d %H:%M', localtime $time);
+}
+
+
+sub all_shippers {
+  require BSE::Shipping;
+
+  my $cfg = BSE::Cfg->single;
+  my @shippers = BSE::TB::Orders->dummy_shipping_methods;
+  if ($cfg->entry("shop", "shipping", 0)) {
+    my @normal = BSE::Shipping->get_couriers($cfg);
+    push @shippers, map 
+      +{
+	id => $_->name,
+	name => $_->description
+       }, @normal;
+  }
+
+  return @shippers;
 }
 
 1;

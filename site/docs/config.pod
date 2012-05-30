@@ -2677,6 +2677,16 @@ This applies if the value of the entry is a true perl value.
   ; article 3 is deletable
   3=
 
+=head2 [dummy shipping methods]
+
+Configures extra shipping methods only selectable from the order
+detail page.
+
+Entries are sorted by value.
+
+If the value contains a comma the text up to the comma is removed and
+the remains used as the label, otherwise the key is used as the label.
+
 =head1 AUTHOR
 
 Tony Cook <tony@develop-help.com>

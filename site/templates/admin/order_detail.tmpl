@@ -99,20 +99,13 @@
           <td class="col_ext_gst"><:extension gst:></td>
 </tr>
 <:iterator end items:>
-<:if Cfg shop shipping:>
-<:if Order shipping_name:>
-
         <tr> 
           <td colspan="3" class="col_contact">
 <:if Eq [order shipping_name] "none":>
 Nothing to ship.
 <:or:>
-<:if Eq [order shipping_name] "contact":>
-Contact customer to make shipping arrangements
-<:or Eq:>
-Shipping via <:order shipping_method:>
-<:eif Eq:>, 
-	        <form method="post" action="<:adminurl shopadmin a_order_save 1:>">
+<form method="post" action="<:adminurl shopadmin a_order_save 1:>">
+Shipping via <:shipping_method_select:>
     <input type="hidden" name="id" value="<:order id:>" />
     <:csrfp shop_order_save hidden:>
     <label>tracking code: <input type="text" name="freight_tracking" value="<:order freight_tracking:>" /></label>
@@ -126,9 +119,6 @@ Shipping via <:order shipping_method:>
           <td>&nbsp;</td>
           <td class="col_ext_gst"></td>
 </tr>
-<:or Order:><:eif Order:>
-<:or Cfg:>
-<:eif Cfg:>
         <tr> 
           <td colspan="3" class="col_total">Total:</td>
           <td class="col_extension total"><:money order total:></td>
@@ -137,20 +127,6 @@ Shipping via <:order shipping_method:>
           <td>&nbsp;</td>
           <td class="col_ext_gst total"><:money order gst:></td>
 </tr>
-<:if Cfg shop shipping:><:or Cfg:>
-<tr>
-  <td colspan="3">
-    <form method="post" action="<:adminurl shopadmin a_order_save 1:>">
-    <input type="hidden" name="id" value="<:order id:>" />
-    <:csrfp shop_order_save hidden:>
-    <label>Shipping method: <:shipping_method_select:></label>
-    <label>tracking code: <input type="text" name="freight_tracking" value="<:order freight_tracking:>" /></label>
-    <input type="submit" name="a_order_save" value="Save" />
-    </form>
-  </td>
-  <td colspan="5"></td>
-</tr>
-<:eif Cfg:>
 </table>
 <p>Order progress: <:stage_description:> <a href="#" onclick="document.getElementById('update_stage').style.display='block'; this.style.display='none'; return false;">update</a></p>
 
