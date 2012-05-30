@@ -2,7 +2,7 @@ package Squirrel::Template::Expr::WrapScalar;
 use strict;
 use base qw(Squirrel::Template::Expr::WrapBase);
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub _do_length  {
   my ($self, $args) = @_;
@@ -109,6 +109,7 @@ Squirrel::Template::Expr::WrapScalar - provide methods for scalars
   split = somescalar.split(":");
   split = somescalar.split(":", count);
   formatted = somescalar.format("%05d");
+  value = somescalar.evaltag
 
 =head1 DESCRIPTION
 
@@ -146,6 +147,11 @@ C<sep>, returning up to C<count> objects.  C<sep> defaults to C<" ">,
 C<count> defaults to C<0>.  A count of C<0> returns as many elements
 as are found but removes any trailing empty length elements.  A
 negative C<count> returns all elements.
+
+=item evaltag
+
+Evalulate the value of string as if processed as a tag.  The string
+must not include the surrounding <: ... :>.
 
 =head1 SEE ALSO
 
