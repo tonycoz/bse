@@ -1,7 +1,7 @@
 package Squirrel::Template::Expr;
 use strict;
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 package Squirrel::Template::Expr::Eval;
 use Scalar::Util ();
@@ -12,11 +12,12 @@ use Squirrel::Template::Expr::WrapCode;
 use Squirrel::Template::Expr::WrapClass;
 
 use constant TMPL => 0;
+use constant ACTS => 1;
 
 sub new {
-  my ($class, $templater) = @_;
+  my ($class, $templater, $acts) = @_;
 
-  return bless [ $templater ], $class;
+  return bless [ $templater, $acts ], $class;
 }
 
 sub _wrapped {
@@ -29,18 +30,18 @@ sub _wrapped {
     else {
       my $type = Scalar::Util::reftype($val);
       if ($type eq "ARRAY") {
-	return Squirrel::Template::Expr::WrapArray->new($val);
+	return Squirrel::Template::Expr::WrapArray->new($val, $self->[TMPL]);
       }
       elsif ($type eq "HASH") {
-	return Squirrel::Template::Expr::WrapHash->new($val);
+	return Squirrel::Template::Expr::WrapHash->new($val, $self->[TMPL]);
       }
       elsif ($type eq "CODE") {
-	return Squirrel::Template::Expr::WrapCode->new($val);
+	return Squirrel::Template::Expr::WrapCode->new($val, $self->[TMPL]);
       }
     }
   }
   else {
-    return Squirrel::Template::Expr::WrapScalar->new($val);
+    return Squirrel::Template::Expr::WrapScalar->new($val, $self->[TMPL], $self->[ACTS]);
   }
 }
 

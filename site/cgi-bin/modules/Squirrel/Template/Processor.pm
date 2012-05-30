@@ -3,7 +3,7 @@ use strict;
 use Squirrel::Template::Constants qw(:node);
 use Scalar::Util ();
 
-our $VERSION = "1.014";
+our $VERSION = "1.015";
 
 use constant ACTS => 0;
 use constant TMPLT => 1;
@@ -20,7 +20,7 @@ sub new {
      $tmplt,
      {},
      $wrapped,
-     Squirrel::Template::Expr::Eval->new($tmplt)
+     Squirrel::Template::Expr::Eval->new($tmplt, $acts)
     ], $class;
 }
 

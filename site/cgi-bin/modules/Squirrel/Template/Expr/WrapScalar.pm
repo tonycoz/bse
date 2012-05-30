@@ -2,7 +2,7 @@ package Squirrel::Template::Expr::WrapScalar;
 use strict;
 use base qw(Squirrel::Template::Expr::WrapBase);
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub _do_length  {
   my ($self, $args) = @_;
@@ -69,6 +69,17 @@ sub _do_format {
     or die [ error => "scalar.format takes one parameter" ];
 
   return sprintf($args->[0], $self->[0]);
+}
+
+sub _do_evaltag {
+  my ($self, $args) = @_;
+
+  @$args == 0
+    or die [ error => "scalar.evaltags takes no parameters" ];
+
+  my ($func, $tag_args) = split ' ', $self->[0], 2;
+
+  return $self->[1]->perform($self->[2], $func, $tag_args, $self->[0]);
 }
 
 sub call {

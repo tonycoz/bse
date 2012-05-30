@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 107;
+use Test::More tests => 108;
 
 sub template_test($$$$;$$);
 
@@ -559,6 +559,14 @@ Backtrace:
   .call 'foo' from test:1
   .call 'foo' from test:1
   .call 'foo' from test:3
+OUT
+
+  template_test(<<IN, <<OUT, "evaltags", \%acts, "", \%vars);
+<:= "str".evaltag :>
+<:= "cat [str] [str2]".evaltag :>
+IN
+ABC
+ABCDEF
 OUT
 }
 
