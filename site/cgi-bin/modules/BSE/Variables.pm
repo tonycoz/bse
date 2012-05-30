@@ -2,8 +2,9 @@ package BSE::Variables;
 use strict;
 use Scalar::Util qw(blessed);
 use BSE::TB::Site;
+use BSE::Util::HTML;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub variables {
   my ($self, %opts) = @_;
@@ -13,8 +14,8 @@ sub variables {
      site => BSE::TB::Site->new,
      url => 
      ($opts{admin} || $opts{admin_links}
-      ? sub { $_[0]->admin }
-      : sub { $_[0]->link }
+      ? sub { _url_common($_[0]->admin, $_[1]) }
+      : sub { _url_common($_[0]->link, $_[1]) }
      ),
      admin => $opts{admin},
      admin_links => $opts{admin_links},
@@ -24,6 +25,30 @@ sub variables {
      },
      categorize_tags => \&_categorize_tags,
     };
+}
+
+sub _url_common {
+  my ($base, $extras) = @_;
+
+  if ($extras && ref $extras) {
+    my @extras;
+    for my $key (keys %$extras) {
+      my $value = $extras->{$key};
+      if (ref $value) {
+	push @extras, map { "$key=" . escape_uri($_) } @$value;
+      }
+      else {
+	push @extras, "$key=" . escape_uri($value);
+      }
+    }
+
+    if (@extras) {
+      $base .= $base =~ /\?/ ? "&" : "?";
+      $base .= join("&", @extras);
+    }
+  }
+
+  return $base;
 }
 
 sub _categorize_tags {
@@ -84,8 +109,12 @@ images, and having children.w
 
 =item bse.url(somearticle)
 
+=item bse.url(somearticle, extraargs)
+
 Return the article admin link in admin (or admin_links) mode,
 otherwise the normal article link.
+
+If supplied, C<extraargs> should be a hash containing extra arguments.
 
 =item bse.admin
 
