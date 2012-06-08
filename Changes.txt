@@ -1,4 +1,4 @@
-BSE 0.22 - unreleased
+BSE 0.22 - 08 Jun 2012
 ========
 
 Bug fixes:
