@@ -66,6 +66,10 @@ Enhancements:
 
  - the shopadmin order_paid and order_unpaid now require csfrp tokens.
 
+ - siteuser admin view and edit targets now also accept userId to
+   identify the user.
+   https://rt4.develop-help.com/Ticket/Display.html?id=1351
+
 Templates:
 
  - admin/order_detail.tmpl - the product tag now uses tag_article as
