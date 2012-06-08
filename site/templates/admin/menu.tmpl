@@ -108,8 +108,21 @@ href="/cgi-bin/admin/shopadmin.pl?order_list=1&amp;template=order_list_filled">f
 <p>&nbsp;</p>
 
       <form action="/cgi-bin/admin/admin.pl">
-        Jump to: 
+        Jump to article: 
         <input type="text" name="id" size="4" />
         <input type="submit" value="Jump!" />
         (Article ID eg: 1 = Home) 
       </form>
+<p>
+  <:.if request.user_can('bse_members_user_edit') or req.user_can('bse_members_user_view') :>
+  <form action="<:adminurl2 siteusers:>">
+    Jump to member: 
+    <input type="text" name="userId" size="20" />
+    <:.if request.user_can('bse_members_user_edit') -:>
+    <input type="submit" name="a_edit" value="Edit" />
+    <:.else:>
+    <input type="submit" name="a_view" value="View" />
+    <:.end if:>
+  </form>
+  <:.end if:>
+</p>

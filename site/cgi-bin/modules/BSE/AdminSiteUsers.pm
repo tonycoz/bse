@@ -13,7 +13,7 @@ use constant SITEUSER_GROUP_SECT => 'BSE Siteuser groups validation';
 use BSE::Template;
 use DevHelp::Date qw(dh_parse_date_sql dh_parse_time_sql);
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 my %actions =
   (
@@ -236,10 +236,19 @@ sub _display_user {
 
   my $cgi = $req->cgi;
   my $id = $cgi->param('id');
-  defined $id
-    or return $class->req_list($req, "No site user id supplied");
-  my $siteuser = SiteUsers->getByPkey($id)
-    or return $class->req_list($req, "No such site user found");
+  my $userId = $cgi->param('userId');
+  my $siteuser;
+  if (defined $id) {
+    $siteuser = SiteUsers->getByPkey($id)
+      or return $class->req_list($req, "No site user id '$id' found");
+  }
+  elsif (defined $userId) {
+    ($siteuser) = SiteUsers->getBy(userId => $userId)
+      or return $class->req_list($req, "No site user logon '$userId' found");
+  }
+  else {
+    return $class->req_list($req, "No site user id supplied");
+  }
 
   my $it = BSE::Util::Iterate->new;
 
