@@ -4,7 +4,7 @@ use Squirrel::Template;
 use Carp qw(confess cluck);
 use Config ();
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 sub templater {
   my ($class, $cfg, $rsets) = @_;
@@ -41,6 +41,9 @@ sub templater {
   if ($cfg->entry("basic", "cache_templates")) {
     require BSE::Cache;
     $opts{cache} = BSE::Cache->load($cfg);
+  }
+  if ($cfg->entry("basic", "cache_templates_locally")) {
+    $opts{cache_locally} = 1;
   }
 
   $opts{preload} = $cfg->entry("basic", "preload_template");

@@ -19,7 +19,9 @@ BEGIN {
 
 use constant DEBUG_GET_PARMS => 0;
 
-our $VERSION = "1.020";
+our $VERSION = "1.021";
+
+my %compile_cache;
 
 my $tag_head = qr/(?:\s+<:-|<:-?)/;
 my $tag_tail = qr/(?:-:>\s*|:>)/;
@@ -417,8 +419,26 @@ sub parse_filename {
   my $key = "Squirrel::Template::file:$filename";
   my ($date, $size);
 
+  if ($self->{cache_locally}) {
+    ($date, $size) = (stat $filename)[9, 7]
+      unless $date;
+
+    my $cached = $compile_cache{$filename};
+    if ($cached) {
+      if ($cached->[0] == $date && $cached->[1] == $size) {
+	#print STDERR "Found cached $filename / $date / $size\n";
+	return $cached->[2];
+      }
+      else {
+	#print STDERR "Cached but old $filename / $date / $size\n";
+	delete $compile_cache{$filename};
+      }
+    }
+  }
+
   if ($self->{cache}) {
-    ($date, $size) = (stat $filename)[9, 7];
+    ($date, $size) = (stat $filename)[9, 7]
+      unless $date;
 
     my $cached = $self->{cache}->get($key);
     if ($cached) {
@@ -445,6 +465,10 @@ sub parse_filename {
       if ($parsed && $self->{cache}) {
 	#print STDERR "Set $key / $date / $size\n";
 	$self->{cache}->set($key => [ $date, $size, $parsed ]);
+      }
+
+      if ($parsed && $self->{cache_locally}) {
+	$compile_cache{$filename} = [ $date, $size, $parsed ];
       }
 
       return ($parsed, $message);

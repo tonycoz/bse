@@ -444,6 +444,12 @@ If true, BSE will cache compiled templates using the configured BSE
 cache, if any.  Depending on the configured cache this may slow things
 down.  Default: disabled.
 
+=item cache_templates_locally
+
+If true, BSE will cache compiled templates in memory.  This may
+significantly improve performance but may increase memory use.
+Default: disabled.
+
 =item preload_template
 
 Preload the named template, searching the template search part.  Any
