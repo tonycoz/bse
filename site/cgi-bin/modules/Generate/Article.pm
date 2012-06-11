@@ -15,7 +15,7 @@ use BSE::Arrows;
 use Carp 'confess';
 use BSE::Util::Iterate;
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 my $excerptSize = 300;
 
@@ -59,12 +59,24 @@ sub link_to_form {
 sub generate_low {
   my ($self, $template, $article, $articles, $embedded) = @_;
   my %acts;
-  %acts = $self -> baseActs($articles, \%acts, $article, $embedded);
+  %acts = $self->baseActs($articles, \%acts, $article, $embedded);
 
   my $page = BSE::Template->replace($template, $self->{cfg}, \%acts,
 				    $self->variables);
 
   %acts = (); # try to destroy any circular refs
+
+  return $page;
+}
+
+sub generate {
+  my ($self, $article, $articles) = @_;
+
+  my %acts;
+  %acts = $self -> baseActs($articles, \%acts, $article, 0);
+
+  my $page = BSE::Template->get_page($article->template, $self->{cfg}, \%acts, undef, undef, $self->variables);
+  %acts = ();
 
   return $page;
 }
@@ -747,15 +759,6 @@ sub do_thumbimage {
   }
 
   return $self->_sthumbimage_low($geo_id, $im, $field);
-}
-
-sub generate {
-  my ($self, $article, $articles) = @_;
-
-  my $html = BSE::Template->get_source($article->{template}, $self->{cfg});
-  $html =~ s/<:\s*embed\s+(?:start|end)\s*:>//g;
-
-  return $self->generate_low($html, $article, $articles, 0);
 }
 
 sub tag_movekid {
