@@ -14,7 +14,7 @@ fetch_ok($ua, "generate all verbose",
 	 "$baseurl/cgi-bin/admin/generate.pl?progress=1",
 	 "Regenerating.*Return to admin menu");
 fetch_ok($ua, "index", "$baseurl/", "Home");
-fetch_ok($ua, "shop", "$baseurl/shop/", "The Shop - Catalogue Items");
+fetch_ok($ua, "shop", "$baseurl/shop/", "The Shop");
 fetch_ok($ua, "shop cart", "$baseurl/cgi-bin/shop.pl",
 	 "Shopping Cart Items");
 fetch_ok($ua, "shop cart checkout no items", "$baseurl/cgi-bin/shop.pl",
