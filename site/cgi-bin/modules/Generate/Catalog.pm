@@ -1,6 +1,6 @@
 package Generate::Catalog;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 use strict;
 use Generate;
@@ -113,8 +113,8 @@ sub tag_ifAnyProductOptions {
   return scalar(@options);
 }
 
-sub generate_low {
-  my ($self, $template, $article, $articles, $embedded) = @_;
+sub baseActs {
+  my ($self, $articles, $acts, $article, $embedded) = @_;
 
   my $products = Products->new;
   my @products = sort { $b->{displayOrder} <=> $a->{displayOrder} }
@@ -160,10 +160,9 @@ sub generate_low {
   my $it = BSE::Util::Iterate->new;
   my $cfg = $self->{cfg};
   my $art_it = BSE::Util::Iterate::Article->new(cfg => $cfg);
-  my %acts;
-  %acts =
+  my %work =
     (
-     $self->baseActs($articles, \%acts, $article, $embedded),
+     $self->SUPER::baseActs($articles, $acts, $article, $embedded),
      #article => sub { escape_html($article->{$_[0]}) },
      $art_it->make_iterator(undef, 'product', 'products', \@products, 
 			\$product_index),
@@ -245,9 +244,9 @@ HTML
      ifAnyProductOptions =>
      [ tag_ifAnyProductOptions => $self, \%named_product_iterators ],
     );
-  my $oldurl = $acts{url};
+  my $oldurl = $work{url};
   my $urlbase = $self->{cfg}->entryVar('site', 'url');
-  $acts{url} =
+  $work{url} =
     sub {
       my $value = $oldurl->(@_);
       return $value if $value =~ /^<:/; # handle "can't do it"
@@ -258,18 +257,7 @@ HTML
       return $value;
     };
 
-  return BSE::Template->replace($template, $self->{cfg}, \%acts,
-				$self->variables);
-}
-
-sub generate {
-  my ($self, $article, $articles) = @_;
-
-  my $html = BSE::Template->get_source($article->{template}, $self->{cfg});
-
-  $html =~ s/<:\s*embed\s+(?:start|end)\s*:>//g;
-  
-  return $self->generate_low($html, $article, $articles, 0);
+  return %work;
 }
 
 1;
