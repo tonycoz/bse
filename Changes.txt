@@ -1,3 +1,16 @@
+BSE 0.23 - unreleased
+========
+
+ - modify Generate::* classes to build templates by filename instead
+   of reading them into memory.  This will allow caching by
+   Squirrel::Template.
+   https://rt4.develop-help.com/Ticket/Display.html?id=1341
+
+ - add [basic].cache_templates_locally to configure Squirrel::Template
+   to cache templates in memory.  This removes the overhead of
+   (de-)serializing from/to an external cache, but may increase memory
+   use.
+
 BSE 0.22 - 08 Jun 2012
 ========
 
