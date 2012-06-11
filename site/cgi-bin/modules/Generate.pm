@@ -13,7 +13,7 @@ use BSE::Variables;
 use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 
-our $VERSION = "1.008";
+our $VERSION = "1.009";
 
 my $excerptSize = 300;
 
@@ -828,6 +828,7 @@ sub baseActs {
      ifEmbedded=> sub { $embedded },
      embed => sub {
        my ($args, $acts, $name, $templater) = @_;
+       return '' if $args eq 'start' || $args eq 'end';
        my ($what, $template, $maxdepth) = split ' ', $args;
        undef $maxdepth if defined $maxdepth && $maxdepth !~ /^\d+/;
        return $self->_embed_low($acts, $articles, $what, $template, $maxdepth, $templater);
