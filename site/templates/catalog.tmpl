@@ -46,8 +46,8 @@
 <:if Dynamic:>
           <:iterator begin dynallprods:> 
           <tr valign="middle" align="center" bgcolor="#FFFFFF"> 
-            <td width="100%" align="left"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><a href="<:url dynallprod:>"><:dynallprod 
-              description:></a></font> <:dynmoveallprod:></td>
+            <td width="100%" align="left"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><a href="<:url dynallprod:>"><:ifDynallprod description:><:dynallprod 
+              description:><:or:><:dynallprod title:><:eif:></a></font> <:dynmoveallprod:></td>
 <:if Dynallprod retailPrice:>
             <td align="right"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>$<:money price dynallprod:></b></font></td>
 <:ifAnd [cfg shop order_from_catalog] [ifEq [ifDynAnyProductOptions dynallprod] "0"]:>
@@ -62,8 +62,8 @@
 <:or Dynamic:>
           <:iterator begin allprods:> 
           <tr valign="middle" align="center" bgcolor="#FFFFFF"> 
-            <td width="100%" align="left"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><a href="<:url allprod:>"><:allprod 
-              description:></a></font> <:moveallprod:></td>
+            <td width="100%" align="left"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><a href="<:url allprod:>"><:ifAllprod description:><:allprod 
+              description:><:or:><:allprod title:><:eif:></a></font> <:moveallprod:></td>
 <:if Allprod retailPrice:>
             <td align="right"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>$<:money allprod retailPrice:></b></font></td>
 <:ifAnd [cfg shop order_from_catalog] [ifEq [ifAnyProductOptions allprod] "0"]:>
