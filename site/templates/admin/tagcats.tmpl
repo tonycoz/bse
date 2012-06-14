@@ -1,0 +1,17 @@
+<:wrap admin/base.tmpl title => "Tag Categories", showtitle => 1 :>
+<:ifMessage:><p class="message"><:message:></p><:or:><:eif:>
+<:include admin/include/site_menu.tmpl:>
+<:.set pcats = bse.paged(tagcats) :>
+<ul>
+<:.for cat in pcats.items :>
+<li><a href="<:= cfg.admin_url2("add", "tagcat", { "id":-1, "cat":cat.cat}) |html:>"><:= cat.cat | html :></a></li>
+<:.end for:>
+<div class="pagelist">
+<:.for p in pcats.pages :>
+<:.if p.link :>
+<a href="<:= cfg.admin_url2("add", "tagcats", { "id":-1, "p":p.page, "pp":pcats.pp }) | html:>"><:= p.page |html :></a>
+<:.else:>
+<span><:= p.page |html:></span>
+<:.end if:>
+<:.end for:>
+</div>

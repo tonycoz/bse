@@ -218,6 +218,10 @@ site/cgi-bin/modules/BSE/TB/Subscription.pm
 site/cgi-bin/modules/BSE/TB/Subscription/Calc.pm
 site/cgi-bin/modules/BSE/TB/Subscriptions.pm
 site/cgi-bin/modules/BSE/TB/Tag.pm
+site/cgi-bin/modules/BSE/TB/TagCategories.pm
+site/cgi-bin/modules/BSE/TB/TagCategory.pm
+site/cgi-bin/modules/BSE/TB/TagCategoryDep.pm
+site/cgi-bin/modules/BSE/TB/TagCategoryDeps.pm
 site/cgi-bin/modules/BSE/TB/TagMember.pm
 site/cgi-bin/modules/BSE/TB/TagMembers.pm
 site/cgi-bin/modules/BSE/TB/TagOwner.pm
@@ -375,6 +379,7 @@ site/docs/bse.pod
 site/docs/BSE::TB::SiteCommon.html
 site/docs/BSE::TB::TagOwner.html
 site/docs/BSE::UI::Affiliate.html
+site/docs/BSE::Variables.html
 site/docs/bse_import.pod
 site/docs/bsedbschema.odt
 site/docs/bsedbschema.pdf
@@ -629,6 +634,8 @@ site/templates/admin/subscr/detail.tmpl
 site/templates/admin/subscr/detail_delete.tmpl
 site/templates/admin/subscr/edit.tmpl
 site/templates/admin/subscr/list.tmpl
+site/templates/admin/tagcat.tmpl
+site/templates/admin/tagcats.tmpl
 site/templates/admin/tags.tmpl
 site/templates/admin/user_book_seminar.tmpl
 site/templates/admin/user_edit_seminar.tmpl

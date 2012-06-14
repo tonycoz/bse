@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test qw(make_ua base_url);
-use Test::More tests => 24;
+use Test::More tests => 32;
 use File::Spec;
 use Carp qw(confess);
 
@@ -95,6 +95,34 @@ my $im2;
   ok($thumb_res->is_success, "successful fetch");
   like($thumb_res->content_type, qr(^image/[a-z]+$), "check content type");
   print "# ", $thumb_res->content_type, "\n";
+}
+
+{
+  my $error;
+  ok($art->set_tags([ "colour: red", "size: large" ], \$error),
+     "set some tags should succeed");
+  my $cat = Articles->tag_category("colour");
+  ok($cat, "get the 'colour' tag cat");
+  my @orig_deps = $cat->deps;
+
+  ok($cat->set_deps([], \$error), "empty deps list")
+    or diag "setting deps empty: ", $error;
+
+  ok($cat->set_deps([ "abc:", "def :", "efg: ", "alpha:beta" ], \$error),
+     "set deps");
+  is_deeply([$cat->deps],
+	    [ "abc:", "alpha: beta", "def:", "efg:" ],
+	    "check they were set");
+
+  ok($cat->set_deps([ "abc:", "hij:" ], \$error),
+     "set deps that add and remove to the list");
+
+  is_deeply([$cat->deps],
+	    [ "abc:", "hij:" ],
+	    "check they were set");
+
+  ok($cat->set_deps(\@orig_deps, \$error), "restore deps list")
+    or diag "restoring deps: ", $error;
 }
 
 ok($child->remove($cfg), "remove child");
