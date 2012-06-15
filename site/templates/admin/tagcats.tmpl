@@ -4,7 +4,7 @@
 <:.set pcats = bse.paged(tagcats) :>
 <ul>
 <:.for cat in pcats.items :>
-<li><a href="<:= cfg.admin_url2("add", "tagcat", { "id":-1, "cat":cat.cat}) |html:>"><:= cat.cat | html :></a></li>
+<li><a href="<:= cfg.admin_url2("add", "tagcat", { "id":-1, "cat":cat}) |html:>"><:= cat | html :></a></li>
 <:.end for:>
 <div class="pagelist">
 <:.for p in pcats.pages :>

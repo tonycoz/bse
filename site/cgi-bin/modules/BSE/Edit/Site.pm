@@ -283,13 +283,24 @@ Display a list of tag categories.
 
 Populates standard edit tags and variables.
 
+Parameters:
+
+=over
+
+=item *
+
+cat - optional filter, only tag categories starting with this text
+will be returned
+
+=back
+
 Extra variables:
 
 =over
 
 =item *
 
-cats - a list of tag categories, each with only key C<cat> set.
+cats - a list of tag category names
 
 =back
 
@@ -297,7 +308,7 @@ For ajax the result is like:
 
   {
     success: 1,
-    cats => [ { cat:name }, { cat: name } ]
+    cats => [ name, name, ... ]
   }
 
 Template: C<admin/tagcats>.

@@ -6,6 +6,8 @@ use strict;
 use BSE::TB::Tags;
 use BSE::TB::TagMembers;
 
+our $VERSION = "1.003";
+
 =head1 NAME
 
 BSE::TB::TagOwners - mixin for collections that have tags on their members.
@@ -24,8 +26,6 @@ information.
 =over
 
 =cut
-
-our $VERSION = "1.002";
 
 =item getTagByName($name)
 
@@ -93,7 +93,7 @@ Retrieve a list of all tag categories.
 sub all_tag_categories {
   my ($self, @more_rules) = @_;
 
-  return BSE::DB->query
+  return map $_->{cat}, BSE::DB->query
     (
      'TagOwners.allCats' => $self->rowClass->tag_owner_type
     );
