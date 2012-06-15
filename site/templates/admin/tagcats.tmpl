@@ -11,12 +11,7 @@
 <:.for cat in pcats.items :>
 <li><a href="<:= cfg.admin_url2("add", "tagcat", { "id":-1, "cat":cat}) |html:>"><:= cat | html :></a></li>
 <:.end for:>
-<div class="pagelist">
-<:.for p in pcats.pages :>
-<:.if p.link :>
-<a href="<:= cfg.admin_url2("add", "tagcats", { "id":-1, "p":p.page, "pp":pcats.pp }) | html:>"><:= p.page |html :></a>
-<:.else:>
-<span><:= p.page |html:></span>
-<:.end if:>
-<:.end for:>
-</div>
+</ul>
+<:.call "page_list",
+  "base":cfg.admin_url2("add", "tagcats", { "id":-1 }),
+  "pages":pcats :>

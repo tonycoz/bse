@@ -4,7 +4,7 @@ use Scalar::Util qw(blessed);
 use BSE::TB::Site;
 use BSE::Util::HTML;
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 sub _base_variables {
   my ($self, %opts) = @_;
@@ -173,6 +173,8 @@ sub _paged {
      next_page => ( $p < $pcount ? $p + 1 : 0 ),
      previous_page => ($p > 1 ? $p - 1 : 0 ),
      pages => \@pages,
+     pname => $pname,
+     ppname => $ppname,
     };
 }
 
@@ -286,6 +288,10 @@ page - the current page number
 
 =item *
 
+pagecount - the number of pages.
+
+=item *
+
 pp - the number of items per page.
 
 =item *
@@ -342,6 +348,14 @@ link - true if this entry should be a link.  false for gaps and the
 current page.
 
 =back
+
+=item *
+
+pname - the name of the page number parameter
+
+=item *
+
+ppname - the name of the items per page parameter
 
 =back
 
