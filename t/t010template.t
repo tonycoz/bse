@@ -460,11 +460,13 @@ OUT
 <:-.define bar:>
 <:.end define-:>
 IN
-  template_test(<<IN, "avalue", "define with call", \%acts, "both", \%vars);
+  template_test(<<IN, "avaluebvalue", "define with call", \%acts, "both", \%vars);
 <:-.define foo:>
 <:-= avar -:>
 <:.end-:>
 <:.call "foo", "avar":"avalue"-:>
+<:.call "foo",
+  "avar":"bvalue"-:>
 IN
   template_test(<<IN, "other value", "external call", \%acts, "", \%vars);
 <:.call "called.tmpl", "avar":"other value"-:>
