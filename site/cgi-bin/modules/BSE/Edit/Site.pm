@@ -15,7 +15,7 @@ BSE::Edit::Site - edit interface for the site itself.
 
 =cut
 
-our $VERSION = "1.009";
+our $VERSION = "1.010";
 
 use base 'BSE::Edit::Article';
 use BSE::TB::Site;
@@ -319,6 +319,10 @@ sub req_tagcats {
   my ($self, $req, $article, $articles) = @_;
 
   my @cats = Articles->all_tag_categories;
+  my $filter = $req->cgi->param("cat");
+  if (defined $filter and $filter =~ /\S/) {
+    @cats = grep /\A\Q$filter/i, @cats;
+  }
 
   if ($req->is_ajax) {
     my @json = map $_->{cat}, @cats;
