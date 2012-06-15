@@ -15,10 +15,11 @@ BSE::Edit::Site - edit interface for the site itself.
 
 =cut
 
-our $VERSION = "1.008";
+our $VERSION = "1.009";
 
 use base 'BSE::Edit::Article';
 use BSE::TB::Site;
+use DevHelp::HTML;
 
 sub edit_sections {
   my ($self, $req, $articles, $msg) = @_;
@@ -33,7 +34,7 @@ sub edit_sections {
 
 my @site_actions =
   qw(edit artimg process addimg removeimg moveimgup moveimgdown a_thumb
-     a_edit_image a_save_image a_order_images filelist fileadd fileswap filedel 
+     a_edit_image a_save_image a_order_images filelist fileadd fileswap filedel
      filesave a_edit_file a_save_file a_tree a_csrfp a_article a_config);
 
 my %more_site_actions =
@@ -78,7 +79,7 @@ sub validate_image_name {
   my ($self, $name, $rmsg) = @_;
 
   length $name and return 1;
-  
+
   $$rmsg = "Name must be supplied for global images";
 
   return 0;
@@ -143,7 +144,7 @@ sub req_tagshow {
      (
       single => "systagart",
       plural => "systagarts",
-      code => sub { 
+      code => sub {
 	return sort { lc $a->title cmp lc $b->title }
 	  Articles->getByTag($tag);
       },
@@ -371,10 +372,16 @@ sub req_tagcat {
 
   my $catname = $req->cgi->param("cat");
   my $error;
-  my ($workcat) = BSE::TB::Tags->valid_category($catname, \$error);
+  my $workcat;
   my %errors;
-  unless (defined $workcat) {
-    $errors{cat} = "Invalid category name: $error";
+  unless (defined $catname) {
+    $errors{cat} = "Missing cat parameter";
+  }
+  unless ($errors{cat}) {
+    $workcat = BSE::TB::Tags->valid_category($catname, \$error);
+    unless (defined $workcat) {
+      $errors{cat} = "Invalid category name: $error";
+    }
   }
   if (keys %errors) {
     $req->is_ajax
@@ -383,7 +390,7 @@ sub req_tagcat {
 	 success => 0,
 	 errors => \%errors,
 	);
-    
+
     return $self->req_tagcats($req, $article, $articles, undef, \%errors);
   }
 
@@ -392,7 +399,6 @@ sub req_tagcat {
 				 "Cannot find or create tag category '$workcat'");
 
   if ($req->is_ajax) {
-    
     return $req->json_content
       (
        success => 1,
@@ -404,7 +410,7 @@ sub req_tagcat {
   my %acts;
   %acts =
     (
-     $self->low_edit_tags(\%acts, $req, $article, $articles),
+     $self->low_edit_tags(\%acts, $req, $article, $articles, $msg, $errors),
     );
 
   return $req->dyn_response("admin/tagcat", \%acts);
@@ -425,7 +431,7 @@ cat - the category to save to
 =item *
 
 dep - zero or more dependencies.  This B<replaces> the list of
-dependencies for the category.
+dependencies for the category.  Blank C<dep> values are ignored.
 
 =back
 
@@ -443,16 +449,24 @@ CSRF token: C<admin_tagcatsave>.
 sub req_tagcatsave {
   my ($self, $req, $article, $articles) = @_;
 
+  $DB::single = 1;
   $req->check_csrf("admin_tagcatsave")
-    or return $self->csrf_error($req, "admin_tagcatsave", "Saving Tag Category");
+    or return $self->csrf_error($req, $article, "admin_tagcatsave", "Saving Tag Category");
 
   my $catname = $req->cgi->param("cat");
-  my $error;
-  my ($workcat) = BSE::TB::Tags->valid_category($catname, \$error);
   my %errors;
-  unless (defined $workcat) {
-    $errors{cat} = "Invalid category name: $error";
+  unless (defined $catname) {
+    $errors{cat} = "Missing cat parameter";
   }
+  my $workcat;
+  unless ($errors{cat}) {
+    my $error;
+    $workcat = BSE::TB::Tags->valid_category($catname, \$error);
+    unless (defined $workcat) {
+      $errors{cat} = "Invalid category name: $error";
+    }
+  }
+
   if (keys %errors) {
     $req->is_ajax
       and return $req->json_content
@@ -460,7 +474,7 @@ sub req_tagcatsave {
 	 success => 0,
 	 errors => \%errors,
 	);
-    
+
     return $self->req_tagcats($req, $article, $articles, undef, \%errors);
   }
 
@@ -468,7 +482,7 @@ sub req_tagcatsave {
     or return $self->req_tagcats($req, $article, $articles,
 				 "Cannot find or create tag category '$workcat'");
 
-  my @deps = $req->cgi->param("dep");
+  my @deps = grep /\S/, $req->cgi->param("dep");
   my @errors;
   for my $dep (@deps) {
     my $error;
@@ -504,7 +518,7 @@ sub req_tagcatsave {
   }
 
   $req->flash("msg:bse/admin/edit/tags/tagcatsave", [ $cat->cat ]);
-  return $self->refresh($article, $req->cgi, undef, undef, "&a_tagcat=1");
+  return $self->refresh($article, $req->cgi, undef, undef, "&a_tagcat=1&cat=".escape_uri($workcat));
 }
 
 1;

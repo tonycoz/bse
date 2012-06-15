@@ -503,6 +503,7 @@ site/htdocs/js/admin_editprodopt.js
 site/htdocs/js/admin_messages.js
 site/htdocs/js/admin_prodopts.js
 site/htdocs/js/admin_siteusers.js
+site/htdocs/js/admin_tagcat.js
 site/htdocs/js/admin_tools.js
 site/htdocs/js/bse.js
 site/htdocs/js/bse_adminpage.js
