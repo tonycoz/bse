@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 108;
+use Test::More tests => 110;
 
 sub template_test($$$$;$$);
 
@@ -390,7 +390,12 @@ OUT
 <:.set foo = [] :><:% foo.push(1); foo.push(2) :><:= foo.size() -:>
 TEMPLATE
 
+  template_test(<<TEMPLATE, "2", "multi-statement no ws", \%acts, "", \%vars);
+<:.set foo=[]:><:%foo.push(1);foo.push(2):><:= foo.size() -:>
+TEMPLATE
+
   template_test("<:= str :>", "ABC", "simple exp", \%acts, "", \%vars);
+  template_test("<:=str:>", "ABC", "simple exp no ws", \%acts, "", \%vars);
   template_test("<:= a.b.c :>", "CEE", "hash methods", \%acts, "", \%vars);
   template_test(<<IN, <<OUT, "simple set", \%acts, "both", \%vars);
 <:.set d = "test" -:><:= d :>

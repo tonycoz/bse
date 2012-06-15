@@ -2,7 +2,7 @@ package Squirrel::Template::Tokenizer;
 use strict;
 use Squirrel::Template::Constants qw(:token);
 
-our $VERSION = "1.011";
+our $VERSION = "1.012";
 
 use constant QUEUE => 0;
 use constant TEXT => 1;
@@ -82,10 +82,10 @@ sub get {
 	  push @$queue, [ error => $tag, $line, $name, 'Too many levels of includes' ];
 	}
       }
-      elsif ($body =~ /\A=\s+(\S.*?)(?:\s+\|\s*(\w*))?\z/s) {
+      elsif ($body =~ /\A=\s*(\S.*?)(?:\s+\|\s*(\w*))?\z/s) {
 	push @$queue, [ expr => $tag, $line, $name, $1, $2 || "" ];
       }
-      elsif ($body =~ /\A%\s+(\S.*?)(?:\s+\|\s*(\w+))?\z/s) {
+      elsif ($body =~ /\A%\s*(\S.*?)(?:\s+\|\s*(\w+))?\z/s) {
 	push @$queue, [ stmt => $tag, $line, $name, $1, $2 || "" ];
       }
       elsif ($body =~ /\A\.set\s+([a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)*)\s*=\s*(\S.*)\z/s) {
