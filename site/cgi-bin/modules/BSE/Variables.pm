@@ -4,7 +4,7 @@ use Scalar::Util qw(blessed);
 use BSE::TB::Site;
 use BSE::Util::HTML;
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 sub _base_variables {
   my ($self, %opts) = @_;
@@ -73,29 +73,11 @@ sub _url_common {
 }
 
 sub _categorize_tags {
-  my ($tags) = @_;
+  my ($tags, $selected_tags, $opts) = @_;
 
-  $DB::single = 1;
-  require BSE::TB::Tags;
-  my %cats;
-  for my $tag (@$tags) {
-    my $work = blessed $tag ? $tag->json_data : $tag;
-    my $cat = lc $tag->{cat};
-    unless ($cats{$cat}) {
-      $cats{$cat} =
-	{
-	 name => $tag->{cat},
-	 tags => [],
-	};
-    }
-    push @{$cats{$cat}{tags}}, $tag;
-  }
+  require Articles;
 
-  for my $cat (values %cats) {
-    @{$cat->{tags}} = sort { lc $a->{val} cmp lc $b->{val} } @{$cat->{tags}};
-  }
-
-  return [ sort { lc $a->{name} cmp $b->{name} } values %cats ];
+  return Articles->categorize_tags($tags, $selected_tags, $opts);
 }
 
 sub _paged {
@@ -231,7 +213,7 @@ Return true in admin_links mode
 
 Dump the value in perl syntax using L<Data::Dumper>.
 
-=item categorize_keys(tags)
+=item categorize_tags(tags)
 
 Returns the given tags as a list of tag categories, each category has
 a name (of the category) and a list of tags in that category.
