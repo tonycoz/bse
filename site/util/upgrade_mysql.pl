@@ -163,7 +163,7 @@ for my $table (sort keys %tables) {
 	lc $want_engine ne lc $current_engines{lc $table}) {
       print "Changing engine type to $want_engine\n"
 	if $verbose;
-      push @alters, qq!type = $want_engine!;
+      push @alters, qq!engine = $want_engine!;
     }
 
     # preprocess the types.
@@ -277,7 +277,7 @@ sub make_table {
   $sql .= "\n)";
   my @extras;
   if (defined $engine) {
-    push @extras, "type = $engine";
+    push @extras, "engine = $engine";
   }
   if ($charset) {
     push @extras,
