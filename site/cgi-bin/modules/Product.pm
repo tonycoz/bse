@@ -5,7 +5,7 @@ use Articles;
 use vars qw/@ISA/;
 @ISA = qw/Article/;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 # subscription_usage values
 use constant SUBUSAGE_START_ONLY => 1;
@@ -137,7 +137,11 @@ sub db_options {
   my ($self) = @_;
 
   require BSE::TB::ProductOptions;
-  return BSE::TB::ProductOptions->getBy(product_id => $self->{id});
+  return BSE::TB::ProductOptions->getBy2
+    (
+     [ product_id => $self->{id} ],
+     { order => "display_order" }
+    );
 }
 
 sub remove {

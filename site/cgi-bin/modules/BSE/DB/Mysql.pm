@@ -5,7 +5,7 @@ use vars qw/@ISA/;
 use Carp 'confess';
 @ISA = qw(BSE::DB);
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 use vars qw($VERSION $MAX_CONNECTION_AGE);
 
@@ -116,11 +116,6 @@ SQL
 select ar.*, pr.* from article ar, product pr, bse_wishlist wi
   where wi.user_id = ? and wi.product_id = ar.id and ar.id = pr.articleId
 order by wi.display_order desc
-SQL
-   getProductOptionByProduct_id => <<SQL,
-select *
-from bse_product_options
-where product_id = ?
 SQL
    'Products.visible_children_of' => <<SQL,
 select ar.*, pr.* from article ar, product pr
