@@ -596,3 +596,17 @@ where t.id = m.tag_id
   )
 SQL
 
+name: TagCategoryDeps.deleteCat
+sql_statement: <<SQL
+delete from bse_tag_category_deps
+where cat_id = ?
+SQL
+
+name: TagOwners.allCats
+sql_statement: <<SQL
+select distinct concat(t.cat, ':') as cat
+from bse_tags t
+where owner_type = ?
+  and t.cat <> ''
+order by cat
+SQL

@@ -94,6 +94,9 @@ message: There is already a tag with name '%1:s'
 id: bse/admin/edit/tags/nochange
 message: No changes to save
 
+id: bse/admin/edit/tags/tagcatsave
+message: Saved tag category '%1:s'
+
 id: bse/admin/edit/category/unknown
 message: Unknown article category
 

@@ -6,7 +6,7 @@ require BSE::TB::TagOwners;
 @ISA = qw(Squirrel::Table BSE::TB::TagOwners);
 use Article;
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 sub rowClass {
   return 'Article';
@@ -165,18 +165,6 @@ sub reorder_child {
   }
 
   return 1;
-}
-
-sub all_tags {
-  my ($self, @more_rules) = @_;
-  return BSE::TB::Tags->getBy2
-    (
-     [ 
-      [ owner_type => Article->tag_owner_type ],
-      @more_rules
-     ],
-     { order => "cat, val" },
-    );
 }
 
 sub categories {

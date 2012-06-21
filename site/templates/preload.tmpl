@@ -9,3 +9,36 @@
   <:-.end for-:>
   </select>
 <:-.end define -:>
+<:#
+page_list expects:
+base - base url for links
+pages - the result of the bse.pages call
+ :>
+<:-.define page_list-:>
+<:.set sep = base =~ /\?/ ? "&" : "?" -:>
+<:.set base = base _ sep :>
+<div class="pagelist">
+Page <:= pages.page :> of <:= pages.pagecount :>
+<:.if pages.previous_page -:>
+<a href="<:= base |html:><:= pages.pname | uri :>=1&amp;<:= pages.ppname | uri :>=<:= pages.pp | uri :>">&lt;&lt</a>
+<a href="<:= base |html:><:= pages.pname | uri :>=<:= pages.previous_page |uri:>&amp;<:= pages.ppname | uri :>=<:= pages.pp | uri :>">&lt;</a>
+<:.else -:>
+<span>&lt&lt</span>
+<span>&lt</span>
+<:.end if -:>
+<:.for p in pcats.pages :>
+<:.if p.link -:>
+<a href="<:= base |html :><:= pages.pname | uri:>=<:= p.page | uri :>&amp;<:=pages.ppname | uri :>=<:= pages.pp | uri :>"><:= p.page |html :></a>
+<:.else -:>
+<span><:= p.page |html:></span>
+<:.end if -:>
+<:.end for:>
+<:.if pages.next_page -:>
+<a href="<:= base |html:><:= pages.pname | uri :>=<:= pages.next_page |uri:>&amp;<:= pages.ppname | uri :>=<:= pages.pp | uri :>">&gt;</a>
+<a href="<:= base |html:><:= pages.pname | uri :>=<:= pages.pagecount |uri:>&amp;<:= pages.ppname | uri :>=<:= pages.pp | uri :>">&gt;&gt</a>
+<:.else -:>
+<span>&gt&gt</span>
+<span>&gt</span>
+<:.end if -:>
+</div>
+<:-.end define -:>

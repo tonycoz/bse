@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>150;
+use Test::More tests=>153;
 use File::Spec;
 use FindBin;
 BEGIN {
@@ -493,6 +493,65 @@ Category: Two
   Tag: C
 
 EXPECTED
+
+my $cat = Articles->tag_category("Foo:");
+my @old_deps = $cat->deps;
+my $error;
+$cat->set_deps([ "Bar:" ], \$error);
+
+template_test "bse.categorize_tags with deps", $parent, <<'TEMPLATE', <<'EXPECTED';
+<:.set tags = [
+  { "cat":"Bar", "val":"A", "name":"Bar: A" },
+  { "cat":"Bar", "val":"B", "name":"Bar: B" },
+  { "cat":"Foo", "val":"C", "name":"Foo: C" },
+  { "cat":"", "val":"D", "name":"D" }
+  ] -:>
+<:.set tagcats = bse.categorize_tags(tags) -:>
+<:.for tagcat in tagcats -:>
+Category: <:= tagcat.name:>
+<:.end for -:>
+--
+<:.set tagcats = bse.categorize_tags(tags, [ "Bar: B" ]) -:>
+<:.for tagcat in tagcats -:>
+Category: <:= tagcat.name:>
+<:.end for -:>
+--
+<:.set tagcats = bse.categorize_tags(tags, [ "Bar: B" ], { "onlyone":1 }) -:>
+<:.for tagcat in tagcats -:>
+Category: <:= tagcat.name:>
+<:.end for -:>
+--
+<:.set counts = { "Bar: A":1, "Foo: C": 10 } -:>
+<:.set tagcats = bse.categorize_tags(tags, [ "Bar: B" ], { "counts":counts }) -:>
+<:.for tagcat in tagcats -:>
+Category: <:= tagcat.name:>
+<:.for tag in tagcat.tags :>  Tag: <:= tag.val:> (<:= tag.count:>)
+<:.end for:>
+<:.end for -:>
+TEMPLATE
+Category: 
+Category: Bar
+--
+Category: 
+Category: Bar
+Category: Foo
+--
+Category: 
+Category: Foo
+--
+Category: 
+  Tag: D (0)
+
+Category: Bar
+  Tag: A (1)
+  Tag: B (0)
+
+Category: Foo
+  Tag: C (10)
+
+EXPECTED
+
+$cat->set_deps(\@old_deps, \$error);
 
 ############################################################
 # dynamic stuff

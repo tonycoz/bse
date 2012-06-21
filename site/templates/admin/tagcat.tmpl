@@ -1,0 +1,16 @@
+<:wrap admin/base.tmpl title => "Tag Category", showtitle => 1, js => "admin_tagcat.js" :>
+<:ifMessage:><p class="message"><:message:></p><:or:><:eif:>
+<:include admin/include/site_menu.tmpl:>
+<p>Parents:</p>
+<form method="post" action="<:= bse.admin_url2("add") :>">
+<input type="hidden" name="cat" value="<:= cat.cat |html :>" />
+<input type="hidden" name="id" value="-1" />
+<:csrfp admin_tagcatsave hidden :>
+<ul id="tagcatdeps">
+<:.for dep in cat.deps :>
+<li><input type="text" name="dep" value="<:= dep |html:>" /></li>
+<:.end for:>
+<li><input type="text" name="dep" value="" /></li>
+</ul>
+<input type="submit" name="a_tagcatsave" value="Save dependencies" />
+</form>

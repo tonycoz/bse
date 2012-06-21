@@ -6,7 +6,7 @@ use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 use BSE::CfgInfo qw(custom_class);
 
-our $VERSION = "1.024";
+our $VERSION = "1.025";
 
 =head1 NAME
 
@@ -763,54 +763,18 @@ sub iter_dynunused_tagcats {
     $tags = $self->{tags}{$iter};
   }
 
-  my %cats;
- TAG:
-  for my $tag (keys %$tags) {
-    my $count = $tags->{$tag};
-    my ($cat, $val) = BSE::TB::Tags->split_name($tag);
-    my $ind = lc(length $cat ? "$cat:" : $val);
-    my $can_cat = lc $cat;
+  require Articles;
 
-    if ($only_one && length $cat && $selected_cats{$can_cat}) {
-      next TAG;
-    }
-
-    if (!$only_cat || $cat =~ /$only_cat/) {
-      unless ($cats{$ind}) {
-	$cats{$ind} =
-	  {
-	   name => $cat,
-	   ind => $ind,
-	   vals => [],
-	   nocat => (length($cat) == 0),
-	  };
-      }
-      push @{$cats{$ind}{vals}}, 
-	{
-	 name => $tag,
-	 val => $val,
-	 cat => $cat,
-	 count => $count,
-	};
-    }
-  }
-
-  # sort each value set
-  for my $cat (values %cats) {
-    my $newvals =  [ sort { lc($a->{val}) cmp lc($b->{val}) } @{$cat->{vals}} ];
-    $cat->{vals} = $newvals;
-  }
-
-  my $cats =
-    [
-     sort
+  return Articles->categorize_tags
+    (
+     [ keys %$tags ],
+     $selected_tags,
      {
-       $b->{nocat} <=> $a->{nocat}
-	 || $a->{ind} cmp $b->{ind}
-     } values %cats
-    ];
-
-  return $cats;
+      onlycat => $only_cat,
+      onlyone => $only_one,
+      counts => $tags,
+     },
+    );
 }
 
 =item iterator dynunsed_tags

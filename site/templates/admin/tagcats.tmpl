@@ -1,0 +1,17 @@
+<:wrap admin/base.tmpl title => "Tag Categories", showtitle => 1 :>
+<:ifMessage:><p class="message"><:message:></p><:or:><:eif:>
+<:include admin/include/site_menu.tmpl:>
+<p><form method="get" action="<:= cfg.admin_url("add") :>">
+<input type="hidden" name="id" value="-1" />
+<input type="text" name="cat" value="<:= cgi.param("cat") |html:>" />
+<input type="submit" name="a_tagcats" value="Filter" />
+</form></p>
+<:.set pcats = bse.paged(tagcats) :>
+<ul>
+<:.for cat in pcats.items :>
+<li><a href="<:= cfg.admin_url2("add", "tagcat", { "id":-1, "cat":cat}) |html:>"><:= cat | html :></a></li>
+<:.end for:>
+</ul>
+<:.call "page_list",
+  "base":cfg.admin_url2("add", "tagcats", { "id":-1 }),
+  "pages":pcats :>

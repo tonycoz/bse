@@ -143,6 +143,9 @@ description: name field error if you try to rename a tag to match another
 id: bse/admin/edit/tags/nochange
 description: name field error if no change is saved
 
+id: bse/admin/edit/tags/tagcatsave
+description: changes to a tag category were saved successfully. %1 is the category name.
+
 id: bse/admin/edit/category/
 description: Category field errors
 

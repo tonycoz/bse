@@ -3,7 +3,7 @@ use strict;
 use base 'Squirrel::Table';
 use BSE::TB::Tag;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub rowClass {
   return 'BSE::TB::Tag';
@@ -42,7 +42,42 @@ sub valid_name {
     return;
   }
 
+  unless ($val =~ /\S/) {
+    $$error = "emptyvalue";
+    return;
+  }
+
   return ($cat, $val);
+}
+
+=item valid_category
+
+Test that the supplied category name is valid.
+
+It must contain a trailing colon.
+
+Returns the canonical form of the tag category.
+
+=cut
+
+sub valid_category {
+  my ($class, $catname, $error) = @_;
+
+  if ($catname =~ /$bad_char/) {
+    $$error = "badchars";
+    return;
+  }
+
+  $catname =~ s/^\s+//;
+  $catname =~ s/\s+\z//;
+  $catname =~ s/\s+:\z/:/;
+
+  unless ($catname =~ /:\z/) {
+    $$error = "nocolon";
+    return;
+  }
+
+  return $catname;
 }
 
 sub make_name {

@@ -1294,3 +1294,23 @@ create table bse_tag_members (
   unique art_tag(owner_id, tag_id),
   index by_tag(tag_id)
 );
+
+create table bse_tag_categories (
+  id integer not null auto_increment primary key,
+
+  cat varchar(80) not null,
+
+  owner_type char(2) not null,
+
+  unique cat(cat, owner_type)
+);
+
+create table bse_tag_category_deps (
+  id integer not null auto_increment primary key,
+
+  cat_id integer not null,
+
+  depname varchar(160) not null,
+
+  unique cat_dep(cat_id, depname)
+);
