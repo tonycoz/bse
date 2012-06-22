@@ -5,7 +5,7 @@ use vars qw/@ISA/;
 use Carp 'confess';
 @ISA = qw(BSE::DB);
 
-our $VERSION = "1.008";
+our $VERSION = "1.009";
 
 use vars qw($VERSION $MAX_CONNECTION_AGE);
 
@@ -634,12 +634,19 @@ sub _forked {
 
 my $get_sql_by_name = 'select sql_statement from sql_statements where name=?';
 
+my %sql_cache;
+
 sub stmt_sql {
   my ($self, $name) = @_;
 
   $name =~ s/BSE.*:://;
 
   my $sql = $statements{$name};
+  unless ($sql) {
+    if (exists $sql_cache{$name}) {
+      return $sql_cache{name};
+    }
+  }
   unless ($sql) {
     my @row = $self->{dbh}->selectrow_array($get_sql_by_name, {}, $name);
     if (@row) {
@@ -649,6 +656,8 @@ sub stmt_sql {
     else {
       #print STDERR "SQL statment $name not found in sql_statements table\n";
     }
+
+    $sql_cache{$name} = $sql;
   }
 
   return $sql;
