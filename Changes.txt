@@ -11,6 +11,12 @@ BSE 0.23 - unreleased
    (de-)serializing from/to an external cache, but may increase memory
    use.
 
+ - tags can now depend on a tag from another category being selected
+   before being displayed.
+
+ - lookups in sql_statements are now cached.
+   https://rt4.develop-help.com/Ticket/Display.html?id=1352
+
 BSE 0.22 - 08 Jun 2012
 ========
 
