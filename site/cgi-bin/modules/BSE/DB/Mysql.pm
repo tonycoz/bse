@@ -5,7 +5,7 @@ use vars qw/@ISA/;
 use Carp 'confess';
 @ISA = qw(BSE::DB);
 
-our $VERSION = "1.009";
+our $VERSION = "1.010";
 
 use vars qw($VERSION $MAX_CONNECTION_AGE);
 
@@ -644,7 +644,7 @@ sub stmt_sql {
   my $sql = $statements{$name};
   unless ($sql) {
     if (exists $sql_cache{$name}) {
-      return $sql_cache{name};
+      return $sql_cache{$name};
     }
   }
   unless ($sql) {
