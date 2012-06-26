@@ -1,6 +1,13 @@
 BSE 0.23 - unreleased
 ========
 
+Bug fixes:
+
+ - <:.set ... :> would treat an unknown value (ENOIMPL) as an error
+   rather, instead of leaving the code in place
+
+Enchancements:
+
  - modify Generate::* classes to build templates by filename instead
    of reading them into memory.  This will allow caching by
    Squirrel::Template.
@@ -16,6 +23,7 @@ BSE 0.23 - unreleased
 
  - lookups in sql_statements are now cached.
    https://rt4.develop-help.com/Ticket/Display.html?id=1352
+
 
 BSE 0.22 - 08 Jun 2012
 ========
