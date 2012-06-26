@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 110;
+use Test::More tests => 111;
 
 sub template_test($$$$;$$);
 
@@ -47,6 +47,10 @@ SKIP: {
      num1 => 101,
      num2 => 202,
      testclass => Squirrel::Template::Expr::WrapClass->new("TestClass"),
+     error =>
+     {
+      noimpl => sub { die "ENOIMPL\n" },
+     },
     );
   template_test("<:str:>", "ABC", "simple", \%acts);
   template_test("<:strref:>", "ABC", "scalar ref", \%acts);
@@ -574,6 +578,14 @@ OUT
 IN
 ABC
 ABCDEF
+OUT
+
+  template_test(<<IN, <<OUT, "set undef", \%acts, "", \%vars);
+<:.set foo = unknown :>
+<:.set bar = error.noimpl :>
+IN
+<:.set foo = unknown :>
+<:.set bar = error.noimpl :>
 OUT
 }
 

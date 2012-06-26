@@ -3,7 +3,7 @@ use strict;
 use Squirrel::Template::Constants qw(:node);
 use Scalar::Util ();
 
-our $VERSION = "1.015";
+our $VERSION = "1.016";
 
 use constant ACTS => 0;
 use constant TMPLT => 1;
@@ -134,7 +134,11 @@ sub _process_set {
     }
   }
   else {
-    push @errors, $self->_error($node, ref $@ ? $@->[1] : $@ );
+    my $msg = $@;
+
+    $msg =~ /\bENOIMPL\b/ and return $node->[NODE_ORIG];
+
+    push @errors, $self->_error($node, ref $msg ? $msg->[1] : $msg );
   }
 
   return @errors;
