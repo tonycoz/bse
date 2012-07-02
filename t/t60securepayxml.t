@@ -104,7 +104,7 @@ my %bad_add =
   (
    clientid => 'BBBB',
    expirydate => '05/05',
-   cardnumber => '4242424242424241',
+   cardnumber => '4242424242424242',
   );
 $result = $payment->add_payment(%bad_add);
 ok($result, "got some sort of result");
