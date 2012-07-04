@@ -24,6 +24,12 @@ Enchancements:
  - lookups in sql_statements are now cached.
    https://rt4.develop-help.com/Ticket/Display.html?id=1352
 
+ - added collection_with_tags() to TagOwners (so it's usable for
+   Articles and Products, etc) to allow filtering the various
+   collection methods by tag.
+
+ - added bse.articles and bse.products for access to the Articles and
+   Products collection classes.
 
 BSE 0.22 - 08 Jun 2012
 ========
