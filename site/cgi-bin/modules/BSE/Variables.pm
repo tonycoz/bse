@@ -4,7 +4,7 @@ use Scalar::Util qw(blessed);
 use BSE::TB::Site;
 use BSE::Util::HTML;
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 sub _base_variables {
   my ($self, %opts) = @_;
@@ -12,6 +12,8 @@ sub _base_variables {
   return
     (
      site => BSE::TB::Site->new,
+     articles => \&_articles,
+     products => \&_products,
      url => 
      ($opts{admin} || $opts{admin_links}
       ? sub { _url_common($_[0]->admin, $_[1]) }
@@ -169,6 +171,37 @@ sub _paged {
     };
 }
 
+sub _variable_class {
+  my ($class) = @_;
+
+  require Squirrel::Template;
+  return Squirrel::Template::Expr::WrapClass->new($class);
+}
+
+{
+  my $articles;
+  sub _articles {
+    unless ($articles) {
+      require Articles;
+      $articles = _variable_class("Articles");
+    }
+
+    return $articles;
+  }
+}
+
+{
+  my $products;
+  sub _products {
+    unless ($products) {
+      require Products;
+      $products = _variable_class("Products");
+    }
+
+    return $products;
+  }
+}
+
 1;
 
 =head1 NAME
@@ -183,10 +216,10 @@ BSE::Variables - commonly set variables
 
   # in templates
   <:.set level1 = bse.site.children :>
-  <:= url(article) | html :>
+  <:= bse.url(article) | html :>
   <:= tagcats = bse.categorize_tags(article.tag_objects) :>
   <:.if bse.admin:>...
-  <:= dumper(somevar) :> lots of noise
+  <:= bse.dumper(somevar) :> lots of noise
 
 =head1 DESCRIPTION
 
@@ -226,6 +259,12 @@ Dump the value in perl syntax using L<Data::Dumper>.
 
 Returns the given tags as a list of tag categories, each category has
 a name (of the category) and a list of tags in that category.
+
+=item articles
+
+=item products
+
+The article and product collections.
 
 =back
 
