@@ -5,7 +5,7 @@ use BSE::Template;
 use BSE::Util::HTML;
 use base qw(BSE::Util::DynamicTags);
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 sub new {
   my ($class, $req, %opts) = @_;
@@ -31,6 +31,18 @@ sub generate {
   else {
     %acts = $self->tags($article);
   }
+
+  require BSE::Variables;
+  $self->{req}->set_variable
+    (
+     bse =>
+     BSE::Variables->dyn_variables
+     (
+      request => $self->req,
+      admin => $self->{admin},
+      admin_links => $self->{admin_links},
+     ),
+    );
 
   # FIXME: this should be done through the request object
   $self->{req}->_set_vars();
