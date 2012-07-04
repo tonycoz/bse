@@ -77,6 +77,15 @@ sub _categorize_tags {
 
   require Articles;
 
+  if ($opts && $opts->{members} && !$opts->{counts}) {
+    my %counts;
+    my %tags = map { $_->id => $_->name } @$tags;
+    for my $entry (@{$opts->{members}}) {
+      ++$counts{$tags{$entry->tag_id}};
+    }
+    $opts->{counts} = \%counts;
+  }
+
   return Articles->categorize_tags($tags, $selected_tags, $opts);
 }
 

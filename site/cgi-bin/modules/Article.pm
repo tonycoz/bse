@@ -8,7 +8,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::TB::SiteCommon BSE::TB::TagOwner/;
 use Carp 'confess';
 
-our $VERSION = "1.013";
+our $VERSION = "1.014";
 
 =head1 NAME
 
@@ -576,6 +576,10 @@ sub restricted_methods {
 
   return $self->SUPER::restricted_methods($name)
     || $name =~ /^(?:update_|remove_|add_)/;
+}
+
+sub tableClass {
+  return "Articles";
 }
 
 1;

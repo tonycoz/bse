@@ -5,7 +5,7 @@ use Articles;
 use vars qw/@ISA/;
 @ISA = qw/Article/;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 # subscription_usage values
 use constant SUBUSAGE_START_ONLY => 1;
@@ -261,6 +261,10 @@ sub update_dynamic {
   }
 
   return $self->SUPER::update_dynamic($cfg);
+}
+
+sub tableClass {
+  return "Products";
 }
 
 package BSE::CfgProductOption;

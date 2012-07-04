@@ -6,7 +6,7 @@ use strict;
 use BSE::TB::Tags;
 use BSE::TB::TagMembers;
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 =head1 NAME
 
@@ -177,6 +177,51 @@ not be in the result.
 
 =back
 
+Each category entry contains:
+
+=over
+
+=item *
+
+name - the category
+
+=item *
+
+ind - a uniquified category name
+
+=item *
+
+vals - an array reference of values for the category
+
+=item *
+
+nocat - true if this is a wrapper for a tag with no category
+
+=back
+
+Each value entry contains:
+
+=over
+
+=item *
+
+name - the full name of the tag
+
+=item *
+
+val - the value of the tag
+
+=item *
+
+cat - the category name
+
+=item *
+
+count - the number of entries for this tag (if counts is supplied as
+an input)
+
+=back
+
 =cut
 
 sub categorize_tags {
@@ -195,10 +240,10 @@ sub categorize_tags {
   my $only_cat = $opts->{onlycat};
 
   my %selected_cats;
-  defined $selected_tags or $selected_tags = [];
+  defined $selected_tags && $selected_tags ne "" or $selected_tags = [];
 
   my $all_selected;
-  if ($selected_tags) {
+  if (defined $selected_tags) {
     if (ref $selected_tags) {
       %selected_cats = map { lc("$_:") => 1 }
 	map { lc ((BSE::TB::Tags->split_name($_))[0]) }
@@ -276,7 +321,240 @@ sub categorize_tags {
   return $cats;
 }
 
+=item collection_with_tags($name, $tags, \%opts)
+
+Request a variety of tagging information about a collection of
+articles, the return value includes:
+
+=over
+
+=item *
+
+objects - an array reference of objects
+
+=item *
+
+object_ids - an array reference on matching objects
+
+=item *
+
+extratags - arrayref of tags as tag objects for those objects that
+passed the filter, but aren't in the set of selected tags.
+
+=item *
+
+members - arrayref tag membership of tag membership objects.  May
+include membership for objects outside of those listed in objects.
+
+=back
+
+If C<$name> is a false value then the tags are checked over the
+objects supplied in C<$opts{objects}>.
+
+C<%opts> can contain any of:
+
+=over
+
+=item *
+
+args - arrayref of extra arguments to pass to the C<$name> method.
+Defaults to none.
+
+=item *
+
+objects - the objects, already fetched (optional).  These must be the
+same objects, or a subset of the objects, returned by the C<$name>
+method.  Required if C<$name> is false.
+
+=item *
+
+noobjects - don't populate objects in the result.  This is done as
+optimization for those cases when the objects are not needed.  In some
+cases the objects may be fetched anyway.
+
+=item *
+
+self - the object to call method C<$name> on.  Defaults to the object
+C<collection_with_tags> is called on.
+
+=item *
+
+members - previously fetched tag membership objects
+
+=item *
+
+knowntags - previously fetched knowntags
+
+=back
+
+=cut
+
+sub collection_with_tags {
+  my ($self, $name, $tags, $opts) = @_;
+
+  $opts ||= {};
+  my $objects = $opts->{objects};
+  my $members = $opts->{members};
+  my $knowntags = $opts->{knowntags};
+  my $workself = $opts->{self} || $self;
+  my $args = $opts->{args} || [];
+
+  my @tag_objects;
+  my %known_tags;
+  my %known_by_id;
+  %known_tags = map { lc $_->name => $_ } @$knowntags if $knowntags;
+  %known_by_id = map { lc $_->id => $_ } @$knowntags if $knowntags;
+  for my $tag (@$tags) {
+    my $obj = ref $tag
+      ? $tag
+	: $known_tags{lc $tag} || $self->rowClass->tag_by_name($tag);
+    unless ($obj) {
+      # tag isn't in the system, so it can't match
+      return
+	{
+	 objects => [],
+	 extratags => [],
+	 members => [],
+	 object_ids => [],
+	 counts => {},
+	};
+    }
+    push @tag_objects, $obj;
+  }
+
+  my $tag_info;
+  my $tag_method;
+  if ($name) {
+    $tag_method = $name;
+    # so for a collection "all_visible_products" the method is
+    # "all_visible_product_tags"
+    $tag_method =~ s/e?s$//;
+    $tag_method .= "_tags";
+  }
+  if (!$members
+      && $name
+      && $workself->can($tag_method)) {
+    $tag_info = $workself->$tag_method(@$args);
+    $members = $tag_info->{members};
+    @known_tags{map $_->id, @{$tag_info->{tags}}} = @{$tag_info->{tags}};
+  }
+
+  if ($objects || !$opts->{noobjects} || !$members) {
+    my @out_objects;
+    my @out_members;
+    my %out_tags;
+    my %counts_by_id;
+    $objects ||= [ $workself->$name(@$args) ];
+
+    if ($members) {
+      my %by_obj_and_tag;
+      for my $member (@$members) {
+	$by_obj_and_tag{$member->owner_id}{$member->tag_id} = $member;
+      }
+
+    OBJECT:
+      for my $obj (@$objects) {
+	my $obj_tags = $by_obj_and_tag{$obj->id}
+	  or next OBJECT;
+	for my $tag (@tag_objects) {
+	  $obj_tags->{$tag->id}
+	    or next OBJECT;
+	}
+	push @out_objects, $obj;
+	@out_tags{keys %$obj_tags} = ();
+	push @out_members, values %$obj_tags;
+	++$counts_by_id{$_} for keys %$obj_tags;
+      }
+    }
+    else {
+      # no member information, fetch tags by object
+    OBJECT:
+      for my $obj (@$objects) {
+	my @obj_tag_members = $obj->tag_members;
+	my %obj_tag_members = map { $_->tag_id => 1 } @obj_tag_members;
+	for my $tag (@tag_objects) {
+	  $obj_tag_members{$tag->id}
+	    or next OBJECT;
+	}
+	push @out_objects, $obj;
+	@out_tags{map $_->tag_id, @obj_tag_members} = ();
+	push @out_members, @obj_tag_members;
+	++$counts_by_id{$_->tag_id} for @obj_tag_members;
+      }
+    }
+    delete @out_tags{map $_->id, @tag_objects};
+
+    my @out_tags;
+    my %counts;
+    for my $tag_id (keys %out_tags) {
+      my $tag = $known_by_id{$tag_id}
+	|| BSE::TB::Tags->getByPkey($tag_id);
+      push @out_tags, $tag;
+      $counts{$tag->name} = $counts_by_id{$tag->id} || 0;
+    }
+    return
+      {
+       objects => \@out_objects,
+       members => \@out_members,
+       extratags => \@out_tags,
+       object_ids => [ map $_->id, @out_objects ],
+       counts => \%counts,
+      };
+  }
+  else {
+    # at this point $members contains membership objects for the
+    # articles we care about.
+    my %by_obj_and_tag;
+    for my $member (@$members) {
+      $by_obj_and_tag{$member->owner_id}{$member->tag_id} = $member;
+    }
+    my @object_ids;
+    my %out_tags;
+    my @out_members;
+    my %counts_by_id;
+  OBJECT:
+    for my $object_id (keys %by_obj_and_tag) {
+      my $obj_tags = $by_obj_and_tag{$object_id};
+      for my $tag (@tag_objects) {
+	$obj_tags->{$tag->id}
+	  or next OBJECT;
+      }
+      push @object_ids, $object_id;
+      @out_tags{keys %$obj_tags} = ();
+      push @out_members, values %$obj_tags;
+      ++$counts_by_id{$_} for keys %$obj_tags;
+    }
+    delete @out_tags{map $_->id, @tag_objects};
+    my @out_tags;
+    my %counts;
+    for my $tag_id (keys %out_tags) {
+      my $tag = $known_by_id{$tag_id} || BSE::TB::Tags->getByPkey($tag_id);
+      push @out_tags, $tag;
+      $counts{$tag->name} = $counts_by_id{$tag_id};
+    }
+
+    return
+      {
+       members => \@out_members,
+       extratags => \@out_tags,
+       object_ids => \@object_ids,
+       counts => \%counts,
+      };
+  }
+}
+
 1;
+
+=back
+
+=head1 REQUIRED METHODS
+
+=over
+
+=item rowClass
+
+Returns the name of the class (or an object of that class)
+representing the items in the collection.
 
 =back
 

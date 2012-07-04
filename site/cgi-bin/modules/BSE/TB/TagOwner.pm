@@ -6,7 +6,7 @@ use strict;
 use BSE::TB::Tags;
 use BSE::TB::TagMembers;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 =head1 NAME
 
@@ -150,6 +150,23 @@ sub tag_ids {
   return map $_->{id}, BSE::DB->single->run("Tag_ids.by_owner", $self->tag_owner_type, $self->id);
 }
 
+=item tag_members
+
+Return all tag membership links for the object.
+
+=cut
+
+sub tag_members {
+  my ($self) = @_;
+
+  require BSE::TB::TagMembers;
+  return BSE::TB::TagMembers->getBy
+    (
+     owner_id => $self->id,
+     owner_type => $self->tag_owner_type,
+    );
+}
+
 =item has_tags(\@tags)
 
 Check that all of the specified tags are on the object.
@@ -177,6 +194,44 @@ sub has_tags {
   return 1;
 }
 
+=item tag_by_name
+
+Return the tag (if any) by name for this object type.
+
+Returns an empty list if no such tag is found.
+
+=cut
+
+sub tag_by_name {
+  my ($self, $name) = @_;
+
+  my ($tag) = BSE::TB::Tags->getByName($self->tag_owner_type, $name)
+    or return;
+
+  return $tag;
+}
+
+=item collection_with_tags()
+
+This is a wrapper for L<BSE::TB::TagOwners/collection_with_tags()>
+that passes $self as the C<self> parameter in \%opts.
+
+=cut
+
+sub collection_with_tags {
+  my ($self, $name, $tags, $opts) = @_;
+
+  return $self->tableClass->collection_with_tags
+    (
+     $name,
+     $tags,
+     {
+      ($opts ? %$opts : ()),
+      self => $self,
+     },
+    );
+}
+
 1;
 
 __END__
@@ -196,6 +251,10 @@ Return a short constant string identifying owner class of the tags.
 =item id
 
 The numeric id of the specific owner object of the tags.
+
+=item tableClass
+
+The name of the class for collections of the tag owner.
 
 =back
 

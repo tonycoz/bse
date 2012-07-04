@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests => 92;
+use Test::More tests => 95;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
@@ -307,6 +307,35 @@ Colour:
 
 EXPECTED
 
+dyn_template_test "unused tags new style", $parent, <<TEMPLATE, <<EXPECTED;
+<:.set ptags = dynarticle.collection_with_tags(
+  "all_visible_products",
+  [],
+  {
+    "noobjects":1
+  }
+  ) -:>
+<:# = bse.dumper(ptags) -:>
+<:.set ptagcats = bse.categorize_tags(ptags.extratags, [],
+  {
+   "onlycat":"Colour",
+   "counts":ptags.counts
+  }) -:>
+<:.for cat in ptagcats -:>
+<:= cat.name:>:
+<:.for val in cat.vals -:>
+<:= " " _ val.val :> (<:= val.count :>)
+<:.end for-:>
+<:.end for:>
+TEMPLATE
+Colour:
+ Black (1)
+ Blue (3)
+ Green (3)
+ Purple (1)
+ Red (3)
+
+EXPECTED
 
 dyn_template_test "dyntags", $parent, <<TEMPLATE, <<EXPECTED;
 <:iterator begin dyntags "Size:  Small/Colour: Red/XYZ" :><:
