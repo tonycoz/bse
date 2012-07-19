@@ -280,6 +280,10 @@ change your redirect handling if you enable this.  Default: Off.
 If this is non-zero then the title is cleaned up (all but
 alphanumerics removed) and appended to the alias URL generated.
 
+=item all_dynamic
+
+If true then all articles are treated as dynamic.  Default: false.
+
 =item auto_images
 
 By default, if the author doesn't use any image tags, BSE will insert
