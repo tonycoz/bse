@@ -17,7 +17,7 @@ use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 
-our $VERSION = "1.031";
+our $VERSION = "1.032";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -1023,7 +1023,9 @@ sub req_payment {
 
     for my $field (keys %fields) {
       unless ($nostore{$field}) {
-	($order_values->{$field}) = $cgi->param($field);
+	if (my ($value) = $cgi->param($field)) {
+	  $order_values->{$field} = $value;
+	}
       }
     }
 
