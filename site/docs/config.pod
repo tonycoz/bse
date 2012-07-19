@@ -246,63 +246,10 @@ tidy].
 
 =over
 
-=item cookie_lifetime
-
-The expiry time for cookies.  This should be in the form supported by
-CGI.pm for the -expires parameter.  Typically you want a plus ('+'), a
-number, and a time character (s - seconds, m - minutes, h - hours, d -
-days, M - months).  Default: +3h
-
-=item cookie_domain
-
-This overrides the domain value set for cookies.  This is useful if
-you allow the site to run under both example.com and www.example.com,
-if you set cookie_domain to example.com then a user visiting
-www.example.com will still have their cookies when they visit
-example.com.
-
-=item cookie_name
-
-This overrides the cookie name used to store the session id.  Default:
-sessionid.  This is useful when you have 2 sites under the same
-top-level domain, and helps disambiguate the cookie returned by the
-browser.
-
-=item minpassword
-
-Minimum password length in characters.  Default: 4.
-
-=item randomdata
-
-Device to read random data from.  This device should not block when it
-runs out of entropy.
-
-=item sign
-
-If this is true then the encrypted messages containing the customer's
-credit card number are sent to the shop owner signed.  To avoid
-keeping a passphrase and signing key on the server you can set this to
-false (0).  This has the effect that anyone could send you an unsigned
-message encrypted with your public key, though this may not be a
-security threat.  Default: True.
-
-=item link_titles
-
-If this is true then the links to your articles within BSE will be
-followed by a / and then by a simplified version of the article title.
-The aim is to include at least some title information in the URL
-without modifying the name of the HTML file.  Default: False.
-
 =item access_control
 
 If this is true then the user/group/permissions database is used to
 control access to the system.  Default: False.
-
-=item access_filter_steps
-
-If this is true, then the drop-down lists of possible stepparents and
-stepchildren on the article edit pages are filtered for access control.
-Default: False.
 
 =item access_filter_parents
 
@@ -310,62 +257,16 @@ If this is true, then the drop-down lists of possible parents on the
 newsletter edit pages are filtered for access control.
 Default: False.
 
-=item server_auth
+=item access_filter_steps
 
-Set this to non-zero to enable authentication via server
-authentication (usually Basic Authentication.)  You should normally
-set this if you set htusers below.  Default: 0 (disabled)
-
-=item htusers
-
-This should be the path to a file to be updated with the list of users
-and crypt() versions of their passwords.  If this is set then the
-security system will check for a user set by the browser before
-attempting a form based logon.  Default: None.
-
-=item custom_class
-
-The name of the custom class for your site.  This is currently only
-used for article editing customizations.  This class should derive
-from BSE::CustomBase.  Default: BSE::Custom.
-
-=item jit_dynamic_pregen
-
-If this is true, then pre-generation for dynamic pages will be delayed
-until the page is displayed to a user.  Default: off.
-
-=item staticajax
-
-If true, the ifAjax and ajax tags will be active for static pages.
-
-=item cache_thumbnails
-
-If set to zero the results of the thumbimage/gthumbimage body/template
-tags will not be cached.  Default: 1 (caching is enabled).
-
-=item static_thumbnails
-
-If true and cache_thumbnails is true then thumbnails for the thumbnail
-cache will be generated when a static page is regenerated, and the
-link from the page will link to the image in the cache rather than to
-C<thumb.pl>.  Default: 1 (static thumbnails enabled).
+If this is true, then the drop-down lists of possible stepparents and
+stepchildren on the article edit pages are filtered for access control.
+Default: False.
 
 =item alias_prefix
 
 The prefix applied to articles that use a linkAlias url.  This should
 start with a /.
-
-=item use_alias
-
-If this is non-zero then an article with linkAlias set will use an
-alias url instead of the "real" url.  You will need to configure a
-RewriteRule or ErrorDocument to page.pl to direct the user to the
-correct URL.  Default: 1.
-
-=item alias_suffix
-
-If this is non-zero then the title is cleaned up (all but
-alphanumerics removed) and appended to the alias URL generated.
 
 =item alias_recursive
 
@@ -374,69 +275,20 @@ followed by slash (C</>) separated aliases from the ancestors starting
 from the section, followed by the C<alias_suffix>.  You may need to
 change your redirect handling if you enable this.  Default: Off.
 
-=item default_popupimage
+=item alias_suffix
 
-This is the default popup image class for the popimage[] and
-gpopimage[] tags.  Default: popup.
+If this is non-zero then the title is cleaned up (all but
+alphanumerics removed) and appended to the alias URL generated.
 
-=item warn_obsolete
+=item auto_images
 
-Some obsolete tags will warn to stderr if this is non-zero.  Default:
-don't warn.
+By default, if the author doesn't use any image tags, BSE will insert
+any unnamed article images into the body text of an article.  You can
+disable this on a per-article basis in the image tool, or disable it
+globally by setting C<auto_images> to 0.
 
-=item no_cache_dynamic
-
-If non-zero, the default, dynamic responses will include a
-C<Cache-Control: no-cache> header.  This can be overridden for
-articles via , article flags, C<[template >
-I<templatename>C<].no_cache_dynamic> and [article].no_cache_dynamic.
-Default: 1.
-
-=item redir_to_alias
-
-If true then page.pl will 301 redirect (Moved Permanently) requests
-for an article by its id to the generated link if the article has a
-link alias.  Default: false.  Must only be used with use_alias true.
-
-=item track_uploads
-
-If this is non-zero, and a cache is configured (see [cache]), file
-uploads are tracked in entries in the cache.
-
-The fileprogress.pl script can be called by Ajax to display file
-upload progress information to the user.  The upload state is updated
-a maximum of once a second.
-
-=item http_only_session
-
-If this is non-zero, the default, the session cookie sent to the
-browser has the C<HttpOnly> attribute set.  This can prevent session
-cookie hijacking.  Default: 1.
-
-=item secure_session
-
-If this is non-zero then the session cookie sent to the browser has
-the C<Secure> attribute set.  This means that the cookie will only be
-visible over https.  This is only useful when the only URL the site is
-visited over is a https URL.  Default: 0.
-
-=item make_userid_cookie
-
-If this is non-zero, the default, then when the site member logs in, a
-javascript visible cookie, C<userid> will be set that contains the
-login name of the user.  BSE's back-end doesn't use this cookie, its
-only use is for Javascript to enable/disable user interface elements.
-Default: 1.
-
-=item dynamic_access_filter
-
-If set to 0, dynamic article iterators will no access control filter
-their results.  Default: 1.
-
-=item index_file
-
-The name of the file to generate for static articles when the link is
-terminated by "/".  Default: C<index.html>.
+An alternative is to set C<imagePos> in C<[article defaults]> to
+C<xx> which will default articles to not auto-inserting images.
 
 =item cache_templates
 
@@ -450,6 +302,99 @@ If true, BSE will cache compiled templates in memory.  This may
 significantly improve performance but may increase memory use.
 Default: disabled.
 
+=item cache_thumbnails
+
+If set to zero the results of the thumbimage/gthumbimage body/template
+tags will not be cached.  Default: 1 (caching is enabled).
+
+=item cookie_domain
+
+This overrides the domain value set for cookies.  This is useful if
+you allow the site to run under both example.com and www.example.com,
+if you set cookie_domain to example.com then a user visiting
+www.example.com will still have their cookies when they visit
+example.com.
+
+=item cookie_lifetime
+
+The expiry time for cookies.  This should be in the form supported by
+CGI.pm for the -expires parameter.  Typically you want a plus ('+'), a
+number, and a time character (s - seconds, m - minutes, h - hours, d -
+days, M - months).  Default: +3h
+
+=item cookie_name
+
+This overrides the cookie name used to store the session id.  Default:
+sessionid.  This is useful when you have 2 sites under the same
+top-level domain, and helps disambiguate the cookie returned by the
+browser.
+
+=item custom_class
+
+The name of the custom class for your site.  This is currently only
+used for article editing customizations.  This class should derive
+from BSE::CustomBase.  Default: BSE::Custom.
+
+=item default_popupimage
+
+This is the default popup image class for the popimage[] and
+gpopimage[] tags.  Default: popup.
+
+=item dynamic_access_filter
+
+If set to 0, dynamic article iterators will no access control filter
+their results.  Default: 1.
+
+=item http_only_session
+
+If this is non-zero, the default, the session cookie sent to the
+browser has the C<HttpOnly> attribute set.  This can prevent session
+cookie hijacking.  Default: 1.
+
+=item htusers
+
+This should be the path to a file to be updated with the list of users
+and crypt() versions of their passwords.  If this is set then the
+security system will check for a user set by the browser before
+attempting a form based logon.  Default: None.
+
+=item index_file
+
+The name of the file to generate for static articles when the link is
+terminated by "/".  Default: C<index.html>.
+
+=item jit_dynamic_pregen
+
+If this is true, then pre-generation for dynamic pages will be delayed
+until the page is displayed to a user.  Default: off.
+
+=item link_titles
+
+If this is true then the links to your articles within BSE will be
+followed by a / and then by a simplified version of the article title.
+The aim is to include at least some title information in the URL
+without modifying the name of the HTML file.  Default: False.
+
+=item make_userid_cookie
+
+If this is non-zero, the default, then when the site member logs in, a
+javascript visible cookie, C<userid> will be set that contains the
+login name of the user.  BSE's back-end doesn't use this cookie, its
+only use is for Javascript to enable/disable user interface elements.
+Default: 1.
+
+=item minpassword
+
+Minimum password length in characters.  Default: 4.
+
+=item no_cache_dynamic
+
+If non-zero, the default, dynamic responses will include a
+C<Cache-Control: no-cache> header.  This can be overridden for
+articles via , article flags, C<[template >
+I<templatename>C<].no_cache_dynamic> and [article].no_cache_dynamic.
+Default: 1.
+
 =item preload_template
 
 Preload the named template, searching the template search part.  Any
@@ -457,15 +402,70 @@ text that would normally be produced by the preloaded template is
 ignored.  This can be useful for common definitions and variables for
 use in many templates.  Default: none.
 
-=item auto_images
+=item randomdata
 
-By default, if the author doesn't use any image tags, BSE will insert
-any unnamed article images into the body text of an article.  You can
-disable this on a per-article basis in the image tool, or disable it
-globally by setting C<auto_images> to 0.
+Device to read random data from.  This device should not block when it
+runs out of entropy.
 
-An alternative is to set C<imagePos> in C<[article defaults]> to
-C<xx> which will default articles to not auto-inserting images.
+=item redir_to_alias
+
+If true then page.pl will 301 redirect (Moved Permanently) requests
+for an article by its id to the generated link if the article has a
+link alias.  Default: false.  Must only be used with use_alias true.
+
+=item secure_session
+
+If this is non-zero then the session cookie sent to the browser has
+the C<Secure> attribute set.  This means that the cookie will only be
+visible over https.  This is only useful when the only URL the site is
+visited over is a https URL.  Default: 0.
+
+=item server_auth
+
+Set this to non-zero to enable authentication via server
+authentication (usually Basic Authentication.)  You should normally
+set this if you set htusers below.  Default: 0 (disabled)
+
+=item sign
+
+If this is true then the encrypted messages containing the customer's
+credit card number are sent to the shop owner signed.  To avoid
+keeping a passphrase and signing key on the server you can set this to
+false (0).  This has the effect that anyone could send you an unsigned
+message encrypted with your public key, though this may not be a
+security threat.  Default: True.
+
+=item staticajax
+
+If true, the ifAjax and ajax tags will be active for static pages.
+
+=item static_thumbnails
+
+If true and cache_thumbnails is true then thumbnails for the thumbnail
+cache will be generated when a static page is regenerated, and the
+link from the page will link to the image in the cache rather than to
+C<thumb.pl>.  Default: 1 (static thumbnails enabled).
+
+=item track_uploads
+
+If this is non-zero, and a cache is configured (see [cache]), file
+uploads are tracked in entries in the cache.
+
+The fileprogress.pl script can be called by Ajax to display file
+upload progress information to the user.  The upload state is updated
+a maximum of once a second.
+
+=item use_alias
+
+If this is non-zero then an article with linkAlias set will use an
+alias url instead of the "real" url.  You will need to configure a
+RewriteRule or ErrorDocument to page.pl to direct the user to the
+correct URL.  Default: 1.
+
+=item warn_obsolete
+
+Some obsolete tags will warn to stderr if this is non-zero.  Default:
+don't warn.
 
 =back
 
