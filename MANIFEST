@@ -51,7 +51,6 @@ site/cgi-bin/fmail.fcgi
 site/cgi-bin/fmail.pl
 site/cgi-bin/image.pl
 site/cgi-bin/interest.pl
-site/cgi-bin/modules/AdminUtil.pm
 site/cgi-bin/modules/Apache/Session/DBIreal.pm
 site/cgi-bin/modules/Apache/Session/Store/DBIreal.pm
 site/cgi-bin/modules/Article.pm
