@@ -1,6 +1,13 @@
 #!perl -w
 use strict;
-use Test::More tests => 7;
+use Test::More;
+
+BEGIN {
+  eval "use XML::Simple; 1"
+    or plan skip_all => "No XML::Simple";
+
+  plan tests => 7;
+}
 
 use Courier::Fastway::Road;
 use BSE::Shipping;

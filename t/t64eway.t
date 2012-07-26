@@ -1,6 +1,17 @@
 #!perl -w
 use strict;
-use Test::More tests => 17;
+use Test::More;
+
+BEGIN {
+  eval { require XML::LibXML; }
+    or plan skip_all => "No XML::LibXML";
+  eval { require LWP::UserAgent; }
+    or plan skip_all => "No XML::LibXML";
+  eval { require Crypt::SSLeay; }
+    or plan skip_all => "No Crypt::SSLeay";
+
+  plan tests => 17;
+}
 
 ++$|;
 

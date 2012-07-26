@@ -2,7 +2,7 @@ package DevHelp::Tags::Iterate;
 use strict;
 use Carp qw(confess);
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 sub new {
   my ($class, %opts) = @_;
@@ -344,13 +344,13 @@ sub make_paged {
      "${single}_number" => [ _iter_number_paged=>$self, \%state ],
      "ifLast\u$single" => [ _iter_if_last=>$self, \%state ],
      "ifFirst\u$single" => [ _iter_if_first=>$self, \%state ],
-     "ifNext\u${plural}\EPage" => $page_num < $page_count,
-     "ifPrev\u${plural}\EPage" => $page_num > 1,
-     "ifFirst\u${plural}\EPage" => $page_num == 1,
-     "ifLast\u${plural}\EPage" => $page_num == $page_count,
-     "next\u${plural}\EPage" => 
+     "ifNext\u${plural}Page" => $page_num < $page_count,
+     "ifPrev\u${plural}Page" => $page_num > 1,
+     "ifFirst\u${plural}Page" => $page_num == 1,
+     "ifLast\u${plural}Page" => $page_num == $page_count,
+     "next\u${plural}Page" => 
      ( $page_num < $page_count ? $page_num + 1 : $page_num ),
-     "prev\u${plural}\EPage" =>
+     "prev\u${plural}Page" =>
      ( $page_num > 1 ? $page_num - 1 : 1 ),
      "${single}_count" => scalar(@data),
      "${plural}_pagenum" => $page_num,

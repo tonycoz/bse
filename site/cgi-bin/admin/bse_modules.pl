@@ -42,6 +42,9 @@ my @base_check =
       'MIME::Lite' => 0,
       'Date::Format' => 0,
       'Data::UUID' => '1.148',
+      'File::Slurp' => 0,
+      'Time::HiRes' => 0,
+      'WWW::Mechanize' => 0,
      }
    },
    {
@@ -63,21 +66,12 @@ my @base_check =
     },
    },
    {
-    name => "Nport",
-    modules => 
-    {
-     'Time::HiRes' => 0,
-     'Date::Calc' => 0,
-    },
-   },
-   {
     name => "Optional",
     modules =>
     {
      'Imager' => 0.44,
      'Log::Agent' => 0,
      'Net::Amazon::S3' => 0,
-     'Date::Format' => 0,
      'Captcha::reCAPTCHA' => 0,
      'FLV::Info' => 0,
      'DBM::Deep' => 2,

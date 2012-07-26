@@ -86,7 +86,9 @@ my $im2;
   is($imres->decoded_content, $orig, "check it matches");
 }
 
-{
+SKIP: {
+  eval { require Imager; }
+    or skip "No Imager", 2;
   # check thumbnailing
   my $thumb_url = base_url() . $im2->dynamic_thumb_url(geo => "editor");
   $thumb_url .= "&cache=0";

@@ -33,19 +33,21 @@ my $perl = BSE::Test::test_perl();
 if ($perl ne '/usr/bin/perl') {
   my $manifest = ExtUtils::Manifest::maniread();
 
-  for my $file (grep /\.pl$/, keys %$manifest) {
+  for my $file (keys %$manifest) {
     (my $work = $file) =~ s!^site!!;
-    next unless $work =~ /cgi-bin/;
     my $full = $instbase . $work;
-    open SCRIPT, "< $full" or die "Cannot open $full: $!";
-    binmode SCRIPT;
-    my @all = <SCRIPT>;
-    close SCRIPT;
-    $all[0] =~ s/^#!\S*perl\S*/#!$perl/;
-    open SCRIPT, "> $full" or die "Cannot create $full: $!";
-    binmode SCRIPT;
-    print SCRIPT @all;
-    close SCRIPT;
+    open my $script, "<", $full
+      or next;
+    binmode $script;
+    my $first = <$script>;
+    if ($first =~ s/^#!\S*perl\S*/#!$perl/) {
+      my @all = <$script>;
+      close $script;
+      open my $out_script, ">", $full or die "Cannot create $full: $!";
+      binmode $out_script;
+      print $out_script $first, @all;
+      close $out_script;
+    }
   }
 }
 
@@ -136,7 +138,7 @@ unless ($leavedb) {
     my $db = $1;
     system "$mysql -u$dbuser -p$dbpass $db <$dist/schema/bse.sql"
       and die "Cannot initialize database";
-    system "cd $instbase/util ; perl initial.pl"
+    system "cd $instbase/util ; $perl initial.pl"
       and die "Cannot load database";
   }
   else {
