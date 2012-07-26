@@ -1,3 +1,5 @@
+drop table if exists bse_tag_category_deps;
+drop table if exists bse_tag_categories;
 drop table if exists bse_tag_members;
 drop table if exists bse_tags;
 
