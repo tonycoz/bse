@@ -1,10 +1,11 @@
 #!perl -w
 use strict;
-use BSE::Test qw(base_url make_ua fetch_ok skip check_form post_ok ok 
-                 check_content);
+use BSE::Test qw(base_url make_ua skip check_form post_ok ok 
+                 check_content follow_ok);
+use URI::QueryParam;
 #use WWW::Mechanize;
 ++$|;
-print "1..19\n";
+print "1..22\n";
 my $baseurl = base_url;
 my $ua = make_ua;
 
@@ -34,3 +35,12 @@ check_content($ua->{content}, "admin mode",
   	   .*
   	   This\ is\ a\ test\ body
   	   !xsm);
+my $uri = $ua->uri;
+my $id = $uri->query_param("id");
+# manage sections
+ok($ua->get("$baseurl/cgi-bin/admin/add.pl?id=-1"), "sections page");
+follow_ok($ua, "clean up",
+	  {
+	   text => "Delete",
+	   url_regex => qr/id=$id/
+	  }, qr/Article deleted/);
