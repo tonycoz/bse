@@ -7,7 +7,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::ThumbCommon/;
 use Carp qw(confess);
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 sub columns {
   return qw/id articleId image alt width height url displayOrder name
@@ -112,6 +112,13 @@ sub article {
     require Articles;
     return Articles->getByPkey($self->articleId);
   }
+}
+
+sub remove {
+  my ($self) = @_;
+
+  unlink $self->full_filename;
+  return $self->SUPER::remove();
 }
 
 sub update {

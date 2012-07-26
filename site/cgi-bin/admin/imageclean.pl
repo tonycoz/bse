@@ -2,9 +2,13 @@
 use strict;
 use FindBin;
 use lib "$FindBin::Bin/../modules";
+use BSE::API qw(bse_init);
 use BSE::TB::Images;
 use Articles;
-use Constants qw($IMAGEDIR);
+use BSE::CfgInfo qw(cfg_image_dir);
+use File::Spec::Functions qw(catfile);
+
+bse_init("..");
 
 my %articleIds = ( -1 => 1 );
 my $images = BSE::TB::Images->new;
@@ -54,16 +58,17 @@ for my $id (@articleids) {
 
 print "\nRemoving unused images\n";
 
-opendir IMG, $IMAGEDIR
-  or do { print "Cannot open $IMAGEDIR: $!\n"; exit };
+my $image_dir = cfg_image_dir();
+opendir IMG, $image_dir
+  or do { print "Cannot open $image_dir: $!\n"; exit };
 while (defined(my $file = readdir IMG)) {
   if ($file =~ /^\d{8}/) {
     print ".";
-    unless ($names{$file} || !-f "$IMAGEDIR$file") {
+    unless ($names{$file} || !-f catfile($image_dir, $file)) {
       print "x";
-      
-      unlink $IMAGEDIR.$file
-	or print "\nCould not remove $IMAGEDIR$file: $!\n";
+
+      unlink catfile($image_dir, $file)
+	or print "\nCould not remove $image_dir$file: $!\n";
     }
   }
 }
@@ -82,12 +87,13 @@ imageclean.pl - clean up the images directory and image records
 
 =head1 WARNING
 
-This will remove B<any> images in $IMAGEDIR that have names starting
-with 8 or more digits if they don't exist in the C<image> table as a
-record with a current article number.
+This will remove B<any> images in the configured managed images
+directory that have names starting with 8 or more digits if
+they don't exist in the C<image> table as a record with a current
+article number.
 
 If you need image names of this form, put them elsewhere, or
-reconfigure $IMAGEDIR.
+reconfigure the managed images directory.
 
 =head1 DESCRIPTION
 
@@ -109,7 +115,8 @@ older versions didn't remove the image files when images were removed
 
 =item
 
-you may have deleted articles with images under an older version, which would have left the image records (and the image files)
+you may have deleted articles with images under an older version,
+which would have left the image records (and the image files)
 
 =back
 

@@ -1,4 +1,3 @@
-
 =head1 NAME
 
 config.pod - documents BSE configuration file options
@@ -1140,17 +1139,28 @@ This is underused, so don't rely on it yet.
 
 =over
 
+=item articles
+
 =item cgi
 
 The URI to the CGI directory.  Default: /cgi-bin
 
+=item dist_images
+
+The URI where images included with BSE can be found.
+
+This includes images such as F<trans_pixel.gif> and C<admin/error.gif>.
+
+Default: C</images>
+
 =item images
 
-The URI where images are kept.  Default: /images
+The URI where managed images are kept which should correspond to
+C<images> in C<[paths]>.
+
+Default: C</images> (from C<$Constants::IMAGES_URI>)
 
 =item shop
-
-=item articles
 
 =back
 

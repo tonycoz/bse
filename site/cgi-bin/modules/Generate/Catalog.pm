@@ -1,18 +1,19 @@
 package Generate::Catalog;
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 use strict;
 use Generate;
 use Products;
 use base 'Generate::Article';
 use BSE::Template;
-use Constants qw($CGI_URI $IMAGES_URI $ADMIN_URI);
+use Constants qw($CGI_URI $ADMIN_URI);
 use BSE::Regen qw(generate_button);
 use OtherParents;
 use DevHelp::HTML;
 use BSE::Arrows;
 use BSE::Util::Iterate;
+use BSE::CfgInfo qw(cfg_dist_image_uri);
 
 sub _default_admin {
   my ($self, $article, $embedded) = @_;
@@ -160,6 +161,7 @@ sub baseActs {
   my $it = BSE::Util::Iterate->new;
   my $cfg = $self->{cfg};
   my $art_it = BSE::Util::Iterate::Article->new(cfg => $cfg);
+  my $image_uri = cfg_dist_image_uri();
   my %work =
     (
      $self->SUPER::baseActs($articles, $acts, $article, $embedded),
@@ -172,7 +174,7 @@ sub baseActs {
      sub {
        if ($self->{admin} && $product_index < $#products) {
 	 my $html = <<HTML;
- <a href="$CGI_URI/admin/move.pl?id=$products[$product_index]{id}&amp;d=down"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom" /></a>
+ <a href="$CGI_URI/admin/move.pl?id=$products[$product_index]{id}&amp;d=down"><img src="$image_uri/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="absbottom" /></a>
 HTML
 	 chop $html;
 	 return $html;
@@ -185,7 +187,7 @@ HTML
      sub {
        if ($self->{admin} && $product_index > 0) {
 	 my $html = <<HTML;
- <a href="$CGI_URI/admin/move.pl?id=$products[$product_index]{id}&amp;d=up"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom" /></a>
+ <a href="$CGI_URI/admin/move.pl?id=$products[$product_index]{id}&amp;d=up"><img src="$image_uri/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="absbottom" /></a>
 HTML
 	 chop $html;
 	 return $html;
@@ -214,7 +216,7 @@ HTML
        my $can_move_up = $allprod_index > 0;
        my $can_move_down = $allprod_index < $#allprods;
        return '' unless $can_move_up || $can_move_down;
-       my $blank = '<img src="/images/trans_pixel.gif" width="17" height="13" border="0" align="absbotton" alt="" />';
+       my $blank = qq(<img src="$image_uri/trans_pixel.gif" width="17" height="13" border="0" align="absbotton" alt="" />);
        my $myid = $allprods[$allprod_index]{id};
        my $top = $self->{top} || $article;
        my $refreshto = "$CGI_URI/admin/admin.pl?id=$top->{id}$urladd";

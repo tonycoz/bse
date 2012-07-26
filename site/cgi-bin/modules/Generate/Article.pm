@@ -1,7 +1,7 @@
 package Generate::Article;
 use strict;
 use BSE::Template;
-use Constants qw(%LEVEL_DEFAULTS $CGI_URI $ADMIN_URI $IMAGES_URI 
+use Constants qw(%LEVEL_DEFAULTS $CGI_URI $ADMIN_URI
                  $UNLISTED_LEVEL1_IN_CRUMBS);
 use BSE::TB::Images;
 use vars qw(@ISA);
@@ -14,8 +14,9 @@ use BSE::Util::HTML;
 use BSE::Arrows;
 use Carp 'confess';
 use BSE::Util::Iterate;
+use BSE::CfgInfo qw(cfg_dist_image_uri);
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 my $excerptSize = 300;
 
@@ -110,7 +111,7 @@ sub tag_title {
   }
 
   if ($im) {
-    my $src = $im->{src} || "/images/$im->{image}";
+    my $src = $im->image_url;
     $src = escape_html($src);
     return qq!<img src="$src" width="$im->{width}"!
       . qq! height="$im->{height}" alt="$title" class="bse_image_title" />!;
@@ -409,7 +410,8 @@ sub baseActs {
     BSE::TB::ArticleFiles->getBy(articleId=>$article->{id});
   my @files = grep !$_->{hide_from_list}, @all_files;
   
-  my $blank = qq!<img src="$IMAGES_URI/trans_pixel.gif"  width="17" height="13" border="0" align="absbottom" alt="" />!;
+  my $image_uri = cfg_dist_image_uri();
+  my $blank = qq!<img src="$image_uri/trans_pixel.gif"  width="17" height="13" border="0" align="absbottom" alt="" />!;
 
   my $top = $self->{top} || $article;
   my $abs_urls = $self->abs_urls($article);
@@ -454,7 +456,8 @@ sub baseActs {
 	   (my $image = $templater->perform($acts, $which, 'thumbImage'))) {
 	 my $width = $templater->perform($acts, $which, 'thumbWidth');
 	 my $height = $templater->perform($acts, $which, 'thumbHeight');
-         my $result = '<img src="/images/'.$image
+	 my $image_uri = cfg_image_uri();
+         my $result = qq(<img src="$image_uri/$image")
            .'" width="'.$width
              .'" height="'.$height.'"';
          $result .= qq! class="$class"! if $class;
@@ -532,7 +535,7 @@ sub baseActs {
        @children > 1 or return '';
        if ($self->{admin} && $child_index < $#children) {
          my $html = <<HTML;
-<a href="$CGI_URI/admin/move.pl?id=$children[$child_index]{id}&amp;d=down"><img src="$IMAGES_URI/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="bottom" /></a>
+<a href="$CGI_URI/admin/move.pl?id=$children[$child_index]{id}&amp;d=down"><img src="$image_uri/admin/move_down.gif" width="17" height="13" border="0" alt="Move Down" align="bottom" /></a>
 HTML
 	 chop $html;
 	 return $html;
@@ -545,7 +548,7 @@ HTML
        @children > 1 or return '';
        if ($self->{admin} && $child_index > 0) {
          my $html = <<HTML;
-<a href="$CGI_URI/admin/move.pl?id=$children[$child_index]{id}&amp;d=up"><img src="$IMAGES_URI/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="bottom" /></a>
+<a href="$CGI_URI/admin/move.pl?id=$children[$child_index]{id}&amp;d=up"><img src="$image_uri/admin/move_up.gif" width="17" height="13" border="0" alt="Move Up" align="bottom" /></a>
 HTML
 	 chop $html;
 	 return $html;

@@ -2,9 +2,10 @@ package BSE::Index::BSE;
 use strict;
 use base 'BSE::Index::Base';
 use BSE::DB;
-use Constants qw($DATADIR $MAXPHRASE);
+use Constants qw($MAXPHRASE);
+use BSE::CfgInfo qw(cfg_data_dir);
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub new {
   my ($class, %opts) = @_;
@@ -50,7 +51,8 @@ sub new {
 sub start_index {
   my $self = shift;
 
-  my $stopwords = "$DATADIR/stopwords.txt";
+  my $data_dir = cfg_data_dir();
+  my $stopwords = "$data_dir/stopwords.txt";
 
   # load the stop words
   open STOP, "< $stopwords"

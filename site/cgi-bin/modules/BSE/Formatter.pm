@@ -3,7 +3,7 @@ use strict;
 use BSE::Util::HTML;
 use Carp 'confess';
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 use base 'DevHelp::Formatter';
 
@@ -51,7 +51,12 @@ sub new {
 sub image_url {
   my ($self, $im) = @_;
 
-  $im->{src} || "/images/$im->{image}"
+  return $im->{src}
+    if $im->src;
+
+  require BSE::CfgInfo;
+
+  return BSE::CfgInfo::cfg_image_uri() . "/" . $im->{image};
 }
 
 sub _image {

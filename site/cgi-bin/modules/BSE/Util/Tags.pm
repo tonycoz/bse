@@ -8,7 +8,7 @@ use vars qw(@EXPORT_OK @ISA);
 @ISA = qw(Exporter);
 require Exporter;
 
-our $VERSION = "1.021";
+our $VERSION = "1.022";
 
 sub _get_parms {
   my ($acts, $args) = @_;
@@ -964,7 +964,7 @@ sub tag_error_img {
     return '' unless @$msg > $num && $msg->[$num];
     $msg = $msg->[$num];
   }
-  my $images_uri = $cfg->entry('uri', 'images', '/images');
+  my $images_uri = BSE::CfgInfo::cfg_dist_image_uri($cfg);
   my $image = $cfg->entry('error_img', 'image', "$images_uri/admin/error.gif");
   my $width = $cfg->entry('error_img', 'width', 16);
   my $height = $cfg->entry('error_img', 'height', 16);

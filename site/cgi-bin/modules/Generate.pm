@@ -1,19 +1,19 @@
 package Generate;
 use strict;
 use Articles;
-use Constants qw($IMAGEDIR $LOCAL_FORMAT $BODY_EMBED 
+use Constants qw($LOCAL_FORMAT $BODY_EMBED 
                  $EMBED_MAX_DEPTH $HAVE_HTML_PARSER);
 use DevHelp::Tags;
 use BSE::Util::HTML;
 use BSE::Util::Tags qw(tag_article);
-use BSE::CfgInfo qw(custom_class);
+use BSE::CfgInfo qw(custom_class cfg_image_dir cfg_image_uri);
 use BSE::Util::Iterate;
 use BSE::TB::Site;
 use BSE::Variables;
 use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 
-our $VERSION = "1.009";
+our $VERSION = "1.010";
 
 my $excerptSize = 300;
 
@@ -922,8 +922,11 @@ sub baseActs {
      titleImage=>
      sub {
        my ($image, $text) = split ' ', $_[0];
-       if (-e $IMAGEDIR."/titles/".$image) {
-         return qq!<img src="/images/titles/!.$image .qq!" border=0>!
+
+       my $image_dir = cfg_image_dir();
+       if (-e "$image_dir/titles/$image") {
+	 my $image_uri = cfg_image_uri();
+         return qq!<img src="$image_uri/titles/!.$image .qq!" border=0>!
        }
        else {
          return escape_html($text);
@@ -1450,8 +1453,8 @@ Conditional tag, true if the given item can appear in a menu.
 =item titleImage I<imagename> I<text>
 
 Generates an IMG tag if the given I<imagename> is in the title image
-directory ($IMAGEDIR/titles).  If it doesn't exists, produces the
-I<text>.
+directory (F<titles> in the managed images directory).  If it doesn't
+exist, produce I<text>.
 
 =item embed I<which>
 

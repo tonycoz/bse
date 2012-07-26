@@ -1,8 +1,9 @@
 package BSE::Arrows;
 use strict;
 use BSE::Util::HTML;
+use BSE::CfgInfo qw(cfg_dist_image_uri);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 use base 'Exporter';
 
@@ -16,7 +17,7 @@ sub make_arrows {
   my $section = $type ? "$type arrows" : "arrows";
   my $prefix = $cfg->entry($section, "prefix", $type);
 
-  my $images_uri = $cfg->entry('uri', 'images', '/images');
+  my $images_uri = cfg_dist_image_uri();
   my $html = '';
   my $want_xhtml = $cfg->entryBool('basic', 'xhtml', 1);
   my $extra_attr = "";
@@ -31,7 +32,7 @@ sub make_arrows {
     $extra_attr .= qq(width="$image_width" height="$image_height" );
   }
 
-  my $nomove = qq'<img src="/images/trans_pixel.gif" alt="" $extra_attr/>';
+  my $nomove = qq'<img src="$images_uri/trans_pixel.gif" alt="" $extra_attr/>';
   if ($down_url) {
     my $down_img = $cfg->entry($section, "downimg", "$images_uri/admin/${prefix}move_down.gif");
     $down_url .= "&r=".escape_uri($refresh) if $refresh;

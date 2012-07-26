@@ -5,7 +5,7 @@ use vars qw(@ISA $VERSION);
 @ISA = qw(Squirrel::Table);
 use BSE::TB::Image;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub rowClass {
   return 'BSE::TB::Image';
@@ -27,10 +27,13 @@ Return the base URI for images stored in the image_dir().
 
 Traditionally C</images/>, but it's meant to be configurable.
 
+This includes a trailing C</> unlike L<BSE::CfgInfo/cfg_image_uri()>.
+
 =cut
 
 sub base_uri {
-  return BSE::Cfg->single->entryIfVar("site", "images", "/images/");
+  require BSE::CfgInfo;
+  return BSE::CfgInfo::cfg_image_uri() . "/";
 }
 
 =item get_ftype($is_type)

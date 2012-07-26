@@ -1,12 +1,12 @@
 package BSE::CfgInfo;
 use strict;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 use vars qw(@ISA @EXPORT_OK);
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(custom_class admin_base_url cfg_image_dir credit_card_class product_options bse_default_country);
+@EXPORT_OK = qw(custom_class admin_base_url cfg_image_dir cfg_image_uri cfg_dist_image_uri cfg_data_dir credit_card_class product_options bse_default_country);
 
 =head1 NAME
 
@@ -79,10 +79,74 @@ sub admin_base_url {
   return $base;
 }
 
+=item cfg_image_dir()
+
+Return the directory configured for storage of managed images.
+
+=cut
+
 sub cfg_image_dir {
   my ($cfg) = @_;
 
-  $cfg->entry('paths', 'images', $Constants::IMAGEDIR);
+  $cfg ||= BSE::Cfg->single;
+
+  return $cfg->entryIfVar('paths', 'images', $Constants::IMAGEDIR);
+}
+
+=item cfg_image_uri()
+
+Return the configured base URI for managed images.
+
+This should correspond to the directory specified by [paths].images
+
+Configured with [uri].images
+
+=cut
+
+sub cfg_image_uri {
+  my ($cfg) = @_;
+
+  $cfg ||= BSE::Cfg->single;
+
+  require Constants;
+  return $cfg->entryIfVar('uri', 'images', $Constants::IMAGES_URI);
+}
+
+=item cfg_dist_image_uri()
+
+Return the configured base URI for images distributed with BSE.
+
+This imcludes images such as F<trans_pixel.gif> and C<admin/error.gif>.
+
+Must not include a trailing C</>.
+
+Configured with [uri].dist_images
+
+=cut
+
+sub cfg_dist_image_uri {
+  my ($cfg) = @_;
+
+  $cfg ||= BSE::Cfg->single;
+
+  return $cfg->entryIfVar('uri', 'dist_images', "/images");
+}
+
+=item cfg_data_dir()
+
+Returns the directory configured for storage of files such as
+F<stopwords.txt>.
+
+Configured with [paths].data
+
+=cut
+
+sub cfg_data_dir {
+  my ($cfg) = @_;
+
+  $cfg ||= BSE::Cfg->single;
+
+  return $cfg->entryIfVar('paths', 'data', $Constants::DATADIR);
 }
 
 =item credit_card_class

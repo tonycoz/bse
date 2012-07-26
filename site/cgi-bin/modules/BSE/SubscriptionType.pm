@@ -5,7 +5,7 @@ use Squirrel::Row;
 use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub columns {
   return qw/id name title description frequency keyword archive 
@@ -404,7 +404,7 @@ sub send {
     my @cols = Article->columns;
     shift @cols;
     my $article = Articles->add(@article{@cols});
-    use Constants qw(:edit $CGI_URI $IMAGES_URI $ARTICLE_URI $LINK_TITLES);
+    use Constants qw(:edit $CGI_URI $ARTICLE_URI $LINK_TITLES);
     my $link = "$ARTICLE_URI/$article->{id}.html";
     if ($LINK_TITLES) {
       (my $extra = lc $article->{title}) =~ tr/a-z0-9/_/sc;

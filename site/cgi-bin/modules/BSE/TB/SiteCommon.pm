@@ -2,7 +2,7 @@ package BSE::TB::SiteCommon;
 use strict;
 use Carp qw(confess);
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 =head1 NAME
 
@@ -173,9 +173,11 @@ sub files {
 sub remove_images {
   my ($self, $cfg) = @_;
 
+  $cfg ||= BSE::Cfg->single;
   my @images = $self->images;
   my $mgr;
-  my $imagedir = $cfg->entry('paths', 'images', $Constants::IMAGEDIR);
+  require BSE::CfgInfo;
+  my $imagedir = BSE::CfgInfo::cfg_image_dir($cfg);
   for my $image (@images) {
     if ($image->{storage} ne 'local') {
       unless ($mgr) {
@@ -185,7 +187,6 @@ sub remove_images {
       $mgr->unstore($image->{image}, $image->{storage});
     }
 
-    unlink("$imagedir/$image->{image}");
     $image->remove();
   }
 }

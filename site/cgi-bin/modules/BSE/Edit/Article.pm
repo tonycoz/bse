@@ -6,7 +6,7 @@ use BSE::Util::SQL qw(now_sqldate now_sqldatetime);
 use BSE::Permissions;
 use BSE::Util::HTML qw(:default popup_menu);
 use BSE::Arrows;
-use BSE::CfgInfo qw(custom_class admin_base_url cfg_image_dir);
+use BSE::CfgInfo qw(custom_class admin_base_url cfg_image_dir cfg_dist_image_uri cfg_image_uri);
 use BSE::Util::Iterate;
 use BSE::Template;
 use BSE::Util::ContentType qw(content_type);
@@ -15,7 +15,7 @@ use DevHelp::Date qw(dh_parse_date dh_parse_sql_date);
 use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
-our $VERSION = "1.026";
+our $VERSION = "1.027";
 
 =head1 NAME
 
@@ -704,7 +704,7 @@ sub tag_move_stepparent {
   $urladd = '' unless defined $urladd;
 
   my $cgi_uri = $self->{cfg}->entry('uri', 'cgi', '/cgi-bin');
-  my $images_uri = $self->{cfg}->entry('uri', 'images', '/images');
+  my $images_uri = cfg_dist_image_uri();
   my $html = '';
   my $url = $ENV{SCRIPT_NAME} . "?id=$article->{id}";
   if ($cgi->param('_t')) {
@@ -813,7 +813,7 @@ sub tag_movechild {
   $urladd = '' unless defined $urladd;
 
   my $cgi_uri = $self->{cfg}->entry('uri', 'cgi', '/cgi-bin');
-  my $images_uri = $self->{cfg}->entry('uri', 'images', '/images');
+  my $images_uri = cfg_dist_image_uri();
   my $urlbase = admin_base_url($req->cfg);
   my $refresh_url = "$urlbase$ENV{SCRIPT_NAME}?id=$article->{id}";
   my $t = $req->cgi->param('_t');
@@ -2966,7 +2966,7 @@ sub save_image_changes {
 
 	    $changes{$id}{image} = $image_name;
 	    $changes{$id}{storage} = 'local';
-	    $changes{$id}{src} = "/images/$image_name";
+	    $changes{$id}{src} = cfg_image_uri() . "/" . $image_name;
 	    $changes{$id}{width} = $width;
 	    $changes{$id}{height} = $height;
 	    $changes{$id}{ftype} = $self->_image_ftype($type);
@@ -3257,7 +3257,7 @@ sub do_add_image {
      displayOrder=>time,
      name => $imageref,
      storage => 'local',
-     src => '/images/' . $filename,
+     src => cfg_image_uri() . '/' . $filename,
      ftype => $self->_image_ftype($type),
     );
   require BSE::TB::Images;
@@ -3392,7 +3392,6 @@ sub remove_img {
   }
 
   my $imagedir = cfg_image_dir($req->cfg);
-  unlink "$imagedir$image->{image}";
   $image->remove;
 
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
@@ -3475,7 +3474,7 @@ sub req_thumb {
     my $geometry_id = $cgi->param('g');
     defined $geometry_id or $geometry_id = 'editor';
     my $geometry = $cfg->entry('thumb geometries', $geometry_id, 'scale(200x200)');
-    my $imagedir = $cfg->entry('paths', 'images', $Constants::IMAGEDIR);
+    my $imagedir = cfg_image_dir();
     
     my $error;
     ($data, $type) = $thumb_obj->thumb_data
@@ -3505,7 +3504,7 @@ sub req_thumb {
   }
   else {
     # grab the nothumb image
-    my $uri = $cfg->entry('editor', 'default_thumbnail', '/images/admin/nothumb.png');
+    my $uri = $cfg->entry('editor', 'default_thumbnail', cfg_dist_image_uri() . '/admin/nothumb.png');
     my $filebase = $cfg->content_base_path;
     if (open IMG, "<$filebase/$uri") {
       binmode IMG;
@@ -3686,7 +3685,7 @@ sub req_save_image {
 	  $image->{width} = $width;
 	  $image->{height} = $height;
 	  $image->{storage} = 'local'; # not on the remote store yet
-	  $image->{src} = '/images/' . $image_name;
+	  $image->{src} = cfg_image_uri() . '/' . $image_name;
 	  $image->{ftype} = $self->_image_ftype($type);
 	}
 	else {

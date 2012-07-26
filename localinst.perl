@@ -71,7 +71,7 @@ my $dbpass = BSE::Test::test_dbpass();
 #$con =~ s/(^\$DBCLASS = ')[^']*/$1 . BSE::Test::test_dbclass()/me;
 #$con =~ s/(^\$UN = ')[^']*/$1$dbuser/m;
 #$con =~ s/(^\$PW = ')[^']*/$1$dbpass/m;
-$con =~ s/(^\$BASEDIR = ')[^']+/$1 . BSE::Test::base_dir/me;
+#$con =~ s/(^\$BASEDIR = ')[^']+/$1 . BSE::Test::base_dir/me;
 #$con =~ s/(^\$URLBASE = ["'])[^'"]+/$1 . BSE::Test::base_url/me;
 #$con =~ s/(^\$SECURLBASE = ["'])[^'"]+/$1 . BSE::Test::test_securl/me;
 $con =~ s/(^\$SESSION_CLASS = [\"\'])[^\'\"]+/$1 . BSE::Test::test_sessionclass()/me;
@@ -87,11 +87,12 @@ my $conffile = BSE::Test::test_conffile();
 my %conf;
 $conf{site}{url} = BSE::Test::base_url();
 $conf{site}{secureurl} = BSE::Test::base_securl();
-my $uploads = "$instbase/uploads";
-$conf{paths}{downloads} = $uploads;
-my $templates = "$instbase/templates";
-$conf{paths}{templates} = $templates;
-$conf{paths}{public_html} = "$instbase/htdocs";
+$conf{paths}{siteroot} = $instbase;
+#my $uploads = "$instbase/uploads";
+#$conf{paths}{downloads} = $uploads;
+#my $templates = "$instbase/templates";
+#$conf{paths}{templates} = $templates;
+#$conf{paths}{public_html} = "$instbase/htdocs";
 open TESTCONF, "< $conffile"
   or die "Could not open config file $conffile: $!";
 while (<TESTCONF>) {
@@ -100,7 +101,7 @@ while (<TESTCONF>) {
   $conf{lc $1}{lc $2} = $3;
 }
 
-$uploads = $conf{paths}{downloads};
+#$uploads = $conf{paths}{downloads};
 # create installation config
 
 $conf{db}{class} = BSE::Test::test_dbclass();
@@ -123,9 +124,9 @@ for my $section_name (keys %conf) {
 
 close CFG;
 
--d $uploads 
-  or mkdir $uploads, 0777 
-  or die "Cannot find or create upload directory: $!";
+#-d $uploads 
+#  or mkdir $uploads, 0777 
+#  or die "Cannot find or create upload directory: $!";
 
 
 # build the database

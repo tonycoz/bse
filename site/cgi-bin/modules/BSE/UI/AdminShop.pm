@@ -6,9 +6,8 @@ use Product;
 use BSE::TB::Orders;
 use BSE::TB::OrderItems;
 use BSE::Template;
-#use Squirrel::ImageEditor;
 use Constants qw(:shop $SHOPID $PRODUCTPARENT 
-                 $SHOP_URI $CGI_URI $IMAGES_URI $AUTO_GENERATE);
+                 $SHOP_URI $CGI_URI $AUTO_GENERATE);
 use BSE::TB::Images;
 use Articles;
 use BSE::Sort;
@@ -18,8 +17,9 @@ use BSE::WebUtil 'refresh_to_admin';
 use BSE::Util::HTML qw(:default popup_menu);
 use BSE::Arrows;
 use BSE::Shop::Util qw(:payment order_item_opts nice_options payment_types);
+use BSE::CfgInfo qw(cfg_dist_image_uri);
 
-our $VERSION = "1.015";
+our $VERSION = "1.016";
 
 my %actions =
   (
@@ -84,7 +84,8 @@ sub embedded_catalog {
     grep $_->{generator} eq 'Generate::Catalog', 
     Articles->children($catalog->{id});
 
-  my $blank = qq!<img src="$IMAGES_URI/trans_pixel.gif" width="17" height="13" border="0" align="absbottom" />!;
+  my $image_uri = cfg_dist_image_uri();
+  my $blank = qq!<img src="$image_uri/trans_pixel.gif" width="17" height="13" border="0" align="absbottom" />!;
 
   my %acts;
   %acts =
@@ -201,7 +202,8 @@ sub req_product_list {
     $products->getBy(parentid => $shopid);
   my $product_index;
 
-  my $blank = qq!<img src="$IMAGES_URI/trans_pixel.gif" width="17" height="13" border="0" align="absbottom" />!;
+  my $image_uri = cfg_dist_image_uri();
+  my $blank = qq!<img src="$image_uri/trans_pixel.gif" width="17" height="13" border="0" align="absbottom" />!;
 
   my $it = BSE::Util::Iterate->new;
 
@@ -354,7 +356,8 @@ sub product_form {
 #      if $product->{id};
   my $image_index;
 
-  my $blank = qq!<img src="$IMAGES_URI/trans_pixel.gif" width="17" height="13" border="0" align="absbottom" />!;
+  my $image_uri = cfg_dist_image_uri();
+  my $blank = qq!<img src="$image_uri/trans_pixel.gif" width="17" height="13" border="0" align="absbottom" />!;
 
   my %acts;
   %acts =

@@ -871,8 +871,8 @@ Conditional tag, true if the given item can appear in a menu.
 =item titleImage I<imagename> I<text>
 
 Generates an IMG tag if the given I<imagename> is in the title image
-directory ($IMAGEDIR/titles).  If it doesn't exists, produces the
-I<text>.
+directory (F<titles> in the configured image directory).  If it
+doesn't exists, produces the I<text>.
 
 =item embed I<which>
 
