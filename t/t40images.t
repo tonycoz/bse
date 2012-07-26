@@ -1,10 +1,13 @@
 #!perl -w
 use strict;
 use BSE::Test qw(make_ua base_url fetch_ok follow_ok click_ok follow_refresh_ok);
-use Test::More tests => 106;
+use Test::More tests => 114;
 
 my $base_url = base_url;
 my $ua = make_ua;
+
+my $title = "t40images.t ".time;
+my $title_re = qr/\Q$title/;
 
 # make a new section to put the images into
 fetch_ok($ua, "menu", "$base_url/cgi-bin/admin/menu.pl", qr/Administration Centre/);
@@ -13,14 +16,23 @@ follow_ok($ua, "add section link", "Add a new section", qr/New Page Lev1/);
 
 ok($ua->form_name("edit"), "select edit form");
 
-$ua->field(title => "Images test article");
+$ua->field(title => $title);
 $ua->field(body => "ONE((image[test]))\n\nTWO\{\{image[2]\}\}");
 
-click_ok($ua, "add the article", "save", qr/Images test article/);
+click_ok($ua, "add the article", "save", $title_re);
 
 ok($ua->form_name("edit"), "select edit form");
 
 click_ok($ua, "back to editor", undef, qr/Edit Page Lev1/);
+
+my $article_id;
+SKIP:
+{
+  ok((my $edit_form = $ua->form_name("edit")), "edit page has an edit form")
+    or skip("no edit form", 1);
+  ok(($article_id = $edit_form->value("id")),
+     "edit form has an id");
+}
 
 follow_ok($ua, "to images", "Manage Images", qr/Page Lev1 Image Wizard/);
 
@@ -69,7 +81,7 @@ like($images[1]{src}, qr/t101\.jpg$/, "image 2 name");
 is($images[1]{alt}, "two", "image 2 alt");
 
 # look at the article
-follow_ok($ua, "admin view of article", "See article", "Images test article");
+follow_ok($ua, "admin view of article", "See article", $title_re);
 
 # extract the images here too, but simpler due to the layout of the body
 my @im_html;
@@ -147,7 +159,7 @@ ok($ua->form_name("edit"), "select edit form");
 $ua->field(body =>"ONE((image[test]))\n\nTWO\{\{image[2]\}\}\n\nTHREE<<gimage[$global_name]>>");
 
 click_ok($ua, "save the new body", "save", undef, qr/Title: BSE - Edit Page Lev1/);
-follow_ok($ua, "to display", "See article", qr/Images test article/);
+follow_ok($ua, "to display", "See article", $title_re);
 print "# on page ",$ua->uri,"\n";
 my ($g_html) = $ua->content =~ /THREE&lt;&lt;(.*?)&gt;&gt;/;
 ok($g_html, "global image in page");
@@ -205,6 +217,15 @@ my $img_url = URI->new_abs($gim{src}, $ua->uri);
 ok(!$ua->get($img_url)->is_success, 
    "checking image file for global image was deleted");
 $ua->back;
+
+follow_ok($ua, "admin menu", "Admin menu", qr/Administration Centre/);
+follow_ok($ua, "sections", "Administer sections", qr/Manage Sections/);
+follow_ok($ua, "delete article",
+	  {
+	   text => "Delete",
+	   url_regex => qr/id=$article_id/
+	  },
+	  qr/Article deleted/);
 
 sub image1 {
   # based on testout/t105pal.gif from Imager
