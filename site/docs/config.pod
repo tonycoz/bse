@@ -820,6 +820,11 @@ usage.
 C<memory> priority index building requires that the DBM::Deep module
 be installed.
 
+=item level
+
+Articles with a higher level than this are indexed as their ancestor.
+Default: C<$SEARCH_LEVEL> which defaults to 5.
+
 =back
 
 =head2 [search highlight]

@@ -1,10 +1,10 @@
 package BSE::Index;
 use strict;
 use Time::HiRes qw(time);
-use Constants qw($BASEDIR $MAXPHRASE $DATADIR @SEARCH_EXCLUDE @SEARCH_INCLUDE $SEARCH_LEVEL);
+use Constants qw(@SEARCH_EXCLUDE @SEARCH_INCLUDE);
 use Articles;
 
-our $VERSION = "1.001";
+our $VERSION = "1.003";
 
 my %default_scores =
   (
@@ -24,16 +24,16 @@ my %default_scores =
 sub new {
   my ($class, %opts) = @_;
 
+  my $cfg = BSE::Cfg->single;
   unless ($opts{scores}) {
     my $scores = { %default_scores };
-    my $cfg = BSE::Cfg->single;
     for my $field (keys %$scores) {
       $scores->{$field} = $cfg->entry("search index scores", $field, $scores->{$field});
     }
     $opts{scores} = $scores;
   }
   $opts{start} = time;
-  $opts{max_level} ||= $SEARCH_LEVEL;
+  $opts{max_level} ||= $cfg->entry("search", "level", $Constants::SEARCH_LEVEL);
 
   return bless \%opts, $class;
 }
