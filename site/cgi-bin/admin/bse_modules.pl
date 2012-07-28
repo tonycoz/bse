@@ -76,6 +76,7 @@ my @base_check =
      'FLV::Info' => 0,
      'DBM::Deep' => 2,
      'CSS::Inliner' => 3042,
+     'DBM::Deep' => 0,
     },
    },
    {

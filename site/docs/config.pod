@@ -816,8 +816,8 @@ C<speed> builds the index in memory and is very fast, but can consume
 a lot of memory.  Otherwise, set this to C<memory> to reduce memory
 usage.
 
-C<memory> priority index building requires that the DBM::Deep module
-be installed.
+C<memory> priority index building requires that the C<DBM::Deep>
+module be installed.
 
 =item level
 

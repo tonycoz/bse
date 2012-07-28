@@ -5,7 +5,7 @@ use BSE::DB;
 use Constants qw($MAXPHRASE);
 use BSE::CfgInfo qw(cfg_data_dir);
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub new {
   my ($class, %opts) = @_;
@@ -23,7 +23,8 @@ sub new {
     $self->{index} = {};
   }
   elsif ($priority eq "memory") {
-    require DBM::Deep;
+    eval { require DBM::Deep; 1 }
+      or die "DBM::Deep must be installed to use [search].index_priority=memory\n";
     require File::Temp;
     my $fh = File::Temp->new;
     $self->{index} = DBM::Deep->new

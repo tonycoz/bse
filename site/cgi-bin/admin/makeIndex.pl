@@ -114,6 +114,7 @@ sub do_regen {
   }
   
   my $good = eval {
+    local $SIG{__DIE__};
     my $indexer = BSE::Index->new
       (
        error => $errorcb,
