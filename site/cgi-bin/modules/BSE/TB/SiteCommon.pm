@@ -2,7 +2,7 @@ package BSE::TB::SiteCommon;
 use strict;
 use Carp qw(confess);
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 =head1 NAME
 
@@ -203,6 +203,59 @@ sub _copy_fh_to_fh {
   return 1;
 }
 
+=head1 add_file($cfg, %opts)
+
+Add a file to the site or article.
+
+Options:
+
+=over
+
+=item *
+
+C<filename> - the name of the file to add.  This or C<file> is required.
+
+If C<filename> is in the BSE download directory BSE will take
+ownership of the file - you must not remove it.
+
+=item *
+
+C<file> - a file handle of the file to add.  This or C<filename> is
+required.
+
+=item *
+
+C<displayName> - the display name of the file.  Required.
+eg. C<"foo.txt">
+
+=item *
+
+C<contentType> - the content type of the file.  Guessed from
+C<displayName> if not supplied.
+
+=item *
+
+C<name> - an identifier for the file.  Required for global files,
+though that may change.  Must unique within global files or within the
+article's files, depending where you're adding it.
+
+=item *
+
+C<store> - set to true to perform storage processing on the file.
+
+=item *
+
+C<storage> - the storage to store the file in if C<store> is true.  If
+blank or empty BSE will select store based on the configured rules.
+
+=back
+
+dies with an error message on failure.
+
+Returns a file object on success.
+
+=cut
+
 sub add_file {
   my ($self, $cfg, %opts) = @_;
 
@@ -241,6 +294,8 @@ sub add_file {
   }
   elsif ($opts{file}) {
     my $file = delete $opts{file};
+    UNIVERSAL::isa(\$file, "GLOB") || UNIVERSAL::isa($file, "GLOB")
+	or die "file must be a file handle\n";
     my $out_fh;
     require DevHelp::FileUpload;
     my $msg;

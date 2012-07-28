@@ -1,8 +1,9 @@
 #!perl -w
 use strict;
 use BSE::Test qw(make_ua base_url);
-use Test::More tests => 32;
+use Test::More tests => 38;
 use File::Spec;
+use File::Slurp;
 use Carp qw(confess);
 
 $SIG{__DIE__} = sub { confess @_ };
@@ -127,5 +128,48 @@ SKIP: {
     or diag "restoring deps: ", $error;
 }
 
+{ # adding a file
+  { # this should fail, file isn't a handle
+    my $file;
+    ok(!eval { $file = $art->add_file
+	     (
+	      $cfg,
+	      displayName => "test.txt",
+	      file => "t/t15api.t",
+	      store => 0,
+	     ) }, "file must be a file handle");
+    like($@, qr/file must be a file handle/, "check message");
+
+    ok(!eval { $file = $art->add_file
+	     (
+	      $cfg,
+	      filename => "t/t15api.t",
+	      store => 0,
+	     ) }, "displayName is required");
+    like($@, qr/displayName must be non-blank/, "check message");
+  }
+
+  my $file = $art->add_file
+    (
+     $cfg,
+     displayName => "test.txt",
+     filename => "t/t15api.t",
+     store => 0,
+    );
+  ok($file, "added a file");
+
+  # check the content
+  my $mine = read_file("t/t15api.t");
+  my $stored = read_file($file->full_filename);
+  is($stored, $mine, "check contents");
+}
+
 ok($child->remove($cfg), "remove child");
+undef $child;
 ok($art->remove($cfg), "remove article");
+undef $art;
+
+END {
+  $child->remove($cfg) if $child;
+  $art->remove($cfg) if $art;
+}
