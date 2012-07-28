@@ -1,7 +1,7 @@
 package BSE::CfgInfo;
 use strict;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 use vars qw(@ISA @EXPORT_OK);
 require Exporter;
@@ -146,7 +146,11 @@ sub cfg_data_dir {
 
   $cfg ||= BSE::Cfg->single;
 
-  return $cfg->entryIfVar('paths', 'data', $Constants::DATADIR);
+  my $dir = $cfg->entryIfVar('paths', 'data', $Constants::DATADIR);
+  -d $dir
+    or die "[paths].data value '$dir' isn't a directory\n";
+
+  return $dir;
 }
 
 =item credit_card_class
