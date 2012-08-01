@@ -265,11 +265,13 @@ sub _make_sql {
   my %map;
   @map{@code_cols} = @db_cols;
 
+  my $db = BSE::DB->single;
+
   my @want_cols;
   for my $log_col (@$cols) {
     my $phy_col = $map{$log_col}
       or confess "Unknown logical column $log_col";
-    push @want_cols, $phy_col;
+    push @want_cols, $db->quote_id($phy_col);
   }
 
   my $sql = "select " . join(", ", @want_cols) . " from $table_name";
@@ -498,21 +500,25 @@ sub _where_clause {
   elsif ($op =~ /^(=|<>|>=|<=|like|not like)$/) {
     my $dbcol = $map->{$query[0]}
       or confess "Unknown column $query[0]";
+    $dbcol = BSE::DB->single->quote_id($dbcol);
     return ("$dbcol $op ?", $query[1] );
   }
   elsif ($op =~ /^(?:not )?null$/) {
     my $dbcol = $map->{$query[0]}
       or confess "Unknown column $query[0]";
+    $dbcol = BSE::DB->single->quote_id($dbcol);
     return ("$dbcol $op", () );
   }
   elsif ($op eq "between") {
     my $dbcol = $map->{$query[0]}
       or confess "Unknown column $query[0]";
+    $dbcol = BSE::DB->single->quote_id($dbcol);
     return ("$dbcol $op ? and ?", @query[1, 2] );
   }
   else {
     my $dbcol = $map->{$op}
       or confess "Unknown column $op";
+    $dbcol = BSE::DB->single->quote_id($dbcol);
     return ("$dbcol = ?", $query[0]);
   }
 }

@@ -3,11 +3,9 @@ require 5.005;
 use strict;
 use Carp qw(croak);
 use Carp qw/confess/;
+use DBI::Const::GetInfoType;
 
-our $VERSION = "1.000";
-
-use vars qw($VERSION);
-$VERSION = '1.00';
+our $VERSION = "1.001";
 
 my $single;
 
@@ -126,6 +124,25 @@ sub run {
 
 sub dbh {
   $_[0]{dbh};
+}
+
+sub id_quote {
+  my $self = shift;
+
+  unless (defined $self->{id_quote}) {
+    $self->{id_quote} = $self->dbh->get_info($GetInfoType{SQL_IDENTIFIER_QUOTE_CHAR});
+    defined $self->{id_quote} or $self->{id_quote} = "";
+  }
+
+  return $self->{id_quote};
+}
+
+sub quote_id {
+  my ($self, $id) = @_;
+
+  my $q = $self->id_quote;
+
+  return $q . $id . $q;
 }
 
 sub forked {
