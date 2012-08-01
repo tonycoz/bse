@@ -1,0 +1,23 @@
+<:wrap admin/base.tmpl title => "Image Clean":>
+
+<h1>Image Clean - Processing</h1>
+
+<p>| <a href="<:= cfg.admin_url("menu") | html :>">Admin Menu</a>
+|</p>
+
+<div class="imageclean">
+<:iterator begin messages:>
+<:-.set msgbase = [ state, "msg:bse/admin/imageclean/" ][1] -:>
+<:- .if state.type eq "stage" -:>
+  <h1><:= request.htmlmsg("msg:bse/admin/imageclean/stage/" _ state.stage) -:></h1>
+<: .elsif state.type eq "substage" -:>
+  <h2><:= request.htmlmsg("msg:bse/admin/imageclean/substage/" _ state.stage _ "/" _ state.substage) -:></h2>
+<: .elsif state.type eq "orphanimage" :>
+  <div><:= request.htmlmsg(msgbase _ "process/" _ ( acted ? "remove" : "skip" ) _ "image", [ state.image.id, state.image.image ]) :></div>
+<: .elsif state.type eq "orphanfile" :>
+  <div><:= request.htmlmsg(msgbase _ "process/" _ ( acted ? "remove" : "skip" ) _ "file", [ state.file ]) :></div>
+<: .elsif state.type eq "error" :>
+<div class="message error"><:= state.error | html :></div>
+<: .end if -:>
+<:iterator end messages:>
+</div>

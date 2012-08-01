@@ -100,6 +100,7 @@ site/cgi-bin/modules/BSE/Formatter.pm
 site/cgi-bin/modules/BSE/Formatter/Article.pm
 site/cgi-bin/modules/BSE/Formatter/Subscription.pm
 site/cgi-bin/modules/BSE/Generate/Seminar.pm
+site/cgi-bin/modules/BSE/ImageClean.pm
 site/cgi-bin/modules/BSE/ImageHandler/Base.pm
 site/cgi-bin/modules/BSE/ImageHandler/Flash.pm
 site/cgi-bin/modules/BSE/ImageHandler/Img.pm
@@ -236,6 +237,7 @@ site/cgi-bin/modules/BSE/ThumbLow.pm
 site/cgi-bin/modules/BSE/UI.pm
 site/cgi-bin/modules/BSE/UI/AdminAudit.pm
 site/cgi-bin/modules/BSE/UI/AdminDispatch.pm
+site/cgi-bin/modules/BSE/UI/AdminImageClean.pm
 site/cgi-bin/modules/BSE/UI/AdminMessages.pm
 site/cgi-bin/modules/BSE/UI/AdminModules.pm
 site/cgi-bin/modules/BSE/UI/AdminNewsletter.pm
@@ -560,6 +562,9 @@ site/templates/admin/generate.tmpl
 site/templates/admin/grouplist.tmpl
 site/templates/admin/helpicon.tmpl	Help icon template for admin templates
 site/templates/admin/image_edit.tmpl	Edit a single image
+site/templates/admin/imageclean/final.tmpl
+site/templates/admin/imageclean/intro.tmpl
+site/templates/admin/imageclean/preview.tmpl
 site/templates/admin/include/article_menu.tmpl
 site/templates/admin/include/auditentry.tmpl
 site/templates/admin/include/audithead.tmpl
@@ -806,6 +811,7 @@ site/templates/user/unsubone_base.tmpl
 site/templates/user/userpage_base.tmpl
 site/templates/xbase.tmpl
 site/util/bse_back.pl
+site/util/bse_imageclean.pl
 site/util/bse_makeindex.pl
 site/util/bse_mkgitversion.pl
 site/util/bse_msgcheck.pl	Scan for undefined message ids

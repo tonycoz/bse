@@ -184,6 +184,42 @@ message: You don't have access to this function (%1:s)
 id: bse/admin/makeindex/complete
 message: Search index rebuild complete
 
+id: bse/admin/imageclean/stage/images
+message: Scanning image objects
+
+id: bse/admin/imageclean/stage/index
+message: Indexing file names from objects
+
+id: bse/admin/imageclean/stage/files
+message: Scanning files in the images directory for orphans
+
+id: bse/admin/imageclean/substage/index/images
+message: Image objects
+
+id: bse/admin/imageclean/substage/index/thumbnails
+message: Article thumbnails
+
+id: bse/admin/imageclean/substage/index/publicfiles
+message: Public managed files
+
+id: bse/admin/imageclean/preview/image
+message: Image: %1:d (%2:s)
+
+id: bse/admin/imageclean/preview/file
+message: File: %1:s
+
+id: bse/admin/imageclean/process/removefile
+message: Removed file '%1:s'
+
+id: bse/admin/imageclean/process/removeimage
+message: Removed image %1:d (%2:s)
+
+id: bse/admin/imageclean/process/skipfile
+message: Skipped file '%1:s'
+
+id: bse/admin/imageclean/process/skipimage
+message: Skipped image %1:d (%2:s)
+
 id: bse/shop/cart/empty
 message: Cart emptied
 

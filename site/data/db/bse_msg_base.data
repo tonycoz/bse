@@ -1,5 +1,5 @@
 --
-# VERSION=1.002
+# VERSION=1.003
 id: bse/
 description: BSE messages
 
@@ -271,6 +271,60 @@ description: Attempted to create or save a message to a language not in the conf
 
 id: bse/admin/message/badmultiline
 description: Multiple lines of text supplied when creating or saving a single line message
+
+id: bse/admin/imageclean/
+description: Messages/text for the imageclean tool(s)
+
+id: bse/admin/imageclean/stage/
+description: imageclean stage descriptions
+
+id: bse/admin/imageclean/stage/images
+description: Scanning images stage
+
+id: bse/admin/imageclean/stage/index
+description: Indexing file names from objects stage
+
+id: bse/admin/imageclean/stage/files
+description: Scanning files in the images directory for orphans
+
+id: bse/admin/imageclean/substage/
+description: Descriptions of substages
+
+id: bse/admin/imageclean/substage/index/
+description: Descriptions of substages of the index stage
+
+id: bse/admin/imageclean/substage/index/images
+description: Descriptions of the images substages of the index stage
+
+id: bse/admin/imageclean/substage/index/thumbnails
+description: Descriptions of the thumbnails substage of the index stage
+
+id: bse/admin/imageclean/substage/index/publicfiles
+description: Descriptions of publicfiles substage of the index stage
+
+id: bse/admin/imageclean/preview/
+description: Messages for images and files found during preview
+
+id: bse/admin/imageclean/preview/image
+description: Displayed for an orphan image object (%1 is the object id, %2 the filename)
+
+id: bse/admin/imageclean/preview/file
+description: Displayed for an orphan file (%1 is the filename)
+
+id: bse/admin/imageclean/process/
+description: Messages displayed during final processing
+
+id: bse/admin/imageclean/process/removefile
+description: Displayed when an orphan file is removed (%1 - filename)
+
+id: bse/admin/imageclean/process/removeimage
+description: Displayed when an orphan image is removed (%1 - image id, %2 - image filename)
+
+id: bse/admin/imageclean/process/skipfile
+description: Displayed when an orphan file is skipped (%1 - filename)
+
+id: bse/admin/imageclean/process/skipimage
+description: Displayed when an orphan image is skipped (%1 - image id, %2 - image filename)
 
 id: bse/shop/
 description: Shop messages

@@ -7,12 +7,14 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::ThumbCommon/;
 use Carp qw(confess);
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 sub columns {
   return qw/id articleId image alt width height url displayOrder name
             storage src ftype/;
 }
+
+sub table { "image" }
 
 sub formatted {
   my ($self, %opts) = @_;

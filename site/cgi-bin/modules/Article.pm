@@ -8,7 +8,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::TB::SiteCommon BSE::TB::TagOwner/;
 use Carp 'confess';
 
-our $VERSION = "1.014";
+our $VERSION = "1.015";
 
 =head1 NAME
 
@@ -43,6 +43,12 @@ sub columns {
     force_dynamic cached_dynamic inherit_siteuser_rights
     metaDescription metaKeywords summary menu titleAlias linkAlias
     category/;
+}
+
+sub db_columns {
+  my ($self) = @_;
+
+  return map { $_ eq "summary" ? "summaryx" : $_ } $self->columns;
 }
 
 =item id

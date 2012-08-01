@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 28;
+use Test::More tests => 30;
 use_ok("BSE::Cfg");
 use_ok("Squirrel::Template");
 use_ok("BSE::Template");
@@ -29,3 +29,5 @@ use_ok("BSE::UI::Page");
 use_ok("BSE::UserReg");
 use_ok("BSE::Index");
 use_ok("BSE::Index::BSE");
+use_ok("BSE::ImageClean");
+use_ok("BSE::UI::AdminImageClean");
