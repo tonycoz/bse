@@ -255,6 +255,8 @@ sub _getBy_sth {
 sub _make_sql {
   my ($self, $cols, $query, $options) = @_;
 
+  $query ||= [];
+
   my $table_name = $self->rowClass->table
     or confess "No table_name defined";
 
@@ -285,6 +287,16 @@ sub _make_sql {
   return ($sql, @args);
 }
 
+=item getColumnsBy
+
+Usage:
+
+$table_class->getColumnsBy([ "column" ... ], [ I<query> ], \%opts)
+
+See L</_where_clause> for information on formatting the query.
+
+=cut
+
 sub getColumnsBy {
   my ($self, $cols, $query, $opts) = @_;
 
@@ -306,6 +318,16 @@ sub getColumnsBy {
 
   return wantarray ? @rows : \@rows;
 }
+
+=item getColumnBy
+
+Usage:
+
+  $table_class->getColumnBy("column", \@query, \%opts);
+
+Returns the given column after running the query.
+
+=cut
 
 sub getColumnBy {
   my ($self, $col, $query, $opts) = @_;
@@ -330,6 +352,10 @@ sub getColumnBy {
 =item getCount($query)
 
 Get a count of rows matching the given query.
+
+Usage:
+
+$table_class->getCount(\@query);
 
 =cut
 
