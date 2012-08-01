@@ -1,6 +1,6 @@
 package Squirrel::Table;
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 use Carp;
 use strict;
@@ -420,6 +420,42 @@ sub getBy2 {
   }
 
   return wantarray ? @rows : \@rows;
+}
+
+=item iterateBy($query, $opts)
+
+Dynamically build a query and call a callback with the results.
+
+$query is a _where_clause() query as documented below.
+
+=cut
+
+sub iterateBy {
+  my ($self, $callback, $query, $opts) = @_;
+
+  my $rowClass = $self->rowClass;
+  my ($sql, @args) = $self->_make_sql([ $rowClass->columns ], $query, $opts);
+
+  $dh ||= BSE::DB->single;
+  my $sth = $dh->{dbh}->prepare($sql)
+    or confess "Cannot prepare generated $sql: ", $dh->{dbh}->errstr;
+
+  $sth->execute(@args)
+    or confess "Cannot execute $sql: ",$dh->{dbh}->errstr;
+
+  my @rows;
+  my @result;
+  while (my $row = $sth->fetchrow_arrayref) {
+    my $object = $rowClass->new(@$row);
+    if (defined wantarray) {
+      push @result, $callback->($object);
+    }
+    else {
+      $callback->($object);
+    }
+  }
+
+  return wantarray ? \@result : @result;
 }
 
 =item _where_clause(\%map, @query)
