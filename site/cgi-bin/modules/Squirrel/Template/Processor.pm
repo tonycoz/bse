@@ -3,7 +3,7 @@ use strict;
 use Squirrel::Template::Constants qw(:node);
 use Scalar::Util ();
 
-our $VERSION = "1.016";
+our $VERSION = "1.017";
 
 use constant ACTS => 0;
 use constant TMPLT => 1;
@@ -65,7 +65,10 @@ sub _process_stmt {
   }) {
     my $msg = $@;
 
-    return $node->[NODE_ORIG] if $msg =~ /\bENOIMPL\b/;
+    if ($msg =~ /\bENOIMPL\b/) {
+      $self->[TMPLT]->trace_noimpl("stmt:$node->[NODE_FILENAME]:$node->[NODE_LINE]:$msg\n");
+      return $node->[NODE_ORIG];
+    }
 
     push @errors, $self->_error($node, ref $msg ? $msg->[1] : $msg );
   }
@@ -81,7 +84,10 @@ sub _process_expr {
   unless (eval { $value = $self->[EVAL]->process($node->[NODE_EXPR_EXPR]); 1 }) {
     my $msg = $@;
 
-    return $node->[NODE_ORIG] if $msg =~ /\bENOIMPL\b/;
+    if ($msg =~ /\bENOIMPL\b/) {
+      $self->[TMPLT]->trace_noimpl("expr:$node->[NODE_FILENAME]:$node->[NODE_LINE]:$msg\n");
+      return $node->[NODE_ORIG];
+    }
 
     push @errors, $self->_error($node, ref $msg ? $msg->[1] : $msg );
   }
@@ -136,7 +142,10 @@ sub _process_set {
   else {
     my $msg = $@;
 
-    $msg =~ /\bENOIMPL\b/ and return $node->[NODE_ORIG];
+    if ($msg =~ /\bENOIMPL\b/) {
+      $self->[TMPLT]->trace_noimpl("set:$node->[NODE_FILENAME]:$node->[NODE_LINE]:$msg\n");
+      return $node->[NODE_ORIG];
+    }
 
     push @errors, $self->_error($node, ref $msg ? $msg->[1] : $msg );
   }
@@ -170,8 +179,10 @@ sub _process_call {
     $parsed = $self->[TMPLT]->get_macro($name);
     if (!$parsed) {
       ($parsed, my $message) = $self->[TMPLT]->parse_file($name);
-      $parsed
-	or die "ENOIMPL - $name not found\n";
+      unless ($parsed) {
+	$self->[TMPLT]->trace_noimpl("call:$node->[NODE_FILENAME]:$node->[NODE_LINE]:$message\n");
+	die "ENOIMPL - $name not found\n";
+      }
     }
     1;
   }) {
@@ -523,7 +534,7 @@ sub _process_switch {
 	  $result = $self->[TMPLT]->low_perform($self->[ACTS], lcfirst $func, $args, '');
 	}
 	else {
-	  die "ENOIMPL\n";
+	  die "ENOIMPL $func not found for switch case\n";
 	}
 	1;
       };

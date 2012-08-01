@@ -1129,6 +1129,12 @@ STDERR.
 If non-zero then the ifUserCan tag will output some trace information
 to STDERR.
 
+=item trace_noimpl
+
+Enables some trace messages from tags that return an ENOIMPL
+exception.  This can be useful for tracking down why a tag isn't being
+replaced.  This will produce a lot of output during page regeneration.
+
 =back
 
 =head2 [uri]

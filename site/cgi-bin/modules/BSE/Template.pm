@@ -4,7 +4,7 @@ use Squirrel::Template;
 use Carp qw(confess cluck);
 use Config ();
 
-our $VERSION = "1.008";
+our $VERSION = "1.009";
 
 sub templater {
   my ($class, $cfg, $rsets) = @_;
@@ -37,6 +37,7 @@ sub templater {
 	return BSE::Util::HTML::escape_uri($_[0]);
       },
      },
+     trace_noimpl => scalar($cfg->entry("debug", "trace_noimpl", 0)),
     );
   if ($cfg->entry("basic", "cache_templates")) {
     require BSE::Cache;

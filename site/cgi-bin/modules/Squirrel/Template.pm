@@ -19,7 +19,7 @@ BEGIN {
 
 use constant DEBUG_GET_PARMS => 0;
 
-our $VERSION = "1.021";
+our $VERSION = "1.022";
 
 my %compile_cache;
 
@@ -29,7 +29,7 @@ my $tag_tail = qr/(?:-:>\s*|:>)/;
 sub new {
   my ($class, %opts) = @_;
 
-  $opts{errout} = \*STDOUT;
+  $opts{errout} = \*STDERR;
   $opts{param} = [];
   $opts{wraps} = [];
   $opts{errors} = [];
@@ -155,6 +155,15 @@ sub perform {
   print STDERR "  < perform\n" if DEBUG > 1;
 
   return $value;
+}
+
+# display a trace message for ENOIMPL, if enabled
+sub trace_noimpl {
+  my $self = shift;
+
+  $self->{trace_noimpl} or return;
+  my $err = $self->{errout};
+  print $err @_;
 }
 
 sub find_template {
