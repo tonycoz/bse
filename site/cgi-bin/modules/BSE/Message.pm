@@ -9,7 +9,7 @@ use overload
   "&{}" => sub { my $self = $_[0]; return sub { $self->_old_msg(@_) } },
   "bool" => sub { 1 };
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 my $single;
 
@@ -221,7 +221,10 @@ sub _get_base_low {
 
   # build a list of languages to search
   my @langs = $lang;
-  if ($lang =~ /^([a-z]+)_[a-z]+$/) {
+  if ($lang =~ /^([a-z]+(?:[a-z]+))\./) {
+    push @langs, $1;
+  }
+  if ($lang =~ /^([a-z]+)_/i) {
     push @langs, $1;
   }
 
