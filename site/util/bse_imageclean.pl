@@ -14,7 +14,7 @@ GetOptions
   (
    "v", \$verbose,
    "a|actions" => \$actions,
-   "b|bse" => \$bse_dir,
+   "b|bse=s" => \$bse_dir,
    "n|nothing" => \$nothing,
    "h" => \$help,
   );
