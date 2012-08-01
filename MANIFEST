@@ -864,6 +864,7 @@ t/t13parent.t
 t/t13steps.t
 t/t15api.t
 t/t16article.t
+t/t17tags.t
 t/t20gen.t
 t/t21gencat.t			Tests catalog generation
 t/t30rules.t			Check for use strict and warnings
