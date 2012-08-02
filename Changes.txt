@@ -6,6 +6,14 @@ Bug fixes:
  - <:.set ... :> would treat an unknown value (ENOIMPL) as an error
    rather, instead of leaving the code in place
 
+ - removed the unused Squirrel::ImageEditor and AdminUtil modules.
+
+ - column names in generated queries are now quoted using the
+   identifier quote returned by the database driver.
+
+ - handle language ids of the form xx_XX.charset correctly when
+   performing message lookups.
+
 Enchancements:
 
  - modify Generate::* classes to build templates by filename instead
@@ -30,6 +38,55 @@ Enchancements:
 
  - added bse.articles and bse.products for access to the Articles and
    Products collection classes.
+
+ - order payment would fail if the CC fields weren't present.
+
+ - search index depth can now be configured in the config file
+
+ - some tests now clean up the articles they create more reliably
+
+ - $DATADIR is now configurable as [paths].data
+
+ - $IMAGEDIR and $IMAGES_URI are now reliably configurable as
+   [paths].images and [uri].images.
+
+ - better perl 5.16 compatibility (resolved some warnings)
+
+ - installation now updates installed scripts with the test.cfg
+   configured perl.
+
+ - tests now handle missing optional modules correctly
+
+ - added iterateBy() to Squirrel::Table for memory efficient iteration
+   over query results.
+
+ - revamped imageclean.pl:
+
+   - output is now controlled by templates
+
+   - added a command-line tool
+
+   - web UI is now access controlled
+
+   - the web UI now provides a preview of the work to be done, with
+     checkboxes to control which clean ups are done.
+
+   - now accounts for public files controlled by BSE::TB::Files.
+
+Documentation:
+
+ - documented [basic].all_dynamic
+
+ - minor documentation updates to Squirrel::Table
+
+Templates:
+
+ - admin.pl now properly passes the admin state to bse.* template
+   variables
+
+ - added templates admin/imageclean/intro.tmpl,
+   admin/imageclean/preview.tmpl and admin/imageclean/final.tmpl for
+   the updated imagclean.pl
 
 BSE 0.22 - 08 Jun 2012
 ========
