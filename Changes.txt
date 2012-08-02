@@ -79,6 +79,16 @@ Documentation:
 
  - minor documentation updates to Squirrel::Table
 
+ - added a htmldocs target to the Makefile.  This requires a
+   HTMLDOCDIR parameter:
+
+     make htmldocs HTMLDOCDIR=/somewhere
+
+ - added tests for syntax check all pod
+
+ - improved documentation in Articles, BSE::AdminMenu and
+   Squirrel::Template::Processor.
+
 Templates:
 
  - admin.pl now properly passes the admin state to bse.* template
