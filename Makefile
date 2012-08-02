@@ -11,6 +11,8 @@ BSEMODULES=site/cgi-bin/modules/BSE/Modules.pm
 
 NOOP=echo Nothing
 
+HTMLDEPS=$(shell $(PERL) -lane 'print $$F[0] if $$F[0] =~ /\.(pm|pl|pod)$$/' MANIFEST)
+
 MODULES=$(shell grep cgi-bin/.*\.pm MANIFEST | sed -e '/^\#/d' -e 's/[ \t].*//' -e '/^site\/cgi-bin\/modules\/BSE\/\(Modules\|Version\)\.pm/d' )
 VERSIONDEPS=$(shell $(PERL) site/util/bse_versiondeps.pl MANIFEST)
 
@@ -122,3 +124,10 @@ filecheck:
 
 manifest:
 	$(PERL) -MExtUtils::Manifest=mkmanifest -e mkmanifest
+
+htmldocs: $(HTMLDEPS)
+	if [ -z "$(HTMLDOCDIR)" ] ; then \
+	  echo Supply HTMLDOCDIR ; exit 1 ; \
+	fi
+	[ -d "$(HTMLDOCDIR)" ] || mkdir -p "$(HTMLDOCDIR)"
+	$(PERL) makehtmldocs.pl "$(HTMLDOCDIR)" 

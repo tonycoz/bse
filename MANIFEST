@@ -6,6 +6,7 @@ INSTALL.pod
 INSTALL.txt
 localinst.perl			# simple test installer
 Makefile
+makehtmldocs.pl
 MANIFEST
 MANIFEST.SKIP
 README
