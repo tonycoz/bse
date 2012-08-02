@@ -883,6 +883,7 @@ t/t70thumbim.t
 t/t80catalog.t
 t/t85message.t
 t/t90dyncat.t
+t/t98podcheck.t
 t/tags/bse.cfg
 t/templater/00load.t
 t/templater/10token.t
