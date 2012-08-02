@@ -6,34 +6,77 @@ require BSE::TB::TagOwners;
 @ISA = qw(Squirrel::Table BSE::TB::TagOwners);
 use Article;
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
+
+=head1 NAME
+
+Articles - BSE's article collection
+
+=head1 SYNOPSIS
+
+  use Articles;
+
+  my $article = Articles->make(...);
+  my $article = Articles->getByPkey($id)
+  # etc
+
+=head1 DESCRIPTION
+
+The collective class for BSE articles.
+
+=head1 USEFUL METHODS
+
+=over
+
+=cut
 
 sub rowClass {
   return 'Article';
 }
 
-# returns a list of articles which are sections
+=item sections
+
+Returns a list of articles which are sections
+
+=cut
+
 sub sections {
   my ($self) = @_;
 
   return $self->getBy('level', 1);
 }
 
-# returns a list of articles which are sub sections
+=item subsections
+
+Returns a list of articles which are sub sections
+
+=cut
+
 sub subsections {
   my ($self) = @_;
 
   return $self->getBy('level', 2);
 }
 
-# child articles of the given child id
+=item children($id)
+
+Child articles of the given article id
+
+=cut
+
 sub children {
   my ($self, $id) = @_;
 
   return $self->getBy('parentid', $id);
 }
 
-# children of the given article that are listed and in the display order
+=item listedChildren($id)
+
+Children of the given article id that are listed and in the display
+order
+
+=cut
+
 sub listedChildren {
   my ($self, $id) = @_;
   my ($year, $month, $day) = (localtime)[5,4,3];
@@ -44,9 +87,21 @@ sub listedChildren {
 	     && $today le $_->{expire}} @work;
 }
 
+=item summary
+
+Return a list of hashes with article id and title for every article.
+
+=cut
+
 sub summary {
   BSE::DB->query('articlesList');
 }
+
+=item allids
+
+Return a list of all article ids.
+
+=cut
 
 sub allids {
   my ($self) = @_;
@@ -59,6 +114,12 @@ sub allids {
   }
 }
 
+=item visible_stepkids($id)
+
+Return a list of visible stepkids of the given article id.
+
+=cut
+
 sub visible_stepkids {
   my ($self, $id) = @_;
 
@@ -67,6 +128,12 @@ sub visible_stepkids {
 
   return Articles->getSpecial('visibleStepKids', $id, $today);
 }
+
+=item all_visible_kids($id)
+
+Return a list of all visible children of the given article id.
+
+=cut
 
 sub all_visible_kids {
   my ($self, $id) = @_;
@@ -85,6 +152,14 @@ sub all_visible_kids {
   return @kids{ sort { $order{$b} <=> $order{$a} } keys %kids };
 }
 
+=item all_visible_kid_tags($id)
+
+Return a hash with two keys, C<tags> being all tags for all visible
+children of C<$id>, and C<members> being all tag member objects for
+all visible children of C<$id>.
+
+=cut
+
 sub all_visible_kid_tags {
   my ($self, $id) = @_;
 
@@ -96,6 +171,12 @@ sub all_visible_kid_tags {
      members => [ BSE::TB::TagMembers->getSpecial(allkids => $id, $id) ],
     };
 }
+
+=item global_files
+
+Return a list of global files.
+
+=cut
 
 sub global_files {
   my ($self) = @_;
@@ -122,6 +203,15 @@ sub allkid_summary {
   return sort { $b->{displayOrder} <=> $a->{displayOrder} }
     ( @child_order, @stepchild_order );
 }
+
+=item reorder_child($parent_id, $child_id, $after_id)
+
+Move article C<$child_id> after C<$after_id> in the all children list
+of article C<$after_id>.
+
+Returns a true value on success.
+
+=cut
 
 sub reorder_child {
   my ($class, $parent_id, $child_id, $after_id) = @_;
@@ -167,6 +257,14 @@ sub reorder_child {
   return 1;
 }
 
+=item categories
+
+Return a list of all configured article categories.
+
+Each entry is a hash containing C<id> and C<name>.
+
+=cut
+
 sub categories {
   my $cfg = BSE::Cfg->single;
 
@@ -187,3 +285,12 @@ sub categories {
 }
 
 1;
+
+=back
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=cut
+

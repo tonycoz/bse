@@ -4,7 +4,27 @@ use BSE::Util::Tags;
 use base 'BSE::UI::AdminDispatch';
 use DevHelp::HTML;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
+
+=head1 NAME
+
+BSE::AdminMenu - implements the BSE admin menu.
+
+=head1 SYNOPSIS
+
+  menu.pl
+
+=head1 DESCRIPTION
+
+Implements the BSE admin menu and provides some other utilities.
+
+All actions require admin access.
+
+=head1 TARGETS
+
+=over
+
+=cut
 
 my %actions =
   (
@@ -21,6 +41,16 @@ sub actions { \%actions }
 sub rights { +{} }
 
 sub default_action { 'menu' }
+
+=item menu
+
+Display the menu.
+
+Template: F<admin/menu>.
+
+Tags: standard admin tags and C<message>.
+
+=cut
 
 sub req_menu {
   my ($class, $req, $msg) = @_;
@@ -50,7 +80,7 @@ sub req_menu {
   return $req->dyn_response('admin/menu', \%acts);
 }
 
-=item a_set_state
+=item set_state
 
 Set a UI state value.
 
@@ -108,6 +138,32 @@ sub req_set_state {
   return $req->json_content(success => 1);
 }
 
+=item get_state
+
+Get a UI state value.
+
+Parameters:
+
+=over
+
+=item *
+
+C<name> - name of the state value to retrieve.
+
+=back
+
+Requires Ajax.
+
+Returns JSON, on success:
+
+  { "success": 1, "value": "some value" }
+
+on failure:
+
+  { "success": 0, "error_code": "some code" }
+
+=cut
+
 sub req_get_state {
   my ($self, $req) = @_;
 
@@ -138,6 +194,32 @@ sub req_get_state {
     );
 }
 
+=item delete_state
+
+Delete a UI state value.
+
+Parameters:
+
+=over
+
+=item *
+
+C<name> - name of the state value to delete.
+
+=back
+
+Requires Ajax.
+
+Returns JSON, on success:
+
+  { "success": 1 }
+
+on failure:
+
+  { "success": 0, "error_code": "some code" }
+
+=cut
+
 sub req_delete_state {
   my ($self, $req) = @_;
 
@@ -162,6 +244,39 @@ sub req_delete_state {
     );
 }
 
+=item get_matching_state
+
+Get all UI state values where the name matches a prefix.
+
+Parameters:
+
+=over
+
+=item *
+
+C<name> - prefix to match
+
+=back
+
+Requires Ajax.
+
+Returns JSON, on success:
+
+  { "success": 1, 
+    "entries": [
+     { "name": "some name", "value": "some value" },
+     ...
+     ]
+   }
+
+Matching zero states is success.
+
+on failure:
+
+  { "success": 0, "error_code": "some code" }
+
+=cut
+
 sub req_get_matching_state {
   my ($self, $req) = @_;
 
@@ -184,6 +299,34 @@ sub req_get_matching_state {
      [ map +{ name => $_->name, value => $_->val }, @entries ],
     );
 }
+
+=item delete_matching_state
+
+Delete all UI state values where the name matches a prefix.
+
+Parameters:
+
+=over
+
+=item *
+
+C<name> - prefix to match
+
+=back
+
+Requires Ajax.
+
+Returns JSON, on success:
+
+  { "success": 1 }
+
+Matching zero states is success.
+
+on failure:
+
+  { "success": 0, "error_code": "some code" }
+
+=cut
 
 sub req_delete_matching_state {
   my ($self, $req) = @_;
@@ -212,3 +355,11 @@ sub req_delete_matching_state {
 }
 
 1;
+
+=back
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=cut

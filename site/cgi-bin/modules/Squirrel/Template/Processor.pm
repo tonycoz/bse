@@ -3,7 +3,7 @@ use strict;
 use Squirrel::Template::Constants qw(:node);
 use Scalar::Util ();
 
-our $VERSION = "1.017";
+our $VERSION = "1.018";
 
 use constant ACTS => 0;
 use constant TMPLT => 1;
@@ -643,7 +643,7 @@ Squirrel::Template::Processor - process a parsed template
   my $proc = Squirrel::Template::Processor->new(\%acts, $tmpl);
   my @content = $proc->process($node);
 
-=head DESCRIPTION
+=head1 DESCRIPTION
 
 Processes a parsed template node producing text.
 
@@ -663,8 +663,10 @@ when processing wrapped subtemplates.
 
 Process a parsed template node returning the results as a list.
 
+=back
+
 =head1 AUTHOR
 
 Tony Cook <tony@develop-help.com>
 
-=back
+=cut
