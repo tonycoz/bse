@@ -845,6 +845,7 @@ t/cfg/cfg/99end.cfg
 t/cfg/isafile.cfg
 t/cfg/t/varinc.cfg
 t/data/govhouse.jpg
+t/data/known_pod_issues.txt
 t/data/t101.jpg
 t/t000load.t
 t/t00smoke.t			makes a request to most of the scripts

@@ -116,6 +116,9 @@ TEST_VERBOSE=0
 test: testup
 	$(PERL) '-MTest::Harness=runtests,$$verbose' -Isite/cgi-bin/modules -It -e '$$verbose=$(TEST_VERBOSE); runtests @ARGV' $(TEST_FILES)
 
+regen_known_errors:
+	$(PERL) t/t98podcheck.t -r
+
 manicheck:
 	$(PERL) -MExtUtils::Manifest=manicheck -e 'manicheck()'
 
