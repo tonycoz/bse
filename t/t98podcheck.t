@@ -118,6 +118,9 @@ if ($rebuild) {
     }
     $message =~ s/^\d+\s+//;
 
+    # this message is so wrong
+    $message =~ /unescaped <> in paragraph/ and return;
+
     push @{$self->{imager_errors}}, $opts;
   }
 

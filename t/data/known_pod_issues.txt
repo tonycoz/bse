@@ -1,63 +1,31 @@
-INSTALL.pod	2 unescaped <> in paragraph	2
 INSTALL.pod	previous =item has no contents	1
-site/cgi-bin/admin/datadump.pl	2 unescaped <> in paragraph	1
 site/cgi-bin/admin/datadump.pl	Verbatim paragraph in NAME section	1
-site/cgi-bin/admin/generate.pl	2 unescaped <> in paragraph	1
-site/cgi-bin/admin/makeIndex.pl	2 unescaped <> in paragraph	1
-site/cgi-bin/admin/reorder.pl	2 unescaped <> in paragraph	1
-site/cgi-bin/affiliate.pl	2 unescaped <> in paragraph	1
-site/cgi-bin/modules/Article.pm	2 unescaped <> in paragraph	1
-site/cgi-bin/modules/Articles.pm	2 unescaped <> in paragraph	1
-site/cgi-bin/modules/BSE/AdminMenu.pm	2 unescaped <> in paragraph	1
-site/cgi-bin/modules/BSE/Cache.pm	1 unescaped <> in paragraph	4
 site/cgi-bin/modules/BSE/Cache.pm	=over on line 59 without closing =back	1
 site/cgi-bin/modules/BSE/Cache.pm	Spurious =cut command	1
-site/cgi-bin/modules/BSE/Cfg.pm	1 unescaped <> in paragraph	1
-site/cgi-bin/modules/BSE/Cfg.pm	2 unescaped <> in paragraph	1
 site/cgi-bin/modules/BSE/Cfg.pm	=over on line 34 without closing =back (at head1)	1
 site/cgi-bin/modules/BSE/Cfg.pm	Verbatim paragraph in NAME section	1
-site/cgi-bin/modules/BSE/CfgInfo.pm	2 unescaped <> in paragraph	1
 site/cgi-bin/modules/BSE/Console.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/Custom.pm	Verbatim paragraph in NAME section	1
-site/cgi-bin/modules/BSE/CustomBase.pm	1 unescaped <> in paragraph	9
 site/cgi-bin/modules/BSE/CustomBase.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/CustomBase.pm	Verbatim paragraph in NAME section	1
-site/cgi-bin/modules/BSE/DB.pm	1 unescaped <> in paragraph	1
-site/cgi-bin/modules/BSE/DB.pm	2 unescaped <> in paragraph	1
 site/cgi-bin/modules/BSE/DB.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/BSE/Dynamic/Article.pm	=item without previous =over	1
-site/cgi-bin/modules/BSE/Edit/Article.pm	2 unescaped <> in paragraph	1
 site/cgi-bin/modules/BSE/Edit/Article.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/Edit/Article.pm	No items in =over (at line 3060) / =back list	1
 site/cgi-bin/modules/BSE/Edit/Article.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/BSE/Edit/Product.pm	=over on line 693 without closing =back	1
-site/cgi-bin/modules/BSE/Edit/Site.pm	2 unescaped <> in paragraph	1
-site/cgi-bin/modules/BSE/FileBehaviour.pm	1 unescaped <> in paragraph	1
-site/cgi-bin/modules/BSE/FileHandler/Base.pm	1 unescaped <> in paragraph	9
 site/cgi-bin/modules/BSE/FileHandler/Base.pm	=over on line 31 without closing =back	1
-site/cgi-bin/modules/BSE/FileHandler/FLV.pm	2 unescaped <> in paragraph	2
 site/cgi-bin/modules/BSE/FileHandler/FLV.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/FileHandler/FLV.pm	empty section in previous paragraph	1
-site/cgi-bin/modules/BSE/ImageClean.pm	2 unescaped <> in paragraph	1
-site/cgi-bin/modules/BSE/ImageHandler/Flash.pm	2 unescaped <> in paragraph	1
 site/cgi-bin/modules/BSE/ImageHandler/Flash.pm	=over on line 201 without closing =back	1
-site/cgi-bin/modules/BSE/Mail.pm	2 unescaped <> in paragraph	1
 site/cgi-bin/modules/BSE/Mail.pm	Verbatim paragraph in NAME section	1
-site/cgi-bin/modules/BSE/Message.pm	1 unescaped <> in paragraph	2
 site/cgi-bin/modules/BSE/Message.pm	=item without previous =over	1
-site/cgi-bin/modules/BSE/MessageScanner.pm	1 unescaped <> in paragraph	1
 site/cgi-bin/modules/BSE/MessageScanner.pm	=item without previous =over	1
-site/cgi-bin/modules/BSE/NLFilter/SQL.pm	2 unescaped <> in paragraph	1
-site/cgi-bin/modules/BSE/Password.pod	2 unescaped <> in paragraph	1
-site/cgi-bin/modules/BSE/Request/Base.pm	2 unescaped <> in paragraph	1
 site/cgi-bin/modules/BSE/Request/Base.pm	=item without previous =over	1
-site/cgi-bin/modules/BSE/Session.pm	2 unescaped <> in paragraph	1
 site/cgi-bin/modules/BSE/Shop/PaymentTypes.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/Shop/Util.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/Sort.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/Sort.pm	Verbatim paragraph in NAME section	1
-site/cgi-bin/modules/BSE/Storage/Base.pm	2 unescaped <> in paragraph	1
-site/cgi-bin/modules/BSE/StorageMgr/Base.pm	1 unescaped <> in paragraph	6
 site/cgi-bin/modules/BSE/TB/ArticleFile.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/TB/AuditLog.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/TB/Files.pm	=item without previous =over	1
@@ -65,18 +33,10 @@ site/cgi-bin/modules/BSE/TB/Images.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/TB/Order.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/TB/Orders.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/TB/PriceTier.pm	=item without previous =over	1
-site/cgi-bin/modules/BSE/TB/SiteCommon.pm	2 unescaped <> in paragraph	1
 site/cgi-bin/modules/BSE/TB/SiteCommon.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/TB/SiteCommon.pm	=over on line 22 without closing =back (at head1)	1
 site/cgi-bin/modules/BSE/TB/SiteCommon.pm	multiple occurrence of link target 'menu_kids'	1
-site/cgi-bin/modules/BSE/TB/TagCategory.pm	2 unescaped <> in paragraph	1
-site/cgi-bin/modules/BSE/TB/TagOwner.pm	2 unescaped <> in paragraph	1
-site/cgi-bin/modules/BSE/TB/TagOwners.pm	1 unescaped <> in paragraph	1
-site/cgi-bin/modules/BSE/TB/TagOwners.pm	2 unescaped <> in paragraph	1
 site/cgi-bin/modules/BSE/TB/Tags.pm	=item without previous =over	1
-site/cgi-bin/modules/BSE/Thumb/Imager.pm	1 unescaped <> in paragraph	1
-site/cgi-bin/modules/BSE/UI/AdminImageClean.pm	2 unescaped <> in paragraph	1
-site/cgi-bin/modules/BSE/UI/AdminImageClean.pm	4 unescaped <> in paragraph	2
 site/cgi-bin/modules/BSE/UI/AdminImageClean.pm	No argument for =item	2
 site/cgi-bin/modules/BSE/UI/AdminModules.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/UI/AdminShop.pm	=item without previous =over	1
@@ -88,64 +48,40 @@ site/cgi-bin/modules/BSE/UI/AdminShop.pm	multiple occurrence of link target 'mon
 site/cgi-bin/modules/BSE/UI/AdminShop.pm	multiple occurrence of link target 'order name'	1
 site/cgi-bin/modules/BSE/UI/AdminShop.pm	multiple occurrence of link target 'product name'	1
 site/cgi-bin/modules/BSE/UI/AdminShop.pm	multiple occurrence of link target 'script'	1
-site/cgi-bin/modules/BSE/UI/Affiliate.pm	2 unescaped <> in paragraph	1
 site/cgi-bin/modules/BSE/UI/Background.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/UI/Formmail.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/UI/Shop.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/UserReg.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/UserReg.pm	Unknown command 'target'	2
-site/cgi-bin/modules/BSE/Util/DynamicTags.pm	1 unescaped <> in paragraph	10
-site/cgi-bin/modules/BSE/Util/DynamicTags.pm	10 unescaped <> in paragraph	1
-site/cgi-bin/modules/BSE/Util/DynamicTags.pm	2 unescaped <> in paragraph	3
-site/cgi-bin/modules/BSE/Util/DynamicTags.pm	8 unescaped <> in paragraph	1
 site/cgi-bin/modules/BSE/Util/DynamicTags.pm	No items in =over (at line 1237) / =back list	1
 site/cgi-bin/modules/BSE/Util/DynamicTags.pm	No items in =over (at line 1252) / =back list	1
 site/cgi-bin/modules/BSE/Util/DynamicTags.pm	No items in =over (at line 643) / =back list	1
 site/cgi-bin/modules/BSE/Util/DynamicTags.pm	No items in =over (at line 854) / =back list	1
 site/cgi-bin/modules/BSE/Util/DynamicTags.pm	No items in =over (at line 941) / =back list	1
-site/cgi-bin/modules/BSE/Util/HTML.pm	2 unescaped <> in paragraph	2
 site/cgi-bin/modules/BSE/Util/SQL.pm	=over on line 37 without closing =back	1
 site/cgi-bin/modules/BSE/Util/SQL.pm	Verbatim paragraph in NAME section	1
-site/cgi-bin/modules/BSE/Util/Secure.pm	2 unescaped <> in paragraph	1
 site/cgi-bin/modules/BSE/Util/Secure.pm	=over on line 25 without closing =back (at head1)	1
 site/cgi-bin/modules/BSE/Util/Secure.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/BSE/Util/Tags.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/Util/Tags.pm	No items in =over (at line 1255) / =back list	1
-site/cgi-bin/modules/BSE/Variables.pm	2 unescaped <> in paragraph	1
-site/cgi-bin/modules/Courier/FixedAU.pm	2 unescaped <> in paragraph	1
-site/cgi-bin/modules/DevHelp/Cfg.pm	1 unescaped <> in paragraph	2
-site/cgi-bin/modules/DevHelp/Cfg.pm	2 unescaped <> in paragraph	1
 site/cgi-bin/modules/DevHelp/Cfg.pm	=over on line 259 without closing =back (at head1)	1
 site/cgi-bin/modules/DevHelp/Cfg.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/DevHelp/Date.pm	=item without previous =over	1
-site/cgi-bin/modules/DevHelp/DynSort.pm	2 unescaped <> in paragraph	1
 site/cgi-bin/modules/DevHelp/DynSort.pm	Verbatim paragraph in NAME section	1
-site/cgi-bin/modules/DevHelp/FileUpload.pm	1 unescaped <> in paragraph	3
-site/cgi-bin/modules/DevHelp/FileUpload.pm	2 unescaped <> in paragraph	1
 site/cgi-bin/modules/DevHelp/FileUpload.pm	Verbatim paragraph in NAME section	1
-site/cgi-bin/modules/DevHelp/HTML.pm	2 unescaped <> in paragraph	1
-site/cgi-bin/modules/DevHelp/Payments.pod	2 unescaped <> in paragraph	1
-site/cgi-bin/modules/DevHelp/Payments/Eway.pm	2 unescaped <> in paragraph	1
 site/cgi-bin/modules/DevHelp/Payments/Eway.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/DevHelp/Payments/SecurePay.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/DevHelp/Payments/SecurePayXML.pm	Verbatim paragraph in NAME section	1
-site/cgi-bin/modules/DevHelp/Payments/Test.pm	2 unescaped <> in paragraph	1
 site/cgi-bin/modules/DevHelp/Payments/Test.pm	=back without previous =over	1
 site/cgi-bin/modules/DevHelp/Tags/Iterate.pm	=item without previous =over	1
-site/cgi-bin/modules/DevHelp/Validate.pm	2 unescaped <> in paragraph	1
 site/cgi-bin/modules/DevHelp/Validate.pm	empty section in previous paragraph	1
 site/cgi-bin/modules/DevHelp/Validate.pm	multiple occurrence of link target 'confirm'	1
 site/cgi-bin/modules/DevHelp/Validate.pm	multiple occurrence of link target 'date'	1
 site/cgi-bin/modules/DevHelp/Validate.pm	multiple occurrence of link target 'required'	1
 site/cgi-bin/modules/DevHelp/Validate.pm	multiple occurrence of link target 'rules'	1
 site/cgi-bin/modules/DevHelp/Validate.pm	unresolved internal link 'CONFIGURED VALIDATON'	1
-site/cgi-bin/modules/Generate.pm	2 unescaped <> in paragraph	1
 site/cgi-bin/modules/Generate.pm	=item without previous =over	1
 site/cgi-bin/modules/Generate.pm	empty section in previous paragraph	1
-site/cgi-bin/modules/Generate/Article.pm	1 unescaped <> in paragraph	4
-site/cgi-bin/modules/Generate/Article.pm	2 unescaped <> in paragraph	12
-site/cgi-bin/modules/Generate/Article.pm	4 unescaped <> in paragraph	1
-site/cgi-bin/modules/Generate/Article.pm	6 unescaped <> in paragraph	3
 site/cgi-bin/modules/Generate/Article.pm	=item without previous =over	1
 site/cgi-bin/modules/Generate/Article.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/Generate/Article.pm	empty section in previous paragraph	2
@@ -159,43 +95,21 @@ site/cgi-bin/modules/Generate/Article.pm	unresolved internal link 'item child'	1
 site/cgi-bin/modules/Generate/Article.pm	unresolved internal link 'item crumbs'	1
 site/cgi-bin/modules/Generate/Catalog.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/Generate/Product.pm	Verbatim paragraph in NAME section	1
-site/cgi-bin/modules/Product.pm	1 unescaped <> in paragraph	1
-site/cgi-bin/modules/Product.pm	2 unescaped <> in paragraph	1
 site/cgi-bin/modules/Product.pm	=item without previous =over	1
-site/cgi-bin/modules/SiteUser.pm	1 unescaped <> in paragraph	1
 site/cgi-bin/modules/SiteUser.pm	=item without previous =over	1
-site/cgi-bin/modules/Squirrel/GPG.pm	1 unescaped <> in paragraph	3
 site/cgi-bin/modules/Squirrel/GPG.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/Squirrel/PGP5.pm	Verbatim paragraph in NAME section	1
-site/cgi-bin/modules/Squirrel/PGP6.pm	1 unescaped <> in paragraph	3
 site/cgi-bin/modules/Squirrel/PGP6.pm	Verbatim paragraph in NAME section	1
-site/cgi-bin/modules/Squirrel/Row.pm	1 unescaped <> in paragraph	9
 site/cgi-bin/modules/Squirrel/Row.pm	Unknown command 'NAME'	1
 site/cgi-bin/modules/Squirrel/Row.pm	Verbatim paragraph in NAME section	1
-site/cgi-bin/modules/Squirrel/Table.pm	1 unescaped <> in paragraph	12
 site/cgi-bin/modules/Squirrel/Table.pm	=item without previous =over	1
 site/cgi-bin/modules/Squirrel/Table.pm	empty section in previous paragraph	1
 site/cgi-bin/modules/Squirrel/Table.pm	unresolved internal link '_where_clause'	1
-site/cgi-bin/modules/Squirrel/Template.pm	1 unescaped <> in paragraph	76
-site/cgi-bin/modules/Squirrel/Template.pm	2 unescaped <> in paragraph	15
-site/cgi-bin/modules/Squirrel/Template.pm	3 unescaped <> in paragraph	1
 site/cgi-bin/modules/Squirrel/Template.pm	Verbatim paragraph in NAME section	1
-site/cgi-bin/modules/Squirrel/Template/Expr.pm	1 unescaped <> in paragraph	12
-site/cgi-bin/modules/Squirrel/Template/Expr.pm	2 unescaped <> in paragraph	1
-site/cgi-bin/modules/Squirrel/Template/Expr.pm	4 unescaped <> in paragraph	1
 site/cgi-bin/modules/Squirrel/Template/Expr.pm	multiple occurrence of link target 'Methods'	1
-site/cgi-bin/modules/Squirrel/Template/Expr/WrapArray.pm	2 unescaped <> in paragraph	1
-site/cgi-bin/modules/Squirrel/Template/Expr/WrapClass.pm	2 unescaped <> in paragraph	1
-site/cgi-bin/modules/Squirrel/Template/Expr/WrapHash.pm	2 unescaped <> in paragraph	1
-site/cgi-bin/modules/Squirrel/Template/Expr/WrapScalar.pm	2 unescaped <> in paragraph	2
 site/cgi-bin/modules/Squirrel/Template/Expr/WrapScalar.pm	=back without previous =over	1
 site/cgi-bin/modules/Squirrel/Template/Expr/WrapScalar.pm	=over on line 121 without closing =back (at head1)	1
-site/cgi-bin/modules/Squirrel/Template/Processor.pm	2 unescaped <> in paragraph	1
-site/cgi-bin/modules/Squirrel/Template/Tokenizer.pm	2 unescaped <> in paragraph	1
-site/cgi-bin/search.pl	2 unescaped <> in paragraph	1
 site/cgi-bin/search.pl	Verbatim paragraph in NAME section	1
-site/cgi-bin/shop.pl	2 unescaped <> in paragraph	10
-site/cgi-bin/shop.pl	4 unescaped <> in paragraph	1
 site/cgi-bin/shop.pl	multiple occurrence of link target '%<format>'	1
 site/cgi-bin/shop.pl	multiple occurrence of link target 'gst'	1
 site/cgi-bin/shop.pl	multiple occurrence of link target 'id'	1
@@ -205,15 +119,7 @@ site/cgi-bin/shop.pl	multiple occurrence of link target 'options'	1
 site/cgi-bin/shop.pl	multiple occurrence of link target 'order field'	1
 site/cgi-bin/shop.pl	multiple occurrence of link target 'product field'	1
 site/cgi-bin/shop.pl	multiple occurrence of link target 'total'	1
-site/docs/TODO.pod	4 unescaped <> in paragraph	1
-site/docs/access.pod	2 unescaped <> in paragraph	1
 site/docs/access.pod	multiple occurrence of link target 'Regeneration'	1
-site/docs/bse.pod	1 unescaped <> in paragraph	26
-site/docs/bse.pod	2 unescaped <> in paragraph	74
-site/docs/bse.pod	3 unescaped <> in paragraph	3
-site/docs/bse.pod	4 unescaped <> in paragraph	12
-site/docs/bse.pod	6 unescaped <> in paragraph	2
-site/docs/bse.pod	8 unescaped <> in paragraph	2
 site/docs/bse.pod	=item type mismatch ('definition' vs. 'bullet')	1
 site/docs/bse.pod	No items in =over (at line 5204) / =back list	1
 site/docs/bse.pod	No items in =over (at line 6076) / =back list	1
@@ -222,10 +128,6 @@ site/docs/bse.pod	preceding non-item paragraph(s)	1
 site/docs/bse.pod	unresolved internal link 'formmail.pod'	1
 site/docs/bse_import.pod	empty section in previous paragraph	1
 site/docs/bse_import.pod	multiple occurrence of link target 'Configuration'	1
-site/docs/config.pod	1 unescaped <> in paragraph	10
-site/docs/config.pod	2 unescaped <> in paragraph	6
-site/docs/config.pod	4 unescaped <> in paragraph	2
-site/docs/config.pod	6 unescaped <> in paragraph	3
 site/docs/config.pod	No items in =over (at line 1827) / =back list	1
 site/docs/config.pod	No items in =over (at line 1887) / =back list	1
 site/docs/config.pod	empty section in previous paragraph	4
@@ -238,22 +140,10 @@ site/docs/config.pod	multiple occurrence of link target 'template'	1
 site/docs/config.pod	multiple occurrence of link target 'template_dirs'	1
 site/docs/config.pod	multiple occurrence of link target 'url'	1
 site/docs/config.pod	unresolved internal link '<[siteuser update specid]'	1
-site/docs/custom.pod	2 unescaped <> in paragraph	1
 site/docs/custom.pod	empty section in previous paragraph	3
-site/docs/dynamic.pod	2 unescaped <> in paragraph	1
-site/docs/formmail.pod	2 unescaped <> in paragraph	3
 site/docs/formmail.pod	No argument for =item	1
 site/docs/formmail.pod	nested commands I<...I<...>...>	2
-site/docs/future_plans.pod	2 unescaped <> in paragraph	1
-site/docs/secure.pod	2 unescaped <> in paragraph	1
 site/docs/secure.pod	empty section in previous paragraph	1
-site/docs/siteusers.pod	2 unescaped <> in paragraph	1
-site/docs/standard.pod	1 unescaped <> in paragraph	1
-site/docs/standard.pod	2 unescaped <> in paragraph	1
-site/docs/storages.pod	2 unescaped <> in paragraph	1
-site/docs/templates.pod	1 unescaped <> in paragraph	10
-site/docs/templates.pod	2 unescaped <> in paragraph	25
-site/docs/templates.pod	4 unescaped <> in paragraph	8
 site/docs/templates.pod	=item type mismatch ('definition' vs. 'bullet')	1
 site/docs/templates.pod	multiple occurrence of link target '%<format>'	1
 site/docs/templates.pod	multiple occurrence of link target '1'	1
@@ -280,9 +170,3 @@ site/docs/templates.pod	multiple occurrence of link target 'wholesalePrice'	1
 site/docs/templates.pod	unresolved internal link 'Tag notes'	1
 site/docs/templates.pod	unresolved internal link 'item child'	1
 site/docs/templates.pod	unresolved internal link 'item crumbs'	1
-site/docs/thumbnails.pod	2 unescaped <> in paragraph	1
-site/docs/thumbnails.pod	4 unescaped <> in paragraph	1
-site/util/bse_imageclean.pl	2 unescaped <> in paragraph	1
-site/util/bse_makeindex.pl	2 unescaped <> in paragraph	1
-site/util/gen.pl	2 unescaped <> in paragraph	1
-site/util/upgrade_mysql.pl	2 unescaped <> in paragraph	1
