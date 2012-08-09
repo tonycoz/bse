@@ -15,7 +15,7 @@ use DevHelp::Date qw(dh_parse_date dh_parse_sql_date);
 use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
-our $VERSION = "1.027";
+our $VERSION = "1.028";
 
 =head1 NAME
 
@@ -3161,6 +3161,8 @@ sub _image_ftype {
   return BSE::TB::Images->get_ftype($type);
 }
 
+my $last_display_order = 0;
+
 sub do_add_image {
   my ($self, $cfg, $article, $image, %opts) = @_;
 
@@ -3239,8 +3241,13 @@ sub do_add_image {
 
   use Image::Size;
 
-
   my($width,$height, $type) = imgsize("$imagedir/$filename");
+
+  my $display_order = time;
+  if ($display_order <= $last_display_order) {
+    $display_order = $last_display_order + 1;
+  }
+  $last_display_order = $display_order;
 
   my $alt = $opts{alt};
   defined $alt or $alt = '';
@@ -3254,7 +3261,7 @@ sub do_add_image {
      width=>$width,
      height => $height,
      url => $url,
-     displayOrder=>time,
+     displayOrder => $display_order,
      name => $imageref,
      storage => 'local',
      src => cfg_image_uri() . '/' . $filename,
