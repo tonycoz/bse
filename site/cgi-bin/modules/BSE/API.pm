@@ -4,13 +4,40 @@ use BSE::Util::SQL qw(sql_datetime now_sqldatetime);
 use BSE::DB;
 use BSE::Cfg;
 use Exporter qw(import);
-our @EXPORT_OK = qw(bse_init bse_cfg bse_make_product bse_make_catalog bse_encoding bse_add_image bse_save_image bse_add_step_child bse_add_owned_file bse_delete_owned_file bse_replace_owned_file bse_make_article bse_add_step_parent);
+our @EXPORT_OK = qw(bse_init bse_cfg bse_make_product bse_make_catalog bse_encoding bse_add_image bse_save_image bse_add_step_child bse_add_owned_file bse_delete_owned_file bse_replace_owned_file bse_make_article bse_add_step_parent bse_add_global_image bse_site);
 our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 use Carp qw(confess croak);
 use Fcntl qw(:seek);
 use Cwd;
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
+
+=head1 NAME
+
+BSE::API - API for fundamental operations for BSE.
+
+=head1 SYNOPSIS
+
+  use BSE::API qw(bse_init);
+  bse_init("path/to/bse/cgi-bin");
+
+=head1 DESCRIPTION
+
+BSE::API provides access to a variety of operations for working with
+BSE.
+
+For a command-line program, the most essential step is to initialize
+BSE, with the bse_init() function:
+
+  bse_init($path);
+
+This is required before calling any other BSE function or method.
+
+=head1 FUNCTIONS
+
+=over
+
+=cut
 
 my %acticle_defaults =
   (
@@ -127,6 +154,14 @@ sub bse_cfg {
 
   return $cfg;
 }
+
+=item bse_init($path)
+
+Initialise the BSE API.
+
+C<$path> should be the BSE F<cgi-bin> directory.
+
+=cut
 
 sub bse_init {
   my ($bse_cgi) = @_;
@@ -508,4 +543,41 @@ sub bse_add_step_parent {
   return OtherParents->make(%step);
 }
 
+=item bse_site
+
+Returns a BSE::TB::Site object, for access to global files and images.
+
+No parameters.
+
+=cut
+
+sub bse_site {
+  require BSE::TB::Site;
+  return BSE::TB::Site->new;
+}
+
+=item bse_add_global_image($cfg, %opts)
+
+Equivalent to:
+
+  bse_add_image($cfg, bse_site(), %opts);
+
+Create a global image.
+
+=cut
+
+sub bse_add_global_image {
+  my ($cfg, %opts) = @_;
+
+  return bse_add_image($cfg, bse_site(), %opts);
+}
+
 1;
+
+=back
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=cut

@@ -16,7 +16,7 @@ use Carp 'confess';
 use BSE::Util::Iterate;
 use BSE::CfgInfo qw(cfg_dist_image_uri);
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 my $excerptSize = 300;
 
@@ -401,7 +401,10 @@ sub baseActs {
   my $parent = $articles->getByPkey($article->{parentid});
   my $section = @crumbs ? $crumbs[0] : $article;
 
-  my @images = BSE::TB::Images->getBy('articleId', $article->{id});
+  my @images;
+  if (UNIVERSAL::isa($article, 'Article')) {
+    @images = $article->images;
+  }
   my @unnamed_images = grep $_->{name} eq '', @images;
   my @iter_images;
   my $image_index = -1;

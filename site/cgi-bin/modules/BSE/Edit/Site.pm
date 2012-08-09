@@ -15,7 +15,7 @@ BSE::Edit::Site - edit interface for the site itself.
 
 =cut
 
-our $VERSION = "1.010";
+our $VERSION = "1.011";
 
 use base 'BSE::Edit::Article';
 use BSE::TB::Site;
@@ -64,9 +64,7 @@ sub article_actions {
 sub get_images {
   my ($self, $article) = @_;
 
-  require BSE::TB::Images;
-
-  return BSE::TB::Images->getBy(articleId => -1);
+  return $article->images;
 }
 
 sub get_files {

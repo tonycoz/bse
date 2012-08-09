@@ -2,7 +2,7 @@ package BSE::TB::SiteCommon;
 use strict;
 use Carp qw(confess);
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 =head1 NAME
 
@@ -153,7 +153,8 @@ sub all_menu_kids {
 sub images {
   my ($self) = @_;
   require BSE::TB::Images;
-  BSE::TB::Images->getBy(articleId=>$self->{id});
+  return sort { $a->{displayOrder} <=> $b->{displayOrder} }
+    BSE::TB::Images->getBy(articleId=>$self->{id});
 }
 
 sub children {

@@ -13,7 +13,7 @@ use BSE::Variables;
 use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 
-our $VERSION = "1.010";
+our $VERSION = "1.011";
 
 my $excerptSize = 300;
 
@@ -39,6 +39,12 @@ sub new {
 
 sub cfg {
   $_[0]{cfg};
+}
+
+sub site {
+  my $self = shift;
+  $self->{site} ||= BSE::TB::Site->new;
+  return $self->{site};
 }
 
 sub set_variable {
@@ -441,20 +447,15 @@ sub iter_gimages {
   my ($self, $args) = @_;
 
   unless ($self->{gimages}) {
-    require BSE::TB::Images;
-    my @gimages = BSE::TB::Images->getBy(articleId => -1);
-    my %gimages = map { $_->{name} => $_ } @gimages;
-    $self->{gimages} = \%gimages;
+    $self->_init_gimages;
   }
 
-  my @gimages = 
-    sort { $a->{name} cmp $b->{name} } values %{$self->{gimages}};
   if ($args =~ m!^named\s+/([^/]+)/$!) {
     my $re = $1;
-    return grep $_->{name} =~ /$re/i, @gimages;
+    return grep $_->{name} =~ /$re/i, @{$self->{gimages_a}};
   }
   else {
-    return @gimages;
+    return @{$self->{gimages_a}};
   }
 }
 
@@ -1170,14 +1171,19 @@ sub remove_block {
   $$body = $formatter->remove_format($$body);
 }
 
+sub _init_gimages {
+  my ($self) = @_;
+
+  my @gimages = $self->site->images;
+  $self->{gimages} = { map { $_->{name} => $_ } @gimages };
+  $self->{gimages_a} = \@gimages;
+}
+
 sub get_gimage {
   my ($self, $name) = @_;
 
   unless ($self->{gimages}) {
-    require BSE::TB::Images;
-    my @gimages = BSE::TB::Images->getBy(articleId => -1);
-    my %gimages = map { $_->{name} => $_ } @gimages;
-    $self->{gimages} = \%gimages;
+    $self->_init_gimages;
   }
 
   return $self->{gimages}{$name};

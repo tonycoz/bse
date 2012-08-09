@@ -1,15 +1,18 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>153;
+use Test::More tests=>158;
 use File::Spec;
 use FindBin;
+use Cwd;
+my $start_dir;
 BEGIN {
+  $start_dir = getcwd();
   my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
   ok(chdir $cgidir, "switch to CGI directory");
   push @INC, 'modules';
 }
-use BSE::API qw(bse_init bse_cfg bse_make_article);
+use BSE::API qw(bse_init bse_cfg bse_make_article bse_add_global_image);
 
 bse_init(".");
 
@@ -47,6 +50,27 @@ my $grandkid = add_article
    title => "Grandkid",
    body => "grandkid",
   );
+
+my $prefix = "test" . time;
+my $gim1 = bse_add_global_image
+  (
+   $cfg,
+   file => "$start_dir/t/data/govhouse.jpg",
+   name => $prefix . "a",
+  );
+ok($gim1, "make a global image");
+my $gim2 = bse_add_global_image
+  (
+   $cfg,
+   file => "$start_dir/t/data/t101.jpg",
+   name => $prefix . "b",
+  );
+ok($gim2, "make a second global image");
+
+END {
+  $gim1->remove if $gim1;
+  $gim2->remove if $gim2;
+}
 
 my $base_securl = $cfg->entryVar("site", "secureurl");
 
@@ -273,7 +297,7 @@ $formatted
 EXPECTED
 }
 
-use POSIX;
+use POSIX qw(strftime);
 template_test "today", $parent, <<'TEMPLATE', strftime("%Y-%m-%d %d-%b-%Y\n", localtime);
 <:today "%Y-%m-%d":> <:today:>
 TEMPLATE
@@ -435,6 +459,15 @@ template_test "ifUnderThreshold child stepkids", $kids[0], <<'TEMPLATE', <<EXPEC
 <:ifUnderThreshold stepkids:>1<:or:>0<:eif:>
 TEMPLATE
 1
+EXPECTED
+
+template_test "global images", $parent, <<TEMPLATE, <<EXPECTED;
+<:iterator begin gimages named /^$prefix/ :>
+<:-gimage - displayOrder:>
+<:iterator end gimages-:>
+TEMPLATE
+$gim1->{displayOrder}
+$gim2->{displayOrder}
 EXPECTED
 
 template_test "noreplace undefined", $parent, <<'TEMPLATE', <<'EXPECTED';

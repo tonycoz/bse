@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test qw(make_ua base_url);
-use Test::More tests => 38;
+use Test::More tests => 48;
 use File::Spec;
 use File::Slurp;
 use Carp qw(confess);
@@ -168,6 +168,54 @@ ok($child->remove($cfg), "remove child");
 undef $child;
 ok($art->remove($cfg), "remove article");
 undef $art;
+
+{
+  my $prefix = "g" . time;
+  # deliberately out of order
+  my $im1 = bse_add_global_image
+    (
+     $cfg,
+     file => "t/data/govhouse.jpg",
+     name => $prefix . "b"
+    );
+  ok($im1, "make a global image (b)");
+  my $im2 = bse_add_global_image
+    (
+     $cfg,
+     file => "t/data/govhouse.jpg",
+     name => $prefix . "c"
+    );
+  ok($im2, "make a global image (c)");
+  my $im3 = bse_add_global_image
+    (
+     $cfg,
+     file => "t/data/govhouse.jpg",
+     name => $prefix . "a"
+    );
+  ok($im3, "make a global image (a)");
+
+  my @images = bse_site()->images;
+  cmp_ok(@images, '>=', 3, "we have some global images");
+
+  my @mine = grep $_->name =~ /^\Q$prefix/, @images;
+
+  # check sort order
+  is($mine[0]->displayOrder, $im1->displayOrder, "first should be first");
+  is($mine[1]->displayOrder, $im2->displayOrder, "middle should be middle");
+  is($mine[2]->displayOrder, $im3->displayOrder, "last should be last");
+
+  ok($im3->remove, "remove the global image");
+  undef $im3;
+  ok($im2->remove, "remove the global image");
+  undef $im2;
+  ok($im1->remove, "remove the global image");
+  undef $im1;
+  END {
+    $im1->remove if $im1;
+    $im2->remove if $im2;
+    $im3->remove if $im3;
+  }
+}
 
 END {
   $child->remove($cfg) if $child;
