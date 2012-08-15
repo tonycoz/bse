@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test qw(make_ua base_url);
-use Test::More tests => 48;
+use Test::More tests => 53;
 use File::Spec;
 use File::Slurp;
 use Carp qw(confess);
@@ -162,6 +162,34 @@ SKIP: {
   my $mine = read_file("t/t15api.t");
   my $stored = read_file($file->full_filename);
   is($stored, $mine, "check contents");
+}
+
+{
+  {
+    # fail adding an image
+    my %errors;
+    my $im = bse_add_image
+      (
+       $cfg, $art,
+       file => "t/t15api.t",
+       errors => \%errors,
+      );
+    ok(!$im, "image failed to add");
+    ok($errors{image}, "failed on the image itself");
+    is($errors{image}, "Unknown image file type", "check message");
+  }
+  {
+    my %errors;
+    my $im = bse_add_image
+      (
+       $cfg, $art,
+       file => "t/data/govhouse.jpg",
+       display_name => "test.php",
+       errors => \%errors,
+      );
+    ok($im, "image failed to add");
+    like($im->image, qr/\.jpeg$/, "check proper extension");
+  }
 }
 
 ok($child->remove($cfg), "remove child");

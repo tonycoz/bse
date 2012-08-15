@@ -10,7 +10,7 @@ use Carp qw(confess croak);
 use Fcntl qw(:seek);
 use Cwd;
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 =head1 NAME
 
@@ -339,6 +339,7 @@ sub bse_add_image {
     open $fh, "< $filename"
       or croak "Failed opening image file $filename: $!";
     binmode $fh;
+    $filename = $opts{display_name} if $opts{display_name};
   }
   elsif ($opts{fh}) {
     $filename = $opts{display_name}

@@ -15,7 +15,7 @@ use DevHelp::Date qw(dh_parse_date dh_parse_sql_date);
 use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
-our $VERSION = "1.028";
+our $VERSION = "1.029";
 
 =head1 NAME
 
@@ -2940,43 +2940,49 @@ sub save_image_changes {
     if (defined $filename && length $filename) {
       my $in_fh = $cgi->upload("image$id");
       if ($in_fh) {
-	# work out where to put it
-	require DevHelp::FileUpload;
-	my $msg;
-	my ($image_name, $out_fh) = DevHelp::FileUpload->make_img_filename
-	  ($image_dir, $filename . '', \$msg);
-	if ($image_name) {
-	  local $/ = \8192;
-	  my $data;
-	  while ($data = <$in_fh>) {
-	    print $out_fh $data;
-	  }
-	  close $out_fh;
+	my $basename;
+	my $image_error;
+	my ($width, $height, $type) = $self->_validate_image
+	  ($filename, $in_fh, \$basename, \$image_error);
 
-	  my $full_filename = "$image_dir/$image_name";
-	  require Image::Size;
-	  my ($width, $height, $type) = Image::Size::imgsize($full_filename);
-	  if ($width) {
-	    $old_images{$id} = 
-	      { 
-	       image => $image->{image}, 
-	       storage => $image->{storage}
-	      };
-	    push @new_images, $image_name;
+	unless ($type) {
+	  $errors{"image$id"} = $image_error;
+	}
 
-	    $changes{$id}{image} = $image_name;
-	    $changes{$id}{storage} = 'local';
-	    $changes{$id}{src} = cfg_image_uri() . "/" . $image_name;
-	    $changes{$id}{width} = $width;
-	    $changes{$id}{height} = $height;
-	    $changes{$id}{ftype} = $self->_image_ftype($type);
+	unless ($errors{"image$id"}) {
+	  # work out where to put it
+	  require DevHelp::FileUpload;
+	  my $msg;
+	  my ($image_name, $out_fh) = DevHelp::FileUpload->make_img_filename
+	    ($image_dir, $basename, \$msg);
+	  if ($image_name) {
+	    local $/ = \8192;
+	    my $data;
+	    while ($data = <$in_fh>) {
+	      print $out_fh $data;
+	    }
+	    close $out_fh;
+	    
+	    my $full_filename = "$image_dir/$image_name";
+	    if ($width) {
+	      $old_images{$id} = 
+		{ 
+		 image => $image->{image}, 
+		 storage => $image->{storage}
+		};
+	      push @new_images, $image_name;
+	      
+	      $changes{$id}{image} = $image_name;
+	      $changes{$id}{storage} = 'local';
+	      $changes{$id}{src} = cfg_image_uri() . "/" . $image_name;
+	      $changes{$id}{width} = $width;
+	      $changes{$id}{height} = $height;
+	      $changes{$id}{ftype} = $self->_image_ftype($type);
+	    }
 	  }
 	  else {
-	    $errors{"image$id"} = $type;
+	    $errors{"image$id"} = $msg;
 	  }
-	}
-	else {
-	  $errors{"image$id"} = $msg;
 	}
       }
       else {
@@ -3161,6 +3167,56 @@ sub _image_ftype {
   return BSE::TB::Images->get_ftype($type);
 }
 
+my %valid_exts =
+  (
+   tiff => "tiff,tif",
+   jpg => "jpeg,jpg",
+   pnm => "pbm,pgm,ppm",
+  );
+
+sub _validate_image {
+  my ($self, $filename, $fh, $rbasename, $error) = @_;
+
+  if ($fh) {
+    if (-z $fh) {
+      $$error = 'Image file is empty';
+      return;
+    }
+  }
+  else {
+    $$error = 'Please enter an image filename';
+    return;
+  }
+  my $imagename = $filename;
+  $imagename .= ''; # force it into a string
+  my $basename = '';
+  $imagename =~ tr/ //d;
+  $imagename =~ /([\w.-]+)$/ and $basename = $1;
+
+  # for OSs with special text line endings
+  use Image::Size;
+
+  my($width,$height, $type) = imgsize($fh);
+
+  unless (defined $width) {
+    $$error = "Unknown image file type";
+    return;
+  }
+
+  my $lctype = lc $type;
+  my @valid_exts = split /,/, 
+    BSE::Cfg->single->entry("valid image extensions", $lctype,
+		$valid_exts{$lctype} || $lctype);
+
+  my ($ext) = $basename =~ /\.(\w+)\z/;
+  if (!$ext || !grep $_ eq lc $ext, @valid_exts) {
+    $basename .= ".$valid_exts[0]";
+  }
+  $$rbasename = $basename;
+
+  return ($width, $height, $type);
+}
+
 my $last_display_order = 0;
 
 sub do_add_image {
@@ -3194,22 +3250,17 @@ sub do_add_image {
       or $errors->{name} = $workmsg;
   }
 
-  if ($image) {
-    if (-z $image) {
-      $errors->{image} = 'Image file is empty';
-    }
+  my $image_error;
+  my $basename;
+  my ($width, $height, $type) = 
+    $self->_validate_image($opts{filename} || $image, $image, \$basename,
+			   \$image_error);
+  unless ($width) {
+    $errors->{image} = $image_error;
   }
-  else {
-    $errors->{image} = 'Please enter an image filename';
-  }
+
   keys %$errors
     and return;
-
-  my $imagename = $opts{filename} || $image;
-  $imagename .= ''; # force it into a string
-  my $basename = '';
-  $imagename =~ tr/ //d;
-  $imagename =~ /([\w.-]+)$/ and $basename = $1;
 
   # for the sysopen() constants
   use Fcntl;
@@ -3225,10 +3276,9 @@ sub do_add_image {
     return;
   }
 
-  # for OSs with special text line endings
-  binmode $fh;
-
   my $buffer;
+
+  binmode $fh;
 
   no strict 'refs';
 
@@ -3238,10 +3288,6 @@ sub do_add_image {
   # close and flush
   close $fh
     or die "Could not close image file $filename: $!";
-
-  use Image::Size;
-
-  my($width,$height, $type) = imgsize("$imagedir/$filename");
 
   my $display_order = time;
   if ($display_order <= $last_display_order) {
@@ -3669,24 +3715,27 @@ sub req_save_image {
   if (defined $filename && length $filename) {
     my $in_fh = $cgi->upload('image');
     if ($in_fh) {
-      require DevHelp::FileUpload;
-      my $msg;
-      my ($image_name, $out_fh) = DevHelp::FileUpload->make_img_filename
-	($image_dir, $filename . '', \$msg);
-      if ($image_name) {
-	{
-	  local $/ = \8192;
-	  my $data;
-	  while ($data = <$in_fh>) {
-	    print $out_fh $data;
+      my $basename;
+      my $image_error;
+      my ($width, $height, $type) = $self->_validate_image
+	($filename, $in_fh, \$basename, \$image_error);
+      if ($type) {
+	require DevHelp::FileUpload;
+	my $msg;
+	my ($image_name, $out_fh) = DevHelp::FileUpload->make_img_filename
+	  ($image_dir, $basename, \$msg);
+	if ($image_name) {
+	  {
+	    local $/ = \8192;
+	    my $data;
+	    while ($data = <$in_fh>) {
+	      print $out_fh $data;
+	    }
+	    close $out_fh;
 	  }
-	  close $out_fh;
-	}
 
-	my $full_filename = "$image_dir/$image_name";
-	require Image::Size;
-	my ($width, $height, $type) = Image::Size::imgsize($full_filename);
-	if ($width) {
+	  my $full_filename = "$image_dir/$image_name";
+	  require Image::Size;
 	  $delete_file = $image->{image};
 	  $image->{image} = $image_name;
 	  $image->{width} = $width;
@@ -3696,11 +3745,11 @@ sub req_save_image {
 	  $image->{ftype} = $self->_image_ftype($type);
 	}
 	else {
-	  $errors{image} = $type;
+	  $errors{image} = $msg;
 	}
       }
       else {
-	$errors{image} = $msg;
+	$errors{image} = $image_error;
       }
     }
     else {
