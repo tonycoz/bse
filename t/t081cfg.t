@@ -8,7 +8,7 @@ BEGIN {
     or plan skip_all => "Cannot load BSE::Cfg";
 }
 
-plan tests => 13;
+plan tests => 15;
 
 #ok(chdir "t/cfg", "chdir to cfg dir");
 my $cfg = eval { BSE::Cfg->new(path => "t/cfg") };
@@ -38,3 +38,15 @@ is_deeply({ $cfg->entriesCS("conflict") },
 	  { keya => "valuez" }, "CS section with a value");
 is_deeply([ $cfg->orderCS("conflict") ],
 	  [ qw/keya keya/ ], "original case keys in order of appearance");
+
+{
+  my $cfg = BSE::Cfg->new_from_text(text => <<EOS, path => ".");
+[by unit au shipping]
+description=testing
+base=1000
+unit=100
+EOS
+  ok($cfg, "make cfg from text");
+  is($cfg->entry("by unit au shipping", "description"), "testing",
+     "test we got the cfg");
+}

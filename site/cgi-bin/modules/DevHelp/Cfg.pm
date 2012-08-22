@@ -6,7 +6,7 @@ use constant CFG_DEPTH => 5; # unused so far
 use constant CACHE_AGE => 30;
 use constant VAR_DEPTH => 10;
 
-our $VERSION = "1.003";
+our $VERSION = "1.005";
 
 my %cache;
 
@@ -72,6 +72,28 @@ sub new {
   }
 
   return $class->_load_cfg($file);
+}
+
+=item new_from_text
+
+=cut
+
+sub new_from_text {
+  my ($class, %opts) = @_;
+
+  require Encode;
+  my $text = $opts{text}
+    or confess "Missing text parameter";
+  my $work_text = Encode::encode("utf-8", $text, 0);
+  open my $fh, "<", \$work_text;
+
+  my $self = $class->_new;
+
+  $self->_load_fh($fh, "<text>");
+
+  $self->_load_includes($opts{path});
+
+  return $self;
 }
 
 =item entry($section, $key, $def)
@@ -309,11 +331,23 @@ Low level file load.
 sub _load_file {
   my ($self, $file) = @_;
 
-  open CFG, "< $file"
+  open my $cfg, "<", $file
     or return;
-  binmode CFG, ":encoding(utf-8)";
+
+  $self->_load_fh($cfg, $file);
+
+  close $cfg;
+
+  return 1;
+}
+
+sub _load_fh {
+  my ($self, $cfg, $filename) = @_;
+
+  binmode $cfg, ":encoding(utf-8)";
+
   my $section;
-  while (<CFG>) {
+  while (<$cfg>) {
     chomp;
     next if /^\s*$/ || /^\s*[#;]/;
     if (/^\[([^]]+)\]\s*$/) {
@@ -323,7 +357,7 @@ sub _load_file {
       $section or next;
       my ($key, $value) = ($1, $2);
       if ($value =~ /^<<(\w+)$/) {
-	$value = _get_heredoc(\*CFG, $file, $1);
+	$value = _get_heredoc($cfg, $filename, $1);
 	defined $value
 	  or last;
       }
@@ -333,7 +367,6 @@ sub _load_file {
       $self->{config}{$section}{case}{$key} = $value;
     }
   }
-  close CFG;
 
   return 1;
 }
@@ -378,6 +411,17 @@ sub _replace_vars{
   return;
 }
 
+sub _new {
+  my ($class) = @_;
+
+  return bless
+    {
+     config => {},
+     includes => [],
+     when => time,
+    }, $class;
+}
+
 =item _load_cfg($file)
 
 Does the basic load of the config file.
@@ -391,15 +435,27 @@ sub _load_cfg {
     return $cache{$file};
   }
 
-  my $self = bless
-    {
-     config => {},
-     includes => [],
-     when => time,
-    }, $class;
+  my $self = $class->_new;
 
   $self->_load_file($file)
     or _load_error("Cannot open config file $file: $!");
+
+  my $path = $file;
+  $path =~ s![^\\/:]+$!!;
+
+  $self->_load_includes($path);
+
+  $cache{$file} = $self;
+
+  return $self;
+}
+
+=item _load_includes($path)
+
+=cut
+
+sub _load_includes {
+  my ($self, $path) = @_;
 
   # go through the includes
   my @raw_includes;
@@ -407,8 +463,7 @@ sub _load_cfg {
     my $hash = $self->{config}{includes}{values};
     @raw_includes = @$hash{sort keys %$hash};
   }
-  my $path = $file;
-  $path =~ s![^\\/:]+$!!;
+
  INCLUDE:
   for my $include (@raw_includes) {
     my $work_include = $self->_replace_vars($include, "includes", $include);
@@ -436,9 +491,7 @@ sub _load_cfg {
     }
   }
 
-  $cache{$file} = $self;
-
-  return $self;
+  return 1;
 }
 
 =item _get_heredoc($fh, $end_marker)
@@ -482,6 +535,8 @@ sub _error {
 
 
 1;
+
+=back
 
 =head1 AUTHOR
 
