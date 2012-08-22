@@ -295,6 +295,7 @@ site/cgi-bin/modules/Courier/AustraliaPost/Air.pm
 site/cgi-bin/modules/Courier/AustraliaPost/Express.pm
 site/cgi-bin/modules/Courier/AustraliaPost/Sea.pm
 site/cgi-bin/modules/Courier/AustraliaPost/Standard.pm
+site/cgi-bin/modules/Courier/ByUnitAU.pm
 site/cgi-bin/modules/Courier/Fastway.pm
 site/cgi-bin/modules/Courier/Fastway/Road.pm
 site/cgi-bin/modules/Courier/Fastway/Satchel.pm
@@ -844,6 +845,7 @@ t/cfg/cfg/00start.cfg
 t/cfg/cfg/99end.cfg
 t/cfg/isafile.cfg
 t/cfg/t/varinc.cfg
+t/courier/by-unit.t
 t/data/govhouse.jpg
 t/data/known_pod_issues.txt
 t/data/t101.jpg
