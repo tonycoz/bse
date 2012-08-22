@@ -2,13 +2,13 @@ package BSE::Shipping;
 use strict;
 use Carp qw(confess);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub get_couriers {
     my ($class, $cfg, $wanted) = @_;
 
     my @enabled = split /\s+/, $cfg->entry("shipping", "couriers");
-    push @enabled, "Null";
+    push @enabled, "Null" if $cfg->entry("shipping", "quoted", 1);
 
     my @couriers;
     foreach my $name (@enabled) {

@@ -1029,6 +1029,11 @@ A space-separated list of modules under Courier::, e.g. "Fastway::Road
 AustraliaPost::Air". These will be made available as shipping methods
 on the checkout page.
 
+=item quoted
+
+If true then a default "Quote shipping charges later" shipping method
+will be added to the shipping methods list.
+
 =item sourcepostcode
 
 The post code from which products are shipped.
