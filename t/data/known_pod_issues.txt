@@ -11,7 +11,6 @@ site/cgi-bin/modules/BSE/CustomBase.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/BSE/DB.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/BSE/Dynamic/Article.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/Edit/Article.pm	=item without previous =over	1
-site/cgi-bin/modules/BSE/Edit/Article.pm	No items in =over (at line 3060) / =back list	1
 site/cgi-bin/modules/BSE/Edit/Article.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/BSE/Edit/Product.pm	=over on line 693 without closing =back	1
 site/cgi-bin/modules/BSE/FileHandler/Base.pm	=over on line 31 without closing =back	1
@@ -53,18 +52,11 @@ site/cgi-bin/modules/BSE/UI/Formmail.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/UI/Shop.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/UserReg.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/UserReg.pm	Unknown command 'target'	2
-site/cgi-bin/modules/BSE/Util/DynamicTags.pm	No items in =over (at line 1237) / =back list	1
-site/cgi-bin/modules/BSE/Util/DynamicTags.pm	No items in =over (at line 1252) / =back list	1
-site/cgi-bin/modules/BSE/Util/DynamicTags.pm	No items in =over (at line 643) / =back list	1
-site/cgi-bin/modules/BSE/Util/DynamicTags.pm	No items in =over (at line 854) / =back list	1
-site/cgi-bin/modules/BSE/Util/DynamicTags.pm	No items in =over (at line 941) / =back list	1
 site/cgi-bin/modules/BSE/Util/SQL.pm	=over on line 37 without closing =back	1
 site/cgi-bin/modules/BSE/Util/SQL.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/BSE/Util/Secure.pm	=over on line 25 without closing =back (at head1)	1
 site/cgi-bin/modules/BSE/Util/Secure.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/BSE/Util/Tags.pm	=item without previous =over	1
-site/cgi-bin/modules/BSE/Util/Tags.pm	No items in =over (at line 1255) / =back list	1
-site/cgi-bin/modules/DevHelp/Cfg.pm	=over on line 259 without closing =back (at head1)	1
 site/cgi-bin/modules/DevHelp/Cfg.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/DevHelp/Date.pm	=item without previous =over	1
 site/cgi-bin/modules/DevHelp/DynSort.pm	Verbatim paragraph in NAME section	1
@@ -121,15 +113,10 @@ site/cgi-bin/shop.pl	multiple occurrence of link target 'product field'	1
 site/cgi-bin/shop.pl	multiple occurrence of link target 'total'	1
 site/docs/access.pod	multiple occurrence of link target 'Regeneration'	1
 site/docs/bse.pod	=item type mismatch ('definition' vs. 'bullet')	1
-site/docs/bse.pod	No items in =over (at line 5204) / =back list	1
-site/docs/bse.pod	No items in =over (at line 6076) / =back list	1
-site/docs/bse.pod	No items in =over (at line 6088) / =back list	1
 site/docs/bse.pod	preceding non-item paragraph(s)	1
 site/docs/bse.pod	unresolved internal link 'formmail.pod'	1
 site/docs/bse_import.pod	empty section in previous paragraph	1
 site/docs/bse_import.pod	multiple occurrence of link target 'Configuration'	1
-site/docs/config.pod	No items in =over (at line 1827) / =back list	1
-site/docs/config.pod	No items in =over (at line 1887) / =back list	1
 site/docs/config.pod	empty section in previous paragraph	4
 site/docs/config.pod	multiple occurrence of link target 'extra_templates'	1
 site/docs/config.pod	multiple occurrence of link target 'from'	1

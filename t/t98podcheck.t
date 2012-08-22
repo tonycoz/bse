@@ -121,6 +121,9 @@ if ($rebuild) {
     # this message is so wrong
     $message =~ /unescaped <> in paragraph/ and return;
 
+    # this one too
+    $message =~ /No items in =over/ and return;
+
     push @{$self->{imager_errors}}, $opts;
   }
 
