@@ -13,7 +13,7 @@ use BSE::Variables;
 use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 
-our $VERSION = "1.011";
+our $VERSION = "1.012";
 
 my $excerptSize = 300;
 
@@ -775,7 +775,7 @@ sub _find_articles {
       return Articles->all_visible_kids(-1);
     }
     else {
-      my @parents = $self->_find_articles($id)
+      my @parents = $self->_find_articles($id, $article, $acts, $name, $templater)
 	or return;
       return map $_->all_visible_kids, @parents;
     }

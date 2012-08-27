@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>158;
+use Test::More tests=>161;
 use File::Spec;
 use FindBin;
 use Cwd;
@@ -498,6 +498,14 @@ contentB
 <:iterator separator dynallkids_of2:>
 <:iterator end dynallkids_of2:>
 <:or Or:><:eif Or:><:endswitch:>
+EXPECTED
+
+# vimages
+template_test "vimages childrenof(children)", $parent, <<TEMPLATE, <<EXPECTED;
+<:iterator begin vimages childrenof(children) :>
+<:iterator end vimages:>
+TEMPLATE
+
 EXPECTED
 
 # tags
