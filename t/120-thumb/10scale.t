@@ -83,7 +83,7 @@ ok($th, "make driver object");
     {
       my $error;
       my ($data, $type) =
-	$th->thumb_data(filename => "t/thumb/data/$infile",
+	$th->thumb_data(filename => "t/120-thumb/data/$infile",
 			geometry => $geo,
 			error => \$error);
       ok($data, "$name: made a thumb")
@@ -94,7 +94,7 @@ ok($th, "make driver object");
 	 "$name: get the image data back as an image")
 	or skip("can't compare an image I can't read", 2);
       my $refim = Imager->new;
-      ok($refim->read(file => "t/thumb/data/$reffile"),
+      ok($refim->read(file => "t/120-thumb/data/$reffile"),
 	 "$name: get the reference image file as an image")
 	or skip("can't compare an image I can't read", 1);
       is_image_similar($outim, $refim, $maxdiff,

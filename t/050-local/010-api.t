@@ -135,7 +135,7 @@ SKIP: {
 	     (
 	      $cfg,
 	      displayName => "test.txt",
-	      file => "t/t15api.t",
+	      file => "t/t000load.t",
 	      store => 0,
 	     ) }, "file must be a file handle");
     like($@, qr/file must be a file handle/, "check message");
@@ -143,7 +143,7 @@ SKIP: {
     ok(!eval { $file = $art->add_file
 	     (
 	      $cfg,
-	      filename => "t/t15api.t",
+	      filename => "t/t000load.t",
 	      store => 0,
 	     ) }, "displayName is required");
     like($@, qr/displayName must be non-blank/, "check message");
@@ -153,13 +153,13 @@ SKIP: {
     (
      $cfg,
      displayName => "test.txt",
-     filename => "t/t15api.t",
+     filename => "t/t000load.t",
      store => 0,
     );
   ok($file, "added a file");
 
   # check the content
-  my $mine = read_file("t/t15api.t");
+  my $mine = read_file("t/t000load.t");
   my $stored = read_file($file->full_filename);
   is($stored, $mine, "check contents");
 }
@@ -171,7 +171,7 @@ SKIP: {
     my $im = bse_add_image
       (
        $cfg, $art,
-       file => "t/t15api.t",
+       file => "t/t000load.t",
        errors => \%errors,
       );
     ok(!$im, "image failed to add");

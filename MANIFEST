@@ -839,70 +839,70 @@ t-js/10menu.js
 t-js/menu.css
 t-js/test.js
 t-js/tests.css
+t/010-modules/010-dhdates.t
+t/010-modules/020-validate.t
+t/010-modules/030-country.t
+t/010-modules/040-bsesort.t
+t/010-modules/050-format.t
+t/010-modules/060-sqldates.t
+t/010-modules/070-escape.t
+t/010-modules/080-cfg.t
+t/010-modules/090-subcalc.t
+t/020-templater/000-load.t
+t/020-templater/010-token.t
+t/020-templater/020-parse.t
+t/020-templater/030-expr.t
+t/020-templater/040-original.t
+t/020-templater/080-parms.t
+t/030-tags/010-num.t
+t/030-tags/020-iter.t
+t/050-local/010-api.t
+t/050-local/020-article.t
+t/050-local/030-tags.t
+t/050-local/040-catalog.t
+t/050-local/050-dyncat.t
+t/060-generate/010-generate.t
+t/060-generate/020-catalog.t
+t/060-generate/030-thumb.t
+t/070-user/010-edit.t
+t/070-user/020-images.t
+t/080-remote/010-save.t
+t/080-remote/020-cat.t
+t/080-remote/030-parent.t
+t/080-remote/040-steps.t
+t/100-payment/010-securepayxml.t
+t/100-payment/020-nabtransactxml.t
+t/100-payment/030-eway.t
+t/110-courier/010-fastway.t
+t/110-courier/020-auspost.t
+t/110-courier/030-by-unit.t
+t/120-thumb/00load.t
+t/120-thumb/10scale.t
+t/120-thumb/data/scale40x30.png
+t/120-thumb/data/scale40x30fill.png
+t/120-thumb/data/simple.png
+t/900-kwalitee/010-strict-warn.t
+t/900-kwalitee/020-checktemplates.t
+t/900-kwalitee/030-messages.t
+t/900-kwalitee/040-podcheck.t
 t/BSE/Test.pm
 t/cfg/bse.cfg
 t/cfg/cfg/00start.cfg
 t/cfg/cfg/99end.cfg
 t/cfg/isafile.cfg
 t/cfg/t/varinc.cfg
-t/courier/by-unit.t
 t/data/govhouse.jpg
 t/data/known_pod_issues.txt
 t/data/t101.jpg
 t/t000load.t
 t/t00smoke.t			makes a request to most of the scripts
-t/t010template.t		Tests Squirrel::Template
-t/t011dhdates.t			Tests DevHelp::Date
-t/t012validate.t
-t/t013country.t
-t/t014bsesort.t
-t/t020checktemplates.t
-t/t050format.t			DevHelp::Formatter tests
-t/t060parms.t
-t/t070sqldates.t		Test SQL date tools
-t/t080escape.t
-t/t081cfg.t
-t/t090tags.t
-t/t091iter.t
-t/t10edit.t
-t/t11save.t
-t/t12cat.t
-t/t13parent.t
-t/t13steps.t
-t/t15api.t
-t/t16article.t
-t/t17tags.t
-t/t20gen.t
-t/t21gencat.t			Tests catalog generation
-t/t30rules.t			Check for use strict and warnings
-t/t40images.t			Tests image management
-t/t50subscalc.t			Test subscriptions calculations
-t/t60securepayxml.t
-t/t61fastway.t
-t/t62auspost.t
-t/t63nabtransactxml.t
-t/t64eway.t
-t/t70thumbim.t
-t/t80catalog.t
-t/t85message.t
-t/t90dyncat.t
-t/t98podcheck.t
 t/tags/bse.cfg
-t/templater/00load.t
-t/templater/10token.t
-t/templater/20parse.t
-t/templater/30expr.t
 t/templates/called.tmpl
-t/templates/included.include	Used by t010template.t
+t/templates/included.include
 t/templates/included.recursive
 t/templates/preload.tmpl
 t/templates/wrapinner.tmpl
 t/templates/wrapself.tmpl
-t/templates/wraptest.tmpl	Used by t010template.t
-t/thumb/00load.t
-t/thumb/10scale.t
-t/thumb/data/scale40x30.png
-t/thumb/data/scale40x30fill.png
-t/thumb/data/simple.png
+t/templates/wraptest.tmpl
 test.cfg-dist
 test.cfg.base
