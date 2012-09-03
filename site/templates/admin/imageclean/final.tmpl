@@ -7,11 +7,11 @@
 
 <div class="imageclean">
 <:iterator begin messages:>
-<:-.set msgbase = [ state, "msg:bse/admin/imageclean/" ][1] -:>
+<:-.set msgbase = [ state, "msg:bse/admin/imageclean/", "NOMSGID" ][1] -:>
 <:- .if state.type eq "stage" -:>
-  <h1><:= request.htmlmsg("msg:bse/admin/imageclean/stage/" _ state.stage) -:></h1>
+  <h1><:= request.htmlmsg(msgbase _ "stage/" _ state.stage) -:></h1>
 <: .elsif state.type eq "substage" -:>
-  <h2><:= request.htmlmsg("msg:bse/admin/imageclean/substage/" _ state.stage _ "/" _ state.substage) -:></h2>
+  <h2><:= request.htmlmsg(msgbase _ "substage/" _ state.stage _ "/" _ state.substage) -:></h2>
 <: .elsif state.type eq "orphanimage" :>
   <div><:= request.htmlmsg(msgbase _ "process/" _ ( acted ? "remove" : "skip" ) _ "image", [ state.image.id, state.image.image ]) :></div>
 <: .elsif state.type eq "orphanfile" :>

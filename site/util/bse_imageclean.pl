@@ -48,7 +48,7 @@ require BSE::ImageClean;
 
 my $action = $nothing ? "skip" : "remove";
 
-my $msgbase = "msg:bse/admin/imageclean";
+my $msgbase = "msg:bse/admin/imageclean"; # NOMSGID
 
 BSE::ImageClean->scan
   (
