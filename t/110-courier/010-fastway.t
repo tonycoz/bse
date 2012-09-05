@@ -11,21 +11,19 @@ BEGIN {
 
 use Courier::Fastway::Road;
 use BSE::Shipping;
+use BSE::Cfg;
 
-my %cfg_work = 
+my $cfg = BSE::Cfg->new_from_text
   (
-   shipping => 
-   {
-    sourcepostcode => "4350",
-    fastwayfranchisee => "TOO",
-   },
-   debug =>
-   {
-    fastway => 0,
-   },
-  );
+   text => <<EOS,
+[shipping]
+sourcepostcode=2000
+fastwayfranchisee=SYD
 
-my $cfg = bless \%cfg_work, "Test::Cfg";
+[debug]
+fastway=0
+EOS
+  );
 
 my $cour = Courier::Fastway::Road->new(config => $cfg);
 ok($cour, "make courier object");
@@ -70,13 +68,3 @@ my $local_medium_cost = $cour->calculate_shipping
   );
 ok($local_medium_cost, "got a local medium cost");
 like($local_medium_cost, qr/^\d+$/, "it's an integer");
-
-package Test::Cfg;
-
-sub entry {
-  my ($self, $section, $key, $def) = @_;
-
-  exists $self->{$section} or return $def;
-  exists $self->{$section}{$key} or return $def;
-  return $self->{$section}{$key};
-}
