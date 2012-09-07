@@ -14,6 +14,9 @@ Bug fixes:
  - handle language ids of the form xx_XX.charset correctly when
    performing message lookups.
 
+ - global images are now returned in the order specified in the
+   editor.
+
 Enchancements:
 
  - modify Generate::* classes to build templates by filename instead
@@ -72,6 +75,17 @@ Enchancements:
      checkboxes to control which clean ups are done.
 
    - now accounts for public files controlled by BSE::TB::Files.
+
+ - quoted shipping can now be disabled
+
+ - added the Courier::ByUnitAU shipping module.
+
+Infrastructure:
+
+ - the test script directory (t) has been reorganized.
+
+ - configuration can now be loaded from a string to simplify building
+   config objects for testing.
 
 Documentation:
 
