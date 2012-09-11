@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test qw(make_ua base_url);
-use Test::More tests => 53;
+use Test::More tests => 59;
 use File::Spec;
 use File::Slurp;
 use Carp qw(confess);
@@ -242,6 +242,45 @@ undef $art;
     $im1->remove if $im1;
     $im2->remove if $im2;
     $im3->remove if $im3;
+  }
+}
+
+{ # test that access controls are removed on article removal
+  # https://rt4.develop-help.com/Ticket/Display.html?id=1368
+  my $art = bse_make_article(cfg => $cfg,
+			     title => "010-api - access control");
+  my $artid = $art->id; # save for later
+  ok($art, "make an article");
+  $art->add_group_id(-1);
+  is_deeply([ $art->group_ids ], [ -1 ], "added group, check it stuck");
+
+  # make an admin group
+  require BSE::TB::AdminGroups;
+  my $name = "010-api group " . time;
+  my $group = BSE::TB::AdminGroups->make
+    (
+     name => $name,
+    );
+  ok($group, "make a group");
+
+  require BSE::Permissions;
+  my $perms = BSE::Permissions->new($cfg);
+  $perms->set_article_perm($artid, $group, "");
+  my $aperm = $perms->get_article_perm($artid, $group);
+  ok($aperm, "added article perms for group");
+
+  $art->remove($cfg);
+  undef $art;
+  # hack - taken from Article.pm
+  my @now_ids =  map $_->{id}, BSE::DB->query(siteuserGroupsForArticle => $artid);
+  is_deeply(\@now_ids, [], "should be no groups for that article id after article is removed");
+
+  my $aperm2 = $perms->get_article_perm($artid, $group);
+  ok(!$aperm2, "should no longer be admin permissions for that article/group");
+
+  END {
+    $art->remove($cfg) if $art;
+    $group->remove if $group;
   }
 }
 

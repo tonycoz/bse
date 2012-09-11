@@ -1,5 +1,5 @@
 --
-# VERSION=1.003
+# VERSION=1.004
 name: bse_siteuserSeminarBookingsDetail
 sql_statement: <<SQL
 select ar.*, pr.*, se.*, ss.*, sb.*,
@@ -609,4 +609,16 @@ from bse_tags t
 where owner_type = ?
   and t.cat <> ''
 order by cat
+SQL
+
+name: bseRemoveArticleSiteUserGroups
+sql_statement: <<SQL
+delete from bse_article_groups
+where article_id = ?
+SQL
+
+name: bseRemoveArticleAdminAccess
+sql_statement: <<SQL
+delete from admin_perms
+where object_id = ?
 SQL

@@ -8,7 +8,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::TB::SiteCommon BSE::TB::TagOwner/;
 use Carp 'confess';
 
-our $VERSION = "1.015";
+our $VERSION = "1.016";
 
 =head1 NAME
 
@@ -360,9 +360,15 @@ sub remove {
     $link->remove();
   }
 
+  # remove any site user access controls
+  BSE::DB->single->run(bseRemoveArticleSiteUserGroups => $self->id);
+
+  # remove any admin user/group access controls
+  BSE::DB->single->run(bseRemoveArticleAdminAccess => $self->id);
+
   # remove the static page
   $self->remove_html($cfg);
-  
+
   $self->SUPER::remove();
 }
 
