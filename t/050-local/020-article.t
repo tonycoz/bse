@@ -3,18 +3,16 @@ use strict;
 use Test::More tests => 12;
 use BSE::Test ();
 use File::Spec;
+use BSE::Cfg;
 
 use_ok("Article");
 
 {
-  my $cfg = bless 
-    {
-     paths =>
-     {
-      base => "/test",
-      public_html => '$(base)/htdocs',
-     }
-    }, "Test::Cfg";
+  my $cfg = BSE::Cfg->new_from_text(text => <<'EOS');
+[paths]
+base=/test
+public_html=$(base)/htdocs
+EOS
 
   is(Article->link_to_filename($cfg, "/"), "/test/htdocs/index.html",
      "check default link to /");
@@ -27,18 +25,15 @@ use_ok("Article");
 }
 
 {
-  my $cfg = bless 
-    {
-     paths =>
-     {
-      base => "/test",
-      public_html => '$(base)/htdocs',
-     },
-     basic =>
-     {
-      index_file => "default.htm"
-     }
-    }, "Test::Cfg";
+  my $cfg = BSE::Cfg->new_from_text(text => <<'EOS');
+[paths]
+base=/test
+public_html=$(base)/htdocs
+
+[basic]
+index_file=default.htm
+EOS
+
   is(Article->link_to_filename($cfg, "/"), "/test/htdocs/default.htm",
      "check cfg link to filename");
 }
@@ -77,52 +72,3 @@ use_ok("Article");
   }
 }
 
-package Test::Cfg;
-
-sub entry {
-  my ($self, $section, $key, $def) = @_;
-
-  my $sect = $self->{$section}
-    or return $def;
-  exists $sect->{$key} or return $def;
-
-  return $sect->{$key};
-}
-
-sub entryIfVar {
-  my ($self, $section, $key, $def) = @_;
-
-  my $value = $self->entry($section, $key);
-  defined $value
-    or return $def;
-
-  return $self->entryVar($section, $key);
-}
-
-sub entryErr {
-  my ($self, $section, $key) = @_;
-
-  my $value = $self->entry($section, $key);
-  defined $value or die "Missing [$section].$key";
-
-  return $value;
-}
-
-sub entryVar {
-  my ($self, $section, $key, $depth) = @_;
-
-  $depth ||= 0;
-  $depth < 10
-    or die "Too many levels of variables getting $key from $section";
-  my $value = $self->entryErr($section, $key);
-  $value =~ s!\$\(([\w ]+)/([\w ]+)\)! $self->entryVar($1, $2, $depth+1) !eg;
-  $value =~ s!\$\(([\w ]+)\)! $self->entryVar($section, $1, $depth+1) !eg;
-
-  $value;
-}
-
-sub content_base_path {
-  my ($self) = @_;
-
-  return $self->entryVar("paths", "public_html");
-}
