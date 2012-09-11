@@ -2,7 +2,7 @@ package Squirrel::Row;
 require 5.005;
 use strict;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 use Carp;
 use BSE::DB;
@@ -197,6 +197,8 @@ sub remove {
     $sth->execute(@primary)
       or confess "Cannot delete ", ref $self, ":", $sth->errstr;
   }
+
+  1;
 }
 
 sub set {

@@ -861,6 +861,7 @@ t/050-local/020-article.t
 t/050-local/030-tags.t
 t/050-local/040-catalog.t
 t/050-local/050-dyncat.t
+t/050-local/060-admin-group.t
 t/060-generate/010-generate.t
 t/060-generate/020-catalog.t
 t/060-generate/030-thumb.t
