@@ -3,6 +3,10 @@ BSE 0.24 - unreleased
 
 Bug fixes:
 
+ - clean up access control records for article when the article is
+   deleted
+   https://rt4.develop-help.com/Ticket/Display.html?id=1368
+
 Enhancements:
 
 Templates:
