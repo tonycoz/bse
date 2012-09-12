@@ -114,6 +114,12 @@ implemented.  Default: $IMAGEDIR.
 Local search path for BSE::Custom, or the class configured by
 C<custom_class> in [basic].
 
+=item scalecache
+
+The directory where cached versions of scaled thumbnails are stored.
+Defaults to I<[paths].images>F</scaled>.  This must be in the document tree.  If
+you set this you should also set I<[uri].scalecache>.
+
 =item siteuser_images
 
 Where uploaded siteuser images are stored.  This must be set in the
@@ -124,17 +130,6 @@ values of [paths].downloads
 
 Pregenerated dynamic article pages are stored here.  This must be
 defined if you site contains any dynamicly generated pages.
-
-=item scalecache
-
-The directory where cached versions of scaled thumbnails are stored.
-Defaults to image_dir/scaled.  This must be in the document tree.  If
-you set this you should also set scalecacheurl.
-
-=item scalecacheurl
-
-The URL to the directory represented by scalecache.  Defaults to
-/images/scaled.
 
 =back
 
@@ -1170,6 +1165,11 @@ The URI where managed images are kept which should correspond to
 C<images> in C<[paths]>.
 
 Default: C</images> (from C<$Constants::IMAGES_URI>)
+
+=item scalecache
+
+The URL to the directory represented by scalecache.  Defaults to
+I<[uri].images>F</scaled>.
 
 =item shop
 

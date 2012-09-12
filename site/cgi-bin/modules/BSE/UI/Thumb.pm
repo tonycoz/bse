@@ -1,10 +1,10 @@
 package BSE::UI::Thumb;
 use strict;
 use base 'BSE::UI::Dispatch'; # for error
-use BSE::CfgInfo qw(cfg_image_dir);
+use BSE::CfgInfo qw(cfg_scalecache_dir cfg_scalecache_uri);
 use BSE::Util::Thumb;
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 sub dispatch {
   my ($class, $req) = @_;
@@ -44,10 +44,9 @@ sub dispatch {
   }
 
   my $do_cache = $cfg->entry('basic', 'cache_thumbnails', 1) && $cache;
-  my $image_dir = cfg_image_dir($cfg);
   
-  my $cache_dir = $cfg->entry('paths', 'scalecache', "$image_dir/scaled");
-  my $cache_base_url = $cfg->entry('paths', 'scalecacheurl', '/images/scaled');
+  my $cache_dir = cfg_scalecache_dir($cfg);
+  my $cache_base_url = cfg_scalecache_uri($cfg);
 
   my ($start_type) = $image->filename =~ /\.(\w+)$/;
   $start_type ||= 'png';

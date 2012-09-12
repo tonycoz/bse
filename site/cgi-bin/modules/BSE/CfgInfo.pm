@@ -1,12 +1,12 @@
 package BSE::CfgInfo;
 use strict;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 use vars qw(@ISA @EXPORT_OK);
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(custom_class admin_base_url cfg_image_dir cfg_image_uri cfg_dist_image_uri cfg_data_dir credit_card_class product_options bse_default_country);
+@EXPORT_OK = qw(custom_class admin_base_url cfg_image_dir cfg_image_uri cfg_dist_image_uri cfg_data_dir cfg_scalecache_dir cfg_scalecache_uri credit_card_class product_options bse_default_country);
 
 =head1 NAME
 
@@ -151,6 +151,52 @@ sub cfg_data_dir {
     or die "[paths].data value '$dir' isn't a directory\n";
 
   return $dir;
+}
+
+=item cfg_scalecache_dir()
+
+Returns the directory configured for storage of generated thumbnails.
+
+Controlled with [paths].scalecache.
+
+Default: C<cfg_image_dir() . "/scaled">
+
+=cut
+
+sub cfg_scalecache_dir {
+  my ($cfg) = @_;
+
+  $cfg ||= BSE::Cfg->single;
+
+  my $dir = $cfg->entryIfVar('paths', 'scalecache', cfg_image_dir($cfg) . "/scaled");
+  -d $dir
+    or die "[paths].scalecache value '$dir' isn't a directory\n";
+
+  return $dir;
+}
+
+=item cfg_scalecache_uri()
+
+Returns the uri for the directory configured for storage of generated
+thumbnails.
+
+Controlled with C<[uri].scalecache> with a fallback to
+C<[paths].scalecacheurl>.
+
+=cut
+
+sub cfg_scalecache_uri {
+  my ($cfg) = @_;
+
+  $cfg ||= BSE::Cfg->single;
+
+  my $uri = $cfg->entryIfVar('uri', 'scalecache');
+  defined $uri
+    or $uri = $cfg->entryIfVar('path', 'scalecacheurl');
+  defined $uri
+    or $uri = cfg_image_uri($cfg) . "/scaled";
+
+  return $uri;
 }
 
 =item credit_card_class

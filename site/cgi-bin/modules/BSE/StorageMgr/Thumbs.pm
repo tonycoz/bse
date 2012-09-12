@@ -2,17 +2,16 @@ package BSE::StorageMgr::Thumbs;
 use strict;
 use BSE::StorageMgr::Base;
 our @ISA = qw(BSE::StorageMgr::Base);
-use BSE::CfgInfo qw(cfg_image_dir);
+use BSE::CfgInfo qw(cfg_scalecache_dir);
 use BSE::Storage::LocalThumbs;
 use BSE::Util::ContentType qw(content_type);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub filebase {
   my ($self) = @_;
 
-  my $image_dir = cfg_image_dir($self->cfg);
-  return $self->cfg->entry('paths', 'scalecache', "$image_dir/scaled");
+  return cfg_scalecache_dir($self->cfg);
 }
 
 sub local_class {

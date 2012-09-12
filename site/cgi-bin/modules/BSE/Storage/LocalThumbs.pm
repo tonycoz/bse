@@ -2,13 +2,14 @@ package BSE::Storage::LocalThumbs;
 use strict;
 use BSE::Storage::LocalBase;
 our @ISA = qw(BSE::Storage::LocalBase);
+use BSE::CfgInfo qw(cfg_scalecache_uri);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub _base_url {
   my ($self) = @_;
 
-  return $self->cfg->entry('paths', 'scalecacheurl', '/images/scaled');
+  return cfg_scalecache_uri($self->cfg);
 }
 
 sub store {

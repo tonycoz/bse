@@ -1,10 +1,10 @@
 package BSE::Util::Thumb;
 use strict;
 use BSE::TB::Images;
-use BSE::CfgInfo qw(cfg_image_dir);
+use BSE::CfgInfo qw(cfg_scalecache_dir cfg_scalecache_uri);
 use BSE::StorageMgr::Thumbs;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 # returns a list of $url, $filename, $basename
 sub generate_thumb {
@@ -16,9 +16,8 @@ sub generate_thumb {
     die "Unknown geometry $geometry_id\n";
   }
 
-  my $image_dir = cfg_image_dir($cfg);
-  my $cache_dir = $cfg->entry('paths', 'scalecache', "$image_dir/scaled");
-  my $cache_base_url = $cfg->entry('paths', 'scalecacheurl', '/images/scaled');
+  my $cache_dir = cfg_scalecache_dir($cfg);
+  my $cache_base_url = cfg_scalecache_uri($cfg);
 
   my ($start_type) = $image->filename =~ /\.(\w+)$/;
   $start_type ||= 'png';
