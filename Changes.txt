@@ -7,6 +7,12 @@ Bug fixes:
    deleted
    https://rt4.develop-help.com/Ticket/Display.html?id=1368
 
+ - lookup the scalecache path and uri consistently, and configure them
+   in the [paths] and [uri] sections.  This may break your site if you
+   didn't use the old defaults.
+   https://rt4.develop-help.com/Ticket/Display.html?id=1363
+   https://rt4.develop-help.com/Ticket/Display.html?id=1364
+
 Enhancements:
 
 Templates:
