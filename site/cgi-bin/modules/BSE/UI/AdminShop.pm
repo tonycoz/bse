@@ -19,7 +19,7 @@ use BSE::Arrows;
 use BSE::Shop::Util qw(:payment order_item_opts nice_options payment_types);
 use BSE::CfgInfo qw(cfg_dist_image_uri);
 
-our $VERSION = "1.016";
+our $VERSION = "1.017";
 
 my %actions =
   (
@@ -92,8 +92,6 @@ sub embedded_catalog {
     (
      $req->admin_tags,
      catalog => [ \&tag_hash, $catalog ],
-     date => sub { display_date($list[$list_index]{$_[0]}) },
-     money => sub { sprintf("%.2f", $list[$list_index]{$_[0]}/100.0) },
      iterate_products_reset => sub { $list_index = -1; },
      iterate_products =>
      sub {
@@ -1132,16 +1130,6 @@ sub req_order_save {
 # perhaps some of these belong in a class...
 
 # format an ANSI SQL date for display
-sub display_date {
-  my ($date) = @_;
-  
-  if ( my ($year, $month, $day) = 
-       ($date =~ /^(\d+)-(\d+)-(\d+)/)) {
-    return sprintf("%02d/%02d/%04d", $day, $month, $year);
-  }
-  return $date;
-}
-
 sub money_to_cents {
   my $money = shift;
 

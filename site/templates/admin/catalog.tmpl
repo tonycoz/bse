@@ -22,11 +22,11 @@
         <tr> 
           <td class="col_id"><:product id:></td>
           <td class="col_name"><a href="<:product admin:>"><:product title:></a></td>
-          <td class="col_release"><:date release:></td>
-          <td class="col-expire"><:ifMatch [date expire] "31/12/9999":>Never<:or:><:date expire:><:eif:></td>
-          <td class="col_retail">$<:money retailPrice:></td>
-          <td class="col_wsale">$<:money wholesalePrice:></td>
-          <td class="col_gst">$<:money gst:></td>
+          <td class="col_release"><:date "%d/%m/%Y" product release:></td>
+          <td class="col-expire"><:ifMatch [product expire] "^9999-12-31":>Never<:or:><:date "%d/%m/%Y" product expire:><:eif:></td>
+          <td class="col_retail">$<:money product retailPrice:></td>
+          <td class="col_wsale">$<:money product wholesalePrice:></td>
+          <td class="col_gst">$<:money product gst:></td>
           <td class="col_modify"><a href="/cgi-bin/admin/add.pl?id=<:product id:>">Edit</a> 
             <:if Product listed:> <a href="/cgi-bin/admin/add.pl?hide=1&amp;id=<:product id:>&amp;_csrfp=<:csrfp admin_save_article:>&amp;r=<:cfg site url:><:script:>">Hide</a> 
             <:or Product:> <a href="/cgi-bin/admin/add.pl?unhide=1&amp;id=<:product id:>&amp;_csrfp=<:csrfp admin_save_article:>&amp;r=<:cfg site url:><:script:>">Show</a> 
