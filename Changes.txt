@@ -13,10 +13,16 @@ Bug fixes:
    https://rt4.develop-help.com/Ticket/Display.html?id=1363
    https://rt4.develop-help.com/Ticket/Display.html?id=1364
 
+ - remove the local date and money tag definitions from the
+   administrative embedded catalog tags.  This will require updates to
+   your embedded catalog template (admin/catalog.tmpl in base BSE).
+
 Enhancements:
 
 Templates:
 
+ - admin/catalog.tmpl (maybe named differently) - removed the local
+   date and money tag definitions.
 
 BSE 0.23 - 07 Sep 2012
 ========
