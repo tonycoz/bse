@@ -3,7 +3,7 @@ use strict;
 use DevHelp::Tags;
 use DevHelp::HTML qw(escape_html popup_menu escape_uri);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub new {
   my ($class, $cfg, $section) = @_;
@@ -546,7 +546,7 @@ sub tag_repparams {
   }
   elsif ($args eq 'url') {
     return join "&amp;", 
-      map $prefix . $_+1 . '=' . escape_uri($params->[$_]),
+      map $prefix . ($_+1) . '=' . escape_uri($params->[$_]),
 	  0 .. $#$params;
   }
   else {
@@ -560,23 +560,20 @@ sub show_tags {
   $self->show_tags2($repid, $db, $rmsg, \@params);
 }
 
-sub show_tags2 {
+sub report_data {
   my ($self, $repid, $db, $rmsg, $params, %opts) = @_;
 
   my $dbh = $self->report_db($repid, $db);
 
-  my $prefix = $opts{tag_prefix} || '';
-  # build up result sets
   my $report = $self->_load($repid, undef, $dbh);
-  if ($report->{debug}) {
-    print STDERR "Params: @$params\n";
-  }
+
   my @sorts = $report->sorts;
   my $sort;
   if (@sorts) {
     my $sort_id = $opts{sort} || 1;
     ($sort) = grep $_->{id} == $sort_id, @sorts;
   }
+
   my @results;
   for my $sql (@{$report->{sql}}) {
     my %result;
@@ -612,11 +609,35 @@ sub show_tags2 {
     push @results, \%result;
   }
 
-  my @index = ( 0 ) x @results;
+  return \@results;
+}
+
+sub show_tags2 {
+  my ($self, $repid, $db, $rmsg, $params, %opts) = @_;
+
+  my $dbh = $self->report_db($repid, $db);
+
+  my $prefix = $opts{tag_prefix} || '';
+  # build up result sets
+  my $report = $self->_load($repid, undef, $dbh);
+  if ($report->{debug}) {
+    print STDERR "Params: @$params\n";
+  }
+  my @sorts = $report->sorts;
+  my $sort;
+  if (@sorts) {
+    my $sort_id = $opts{sort} || 1;
+    ($sort) = grep $_->{id} == $sort_id, @sorts;
+  }
+
+  my $results = $self->report_data($repid, $db, $rmsg, $params, %opts)
+    or return;
+
+  my @index = ( 0 ) x @$results;
   my @work;
-  push @work, [] for 1 .. @results;
-  my @level1names = @{$results[0]{names}};
-  for my $row (@{$results[0]{rows}}) {
+  push @work, [] for 1 .. @$results;
+  my @level1names = @{$results->[0]{names}};
+  for my $row (@{$results->[0]{rows}}) {
     my %hashrow =
       map { $level1names[$_] => $row->[$_] } 0..$#$row;
     push @{$work[0]}, \%hashrow;
@@ -634,30 +655,30 @@ sub show_tags2 {
      DevHelp::Tags->make_iterator2
      (undef, $prefix.'level1', $prefix.'level1', $work[0], \$index[0], undef, \$level1_row),
      DevHelp::Tags->make_iterator2
-     ([ \&iter_levelN_cols, 0, \@results, $work[0], \$index[0] ], 
+     ([ \&iter_levelN_cols, 0, $results, $work[0], \$index[0] ], 
       $prefix.'level1_col', $prefix.'level1_cols', undef, undef, 'NoCache'),
      DevHelp::Tags->make_iterator2
      (undef, $prefix.'level1_name', $prefix.'level1_names', 
-      [ map +{ 'name' => $_ }, @{$results[0]{titles}} ], \$level1_name_index),
+      [ map +{ 'name' => $_ }, @{$results->[0]{titles}} ], \$level1_name_index),
      DevHelp::Tags->make_iterator2
      ([ \&iter_levelN_links, 0, $report->{sql}[0]{links}, $work[0], 
 	\$index[0] ], 
       $prefix.'level1_link', $prefix.'level1_links', undef, undef, 'NoCache'),
      "${prefix}level1_byname" => [ \&tag_levelN_col, \$level1_row ],
      "${prefix}level1_sum" => 
-     [ \&tag_levelN_sum, $results[0]{rows}, $results[0]{names_hash} ],
+     [ \&tag_levelN_sum, $results->[0]{rows}, $results->[0]{names_hash} ],
      "${prefix}report" => [ \&tag_hash, $report ],
     );
-  for my $level (1 .. $#results) {
+  for my $level (1 .. $#$results) {
     my $name = "${prefix}level" . ($level + 1);
     my %work_tags =
       DevHelp::Tags->make_iterator2
-	  ([ \&iter_levelN, $report, \@results, \@work, $level, 
+	  ([ \&iter_levelN, $report, $results, \@work, $level, 
 	     \$index[$level-1] ], 
 	   $name, $name, $work[$level], \$index[$level], 'NoCache');
     @tags{keys %work_tags} = values %work_tags;
   }
-  $tags{"${prefix}sort"} = [ tag_sort => $self, $report, $sort, $params, $results[0]{titles}, \$level1_name_index ];
+  $tags{"${prefix}sort"} = [ tag_sort => $self, $report, $sort, $params, $results->[0]{titles}, \$level1_name_index ];
   $tags{"${prefix}sort_select"} = [ tag_sort_select => $self, $report, $sort ];
   $tags{"${prefix}repparams"} = [ tag_repparams => $self, $report, $params ];
 

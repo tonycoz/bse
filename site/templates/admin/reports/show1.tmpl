@@ -1,6 +1,8 @@
 <:wrap admin/base.tmpl title=>"Reports - BSE":>
 <h1>Report: <:report name:></h1>
-<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | <a href="/cgi-bin/admin/report.pl">Reports List</a> | <:ifReport has_params:><a href="/cgi-bin/admin/report.pl?s_prompt=1&r=<:report id:>">Arguments</a> | <:or:><:eif:></p>
+<p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | <a href="/cgi-bin/admin/report.pl">Reports List</a> | <:ifReport has_params:><a href="/cgi-bin/admin/report.pl?s_prompt=1&r=<:report id:>">Arguments</a> | <:or:><:eif:>
+<a href="<:adminurl2 report show r [report id] type csv:>&amp;<:repparams url:>">CSV</a> |
+</p>
 
 <:if Sort_select others:>
 <form action="<:script:>">

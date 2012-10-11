@@ -5,7 +5,17 @@ use BSE::Util::Tags;
 use BSE::Report;
 use BSE::Util::HTML;
 
-our $VERSION = "1.001";
+=head1 NAME
+
+BSE::UI::AdminReport - reporting user interface
+
+=head1 METHODS
+
+=over
+
+=cut
+
+our $VERSION = "1.002";
 
 my %actions =
   (
@@ -86,6 +96,52 @@ sub req_prompt {
   return $req->dyn_response($template, \%acts);
 }
 
+=item target show
+
+Display report results.
+
+Parameters:
+
+=over
+
+=item *
+
+r - report id
+
+=item *
+
+p1 ... pN - report parameters
+
+=item *
+
+sort - the sort method to use
+
+=item *
+
+type - the type of output, the default is C<html>, but may be set to
+C<csv> for a CSV export of the report data.
+
+=back
+
+Extra parameters can be supplied for CSV output:
+
+=over
+
+=item *
+
+filename - the filename to provide in the C<Content-Disposition>
+header.  Defaults to C<< I<reportname>.csv >>.  Characters outside of
+C<A-Za-z0-9_.-> are replaced with C<-> and duplicate C<-> are
+squashed.
+
+=item *
+
+download - set to 0 to set C<Content-Disposition> to C<inline>.
+
+=back
+
+=cut
+
 sub req_show {
   my ($class, $req) = @_;
 
@@ -113,6 +169,12 @@ sub req_show {
   if (defined $sort && $sort =~ /^\d+$/) {
     $show_opts{sort} = $sort;
   }
+
+  my $type = $req->cgi->param('type') || 'html';
+  if ($type eq 'csv') {
+    return $class->_show_csv($req, $reports, $repname, \@params, sort => $sort);
+  }
+
   my $msg;
   my %acts;
   %acts =
@@ -130,4 +192,55 @@ sub req_show {
   return $req->dyn_response($template, \%acts);
 }
 
+sub _show_csv {
+  my ($self, $req, $reports, $repname, $params, %opts) = @_;
+
+  my $msg;
+  my $result = $reports->report_data
+    (
+     $repname, BSE::DB->single, \$msg, $params,
+     %opts
+    )
+      or return $self->_error($req, $msg);
+
+  require Text::CSV;
+  my $csv = Text::CSV->new({ binary => 1 });
+  my $first = $result->[0];
+  $csv->combine(@{$first->{titles}});
+  my @out = $csv->string;
+  for my $row (@{$first->{rows}}) {
+    $csv->combine(@$row);
+    push @out, $csv->string;
+  }
+
+  my $data = join("\n", @out, "");
+  if ($req->cfg->utf8) {
+    my $charset = $req->cfg->charset;
+    require Encode;
+    $data = Encode::encode($charset, $data);
+  }
+
+  my $filename = $req->cgi->param("filename");
+  $filename ||= "$repname.csv";
+  $filename =~ tr/a-zA-Z0-9_./-/cs;
+  $filename =~ s/^-+//;
+  my $download = $req->cgi->param("download");
+  defined $download or $download = 1;
+  my $disp = $download ? "attachment" : "inline";
+
+  return
+    {
+     type => "text/plain",
+     content => $data,
+     headers =>
+     [
+      "Content-Disposition: $disp; filename=$filename"
+     ],
+    };
+}
+
 1;
+
+=back
+
+=cut
