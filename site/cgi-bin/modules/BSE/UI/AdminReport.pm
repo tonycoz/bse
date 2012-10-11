@@ -15,7 +15,7 @@ BSE::UI::AdminReport - reporting user interface
 
 =cut
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 my %actions =
   (
@@ -230,7 +230,7 @@ sub _show_csv {
 
   return
     {
-     type => "text/plain",
+     type => "text/csv",
      content => $data,
      headers =>
      [
