@@ -19,6 +19,8 @@ Bug fixes:
 
 Enhancements:
 
+ - add support for exporting report results as CSV
+
 Templates:
 
  - admin/catalog.tmpl (maybe named differently) - removed the local
