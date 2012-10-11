@@ -123,6 +123,7 @@ site/docs/config.pod	multiple occurrence of link target 'from'	1
 site/docs/config.pod	multiple occurrence of link target 'images'	1
 site/docs/config.pod	multiple occurrence of link target 'no_cache_dynamic'	1
 site/docs/config.pod	multiple occurrence of link target 'require_logon'	1
+site/docs/config.pod	multiple occurrence of link target 'scalecache'	1
 site/docs/config.pod	multiple occurrence of link target 'template'	1
 site/docs/config.pod	multiple occurrence of link target 'template_dirs'	1
 site/docs/config.pod	multiple occurrence of link target 'url'	1
