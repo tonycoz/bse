@@ -5,93 +5,92 @@
 
 <table class="menu">
 <tr>
-  <th width="33%">Content</th>
-  <th width="33%">Users</th>
-  <th width="33%">Maintenance</th>
+  <th>Content</th>
+  <th>Users</th>
+  <th>Maintenance</th>
 </tr>
 <tr>
-  <td bgcolor="#FFFFFF">
-<p><a href="/cgi-bin/admin/admin.pl?id=1">Browse in edit mode</a></p>
+  <td>
+<p><a href="<:= cfg.admin_url("admin", { "id": 1 }) | html :>">Browse in edit mode</a></p>
 
 <p><a href="/">Browse in static mode</a></p>
 
 <:if UserCan edit_add_child:2 :>
-<p><a href="/cgi-bin/admin/add.pl?parentid=2">Add to home page</a></p><:or UserCan:><:eif UserCan:>
+<p><a href="<:= cfg.admin_url("add", { "parentid":2 }) | html :>">Add to home page</a></p><:or UserCan:><:eif UserCan:>
 
 <p>&nbsp;</p>
 
-<p><a href="/cgi-bin/admin/add.pl?id=-1">Administer sections</a></p>
- 
+<p><a href="<:= cfg.admin_url("add", { "id": -1 }) | html :>">Administer sections</a></p>
+
 <ul>
 
 <:if UserCan edit_add_child:-1 :>
-<li><a href="/cgi-bin/admin/add.pl?level=1&amp;parentid=-1">Add a new 
+<li><a href="<:= cfg.admin_url("add", { "level":1, "parentid": -1 }) | html :>">Add a new
 section</a></li>
 <:or UserCan:><:eif UserCan:>
 
-<li><a href="/cgi-bin/admin/add.pl?level=2">Add a new subsection</a></li>
+<li><a href="<:= cfg.admin_url("add", { "level":2 }) | html :>">Add a new subsection</a></li>
 
-<li><a href="/cgi-bin/admin/add.pl">Add a new article</a></li>
+<li><a href="<:= cfg.admin_url("add") | html :>">Add a new article</a></li>
 
 </ul>
 
-<p><a href="<:adminurl pregen:>">Preview Pregen pages</a></p>
+<p><a href="<:= cfg.admin_url("pregen") | html :>">Preview Pregen pages</a></p>
 
   </td>
-  <td bgcolor="#FFFFFF">
-<p><a href="/cgi-bin/admin/adminusers.pl">Admin User/Group administration</a></p>
+  <td>
+<p><a href="<:= cfg.admin_url("adminusers") | html :>">Admin User/Group administration</a></p>
 
 <p>&nbsp;</p>
- 
-<p><a href="/cgi-bin/admin/siteusers.pl">Member administration</a></p>
-<ul><li><a href="/cgi-bin/admin/userlist.pl">Download member list</a></li>
-<li><a href="/cgi-bin/admin/userupdate.pl">Upload updated member data</a></li></ul>
+
+<p><a href="<:= cfg.admin_url("siteusers") | html :>">Member administration</a></p>
+<ul><li><a href="<:= cfg.admin_url("userlist") | html :>">Download member list</a></li>
+<li><a href="<:= cfg.admin_url("userupdate") | html :>">Upload updated member data</a></li></ul>
 <p>&nbsp;</p>
 
-<p><a href="/cgi-bin/admin/subs.pl">Newsletters administration</a></p>
+<p><a href="<:= cfg.admin_url("subs") | html :>">Newsletters administration</a></p>
 
-<p><a href="/cgi-bin/admin/subadmin.pl">Subscriptions administration</a></p>
+<p><a href="<:= cfg.admin_url("subadmin") | html :>">Subscriptions administration</a></p>
   </td>
-  <td bgcolor="#FFFFFF">
+  <td>
 <:ifUserCan regen_all:>
-<p><a href="/cgi-bin/admin/generate.pl">Regenerate static &amp; base
+<p><a href="<:= cfg.admin_url("generate") | html :>">Regenerate static &amp; base
 pages</a> (<a
-href="/cgi-bin/admin/generate.pl?progress=1">verbose</a>)</p>
+href="<:= cfg.admin_url("generate", { "progress":1 }) | html :>">verbose</a>)</p>
 <:or:><:eif:>
 
 <:ifUserCan regen_extras:>
 <ul>
-<li><a 
-href="/cgi-bin/admin/generate.pl?id=extras">Regenerate extras 
-and base pages</a> (<a 
-href="/cgi-bin/admin/generate.pl?id=extras&amp;progress=1">verbose</a>)</li></ul>
+<li><a
+href="<:= cfg.admin_url("generate", { "id": "extras" }) | html :>">Regenerate extras
+and base pages</a> (<a
+href="<:= cfg.admin_url("generate", { "id": "extras", "progress":1 }) | html :>">verbose</a>)</li></ul>
 <:or:><:eif:>
 
-<p><a href="/cgi-bin/admin/makeIndex.pl">Regenerate search index</a></p>
+<p><a href="<:= cfg.admin_url("makeIndex") | html :>">Regenerate search index</a> (<a href="<:= cfg.admin_url("makeIndex", { "progress":1 }) | html :>">verbose</a>)</p>
 
-<p><a href="/cgi-bin/admin/backmon.pl">Background processing</a></p>
+<p><a href="<:= cfg.admin_url("backmon") | html :>">Background processing</a></p>
 
-<p><a href="<:adminurl messages:>">Message database</a></p>
+<p><a href="<:= cfg.admin_url("messages") | html :>">Message database</a></p>
 
-<p><a href="<:adminurl modules:>">Module Check</a></p>
+<p><a href="<:= cfg.admin_url("modules") | html :>">Module Check</a></p>
 
-<p><a href="<:adminurl log:>">Activity Log</a></p>
+<p><a href="<:= cfg.admin_url("log") | html :>">Activity Log</a></p>
 
-<p><a href="<:adminurl report:>">Reports</a></p>
+<p><a href="<:= cfg.admin_url("report") | html :>">Reports</a></p>
 
-<p><a href="/cgi-bin/admin/shopadmin.pl">Shop administration</a></p>
+<p><a href="<:= cfg.admin_url("shopadmin") | html :>">Shop administration</a></p>
 
 <ul>
- 
-<:if UserCan shop_order_list :>
+<:.if request.user_can("shop_order_list") :>
 <li><a
-href="/cgi-bin/admin/shopadmin.pl?order_list=1&amp;template=order_list_unfilled">View
+href="<:= cfg.admin_url2("shopadmin", "order_list_unfilled", { "template":"order_list_unfilled" }) | html :>">View
 current orders</a> <br />(<a
-href="/cgi-bin/admin/shopadmin.pl?order_list=1">all</a> or <a
-href="/cgi-bin/admin/shopadmin.pl?order_list=1&amp;template=order_list_filled">filled</a>)</li>
-<:or UserCan:><:eif UserCan:>
+href="<:= cfg.admin_url2("shopadmin", "order_list") | html :>">all</a> or <a
+href="<:= cfg.admin_url2("shopadmin", "order_list_filled", { "template":"order_list_filled" }) | html :>">filled</a>)</li>
+<:.end if:>
 
-<li><a href="/cgi-bin/admin/add.pl?parentid=3">Add catalog</a></li>
+<li><a href="<:= cfg.admin_url("add", { "parentid":3 }) | html :>">Add catalog</a></li>
 
 </ul>
   </td>
@@ -107,22 +106,24 @@ href="/cgi-bin/admin/shopadmin.pl?order_list=1&amp;template=order_list_filled">f
 
 <p>&nbsp;</p>
 
-      <form action="/cgi-bin/admin/admin.pl">
-        Jump to article: 
-        <input type="text" name="id" size="4" />
-        <input type="submit" value="Jump!" />
-        (Article ID eg: 1 = Home) 
-      </form>
-<p>
-  <:.if request.user_can('bse_members_user_edit') or req.user_can('bse_members_user_view') :>
-  <form action="<:adminurl2 siteusers:>">
-    Jump to member: 
+<form action="/cgi-bin/admin/admin.pl">
+  <p>
+    Jump to article: 
+    <input type="text" name="id" size="4" />
+    <input type="submit" value="Jump!" />
+    (Article ID eg: 1 = Home)
+  </p>
+</form>
+<:.if request.user_can('bse_members_user_edit') or request.user_can('bse_members_user_view') :>
+<form action="<:adminurl2 siteusers:>">
+  <p>
+    Jump to member:
     <input type="text" name="userId" size="20" />
     <:.if request.user_can('bse_members_user_edit') -:>
     <input type="submit" name="a_edit" value="Edit" />
     <:.else:>
     <input type="submit" name="a_view" value="View" />
     <:.end if:>
-  </form>
-  <:.end if:>
-</p>
+  </p>
+</form>
+<:.end if:>

@@ -178,6 +178,10 @@ div.menu {
   margin-bottom: 1em;
 }
 
+table.menu td, table.menu th {
+  width: 33%;
+}
+
 .prodopt input.editor_field {
   border: 1px solid #444;
   width: 50%;
