@@ -106,11 +106,11 @@ site/cgi-bin/modules/BSE/ImageHandler/Base.pm
 site/cgi-bin/modules/BSE/ImageHandler/Flash.pm
 site/cgi-bin/modules/BSE/ImageHandler/Img.pm
 site/cgi-bin/modules/BSE/Importer.pm
-site/cgi-bin/modules/BSE/ImportSourceBase.pm
-site/cgi-bin/modules/BSE/ImportSourceXLS.pm
-site/cgi-bin/modules/BSE/ImportTargetArticle.pm
-site/cgi-bin/modules/BSE/ImportTargetBase.pm
-site/cgi-bin/modules/BSE/ImportTargetProduct.pm
+site/cgi-bin/modules/BSE/Importer/Source/Base.pm
+site/cgi-bin/modules/BSE/Importer/Source/XLS.pm
+site/cgi-bin/modules/BSE/Importer/Target/Article.pm
+site/cgi-bin/modules/BSE/Importer/Target/Base.pm
+site/cgi-bin/modules/BSE/Importer/Target/Product.pm
 site/cgi-bin/modules/BSE/Index.pm
 site/cgi-bin/modules/BSE/Index/Base.pm
 site/cgi-bin/modules/BSE/Index/BSE.pm
