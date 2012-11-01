@@ -11,14 +11,18 @@ my @errors;
 for my $check (@check) {
   $check =~ /^D/ and next;
   $check =~ s/^(..)\s+//;
-  $check =~ s/.* -> //; # renames
   my $type = $1;
+  my $old = $check;
+  if ($type =~ /^R/ && $check =~ s/(.*) -> //) {
+    # rename
+    $old = $1;
+  }
   -e $check or die "Cannot find file $check\n";
 
   my $ver = file_vers($check);
 
   if ($type =~ "M") {
-    my $committed = `git show HEAD:$check`;
+    my $committed = `git show HEAD:$old`;
     my $old_ver = content_vers($committed);
 
     if (defined $old_ver) {
