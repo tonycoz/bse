@@ -5,7 +5,7 @@ DISTTAR=../$(DISTNAME).tar
 DISTTGZ=$(DISTTAR).gz
 WEBBASE=/home/tony/www/bse
 PERL=$(shell perl -It -MBSE::Test -e 'print BSE::Test::test_perl()')
-PERLBIN=$(shell $(PERL) -MConfig -e 'print $Config{installbin}')
+PERLBIN=$(shell $(PERL) -MConfig -e 'print $$Config{installbin}')
 
 BSEMODULES=site/cgi-bin/modules/BSE/Modules.pm
 
@@ -18,6 +18,10 @@ VERSIONDEPS=$(shell $(PERL) site/util/bse_versiondeps.pl MANIFEST)
 
 POD2TEXT=$(PERLBIN)/pod2text
 POD2HTML=$(PERLBIN)/pod2html
+
+.PHONY: help dist cleantree archive distdir clean docs otherdocs dbinfo
+.PHONY: version modversion testinst test testup checkver regen_known_errors
+.PHONY: manicheck filecheck manifect htmldocs
 
 help:
 	@echo make dist - build the tar.gz file and copy to distribution directory
@@ -72,10 +76,13 @@ clean:
 docs: INSTALL.txt INSTALL.html otherdocs
 
 INSTALL.txt: INSTALL.pod
-	$(POD2TEXT) <INSTALL.pod >INSTALL.txt
+	echo perl=$(PERL) pod2text=$(POD2TEXT) perlbin=$(PERLBIN)
+	$(POD2TEXT) <INSTALL.pod >INSTALL.tmp
+	mv INSTALL.tmp INSTALL.txt
 
 INSTALL.html: INSTALL.pod
-	$(POD2HTML) --infile=INSTALL.pod --outfile=INSTALL.html
+	$(POD2HTML) --infile=INSTALL.pod --outfile=INSTALL.htmp
+	mv INSTALL.htmp INSTALL.html
 	-rm pod2html-dircache pod2html-itemcache pod2htmd.tmp pod2htmi.tmp
 
 otherdocs:
