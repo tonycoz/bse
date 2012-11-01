@@ -131,7 +131,7 @@ sub new {
   $self->{parent} = $importer->cfg_entry("parent", $self->default_parent);
 
   if ($self->{use_codes} && !defined $map->{$self->{code_field}}) {
-    die "No product_code mapping found with 'codes' enabled\n";
+    die "No $self->{code_field} mapping found with 'codes' enabled\n";
   }
   $self->{ignore_missing} = $importer->cfg_entry("ignore_missing", 1);
   $self->{reset_images} = $importer->cfg_entry("reset_images", 0);
