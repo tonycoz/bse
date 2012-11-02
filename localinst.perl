@@ -100,7 +100,7 @@ open TESTCONF, "< $conffile"
 while (<TESTCONF>) {
   chomp;
   /^\s*(\w[^=]*\w)\.([\w-]+)\s*=\s*(.*)\s*$/ or next;
-  $conf{lc $1}{lc $2} = $3;
+  $conf{lc $1}{$2} = $3;
 }
 
 #$uploads = $conf{paths}{downloads};
