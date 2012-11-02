@@ -3,7 +3,7 @@ use strict;
 use Squirrel::Template::Constants qw(:node);
 use Scalar::Util ();
 
-our $VERSION = "1.018";
+our $VERSION = "1.019";
 
 use constant ACTS => 0;
 use constant TMPLT => 1;
@@ -628,6 +628,54 @@ sub _process_tag {
   }
 
   return Squirrel::Template::Deparser->deparse($node);
+}
+
+sub _process_iterateover {
+  my ($self, $node) = @_;
+
+  my $call;
+  my @args;
+  unless (eval {
+    $call = $self->[EVAL]->process($node->[NODE_ITERATEOVER_CALL]);
+    @args = map $self->[EVAL]->process($_), @{$node->[NODE_ITERATEOVER_ARGS]};
+    1;
+  }) {
+    my $msg = $@;
+    if ($msg =~ /\bENOIMPL\b/) {
+      return
+	(
+	 $node->[NODE_ORIG],
+	 $self->process($node->[NODE_FOR_CONTENT]),
+	 $node->[NODE_FOR_END][NODE_ORIG]
+	);
+    }
+    else {
+      return $self->_error($node, $@);
+    }
+  }
+
+  unless (ref $call && !Scalar::Util::blessed($call)
+	  && Scalar::Util::reftype($call) eq 'CODE') {
+    return $self->_error($node, ".iterateover expression must be a code reference");
+  }
+
+  my @result;
+  unless (eval {
+    $call->
+      (
+       sub {
+	 push @result, $self->process($node->[NODE_ITERATEOVER_CONTENT]);
+	 1;
+       },
+       $self->[TMPLT],
+       @args
+      );
+    1;
+  }) {
+    push @result, $self->_error($node, "exception in .iterateover callback ".$@);
+  }
+
+  return @result;
 }
 
 1;

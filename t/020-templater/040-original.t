@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 112;
+use Test::More tests => 113;
 
 sub template_test($$$$;$$);
 
@@ -50,6 +50,14 @@ SKIP: {
      error =>
      {
       noimpl => sub { die "ENOIMPL\n" },
+     },
+     callback1 => sub {
+       my ($cb, $templater, @args) = @_;
+
+       for my $foo ("a" .. "e") {
+	 $templater->set_var(foo => $foo);
+	 $cb->();
+       }
      },
     );
   template_test("<:str:>", "ABC", "simple", \%acts);
@@ -587,6 +595,14 @@ OUT
 IN
 <:.set foo = unknown :>
 <:.set bar = error.noimpl :>
+OUT
+
+  template_test(<<IN, <<OUT, "iterateover", \%acts, "", \%vars);
+<:.iterateover callback1-:>
+<:= foo -:>
+<:.end:>
+IN
+abcde
 OUT
 }
 

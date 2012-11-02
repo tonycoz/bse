@@ -19,7 +19,7 @@ BEGIN {
 
 use constant DEBUG_GET_PARMS => 0;
 
-our $VERSION = "1.022";
+our $VERSION = "1.023";
 
 my %compile_cache;
 
@@ -837,6 +837,15 @@ should be limited to a quoted identifier.
 
 Changes to any top level variables are scoped to inside the called
 macro or file.
+
+=item *
+
+C<< <:.iterateover I<callback> :> I<content> <:.end :> >>
+
+C<< <:.iterateover I<callback>, I<arguments>... :> I<content> <:.end :> >>
+
+Calls back into the target supplied callback to set variables which
+can then be replaced on each iteration.
 
 =back
 

@@ -2,7 +2,7 @@ package Squirrel::Template::Parser;
 use strict;
 use Squirrel::Template::Constants qw(:token :node);
 
-our $VERSION = "1.012";
+our $VERSION = "1.013";
 
 use constant TOK => 0;
 use constant TMPLT => 1;
@@ -554,6 +554,65 @@ sub _parse_ext_if {
     ( \@conds, [ $else, $else_content ], $end );
 
   return @errors ? $self->_comp($if, @errors) : $if;
+}
+
+sub _parse_iterateover {
+  my ($self, $token) = @_;
+
+  my $content = $self->_parse_content;
+  my $end = $self->[TOK]->get;
+  my $error;
+  if ($end->[TOKEN_TYPE] eq 'end') {
+    if ($end->[TOKEN_END_TYPE] && $end->[TOKEN_END_TYPE] ne 'iterateover') {
+      $error = $self->_error($end, "Expected '.end' or '.end iterateover' for .iterateover started $token->[TOKEN_FILENAME]:$token->[TOKEN_LINE] but found '.end $end->[TOKEN_END_TYPE]'");
+    }
+  }
+  else {
+    $self->[TOK]->unget($end);
+    $error = $self->_error($end, "Expected '.end' for .iterateover started $token->[TOKEN_FILENAME]:$token->[TOKEN_LINE] but found $end->[TOKEN_TYPE]");
+    $end = $self->_empty($end);
+  }
+
+  my @exprs;
+  {
+    my $error;
+    @exprs = $self->_parse_expr_list($token, $token->[TOKEN_ITERATEOVER_EXPR], \$error)
+      or return $error;
+  }
+
+  my $callto = shift @exprs;
+  @{$token}[NODE_ITERATEOVER_CALL, NODE_ITERATEOVER_CONTENT, NODE_ITERATEOVER_ARGS] = ( $callto, $content, \@exprs );
+
+  return $error ? $self->_comp($token, $error) : $token;
+}
+
+sub _parse_expr_list {
+  my ($self, $token, $text, $rerror) = @_;
+
+  my $tokens = Squirrel::Template::Expr::Tokenizer->new($text);
+  my $parser = Squirrel::Template::Expr::Parser->new;
+  my @result;
+  my $expr;
+  unless (eval { $expr = $parser->parse_tokens($tokens); 1 }) {
+    $$rerror = $self->_error($token, "Could not parse expression list: ".$@->[1]);
+    return;
+  }
+  push @result, $expr;
+  my $next = $tokens->get;
+  while ($next->[0] eq 'op,') {
+    unless (eval { $expr = $parser->parse_tokens($tokens); 1 }) {
+      $$rerror = $self->_error($token, "Could not parse expression list: ".$@->[1]);
+      return;
+    }
+    push @result, $expr;
+    $next = $tokens->get;
+  }
+  if ($next->[0] ne 'eof') {
+    $$rerror = $self->_error($token, "Expected , or end of expression list but found $next->[0]");
+    return;
+  }
+
+  return @result;
 }
 
 sub _parse_error {
