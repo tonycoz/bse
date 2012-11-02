@@ -93,6 +93,10 @@ href="<:= cfg.admin_url2("shopadmin", "order_list_filled", { "template":"order_l
 <li><a href="<:= cfg.admin_url("add", { "parentid":3 }) | html :>">Add catalog</a></li>
 
 </ul>
+
+<:.if request.user_can("bse_admin_import") :>
+<p><a href="<:= cfg.admin_url("importer") | html :>">Import data</a></p>
+<:.end if:>
   </td>
 </tr>
 </table>

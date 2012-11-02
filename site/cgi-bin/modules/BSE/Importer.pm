@@ -2,7 +2,7 @@ package BSE::Importer;
 use strict;
 use Config;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 =head1 NAME
 
@@ -287,6 +287,18 @@ objects (if any).
 
 sub parents {
   return $_[0]{target}->parents;
+}
+
+=item set_callback()
+
+Replace the callback sub reference.
+
+=cut
+
+sub set_callback {
+  my ($self, $callback) = @_;
+
+  $self->{callback} = $callback;
 }
 
 =back

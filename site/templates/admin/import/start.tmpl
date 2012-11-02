@@ -1,0 +1,38 @@
+<:wrap admin/base.tmpl title => "Import Data":>
+<h1>Import Data</h1>
+<p>| <a href="/admin/">Admin Menu</a> |</p>
+
+<:.if request.messages.size != 0:>
+<:-.for m in request.messages -:>
+<div class="message <:= m.class:>"><:= m.html :></div>
+<:.end for-:>
+<:.end if:>
+
+<:.if profile_errors.size:>
+<div class="message errors">
+<:.for m in profile_errors:>
+<div><:= m | html :></div>
+<:.end for:>
+</div>
+<:.end if:>
+
+<form action="<:= cfg.admin_url("importer") | html:>" method="post" enctype="multipart/form-data">
+<:csrfp bse_admin_import hidden:>
+  <table class="editform editformsmall">
+    <tr>
+      <th>Import profile:</th>
+      <td><:.call "make_select", "list":profiles, "name":"profile", "id":"id", "desc":"label", "default":cgi.param('profile') :></td>
+      <td><:error_img profile:></td>
+    </tr>
+    <tr>
+      <th>File:</th>
+      <td><input type="file" name="file" /></td>
+      <td><:error_img file:></td>
+    </tr>
+    <tr>
+      <td colspan="3" class="buttons">
+        <input type="submit" value="Import" name="a_import" />
+      </td>
+    </tr>
+  </table>
+</form>
