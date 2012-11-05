@@ -106,11 +106,11 @@ site/cgi-bin/modules/BSE/ImageHandler/Base.pm
 site/cgi-bin/modules/BSE/ImageHandler/Flash.pm
 site/cgi-bin/modules/BSE/ImageHandler/Img.pm
 site/cgi-bin/modules/BSE/Importer.pm
-site/cgi-bin/modules/BSE/ImportSourceBase.pm
-site/cgi-bin/modules/BSE/ImportSourceXLS.pm
-site/cgi-bin/modules/BSE/ImportTargetArticle.pm
-site/cgi-bin/modules/BSE/ImportTargetBase.pm
-site/cgi-bin/modules/BSE/ImportTargetProduct.pm
+site/cgi-bin/modules/BSE/Importer/Source/Base.pm
+site/cgi-bin/modules/BSE/Importer/Source/XLS.pm
+site/cgi-bin/modules/BSE/Importer/Target/Article.pm
+site/cgi-bin/modules/BSE/Importer/Target/Base.pm
+site/cgi-bin/modules/BSE/Importer/Target/Product.pm
 site/cgi-bin/modules/BSE/Index.pm
 site/cgi-bin/modules/BSE/Index/Base.pm
 site/cgi-bin/modules/BSE/Index/BSE.pm
@@ -239,6 +239,7 @@ site/cgi-bin/modules/BSE/UI.pm
 site/cgi-bin/modules/BSE/UI/AdminAudit.pm
 site/cgi-bin/modules/BSE/UI/AdminDispatch.pm
 site/cgi-bin/modules/BSE/UI/AdminImageClean.pm
+site/cgi-bin/modules/BSE/UI/AdminImporter.pm
 site/cgi-bin/modules/BSE/UI/AdminMessages.pm
 site/cgi-bin/modules/BSE/UI/AdminModules.pm
 site/cgi-bin/modules/BSE/UI/AdminNewsletter.pm
@@ -563,6 +564,8 @@ site/templates/admin/image_edit.tmpl	Edit a single image
 site/templates/admin/imageclean/final.tmpl
 site/templates/admin/imageclean/intro.tmpl
 site/templates/admin/imageclean/preview.tmpl
+site/templates/admin/import/import.tmpl
+site/templates/admin/import/start.tmpl
 site/templates/admin/include/article_menu.tmpl
 site/templates/admin/include/auditentry.tmpl
 site/templates/admin/include/audithead.tmpl
