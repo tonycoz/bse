@@ -6,7 +6,7 @@ require 'Exporter.pm';
 @EXPORT = qw(base_url ok fetch_ok make_url skip make_ua);
 @EXPORT_OK = qw(base_url ok make_ua fetch_url fetch_ok make_url skip 
                 make_post check_form post_ok check_content follow_ok
-                follow_refresh_ok click_ok config);
+                follow_refresh_ok click_ok config test_actions);
 
 my %conf;
 
@@ -400,6 +400,27 @@ sub check_form {
   }
 
   return %values;
+}
+
+# test that all actions have methods for a given dispatcher class
+sub test_actions {
+  my ($class) = @_;
+
+  my $tb = Test::Builder->new;
+
+  my $obj = $class->new;
+  my $actions = $obj->actions;
+  my @bad;
+  for my $action (sort keys %$actions) {
+    my $method = "req_$action";
+    unless ($obj->can($method)) {
+      push @bad, $action;
+    }
+  }
+  $tb->ok(!@bad, "check all actions have a method for $class");
+  print STDERR "No method found for $class action $_\n" for @bad;
+
+  return !@bad;
 }
 
 1;

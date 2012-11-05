@@ -870,6 +870,7 @@ t/060-generate/020-catalog.t
 t/060-generate/030-thumb.t
 t/070-user/010-edit.t
 t/070-user/020-images.t
+t/070-user/050-user.t
 t/080-remote/010-save.t
 t/080-remote/020-cat.t
 t/080-remote/030-parent.t
