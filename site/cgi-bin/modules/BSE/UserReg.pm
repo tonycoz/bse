@@ -18,10 +18,28 @@ use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
 use Carp qw(confess);
 
-our $VERSION = "1.022";
+our $VERSION = "1.023";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
+
+=head1 NAME
+
+BSE::UserReg - member (site user) registration and handling
+
+=head1 SYNOPSIS
+
+  /cgi-bin/user.pl?...
+
+=head1 DESCRIPTION
+
+BSE::UserReg is the user interface handler for user.pl.
+
+=head1 TARGETS
+
+=over
+
+=cut
 
 my %actions =
   (
@@ -90,6 +108,28 @@ sub _send_user_cookie {
       (BSE::Session->make_cookie(BSE::Cfg->single, userid => $value));
 }
 
+=item show_logon
+
+Display the logon page.
+
+Tags: standard dynamic tags and the following:
+
+=over
+
+=item *
+
+C<message> - HTML encoded error message text
+
+=item *
+
+C<error_img> - field error indicators.
+
+=back
+
+Template: F<user/logon>
+
+=cut
+
 sub req_show_logon {
   my ($self, $req, $message) = @_;
 
@@ -144,6 +184,30 @@ my %logon_fields =
     rules => "required",
    },
   );
+
+=item logon
+
+Process a logon request.
+
+Parameters:
+
+=over
+
+=item *
+
+C<userid> - the user's logon
+
+=item *
+
+C<password> - the user's password.
+
+=back
+
+On success, redirect to the L</userpage>.
+
+On failure, re-display the L</logon> form.
+
+=cut
 
 sub req_logon {
   my ($self, $req) = @_;
@@ -293,6 +357,13 @@ sub _got_user_refresh {
   }
 }
 
+=item setcookie
+
+Used internally to propagate session cookie changes between the SSL
+and non-SSL hosts.
+
+=cut
+
 sub req_setcookie {
   my ($self, $req) = @_;
 
@@ -336,6 +407,16 @@ sub req_setcookie {
 
   return;
 }
+
+=item logoff
+
+Log the user off.
+
+This removes the user's session.
+
+Redirects to the L</logon> page.
+
+=cut
 
 sub req_logoff {
   my ($self, $req) = @_;
@@ -386,6 +467,47 @@ sub tag_if_required {
 
   return $cfg->entryBool('site users', "require_$args", 0);
 }
+
+=item show_register
+
+Display the member registration page.
+
+Tags: standard dynamic tags and:
+
+=over
+
+=item *
+
+C<< old I<field> >> - display the value of I<field> as it was
+previously submitted.
+
+=item *
+
+C<message> - any error messages from the form submission.
+
+=item *
+
+C<< iterator ... subscriptions >>, C<< subscription I<field> >> -
+iterate over configured newsletter subscriptions.
+
+=item *
+
+C<< ifSubscribed >> - test if the user selected a subscription on
+their previous form submission.
+
+=item *
+
+C<< ifRequired I<field> >> - test if the specified member field is required.
+
+=item *
+
+C<< error_img I<field> >> - display an error indicator for I<field>
+
+=back
+
+Template: F<user/register>
+
+=cut
 
 sub req_show_register {
   my ($self, $req, $message, $errors) = @_;
@@ -448,6 +570,208 @@ sub req_show_register {
 
   my $template = 'user/register';
   return $req->dyn_response($template, \%acts);
+}
+
+=item register
+
+Register a new user.
+
+=cut
+
+sub req_register {
+  my ($self, $req) = @_;
+
+  my $cfg = $req->cfg;
+  my $cgi = $req->cgi;
+  my $session = $req->session;
+
+  my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
+
+  my $user_register = $cfg->entryBool('site users', 'user_register', 1);
+  my $nopassword = $cfg->entryBool('site users', 'nopassword', 0);
+  unless ($user_register) {
+    my $msg = $msgs->(regdisabled => "Registration disabled");
+    if ($nopassword) {
+      return $self->req_show_lost_password($req, $msg);
+    }
+    else {
+      return $self->req_show_logon($req, $msg);
+    }
+  }
+
+  my %user;
+  my @cols = SiteUser->columns;
+  shift @cols;
+
+  my %errors;
+  my %fields = SiteUser->valid_fields($cfg);
+  my %rules = SiteUser->valid_rules($cfg);
+  $req->validate(errors => \%errors,
+		 fields => \%fields,
+		 rules => \%rules,
+		 section => 'site user validation');
+
+  my $email = $cgi->param('email');
+  if (!defined $email or !length $email) {
+    $errors{email} = $msgs->(regnoemail => "Please enter an email address");
+    $email = ''; # prevent undefined value warnings later
+  }
+  elsif ($email !~ /.\@./) {
+    $errors{email} = $msgs->(regbademail => "Please enter a valid email address");
+  }
+  if ($nopassword) {
+    my $confemail = $cgi->param('confirmemail');
+    if (!defined $confemail or !length $confemail) {
+      $errors{confirmemail} = $msgs->(regnoconfemail => "Please enter a confirmation email address");
+    }
+    elsif ($email ne $confemail) {
+      $errors{confirmemail} = $msgs->(regbadconfemail => "Confirmation email must match the email address");
+    }
+    my $user = SiteUsers->getBy(userId=>$email);
+    if ($user) {
+      $errors{email} = $msgs->(regemailexists=>
+				"Sorry, email $email already exists as a user",
+				$email);
+    }
+    $user{userId} = $email;
+    $user{password} = '';
+  }
+  else {
+    my $min_pass_length = $cfg->entry('basic', 'minpassword') || 4;
+    my $userid = $cgi->param('userid');
+    if (!defined $userid || length $userid == 0) {
+      $errors{userid} = $msgs->(reguser=>"Please enter your username");
+    }
+    my $pass = $cgi->param('password');
+    my $pass2 = $cgi->param('confirm_password');
+    if (!defined $pass || length $pass == 0) {
+      $errors{password} = $msgs->(regpass=>"Please enter your password");
+    }
+    elsif (length $pass < $min_pass_length) {
+      $errors{password} = $msgs->(regpasslen=>"The password must be at least $min_pass_length characters");
+    }
+    elsif (!defined $pass2 || length $pass2 == 0) {
+      $errors{confirm_password} = 
+	$msgs->(regconfpass=>"Please enter a confirmation password");
+    }
+    elsif ($pass ne $pass2) {
+      $errors{confirm_password} = 
+	$msgs->(regconfmismatch=>"The confirmation password is different from the password");
+    }
+    my $user = SiteUsers->getBy(userId=>$userid);
+    if ($user) {
+      # give the user a suggestion
+      my $workuser = $userid;
+      $workuser =~ s/\d+$//;
+      my $suffix = 1;
+      for my $suffix (1..100) {
+	unless (SiteUsers->getBy(userId=>"$workuser$suffix")) {
+	  $cgi->param(userid=>"$workuser$suffix");
+	  last;
+	}
+      }
+      $errors{userid} = $msgs->(regexists=>
+				"Sorry, username $userid already exists",
+				$userid);
+    }
+    $user{userId} = $userid;
+    $user{password} = $pass;
+  }
+
+  unless ($errors{email}) {
+    my $checkemail = _generic_email($email);
+    require 'BSE/EmailBlacklist.pm';
+    my $blackentry = BSE::EmailBlacklist->getEntry($checkemail);
+    if ($blackentry) {
+      $errors{email} = $msgs->(regblackemail => 
+			       "Email $email is blacklisted: $blackentry->{why}",
+			       $email, $blackentry->{why});
+    }
+  }
+
+  my @mod_cols = grep !$donttouch{$_}, @cols;
+  for my $col (@mod_cols) {
+    my $value = $cgi->param($col);
+    if ($cfg->entryBool('site users', "require_$col")) {
+      unless (defined $value && $value ne '') {
+	my $disp = $cfg->entry('site users', "display_$col", "\u$col");
+
+	$errors{$col} = $msgs->(regrequired => "$disp is a required field", 
+				$col, $disp);
+      }
+    }
+    if (defined $value) {
+      $user{$col} = $value;
+    }
+  }
+  my $aff_name = $cgi->param('affiliate_name');
+  $aff_name = _validate_affiliate_name($cfg, $aff_name, \%errors, $msgs);
+  defined $aff_name or $aff_name = '';
+
+  if (keys %errors) {
+    return $self->req_show_register($req, undef, \%errors);
+  }
+
+  $user{email} = $email;
+  $user{affiliate_name} = $aff_name;
+  if ($nopassword) {
+    use BSE::Util::Secure qw/make_secret/;
+    $user{password} = make_secret($cfg);
+  }
+
+  my $user;
+  eval {
+    $user = SiteUsers->make(%user);
+  };
+  if ($user) {
+    my $custom = custom_class($cfg);
+    $custom->can('siteuser_add')
+      and $custom->siteuser_add($user, 'user', $cfg);
+
+    $req->audit
+      (
+       actor => $user,
+       object => $user,
+       component => "member:register:created",
+       msg => "New user created",
+       level => "info",
+      );
+
+    $self->_send_user_cookie($user);
+    unless ($nopassword) {
+      $session->{userid} = $user->id;
+      my $custom = custom_class($cfg);
+      if ($custom->can('siteuser_login')) {
+	$custom->siteuser_login($session->{_session_id}, $session->{userid}, $cfg);
+      }
+    }
+
+    if ($cfg->entry('site users', 'notify_register', 0)) {
+      $self->_notify_registration($req, $user);
+    }
+
+    my $subs = $self->_save_subs($user, $session, $cfg, $cgi);
+    if ($nopassword) {
+      return $self->send_conf_request($req, $user);
+    }
+    elsif ($subs) {
+      my $page = $self->send_conf_request($req, $user, 1);
+      $page and return $page;
+    }
+    elsif ($cfg->entry('site users', 'notify_register_customer')) {
+      $user->send_registration_notify
+	(
+	 remote_addr => $req->ip_address
+	);
+    }
+
+    $custom->siteusers_changed($cfg);
+
+    return $self->_got_user_refresh($req);
+  }
+  else {
+    return $self->req_show_register($req, $msgs->(regdberr=> "Database error $@"));
+  }
 }
 
 sub _get_user {
@@ -521,6 +845,60 @@ sub _partial_logon {
   }
   return;
 }
+
+=item show_opts
+
+Display the user options page.
+
+This page is also displayed if the user logs on and not all required
+fields are populated.
+
+Tags: L</Standard user page tags> and:
+
+=over
+
+=item *
+
+C<< last I<field> >> - the previous form submitted value for I<field>
+or that field from the user record.
+
+=item *
+
+C<message> - an error messages from the previous form submission.
+
+=item *
+
+C<< iterator ... subscriptions >>, C<< subscription I<field> >> -
+iterate over configured newsletter subscriptions.
+
+=item *
+
+C<< ifSubscribed >> - test if the user selected a subscription on
+their previous form submission, or if the user is subscribed to this
+newsletter subscription.
+
+=item *
+
+C<ifUserSubs> - test if the user is subscribed to anything.
+
+=item *
+
+C<< error_img I<field> >> - display an error indicator for I<field>.
+
+=item *
+
+C<<partial_logon>> - test if the user is only partly logged on.
+
+=item *
+
+C<< iterator ... filecats >>, C<< filecat I<field> >> - iterate over
+the configured file categories.
+
+=back
+
+Template: F<user/options>
+
+=cut
 
 sub req_show_opts {
   my ($self, $req, $message, $errors) = @_;
@@ -651,6 +1029,12 @@ sub _checkemail {
     }
   }
 }
+
+=item saveopts
+
+Save options prompted for by L</show_opts>
+
+=cut
 
 sub req_saveopts {
   my ($self, $req) = @_;
@@ -836,9 +1220,7 @@ sub req_saveopts {
 
   $custom->siteusers_changed($cfg);
 
-  refresh_to($url);
-
-  return;
+  return $req->get_refresh($url);
 }
 
 # returns true if the caller needs to send output
@@ -868,203 +1250,6 @@ sub _save_subs {
     return $found;
   }
   return 0;
-}
-
-sub req_register {
-  my ($self, $req) = @_;
-
-  my $cfg = $req->cfg;
-  my $cgi = $req->cgi;
-  my $session = $req->session;
-
-  my $msgs = BSE::Message->new(cfg=>$cfg, section=>'user');
-
-  my $user_register = $cfg->entryBool('site users', 'user_register', 1);
-  my $nopassword = $cfg->entryBool('site users', 'nopassword', 0);
-  unless ($user_register) {
-    my $msg = $msgs->(regdisabled => "Registration disabled");
-    if ($nopassword) {
-      return $self->req_show_lost_password($req, $msg);
-    }
-    else {
-      return $self->req_show_logon($req, $msg);
-    }
-  }
-
-  my %user;
-  my @cols = SiteUser->columns;
-  shift @cols;
-
-  my %errors;
-  my %fields = SiteUser->valid_fields($cfg);
-  my %rules = SiteUser->valid_rules($cfg);
-  $req->validate(errors => \%errors,
-		 fields => \%fields,
-		 rules => \%rules,
-		 section => 'site user validation');
-
-  my $email = $cgi->param('email');
-  if (!defined $email or !length $email) {
-    $errors{email} = $msgs->(regnoemail => "Please enter an email address");
-    $email = ''; # prevent undefined value warnings later
-  }
-  elsif ($email !~ /.\@./) {
-    $errors{email} = $msgs->(regbademail => "Please enter a valid email address");
-  }
-  if ($nopassword) {
-    my $confemail = $cgi->param('confirmemail');
-    if (!defined $confemail or !length $confemail) {
-      $errors{confirmemail} = $msgs->(regnoconfemail => "Please enter a confirmation email address");
-    }
-    elsif ($email ne $confemail) {
-      $errors{confirmemail} = $msgs->(regbadconfemail => "Confirmation email must match the email address");
-    }
-    my $user = SiteUsers->getBy(userId=>$email);
-    if ($user) {
-      $errors{email} = $msgs->(regemailexists=>
-				"Sorry, email $email already exists as a user",
-				$email);
-    }
-    $user{userId} = $email;
-    $user{password} = '';
-  }
-  else {
-    my $min_pass_length = $cfg->entry('basic', 'minpassword') || 4;
-    my $userid = $cgi->param('userid');
-    if (!defined $userid || length $userid == 0) {
-      $errors{userid} = $msgs->(reguser=>"Please enter your username");
-    }
-    my $pass = $cgi->param('password');
-    my $pass2 = $cgi->param('confirm_password');
-    if (!defined $pass || length $pass == 0) {
-      $errors{password} = $msgs->(regpass=>"Please enter your password");
-    }
-    elsif (length $pass < $min_pass_length) {
-      $errors{password} = $msgs->(regpasslen=>"The password must be at least $min_pass_length characters");
-    }
-    elsif (!defined $pass2 || length $pass2 == 0) {
-      $errors{confirm_password} = 
-	$msgs->(regconfpass=>"Please enter a confirmation password");
-    }
-    elsif ($pass ne $pass2) {
-      $errors{confirm_password} = 
-	$msgs->(regconfmismatch=>"The confirmation password is different from the password");
-    }
-    my $user = SiteUsers->getBy(userId=>$userid);
-    if ($user) {
-      # give the user a suggestion
-      my $workuser = $userid;
-      $workuser =~ s/\d+$//;
-      my $suffix = 1;
-      for my $suffix (1..100) {
-	unless (SiteUsers->getBy(userId=>"$workuser$suffix")) {
-	  $cgi->param(userid=>"$workuser$suffix");
-	  last;
-	}
-      }
-      $errors{userid} = $msgs->(regexists=>
-				"Sorry, username $userid already exists",
-				$userid);
-    }
-    $user{userId} = $userid;
-    $user{password} = $pass;
-  }
-
-  unless ($errors{email}) {
-    my $checkemail = _generic_email($email);
-    require 'BSE/EmailBlacklist.pm';
-    my $blackentry = BSE::EmailBlacklist->getEntry($checkemail);
-    if ($blackentry) {
-      $errors{email} = $msgs->(regblackemail => 
-			       "Email $email is blacklisted: $blackentry->{why}",
-			       $email, $blackentry->{why});
-    }
-  }
-
-  my @mod_cols = grep !$donttouch{$_}, @cols;
-  for my $col (@mod_cols) {
-    my $value = $cgi->param($col);
-    if ($cfg->entryBool('site users', "require_$col")) {
-      unless (defined $value && $value ne '') {
-	my $disp = $cfg->entry('site users', "display_$col", "\u$col");
-
-	$errors{$col} = $msgs->(regrequired => "$disp is a required field", 
-				$col, $disp);
-      }
-    }
-    if (defined $value) {
-      $user{$col} = $value;
-    }
-  }
-  my $aff_name = $cgi->param('affiliate_name');
-  $aff_name = _validate_affiliate_name($cfg, $aff_name, \%errors, $msgs);
-  defined $aff_name or $aff_name = '';
-
-  if (keys %errors) {
-    return $self->req_show_register($req, undef, \%errors);
-  }
-
-  $user{email} = $email;
-  $user{affiliate_name} = $aff_name;
-  if ($nopassword) {
-    use BSE::Util::Secure qw/make_secret/;
-    $user{password} = make_secret($cfg);
-  }
-
-  my $user;
-  eval {
-    $user = SiteUsers->make(%user);
-  };
-  if ($user) {
-    my $custom = custom_class($cfg);
-    $custom->can('siteuser_add')
-      and $custom->siteuser_add($user, 'user', $cfg);
-
-    $req->audit
-      (
-       actor => $user,
-       object => $user,
-       component => "member:register:created",
-       msg => "New user created",
-       level => "info",
-      );
-
-    $self->_send_user_cookie($user);
-    unless ($nopassword) {
-      $session->{userid} = $user->id;
-      my $custom = custom_class($cfg);
-      if ($custom->can('siteuser_login')) {
-	$custom->siteuser_login($session->{_session_id}, $session->{userid}, $cfg);
-      }
-    }
-
-    my $subs = $self->_save_subs($user, $session, $cfg, $cgi);
-    if ($nopassword) {
-      return $self->send_conf_request($req, $user);
-    }
-    elsif ($subs) {
-      return if $self->send_conf_request($req, $user, 1);
-    }
-    elsif ($cfg->entry('site users', 'notify_register_customer')) {
-      $user->send_registration_notify
-	(
-	 remote_addr => $req->ip_address
-	);
-    }
-
-    $custom->siteusers_changed($cfg);
-
-    if ($cfg->entry('site users', 'notify_register', 0)) {
-      $self->_notify_registration($req, $user);
-    }
-
-    return $self->_got_user_refresh($req);
-  }
-  else {
-    return $self->req_show_register($req, $msgs->(regdberr=> "Database error $@"));
-  }
-
-  return;
 }
 
 sub iter_usersubs {
@@ -1128,92 +1313,33 @@ sub iter_orderfiles {
   return $$rorder->files;
 }
 
-sub _common_tags {
-  my ($self, $req, $user) = @_;
+=item userpage
 
-  my $cfg = $req->cfg;
+Display general information to the user.
 
-  #my $order_index;
-  #my $item_index;
-  #my @items;
-  my $item;
-  my $product;
-  #my @files;
-  #my $file_index;
-  my $file;
-  my @orders;
-  my $order;
+Tags: L</Standard user page tags> and:
 
-  my $must_be_paid = $cfg->entryBool('downloads', 'must_be_paid', 0);
-  my $must_be_filled = $cfg->entryBool('downloads', 'must_be_filled', 0);
+=over
 
-  my $it = BSE::Util::Iterate->new(req => $req);
-  my $ito = BSE::Util::Iterate::Objects->new();
-  return
-    (
-     $req->dyn_user_tags(),
-     user => [ \&tag_hash, $user ],
-     $ito->make
-     (
-      data => \@orders,
-      single => 'order',
-      plural => 'orders',
-      #index => \$order_index,
-      code => [ iter_orders => $self, $user ],
-      store => \$order,
-     ),
-     $it->make
-     (
-      single => "item",
-      plural => "items",
-      code => [ iter_order_items => $self, \$order ],
-      store => \$item,
-      changed => sub {
-	my ($item) = @_;
-	if ($item) {
-	  $product = $item->product
-	    or print STDERR "No product found for item $item->{id}\n";
-	}
-	else {
-	  undef $product;
-	}
-	$req->set_article(product => $product);
-      },
-      nocache => 1,
-     ),
-     $it->make
-     (
-      single => "orderfile",
-      plural => "orderfiles",
-      code => [ iter_orderfiles => $self, \$order ],
-      store => \$file,
-      nocache => 1,
-     ),
-     product => sub {
-       $item or return "* Not in item iterator *";
-       $product or return "* No current product *";
-       return tag_article($product, $cfg, $_[0]);
-     },
-     $it->make
-     (
-      single => "prodfile",
-      plural => "prodfiles",
-      code => [ files => $product ],
-      store => \$file,
-      nocache => 1,
-     ),
-     ifFileAvail =>
-     sub {
-       if ($file) {
-	 return 1 if !$file->{forSale};
-       }
-       return 0 if $must_be_paid && !$order->paidFor;
-       return 0 if $must_be_filled && !$order->filled;
-       return 1;
-     },
-     options => [ tag_order_item_options => $self, $req, \$item ],
-    );
-}
+=item *
+
+C<message> - any error messages.
+
+=item *
+
+C<< iterator ... subscriptions >>, C<< subscription I<field> >> -
+iterater over subscribed services (B<not> newsletter subscriptions)
+
+=item *
+
+C<< iterator ... bookings >>, C<< booking I<field> >> - iterate over
+user seminar bookings.
+
+=back
+
+Template: F<user/userpage>.
+
+=cut
 
 sub req_userpage {
   my ($self, $req, $message) = @_;
@@ -1297,7 +1423,7 @@ id - order id (the logged in user must own this order)
 
 See _orderdetail_low for tags.
 
-Template: user/orderdetail
+Template: F<user/orderdetail>
 
 =cut
 
@@ -1342,7 +1468,7 @@ id - order randomId
 
 See _orderdetail_low for tags.
 
-Template: user/orderdetaila
+Template: F<user/orderdetaila>
 
 =cut
 
@@ -1515,6 +1641,28 @@ sub _common_download {
   return \%result;
 }
 
+=item download
+
+Download a purchased file.
+
+See also L</download_file> which requires only a file id.
+
+Parameters:
+
+=over
+
+=item *
+
+C<order> - order id where access to the file was purchased
+
+=item *
+
+C<file> - file id of the purchased file.
+
+=back
+
+=cut
+
 sub req_download {
   my ($self, $req) = @_;
 
@@ -1592,6 +1740,23 @@ sub req_download {
   # return \%result;
 }
 
+=item download_file
+
+Download a file.
+
+Parameters:
+
+=over
+
+=item *
+
+C<file> - the id of the file to download.  The user must have access
+to download the file.
+
+=back
+
+=cut
+
 sub req_download_file {
   my ($self, $req) = @_;
 
@@ -1617,6 +1782,26 @@ sub req_download_file {
 
   return $self->_common_download($req, $file);
 }
+
+=item file_metadata
+
+Retrieve metadata for a file.
+
+Parameters:
+
+=over
+
+=item *
+
+C<file> - the id of the file to retrieve metadata for.
+
+=item *
+
+C<name> - the name of the metadata.
+
+=back
+
+=cut
 
 sub req_file_metadata {
   my ($self, $req) = @_;
@@ -1662,6 +1847,24 @@ sub req_file_metadata {
   return \%result;
 }
 
+=item file_cmetadata
+
+Retrieve generated metadata for a file.
+
+=over
+
+=item *
+
+C<file> - the id of the file to retrieve metadata for.
+
+=item *
+
+C<name> - the name of the metadata.
+
+=back
+
+=cut
+
 sub req_file_cmetadata {
   my ($self, $req) = @_;
 
@@ -1696,6 +1899,28 @@ sub req_file_cmetadata {
   return $meta;
 }
 
+=item show_lost_password
+
+Display the lost password form.
+
+Tags: standard dynamic tags and:
+
+=over
+
+=item *
+
+C<message>
+
+=item *
+
+C<< error_img I<field> >>
+
+=back
+
+Template: F<user/lostpassword>
+
+=cut
+
 sub req_show_lost_password {
   my ($self, $req, $message) = @_;
 
@@ -1721,10 +1946,48 @@ sub req_show_lost_password {
      message => $message,
      error_img => [ \&tag_error_img, $cfg, $errors ],
     );
-  BSE::Template->show_page('user/lostpassword', $cfg, \%acts);
 
-  return;
+  return $req->dyn_response('user/lostpassword', \%acts);
 }
+
+=item lost_password
+
+Process a lost password request.
+
+Parameters:
+
+=over
+
+=item *
+
+C<userid> - the user's logon name.
+
+=back
+
+On success, display:
+
+Tags: standard dynamic tags and:
+
+=over
+
+=item *
+
+C<message>
+
+=item *
+
+C<< user I<field> >> - user information.  Very little information from
+this should be displayed.
+
+=item *
+
+C<< emailuser I<field> >> - usually the same as C<user>
+
+=back
+
+Template: F<user/lostemailsent>
+
+=cut
 
 sub req_lost_password {
   my ($self, $req, $message) = @_;
@@ -1762,10 +2025,27 @@ sub req_lost_password {
      user => sub { escape_html($user->{$_[0]}) },
      emailuser => [ \&tag_hash, $email_user ],
     );
-  BSE::Template->show_page('user/lostemailsent', $cfg, \%acts);
 
-  return;
+  return $req->dyn_response('user/lostemailsent', \%acts);
 }
+
+=item subinfo
+
+Display information about a newletter subscription.
+
+Tags: standard dynamic tags and:
+
+=over
+
+=item *
+
+C<< subscription I<field> >> - the subscription being displayed.
+
+=back
+
+Template: F<user/subdetail>
+
+=cut
 
 sub req_subinfo {
   my ($self, $req) = @_;
@@ -1778,15 +2058,15 @@ sub req_subinfo {
     or return $self->show_opts($req, "No subscription id parameter");
   my $sub = BSE::SubscriptionTypes->getByPkey($id)
     or return $self->show_opts($req, "Unknown subscription id");
+  $req->set_variable(subscription => $sub);
   my %acts;
   %acts =
     (
      $req->dyn_user_tags(),
      subscription=>sub { escape_html($sub->{$_[0]}) },
     );
-  BSE::Template->show_page('user/subdetail', $cfg, \%acts);
 
-  return;
+  return $req->dyn_response('user/subdetail', \%acts);
 }
 
 sub req_nopassword {
@@ -1801,9 +2081,8 @@ sub req_nopassword {
     (
      $req->dyn_user_tags(),
     );
-  BSE::Template->show_page('user/nopassword', $cfg, \%acts);
 
-  return;
+  return $req->dyn_response('user/nopassword', \%acts);
 }
 
 sub req_blacklist {
@@ -1823,13 +2102,13 @@ sub req_blacklist {
   %acts =
     (
      $req->dyn_user_tags(),
-     email => sub { escape_html($email) },
+     email => escape_html($email),
     );
   require BSE::EmailBlacklist;
+  $req->set_variable(email => $email);
   my $black = BSE::EmailBlacklist->getEntry($genemail);
   if ($black) {
-    BSE::Template->show_page('user/alreadyblacklisted', $cfg, \%acts);
-    return;
+    return $req->dyn_response('user/alreadyblacklisted', \%acts);
   }
   my %black;
   my @cols = BSE::EmailBlackEntry->columns;
@@ -1837,9 +2116,8 @@ sub req_blacklist {
   $black{email} = $genemail;
   $black{why} = "Web request from $ENV{REMOTE_ADDR}";
   $black = BSE::EmailBlacklist->add(@black{@cols});
-  BSE::Template->show_page('user/blacklistdone', $cfg, \%acts);
 
-  return;
+  return $req->dyn_response('user/blacklistdone', \%acts);
 }
 
 sub req_confirm {
@@ -1881,9 +2159,8 @@ sub req_confirm {
      $req->dyn_user_tags(),
      user=>sub { escape_html($user->{$_[0]}) },
     );
-  BSE::Template->show_page('user/confirmed', $cfg, \%acts);
 
-  return;
+  return $req->dyn_response('user/confirmed', \%acts);
 }
 
 sub _generic_email {
@@ -1917,7 +2194,7 @@ sub send_conf_request {
   my $checkemail = _generic_email($user->{email});
 
   # check the blacklist
-  require 'BSE/EmailBlacklist.pm';
+  require BSE::EmailBlacklist;
 
   my %acts;
   %acts =
@@ -1931,16 +2208,14 @@ sub send_conf_request {
     $cfg->entry('basic', 'emailfrom')|| $SHOP_FROM;
   unless ($from) {
     $acts{mailerror} = sub { escape_html("Configuration Error: The confirmations from address has not been configured") };
-    BSE::Template->show_page('user/email_conferror', $cfg, \%acts);
-    return 1;
+    return $req->dyn_response('user/email_conferror', \%acts);
   }
 
   my $blackentry = BSE::EmailBlacklist->getEntry($checkemail);
 
   if ($blackentry) {
     $acts{black} = sub { escape_html($blackentry->{$_[0]}) },
-    BSE::Template->show_page('user/blacklisted', $cfg, \%acts);
-    return 1;
+    return $req->dyn_response('user/blacklisted', \%acts);
   }
   
   unless ($user->{confirmSecret}) {
@@ -1962,12 +2237,10 @@ sub send_conf_request {
     $acts{ifTooSoon} = sub { $too_soon };
     # check how many
     if ($too_many) {
-      BSE::Template->show_page('user/toomany', $cfg, \%acts);
-      return 1;
+      return $req->dyn_response('user/toomany', \%acts);
     }
     if ($too_soon) {
-      BSE::Template->show_page('user/toosoon', $cfg, \%acts);
-      return 1;
+      return $req->dyn_response('user/toosoon', \%acts);
     }
   }
   else {
@@ -2007,16 +2280,14 @@ sub send_conf_request {
 	subject=>$subject)) {
     # a problem sending the mail
     $acts{mailerror} = sub { escape_html($mail->errstr) };
-    BSE::Template->show_page('user/email_conferror', $cfg, \%acts);
+    return $req->dyn_response('user/email_conferror', \%acts);
     return;
   }
   ++$confirm->{unackedConfMsgs};
   $confirm->{lastConfSent} = now_datetime;
   $confirm->save;
-  return 0 if $suppress_success;
-  BSE::Template->show_page($nopassword ? 'user/confsent_nop' : 'user/confsent', $cfg, \%acts);
-
-  return 1;
+  return if $suppress_success;
+  return $req->dyn_response($nopassword ? 'user/confsent_nop' : 'user/confsent', \%acts);
 }
 
 sub req_unsub {
@@ -2056,19 +2327,17 @@ sub req_unsub {
   my $sub;
   if ($subid eq 'all') {
     $user->removeSubscriptions();
-    BSE::Template->show_page('user/unsuball', $cfg, \%acts);
+    return $req->dyn_response('user/unsuball', \%acts);
   }
   elsif (0+$subid eq $subid 
 	 and $sub = BSE::SubscriptionTypes->getByPkey($subid)) {
     $acts{subscription} = sub { escape_html($sub->{$_[0]}) };
     $user->removeSubscription($subid);
-    BSE::Template->show_page('user/unsubone', $cfg, \%acts);
+    return $req->dyn_response('user/unsubone', \%acts);
   }
   else {
-    BSE::Template->show_page('user/cantunsub', $cfg, \%acts);
+    return $req->dyn_response('user/cantunsub', \%acts);
   }
-
-  return;
 }
 
 sub _validate_affiliate_name {
@@ -2200,8 +2469,6 @@ sub _notify_registration {
 
 =item req_wishlist
 
-=target a_wishlist
-
 Display a given user's wishlist.
 
 Parameters:
@@ -2255,14 +2522,12 @@ sub req_wishlist {
     $template .= "_$t";
   }
 
-  BSE::Template->show_page($template, $req->cfg, \%acts);
+  return $req->dyn_response($template, \%acts);
 
   return;
 }
 
 =item req_downufile
-
-=target a_downufile
 
 Download a user file.
 
@@ -2323,6 +2588,32 @@ sub req_downufile {
       or return $self->error($req, $msg);
 }
 
+=item lost
+
+Prompt the user to enter a new password as part of account password
+recovery.
+
+Tags: standard dynamic tags and:
+
+=over
+
+=item *
+
+C<lostid> - the password recovery id.  This should be supplied as an
+C<id> parameter to C<lost_save>.
+
+=item *
+
+C<< error_img I<field> >> - error indicator for I<field>
+
+=item *
+
+C<< message >> - form submission error messages.
+
+=back
+
+=cut
+
 sub req_lost {
   my ($self, $req, $errors) = @_;
 
@@ -2347,6 +2638,17 @@ sub req_lost {
 
   return $req->response("user/lost_prompt", \%acts);
 }
+
+=item lost_save
+
+Save a new password for a user identified by a lost password recovery
+id.
+
+On success, refresh to the logon page with a success message.
+
+On failure, show the logon page with an error message.
+
+=cut
 
 my %lost_fields =
   (
@@ -2396,6 +2698,147 @@ sub req_lost_save {
   return $req->get_refresh($req->cfg->user_url("user", "show_logon"));
 }
 
+=back
 
+=head1 Standard user page tags
+
+These are the standard dynamic tags, and:
+
+=over
+
+=item *
+
+C<< user I<field> >> - access to the user.
+
+=item *
+
+C<< iterator ... orders >>, C<< order I<field> >> - iterate over user
+orders.
+
+=item *
+
+C<< iterator ... items >>, C<< item I<field> >> - iterate over items
+in the current order.
+
+=item *
+
+C<< iterator ... orderfiles >>, C<< orderfile I<field> >> - iterate
+over the files for the current order.
+
+=item *
+
+C<< product I<field> >> - access to the product for the current order
+item.
+
+=item *
+
+C<< iterator ... prodfiles >>, C<< prodfile I<field> >> - iterate over
+the files for the product for the current order item.
+
+=item *
+
+C<< ifFileAvail >> - test if the current C<orderfile> or C<prodfile>
+is available.
+
+=item *
+
+C<options> - product options selected for the current order line item.
+
+=back
+
+=cut
+
+sub _common_tags {
+  my ($self, $req, $user) = @_;
+
+  my $cfg = $req->cfg;
+
+  #my $order_index;
+  #my $item_index;
+  #my @items;
+  my $item;
+  my $product;
+  #my @files;
+  #my $file_index;
+  my $file;
+  my @orders;
+  my $order;
+
+  my $must_be_paid = $cfg->entryBool('downloads', 'must_be_paid', 0);
+  my $must_be_filled = $cfg->entryBool('downloads', 'must_be_filled', 0);
+
+  my $it = BSE::Util::Iterate->new(req => $req);
+  my $ito = BSE::Util::Iterate::Objects->new();
+  return
+    (
+     $req->dyn_user_tags(),
+     user => [ \&tag_hash, $user ],
+     $ito->make
+     (
+      data => \@orders,
+      single => 'order',
+      plural => 'orders',
+      #index => \$order_index,
+      code => [ iter_orders => $self, $user ],
+      store => \$order,
+     ),
+     $it->make
+     (
+      single => "item",
+      plural => "items",
+      code => [ iter_order_items => $self, \$order ],
+      store => \$item,
+      changed => sub {
+	my ($item) = @_;
+	if ($item) {
+	  $product = $item->product
+	    or print STDERR "No product found for item $item->{id}\n";
+	}
+	else {
+	  undef $product;
+	}
+	$req->set_article(product => $product);
+      },
+      nocache => 1,
+     ),
+     $it->make
+     (
+      single => "orderfile",
+      plural => "orderfiles",
+      code => [ iter_orderfiles => $self, \$order ],
+      store => \$file,
+      nocache => 1,
+     ),
+     product => sub {
+       $item or return "* Not in item iterator *";
+       $product or return "* No current product *";
+       return tag_article($product, $cfg, $_[0]);
+     },
+     $it->make
+     (
+      single => "prodfile",
+      plural => "prodfiles",
+      code => [ files => $product ],
+      store => \$file,
+      nocache => 1,
+     ),
+     ifFileAvail =>
+     sub {
+       if ($file) {
+	 return 1 if !$file->{forSale};
+       }
+       return 0 if $must_be_paid && !$order->paidFor;
+       return 0 if $must_be_filled && !$order->filled;
+       return 1;
+     },
+     options => [ tag_order_item_options => $self, $req, \$item ],
+    );
+}
 
 1;
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=cut

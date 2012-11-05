@@ -50,8 +50,6 @@ site/cgi-bin/modules/BSE/UI/AdminShop.pm	multiple occurrence of link target 'scr
 site/cgi-bin/modules/BSE/UI/Background.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/UI/Formmail.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/UI/Shop.pm	=item without previous =over	1
-site/cgi-bin/modules/BSE/UserReg.pm	=item without previous =over	1
-site/cgi-bin/modules/BSE/UserReg.pm	Unknown command 'target'	2
 site/cgi-bin/modules/BSE/Util/SQL.pm	=over on line 37 without closing =back	1
 site/cgi-bin/modules/BSE/Util/SQL.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/BSE/Util/Secure.pm	=over on line 25 without closing =back (at head1)	1
