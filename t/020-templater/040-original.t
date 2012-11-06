@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 155;
+use Test::More tests => 156;
 
 sub template_test($$$$;$$);
 
@@ -508,6 +508,9 @@ OUT
      [ '(10).ceil', 10 ],
      [ '(10.1).ceil', 11 ],
      [ '(-10.1).ceil', -10 ],
+
+     # WrapArray
+     [ '[ [ 1, 2 ], 3 ].expand.join(",")', "1,2,3" ],
     );
   for my $test (@expr_tests) {
     my ($expr, $result) = @$test;

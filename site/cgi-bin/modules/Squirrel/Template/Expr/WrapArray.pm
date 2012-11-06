@@ -3,7 +3,7 @@ use strict;
 use base qw(Squirrel::Template::Expr::WrapBase);
 use Scalar::Util ();
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 my $list_make_key = sub {
   my ($item, $field) = @_;
@@ -117,6 +117,23 @@ sub _do_unshift {
   return scalar(@{$self->[0]});
 }
 
+sub _do_expand {
+  my ($self, $args) = @_;
+
+  @$args == 0
+    or die [ error => "list.expand takes no parameters" ];
+
+  return 
+    [ map {
+      defined 
+	&& ref
+	  && !Scalar::Util::blessed($_)
+	    && Scalar::Util::reftype($_) eq 'ARRAY'
+	      ? @$_
+		: $_
+    } @{$self->[0]} ];
+}
+
 sub call {
   my ($self, $method, $args) = @_;
 
@@ -208,6 +225,12 @@ Remove the last element from the list and return that.
 
 Add the given elements to the start of the array.  returns the new
 size of the array.
+
+=item expand
+
+Return a new array with any contained arrays expanded one level.
+
+  [ [ [ 1 ], 2 ], 3 ].expand => [ [ 1 ], 2, 3 ]
 
 =back
 
