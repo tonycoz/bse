@@ -5,13 +5,13 @@ use BSE::Util::Iterate;
 use BSE::Util::Tags qw(tag_hash);
 use BSE::Regen qw(pregenerate_list content_one_extra response_one_extra);
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 my %actions =
   (
-   list => "",
-   show => "",
-   display => "",
+   list => "bse_pregen_view",
+   show => "bse_pregen_view",
+   display => "bse_pregen_view",
   );
 
 sub actions { \%actions }

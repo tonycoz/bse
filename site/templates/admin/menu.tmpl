@@ -35,7 +35,9 @@ section</a></li>
 
 </ul>
 
+<:.if request.user_can("bse_pregen_view") and request.user_can("regen_extras") :>
 <p><a href="<:= cfg.admin_url("pregen") | html :>">Preview Pregen pages</a></p>
+<:.end if:>
 
   </td>
   <td>
