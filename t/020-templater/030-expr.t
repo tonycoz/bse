@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use Squirrel::Template::Expr;
-use Test::More tests => 18;
+use Test::More tests => 20;
 use Data::Dumper;
 
 test_tok("abc",
@@ -66,6 +66,16 @@ test_tok("+ - == != > >= < <= eq ne lt le gt ge . _",
 	  [ "op_" => "_" ],
 	  [ eof => "" ],
 	 ], "operators");
+
+test_tok("(10.1).foo",
+	 [
+	  [ "op(", "(" ],
+	  [ num => "10.1", "10.1" ],
+	  [ "op)", ")" ],
+	  [ "op." => "." ],
+	  [ id => "foo", "foo" ],
+	  [ eof => "" ],
+	 ], "parens");
 
 test_parse("1+1",
 	   [ "add",
@@ -191,6 +201,13 @@ test_parse('a.b =~ /a.*\/b/',
 	     ],
 	     [ const => qr(a.*\/b) ],
 	   ], "regexp match");
+
+test_parse("(10.1).foo",
+	   [ call =>
+	     "foo",
+	     [ const => 10.1 ],
+	     [],
+	   ], "method on parens expr");
 
 sub test_tok {
   my ($str, $tokens, $name) = @_;

@@ -1,7 +1,7 @@
 package Squirrel::Template::Expr;
 use strict;
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 package Squirrel::Template::Expr::Eval;
 use Scalar::Util ();
@@ -399,16 +399,7 @@ sub _parse_prefix {
   my ($self, $tok) = @_;
 
   my $nexttype = $tok->peektype('TERM');
-  if ($nexttype eq 'op(') {
-    $tok->get;
-    my $r = $self->_parse_expr($tok);
-    my $close = $tok->get;
-    unless ($close->[0] eq 'op)') {
-      die [ error => "Expected ')' but found $close->[0]" ];
-    }
-    return $r;
-  }
-  elsif ($nexttype eq 'op-') {
+  if ($nexttype eq 'op-') {
     $tok->get;
     return [ uminus => $self->_parse_prefix($tok) ];
   }
@@ -507,7 +498,15 @@ sub _parse_primary {
   my ($self, $tok) = @_;
 
   my $t = $tok->get('TERM');
-  if ($t->[0] eq 'str' || $t->[0] eq 'num') {
+  if ($t->[0] eq 'op(') {
+    my $r = $self->_parse_expr($tok);
+    my $close = $tok->get;
+    unless ($close->[0] eq 'op)') {
+      die [ error => "Expected ')' but found $close->[0]" ];
+    }
+    return $r;
+  }
+  elsif ($t->[0] eq 'str' || $t->[0] eq 'num') {
     return [ const => $t->[2] ];
   }
   elsif ($t->[0] eq 're') {
