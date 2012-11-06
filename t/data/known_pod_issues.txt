@@ -98,7 +98,6 @@ site/cgi-bin/modules/Squirrel/Table.pm	unresolved internal link '_where_clause'	
 site/cgi-bin/modules/Squirrel/Template.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/Squirrel/Template/Expr.pm	multiple occurrence of link target 'Methods'	1
 site/cgi-bin/modules/Squirrel/Template/Expr/WrapScalar.pm	=back without previous =over	1
-site/cgi-bin/modules/Squirrel/Template/Expr/WrapScalar.pm	=over on line 121 without closing =back (at head1)	1
 site/cgi-bin/search.pl	Verbatim paragraph in NAME section	1
 site/cgi-bin/shop.pl	multiple occurrence of link target '%<format>'	1
 site/cgi-bin/shop.pl	multiple occurrence of link target 'gst'	1

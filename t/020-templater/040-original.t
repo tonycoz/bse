@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 113;
+use Test::More tests => 154;
 
 sub template_test($$$$;$$);
 
@@ -465,6 +465,49 @@ OUT
      [ '[ "abc" =~ /(.)(.)/ ][1]', "b" ],
      [ '{ "a": 11, "b": 12, "c": 20 }["b"]', 12 ],
      [ 'testclass.foo', "[TestClass.foo]" ],
+
+     # WrapScalar
+     [ '"foo".length', 3 ],
+     [ '"foo".length(1)', "* scalar.length takes no parameters *" ],
+     [ '"foo".upper', "FOO" ],
+     [ '"foo".upper(1)', "* scalar.upper takes no parameters *" ],
+     [ '"Foo".lower', "foo" ],
+     [ '"Foo".lower(1)', "* scalar.lower takes no parameters *" ],
+     [ '"foo".defined', '1' ],
+     [ '"foo".defined(1)', '* scalar.defined takes no parameters *' ],
+     [ '"foo".trim', "foo" ],
+     [ '" a b ".trim', "a b" ],
+     [ '" a b ".trim(1)', "* scalar.trim takes no parameters *" ],
+     [ '"a b".split.join("|")', "a|b" ],
+     [ '"a,b,c".split(",").join("|")', 'a|b|c' ],
+     [ '"a,b,c".split(",",2).join("|")', 'a|b,c' ],
+     [ '(10.1).format("%.2f")', "10.10" ],
+     [ '(10.1).format("%.2f", 1)', "* scalar.format takes one parameter *" ],
+     [ '"str".evaltag', 'ABC' ],
+     [ '"cat [str] [str2]".evaltag', 'ABCDEF' ],
+     [ '"abc*".quotemeta', "abc\\*" ],
+     [ '"abc".quotemeta(1)', "* scalar.quotemeta takes no parameters *" ],
+     [ '"abcdef".contains("cde")', 1 ],
+     [ '"abcdef".contains("cdf")', "" ],
+     [ '"abcdef".contains("cdf",1)', "* scalar.contains requires one parameter *" ],
+     [ '"abcdefabcdef".index("cde")', 2 ],
+     [ '"abcdefabcdef".index("cdf")', -1 ],
+     [ '"abcdefabcdef".index("cde", 5)', 8 ],
+     [ '"abc".index("ab",1,2)', '* scalar.index requires one or two parameters *' ],
+     [ '"abcdefabcdef".rindex("cde")', 8 ],
+     [ '"abcdefabcdef".rindex("cde", 7)', 2 ],
+     [ '"abcdefabcdef".rindex("cde", 7, 3)', '* scalar.rindex requires one or two parameters *' ],
+     [ "(65).chr", "A" ],
+     [ "(10.1).int", 10 ],
+     [ "(10).int", 10 ],
+     [ "(10).rand < 10 and (10).rand >= 0", 1 ],
+     [ "(-10).abs", "10" ],
+     [ '(10).floor', 10 ],
+     [ '(10.1).floor', 10 ],
+     [ '(-10.1).floor', -11 ],
+     [ '(10).ceil', 10 ],
+     [ '(10.1).ceil', 11 ],
+     [ '(-10.1).ceil', -10 ],
     );
   for my $test (@expr_tests) {
     my ($expr, $result) = @$test;

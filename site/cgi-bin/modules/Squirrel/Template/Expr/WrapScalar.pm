@@ -2,7 +2,7 @@ package Squirrel::Template::Expr::WrapScalar;
 use strict;
 use base qw(Squirrel::Template::Expr::WrapBase);
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 sub _do_length  {
   my ($self, $args) = @_;
@@ -44,7 +44,7 @@ sub _do_trim {
   my ($self, $args) = @_;
 
   @$args == 0
-    or die [ error => "scalar.defined takes no parameters" ];
+    or die [ error => "scalar.trim takes no parameters" ];
 
   my $copy = $self->[0];
   $copy =~ s/\A\s+//;
@@ -82,6 +82,102 @@ sub _do_evaltag {
   return $self->[1]->perform($self->[2], $func, $tag_args, $self->[0]);
 }
 
+sub _do_quotemeta {
+  my ($self, $args) = @_;
+
+  @$args == 0
+    or die [ error => "scalar.quotemeta takes no parameters" ];
+
+  return quotemeta($self->[0]);
+}
+
+sub _do_contains {
+  my ($self, $args) = @_;
+
+  @$args == 1
+    or die [ error => "scalar.contains requires one parameter" ];
+
+  return index($self->[0], $args->[0], @$args > 1 ? $args->[1] : 0) >= 0;
+}
+
+sub _do_index {
+  my ($self, $args) = @_;
+
+  @$args == 1 || @$args == 2
+    or die [ error => "scalar.index requires one or two parameters" ];
+
+  return index($self->[0], $args->[0], @$args > 1 ? $args->[1] : 0);
+}
+
+sub _do_rindex {
+  my ($self, $args) = @_;
+
+  @$args == 1 || @$args == 2
+    or die [ error => "scalar.rindex requires one or two parameters" ];
+
+  return @$args > 1
+    ? rindex($self->[0], $args->[0], $args->[1])
+      :  rindex($self->[0], $args->[0]);
+}
+
+sub _do_chr {
+  my ($self, $args) = @_;
+
+  @$args == 0
+    or die [ error => "scalar.chr takes no parameters" ];
+
+  return chr($self->[0]);
+}
+
+sub _do_int {
+  my ($self, $args) = @_;
+
+  @$args == 0
+    or die [ error => "scalar.int takes no parameters" ];
+
+  return int($self->[0]);
+}
+
+sub _do_rand {
+  my ($self, $args) = @_;
+
+  @$args == 0
+    or die [ error => "scalar.rand takes no parameters" ];
+
+  return rand($self->[0]);
+}
+
+sub _do_abs {
+  my ($self, $args) = @_;
+
+  @$args == 0
+    or die [ error => "scalar.abs takes no parameters" ];
+
+  return abs($self->[0]);
+}
+
+sub _do_floor {
+  my ($self, $args) = @_;
+
+  @$args == 0
+    or die [ error => "scalar.floor takes no parameters" ];
+
+  require POSIX;
+
+  return POSIX::floor($self->[0]);
+}
+
+sub _do_ceil {
+  my ($self, $args) = @_;
+
+  @$args == 0
+    or die [ error => "scalar.ceil takes no parameters" ];
+
+  require POSIX;
+
+  return POSIX::ceil($self->[0]);
+}
+
 sub call {
   my ($self, $method, $args) = @_;
 
@@ -110,6 +206,18 @@ Squirrel::Template::Expr::WrapScalar - provide methods for scalars
   split = somescalar.split(":", count);
   formatted = somescalar.format("%05d");
   value = somescalar.evaltag
+  quoted = somescalar.quotemeta
+  contains = somescalar.contains("foo")
+  pos = somescalar.index("foo")
+  pos = somescalar.index("foo", 5)
+  pos = somescalar.rindex("foo")
+  pos = somescalar.rindex("foo", 5)
+  char = somenumber.chr
+  int = somenumber.int
+  random = somenumber.rand
+  abs = (-10).abs  # 10
+  floor = (-10.1).floor # -11
+  ceil = (-10.1).ceil # -10
 
 =head1 DESCRIPTION
 
@@ -152,6 +260,72 @@ negative C<count> returns all elements.
 
 Evalulate the value of string as if processed as a tag.  The string
 must not include the surrounding <: ... :>.
+
+=item quotemeta
+
+Return the string with regular expression metacharacters quoted with
+C<\>.
+
+=item contains(substring)
+
+Returns true if the subject contains the given substring.
+
+=item index(substring)
+
+=item index(substring, start)
+
+Return the position of C<substring> within the subject, searching
+forward from C<start> or from the beginning of the string.  Returns -1
+if C<substring> isn't found.
+
+=item rindex(substring)
+
+=item rindex(substring, start)
+
+Return the position of C<substring> within the subject, searching
+backward from C<start> or from the end of the string.  Returns -1 if
+C<substring> isn't found.
+
+=item chr
+
+Convert a character code into a character.
+
+  (65).chr # "A"
+
+=item int
+
+Convert a number to an integer.
+
+  (10.1).int # 10
+
+=item rand
+
+Produce a floating point random number greater or equal to 0 and less
+than the subject.
+
+  (10).rand # 0 <= result < 10
+
+=item abs
+
+Return the absolute value of the subject.
+
+=item floor
+
+Return the highest integer less than or equal to the subject
+
+  (10).floor # 10
+  (10.1).floor  # 10
+  (-10.1).floor # -11
+
+=item ceil
+
+Return the lowest integer greater than or equal to the subject.
+
+  (10).ceil # 10
+  (10.1).ceil # 11
+  (-10.1).ceil # -10
+
+=back
 
 =head1 SEE ALSO
 
