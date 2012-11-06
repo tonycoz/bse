@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 154;
+use Test::More tests => 155;
 
 sub template_test($$$$;$$);
 
@@ -630,6 +630,26 @@ OUT
 IN
 ABC
 ABCDEF
+OUT
+
+template_test(<<IN, <<OUT, "hash methods", \%acts, "", \%vars);
+<:.set foo = { "abc": 1, "def":2 } -:>
+<:% foo.set("ghi", 3) -:>
+ghi: <:= foo.ghi :>
+keys: <:= foo.keys.sort.join(",") :>
+size: <:= foo.size :>
+values: <:= foo.values.sort.join(",") :>
+<:.for i in foo.list -:>
+<:= i.key _ "=" _ i.value :>
+<:.end for-:>
+IN
+ghi: 3
+keys: abc,def,ghi
+size: 3
+values: 1,2,3
+abc=1
+def=2
+ghi=3
 OUT
 
   template_test(<<IN, <<OUT, "set undef", \%acts, "", \%vars);

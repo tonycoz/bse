@@ -2,7 +2,7 @@ package Squirrel::Template::Expr::WrapHash;
 use strict;
 use base qw(Squirrel::Template::Expr::WrapBase);
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 sub _do_size {
   my ($self) = @_;
@@ -26,13 +26,24 @@ sub _do_list {
   my ($self) = @_;
 
   my $item = $self->[0];
-  return [ map {; key => $_, value => $item->{$_} } sort keys %$item ];
+  return [ map +{ key => $_, value => $item->{$_} }, sort keys %$item ];
 }
 
 sub _do_delete {
   my ($self, $args) = @_;
 
   return delete @{$self->[0]}{@$args};
+}
+
+sub _do_set {
+  my ($self, $args) = @_;
+
+  @$args == 2
+    or die [ error => "hash.set() requires 2 arguments" ];
+
+  $self->[0]{$args->[0]} = $args->[1];
+
+  return $args->[1];
 }
 
 sub call {
@@ -74,6 +85,7 @@ Squirrel::Template::Expr::WrapHash - virtual method wrapper for hashes
   somehash.list
   somehash.delete(key)
   somehash.aKey
+  somehash.set(key, value)
 
 =head1 DESCRIPTION
 
@@ -105,6 +117,10 @@ key and value for each element of the hash.
 
 Delete a given key from the hash, returning the value that was at that
 key.
+
+=item set(key, value)
+
+Set entry C<key> to C<value>.  Returns C<value>.
 
 =back
 
