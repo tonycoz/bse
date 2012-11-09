@@ -1,12 +1,12 @@
 package BSE::CfgInfo;
 use strict;
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 use vars qw(@ISA @EXPORT_OK);
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(custom_class admin_base_url cfg_image_dir cfg_image_uri cfg_dist_image_uri cfg_data_dir cfg_scalecache_dir cfg_scalecache_uri credit_card_class product_options bse_default_country);
+@EXPORT_OK = qw(custom_class admin_base_url cfg_image_dir cfg_image_uri cfg_dist_image_uri cfg_data_dir cfg_scalecache_dir cfg_scalecache_uri credit_card_class product_options bse_default_country load_class);
 
 =head1 NAME
 
@@ -49,13 +49,32 @@ sub custom_class {
   local @INC = @INC;
 
   my $class = $cfg->entry('basic', 'custom_class', 'BSE::Custom');
+
+  load_class($class, $cfg);
+
+  return $class->new(cfg=>$cfg);
+}
+
+=item load_class($class)
+
+Load a class, also searching the configured library directories.
+
+Should be wrapped in an eval if load failures need to be captured.
+
+=cut
+
+sub load_class {
+  my ($class, $cfg) = @_;
+
+  $cfg ||= BSE::Cfg->single;
+
   (my $file = $class . ".pm") =~ s!::!/!g;
 
   _do_local_inc($cfg);
 
   require $file;
 
-  return $class->new(cfg=>$cfg);
+  1;
 }
 
 =item admin_base_url($cfg)

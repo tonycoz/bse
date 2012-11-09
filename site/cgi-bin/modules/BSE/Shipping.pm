@@ -1,8 +1,9 @@
 package BSE::Shipping;
 use strict;
 use Carp qw(confess);
+use BSE::CfgInfo qw(load_class);
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub get_couriers {
     my ($class, $cfg, $wanted) = @_;
@@ -13,12 +14,10 @@ sub get_couriers {
     my @couriers;
     foreach my $name (@enabled) {
         $name = "Courier::$name";
-        (my $file = $name) =~ s/::/\//g;
-        $file .= ".pm";
 
         my $courier;
         eval {
-            require $file;
+	    load_class($name, $cfg);
             $courier = $name->new(config => $cfg);
         };
         if ($@) {
