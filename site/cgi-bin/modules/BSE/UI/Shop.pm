@@ -17,7 +17,7 @@ use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 
-our $VERSION = "1.033";
+our $VERSION = "1.034";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -86,6 +86,8 @@ sub other_action {
 
 sub req_cart {
   my ($class, $req, $msg) = @_;
+
+  $class->_refresh_cart($req);
 
   my @cart = @{$req->session->{cart} || []};
   my @cart_prods;
@@ -205,7 +207,8 @@ sub req_add {
     if (defined $cart_limit && @cart >= $cart_limit) {
       return $class->req_cart($req, $req->text('shop/cartfull', MSG_SHOP_CART_FULL));
     }
-    my ($price, $tier) = $product->price(user => scalar $req->siteuser);
+    my $user = $req->siteuser;
+    my ($price, $tier) = $product->price(user => $user);
     push @cart, 
       { 
        productId => $product->{id}, 
@@ -213,6 +216,7 @@ sub req_add {
        price=> $price,
        options=>$options,
        tier => $tier ? $tier->id : "",
+       user => $user ? $user->id : 0,
        %$extras,
       };
   }
@@ -276,7 +280,8 @@ sub req_addsingle {
     if (defined $cart_limit && @cart >= $cart_limit) {
       return $class->req_cart($req, $req->text('shop/cartfull', MSG_SHOP_CART_FULL));
     }
-    my ($price, $tier) = $product->price(user => scalar $req->siteuser);
+    my $user = $req->siteuser;
+    my ($price, $tier) = $product->price(user => $user);
     push @cart, 
       { 
        productId => $addid, 
@@ -284,6 +289,7 @@ sub req_addsingle {
        price=> $price,
        options=>$options,
        tier => $tier ? $tier->id : "",
+       user => $user ? $user->id : 0,
        %$extras,
       };
   }
@@ -397,6 +403,7 @@ sub req_addmultiple {
 
     my @additions = grep $_->{quantity} > 0, values %additions;
 
+    my $user = $req->siteuser;
     my $error;
     for my $addition (@additions) {
       my $product = $addition->{product};
@@ -406,13 +413,14 @@ sub req_addmultiple {
 	last;
       }
 
-      my ($price, $tier) = $product->price(user => scalar $req->siteuser);
+      my ($price, $tier) = $product->price(user => $user);
       push @cart, 
 	{ 
 	 productId => $product->{id},
 	 units => $addition->{quantity}, 
 	 price=> $price,
 	 tier => $tier ? $tier->id : "",
+	 user => $user ? $user->id : 0,
 	 options=>[],
 	 %{$addition->{extras}},
 	};
@@ -476,6 +484,8 @@ sub _any_physical_products {
 
 sub req_checkout {
   my ($class, $req, $message, $olddata) = @_;
+
+  $class->_refresh_cart($req);
 
   my $errors = {};
   if (defined $message) {
@@ -2191,6 +2201,28 @@ sub req_paypalcan {
 
   my $url = $req->user_url(shop => "show_payment");
   return $req->get_refresh($url);
+}
+
+sub _refresh_cart {
+  my ($self, $req) = @_;
+
+  my $user = $req->siteuser
+    or return;
+
+  my $cart = $req->session->{cart}
+    or return;
+
+  for my $item (@$cart) {
+    if (!$item->{user} || $item->{user} != $user->id) {
+      my $product = Products->getByPkey($item->{productId})
+	or next;
+      my ($price, $tier) = $product->price(user => $user);
+      $item->{price} = $price;
+      $item->{tier} = $tier ? $tier->id : "";
+    }
+  }
+
+  $req->session->{cart} = $cart;
 }
 
 1;
