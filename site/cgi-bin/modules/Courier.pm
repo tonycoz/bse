@@ -1,6 +1,6 @@
 package Courier;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 use strict;
 use LWP::UserAgent;
@@ -42,6 +42,9 @@ sub calculate_shipping {
   # suburb, postcode - delivery location
   # items - array ref of cart item entries
   # products - array ref of product objects
+  #
+  # return a non-negative number on success
+  # on failure returns undef, check error_message() for the error.
 }
 
 sub delivery_in {
