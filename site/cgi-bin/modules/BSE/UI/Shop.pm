@@ -17,7 +17,7 @@ use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 
-our $VERSION = "1.032";
+our $VERSION = "1.033";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -205,12 +205,14 @@ sub req_add {
     if (defined $cart_limit && @cart >= $cart_limit) {
       return $class->req_cart($req, $req->text('shop/cartfull', MSG_SHOP_CART_FULL));
     }
+    my ($price, $tier) = $product->price(user => scalar $req->siteuser);
     push @cart, 
       { 
        productId => $product->{id}, 
        units => $quantity, 
-       price=> scalar $product->price(user => scalar $req->siteuser),
+       price=> $price,
        options=>$options,
+       tier => $tier ? $tier->id : "",
        %$extras,
       };
   }
@@ -274,12 +276,14 @@ sub req_addsingle {
     if (defined $cart_limit && @cart >= $cart_limit) {
       return $class->req_cart($req, $req->text('shop/cartfull', MSG_SHOP_CART_FULL));
     }
+    my ($price, $tier) = $product->price(user => scalar $req->siteuser);
     push @cart, 
       { 
        productId => $addid, 
        units => $quantity, 
-       price=> scalar $product->price(user => scalar $req->siteuser),
+       price=> $price,
        options=>$options,
+       tier => $tier ? $tier->id : "",
        %$extras,
       };
   }
@@ -402,11 +406,13 @@ sub req_addmultiple {
 	last;
       }
 
+      my ($price, $tier) = $product->price(user => scalar $req->siteuser);
       push @cart, 
 	{ 
 	 productId => $product->{id},
 	 units => $addition->{quantity}, 
-	 price=> scalar $product->price(user => scalar $req->siteuser),
+	 price=> $price,
+	 tier => $tier ? $tier->id : "",
 	 options=>[],
 	 %{$addition->{extras}},
 	};
@@ -1765,7 +1771,7 @@ sub _fillout_order {
 	   products => $products,
 	   items => $items,
 	  );
-	if (!$cost and $courier->name() ne 'contact') {
+	if (!defined $cost and $courier->name() ne 'contact') {
 	  my $err = $courier->error_message();
 	  $$rmsg = "Error calculating shipping cost";
 	  $$rmsg .= ": $err" if $err;
