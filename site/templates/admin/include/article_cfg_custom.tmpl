@@ -1,0 +1,13 @@
+<:.for f in custom.list -:>
+<:.if f.value.description ne "" -:>
+<tr>
+   <th><:= f.value.description | html :>:</th>
+   <td>
+     <input type="text" name="<:= f.key | html :>" value="<:.call "old", "field":f.key, "default": ifnew ? f.value.default : article.get(f.key) :>" />
+   </td>
+   <td class="help">
+     <:-.call "error_img", "field":f.key -:>
+   </td>
+</tr>
+<:  .end if -:>
+<:.end for -:>

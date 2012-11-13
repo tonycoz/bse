@@ -2,7 +2,7 @@ package Squirrel::Row;
 require 5.005;
 use strict;
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 use Carp;
 use BSE::DB;
@@ -210,6 +210,15 @@ sub set {
   ++$self->{changed};
 
   return $value;
+}
+
+sub get {
+  my ($self, $name) = @_;
+
+  exists $self->{$name}
+    or do { warn "Attempt to get unknown column '$name' in ",ref $self; return };
+
+  return $self->{$name};
 }
 
 use vars '$AUTOLOAD';

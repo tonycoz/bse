@@ -2723,6 +2723,23 @@ Entries are sorted by value.
 If the value contains a comma the text up to the comma is removed and
 the remains used as the label, otherwise the key is used as the label.
 
+=head2 [article custom fields]
+
+=head2 [product custom fields]
+
+=head2 [catalog custom fields]
+
+These can be used to define article, product and catalog custom fields
+respectively, in a similar manner to L<formmail>.
+
+The field names are predefined, C<customDate1>, C<customDate2>,
+C<customInt1>, C<customInt2>, C<customInt3>, C<customInt4>,
+C<customStr1> and C<customStr2>, but are only active if a description
+is defined for the field:
+
+  [article custom fields]
+  customInt1_description=Stock Level
+
 =head1 AUTHOR
 
 Tony Cook <tony@develop-help.com>

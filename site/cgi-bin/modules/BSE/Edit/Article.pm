@@ -14,8 +14,9 @@ use BSE::Regen 'generate_article';
 use DevHelp::Date qw(dh_parse_date dh_parse_sql_date);
 use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
+use constant ARTICLE_CUSTOM_FIELDS_CFG => "article custom fields";
 
-our $VERSION = "1.029";
+our $VERSION = "1.030";
 
 =head1 NAME
 
@@ -1153,6 +1154,76 @@ sub iter_tags {
   return $article->tag_objects;
 }
 
+my %base_custom_validation =
+  (
+   customDate1 =>
+   {
+    rules => "date",
+    htmltype => "text",
+    width => 10,
+    default => "",
+   },
+   customDate2 =>
+   {
+    rules => "date",
+    htmltype => "text",
+    width => 10,
+    default => "",
+   },
+   customStr1 =>
+   {
+    htmltype => "text",
+    default => "",
+   },
+   customStr2 =>
+   {
+    htmltype => "text",
+    default => "",
+   },
+   customInt1 =>
+   {
+    rules => "integer",
+    htmltype => "text",
+    width => 10,
+    default => "",
+   },
+   customInt2 =>
+   {
+    rules => "integer",
+    htmltype => "text",
+    width => 10,
+    default => "",
+   },
+   customInt3 =>
+   {
+    rules => "integer",
+    htmltype => "text",
+    width => 10,
+    default => "",
+   },
+   customInt4 =>
+   {
+    rules => "integer",
+    htmltype => "text",
+    width => 10,
+    default => "",
+   },
+  );
+
+sub custom_fields {
+  my $self = shift;
+
+  require DevHelp::Validate;
+  DevHelp::Validate->import;
+  return DevHelp::Validate::dh_configure_fields
+    (
+     \%base_custom_validation,
+     $self->cfg,
+     ARTICLE_CUSTOM_FIELDS_CFG,
+     BSE::DB->single->dbh,
+    );
+}
+
 sub low_edit_tags {
   my ($self, $acts, $request, $article, $articles, $msg, $errors) = @_;
 
@@ -1200,6 +1271,10 @@ sub low_edit_tags {
   my $it = BSE::Util::Iterate->new;
   my $ito = BSE::Util::Iterate::Objects->new;
   my $ita = BSE::Util::Iterate::Article->new(req => $request);
+
+  my $custom = $self->custom_fields;
+  $request->set_variable(custom => $custom);
+
   return
     (
      $request->admin_tags,
@@ -1514,6 +1589,15 @@ sub _validate_common {
       $errors->{category} = "msg:bse/admin/edit/category/unknown";
     }
   }
+
+  require DevHelp::Validate;
+  DevHelp::Validate->import('dh_validate_hash');
+  dh_validate_hash($data, $errors,
+		   {
+		    fields => $self->custom_fields,
+		    optional => 1,
+		   },
+		   $self->cfg, ARTICLE_CUSTOM_FIELDS_CFG);
 }
 
 sub validate {
@@ -1564,6 +1648,32 @@ sub validate_parent {
 
 sub fill_new_data {
   my ($self, $req, $data, $articles) = @_;
+
+  my $custom = $self->custom_fields;
+  for my $key (keys %$custom) {
+    my ($value) = $req->cgi->param($key);
+    if ($custom->{$key}{description} && defined $value) {
+      if ($key =~ /^customDate/) {
+	if ($value =~ /^\s*([0-9]+)[^0-9]+([0-9]+)[^0-9]+([0-9]+)\s*$/) {
+	  $data->{$key} = "$3-$2-$1";
+	}
+	else {
+	  $data->{$key} = undef;
+	}
+      }
+      elsif ($key =~ /^customInt/) {
+	if ($value =~ /\S/) {
+	  $data->{$key} = $value;
+	}
+	else {
+	  $data->{$key} = undef;
+	}
+      }
+      else {
+	$data->{$key} = $value;
+      }
+    }
+  }
 
   custom_class($self->{cfg})
     ->article_fill_new($data, $self->typename);
@@ -1852,6 +1962,30 @@ sub fill_old_data {
     next if $col =~ /^custom/;
     $article->{$col} = $data->{$col}
       if exists $data->{$col} && $col ne 'id' && $col ne 'parentid';
+  }
+  my $custom = $self->custom_fields;
+  for my $key (keys %$custom) {
+    if ($custom->{$key}{description} && exists $data->{$key}) {
+      if ($key =~ /^customDate/) {
+	if ($data->{key} =~ /^\s*([0-9]+)[^0-9]+([0-9]+)[^0-9]+([0-9]+)\s*$/) {
+	  $article->set($key => "$3-$2-$1");
+	}
+	else {
+	  $article->set($key => undef);
+	}
+      }
+      elsif ($key =~ /^customInt/) {
+	if ($data->{$key} =~ /\S/) {
+	  $article->set($key => $data->{$key});
+	}
+	else {
+	  $article->set($key => undef);
+	}
+      }
+      else {
+	$article->set($key => $data->{$key});
+      }
+    }
   }
   custom_class($self->{cfg})
     ->article_fill_old($article, $data, $self->typename);

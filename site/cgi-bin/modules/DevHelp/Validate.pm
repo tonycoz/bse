@@ -6,7 +6,7 @@ use vars qw(@EXPORT_OK @ISA);
 @ISA = qw(Exporter);
 use Carp qw(confess);
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 my %built_ins =
   (
@@ -124,6 +124,10 @@ my %built_ins =
     date => 1,
     maxdate => '+1d',
     maxdatemsg => 'The date entered must be in the past',
+   },
+   integer =>
+   {
+    integer => 1,
    },
    natural => 
    {
@@ -621,10 +625,13 @@ sub _get_cfg_fields {
 
   my $fields = $cfg->entry($section, 'fields', '');
   my @names = ( split(/,/, $fields), keys %$field_hash );
+  my @extra_config;
+  push @extra_config, split /,/, $cfg->entry("form validation", "field_config", "");
+  push @extra_config, split /,/, $cfg->entry($section, "field_config", "");
 
   for my $field (@names) {
     $cfg_fields->{$field} = {};
-    for my $cfg_name (qw(required rules description required_error range_error mindatemsg maxdatemsg ne_error)) {
+    for my $cfg_name (qw(required rules description required_error range_error mindatemsg maxdatemsg ne_error), @extra_config) {
       my $value = $cfg->entry($section, "${field}_$cfg_name");
       if (defined $value) {
 	$cfg_fields->{$field}{$cfg_name} = $value;
@@ -974,6 +981,10 @@ past.
 =item futuredate
 
 A valid date in the future.
+
+=item integer
+
+Any integer.
 
 =item natural
 

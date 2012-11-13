@@ -8,8 +8,9 @@ use BSE::Util::Iterate;
 use BSE::Util::HTML;
 use BSE::CfgInfo 'product_options';
 use BSE::Util::Tags qw(tag_hash tag_article);
+use constant PRODUCT_CUSTOM_FIELDS_CFG => "product custom fields";
 
-our $VERSION = "1.010";
+our $VERSION = "1.011";
 
 =head1 NAME
 
@@ -1820,6 +1821,22 @@ sub req_option_value_reorder {
       );
 
   return $self->refresh($article, $req->cgi, undef, "Values reordered");
+}
+
+sub custom_fields {
+  my ($self) = @_;
+
+  my $custom = $self->SUPER::custom_fields();
+
+  require DevHelp::Validate;
+  DevHelp::Validate->import;
+  return DevHelp::Validate::dh_configure_fields
+    (
+     $custom,
+     $self->cfg,
+     PRODUCT_CUSTOM_FIELDS_CFG,
+     BSE::DB->single->dbh,
+    );
 }
 
 sub article_actions {

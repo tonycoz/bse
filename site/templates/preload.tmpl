@@ -45,3 +45,18 @@ Page <:= pages.page :> of <:= pages.pagecount :>
 <:.end if -:>
 </div>
 <:-.end define -:>
+
+<:.define old -:>
+<:# parameters: field, default -:>
+<:  .if cgi.param(field).defined -:>
+<:= cgi.param(field) -:>
+<:  .else -:>
+<:= default | html -:>
+<:  .end if -:>
+<:.end define-:>
+
+<:.define error_img -:>
+<:# parameters: field -:>
+<:# this implementation should probably change -:>
+<:= ("error_img " _ field).evaltag -:>
+<:.end if -:>

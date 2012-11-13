@@ -248,7 +248,10 @@
               (<:alloptions:>)<:or:><:product options:><:eif:> </td>
             <td class="help"><:help product options:> <:error_img options:></td>
           </tr>
-<:include admin/product_custom.tmpl optional:><:include admin/include/custom/product_custom.tmpl optional:><:include admin/include/product_custom.tmpl optional:>
+<:include admin/product_custom.tmpl optional -:>
+<:include admin/include/custom/product_custom.tmpl optional -:>
+<:include admin/include/product_custom.tmpl optional -:>
+<:include admin/include/article_cfg_custom.tmpl -:>
           <tr> 
             <th>Thumbnail image:</th>
             <td> 

@@ -5,7 +5,7 @@ use BSE::Cfg;
 use BSE::Util::HTML;
 use Carp qw(cluck confess);
 
-our $VERSION = "1.014";
+our $VERSION = "1.015";
 
 sub new {
   my ($class, %opts) = @_;
@@ -409,6 +409,7 @@ sub messages {
 	  };
       }
     }
+    $self->{field_errors} = $errors;
   }
   elsif ($errors && !ref $errors) {
     push @messages,
@@ -448,6 +449,19 @@ sub message {
 
   return join "<br />",
     map { $_->{type} eq 'html' ? $_->{text} : escape_html($_->{text}) } @$messages
+}
+
+=item field_errors
+
+Return a hash of field errors that have been supplied to
+message()/messages().
+
+=cut
+
+sub field_errors {
+  my ($self) = @_;
+
+  return $self->{field_errors} || {};
 }
 
 sub _set_vars {

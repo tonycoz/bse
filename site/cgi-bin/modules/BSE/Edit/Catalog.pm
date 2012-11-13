@@ -3,8 +3,9 @@ use strict;
 use base 'BSE::Edit::Article';
 use BSE::Util::HTML;
 use BSE::Util::Tags qw(tag_article);
+use constant CATALOG_CUSTOM_FIELDS_CFG => "catalog custom fields";
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub base_template_dirs {
   return ( "catalog" );
@@ -138,6 +139,22 @@ sub type_default_value {
   defined $value and return $value;
 
   return $self->SUPER::type_default_value($req, $col);
+}
+
+sub custom_fields {
+  my ($self) = @_;
+
+  my $custom = $self->SUPER::custom_fields();
+
+  require DevHelp::Validate;
+  DevHelp::Validate->import;
+  return DevHelp::Validate::dh_configure_fields
+    (
+     $custom,
+     $self->cfg,
+     CATALOG_CUSTOM_FIELDS_CFG,
+     BSE::DB->single->dbh,
+    );
 }
 
 1;

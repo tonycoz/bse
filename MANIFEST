@@ -566,6 +566,7 @@ site/templates/admin/imageclean/intro.tmpl
 site/templates/admin/imageclean/preview.tmpl
 site/templates/admin/import/import.tmpl
 site/templates/admin/import/start.tmpl
+site/templates/admin/include/article_cfg_custom.tmpl
 site/templates/admin/include/article_menu.tmpl
 site/templates/admin/include/auditentry.tmpl
 site/templates/admin/include/audithead.tmpl
