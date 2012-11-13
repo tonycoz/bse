@@ -16,7 +16,7 @@ use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 use constant ARTICLE_CUSTOM_FIELDS_CFG => "article custom fields";
 
-our $VERSION = "1.030";
+our $VERSION = "1.031";
 
 =head1 NAME
 
@@ -1273,7 +1273,10 @@ sub low_edit_tags {
   my $ita = BSE::Util::Iterate::Article->new(req => $request);
 
   my $custom = $self->custom_fields;
-  $request->set_variable(custom => $custom);
+  # only return the fields that are defined
+  my %work_custom = map { $_ => $custom->{$_} }
+    grep $custom->{$_}{description}, keys %$custom;
+  $request->set_variable(custom => \%work_custom);
 
   return
     (
