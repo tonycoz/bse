@@ -2,7 +2,7 @@ package Squirrel::Template::Expr::WrapHash;
 use strict;
 use base qw(Squirrel::Template::Expr::WrapBase);
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 sub _do_size {
   my ($self) = @_;
@@ -46,6 +46,14 @@ sub _do_set {
   return $args->[1];
 }
 
+sub _do_is_list {
+  return 0;
+}
+
+sub _do_is_hash {
+  return 1;
+}
+
 sub call {
   my ($self, $method, $args) = @_;
 
@@ -86,6 +94,8 @@ Squirrel::Template::Expr::WrapHash - virtual method wrapper for hashes
   somehash.delete(key)
   somehash.aKey
   somehash.set(key, value)
+  somearray.is_list # always false
+  somearray.is_hash # always true
 
 =head1 DESCRIPTION
 
@@ -121,6 +131,14 @@ key.
 =item set(key, value)
 
 Set entry C<key> to C<value>.  Returns C<value>.
+
+=item is_list
+
+Test if this object is a list.  Always false for a hash.
+
+=item is_hash
+
+Test if this object is a hash.  Always true for a hash.
 
 =back
 

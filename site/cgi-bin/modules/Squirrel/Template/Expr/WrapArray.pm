@@ -3,7 +3,7 @@ use strict;
 use base qw(Squirrel::Template::Expr::WrapBase);
 use Scalar::Util ();
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 my $list_make_key = sub {
   my ($item, $field) = @_;
@@ -134,6 +134,14 @@ sub _do_expand {
     } @{$self->[0]} ];
 }
 
+sub _do_is_list {
+  return 1;
+}
+
+sub _do_is_hash {
+  return 0;
+}
+
 sub call {
   my ($self, $method, $args) = @_;
 
@@ -166,6 +174,8 @@ Squirrel::Template::Expr::WrapArray - provide virtual methods for arrays
   somearray.push(avalue);
   last = somearray.pop # modifies somearray
   somearray.unshift(avalue);
+  somearray.is_list # always true
+  somearray.is_hash # always false
 
 =head1 DESCRIPTION
 
@@ -231,6 +241,14 @@ size of the array.
 Return a new array with any contained arrays expanded one level.
 
   [ [ [ 1 ], 2 ], 3 ].expand => [ [ 1 ], 2, 3 ]
+
+=item is_list
+
+Test if this object is a list.  Always true for a list.
+
+=item is_hash
+
+Test if this object is a hash.  Always false for a list.
 
 =back
 

@@ -2,7 +2,7 @@ package Squirrel::Template::Expr::WrapScalar;
 use strict;
 use base qw(Squirrel::Template::Expr::WrapBase);
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 sub _do_length  {
   my ($self, $args) = @_;
@@ -178,6 +178,14 @@ sub _do_ceil {
   return POSIX::ceil($self->[0]);
 }
 
+sub _do_is_list {
+  return 0;
+}
+
+sub _do_is_hash {
+  return 0;
+}
+
 sub call {
   my ($self, $method, $args) = @_;
 
@@ -218,6 +226,8 @@ Squirrel::Template::Expr::WrapScalar - provide methods for scalars
   abs = (-10).abs  # 10
   floor = (-10.1).floor # -11
   ceil = (-10.1).ceil # -10
+  somescalar.is_list # always false
+  somescalar.is_hash # always false
 
 =head1 DESCRIPTION
 
@@ -324,6 +334,14 @@ Return the lowest integer greater than or equal to the subject.
   (10).ceil # 10
   (10.1).ceil # 11
   (-10.1).ceil # -10
+
+=item is_list
+
+Test if this object is a list.  Always true for a list.
+
+=item is_hash
+
+Test if this object is a hash.  Always false for a list.
 
 =back
 
