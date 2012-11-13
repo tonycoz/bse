@@ -12,7 +12,7 @@ site/cgi-bin/modules/BSE/DB.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/BSE/Dynamic/Article.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/Edit/Article.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/Edit/Article.pm	Verbatim paragraph in NAME section	1
-site/cgi-bin/modules/BSE/Edit/Product.pm	=over on line 693 without closing =back	1
+site/cgi-bin/modules/BSE/Edit/Product.pm	=over on line 694 without closing =back	1
 site/cgi-bin/modules/BSE/FileHandler/Base.pm	=over on line 31 without closing =back	1
 site/cgi-bin/modules/BSE/FileHandler/FLV.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/FileHandler/FLV.pm	empty section in previous paragraph	1
@@ -67,6 +67,7 @@ site/cgi-bin/modules/DevHelp/Tags/Iterate.pm	=item without previous =over	1
 site/cgi-bin/modules/DevHelp/Validate.pm	empty section in previous paragraph	1
 site/cgi-bin/modules/DevHelp/Validate.pm	multiple occurrence of link target 'confirm'	1
 site/cgi-bin/modules/DevHelp/Validate.pm	multiple occurrence of link target 'date'	1
+site/cgi-bin/modules/DevHelp/Validate.pm	multiple occurrence of link target 'integer'	1
 site/cgi-bin/modules/DevHelp/Validate.pm	multiple occurrence of link target 'required'	1
 site/cgi-bin/modules/DevHelp/Validate.pm	multiple occurrence of link target 'rules'	1
 site/cgi-bin/modules/DevHelp/Validate.pm	unresolved internal link 'CONFIGURED VALIDATON'	1
@@ -114,7 +115,7 @@ site/docs/bse.pod	preceding non-item paragraph(s)	1
 site/docs/bse.pod	unresolved internal link 'formmail.pod'	1
 site/docs/bse_import.pod	empty section in previous paragraph	1
 site/docs/bse_import.pod	multiple occurrence of link target 'Configuration'	1
-site/docs/config.pod	empty section in previous paragraph	4
+site/docs/config.pod	empty section in previous paragraph	6
 site/docs/config.pod	multiple occurrence of link target 'extra_templates'	1
 site/docs/config.pod	multiple occurrence of link target 'from'	1
 site/docs/config.pod	multiple occurrence of link target 'images'	1
@@ -124,7 +125,6 @@ site/docs/config.pod	multiple occurrence of link target 'scalecache'	1
 site/docs/config.pod	multiple occurrence of link target 'template'	1
 site/docs/config.pod	multiple occurrence of link target 'template_dirs'	1
 site/docs/config.pod	multiple occurrence of link target 'url'	1
-site/docs/config.pod	unresolved internal link '<[siteuser update specid]'	1
 site/docs/custom.pod	empty section in previous paragraph	3
 site/docs/formmail.pod	No argument for =item	1
 site/docs/formmail.pod	nested commands I<...I<...>...>	2

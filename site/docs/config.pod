@@ -1829,10 +1829,6 @@ the current window.  Default: 0.
 
 =back
 
-=over
-
-=back
-
 =head2 [inpho]
 
 This is used to configure the DevHelp::Payments::Inpho module.
@@ -2382,7 +2378,7 @@ eg.
 Each key identifies an update specification for userupdate.pl, the
 value is a description of the specification.
 
-See L<<[siteuser update I<specid>]>> for the rest of the import
+See L<< [siteuser update I<specid>] >> for the rest of the import
 specification.
 
 
