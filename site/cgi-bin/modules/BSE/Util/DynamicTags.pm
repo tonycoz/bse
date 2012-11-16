@@ -5,8 +5,9 @@ use BSE::Util::HTML;
 use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 use BSE::CfgInfo qw(custom_class);
+use BSE::Cart;
 
-our $VERSION = "1.025";
+our $VERSION = "1.026";
 
 =head1 NAME
 
@@ -57,6 +58,7 @@ sub tags {
   my ($self) = @_;
   
   my $req = $self->{req};
+
   return
     (
      BSE::Util::Tags->common($req),

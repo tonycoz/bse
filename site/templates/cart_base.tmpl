@@ -42,27 +42,28 @@
             <td height="18"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FFFFFF"><b>Price:</b></font>&nbsp;</td>
             <td height="18">&nbsp; </td>
           </tr>
-          <:ifCount:>
-          <:iterator begin items:> 
+ 	  <:-.set items = assert_dynamic ? bse.cart.items : 0 -:>
+          <:.if items.size -:>
+	    <:.for item in items -:>
+	      <:.set options = item.option_list -:>
+	      <:.set session = item.session -:>
           <tr valign="middle" align="center" bgcolor="#FFFFFF"> 
-            <td width="100%" align="left"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><a href="<:item link:>"><:item 
-              description:> <:if Options:>(<:iterator begin options:><:option desc:>: 
-              <:option label:><:iterator separator options:>, <:iterator end options:>)<:or 
-              Options:><:eif Options:></a><:ifItem session_id:>(session at <:location description:> <:date "%H:%M %d/%m/%Y" session when_at:>)<:or:><:eif:></font></td>
+            <td width="100%" align="left"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><a href="<:= item.link | html:>"><:= item.product.description | html :> <:.if options.size:>(<:.for option in options:><:= loop.index ? ", " : "" :><:= option.desc | html:>: 
+              <:= option.display |html :><:.end for:>)<:.end if -:></a><:.if item.session_id:>(session at <:= session.location.description | html:> <:= bse.date("%H:%M %d/%m/%Y", session.when_at) -:>)<:.end if:></font></td>
             <td nowrap align="center"> 
-              <input type="text" name="quantity_<:index:>" size="2" value="<:item units:>">
+              <input type="text" name="quantity_<:= loop.index :>" size="2" value="<:= item.units :>">
             </td>
-            <td align="right"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>$<:money item price:></b></font></td>
+            <td align="right"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>$<:= bse.number("money", item.price) | html :></b></font></td>
             <td nowrap> 
-              <input type="submit" name="delete_<:index:>" value="Remove">
+              <input type="submit" name="delete_<:= loop.index :>" value="Remove">
             </td>
           </tr>
-          <:iterator end items:>
-          <:or:>
+	    <:.end for -:>
+          <:.else -:>
           <tr valign="middle" align="center" bgcolor="#FFFFFF"> 
             <td width="100%" height="20" align="center" colspan="4"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">You have no items in your shopping cart!</font></td>
            </tr>
-          <:eif:>
+          <:.end if -:>
         </table>
       </td>
     </tr>

@@ -67,6 +67,7 @@ site/cgi-bin/modules/BSE/Cache.pm
 site/cgi-bin/modules/BSE/Cache/Cache.pm
 site/cgi-bin/modules/BSE/Cache/CHI.pm
 site/cgi-bin/modules/BSE/Cache/Memcached.pm
+site/cgi-bin/modules/BSE/Cart.pm
 site/cgi-bin/modules/BSE/Cfg.pm
 site/cgi-bin/modules/BSE/CfgInfo.pm
 site/cgi-bin/modules/BSE/CGI.pm
@@ -274,6 +275,7 @@ site/cgi-bin/modules/BSE/UserReg.pm
 site/cgi-bin/modules/BSE/Util/ContentType.pm
 site/cgi-bin/modules/BSE/Util/DynamicTags.pm
 site/cgi-bin/modules/BSE/Util/DynSort.pm
+site/cgi-bin/modules/BSE/Util/Format.pm
 site/cgi-bin/modules/BSE/Util/HTML.pm
 site/cgi-bin/modules/BSE/Util/Iterate.pm
 site/cgi-bin/modules/BSE/Util/Prereq.pm

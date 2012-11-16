@@ -4,7 +4,7 @@ use Scalar::Util qw(blessed);
 use BSE::TB::Site;
 use BSE::Util::HTML;
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 sub _base_variables {
   my ($self, %opts) = @_;
@@ -26,6 +26,12 @@ sub _base_variables {
        return escape_html(Data::Dumper::Dumper(shift));
      },
      categorize_tags => \&_categorize_tags,
+     date => \&_date_format,
+     now => \&date_now,
+     number => sub {
+       require BSE::Util::Format;
+       return BSE::Util::Format::bse_number(@_);
+     },
     );
 }
 
@@ -43,10 +49,16 @@ sub dyn_variables {
 
   my $req = $opts{request} or die "No request parameter";
   my $cgi = $req->cgi;
+  my $cart;
   return
     +{
       $self->_base_variables(%opts),
       paged => sub { return _paged($cgi, @_) },
+      cart => sub {
+	require BSE::Cart;
+	$cart ||= BSE::Cart->new($req);
+	return $cart;
+      },
      };
 }
 
@@ -202,6 +214,29 @@ sub _variable_class {
   }
 }
 
+# format an SQL format date
+sub _date_format {
+  my ($format, $date) = @_;
+
+  my ($year, $month, $day, $hour, $min, $sec) = 
+    $date =~ /(\d+)\D+(\d+)\D+(\d+)(?:\D+(\d+)\D+(\d+)\D+(\d+))?/;
+  $hour = $min = $sec = 0 unless defined $sec;
+  $year -= 1900;
+  --$month;
+  # passing the isdst as 0 seems to provide a more accurate result than
+  # -1 on glibc.
+  require DevHelp::Date;
+  return DevHelp::Date::dh_strftime($format, $sec, $min, $hour, $day, $month, $year, -1, -1, -1);
+}
+
+sub _date_now {
+  my ($fmt) = @_;
+
+  $fmt ||= "%d-%b-%Y";
+  require DevHelp::Date;
+  return DevHelp::Date::dh_strftime($fmt, localtime);
+}
+
 1;
 
 =head1 NAME
@@ -265,6 +300,14 @@ a name (of the category) and a list of tags in that category.
 =item products
 
 The article and product collections.
+
+=item date(format, when)
+
+Format an SQL date/time.
+
+=item now(format)
+
+Format the current date/time.
 
 =back
 
@@ -388,6 +431,10 @@ pname - the name of the page number parameter
 ppname - the name of the items per page parameter
 
 =back
+
+=item bse.cart
+
+The contents of the cart.  See L<BSE::Cart> for details.
 
 =back
 
