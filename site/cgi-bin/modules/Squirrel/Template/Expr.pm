@@ -1,7 +1,7 @@
 package Squirrel::Template::Expr;
 use strict;
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 package Squirrel::Template::Expr::Eval;
 use Scalar::Util ();
@@ -592,7 +592,7 @@ sub get {
   $want ||= '';
 
   if ($want ne 'TERM' &&
-	 $self->[TEXT] =~ s/\A(\s*(div|mod|\.\.|and|or)\s*)//) {
+	 $self->[TEXT] =~ s/\A(\s*(div\b|mod\b|\.\.|and\b|or\b)\s*)//) {
     push @$queue, [ $2 => $1 ];
   }
   elsif ($self->[TEXT] =~ s/\A(\s*(0x[0-9A-Fa-f]+)\s*)//) {

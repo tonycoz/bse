@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use Squirrel::Template::Expr;
-use Test::More tests => 20;
+use Test::More tests => 21;
 use Data::Dumper;
 
 test_tok("abc",
@@ -76,6 +76,16 @@ test_tok("(10.1).foo",
 	  [ id => "foo", "foo" ],
 	  [ eof => "" ],
 	 ], "parens");
+
+test_tok("[ order.items ]",
+	 [
+	  [ "op[", "[ " ],
+	  [ id => "order", "order" ],
+	  [ "op." => "." ],
+	  [ id => "items ", "items" ],
+	  [ "op]", "]" ],
+	  [ eof => "" ],
+	 ], "orfoo at the beginning of a list");
 
 test_parse("1+1",
 	   [ "add",
