@@ -4,7 +4,7 @@ use Scalar::Util qw(blessed);
 use BSE::TB::Site;
 use BSE::Util::HTML;
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 sub _base_variables {
   my ($self, %opts) = @_;
@@ -49,16 +49,10 @@ sub dyn_variables {
 
   my $req = $opts{request} or die "No request parameter";
   my $cgi = $req->cgi;
-  my $cart;
   return
     +{
       $self->_base_variables(%opts),
       paged => sub { return _paged($cgi, @_) },
-      cart => sub {
-	require BSE::Cart;
-	$cart ||= BSE::Cart->new($req);
-	return $cart;
-      },
      };
 }
 
@@ -431,10 +425,6 @@ pname - the name of the page number parameter
 ppname - the name of the items per page parameter
 
 =back
-
-=item bse.cart
-
-The contents of the cart.  See L<BSE::Cart> for details.
 
 =back
 

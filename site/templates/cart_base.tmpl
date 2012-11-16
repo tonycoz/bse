@@ -42,7 +42,7 @@
             <td height="18"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FFFFFF"><b>Price:</b></font>&nbsp;</td>
             <td height="18">&nbsp; </td>
           </tr>
- 	  <:-.set items = assert_dynamic ? bse.cart.items : 0 -:>
+ 	  <:-.set items = request.cart.items -:>
           <:.if items.size -:>
 	    <:.for item in items -:>
 	      <:.set options = item.option_list -:>

@@ -1314,4 +1314,13 @@ sub ip_address {
   return $ENV{REMOTE_ADDR};
 }
 
+sub cart {
+  my ($self, $stage) = @_;
+
+  require BSE::Cart;
+  $self->{cart} ||= BSE::Cart->new($self, $stage);
+
+  return $self->{cart};
+}
+
 1;
