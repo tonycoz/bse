@@ -20,7 +20,6 @@ site/cgi-bin/modules/BSE/ImageHandler/Flash.pm	=over on line 201 without closing
 site/cgi-bin/modules/BSE/Mail.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/BSE/Message.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/MessageScanner.pm	=item without previous =over	1
-site/cgi-bin/modules/BSE/Request/Base.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/Shop/PaymentTypes.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/Shop/Util.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/Sort.pm	=item without previous =over	1

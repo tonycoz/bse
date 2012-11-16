@@ -5,7 +5,56 @@ use BSE::Cfg;
 use BSE::Util::HTML;
 use Carp qw(cluck confess);
 
-our $VERSION = "1.015";
+our $VERSION = "1.016";
+
+=head1 NAME
+
+BSE::Request::Base - base class for request objects
+
+=head1 SYNOPSIS
+
+  use BSE::Request;
+  my $req = BSE::Request->new;
+
+=head1 DESCRIPTION
+
+The BSE::Request::Base class provides most of the functionality of
+BSE::Request.
+
+=head1 CONSTRUCTOR
+
+=over
+
+=item new()
+
+Create a new request.  Paramaters:
+
+=over
+
+=item *
+
+C<cgi> - provide a custom CGI object.  Default: create a CGI.pm object.
+
+=item *
+
+C<cfg> - provide a custom config object.  Default: create a BSE::Cfg
+object.
+
+=item *
+
+C<fastcgi> - set to true and supply cgi if this is a FastCGI request.
+
+=item *
+
+C<nodatabase> - skip database initialization.
+
+=item *
+
+C<nosession> - don't allow a session object to be initialized.
+
+=back
+
+=cut
 
 sub new {
   my ($class, %opts) = @_;
@@ -65,6 +114,20 @@ sub _cache_object {
   return $self->{_cache};
 }
 
+=back
+
+=head1 METHODS
+
+=over
+
+=item cache_set($key, $value)
+
+Set the cache entry $key to $value.
+
+Does nothing if the cache is not configured.
+
+=cut
+
 sub cache_set {
   my ($self, $key, $value) = @_;
 
@@ -73,6 +136,12 @@ sub cache_set {
 
   $cache->set($key, $value);
 }
+
+=item cache_get($key)
+
+Retrieve the cache entry identified by $key.
+
+=cut
 
 sub cache_get {
   my ($self, $key) = @_;
@@ -168,13 +237,31 @@ sub _make_cgi {
   return $q;
 }
 
+=item cgi
+
+Return the request's CGI object.
+
+=cut
+
 sub cgi {
   return $_[0]{cgi};
 }
 
+=item cfg
+
+Return the request's cfg object.
+
+=cut
+
 sub cfg {
   return $_[0]{cfg};
 }
+
+=item session
+
+Return the request's session object.
+
+=cut
 
 sub session {
   my $self = shift;
@@ -185,13 +272,35 @@ sub session {
   return $self->{session};
 }
 
+=item is_fastcgi
+
+return true for a fast CGI request.
+
+=cut
+
 sub is_fastcgi {
   $_[0]{fastcgi};
 }
 
+=item end_request
+
+End the current request.
+
+Must only be called by BSE itself.
+
+=cut
+
 sub end_request {
   delete $_[0]{session};
 }
+
+=item user
+
+Return the currently logged in admin user.
+
+Only valid in administrative templates.
+
+=cut
 
 sub user {
   return $_[0]{adminuser};
@@ -205,28 +314,29 @@ sub getuser {
   $_[0]{adminuser};
 }
 
+=item url($action, $params, $name)
+
+Equivalent to $req->cfg->admin_url($action, $params, $name)
+
+=cut
+
 sub url {
   my ($self, $action, $params, $name) = @_;
 
   return $self->cfg->admin_url($action, $params, $name);
 }
 
+=item check_admin_logon()
+
+Used internally to check an admin user is logged on.
+
+=cut
+
 sub check_admin_logon {
   my ($self) = @_;
 
   require BSE::Permissions;
   return BSE::Permissions->check_logon($self);
-}
-
-sub template_sets {
-  my ($self) = @_;
-
-  return () unless $self->access_control;
-
-  my $user = $self->user
-    or return;
-
-  return grep $_ ne '', map $_->{template_set}, $user->groups;
 }
 
 my $site_article = 
@@ -237,6 +347,14 @@ my $site_article =
    generator => 'Generate::Article',
    level     => 0,
   };
+
+=item user_can($perm, $object, $msg)
+
+Check if the current admin user can perform action $perm on $object.
+
+$object is an article or an article id.
+
+=cut
 
 sub user_can {
   my ($self, $perm, $object, $rmsg) = @_;
@@ -271,23 +389,21 @@ sub get_object {
   return;
 }
 
+=item access_control
+
+Return true if access control is enabled.
+
+=cut
+
 sub access_control {
   $_[0]->{cfg}->entry('basic', 'access_control', 0);
 }
 
-sub get_refresh {
-  my ($req, $url) = @_;
+=item flash($msg, ...)
 
-  require BSE::Template;
-  BSE::Template->get_refresh($url, $req->cfg);
-}
+Flash a notice (backward compat).
 
-sub output_result {
-  my ($req, $result) = @_;
-
-  require BSE::Template;
-  BSE::Template->output_result($req, $result);
-}
+=cut
 
 sub flash {
   my ($self, @msg) = @_;
@@ -295,17 +411,51 @@ sub flash {
   return $self->flash_notice(@msg);
 }
 
+=item flash_error($msg, ...)
+
+Flash an error message.
+
+=cut
+
 sub flash_error {
   my ($self, @msg) = @_;
 
   return $self->flashext({ class => "error" }, @msg);
 }
 
+=item flash_notice($msg, ...)
+
+Flash a notice.
+
+=cut
+
 sub flash_notice {
   my ($self, @msg) = @_;
 
   return $self->flashext({ class => "notice" }, @msg);
 }
+
+=item flashext(\%opts, $msg, ...)
+
+Flash a message, with options.
+
+Possible options are:
+
+=over
+
+=item *
+
+class - defaults to "notice".
+
+=item *
+
+type - defaults to "text", can also be "html".
+
+=back
+
+The $msg parameter can also be a message id.
+
+=cut
 
 sub flashext {
   my ($self, $opts, @msg) = @_;
@@ -359,6 +509,35 @@ sub _str_msg_html {
 
   return $msg;
 }
+
+=item messages($errors)
+
+Retrieve the current set of messages, optionally setting them.
+
+Returns a list of message entries, each with:
+
+=over
+
+=item *
+
+class - error or notice.
+
+=item *
+
+type - the original content type of the message, either "text" or
+"html".
+
+=item *
+
+text - the message as text.
+
+=item *
+
+html - the message as html.
+
+=back
+
+=cut
 
 sub messages {
   my ($self, $errors) = @_;
@@ -442,6 +621,13 @@ sub messages {
   return \@messages;
 }
 
+=item message($errors)
+
+Return the current set of messages as a single string in HTML, with
+C<< <br /> >> separators.
+
+=cut
+
 sub message {
   my ($self, $errors) = @_;
 
@@ -479,47 +665,11 @@ sub _set_vars {
   }
 }
 
-sub dyn_response {
-  my ($req, $template, $acts, $modifier) = @_;
+=item siteuser
 
-  my @search = $template;
-  my $base_template = $template;
-  my $t = $req->cgi->param('t');
-  $t or $t = $req->cgi->param('_t');
-  $t or $t = $modifier;
-  if ($t && $t =~ /^\w+$/) {
-    $template .= "_$t";
-    unshift @search, $template;
-  }
+Get the currently logged in siteuser.
 
-  $req->set_variable(template => $template);
-  $req->_set_vars();
-
-  require BSE::Template;
-  my @sets;
-  if ($template =~ m!^admin/!) {
-    @sets = $req->template_sets;
-  }
-
-  return BSE::Template->get_response($template, $req->cfg, $acts,
-				     $base_template, \@sets, $req->{vars});
-}
-
-sub response {
-  my ($req, $template, $acts) = @_;
-
-  require BSE::Template;
-  my @sets;
-  if ($template =~ m!^admin/!) {
-    @sets = $req->template_sets;
-  }
-
-  $req->set_variable(template => $template);
-  $req->_set_vars();
-
-  return BSE::Template->get_response($template, $req->cfg, $acts, 
-				     $template, \@sets, $req->{vars});
-}
+=cut
 
 # get the current site user if one is logged on
 sub siteuser {
@@ -556,6 +706,36 @@ sub siteuser {
   }
 }
 
+=item validate()
+
+Perform data validation on the current CGI request.  Parameters include:
+
+=over
+
+=item *
+
+errors
+
+=item *
+
+fields
+
+=item *
+
+rules
+
+=item *
+
+section
+
+=item *
+
+optional
+
+=back
+
+=cut
+
 sub validate {
   my ($req, %options) = @_;
 
@@ -578,6 +758,22 @@ sub validate {
       );
 }
 
+=item validate_hash(%opts)
+
+Validate data stored in a hash.
+
+Takes an extra parameter over L</validate()>:
+
+=over
+
+=item *
+
+data - a hash reference with the data to validate.
+
+=back
+
+=cut
+
 sub validate_hash {
   my ($req, %options) = @_;
 
@@ -599,6 +795,12 @@ sub validate_hash {
        $options{section}
       );
 }
+
+=item configure_fields(\%fields, $section)
+
+Configure a field hash.
+
+=cut
 
 sub configure_fields {
   my ($self, $fields, $section) = @_;
@@ -713,6 +915,14 @@ sub _siteuser_has_access {
   }
 }
 
+=item siteuser_has_access($article)
+
+=item siteuser_has_access($article, $user)
+
+Check if the current or supplied site user has access to the supplied article.
+
+=cut
+
 sub siteuser_has_access {
   my ($req, $article, $user, $default, $membership) = @_;
 
@@ -732,13 +942,6 @@ sub siteuser_has_access {
   }
 
   return $result;
-}
-
-sub dyn_user_tags {
-  my ($self) = @_;
-
-  require BSE::Util::DynamicTags;
-  return BSE::Util::DynamicTags->new($self)->tags;
 }
 
 sub DESTROY {
@@ -847,96 +1050,6 @@ sub user_url {
   return $req->cfg->user_url($script, $target, @options);
 }
 
-sub admin_tags {
-  my ($req) = @_;
-
-  require BSE::Util::Tags;
-  return
-    (
-     BSE::Util::Tags->common($req),
-     BSE::Util::Tags->admin(undef, $req->cfg),
-     BSE::Util::Tags->secure($req),
-     $req->custom_admin_tags,
-    );
-}
-
-sub custom_admin_tags {
-  my ($req) = @_;
-
-  $req->cfg->entry("custom", "admin_tags")
-    or return;
-
-  require BSE::CfgInfo;
-
-  return BSE::CfgInfo::custom_class($req->cfg)->admin_tags($req);
-}
-
-=item is_ajax
-
-Return true if the current request is an Ajax request.
-
-Warning: changing this code has security concerns, it should only
-match where the request can only be an Ajax request - if the request
-can be produced by a normal form/link POST or GET this method must NOT
-return true.
-
-=cut
-
-sub is_ajax {
-  my ($self) = @_;
-
-  defined $ENV{HTTP_X_REQUESTED_WITH}
-    && $ENV{HTTP_X_REQUESTED_WITH} =~ /XMLHttpRequest/
-      and return 1;
-
-  return;
-}
-
-=item want_json_response
-
-Return true if the caller has indicated they want a JSON response.
-
-In practice, returns true if is_ajax() is true or a _ parameter was
-supplied.
-
-=cut
-
-sub want_json_response {
-  my ($self) = @_;
-
-  $self->is_ajax and return 1;
-
-  $self->cgi->param("_") and return 1;
-
-  return;
-}
-
-=item send_email
-
-Send a simple email.
-
-=cut
-
-sub send_email {
-  my ($self, %opts) = @_;
-
-  my $acts = $opts{acts} || {};
-  my %acts =
-    (
-     $self->dyn_user_tags,
-     %$acts,
-    );
-  if ($opts{extraacts}) {
-    %acts = ( %acts, %{$opts{extraacts}} );
-  }
-  require BSE::ComposeMail;
-  return BSE::ComposeMail->send_simple
-    (
-     %opts,
-     acts => \%acts
-    );
-}
-
 =item is_ssl
 
 Return true if the current request is an SSL request.
@@ -1000,80 +1113,6 @@ sub test_recaptcha {
 
 sub recaptcha_result {
   $_[0]{recaptcha_result};
-}
-
-=item json_content
-
-Generate a hash suitable for output_result() as JSON.
-
-=cut
-
-sub json_content {
-  my ($self, @values) = @_;
-
-  require JSON;
-
-  my $json = JSON->new;
-
-  if ($self->utf8) {
-    $json->utf8;
-  }
-
-  my $value = @values > 1 ? +{ @values } : $values[0];
-  my ($context) = $self->cgi->param("_context");
-  if (defined $context) {
-    $value->{context} = $context;
-  }
-
-  my $json_result =
-    +{
-      type => "application/json",
-      content => $json->encode($value),
-     };
-
-  if (!exists $ENV{HTTP_X_REQUESTED_WITH}
-      || $ENV{HTTP_X_REQUESTED_WITH} !~ /XMLHttpRequest/) {
-    $json_result->{type} = "text/plain";
-  }
-
-  return $json_result;
-}
-
-sub field_error {
-  my ($self, $errors) = @_;
-
-  my %errors = %$errors;
-  for my $key (keys %errors) {
-    if ($errors{$key} =~ /^msg:/) {
-      $errors{$key} = $self->_str_msg($errors{$key});
-    }
-  }
-
-  return $self->json_content
-    (
-     success => 0,
-     error_code => "FIELD",
-     errors => \%errors,
-     message => "Fields failed validation",
-    );
-}
-
-=item logon_error
-
-Standard structure of an "admin user not logged on" error returned as
-JSON content.
-
-=cut
-
-sub logon_error {
-  my ($self) = @_;
-  return $self->json_content
-    (
-     success => 0,
-     error_code => "LOGON",
-     message => "Access forbidden: user not logged on",
-     errors => {},
-    );
 }
 
 =item get_csrf_token($name)
@@ -1323,4 +1362,304 @@ sub cart {
   return $self->{cart};
 }
 
+=back
+
+=head2 Page Generation
+
+These aren't suitable for use in a template.
+
+=over
+
+=item template_sets()
+
+Return a list of template sets for the current admin user.
+
+=cut
+
+sub template_sets {
+  my ($self) = @_;
+
+  return () unless $self->access_control;
+
+  my $user = $self->user
+    or return;
+
+  return grep $_ ne '', map $_->{template_set}, $user->groups;
+}
+
+=item get_refresh($url)
+
+Fetch a refresh result for the given url.
+
+=cut
+
+sub get_refresh {
+  my ($req, $url) = @_;
+
+  require BSE::Template;
+  BSE::Template->get_refresh($url, $req->cfg);
+}
+
+=item output_result($result)
+
+Output a page result.
+
+=cut
+
+sub output_result {
+  my ($req, $result) = @_;
+
+  require BSE::Template;
+  BSE::Template->output_result($req, $result);
+}
+
+=item dyn_response($template, $acts, $modifier)
+
+=item dyn_response($template, $acts)
+
+Generate a page result from template with the given tags.
+
+Allows _t or t to specify an alternate template.
+
+=cut
+
+sub dyn_response {
+  my ($req, $template, $acts, $modifier) = @_;
+
+  my @search = $template;
+  my $base_template = $template;
+  my $t = $req->cgi->param('t');
+  $t or $t = $req->cgi->param('_t');
+  $t or $t = $modifier;
+  if ($t && $t =~ /^\w+$/) {
+    $template .= "_$t";
+    unshift @search, $template;
+  }
+
+  $req->set_variable(template => $template);
+  $req->_set_vars();
+
+  require BSE::Template;
+  my @sets;
+  if ($template =~ m!^admin/!) {
+    @sets = $req->template_sets;
+  }
+
+  return BSE::Template->get_response($template, $req->cfg, $acts,
+				     $base_template, \@sets, $req->{vars});
+}
+
+=item response($template, $acts)
+
+Return a page response generated from $template and the tags in $acts.
+
+=cut
+
+sub response {
+  my ($req, $template, $acts) = @_;
+
+  require BSE::Template;
+  my @sets;
+  if ($template =~ m!^admin/!) {
+    @sets = $req->template_sets;
+  }
+
+  $req->set_variable(template => $template);
+  $req->_set_vars();
+
+  return BSE::Template->get_response($template, $req->cfg, $acts, 
+				     $template, \@sets, $req->{vars});
+}
+
+=item dyn_user_tags()
+
+Return the standard dynamic page tags.
+
+=cut
+
+sub dyn_user_tags {
+  my ($self) = @_;
+
+  require BSE::Util::DynamicTags;
+  return BSE::Util::DynamicTags->new($self)->tags;
+}
+
+=item admin_tags()
+
+Return the standard admin page tags.
+
+=cut
+
+sub admin_tags {
+  my ($req) = @_;
+
+  require BSE::Util::Tags;
+  return
+    (
+     BSE::Util::Tags->common($req),
+     BSE::Util::Tags->admin(undef, $req->cfg),
+     BSE::Util::Tags->secure($req),
+     $req->custom_admin_tags,
+    );
+}
+
+sub custom_admin_tags {
+  my ($req) = @_;
+
+  $req->cfg->entry("custom", "admin_tags")
+    or return;
+
+  require BSE::CfgInfo;
+
+  return BSE::CfgInfo::custom_class($req->cfg)->admin_tags($req);
+}
+
+=item is_ajax
+
+Return true if the current request is an Ajax request.
+
+Warning: changing this code has security concerns, it should only
+match where the request can only be an Ajax request - if the request
+can be produced by a normal form/link POST or GET this method must NOT
+return true.
+
+=cut
+
+sub is_ajax {
+  my ($self) = @_;
+
+  defined $ENV{HTTP_X_REQUESTED_WITH}
+    && $ENV{HTTP_X_REQUESTED_WITH} =~ /XMLHttpRequest/
+      and return 1;
+
+  return;
+}
+
+=item want_json_response
+
+Return true if the caller has indicated they want a JSON response.
+
+In practice, returns true if is_ajax() is true or a _ parameter was
+supplied.
+
+=cut
+
+sub want_json_response {
+  my ($self) = @_;
+
+  $self->is_ajax and return 1;
+
+  $self->cgi->param("_") and return 1;
+
+  return;
+}
+
+=item send_email
+
+Send a simple email.
+
+=cut
+
+sub send_email {
+  my ($self, %opts) = @_;
+
+  my $acts = $opts{acts} || {};
+  my %acts =
+    (
+     $self->dyn_user_tags,
+     %$acts,
+    );
+  if ($opts{extraacts}) {
+    %acts = ( %acts, %{$opts{extraacts}} );
+  }
+  require BSE::ComposeMail;
+  return BSE::ComposeMail->send_simple
+    (
+     %opts,
+     acts => \%acts
+    );
+}
+
+=item json_content
+
+Generate a hash suitable for output_result() as JSON.
+
+=cut
+
+sub json_content {
+  my ($self, @values) = @_;
+
+  require JSON;
+
+  my $json = JSON->new;
+
+  if ($self->utf8) {
+    $json->utf8;
+  }
+
+  my $value = @values > 1 ? +{ @values } : $values[0];
+  my ($context) = $self->cgi->param("_context");
+  if (defined $context) {
+    $value->{context} = $context;
+  }
+
+  my $json_result =
+    +{
+      type => "application/json",
+      content => $json->encode($value),
+     };
+
+  if (!exists $ENV{HTTP_X_REQUESTED_WITH}
+      || $ENV{HTTP_X_REQUESTED_WITH} !~ /XMLHttpRequest/) {
+    $json_result->{type} = "text/plain";
+  }
+
+  return $json_result;
+}
+
+sub field_error {
+  my ($self, $errors) = @_;
+
+  my %errors = %$errors;
+  for my $key (keys %errors) {
+    if ($errors{$key} =~ /^msg:/) {
+      $errors{$key} = $self->_str_msg($errors{$key});
+    }
+  }
+
+  return $self->json_content
+    (
+     success => 0,
+     error_code => "FIELD",
+     errors => \%errors,
+     message => "Fields failed validation",
+    );
+}
+
+=item logon_error
+
+Standard structure of an "admin user not logged on" error returned as
+JSON content.
+
+=cut
+
+sub logon_error {
+  my ($self) = @_;
+  return $self->json_content
+    (
+     success => 0,
+     error_code => "LOGON",
+     message => "Access forbidden: user not logged on",
+     errors => {},
+    );
+}
+
 1;
+
+=back
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=cut
