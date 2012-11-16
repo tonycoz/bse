@@ -2,7 +2,7 @@ package BSE::Cart;
 use strict;
 use Scalar::Util;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 =head1 NAME
 
@@ -11,7 +11,7 @@ BSE::Cart - abstraction for the BSE cart.
 =head1 SYNOPSIS
 
   use BSE::Cart;
-  my $cart = BSE::Cart->new($req);
+  my $cart = BSE::Cart->new($req, $stage);
 
   my $items = $cart->items;
   my $products = $cart->products;
@@ -34,39 +34,20 @@ Create a new cart object based on the session.
 =cut
 
 sub new {
-  my ($class, $req) = @_;
+  my ($class, $req, $stage) = @_;
 
   my $self = bless
     {
      products => {},
      req => $req,
+     stage => $stage,
     }, $class;
   Scalar::Util::weaken($self->{req});
   my $items = $req->session->{cart} || [];
   my $myself = $self;
   Scalar::Util::weaken($myself);
   my $index = 0;
-  $self->{items} =
-    [
-     map
-     {
-       my $myself = $self;
-       my $myindex = $index++;
-       my %item = %$_;
-       my $id = $item{productId};
-       my $options = $item{options};
-       $item{product} = sub { $myself->_product($id) };
-       $item{extended} = $item{price} * $item{units};
-       $item{link} = sub { $myself->_product_link($id) };
-       $item{option_list} = sub { $myself->_option_list($myindex) };
-       $item{option_text} = sub { $myself->_option_text($myindex) };
-
-       my $session_id = $item{session_id};
-       $item{session} = sub { $myself->_item_session($session_id) };
-
-       \%item;
-     } @$items
-    ];
+  $self->{items} =  [ map BSE::Cart::Item->new($_, $index++, $self), @$items ];
 
   return $self;
 }
@@ -133,17 +114,11 @@ Total of items in the cart and any custom extras.
 
 =cut
 
-=back
+sub total {
+  my ($self) = @_;
 
-=head2 Item Members
-
-=over
-
-=item product
-
-Returns the product for that line item.
-
-=cut
+  "FIXME";
+}
 
 sub _product {
   my ($self, $id) = @_;
@@ -163,12 +138,151 @@ sub _product {
     $self->{products}{$id} = $product;
   }
   return $product;
+}
 
+sub _session {
+  my ($self, $id) = @_;
+  my $session = $self->{sessions}{$id};
+  unless ($session) {
+    require BSE::TB::SeminarSessions;
+    $session = BSE::TB::SeminarSessions->getByPkey($id);
+    $self->{sessions}{$id} = $session;
+  }
+
+  return $session;
+}
+
+=item cleanup()
+
+Clean up the cart, removing any items that are unreleased, expired or
+unlisted.
+
+For BSE use.
+
+=cut
+
+sub cleanup {
+  my ($self) = @_;
+
+  my @newitems;
+  for my $item ($self->items) {
+    my $product = $item->product;
+
+    if ($product->is_released && !$product->is_expired && $product->listed) {
+      push @newitems, $item;
+    }
+  }
+
+  $self->{items} = \@newitems;
+}
+
+=back
+
+=cut
+
+package BSE::Cart::Item;
+
+sub new {
+  my ($class, $raw_item, $index, $cart) = @_;
+
+  my $item = bless
+    {
+     %$raw_item,
+     index => $index,
+     cart => $cart,
+    }, $class;
+
+  Scalar::Util::weaken($item->{cart});
+
+  return $item;
+}
+
+=head2 Item Members
+
+=over
+
+=item product
+
+Returns the product for that line item.
+
+=cut
+
+sub product {
+  my $self = shift;
+
+  return $self->{cart}->_product($self->{productId});
+}
+
+=item price
+
+=cut
+
+sub price {
+  my ($self) = @_;
+
+  unless (defined $self->{calc_price}) {
+    $self->{calc_price} = $self->product->price(user => $self->cart->{req}->siteuser);
+  }
+
+  return $self->{calc_price};
 }
 
 =item extended
 
 The extended price for the item.
+
+=cut
+
+sub extended {
+  my ($self, $base) = @_;
+
+  $base =~ /^(price|retailPrice|gst|wholesalePrice)$/
+    or return 0;
+
+  return self->$base() * $self->{units};
+}
+
+sub extended_retailPrice {
+  $_[0]->extended("price");
+}
+
+sub extended_wholesalePrice {
+  $_[0]->extended("wholesalePrice");
+}
+
+sub extended_gst {
+  $_[0]->extended("gst");
+}
+
+=item units
+
+The number of units.
+
+=cut
+
+sub units {
+  $_[0]{units};
+}
+
+=item session_id
+
+The seminar session id, if any.
+
+=cut
+
+sub session_id {
+  $_[0]{session_id};
+}
+
+=item tier_id
+
+The pricing tier id.
+
+=cut
+
+sub tier_id {
+  $_[0]{tier};
+}
 
 =item link
 
@@ -176,10 +290,10 @@ A link to the product.
 
 =cut
 
-sub _product_link {
+sub link {
   my ($self, $id) = @_;
 
-  my $product = $self->_product($id);
+  my $product = $self->product;
   my $link = $product->link;
   unless ($link =~ /^\w+:/) {
     $link = BSE::Cfg->single->entryErr("site", "url") . $link;
@@ -214,13 +328,10 @@ display - display of the option value
 
 =cut
 
-sub _option_list {
+sub option_list {
   my ($self, $index) = @_;
 
-  my $item = $self->items()->[$index];
-  my $product = $self->_product($item->{productId});
-
-  return [ $product->option_descs(BSE::Cfg->single, $item->{options}) ];
+  return [ $self->product->option_descs(BSE::Cfg->single, $self->{options}) ];
 }
 
 =item option_text
@@ -229,10 +340,10 @@ Display text for options for the item.
 
 =cut
 
-sub _option_text {
+sub option_text {
   my ($self, $index) = @_;
 
-  my $options = $self->_option_list($index);
+  my $options = $self->option_list;
   return join(", ", map "$_->{desc}: $_->{display}", @$options);
 }
 
@@ -242,18 +353,30 @@ The session object of the seminar session
 
 =cut
 
-sub _item_session {
-  my ($self, $id) = @_;
+sub session {
+  my ($self) = @_;
 
-  $id or return;
-  my $session = $self->{sessions}{$id};
-  unless ($session) {
-    require BSE::TB::SeminarSessions;
-    $session = BSE::TB::SeminarSessions->getByPkey($id);
-    $self->{sessions}{$id} = $session;
+  $self->{session_id} or return;
+  return $self->{cart}->_session($self->{session_id});
+}
+
+
+my %product_keys;
+
+sub AUTOLOAD {
+  our $AUTOLOAD;
+  (my $name = $AUTOLOAD) =~ s/^.*:://;
+  unless (%product_keys) {
+    require Products;
+    %product_keys = map { $_ => 1 } Product->columns;
   }
 
-  return $session;
+  if ($product_keys{$name}) {
+    return $_[0]->product->$name();
+  }
+  else {
+    return "* unknown method $name *";
+  }
 }
 
 1;
