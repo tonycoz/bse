@@ -17,7 +17,7 @@ use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 
-our $VERSION = "1.034";
+our $VERSION = "1.035";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -1270,6 +1270,22 @@ sub _finish_order {
   delete @{$req->session}{qw/order_info order_info_confirmed order_need_delivery cart order_work/};
 }
 
+=item orderdone
+
+Display the order after the order is complete.
+
+Sets variables:
+
+=over
+
+=item *
+
+C<order> - the new L<BSE::TB::Order> object.
+
+=back
+
+=cut
+
 sub req_orderdone {
   my ($class, $req) = @_;
 
@@ -1389,6 +1405,8 @@ sub req_orderdone {
     my $name = $type->{name};
     $acts{"if${name}Payment"} = $order->{paymentType} == $id;
   }
+
+  $req->set_variable(order => $order);
 
   return $req->response('checkoutfinal', \%acts);
 }

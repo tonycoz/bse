@@ -5,7 +5,7 @@ use Squirrel::Row;
 use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub columns {
   return qw/id productId orderId units price wholesalePrice gst options
@@ -78,6 +78,16 @@ sub nice_options {
     or return '';
 
   return '('.join(", ", map("$_->{desc} $_->{label}", @options)).')';
+}
+
+sub session {
+  my ($self) = @_;
+
+  $self->session_id
+    or return;
+
+  require BSE::TB::SeminarSessions;
+  return BSE::TB::SeminarSessions->getByPkey($self->session_id);
 }
 
 1;
