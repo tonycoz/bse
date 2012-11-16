@@ -2,7 +2,7 @@ package BSE::Cart;
 use strict;
 use Scalar::Util;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 =head1 NAME
 
@@ -221,7 +221,7 @@ sub price {
   my ($self) = @_;
 
   unless (defined $self->{calc_price}) {
-    $self->{calc_price} = $self->product->price(user => $self->cart->{req}->siteuser);
+    $self->{calc_price} = $self->product->price(user => $self->{cart}{req}->siteuser);
   }
 
   return $self->{calc_price};
