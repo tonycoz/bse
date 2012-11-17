@@ -17,7 +17,7 @@ use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 
-our $VERSION = "1.035";
+our $VERSION = "1.036";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -146,7 +146,7 @@ sub req_emptycart {
   my $refresh = $req->cgi->param('r');
   unless ($refresh) {
     $refresh = $req->user_url(shop => 'cart');
-    $req->flash("msg:bse/shop/cart/empty");
+    $req->flash_notice("msg:bse/shop/cart/empty");
   }
 
   return _add_refresh($refresh, $req, !$old);
@@ -200,6 +200,7 @@ sub req_add {
 
     ++$found;
     $item->{units} += $quantity;
+    $req->flash_notice("msg:bse/shop/cart/addquant", [ $product, $quantity ]);
     last;
   }
   unless ($found) {
@@ -219,6 +220,7 @@ sub req_add {
        user => $user ? $user->id : 0,
        %$extras,
       };
+    $req->flash_notice("msg:bse/shop/cart/add", [ $product, $quantity ]);
   }
 
   $req->session->{cart} = \@cart;
@@ -273,6 +275,7 @@ sub req_addsingle {
 
     ++$found;
     $item->{units} += $quantity;
+    $req->flash_notice("msg:bse/shop/cart/addquant", [ $product, $quantity ]);
     last;
   }
   unless ($found) {
@@ -292,6 +295,7 @@ sub req_addsingle {
        user => $user ? $user->id : 0,
        %$extras,
       };
+    $req->flash_notice("msg:bse/shop/cart/add", [ $product, $quantity ]);
   }
 
   $req->session->{cart} = \@cart;
@@ -397,6 +401,8 @@ sub req_addmultiple {
 	or next;
 
       $item->{units} += $addition->{quantity};
+      $req->flash_notice("msg:bse/shop/cart/addquant",
+			 [ $addition->{product}, $addition->{quantity} ]);
     }
 
     my $cart_limit = $req->cfg->entry('shop', 'cart_entry_limit');
@@ -424,6 +430,8 @@ sub req_addmultiple {
 	 options=>[],
 	 %{$addition->{extras}},
 	};
+      $req->flash_notice("msg:bse/shop/cart/add",
+			 [ $addition->{product}, $addition->{quantity} ]);
     }
     
     $req->session->{cart} = \@cart;
@@ -437,12 +445,7 @@ sub req_addmultiple {
     $refresh = $req->user_url(shop => 'cart');
   }
   if (@messages) {
-    my $sep = $refresh =~ /\?/ ? '&' : '?';
-    
-    for my $message (@messages) {
-      $refresh .= $sep . "m=" . escape_uri($message);
-      $sep = '&';
-    }
+    $req->flash_error($_) for @messages;
   }
 
   # speed for ajax
@@ -718,7 +721,9 @@ sub req_remove_item {
   $req->session->{cart} ||= [];
   my @cart = @{$req->session->{cart}};
   if ($index >= 0 && $index < @cart) {
-    splice(@cart, $index, 1);
+    my ($item) = splice(@cart, $index, 1);
+    my $product = Products->getByPkey($item->{productId});
+    $req->flash_notice("msg:bse/shop/cart/remove", [ $product ]);
   }
   $req->session->{cart} = \@cart;
   $req->session->{order_info_confirmed} = 0;
@@ -2215,7 +2220,7 @@ sub req_paypalcan {
   my $order = $self->_paypal_order($req, \$msg)
     or return $self->req_show_payment($req, { _ => $msg });
 
-  $req->flash("msg:bse/shop/paypal/cancelled");
+  $req->flash_notice("msg:bse/shop/paypal/cancelled");
 
   my $url = $req->user_url(shop => "show_payment");
   return $req->get_refresh($url);

@@ -335,6 +335,15 @@ description: Messages from interacting with the cart
 id: bse/shop/cart/empty
 description: flashed when the cart is emptied
 
+id: bse/shop/cart/remove
+description: flashed when an item is removed from the cart (%1 is product object)
+
+id: bse/shop/cart/addquant
+description: added more of an item already in the cart (%1 is product object, %2 is quantity)
+
+id: bse/shop/cart/add
+description: added a new to the cart (%1 is product object, %2 is quantity)
+
 id: bse/shop/paypal/
 description: PayPal messages
 

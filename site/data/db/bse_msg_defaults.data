@@ -223,6 +223,15 @@ message: Skipped image %1:d (%2:s)
 id: bse/shop/cart/empty
 message: Cart emptied
 
+id: bse/shop/cart/remove
+message: Removed %1:{description}s from the cart
+
+id: bse/shop/cart/addquant
+message: Added another %2:d %1:{description}s to the cart
+
+id: bse/shop/cart/add
+message: Added %2:d %1:{description}s to the cart
+
 id: bse/shop/paypal/notoken
 message: No token supplied by PayPal
 
