@@ -14,9 +14,9 @@ use BSE::Util::HTML;
 use BSE::Arrows;
 use Carp 'confess';
 use BSE::Util::Iterate;
-use BSE::CfgInfo qw(cfg_dist_image_uri);
+use BSE::CfgInfo qw(cfg_dist_image_uri cfg_image_uri);
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 my $excerptSize = 300;
 
