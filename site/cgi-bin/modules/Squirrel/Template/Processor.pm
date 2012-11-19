@@ -3,7 +3,7 @@ use strict;
 use Squirrel::Template::Constants qw(:node);
 use Scalar::Util ();
 
-our $VERSION = "1.019";
+our $VERSION = "1.020";
 
 use constant ACTS => 0;
 use constant TMPLT => 1;
@@ -118,7 +118,7 @@ sub _process_set {
 	my $subkey = shift @var;
 	Scalar::Util::blessed($var)
 	    and die [ error => "Cannot set values in an object ".join(".", @seen) ];
-	my $type = reftype $var;
+	my $type = Scalar::Util::reftype($var);
 	if ($type eq 'HASH') {
 	  exists $type->{$subkey}
 	    or die [ error => "$subkey not found in ".join(".", @seen) ];
@@ -131,7 +131,9 @@ sub _process_set {
       }
       Scalar::Util::blessed($var)
 	  and die [ error => "Cannot set values in an object ".join(".", @seen) ];
-      reftype $var eq 'HASH'
+      ref $var
+	or die [ error => join(".", @seen) . " isn't a reference" ];
+      Scalar::Util::reftype($var) eq 'HASH'
 	or die [ error => "Only hashes supported for now" ];
       $var->{$var[0]} = $value;
     }
