@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>161;
+use Test::More tests=>164;
 use File::Spec;
 use FindBin;
 use Cwd;
@@ -468,6 +468,12 @@ template_test "global images", $parent, <<TEMPLATE, <<EXPECTED;
 TEMPLATE
 $gim1->{displayOrder}
 $gim2->{displayOrder}
+EXPECTED
+
+template_test "gimage no name", $parent, <<TEMPLATE, <<EXPECTED;
+<:gimage:>
+TEMPLATE
+* missing or empty name parameter for gimage *
 EXPECTED
 
 template_test "noreplace undefined", $parent, <<'TEMPLATE', <<'EXPECTED';

@@ -13,7 +13,7 @@ use BSE::Variables;
 use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 
-our $VERSION = "1.012";
+our $VERSION = "1.013";
 
 my $excerptSize = 300;
 
@@ -985,6 +985,8 @@ sub baseActs {
        my $rest = "@rest";
 
        my $im;
+       defined $name && length $name
+	 or return '* missing or empty name parameter for gimage *';
        if ($name eq '-') {
 	 $im = $current_gimage
 	   or return '';
