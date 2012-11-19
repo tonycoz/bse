@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 162;
+use Test::More tests => 164;
 
 sub template_test($$$$;$$);
 
@@ -464,6 +464,7 @@ OUT
      [ '"xabcy" =~ /abc/', 1 ],
      [ '[ "abc" =~ /(.)(.)/ ][1]', "b" ],
      [ '{ "a": 11, "b": 12, "c": 20 }["b"]', 12 ],
+     [ '[ 1, 2, 3 ][1]', 2 ],
      [ 'testclass.foo', "[TestClass.foo]" ],
 
      # WrapScalar
@@ -677,6 +678,13 @@ OUT
 <:.end:>
 IN
 abcde
+OUT
+
+  template_test(<<IN, <<OUT, "globals default variable", \%acts, "", \%vars);
+<:.set globals.foo = "test" -:>
+<:= globals.foo :>
+IN
+test
 OUT
 }
 
