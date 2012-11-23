@@ -6,7 +6,7 @@ use BSE::UI::Dispatch;
 use BSE::Template;
 our @ISA = qw(BSE::UI::Dispatch);
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 # we don't do anything fancy on dispatch yet, so don't use the 
 # dispatch classes
@@ -113,7 +113,7 @@ sub dispatch {
     return $self->error($req, "Page id or alias specified for display not found");
   }
 
-  unless ($article->is_linked) {
+  unless ($article->is_linked && $article->listed) {
     my $result = $self->error($req, "Sorry, this page is not available");
     push @{$result->{headers}}, "Status: 404";
     return $result;
