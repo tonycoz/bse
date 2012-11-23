@@ -10,7 +10,7 @@ use Carp qw(confess);
 use BSE::WebUtil qw(refresh_to_admin);
 use BSE::Util::HTML;
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 # returns non-zero if the Regenerate button should work
 sub generate_button {
@@ -56,6 +56,12 @@ sub generate_low {
 
   if ($article->flags =~ /P/ && $article->{parentid} != -1) {
     # link to parent, remove the file
+    unlink $outname;
+    return;
+  }
+
+  unless ($article->listed) {
+    # don't generate unlisted pages and remove any old content
     unlink $outname;
     return;
   }
