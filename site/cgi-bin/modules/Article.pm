@@ -8,7 +8,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::TB::SiteCommon BSE::TB::TagOwner/;
 use Carp 'confess';
 
-our $VERSION = "1.016";
+our $VERSION = "1.017";
 
 =head1 NAME
 
@@ -581,6 +581,19 @@ sub is_descendant_of {
   }
 
   return 0;
+}
+
+=item should_generate
+
+Return true if this article should have pages generated, either for
+static content or for dynamic.
+
+=cut
+
+sub should_generate {
+  my ($self) = @_;
+
+  return $self->is_linked && $self->listed && $self->is_released && !$self->is_expired;
 }
 
 sub restricted_methods {
