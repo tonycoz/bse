@@ -61,4 +61,54 @@ Page <:= pages.page :> of <:= pages.pagecount :>
 <:= ("error_img " _ field).evaltag -:>
 <:.end define -:>
 
+<:.define input -:>
+<:# paramaters:
+  name - field name
+  fields - hash of fields (may be set by page instead)
+  object - source for defaults in edit mode
+:>
+<:  .set f = fields[name] -:>
+<:  .if object -:>
+<:     .set default = object.get(name) -:>
+<:  .elsif f.default -:>
+<:     .set default = f.default -:>
+<:  .else -:>
+<:     .set default = "" -:>
+<:  .end if -:>
+<:  .if f.htmltype eq "textarea" -:>
+<textarea id="<:= name | html :>" name="<:= name | html :>" rows="<:= f.height ? f.height : cfg.entry("forms", "textarea_rows", 10) :>" cols=<:= f.width ? f.width : cfg.entry("textarea_cols", 60) | html :>>
+<:-    .call "old", "field":name, "default":default -:>
+</textarea>
+<:  .elsif f.htmltype eq "checkbox" -:>
+<:.set is_checked = request.method() eq 'post' ? cgi.param(name).defined : default -:>
+<input id="<:= name | html :>" type="checkbox" name="<:= name | html :>"<:= is_checked ? ' checked="checked"' : '' :> value="<:= f.value ? f.value : 1 | html :>" />
+<:  .else -:>
+<input id="<:= name | html :>" type="text" name="<:= name | html :>" value="<:.call "old", "field":name, "default":default :>" 
+<:-= f.maxlength ? ' maxlength="' _ f.maxlength _ '"' : '' :>
+<:= f.width ? 'size="' _ f.width _ '"' : '' :> />
+<:  .end if -:>
+<:.end define -:>
+
+<:.define field -:>
+<:# paramaters:
+  name - field name
+  fields - hash of fields (may be set by page instead)
+:>
+<:.set f = fields[name] -:>
+<div>
+  <label for="<:= field | html :>"><:= f.nolabel ? "" : f.description | html :>:</label>
+  <span><:.call "input", "name":name -:><:.call "error_img", "field":name :></span>
+</div>
+<:.end define -:>
+
+<:.define messages -:>
+<:  .if request.messages.size -:>
+<div class="messages">
+<:     .for m in request.messages -:>
+  <div class="<:= m.class :>"><:= m.html :></div>
+<:     .end for -:> 
+</div>
+<:  .end if -:>
+<:.end define -:>
+
 <:- include includes/custom/preload.tmpl optional -:>
