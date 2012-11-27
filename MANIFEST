@@ -574,6 +574,7 @@ site/templates/admin/include/auditentry.tmpl
 site/templates/admin/include/audithead.tmpl
 site/templates/admin/include/edit_common.tmpl
 site/templates/admin/include/message.tmpl
+site/templates/admin/include/oauditlog.tmpl
 site/templates/admin/include/order_list_filter.tmpl
 site/templates/admin/include/order_list_pages.tmpl
 site/templates/admin/include/site_menu.tmpl
