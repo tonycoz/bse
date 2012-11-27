@@ -736,3 +736,15 @@ span.bse_capswarning {
   font-weight: bold;
   border: 1px solid #F00;
 }
+
+fieldset div {
+  display: table-row;
+}
+
+fieldset span {
+  display: table-cell;
+}
+fieldset label {
+  display: table-cell;
+  padding-right: 0.5em;
+}
