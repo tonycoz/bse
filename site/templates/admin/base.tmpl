@@ -1,7 +1,5 @@
-<?xml version="1.0" encoding="<:cfg html charset iso8859-1:>"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd" >  
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html lang="<:= request.language | html -:>">
   <head>
     <title>BSE - <:param title:></title>
     <link rel="stylesheet" href="/css/admin.css" type="text/css" />
@@ -10,12 +8,15 @@
 <script type="text/javascript" src="/js/bse.js"></script>
 <script type="text/javascript" src="/js/admin.js"></script>
 <script type="text/javascript" src="/js/swfobject.js"></script>
-<:ifParam api:><script type="text/javascript" src="/js/bse_api.js"></script><:or:><:eif:>
-<:ifParam jstools:><script type="text/javascript" src="/js/admin_tools.js"></script><:or:><:eif:>
-<:ifParam js:><script type="text/javascript" src="/js/<:param js:>"></script><:or:><:eif:>
+<:ifParam api:><script type="text/javascript" src="/js/bse_api.js"></script>
+<:eif -:>
+<:ifParam jstools:><script type="text/javascript" src="/js/admin_tools.js"></script>
+<:eif -:>
+<:ifParam js:><script type="text/javascript" src="/js/<:param js:>"></script>
+<:eif -:>
   </head>
-  <body<:ifParam bodyid:> id="<:param bodyid:>"<:or:><:eif:>>
-<:ifParam showtitle:><h1><:param title:></h1><:or:><:eif:>
+  <body<:ifParam bodyid:> id="<:param bodyid:>"<:eif:>>
+<:ifParam showtitle:><h1><:param title:></h1><:eif-:>
 <:wrap here:>
   <hr />
   <p class="version">BSE Release <:release:> - page generated <:today:></p>
