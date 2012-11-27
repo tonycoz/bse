@@ -5,7 +5,7 @@ use BSE::Cfg;
 use BSE::Util::HTML;
 use Carp qw(cluck confess);
 
-our $VERSION = "1.016";
+our $VERSION = "1.017";
 
 =head1 NAME
 
@@ -993,6 +993,13 @@ sub set_variable {
   $self->{vars}{$name} = $value;
 }
 
+sub set_variable_class {
+  my ($self, $name, $class) = @_;
+
+  require Squirrel::Template;
+  $self->set_variable($name => Squirrel::Template::Expr::WrapClass->new($class));
+}
+
 sub text {
   my ($self, $id, $default) = @_;
 
@@ -1674,6 +1681,41 @@ sub logon_error {
      message => "Access forbidden: user not logged on",
      errors => {},
     );
+}
+
+=item cgi_fields
+
+Extract values for the fields specified by the fields parameter.
+
+=cut
+
+sub cgi_fields {
+  my ($self, %opts) = @_;
+
+  my %values;
+  my $fields = $opts{fields}
+    or confess "Missing fields parameter";
+
+  my $cgi = $self->cgi;
+  for my $name (keys %$fields) {
+    my $field = $fields->{$name};
+    my $value;
+    if ($field->{htmltype} eq "checkbox") {
+      if ($field->{type} eq "int") {
+	$value = $cgi->param($name) ? 1 : 0;
+      }
+      else {
+	$value = join("", $cgi->param($name));
+      }
+    }
+    else {
+      ($value) = $cgi->param($name);
+      defined $name or $value = "";
+    }
+    $values{$name} = $value;
+  }
+
+  return \%values;
 }
 
 1;
