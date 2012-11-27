@@ -6,7 +6,7 @@ use vars qw(@ISA $VERSION);
 use BSE::TB::AuditEntry;
 use Scalar::Util qw(blessed);
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 sub rowClass {
   return 'BSE::TB::AuditEntry';
@@ -220,6 +220,29 @@ sub level_id_to_name {
   my ($class, $id) = @_;
 
   return $level_id_to_name{$id} || sprintf("unknown-%d", $id);
+}
+
+=item object_log
+
+Return log entries for the supplied object.
+
+=cut
+
+sub object_log {
+  my ($self, $object, $rules, $options) = @_;
+
+  my %options;
+  %options = %$options if $options;
+  $options{order} ||= "when_at desc";
+
+  my @rules =
+    (
+     [ object_type => blessed $object ],
+     [ object_id => $object->id ],
+    );
+  push @rules, $rules if $rules;
+
+  return $self->getBy2(\@rules, \%options);
 }
 
 1;
