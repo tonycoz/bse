@@ -1349,9 +1349,31 @@ sub language {
   return $self->cfg->entry("basic", "language_code", "en");
 }
 
+=item ip_address
+
+The IP address of the broswer.
+
+=cut
+
 sub ip_address {
   return $ENV{REMOTE_ADDR};
 }
+
+=item method
+
+The request method (post, get etc) in lower case
+
+=cut
+
+sub method {
+  return lc $ENV{REQUEST_METHOD};
+}
+
+=item cart
+
+The user's shopping cart as a L<BSE::Cart> object.
+
+=cut
 
 sub cart {
   my ($self, $stage) = @_;
