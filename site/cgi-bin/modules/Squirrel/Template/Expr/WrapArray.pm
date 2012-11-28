@@ -3,7 +3,7 @@ use strict;
 use base qw(Squirrel::Template::Expr::WrapBase);
 use Scalar::Util ();
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 my $list_make_key = sub {
   my ($item, $field) = @_;
@@ -142,6 +142,10 @@ sub _do_is_hash {
   return 0;
 }
 
+sub _do_is_code {
+  return 0;
+}
+
 sub call {
   my ($self, $method, $args) = @_;
 
@@ -249,6 +253,10 @@ Test if this object is a list.  Always true for a list.
 =item is_hash
 
 Test if this object is a hash.  Always false for a list.
+
+=item is_code
+
+Test if this object is a code object.  Always false for a list.
 
 =back
 

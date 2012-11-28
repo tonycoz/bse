@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 164;
+use Test::More tests => 165;
 
 sub template_test($$$$;$$);
 
@@ -59,6 +59,8 @@ SKIP: {
 	 $cb->();
        }
      },
+     somecode1 => sub { return "FOO" },
+     somecode2 => sub { return [ @_ ] },
     );
   template_test("<:str:>", "ABC", "simple", \%acts);
   template_test("<:strref:>", "ABC", "scalar ref", \%acts);
@@ -680,11 +682,28 @@ IN
 abcde
 OUT
 
-  template_test(<<IN, <<OUT, "globals default variable", \%acts, "", \%vars);
+  template_test(<<'IN', <<OUT, "globals default variable", \%acts, "", \%vars);
 <:.set globals.foo = "test" -:>
 <:= globals.foo :>
+<:.set name="foo" -:>
+<:= testclass.$name :>
+<:= testclass.$name() :>
+<:= testclass.$name(1) :>
 IN
 test
+[TestClass.foo]
+[TestClass.foo]
+[TestClass.foo]
+OUT
+
+  template_test(<<'IN', <<OUT, "function calls", \%acts, "", \%vars);
+<:= somecode1() :>
+<:= somecode2().join(",") :>
+<:= somecode2("a", "b").join(",") :>
+IN
+FOO
+
+a,b
 OUT
 }
 

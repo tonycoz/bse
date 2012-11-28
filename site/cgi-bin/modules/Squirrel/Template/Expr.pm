@@ -1,7 +1,7 @@
 package Squirrel::Template::Expr;
 use strict;
 
-our $VERSION = "1.007";
+our $VERSION = "1.009";
 
 package Squirrel::Template::Expr::Eval;
 use Scalar::Util ();
@@ -147,14 +147,9 @@ sub _process_const {
   return $_[1][1];
 }
 
-sub _process_call {
-  my ($self, $node, $ctx) = @_;
+sub _do_call {
+  my ($self, $val, $args, $method, $ctx) = @_;
 
-  $ctx ||= "";
-
-  my $val = $self->process($node->[2]);
-  my $args = $self->process_list($node->[3]);
-  my $method = $node->[1];
   if (Scalar::Util::blessed($val)
       && !$val->isa("Squirrel::Template::Expr::WrapBase")) {
     $val->can($method)
@@ -169,6 +164,45 @@ sub _process_call {
   else {
     my $wrapped = $self->_wrapped($val);
     return $wrapped->call($method, $args, $ctx);
+  }
+}
+
+sub _process_call {
+  my ($self, $node, $ctx) = @_;
+
+  $ctx ||= "";
+
+  my $val = $self->process($node->[2]);
+  my $args = $self->process_list($node->[3]);
+  my $method = $node->[1];
+
+  return $self->_do_call($val, $args, $method, $ctx);
+}
+
+sub _process_callvar {
+  my ($self, $node, $ctx) = @_;
+
+  $ctx ||= "";
+
+  my $val = $self->process($node->[2]);
+  my $args = $self->process_list($node->[3]);
+  my $method = $self->[TMPL]->get_var($node->[1]);
+
+  return $self->_do_call($val, $args, $method, $ctx);
+}
+
+sub _process_funccall {
+  my ($self, $node, $ctx) = @_;
+
+  $ctx ||= "";
+  my $code = $self->process($node->[1]);
+  my $args = $self->process_list($node->[2]);
+
+  if (Scalar::Util::reftype($code) eq "CODE") {
+    return $ctx eq "LIST" ? $code->(@$args) : scalar($code->(@$args));
+  }
+  else {
+    die [ error => "can't call non code as a function" ];
   }
 }
 
@@ -462,17 +496,31 @@ sub _parse_call {
 
   my $result = $self->_parse_postfix($tok);
   my $next = $tok->peektype;
-  while ($next eq 'op.' || $next eq 'op[') {
+  while ($next eq 'op.' || $next eq 'op[' || $next eq 'op(') {
     if ($next eq 'op.') {
       $tok->get;
       my $name = $tok->get;
-      $name->[0] eq 'id'
-	or die [ error => "Expected method name after '.' but found $name->[1]" ];
-      my $list = [];
-      if ($tok->peektype eq 'op(') {
-	$list = $self->_parse_paren_list($tok, "method");
+      if ($name->[0] eq "id") {
+	my $list = [];
+	if ($tok->peektype eq 'op(') {
+	  $list = $self->_parse_paren_list($tok, "method");
+	}
+	$result = [ call => $name->[2], $result, $list ];
       }
-      $result = [ call => $name->[2], $result, $list ];
+      elsif ($name->[0] eq 'op$') {
+	# get the real name
+	$name = $tok->get;
+	$name->[0] eq 'id'
+	  or die [ error => "Expected an identifer after .\$ but found $name->[1]" ];
+	my $list = [];
+	if ($tok->peektype eq 'op(') {
+	  $list = $self->_parse_paren_list($tok, "method");
+	}
+	$result = [ callvar => $name->[2], $result, $list ];
+      }
+      else {
+	die [ error => "Expected method name or \$var after '.' but found $name->[1]" ];
+      }
     }
     elsif ($next eq 'op[') {
       $tok->get;
@@ -481,6 +529,10 @@ sub _parse_call {
       $close->[0] eq 'op]'
 	or die [ error => "Expected list end ']' but got $close->[0]" ];
       $result = [ subscript => $result, $index ];
+    }
+    elsif ($next eq 'op(') {
+      my $args = $self->_parse_paren_list($tok, "call");
+      $result = [ funccall => $result, $args ];
     }
     $next = $tok->peektype;
   }
@@ -611,7 +663,7 @@ sub get {
 	 $self->[TEXT] =~ s!\A(\s*/((?:[^/\\]|\\.)+)/([ismx]*\s)?\s*)!!) {
     push @$queue, [ re => $1, $2, $3 || "" ];
   }
-  elsif ($self->[TEXT] =~ s/\A(\s*(not\b|eq\b|ne\b|le\b|lt\b|ge\b|gt\b|<=|>=|[!=]\=|\=\~|[_\?:,\[\]\(\)<>=!.*\/+\{\};-])\s*)//) {
+  elsif ($self->[TEXT] =~ s/\A(\s*(not\b|eq\b|ne\b|le\b|lt\b|ge\b|gt\b|<=|>=|[!=]\=|\=\~|[_\?:,\[\]\(\)<>=!.*\/+\{\};\$-])\s*)//) {
     push @$queue, [ "op$2" => $1 ];
   }
   elsif ($self->[TEXT] =~ s/\A(\s*([A-Za-z_][a-zA-Z_0-9]*)\s*)//) {
@@ -780,6 +832,20 @@ L<Squirrel::Template::Expr::WrapArray>,
 L<Squirrel::Template::Expr::WrapScalar>,
 L<Squirrel::Template::Expr::WrapCode> and
 L<Squirrel::Template::Expr::WrapClass>.
+
+=item *
+
+function calls - functions are called as:
+
+  somevar();
+
+or
+
+  somevar(arguments);
+
+or any other expression that doesn't look like a method call:
+
+  somehash.get["foo"]();
 
 =item *
 

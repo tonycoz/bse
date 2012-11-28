@@ -2,7 +2,7 @@ package Squirrel::Template::Expr::WrapScalar;
 use strict;
 use base qw(Squirrel::Template::Expr::WrapBase);
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 sub _do_length  {
   my ($self, $args) = @_;
@@ -186,6 +186,13 @@ sub _do_is_hash {
   return 0;
 }
 
+sub _do_is_code {
+  my ($self) = @_;
+
+  require Scalar::Util;
+  return ref($self->[0]) && Scalar::Util::reftype($self->[0]) eq "CODE";
+}
+
 sub call {
   my ($self, $method, $args) = @_;
 
@@ -342,6 +349,10 @@ Test if this object is a list.  Always true for a list.
 =item is_hash
 
 Test if this object is a hash.  Always false for a list.
+
+=item is_code
+
+Test if this object is a code object.
 
 =back
 

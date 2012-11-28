@@ -178,8 +178,8 @@ test_parse("[ a, b .. c, d ]",
 	   ], "list with range");
 
 
-test_parse("a.b.c().d(1).e(1,2)",
-	   [ call =>
+test_parse('a.b.c().d(1).$e(1,2)',
+	   [ callvar =>
 	     "e",
 	     [ call =>
 	       "d",

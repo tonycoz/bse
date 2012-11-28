@@ -2,7 +2,7 @@ package Squirrel::Template::Expr::WrapHash;
 use strict;
 use base qw(Squirrel::Template::Expr::WrapBase);
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 sub _do_size {
   my ($self) = @_;
@@ -52,6 +52,10 @@ sub _do_is_list {
 
 sub _do_is_hash {
   return 1;
+}
+
+sub _do_is_code {
+  return 0;
 }
 
 sub call {
@@ -139,6 +143,10 @@ Test if this object is a list.  Always false for a hash.
 =item is_hash
 
 Test if this object is a hash.  Always true for a hash.
+
+=item is_code
+
+Test if this object is a code object.  Always false for a hash.
 
 =back
 
