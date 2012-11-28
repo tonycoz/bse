@@ -6,7 +6,7 @@ use vars qw(@EXPORT_OK @ISA);
 @ISA = qw(Exporter);
 use Carp qw(confess);
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 my %built_ins =
   (
@@ -510,6 +510,14 @@ sub validate_field {
 	  last RULE;
 	}
       }
+      if ($rule->{ref}) {
+	my $method = $rule->{method}
+	  or confess "Missing method in ref rule $rule_name";
+	unless ($rule->{ref}->$method($data)) {
+	  $errors->{$field} = _make_error($field, $info, $rule, 'No such $n');
+	  last RULE;
+	}
+      }
     }
   }
 }
@@ -895,6 +903,15 @@ the current field is in the list it is ignored, so you can use one
 rule to compare several fields with each other.  Uses ne_error from
 the field, or ne_error from the rule for customizing the error
 message.
+
+=item ref
+
+Requires that C<method> also be set.
+
+Calls the specified method on the object or class specified by C<ref>
+with the value to check as a parameter.  The value is considered value
+if the result is true.  This is intended for checking the existence of
+objects in a collection.
 
 =back
 
