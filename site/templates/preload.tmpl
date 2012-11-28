@@ -3,12 +3,12 @@
   <:-.if !default.defined -:>
     <:-.set default = "" -:>
   <:.end if:>
-  <select name="<:= name :>">
+  <select name="<:= name | html :>">
   <:-.for i in list -:>
-    <option value="<:= i[id] |html :>"
-      <:- .if i[id] eq default :> selected="selected"<:.end if -:>
+    <option value="<:= i.$id | html :>"
+      <:- .if i.$id eq default :> selected="selected"<:.end if -:>
     >
-    <:= i[desc] | html :>
+    <:= i.$desc | html :>
   <:-.end for-:>
   </select>
 <:-.end define -:>
@@ -82,6 +82,16 @@ Page <:= pages.page :> of <:= pages.pagecount :>
 <:  .elsif f.htmltype eq "checkbox" -:>
 <:.set is_checked = request.method() eq 'post' ? cgi.param(name).defined : default -:>
 <input id="<:= name | html :>" type="checkbox" name="<:= name | html :>"<:= is_checked ? ' checked="checked"' : '' :> value="<:= f.value ? f.value : 1 | html :>" />
+<:  .elsif f.htmltype eq "select" -:>
+<:.set values = f.select["values"] -:>
+<:.set values = values.is_code ? values() : values -:>
+<:.call "make_select",
+    "name":name,
+    "default":default,
+    "list":values,
+    "id":f.select.id,
+    "desc":f.select.label
+-:>
 <:  .else -:>
 <input id="<:= name | html :>" type="text" name="<:= name | html :>" value="<:.call "old", "field":name, "default":default :>" 
 <:-= f.maxlength ? ' maxlength="' _ f.maxlength _ '"' : '' :>
