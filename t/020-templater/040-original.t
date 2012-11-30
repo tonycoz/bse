@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 165;
+use Test::More tests => 166;
 
 sub template_test($$$$;$$);
 
@@ -513,6 +513,7 @@ OUT
      [ '(-10.1).ceil', -10 ],
      [ '"test".is_list', 0 ],
      [ '"test".is_hash', 0 ],
+     [ '"abc".replace(/(.)(.)(.)/, "$3$2$1")', "cba" ],
 
      # WrapArray
      [ '[ [ 1, 2 ], 3 ].expand.join(",")', "1,2,3" ],

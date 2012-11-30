@@ -2,7 +2,7 @@ package Squirrel::Template::Expr::WrapScalar;
 use strict;
 use base qw(Squirrel::Template::Expr::WrapBase);
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 sub _do_length  {
   my ($self, $args) = @_;
@@ -193,6 +193,47 @@ sub _do_is_code {
   return ref($self->[0]) && Scalar::Util::reftype($self->[0]) eq "CODE";
 }
 
+sub _do_replace {
+  my ($self, $args) = @_;
+
+  @$args == 2 || @$args == 3
+    or die [ error => "scalar.replace takes two or three parameters" ];
+
+  my ($re, $with, $global) = @$args;
+  my $str = $self->[0];
+
+  if ($global) {
+    $str =~ s{$re}
+      {
+	# yes, this sucks
+	my @out = ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+	defined or $_ = '' for @out;
+	my $tmp = $with;
+	{
+	  $tmp =~ s/\$([1-9\$])/
+	    $1 eq '$' ? '$' : $out[$1-1] /ge;
+	}
+	$tmp;
+      }ge;
+  }
+  else {
+    $str =~ s{$re}
+      {
+	# yes, this sucks
+	my @out = ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+	defined or $_ = '' for @out;
+	my $tmp = $with;
+	{
+	  $tmp =~ s/\$([1-9\$])/
+	    $1 eq '$' ? '$' : $out[$1-1] /ge;
+	}
+	$tmp;
+      }e;
+  }
+
+  return $str;
+}
+
 sub call {
   my ($self, $method, $args) = @_;
 
@@ -302,6 +343,18 @@ if C<substring> isn't found.
 Return the position of C<substring> within the subject, searching
 backward from C<start> or from the end of the string.  Returns -1 if
 C<substring> isn't found.
+
+=item replace(regexp, replacement)
+
+=item replace(regexp, replacement, global)
+
+Replace the given C<regexp> in the string with C<replacement>. C<$1>
+etc are replaced with what the corresponding parenthesized expression
+in the regexp matched.  C<$$> is replaced with C<$>.
+
+If C<global> is present and true, replace every instance.
+
+Does not modify the source, simply returns the modified text.
 
 =item chr
 
