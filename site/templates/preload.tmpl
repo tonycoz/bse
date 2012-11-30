@@ -109,7 +109,7 @@ Page <:= pages.page :> of <:= pages.pagecount :>
 :>
 <:.set f = fields[name] -:>
 <div>
-  <label for="<:= field | html :>"><:= f.nolabel ? "" : f.description | html :>:</label>
+  <label for="<:= name | html :>"><:= f.nolabel ? "" : f.description | html :>:</label>
   <span><:.call "input", "name":name -:><:.call "error_img", "field":name :></span>
 </div>
 <:.end define -:>
