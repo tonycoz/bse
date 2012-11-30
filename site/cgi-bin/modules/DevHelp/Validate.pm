@@ -6,7 +6,7 @@ use vars qw(@EXPORT_OK @ISA);
 @ISA = qw(Exporter);
 use Carp qw(confess);
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 my %built_ins =
   (
@@ -276,6 +276,11 @@ sub _validate {
   !keys %$errors;
 }
 
+my @dow_tokens = qw(sun mon tue wed thu fri sat);
+my @dow_names = qw(Sunday Monday Tuesday Wednesday Thursday Friday Saturday);
+my %dow_trans;
+@dow_trans{@dow_tokens} = @dow_names;
+
 sub validate_field {
   my ($self, $field, $info, $rules, $optional, $errors) = @_;
 
@@ -438,6 +443,23 @@ sub validate_field {
 		_make_error($field, $info, $rule,
 			    $info->{mindatemsg} || $rule->{maxdatemsg} || '$n is too late');
 	    }
+	  }
+	}
+	if (defined $rule->{dow}) { # could be "0" for Sunday
+	  my $dow = DevHelp::Date::dh_date_dow($year, $month, $day);
+	  my ($dow_name) = $dow_tokens[$dow];
+	  unless ($rule->{dow} =~ /\b($dow|$dow_name)\b/i) {
+	    my @valid_dow = map {
+	      ;$_ =~ /[0-7]/ ? $dow_names[$_] : $dow_trans{$_}
+	    } split /,/, $rule->{dow};
+	    my $valid_dow = @valid_dow > 1
+	      ? "any of " . join(", ", @valid_dow)
+		: "a @valid_dow";
+	    $errors->{$field} =
+	      _make_error($field, $info, $rule,
+			  $info->{dowmsg} || $rule->{dowmsg}
+			  || ('$n must fall on ' . $valid_dow));
+	    last RULE;
 	  }
 	}
       }
@@ -890,6 +912,11 @@ mindatemsg from the field or rule for the error message.
 
 Set maxdate to specify a maximum date for range validation.  Uses
 maxdatemsg from the field or rule for the error message.
+
+Set C<dow> to a comma-separated list of number from 0 to 6, or 3
+letter day of week abbreviations to require the date be only on those
+days of week.  Uses C<dowmsg> from the field or rule for the error
+message.
 
 =item confirm
 
