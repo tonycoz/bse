@@ -6,14 +6,14 @@ use vars qw(@EXPORT_OK %EXPORT_TAGS @ISA);
 @EXPORT_OK = 
   qw(dh_parse_date dh_parse_date_sql dh_parse_time dh_parse_time_sql
      dh_parse_sql_date dh_parse_sql_datetime dh_strftime_sql_datetime
-     dh_valid_date dh_strftime);
+     dh_valid_date dh_strftime dh_date_dow);
 %EXPORT_TAGS =
   (
    all => \@EXPORT_OK,
    sql => [ grep /_sql$/, @EXPORT_OK ],
   );
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 use constant SECS_PER_DAY => 24 * 60 * 60;
 
@@ -235,6 +235,31 @@ sub dh_valid_date {
     or return;
 
   return 1;
+}
+
+# see http://en.wikipedia.org/wiki/Determination_of_the_day_of_the_week#Implementation-dependent_methods_of_Sakamoto.2C_Lachman.2C_Keith_and_Craver
+my @month_adjust = ( 0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4 );
+
+=item dh_date_dow($year, $month, $day)
+
+Return the day of week number for the given date.
+
+0 is Sunday, etc.
+
+Returns nothing for an invalid date.
+
+=cut
+
+sub dh_date_dow {
+  my ($year, $month, $day) = @_;
+
+  dh_valid_date(@_)
+    or return;
+
+  $year -= $month < 3;
+
+  return ($year + int($year/4) - int($year/100) + int($year/400)
+	  + $month_adjust[$month-1] + $day) % 7;
 }
 
 1;

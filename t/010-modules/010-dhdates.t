@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests=>46;
+use Test::More tests=>51;
 
 my $gotmodule;
 BEGIN { $gotmodule = use_ok('DevHelp::Date', ':all'); }
@@ -92,4 +92,11 @@ SKIP:
   is(dh_strftime("%a %U %j %F %T", 20, 5, 12, 30, 5, 105),
      "Thu 26 181 2005-06-30 12:05:20",
      "dh_strftime");
+
+  # day of week
+  is(dh_date_dow(2012, 11, 29), 4, "29/11/2012 is a thursday");
+  is(dh_date_dow(2012, 11,  3), 6, "3/11/2012 is a saturday");
+  is(dh_date_dow(2012, 11, 11), 0, "11/11/2012 is a sunday");
+  is(dh_date_dow(2012,  6, 1),  5, "1/6/2012 is a friday");
+  is(dh_date_dow(2008,  2, 29), 5, "29/2/2008 is a friday");
 }
