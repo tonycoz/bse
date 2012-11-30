@@ -1,7 +1,7 @@
 package Squirrel::Template::Expr;
 use strict;
 
-our $VERSION = "1.009";
+our $VERSION = "1.010";
 
 package Squirrel::Template::Expr::Eval;
 use Scalar::Util ();
@@ -350,7 +350,7 @@ sub _parse_cond {
     my $colon = $tok->get;
     $colon->[0] eq 'op:'
       or die [ error => "Expected : for ? : operator but found $tok->[1]" ];
-    my $false = $self->_parse_or($tok);
+    my $false = $self->_parse_cond($tok);
 
     $result = [ cond => $result, $true, $false ];
   }
@@ -453,7 +453,7 @@ sub _parse_prefix {
 sub _parse_list {
   my ($self, $tok) = @_;
 
-  $tok->peektype eq 'op)'
+  $tok->peektype("TERM") eq 'op)'
     and return [];
 
   my @list;
