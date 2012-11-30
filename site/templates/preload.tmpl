@@ -93,6 +93,9 @@ Page <:= pages.page :> of <:= pages.pagecount :>
     "desc":f.select.label
 -:>
 <:  .else -:>
+<:    .if f.type and f.type eq "date" and default ne "" -:>
+<:      .set default = default.replace(/(\d+)\D+(\d+)\D+(\d+)/, "$3/$2/$1") -:>
+<:    .end if -:>
 <input id="<:= name | html :>" type="text" name="<:= name | html :>" value="<:.call "old", "field":name, "default":default :>" 
 <:-= f.maxlength ? ' maxlength="' _ f.maxlength _ '"' : '' :>
 <:= f.width ? 'size="' _ f.width _ '"' : '' :> />
