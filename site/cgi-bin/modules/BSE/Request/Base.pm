@@ -5,7 +5,7 @@ use BSE::Cfg;
 use BSE::Util::HTML;
 use Carp qw(cluck confess);
 
-our $VERSION = "1.017";
+our $VERSION = "1.018";
 
 =head1 NAME
 
@@ -1707,6 +1707,13 @@ sub cgi_fields {
       else {
 	$value = join("", $cgi->param($name));
       }
+    }
+    elsif ($field->{type} && $field->{type} eq "date" && !$opts{api}) {
+      ($value) = $cgi->param($name);
+      require DevHelp::Date;
+      my $msg;
+      my ($year, $month, $day) = DevHelp::Date::dh_parse_date($value, \$msg);
+      $value = "$year-$month-$day";
     }
     else {
       ($value) = $cgi->param($name);
