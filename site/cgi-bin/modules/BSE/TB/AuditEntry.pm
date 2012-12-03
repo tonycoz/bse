@@ -2,7 +2,7 @@ package BSE::TB::AuditEntry;
 use strict;
 use base qw(Squirrel::Row);
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 sub columns {
   return qw/id 
@@ -110,14 +110,14 @@ my %types =
    "SiteUser" =>
    {
     target => "siteusers",
-    action => "a_view",
+    action => "view",
     format => "Member %d",
     class => "SiteUsers",
    },
    "BSE::TB::AdminUser" =>
    {
     target => "adminusers",
-    action => "a_showuser",
+    action => "showuser",
     format => "Admin: %d",
     class => "BSE::TB::AdminUsers",
    },
@@ -129,13 +129,21 @@ sub object_link {
   my $id = $self->object_id or return "";
   my $type = $self->object_type;
   my $entry = $types{$type};
+    my $cfg = BSE::Cfg->single;
   if ($entry) {
-    BSE::Cfg->single->admin_url($entry->{target},
-				{ id => $self->object_id,
-				  $entry->{action} => 1 });
+    return $cfg->admin_url2($entry->{target}, $entry->{action},
+			    { id => $id });
   }
   else {
-    return "";
+    my $link_action = $cfg->entry("type $type", "link_action");
+    my $link_target = $cfg->entry("type $type", "link_target");
+    if ($link_action && $link_target) {
+      return $cfg->admin_url2($link_target, $link_action,
+			      { id => $id });
+    }
+    else {
+      return "";
+    }
   }
 }
 
@@ -145,22 +153,24 @@ sub object_name {
   my $type = $self->object_type
     or return '(None)';
   my $entry = $types{$type};
-  if ($entry) {
-    if ($entry->{class}) {
-      if (eval "use $entry->{class}; 1"
-	  && (my $obj = $entry->{class}->getByPkey($self->object_id))) {
-	return $obj->describe;
-      }
-    }
-    else {
-      return sprintf $entry->{format}, $self->object_id;
-    }
+  my $cfg = BSE::Cfg->single;
+  my $class = $entry ? $entry->{class} : $cfg->entry("type $type", "class");
+  my $method = $cfg->entry("type $type", "method", "describe");
+  my $format = $cfg->entry("type $type", "format",
+			  ($entry && $entry->{format}) ? $entry->{format} : "");
+  my $obj;
+  if ($class
+      && eval "use $class; 1"
+      && ($obj = $class->getByPkey($self->object_id))
+      && $obj->can($method)) {
+    $format ||= "%s";
+    return sprintf($format, $obj->$method());
   }
-  elsif ($type) {
-    return $type . ": " . $self->object_id;
+  elsif ($format) {
+    return sprintf $format, $self->object_id;
   }
   else {
-    return '(None)';
+    return $type . ": " . $self->object_id;
   }
 }
 
