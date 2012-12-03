@@ -1687,6 +1687,31 @@ sub logon_error {
 
 Extract values for the fields specified by the fields parameter.
 
+Field information expected or supported:
+
+=over
+
+=item *
+
+C<htmltype> - if this is checkbox, C<type> is consulted, if C<"int">
+then set the value based on whether the field is present, otherwise
+return a concatenation of the values of the checkboxes of that name.
+
+=item *
+
+C<type> - if C<date> then parse the content as a date.
+
+=item *
+
+C<api> - if true, don't convert dates from d/m/y to y-m-d, since they
+should already be that format.
+
+=item *
+
+C<trim> - for plain text fields, trim leading and trailing whitespace.
+
+=back
+
 =cut
 
 sub cgi_fields {
@@ -1718,6 +1743,10 @@ sub cgi_fields {
     else {
       ($value) = $cgi->param($name);
       defined $name or $value = "";
+      if ($field->{trim}) {
+	$value =~ s/^\s+//;
+	$value =~ s/\s+\z//;
+      }
     }
     $values{$name} = $value;
   }
