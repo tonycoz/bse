@@ -146,8 +146,7 @@ sub log {
     return;
   }
 
-  require BSE::TB::AuditLog;
-  my $entry = BSE::TB::AuditLog->make(%entry);
+  my $entry = $class->make(%entry);
 
   if (!$mailing) {
     my $send = $cfg->entry("mail audit log", $level_name) ||
