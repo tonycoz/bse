@@ -6,7 +6,7 @@ use vars qw(@ISA $VERSION);
 use BSE::TB::AuditEntry;
 use Scalar::Util qw(blessed);
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 sub rowClass {
   return 'BSE::TB::AuditEntry';
@@ -125,7 +125,26 @@ sub log {
 
   $entry{msg} = delete $opts{msg}
     or $class->crash("No msg");
-  $entry{dump} = delete $opts{dump};
+  my $dump = delete $opts{dump};
+  my $bad_dump;
+  if (defined $dump) {
+    if (ref $dump) {
+      if (blessed($dump)) {
+	$bad_dump = "Dump data is blessed";
+      }
+      else {
+	require JSON;
+
+	my $json = JSON->new;
+	$json->pretty;
+	eval {
+	  $dump = $json->encode($dump);
+	  1;
+	} or $bad_dump = "Cannot encode dump reference to JSON: $@";
+      }
+    }
+  }
+  $entry{dump} = $dump;
 
   my $cfg = BSE::Cfg->single;
 
@@ -182,6 +201,9 @@ sub log {
 
   keys %opts
     and $class->crash("Unknown parameters ", join(",", keys %opts), " to log()");
+
+  $bad_dump
+    and $class->crash($bad_dump);
 }
 
 sub crash {
