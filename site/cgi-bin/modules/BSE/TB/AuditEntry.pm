@@ -2,7 +2,7 @@ package BSE::TB::AuditEntry;
 use strict;
 use base qw(Squirrel::Row);
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 sub columns {
   return qw/id 
@@ -145,14 +145,16 @@ sub object_name {
   my $type = $self->object_type
     or return '(None)';
   my $entry = $types{$type};
-  if ($entry->{class}) {
-    if (eval "use $entry->{class}; 1"
-       && (my $obj = $entry->{class}->getByPkey($self->object_id))) {
-      return $obj->describe;
-    }
-  }
   if ($entry) {
-    return sprintf $entry->{format}, $self->object_id;
+    if ($entry->{class}) {
+      if (eval "use $entry->{class}; 1"
+	  && (my $obj = $entry->{class}->getByPkey($self->object_id))) {
+	return $obj->describe;
+      }
+    }
+    else {
+      return sprintf $entry->{format}, $self->object_id;
+    }
   }
   elsif ($type) {
     return $type . ": " . $self->object_id;
