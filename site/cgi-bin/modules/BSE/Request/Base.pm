@@ -5,7 +5,7 @@ use BSE::Cfg;
 use BSE::Util::HTML;
 use Carp qw(cluck confess);
 
-our $VERSION = "1.018";
+our $VERSION = "1.019";
 
 =head1 NAME
 
@@ -1374,6 +1374,16 @@ The request method (post, get etc) in lower case
 
 sub method {
   return lc $ENV{REQUEST_METHOD};
+}
+
+=item user_agent
+
+The browser user agent string.
+
+=cut
+
+sub user_agent {
+  return $ENV{HTTP_USER_AGENT} || "";
 }
 
 =item cart
