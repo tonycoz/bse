@@ -5,7 +5,7 @@ use vars qw/@ISA/;
 use Carp 'confess';
 @ISA = qw(BSE::DB);
 
-our $VERSION = "1.010";
+our $VERSION = "1.011";
 
 use vars qw($VERSION $MAX_CONNECTION_AGE);
 
@@ -291,6 +291,12 @@ SQL
    addAdminUser => 'insert into admin_users values(?,?,?,?,?,?)',
    replaceAdminUser => 'replace into admin_users values(?,?,?,?,?,?)',
    deleteAdminUser => 'delete from admin_users where base_id = ?',
+   "AdminUsers.group_members" => <<SQL,
+select bs.*, us.*
+  from admin_base bs, admin_users us, admin_membership am
+  where bs.id = us.base_id && am.group_id = ? and am.user_id = bs.id
+  order by logon
+SQL
    adminUsersGroups => <<SQL,
 select bs.*, gr.*
   from admin_base bs, admin_groups gr, admin_membership am
@@ -306,12 +312,6 @@ select bs.*, gr.*
   where bs.id = gr.base_id
   order by name
 SQL
-   adminGroupsUsers => <<SQL,
-select bs.*, us.*
-  from admin_base bs, admin_users us, admin_membership am
-  where bs.id = us.base_id && am.group_id = ? and am.user_id = bs.id
-  order by logon
-SQL
    getAdminGroupByName => <<SQL,
 select bs.*, gr.* from admin_base bs, admin_groups gr
   where bs.id = gr.base_id and gr.name = ?
@@ -324,6 +324,12 @@ SQL
    replaceAdminGroup => 'replace into admin_groups values(?,?,?,?,?)',
    deleteAdminGroup => 'delete from admin_groups where base_id = ?',
    groupUsers => 'select * from admin_membership where group_id = ?',
+   bseAdminGroupMember => <<SQL,
+select 1
+from admin_membership
+where group_id = ?
+  and user_id = ?
+SQL
    'AdminGroups.userPermissionGroups' => <<SQL,
 select bs.*, ag.* from admin_base bs, admin_groups ag, admin_membership am
 where bs.id = ag.base_id

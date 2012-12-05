@@ -6,7 +6,7 @@ use BSE::Util::HTML qw(:default popup_menu);
 use BSE::CfgInfo qw(admin_base_url);
 use BSE::Template;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 my %actions =
   (
@@ -77,7 +77,7 @@ sub iter_get_group_users {
   my $id = $templater->perform($acts, $args, 'id')
     or return;
 
-  return BSE::DB->query(adminGroupsUsers => $id);
+  return BSE::TB::AdminGroups->group_members($id);
 }
 
 my @saltchars = ('.', '/', 0..9, 'A'..'Z', 'a'..'z');
