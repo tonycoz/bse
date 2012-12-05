@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 34;
+use Test::More tests => 38;
 
 BEGIN { use_ok('DevHelp::Validate'); }
 
@@ -211,4 +211,20 @@ BEGIN { use_ok('DevHelp::Validate'); }
       is_deeply(\%errors, { date => "date must fall on any of Monday, Tuesday, Wednesday, Thursday, Friday" }, "check errors");
     }
   }
+}
+
+# times
+{
+  my $val = DevHelp::Validate::Hash->new
+      (
+       fields =>
+       {
+	time => { rules => "time" },
+       }
+      );
+  my %errors;
+  ok($val->validate({time => "10:00"}, \%errors), "simple hh:mm");
+  ok($val->validate({time => "2pm" }, \%errors), "simple Hpm");
+  ok($val->validate({time => "12pm" }, \%errors), "simple 12pm");
+  ok(!$val->validate({time => "13pm" }, \%errors), "simple 13pm");
 }

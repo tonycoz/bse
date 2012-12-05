@@ -6,7 +6,7 @@ use vars qw(@EXPORT_OK @ISA);
 @ISA = qw(Exporter);
 use Carp qw(confess);
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 my %built_ins =
   (
@@ -124,6 +124,10 @@ my %built_ins =
     date => 1,
     maxdate => '+1d',
     maxdatemsg => 'The date entered must be in the past',
+   },
+   time =>
+   {
+    time => 1,
    },
    integer =>
    {
@@ -463,6 +467,20 @@ sub validate_field {
 	  }
 	}
       }
+      if ($rule->{time}) {
+	require DevHelp::Date;
+	my $msg;
+	if (my ($hour, $min, $sec)
+	    = DevHelp::Date::dh_parse_time($data, \$msg)) {
+	  # nothing to do here yet, later it will allow limits
+	}
+	else {
+	  $errors->{$field} =
+	    _make_error($field, $info, $rule,
+			'$n is not a valid time of day');
+	  last RULE;
+	}
+      }
       if ($rule->{confirm}) {
 	my $other = $self->param($rule->{confirm});
 	unless ($other eq $data) {
@@ -535,7 +553,11 @@ sub validate_field {
       if ($rule->{ref}) {
 	my $method = $rule->{method}
 	  or confess "Missing method in ref rule $rule_name";
-	unless ($rule->{ref}->$method($data)) {
+	my $before = $rule->{before};
+	my @before = defined $before ? ( ref $before ? @$before : split /,/, $before ) : ();
+	my $after = $rule->{after};
+	my @after = defined $after ? ( ref $after ? @$after : split /,/, $after ) : ();
+	unless ($rule->{ref}->$method(@before, $data, @after)) {
 	  $errors->{$field} = _make_error($field, $info, $rule, 'No such $n');
 	  last RULE;
 	}
@@ -829,6 +851,8 @@ DevHelp::Validate - handy configurable validation, I hope
 
 =head1 DESCRIPTION
 
+Performs simple validation of CGI or hash data.
+
 =head1 RULES PARAMETER
 
 The rules parameter is a hash with 2 keys:
@@ -857,7 +881,7 @@ A short description of the field, for use in error messages.
 =item rules
 
 A hash of rules.  See the rules description under L<CONFIGURED
-VALIDATON>.
+VALIDATION>.
 
 =back
 
@@ -871,9 +895,9 @@ The values of those keys gives the name of a validation rule, a string
 id for internationlization of the field description and a default
 field description, separated by commas.
 
-Each validation rule name has a corresponding section, [Validate Rule
-I<rule-name>], which describes the rule.  Rule names can also refer to
-built-in rules,
+Each validation rule name has a corresponding section,C<< [Validation
+Rule I<rule-name>] >>, which describes the rule.  Rule names can also
+refer to built-in rules,
 
 Values in the validation rule section are:
 
@@ -918,6 +942,11 @@ letter day of week abbreviations to require the date be only on those
 days of week.  Uses C<dowmsg> from the field or rule for the error
 message.
 
+=item time
+
+If true, validates that the value can be parsed by
+L<DevHelp::Date/dh_parse_time()>.
+
 =item confirm
 
 Specify another field that the field must be equal to, intended for
@@ -939,6 +968,12 @@ Calls the specified method on the object or class specified by C<ref>
 with the value to check as a parameter.  The value is considered value
 if the result is true.  This is intended for checking the existence of
 objects in a collection.
+
+Optionally C<before> can be an array ref or comma-separated list of
+parameters to supply before the value.
+
+Optionally C<after> can be an array ref or comma-separated list of
+parameters to supply after the value.
 
 =back
 
@@ -1025,6 +1060,10 @@ past.
 =item futuredate
 
 A valid date in the future.
+
+=item time
+
+Parses as a time as per dh_parse_time().
 
 =item integer
 
