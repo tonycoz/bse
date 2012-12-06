@@ -4,7 +4,7 @@ use Scalar::Util qw(blessed);
 use BSE::TB::Site;
 use BSE::Util::HTML;
 
-our $VERSION = "1.008";
+our $VERSION = "1.009";
 
 sub _base_variables {
   my ($self, %opts) = @_;
@@ -213,7 +213,14 @@ sub _date_format {
   my ($format, $date) = @_;
 
   my ($year, $month, $day, $hour, $min, $sec) = 
-    $date =~ /(\d+)\D+(\d+)\D+(\d+)(?:\D+(\d+)\D+(\d+)\D+(\d+))?/;
+    $date =~ /^\s*(\d+)-(\d+)\D+(\d+)(?:\D+(\d+)\D+(\d+)\D+(\d+))?/;
+  unless (defined $year) {
+    ($hour, $min, $sec) = $date =~ /^(\d+)\D+(\d+)\D+(\d+)/;
+print STDERR "time $hour $min $sec?\n";
+
+    # values that won't make strftime crazy
+    ($year, $month, $day) = ( 2000, 1, 1 );
+  }
   $hour = $min = $sec = 0 unless defined $sec;
   $year -= 1900;
   --$month;
