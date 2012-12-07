@@ -75,9 +75,17 @@ Page <:= pages.page :> of <:= pages.pagecount :>
 <:  .else -:>
 <:     .set default = "" -:>
 <:  .end if -:>
+<:  .if f.type and f.type eq "date" and default ne "" -:>
+<:    .set default = default.replace(/(\d+)\D+(\d+)\D+(\d+)/, "$3/$2/$1") -:>
+<:  .elsif f.type and f.type eq "time" and default ne "" -:>
+<:    .set default = bse.date(default =~ /:00$/ ? "%I:%M%p" : "%I:%M:%S%p", default).replace(/^0/, "").lower() -:>
+<:  .end if -:>
+<:  .if cgi.param(name).defined -:>
+<:     .set default = cgi.param(name) -:>
+<:  .end if -:>
 <:  .if f.htmltype eq "textarea" -:>
 <textarea id="<:= name | html :>" name="<:= name | html :>" rows="<:= f.height ? f.height : cfg.entry("forms", "textarea_rows", 10) :>" cols=<:= f.width ? f.width : cfg.entry("textarea_cols", 60) | html :>>
-<:-    .call "old", "field":name, "default":default -:>
+<:-= default | html -:>
 </textarea>
 <:  .elsif f.htmltype eq "checkbox" -:>
 <:.set is_checked = request.method() eq 'post' ? cgi.param(name).defined : default -:>
@@ -93,19 +101,14 @@ Page <:= pages.page :> of <:= pages.pagecount :>
     "desc":f.select.label
 -:>
 <:  .else -:>
-<:    .if f.type and f.type eq "date" and default ne "" -:>
-<:      .set default = default.replace(/(\d+)\D+(\d+)\D+(\d+)/, "$3/$2/$1") -:>
-<:    .elsif f.type and f.type eq "time" and default ne "" -:>
-<:      .set default = bse.date(default =~ /:00$/ ? "%I:%M%p" : "%I:%M:%S%p", default).replace(/^0/, "").lower() -:>
-<:    .end if -:>
-<input id="<:= name | html :>" type="text" name="<:= name | html :>" value="<:.call "old", "field":name, "default":default :>" 
+<input id="<:= name | html :>" type="text" name="<:= name | html :>" value="<:=  default | html :>" 
 <:-= f.maxlength ? ' maxlength="' _ f.maxlength _ '"' : '' :>
-<:= f.width ? 'size="' _ f.width _ '"' : '' :> />
+<:-= f.width ? ' size="' _ f.width _ '"' : '' :> />
 <:  .end if -:>
 <:.end define -:>
 
 <:.define field -:>
-<:# paramaters:
+<:# parameters:
   name - field name
   fields - hash of fields (may be set by page instead)
 :>
