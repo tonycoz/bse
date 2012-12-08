@@ -6,7 +6,7 @@ use BSE::Util::HTML qw(:default popup_menu);
 use BSE::CfgInfo qw(admin_base_url);
 use BSE::Template;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 my %actions =
   (
@@ -702,10 +702,10 @@ sub req_saveuser {
     
     for my $group_id (@group_ids) {
       if ($want_groups{$group_id} && !$current_groups{$group_id}) {
-	BSE::DB->run(addUserToGroup=>$user->{id}, $group_id);
+	$user->add_to_group($group_id);
       }
       elsif (!$want_groups{$group_id} && $current_groups{$group_id}) {
-	BSE::DB->run(delUserFromGroup=>$user->{id}, $group_id);
+	$user->remove_from_group($group_id);
       }
     }
   }

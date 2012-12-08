@@ -2,7 +2,7 @@ package BSE::TB::AdminUser;
 use strict;
 use base qw(BSE::TB::AdminBase);
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 sub columns {
   return ($_[0]->SUPER::columns,
@@ -59,6 +59,22 @@ sub describe {
   my ($self) = @_;
 
   return "Admin: " . $self->logon;
+}
+
+sub add_to_group {
+  my ($self, $group) = @_;
+
+  my $group_id = ref $group ? $group->id : $group;
+
+  BSE::DB->run(addUserToGroup=>$self->{id}, $group_id);
+}
+
+sub remove_from_group {
+  my ($self, $group) = @_;
+
+  my $group_id = ref $group ? $group->id : $group;
+
+  BSE::DB->run(delUserFromGroup=>$self->{id}, $group_id);
 }
 
 1;
