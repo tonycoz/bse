@@ -1,15 +1,42 @@
+<:.set groups = 0 -:>
+<:.set grouplabel = "label" -:>
+<:.set groupid = "id" -:>
+<:.set itemgroupid = "groupid" -:>
 <:# utility definitions :>
 <:-.define make_select-:>
   <:-.if !default.defined -:>
     <:-.set default = "" -:>
   <:.end if:>
   <select name="<:= name | html :>">
-  <:-.for i in list -:>
+  <:- .if groups -:>
+    <:-.for i in list -:>
+      <:.if i.$itemgroupid eq "" -:>
     <option value="<:= i.$id | html :>"
-      <:- .if i.$id eq default :> selected="selected"<:.end if -:>
+          <:- .if i.$id eq default :> selected="selected"<:.end if -:>
     >
-    <:= i.$desc | html :>
-  <:-.end for-:>
+        <:-= i.$desc | html -:>
+      <:.end if -:>
+    <:.end for -:>
+    <:-.for g in groups -:>
+    <optgroup label="<:= g.$grouplabel | html -:>">
+      <:-.for i in list -:>
+        <:.if i.$itemgroupid == g.$groupid -:>
+      <option value="<:= i.$id | html :>"
+          <:- .if i.$id eq default :> selected="selected"<:.end if -:>
+      >
+          <:-= i.$desc | html -:>
+        <:.end if -:>
+      <:.end for -:>
+    </optgroup>
+    <:-.end for -:>
+  <:- .else -:>
+    <:-.for i in list -:>
+    <option value="<:= i.$id | html :>"
+        <:- .if i.$id eq default :> selected="selected"<:.end if -:>
+    >
+      <:-= i.$desc | html -:>
+    <:-.end for-:>
+  <:-.end if -:>
   </select>
 <:-.end define -:>
 <:#
@@ -98,7 +125,11 @@ Page <:= pages.page :> of <:= pages.pagecount :>
     "default":default,
     "list":values,
     "id":f.select.id,
-    "desc":f.select.label
+    "desc":f.select.label,
+    "groupid": (f.select.groupid or "id"),
+    "itemgroupid": (f.select.itemgroupid or "groupid"),
+    "groups": f.select.groups ? (f.select.groups.is_code ? (f.select.groups)() : f.select.groups ) : 0,
+    "grouplabel": (f.select.grouplabel or "label")
 -:>
 <:  .else -:>
 <input id="<:= name | html :>" type="text" name="<:= name | html :>" value="<:=  default | html :>" 
