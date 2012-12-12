@@ -5,7 +5,7 @@ use BSE::Cfg;
 use BSE::Util::HTML;
 use Carp qw(cluck confess);
 
-our $VERSION = "1.020";
+our $VERSION = "1.021";
 
 =head1 NAME
 
@@ -65,6 +65,8 @@ sub new {
     require BSE::DB;
     BSE::DB->init($opts{cfg});
     BSE::DB->startup();
+    require Squirrel::Table;
+    Squirrel::Table->caching(0);
   }
 
   my $self = bless \%opts, $class;
