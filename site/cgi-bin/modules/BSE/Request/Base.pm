@@ -1388,6 +1388,16 @@ sub user_agent {
   return $ENV{HTTP_USER_AGENT} || "";
 }
 
+=item referer
+
+The referer if any.
+
+=cut
+
+sub referer {
+  return $ENV{HTTP_REFERER} || "";
+}
+
 =item cart
 
 The user's shopping cart as a L<BSE::Cart> object.
