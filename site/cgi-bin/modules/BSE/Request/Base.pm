@@ -5,7 +5,7 @@ use BSE::Cfg;
 use BSE::Util::HTML;
 use Carp qw(cluck confess);
 
-our $VERSION = "1.021";
+our $VERSION = "1.022";
 
 =head1 NAME
 
@@ -1449,6 +1449,22 @@ sub get_refresh {
 
   require BSE::Template;
   BSE::Template->get_refresh($url, $req->cfg);
+}
+
+=item get_def_refresh($url)
+
+Fetch a refresh based on the C<r> cgi parameter or the provided url if
+C<r> isn't set.
+
+=cut
+
+sub get_def_refresh {
+  my ($req, $url) = @_;
+
+  my $r = $req->cgi->param("r");
+  $r ||= $url;
+
+  return $req->get_refresh($r);
 }
 
 =item output_result($result)
