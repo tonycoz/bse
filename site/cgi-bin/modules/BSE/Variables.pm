@@ -4,7 +4,7 @@ use Scalar::Util qw(blessed);
 use BSE::TB::Site;
 use BSE::Util::HTML;
 
-our $VERSION = "1.010";
+our $VERSION = "1.011";
 
 sub _base_variables {
   my ($self, %opts) = @_;
@@ -27,7 +27,7 @@ sub _base_variables {
      },
      categorize_tags => \&_categorize_tags,
      date => \&_date_format,
-     now => \&date_now,
+     now => \&_date_now,
      number => sub {
        require BSE::Util::Format;
        return BSE::Util::Format::bse_number(@_);
