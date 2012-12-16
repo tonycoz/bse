@@ -13,7 +13,7 @@ use BSE::Variables;
 use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 
-our $VERSION = "1.013";
+our $VERSION = "1.014";
 
 my $excerptSize = 300;
 
@@ -822,7 +822,7 @@ sub baseActs {
     (
      %extras,
 
-     custom_class($cfg)->base_tags($articles, $acts, $article, $embedded, $cfg),
+     custom_class($cfg)->base_tags($articles, $acts, $article, $embedded, $cfg, $self),
      $self->admin_tags(),
      BSE::Util::Tags->static($acts, $self->{cfg}),
      # for embedding the content from children and other sources
