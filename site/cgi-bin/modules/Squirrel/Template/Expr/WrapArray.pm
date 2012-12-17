@@ -3,7 +3,7 @@ use strict;
 use base qw(Squirrel::Template::Expr::WrapBase);
 use Scalar::Util ();
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 my $list_make_key = sub {
   my ($item, $field) = @_;
@@ -146,6 +146,17 @@ sub _do_is_code {
   return 0;
 }
 
+sub _do_set {
+  my ($self, $args) = @_;
+
+  @$args == 2
+    or die [ error => "list.set takes two parameters" ];
+
+  $self->[0][$args->[0]] = $args->[1];
+
+  return $args->[1];
+}
+
 sub call {
   my ($self, $method, $args) = @_;
 
@@ -245,6 +256,11 @@ size of the array.
 Return a new array with any contained arrays expanded one level.
 
   [ [ [ 1 ], 2 ], 3 ].expand => [ [ 1 ], 2, 3 ]
+
+=item set(index, value)
+
+Set the specified I<index> in the array to I<value>.  Returns
+I<value>.
 
 =item is_list
 

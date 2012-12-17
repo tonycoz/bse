@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 166;
+use Test::More tests => 167;
 
 sub template_test($$$$;$$);
 
@@ -665,6 +665,14 @@ values: 1,2,3
 abc=1
 def=2
 ghi=3
+OUT
+
+template_test(<<IN, <<OUT, "array methods", \%acts, "", \%vars);
+<:.set foo = [ 1, 2, 4 ] -:>
+<:% foo.set(2, 3) -:>
+2: <:= foo[2] :>
+IN
+2: 3
 OUT
 
   template_test(<<IN, <<OUT, "set undef", \%acts, "", \%vars);
