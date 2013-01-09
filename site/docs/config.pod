@@ -131,6 +131,11 @@ values of [paths].downloads
 Pregenerated dynamic article pages are stored here.  This must be
 defined if you site contains any dynamicly generated pages.
 
+=item public_files
+
+The directory to store public BSE::TB::File content in (currently used
+for application specific files.)
+
 =back
 
 =head2 [extensions]
@@ -1170,6 +1175,10 @@ Default: C</images> (from C<$Constants::IMAGES_URI>)
 
 The URL to the directory represented by scalecache.  Defaults to
 I<[uri].images>F</scaled>.
+
+=item public_files
+
+The URL to the directory configured as I<[paths].public_files>.
 
 =item shop
 

@@ -6,7 +6,7 @@ use vars qw(@ISA $VERSION);
 use BSE::TB::File;
 use Carp ();
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 sub rowClass {
   return 'BSE::TB::File';
@@ -27,7 +27,7 @@ sub public_path {
 sub public_base_url {
   my ($class) = @_;
 
-  return BSE::Cfg->single->entryVar('site', 'public_files');
+  return BSE::Cfg->single->entryVar('uri', 'public_files');
 }
 
 sub make_filename {
