@@ -4721,71 +4721,8 @@ sub req_save_file {
     }
   }
 
-  my @meta;
-  my @meta_delete;
-  my @metafields = grep !$_->ro, $file->metafields($self->cfg);
-  my %current_meta = map { $_ => 1 } $file->metanames;
-  for my $meta (@metafields) {
-    my $name = $meta->name;
-    my $cgi_name = "meta_$name";
-    if ($cgi->param("delete_$cgi_name")) {
-      for my $metaname ($meta->metanames) {
-	push @meta_delete, $metaname
-	  if $current_meta{$metaname};
-      }
-    }
-    else {
-      my $new;
-      if ($meta->is_text) {
-	my ($value) = $cgi->param($cgi_name);
-	if (defined $value && 
-	    ($value =~ /\S/ || $current_meta{$meta->name})) {
-	  my $error;
-	  if ($meta->validate(value => $value, error => \$error)) {
-	    push @meta,
-	      {
-	       name => $name,
-	       value => $value,
-	      };
-	  }
-	  else {
-	    $errors{$cgi_name} = $error;
-	  }
-	}
-      }
-      else {
-	my $im = $cgi->param($cgi_name);
-	my $up = $cgi->upload($cgi_name);
-	if (defined $im && $up) {
-	  my $data = do { local $/; <$up> };
-	  my ($width, $height, $type) =
-	    BSE::ImageSize::imgsize(\$data);
-
-	  if ($width && $height) {
-	    push @meta,
-	      (
-	       {
-		name => $meta->data_name,
-		value => $data,
-		content_type => "image/\L$type",
-	       },
-	       {
-		name => $meta->width_name,
-		value => $width,
-	       },
-	       {
-		name => $meta->height_name,
-		value => $height,
-	       },
-	      );
-	  }
-	  else {
-	    $errors{$cgi_name} = $type;
-	  }
-	}
-      }
-    }
-  }
+  require BSE::FileMetaMeta;
+  my $meta = BSE::FileMetaMeta->retrieve($req, $file, \%errors);
 
   if ($cgi->param('save_file_flags')) {
     my $download = 0 + defined $cgi->param("download");
@@ -4877,12 +4814,7 @@ sub req_save_file {
       and $req->flash("Could not move $file->{displayName} to $storage: $@");
   }
 
-  for my $meta_delete (@meta_delete, map $_->{name}, @meta) {
-    $file->delete_meta_by_name($meta_delete);
-  }
-  for my $meta (@meta) {
-    $file->add_meta(%$meta, appdata => 1);
-  }
+  BSE::FileMetaMeta->save($file, $meta);
 
   # remove the replaced files
   if (my ($old_name, $old_storage) = @old_file) {

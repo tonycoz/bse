@@ -481,6 +481,7 @@ create table article_files (
   primary key (id)
 );
 
+-- this now stores metadata for more than just files
 drop table if exists bse_article_file_meta;
 create table bse_article_file_meta (
   id integer not null auto_increment primary key,
@@ -498,7 +499,10 @@ create table bse_article_file_meta (
   -- regenerated
   appdata integer not null default 0,
 
-  unique file_name(file_id, name)
+  -- owner type
+  owner_type varchar(20) not null default 'bse_file',
+
+  unique file_name(file_id, owner_type, name)
 );
 
 -- these are mailing list subscriptions

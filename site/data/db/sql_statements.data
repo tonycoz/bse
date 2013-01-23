@@ -200,24 +200,31 @@ name: bseClearArticleFileMetadata
 sql_statement: <<SQL
 delete from bse_article_file_meta
 where file_id = ?
+  and owner_type = ?
 SQL
 
 name: bseClearArticleFileAppMetadata
 sql_statement: <<SQL
 delete from bse_article_file_meta
-where file_id = ? and appdata <> 0
+where file_id = ?
+  and appdata <> 0
+  and owner_type = ?
 SQL
 
 name: bseClearArticleFileSysMetadata
 sql_statement: <<SQL
 delete from bse_article_file_meta
-where file_id = ? and appdata = 0
+where file_id = ?
+  and appdata = 0
+  and owner_type = ?
 SQL
 
 name: bseDeleteArticleFileMetaByName
 sql_statement: <<SQL
 delete from bse_article_file_meta
-where file_id = ? and name = ?
+where file_id = ?
+  and name = ?
+  and owner_type = ?
 SQL
 
 name: bseArticleKidSummary

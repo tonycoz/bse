@@ -133,6 +133,8 @@ site/cgi-bin/modules/BSE/Mail/Sendmail.pm
 site/cgi-bin/modules/BSE/Mail/SMTP.pm
 site/cgi-bin/modules/BSE/Message.pm
 site/cgi-bin/modules/BSE/MessageScanner.pm
+site/cgi-bin/modules/BSE/MetaMeta.pm
+site/cgi-bin/modules/BSE/MetaOwnerBase.pm
 site/cgi-bin/modules/BSE/NLFilter/SQL.pm
 site/cgi-bin/modules/BSE/NotifyFiles.pm
 site/cgi-bin/modules/BSE/Password.pod
@@ -187,8 +189,6 @@ site/cgi-bin/modules/BSE/TB/AdminUser.pm
 site/cgi-bin/modules/BSE/TB/AdminUsers.pm
 site/cgi-bin/modules/BSE/TB/Article.pm
 site/cgi-bin/modules/BSE/TB/ArticleFile.pm
-site/cgi-bin/modules/BSE/TB/ArticleFileMeta.pm
-site/cgi-bin/modules/BSE/TB/ArticleFileMetas.pm
 site/cgi-bin/modules/BSE/TB/ArticleFiles.pm
 site/cgi-bin/modules/BSE/TB/Articles.pm
 site/cgi-bin/modules/BSE/TB/AuditEntry.pm
@@ -209,6 +209,8 @@ site/cgi-bin/modules/BSE/TB/IPLockout.pm
 site/cgi-bin/modules/BSE/TB/IPLockouts.pm
 site/cgi-bin/modules/BSE/TB/Location.pm
 site/cgi-bin/modules/BSE/TB/Locations.pm
+site/cgi-bin/modules/BSE/TB/Metadata.pm
+site/cgi-bin/modules/BSE/TB/MetaEntry.pm
 site/cgi-bin/modules/BSE/TB/Order.pm
 site/cgi-bin/modules/BSE/TB/OrderItem.pm
 site/cgi-bin/modules/BSE/TB/OrderItemOption.pm

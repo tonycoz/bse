@@ -1,9 +1,7 @@
 package BSE::TB::ArticleFile;
 use strict;
 # represents a file associated with an article from the database
-use Squirrel::Row;
-use vars qw/@ISA/;
-@ISA = qw/Squirrel::Row/;
+use base qw(Squirrel::Row BSE::MetaOwnerBase);
 use Carp 'confess';
 
 our $VERSION = "1.011";
@@ -106,30 +104,6 @@ sub handler {
   return BSE::TB::ArticleFiles->handler($self->file_handler, $cfg);
 }
 
-sub clear_metadata {
-  my ($self) = @_;
-
-  BSE::DB->run(bseClearArticleFileMetadata => $self->{id});
-}
-
-sub clear_app_metadata {
-  my ($self) = @_;
-
-  BSE::DB->run(bseClearArticleFileAppMetadata => $self->{id});
-}
-
-sub clear_sys_metadata {
-  my ($self) = @_;
-
-  BSE::DB->run(bseClearArticleFileSysMetadata => $self->{id});
-}
-
-sub delete_meta_by_name {
-  my ($self, $name) = @_;
-
-  BSE::DB->run(bseDeleteArticleFileMetaByName => $self->{id}, $name);
-}
-
 sub set_handler {
   my ($self, $cfg) = @_;
 
@@ -163,52 +137,6 @@ sub set_handler {
   $self->set_file_handler("");
   print STDERR "** Ran off the end of ArticleFile->set_handler()\n";
   return;
-}
-
-sub add_meta {
-  my ($self, %opts) = @_;
-
-  require BSE::TB::ArticleFileMetas;
-  return BSE::TB::ArticleFileMetas->make
-      (
-       file_id => $self->{id},
-       %opts,
-      );
-}
-
-sub metadata {
-  my ($self) = @_;
-
-  require BSE::TB::ArticleFileMetas;
-  return  BSE::TB::ArticleFileMetas->getBy
-    (
-     file_id => $self->id
-    );
-}
-
-sub text_metadata {
-  my ($self) = @_;
-
-  require BSE::TB::ArticleFileMetas;
-  return  BSE::TB::ArticleFileMetas->getBy
-    (
-     file_id => $self->id,
-     content_type => "text/plain",
-    );
-}
-
-sub meta_by_name {
-  my ($self, $name) = @_;
-
-  require BSE::TB::ArticleFileMetas;
-  my ($result) = BSE::TB::ArticleFileMetas->getBy
-    (
-     file_id => $self->id,
-     name => $name
-    )
-      or return;
-
-  return $result;
 }
 
 sub inline {
@@ -520,7 +448,10 @@ sub update {
       push @$warnings, "msg:bse/admin/edit/file/save/delfromstore:$msg";
     };
   }
+}
 
+sub meta_owner_type {
+  'bse_file';
 }
 
 1;

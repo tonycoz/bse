@@ -1,15 +1,15 @@
-package BSE::TB::ArticleFileMeta;
+package BSE::TB::MetaEntry;
 use strict;
 use base 'Squirrel::Row';
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub table {
   "bse_article_file_meta";
 }
 
 sub columns {
-  qw/id file_id name content_type value appdata/;
+  qw/id file_id name content_type value appdata owner_type/;
 }
 
 sub defaults {
