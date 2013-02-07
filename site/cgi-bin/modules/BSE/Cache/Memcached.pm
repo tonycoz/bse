@@ -2,7 +2,7 @@ package BSE::Cache::Memcached;
 use strict;
 use Cache::Memcached::Fast;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub new {
   my ($class, $cfg) = @_;
@@ -68,7 +68,7 @@ BSE::Cache::Memcached - BSE interface to Cache::Memcached::Fast
 =head1 SYNOPSIS
 
   [cache]
-  class=BSE::Cache::Memcached::Fast
+  class=BSE::Cache::Memcached
   servers=127.0.0.1:11211;{address=host:port,weight=0.5,noreply=1}
   ...
 
