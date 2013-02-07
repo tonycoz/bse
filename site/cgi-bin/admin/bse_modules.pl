@@ -69,7 +69,8 @@ my @base_check =
     name => "Optional",
     modules =>
     {
-     'Imager' => 0.44,
+     'Imager' => 0.62,
+     'Imager::Filter::Sepia' => 0,
      'Log::Agent' => 0,
      'Net::Amazon::S3' => 0,
      'Captcha::reCAPTCHA' => 0,
@@ -77,6 +78,7 @@ my @base_check =
      'DBM::Deep' => 2,
      'CSS::Inliner' => 3042,
      'DBM::Deep' => 0,
+     'Spreadsheet::ParseExcel' => 0.56,
     },
    },
    {
