@@ -53,7 +53,8 @@ my @base_check =
     {
      'XML::Simple' => 0,
      'LWP::UserAgent' => 0,
-     'Crypt::SSLeay' => 0,
+     'LWP::Protocol::https' => 6.02,
+     'Mozilla::CA' => 0,
     },
    },
    {
@@ -62,7 +63,22 @@ my @base_check =
     {
      'XML::LibXML' => 0,
      'LWP::UserAgent' => 0,
-     'Crypt::SSLeay' => 0,
+     'LWP::Protocol::https' => 6.02,
+     'Mozilla::CA' => 0,
+    },
+   },
+   {
+    name => "Courier modules",
+    modules =>
+    {
+     'LWP::UserAgent' => 0,
+    },
+   },
+   {
+    name => "Fastway Couriers",
+    modules =>
+    {
+     'XML::Parser' => 0,
     },
    },
    {
@@ -78,7 +94,7 @@ my @base_check =
      'DBM::Deep' => 2,
      'CSS::Inliner' => 3042,
      'DBM::Deep' => 0,
-     'Spreadsheet::ParseExcel' => 0.56,
+     'Spreadsheet::ParseExcel' => 0.55,
     },
    },
    {
@@ -103,6 +119,13 @@ my @base_check =
      "CHI" => 0.23,
      "Cache" => 2.00,
      "Cache::Memcached::Fast" => 0.17,
+    },
+   },
+   {
+    name => "Online HTML validation",
+    modules =>
+    {
+     'WebService::Validator::HTML::W3C' => 0,
     },
    },
    {
