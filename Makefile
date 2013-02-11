@@ -76,7 +76,6 @@ clean:
 docs: INSTALL.txt INSTALL.html otherdocs
 
 INSTALL.txt: INSTALL.pod
-	echo perl=$(PERL) pod2text=$(POD2TEXT) perlbin=$(PERLBIN)
 	$(POD2TEXT) <INSTALL.pod >INSTALL.tmp
 	mv INSTALL.tmp INSTALL.txt
 
