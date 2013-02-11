@@ -1,7 +1,7 @@
 package BSE::CfgInfo;
 use strict;
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 use vars qw(@ISA @EXPORT_OK);
 require Exporter;
@@ -46,8 +46,6 @@ Returns an object of the class of the configured custom class.
 sub custom_class {
   my ($cfg) = @_;
 
-  local @INC = @INC;
-
   my $class = $cfg->entry('basic', 'custom_class', 'BSE::Custom');
 
   load_class($class, $cfg);
@@ -69,6 +67,8 @@ sub load_class {
   $cfg ||= BSE::Cfg->single;
 
   (my $file = $class . ".pm") =~ s!::!/!g;
+
+  local @INC = @INC;
 
   _do_local_inc($cfg);
 
