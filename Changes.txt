@@ -17,14 +17,89 @@ Bug fixes:
    administrative embedded catalog tags.  This will require updates to
    your embedded catalog template (admin/catalog.tmpl in base BSE).
 
+ - the check_versions.pl code now handles file renames correctly
+
+ - test.cfg is now handled case sensitively so the resulting
+   bse-install.cfg uses the same cases as test.cfg
+
+ - change BSE::UserReg to use dyn_response() instead of show_page() in
+   the few places still using it.
+
+ - define access rights for the pregen actions
+
+ - update price and tier information in the cart when the user logs in
+
+ - several template expression fixes:
+
+   - or is now only an operator when a distinct word in template
+     expressions
+
+   - parse () groups as primary expressions in template expressions
+
+   - fix the list() method for hashes
+
+ - moved [basic].public_files to [uri].public files.  RT #1359.
+
+ - fixed example in the SYNOPSIS for BSE::Cache::Memcached
+
 Enhancements:
 
  - add support for exporting report results as CSV
+
+ - add .iterateover directive to templates
+
+ - add a web UI to the importer
+
+ - added documentation to BSE::UserReg, BSE::Request::Base (the
+   request object)
+
+ - template expression enhancements:
+
+   - added several new scalar methods to template expressions
+
+   - added the set() method to hashes in template expressions
+
+   - added the expand() method to lists template expressions
+
+ - BSE now searches for shipping modules in the library_path.
+
+ - article custom fields can now be configured in [article custom
+   fields] etc
+
+ - the shopping cart is now visible to the new tag system
+
+ - flash notices when the user manipulates the cart
+
+ - unlisted, un-released, expired and unlinked pages are now treated
+   as unavailable:
+
+   - static content is remove if present
+
+   - dynamic access returns a 404 error
+
+ - added FixedIntl shipping module 
+
+ - updated the required modules in bse_modules.pl
 
 Templates:
 
  - admin/catalog.tmpl (maybe named differently) - removed the local
    date and money tag definitions.
+
+API:
+
+ - admin group creation now provides reasonable defaults
+
+Testing:
+
+ - many internal test code changes
+
+ - update the regen_known_errors make target to match the new test
+   file name
+
+ - add actions test for BSE::UserReg
+
+ - disable debug output for the eway test
 
 BSE 0.23 - 07 Sep 2012
 ========
