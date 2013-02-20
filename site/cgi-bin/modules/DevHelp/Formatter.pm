@@ -3,7 +3,7 @@ use strict;
 use DevHelp::HTML;
 use Carp 'confess';
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 use constant DEBUG => 0;
 
@@ -173,28 +173,28 @@ sub link {
 
 sub replace_char {
   my ($self, $rpart) = @_;
-  $$rpart =~ s#(acronym|abbr|dfn)\[(?:\r?\n)?([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+?)(?:\r?\n)?\]#
+  $$rpart =~ s#(acronym|abbr|dfn|cite)\[(?:\r?\n)?([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+?)(?:\r?\n)?\]#
     $self->_fix_spanned(qq/<$1 class="$3" title="$2">/, "</$1>", $4)#egi
     and return 1;
-  $$rpart =~ s#(acronym|abbr|dfn)\[(?:\r?\n)?([^|\]\[]+)\|([^\]\[]+?)(?:\r?\n)?\]#
+  $$rpart =~ s#(acronym|abbr|dfn|cite)\[(?:\r?\n)?([^|\]\[]+)\|([^\]\[]+?)(?:\r?\n)?\]#
     $self->_fix_spanned(qq/<$1 title="$2">/, "</$1>", $3)#egi
     and return 1;
-  $$rpart =~ s#(acronym|abbr|dfn)\[(?:\r?\n)?\|([^\]\[]+?)(?:\r?\n)?\]#
+  $$rpart =~ s#(acronym|abbr|dfn|cite)\[(?:\r?\n)?\|([^\]\[]+?)(?:\r?\n)?\]#
     $self->_fix_spanned("<$1>", "</$1>", $2)#egi
     and return 1;
-  $$rpart =~ s#(acronym|abbr|dfn)\[(?:\r?\n)?([^\]\[]+?)(?:\r?\n)?\]#
+  $$rpart =~ s#(acronym|abbr|dfn|cite)\[(?:\r?\n)?([^\]\[]+?)(?:\r?\n)?\]#
     $self->_fix_spanned("<$1>", "</$1>", $2)#egi
     and return 1;
   $$rpart =~ s#bdo\[(?:\r?\n)?([^|\]\[]+)\|([^\]\[]+?)(?:\r?\n)?\]#
     $self->_fix_spanned(qq/<bdo dir="$1">/, "</bdo>", $2)#egi
     and return 1;
-  $$rpart =~ s#(strong|em|samp|code|var|sub|sup|kbd|q|b|i|tt|span)\[(?:\r?\n)?([^|\]\[]+)\|([^\]\[]+?)(?:\r?\n)?\]#
+  $$rpart =~ s#(strong|em|samp|code|var|sub|sup|kbd|q|b|i|tt|span|small|large)\[(?:\r?\n)?([^|\]\[]+)\|([^\]\[]+?)(?:\r?\n)?\]#
     $self->_fix_spanned(qq/<$1 class="$2">/, "</$1>", $3)#egi
     and return 1;
-  $$rpart =~ s#(strong|em|samp|code|var|sub|sup|kbd|q|b|i|tt|span)\[(?:\r?\n)?\|([^\]\[]+?)(?:\r?\n)?\]#
+  $$rpart =~ s#(strong|em|samp|code|var|sub|sup|kbd|q|b|i|tt|span|small|large)\[(?:\r?\n)?\|([^\]\[]+?)(?:\r?\n)?\]#
     $self->_fix_spanned("<$1>", "</$1>", $2)#egi
     and return 1;
-  $$rpart =~ s#(strong|em|samp|code|var|sub|sup|kbd|q|b|i|tt|span)\[(?:\r?\n)?([^\]\[]+?)(?:\r?\n)?\]#
+  $$rpart =~ s#(strong|em|samp|code|var|sub|sup|kbd|q|b|i|tt|span|small|large)\[(?:\r?\n)?([^\]\[]+?)(?:\r?\n)?\]#
     $self->_fix_spanned("<$1>", "</$1>", $2)#egi
     and return 1;
   $$rpart =~ s#poplink\[([^|\]\[]+)\|([^\]\[]+)\]#
@@ -418,19 +418,19 @@ sub remove_format {
     TRY: while (1) {
 	$self->remove(\$part)
 	  and next TRY;
-	$part =~ s#(?:acronym|abbr|dfn)\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]*)\]#$3#ig
+	$part =~ s#(?:acronym|abbr|dfn|cite)\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]*)\]#$3#ig
 	  and next TRY;
-	$part =~ s#(?:acronym|abbr|dfn|bdo)\[([^|\]\[]+)\|([^\]\[]*)\]#$2#ig
+	$part =~ s#(?:acronym|abbr|dfn|cite|bdo)\[([^|\]\[]+)\|([^\]\[]*)\]#$2#ig
 	  and next TRY;
-	$part =~ s#(?:acronym|abbr|dfn|bdo)\[\|([^|\]\[]*)\]#$1#ig
+	$part =~ s#(?:acronym|abbr|dfn|cite|bdo)\[\|([^|\]\[]*)\]#$1#ig
 	  and next TRY;
-	$part =~ s#(?:acronym|abbr|dfn)\[([^|\]\[]*)\]#$1#ig
+	$part =~ s#(?:acronym|abbr|dfn|cite)\[([^|\]\[]*)\]#$1#ig
 	  and next TRY;
-	$part =~ s#(?:strong|em|samp|code|var|sub|sup|kbd|q|address|blockquote|b|i|tt|span)\[([^|\]\[]+)\|([^\]\[]*)\]#$2#ig
+	$part =~ s#(?:strong|em|samp|code|var|sub|sup|kbd|q|address|blockquote|b|i|tt|span|small|large)\[([^|\]\[]+)\|([^\]\[]*)\]#$2#ig
 	  and next TRY;
-	$part =~ s#(?:strong|em|samp|code|var|sub|sup|kbd|q|address|blockquote|b|i|tt|span)\[\|([^\]\[]*)\]#$1#ig
+	$part =~ s#(?:strong|em|samp|code|var|sub|sup|kbd|q|address|blockquote|b|i|tt|span|small|large)\[\|([^\]\[]*)\]#$1#ig
 	  and next TRY;
-	$part =~ s#(?:strong|em|samp|code|var|sub|sup|kbd|q|address|blockquote|b|i|tt|span)\[([^\]\[]*)\]#$1#ig
+	$part =~ s#(?:strong|em|samp|code|var|sub|sup|kbd|q|address|blockquote|b|i|tt|span|small|large)\[([^\]\[]*)\]#$1#ig
 	  and next TRY;
 	$part =~ s#div\[([^\[\]\|]+)\|([^\[\]]*)\](?:\r?\n)?#$2#ig
 	  and next TRY;
