@@ -83,7 +83,8 @@ sub do_regen {
     if ($type eq "html") {
       require BSE::Template;
       %acts = $req->admin_tags;
-      my $temp_result = BSE::Template->get_page("admin/makeindex", $req->cfg, \%acts);
+      $req->_set_vars();
+      my $temp_result = BSE::Template->get_page("admin/makeindex", $req->cfg, \%acts, undef, undef, $req->{vars});
       (my ($prefix), $permessage, $suffix) =
 	split /<:\s*iterator\s+(?:begin|end)\s+messages\s*:>/, $temp_result;
       print "Content-Type: ", BSE::Template->html_type($cfg), "\n\n";
@@ -92,7 +93,7 @@ sub do_regen {
 	my ($error, @msg) = @_;
 	$acts{ifError} = $error;
 	$acts{message} = escape_html(join("", @msg));
-	$outputcb->(BSE::Template->replace($permessage, $req->cfg, \%acts));
+	$outputcb->(BSE::Template->replace($permessage, $req->cfg, \%acts, $req->{vars}));
       };
       $errorcb = sub {
 	my (@msg) = @_;
