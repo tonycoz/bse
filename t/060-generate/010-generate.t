@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>164;
+use Test::More tests=>167;
 use File::Spec;
 use FindBin;
 use Cwd;
@@ -661,6 +661,18 @@ Three
 Two
 One
 
+EXPECTED
+
+template_test "template vars", $parent, <<TEMPLATE, <<EXPECTED;
+Article Title: [<:= article.title |html :>]
+Top Title: [<:= top.title |html :>]
+Embedded: [<:= embedded | html :>]
+Dynamic: [<:= dynamic | html :>]
+TEMPLATE
+Article Title: [Parent]
+Top Title: [Parent]
+Embedded: [0]
+Dynamic: [0]
 EXPECTED
 
 ############################################################

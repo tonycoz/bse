@@ -16,7 +16,50 @@ use Carp 'confess';
 use BSE::Util::Iterate;
 use BSE::CfgInfo qw(cfg_dist_image_uri cfg_image_uri);
 
-our $VERSION = "1.008";
+our $VERSION = "1.009";
+
+=head1 NAME
+
+  Generate::Article - generates articles.
+
+=head1 SYNOPSIS
+
+=head1 DESCRIPTION
+
+=head1 TAGS
+
+
+=head2 Tag notes
+
+In your HTML each tag will be preceded by <: and followed by :>
+
+Tags marked as conditional will require a little more.  Conditional
+tags can be used in two ways:
+
+<:ifName args:>true text<:or:>false text<:eif:>
+
+or:
+
+<:if Name args:>true text<:or Name:>false text<:eif Name:>
+
+Tags starting iterator ... are used as iterators, like:
+
+<:iterator begin name:>
+repeated text
+<:iterator separator name:>
+separator text
+<:iterator end name:>
+
+In general, a parameter I<which> can be any one of 'article', 'parent'
+or 'section'.  In a child iterator it can also be 'child'.  In a
+crumbs iterator it can also be 'crumbs'.  If I<which> is missing it
+means the current article.
+
+=head2 Normal tags
+
+=over 4
+
+=cut
 
 my $excerptSize = 300;
 
@@ -249,7 +292,7 @@ Reference an article attached file by name.
 
 C<filen name> will display a link to the file.
 
-C<<filen name I<field> >> will display the given field from the file
+C<< filen name I<field> >> will display the given field from the file
 record.  A I<field> of C<url> will be a URL to the file.
 
 If the file identifier given doesn't exist for the current article the
@@ -378,6 +421,7 @@ sub baseActs {
 
   $self->set_variable(article => $article);
   $self->set_variable(embedded => $embedded);
+  $self->set_variable(top => $self->{top});
   # used to generate the list (or not) of children to this article
   my $child_index = -1;
   my @children = $articles->listedChildren($article->{id});
@@ -421,6 +465,7 @@ sub baseActs {
 
   my $dynamic = $self->{force_dynamic}
     || (UNIVERSAL::isa($top, 'Article') ? $top->is_dynamic : 0);
+  $self->set_variable(dynamic => $dynamic);
 
   my @stepkids;
   my @allkids;
@@ -813,47 +858,6 @@ sub _find_articles {
 1;
 
 __END__
-
-=head1 NAME
-
-  Generate::Article - generates articles.
-
-=head1 SYNOPSIS
-
-=head1 DESCRIPTION
-
-=head1 TAGS
-
-
-=head2 Tag notes
-
-In your HTML each tag will be preceded by <: and followed by :>
-
-Tags marked as conditional will require a little more.  Conditional
-tags can be used in two ways:
-
-<:ifName args:>true text<:or:>false text<:eif:>
-
-or:
-
-<:if Name args:>true text<:or Name:>false text<:eif Name:>
-
-Tags starting iterator ... are used as iterators, like:
-
-<:iterator begin name:>
-repeated text
-<:iterator separator name:>
-separator text
-<:iterator end name:>
-
-In general, a parameter I<which> can be any one of 'article', 'parent'
-or 'section'.  In a child iterator it can also be 'child'.  In a
-crumbs iterator it can also be 'crumbs'.  If I<which> is missing it
-means the current article.
-
-=head2 Normal tags
-
-=over 4
 
 =item article I<name>
 
@@ -1298,9 +1302,9 @@ Controls whether the article inherits its parents access controls.
 
 =head2 Admin tags
 
-=over 4
-
 The following tags produce output only in admin mode.
+
+=over 4
 
 =item admin
 
@@ -1358,6 +1362,32 @@ Conditional tag, true if the current article has a parent.
 
 Conditional tag, true if the current article is embedded in another
 article, in this context.
+
+=back
+
+=head1 Variables
+
+=over
+
+=item *
+
+X<article, template variable>article - the article being processed.
+An object of type L<Article>.
+
+=item *
+
+X<top, template variable>top - when C<article> is being embedded, the
+very top article being generated.  An object of type L<Article>.
+
+=item *
+
+X<embedded, template variable>embedded - whether the current article
+is embedded.
+
+=item *
+
+X<dynamic, template variable>dynamic - whether the page is being
+generated for dynamic display.
 
 =back
 

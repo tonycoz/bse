@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests => 95;
+use Test::More tests => 98;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
@@ -44,7 +44,8 @@ my $parent = bse_make_catalog
   (
    cfg => $cfg,
    title => "test catalog",
-   body => "Test catalog for catalog tests"
+   body => "Test catalog for catalog tests",
+   force_dynamic => 1,
   );
 
 ok($parent, "made a catalog");
@@ -500,6 +501,18 @@ Pages: 1fn2 2cn3p1 3lp2
 9 prod3
 10 prod2
 
+EXPECTED
+
+dyn_template_test "template vars", $parent, <<TEMPLATE, <<EXPECTED;
+Article Title: [<:= article.title |html :>]
+Top Title: [<:= top.title |html :>]
+Embedded: [<:= embedded | html :>]
+Dynamic: [<:= dynamic | html :>]
+TEMPLATE
+Article Title: [test catalog]
+Top Title: [test catalog]
+Embedded: [0]
+Dynamic: [1]
 EXPECTED
 
 $prod4->remove($cfg);
