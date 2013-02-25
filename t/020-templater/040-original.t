@@ -1,7 +1,8 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 167;
+use Test::More tests => 168;
+use HTML::Entities;
 
 sub template_test($$$$;$$);
 
@@ -516,6 +517,7 @@ OUT
      [ '"test".is_list', 0 ],
      [ '"test".is_hash', 0 ],
      [ '"abc".replace(/(.)(.)(.)/, "$3$2$1")', "cba" ],
+     [ '"a&b".escape("html")', 'a&amp;b' ],
 
      # WrapArray
      [ '[ [ 1, 2 ], 3 ].expand.join(",")', "1,2,3" ],
@@ -728,7 +730,13 @@ sub template_test ($$$$;$$) {
   my $templater = Squirrel::Template->new
     (
      template_dir=>'t/templates',
-     preload => "preload.tmpl"
+     preload => "preload.tmpl",
+     formats =>
+     {
+      html => sub {
+	encode_entities($_[0], '&<>');
+      }
+     }
     );
 
   my $result = $templater->replace_template($in, $acts, undef, "test", $vars);

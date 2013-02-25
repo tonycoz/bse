@@ -2,7 +2,7 @@ package Squirrel::Template::Expr::WrapScalar;
 use strict;
 use base qw(Squirrel::Template::Expr::WrapBase);
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 sub _do_length  {
   my ($self, $args) = @_;
@@ -234,6 +234,14 @@ sub _do_replace {
   return $str;
 }
 
+sub _do_escape {
+  my ($self, $args) = @_;
+
+  @$args == 1
+    or die [ error => "scalar.escape requires one parameter" ];
+  return $self->[1]->format($self->[0], $args->[0]);
+}
+
 sub call {
   my ($self, $method, $args) = @_;
 
@@ -313,6 +321,19 @@ C<sep>, returning up to C<count> objects.  C<sep> defaults to C<" ">,
 C<count> defaults to C<0>.  A count of C<0> returns as many elements
 as are found but removes any trailing empty length elements.  A
 negative C<count> returns all elements.
+
+=item format(format)
+
+Formats the scalar using a sprintf() format code.
+
+  (10.123).format("%.2f") # "10.12"
+
+=item escape(type)
+
+Escape the scalar with the template defined escape method, eg. "html",
+"uri".
+
+  "a&b".escape("html") # "a&amp;b"
 
 =item evaltag
 
