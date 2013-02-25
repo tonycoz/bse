@@ -239,6 +239,11 @@ If non-zero then any HTML output is validated with HTML::Tidy.
 Validation errors and warnings are sent to the audit log.  See [html
 tidy].
 
+=item tagformat
+
+The default tag formatting to use for C<< <:= ... :> >> tags.
+Default: C<html>.
+
 =back
 
 =head2 [basic]

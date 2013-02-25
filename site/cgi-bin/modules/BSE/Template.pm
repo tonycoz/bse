@@ -4,7 +4,24 @@ use Squirrel::Template;
 use Carp qw(confess cluck);
 use Config ();
 
-our $VERSION = "1.009";
+our $VERSION = "1.010";
+
+my %formats =
+  (
+   html => sub {
+     require BSE::Util::HTML;
+     return BSE::Util::HTML::escape_html($_[0]);
+   },
+   uri => sub {
+     require BSE::Util::HTML;
+     return BSE::Util::HTML::escape_uri($_[0]);
+   },
+   raw => sub {
+     return $_[0];
+   },
+  );
+$formats{h} = $formats{html};
+$formats{u} = $formats{uri};
 
 sub templater {
   my ($class, $cfg, $rsets) = @_;
@@ -26,17 +43,8 @@ sub templater {
      template_dir => \@dirs,
      utf8 => $cfg->utf8,
      charset => $cfg->charset,
-     formats =>
-     {
-      html => sub {
-	require BSE::Util::HTML;
-	return BSE::Util::HTML::escape_html($_[0]);
-      },
-      uri => sub {
-	require BSE::Util::HTML;
-	return BSE::Util::HTML::escape_uri($_[0]);
-      },
-     },
+     formats => \%formats,
+     def_format => $cfg->entry("html", "tagformat", "html"),
      trace_noimpl => scalar($cfg->entry("debug", "trace_noimpl", 0)),
     );
   if ($cfg->entry("basic", "cache_templates")) {

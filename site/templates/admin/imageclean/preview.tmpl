@@ -12,13 +12,13 @@
 <:- .if state.type eq "stage" -:>
   <h1><:= request.catmsg(msgbase _ "stage/" _ state.stage) -:></h1>
 <: .elsif state.type eq "substage" -:>
-  <h2><:= request.htmlmsg(msgbase _ "substage/" _ state.stage _ "/" _ state.substage) -:></h2>
+  <h2><:= request.htmlmsg(msgbase _ "substage/" _ state.stage _ "/" _ state.substage) |raw :></h2>
 <: .elsif state.type eq "orphanimage" :>
   <div><input type="checkbox" name="image" value="<:= state.image.id :>" checked="checked" />
-  <:= request.htmlmsg(msgbase _ "preview/image", [ state.image.id, state.image.image ]) :></div>
+  <:= request.htmlmsg(msgbase _ "preview/image", [ state.image.id, state.image.image ]) |raw :></div>
 <: .elsif state.type eq "orphanfile" :>
   <div><input type="checkbox" name="file" value="<:= state.file :>" checked="checked" />
-  <:= request.htmlmsg(msgbase _ "preview/file", [ state.file ]) :></div>
+  <:= request.htmlmsg(msgbase _ "preview/file", [ state.file ]) |raw:></div>
 <: .elsif state.type eq "error" :>
 <div class="message error"><:= state.error | html :></div>
 <: .end if -:>

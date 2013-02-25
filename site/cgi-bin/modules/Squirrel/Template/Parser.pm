@@ -2,7 +2,7 @@ package Squirrel::Template::Parser;
 use strict;
 use Squirrel::Template::Constants qw(:token :node);
 
-our $VERSION = "1.013";
+our $VERSION = "1.014";
 
 use constant TOK => 0;
 use constant TMPLT => 1;
@@ -131,6 +131,7 @@ sub _parse_expr {
   my $parsed;
   if (eval { $parsed = $parser->parse($expr->[TOKEN_EXPR_EXPR]); 1 }) {
     $expr->[NODE_EXPR_EXPR] = $parsed;
+    $expr->[NODE_EXPR_FORMAT] ||= $self->[TMPLT]{def_format};
     return $expr;
   }
   elsif (ref $@) {

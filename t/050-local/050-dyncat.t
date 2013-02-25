@@ -43,7 +43,7 @@ sub dyn_template_test($$$$);
 my $parent = bse_make_catalog
   (
    cfg => $cfg,
-   title => "test catalog",
+   title => "test & catalog",
    body => "Test catalog for catalog tests",
    force_dynamic => 1,
   );
@@ -509,8 +509,8 @@ Top Title: [<:= top.title |html :>]
 Embedded: [<:= embedded | html :>]
 Dynamic: [<:= dynamic | html :>]
 TEMPLATE
-Article Title: [test catalog]
-Top Title: [test catalog]
+Article Title: [test &amp; catalog]
+Top Title: [test &amp; catalog]
 Embedded: [0]
 Dynamic: [1]
 EXPECTED

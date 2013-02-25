@@ -2,7 +2,7 @@
 <h1>Logon</h1>
 <:.if request.messages.size != 0:>
 <:-.for m in request.messages -:>
-<div class="message <:= m.class:>"><:= m.html :></div>
+<div class="message <:= m.class:>"><:= m.html |raw:></div>
 <:.end for-:>
 <:.end if:>
 <form method="post" action="<:adminbase:><:script:>">

@@ -20,7 +20,7 @@ BEGIN {
 
 use constant DEBUG_GET_PARMS => 0;
 
-our $VERSION = "1.024";
+our $VERSION = "1.025";
 
 my %compile_cache;
 
@@ -34,6 +34,7 @@ sub new {
   $opts{param} = [];
   $opts{wraps} = [];
   $opts{errors} = [];
+  $opts{def_format} ||= "";
 
   return bless \%opts, $class;
 }
@@ -643,6 +644,15 @@ by template files.  Defaults to C<"utf-8">.
 
 A BSE::Cache object to use for caching compiled templates.  Note that
 templates are currently only cached by filename.
+
+=item formats
+
+A hashref of content formatters used for formatting C<< E<lt>=
+... E<gt> >> tags.
+
+=item def_format
+
+The default format for C<< E<lt>= ... E<gt> >> tags.
 
 =back
 

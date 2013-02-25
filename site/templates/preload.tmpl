@@ -85,7 +85,7 @@ Page <:= pages.page :> of <:= pages.pagecount :>
 <:.define error_img -:>
 <:# parameters: field -:>
 <:# this implementation should probably change -:>
-<:= ("error_img " _ field).evaltag -:>
+<:= ("error_img " _ field).evaltag |raw -:>
 <:.end define -:>
 
 <:.define input -:>
@@ -158,7 +158,7 @@ Page <:= pages.page :> of <:= pages.pagecount :>
 <:  .if request.messages.size -:>
 <div class="messages">
 <:     .for m in request.messages -:>
-  <div class="<:= m.class :>"><:= m.html :></div>
+  <div class="<:= m.class :>"><:= m.html |raw :></div>
 <:     .end for -:> 
 </div>
 <:  .end if -:>

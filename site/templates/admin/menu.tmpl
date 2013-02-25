@@ -69,7 +69,7 @@ and base pages</a> (<a
 href="<:= cfg.admin_url("generate", { "id": "extras", "progress":1 }) | html :>">verbose</a>)</li></ul>
 <:or:><:eif:>
 
-<p><a href="<:= cfg.admin_url("makeIndex") | html :>">Regenerate search index</a> (<a href="<:= cfg.admin_url("makeIndex", { "progress":1 }) | html :>">verbose</a>)</p>
+<p><a href="<:= cfg.admin_url("makeIndex") | html :>">Regenerate search index</a> (<a href="<:= cfg.admin_url("makeIndex", { "verbose":1 }) | html :>">verbose</a>)</p>
 
 <p><a href="<:= cfg.admin_url("backmon") | html :>">Background processing</a></p>
 
