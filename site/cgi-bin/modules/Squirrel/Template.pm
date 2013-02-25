@@ -6,6 +6,7 @@ use Squirrel::Template::Parser;
 use Squirrel::Template::Deparser;
 use Squirrel::Template::Processor;
 use Squirrel::Template::Expr;
+use Squirrel::Template::Params;
 
 use constant MAX_SCOPES => 50;
 
@@ -19,7 +20,7 @@ BEGIN {
 
 use constant DEBUG_GET_PARMS => 0;
 
-our $VERSION = "1.023";
+our $VERSION = "1.024";
 
 my %compile_cache;
 
@@ -509,7 +510,12 @@ sub replace {
 
   local $self->{scopes} = [];
   push @{$self->{scopes}}, $vars if $vars;
-  push @{$self->{scopes}}, { globals => {} };
+  my $my_scope = 
+    {
+     globals => {},
+     params => Squirrel::Template::Params->new(undef, $self, undef),
+    };
+  push @{$self->{scopes}}, $my_scope;
   local $self->{scope_contexts} = [];
 
   local $self->{defines} = {};
@@ -849,7 +855,9 @@ can then be replaced on each iteration.
 
 =back
 
-=head1 The loop variable
+=head1 Special Variables
+
+=head2 The loop variable
 
 Each C<.for> loop defines a C<loop> variable.  If you have nested
 loops, you can define an alias to the variable, eg:
@@ -904,6 +912,21 @@ prev, next - the previous or next element respectively, if any.
 list - the list argument to C<.for>.
 
 =back
+
+=head2 params
+
+This is set to the names and values supplied in a C<wrap> request, so:
+
+  <:= param.name :>
+
+is equivalent to:
+
+  <: param name :>
+
+=head2 globals
+
+C<globals> provides a top-level hash to fill as required.  This can be
+used to pass information from an inner-scope back to an outer scope.
 
 =head1 OLD TEMPLATE SYNTAX
 

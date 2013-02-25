@@ -97,10 +97,12 @@ TEMPLATE
 <:wrap wraptest.tmpl title=>[cat "foo " [str]], menu => 1, showtitle => "abc" :>Alpha
 <:param menu:>
 <:param showtitle:>
+<:= params.showtitle :>
 TEMPLATE
 <title>foo ABC</title>
 Alpha
 1
+abc
 abc
 OUTPUT
 
