@@ -29,8 +29,8 @@ Otherwise install Imager from CPAN:
 =item 1
 
 install the libraries that Imager depends on, this is at least
-libjpeg, libgif (or libungif) and libpng.  You can also install
-libtiff, but this shouldn't be necessary, since TIFF isn't a common
+C<libjpeg>, C<libgif> and C<libpng>.  You can also install
+C<libtiff>, but this shouldn't be necessary, since TIFF isn't a common
 web format.
 
 All of these libraries are usually available in your operating
@@ -49,9 +49,9 @@ install Imager, as root:
 Once you have Imager installed, add the following to bse.cfg (or
 bse-local.cfg):
 
-[editor]
-allow_thumb=1
-thumbs_class=BSE::Thumb::Imager
+  [editor]
+  allow_thumb=1
+  thumbs_class=BSE::Thumb::Imager
 
 If you don't see thumbnails on the image manager page, check your
 server error log file for error messages.
@@ -59,9 +59,5 @@ server error log file for error messages.
 =head1 AUTHOR
 
 Tony Cook <tony@develop-help.com>
-
-=head1 REVISION
-
-$Revision$
 
 =cut
