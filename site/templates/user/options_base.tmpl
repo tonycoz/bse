@@ -45,14 +45,13 @@
         </td>
     </tr>
 <:eif Partial_logon:>
-    <:if Message:> 
+    <:.if request.message:> 
     <tr> 
       <td colspan="2" align="center"> 
-        <p><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><b>
-          <:message:></b></font></p>
+      <:- .call "messages" -:>
       </td>
     </tr>
-    <:or Message:><:eif Message:> 
+    <:.end if:>
 <:if Imagetemplates:>
     <tr> 
       <td colspan="2" height="20" align="center"> 

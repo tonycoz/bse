@@ -37,6 +37,12 @@ message: You haven't paid the order containing this file
 id: bse/user/downloaderror/unfilled
 message: The order containing this file hasn't been filled.  Please contact us.
 
+id: bse/user/register
+message: User '%1:{userId}s' successfully registered
+
+id: bse/user/saveopts
+message: Saved %1:{userId}s's options
+
 id: bse/admin/edit/image/save/nameformat
 message: Image identifiers must be a letter or underscore followed by zero or more letters, underscores or digits
 

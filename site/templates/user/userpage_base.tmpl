@@ -30,7 +30,7 @@
   </table>
   <br>
    
-<:if Message:><p class="message"><:message:></p> <:or Message:><:eif Message:> 
+<:.if request.message:><p class="message"><:.call "messages":></p> <:.end if:> 
   <table width="100%" cellpadding="0" cellspacing="1">
     <tr> 
       <th align="center" height="20"><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Your 

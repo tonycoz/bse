@@ -7,13 +7,13 @@
           Registration</font></b></p>
       </th>
     </tr>
-    <:if Message:> 
+    <:.if request.message:> 
     <tr> 
       <td colspan="2" align="center"> 
-        <p><b><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:message:></font></b></p>
+        <:.call "messages":>
       </td>
     </tr>
-    <:or Message:><:eif Message:> <:if User:> 
+    <:.end if:> <:if User:> 
     <tr> 
       <td colspan="2"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">You 
         are already logged on - Why register again?</font></td>

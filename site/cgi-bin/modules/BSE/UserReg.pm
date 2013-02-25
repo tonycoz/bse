@@ -18,7 +18,7 @@ use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
 use Carp qw(confess);
 
-our $VERSION = "1.023";
+our $VERSION = "1.024";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -528,23 +528,7 @@ sub req_show_register {
 			       "Registration disabled");
     }
   }
-  $errors ||= {};
-  $message ||= $cgi->param('message');
-  if (defined $message) {
-    $message = escape_html($message);
-  }
-  else {
-    if (keys %$errors) {
-      my @keys = $cgi->param();
-      my %errors_copy = %$errors;
-      my @errors = grep defined, delete @errors_copy{@keys};
-      push @errors, values %errors_copy;
-      $message = join("<br />", map escape_html($_), @errors);
-    }
-    else {
-      $message = '';
-    }
-  }
+  $message = $req->message($message || $errors);
 
   my @subs = grep $_->{visible}, BSE::SubscriptionTypes->all;
   my $sub_index = -1;
@@ -767,6 +751,8 @@ sub req_register {
 
     $custom->siteusers_changed($cfg);
 
+    $req->flash_notice("msg:bse/user/register", [ $user ]);
+
     return $self->_got_user_refresh($req);
   }
   else {
@@ -926,19 +912,8 @@ sub req_show_opts {
   my %usersubs = map { $_->{subId}, $_ } @usersubs;
   
   my $sub_index;
-  $errors ||= {};
-  $message ||= $cgi->param('message');
-  if (defined $message) {
-    $message = escape_html($message);
-  }
-  else {
-    if (keys %$errors) {
-      $message = $req->message($errors);
-    }
-    else {
-      $message = '';
-    }
-  }
+  $message = $req->message($message || $errors);
+
   require BSE::TB::OwnedFiles;
   my @file_cats = BSE::TB::OwnedFiles->categories($cfg);
   my %subbed = map { $_ => 1 } $user->subscribed_file_categories;
@@ -1218,6 +1193,8 @@ sub req_saveopts {
     }
   }
 
+  $req->flash_notice("msg:bse/user/saveopts", [ $user ]);
+
   $custom->siteusers_changed($cfg);
 
   return $req->get_refresh($url);
@@ -1348,17 +1325,11 @@ sub req_userpage {
   my $cgi = $req->cgi;
   my $session = $req->session;
 
-  if ($message) {
-    $message = escape_html($message);
-  }
-  else {
-    $message = $req->message;
-  }
+  $message = $req->message($message);
 
   my $result;
   my $user = $self->_get_user($req, 'userpage', \$result)
     or return $result;
-  $message ||= $cgi->param('message') || '';
 
   my $it = BSE::Util::Iterate->new;
   my %acts =

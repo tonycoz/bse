@@ -1,5 +1,5 @@
 --
-# VERSION=1.003
+# VERSION=1.004
 id: bse/
 description: BSE messages
 
@@ -64,6 +64,12 @@ description: No order containing this file has been paid for (if must_be_paid se
 
 id: bse/user/downloaderror/unfilled
 description: No order containing this file has been filled (if must_be_filled set)
+
+id: bse/user/register
+description: Displayed on successful registration ($1 the new user object).
+
+id: bse/user/saveopts
+description: Displayed when options saved successfully ($1 the user object).
 
 id: bse/admin/
 description: BSE Administration
