@@ -13,7 +13,7 @@ use BSE::Variables;
 use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 
-our $VERSION = "1.014";
+our $VERSION = "1.015";
 
 my $excerptSize = 300;
 
@@ -39,6 +39,22 @@ sub new {
 
 sub cfg {
   $_[0]{cfg};
+}
+
+sub url {
+  my ($self, $article, $force_abs) = @_;
+
+  my $url = $self->{admin_links} ? $article->admin : $article->link;
+  if (!$self->{admin} && $self->{admin_links}) {
+    $url .= $url =~ /\?/ ? "&" : "?";
+    $url .= "admin=0&admin_links=1";
+  }
+
+  if (($force_abs || $self->abs_urls) && $url !~ /^\w+:/) {
+    $url = $self->cfg->entryErr("site", "url") . $url;
+  }
+
+  return $url;
 }
 
 sub site {
@@ -818,6 +834,9 @@ sub baseActs {
   my $art_it = BSE::Util::Iterate::Article->new(cfg => $cfg,
 						admin => $self->{admin},
 						top => $self->{top});
+  my $weak_self = $self;
+  Scalar::Util::weaken($weak_self);
+  $self->set_variable(url => sub { $weak_self->url(@_) });
   return 
     (
      %extras,
@@ -1493,6 +1512,31 @@ C<embed child>.
 =item ifEmbedded
 
 Conditional tag, true if the current article is being embedded.
+
+=back
+
+=head1 VARIABLES
+
+Template variables:
+
+=over
+
+=item *
+
+url(article)
+
+=item *
+
+url(article, 1)
+
+Return a URL for the given article, depending on admin_links mode.  If
+the page is being generated with absolute URLs or a second true
+parameter is supplied, the URL is convrted to an absolute URL if
+necessary.
+
+=item *
+
+articles - the articles class.
 
 =back
 
