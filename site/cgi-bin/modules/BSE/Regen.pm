@@ -10,7 +10,7 @@ use Carp qw(confess);
 use BSE::WebUtil qw(refresh_to_admin);
 use BSE::Util::HTML;
 
-our $VERSION = "1.008";
+our $VERSION = "1.009";
 
 # returns non-zero if the Regenerate button should work
 sub generate_button {
@@ -123,7 +123,7 @@ sub _search_presets {
 
   _cfg_presets($cfg, \%article, "search");
 
-  return \%article;
+  return _dummy_article(\%article);
 }
 
 sub _shop_presets {
@@ -138,7 +138,7 @@ sub _shop_presets {
 
   _cfg_presets($cfg, $shop, "shop");
 
-  return $shop;
+  return _dummy_article($shop);
 }
 
 sub _extras_presets {
@@ -152,7 +152,7 @@ sub _extras_presets {
   $article{link} = $cfg->entryErr('site', 'url');
   _cfg_presets($cfg, \%article, $presets);
 
-  return \%article;
+  return _dummy_article(\%article);
 }
 
 my %builtin_extras =
@@ -463,6 +463,30 @@ sub _write_text {
     or die "Cannot write $filename: $!";
   close $fh
     or die "Cannot close $filename: $!";
+}
+
+sub _dummy_article {
+  my ($data) = @_;
+
+  return bless $data, "BSE::Regen::DummyArticle";
+}
+
+package BSE::Regen::DummyArticle;
+use base 'BSE::TB::SiteCommon';
+
+sub images {
+  return;
+}
+
+sub files {
+  return;
+}
+
+{
+  use Articles;
+  for my $name (Article->columns) {
+    eval "sub $name { \$_[0]{$name} }";
+  }
 }
 
 1;
