@@ -13,7 +13,7 @@ use BSE::Variables;
 use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 
-our $VERSION = "1.015";
+our $VERSION = "1.016";
 
 my $excerptSize = 300;
 
@@ -31,6 +31,7 @@ sub new {
      cfg => $opts{cfg},
      bse => BSE::Variables->variables(%opts),
     };
+  $opts{varstack} = [];
   my $self = bless \%opts, $class;
   $self->set_variable_class(articles => "Articles");
 
@@ -127,6 +128,14 @@ sub summarize {
   $result =~ s!<p>|</p>!!g;
 
   return $result;
+}
+
+sub summary {
+  my ($self, $article, $limit) = @_;
+
+  $limit ||= $article->summaryLength;
+
+  return $self->summarize("Articles", $article->body, {}, $limit);
 }
 
 # attempts to move the given position forward if it's within a HTML tag,
@@ -1244,6 +1253,26 @@ sub get_real_article {
   my ($self, $article) = @_;
 
   return $article;
+}
+
+sub localize {
+  my ($self) = @_;
+
+  my $vars = $self->{vars};
+  my %copy = %$vars;
+  for my $key (keys %$vars) {
+    if (ref $vars->{$key} && Scalar::Util::isweak($vars->{$key})) {
+      Scalar::Util::weaken($copy{$key});
+    }
+  }
+  push @{$self->{varstack}}, $vars;
+  $self->{vars} = \%copy;
+}
+
+sub unlocalize {
+  my ($self) = @_;
+
+  $self->{vars} = pop @{$self->{varstack}};
 }
 
 1;

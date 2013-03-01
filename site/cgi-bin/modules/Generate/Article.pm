@@ -16,7 +16,7 @@ use Carp 'confess';
 use BSE::Util::Iterate;
 use BSE::CfgInfo qw(cfg_dist_image_uri cfg_image_uri);
 
-our $VERSION = "1.009";
+our $VERSION = "1.010";
 
 =head1 NAME
 
@@ -102,6 +102,8 @@ sub link_to_form {
 
 sub generate_low {
   my ($self, $template, $article, $articles, $embedded) = @_;
+
+  $self->localize;
   my %acts;
   %acts = $self->baseActs($articles, \%acts, $article, $embedded);
 
@@ -109,6 +111,7 @@ sub generate_low {
 				    $self->variables);
 
   %acts = (); # try to destroy any circular refs
+  $self->unlocalize;
 
   return $page;
 }
@@ -116,11 +119,13 @@ sub generate_low {
 sub generate {
   my ($self, $article, $articles) = @_;
 
+  $self->localize;
   my %acts;
   %acts = $self -> baseActs($articles, \%acts, $article, 0);
 
   my $page = BSE::Template->get_page($article->template, $self->{cfg}, \%acts, undef, undef, $self->variables);
   %acts = ();
+  $self->unlocalize;
 
   return $page;
 }
