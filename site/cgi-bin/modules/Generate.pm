@@ -10,10 +10,11 @@ use BSE::CfgInfo qw(custom_class cfg_image_dir cfg_image_uri);
 use BSE::Util::Iterate;
 use BSE::TB::Site;
 use BSE::Variables;
+use Scalar::Util ();
 use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 
-our $VERSION = "1.016";
+our $VERSION = "1.017";
 
 my $excerptSize = 300;
 
@@ -34,6 +35,8 @@ sub new {
   $opts{varstack} = [];
   my $self = bless \%opts, $class;
   $self->set_variable_class(articles => "Articles");
+  $opts{vars}{generator} = $self;
+  Scalar::Util::weaken($opts{vars}{generator});
 
   return $self;
 }
@@ -135,7 +138,7 @@ sub summary {
 
   $limit ||= $article->summaryLength;
 
-  return $self->summarize("Articles", $article->body, {}, $limit);
+  return $self->summarize("Articles", $article->body, $self->{acts}, $limit);
 }
 
 # attempts to move the given position forward if it's within a HTML tag,
@@ -366,6 +369,12 @@ sub embed {
     $html = $1;
   }
   return $self->generate_low($html, $article, $articles, 1);
+}
+
+sub vembed {
+  my ($self, $article, $template) = @_;
+
+  return $self->embed($article, "Articles", $template);
 }
 
 sub iter_kids_of {

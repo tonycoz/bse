@@ -16,7 +16,7 @@ use Carp 'confess';
 use BSE::Util::Iterate;
 use BSE::CfgInfo qw(cfg_dist_image_uri cfg_image_uri);
 
-our $VERSION = "1.010";
+our $VERSION = "1.011";
 
 =head1 NAME
 
@@ -107,6 +107,7 @@ sub generate_low {
   my %acts;
   %acts = $self->baseActs($articles, \%acts, $article, $embedded);
 
+  local $self->{acts} = \%acts;
   my $page = BSE::Template->replace($template, $self->{cfg}, \%acts,
 				    $self->variables);
 
@@ -123,6 +124,7 @@ sub generate {
   my %acts;
   %acts = $self -> baseActs($articles, \%acts, $article, 0);
 
+  local $self->{acts} = \%acts;
   my $page = BSE::Template->get_page($article->template, $self->{cfg}, \%acts, undef, undef, $self->variables);
   %acts = ();
   $self->unlocalize;
