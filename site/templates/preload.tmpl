@@ -164,4 +164,28 @@ Page <:= pages.page :> of <:= pages.pagecount :>
 <:  .end if -:>
 <:.end define -:>
 
+<:.define mover -:>
+<:# expects loop, parent
+  which in most cases means you can just supply parent
+-:>
+<:.set distim = cfg.entryIfVar("uri", "dist_images", "/images") -:>
+<:.set width = cfg.entry("arrows", "width", 17) -:>
+<:.set height = cfg.entry("arrows", "height", 13) -:>
+<:.set extras = 'width="' _ width _ '" height="' _ height _ '"' -:>
+<:.set blankim = '<img src="' _ (distim _ "/trans_pixel.gif").escape("html") _ '" alt="" ' _ extras _ ' />' -:>
+<:.if loop.prev -:>
+  <:.set upimg = cfg.entry("arrows", "upimg", distim _ "/admin/move_up.gif") -:>
+<a href="<:= cfg.admin_url("move", { "stepparent":parent.id, "d":"swap", "id":loop.current.id, "other":loop.prev.id, "r":top.admin }) :>"><img src="<:= upimg :>" <:= extras :> /></a>
+<:.else -:>
+<:= blankim |raw-:>
+<:.end if -:>
+<:.if loop.next -:>
+  <:.set downimg = cfg.entry("arrows", "downimg", distim _ "/admin/move_down.gif") -:>
+<a href="<:= cfg.admin_url("move", { "stepparent":parent.id, "d":"swap", "id":loop.current.id, "other":loop.next.id, "r":top.admin }) :>"><img src="<:= downimg :>" <:= extras :> /></a>
+<:.else -:>
+<:= blankim |raw-:>
+<:.end if -:>
+
+<:.end define -:>
+
 <:- include includes/custom/preload.tmpl optional -:>
