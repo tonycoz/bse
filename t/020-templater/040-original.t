@@ -556,13 +556,13 @@ IN
 IN
   template_test(<<IN, <<OUT, "simple .for", \%acts, "", \%vars);
 <:.for x in [ "a" .. "d" ] -:>
-Value: <:= x :> Index: <:= loop.index :> Count: <:= loop.count:> Prev: <:= loop.prev :> Next: <:= loop.next :> Even: <:= loop.even :> Odd: <:= loop.odd :> Parity: <:= loop.parity :> is_first: <:= loop.is_first :> is_last: <:= loop.is_last :>-
+Value: <:= x :> Index: <:= loop.index :> Count: <:= loop.count:> Prev: <:= loop.prev :> Next: <:= loop.next :> Even: <:= loop.even :> Odd: <:= loop.odd :> Parity: <:= loop.parity :> is_first: <:= loop.is_first :> is_last: <:= loop.is_last :> Current by index: <:= loop.current :>-
 <:.end-:>
 IN
-Value: a Index: 0 Count: 1 Prev:  Next: b Even:  Odd: 1 Parity: odd is_first: 1 is_last: -
-Value: b Index: 1 Count: 2 Prev: a Next: c Even: 1 Odd:  Parity: even is_first:  is_last: -
-Value: c Index: 2 Count: 3 Prev: b Next: d Even:  Odd: 1 Parity: odd is_first:  is_last: -
-Value: d Index: 3 Count: 4 Prev: c Next:  Even: 1 Odd:  Parity: even is_first:  is_last: 1-
+Value: a Index: 0 Count: 1 Prev:  Next: b Even:  Odd: 1 Parity: odd is_first: 1 is_last:  Current by index: a-
+Value: b Index: 1 Count: 2 Prev: a Next: c Even: 1 Odd:  Parity: even is_first:  is_last:  Current by index: b-
+Value: c Index: 2 Count: 3 Prev: b Next: d Even:  Odd: 1 Parity: odd is_first:  is_last:  Current by index: c-
+Value: d Index: 3 Count: 4 Prev: c Next:  Even: 1 Odd:  Parity: even is_first:  is_last: 1 Current by index: d-
 OUT
   template_test(<<IN, <<OUT, "simple .if", \%acts, "", \%vars);
 <:.if "a" eq "b" :>FAIL<:.else:>SUCCESS<:.end:>

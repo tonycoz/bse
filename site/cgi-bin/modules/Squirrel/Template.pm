@@ -20,7 +20,7 @@ BEGIN {
 
 use constant DEBUG_GET_PARMS => 0;
 
-our $VERSION = "1.025";
+our $VERSION = "1.026";
 
 my %compile_cache;
 
@@ -920,6 +920,10 @@ prev, next - the previous or next element respectively, if any.
 =item *
 
 list - the list argument to C<.for>.
+
+=item *
+
+current - the current item in the iteration.
 
 =back
 

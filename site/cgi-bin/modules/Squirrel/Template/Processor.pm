@@ -3,7 +3,7 @@ use strict;
 use Squirrel::Template::Constants qw(:node);
 use Scalar::Util ();
 
-our $VERSION = "1.020";
+our $VERSION = "1.021";
 
 use constant ACTS => 0;
 use constant TMPLT => 1;
@@ -278,6 +278,7 @@ sub _process_for {
   my @result;
   for my $current (@$list) {
     $scope->{$name} = $current;
+    $loop{current} = $current;
     push @result, $self->process($node->[NODE_FOR_CONTENT]);
     ++$index;
   }
