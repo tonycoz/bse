@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 168;
+use Test::More tests => 170;
 use HTML::Entities;
 
 sub template_test($$$$;$$);
@@ -467,7 +467,9 @@ OUT
      [ 'not 1 or 1', 1 ],
      [ 'not 1 and 1', "" ],
      [ '"xabcy" =~ /abc/', 1 ],
+     [ '"xabcy" !~ /abc/', "" ],
      [ '[ "abc" =~ /(.)(.)/ ][1]', "b" ],
+     [ '"xabcy" !~ /abg/', 1 ],
      [ '{ "a": 11, "b": 12, "c": 20 }["b"]', 12 ],
      [ '[ 1, 2, 3 ][1]', 2 ],
      [ 'testclass.foo', "[TestClass.foo]" ],
