@@ -10,7 +10,7 @@ use Carp qw(confess);
 use BSE::WebUtil qw(refresh_to_admin);
 use BSE::Util::HTML;
 
-our $VERSION = "1.009";
+our $VERSION = "1.010";
 
 # returns non-zero if the Regenerate button should work
 sub generate_button {
@@ -487,6 +487,10 @@ sub files {
   for my $name (Article->columns) {
     eval "sub $name { \$_[0]{$name} }";
   }
+}
+
+sub restricted_method {
+  return 0;
 }
 
 1;
