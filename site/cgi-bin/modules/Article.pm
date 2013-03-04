@@ -8,7 +8,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::TB::SiteCommon BSE::TB::TagOwner/;
 use Carp 'confess';
 
-our $VERSION = "1.017";
+our $VERSION = "1.018";
 
 =head1 NAME
 
@@ -596,10 +596,10 @@ sub should_generate {
   return $self->is_linked && $self->listed && $self->is_released && !$self->is_expired;
 }
 
-sub restricted_methods {
+sub restricted_method {
   my ($self, $name) = @_;
 
-  return $self->SUPER::restricted_methods($name)
+  return $self->SUPER::restricted_method($name)
     || $name =~ /^(?:update_|remove_|add_)/;
 }
 
