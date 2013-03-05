@@ -14,7 +14,7 @@ use Scalar::Util ();
 use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 
-our $VERSION = "1.017";
+our $VERSION = "1.018";
 
 my $excerptSize = 300;
 
@@ -54,7 +54,7 @@ sub url {
     $url .= "admin=0&admin_links=1";
   }
 
-  if (($force_abs || $self->abs_urls) && $url !~ /^\w+:/) {
+  if (($force_abs || $self->abs_urls($article)) && $url !~ /^\w+:/) {
     $url = $self->cfg->entryErr("site", "url") . $url;
   }
 
