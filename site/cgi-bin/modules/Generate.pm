@@ -14,7 +14,306 @@ use Scalar::Util ();
 use base 'BSE::ThumbLow';
 use base 'BSE::TagFormats';
 
-our $VERSION = "1.018";
+=head1 NAME
+
+Generate - provides base Squirel::Template actions for use in generating
+pages.
+
+=head1 SYNOPSIS
+
+=head1 DESCRIPTION
+
+This is probably better documented in L<templates.pod>.
+
+=head1 VARIABLES
+
+Template variables:
+
+=over
+
+=item *
+
+url(article)
+
+=item *
+
+url(article, 1)
+
+Return a URL for the given article, depending on admin_links mode.  If
+the page is being generated with absolute URLs or a second true
+parameter is supplied, the URL is convrted to an absolute URL if
+necessary.
+
+=item *
+
+articles - the articles class.
+
+=item *
+
+generator - the generator object itself.
+
+=back
+
+=head1 COMMON TAGS
+
+These tags can be used anywhere, including in admin templates.  It's
+possible some admin code has been missed, if you find a place where
+these cannot be used let us know.
+
+=over
+
+=item kb I<data tag>
+
+Formats the give value in kI<whatevers>.  If you have a number that
+could go over 1000 and you want it to use the 'k' metric prefix when
+it does, use this tag.  eg. <:kb file sizeInBytes:>
+
+=item date I<data tag>
+
+=item date "I<format>" I<data tag>
+
+Formats a date or date/time value from the database into something
+more human readable.  If you don't supply a format then the default
+format of "%d-%b-%Y" is used ("20-Mar-2002").
+
+The I<format> is a strftime() format specification, if that means
+anything to you.  If it doesn't, each code starts with % and are
+replaced as follows:
+
+=over
+
+=item %a
+
+abbreviated weekday name
+
+=item %A
+
+full weekday name
+
+=item %b
+
+abbreviated month name
+
+=item %B
+
+full month name
+
+=item %c
+
+"preferred" date and time representation
+
+=item %d
+
+day of the month as a 2 digit number
+
+=item %H
+
+hour (24-hour clock)
+
+=item %I
+
+hour (12-hour clock)
+
+=item %j
+
+day of year as a 3-digit number
+
+=item %m
+
+month as a 2 digit number
+
+=item %M
+
+minute as a 2 digit number
+
+=item %p
+
+AM or PM or their equivalents
+
+=item %S
+
+seconds as a 2 digit number
+
+=item %U
+
+week number as a 2 digit number (first Sunday as the first day of week 1)
+
+=item %w
+
+weekday as a decimal number (0-6)
+
+=item %W
+
+week number as a 2 digit number (first Monday as the first day of week 1)
+
+=item %x
+
+the locale's appropriate date representation
+
+=item %X
+
+the locale's appropriate time representation
+
+=item %y
+
+2-digit year without century
+
+=item %Y
+
+the full year
+
+=item %Z
+
+time zone name or abbreviation
+
+=item %%
+
+just '%'
+
+=back
+
+Your local strftime() implementation may implement some extensions to
+the above, if your server is on a Unix system try running "man
+strftime" for more information.
+
+=item bodytext I<data tag>
+
+Formats the text from the given tag in the same way that body text is.
+
+=item ifEq I<data1> I<data2>
+
+Checks if the 2 values are exactly equal.  This is a string
+comparison.
+
+The 2 data parameters can either be a tag reference in [], a literal
+string inside "" or a single word.
+
+=item ifMatch I<data1> I<data2>
+
+Treats I<data2> as a perl regular expression and attempts to match
+I<data1> against it.
+
+The 2 data parameters can either be a tag reference in [], a literal
+string inside "" or a single word.
+
+=item cfg I<section> I<key>
+
+=item cfg I<section> I<key> I<default>
+
+Retrieves a value from the BSE configuration file.
+
+If you don't supply a default then a default will be the empty string.
+
+=item release
+
+The release number of BSE.
+
+=back
+
+=head1 TAGS
+
+=over 4
+
+=item ifAdmin
+
+Conditional tag, true if generating in admin mode.
+
+=item iterator ... level1
+
+Iterates over the listed level 1 articles.
+
+=item level1 I<name>
+
+The value of the I<name> field of the current level 1 article.
+
+=item iterator ... level2
+
+Iterates over the listed level 2 children of the current level 1 article.
+
+=item level2 I<name>
+
+The value of the I<name> field of the current level 2 article.
+
+=item ifLevel2 I<name>
+
+Conditional tag, true if the current level 1 article has any listed
+level 2 children.
+
+=item iterator ... level3
+
+Iterates over the listed level 3 children of the current level 2 article.
+
+=item level3 I<name>
+
+The value of the I<name> field of the current level 3 article.
+
+=item ifLevel3 I<name>
+
+Conditional tag, true if the current level 2 article has any listed
+level 3 children.
+
+=item url I<which>
+
+Returns a link to the specified article .  Due to the way the action
+list is built, this can be article types defined in derived classes of
+Generate, like the C<parent> article in Generate::Article.
+
+=item money I<data tag>
+
+Formats the given value as a monetary value.  This does not include a
+currency symbol.  Internally BSE stores monetary values as integers to
+prevent the loss of accuracy inherent in floating point numbers.  You
+need to use this tag to display any monetary value.
+
+=item ifInMenu I<which>
+
+Conditional tag, true if the given item can appear in a menu.
+
+=item titleImage I<imagename> I<text>
+
+Generates an IMG tag if the given I<imagename> is in the title image
+directory (F<titles> in the managed images directory).  If it doesn't
+exist, produce I<text>.
+
+=item embed I<which>
+
+=item embed I<which> I<template>
+
+=item embed I<which> I<template> I<maxdepth>
+
+=item embed child
+
+Embeds the article specified by which using either the specified
+template or the articles template.
+
+In this case I<which> can also be an article ID.
+
+I<template> is a filename relative to the templates directory.  If
+this is "-" then the articles template is used (so you can set
+I<maxdepth> without setting the template.)  If I<template> contains a
+C<$> sign it will be replaced with the name of the original template.
+
+If I<maxdepth> is supplied and is less than the current maximum depth
+then it becomes the new maximum depth.  This can be used with ifCanEmbed.
+
+=item embed start ... embed end
+
+Marks the range of text that would be embedded in a parent that used
+C<embed child>.
+
+=item ifEmbedded
+
+Conditional tag, true if the current article is being embedded.
+
+=back
+
+=head1 C<generator> METHODS
+
+=over
+
+=cut
+
+our $VERSION = "1.019";
 
 my $excerptSize = 300;
 
@@ -370,6 +669,22 @@ sub embed {
   }
   return $self->generate_low($html, $article, $articles, 1);
 }
+
+=item vembed(article)
+
+=item vembed(article, template)
+
+Embed the specified article using either the article template or the
+specified template.
+
+=back
+
+=head1 GENERATOR TAGS
+
+=over
+
+=cut
+
 
 sub vembed {
   my ($self, $article, $template) = @_;
@@ -1287,294 +1602,6 @@ sub unlocalize {
 1;
 
 __END__
-
-=head1 NAME
-
-Generate - provides base Squirel::Template actions for use in generating
-pages.
-
-=head1 SYNOPSIS
-
-=head1 DESCRIPTION
-
-This is probably better documented in L<templates.pod>.
-
-=head1 COMMON TAGS
-
-These tags can be used anywhere, including in admin templates.  It's
-possible some admin code has been missed, if you find a place where
-these cannot be used let us know.
-
-
-=over
-
-=item kb I<data tag>
-
-Formats the give value in kI<whatevers>.  If you have a number that
-could go over 1000 and you want it to use the 'k' metric prefix when
-it does, use this tag.  eg. <:kb file sizeInBytes:>
-
-=item date I<data tag>
-
-=item date "I<format>" I<data tag>
-
-Formats a date or date/time value from the database into something
-more human readable.  If you don't supply a format then the default
-format of "%d-%b-%Y" is used ("20-Mar-2002").
-
-The I<format> is a strftime() format specification, if that means
-anything to you.  If it doesn't, each code starts with % and are
-replaced as follows:
-
-=over
-
-=item %a
-
-abbreviated weekday name
-
-=item %A
-
-full weekday name
-
-=item %b
-
-abbreviated month name
-
-=item %B
-
-full month name
-
-=item %c
-
-"preferred" date and time representation
-
-=item %d
-
-day of the month as a 2 digit number
-
-=item %H
-
-hour (24-hour clock)
-
-=item %I
-
-hour (12-hour clock)
-
-=item %j
-
-day of year as a 3-digit number
-
-=item %m
-
-month as a 2 digit number
-
-=item %M
-
-minute as a 2 digit number
-
-=item %p
-
-AM or PM or their equivalents
-
-=item %S
-
-seconds as a 2 digit number
-
-=item %U
-
-week number as a 2 digit number (first Sunday as the first day of week 1)
-
-=item %w
-
-weekday as a decimal number (0-6)
-
-=item %W
-
-week number as a 2 digit number (first Monday as the first day of week 1)
-
-=item %x
-
-the locale's appropriate date representation
-
-=item %X
-
-the locale's appropriate time representation
-
-=item %y
-
-2-digit year without century
-
-=item %Y
-
-the full year
-
-=item %Z
-
-time zone name or abbreviation
-
-=item %%
-
-just '%'
-
-=back
-
-Your local strftime() implementation may implement some extensions to
-the above, if your server is on a Unix system try running "man
-strftime" for more information.
-
-=item bodytext I<data tag>
-
-Formats the text from the given tag in the same way that body text is.
-
-=item ifEq I<data1> I<data2>
-
-Checks if the 2 values are exactly equal.  This is a string
-comparison.
-
-The 2 data parameters can either be a tag reference in [], a literal
-string inside "" or a single word.
-
-=item ifMatch I<data1> I<data2>
-
-Treats I<data2> as a perl regular expression and attempts to match
-I<data1> against it.
-
-The 2 data parameters can either be a tag reference in [], a literal
-string inside "" or a single word.
-
-=item cfg I<section> I<key>
-
-=item cfg I<section> I<key> I<default>
-
-Retrieves a value from the BSE configuration file.
-
-If you don't supply a default then a default will be the empty string.
-
-=item release
-
-The release number of BSE.
-
-=back
-
-=head1 TAGS
-
-=over 4
-
-=item ifAdmin
-
-Conditional tag, true if generating in admin mode.
-
-=item iterator ... level1
-
-Iterates over the listed level 1 articles.
-
-=item level1 I<name>
-
-The value of the I<name> field of the current level 1 article.
-
-=item iterator ... level2
-
-Iterates over the listed level 2 children of the current level 1 article.
-
-=item level2 I<name>
-
-The value of the I<name> field of the current level 2 article.
-
-=item ifLevel2 I<name>
-
-Conditional tag, true if the current level 1 article has any listed
-level 2 children.
-
-=item iterator ... level3
-
-Iterates over the listed level 3 children of the current level 2 article.
-
-=item level3 I<name>
-
-The value of the I<name> field of the current level 3 article.
-
-=item ifLevel3 I<name>
-
-Conditional tag, true if the current level 2 article has any listed
-level 3 children.
-
-=item url I<which>
-
-Returns a link to the specified article .  Due to the way the action
-list is built, this can be article types defined in derived classes of
-Generate, like the C<parent> article in Generate::Article.
-
-=item money I<data tag>
-
-Formats the given value as a monetary value.  This does not include a
-currency symbol.  Internally BSE stores monetary values as integers to
-prevent the loss of accuracy inherent in floating point numbers.  You
-need to use this tag to display any monetary value.
-
-=item ifInMenu I<which>
-
-Conditional tag, true if the given item can appear in a menu.
-
-=item titleImage I<imagename> I<text>
-
-Generates an IMG tag if the given I<imagename> is in the title image
-directory (F<titles> in the managed images directory).  If it doesn't
-exist, produce I<text>.
-
-=item embed I<which>
-
-=item embed I<which> I<template>
-
-=item embed I<which> I<template> I<maxdepth>
-
-=item embed child
-
-Embeds the article specified by which using either the specified
-template or the articles template.
-
-In this case I<which> can also be an article ID.
-
-I<template> is a filename relative to the templates directory.  If
-this is "-" then the articles template is used (so you can set
-I<maxdepth> without setting the template.)  If I<template> contains a
-C<$> sign it will be replaced with the name of the original template.
-
-If I<maxdepth> is supplied and is less than the current maximum depth
-then it becomes the new maximum depth.  This can be used with ifCanEmbed.
-
-=item embed start ... embed end
-
-Marks the range of text that would be embedded in a parent that used
-C<embed child>.
-
-=item ifEmbedded
-
-Conditional tag, true if the current article is being embedded.
-
-=back
-
-=head1 VARIABLES
-
-Template variables:
-
-=over
-
-=item *
-
-url(article)
-
-=item *
-
-url(article, 1)
-
-Return a URL for the given article, depending on admin_links mode.  If
-the page is being generated with absolute URLs or a second true
-parameter is supplied, the URL is convrted to an absolute URL if
-necessary.
-
-=item *
-
-articles - the articles class.
 
 =back
 
