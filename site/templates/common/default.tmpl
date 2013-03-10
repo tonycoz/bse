@@ -22,34 +22,46 @@
     </td>
   </tr>
 </table>
-<:if Article body:> 
+<:.if article.body:> 
 <div class="body"><:body:></div>
-<:or Article:><:eif Article:><:if Embedded:><:or Embedded:><:ifAdmin:><:if Children:> 
-<p><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Reorder child articles: 
-  <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=title&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
-  title</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=date&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
+<:.end if -:>
+<:.set kids = [ article.all_visible_kids ] :>
+<:.if !embedded:>
+  <:.if bse.admin and kids.size > 1:>
+<div class="adminsort">
+Reorder child articles: 
+  <:.set refresh = cfg.admin_url("admin", { "id":top.id }) -:>
+  <a href="<:= cfg.admin_url("reorder", { "parentid":article.id, "sort":"title",
+   "refreshto":refresh }) :>"">by title</a> 
+| <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=date&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
   date</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&reverse=1&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">reverse 
   order</a></font></p>
-<:or Children:><:eif Children:><:or:><:eif:>
-<:if Dynamic:>
-<:iterator begin dynchildren:> 
+  <:.end if -:>
+  <:.if dynamic -:>
+    <:iterator begin dynchildren -:> 
 <p><:thumbnail dynchild:> <a href="<:url dynchild:>"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><:dynchild 
   title:></font></b></a><br>
-  <:if Child summaryLength:><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:summary:></font><:or 
+    <:if Child summaryLength -:><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:summary:></font><:or 
   Child:><:eif Child:></p>
-<:iterator separator dynchildren:><:iterator end dynchildren:>
-<:or Dynamic:>
-<:if UnderThreshold:><:iterator begin 
-children:><:ifAdmin:> 
-<hr noshade size="1">
-<:or:><:eif:><:movekid:><:embed child:><:iterator separator children:><br>
-<:iterator end children:> <:or UnderThreshold:> <:iterator begin children:> 
-<p><:thumbnail child:> <a href="<:url child:>"><b><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><:child 
-  title:></font></b></a><:movekid:><br>
-  <:if Child summaryLength:><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:summary:></font><:or 
-  Child:><:eif Child:></p>
-<:iterator separator children:><:iterator end children:><:eif UnderThreshold:><:eif Dynamic:><:eif 
-Embedded:> <br>
+  <:iterator end dynchildren -:>
+  <:.else -:>
+    <:.if kids.size < article.threshold :>
+      <:.for child in kids -:>
+        <:.call "mover", "parent":article -:>
+        <:= generator.vembed(child) |raw -:>
+       <:.end for -:>
+    <:.else -:>
+      <:.for child in kids -:>
+<div class="child">
+  <h1><:= generator.thumbnail(child) :><a href="<:= url(child):>"><:= child.title -:></a><:.call "mover", "parent":article :><h1>
+        <:.if child.summaryLength -:>
+      <div><:= generator.summary(child) :></div>
+        <:.end if -:>
+</div>
+      <:.end for -:>
+    <:.end if -:><:# if under threshold else -:>
+  <:.end if :><:# if dynamic else -:>
+<:.end if :><:# if embedded else :> <br>
 <:if Files:> <br>
 <table border="0" cellspacing="0" cellpadding="0">
   <tr> 

@@ -279,7 +279,7 @@
               Alt: <input type="text" name="image_<:imagetemplate id:>_alt" value="<:siteuser_image [imagetemplate id] alt:>" /><br />
 	<:ifSiteuser_image [imagetemplate id]:><input type="checkbox" name="image_<:imagetemplate id:>_delete" value="1" /> Delete<br /><img src="<:siteuser_image [imagetemplate id] url:>" /><:or:><:eif:>
               </td>
-            <td class="help"> <:help editsiteuser images:>  <:error_img password:></td>
+            <td class="help"> <:help editsiteuser images:>  <:error_img [concatenate "image_" [imagetemplate id] "_file"] :></td>
           </tr>
 <:iterator end imagetemplates:>
 <:if UserCan siteuser_changepw:>

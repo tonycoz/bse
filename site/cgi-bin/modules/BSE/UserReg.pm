@@ -18,7 +18,7 @@ use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
 use Carp qw(confess);
 
-our $VERSION = "1.024";
+our $VERSION = "1.025";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -621,18 +621,26 @@ sub req_register {
     $user{password} = '';
   }
   else {
-    my $min_pass_length = $cfg->entry('basic', 'minpassword') || 4;
     my $userid = $cgi->param('userid');
+    my @errors;
     if (!defined $userid || length $userid == 0) {
       $errors{userid} = $msgs->(reguser=>"Please enter your username");
     }
+    my %others = map { $_ => scalar($cgi->param($_)) }
+      SiteUser->password_check_fields;
     my $pass = $cgi->param('password');
     my $pass2 = $cgi->param('confirm_password');
     if (!defined $pass || length $pass == 0) {
       $errors{password} = $msgs->(regpass=>"Please enter your password");
     }
-    elsif (length $pass < $min_pass_length) {
-      $errors{password} = $msgs->(regpasslen=>"The password must be at least $min_pass_length characters");
+    elsif (!SiteUser->check_password_rules
+	   (
+	    password => $pass,
+	    username => $userid,
+	    errors => \@errors,
+	    other => \%others,
+	   )) {
+      $errors{password} = \@errors;
     }
     elsif (!defined $pass2 || length $pass2 == 0) {
       $errors{confirm_password} = 
@@ -1057,10 +1065,17 @@ sub req_saveopts {
 	  $errors{old_password} = $msgs->(optsbadold=>"You need to enter your old password to change your password")
 	}
 	else {
-	  my $error;
-	  if (!SiteUser->check_password_rules($newpass, \$error)) {
-	    my ($code, @more) = @$error;
-	    $errors{password} = $req->catmsg("msg:bse/user/$code", \@more)
+	  my @errors;
+	  my %others;
+	  %others = map { $_ => $user->$_() } SiteUser->password_check_fields;
+	  if (!SiteUser->check_password_rules
+	      (
+	       password => $newpass,
+	       errors => \@errors,
+	       username => $user->userId,
+	       other => \%others
+	      )) {
+	    $errors{password} = \@errors;
 	  }
 	  elsif (!defined $confirm || length $confirm == 0) {
 	    $errors{confirm_password} = $msgs->(optsconfpass=>"Please enter a confirmation password");
@@ -2648,11 +2663,21 @@ sub req_lost_save {
   $req->validate(fields => \%lost_fields,
 		 errors => \%errors);
   my $password = $req->cgi->param("password");
+  my $tmp_user = SiteUsers->lost_password_next($id);
   unless ($errors{password}) {
-    my $error;
-    unless (SiteUser->check_password_rules($password, \$error)) {
-      my ($errorid, @more) = @$error;
-      $errors{password} = $req->catmsg("msg:bse/user/$errorid", \@more)
+    my @errors;
+    my %others = $tmp_user
+      ? map { $_ => $tmp_user->$_() } SiteUser->password_check_fields
+	: ();
+    $DB::single = 1;
+    unless (SiteUser->check_password_rules
+	    (
+	     password => $password,
+	     errors => \@errors,
+	     username => $tmp_user ? $tmp_user->userId : undef,
+	     other => \%others,
+	    )) {
+      $errors{password} = \@errors;
     }
   }
 

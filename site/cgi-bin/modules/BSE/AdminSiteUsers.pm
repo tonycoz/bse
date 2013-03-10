@@ -13,7 +13,7 @@ use constant SITEUSER_GROUP_SECT => 'BSE Siteuser groups validation';
 use BSE::Template;
 use DevHelp::Date qw(dh_parse_date_sql dh_parse_time_sql);
 
-our $VERSION = "1.008";
+our $VERSION = "1.009";
 
 my %actions =
   (
@@ -418,10 +418,16 @@ sub req_save {
     my $confirm = $cgi->param('confirm_password');
     
     if (defined $newpass && length $newpass) {
-      my $min_pass_length = $cfg->entry('basic', 'minpassword') || 4;
-	  my $error;
-      if (length $newpass < $min_pass_length) {
-	$errors{password} = "The password must be at least $min_pass_length characters";
+      my @errors;
+      my %other = map { $_ => $user->$_() } SiteUser->password_check_fields;
+      if (!SiteUser->check_password_rules
+	  (
+	   password => $newpass,
+	   username => $user->userId,
+	   other => \%other,
+	   errors => \@errors,
+	  )) {
+	$errors{password} = \@errors;
       }
       elsif (!defined $confirm || length $confirm == 0) {
 	$errors{confirm_password} = "Please enter a confirmation password";
@@ -651,18 +657,28 @@ sub req_add {
     $user{password} = '';
   }
   else {
-    my $min_pass_length = $cfg->entry('basic', 'minpassword') || 4;
     my $userid = $cgi->param('userId');
     if (!defined $userid || length $userid == 0) {
       $errors{userId} = "Please enter a userid";
     }
     my $pass = $cgi->param('password');
+    $pass =~ s/\A\s+//, $pass =~ s/\s+\z// if defined $pass;
     my $pass2 = $cgi->param('confirm_password');
+    $pass2 =~ s/\A\s+//, $pass2 =~ s/\s+\z// if defined $pass2;
+    my %other = map { $_ => scalar $cgi->param($_) }
+      SiteUser->password_check_fields;
+    my @errors;
     if (!defined $pass || length $pass == 0) {
       $errors{password} = "Please enter a password";
     }
-    elsif (length $pass < $min_pass_length) {
-      $errors{password} = "The password must be at least $min_pass_length characters";
+    elsif (!SiteUser->check_password_rules
+	   (
+	    password => $pass,
+	    username => $userid,
+	    other => \%other,
+	    errors => \@errors,
+	   )) {
+      $errors{password} = \@errors;
     }
     elsif (!defined $pass2 || length $pass2 == 0) {
       $errors{confirm_password} = "Please enter a confirmation password";

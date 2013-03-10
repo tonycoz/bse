@@ -393,7 +393,8 @@ Default: 1.
 
 =item minpassword
 
-Minimum password length in characters.  Default: 4.
+Previously the minimum length of site user passwords in characters.
+You must now set C<length> in C<[siteuser passwords]>.
 
 =item no_cache_dynamic
 
@@ -2749,6 +2750,54 @@ is defined for the field:
 
   [article custom fields]
   customInt1_description=Stock Level
+
+=head2 [siteuser passwords]
+
+Rules for validating (not verifying) site user passwords.  Possible
+keys are:
+
+=over
+
+=item *
+
+C<length> - the minimum length of passwords.  This replaces
+C<minpassword> in C<[basic]>.
+
+=item *
+
+C<entropy> - the minimum password entropy as measured by
+L<Data::Password::Entropy>.
+
+=item *
+
+C<symbols> - if non-zero, the password must contain non-alphanumerics.
+
+=item *
+
+C<digits> - if non-zero, the password must contain digits.
+
+=item *
+
+C<mixedcase> - if non-zero, the password must contain both upper and
+lower case letters.
+
+=item *
+
+C<categories> - the number of categories out of 5 required out of
+symbols, digits, upper case, lower case and extended ASCII/Unicode.
+This should typically never be 5.
+
+=item *
+
+C<notuser> - the password and user name may not match each other
+case-insensitively.
+
+=item *
+
+C<notu5er> - the password may not match the user name
+case-insensitively, even with symbol replacement (e.g. "5" for "S".
+
+=back
 
 =head1 AUTHOR
 

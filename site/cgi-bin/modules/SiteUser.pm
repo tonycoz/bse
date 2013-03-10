@@ -8,7 +8,7 @@ use Constants qw($SHOP_FROM);
 use Carp qw(confess);
 use BSE::Util::SQL qw/now_datetime now_sqldate sql_normal_date sql_add_date_days/;
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -897,16 +897,21 @@ sub lost_password {
 }
 
 sub check_password_rules {
-  my ($class, $password, $error) = @_;
+  my ($class, %opts) = @_;
 
-  my $cfg = BSE::Cfg->single;
-  my $min_pass_length = $cfg->entry('basic', 'minpassword') || 4;
-  if (length $password < $min_pass_length) {
-    $$error = [ "passwordlen", $min_pass_length ];
-    return;
-  }
+  require BSE::Util::PasswordValidate;
 
-  return 1;
+  my %rules = BSE::Cfg->single->entries("siteuser passwords");
+
+  return BSE::Util::PasswordValidate->validate
+    (
+     %opts,
+     rules => \%rules,
+    );
+}
+
+sub password_check_fields {
+  return qw(name1 name2);
 }
 
 1;

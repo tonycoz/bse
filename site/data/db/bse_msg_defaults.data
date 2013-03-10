@@ -292,9 +292,34 @@ message: File must be an image file
 id: bse/files/pdf_file_required
 message: File must be a PDF file
 
+id: bse/util/password/length
+message: Password must be at least %2:d characters long
+
+id: bse/util/password/entropy
+message: Your password isn't complex enough (but you're %3:.0f%% of the way there)
+
+id: bse/util/password/symbols
+message: Password must contain some punctuation (or other letters or numbers)
+
+id: bse/util/password/digits
+message: Password must contain some numbers
+
+id: bse/util/password/mixedcase
+message: Password must contain both upper and lower case letters
+
+id: bse/util/password/categories
+message: Password must contain at least %2:d out of upper case letters, lower case, numbers or punctuation.
+
+id: bse/util/password/notuser
+message: Password and your user name may not contain the other
+
+id: bse/util/password/notu5er
+message: Password and your user name may not contain the other (even with substitution)
+
 id: test/test/multiline
 message: <<TEXT
 This message has
 multiple
 lines
 TEXT
+

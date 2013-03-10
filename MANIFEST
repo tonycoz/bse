@@ -278,6 +278,7 @@ site/cgi-bin/modules/BSE/Util/DynSort.pm
 site/cgi-bin/modules/BSE/Util/Format.pm
 site/cgi-bin/modules/BSE/Util/HTML.pm
 site/cgi-bin/modules/BSE/Util/Iterate.pm
+site/cgi-bin/modules/BSE/Util/PasswordValidate.pm
 site/cgi-bin/modules/BSE/Util/Prereq.pm
 site/cgi-bin/modules/BSE/Util/Secure.pm
 site/cgi-bin/modules/BSE/Util/SQL.pm
@@ -857,6 +858,7 @@ t/010-modules/060-sqldates.t
 t/010-modules/070-escape.t
 t/010-modules/080-cfg.t
 t/010-modules/090-subcalc.t
+t/010-modules/100-password-validate.t
 t/020-templater/000-load.t
 t/020-templater/010-token.t
 t/020-templater/020-parse.t
