@@ -589,24 +589,7 @@ sub req_addform {
 
   my $cgi = $req->cgi;
 
-  $errors ||= {};
-  if ($msg) {
-    $msg = escape_html($msg);
-  }
-  elsif ($cgi->param('m')) {
-    $msg = join("<br />", map escape_html($_), $cgi->param('m'));
-  }
-  else {
-    if (keys %$errors) {
-      my %work = %$errors;
-      my @msgs = grep defined, delete @work{$cgi->param()};
-      push @msgs, values %work;
-      $msg = join "<br />", map escape_html($_), grep $_, @msgs;
-    }
-    else {
-      $msg = '';
-    }
-  }
+  $msg = $req->message($msg || $errors);
 
   my $it = BSE::Util::Iterate->new;
 
