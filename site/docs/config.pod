@@ -2799,6 +2799,12 @@ case-insensitively, even with symbol replacement (e.g. "5" for "S".
 
 =back
 
+=head2 [admin user passwords]
+
+Rules for validating (not verifying) administrative user passwords.
+See L</[siteuser passwords]> on the keys that can be set.
+
+
 =head1 AUTHOR
 
 Tony Cook <tony@develop-help.com>

@@ -6,7 +6,7 @@ use BSE::Util::HTML qw(:default popup_menu);
 use BSE::CfgInfo qw(admin_base_url);
 use BSE::Template;
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 my %actions =
   (
@@ -254,10 +254,25 @@ sub req_adduser {
       or $errors{confirm} = 'No confirmation password supplied';
   }
 
+  require BSE::TB::AdminUsers;
+  if (!$errors{password} && $logon) {
+    my %others = map { $_ => scalar $cgi->param($_) }
+      BSE::TB::AdminUser->password_check_fields;
+    my @errors;
+    unless (BSE::TB::AdminUser->check_password_rules
+	    (
+	     password => $password,
+	     username => $logon,
+	     other => \%others,
+	     errors => \@errors,
+	    )) {
+      $errors{password} = \@errors;
+    }
+  }
+
   keys %errors
     and return $class->req_adduserform($req, undef, \%errors);
 
-  require BSE::TB::AdminUsers;
   my $old = BSE::TB::AdminUsers->getBy(logon=>$logon)
     and return $class->req_adduserform($req, "Logon '$logon' already exists");
   my %user =
@@ -667,7 +682,21 @@ sub req_saveuser {
      && length $password) {
     if (length $confirm) {
       if ($password eq $confirm) {
-	$user->changepw($password);
+	my %others = map { $_ => $user->$_() }
+	  BSE::TB::AdminUser->password_check_fields;
+	my @errors;
+	if (BSE::TB::AdminUser->check_password_rules
+	    (
+	     password => $password,
+	     username => $user->logon,
+	     other => \%others,
+	     errors => \@errors,
+	    )) {
+	  $user->changepw($password);
+	}
+	else {
+	  $errors{password} = \@errors;
+	}
       }
       else {
 	$errors{confirm} = "Password and confirmation password didn't match"

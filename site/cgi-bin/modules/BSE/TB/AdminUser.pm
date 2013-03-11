@@ -2,7 +2,7 @@ package BSE::TB::AdminUser;
 use strict;
 use base qw(BSE::TB::AdminBase);
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 sub columns {
   return ($_[0]->SUPER::columns,
@@ -75,6 +75,24 @@ sub remove_from_group {
   my $group_id = ref $group ? $group->id : $group;
 
   BSE::DB->run(delUserFromGroup=>$self->{id}, $group_id);
+}
+
+sub check_password_rules {
+  my ($class, %opts) = @_;
+
+  require BSE::Util::PasswordValidate;
+
+  my %rules = BSE::Cfg->single->entries("admin user passwords");
+
+  return BSE::Util::PasswordValidate->validate
+    (
+     %opts,
+     rules => \%rules,
+    );
+}
+
+sub password_check_fields {
+  return qw(name);
 }
 
 1;
