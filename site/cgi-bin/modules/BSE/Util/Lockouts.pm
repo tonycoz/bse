@@ -5,7 +5,7 @@ use BSE::TB::AuditLog;
 use Scalar::Util qw(blessed);
 use POSIX qw(strftime);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub check_lockouts {
   my ($class, %opts) = @_;
@@ -104,7 +104,7 @@ sub check_lockouts {
     if ($penalty) {
       my $end = strftime("%Y-%m-%d %H:%M:%S", localtime(time() + $penalty * 60));
       my $db = BSE::DB->single;
-      $db->run(bse_lockout_ip => $req->ip_address, $user->lockout_type, $end);
+      $db->run(bse_lockout_ip => $req->ip_address, $type, $end);
       $req->audit
 	(
 	 component => $component,
