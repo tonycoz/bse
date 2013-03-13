@@ -1,6 +1,6 @@
 package Squirrel::Table;
 
-our $VERSION = "1.008";
+our $VERSION = "1.009";
 
 use Carp;
 use strict;
@@ -533,7 +533,7 @@ sub _where_clause {
     }
     return ("(".join(" $op ", @exprs).")", @args);
   }
-  elsif ($op =~ /^(=|<>|>=|<=|like|not like)$/) {
+  elsif ($op =~ /^(=|>|<|<>|>=|<=|like|not like)$/) {
     my $dbcol = $map->{$query[0]}
       or confess "Unknown column $query[0]";
     $dbcol = BSE::DB->single->quote_id($dbcol);
