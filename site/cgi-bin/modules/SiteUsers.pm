@@ -5,7 +5,7 @@ use vars qw(@ISA $VERSION);
 @ISA = qw(Squirrel::Table);
 use SiteUser;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub rowClass {
   return 'SiteUser';
@@ -78,6 +78,15 @@ sub lost_password_save {
 		  component => "siteusers:lost:changepw",
 		  msg => "Account recovered");
   $user->set_lost_id("");
+  $user->set_lockout_end(undef);
+  BSE::TB::AuditLog->log
+      (
+       object => $user,
+       component => "siteuser:logon:recover",
+       actor => "S",
+       level => "notice",
+       msg => "Account recovered",
+      );
   $user->save;
 
   return 1;

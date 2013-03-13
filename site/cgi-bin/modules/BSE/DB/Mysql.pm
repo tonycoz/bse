@@ -5,7 +5,7 @@ use vars qw/@ISA/;
 use Carp 'confess';
 @ISA = qw(BSE::DB);
 
-our $VERSION = "1.011";
+our $VERSION = "1.012";
 
 use vars qw($VERSION $MAX_CONNECTION_AGE);
 
@@ -288,8 +288,8 @@ SQL
 select bs.*, us.* from admin_base bs, admin_users us
   where bs.id = us.base_id and bs.id = ?
 SQL
-   addAdminUser => 'insert into admin_users values(?,?,?,?,?,?)',
-   replaceAdminUser => 'replace into admin_users values(?,?,?,?,?,?)',
+   addAdminUser => 'insert into admin_users values(?,?,?,?,?,?,?)',
+   replaceAdminUser => 'replace into admin_users values(?,?,?,?,?,?,?)',
    deleteAdminUser => 'delete from admin_users where base_id = ?',
    "AdminUsers.group_members" => <<SQL,
 select bs.*, us.*

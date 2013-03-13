@@ -622,3 +622,48 @@ sql_statement: <<SQL
 delete from admin_perms
 where object_id = ?
 SQL
+
+name: AuditLog.logonRecords
+sql_statement: <<SQL
+select * from bse_audit_log
+where object_id = ?
+  and object_type = ?
+  and facility = 'bse'
+  and component = ?
+  and module = ?
+  and
+  (
+    `function` = 'success'
+   or
+    `function` = 'invalid'
+   or
+    `function` = 'unlock'
+   or
+    `function` = 'recover'
+  )
+  and when_at > date_sub(now(), interval ? minute)
+order by when_at asc
+SQL
+
+name: AuditLog.ipLogonRecords
+sql_statement: <<SQL
+select * from bse_audit_log
+where ip_address = ?
+  and facility = 'bse'
+  and component = ?
+  and module = ?
+  and
+  (
+    `function` = 'success'
+   or
+    `function` = 'invalid'
+   or
+    `function` = 'unlock'
+  )
+  and when_at > date_sub(now(), interval ? minute)
+order by when_at asc
+SQL
+
+name: bse_lockout_ip
+sql_statement: call bse_ip_lockout(?,?,?)
+

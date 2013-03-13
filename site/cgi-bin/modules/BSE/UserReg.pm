@@ -18,7 +18,7 @@ use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
 use Carp qw(confess);
 
-our $VERSION = "1.025";
+our $VERSION = "1.026";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -231,13 +231,34 @@ sub req_logon {
   my $password = $cgi->param("password");
   unless (keys %errors) {
     $user = SiteUsers->getBy(userId => $userid);
-    my $error = "INVALID";
-    unless ($user && $user->check_password($password, \$error)) {
-      if ($error eq "INVALID") {
-	$errors{_} = $msgs->(baduserpass=>"Invalid username or password");
-      }
-      else {
-	$errors{_} = $msgs->(passwordload => "Error loading password module");
+    if ($req->ip_locked_out("S")) {
+      $errors{_} = "msg:bse/user/iplockout:".$req->ip_address;
+    }
+    elsif ($user && $user->locked_out) {
+      $errors{_} = "msg:bse/user/userlockout";
+    }
+    else {
+      my $error = "INVALID";
+      unless ($user && $user->check_password($password, \$error)) {
+	if ($error eq "INVALID") {
+	  $errors{_} = $msgs->(baduserpass=>"Invalid username or password");
+	  $req->audit
+	    (
+	     object => $user,
+	     component => "siteuser:logon:invalid",
+	     actor => "S",
+	     level => "notice",
+	     msg => "Invalid username or password",
+	    );
+	  SiteUser->check_lockouts
+	    (
+	     request => $req,
+	     user => $user,
+	    );
+	}
+	else {
+	  $errors{_} = $msgs->(passwordload => "Error loading password module");
+	}
       }
     }
   }
@@ -279,6 +300,15 @@ sub req_logon {
 
   $session->{cart} = $cart;
   $session->{userid} = $user->id;
+
+  $req->audit
+    (
+     object => $user,
+     component => "siteuser:logon:success",
+     actor => "S",
+     level => "info",
+     msg => "Invalid username or password",
+    );
 
   if ($custom->can('siteuser_login')) {
     $custom->siteuser_login($session->{_session_id}, $session->{userid}, 

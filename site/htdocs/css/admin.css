@@ -566,6 +566,10 @@ table.siteusers {
   width: 100%;
 }
 
+table tr.locked td {
+  background-color: #FFC0C0;
+}
+
 table.siteusers td.col_name1,
 table.siteusers td.col_name2 { 
   width: 33%;

@@ -1,0 +1,18 @@
+<table>
+<tr>
+  <th>When</th>
+  <th>Level</th>
+  <th>Who</th>
+  <th>What</th>
+  <th>Message</th>
+</tr>
+<:.for entry in activity -:>
+<tr class="audit<:= entry.level :>">
+  <td class="col_when_at"><:= bse.date("%H:%M %d/%m/%Y", entry.when_at) :></td>
+  <td class="col_level"><:= entry.level_name:></td>
+  <td class="col_actor"><:= entry.actor_name:></td>
+   <td class="col_what"><:.if entry.facility ne "bse":><:= entry.facility :>: <:.end if:><:= entry.component:>/<:= entry.module:>/<:= entry.function :></td>
+   <td class="col_msg"><:= entry.msg:></td>
+</tr>
+<:.end for -:>
+</table>

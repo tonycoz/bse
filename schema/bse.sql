@@ -648,6 +648,9 @@ create table bse_siteusers (
 
   customWhen1 datetime,
 
+  -- when the account lock-out (if any) ends
+  lockout_end datetime,
+
   primary key (id),
   unique (userId),
   index (affiliate_name),
@@ -723,6 +726,10 @@ create table admin_users (
   password varchar(255) not null,
   perm_map varchar(255) not null,
   password_type varchar(20) not null default 'plain',
+
+  -- when the account lock-out (if any) ends
+  lockout_end datetime,
+
   primary key (base_id),
   unique (logon)
 );
@@ -1316,3 +1323,17 @@ create table bse_tag_category_deps (
 
   unique cat_dep(cat_id, depname)
 );
+
+drop table if exists bse_ip_lockouts;
+create table bse_ip_lockouts (
+  id integer not null auto_increment primary key,
+
+  ip_address varchar(20) not null,
+
+  -- S or A for site user or admin user lockouts
+  type char not null,
+
+  expires datetime not null,
+
+  unique ip_address(ip_address, type)
+) type=innodb;

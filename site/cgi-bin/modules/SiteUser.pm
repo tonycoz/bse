@@ -8,7 +8,17 @@ use Constants qw($SHOP_FROM);
 use Carp qw(confess);
 use BSE::Util::SQL qw/now_datetime now_sqldate sql_normal_date sql_add_date_days/;
 
-our $VERSION = "1.008";
+=head1 NAME
+
+SiteUser - represent a site user (or member)
+
+=head1 METHODS
+
+=over
+
+=cut
+
+our $VERSION = "1.009";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -30,6 +40,7 @@ sub columns {
             customText1 customText2 customText3
             customStr1 customStr2 customStr3
             customInt1 customInt2 customWhen1
+	    lockout_end
             /;
 }
 
@@ -97,6 +108,7 @@ sub defaults {
      customInt1 => "",
      customInt2 => "",
      customWhen1 => "",
+     lockout_end => undef,
     );
 }
 
@@ -209,6 +221,12 @@ sub generic_email {
   $checkemail;
 }
 
+=item subscriptions
+
+The subscriptions the user is subscribed to.
+
+=cut
+
 sub subscriptions {
   my ($self) = @_;
 
@@ -317,6 +335,12 @@ sub send_conf_request {
   return 1;
 }
 
+=item orders
+
+The shop orders made by the user.
+
+=cut
+
 sub orders {
   my ($self) = @_;
 
@@ -334,6 +358,12 @@ sub _user_sub_entry {
 
   return $entry;
 }
+
+=item subscribed_to
+
+return true if the user is subcribed to the given subscription.
+
+=cut
 
 # check if the user is subscribed to the given subscription
 sub subscribed_to {
@@ -387,6 +417,12 @@ sub images_cfg {
   
   @images;
 }
+
+=item images
+
+Return images associated with the user.
+
+=cut
 
 sub images {
   my ($self) = @_;
@@ -454,6 +490,12 @@ sub subscribed_services {
   BSE::DB->query(siteuserSubscriptions => $self->{id});
 }
 
+=item is_disabled
+
+Return true if the user is disabled.
+
+=cut
+
 sub is_disabled {
   my ($self) = @_;
 
@@ -494,6 +536,12 @@ sub seminar_bookings_detail {
 
   BSE::DB->query(bse_siteuserSeminarBookingsDetail => $self->{id});
 }
+
+=item wishlist
+
+return the user's wishlist products.
+
+=cut
 
 sub wishlist {
   my $self = shift;
@@ -627,7 +675,12 @@ sub query_group_files {
     );
 }
 
-# files the user can see, both owned and owned by groups
+=item visible_files
+
+files the user can see, both owned and owned by groups
+
+=cut
+
 sub visible_files {
   my ($self, $cfg) = @_;
 
@@ -913,5 +966,66 @@ sub check_password_rules {
 sub password_check_fields {
   return qw(name1 name2);
 }
+
+=item locked_out
+
+Return true if logons are disabled due to too many authentication
+failures.
+
+=cut
+
+sub locked_out {
+  my ($self) = @_;
+
+  return $self->lockout_end && $self->lockout_end gt now_datetime();
+}
+
+sub check_lockouts {
+  my ($class, %opts) = @_;
+
+  require BSE::Util::Lockouts;
+  BSE::Util::Lockouts->check_lockouts
+      (
+       %opts,
+       section => "site user lockouts",
+       component => "siteuser",
+       module => "logon",
+       type => $class->lockout_type,
+      );
+}
+
+sub unlock {
+  my ($self, %opts) = @_;
+
+  require BSE::Util::Lockouts;
+  BSE::Util::Lockouts->unlock_user
+      (
+       %opts,
+       user => $self,
+       component => "siteuser",
+       module => "logon",
+      );
+}
+
+sub unlock_ip_address {
+  my ($class, %opts) = @_;
+
+  require BSE::Util::Lockouts;
+  BSE::Util::Lockouts->unlock_ip_address
+      (
+       %opts,
+       component => "siteuser",
+       module => "logon",
+       type => $class->lockout_type,
+      );
+}
+
+sub lockout_type {
+  "S";
+}
+
+=back
+
+=cut
 
 1;

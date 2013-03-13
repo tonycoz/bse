@@ -4,7 +4,7 @@ use BSE::Util::Tags qw(tag_error_img);
 use BSE::Util::HTML;
 use BSE::CfgInfo 'admin_base_url';
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 my %actions =
   (
@@ -33,13 +33,7 @@ sub dispatch {
 sub req_logon_form {
   my ($class, $req, $errors) = @_;
 
-  my $msg = (!$errors || ref $errors) ? $req->message($errors) : escape_html($errors);
-
-  $errors ||= {};
-  $errors = ref $errors ? $errors : { _ => $errors };
-
-  $req->set_variable(errors => $errors);
-  $req->set_variable(message => $msg);
+  my $msg = $req->message($errors);
 
   my %acts;
   %acts =
@@ -95,7 +89,7 @@ sub _service_error {
       );
   }
   else {
-    return $self->req_logon_form($req, $errors);
+    return $self->req_logon_form($req, ref $errors ? $errors : { _ => $errors });
   }
 }
 
@@ -129,6 +123,14 @@ sub req_logon {
     and return $class->_service_error($req, \%errors, "FIELD");
   require BSE::TB::AdminUsers;
   my $user = BSE::TB::AdminUsers->getBy(logon=>$logon);
+
+  if ($req->ip_locked_out("A")) {
+    return $class->_service_error($req, "IP Address blocked due to excessive logon failures", "IPBLOCKED");
+  }
+  elsif ($user && $user->locked_out) {
+    return $class->_service_error($req, "User account locked due to excessive logon failures", "USERLOCKED");
+  }
+
   my $match;
   if ($user) {
     my $error;
@@ -141,13 +143,19 @@ sub req_logon {
   unless ($user && $match) {
     $req->audit
       (
-       component => "adminlogon:logon:failure",
+       component => "adminlogon:logon:invalid",
        level => "error",
        msg => "Failed logon attempt",
        actor => "U",
        object => $user,
        dump => "Logon: $logon",
       );
+    BSE::TB::AdminUser->check_lockouts
+	(
+	 request => $req,
+	 user => $user,
+	);
+
     return $class->_service_error($req, "Invalid logon or password", "INVALID");
   }
   $req->session->{adminuserid} = $user->{id};

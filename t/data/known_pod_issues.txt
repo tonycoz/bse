@@ -69,9 +69,7 @@ site/cgi-bin/modules/DevHelp/Validate.pm	multiple occurrence of link target 'int
 site/cgi-bin/modules/DevHelp/Validate.pm	multiple occurrence of link target 'required'	1
 site/cgi-bin/modules/DevHelp/Validate.pm	multiple occurrence of link target 'rules'	1
 site/cgi-bin/modules/DevHelp/Validate.pm	multiple occurrence of link target 'time'	1
-site/cgi-bin/modules/Generate.pm	=item without previous =over	1
 site/cgi-bin/modules/Generate.pm	empty section in previous paragraph	1
-site/cgi-bin/modules/Generate/Article.pm	=item without previous =over	1
 site/cgi-bin/modules/Generate/Article.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/Generate/Article.pm	empty section in previous paragraph	2
 site/cgi-bin/modules/Generate/Article.pm	multiple occurrence of link target 'admin'	1
@@ -79,13 +77,11 @@ site/cgi-bin/modules/Generate/Article.pm	multiple occurrence of link target 'bod
 site/cgi-bin/modules/Generate/Article.pm	multiple occurrence of link target 'file field'	1
 site/cgi-bin/modules/Generate/Article.pm	multiple occurrence of link target 'ifParent'	1
 site/cgi-bin/modules/Generate/Article.pm	multiple occurrence of link target 'image'	1
-site/cgi-bin/modules/Generate/Article.pm	preceding non-item paragraph(s)	1
 site/cgi-bin/modules/Generate/Article.pm	unresolved internal link 'item child'	1
 site/cgi-bin/modules/Generate/Article.pm	unresolved internal link 'item crumbs'	1
 site/cgi-bin/modules/Generate/Catalog.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/Generate/Product.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/Product.pm	=item without previous =over	1
-site/cgi-bin/modules/SiteUser.pm	=item without previous =over	1
 site/cgi-bin/modules/Squirrel/GPG.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/Squirrel/PGP5.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/Squirrel/PGP6.pm	Verbatim paragraph in NAME section	1
@@ -118,6 +114,7 @@ site/docs/config.pod	multiple occurrence of link target 'extra_templates'	1
 site/docs/config.pod	multiple occurrence of link target 'from'	1
 site/docs/config.pod	multiple occurrence of link target 'images'	1
 site/docs/config.pod	multiple occurrence of link target 'no_cache_dynamic'	1
+site/docs/config.pod	multiple occurrence of link target 'public_files'	1
 site/docs/config.pod	multiple occurrence of link target 'require_logon'	1
 site/docs/config.pod	multiple occurrence of link target 'scalecache'	1
 site/docs/config.pod	multiple occurrence of link target 'template'	1

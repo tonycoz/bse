@@ -1,17 +1,22 @@
 <:wrap admin/base.tmpl title => "Edit User":>
 <h1>Edit User</h1>
-<p>
+<div class="menu">
 | <a href="/cgi-bin/admin/menu.pl">Admin menu</a>
 | <a href="<:script:>">User list</a> |
 <a href="<:script:>?a_groups=1">Group list</a> |
-</p>
-<p>
+
+</menu>
+<div class="menu">
 | User Details | <a href="<:script:>?a_showuser=1&amp;userid=<:user id:>&amp;_t=glob">Global Permissions</a>
 | <a href="<:script:>?a_showuserart=1&amp;userid=<:user id:>&amp;id=-1">Article Permissions</a> |
-</p>
-<:ifMessage:>
-<p><b><:message:></b></p>
-<:or:><:eif:> 
+<:.if user.locked_out and request.user_can("bse_admin_user_unlock") -:>
+<a href="<:= cfg.admin_url2("adminusers", "unlock",
+    { "userid": user.id,
+      "r":cfg.admin_url2("adminusers", "showuser", { "userid":user.id })
+    }) :>">Unlock</a> |
+<:.end if -:>
+</div>
+<:.call "messages" -:>
 
 <form method="post" action="<:script:>">
 <input type="hidden" name="userid" value="<:user id:>" />
