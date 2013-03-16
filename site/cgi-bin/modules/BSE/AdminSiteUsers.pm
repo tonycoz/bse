@@ -13,7 +13,7 @@ use constant SITEUSER_GROUP_SECT => 'BSE Siteuser groups validation';
 use BSE::Template;
 use DevHelp::Date qw(dh_parse_date_sql dh_parse_time_sql);
 
-our $VERSION = "1.010";
+our $VERSION = "1.011";
 
 my %actions =
   (
@@ -572,7 +572,7 @@ sub req_delete {
     (
      component => "members::delete",
      object => $user,
-     level => "info",
+     level => "notice",
      msg => "Member " . $user->userId . " (" . $user->id . ") deleted",
     );
 
@@ -759,7 +759,7 @@ sub req_add {
        object => $user,
        component => "members::add",
        msg => "New user created",
-       level => "info",
+       level => "notice",
       );
 
     $req->flash("msg:bse/admin/siteusers/usercreated", [ $user ]);

@@ -18,7 +18,7 @@ use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
 use Carp qw(confess);
 
-our $VERSION = "1.026";
+our $VERSION = "1.027";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -247,7 +247,7 @@ sub req_logon {
 	     object => $user,
 	     component => "siteuser:logon:invalid",
 	     actor => "S",
-	     level => "notice",
+	     level => "warning",
 	     msg => "Invalid username or password",
 	    );
 	  SiteUser->check_lockouts
@@ -306,7 +306,7 @@ sub req_logon {
      object => $user,
      component => "siteuser:logon:success",
      actor => "S",
-     level => "info",
+     level => "warning",
      msg => "Invalid username or password",
     );
 
@@ -756,7 +756,7 @@ sub req_register {
        object => $user,
        component => "member:register:created",
        msg => "New user created",
-       level => "info",
+       level => "notice",
       );
 
     $self->_send_user_cookie($user);

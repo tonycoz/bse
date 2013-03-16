@@ -7,7 +7,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::ThumbCommon/;
 use Carp qw(confess);
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 sub columns {
   return qw/id articleId image alt width height url displayOrder name
@@ -247,7 +247,7 @@ sub update {
     BSE::TB::AuditLog->log
       (
        component => "admin:edit:saveimage",
-       level => "warn",
+       level => "warning",
        object => $image,
        actor => $actor,
        msg => "Error saving image to storage $new_storage: $msg",
@@ -266,7 +266,7 @@ sub update {
       BSE::TB::AuditLog->log
 	(
 	 component => "admin:edit:saveimage",
-	 level => "warn",
+	 level => "warning",
 	 object => $image,
 	 actor => $actor,
 	 msg => "Error saving image to storage $new_storage: $msg",

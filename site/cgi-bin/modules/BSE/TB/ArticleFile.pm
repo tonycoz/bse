@@ -6,7 +6,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 use Carp 'confess';
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 sub columns {
   return qw/id articleId displayName filename sizeInBytes description 
@@ -487,7 +487,7 @@ sub update {
     BSE::TB::AuditLog->log
       (
        component => "admin:edit:saveimage",
-       level => "warn",
+       level => "warning",
        object => $self,
        actor => $actor,
        msg => "Error saving file to storage $new_storage: $msg",
@@ -506,7 +506,7 @@ sub update {
       BSE::TB::AuditLog->log
 	(
 	 component => "admin:edit:savefile",
-	 level => "warn",
+	 level => "warning",
 	 object => $self,
 	 actor => $actor,
 	 msg => "Error saving file to storage $new_storage: $msg",
