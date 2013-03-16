@@ -1,7 +1,7 @@
 package BSE::Util::ValidateHTML;
 use strict;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub validate {
   my ($class, $cfg, $result) = @_;
@@ -20,7 +20,7 @@ sub validate {
       BSE::TB::AuditLog->log
 	  (
 	   component => "template:validatehtml:load",
-	   level => "critical",
+	   level => "crit",
 	   actor => "S",
 	   msg => "Could not load $real_class",
 	   dump => $@,
