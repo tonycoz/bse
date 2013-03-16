@@ -7,7 +7,7 @@ use vars qw/@ISA/;
 use Carp 'confess';
 use BSE::Shop::PaymentTypes;
 
-our $VERSION = "1.016";
+our $VERSION = "1.017";
 
 sub columns {
   return qw/id
@@ -638,7 +638,7 @@ sub new_stage {
      component => "shopadmin:orders:saveorder",
      object => $self,
      msg => $msg,
-     level => "info",
+     level => "notice",
      actor => $who || "U"
     );
 
