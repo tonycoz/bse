@@ -18,7 +18,7 @@ SiteUser - represent a site user (or member)
 
 =cut
 
-our $VERSION = "1.009";
+our $VERSION = "1.010";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -859,7 +859,7 @@ sub changepw {
        component => "siteusers::changepw",
        object => $self,
        actor => $who,
-       level => "info",
+       level => "notice",
        msg => "Change password",
        %log,
       );
