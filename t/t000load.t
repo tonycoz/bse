@@ -1,9 +1,10 @@
 #!perl -w
 use strict;
-use Test::More tests => 31;
+use Test::More tests => 32;
 use_ok("BSE::Cfg");
 use_ok("Squirrel::Template");
 use_ok("BSE::Template");
+use_ok("BSE::Util::PasswordValidate");
 use_ok("DevHelp::Date");
 use_ok("DevHelp::Formatter");
 use_ok("DevHelp::HTML");

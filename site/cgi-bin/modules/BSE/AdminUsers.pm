@@ -5,8 +5,11 @@ use BSE::Permissions;
 use BSE::Util::HTML qw(:default popup_menu);
 use BSE::CfgInfo qw(admin_base_url);
 use BSE::Template;
+use BSE::TB::AdminUsers;
+use BSE::TB::AdminGroups;
+use BSE::Util::Iterate;
 
-our $VERSION = "1.003";
+our $VERSION = "1.005";
 
 my %actions =
   (
@@ -17,6 +20,7 @@ my %actions =
    saveuserart=>1,
    adduserform => 1,
    adduser=>1,
+   unlock => 1,
    groups=>1,
    showgroupart=>1,
    showgroup=>1,
@@ -51,14 +55,12 @@ sub dispatch {
 sub iter_get_users {
   my ($req) = @_;
 
-  require BSE::TB::AdminUsers;
   return BSE::TB::AdminUsers->all;
 }
 
 sub iter_get_groups {
   my ($req) = @_;
 
-  require BSE::TB::AdminGroups;
   return BSE::TB::AdminGroups->all;
 }
 
@@ -141,12 +143,21 @@ sub common_tags {
   my $user_index;
   my @groups;
   my $group_index;
+  $req->set_variable_class(users => "BSE::TB::AdminUsers");
+  $req->set_variable_class(groups => "BSE::TB::AdminGroups");
+  my $ito = BSE::Util::Iterate::Objects->new;
   return
     (
      $req->admin_tags,
      message => $msg,
-     DevHelp::Tags->make_iterator2
-     ([ \&iter_get_users, $req ], 'iuser', 'users', \@users, \$user_index),
+     $ito->make
+     (
+      code => [ all => "BSE::TB::AdminUsers" ],
+      single => "iuser",
+      plural => "users",
+      data => \@users,
+      index => \$user_index,
+     ),
      DevHelp::Tags->make_iterator2
      ([ \&iter_get_groups, $req ], 'igroup', 'groups', \@groups, 
       \$group_index),
@@ -254,10 +265,25 @@ sub req_adduser {
       or $errors{confirm} = 'No confirmation password supplied';
   }
 
+  require BSE::TB::AdminUsers;
+  if (!$errors{password} && $logon) {
+    my %others = map { $_ => scalar $cgi->param($_) }
+      BSE::TB::AdminUser->password_check_fields;
+    my @errors;
+    unless (BSE::TB::AdminUser->check_password_rules
+	    (
+	     password => $password,
+	     username => $logon,
+	     other => \%others,
+	     errors => \@errors,
+	    )) {
+      $errors{password} = \@errors;
+    }
+  }
+
   keys %errors
     and return $class->req_adduserform($req, undef, \%errors);
 
-  require BSE::TB::AdminUsers;
   my $old = BSE::TB::AdminUsers->getBy(logon=>$logon)
     and return $class->req_adduserform($req, "Logon '$logon' already exists");
   my %user =
@@ -391,6 +417,7 @@ sub req_showuser {
   require BSE::TB::AdminUsers;
   my $user = BSE::TB::AdminUsers->getByPkey($userid)
     or return $class->req_users($req, "User id $userid not found");
+  $req->set_variable("user", $user);
   my %acts;
   %acts =
     (
@@ -667,7 +694,21 @@ sub req_saveuser {
      && length $password) {
     if (length $confirm) {
       if ($password eq $confirm) {
-	$user->changepw($password);
+	my %others = map { $_ => $user->$_() }
+	  BSE::TB::AdminUser->password_check_fields;
+	my @errors;
+	if (BSE::TB::AdminUser->check_password_rules
+	    (
+	     password => $password,
+	     username => $user->logon,
+	     other => \%others,
+	     errors => \@errors,
+	    )) {
+	  $user->changepw($password);
+	}
+	else {
+	  $errors{password} = \@errors;
+	}
       }
       else {
 	$errors{confirm} = "Password and confirmation password didn't match"
@@ -925,5 +966,29 @@ sub req_delgroup {
   return $class->refresh($req, a_groups =>
 			 'm' => "Group '$name' deleted");
 }
+
+sub req_unlock {
+  my ($class, $req) = @_;
+
+ $req->user_can("bse_admin_user_unlock")
+    or return $class->req_users($req, "You don't have bse_admin_user_unlock access");
+  
+  my $cgi = $req->cgi;
+  my $cfg = $req->cfg;
+  my $userid = $cgi->param('userid');
+  $userid
+    or return $class->req_users($req, 'No userid supplied');
+  require BSE::TB::AdminUsers;
+  my $user = BSE::TB::AdminUsers->getByPkey($userid)
+    or return $class->req_users($req, "User id $userid not found");
+
+  $user->unlock(request => $req);
+  $req->flash_notice("msg:bse/admin/user/unlocked", [ $user ]);
+
+  my $uri = $cgi->param("r") || $cfg->admin_url2("adminusers");
+
+  return $req->get_refresh($uri);
+}
+
 
 1;

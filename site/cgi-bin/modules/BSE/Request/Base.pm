@@ -5,7 +5,7 @@ use BSE::Cfg;
 use BSE::Util::HTML;
 use Carp qw(cluck confess);
 
-our $VERSION = "1.022";
+our $VERSION = "1.023";
 
 =head1 NAME
 
@@ -1560,6 +1560,14 @@ Return the standard admin page tags.
 sub admin_tags {
   my ($req) = @_;
 
+  $req->set_variable
+    (
+     auditlog =>
+     sub {
+       require BSE::TB::AuditLog;
+       Squirrel::Template::Expr::WrapClass->new("BSE::TB::AuditLog")
+     });
+
   require BSE::Util::Tags;
   return
     (
@@ -1797,6 +1805,20 @@ sub cgi_fields {
   }
 
   return \%values;
+}
+
+=item ip_locked_out
+
+Return true if there's an active IP address lockout of the current IP
+address.
+
+=cut
+
+sub ip_locked_out {
+  my ($self, $type) = @_;
+
+  require BSE::TB::IPLockouts;
+  return BSE::TB::IPLockouts->active($self->ip_address, $type);
 }
 
 1;

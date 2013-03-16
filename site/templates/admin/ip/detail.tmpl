@@ -1,0 +1,32 @@
+<:wrap admin/base.tmpl title => "IP Addresses", bodyid => "ipaddresses":>
+<h1>IP Address: <:= ip.ip_address -:></h1>
+<div class="menu">| <a href="<:= cfg.admin_url("menu") :>">Admin Menu</a> |
+<a href="<:= cfg.admin_url2("ipaddress", "list") :>">Return to list</a>
+</div>
+
+<:.call "messages" -:>
+
+<:.if ip.lockout_S -:>
+<div class="warning">Site users are locked out from this address
+<a href="<:= cfg.admin_url2("ipaddress", "unlock", { "ip":ip.ip_address, "type":"S" }) :>">Unlock</a>
+</div>
+<:.end if:>
+
+<:.if ip.lockout_A -:>
+<div class="warning">Admin users are locked out from this address
+<a href="<:= cfg.admin_url2("ipaddress", "unlock", { "ip":ip.ip_address, "type":"A", "r":cfg.admin_url2("ipaddress", "detail", { "ip":ip.ip_address }) }) :>">Unlock</a>
+</div>
+<:.end if:>
+
+<h2>Activity from <:= ip.ip_address :></h2>
+
+<:.set activity =
+    [
+      auditlog().getBy2
+        ( [
+            [ "ip_address", ip.ip_address ]
+          ],
+          { "order":"id desc", "limit":50 }
+        )
+    ] -:>
+<:.call "admin/include/activity.tmpl", "activity":activity :>

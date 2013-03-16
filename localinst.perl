@@ -132,18 +132,23 @@ close CFG;
 
 
 # build the database
-unless ($leavedb) {
-  my $dsn = BSE::Test::test_dsn();
-  if ($dsn =~ /:mysql:(?:database=)?(\w+)/) {
-    my $db = $1;
+my $dsn = BSE::Test::test_dsn();
+if ($dsn =~ /:mysql:(?:database=)?(\w+)/) {
+  my $db = $1;
+
+  unless ($leavedb) {
     system "$mysql -u$dbuser -p$dbpass $db <$dist/schema/bse.sql"
       and die "Cannot initialize database";
     system "cd $instbase/util ; $perl initial.pl"
       and die "Cannot load database";
   }
-  else {
-    print "WARNING: cannot install to $dsn database\n";
-  }
+
+  # always load stored procedures
+  system qq($mysql "-u$dbuser" "-p$dbpass" "$db" <$dist/schema/bse_sp.sql)
+    and die "Error loading stored procedures\n";
+}
+else {
+  print "WARNING: cannot install to $dsn database\n";
 }
 
   

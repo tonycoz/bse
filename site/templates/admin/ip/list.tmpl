@@ -1,0 +1,25 @@
+<:wrap admin/base.tmpl title => "IP Addresses", bodyid => "ipaddresses":>
+<h1>IP Addresses</h1>
+<div class="menu">| <a href="<:= cfg.admin_url("menu") :>">Admin Menu</a> |</div>
+
+<:.call "messages" -:>
+
+<table>
+  <tr>
+    <th>IP Address</th>
+    <th>Site users</th>
+    <th>Admin users</th>
+  </tr>
+<:.if ips.size -:>
+<:.for ip in ips -:>
+  <tr>
+    <td><a href="<:= cfg.admin_url2("ipaddress", "detail", { "ip":ip.ip_address }) :>"><:= ip.ip_address -:></a></td>
+    <td><:.if ip.lockout_S:>Locked<:.end if:></td>
+    <td><:.if ip.lockout_A:>Locked<:.end if:></td>
+  </tr>
+<:.end for -:>
+<:.else -:>
+<tr>
+  <td colspan="2">No IP addresses being tracked</td>
+<:.end if -:>
+</table>

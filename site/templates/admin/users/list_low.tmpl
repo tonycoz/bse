@@ -1,11 +1,19 @@
 <:ifAjax:><table class="siteusers"><:or:><:eif:>
           <:if Siteusers:> <: iterator begin siteusers :> 
-          <tr> 
+          <tr<:if Siteuser locked_out:> class="locked"<:eif:>> 
 	    <td class="col_id">  <:if Or [ifUserCan bse_members_user_edit] [ifUserCan bse_members_user_view]:><a href="<:script:>?<:ifUserCan bse_members_user_edit:>a_edit<:or:>a_view<:eif:>=1&amp;id=<:siteuser id:>"><:siteuser id:></a><:or Or:><:siteuser id:><:eif Or:></td>
             <td class="col_userid"> <:if Or [ifUserCan bse_members_user_edit] [ifUserCan bse_members_user_view]:><a href="<:script:>?<:ifUserCan bse_members_user_edit:>a_edit<:or:>a_view<:eif:>=1&amp;id=<:siteuser id:>"><:siteuser userId:></a><:or Or:><:siteuser userId:><:eif Or:></td>
             <td class="col_name1"><:siteuser name1:></td>
             <td class="col_name2"><:siteuser name2:> </td>
-	    <td><:ifUserCan bse_members_user_delete:><a href="<:script:>?a_deleteform=1&amp;id=<:siteuser id:>">Delete</a> <:or:><:eif:><a href="<:script:>?a_edit=1&amp;id=<:siteuser id:>&amp;_t=files">Files</a></td>
+	    <td>
+<:ifUserCan bse_members_user_delete -:>
+<a href="<:script:>?a_deleteform=1&amp;id=<:siteuser id:>">Delete</a>
+<:-eif:>
+<a href="<:script:>?a_edit=1&amp;id=<:siteuser id:>&amp;_t=files">Files</a>
+<:ifAnd [ifUserCan bse_member_user_unlock] [siteuser locked_out]:>
+<a href="<:adminurl2 siteusers unlock id [siteuser id]:>">Unlock</a>
+<:eif:>
+</td>
           </tr>
           <: iterator end siteusers :> 
           <:or Siteusers:> 

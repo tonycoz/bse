@@ -13,7 +13,7 @@ use constant SITEUSER_GROUP_SECT => 'BSE Siteuser groups validation';
 use BSE::Template;
 use DevHelp::Date qw(dh_parse_date_sql dh_parse_time_sql);
 
-our $VERSION = "1.008";
+our $VERSION = "1.010";
 
 my %actions =
   (
@@ -25,6 +25,7 @@ my %actions =
    deleteform        => 'bse_members_user_delete',
    delete            => 'bse_members_user_delete',
    view              => 'bse_members_user_view',
+   unlock            => 'bse_members_user_unlock',
    grouplist	     => 'bse_members_group_list',
    addgroupform	     => 'bse_members_group_add',
    addgroup	     => 'bse_members_group_add',
@@ -118,10 +119,12 @@ sub req_list {
   my ($sortby, $reverse) =
     sorter(data=>\@users, cgi=>$cgi, sortby=>'userId', session=>$req->session,
 	   name=>'siteusers', fields=> { id => {numeric => 1 } });
-  my $it = BSE::Util::Iterate->new;
+  my $it = BSE::Util::Iterate::Objects->new;
 
   my $search_param =
     join('&', map { "$_=".escape_uri($search_fields{$_}) } keys %search_fields);
+
+  $req->set_variable(siteusers => \@users);
 
   my %acts;
   %acts =
@@ -252,13 +255,9 @@ sub _display_user {
 
   my $it = BSE::Util::Iterate->new;
 
-  $errors ||= {};
-  if ($msg) {
-    $msg = escape_html($msg);
-  }
-  else {
-    $msg = $req->message($errors);
-  }
+  $msg = $req->message($msg || $errors);
+
+  $req->set_variable(siteuser => $siteuser);
 
   require BSE::TB::OwnedFiles;
   my @file_cats = BSE::TB::OwnedFiles->categories($req->cfg);
@@ -418,10 +417,16 @@ sub req_save {
     my $confirm = $cgi->param('confirm_password');
     
     if (defined $newpass && length $newpass) {
-      my $min_pass_length = $cfg->entry('basic', 'minpassword') || 4;
-	  my $error;
-      if (length $newpass < $min_pass_length) {
-	$errors{password} = "The password must be at least $min_pass_length characters";
+      my @errors;
+      my %other = map { $_ => $user->$_() } SiteUser->password_check_fields;
+      if (!SiteUser->check_password_rules
+	  (
+	   password => $newpass,
+	   username => $user->userId,
+	   other => \%other,
+	   errors => \@errors,
+	  )) {
+	$errors{password} = \@errors;
       }
       elsif (!defined $confirm || length $confirm == 0) {
 	$errors{confirm_password} = "Please enter a confirmation password";
@@ -589,24 +594,7 @@ sub req_addform {
 
   my $cgi = $req->cgi;
 
-  $errors ||= {};
-  if ($msg) {
-    $msg = escape_html($msg);
-  }
-  elsif ($cgi->param('m')) {
-    $msg = join("<br />", map escape_html($_), $cgi->param('m'));
-  }
-  else {
-    if (keys %$errors) {
-      my %work = %$errors;
-      my @msgs = grep defined, delete @work{$cgi->param()};
-      push @msgs, values %work;
-      $msg = join "<br />", map escape_html($_), grep $_, @msgs;
-    }
-    else {
-      $msg = '';
-    }
-  }
+  $msg = $req->message($msg || $errors);
 
   my $it = BSE::Util::Iterate->new;
 
@@ -668,18 +656,28 @@ sub req_add {
     $user{password} = '';
   }
   else {
-    my $min_pass_length = $cfg->entry('basic', 'minpassword') || 4;
     my $userid = $cgi->param('userId');
     if (!defined $userid || length $userid == 0) {
       $errors{userId} = "Please enter a userid";
     }
     my $pass = $cgi->param('password');
+    $pass =~ s/\A\s+//, $pass =~ s/\s+\z// if defined $pass;
     my $pass2 = $cgi->param('confirm_password');
+    $pass2 =~ s/\A\s+//, $pass2 =~ s/\s+\z// if defined $pass2;
+    my %other = map { $_ => scalar $cgi->param($_) }
+      SiteUser->password_check_fields;
+    my @errors;
     if (!defined $pass || length $pass == 0) {
       $errors{password} = "Please enter a password";
     }
-    elsif (length $pass < $min_pass_length) {
-      $errors{password} = "The password must be at least $min_pass_length characters";
+    elsif (!SiteUser->check_password_rules
+	   (
+	    password => $pass,
+	    username => $userid,
+	    other => \%other,
+	    errors => \@errors,
+	   )) {
+      $errors{password} = \@errors;
     }
     elsif (!defined $pass2 || length $pass2 == 0) {
       $errors{confirm_password} = "Please enter a confirmation password";
@@ -827,6 +825,27 @@ sub save_subs {
   }
 
   $found;
+}
+
+sub req_unlock {
+  my ($class, $req) = @_;
+
+  my $cgi = $req->cgi;
+  my $cfg = $req->cfg;
+
+  my $id = $cgi->param('id');
+  $id && $id =~ /^\d+$/
+    or return $class->req_list($req, "No user id supplied");
+
+  my $user = SiteUsers->getByPkey($id)
+    or return $class->req_list($req, "No user $id found");
+
+  $user->unlock(request => $req);
+  $req->flash_notice("msg:bse/user/unlocked", [ $user ]);
+
+  my $uri = $cgi->param("r") || $cfg->admin_url2("siteusers", "list");
+
+  return $req->get_refresh($uri);
 }
 
 sub _validate_affiliate_name {

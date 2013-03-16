@@ -2,7 +2,7 @@ package BSE::TB::AuditEntry;
 use strict;
 use base qw(Squirrel::Row);
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 sub columns {
   return qw/id 
@@ -120,6 +120,7 @@ my %types =
     action => "showuser",
     format => "Admin: %d",
     class => "BSE::TB::AdminUsers",
+    idname => "userid",
    },
   );
 
@@ -131,8 +132,9 @@ sub object_link {
   my $entry = $types{$type};
     my $cfg = BSE::Cfg->single;
   if ($entry) {
+    my $idname = $entry->{idname} || "id";
     return $cfg->admin_url2($entry->{target}, $entry->{action},
-			    { id => $id });
+			    { $idname => $id });
   }
   else {
     my $link_action = $cfg->entry("type $type", "link_action");
@@ -163,8 +165,7 @@ sub object_name {
       && eval "use $class; 1"
       && ($obj = $class->getByPkey($self->object_id))
       && $obj->can($method)) {
-    $format ||= "%s";
-    return sprintf($format, $obj->$method());
+    return $obj->$method();
   }
   elsif ($format) {
     return sprintf $format, $self->object_id;

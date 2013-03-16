@@ -1,5 +1,5 @@
 ---
-# VERSION=1.004
+# VERSION=1.005
 # defaults for the following
 language_code: en
 priority: 0
@@ -18,6 +18,15 @@ message: No id supplied for password recovery
 
 id: bse/user/passwordlen
 message: New password must be at least %1:s characters
+
+id: bse/user/userlockout
+message: Your account is locked out due to too many logon failures, please try again later, or recover your account below.
+
+id: bse/user/unlocked
+message: Unlocked user account '%1:{userId}s'
+
+id: bse/user/iplockout
+message: Your IP address '%1:s' is locked out due to too many failed logon attempts.
 
 id: bse/user/lostsaved
 message: Your new password has been saved, please logon
@@ -187,6 +196,9 @@ message: Membership saved for group '%1:{name}s'
 id: bse/admin/generic/accessdenied
 message: You don't have access to this function (%1:s)
 
+id: bse/admin/user/unlocked
+message: User '%1:{logon}s' unlocked
+
 id: bse/admin/makeindex/complete
 message: Search index rebuild complete
 
@@ -292,9 +304,40 @@ message: File must be an image file
 id: bse/files/pdf_file_required
 message: File must be a PDF file
 
+id: bse/util/password/length
+message: Password must be at least %2:d characters long
+
+id: bse/util/password/entropy
+message: Your password isn't complex enough (but you're %3:.0f%% of the way there)
+
+id: bse/util/password/symbols
+message: Password must contain some punctuation (or other letters or numbers)
+
+id: bse/util/password/digits
+message: Password must contain some numbers
+
+id: bse/util/password/mixedcase
+message: Password must contain both upper and lower case letters
+
+id: bse/util/password/categories
+message: Password must contain at least %2:d out of upper case letters, lower case, numbers or punctuation.
+
+id: bse/util/password/notuser
+message: Password and your user name may not contain the other
+
+id: bse/util/password/notu5er
+message: Password and your user name may not contain the other (even with substitution)
+
+id: bse/admin/ipaddress/siteunlock
+message: IP address '%1:s' unlocked for site users
+
+id: bse/admin/ipaddress/adminunlock
+message: IP address '%1:s' unlocked for admin users
+
 id: test/test/multiline
 message: <<TEXT
 This message has
 multiple
 lines
 TEXT
+

@@ -393,7 +393,8 @@ Default: 1.
 
 =item minpassword
 
-Minimum password length in characters.  Default: 4.
+Previously the minimum length of site user passwords in characters.
+You must now set C<length> in C<[siteuser passwords]>.
 
 =item no_cache_dynamic
 
@@ -2749,6 +2750,126 @@ is defined for the field:
 
   [article custom fields]
   customInt1_description=Stock Level
+
+=head2 [siteuser passwords]
+
+Rules for validating (not verifying) site user passwords.  Possible
+keys are:
+
+=over
+
+=item *
+
+C<length> - the minimum length of passwords.  This replaces
+C<minpassword> in C<[basic]>.
+
+=item *
+
+C<entropy> - the minimum password entropy as measured by
+L<Data::Password::Entropy>.
+
+=item *
+
+C<symbols> - if non-zero, the password must contain non-alphanumerics.
+
+=item *
+
+C<digits> - if non-zero, the password must contain digits.
+
+=item *
+
+C<mixedcase> - if non-zero, the password must contain both upper and
+lower case letters.
+
+=item *
+
+C<categories> - the number of categories out of 5 required out of
+symbols, digits, upper case, lower case and extended ASCII/Unicode.
+This should typically never be 5.
+
+=item *
+
+C<notuser> - the password and user name may not match each other
+case-insensitively.
+
+=item *
+
+C<notu5er> - the password may not match the user name
+case-insensitively, even with symbol replacement (e.g. "5" for "S".
+
+=back
+
+=head2 [admin user passwords]
+
+Rules for validating (not verifying) administrative user passwords.
+See L</[siteuser passwords]> on the keys that can be set.
+
+=head2 [site user lockouts]
+
+Controls when accounts and IP addresses are locked out due to repeated
+site user authentication failures.
+
+=over
+
+=item *
+
+I<account maximum failures> - the maximum number of login failures for
+a given account in I<account time period>.  A successful login of the
+account resets the count.  Default: 3.
+
+=item *
+
+C<account_time_period> - the number of minutes in which
+C<account_maximum_failures> login failures occurring will cause an
+account lock-out. Default: 10.
+
+=item *
+
+C<account_lockout_time> - the number of minutes to lock out an account
+that fails too many logins. Default: 60.
+
+=item *
+
+C<ip_maximum_failures> - the maximum number of login failures for a
+given IP address with-in C<ip_time_period>.  A successful login of any
+account at the IP address resets the count.  Default: 10.
+
+=item *
+
+C<ip_time_period> - the number of minutes in which
+C<ip_maximum_failures> login failures occurring causes an IP address
+lock-out. Default: 30.
+
+=item *
+
+C<ip_lockout_time> - the number of minutes to lock out an IP
+address that fails too many logins. Default: 120.
+
+=item *
+
+C<ip_maximum_failures2> - the maximum number of login failures for a
+given IP address with-in C<ip_time_period>.  A successful login of any
+account at the IP address I<does not reset> the count. Default: 50.
+
+=item *
+
+C<ip_lockout_time2> - the number of minutes to lock out an IP address
+that fails too many logins against C<ip_maximum_failure2>. Default:
+120.
+
+=back
+
+Note: an administrator unlocking an account resets the account lock
+count but has no effect on the IP address lock count.  An
+administrator unlocking an IP address resets both IP address lock
+counts, but has no effect on account lock counts.
+
+=head2 [admin user lockouts]
+
+Control account and IP address lockouts for admin user authentication.
+
+See L</[site user lockouts]> for details of the configuration
+possible.
 
 =head1 AUTHOR
 

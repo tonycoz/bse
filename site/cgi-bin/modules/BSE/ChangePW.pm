@@ -4,7 +4,7 @@ use BSE::Util::Tags qw(tag_error_img);
 use BSE::Util::HTML;
 use base 'BSE::UI::AdminDispatch';
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 my %actions =
   (
@@ -27,15 +27,7 @@ sub default_action {
 sub req_form {
   my ($class, $req, $msg, $errors) = @_;
 
-  $msg ||= $req->cgi->param('m');
-  $errors ||= +{};
-
-  if ($msg) {
-    $msg = escape_html($msg);
-  }
-  else {
-    $msg = join "<br />", map escape_html($_), values %$errors;
-  }
+  $msg = $req->message($msg || $errors);
 
   my %acts;
   %acts =
@@ -85,6 +77,20 @@ sub req_change {
   if (!$errors{newpassword} && !$errors{confirm}
       && $newpw ne $confirm) {
     $errors{confirm} = "Confirmation password does not match new password";
+  }
+  if (!$errors{newpassword}) {
+    my %others = map { $_ => $user->$_() }
+      BSE::TB::AdminUser->password_check_fields;
+    my @errors;
+    unless (BSE::TB::AdminUser->check_password_rules
+	    (
+	     password => $newpw,
+	     username => $user->logon,
+	     other => \%others,
+	     errors => \@errors,
+	    )) {
+      $errors{newpassword} = \@errors;
+    }
   }
   if (keys %errors) {
     $req->is_ajax

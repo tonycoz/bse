@@ -12,6 +12,7 @@ MANIFEST.SKIP
 README
 schema/article.txt
 schema/bse.sql
+schema/bse_sp.sql
 schema/mssql.sql
 schema/mysql_build.pl		# builds site/util/mysql.str
 schema/site_users_to_members.sql
@@ -187,6 +188,8 @@ site/cgi-bin/modules/BSE/TB/FileAccessLogEntry.pm
 site/cgi-bin/modules/BSE/TB/Files.pm
 site/cgi-bin/modules/BSE/TB/Image.pm
 site/cgi-bin/modules/BSE/TB/Images.pm
+site/cgi-bin/modules/BSE/TB/IPLockout.pm
+site/cgi-bin/modules/BSE/TB/IPLockouts.pm
 site/cgi-bin/modules/BSE/TB/Location.pm
 site/cgi-bin/modules/BSE/TB/Locations.pm
 site/cgi-bin/modules/BSE/TB/Order.pm
@@ -241,6 +244,7 @@ site/cgi-bin/modules/BSE/UI/AdminAudit.pm
 site/cgi-bin/modules/BSE/UI/AdminDispatch.pm
 site/cgi-bin/modules/BSE/UI/AdminImageClean.pm
 site/cgi-bin/modules/BSE/UI/AdminImporter.pm
+site/cgi-bin/modules/BSE/UI/AdminIPAddress.pm
 site/cgi-bin/modules/BSE/UI/AdminMessages.pm
 site/cgi-bin/modules/BSE/UI/AdminModules.pm
 site/cgi-bin/modules/BSE/UI/AdminNewsletter.pm
@@ -278,6 +282,8 @@ site/cgi-bin/modules/BSE/Util/DynSort.pm
 site/cgi-bin/modules/BSE/Util/Format.pm
 site/cgi-bin/modules/BSE/Util/HTML.pm
 site/cgi-bin/modules/BSE/Util/Iterate.pm
+site/cgi-bin/modules/BSE/Util/Lockouts.pm
+site/cgi-bin/modules/BSE/Util/PasswordValidate.pm
 site/cgi-bin/modules/BSE/Util/Prereq.pm
 site/cgi-bin/modules/BSE/Util/Secure.pm
 site/cgi-bin/modules/BSE/Util/SQL.pm
@@ -570,6 +576,7 @@ site/templates/admin/imageclean/intro.tmpl
 site/templates/admin/imageclean/preview.tmpl
 site/templates/admin/import/import.tmpl
 site/templates/admin/import/start.tmpl
+site/templates/admin/include/activity.tmpl
 site/templates/admin/include/article_cfg_custom.tmpl
 site/templates/admin/include/article_menu.tmpl
 site/templates/admin/include/auditentry.tmpl
@@ -581,6 +588,8 @@ site/templates/admin/include/order_list_filter.tmpl
 site/templates/admin/include/order_list_pages.tmpl
 site/templates/admin/include/site_menu.tmpl
 site/templates/admin/interestemail.tmpl
+site/templates/admin/ip/detail.tmpl
+site/templates/admin/ip/list.tmpl
 site/templates/admin/locations/add.tmpl
 site/templates/admin/locations/delete.tmpl
 site/templates/admin/locations/edit.tmpl
@@ -857,6 +866,7 @@ t/010-modules/060-sqldates.t
 t/010-modules/070-escape.t
 t/010-modules/080-cfg.t
 t/010-modules/090-subcalc.t
+t/010-modules/100-password-validate.t
 t/020-templater/000-load.t
 t/020-templater/010-token.t
 t/020-templater/020-parse.t

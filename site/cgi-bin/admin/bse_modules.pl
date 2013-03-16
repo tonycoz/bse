@@ -45,6 +45,7 @@ my @base_check =
       'File::Slurp' => 0,
       'Time::HiRes' => 0,
       'WWW::Mechanize' => 0,
+      'Net::IP' => 0,
      }
    },
    {

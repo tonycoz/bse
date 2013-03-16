@@ -2,15 +2,32 @@ package BSE::TB::AdminUser;
 use strict;
 use base qw(BSE::TB::AdminBase);
 
-our $VERSION = "1.004";
+our $VERSION = "1.006";
+
+=head1 NAME
+
+BSE::TB::AdminUser - represents an admin user.
+
+=head1 METHODS
+
+=over
+
+=cut
 
 sub columns {
   return ($_[0]->SUPER::columns,
-	  qw/base_id logon name password perm_map password_type/);
+	  qw/base_id logon name password perm_map password_type lockout_end/);
 }
 
 sub bases {
   return { base_id=>{ class=>'BSE::TB::AdminBase' } };
+}
+
+sub defaults {
+  return
+    (
+     lockout_end => undef,
+    );
 }
 
 sub remove {
@@ -20,6 +37,12 @@ sub remove {
 
   $self->SUPER::remove();
 }
+
+=item groups()
+
+return the groups the user is a member of.
+
+=cut
 
 sub groups {
   my ($self) = @_;
@@ -76,6 +99,87 @@ sub remove_from_group {
 
   BSE::DB->run(delUserFromGroup=>$self->{id}, $group_id);
 }
+
+sub check_password_rules {
+  my ($class, %opts) = @_;
+
+  require BSE::Util::PasswordValidate;
+
+  my %rules = BSE::Cfg->single->entries("admin user passwords");
+
+  return BSE::Util::PasswordValidate->validate
+    (
+     %opts,
+     rules => \%rules,
+    );
+}
+
+sub password_check_fields {
+  return qw(name);
+}
+
+=item locked_out
+
+Return true if logons are disabled due to too many authentication
+failures.
+
+=cut
+
+sub locked_out {
+  my ($self) = @_;
+
+  require BSE::Util::SQL;
+  return $self->lockout_end
+    && $self->lockout_end gt BSE::Util::SQL::now_datetime();
+}
+
+sub check_lockouts {
+  my ($class, %opts) = @_;
+
+  require BSE::Util::Lockouts;
+  BSE::Util::Lockouts->check_lockouts
+      (
+       %opts,
+       section => "admin user lockouts",
+       component => "adminlogon",
+       module => "logon",
+       type => $class->lockout_type,
+      );
+}
+
+sub unlock {
+  my ($self, %opts) = @_;
+
+  require BSE::Util::Lockouts;
+  BSE::Util::Lockouts->unlock_user
+      (
+       %opts,
+       user => $self,
+       component => "adminlogon",
+       module => "logon",
+      );
+}
+
+sub unlock_ip_address {
+  my ($class, %opts) = @_;
+
+  require BSE::Util::Lockouts;
+  BSE::Util::Lockouts->unlock_ip_address
+      (
+       %opts,
+       component => "adminlogon",
+       module => "logon",
+       type => $class->lockout_type,
+      );
+}
+
+sub lockout_type {
+  "A";
+}
+
+=back
+
+=cut
 
 1;
 

@@ -1,16 +1,15 @@
 <:wrap admin/base.tmpl title => "Admin Users" :>
 <h1>Admin Users</h1>
-<p>
-| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> 
-| <a href="<:script:>?a_groups=1">Group list</a> |
-<:if UserCan admin_user_add :>
-<a href="<:script:>?a_adduserform=1">Add New User</a> |
-<:or UserCan:><:eif UserCan:></p>
-<:ifMessage:>
-<p><b><:message:></b></p>
-<:or:><:eif:> 
+<div class="menu">
+| <a href="<:= cfg.admin_url("menu") :>">Admin menu</a> 
+| <a href="<:= cfg.admin_url2("adminusers", "groups") :>">Group list</a> |
+<:.if request.user_can("admin_user_add") :>
+<a href="<:= cfg.admin_url2("adminusers", "adduserform") :>">Add New User</a> |
+<:.end if:></div>
+<:.call "messages" :>
 
-<form method="post" action="<:script:>">
+<:.set allusers = [ users.all ] -:>
+<form method="post" action="<:= cfg.admin_url("adminusers") :>">
         <table >
           <tr> 
             <th> Logon</th>
@@ -18,22 +17,40 @@
             <th> In Groups</th>
             <th>&nbsp;</th>
           </tr>
-          <:if Users:> <: iterator begin users :> 
-          <tr> 
-            <td> <a href="<:script:>?a_showuser=1&amp;userid=<:iuser id:>"><:iuser logon:></a></td>
-            <td><:iuser name:></td>
-            <td><:ifUser_groups iuser:><:iterator begin user_groups iuser:><:user_group name:><:iterator separator user_groups:>, <:iterator end user_groups:><:or:>(none)<:eif:>
+          <:.if allusers.size:>
+	  <:.for user in allusers :>
+          <tr<:.if user.locked_out :> class="locked"<:.end if:>> 
+            <td> <a href="<:= cfg.admin_url2("adminusers", "showuser", { "userid":user.id }) :>"><:= user.logon :></a></td>
+            <td><:= user.name:></td>
+<:.set usergroups = [ user.groups ] -:>
+            <td>
+ 	      <:-.if usergroups.size -:>
+	        <:.for group in usergroups -:>
+		  <:= group.name :><:= loop.is_last ? "" : ", " -:>
+		<:.end for:>
+	      <:.else -:>
+	        (none)
+	      <:-.end if-:>
             </td>
 	    <td>
-	      <:ifUserCan admin_user_del:><a href="<:script:>?a_showuser=1&amp;userid=<:iuser id:>&amp;_t=del">Delete</a><:or:><:eif:>
+	      <:.if request.user_can("admin_user_del")-:>
+                <a href="<:= cfg.admin_url2("adminusers", "showuser", { "userid": user.id, "_t":"del" })  :>">Delete</a>
+              <:-.end if:>
+	      <:.if user.locked_out -:>
+	        <:.if request.user_can("bse_admin_user_unlock") -:>
+		  <a href="<:= cfg.admin_url2("adminusers", "unlock", { "userid": user.id })  :>">Unlock</a>
+		<:.else -:>
+		  LOCKED
+		<:.end if -:>
+	      <:.end if -:>
 	    </td>
           </tr>
-          <: iterator end users :> 
-          <:or Users:> 
+          <:.end for :>
+          <:.else:> 
           <tr> 
             <td colspan="4">Your system has no users.</td>
           </tr>
-          <:eif Users:> 
+          <:.end if:> 
         </table>
 </form>
 

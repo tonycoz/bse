@@ -31,6 +31,7 @@ Column name;varchar(255);NO;NULL;
 Column password;varchar(255);NO;NULL;
 Column perm_map;varchar(255);NO;NULL;
 Column password_type;varchar(20);NO;plain;
+Column lockout_end;datetime;YES;NULL;
 Index PRIMARY;1;[base_id]
 Index logon;1;[logon]
 Table article
@@ -227,6 +228,14 @@ Column description;text;NO;NULL;
 Column ftype;varchar(20);NO;img;
 Index PRIMARY;1;[id]
 Index owner;0;[file_type;owner_id]
+Table bse_ip_lockouts
+Engine InnoDB
+Column id;int(11);NO;NULL;auto_increment
+Column ip_address;varchar(20);NO;NULL;
+Column type;char(1);NO;NULL;
+Column expires;datetime;NO;NULL;
+Index PRIMARY;1;[id]
+Index ip_address;1;[ip_address;type]
 Table bse_locations
 Engine MyISAM
 Column id;int(11);NO;NULL;auto_increment
@@ -452,6 +461,7 @@ Column customStr3;varchar(255);YES;NULL;
 Column customInt1;int(11);YES;NULL;
 Column customInt2;int(11);YES;NULL;
 Column customWhen1;datetime;YES;NULL;
+Column lockout_end;datetime;YES;NULL;
 Index PRIMARY;1;[id]
 Index affiliate_name;0;[affiliate_name]
 Index idUUID;1;[idUUID]
