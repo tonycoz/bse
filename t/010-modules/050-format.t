@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 97;
+use Test::More tests => 107;
 
 sub format_test($$$;$);
 sub noformat_test($$$;$);
