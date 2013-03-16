@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 97;
+use Test::More tests => 107;
 
 sub format_test($$$;$);
 sub noformat_test($$$;$);
@@ -21,6 +21,16 @@ SKIP: {
   format_test 'blockquote[hello]', '<blockquote><p>hello</p></blockquote>', 'blockquote';
   format_test 'blockquote[|hello]', '<blockquote><p>hello</p></blockquote>', 'blockquote with empty class';
   format_test 'blockquote[foo|hello]', '<blockquote class="foo"><p>hello</p></blockquote>', 'blockquote with class';
+  format_test 'cite[hello]', '<p><cite>hello</cite></p>', 'cite';
+  format_test 'cite[|hello]', '<p><cite>hello</cite></p>', 'cite with empty title';
+  format_test 'cite[foo|hello]', '<p><cite title="foo">hello</cite></p>', 'cite with title';
+  format_test 'cite[foo|bar|hello]', '<p><cite class="bar" title="foo">hello</cite></p>', 'cite with class and title';
+  format_test 'small[hello]', '<p><small>hello</small></p>', 'small';
+  format_test 'small[|hello]', '<p><small>hello</small></p>', 'small empty class';
+  format_test 'small[foo|hello]', '<p><small class="foo">hello</small></p>', 'small with class';
+  format_test 'large[hello]', '<p><large>hello</large></p>', 'large';
+  format_test 'large[|hello]', '<p><large>hello</large></p>', 'large empty class';
+  format_test 'large[foo|hello]', '<p><large class="foo">hello</large></p>', 'large with class';
   format_test <<IN, <<OUT, 'strong over paras', 'both';
 strong[foo|hello
 
