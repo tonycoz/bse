@@ -5,7 +5,7 @@ use BSE::TB::AuditLog;
 use Scalar::Util qw(blessed);
 use POSIX qw(strftime);
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub check_lockouts {
   my ($class, %opts) = @_;
@@ -57,7 +57,7 @@ sub check_lockouts {
 	 component => $component,
 	 module => $module,
 	 function => "lockout",
-	 level => "warning",
+	 level => "error",
 	 actor => "S",
 	 msg => "Account locked out until $end",
 	 ip_address => $req->ip_address,
@@ -110,7 +110,7 @@ sub check_lockouts {
 	 component => $component,
 	 module => $module,
 	 function => "lockout",
-	 level => "warning",
+	 level => "error",
 	 actor => "S",
 	 msg => "IP address " . $req->ip_address . " ${lock}locked out until $end",
 	 object => $user,
