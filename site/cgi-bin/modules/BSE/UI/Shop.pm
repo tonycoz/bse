@@ -17,7 +17,7 @@ use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 
-our $VERSION = "1.036";
+our $VERSION = "1.037";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -1582,7 +1582,7 @@ sub _send_order {
        template => "mailorder",
        log_component => "shop:sendorder:mailowner",
        log_object => $order,
-       log_msg => "Order $order->{id} sent to site owner",
+       log_msg => "Send Order No. $order->{id} to admin",
       );
 
     unless ($noencrypt) {
@@ -1616,7 +1616,7 @@ sub _send_order {
      acts => \%acts,
      log_component => "shop:sendorder:mailbuyer",
      log_object => $order,
-     log_msg => "Order $order->{id} sent to purchaser $to_email",
+     log_msg => "Send Order No. $order->{id} to customer ($to_email)",
     );
   my $bcc_order = $cfg->entry("shop", "bcc_email");
   if ($bcc_order) {

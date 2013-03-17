@@ -18,7 +18,7 @@ use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
 use Carp qw(confess);
 
-our $VERSION = "1.027";
+our $VERSION = "1.028";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -248,7 +248,7 @@ sub req_logon {
 	     component => "siteuser:logon:invalid",
 	     actor => "S",
 	     level => "warning",
-	     msg => "Invalid username or password",
+	     msg => "Site User logon attempt failed",
 	    );
 	  SiteUser->check_lockouts
 	    (
@@ -306,8 +306,8 @@ sub req_logon {
      object => $user,
      component => "siteuser:logon:success",
      actor => "S",
-     level => "warning",
-     msg => "Invalid username or password",
+     level => "info",
+     msg => "Site User '" . $user->userId . "' logged on",
     );
 
   if ($custom->can('siteuser_login')) {
@@ -755,7 +755,7 @@ sub req_register {
        actor => $user,
        object => $user,
        component => "member:register:created",
-       msg => "New user created",
+       msg => "Site User '" . $user->userId . "' created",
        level => "notice",
       );
 
@@ -2471,7 +2471,7 @@ sub _notify_registration {
 		from => $email,
 		subject => $subject,
                 log_object => $user,
-                log_msg => "Notify admin of user registration to $email",
+                log_msg => "Notify admin that a Site User registered ($email)",
                 log_component => "member:register:notifyadmin");
 }
 

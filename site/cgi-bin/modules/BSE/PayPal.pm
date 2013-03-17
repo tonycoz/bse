@@ -5,7 +5,7 @@ use BSE::Util::HTML;
 use BSE::Shop::Util qw(:payment);
 use Carp qw(confess);
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 use constant DEF_TEST_WS_URL => "https://api-3t.sandbox.paypal.com/nvp";
 use constant DEF_TEST_REFRESH_URL => "https://www.sandbox.paypal.com/webscr";
@@ -196,7 +196,7 @@ sub pay_order {
        level => "notice",
        object => $order,
        actor => scalar($req->siteuser) || "U",
-       msg => "Order paid via Paypal, transaction ".$order->paypal_tran_id,
+       msg => "Apply PayPal payment to Order No. " . $order->id . ", transaction ".$order->paypal_tran_id,
       );
 
   return 1;
@@ -213,7 +213,7 @@ sub refund_order {
     or confess "Missing req";
 
   unless ($order->paymentType eq PAYMENT_PAYPAL) {
-    $$rmsg = "This order was not paid by paypal";
+    $$rmsg = "This order was not paid by PayPal";
     return;
   }
 
@@ -230,7 +230,7 @@ sub refund_order {
        level => "notice",
        object => $order,
        actor => scalar($req->user) || "U",
-       msg => "PayPal payment refunded, transaction $info{REFUNDTRANSACTIONID}",
+       msg => "Refund PayPal payment on Order No. " . $order->id . ", transaction $info{REFUNDTRANSACTIONID}",
       );
 
   return 1;

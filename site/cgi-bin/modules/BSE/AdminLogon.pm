@@ -4,7 +4,7 @@ use BSE::Util::Tags qw(tag_error_img);
 use BSE::Util::HTML;
 use BSE::CfgInfo 'admin_base_url';
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 my %actions =
   (
@@ -145,7 +145,7 @@ sub req_logon {
       (
        component => "adminlogon:logon:invalid",
        level => "warning",
-       msg => "Failed logon attempt",
+       msg => "Admin User logon attempt failed",
        actor => "U",
        object => $user,
        dump => "Logon: $logon",
@@ -163,7 +163,7 @@ sub req_logon {
     (
      component => "adminlogon:logon:success",
      level => "info",
-     msg => "User '" . $user->logon . "' successfully logged in",
+     msg => "Admin User '" . $user->logon . "' logged on",
      actor => $user,
      object => $user,
     );
@@ -206,7 +206,7 @@ sub req_logoff {
        component => "adminlogon:logoff:success",
        object => $req->user,
        actor => $req->user,
-       msg => "User '" . $user->logon . "' logged off",
+       msg => "Admin User '" . $user->logon . "' logged off",
        level => "info",
       );
     $req->flash("msg:bse/admin/logon/logoff", [ $user->logon ]);

@@ -5,7 +5,7 @@ use BSE::TB::AuditLog;
 use Scalar::Util qw(blessed);
 use POSIX qw(strftime);
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 sub check_lockouts {
   my ($class, %opts) = @_;
@@ -112,7 +112,7 @@ sub check_lockouts {
 	 function => "lockout",
 	 level => "error",
 	 actor => "S",
-	 msg => "IP address " . $req->ip_address . " ${lock}locked out until $end",
+	 msg => "IP address '" . $req->ip_address . "' ${lock}locked out until $end",
 	 object => $user,
 	 ip_address => $req->ip_address,
 	);
@@ -149,8 +149,8 @@ sub unlock_user {
 
 my %types =
   (
-   "S" => "Site users",
-   "A" => "Admin users",
+   "S" => "Site Users",
+   "A" => "Admin Users",
   );
 
 sub unlock_ip_address {

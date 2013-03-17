@@ -7,7 +7,7 @@ use vars qw/@ISA/;
 use Carp 'confess';
 use BSE::Shop::PaymentTypes;
 
-our $VERSION = "1.017";
+our $VERSION = "1.018";
 
 sub columns {
   return qw/id
@@ -607,7 +607,7 @@ sub send_shipped_email {
      subject => "Your order has shipped",
      template => "email/ordershipped",
      acts => \%acts,
-     log_msg => "Notify customer order has shipped",
+     log_msg => "Notify customer that Order No. " . $self->id . " has shipped",
      log_object => $self,
      log_component => "shopadmin:orders:saveorder",
     );
@@ -628,7 +628,7 @@ sub new_stage {
   }
 
   my $old_stage = $self->stage;
-  my $msg = "Set to stage '$stage'";
+  my $msg = "Set Order No. ". $self->id . " stage to '$stage'";
   if (defined $stage_note && $stage_note =~ /\S/) {
     $msg .= ": $stage_note";
   }

@@ -4,7 +4,7 @@ use BSE::Util::Tags qw(tag_error_img);
 use BSE::Util::HTML;
 use base 'BSE::UI::AdminDispatch';
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 my %actions =
   (
@@ -60,7 +60,7 @@ sub req_change {
       $req->audit
 	(
 	 component => "adminchangepw:changepw:badpassword",
-	 msg => "User '".$user->logon."' supplied an incorrect old password when changing their password",
+	 msg => "Admin User '".$user->logon."' supplied an incorrect old password when changing their password",
 	 object => $user,
 	 actor => $user,
 	 level => "error",
@@ -101,7 +101,7 @@ sub req_change {
   $req->audit
     (
      component => "adminchangepw:changepw:success",
-     msg => "User '".$user->logon."' successfully changed their password",
+     msg => "Admin User '".$user->logon."' changed their password",
      object => $user,
      actor => $user,
      level => "notice",

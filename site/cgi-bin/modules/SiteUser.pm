@@ -18,7 +18,7 @@ SiteUser - represent a site user (or member)
 
 =cut
 
-our $VERSION = "1.010";
+our $VERSION = "1.011";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -838,7 +838,7 @@ sub send_registration_notify {
 	host => $opts{remote_addr},
 	user => [ \&BSE::Util::Tags::tag_hash_plain, $self ],
        },
-       log_msg => "Registration email to " . $self->email,
+       log_msg => "Send registration email to Site User (" . $self->email .")",
        log_component => "member:register:notifyuser",
       );
 }
@@ -860,7 +860,7 @@ sub changepw {
        object => $self,
        actor => $who,
        level => "notice",
-       msg => "Change password",
+       msg => "Site User '" . $self->userId . "' changed their password",
        %log,
       );
 
@@ -937,7 +937,7 @@ sub lost_password {
 	   from=>$from,
 	   to => $to,
 	   subject=>$subject,
-	   log_msg => "Sending lost password recovery email",
+	   log_msg => "Send password recovery email to Site User (" . $self->email . ")",
 	   log_component => "siteusers:lost:send",
 	   log_object => $self,
 	  )) {
