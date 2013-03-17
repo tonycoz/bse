@@ -19,7 +19,7 @@ use BSE::Arrows;
 use BSE::Shop::Util qw(:payment order_item_opts nice_options payment_types);
 use BSE::CfgInfo qw(cfg_dist_image_uri);
 
-our $VERSION = "1.017";
+our $VERSION = "1.018";
 
 my %actions =
   (
@@ -951,7 +951,7 @@ sub _set_order_paid {
 	$req->audit
 	  (
 	   component => "shopadmin:order:paid",
-	   level => "info",
+	   level => "notice",
 	   object => $order,
 	   msg => "Order " . $order->id . " marked paid",
 	  );
@@ -960,7 +960,7 @@ sub _set_order_paid {
 	$req->audit
 	  (
 	   component => "shopadmin:order:unpaid",
-	   level => "info",
+	   level => "notice",
 	   object => $order,
 	   msg => "Order " . $order->id . " marked unpaid",
 	  );
@@ -1097,7 +1097,7 @@ sub req_order_save {
 	 component => "shopadmin:orders:saveorder",
 	 object => $order,
 	 msg => "New freight tracking code set: '" . $order->freight_tracking . "'",
-	 level => "info",
+	 level => "notice",
 	);
     }
     if ($new_shipping_name) {
@@ -1106,7 +1106,7 @@ sub req_order_save {
 	 component => "shopadmin:orders:saveorder",
 	 object => $order,
 	 msg => "New shippping method set: '" . $order->shipping_name . "/" . $order->shipping_method . "'",
-	 level => "info",
+	 level => "notice",
 	);
     }
     if ($new_stage) {

@@ -4,7 +4,7 @@ use BSE::Util::Tags qw(tag_error_img);
 use BSE::Util::HTML;
 use base 'BSE::UI::AdminDispatch';
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 my %actions =
   (
@@ -104,7 +104,7 @@ sub req_change {
      msg => "User '".$user->logon."' successfully changed their password",
      object => $user,
      actor => $user,
-     level => "info",
+     level => "notice",
     );
 
   $user->changepw($newpw);

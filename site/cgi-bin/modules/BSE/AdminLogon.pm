@@ -4,7 +4,7 @@ use BSE::Util::Tags qw(tag_error_img);
 use BSE::Util::HTML;
 use BSE::CfgInfo 'admin_base_url';
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 my %actions =
   (
@@ -144,7 +144,7 @@ sub req_logon {
     $req->audit
       (
        component => "adminlogon:logon:invalid",
-       level => "error",
+       level => "warning",
        msg => "Failed logon attempt",
        actor => "U",
        object => $user,
