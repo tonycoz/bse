@@ -18,7 +18,7 @@ SiteUser - represent a site user (or member)
 
 =cut
 
-our $VERSION = "1.011";
+our $VERSION = "1.012";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -1022,6 +1022,14 @@ sub unlock_ip_address {
 
 sub lockout_type {
   "S";
+}
+
+
+# for duck-type compatibility with BSE::TB::AdminUser
+sub logon {
+  my ($self) = @_;
+
+  return $self->userId;
 }
 
 =back
