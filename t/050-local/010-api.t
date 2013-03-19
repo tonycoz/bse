@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test qw(make_ua base_url);
-use Test::More tests => 59;
+use Test::More tests => 62;
 use File::Spec;
 use File::Slurp;
 use Carp qw(confess);
@@ -36,6 +36,9 @@ ok($child->is_descendant_of($art->id), "check decendant by id");
 
 my $im1 = bse_add_image($cfg, $art, file => "t/data/t101.jpg");
 ok($im1, "add an image, just a filename");
+
+my $byindex = $art->image_by_index(1);
+is($byindex->id, $im1->id, "check image_by_index()");
 
 my $im2;
 {
@@ -222,7 +225,8 @@ undef $art;
     );
   ok($im3, "make a global image (a)");
 
-  my @images = bse_site()->images;
+  my $site = bse_site();
+  my @images = $site->images;
   cmp_ok(@images, '>=', 3, "we have some global images");
 
   my @mine = grep $_->name =~ /^\Q$prefix/, @images;
@@ -231,6 +235,14 @@ undef $art;
   is($mine[0]->displayOrder, $im1->displayOrder, "first should be first");
   is($mine[1]->displayOrder, $im2->displayOrder, "middle should be middle");
   is($mine[2]->displayOrder, $im3->displayOrder, "last should be last");
+
+  # fetch by name
+  my $named = $site->image_by_name($prefix . "a");
+  is($named->id, $im3->id, "check we got the right image by name");
+
+  # fetch by index
+  my $byindex = $site->image_by_index(1);
+  is($byindex, undef, "all images named, none available by index");
 
   ok($im3->remove, "remove the global image");
   undef $im3;

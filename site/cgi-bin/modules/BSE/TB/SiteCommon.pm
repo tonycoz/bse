@@ -2,7 +2,7 @@ package BSE::TB::SiteCommon;
 use strict;
 use Carp qw(confess);
 
-our $VERSION = "1.008";
+our $VERSION = "1.009";
 
 =head1 NAME
 
@@ -150,11 +150,68 @@ sub all_menu_kids {
   return grep $_->listed_in_menu, $self->all_visible_kids;
 }
 
+=item images
+
+Return article images (or global images for the site).
+
+=cut
+
 sub images {
   my ($self) = @_;
-  require BSE::TB::Images;
-  return sort { $a->{displayOrder} <=> $b->{displayOrder} }
-    BSE::TB::Images->getBy(articleId=>$self->{id});
+
+  unless ($self->{_images}) {
+    require BSE::TB::Images;
+    $self->{_images} =
+      [ 
+       sort { $a->{displayOrder} <=> $b->{displayOrder} }
+       BSE::TB::Images->getBy(articleId=>$self->{id})
+      ];
+  }
+
+  return @{$self->{_images}};
+}
+
+=item image_by_name
+
+Return an image from the site or article given the image name.
+
+=cut
+
+sub image_by_name {
+  my ($self, $name) = @_;
+
+  unless ($self->{_images_by_name}) {
+    $self->{_images_by_name} =
+      +{
+	map { $_->name => $_ } grep $_->name, $self->images
+       };
+  }
+
+  my $image = $self->{_images_by_name}{$name}
+    or return;
+
+  return $image;
+}
+
+=item image_by_index
+
+Return an image for an article (or the site) by index.
+
+Named images are not counted and the index starts from 1.
+
+=cut
+
+sub image_by_index {
+  my ($self, $index) = @_;
+
+  unless ($self->{_images_by_index}) {
+    $self->{_images_by_index} = [ grep !$_->name, $self->images ];
+  }
+
+  $index >= 1 && $index <= @{$self->{_images_by_index}}
+    or return;
+
+  return $self->{_images_by_index}[$index-1];
 }
 
 sub children {
