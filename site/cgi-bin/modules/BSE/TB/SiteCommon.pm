@@ -2,7 +2,7 @@ package BSE::TB::SiteCommon;
 use strict;
 use Carp qw(confess);
 
-our $VERSION = "1.009";
+our $VERSION = "1.010";
 
 =head1 NAME
 
@@ -183,11 +183,11 @@ sub image_by_name {
   unless ($self->{_images_by_name}) {
     $self->{_images_by_name} =
       +{
-	map { $_->name => $_ } grep $_->name, $self->images
+	map { lc $_->name => $_ } grep $_->name, $self->images
        };
   }
 
-  my $image = $self->{_images_by_name}{$name}
+  my $image = $self->{_images_by_name}{lc $name}
     or return;
 
   return $image;

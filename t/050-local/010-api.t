@@ -237,7 +237,7 @@ undef $art;
   is($mine[2]->displayOrder, $im3->displayOrder, "last should be last");
 
   # fetch by name
-  my $named = $site->image_by_name($prefix . "a");
+  my $named = $site->image_by_name($prefix . "A");
   is($named->id, $im3->id, "check we got the right image by name");
 
   # fetch by index
