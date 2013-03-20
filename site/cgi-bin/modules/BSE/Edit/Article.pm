@@ -16,7 +16,7 @@ use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 use constant ARTICLE_CUSTOM_FIELDS_CFG => "article custom fields";
 
-our $VERSION = "1.031";
+our $VERSION = "1.032";
 
 =head1 NAME
 
@@ -4300,7 +4300,7 @@ sub filesave {
 	      $file->{filename} = $file_name;
 	      $file->{storage} = 'local';
 	      $file->{sizeInBytes} = -s $full_name;
-	      $file->{whenUploaded} = now_datetime();
+	      $file->{whenUploaded} = now_sqldatetime();
 	      $file->{displayName} = $display_name;
 	      push @content_changed, $file;
 	    }
