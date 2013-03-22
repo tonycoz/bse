@@ -6,9 +6,9 @@
 | <a href="<:script:>">User list</a>
 | <a href="<:script:>?a_groups=1">Group list</a> |
 </p>
-<:ifMessage:>
-<p><b><:message:></b></p>
-<:or:><:eif:> 
+
+<:.call "messages" :>
+
 <form method="POST" action="<:script:>">
 
         <table>
