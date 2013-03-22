@@ -1,7 +1,7 @@
 package BSE::Password::Plain;
 use strict;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub new {
   my ($class) = @_;
@@ -12,7 +12,7 @@ sub new {
 sub hash {
   my ($self, $password) = @_;
 
-  return $password;
+  die "Plain password hashing is not supported for new passwords";
 }
 
 sub check {
