@@ -4,8 +4,9 @@ use BSE::Template;
 use BSE::Mail;
 use Carp 'confess';
 use Digest::MD5 qw(md5_hex);
+use BSE::Variables;
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 =head1 NAME
 
@@ -26,6 +27,7 @@ BSE::ComposeMail - compose mail for BSE
                 acts     => \%acts,
                 # from   => $from,
                 # html_template => $html_template # def $template."_html"
+                # vars   => \%vars,
                 ) or die $mailer->errstr;
 
   # more complex
@@ -63,7 +65,7 @@ BSE::ComposeMail - compose mail for BSE
 sub new {
   my ($class, %opts) = @_;
 
-  $opts{cfg} or die;
+  $opts{cfg} ||= BSE::Cfg->single;
 
   bless \%opts, $class;
 }
@@ -127,6 +129,13 @@ sub start {
       $self->{log}{$1} = $opts{$key};
     }
   }
+
+  $self->{vars} =
+    {
+     bse => BSE::Variables->variables(),
+     cfg => $self->{cfg},
+     ( $opts{vars} ? %{$opts{vars}} : () ),
+    };
 
   1;
 }
@@ -421,7 +430,7 @@ sub done {
   my $message;
   my @headers;
   my $content = BSE::Template->
-    get_page($self->{template}, $self->{cfg}, \%acts);
+    get_page($self->{template}, $self->{cfg}, \%acts, undef, undef, $self->{vars});
   if (!$self->{allow_html} || $self->{encrypt} || 
       !BSE::Template->find_source($self->{html_template}, $self->{cfg})) {
     my $text_type = 'text/plain';
@@ -434,7 +443,7 @@ sub done {
   }
   else {
     my $html_content = BSE::Template->
-      get_page($self->{html_template}, $self->{cfg}, \%acts);
+      get_page($self->{html_template}, $self->{cfg}, \%acts, undef, undef, $self->{vars});
 
     my $inline_css = $self->{cfg}->entry("mail", "inline_css", "style");
     if (($inline_css eq "style" && $html_content =~ /<style/i)
