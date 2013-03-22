@@ -4,7 +4,7 @@ use Scalar::Util qw(blessed);
 use BSE::TB::Site;
 use BSE::Util::HTML;
 
-our $VERSION = "1.011";
+our $VERSION = "1.012";
 
 sub _base_variables {
   my ($self, %opts) = @_;
@@ -31,6 +31,10 @@ sub _base_variables {
      number => sub {
        require BSE::Util::Format;
        return BSE::Util::Format::bse_number(@_);
+     },
+     debug => sub {
+       print STDERR @_, "\n";
+       return "";
      },
     );
 }
