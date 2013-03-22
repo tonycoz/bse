@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 32;
+use Test::More tests => 33;
 use_ok("BSE::Cfg");
 use_ok("Squirrel::Template");
 use_ok("BSE::Template");
@@ -9,6 +9,7 @@ use_ok("DevHelp::Date");
 use_ok("DevHelp::Formatter");
 use_ok("DevHelp::HTML");
 use_ok("BSE::Variables");
+use_ok("BSE::TB::AuditLog");
 use_ok("BSE::TB::Tag");
 use_ok("BSE::TB::Tags");
 use_ok("BSE::TB::TagCategory");

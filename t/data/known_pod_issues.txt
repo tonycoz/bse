@@ -25,7 +25,6 @@ site/cgi-bin/modules/BSE/Shop/Util.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/Sort.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/Sort.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/BSE/TB/ArticleFile.pm	=item without previous =over	1
-site/cgi-bin/modules/BSE/TB/AuditLog.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/TB/Files.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/TB/Images.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/TB/Order.pm	=item without previous =over	1

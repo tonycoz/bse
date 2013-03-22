@@ -6,7 +6,7 @@ use vars qw(@ISA $VERSION);
 use BSE::TB::AuditEntry;
 use Scalar::Util qw(blessed);
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 sub rowClass {
   return 'BSE::TB::AuditEntry';
@@ -14,6 +14,14 @@ sub rowClass {
 
 # stop us recursing into here from BSE::ComposeMail
 my $mailing = 0;
+
+=head1 NAME
+
+BSE::TB::AuditLog - audit log for BSE
+
+=head1 METHODS
+
+=over
 
 =item log
 
@@ -167,42 +175,7 @@ sub log {
 
   my $entry = $class->make(%entry);
 
-  if (!$mailing) {
-    my $section = "mail audit log";
-    my $to = $cfg->entry($section, "to", $cfg->entry("shop", "from"));
-    my @look =
-      (
-       [ $section, join("-", @entry{qw/facility component/}) ],
-       [ $section, join("-", @entry{qw/facility component module/}) ],
-       [ $section, join("-", @entry{qw/facility component module function/}) ],
-      );
-    my $send = $cfg->entry($section, $level_name, 0);
-    $send =~ /\@/ and $to = $send;
-    for my $choice (@look) {
-      $send = $cfg->entry(@$choice, $send);
-      $send =~ /\@/ and $to = $send;
-    }
-    if ($send) {
-      $mailing = 1;
-      eval {
-	require BSE::ComposeMail;
-	if ($to) {
-	  require BSE::Util::Tags;
-	  my $mailer = BSE::ComposeMail->new(cfg => $cfg);
-	  my %acts =
-	    (
-	     BSE::Util::Tags->static(undef, $cfg),
-	     entry => [ \&BSE::Util::Tags::tag_object, $entry ],
-	    );
-	  $mailer->send(to => $to,
-			subject => "BSE System Event",
-			template => "admin/log/mail",
-			acts => \%acts);
-	}
-      };
-      $mailing = 0;
-    }
-  }
+  $entry->mail($entry, $cfg);
 
   keys %opts
     and $class->crash("Unknown parameters ", join(",", keys %opts), " to log()");
@@ -272,3 +245,11 @@ sub object_log {
 }
 
 1;
+
+=back
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=cut

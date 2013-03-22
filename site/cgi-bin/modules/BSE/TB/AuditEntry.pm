@@ -2,7 +2,17 @@ package BSE::TB::AuditEntry;
 use strict;
 use base qw(Squirrel::Row);
 
-our $VERSION = "1.007";
+our $VERSION = "1.009";
+
+=head1 NAME
+
+BSE::TB::AuditEntry - an entry in the audit log.
+
+=head1 METHODS
+
+=over
+
+=cut
 
 sub columns {
   return qw/id 
@@ -26,11 +36,51 @@ sub table {
   "bse_audit_log";
 }
 
+=item when_at
+
+=item facility
+
+=item component
+
+=item module
+
+=item function
+
+=item level
+
+=item actor_type
+
+=item actor_id
+
+=item object_type
+
+=item object_id
+
+=item ip_address
+
+=item msg
+
+=item dump
+
+Simple accessors.
+
+=item level_name
+
+Retrieve the level as text.
+
+=cut
+
 sub level_name {
   my ($self) = @_;
 
   return BSE::TB::AuditLog->level_id_to_name($self->level);
 }
+
+=item actor_name
+
+Retrieve description of the actor.
+
+=cut
 
 sub actor_name {
   my ($self) = @_;
@@ -69,6 +119,12 @@ sub actor_name {
     return "Unknown type $type";
   }
 }
+
+=item actor_link
+
+Retrieve a link to the actor.
+
+=cut
 
 sub actor_link {
   my ($self) = @_;
@@ -124,6 +180,12 @@ my %types =
    },
   );
 
+=item object_link
+
+Retrieve a link to the object.
+
+=cut
+
 sub object_link {
   my ($self) = @_;
 
@@ -149,6 +211,12 @@ sub object_link {
   }
 }
 
+=item object_name
+
+Retrieve a name for the object.
+
+=cut
+
 sub object_name {
   my ($self) = @_;
 
@@ -156,15 +224,11 @@ sub object_name {
     or return '(None)';
   my $entry = $types{$type};
   my $cfg = BSE::Cfg->single;
-  my $class = $entry ? $entry->{class} : $cfg->entry("type $type", "class");
   my $method = $cfg->entry("type $type", "method", "describe");
   my $format = $cfg->entry("type $type", "format",
 			  ($entry && $entry->{format}) ? $entry->{format} : "");
-  my $obj;
-  if ($class
-      && eval "use $class; 1"
-      && ($obj = $class->getByPkey($self->object_id))
-      && $obj->can($method)) {
+  my $obj = $self->object;
+  if ($obj && $obj->can($method)) {
     return $obj->$method();
   }
   elsif ($format) {
@@ -175,4 +239,131 @@ sub object_name {
   }
 }
 
+=item object
+
+Attempts retrieve the object for the log entry.
+
+=cut
+
+sub object {
+  my ($self) = @_;
+
+  my $type = $self->object_type
+    or return;
+
+  my $entry = $types{$type};
+  my $cfg = BSE::Cfg->single;
+  my $class = $cfg->entry("type $type", "class", $entry->{class});
+  my $obj;
+  if ($class
+      && eval "use $class; 1"
+      && ($obj = $class->getByPkey($self->object_id))) {
+    return $obj;
+  }
+
+  return;
+}
+
+=item mail()
+
+=cut
+
+=item mail
+
+Used internally to mail audit log entries.
+
+Template tags are common static tags and:
+
+=over
+
+=item *
+
+C<< entry I<field> >> - object tag for the log entry.
+
+=back
+
+Template variable:
+
+=over
+
+=item *
+
+C<entry> - the log entry object.
+
+=item *
+
+C<to> - the recipients
+
+=back
+
+=cut
+
+my $mailing;
+
+sub mail {
+  my ($entry, $cfg) = @_;
+
+  $mailing
+    and return;
+
+  $cfg ||= BSE::Cfg->single;
+  my $section = "mail audit log";
+  my $to = $cfg->entry($section, "to", $cfg->entry("shop", "from"));
+  my ($facility, $component, $module, $function) =
+    map $entry->$_(), qw(facility component module function);
+  my @look =
+    (
+     [ $section, "$facility-$component" ],
+     [ $section, "$facility-$component-$module" ],
+     [ $section, "$facility-$component-$module-$function" ],
+    );
+  my $send = $cfg->entry($section, $entry->level_name, 0);
+  $send =~ /\@/ and $to = $send;
+  for my $choice (@look) {
+    $send = $cfg->entry(@$choice, $send);
+    $send =~ /\@/ and $to = $send;
+  }
+  if ($send) {
+    $mailing = 1;
+    eval {
+      require BSE::ComposeMail;
+      if ($to) {
+	require BSE::Util::Tags;
+	my $mailer = BSE::ComposeMail->new(cfg => $cfg);
+	my %acts =
+	  (
+	   BSE::Util::Tags->static(undef, $cfg),
+	   entry => [ \&BSE::Util::Tags::tag_object, $entry ],
+	  );
+	$mailer->send(to => $to,
+		      subject => "BSE System Event",
+		      template => "admin/log/mail",
+		      acts => \%acts,
+		      vars =>
+		      {
+		       to => $to,
+		       entry => $entry,
+		      });
+      }
+    };
+    $mailing = 0;
+  }
+}
+
+sub restricted_method {
+  my ($self, $name) = @_;
+
+  return $self->SUPER::restricted_method($name)
+    || $name =~ /^(?:mail)$/;
+}
+
 1;
+
+=back
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=cut
+
