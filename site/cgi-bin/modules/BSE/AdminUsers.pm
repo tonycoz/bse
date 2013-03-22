@@ -9,7 +9,7 @@ use BSE::TB::AdminUsers;
 use BSE::TB::AdminGroups;
 use BSE::Util::Iterate;
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 my %actions =
   (
@@ -303,8 +303,8 @@ sub req_adduser {
     (
      component => "admin:users:adduser",
      object => $user,
-     msg => "User '".$user->logon."' created",
-     level => "info",
+     msg => "Admin User '".$user->logon."' created",
+     level => "notice",
     );
 
   return $class->refresh($req, 'a_showuser', userid=>$user->{id},
@@ -948,6 +948,14 @@ sub req_deluser {
   my $msg = "User '$logon' deleted";
 
   $class->_save_htusers($req, \$msg);
+
+  $req->audit
+    (
+     component => "admin:users:deluser",
+     object => $user,
+     msg => "Admin User '".$user->logon."' deleted",
+     level => "notice",
+    );
 
   return $class->refresh($req, a_users =>
 			 'm' => $msg);
