@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 170;
+use Test::More tests => 180;
 use HTML::Entities;
 
 sub template_test($$$$;$$);
@@ -367,6 +367,17 @@ IN
 </foo>
 OUT
 
+    template_test(<<IN, <<OUT, "while", \%acts);
+<:.set work = [ "a" .. "z" ] -:>
+<:.while work.size and work[0] ne "d" -:>
+<:= work.shift :>
+<:.end while -:>
+IN
+a
+b
+c
+OUT
+
     template_test(<<IN, <<OUT, "space complex", \%acts, "both");
 <div class="window">
   <h1><:str:></h1>
@@ -520,6 +531,15 @@ OUT
      [ '"test".is_hash', 0 ],
      [ '"abc".replace(/(.)(.)(.)/, "$3$2$1")', "cba" ],
      [ '"a&b".escape("html")', 'a&amp;b' ],
+     [ '"abc".match(/b/).start', "1" ],
+     [ '"abc".match(/b/).end', "2" ],
+     [ '"abc".match(/b/).length', "1" ],
+     [ '"abc".match(/(b)/).subexpr[0].start', "1" ],
+     [ '"abc".match(/(b)/).subexpr[0].end', "2" ],
+     [ '"abc".match(/(b)/).subexpr[0].length', "1" ],
+     [ '"abcd".substring(1)', "bcd" ],
+     [ '"abcd".substring(1,2)', "bc" ],
+     [ '"abcd".substring(1,-2)', "b" ],
 
      # WrapArray
      [ '[ [ 1, 2 ], 3 ].expand.join(",")', "1,2,3" ],

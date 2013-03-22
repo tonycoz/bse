@@ -2,7 +2,7 @@ package Squirrel::Template::Parser;
 use strict;
 use Squirrel::Template::Constants qw(:token :node);
 
-our $VERSION = "1.014";
+our $VERSION = "1.015";
 
 use constant TOK => 0;
 use constant TMPLT => 1;
@@ -555,6 +555,35 @@ sub _parse_ext_if {
     ( \@conds, [ $else, $else_content ], $end );
 
   return @errors ? $self->_comp($if, @errors) : $if;
+}
+
+sub _parse_ext_while {
+  my ($self, $while) = @_;
+
+  my @errors;
+  my $content = $self->_parse_content;
+  my $end = $self->[TOK]->get;
+  if ($end->[TOKEN_TYPE] eq 'end') {
+    if ($end->[TOKEN_END_TYPE] ne "" && $end->[TOKEN_END_TYPE] ne 'while') {
+      push @errors, $self->_error($end, "Expected '.end' or '.end while' for .while started $while->[TOKEN_FILENAME]:$while->[TOKEN_LINE] but found '.end $end->[TOKEN_END_TYPE]'");
+    }
+  }
+  else {
+    push @errors, $self->_error($end, "Expected '.end' for .while started $while->[TOKEN_FILENAME]:$while->[TOKEN_LINE] but found $end->[TOKEN_TYPE]");
+    $self->[TOK]->unget($end);
+    $end = $self->_empty($end);
+  }
+
+  my $parser = Squirrel::Template::Expr::Parser->new;
+  my $cond_expr;
+  unless (eval { $cond_expr = $parser->parse($while->[TOKEN_EXT_EXPR]); 1 }) {
+    return $self->_error($while, "Could not parse condition for .while: " . ref $@ ? $@->[0] : $@);
+  }
+
+  @{$while}[NODE_TYPE, NODE_WHILE_COND, NODE_WHILE_CONTENT, NODE_WHILE_END] =
+    ( "while", $cond_expr, $content, $end );
+
+  return @errors ? $self->_comp($while, @errors) : $while;
 }
 
 sub _parse_iterateover {

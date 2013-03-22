@@ -20,7 +20,7 @@ BEGIN {
 
 use constant DEBUG_GET_PARMS => 0;
 
-our $VERSION = "1.026";
+our $VERSION = "1.027";
 
 my %compile_cache;
 
@@ -862,6 +862,12 @@ C<< <:.iterateover I<callback>, I<arguments>... :> I<content> <:.end :> >>
 
 Calls back into the target supplied callback to set variables which
 can then be replaced on each iteration.
+
+=item *
+
+C<< <:.while I<condition> :> I<content> <:.end :> >>
+
+Produce I<content> while I<condition> is true.
 
 =back
 

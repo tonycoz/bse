@@ -3,7 +3,7 @@ use strict;
 use Squirrel::Template::Constants qw(:node);
 use Scalar::Util ();
 
-our $VERSION = "1.021";
+our $VERSION = "1.022";
 
 use constant ACTS => 0;
 use constant TMPLT => 1;
@@ -679,6 +679,53 @@ sub _process_iterateover {
   }
 
   return @result;
+}
+
+sub _process_while {
+  my ($self, $node) = @_;
+
+  my $cond = $node->[NODE_WHILE_COND];
+  my $result;
+  unless (eval { $result = $self->[EVAL]->process($cond); 1 }) {
+    my $msg = $@;
+    if (!ref $msg && $msg ==~ /\bENOIMPL\b/) {
+      return
+	(
+	 $node->[NODE_ORIG],
+	 $self->process($node->[NODE_WHILE_CONTENT]),
+	 $node->[NODE_WHILE_END][NODE_ORIG],
+	);
+    }
+    else {
+      return $self->_error($node, ref $msg ? $msg->[1] : $msg);
+    }
+  }
+  my @output;
+  while ($result) {
+    push @output, $self->process($node->[NODE_WHILE_CONTENT]);
+
+    unless (eval { $result = $self->[EVAL]->process($cond); 1 }) {
+      my $msg = $@;
+      if (!ref $msg && $msg ==~ /\bENOIMPL\b/) {
+	return
+	  (
+	   @output,
+	   $node->[NODE_ORIG],
+	   $self->process($node->[NODE_WHILE_CONTENT]),
+	   $node->[NODE_WHILE_END][NODE_ORIG],
+	  );
+      }
+      else {
+	return
+	  (
+	   @output,
+	   $self->_error($node, ref $msg ? $msg->[1] : $msg),
+	  );
+      }
+    }
+  }
+
+  return @output;
 }
 
 1;
