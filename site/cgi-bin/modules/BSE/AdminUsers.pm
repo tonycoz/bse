@@ -136,8 +136,7 @@ sub _save_htusers {
 sub common_tags {
   my ($class, $req, $msg, $errors) = @_;
 
-  $errors ||= +{};
-  $msg ||= $req->message($errors);
+  $msg = $req->message($errors || $msg);
 
   my @users;
   my $user_index;
