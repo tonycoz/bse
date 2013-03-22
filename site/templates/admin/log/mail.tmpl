@@ -1,7 +1,43 @@
-An error occurred on <:cfg site url:>
+<:.if entry.level_name =~ /^(emerg|alert|crit|error)$/ -:>
+An error occurred 
+<:-.elsif entry.level_name eq 'warning' -:>
+<:% set_subject("BSE system warning") -:>
+A warning has occurred 
+<:-.else -:>
+<:% set_subject("BSE system event") -:>
+System <:= entry.level_name -:> 
+<:-.end if :> on <:= cfg.entry("site", "url") :>
 
-Level: <:entry level_name:>
-When: <:date "%H:%M %d/%m/%Y" entry when_at:>
+Level: <:= entry.level_name :>
+When: <:= bse.date("%H:%M %d/%m/%Y", entry.when_at) :>
 
 Message:
-<:entry msg |z:>
+<:= entry.msg.replace(/\S{60,}\s/, "$1\n", 1) :>
+
+<:.set work = cfg.entry("mail audit log", "subject_" _ entry.facility _ "-"
+    _ entry.component _ "-" _ entry.module _ "-" _ entry.function) -:>
+<:.if work -:>
+  <:.if work =~ /\{\w+\}/ -:>
+     <:.set obj = entry.object -:>
+     <:.if obj -:>
+        <:# poor man's expression replace -:>
+        <:.set work2 = "" -:>
+        <:.set m = work.match(/\{(\w+)\}/) -:>
+        <:.while m and work.length -:>
+           <:.set work2 = work2 _ work.substring(0, m.start) -:>
+	   <:.set method = work.substring(m.subexpr[0].start, m.subexpr[0].length) -:>
+	   <:.if obj.can(method) -:>
+              <:.set work2 = work2 _ obj.$method -:>
+           <:.else -:>
+	      <:.set work2 = work2 _ "* method " _ method _ " not found *" -:>
+	   <:.end if -:>
+           <:.set work = work.substring(m.end) -:>
+           <:.set m = work.match(/\{(\w+)\}/) -:>
+        <:.end while -:>
+	<:.set work2 = work2 _ work -:>
+     <:.end if -:>
+     <:% set_subject(work2) -:>
+  <:.else -:>
+     <:% set_subject(work) -:>
+  <:.end if -:>
+<:.end if:>
