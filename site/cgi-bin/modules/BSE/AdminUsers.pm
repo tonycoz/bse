@@ -9,7 +9,7 @@ use BSE::TB::AdminUsers;
 use BSE::TB::AdminGroups;
 use BSE::Util::Iterate;
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 my %actions =
   (
@@ -298,6 +298,14 @@ sub req_adduser {
   my $msg = "User $logon created";
 
   $class->_save_htusers($req, \$msg);
+
+  $req->audit
+    (
+     component => "admin:users:adduser",
+     object => $user,
+     msg => "User '".$user->logon."' created",
+     level => "info",
+    );
 
   return $class->refresh($req, 'a_showuser', userid=>$user->{id},
 			 'm'=>$msg);
