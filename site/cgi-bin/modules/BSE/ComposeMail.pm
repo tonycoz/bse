@@ -6,7 +6,7 @@ use Carp 'confess';
 use Digest::MD5 qw(md5_hex);
 use BSE::Variables;
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 =head1 NAME
 
@@ -75,7 +75,6 @@ sub send {
 
   $self->start(%opts)
     and $self->done();
-    
 }
 
 sub start {
@@ -130,10 +129,15 @@ sub start {
     }
   }
 
+  my $weak = $self;
+  Scalar::Util::weaken($weak);
   $self->{vars} =
     {
      bse => BSE::Variables->variables(),
      cfg => $self->{cfg},
+     set_subject => sub {
+       $self->{subject} = $_[0];
+     },
      ( $opts{vars} ? %{$opts{vars}} : () ),
     };
 
