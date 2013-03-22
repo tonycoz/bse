@@ -2,7 +2,7 @@ package Squirrel::Template::Expr::WrapScalar;
 use strict;
 use base qw(Squirrel::Template::Expr::WrapBase);
 
-our $VERSION = "1.008";
+our $VERSION = "1.009";
 
 sub _do_length  {
   my ($self, $args) = @_;
@@ -51,6 +51,17 @@ sub _do_trim {
   $copy =~ s/\s+\z//;
 
   return $copy;
+}
+
+sub _do_substring {
+  my ($self, $args) = @_;
+
+  @$args == 1 || @$args == 2
+    or die [ error => "scalar.substring takes 1 or 2 parameters" ];
+
+  return @$args == 1
+    ? substr($self->[0], $args->[0])
+      : substr($self->[0], $args->[0], $args->[1]);
 }
 
 sub _do_split {
@@ -234,6 +245,36 @@ sub _do_replace {
   return $str;
 }
 
+sub _do_match {
+  my ($self, $args) = @_;
+
+  @$args == 1
+    or die [ error => "scalar.escape requires one parameter" ];
+
+  $self->[0] =~ $args->[0]
+    or return undef;
+
+  my %result =
+    (
+     start => $-[0],
+     length => $+[0] - $-[0],
+     end => $+[0],
+     subexpr =>
+     [
+      map
+      (+{
+	 start => $-[$_],
+	 length => $+[$_] - $-[$_],
+	 end => $+[$_],
+	 },
+       1 .. $#-
+      )
+     ],
+    );
+
+  return \%result;
+}
+
 sub _do_escape {
   my ($self, $args) = @_;
 
@@ -376,6 +417,35 @@ in the regexp matched.  C<$$> is replaced with C<$>.
 If C<global> is present and true, replace every instance.
 
 Does not modify the source, simply returns the modified text.
+
+=item match(regexp)
+
+Matches the string against C<regexp> returning undef on no match, or
+returning a hash:
+
+  {
+    "start":start of whole match,
+    "length":length of whole match,
+    "end":end of whole match,
+    "subexpr": [
+       {
+         "start": start of first subexpr match
+         "length": length of first subexpr match
+         "end": end of first subexpr match
+       },
+       ...
+     ]
+  }
+
+=item substring(start)
+
+=item substring(start, length)
+
+Return the sub-string the scalar starting from C<start> for up to the
+end of the string (or up to C<length> characters.)
+
+Supports negative C<start> to count from the end of the end of the
+string, and similarly for C<length>.
 
 =item chr
 
