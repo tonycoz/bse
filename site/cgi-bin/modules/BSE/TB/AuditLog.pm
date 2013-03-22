@@ -168,19 +168,24 @@ sub log {
   my $entry = $class->make(%entry);
 
   if (!$mailing) {
-    my $send = $cfg->entry("mail audit log", $level_name) ||
-      $cfg->entry
-	("mail audit log", join("-", @entry{qw/facility component module function/}),
-	 $cfg->entry
-	 ("mail audit log", join("-", @entry{qw/facility component module/}),
-	  $cfg->entry("mail audit log", join("-", @entry{qw/facility component/}))));
+    my $section = "mail audit log";
+    my $to = $cfg->entry($section, "to", $cfg->entry("shop", "from"));
+    my @look =
+      (
+       [ $section, join("-", @entry{qw/facility component/}) ],
+       [ $section, join("-", @entry{qw/facility component module/}) ],
+       [ $section, join("-", @entry{qw/facility component module function/}) ],
+      );
+    my $send = $cfg->entry($section, $level_name, 0);
+    $send =~ /\@/ and $to = $send;
+    for my $choice (@look) {
+      $send = $cfg->entry(@$choice, $send);
+      $send =~ /\@/ and $to = $send;
+    }
     if ($send) {
       $mailing = 1;
       eval {
 	require BSE::ComposeMail;
-	my $to = $send =~ /\@/ ? $send :
-	  $cfg->entry("mail audit log", "to",
-		      $cfg->entry("shop", "from"));
 	if ($to) {
 	  require BSE::Util::Tags;
 	  my $mailer = BSE::ComposeMail->new(cfg => $cfg);
