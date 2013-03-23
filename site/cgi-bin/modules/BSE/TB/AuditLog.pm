@@ -6,7 +6,7 @@ use vars qw(@ISA $VERSION);
 use BSE::TB::AuditEntry;
 use Scalar::Util qw(blessed);
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 sub rowClass {
   return 'BSE::TB::AuditEntry';
@@ -175,7 +175,7 @@ sub log {
 
   my $entry = $class->make(%entry);
 
-  $entry->mail($entry, $cfg);
+  $entry->mail($cfg);
 
   keys %opts
     and $class->crash("Unknown parameters ", join(",", keys %opts), " to log()");
