@@ -3,7 +3,7 @@ use strict;
 use Squirrel::Template::Constants qw(:node);
 use Scalar::Util ();
 
-our $VERSION = "1.022";
+our $VERSION = "1.023";
 
 use constant ACTS => 0;
 use constant TMPLT => 1;
@@ -688,7 +688,7 @@ sub _process_while {
   my $result;
   unless (eval { $result = $self->[EVAL]->process($cond); 1 }) {
     my $msg = $@;
-    if (!ref $msg && $msg ==~ /\bENOIMPL\b/) {
+    if (!ref $msg && $msg =~ /\bENOIMPL\b/) {
       return
 	(
 	 $node->[NODE_ORIG],
