@@ -2,7 +2,7 @@ package BSE::Importer;
 use strict;
 use Config;
 
-our $VERSION = "1.003";
+our $VERSION = "1.005";
 
 =head1 NAME
 
@@ -484,8 +484,8 @@ sub cfg_entry {
 =head1 SEE ALSO
 
 L<BSE::Importer::Source::Base>, L<BSE::Importer::Source::XLS>,
-L<BSE::Importer::Target::Base>, L<BSE::Importer::Target::Article>,
-L<BSE::Importer::Target::Product>,
+L<BSE::Importer::Source::CSV>, L<BSE::Importer::Target::Base>,
+L<BSE::Importer::Target::Article>, L<BSE::Importer::Target::Product>,
 
 =head1 AUTHOR
 
