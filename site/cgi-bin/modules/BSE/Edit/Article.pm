@@ -16,7 +16,7 @@ use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 use constant ARTICLE_CUSTOM_FIELDS_CFG => "article custom fields";
 
-our $VERSION = "1.032";
+our $VERSION = "1.033";
 
 =head1 NAME
 
@@ -673,6 +673,7 @@ sub iter_get_stepparents {
 
   return unless $article->{id} && $article->{id} > 0;
 
+  require OtherParents;
   OtherParents->getBy(childId=>$article->{id});
 }
 
