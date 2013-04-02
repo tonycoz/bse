@@ -6,7 +6,7 @@ use Articles;
 use Products;
 use OtherParents;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 =head1 NAME
 
@@ -37,7 +37,10 @@ BSE::Importer::Target::Article - import target for articles.
 
 Provides a target for importing BSE articles.
 
-The import profile must provide a C<title> mapping.
+C<update_only> profiles must provide a mapping for one of C<id> or
+C<linkAlias>.
+
+Non-C<update_only> profiles must provide a mapping for C<title>.
 
 =head1 CONFIGURATION
 
@@ -48,7 +51,8 @@ The following extra configuration can be set in the import profile:
 =item *
 
 C<codes> - set to true to use the configured C<code_field> to update
-existing articles rather than creating new articles.
+existing articles rather than creating new articles.  This is forced
+on when the import profile enables C<update_only>.
 
 =item *
 
@@ -121,12 +125,33 @@ sub new {
 
   my $importer = delete $opts{importer};
 
-  my $map = $importer->maps;
-  defined $map->{title}
-    or die "No title mapping found\n";
-
   $self->{use_codes} = $importer->cfg_entry('codes', 0);
-  $self->{code_field} = $importer->cfg_entry("code_field", $self->default_code_field);
+  my $map = $importer->maps;
+  if ($importer->update_only) {
+    my $def_code;
+    my $found_key = 0;
+  KEYS:
+    for my $key ($self->key_fields) {
+      if ($map->{$key}) {
+	$found_key = 1;
+	$def_code = $key;
+	last KEYS;
+      }
+    }
+    $found_key
+      or die "No key field (", join(",", $self->key_fields),
+	") mapping found\n";
+
+    $self->{code_field} = $importer->cfg_entry("code_field", $def_code);
+    $self->{use_codes} = 1;
+  }
+  else {
+    defined $map->{title}
+      or die "No title mapping found\n";
+
+    $self->{code_field} = $importer->cfg_entry("code_field", $self->default_code_field);
+
+  }
 
   $self->{parent} = $importer->cfg_entry("parent", $self->default_parent);
 
@@ -164,18 +189,26 @@ sub row {
   my ($self, $importer, $entry, $parents) = @_;
 
   $self->xform_entry($importer, $entry);
-  
-  $entry->{parentid} = $self->_find_parent($importer, $self->{parent}, @$parents);
+
+  if (!$importer->update_only || @$parents) {
+    $entry->{parentid} = $self->_find_parent($importer, $self->{parent}, @$parents);
+  }
+
   my $leaf;
   if ($self->{use_codes}) {
     my $leaf_id = $entry->{$self->{code_field}};
-    
-    $leaf = $self->find_leaf($leaf_id);
+
+    if ($importer->{update_only}) {
+      $leaf_id =~ /\S/
+	or die "$self->{code_field} blank for update_only profile\n";
+    }
+
+    $leaf = $self->find_leaf($leaf_id, $importer);
   }
   if ($leaf) {
     @{$leaf}{keys %$entry} = values %$entry;
     $leaf->save;
-    $importer->info("Updated $leaf->{id}: $entry->{title}");
+    $importer->info("Updated $leaf->{id}: ".$leaf->title);
     if ($self->{reset_images}) {
       $leaf->remove_images($importer->cfg);
       $importer->info(" $leaf->{id}: Reset images");
@@ -187,7 +220,7 @@ sub row {
       }
     }
   }
-  else {
+  elsif (!$importer->update_only) {
     $leaf = $self->make_leaf
       (
        $importer, 
@@ -195,6 +228,9 @@ sub row {
        %$entry
       );
     $importer->info("Added $leaf->{id}: $entry->{title}");
+  }
+  else {
+    die "No leaf found for $entry->{$self->{code_field}} for update_only profile\n";
   }
   for my $image_index (1 .. 10) {
     my $file = $entry->{"image${image_index}_file"};
@@ -240,6 +276,8 @@ sub row {
   }
   $self->fill_leaf($importer, $leaf, %$entry);
   push @{$self->{leaves}}, $leaf;
+
+  $importer->event(endrow => { leaf => $leaf });
 }
 
 =item xform_entry()
@@ -254,17 +292,21 @@ values of C<summary>, C<description> and C<body> to the title.
 sub xform_entry {
   my ($self, $importer, $entry) = @_;
 
-  $entry->{title} =~ /\S/
-    or die "title blank\n";
+  if (exists $entry->{title}) {
+    $entry->{title} =~ /\S/
+      or die "title blank\n";
 
-  $entry->{title} =~ /\n/
-    and die "Title may not contain newlines";
-  $entry->{summary}
-    or $entry->{summary} = $entry->{title};
-  $entry->{description}
-    or $entry->{description} = $entry->{title};
-  $entry->{body}
-    or $entry->{body} = $entry->{title};
+    $entry->{title} =~ /\n/
+      and die "Title may not contain newlines";
+  }
+  unless ($importer->update_only) {
+    $entry->{summary}
+      or $entry->{summary} = $entry->{title};
+    $entry->{description}
+      or $entry->{description} = $entry->{title};
+    $entry->{body}
+      or $entry->{body} = $entry->{title};
+  }
 }
 
 =item children_of()
@@ -300,12 +342,15 @@ Find a leave article based on the supplied code.
 =cut
 
 sub find_leaf {
-  my ($self, $leaf_id) = @_;
+  my ($self, $leaf_id, $importer) = @_;
 
-  $leaf_id =~ tr/A-Za-z0-9_/_/cds;
+  $leaf_id =~ s/\A\s+//;
+  $leaf_id =~ s/\s+\z//;
 
   my ($leaf) = Articles->getBy($self->{code_field}, $leaf_id)
     or return;
+
+  $importer->event(find_leaf => { id => $leaf_id, leaf => $leaf });
 
   return $leaf;
 }
@@ -321,7 +366,11 @@ Overridden in the product importer to create products.
 sub make_leaf {
   my ($self, $importer, %entry) = @_;
 
-  return bse_make_article(%entry);
+  my $leaf = bse_make_article(%entry);
+
+  $importer->event(make_leaf => { leaf => $leaf });
+
+  return $leaf;
 }
 
 =item fill_leaf()
@@ -407,7 +456,7 @@ sub default_parent { -1 }
 
 Return the default code field.
 
-Overridden by the produuct target to return the C<product_code> field.
+Overridden by the product target to return the C<product_code> field.
 
 =cut
 
@@ -431,6 +480,16 @@ Return the parent articles created or used by the import run.
 
 sub parents {
   return @{$_[0]{parents}}
+}
+
+=item key_fields()
+
+Columns that can act as keys.
+
+=cut
+
+sub key_fields {
+  return qw(id linkAlias);
 }
 
 1;
