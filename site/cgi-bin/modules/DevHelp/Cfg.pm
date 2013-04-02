@@ -6,7 +6,7 @@ use constant CFG_DEPTH => 5; # unused so far
 use constant CACHE_AGE => 30;
 use constant VAR_DEPTH => 10;
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 my %cache;
 
@@ -43,12 +43,22 @@ Parameters:
 
 =item *
 
-filename - the filename to search for (required)
+C<filename> - the filename to search for (required)
 
 =item *
 
-path - the path to start searching for the config file in, typically
-the BSE cgi-bin.
+C<path> - the path to start searching for the config file in,
+typically the BSE cgi-bin.
+
+=item *
+
+C<extra_text> - extra text to load as configuration after all files
+are loaded.  Intended for use in tests.
+
+=item *
+
+C<extra_file> - an extra file to load as configuration after all files
+are loaded.  Intended for use in tests.
 
 =back
 
@@ -71,27 +81,52 @@ sub new {
       or return bless { config => {} }, $class;
   }
 
-  return $class->_load_cfg($file);
+  my $cfg = $class->_load_cfg($file);
+
+  $cfg->_load_extras(\%opts);
+
+  return $cfg;
 }
 
 =item new_from_text
+
+Load configuration from supplied text.  Intended for use in tests.
+
+Parameters:
+
+=over
+
+=item *
+
+C<text> - the text to load as characters.
+
+=item *
+
+C<extra_text> - extra text to load as configuration after all files
+are loaded.  Intended for use in tests.
+
+=item *
+
+C<extra_file> - an extra file to load as configuration after all files
+are loaded.  Intended for use in tests.
+
+=back
 
 =cut
 
 sub new_from_text {
   my ($class, %opts) = @_;
 
-  require Encode;
   my $text = $opts{text}
     or confess "Missing text parameter";
-  my $work_text = Encode::encode("utf-8", $text, 0);
-  open my $fh, "<", \$work_text;
 
   my $self = $class->_new;
 
-  $self->_load_fh($fh, "<text>");
+  $self->_load_text(\$text);
 
   $self->_load_includes($opts{path});
+
+  $self->_load_extras(\%opts);
 
   return $self;
 }
@@ -341,6 +376,22 @@ sub _load_file {
   return 1;
 }
 
+sub _load_text {
+  my ($self, $rtext) = @_;
+
+  require Encode;
+
+  my $work_text = Encode::encode("utf-8", $$rtext);
+
+  open my $fh, "<", \$work_text;
+
+  $self->_load_fh($fh, "<text>");
+
+  close $fh;
+
+  return 1;
+}
+
 sub _load_fh {
   my ($self, $cfg, $filename) = @_;
 
@@ -492,6 +543,17 @@ sub _load_includes {
   }
 
   return 1;
+}
+
+sub _load_extras {
+  my ($self, $opts) = @_;
+
+  if ($opts->{extra_text}) {
+    $self->_load_text(\$opts->{extra_text});
+  }
+  if ($opts->{extra_file}) {
+    $self->_load_file($opts->{extra_file});
+  }
 }
 
 =item _get_heredoc($fh, $end_marker)
