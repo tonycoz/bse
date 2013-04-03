@@ -6,7 +6,7 @@ use Articles;
 use Products;
 use OtherParents;
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 =head1 NAME
 
@@ -332,37 +332,44 @@ sub _add_files {
     }
 
     if (!$file && !$opts{filename}) {
-      die "No file${file_index}_file supplied but other file${file_index}_* field supplied\n";
+      $importer->warn("No file${file_index}_file supplied but other file${file_index}_* field supplied");
+      next;
     }
 
     if ($filename && !$opts{displayName}) {
-      ($opts{displayName}) = $filename =~ /([^\\\/:]+)$/
-	or die "Cannot create displayName for $filename\n";
+      unless (($opts{displayName}) = $filename =~ /([^\\\/:]+)$/) {
+	$importer->warn("Cannot create displayName for $filename");
+	next;
+      }
     }
 
-    if ($file) {
-      my @warnings;
-      $file->update
-	(
-	 _actor => $importer->actor,
-	 _warnings => \@warnings,
-	 %opts,
-	);
+    eval {
+      if ($file) {
+	my @warnings;
+	$file->update
+	  (
+	   _actor => $importer->actor,
+	   _warnings => \@warnings,
+	   %opts,
+	  );
 
-      $importer->info(" $leaf->{id}: Update file '".$file->displayName ."'");
-    }
-    else {
-      # this dies on failure
-      $file = $leaf->add_file
-	(
-	 $importer->cfg,
-	 %opts,
-	 store => 1,
-	);
+	$importer->info(" $leaf->{id}: Update file '".$file->displayName ."'");
+      }
+      else {
+	# this dies on failure
+	$file = $leaf->add_file
+	  (
+	   $importer->cfg,
+	   %opts,
+	   store => 1,
+	  );
 
-
-      $importer->info(" $leaf->{id}: Add file '$filename'");
-    }
+	$importer->info(" $leaf->{id}: Add file '$filename'");
+      }
+      1;
+    } or do {
+      $importer->warn($@);
+    };
   }
 }
 
