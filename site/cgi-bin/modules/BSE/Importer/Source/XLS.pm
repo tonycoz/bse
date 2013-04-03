@@ -3,7 +3,7 @@ use strict;
 use base 'BSE::Importer::Source::Base';
 use Spreadsheet::ParseExcel;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 =head1 NAME
 
@@ -61,7 +61,7 @@ sub each_row {
 
   my $parser = Spreadsheet::ParseExcel->new;
   my $wb = $parser->Parse($filename)
-    or die "Could not parse $filename\n";
+    or die "Could not parse $filename as XLS\n";
   $self->{sheet} <= $wb->{SheetCount}
     or die "No enough worksheets in input\n";
   $self->{ws} = ($wb->worksheets)[$self->{sheet}-1]
