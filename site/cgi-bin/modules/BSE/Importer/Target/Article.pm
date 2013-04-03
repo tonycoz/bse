@@ -6,7 +6,7 @@ use Articles;
 use Products;
 use OtherParents;
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 =head1 NAME
 
@@ -22,6 +22,7 @@ BSE::Importer::Target::Article - import target for articles.
   parent=-1
   ignore_missing=1
   reset_images=0
+  reset_files=0
   reset_steps=0
 
   # done by the importer
@@ -66,13 +67,18 @@ parent tree under.
 
 =item *
 
-C<ignore_missing> - set to 0 to error on missing image files.
-Default: 1.
+C<ignore_missing> - set to 0 to error on missing image or article
+files.  Default: 1.
 
 =item *
 
 C<reset_images> - set to true to delete all images from an article
 before adding the imported images.
+
+=item *
+
+C<reset_files> - set to true to delete all files from an article
+before adding the imported files.
 
 =item *
 
@@ -160,6 +166,7 @@ sub new {
   }
   $self->{ignore_missing} = $importer->cfg_entry("ignore_missing", 1);
   $self->{reset_images} = $importer->cfg_entry("reset_images", 0);
+  $self->{reset_files} = $importer->cfg_entry("reset_files", 0);
   $self->{reset_steps} = $importer->cfg_entry("reset_steps", 0);
 
   return $self;
@@ -213,6 +220,10 @@ sub row {
       $leaf->remove_images($importer->cfg);
       $importer->info(" $leaf->{id}: Reset images");
     }
+    if ($self->{reset_files}) {
+      $leaf->remove_files($importer->cfg);
+      $importer->info(" $leaf->{id}: Reset files");
+    }
     if ($self->{reset_steps}) {
       my @steps = OtherParents->getBy(childId => $leaf->{id});
       for my $step (@steps) {
@@ -258,6 +269,7 @@ sub row {
       or die join(", ",map "$_: $errors{$_}", keys %errors), "\n";
     $importer->info(" $leaf->{id}: Add image '$file'");
   }
+  $self->_add_files($importer, $entry, $leaf);
   for my $step_index (1 .. 10) {
     my $step_id = $entry->{"step$step_index"};
     $step_id
@@ -278,6 +290,80 @@ sub row {
   push @{$self->{leaves}}, $leaf;
 
   $importer->event(endrow => { leaf => $leaf });
+}
+
+sub _add_files {
+  my ($self, $importer, $entry, $leaf) = @_;
+
+  my %named_files = map { $_->name => $_ } grep $_->name ne '', $leaf->files;
+
+  for my $file_index (1 .. 10) {
+    my %opts;
+
+    my $found = 0;
+    for my $key (qw/name displayName storage description forSale download requireUser notes hide_from_list category/) {
+      my $fkey = "file${file_index}_$key";
+      if (defined $entry->{$fkey}) {
+	$opts{$key} = $entry->{$fkey};
+	$found = 1;
+      }
+    }
+
+    my $filename = $entry->{"file${file_index}_file"};
+    if ($filename) {
+      my $full_file = $importer->find_file($filename);
+
+      unless ($full_file) {
+	$self->{ignore_missing}
+	  and next;
+	die "File '$filename' not found for file$file_index\n";
+      }
+
+      $opts{filename} = $full_file;
+      $found = 1;
+    }
+
+    $found
+      or next;
+
+    my $file;
+    if ($opts{name}) {
+      $file = $named_files{$opts{name}};
+    }
+
+    if (!$file && !$opts{filename}) {
+      die "No file${file_index}_file supplied but other file${file_index}_* field supplied\n";
+    }
+
+    if ($filename && !$opts{displayName}) {
+      ($opts{displayName}) = $filename =~ /([^\\\/:]+)$/
+	or die "Cannot create displayName for $filename\n";
+    }
+
+    if ($file) {
+      my @warnings;
+      $file->update
+	(
+	 _actor => $importer->actor,
+	 _warnings => \@warnings,
+	 %opts,
+	);
+
+      $importer->info(" $leaf->{id}: Update file '".$file->displayName ."'");
+    }
+    else {
+      # this dies on failure
+      $file = $leaf->add_file
+	(
+	 $importer->cfg,
+	 %opts,
+	 store => 1,
+	);
+
+
+      $importer->info(" $leaf->{id}: Add file '$filename'");
+    }
+  }
 }
 
 =item xform_entry()

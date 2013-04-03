@@ -31,12 +31,12 @@ to search for image files
 
 =item *
 
-source - type of input format, default and currently only XLS.
+source - type of input format, default and currently C<XLS> or C<CSV>.
 
 =item *
 
 target - type of output record, default Product, can currently be
-Article or Product.
+C<Article> or C<Product>.
 
 =item *
 
@@ -79,11 +79,23 @@ for articles.
 
 =item *
 
-ignore_missing - ignore missing image files.  Default: 1.
+update_only - if true, records are only updated, the summary, body and
+description fields are no longer populated from title, title is no
+longer required to be mapped, and codes defaults to true.  If
+C<code_field> isn't specified the first mapped field from C<id> or
+C<linkAlias> is selected (or C<product_code> for products)
+
+=item *
+
+ignore_missing - ignore missing image and article files.  Default: 1.
 
 =item *
 
 reset_images - reset images for an article being imported.  Default: 0.
+
+=item *
+
+reset_files - reset files for an article being imported.  Default: 0.
 
 =item *
 
@@ -103,6 +115,20 @@ image1_file .. image10_file - name of an image file found in
 
 imageI<N>_alt, imageI<N>_name, imageI<N>_url, imageI<N>_storage - set
 the appropriate fields for an image
+
+=item *
+
+C<< file1_file >> .. C<< file10_file >> - name of an article file to
+attach to the article.
+
+=item *
+
+C<< file1I<N>_name >>, C<< file1I<N>_displayName >>, C<<
+file1I<N>_storage >>, C<< file1I<N>_description >>, C<<
+file1I<N>_forSale >>, C<< file1I<N>_download >>, C<<
+file1I<N>_requireUser >>, C<< file1I<N>_notes >>, C<<
+file1I<N>_hide_from_list >>, C<< file1I<N>_category >> - set other
+file fields.
 
 =item *
 

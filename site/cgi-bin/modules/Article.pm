@@ -8,7 +8,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::TB::SiteCommon BSE::TB::TagOwner/;
 use Carp 'confess';
 
-our $VERSION = "1.018";
+our $VERSION = "1.019";
 
 =head1 NAME
 
@@ -349,9 +349,7 @@ sub remove {
 
   $self->remove_images($cfg);
 
-  for my $file ($self->files) {
-    $file->remove($cfg);
-  }
+  $self->remove_files($cfg);
   
   # remove any step(child|parent) links
   require OtherParents;

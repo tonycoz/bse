@@ -6,7 +6,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 use Carp 'confess';
 
-our $VERSION = "1.008";
+our $VERSION = "1.009";
 
 sub columns {
   return qw/id articleId displayName filename sizeInBytes description 
@@ -408,7 +408,7 @@ sub update {
 	require DevHelp::FileUpload;
 	my $msg;
 	($filename) = DevHelp::FileUpload->
-	  make_img_copy($file_dir, $opts{displayName}, \$msg)
+	  make_fh_copy($in_fh, $file_dir, $opts{displayName}, \$msg)
 	    or die "$msg\n";
       }
     }
@@ -437,6 +437,14 @@ sub update {
   my $type = delete $opts{contentType};
   if (defined $type) {
     $self->set_contentType($type);
+  }
+
+  for my $field (qw(displayName description forSale download requireUser notes hide_from_list category)) {
+    my $value = delete $opts{$field};
+    if (defined $value) {
+      my $method = "set_$field";
+      $self->$method($value);
+    }
   }
 
   my $name = $opts{name};

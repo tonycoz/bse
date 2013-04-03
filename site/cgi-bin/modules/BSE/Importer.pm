@@ -2,7 +2,7 @@ package BSE::Importer;
 use strict;
 use Config;
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 =head1 NAME
 
@@ -111,6 +111,10 @@ processing.
 =item *
 
 C<listen> - a hashref of event handlers.
+
+=item *
+
+C<actor> - an actor name suitable for audit logging.
 
 =back
 
@@ -511,6 +515,16 @@ Returns true if only performing updates.
 
 sub update_only {
   $_[0]{update_only};
+}
+
+=item actor
+
+The actor supplied to new.
+
+=cut
+
+sub actor {
+  $_[0]{actor} || "U";
 }
 
 1;
