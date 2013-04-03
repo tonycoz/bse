@@ -4,7 +4,7 @@ use BSE::Test qw(base_url);
 use File::Spec;
 use File::Temp;
 
-use Test::More tests => 7;
+use Test::More tests => 8;
 
 BEGIN {
   unshift @INC, File::Spec->catdir(BSE::Test::base_dir(), "cgi-bin", "modules");
@@ -34,6 +34,15 @@ target=Product
 update_only=1
 sep_char=\\t
 code_field=linkAlias
+
+[import profile newdup$when]
+map_product_code=1
+map_title=2
+map_retailPrice=3
+skiplines=0
+source=CSV
+target=Product
+
 CFG
 
 {
@@ -56,23 +65,44 @@ CFG
 }
 
 {
-  my $testa = bse_make_product(cfg => $cfg, title => "test updates",
-			       linkAlias => "P$when", retailPrice => 500);
+  my $testa = bse_make_product
+    (
+     cfg => $cfg,
+     title => "test updates",
+     linkAlias => "P$when",
+     retailPrice => 500,
+     product_code => "C$when",
+    );
 
-  my $fh = File::Temp->new;
-  my $filename = $fh->filename;
-  print $fh <<EOS;
+  {
+    my $fh = File::Temp->new;
+    my $filename = $fh->filename;
+    print $fh <<EOS;
 linkAlias\tbody
 "P$when"\t"This is the body text with multiple lines
 
 Yes, multiple lines with CSV!"
 EOS
-  close $fh;
-  my $imp = BSE::Importer->new(cfg => $cfg, profile => "simpleupdate$when",
-			       callback => sub { note @_ });
-  $imp->process($filename);
-  my $testb = Articles->getByPkey($testa->id);
-  like($testb->body, qr/This is the body/, "check the body is updated");
+    close $fh;
+    my $imp = BSE::Importer->new(cfg => $cfg, profile => "simpleupdate$when",
+				 callback => sub { note @_ });
+    $imp->process($filename);
+    my $testb = Articles->getByPkey($testa->id);
+    like($testb->body, qr/This is the body/, "check the body is updated");
+  }
+
+  { # fail to duplicate a product code
+    my $fh = File::Temp->new;
+    my $filename = $fh->filename;
+    my $id = $testa->id;
+    print $fh <<EOS;
+"C$when",A new title,100
+EOS
+    close $fh;
+    my $imp = BSE::Importer->new(cfg => $cfg, profile => "newdup$when", callback => sub { note @_ });
+    $imp->process($filename);
+    is_deeply([ $imp->leaves ], [], "should be no updated articles");
+  }
 
   END {
     $testa->remove($cfg) if $testa;

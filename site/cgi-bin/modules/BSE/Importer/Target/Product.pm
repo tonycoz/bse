@@ -8,7 +8,7 @@ use BSE::TB::ProductOptions;
 use BSE::TB::ProductOptionValues;
 use BSE::TB::PriceTiers;
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 =head1 NAME
 
@@ -151,6 +151,11 @@ sub xform_entry {
 
   $self->SUPER::xform_entry($importer, $entry);
 
+  if (defined $entry->{product_code}) {
+    $entry->{product_code} =~ s/\A\s+//;
+    $entry->{product_code} =~ s/\s+\z//;
+  }
+
   if ($self->{use_codes}) {
     $entry->{$self->{code_field}} =~ /\S/
       or die "$self->{code_field} blank with use_codes\n";
@@ -202,8 +207,14 @@ Find an existing product matching the code.
 sub find_leaf {
   my ($self, $leaf_id, $importer) = @_;
 
-  my ($leaf) = Products->getBy($self->{code_field}, $leaf_id)
-    or return;
+  my $leaf;
+  if ($self->{code_field} eq "id") {
+    $leaf = Products->getByPkey($leaf_id);
+  }
+  else {
+    ($leaf) = Products->getBy($self->{code_field}, $leaf_id)
+      or return;
+  }
 
   $importer->event(find_leaf => { id => $leaf_id, leaf => $leaf });
 
@@ -311,6 +322,20 @@ sub key_fields {
   my ($class) = @_;
 
   return ( $class->SUPER::key_fields(), "product_code" );
+}
+
+=item validate_make_leaf
+
+=cut
+
+sub validate_make_leaf {
+  my ($self, $importer, $entry) = @_;
+
+  if (defined $entry->{product_code} && $entry->{product_code} ne '') {
+    my $other = Products->getBy(product_code => $entry->{product_code});
+    $other
+      and die "Duplicate product_code with product ", $other->id, "\n";
+  }
 }
 
 1;

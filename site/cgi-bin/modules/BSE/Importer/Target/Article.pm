@@ -6,7 +6,7 @@ use Articles;
 use Products;
 use OtherParents;
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 =head1 NAME
 
@@ -232,6 +232,7 @@ sub row {
     }
   }
   elsif (!$importer->update_only) {
+    $self->validate_make_leaf($importer, $entry);
     $leaf = $self->make_leaf
       (
        $importer, 
@@ -399,6 +400,10 @@ sub xform_entry {
       or $entry->{description} = $entry->{title};
     $entry->{body}
       or $entry->{body} = $entry->{title};
+  }
+
+  if (defined $entry->{linkAlias}) {
+    $entry->{linkAlias} =~ tr/A-Za-z0-9//cd;
   }
 }
 
@@ -583,6 +588,22 @@ Columns that can act as keys.
 
 sub key_fields {
   return qw(id linkAlias);
+}
+
+=item validate_make_leaf
+
+Perform validation only needed on creation
+
+=cut
+
+sub validate_make_leaf {
+  my ($self, $importer, $entry) = @_;
+
+  if (defined $entry->{linkAlias} && $entry->{linkAlias} ne '') {
+    my $other = Articles->getBy(linkAlias => $entry->{linkAlias});
+    $other
+      and die "Duplicate linkAlias value with article ", $other->id, "\n";
+  }
 }
 
 1;

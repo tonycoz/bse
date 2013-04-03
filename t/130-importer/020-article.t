@@ -4,7 +4,7 @@ use BSE::Test qw(base_url);
 use File::Spec;
 use File::Temp;
 
-use Test::More tests => 41;
+use Test::More tests => 42;
 
 BEGIN {
   unshift @INC, File::Spec->catdir(BSE::Test::base_dir(), "cgi-bin", "modules");
@@ -75,6 +75,13 @@ skiplines=0
 file_path=t/data
 ignore_missing=0
 update_only=1
+source=CSV
+target=Article
+
+[import profile newdup$when]
+map_linkAlias=1
+map_title=2
+skiplines=0
 source=CSV
 target=Article
 
@@ -204,6 +211,19 @@ EOS
     is($file->requireUser, 1, "requireUser");
     is($file->notes, "Some Notes", "notes");
     is($file->hide_from_list, 1, "hide_from_list");
+  }
+
+  { # fail to duplicate a link alias
+    my $fh = File::Temp->new;
+    my $filename = $fh->filename;
+    my $id = $testa->id;
+    print $fh <<EOS;
+"alias$when",test,t101.jpg
+EOS
+    close $fh;
+    my $imp = BSE::Importer->new(cfg => $cfg, profile => "newdup$when", callback => sub { note @_ });
+    $imp->process($filename);
+    is_deeply([ $imp->leaves ], [], "should be no updated articles");
   }
 
   END {
