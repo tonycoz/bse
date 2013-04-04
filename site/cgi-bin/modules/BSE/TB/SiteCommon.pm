@@ -2,7 +2,7 @@ package BSE::TB::SiteCommon;
 use strict;
 use Carp qw(confess);
 
-our $VERSION = "1.011";
+our $VERSION = "1.012";
 
 =head1 NAME
 
@@ -214,6 +214,12 @@ sub image_by_index {
   return $self->{_images_by_index}[$index-1];
 }
 
+sub uncache_images {
+  my ($self) = @_;
+
+  delete @{$self}{qw/_images _images_by_name _images_by_index/};
+}
+
 sub children {
   my ($self) = @_;
 
@@ -232,6 +238,7 @@ sub remove_images {
   my ($self, $cfg) = @_;
 
   $cfg ||= BSE::Cfg->single;
+  $self->uncache_images;
   my @images = $self->images;
   my $mgr;
   require BSE::CfgInfo;
@@ -247,6 +254,7 @@ sub remove_images {
 
     $image->remove();
   }
+  $self->uncache_images;
 }
 
 sub remove_files {
