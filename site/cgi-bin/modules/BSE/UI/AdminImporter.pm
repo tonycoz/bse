@@ -4,7 +4,7 @@ use base 'BSE::UI::AdminDispatch';
 use BSE::Importer;
 use BSE::Util::Tags qw(tag_error_img);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 my %actions =
   (
@@ -64,7 +64,12 @@ sub req_start {
   for my $profile (keys %$profiles) {
     if (eval {
       local $SIG{__DIE__};
-      BSE::Importer->new(profile => $profile, cfg => $req->cfg);
+      BSE::Importer->new
+	  (
+	   profile => $profile,
+	   cfg => $req->cfg,
+	   actor => ( $req->user || "U" ),
+	  );
     }) {
       push @profiles, { id => $profile, label => $profiles->{$profile} };
     }
@@ -122,7 +127,12 @@ sub req_import {
   my $imp;
   {
     local $SIG{__DIE__};
-    eval { $imp = BSE::Importer->new(profile => $profile, cfg => $req->cfg) }
+    eval { $imp = BSE::Importer->new
+	     (
+	      profile => $profile,
+	      cfg => $req->cfg,
+	      actor => ( $req->user || "U" ),
+	     ) }
       or return $self->req_start($req, "Cannot load profile '$profile': $@");
   }
 
