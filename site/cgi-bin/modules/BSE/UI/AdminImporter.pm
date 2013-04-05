@@ -138,7 +138,7 @@ sub req_import {
 	  $mycb
 	 );
        local $SIG{__DIE__};
-       unless (eval { $imp->process($file); 1 }) {
+       unless (eval { $imp->process($file->handle); 1 }) {
 	 $mycb->($@);
        }
      });
