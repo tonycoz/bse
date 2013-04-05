@@ -214,6 +214,7 @@ sub row {
   }
   if ($leaf) {
     @{$leaf}{keys %$entry} = values %$entry;
+    $leaf->mark_modified(actor => $importer->actor);
     $leaf->save;
     $importer->info("Updated $leaf->{id}: ".$leaf->title);
     if ($self->{reset_images}) {

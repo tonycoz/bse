@@ -8,7 +8,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::TB::SiteCommon BSE::TB::TagOwner/;
 use Carp 'confess';
 
-our $VERSION = "1.019";
+our $VERSION = "1.020";
 
 =head1 NAME
 
@@ -598,11 +598,35 @@ sub restricted_method {
   my ($self, $name) = @_;
 
   return $self->SUPER::restricted_method($name)
-    || $name =~ /^(?:update_|remove_|add_)/;
+    || $name =~ /^(?:update_|remove_|add_|mark_modified)/;
 }
 
 sub tableClass {
   return "Articles";
+}
+
+=item mark_modified
+
+Call by admin code to do the things we do when an article is modified.
+
+Parameters:
+
+=over
+
+=item *
+
+actor - an audit log compatible actor.
+
+=back
+
+=cut
+
+sub mark_modified {
+  my ($self, %opts) = @_;
+
+  require BSE::Util::SQL;
+  $self->set_lastModified(BSE::Util::SQL::now_sqldatetime());
+  $self->set_lastModifiedBy(ref $opts{actor} ? $opts{actor}->logon : "");
 }
 
 1;

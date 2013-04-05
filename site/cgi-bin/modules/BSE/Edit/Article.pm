@@ -16,7 +16,7 @@ use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 use constant ARTICLE_CUSTOM_FIELDS_CFG => "article custom fields";
 
-our $VERSION = "1.033";
+our $VERSION = "1.034";
 
 =head1 NAME
 
@@ -2169,7 +2169,6 @@ sub save {
   $article->{expire} = sql_date($cgi->param('expire')) || $Constants::D_99
     if defined $cgi->param('expire') && 
       $req->user_can('edit_field_edit_expire', $article);
-  $article->{lastModified} =  now_sqldatetime();
   for my $col (qw/force_dynamic inherit_siteuser_rights/) {
     if ($req->user_can("edit_field_edit_$col", $article)
 	&& $cgi->param("save_$col")) {
@@ -2177,10 +2176,7 @@ sub save {
     }
   }
 
-# Added by adrian
-  my $user = $req->getuser;
-  $article->{lastModifiedBy} = $user ? $user->{logon} : '';
-# end adrian
+  $article->mark_modified(actor => $req->getuser || "U");
 
   my @save_group_ids = $cgi->param('save_group_id');
   if ($req->user_can('edit_field_edit_group_id')
