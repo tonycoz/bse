@@ -2,7 +2,7 @@ package BSE::Importer::Source::Base;
 use strict;
 use Config;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 =head1 NAME
 
@@ -63,6 +63,8 @@ This should populate the storage used by get_column() and call
   $importer->row($source)
 
 for each row found.
+
+C<$filename> can be either a filename or a file handle reference.
 
 =item get_column()
 
