@@ -6,7 +6,7 @@ use Articles;
 use Products;
 use OtherParents;
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 =head1 NAME
 
@@ -233,6 +233,8 @@ sub row {
     }
   }
   elsif (!$importer->update_only) {
+    $entry->{createdBy} ||= ref $importer->actor ? $importer->actor->logon : "";
+    $entry->{lastModifiedBy} ||= ref $importer->actor ? $importer->actor->logon : "";
     $self->validate_make_leaf($importer, $entry);
     $leaf = $self->make_leaf
       (
