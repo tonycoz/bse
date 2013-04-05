@@ -3,7 +3,7 @@ use strict;
 use base 'BSE::Importer::Source::Base';
 use Text::CSV;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 my @text_csv_options = qw(quote_char escape_char sep_char binary allow_loose_quotes allow_loose_escapes allow_whitespace);
 
@@ -112,8 +112,16 @@ sub new {
 sub each_row {
   my ($self, $importer, $filename) = @_;
 
-  open my $fh, "<encoding($self->{encoding})", $filename
-    or die "Cannot open file $filename: $!\n";
+  my $fh;
+
+  if (ref $filename) {
+    $fh = $filename;
+    binmode $fh, ":encoding($self->{encoding})";
+  }
+  else {
+    open $fh, "<:encoding($self->{encoding})", $filename
+      or die "Cannot open file $filename: $!\n";
+  }
 
   my $csv = Text::CSV->new($self->{csv_opts})
     or die "Cannot use CSV: ", Text::CSV->error_diag(), "\n";

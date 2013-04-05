@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 6;
+use Test::More tests => 8;
 use BSE::Cfg;
 BEGIN {
   eval "require Text::CSV;"
@@ -27,6 +27,34 @@ CFG
        [ "Line 2", 1, 2, 3 ],
        [ "Line 3", qw(abc def hij) ],
       ], "check data read");
+}
+
+{
+  my $cfg = BSE::Cfg->new_from_text(text => <<CFG);
+[import profile test]
+source=CSV
+CFG
+  my $importer = DummyImporter->new(columns => 3, cfg => $cfg);
+  my $src = BSE::Importer::Source::CSV->new
+    (
+     importer => $importer,
+     opts => { profile => "test", cfg => $cfg },
+    );
+  ok($src, "make a CSV source");
+
+  my $csv = <<EOS;
+a,b,c
+1,2,3
+abc,def,hij
+EOS
+  open my $fh, "<", \$csv;
+
+  $src->each_row($importer, $fh);
+  is_deeply($importer->{rows},
+      [
+       [ "Line 2", 1, 2, 3 ],
+       [ "Line 3", qw(abc def hij) ],
+      ], "check data read with fh source");
 }
 
 {
