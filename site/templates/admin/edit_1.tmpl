@@ -293,3 +293,32 @@
   </p>
 </form><:or UserCan:><:eif UserCan:>
 <:eif New:> <:or HaveChildType:> <:eif HaveChildType:>
+
+<h2>Metadata</h2>
+
+<table class="editform">
+  <tr>
+    <th>Last Modified</th>
+    <td><:= bse.date("%H:%M %d/%m/%Y", article.lastModified) -:></td>
+  </tr>
+  <tr>
+    <th>Last Modified By</th>
+    <td><:= article.lastModifiedBy eq "" ? "(unknown)" : article.lastModifiedBy -:></td>
+  </tr>
+  <tr>
+    <th>Link</th>
+    <td><a href="<:= article.link -:>"><:= article.link -:></a></td>
+  </tr>
+  <tr>
+    <th>Generator</th>
+    <td><:= article.generator -:></td>
+  </tr>
+  <tr>
+    <th>Created</th>
+    <td><:= bse.date("%H:%M %d/%m/%Y", article.created) -:></td>
+  </tr>
+  <tr>
+    <th>Created By</th>
+    <td><:= article.createdBy eq "" ? "(unknown)" : article.createdBy -:></td>
+  </tr>
+</table>
