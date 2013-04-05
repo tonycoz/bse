@@ -2,7 +2,7 @@ package BSE::Importer;
 use strict;
 use Config;
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 =head1 NAME
 
@@ -137,6 +137,7 @@ sub new {
      profile => $profile,
      section => "import profile $profile",
      callback => scalar(delete $opts{callback}),
+     actor => $opts{actor} || "U",
     }, $class;
 
   # field mapping
@@ -524,7 +525,7 @@ The actor supplied to new.
 =cut
 
 sub actor {
-  $_[0]{actor} || "U";
+  $_[0]{actor};
 }
 
 1;
