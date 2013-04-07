@@ -1,93 +1,68 @@
 package BSE::Test;
 use strict;
 use vars qw(@ISA @EXPORT @EXPORT_OK);
-@ISA = qw(Exporter);
-require 'Exporter.pm';
-@EXPORT = qw(base_url ok fetch_ok make_url skip make_ua);
-@EXPORT_OK = qw(base_url ok make_ua fetch_url fetch_ok make_url skip 
+use Exporter 'import';
+@EXPORT = qw(base_url fetch_ok make_url skip make_ua);
+@EXPORT_OK = qw(base_url make_ua fetch_url fetch_ok make_url skip 
                 make_post check_form post_ok check_content follow_ok
                 follow_refresh_ok click_ok config test_actions);
+use lib 'site/cgi-bin/modules';
+use BSE::Cfg;
 
-my %conf;
+my $conffile = $ENV{BSETEST} || 'install.cfg';
 
-my $conffile = $ENV{BSETEST} || 'test.cfg';
-
-open TESTCFG, "< $conffile" or die "Cannot open $conffile: $!";
-while (<TESTCFG>) {
-  next if /^\s*[\#;]/;
-  chomp;
-  next unless /^\s*(\w+)\s*=\s*(.*)/ 
-    or  /^\s*(\w[^=]*\w\.\w+)\s*=\s*(.*\S)\s*$/;
-  $conf{$1} = $2;
-}
-close TESTCFG;
-
-sub base_url { $conf{base_url} or die "No base_url in test config" }
-
-sub base_securl { 
-  $conf{securl} or $conf{base_url} or die "No securl or base_url in $conffile"
-}
-
-sub base_dir { $conf{base_dir} or die "No base_dir in test config" }
-
-sub mysql_name { $conf{mysql} or die "No mysql in test config" }
-
-sub test_dsn { $conf{dsn} or die "No dsn in test config" }
-
-sub test_dbuser { $conf{dbuser} or die "No dbuser in test config" }
-
-sub test_dbpass { $conf{dbpass} or die "No dbpass in test config" }
-
-sub test_dbclass { $conf{dbclass} or die "No dbclass in test config" }
-
-sub test_sessionclass { $conf{sessionclass} or die "No sessionclass in config" }
-sub test_perl { $conf{perl} or "/usr/bin/perl" }
-
-sub test_conffile {
-  return $conffile;
-}
+my $cfg = BSE::Cfg->new
+  (
+   path => "site/cgi-bin",
+   extra_file => $conffile,
+  );
 
 sub config {
-  my ($name) = @_;
-
-  $conf{$name};
+  $cfg;
 }
 
-my $test_num = 1;
-
-sub ok ($$) {
-  my ($ok, $desc) = @_;
-
-  if ($INC{"Test/More.pm"}) {
-    return Test::More::ok($ok, $desc);
-  }
-  else {
-    if ($ok) {
-      print "ok $test_num # $desc\n";
-    }
-    else {
-      print "not ok $test_num # $desc ",join(",", caller()),"\n";
-    }
-    ++$test_num;
-    return $ok;
-  }
+sub base_url {
+  $cfg->entryVar("site", "url");
 }
 
-sub skip {
-  my ($desc, $count) = @_;
+sub base_securl {
+  $cfg->entryVar("site", "secureurl");
+}
 
-  if ($INC{"Test/More.pm"}) {
-  SKIP: {
-      Test::More::skip($desc, $count);
-    }
-  }
-  else {
-    $count ||= 1;
-    for my $i (1..$count) {
-      print "ok $test_num # skipped: $desc\n";
-      ++$test_num;
-    }
-  }
+sub base_dir {
+  $cfg->entryVar("paths", "siteroot");
+}
+
+sub mysql_name {
+  $cfg->entry("binaries", "mysql", "mysql");
+}
+
+sub test_dsn {
+  $cfg->entry("db", "dsn");
+}
+
+sub test_dbuser {
+  $cfg->entry("db", "user");
+}
+
+sub test_dbpass {
+  $cfg->entry("db", "password");
+}
+
+sub test_dbclass {
+  $cfg->entry("db", "class", "BSE::DB::Mysql");
+}
+
+sub test_sessionclass {
+  $cfg->entry("basic", "session_class", "Apache::Session::Mysql");
+}
+
+sub test_perl {
+  $cfg->entry("paths", "perl", $^X);
+}
+
+sub test_conffile {
+  $conffile;
 }
 
 sub make_ua {
@@ -133,48 +108,47 @@ sub make_url {
 
 sub check_content {
   my ($content, $note, $match) = @_;
-  unless (ok($content =~ /$match/s, "$note: match")) {
-    print "# wanted /$match/ got:\n";
-    my $copy = $content;
-    $copy =~ s/^/# /gm;
-    $copy .= "\n" unless $copy =~ /\n\z/;
-    print $copy;
-  }
+  my $tb = Test::Builder->new;
+  local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+  return $tb->like($content, qr/$match/s, "$note: match");
 }
 
 sub _check_fetch {
   my ($content, $code, $ok, $headers,
       $note, $match, $headmatch) = @_;  
 
+  my $tb = Test::Builder->new;
+  local $Test::Builder::Level = $Test::Builder::Level + 1;
+
   my $good = $ok;
-  ok($ok, "$note: fetch ($code)");
-  if ($ok) {
+  $tb->ok($ok, "$note: fetch ($code)");
+  SKIP:
+  {
+    my $count = 0;
+    $count++ if $match;
+    $count++ if $headmatch;
+    $ok or skip("$note: fetch failed", $count) if $count;
     if ($match) {
-      unless (ok($content =~ /$match/s, "$note: match")) {
-	print "# wanted /$match/ got:\n";
-	my $copy = $content;
-	$copy =~ s/^/# /gm;
-	$copy .= "\n" unless $copy =~ /\n\z/;
-	print $copy;
+      unless ($tb->like($content, qr/$match/s, "$note: match")) {
+	#print "# wanted /$match/ got:\n";
+	#my $copy = $content;
+	#$copy =~ s/^/# /gm;
+	#$copy .= "\n" unless $copy =~ /\n\z/;
+	#print $copy;
 	$good = 0;
       }
     }
     if ($headmatch) {
-      unless (ok($headers =~ /$headmatch/s, "$note: headmatch")) {
-	print "# wanted /$headmatch/ got:\n";
-	my $copy = $headers;
-	$copy =~ s/^/# /gm;
-	$copy .= "\n" unless $copy =~ /\n\z/;
-	print $copy;
+      unless ($tb->like($headers, qr/$headmatch/s, "$note: headmatch")) {
+	#print "# wanted /$headmatch/ got:\n";
+	#my $copy = $headers;
+	#$copy =~ s/^/# /gm;
+	#$copy .= "\n" unless $copy =~ /\n\z/;
+	#print $copy;
 	$good = 0;
       }
     }
-  }
-  else {
-    my $count = 0;
-    $count++ if $match;
-    $count++ if $headmatch;
-    skip("$note: fetch failed", $count) if $count;
   }
 
   if (wantarray) {
@@ -262,7 +236,10 @@ sub follow_refresh_ok {
 sub click_ok {
   my ($ua, $note, $name, $match, $headmatch) = @_;
 
-  my $ok = ok($ua->click($name), "$note - click");
+  local $Test::Builder::Level = $Test::Builder::Level + 1;
+  my $tb = Test::Builder->new;
+
+  my $ok = $tb->ok($ua->click($name), "$note - click");
   return _check_fetch($ua->{content}, $ua->{status}, $ok, 
 		      $ua->{res}->headers_as_string, $note, 
 		      $match, $headmatch)
@@ -283,6 +260,9 @@ sub check_form {
   my $textname;
   my %values;
 
+  my $tb = Test::Builder->new;
+  local $Test::Builder::Level = $Test::Builder::Level + 1;
+
   my $text =
     sub {
       my ($t) = @_;
@@ -295,26 +275,26 @@ sub check_form {
       if ($tagname eq 'input') {
 	my $name = $attr->{name};
 	if ($name && $todo{$name}) {
-	  ok(1, "$note - $name - field is present");
+	  $tb->ok(1, "$note - $name - field is present");
 	  $values{$name} = $attr->{$name};
 	  if (defined $todo{$name}[0]) {
 	    my $cvalue = $checks{$name}[0];
 	    my $fvalue = $attr->{value};
 	    if (defined $fvalue) {
-	      ok($cvalue eq $fvalue, "$note - $name - comparing values");
+	      $tb->ok($cvalue eq $fvalue, "$note - $name - comparing values");
 	    }
 	    else {
-	      ok(0, "$note - $name - value is not present");
+	      $tb->ok(0, "$note - $name - value is not present");
 	    }
 	  }
 	  if (defined $todo{$name}[1]) {
 	    my $ttype = $todo{$name}[1];
 	    my $ftype = $attr->{type};
 	    if (defined $ftype) {
-	      ok($ttype eq $ftype, "$note - $name - comparing types");
+	      $tb->ok($ttype eq $ftype, "$note - $name - comparing types");
 	    }
 	    else {
-	      ok(0, "$note - $name - type not present");
+	      $tb->ok(0, "$note - $name - type not present");
 	    }
 	  }
 	  delete $todo{$name};
@@ -324,12 +304,12 @@ sub check_form {
 	$selname = $attr->{name};
 	
 	if ($todo{$selname}) {
-	  ok(1, "$note - $selname - field is present");
+	  $tb->ok(1, "$note - $selname - field is present");
 	  $inselect = 1;
 	  if (defined $todo{$selname}[1]) {
 	    $checked_sel_value = 0;
 	    my $ttype = $todo{$selname}[1];
-	    ok ($ttype eq 'select', "$note - $selname - checking type (select)");
+	    $tb->ok ($ttype eq 'select', "$note - $selname - checking type (select)");
 	  }
 	}
       }
@@ -344,10 +324,10 @@ sub check_form {
 	    my $fvalue = $attr->{value};
 	    my $tvalue = $todo{$selname}[0];
 	    if (defined $fvalue) {
-	      ok($fvalue eq $tvalue, "$note - $selname - checking value ($fvalue vs $tvalue)");
+	      $tb->ok($fvalue eq $tvalue, "$note - $selname - checking value ($fvalue vs $tvalue)");
 	    }
 	    else {
-	      ok(0, "$note - $selname - no value supplied");
+	      $tb->ok(0, "$note - $selname - no value supplied");
 	    }
 	  }
 	}
@@ -364,7 +344,7 @@ sub check_form {
 
       if ($tagname eq 'select' && $inselect) {
 	if (!$checked_sel_value) {
-	  ok(0, "$note - $selname - no value selected");
+	  $tb->ok(0, "$note - $selname - no value selected");
 	}
 	delete $todo{$selname};
       }
@@ -373,13 +353,13 @@ sub check_form {
 	if ($todo{$textname}) {
 	  my $fvalue = HTML::Entities::decode_entities($saved);
 	  $values{$textname} = $fvalue;
-	  ok(1, "$note - $textname - field exists");
+	  $tb->ok(1, "$note - $textname - field exists");
 	  if (defined $todo{$textname}[0]) {
 	    my $tvalue = $todo{$textname}[0];
-	    ok($tvalue eq $fvalue, "$note - $textname - checking value($tvalue vs $fvalue)");
+	    $tb->ok($tvalue eq $fvalue, "$note - $textname - checking value($tvalue vs $fvalue)");
 	  }
 	  if (defined $todo{$textname}[1]) {
-	    ok ($todo{$textname}[1] eq 'textarea',
+	    $tb->ok ($todo{$textname}[1] eq 'textarea',
 		"$note - $textname - check field type");
 	  }
 	  delete $todo{$textname};
@@ -392,11 +372,13 @@ sub check_form {
   $p->parse($content);
   $p->eof;
   for my $name (keys %todo) {
-    ok(0, "$note - $name - field doesn't exist");
+    $tb->ok(0, "$note - $name - field doesn't exist");
     my $count = 0;
     ++$count if defined $todo{$name}[0];
     ++$count if defined $todo{$name}[1];
-    skip("$note - $name - no field", $count);
+  SKIP: {
+      skip("$note - $name - no field", $count) if $count;
+    }
   }
 
   return %values;
@@ -407,6 +389,7 @@ sub test_actions {
   my ($class) = @_;
 
   my $tb = Test::Builder->new;
+  local $Test::Builder::Level = $Test::Builder::Level + 1;
 
   my $obj = $class->new;
   my $actions = $obj->actions;

@@ -1,9 +1,9 @@
 #!perl -w
 use strict;
-use BSE::Test qw(make_ua ok fetch_ok base_url config);
+use Test::More tests => 62;
+use BSE::Test qw(make_ua fetch_ok base_url config);
 
 ++$|;
-print "1..62\n";
 my $baseurl = base_url;
 ok($baseurl =~ /^http:/, "basic check of base url");
 my $ua = make_ua;
@@ -27,7 +27,7 @@ fetch_ok($ua, "failed search", "$baseurl/cgi-bin/search.pl?q=blargle",
 	 "No\\s+documents\\s+were\\s+found");
 fetch_ok($ua, "good search", "$baseurl/cgi-bin/search.pl?q=shop",
 	 qr!You\s+can\s+buy!s);
-if (config('site users.nopassword')) {
+if (config->entry('site users', 'nopassword')) {
   fetch_ok($ua, "not user logon page", "$baseurl/cgi-bin/user.pl",
 	   qr!Not\s+Authenticated!s);
 }

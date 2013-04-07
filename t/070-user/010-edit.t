@@ -1,11 +1,11 @@
 #!perl -w
 use strict;
-use BSE::Test qw(base_url make_ua skip check_form post_ok ok 
+use Test::More tests => 22;
+use BSE::Test qw(base_url make_ua check_form post_ok
                  check_content follow_ok);
 use URI::QueryParam;
 #use WWW::Mechanize;
 ++$|;
-print "1..22\n";
 my $baseurl = base_url;
 my $ua = make_ua;
 

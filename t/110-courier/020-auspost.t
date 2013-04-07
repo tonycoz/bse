@@ -146,7 +146,7 @@ my $us_medium_cost_sea = $sea->calculate_shipping
 ok($us_medium_cost_sea, "got a US medium cost");
 like($us_medium_cost_sea, qr/^\d+$/, "it's an integer");
 print "# $us_medium_cost_sea\n";
-cmp_ok($perth_medium_cost, "<=", $us_medium_cost_sea, "perth <= us sea");
+cmp_ok($perth_medium_cost, "<=", $us_medium_cost_air, "perth <= us air");
 
 # too big
 my $too_long = BSE::Shipping::Parcel->new

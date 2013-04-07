@@ -8,6 +8,7 @@
 ^\.git/
 ^test\.cfg$
 ^test-.*cfg$
+^install\.cfg$
 ^nswfitc\.cfg$
 ^site/htdocs/images/admin/help\.png$
 ^install.perl$

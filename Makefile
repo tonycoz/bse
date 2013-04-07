@@ -19,6 +19,9 @@ VERSIONDEPS=$(shell $(PERL) site/util/bse_versiondeps.pl MANIFEST)
 POD2TEXT=$(PERLBIN)/pod2text
 POD2HTML=$(PERLBIN)/pod2html
 
+UTILDIR=$(shell $(PERL) -Ilib -MBSE::Install=util_dir -e 'print util_dir')
+DATADIR=$(shell $(PERL) -Ilib -MBSE::Install=data_dir -e 'print data_dir')
+
 .PHONY: help dist cleantree archive distdir clean docs otherdocs dbinfo
 .PHONY: version modversion testinst test testup checkver regen_known_errors
 .PHONY: manicheck filecheck manifect htmldocs
@@ -106,12 +109,12 @@ $(BSEMODULES): $(MODULES) site/util/make_versions.pl
 testinst: distdir
 	$(PERL) localinst.perl $(DISTBUILD)
 	$(PERL) -MExtUtils::Command -e rm_rf $(DISTBUILD)
-	cd `$(PERL) -lne 'do { print $$1; exit; } if /^base_dir\s*=\s*(.*)/' test.cfg`/util ; $(PERL) loaddata.pl ../data/db
+	cd $(UTILDIR) ; $(PERL) loaddata.pl $(DATADIR)/db
 
 testup: checkver distdir
 	$(PERL) localinst.perl $(DISTBUILD) leavedb
 	$(PERL) -MExtUtils::Command -e rm_rf $(DISTBUILD)
-	cd `$(PERL) -lne 'do { print $$1; exit; } if /^base_dir\s*=\s*(.*)/' test.cfg`/util ; $(PERL) upgrade_mysql.pl -b ; $(PERL) loaddata.pl ../data/db
+	cd $(UTILDIR) ; $(PERL) upgrade_mysql.pl -b ; $(PERL) loaddata.pl $(DATADIR)/db
 
 checkver:
 	if [ -d .git ] ; then perl site/util/check_versions.pl ; fi

@@ -1,10 +1,12 @@
-MANIFEST.bak
-test.cfg
-INSTALL.html
-INSTALL.txt
-site/cgi-bin/modules/BSE/Modules.pm
-site/cgi-bin/modules/BSE/Version.pm
+/MANIFEST.bak
+/test.cfg
+/install.cfg
+/INSTALL.html
+/INSTALL.txt
+/site/cgi-bin/modules/BSE/Modules.pm
+/site/cgi-bin/modules/BSE/Version.pm
 .#*
 *~
 
 /cover_db
+/bse-[0-9]*

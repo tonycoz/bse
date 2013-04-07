@@ -4,7 +4,7 @@ use CGI::Cookie;
 use BSE::DB;
 use BSE::CfgInfo qw/custom_class/;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub _session_require {
   my ($cfg) = @_;
@@ -18,11 +18,7 @@ sub _session_require {
 sub _session_class {
   my ($cfg) = @_;
 
-  eval { require Constants; };
-
-  my $default = $Constants::SESSION_CLASS || 'Apache::Session::MySQL';
-
-  return $cfg->entry('basic', 'session_class', $default);
+  return $cfg->entry('basic', 'session_class', "Apache::Session::MySQL");
 }
 
 sub _send_session_cookie {

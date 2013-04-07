@@ -2,40 +2,43 @@
 use strict;
 #use File::Tree;
 use File::Copy;
-use lib 't';
-use BSE::Test ();
-require ExtUtils::Manifest;
+use lib 'lib';
+use BSE::Install qw(util_dir cgi_dir public_html_dir templates_dir data_dir mysql_name);
+#use BSE::Test ();
+use ExtUtils::Manifest qw(maniread);
+use File::Copy qw(copy);
+use File::Spec;
+use File::Path qw(make_path);
+use Getopt::Long;
+
+my $verbose;
+GetOptions("v|verbose" => \$verbose);
 
 my $dist = shift or die "Usage: $0 distdir [leavedb]";
 my $leavedb = shift or 0;
-my $instbase = shift || BSE::Test::base_dir() || die "No base_dir";
 
-my $mysql = BSE::Test::mysql_name;
+my $mysql = mysql_name();
 
-#  if (-e "$instbase/cgi-bin/modules/Constants.pm"
-#      && !-e "$instbase/Constants.pm") {
-#    system "cp $instbase/cgi-bin/modules/Constants.pm $instbase/Constants.pm"
-#  }
+my $cfg = BSE::Install::cfg();
 
-#system("rm -rf $instbase/cgi-bin")
-#  and die "Cannot remove cgi-bin";
-#system "rm -rf $instbase/data"
-#  and die "Cannot remove data";
-#system "rm -f $instbase/htdocs/{*.html,a/*.html,shop/*.html,images/*.jpg}"
-#  and die "Cannot remove htdocs";
+my $manifest = maniread();
 
--d "$instbase/cgi-bin" or mkdir "$instbase/cgi-bin"
-  or die "Cannot create $instbase/cgi-bin: $!";
-system "cp -rf $dist/site/cgi-bin/* $instbase/cgi-bin"
-  and die "Cannot copy cgi-bin";
+install_files("site/htdocs/", public_html_dir());
+install_files("site/templates/", templates_dir());
+install_files("site/cgi-bin", cgi_dir());
+install_files("site/util/", util_dir());
+install_files("site/data/", data_dir());
 
-my $perl = BSE::Test::test_perl();
+my $perl = BSE::Install::perl();
 if ($perl ne '/usr/bin/perl') {
   my $manifest = ExtUtils::Manifest::maniread();
 
   for my $file (keys %$manifest) {
-    (my $work = $file) =~ s!^site!!;
-    my $full = $instbase . $work;
+    (my $work = $file) =~ s!^site/!!;
+    $work =~ s(^(cgi-bin|util)/)()
+      or next;
+    my $base = $work eq "util" ? util_dir() : cgi_dir();
+    my $full = File::Spec->catfile($base, $work);
     open my $script, "<", $full
       or next;
     binmode $script;
@@ -51,95 +54,29 @@ if ($perl ne '/usr/bin/perl') {
   }
 }
 
-system "cp -rf $dist/site/htdocs/* $instbase/htdocs"
-  and die "Cannot copy htdocs";
-system "cp -rf $dist/site/templates/* $instbase/templates"
-  and die "Cannot copy templates";
-system "cp -rf $dist/site/data $instbase"
-  and die "Cannot copy data";
-system "cp -rf $dist/site/util/ $instbase";
-
 print "Updating conf\n";
-# try to update Constants.pm
-open CON, "< $instbase/cgi-bin/modules/Constants.pm"
-  or die "Cannot open Constants.pm";
-my $con = do { local $/; <CON> };
-close CON;
 
-my $dbuser = BSE::Test::test_dbuser();
-my $dbpass = BSE::Test::test_dbpass();
-
-#$con =~ s/(^\$DSN = ')[^']*/$1 . BSE::Test::test_dsn()/me;
-#$con =~ s/(^\$DBCLASS = ')[^']*/$1 . BSE::Test::test_dbclass()/me;
-#$con =~ s/(^\$UN = ')[^']*/$1$dbuser/m;
-#$con =~ s/(^\$PW = ')[^']*/$1$dbpass/m;
-#$con =~ s/(^\$BASEDIR = ')[^']+/$1 . BSE::Test::base_dir/me;
-#$con =~ s/(^\$URLBASE = ["'])[^'"]+/$1 . BSE::Test::base_url/me;
-#$con =~ s/(^\$SECURLBASE = ["'])[^'"]+/$1 . BSE::Test::test_securl/me;
-$con =~ s/(^\$SESSION_CLASS = [\"\'])[^\'\"]+/$1 . BSE::Test::test_sessionclass()/me;
-open CON, "> $instbase/cgi-bin/modules/Constants.pm"
-  or die "Cannot open Constants.pm for write: $!";
-print CON $con;
-close CON;
-
-
-# rebuild the config file
-# first load values from the test.cfg file
-my $conffile = BSE::Test::test_conffile();
-my %conf;
-$conf{site}{url} = BSE::Test::base_url();
-$conf{site}{secureurl} = BSE::Test::base_securl();
-$conf{paths}{siteroot} = $instbase;
-#my $uploads = "$instbase/uploads";
-#$conf{paths}{downloads} = $uploads;
-#my $templates = "$instbase/templates";
-#$conf{paths}{templates} = $templates;
-#$conf{paths}{public_html} = "$instbase/htdocs";
-open TESTCONF, "< $conffile"
-  or die "Could not open config file $conffile: $!";
-while (<TESTCONF>) {
-  chomp;
-  /^\s*(\w[^=]*\w)\.([\w-]+)\s*=\s*(.*)\s*$/ or next;
-  $conf{lc $1}{$2} = $3;
-}
-
-#$uploads = $conf{paths}{downloads};
-# create installation config
-
-$conf{db}{class} = BSE::Test::test_dbclass();
-$conf{db}{dsn} = BSE::Test::test_dsn();
-$conf{db}{user} = $dbuser;
-$conf{db}{password} = $dbpass;
-
-open CFG, "> $instbase/cgi-bin/bse-install.cfg"
-  or die "Cannot create $instbase/cgi-bin/bse-install.cfg: $!";
-
-print CFG "; DO NOT EDIT - created during installation\n";
-for my $section_name (keys %conf) {
-  print CFG "[$section_name]\n";
-  my $section = $conf{$section_name};
-  for my $key (keys %$section) {
-    print CFG "$key=$section->{$key}\n";
-  }
-  print CFG "\n";
-}
-
-close CFG;
+my $conf_src = BSE::Install::conffile();
+my $conf_dest = File::Spec->catfile(cgi_dir(), "bse-install.cfg");
+copy($conf_src, $conf_dest)
+  or die "Cannot copy $conf_src to $conf_dest: $!\n";
 
 #-d $uploads 
 #  or mkdir $uploads, 0777 
 #  or die "Cannot find or create upload directory: $!";
 
+my $dbuser = BSE::Install::db_user();
+my $dbpass = BSE::Install::db_password();
 
 # build the database
-my $dsn = BSE::Test::test_dsn();
+my $dsn = BSE::Install::db_dsn();
 if ($dsn =~ /:mysql:(?:database=)?(\w+)/) {
   my $db = $1;
 
   unless ($leavedb) {
     system "$mysql -u$dbuser -p$dbpass $db <$dist/schema/bse.sql"
       and die "Cannot initialize database";
-    system "cd $instbase/util ; $perl initial.pl"
+    system "cd ".util_dir." ; $perl initial.pl"
       and die "Cannot load database";
   }
 
@@ -151,4 +88,24 @@ else {
   print "WARNING: cannot install to $dsn database\n";
 }
 
-  
+sub install_files {
+  my ($prefix, $destbase) = @_;
+
+  print "Install $prefix to $destbase\n";
+  for my $file (sort grep /^\Q$prefix/, keys %$manifest) {
+    (my $rel = $file) =~ s/^\Q$prefix//;
+    my $src = File::Spec->catfile($dist, $file);
+    my $dest = File::Spec->catfile($destbase, $rel);
+    my ($destvol, $destdir) = File::Spec->splitpath($dest);
+    my $destpath = File::Spec->catdir($destvol, $destdir);
+    unless (-e $destpath) {
+      make_path($destpath); # croak on error
+    }
+    elsif (!-d $destpath) {
+      die "$destpath isn't a directory!\n";
+    }
+    print "  Copy $rel to $dest\n" if $verbose;
+    copy($src, $dest)
+      or die "Cannot copy $src to $dest: $!\n";
+  }
+}

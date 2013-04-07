@@ -1,9 +1,11 @@
 Artistic
 Changes.txt
 COPYING
+install.cfg
 INSTALL.html
 INSTALL.pod
 INSTALL.txt
+lib/BSE/Install.pm
 localinst.perl			# simple test installer
 Makefile
 makehtmldocs.pl

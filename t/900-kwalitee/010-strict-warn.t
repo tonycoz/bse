@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
-use BSE::Test qw(ok);
 use File::Find;
+use Test::More;
 
 my @files;
 open MANIFEST, "< MANIFEST" or die "Cannot open MANIFEST";
@@ -13,7 +13,7 @@ while (<MANIFEST>) {
 }
 close MANIFEST;
 my @scripts = grep /\.(pl|t)$/, @files;
-print "1..",scalar(@files) + scalar(@scripts),"\n";
+plan tests => scalar(@files) + scalar(@scripts);
 for my $file (@files) {
   open SRC, "< $file" or die "Cannot open $file: $!";
   my $data = do { local $/; <SRC> };
