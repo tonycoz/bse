@@ -2,7 +2,7 @@ package BSE::Importer;
 use strict;
 use Config;
 
-our $VERSION = "1.003";
+our $VERSION = "1.008";
 
 =head1 NAME
 
@@ -73,6 +73,11 @@ C<target> - the target object type, the target module name is this
 value with C<BSE::Importer::Target::> prepended, so a value of
 C<Product> will use the C<BSE::Importer::Target::Product> module.
 
+=item *
+
+C<update_only> - if true, the profile will only update existing
+records.  This may change which fields are required.
+
 =back
 
 The source and target module may include their own configuration in
@@ -103,6 +108,14 @@ C<cfg> - the BSE::Cfg object to use for configuration
 C<callback> - a sub ref to call for messages generated during
 processing.
 
+=item *
+
+C<listen> - a hashref of event handlers.
+
+=item *
+
+C<actor> - an actor name suitable for audit logging.
+
 =back
 
 If the profile is invalid, new() with die with a newline terminated
@@ -124,6 +137,7 @@ sub new {
      profile => $profile,
      section => "import profile $profile",
      callback => scalar(delete $opts{callback}),
+     actor => $opts{actor} || "U",
     }, $class;
 
   # field mapping
@@ -188,6 +202,7 @@ EOS
   }
   $self->{file_path} = \@file_path;
 
+  $self->{update_only} = $self->cfg_entry('update_only', 0);
 
   my $source_type = $self->cfg_entry("source", "XLS");
   $self->{source_class} = "BSE::Importer::Source::$source_type";
@@ -207,7 +222,6 @@ EOS
      importer => $self,
      opts => \%opts,
     );
-
 
   return $self;
 }
@@ -340,6 +354,7 @@ sub row {
       defined $value && $value =~ /\S/
 	and push @parents, $value;
     }
+    $self->event(row => { entry => \%entry, parents => \@parents });
     $self->{target}->row($self, \%entry, \@parents);
   };
   if ($@) {
@@ -348,6 +363,7 @@ sub row {
     $error =~ tr/\n/ /s;
     push @{$self->{errors}}, $error;
     $self->warn("Error: $error");
+    $self->event(error => { msg => $error });
   }
 }
 
@@ -397,6 +413,21 @@ sub warn {
 
   $self->{callback}
     and $self->{callback}->($self->{source}->rowid, ": @msg");
+}
+
+=item event()
+
+Called by various parts of the system to report events.  These are
+intended for tools.
+
+=cut
+
+sub event {
+  my ($self, $event, $args) = @_;
+
+  if ($self->{listen}{$event}) {
+    $self->{listen}{$event}->($event, $args);
+  }
 }
 
 =item find_file()
@@ -477,6 +508,26 @@ sub cfg_entry {
   return $self->{cfg}->entry($self->{section}, $key, $default);
 }
 
+=item update_only
+
+Returns true if only performing updates.
+
+=cut
+
+sub update_only {
+  $_[0]{update_only};
+}
+
+=item actor
+
+The actor supplied to new.
+
+=cut
+
+sub actor {
+  $_[0]{actor};
+}
+
 1;
 
 =back
@@ -484,8 +535,8 @@ sub cfg_entry {
 =head1 SEE ALSO
 
 L<BSE::Importer::Source::Base>, L<BSE::Importer::Source::XLS>,
-L<BSE::Importer::Target::Base>, L<BSE::Importer::Target::Article>,
-L<BSE::Importer::Target::Product>,
+L<BSE::Importer::Source::CSV>, L<BSE::Importer::Target::Base>,
+L<BSE::Importer::Target::Article>, L<BSE::Importer::Target::Product>,
 
 =head1 AUTHOR
 

@@ -8,7 +8,7 @@ use vars qw(@EXPORT_OK @ISA);
 @ISA = qw(Exporter);
 require Exporter;
 
-our $VERSION = "1.024";
+our $VERSION = "1.025";
 
 sub _get_parms {
   my ($acts, $args) = @_;
@@ -954,6 +954,8 @@ sub secure {
 
 sub tag_error_img {
   my ($cfg, $errors, $args, $acts, $func, $templater) = @_;
+
+  ref $errors or return '';
 
   my ($arg, $num) = DevHelp::Tags->get_parms($args, $acts, $templater);
   #print STDERR "name $arg num $num\n";

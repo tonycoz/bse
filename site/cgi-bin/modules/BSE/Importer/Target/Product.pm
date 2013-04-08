@@ -8,7 +8,7 @@ use BSE::TB::ProductOptions;
 use BSE::TB::ProductOptionValues;
 use BSE::TB::PriceTiers;
 
-our $VERSION = "1.002";
+our $VERSION = "1.004";
 
 =head1 NAME
 
@@ -125,8 +125,10 @@ sub new {
   $self->{reset_prodopts} = $importer->cfg_entry("reset_prodopts", 1);
 
   my $map = $importer->maps;
-  defined $map->{retailPrice}
-    or die "No retailPrice mapping found\n";
+  unless ($importer->update_only) {
+    defined $map->{retailPrice}
+      or die "No retailPrice mapping found\n";
+  }
 
   $self->{price_tiers} = +{ map { $_->id => $_ } BSE::TB::PriceTiers->all };
 
@@ -149,19 +151,27 @@ sub xform_entry {
 
   $self->SUPER::xform_entry($importer, $entry);
 
-  if ($self->{use_codes}) {
-    $entry->{product_code} =~ /\S/
-      or die "product_code blank with use_codes\n";
+  if (defined $entry->{product_code}) {
+    $entry->{product_code} =~ s/\A\s+//;
+    $entry->{product_code} =~ s/\s+\z//;
   }
-  $entry->{retailPrice} =~ s/\$//; # in case
 
-  if ($entry->{retailPrice} =~ /\d/) {
-    $self->{price_dollar}
-      and $entry->{retailPrice} *= 100;
+  if ($self->{use_codes}) {
+    $entry->{$self->{code_field}} =~ /\S/
+      or die "$self->{code_field} blank with use_codes\n";
   }
-  else {
-    $importer->warn("Warning: no price");
-    $entry->{retailPrice} = 0;
+
+  if (exists $entry->{retailPrice}) {
+    $entry->{retailPrice} =~ s/\$//; # in case
+
+    if ($entry->{retailPrice} =~ /\d/) {
+      $self->{price_dollar}
+	and $entry->{retailPrice} *= 100;
+    }
+    else {
+      $importer->warn("Warning: no price");
+      $entry->{retailPrice} = 0;
+    }
   }
 }
 
@@ -195,10 +205,18 @@ Find an existing product matching the code.
 =cut
 
 sub find_leaf {
-  my ($self, $leaf_id) = @_;
+  my ($self, $leaf_id, $importer) = @_;
 
-  my ($leaf) = Products->getBy($self->{code_field}, $leaf_id)
-    or return;
+  my $leaf;
+  if ($self->{code_field} eq "id") {
+    $leaf = Products->getByPkey($leaf_id);
+  }
+  else {
+    ($leaf) = Products->getBy($self->{code_field}, $leaf_id)
+      or return;
+  }
+
+  $importer->event(find_leaf => { id => $leaf_id, leaf => $leaf });
 
   if ($self->{reset_prodopts}) {
     my @options = $leaf->db_options;
@@ -219,7 +237,11 @@ Make a new product.
 sub make_leaf {
   my ($self, $importer, %entry) = @_;
 
-  return bse_make_product(%entry);
+  my $leaf = bse_make_product(%entry);
+
+  $importer->event(make_leaf => { leaf => $leaf });
+
+  return $leaf;
 }
 
 =item fill_leaf()
@@ -289,6 +311,32 @@ Overrides the default code field.
 =cut
 
 sub default_code_field { "product_code" }
+
+=item key_fields
+
+Fields that can act as key fields.
+
+=cut
+
+sub key_fields {
+  my ($class) = @_;
+
+  return ( $class->SUPER::key_fields(), "product_code" );
+}
+
+=item validate_make_leaf
+
+=cut
+
+sub validate_make_leaf {
+  my ($self, $importer, $entry) = @_;
+
+  if (defined $entry->{product_code} && $entry->{product_code} ne '') {
+    my $other = Products->getBy(product_code => $entry->{product_code});
+    $other
+      and die "Duplicate product_code with product ", $other->id, "\n";
+  }
+}
 
 1;
 

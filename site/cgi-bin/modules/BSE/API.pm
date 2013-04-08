@@ -10,7 +10,7 @@ use Carp qw(confess croak);
 use Fcntl qw(:seek);
 use Cwd;
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 =head1 NAME
 
@@ -48,7 +48,7 @@ my %acticle_defaults =
    thumbHeight => 0,
    imagePos => 'tr',
    release => sql_datetime(time - 86_400),
-   expire => '2999-12-31',
+   expire => '9999-12-31 23:59:59',
    keyword => '',
    template => 'common/default.tmpl',
    link => '', # needs to be set

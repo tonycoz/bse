@@ -5,7 +5,7 @@ use vars qw/@ISA/;
 use Carp 'confess';
 @ISA = qw(BSE::DB);
 
-our $VERSION = "1.012";
+our $VERSION = "1.013";
 
 use vars qw($VERSION $MAX_CONNECTION_AGE);
 
@@ -91,6 +91,7 @@ SQL
    addProduct => 'insert product values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
    getProductByPkey => 'select article.*, product.* from article, product where id=? and articleId = id',
    getProductByProduct_code => 'select article.*, product.* from article, product where product_code=? and articleId = id',
+   getProductByLinkAlias => 'select article.*, product.* from article, product where linkAlias=? and articleId = id',
    replaceProduct => 'replace product values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
    'Products.stepProducts' => <<EOS,
 select ar.*, pr.* from article ar, product pr, other_parents op

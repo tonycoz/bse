@@ -109,6 +109,7 @@ site/cgi-bin/modules/BSE/ImageHandler/Flash.pm
 site/cgi-bin/modules/BSE/ImageHandler/Img.pm
 site/cgi-bin/modules/BSE/Importer.pm
 site/cgi-bin/modules/BSE/Importer/Source/Base.pm
+site/cgi-bin/modules/BSE/Importer/Source/CSV.pm
 site/cgi-bin/modules/BSE/Importer/Source/XLS.pm
 site/cgi-bin/modules/BSE/Importer/Target/Article.pm
 site/cgi-bin/modules/BSE/Importer/Target/Base.pm
@@ -902,6 +903,10 @@ t/120-thumb/10scale.t
 t/120-thumb/data/scale40x30.png
 t/120-thumb/data/scale40x30fill.png
 t/120-thumb/data/simple.png
+t/130-importer/000-load.t
+t/130-importer/010-csv.t
+t/130-importer/020-article.t
+t/130-importer/030-product.t
 t/900-kwalitee/010-strict-warn.t
 t/900-kwalitee/020-checktemplates.t
 t/900-kwalitee/030-messages.t
@@ -913,6 +918,9 @@ t/cfg/cfg/99end.cfg
 t/cfg/isafile.cfg
 t/cfg/t/varinc.cfg
 t/data/govhouse.jpg
+t/data/importer/article-simple.csv
+t/data/importer/basic.csv
+t/data/importer/product-simple.csv
 t/data/known_pod_issues.txt
 t/data/t101.jpg
 t/t000load.t
