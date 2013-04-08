@@ -3,7 +3,7 @@ use strict;
 use base 'BSE::Importer::Source::Base';
 use Spreadsheet::ParseExcel;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 =head1 NAME
 
@@ -57,11 +57,21 @@ sub new {
 }
 
 sub each_row {
-  my ($self, $importer, $filename) = @_;
+  my ($self, $importer, $file) = @_;
+
+  my $tmp;
+
+  if (ref $file && !$file->can("seek") && defined fileno($file)) {
+    # workaround a problem in CGI.pm, handle() returns an IO::Handle
+    # instead of an IO::File
+    $tmp = $file; # keep it live until the end of the function
+    require IO::File;
+    $file = IO::File->new_from_fd(fileno($file), "<");
+  }
 
   my $parser = Spreadsheet::ParseExcel->new;
-  my $wb = $parser->Parse($filename)
-    or die "Could not parse $filename as XLS\n";
+  my $wb = $parser->Parse($file)
+    or die "Could not parse source as XLS\n";
   $self->{sheet} <= $wb->{SheetCount}
     or die "No enough worksheets in input\n";
   $self->{ws} = ($wb->worksheets)[$self->{sheet}-1]
