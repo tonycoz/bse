@@ -1,8 +1,6 @@
 <:wrap admin/base.tmpl title=>"Manage Sections":>
 <h1>Manage Sections</h1>
-<:ifMessage:> 
-<p><b><:message:></b></p>
-<:or:><:eif:>
+<:.call "messages" -:>
 <:include admin/include/site_menu.tmpl:>
 <:if Or [iadminuser_count] [iadmingroup_count]:>
       <form action="/cgi-bin/admin/adminusers.pl">

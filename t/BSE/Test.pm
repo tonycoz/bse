@@ -3,7 +3,7 @@ use strict;
 use vars qw(@ISA @EXPORT @EXPORT_OK);
 use Exporter 'import';
 @EXPORT = qw(base_url fetch_ok make_url skip make_ua);
-@EXPORT_OK = qw(base_url make_ua fetch_url fetch_ok make_url skip 
+@EXPORT_OK = qw(base_url base_securl make_ua fetch_url fetch_ok make_url skip 
                 make_post check_form post_ok check_content follow_ok
                 follow_refresh_ok click_ok config test_actions);
 use lib 'site/cgi-bin/modules';

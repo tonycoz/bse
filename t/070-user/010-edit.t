@@ -1,12 +1,12 @@
 #!perl -w
 use strict;
 use Test::More tests => 22;
-use BSE::Test qw(base_url make_ua check_form post_ok
+use BSE::Test qw(base_securl make_ua check_form post_ok
                  check_content follow_ok);
 use URI::QueryParam;
 #use WWW::Mechanize;
 ++$|;
-my $baseurl = base_url;
+my $baseurl = base_securl;
 my $ua = make_ua;
 
 ok($ua->get("$baseurl/cgi-bin/admin/add.pl?parentid=-1"), "edit page");
@@ -43,4 +43,4 @@ follow_ok($ua, "clean up",
 	  {
 	   text => "Delete",
 	   url_regex => qr/id=$id/
-	  }, qr/Article deleted/);
+	  }, qr/Article 'Test Article' \($id\) deleted/);

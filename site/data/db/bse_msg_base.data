@@ -1,5 +1,5 @@
 --
-# VERSION=1.005
+# VERSION=1.006
 id: bse/
 description: BSE messages
 
@@ -127,6 +127,9 @@ description: If the image couldn't be deleted from an external store ($1 - the b
 
 id: bse/admin/edit/uplabelsect
 description: label in parent list to make article a section
+
+id: bse/admin/edit/remove
+description: Flashed when an article is removed (%1 - the original article data)
 
 id: bse/admin/edit/tags/
 description: System tags management

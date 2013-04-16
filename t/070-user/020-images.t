@@ -1,9 +1,9 @@
 #!perl -w
 use strict;
-use BSE::Test qw(make_ua base_url fetch_ok follow_ok click_ok follow_refresh_ok);
+use BSE::Test qw(make_ua base_securl fetch_ok follow_ok click_ok follow_refresh_ok);
 use Test::More tests => 114;
 
-my $base_url = base_url;
+my $base_url = base_securl;
 my $ua = make_ua;
 
 my $title = "t40images.t ".time;
@@ -225,7 +225,7 @@ follow_ok($ua, "delete article",
 	   text => "Delete",
 	   url_regex => qr/id=$article_id/
 	  },
-	  qr/Article deleted/);
+	  qr/Article '\Q$title\E' \([0-9]+\) deleted/);
 
 sub image1 {
   # based on testout/t105pal.gif from Imager

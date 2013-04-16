@@ -16,7 +16,7 @@ use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 use constant ARTICLE_CUSTOM_FIELDS_CFG => "article custom fields";
 
-our $VERSION = "1.034";
+our $VERSION = "1.035";
 
 =head1 NAME
 
@@ -1231,8 +1231,8 @@ sub low_edit_tags {
   my $cgi = $request->cgi;
   my $show_full = $cgi->param('f_showfull');
   my $if_error = $msg || ($errors && keys %$errors) || $request->cgi->param("_e");
-  $msg ||= join "\n", map escape_html($_), $cgi->param('message'), $cgi->param('m');
-  $msg ||= $request->message($errors);
+  #$msg ||= join "\n", map escape_html($_), $cgi->param('message'), $cgi->param('m');
+  $msg .= $request->message($errors);
   my $parent;
   if ($article->{id}) {
     if ($article->{parentid} > 0) {
@@ -4903,7 +4903,7 @@ sub remove {
     return $self->_service_error($req, $article, $articles, $why_not, {}, $code);
   }
 
-  my $id = $article->id;
+  my $data = $article->data_only;
 
   my $parentid = $article->{parentid};
   $article->remove($req->cfg);
@@ -4912,16 +4912,17 @@ sub remove {
     return $req->json_content
       (
        success => 1,
-       article_id => $id,
+       article_id => $data->{id},
       );
   }
 
   my $url = $req->cgi->param('r');
   unless ($url) {
-    my $urlbase = admin_base_url($req->cfg);
-    $url = "$urlbase$ENV{SCRIPT_NAME}?id=$parentid";
-    $url .= "&message=Article+deleted";
+    $url = $req->cfg->admin_url("add", { id => $parentid });
   }
+
+  $req->flash_notice("msg:bse/admin/edit/remove", [ $data ]);
+
   return BSE::Template->get_refresh($url, $self->{cfg});
 }
 

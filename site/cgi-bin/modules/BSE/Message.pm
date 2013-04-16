@@ -5,11 +5,12 @@ use BSE::DB;
 use BSE::Cfg;
 use BSE::Cache;
 use DevHelp::HTML;
+use Scalar::Util qw(reftype blessed);
 use overload 
   "&{}" => sub { my $self = $_[0]; return sub { $self->_old_msg(@_) } },
   "bool" => sub { 1 };
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 my $single;
 
@@ -158,9 +159,19 @@ sub _value {
   my $value = $parms->[$index-1];
   if (ref $value) {
     local $@;
-    my $good = eval { $value = $value->$method; 1; };
-    unless ($good) {
-      return "(Bad parameter $index - ref but no $method)";
+    if (blessed $value) {
+      my $good = eval { $value = $value->$method; 1; };
+      unless ($good) {
+	return "(Bad parameter $index - blessed but no $method)";
+      }
+    }
+    elsif (reftype $value eq "HASH") {
+      defined $value->{$method}
+	or return "(Unknown key $method for $index)";
+      $value = $value->{$method};
+    }
+    else {
+      return "(Can't handle ".reftype($value)." values)";
     }
   }
 
