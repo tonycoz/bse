@@ -1,4 +1,4 @@
-<:wrap admin/base.tmpl title=>"Manage Sections":>
+<:wrap admin/base.tmpl title=>"Manage Sections", js => "admin_edit.js":>
 <h1>Manage Sections</h1>
 <:.call "messages" -:>
 <:include admin/include/site_menu.tmpl:>
@@ -26,8 +26,9 @@
 <br />
 <:or Or:><:eif Or:>
 
+<div id="id" style="display: none"><:article id:></div>
 <:if Children:> <a name="children"></a> 
-      <table class="editform children">
+      <table class="editform children" id="children">
         <tr> 
           <th class="col_title">Title</th>
           <th class="col_summary">Summary</th>
@@ -37,11 +38,11 @@
         </tr>
 <:if UserCan edit_reorder_children:>
         <tr> 
-          <td colspan="5">Sort  by: <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&amp;sort=title&amp;refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">title</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&amp;sort=date&amp;refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">date</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&amp;reverse=1&amp;refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">reverse</a></td>
+          <td colspan="5">Sort by: <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&amp;sort=title&amp;refreshto=/cgi-bin/admin/add.pl?id=<:article id:>" data-sort="title">title</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&amp;sort=date&amp;refreshto=/cgi-bin/admin/add.pl?id=<:article id:>" data-sort="date">date</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&amp;reverse=1&amp;refreshto=/cgi-bin/admin/add.pl?id=<:article id:>" data-reverse="1">reverse</a></td>
         </tr>
 <:or UserCan:><:eif UserCan:>
         <:iterator begin children:> 
-        <tr> 
+        <tr id="child<: child id :>"> 
           <td class="col_title"><a href="<:child admin:>"><:child title:></a></td>
           <td class="col_summary"><: summary child body :></td>
           <td class="col_listed"><: is child listed :></td>

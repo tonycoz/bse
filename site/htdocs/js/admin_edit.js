@@ -30,4 +30,39 @@ Event.observe(document, "dom:loaded", function () {
 	    }.bind(this, div));
 	});
     }
+
+    // $$("[data-sort], [data-reverse]").each(function(e) {
+    // 	e.observe("click", function(ev) {
+    // 	    var id = $("id").textContent;
+    // 	    var sorter = e.getAttribute("data-sort");
+    // 	    if (!sorter) sorter = "";
+    // 	    var reverse = e.getAttribute("data-reverse");
+    // 	    if (!reverse) reverse = 0;
+    // 	    new Ajax.Request
+    // 	    ("/cgi-bin/admin/reorder.pl",
+    // 	     {
+    // 		 parameters:{
+    // 		     parentid: id,
+    // 		     sort: sorter,
+    // 		     reverse: reverse
+    // 		 },
+    // 		 onSuccess: function(resp) {
+    // 		     var json = resp.responseJSON;
+    // 		     if (json.success) {
+    // 			 var new_order = json.kids;
+    // 			 var kids = new_order.map(function(id) { return $("child" + id); });
+    // 			 if (kids.length) {
+    // 			     var parent = kids[0].parentNode;
+    // 			     kids.each(function(kid) {
+    // 				 parent.removeChild(kid);
+    // 				 parent.appendChild(kid);
+    // 			     });
+    // 			 }
+    // 		     }
+    // 		     // else ignore error for now
+    // 		 }
+    // 	     });
+    // 	    ev.stop();
+    // 	});
+    // });
 });
