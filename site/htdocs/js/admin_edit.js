@@ -18,14 +18,16 @@ Event.observe(document, "dom:loaded", function () {
     $("tags").insertBefore(new_div, add_div);
     ev.stop();
   }.bind(this, add_div));
-  $("tags").appendChild(add_div);
-  $$('#tags div.tag').each(function(div) {
-    var del = new Element("a", { href: "#" });
-    del.update("Delete");
-    div.appendChild(del);
-    del.observe("click", function(div, ev) {
-      div.remove();
-      ev.stop();
-    }.bind(this, div));
-  });
+    if ($("#tags")) {
+	$("tags").appendChild(add_div);
+	$$('#tags div.tag').each(function(div) {
+	    var del = new Element("a", { href: "#" });
+	    del.update("Delete");
+	    div.appendChild(del);
+	    del.observe("click", function(div, ev) {
+		div.remove();
+		ev.stop();
+	    }.bind(this, div));
+	});
+    }
 });
