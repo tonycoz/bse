@@ -176,6 +176,18 @@ description: General messages
 id: bse/admin/generic/accessdenied
 description: Displayed when the user doesn't have access due to permissions (%1 - required access)
 
+id: bse/admin/reorder/
+description: Produced by reorder.pl
+
+id: bse/admin/reorder/byparent
+description: Flashed after sorting by parent (%1 - parent id, %2 sort order)
+
+id: bse/admin/reorder/bystepparent
+description: Flashed after sorting by step parent (%1 - parent id, %2 sort order)
+
+id: bse/admin/reorder/bystepchild
+description: Flashed after sorting by step child (%1 - child id, %2 sort order)
+
 id: bse/admin/user/
 description: Admin user administration messages
 

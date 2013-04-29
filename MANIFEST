@@ -253,6 +253,7 @@ site/cgi-bin/modules/BSE/UI/AdminModules.pm
 site/cgi-bin/modules/BSE/UI/AdminNewsletter.pm
 site/cgi-bin/modules/BSE/UI/AdminPage.pm
 site/cgi-bin/modules/BSE/UI/AdminPregen.pm
+site/cgi-bin/modules/BSE/UI/AdminReorder.pm
 site/cgi-bin/modules/BSE/UI/AdminReport.pm
 site/cgi-bin/modules/BSE/UI/AdminSeminar.pm
 site/cgi-bin/modules/BSE/UI/AdminSendEmail.pm

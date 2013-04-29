@@ -1,11 +1,12 @@
 #!perl -w
 use strict;
 use Test::More tests => 62;
-use BSE::Test qw(make_ua fetch_ok base_url config);
+use BSE::Test qw(make_ua fetch_ok base_url base_securl config);
 
 ++$|;
 my $baseurl = base_url;
 ok($baseurl =~ /^http:/, "basic check of base url");
+my $securl = base_securl;
 my $ua = make_ua;
 fetch_ok($ua, "admin menu - check the site exists at all", "$baseurl/admin/", "Admin");
 fetch_ok($ua, "generate all", "$baseurl/cgi-bin/admin/generate.pl",
@@ -62,10 +63,10 @@ fetch_ok($ua, "printable", "$baseurl/cgi-bin/printable.pl?id=5",
 	 qr!sidebar\s+subsection!i);
 fetch_ok($ua, "printable error", "$baseurl/cgi-bin/printable.pl?id=5&template=foo",
 	 qr!Invalid\s+template\s+name!i);
-fetch_ok($ua, "siteusers", "$baseurl/cgi-bin/admin/siteusers.pl",
+fetch_ok($ua, "siteusers", "$securl/cgi-bin/admin/siteusers.pl",
 	 qr!Admin Site Members!i);
 
-fetch_ok($ua, "reorder", "$baseurl/cgi-bin/admin/reorder.pl",
+fetch_ok($ua, "reorder", "$securl/cgi-bin/admin/reorder.pl?parentid=-1",
 	"html", "Title: BSE - Administration Centre");
 
 fetch_ok($ua, 'fmail', "$baseurl/cgi-bin/fmail.pl",

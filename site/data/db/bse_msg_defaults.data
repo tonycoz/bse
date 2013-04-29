@@ -136,6 +136,15 @@ message: Unknown language code - no entry found in [languages]
 id: bse/admin/message/badmultiline
 message: Message %1:s may contain only a single line of text
 
+id: bse/admin/reorder/byparent
+message: Sorted children of article %1:d by %2:s
+
+id: bse/admin/reorder/bystepparent
+message: Sorted all children of article %1:d by %2:s
+
+id: bse/admin/reorder/bystepchild
+message: Sorted step parents of article %1:d by %2:s
+
 id: bse/admin/shop/saveorder/saved
 message: Order saved successfully
 

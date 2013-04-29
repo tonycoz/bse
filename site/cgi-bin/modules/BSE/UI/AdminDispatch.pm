@@ -4,7 +4,7 @@ use base qw(BSE::UI::Dispatch);
 use BSE::CfgInfo qw(admin_base_url);
 use Carp qw(confess);
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 # checks we're coming from HTTPS
 sub check_secure {
@@ -85,19 +85,7 @@ sub check_action {
   ref $rights or $rights = [ split /,/, $rights ];
   for my $right (@$rights) {
     unless ($req->user_can($right, -1, \$msg)) {
-      if ($req->is_ajax || $req->cgi->param("_")) {
-	$$rresult = $req->json_content
-	  (
-	   success => 0,
-	   error_code => "ACCESS",
-	   message => "You do not have access to this function $msg",
-	  );
-      }
-      else {
-	my $url = $req->url(menu => 
-			    { 'm' => 'You do not have access to this function '.$msg });
-	$$rresult = $req->get_refresh($url);
-      }
+      $$rresult = $class->access_error($req, $msg);
       return;
     }
   }
@@ -111,6 +99,24 @@ sub error {
   $template ||= 'admin/error';
 
   return $class->SUPER::error($req, $errors, $template);
+}
+
+sub access_error {
+  my ($self, $req, $msg) = @_;
+
+  if ($req->is_ajax || $req->cgi->param("_")) {
+    return $req->json_content
+      (
+       success => 0,
+       error_code => "ACCESS",
+       message => "You do not have access to this function $msg",
+      );
+  }
+  else {
+    my $url = $req->url(menu => 
+			{ 'm' => 'You do not have access to this function '.$msg });
+    return $req->get_refresh($url);
+  }
 }
 
 1;
