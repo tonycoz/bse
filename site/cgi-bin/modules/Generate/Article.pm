@@ -16,7 +16,7 @@ use Carp 'confess';
 use BSE::Util::Iterate;
 use BSE::CfgInfo qw(cfg_dist_image_uri cfg_image_uri);
 
-our $VERSION = "1.011";
+our $VERSION = "1.012";
 
 =head1 NAME
 
@@ -436,17 +436,9 @@ sub baseActs {
   # used to generate a navigation list for the article
   # generate a list of ancester articles/sections
   # Jason calls these breadcrumbs
-  my @crumbs;
-  my @ancestors;
-  my $temp = $article;
-  while ($temp->{parentid} > 0
-	and my $crumb = $articles->getByPkey($temp->{parentid})) {
-    unshift(@ancestors, $crumb);
-    unshift(@crumbs, $crumb) if $crumb->{listed} == 1 || $crumb->{level} == 1;
-    $temp = $crumb;
-  }
-  #my $crumb_index = -1;
-  #my @work_crumbs; # set by the crumbs iterator
+  my @ancestors = UNIVERSAL::isa($article, 'Article') ?
+    reverse($article->ancestors) : ();
+  my @crumbs = grep $_->{listed} == 1 || $_->{level} == 1, @ancestors;
   my $current_crumb;
 
   my $parent = $articles->getByPkey($article->{parentid});
