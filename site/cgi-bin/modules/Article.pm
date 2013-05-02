@@ -8,7 +8,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::TB::SiteCommon BSE::TB::TagOwner/;
 use Carp 'confess';
 
-our $VERSION = "1.020";
+our $VERSION = "1.021";
 
 =head1 NAME
 
@@ -579,6 +579,38 @@ sub is_descendant_of {
   }
 
   return 0;
+}
+
+=item visible_ancestors
+
+Returns all visible ancestors.
+
+Lists the top-level ancestor C<last>.
+
+This list does not include the article itself.
+
+=cut
+
+sub visible_ancestors {
+  my ($self) = @_;
+
+  return grep $_->listed, $self->ancestors;
+}
+
+=item menu_ancestors
+
+Returns visible ancestprs that are visible for menus (ie. listed = 1).
+
+Lists the top-level ancestor C<last>.
+
+This list does not include the article itself.
+
+=cut
+
+sub menu_ancestors {
+  my ($self) = @_;
+
+  return grep $_->listed, $self->ancestors;
 }
 
 =item should_generate
