@@ -8,6 +8,7 @@ use Exporter 'import';
                 follow_refresh_ok click_ok config test_actions);
 use lib 'site/cgi-bin/modules';
 use BSE::Cfg;
+use Test::More;
 
 my $conffile = $ENV{BSETEST} || 'install.cfg';
 
@@ -128,7 +129,7 @@ sub _check_fetch {
     my $count = 0;
     $count++ if $match;
     $count++ if $headmatch;
-    $ok or skip("$note: fetch failed", $count) if $count;
+    skip("$note: fetch failed", $count);
     if ($match) {
       unless ($tb->like($content, qr/$match/s, "$note: match")) {
 	#print "# wanted /$match/ got:\n";
