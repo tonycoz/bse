@@ -125,6 +125,9 @@ TEST_VERBOSE=0
 test: testup
 	$(PERL) '-MTest::Harness=runtests,$$verbose' -Isite/cgi-bin/modules -It -e '$$verbose=$(TEST_VERBOSE); runtests @ARGV' $(TEST_FILES)
 
+test_load: testup
+	$(PERL) '-MTest::Harness=runtests,$$verbose' -Isite/cgi-bin/modules -It -e '$$verbose=$(TEST_VERBOSE); runtests @ARGV' t/t000load.t
+
 regen_known_errors:
 	$(PERL) t/900-kwalitee/040-podcheck.t -r
 
