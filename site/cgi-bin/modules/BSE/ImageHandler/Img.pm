@@ -4,7 +4,7 @@ use base 'BSE::ImageHandler::Base';
 use Carp qw(confess);
 use BSE::Util::HTML;
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 sub format {
   my ($self, %opts) = @_;
@@ -180,8 +180,10 @@ sub thumb {
       $html .= qq! class="$class"!;
     }
     $html .= ' />';
-    if ($imwork->{url}) {
-      $html = '<a href="' . escape_html($imwork->{url}) . '">' . $html . "</a>";
+    unless ($opts{nolink}) {
+      if ($imwork->{url}) {
+	$html = '<a href="' . escape_html($imwork->{url}) . '">' . $html . "</a>";
+      }
     }
     return $html;
   }
