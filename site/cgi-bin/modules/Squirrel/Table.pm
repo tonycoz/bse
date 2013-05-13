@@ -1,6 +1,6 @@
 package Squirrel::Table;
 
-our $VERSION = "1.009";
+our $VERSION = "1.010";
 
 use Carp;
 use strict;
@@ -238,7 +238,9 @@ sub _getBy_sth {
     push @conds, "$db_col = ?";
   }
 
-  my $sql = "select " . join(",", @db_cols) .
+  $dh ||= BSE::DB->single;
+  my $dbh = $dh->dbh;
+  my $sql = "select " . join(",", map $dbh->quote_identifier($_), @db_cols) .
     " from " . $self->rowClass->table;
 
   if (@conds) {
