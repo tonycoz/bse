@@ -4,7 +4,7 @@ use Scalar::Util qw(blessed);
 use BSE::TB::Site;
 use BSE::Util::HTML;
 
-our $VERSION = "1.012";
+our $VERSION = "1.013";
 
 sub _base_variables {
   my ($self, %opts) = @_;
@@ -35,6 +35,10 @@ sub _base_variables {
      debug => sub {
        print STDERR @_, "\n";
        return "";
+     },
+     json => sub {
+       require JSON;
+       return JSON->new->allow_nonref->encode($_[0]);
      },
     );
 }
@@ -289,6 +293,10 @@ Return true in admin mode.
 =item bse.admin_links
 
 Return true in admin_links mode
+
+=item bse.json(data)
+
+Return C<data> as JSON.  This will fail for perl objects.
 
 =item dumper(value)
 
