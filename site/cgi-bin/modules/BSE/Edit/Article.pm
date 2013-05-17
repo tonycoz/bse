@@ -16,7 +16,7 @@ use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 use constant ARTICLE_CUSTOM_FIELDS_CFG => "article custom fields";
 
-our $VERSION = "1.036";
+our $VERSION = "1.037";
 
 =head1 NAME
 
@@ -4050,7 +4050,7 @@ sub fileadd {
   $req->check_csrf("admin_add_file")
     or return $self->csrf_error($req, $article, "admin_add_file", "Add File");
   $req->user_can(edit_files_add => $article)
-    or return $self->edit_form($req, $article, $articles,
+    or return $self->_service_error($req, $article, $articles,
 			      "You don't have access to add files to this article");
 
   my %file;
@@ -4102,7 +4102,7 @@ sub fileadd {
   }
 
   keys %errors
-    and return $self->edit_form($req, $article, $articles, undef, \%errors);
+    and return $self->_service_error($req, $article, $articles, undef, \%errors);
   
   my $basename = '';
   my $workfile = $filename;
@@ -4120,24 +4120,50 @@ sub fileadd {
     };
 
   $fileobj
-    or return $self->edit_form($req, $article, $articles, $@);
+    or return $self->_service_error($req, $article, $articles, $@);
 
-  $req->flash("New file added");
+  unless ($req->is_ajax) {
+    $req->flash("New file added");
+  }
 
+  my $json =
+    {
+     success => 1,
+     file => $fileobj->data_only,
+     warnings => [],
+    };
   my $storage = $cgi->param("storage") || "";
   eval {
     my $msg;
 
     $article->apply_storage($self->cfg, $fileobj, $storage, \$msg);
 
-    $msg and $req->flash($msg);
+    if ($msg) {
+      if ($req->is_ajax) {
+	push @{$json->{warnings}}, $msg;
+      }
+      else {
+	$req->flash_error($msg);
+      }
+    }
   };
-  $@
-    and $req->flash($@);
+  if ($@) {
+    if ($req->is_ajax) {
+      push @{$json->{warnings}}, $@;
+    }
+    else {
+      $req->flash_error($@);
+    }
+  }
 
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
 
-  $self->_refresh_filelist($req, $article);
+  if ($req->is_ajax) {
+    return $req->json_content($json);
+  }
+  else {
+    $self->_refresh_filelist($req, $article);
+  }
 }
 
 sub fileswap {
