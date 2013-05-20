@@ -3,8 +3,13 @@ use strict;
 use BSE::Test qw(base_url);
 use File::Spec;
 use File::Temp;
+use Test::More;
 
-use Test::More tests => 42;
+BEGIN {
+  eval "require Text::CSV;"
+    or plan skip_all => "Text::CSV not available";
+}
+plan tests => 42;
 
 BEGIN {
   unshift @INC, File::Spec->catdir(BSE::Test::base_dir(), "cgi-bin", "modules");

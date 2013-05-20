@@ -10,7 +10,7 @@ my $baseurl = base_url;
 
 my $add_url = $baseurl . "/cgi-bin/admin/add.pl";
 
-my @ajax_hdr = qw(X-Requested-With: XMLHttpRequest);
+my @ajax_hdr = qw(X-Requested-With XMLHttpRequest);
 
 # make a parent
 my $par = do_add($add_url, 

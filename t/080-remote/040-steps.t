@@ -11,7 +11,7 @@ my $baseurl = base_url;
 
 my $add_url = $baseurl . "/cgi-bin/admin/add.pl";
 
-my @ajax_hdr = qw(X-Requested-With: XMLHttpRequest);
+my @ajax_hdr = qw(X-Requested-With XMLHttpRequest);
 
 my $parent = do_add({ parentid => -1, title => "parent2" }, "make parent");
 sleep 1;

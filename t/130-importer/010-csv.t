@@ -1,12 +1,14 @@
 #!perl -w
 use strict;
-use Test::More tests => 8;
+use Test::More;
 use BSE::Cfg;
 BEGIN {
   eval "require Text::CSV;"
     or plan skip_all => "Text::CSV not available";
 }
 use BSE::Importer::Source::CSV;
+
+plan tests => 8;
 
 {
   my $cfg = BSE::Cfg->new_from_text(text => <<CFG);
