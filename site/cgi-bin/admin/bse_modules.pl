@@ -46,6 +46,7 @@ my @base_check =
       'Time::HiRes' => 0,
       'WWW::Mechanize' => 0,
       'Net::IP' => 0,
+      'Data::Password::Entropy' => 0,
      }
    },
    {
@@ -96,6 +97,7 @@ my @base_check =
      'CSS::Inliner' => 3042,
      'DBM::Deep' => 0,
      'Spreadsheet::ParseExcel' => 0.55,
+     'Text::CSV' => 0,
     },
    },
    {
