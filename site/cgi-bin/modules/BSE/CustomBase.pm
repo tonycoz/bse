@@ -1,7 +1,7 @@
 package BSE::CustomBase;
 use strict;
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 sub new {
   my ($class, %params) = @_;
@@ -247,9 +247,22 @@ Defines extra tags for use on any page.
 
 Called when a change is made to the site users table.
 
-=item $self->siteuser_save($user, $req)
+=item $self->siteuser_saveops($user, $req)
 
-Called at the beginning of the save_opts() action.
+Called at the beginning of the save_opts() action, if
+[custom].saveopts is true.
+
+=item $self->admin_siteuser_save_validate($user, $req, \%errors)
+
+Called by the admin siteuser save code to allow custom validation of
+the siteuser edit form, if present and if [custom].admin_saveopts. is
+true.
+
+=item $self->admin_siteuser_save($user, $req)
+
+Called by the admin siteuser save code to allow custom processing of
+the siteuser edit form, if present and if [custom].admin_saveopts. is
+true.
 
 =item send_session_cookie($cookie_name, $session, $sessionid)
 
