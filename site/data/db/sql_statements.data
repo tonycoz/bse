@@ -1,5 +1,5 @@
 --
-# VERSION=1.004
+# VERSION=1.005
 name: bse_siteuserSeminarBookingsDetail
 sql_statement: <<SQL
 select ar.*, pr.*, se.*, ss.*, sb.*,
@@ -667,3 +667,8 @@ SQL
 name: bse_lockout_ip
 sql_statement: call bse_ip_lockout(?,?,?)
 
+name: getAdminUserByPassword_type
+sql_statement: <<SQL
+select bs.*, us.* from admin_base bs, admin_users us
+  where bs.id = us.base_id and us.password_type = ?
+SQL

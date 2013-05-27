@@ -278,6 +278,7 @@ site/cgi-bin/modules/BSE/UI/Tellafriend.pm
 site/cgi-bin/modules/BSE/UI/Thumb.pm
 site/cgi-bin/modules/BSE/UI/User.pm
 site/cgi-bin/modules/BSE/UI/UserCommon.pm
+site/cgi-bin/modules/BSE/Upgrade/Passwords.pm
 site/cgi-bin/modules/BSE/URL.pm
 site/cgi-bin/modules/BSE/UserReg.pm
 site/cgi-bin/modules/BSE/Util/ContentType.pm
@@ -842,6 +843,7 @@ site/util/bse_session_clean.pl
 site/util/bse_storage.pl
 site/util/bse_template_check.pl
 site/util/bse_thumb.pl
+site/util/bse_upgrade.pl
 site/util/bse_versiondeps.pl
 site/util/bseaddimages.pl
 site/util/bsexlsprod.pl
