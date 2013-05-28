@@ -10,7 +10,7 @@ BEGIN {
     or plan skip_all => "Text::CSV not available";
 }
 
-plan tests => 8;
+plan tests => 11;
 
 BEGIN {
   unshift @INC, File::Spec->catdir(BSE::Test::base_dir(), "cgi-bin", "modules");
@@ -80,6 +80,8 @@ CFG
      product_code => "C$when",
     );
 
+  $testa->set_prices({ 1 => 400 });
+
   {
     my $fh = File::Temp->new;
     my $filename = $fh->filename;
@@ -108,6 +110,15 @@ EOS
     my $imp = BSE::Importer->new(cfg => $cfg, profile => "newdup$when", callback => sub { note @_ });
     $imp->process($filename);
     is_deeply([ $imp->leaves ], [], "should be no updated articles");
+  }
+
+ SKIP:
+  {
+    my @prices = $testa->prices;
+    is(@prices, 1, "should still be a tier price")
+      or skip "No prices found", 2;
+    is($prices[0]->tier_id, 1, "check tier id");
+    is($prices[0]->retailPrice, 400, "check tier price");
   }
 
   END {

@@ -8,7 +8,7 @@ use BSE::TB::ProductOptions;
 use BSE::TB::ProductOptionValues;
 use BSE::TB::PriceTiers;
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 =head1 NAME
 
@@ -280,7 +280,7 @@ sub fill_leaf {
     }
   }
 
-  my %prices;
+  my %prices = map { $_->tier_id => $_->retailPrice } $leaf->prices;
   for my $tier_id (keys %{$self->{price_tiers}}) {
     my $price = $entry{"tier_price_$tier_id"};
     if (defined $price && $price =~ /\d/) {
