@@ -2,7 +2,7 @@ package Squirrel::Template::Expr::WrapHash;
 use strict;
 use base qw(Squirrel::Template::Expr::WrapBase);
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 sub _do_size {
   my ($self) = @_;
@@ -20,6 +20,12 @@ sub _do_values {
   my ($self) = @_;
 
   return [ values %{$self->[0]} ];
+}
+
+sub _do_exists {
+  my ($self, $args) = @_;
+
+  return exists ${$self->[0]}{$args->[0]};
 }
 
 sub _do_list {
@@ -56,6 +62,10 @@ sub _do_is_hash {
 
 sub _do_is_code {
   return 0;
+}
+
+sub _do_defined {
+  return 1;
 }
 
 sub call {
@@ -136,6 +146,10 @@ key.
 
 Set entry C<key> to C<value>.  Returns C<value>.
 
+=item exists(key)
+
+Return true if there's an entry for C<key> in the hash.
+
 =item is_list
 
 Test if this object is a list.  Always false for a hash.
@@ -147,6 +161,10 @@ Test if this object is a hash.  Always true for a hash.
 =item is_code
 
 Test if this object is a code object.  Always false for a hash.
+
+=item defined
+
+Always true for hashes.
 
 =back
 
