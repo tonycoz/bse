@@ -6,7 +6,20 @@ use vars qw(@EXPORT_OK @ISA);
 @ISA = qw(Exporter);
 use Carp qw(confess);
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
+
+my $re_real =
+  qr/
+      (
+	[-+]?   # optional sign
+	(?:
+	  [0-9]+(?:\.[0-9]*)?   # either 9 with optional decimal digits
+	  |
+	  \.[0-9]+         # or . with required digits
+	)
+	(?:[eE][-+]?[0-9]+)?  # optional exponent
+      )
+    /x;
 
 my %built_ins =
   (
@@ -377,7 +390,7 @@ sub validate_field {
 	}
       }
       if ($rule->{integer}) {
-	unless ($data =~ /^\s*([-+]?\d+)s*$/) {
+	unless ($data =~ /^\s*([-+]?\d+)\s*$/) {
 	  $errors->{$field} = _make_error($field, $info, $rule,
 					  '$n must be a whole number');
 	  last RULE;
@@ -548,6 +561,32 @@ sub validate_field {
 	  $errors->{$field} = _make_error($field, $info, $rule,
 					  q!$n is in the past, your card has expired!);
 	  last RULE;
+	}
+      }
+      if ($rule->{real}) {
+	unless ($data =~ /^\s*$re_real\s*$/) {
+	  $errors->{$field} = _make_error($field, $info, $rule,
+					  '$n must be a number');
+	  last RULE;
+	}
+	my $num = $1;
+	if (my ($from, $to) = $rule->{real} =~ /^$re_real\s*-\s*$re_real$/) {
+	  unless ($from <= $num and $num <= $to) {
+	    $errors->{$field} = _make_error($field, $info, $rule,
+					    $info->{range_error} ||
+					    $rule->{range_error} ||
+					    "\$n must be in the range $from to $to");
+	    last RULE;
+	  }
+	}
+	elsif (my ($from2) = $rule->{real} =~ /^\s*$re_real\s*-$/) {
+	  unless ($from2 <= $num) {
+	    $errors->{$field} = _make_error($field, $info, $rule,
+					    $info->{range_error} ||
+					    $rule->{range_error} ||
+					    "\$n must be $from2 or higher");
+	    last RULE;
+	  }
 	}
       }
       if ($rule->{ref}) {
@@ -926,6 +965,13 @@ If set to 1, simply ensures the value is an integer.
 
 If set to a range I<integer>-I<integer> then ensures the value is an
 integer in that range.
+
+=item real
+
+If set to 1, simply ensures the value is an real number.
+
+If set to a range C<< I<real> - I<real> >> then ensures the value is
+a real number in that range.
 
 =item date
 

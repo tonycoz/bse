@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 38;
+use Test::More tests => 82;
 
 BEGIN { use_ok('DevHelp::Validate'); }
 
@@ -227,4 +227,88 @@ BEGIN { use_ok('DevHelp::Validate'); }
   ok($val->validate({time => "2pm" }, \%errors), "simple Hpm");
   ok($val->validate({time => "12pm" }, \%errors), "simple 12pm");
   ok(!$val->validate({time => "13pm" }, \%errors), "simple 13pm");
+}
+
+# reals
+{
+  my @rules =
+    (
+     {
+      name => "simple",
+      rule =>
+      {
+       real => 1,
+      },
+      tests =>
+      [
+       [ "1", 1, undef ],
+       [ "2.", 1, undef ],
+       [ "100", 1, undef ],
+       [ " 100", 1, undef ],
+       [ " 100 ", 1, undef ],
+       [ "1e10", 1, undef ],
+       [ "1E10", 1, undef ],
+       [ "-10", 1, undef ],
+       [ "+10", 1, undef ],
+       [ "0.1", 1, undef ],
+       [ ".1", 1, undef ],
+       [ "1.1e10", 1, undef ],
+       [ "1.1e+10", 1, undef ],
+       [ "1.1e-10", 1, undef ],
+       [ "1.1e-2", 1, undef ],
+       [ "abc", '', "Value must be a number" ],
+      ],
+     },
+     {
+      name => "0 or more",
+      rule =>
+      {
+       real => "0 -",
+      },
+      tests =>
+      [
+       [ "0", 1, undef ],
+       [ "-1", '', "Value must be 0 or higher" ],
+      ],
+     },
+     {
+      name => "0 to 100",
+      rule =>
+      {
+       real => "0 - 100",
+      },
+      tests =>
+      [
+       [ "0", 1, undef ],
+       [ "1", 1, undef ],
+       [ "-1", "", "Value must be in the range 0 to 100" ],
+       [ "101", "", "Value must be in the range 0 to 100" ],
+      ],
+     },
+    );
+
+  for my $rule (@rules) {
+    for my $test (@{$rule->{tests}}) {
+      my $val = DevHelp::Validate::Hash->new
+	(
+	 fields =>
+	 {
+	  value =>
+	  {
+	   rules => "test",
+	   description => "Value",
+	  },
+	 },
+	 rules =>
+	 {
+	  test => $rule->{rule},
+	 },
+	);
+      my %errors;
+      my $name = "rule '$rule->{name}' value '$test->[0]'";
+      is($val->validate({ value => $test->[0] }, \%errors), $test->[1],
+	 "$name: validate");
+      is($errors{value}, $test->[2], "$name: message");
+    }
+  }
 }
