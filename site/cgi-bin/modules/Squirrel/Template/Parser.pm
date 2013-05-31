@@ -2,7 +2,7 @@ package Squirrel::Template::Parser;
 use strict;
 use Squirrel::Template::Constants qw(:token :node);
 
-our $VERSION = "1.015";
+our $VERSION = "1.016";
 
 use constant TOK => 0;
 use constant TMPLT => 1;
@@ -129,6 +129,7 @@ sub _parse_expr {
 
   my $parser = Squirrel::Template::Expr::Parser->new;
   my $parsed;
+  local $SIG{__DIE__};
   if (eval { $parsed = $parser->parse($expr->[TOKEN_EXPR_EXPR]); 1 }) {
     $expr->[NODE_EXPR_EXPR] = $parsed;
     $expr->[NODE_EXPR_FORMAT] ||= $self->[TMPLT]{def_format};
@@ -149,6 +150,7 @@ sub _parse_stmt {
   my $tokens = Squirrel::Template::Expr::Tokenizer->new($stmt->[TOKEN_EXPR_EXPR]);
   my @list;
   my $parsed;
+  local $SIG{__DIE__};
   my $good = eval {
     push @list, $parser->parse_tokens($tokens);
     while ($tokens->peektype eq "op;") {
@@ -176,6 +178,7 @@ sub _parse_set {
 
   my $parser = Squirrel::Template::Expr::Parser->new;
   my $parsed;
+  local $SIG{__DIE__};
   if (eval { $parsed = $parser->parse($set->[TOKEN_SET_EXPR]); 1 }) {
     $set->[NODE_SET_VAR] = [ split /\./, $set->[TOKEN_SET_VAR] ];
     $set->[NODE_SET_EXPR] = $parsed;
@@ -361,6 +364,7 @@ sub _parse_for {
   }
   my $list_expr;
   my $parser = Squirrel::Template::Expr::Parser->new;
+  local $SIG{__DIE__};
   unless (eval { $list_expr = $parser->parse($for->[TOKEN_FOR_EXPR]); 1 }) {
     return $self->_error($for, "Could not parse list for .for: " . (ref $@ ? $@->[0] : $@));
   }
@@ -470,6 +474,7 @@ sub _parse_call {
   my $error;
   my $parser = Squirrel::Template::Expr::Parser->new;
   my $name_expr;
+  local $SIG{__DIE__};
   unless (eval { $name_expr = $parser->parse_tokens($tokens); 1 }) {
     return $self->_error($call, "Could not parse expression: ".$@->[1]);
   }
@@ -545,6 +550,7 @@ sub _parse_ext_if {
 
   my $parser = Squirrel::Template::Expr::Parser->new;
   for my $cond (@conds) {
+    local $SIG{__DIE__};
     unless (eval { $cond->[2] = $parser->parse($cond->[0][TOKEN_EXT_EXPR]); 1 }) {
       $cond->[2] = [ const => "", "" ];
       push @errors, $self->_error($cond->[0], ref $@ ? $@->[1] : $@);
@@ -576,6 +582,7 @@ sub _parse_ext_while {
 
   my $parser = Squirrel::Template::Expr::Parser->new;
   my $cond_expr;
+  local $SIG{__DIE__};
   unless (eval { $cond_expr = $parser->parse($while->[TOKEN_EXT_EXPR]); 1 }) {
     return $self->_error($while, "Could not parse condition for .while: " . ref $@ ? $@->[0] : $@);
   }
@@ -623,6 +630,7 @@ sub _parse_expr_list {
   my $parser = Squirrel::Template::Expr::Parser->new;
   my @result;
   my $expr;
+  local $SIG{__DIE__};
   unless (eval { $expr = $parser->parse_tokens($tokens); 1 }) {
     $$rerror = $self->_error($token, "Could not parse expression list: ".$@->[1]);
     return;

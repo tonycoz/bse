@@ -1,7 +1,7 @@
 package Squirrel::Template::Expr;
 use strict;
 
-our $VERSION = "1.011";
+our $VERSION = "1.012";
 
 package Squirrel::Template::Expr::Eval;
 use Scalar::Util ();
@@ -349,7 +349,7 @@ sub _parse_cond {
     my $true = $self->_parse_or($tok);
     my $colon = $tok->get;
     $colon->[0] eq 'op:'
-      or die [ error => "Expected : for ? : operator but found $tok->[1]" ];
+      or die [ error => "Expected : for ? : operator but found $colon->[0]" ];
     my $false = $self->_parse_cond($tok);
 
     $result = [ cond => $result, $true, $false ];
@@ -511,7 +511,7 @@ sub _parse_call {
 	# get the real name
 	$name = $tok->get;
 	$name->[0] eq 'id'
-	  or die [ error => "Expected an identifer after .\$ but found $name->[1]" ];
+	  or die [ error => "Expected an identifier after .\$ but found $name->[1]" ];
 	my $list = [];
 	if ($tok->peektype eq 'op(') {
 	  $list = $self->_parse_paren_list($tok, "method");
@@ -519,7 +519,7 @@ sub _parse_call {
 	$result = [ callvar => $name->[2], $result, $list ];
       }
       else {
-	die [ error => "Expected method name or \$var after '.' but found $name->[1]" ];
+	die [ error => "Expected a method name or \$var after '.' but found $name->[1]" ];
       }
     }
     elsif ($next eq 'op[') {
@@ -527,7 +527,7 @@ sub _parse_call {
       my $index = $self->_parse_expr($tok);
       my $close = $tok->get;
       $close->[0] eq 'op]'
-	or die [ error => "Expected list end ']' but got $close->[0]" ];
+	or die [ error => "Expected closing ']' but got $close->[0]" ];
       $result = [ subscript => $result, $index ];
     }
     elsif ($next eq 'op(') {
@@ -581,7 +581,7 @@ sub _parse_primary {
     }
     my $close = $tok->get;
     $close->[0] eq 'op]'
-      or die [ error => "Expected ] but got $close->[0]" ];
+      or die [ error => "Expected list end ']' but got $close->[0]" ];
     return [ list => $list ];
   }
   elsif ($t->[0] eq 'op{') {

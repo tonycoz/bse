@@ -878,6 +878,7 @@ t/020-templater/010-token.t
 t/020-templater/020-parse.t
 t/020-templater/030-expr.t
 t/020-templater/040-original.t
+t/020-templater/050-error.t
 t/020-templater/080-parms.t
 t/030-tags/010-num.t
 t/030-tags/020-iter.t
