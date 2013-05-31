@@ -1,0 +1,126 @@
+=head1 NAME
+
+preload.tmpl - preloaded template macros
+
+=head1 SYNOPSIS
+
+  <:.call ... -:>
+
+=head1 DESCRIPTION
+
+BSE provides F<preload.tmpl> as sample macros for use in templates.
+
+=head2 High-level form field display
+
+These require two parameters or preset variables:
+
+=over
+
+=item *
+
+C<fields> - a hash of fields
+
+=item *
+
+C<errors> - a hash or error messages for the fields
+
+=item *
+
+C<object> - an object containing the current values for an object, or
+a false value.
+
+=back
+
+=over
+
+=item *
+
+C<field> - lay out a form field, including label, input field, units,
+error indicator.
+
+=item *
+
+C<fieldset> - like C<field> but lay out the field inside a field set.
+
+=item *
+
+C<fieldro> - like C<field>, lay out a form field, but read only.  Does
+not include an error indicator.
+
+=item *
+
+C<fieldsetro> - like C<fieldset>, but read only.
+
+=back
+
+=head2 Low-level form-field display
+
+These are used by the high level field macros, do not require
+C<fields> to be set, but accept C<name> and C<field> paramaters, where
+C<field> is a value from C<fields>.
+
+=over
+
+=item *
+
+C<input> - display an input field 
+
+=item *
+
+C<display> - display a value.
+
+=item *
+
+C<inlinefield> - like C<field> but accepts C<name> and C<field>
+instead of C<name> and C<fields>.
+
+=item *
+
+C<inlinefieldro> - like C<fieldro> but accepts C<name> and C<field>
+instead of C<name> and C<fields>.
+
+=item *
+
+C<make_select> - make a single select element.  Used by C<input>.
+
+=item *
+
+C<make_multicheck> - make a multi-select checkbox set.  Used by
+C<input> etc.
+
+=item *
+
+C<old> - for older pages, render the cgi value given a field name in
+C<field>, otherwise the supplied C<default>.
+
+=back
+
+=head2 Other Utilities
+
+=over
+
+=item *
+
+C<page_list> - render a list of pages.  Accepts a base url in C<base>
+and a list of pages to render, as produced by bse.pages in C<pages>.
+
+=item *
+
+C<error_img_n> - render an error indicated for field C<field>, index
+C<index>.  The error message is taken from C<errors>.
+
+=item *
+
+C<error_img> - render an error indicator for field C<field>.
+
+=item *
+
+C<messages> - render any stored error messages.
+
+=item *
+
+C<mover> - render item move arrows.  Requires C<loop>, C<parent>.
+
+=back
+
+=cut

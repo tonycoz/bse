@@ -421,6 +421,7 @@ site/docs/Makefile
 site/docs/paypal.pod
 site/docs/pod2htmd.tmp
 site/docs/pod2htmi.tmp
+site/docs/preload.pod
 site/docs/search.html
 site/docs/secure.html
 site/docs/secure.pod

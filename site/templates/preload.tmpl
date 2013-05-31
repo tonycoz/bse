@@ -1,3 +1,4 @@
+<:# see preload.pod for documentation -:>
 <:.set groups = 0 -:>
 <:.set grouplabel = "label" -:>
 <:.set groupid = "id" -:>
@@ -39,6 +40,40 @@
     <:-.end for-:>
   <:-.end if -:>
   </select>
+<:-.end define -:>
+<:#
+make_multicheck expects:
+  values - list of hashes
+  default - a list of ids of checks to be checked
+  id - the name of the id field
+  desc - the name of the description field.
+  name - the name of the input elements
+  readonly - true to make it readonly
+-:>
+<:-.define make_multicheck-:>
+  <:.if !readonly -:>
+  <input type="hidden" name="_save_<:= name -:>" value="1">
+  <:.end if -:>
+  <:-.if !default.defined -:>
+    <:-.set default = [] -:>
+  <:.end if:>
+  <:.set checked = {} -:>
+  <:.for v in default -:>
+    <:% checked.set(v, 1) -:>
+  <:.end for -:>
+  <ul>
+  <:-.for i in values -:>
+    <li>
+    <:.set element_id = name _ "-" _ i.$id -:>
+    <input type="checkbox" name="<:= name :>" <:= checked[i.$id] ? 'checked ' : '' -:>
+      id="<:= element_id -:>" value="<:= i.$id :>"
+<:-# readonly attribute isn't valid for checkboxes -:>
+<:-= readonly ? " disabled" : "" -:>
+    >
+    <label for="<:= element_id :>"><:= i.$desc -:></label>
+    </li>
+  <:-.end for -:>
+  </ul>
 <:-.end define -:>
 <:#
 page_list expects:
@@ -106,50 +141,59 @@ Page <:= pages.page :> of <:= pages.pagecount :>
 <:.define input -:>
 <:# paramaters:
   name - field name
-  fields - hash of fields (may be set by page instead)
+  field - entry from fields
   object - source for defaults in edit mode
 :>
-<:  .set f = fields[name] -:>
 <:  .if object -:>
-<:     .set default = object.get(name) -:>
-<:  .elsif f.default -:>
-<:     .set default = f.default -:>
+<:     .set default = object.$name -:>
+<:  .elsif field.default -:>
+<:     .set default = field.default -:>
 <:  .else -:>
 <:     .set default = "" -:>
 <:  .end if -:>
-<:  .if f.type and f.type eq "date" and default ne "" -:>
+<:  .if field.type and field.type eq "date" and default ne "" -:>
 <:    .set default = default.replace(/(\d+)\D+(\d+)\D+(\d+)/, "$3/$2/$1") -:>
-<:  .elsif f.type and f.type eq "time" and default ne "" -:>
+<:  .elsif field.type and field.type eq "time" and default ne "" -:>
 <:    .set default = bse.date(default =~ /:00$/ ? "%I:%M%p" : "%I:%M:%S%p", default).replace(/^0/, "").lower() -:>
 <:  .end if -:>
 <:  .if cgi.param(name).defined -:>
 <:     .set default = cgi.param(name) -:>
 <:  .end if -:>
-<:  .if f.htmltype eq "textarea" -:>
-<textarea id="<:= name | html :>" name="<:= name | html :>" rows="<:= f.height ? f.height : cfg.entry("forms", "textarea_rows", 10) :>" cols=<:= f.width ? f.width : cfg.entry("textarea_cols", 60) | html :>>
+<:  .if field.htmltype eq "textarea" -:>
+<textarea id="<:= name | html :>" name="<:= name | html :>" rows="<:= field.height ? field.height : cfg.entry("forms", "textarea_rows", 10) :>" cols=<:= field.width ? field.width : cfg.entry("textarea_cols", 60) | html :>>
 <:-= default | html -:>
 </textarea>
-<:  .elsif f.htmltype eq "checkbox" -:>
-<:.set is_checked = request.method() eq 'post' ? cgi.param(name).defined : default -:>
-<input id="<:= name | html :>" type="checkbox" name="<:= name | html :>"<:= is_checked ? ' checked="checked"' : '' :> value="<:= f.value ? f.value : 1 | html :>" />
-<:  .elsif f.htmltype eq "select" -:>
-<:.set values = f.select["values"] -:>
+<:  .elsif field.htmltype eq "checkbox" -:>
+<:.set is_checked = cgi.param("_save_" _ name) ? cgi.param(name).defined : default -:>
+<input type="hidden" name="_save_<:= name -:>" value="1">
+<input id="<:= name | html :>" type="checkbox" name="<:= name | html :>"<:= is_checked ? ' checked="checked"' : '' :> value="<:= field.value ? field.value : 1 | html :>" />
+<:  .elsif field.htmltype eq "multicheck" -:>
+<:# we expect default to be a list of selected checks -:>
+<:.set values = field.select["values"] -:>
+<:.set values = values.is_code ? values() : values -:>
+<:.set default = cgi.param("_save_" _ name) ? [ cgi.param(name) ] : default -:>
+<:.call "make_multicheck",
+  "id":field.select.id,
+  "desc":field.select.label,
+  "readonly":0 -:>
+<:  .elsif field.htmltype eq "select" -:>
+<:.set values = field.select["values"] -:>
 <:.set values = values.is_code ? values() : values -:>
 <:.call "make_select",
     "name":name,
     "default":default,
     "list":values,
-    "id":f.select.id,
-    "desc":f.select.label,
-    "groupid": (f.select.groupid or "id"),
-    "itemgroupid": (f.select.itemgroupid or "groupid"),
-    "groups": f.select.groups ? (f.select.groups.is_code ? (f.select.groups)() : f.select.groups ) : 0,
-    "grouplabel": (f.select.grouplabel or "label")
+    "id":field.select.id,
+    "desc":field.select.label,
+    "groupid": (field.select.groupid or "id"),
+    "itemgroupid": (field.select.itemgroupid or "groupid"),
+    "groups": field.select.groups ? (field.select.groups.is_code ? (field.select.groups)() : field.select.groups ) : 0,
+    "grouplabel": (field.select.grouplabel or "label")
 -:>
 <:  .else -:>
 <input id="<:= name | html :>" type="text" name="<:= name | html :>" value="<:=  default | html :>" 
-<:-= f.maxlength ? ' maxlength="' _ f.maxlength _ '"' : '' :>
-<:-= f.width ? ' size="' _ f.width _ '"' : '' :> />
+<:-= field.maxlength ? ' maxlength="' _ field.maxlength _ '"' : '' |raw:>
+<:-= field.width ? ' size="' _ field.width _ '"' : '' | raw :> />
 <:  .end if -:>
 <:.end define -:>
 
@@ -158,15 +202,151 @@ Page <:= pages.page :> of <:= pages.pagecount :>
   name - field name
   fields - hash of fields (may be set by page instead)
 :>
-  <:.set f = fields[name] -:>
+  <:.if fields.is_hash -:>
+    <:.set f = fields[name] -:>
+    <:.if f -:>
+      <:.call "inlinefield", "field":f, "name":name -:>
+    <:.else -:>
+<p>Unknown field id '<b><:= name :></b>', available fields are '<:= fields.keys.join("', '") :>'</p>
+    <:.end if -:>
+  <:.else -:>
+<p>fields isn't a hash, something is wrong.</p>
+  <:.end if -:>
+<:.end define -:>
+
+<:.define inlinefield -:>
+<:# parameters:
+  name - the field name
+  field - a field, as an entry in fields
+-:>
+  <:.if field.is_hash -:>
 <div>
-  <label for="<:= name | html :>"><:= f.nolabel ? "" : f.description | html :>:</label>
+  <label for="<:= name | html :>"><:= field.nolabel ? "" : field.description | html :>:</label>
   <span><:.call "input", "name":name -:><:.call "error_img", "field":name :>
-  <:-.if f.units -:>
-    <:-= f.units | html -:>
-  <:-.end if -:>
+    <:-.if field.units -:>
+      <:-= field.units | html -:>
+    <:-.end if -:>
+  <:.end if -:>
 </span>
 </div>
+<:.end define -:>
+
+<:.define fieldset -:>
+<:# like field, but wrap in a per-field field set.
+parameters:
+  name - field name
+  fields - hash of fields (may be set by page instead)
+:>
+  <:.set f = fields[name] -:>
+  <:.if f.is_hash -:>
+<fieldset>
+    <:.if !f.nolabel -:>
+  <legend><:= f.description :></legend>
+    <:.end if -:>
+  <:.call "input", "name":name, "field":f -:>
+</fieldset>
+  <:.elsif fields.is_hash -:>
+<p>Unknown field id '<b><:= name :></b>', available fields are '<:= fields.keys.join("', '") :>'</p>
+  <:.else -:>
+<p>fields isn't a hash, something is wrong.</p>
+  <:.end if -:>
+<:.end define -:>
+
+<:.define display -:>
+<:# paramaters:
+  name - field name
+  field - entry from fields
+  object - source for defaults in edit mode
+:>
+<:  .if object -:>
+<:     .set default = object.$name -:>
+<:  .end if -:>
+<:  .if field.type and field.type eq "date" and default ne "" -:>
+<:    .set default = default.replace(/(\d+)\D+(\d+)\D+(\d+)/, "$3/$2/$1") -:>
+<:  .elsif field.type and field.type eq "time" and default ne "" -:>
+<:    .set default = bse.date(default =~ /:00$/ ? "%I:%M%p" : "%I:%M:%S%p", default).replace(/^0/, "").lower() -:>
+<:  .end if -:>
+<:  .if field.htmltype eq "textarea" -:>
+<textarea id="<:= name | html :>" name="<:= name | html :>" rows="<:= field.height ? field.height : cfg.entry("forms", "textarea_rows", 10) :>" cols=<:= field.width ? field.width : cfg.entry("textarea_cols", 60) | html :> readonly>
+<:-= default | html -:>
+</textarea>
+<:  .elsif field.htmltype eq "checkbox" -:>
+<input id="<:= name | html :>" type="checkbox" name="<:= name | html :>"<:= is_checked ? ' checked="checked"' : '' :> value="<:= field.value ? field.value : 1 | html :>" readonly>
+<:  .elsif field.htmltype eq "multicheck" -:>
+<:# we expect default to be a list of selected checks -:>
+<:.set values = field.select["values"] -:>
+<:.set values = values.is_code ? values() : values -:>
+<:.call "make_multicheck",
+  "id":field.select.id,
+  "desc":field.select.label,
+  "readonly":1 -:>
+<:  .elsif field.htmltype eq "select" -:>
+<:.set values = field.select["values"] -:>
+<:.set values = values.is_code ? values() : values -:>
+<:# find the selected value and display it's label -:>
+<:.set sid = field.select.id -:>
+<:.set sdesc = field.select.label -:>
+<:.for value in values -:>
+  <:.if value.$id eq default -:>
+    <:= value.$desc -:>
+  <:.end if -:>
+<:.end for -:>
+<:  .else -:>
+<input id="<:= name  :>" type="text" name="<:= name :>" value="<:=  default :>"
+<:-= field.width ? ' size="' _ field.width _ '"' : '' | raw :> readonly>
+<:  .end if -:>
+<:.end define -:>
+
+<:.define inlinefieldro -:>
+<:# parameters:
+  name - the field name
+  field - a field, as an entry in fields
+-:>
+  <:.if field.is_hash -:>
+<div>
+  <label for="<:= name :>"><:= field.nolabel ? "" : field.description :>:</label>
+  <span><:.call "display", "name":name -:>
+    <:-.if field.units -:>
+      <:-= field.units -:>
+    <:-.end if -:>
+  <:.end if -:>
+</span>
+</div>
+<:.end define -:>
+
+<:.define fieldro -:>
+<:# like field, but for display, not editing -:>
+  <:.if fields.is_hash -:>
+    <:.set f = fields[name] -:>
+    <:.if f -:>
+      <:.call "inlinefieldro", "field":f, "name":name -:>
+    <:.else -:>
+<p>Unknown field id '<b><:= name :></b>', available fields are '<:= fields.keys.join("', '") :>'</p>
+    <:.end if -:>
+  <:.else -:>
+<p>fields isn't a hash, something is wrong.</p>
+  <:.end if -:>
+<:.end define -:>
+
+<:.define fieldsetro -:>
+<:# like fieldro, but wrap in a per-field field set.
+parameters:
+  name - field name
+  fields - hash of fields (may be set by page instead)
+:>
+  <:.set f = fields[name] -:>
+  <:.if f.is_hash -:>
+<fieldset>
+    <:.if !f.nolabel -:>
+  <legend><:= f.description :></legend>
+    <:.end if -:>
+  <:.call "display", "name":name, "field":f -:>
+</fieldset>
+  <:.elsif fields.is_hash -:>
+<p>Unknown field id '<b><:= name :></b>', available fields are '<:= fields.keys.join("', '") :>'</p>
+  <:.else -:>
+<p>fields isn't a hash, something is wrong.</p>
+  <:.end if -:>
 <:.end define -:>
 
 <:.define messages -:>
@@ -183,19 +363,18 @@ Page <:= pages.page :> of <:= pages.pagecount :>
 <:# expects loop, parent
   which in most cases means you can just supply parent
 -:>
-<:.set distim = cfg.entryIfVar("uri", "dist_images", "/images") -:>
 <:.set width = cfg.entry("arrows", "width", 17) -:>
 <:.set height = cfg.entry("arrows", "height", 13) -:>
 <:.set extras = 'width="' _ width _ '" height="' _ height _ '"' -:>
-<:.set blankim = '<img src="' _ (distim _ "/trans_pixel.gif").escape("html") _ '" alt="" ' _ extras _ ' />' -:>
+<:.set blankim = '<img src="' _ (dist_images_uri _ "/trans_pixel.gif").escape("html") _ '" alt="" ' _ extras _ ' />' -:>
 <:.if loop.prev -:>
-  <:.set upimg = cfg.entry("arrows", "upimg", distim _ "/admin/move_up.gif") -:>
+  <:.set upimg = cfg.entry("arrows", "upimg", dist_images_uri _ "/admin/move_up.gif") -:>
 <a href="<:= cfg.admin_url("move", { "stepparent":parent.id, "d":"swap", "id":loop.current.id, "other":loop.prev.id, "r":top.admin }) :>"><img src="<:= upimg :>" <:= extras :> /></a>
 <:.else -:>
 <:= blankim |raw-:>
 <:.end if -:>
 <:.if loop.next -:>
-  <:.set downimg = cfg.entry("arrows", "downimg", distim _ "/admin/move_down.gif") -:>
+  <:.set downimg = cfg.entry("arrows", "downimg", dist_images_uri _ "/admin/move_down.gif") -:>
 <a href="<:= cfg.admin_url("move", { "stepparent":parent.id, "d":"swap", "id":loop.current.id, "other":loop.next.id, "r":top.admin }) :>"><img src="<:= downimg :>" <:= extras :> /></a>
 <:.else -:>
 <:= blankim |raw-:>
