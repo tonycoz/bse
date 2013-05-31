@@ -2,6 +2,7 @@
 <:.set grouplabel = "label" -:>
 <:.set groupid = "id" -:>
 <:.set itemgroupid = "groupid" -:>
+<:.set dist_image_uri = cfg.entryIfVar("uri", "dist_images", "/images") -:>
 <:# utility definitions :>
 <:-.define make_select-:>
   <:-.if !default.defined -:>
@@ -82,10 +83,24 @@ Page <:= pages.page :> of <:= pages.pagecount :>
 <:  .end if -:>
 <:.end define-:>
 
+<:.define error_img_n -:>
+<:# parameters:
+   field - name of field
+   index - index of field
+   errors - hash of error messages (should be set by code)
+-:>
+  <:.if errors.$field -:>
+    <:.set msg = errors.$field -:>
+    <:.set msg = msg.is_list ? msg[index] : msg -:>
+    <:.set image = cfg.entry("error_img", "image", dist_image_uri _ "/admin/error.gif") -:>
+    <:.set width = cfg.entry("error_img", "width", 16) -:>
+    <:.set height = cfg.entry("error_img", "height", 16) -:>
+    <img src="<:= image -:>" alt="<:= msg :>" title="<:= msg :>" width="<:= width :>" height="<:= height :>" class="error_img">
+  <:.end if -:>
+<:.end define -:>
+
 <:.define error_img -:>
-<:# parameters: field -:>
-<:# this implementation should probably change -:>
-<:= ("error_img " _ field).evaltag |raw -:>
+<:.call "error_img_n", "index":0 -:>
 <:.end define -:>
 
 <:.define input -:>
