@@ -1,11 +1,11 @@
 package BSE::DB;
-require 5.005;
+require 5.008;
 use strict;
 use Carp qw(croak);
 use Carp qw/confess/;
 use DBI::Const::GetInfoType;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 my $single;
 
@@ -211,7 +211,9 @@ sub generate_query {
 sub insert_stmt {
   my ($self, $table_name, $columns) = @_;
 
-  my $sql = "insert into $table_name(" . join(",", @$columns) . ")";
+  my $dbh = $self->dbh;
+  my @columns = map $dbh->quote_identifier($_), @$columns;
+  my $sql = "insert into $table_name(" . join(",", @columns) . ")";
   $sql .= " values(" . join(",", ("?") x @$columns) . ")";
 
   my $sth = $self->{dbh}->prepare($sql);
@@ -224,8 +226,9 @@ sub insert_stmt {
 sub update_stmt {
   my ($self, $table_name, $pkey, $cols) = @_;
 
+  my @cols = map $self->quote_id($_), @$cols;
   my $sql = "update $table_name set\n  " .
-    join(",\n  ", map "$_ = ?", @$cols) .
+    join(",\n  ", map "$_ = ?", @cols) .
       "\n  where $pkey = ?";
 
   my $sth = $self->{dbh}->prepare($sql);
