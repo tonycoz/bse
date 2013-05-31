@@ -1,6 +1,6 @@
 package Squirrel::Table;
 
-our $VERSION = "1.010";
+our $VERSION = "1.011";
 
 use Carp;
 use strict;
@@ -285,7 +285,15 @@ sub _make_sql {
     }
   }
   if ($options->{order}) {
-    $sql .= " order by $options->{order}";
+    my @order = split /\s*,\s*/, $options->{order};
+    for my $order (@order) {
+      my $dir = "asc";
+      $order =~ s/\s+(asc|desc)\z//i and $dir = $1;
+      my $phy_col = $map{$order}
+	or confess "Unknown logical column '$order' in order";
+      $order = $db->quote_id($order) . " $dir";
+    }
+    $sql .= " order by " . join(", ", @order);
   }
 
   return ($sql, @args);
