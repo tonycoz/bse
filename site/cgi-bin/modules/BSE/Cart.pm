@@ -2,7 +2,7 @@ package BSE::Cart;
 use strict;
 use Scalar::Util;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 =head1 NAME
 
@@ -41,6 +41,7 @@ sub new {
      products => {},
      req => $req,
      stage => $stage,
+     shipping => 0,
     }, $class;
   Scalar::Util::weaken($self->{req});
   my $items = $req->session->{cart} || [];
@@ -49,7 +50,27 @@ sub new {
   my $index = 0;
   $self->{items} =  [ map BSE::Cart::Item->new($_, $index++, $self), @$items ];
 
+  if ($stage eq 'cart' || $stage eq 'checkout') {
+    $self->_enter_cart;
+  }
+
   return $self;
+}
+
+sub _enter_cart {
+  my ($self) = @_;
+
+  my $req = $self->{req};
+  require BSE::CfgInfo;
+
+  $req->session->{custom} ||= {};
+  my %custom_state = %{$req->session->{custom}};
+
+  $self->{custom_state} = \%custom_state;
+
+  my $cust_class = BSE::CfgInfo::custom_class($self->{req}->cfg);
+  $cust_class->enter_cart($self->items, $self->products,
+			  \%custom_state, $req->cfg);
 }
 
 =item items()
@@ -59,7 +80,7 @@ Return an array reference of cart items.
 =cut
 
 sub items {
-  return $_[0]{items};
+  return wantarray ? @{$_[0]{items}} : $_[0]{items};
 }
 
 =item products().
@@ -71,7 +92,10 @@ the array reference returned by items().
 
 sub products {
   my $self = shift;
-  return [ map $self->_product($_->{productId}), @{$self->items} ];
+
+  my @products = map $self->_product($_->{productId}), @{$self->items};
+
+  return wantarray ? @products : \@products;
 }
 
 =item total_cost
@@ -85,10 +109,36 @@ sub total_cost {
 
   my $total_cost = 0;
   for my $item (@{$self->items}) {
-    $total_cost += $item->{extended};
+    $total_cost += $item->extended_retailPrice;
   }
 
   return $total_cost;
+}
+
+=item set_shipping_cost()
+
+Set the cost of shipping.
+
+Called by the shop.
+
+=cut
+
+sub set_shipping_cost {
+  my ($self, $cost) = @_;
+
+  $self->{shipping} = $cost;
+}
+
+=item shipping_cost()
+
+Fetch the cost of shipping.
+
+=cut
+
+sub shipping_cost {
+  my ($self) = @_;
+
+  return $self->{shipping};
 }
 
 =item total_units
@@ -110,14 +160,208 @@ sub total_units {
 
 =item total
 
-Total of items in the cart and any custom extras.
+Total of items in the cart and shipping costs.
+
+This doesn't handle custom costs yet.
 
 =cut
 
 sub total {
   my ($self) = @_;
 
-  "FIXME";
+  return $self->total_cost() + $self->shipping_cost();
+}
+
+=item have_sales_files
+
+Return true if the cart contains products with files that are for
+sale.
+
+=cut
+
+sub have_sales_files {
+  my ($self) = @_;
+
+  unless (defined $self->{have_sales_files}) {
+    $self->{have_sales_files} = 0;
+  PRODUCTS:
+    for my $prod (@{$self->products}) {
+      if ($prod->has_sales_files) {
+	$self->{have_sales_files} = 1;
+	last PRODUCTS;
+      }
+    }
+  }
+
+  return $self->{have_sales_files};
+}
+
+=item need_logon
+
+Return true if the cart contains items that the user needs to be
+logged on to purchase, or if the current user isn't qualified to
+purchase the item.
+
+Call need_logon_message() to get the reason for this method returning
+false.
+
+=cut
+
+sub need_logon {
+  my ($self) = @_;
+
+  unless (exists $self->{need_logon}) {
+    $self->{need_logon} = $self->_need_logon;
+  }
+
+  $self->{need_logon} or return;
+
+  return 1;
+}
+
+=head1 need_logon_message
+
+Returns a list with the error message and message id of the reason the
+user needs to logon for this cart.
+
+=cut
+
+sub need_logon_message {
+  my ($self) = @_;
+
+  unless (exists $self->{need_logon}) {
+    $self->{need_logon} = $self->_need_logon;
+  }
+
+  return @{$self->{logon_reason}};
+}
+
+=item custom_state
+
+State managed by a custom class.
+
+=cut
+
+sub custom_state {
+  my ($self) = @_;
+
+  $self->{custom_state};
+}
+
+=item affiliate_code
+
+Return the stored affiliate code.
+
+=cut
+
+sub affiliate_code {
+  my ($self) = @_;
+
+  my $code = $self->{req}->session->{affiliate_code};
+  defined $code or $code = '';
+
+  return $code;
+}
+
+=item any_physcial_products
+
+Returns true if the cart contains any physical products, ie. needs
+shipping.
+
+=cut
+
+sub any_physical_products {
+  my ($self) = @_;
+
+  for my $prod (@{$self->products}) {
+    if ($prod->weight) {
+      return 1;
+      last;
+    }
+  }
+
+  return 0;
+}
+
+
+=item _need_logon
+
+Internal implementation of need_logon.
+
+=cut
+
+sub _need_logon {
+  my ($self) = @_;
+
+  my $cfg = $self->{req}->cfg;
+
+  $self->{logon_reason} = [];
+
+  my $reg_if_files = $cfg->entryBool('shop', 'register_if_files', 1);
+
+  my $user = $self->{req}->siteuser;
+
+  if (!$user && $reg_if_files) {
+    require BSE::TB::ArticleFiles;
+    # scan to see if any of the products have files
+    # requires a subscription or subscribes
+    for my $prod (@{$self->products}) {
+      my @files = $prod->files;
+      if (grep $_->forSale, @files) {
+	$self->{logon_reason} =
+	  [ "register before checkout", "shop/fileitems" ];
+	return;
+      }
+      if ($prod->{subscription_id} != -1) {
+	$self->{logon_reason} =
+	  [ "you must be logged in to purchase a subscription", "shop/buysub" ];
+	return;
+      }
+      if ($prod->{subscription_required} != -1) {
+	$self->{logon_reason} = 
+	  [ "must be logged in to purchase a product requiring a subscription", "shop/subrequired" ];
+	return;
+      }
+    }
+  }
+
+  my $require_logon = $cfg->entryBool('shop', 'require_logon', 0);
+  if (!$user && $require_logon) {
+    $self->{logon_reason} =
+      [ "register before checkout", "shop/logonrequired" ];
+    return;
+  }
+
+  # check the user has the right required subs
+  # and that they qualify to subscribe for limited subscription products
+  if ($user) {
+    for my $prod (@{$self->products}) {
+      my $sub = $prod->subscription_required;
+      if ($sub && !$user->subscribed_to($sub)) {
+	$self->{logon_reason} =
+	  [ "you must be subscribed to $sub->{title} to purchase one of these products", "shop/subrequired" ];
+	return;
+      }
+
+      $sub = $prod->subscription;
+      if ($sub && $prod->is_renew_sub_only) {
+	unless ($user->subscribed_to_grace($sub)) {
+	  $self->{logon_reason} =
+	    [ "you must be subscribed to $sub->{title} to use this renew only product", "sub/renewsubonly" ];
+	  return;
+	}
+      }
+      if ($sub && $prod->is_start_sub_only) {
+	if ($user->subscribed_to_grace($sub)) {
+	  $self->{logon_reason} =
+	    [ "you must not be subscribed to $sub->{title} already to use this new subscription only product", "sub/newsubonly" ];
+	  return;
+	}
+      }
+    }
+  }
+  
+  return;
 }
 
 sub _product {
@@ -239,7 +483,7 @@ sub extended {
   $base =~ /^(price|retailPrice|gst|wholesalePrice)$/
     or return 0;
 
-  return self->$base() * $self->{units};
+  return $self->$base() * $self->{units};
 }
 
 sub extended_retailPrice {
@@ -377,6 +621,24 @@ sub AUTOLOAD {
   else {
     return "* unknown method $name *";
   }
+}
+
+=item description
+
+=item title
+
+=cut
+
+sub description {
+  my ($self) = @_;
+
+  $self->product->description;
+}
+
+sub title {
+  my ($self) = @_;
+
+  $self->product->title;
 }
 
 1;

@@ -5,7 +5,7 @@ use Squirrel::Row;
 use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub columns {
   return qw/id productId orderId units price wholesalePrice gst options
@@ -88,6 +88,17 @@ sub session {
 
   require BSE::TB::SeminarSessions;
   return BSE::TB::SeminarSessions->getByPkey($self->session_id);
+}
+
+# cart item compatibility
+sub retailPrice {
+  $_[0]->price;
+}
+
+sub extended {
+  my ($self, $name) = @_;
+
+  return $self->units * $self->$name();
 }
 
 1;

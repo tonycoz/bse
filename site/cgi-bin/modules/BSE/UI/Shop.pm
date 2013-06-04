@@ -3,7 +3,7 @@ use strict;
 use base 'BSE::UI::Dispatch';
 use BSE::Util::HTML qw(:default popup_menu);
 use BSE::Util::SQL qw(now_sqldate now_sqldatetime);
-use BSE::Shop::Util qw(:payment need_logon shop_cart_tags payment_types nice_options 
+use BSE::Shop::Util qw(:payment shop_cart_tags payment_types nice_options 
                        cart_item_opts basic_tags order_item_opts);
 use BSE::CfgInfo qw(custom_class credit_card_class bse_default_country);
 use BSE::TB::Orders;
@@ -16,8 +16,9 @@ use Digest::MD5 'md5_hex';
 use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
+use BSE::Template;
 
-our $VERSION = "1.037";
+our $VERSION = "1.038";
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -96,6 +97,7 @@ sub req_cart {
   my @options;
   my $option_index;
   
+  my $cart = $req->cart("cart");
   $req->session->{custom} ||= {};
   my %custom_state = %{$req->session->{custom}};
 
@@ -109,13 +111,14 @@ sub req_cart {
   my %acts;
   %acts =
     (
-     $cust_class->cart_actions(\%acts, \@cart, \@cart_prods, \%custom_state, 
-			       $req->cfg),
-     shop_cart_tags(\%acts, \@items, \@cart_prods, $req, 'cart'),
+     $cust_class->cart_actions(\%acts, $cart->items, $cart->products,
+			       $cart->custom_state, $req->cfg),
+     shop_cart_tags(\%acts, $cart, $req, 'cart'),
      basic_tags(\%acts),
      msg => $msg,
     );
-  $req->session->{custom} = \%custom_state;
+
+  $req->session->{custom} = { %{$cart->custom_state} };
   $req->session->{order_info_confirmed} = 0;
 
   # intended to ajax enable the shop cart with partial templates
@@ -506,28 +509,20 @@ sub req_checkout {
   my $need_delivery = ( $olddata ? $cgi->param("need_delivery") : $req->session->{order_need_delivery} ) || 0;
 
   $class->update_quantities($req);
-  my @cart = @{$req->session->{cart}};
+  my $cart = $req->cart("checkout");
+  my @cart = @{$cart->items};
 
   @cart or return $class->req_cart($req);
 
-  my @cart_prods;
-  my @items = $class->_build_items($req, \@cart_prods);
+  my @cart_prods = @{$cart->products};
+  my @items = @{$cart->items};
 
-  if (my ($msg, $id) = $class->_need_logon($req, \@cart, \@cart_prods)) {
+  if ($cart->need_logon) {
+    my ($msg, $id) = $cart->need_logon_reason;
     return $class->_refresh_logon($req, $msg, $id);
-    return;
   }
 
   my $user = $req->siteuser;
-
-  $req->session->{custom} ||= {};
-  my %custom_state = %{$req->session->{custom}};
-
-  my $cust_class = custom_class($cfg);
-  $cust_class->enter_cart(\@cart, \@cart_prods, \%custom_state, $cfg);
-
-  my $affiliate_code = $req->session->{affiliate_code};
-  defined $affiliate_code or $affiliate_code = '';
 
   my $order_info = $req->session->{order_info};
 
@@ -566,7 +561,7 @@ sub req_checkout {
   my $shipping_name = '';
   my $prompt_ship = $cfg->entry("shop", "shipping", 0);
 
-  my $physical = _any_physical_products(\@cart_prods);
+  my $physical = $cart->any_physical_products;
 
   if ($prompt_ship) {
     my $sel_cn = $old->("shipping_name") || "";
@@ -656,9 +651,12 @@ sub req_checkout {
     }
   }
 
+  my $cust_class = custom_class($cfg);
+
   if (!$message && keys %$errors) {
     $message = $req->message($errors);
   }
+  $cart->set_shipping_cost($shipping_cost);
 
   my $item_index = -1;
   my @options;
@@ -666,16 +664,16 @@ sub req_checkout {
   my %acts;
   %acts =
     (
-     shop_cart_tags(\%acts, \@items, \@cart_prods, $req, 'checkout'),
+     shop_cart_tags(\%acts, $cart, $req, 'checkout'),
      basic_tags(\%acts),
      message => $message,
      msg => $message,
      old => sub { escape_html($old->($_[0])); },
      $cust_class->checkout_actions(\%acts, \@cart, \@cart_prods, 
-				   \%custom_state, $req->cgi, $cfg),
+				   $cart->custom_state, $req->cgi, $cfg),
      ifUser => [ \&tag_ifUser, $user ],
      user => $user ? [ \&tag_hash, $user ] : '',
-     affiliate_code => escape_html($affiliate_code),
+     affiliate_code => escape_html($cart->affiliate_code),
      error_img => [ \&tag_error_img, $cfg, $errors ],
      ifShipping => $prompt_ship,
      shipping_select => $shipping_select,
@@ -687,7 +685,7 @@ sub req_checkout {
      ifPhysical => $physical,
      ifNeedDelivery => $need_delivery,
     );
-  $req->session->{custom} = \%custom_state;
+  $req->session->{custom} = $cart->custom_state;
   my $tmp = $acts{total};
   $acts{total} =
     sub {
@@ -786,11 +784,14 @@ sub req_order {
   $class->_validate_cfg($req, \$msg)
     or return $class->req_cart($req, $msg);
 
-  my @products;
-  my @items = $class->_build_items($req, \@products);
+  my $cart = $req->cart("order");
+
+  my @products = @{$cart->products};
+  my @items = @{$cart->items};
 
   my $id;
-  if (($msg, $id) = $class->_need_logon($req, \@items, \@products)) {
+  if ($cart->need_logon) {
+    my ($msg, $id) = $cart->need_logon_message;
     return $class->_refresh_logon($req, $msg, $id);
   }
 
@@ -861,39 +862,39 @@ sub req_show_payment {
 
   # ideally supply order_id to be consistent with a_payment.
   my $order_id = $cgi->param('orderid') || $cgi->param("order_id");
+  my $cart;
   if ($order_id) {
     $order_id =~ /^\d+$/
       or return $class->req_cart($req, "No or invalid order id supplied");
-    
+
     my $user = $req->siteuser
       or return $class->_refresh_logon
 	($req, "Please logon before paying your existing order", "logonpayorder",
 	 undef, { a_show_payment => 1, orderid => $order_id });
-    
+
     require BSE::TB::Orders;
     $order = BSE::TB::Orders->getByPkey($order_id)
       or return $class->req_cart($req, "Unknown order id");
-    
+
     $order->siteuser_id == $user->id
       or return $class->req_cart($req, "You can only pay for your own orders");
-    
+
     $order->paidFor
       and return $class->req_cart($req, "Order $order->{id} has been paid");
-    
-    @items = $order->items;
-    @products = $order->products;
+
+    $cart = $order;
   }
   else {
     $req->session->{order_info_confirmed}
       or return $class->req_checkout($req, 'Please proceed via the checkout page');
-    
+
     $req->session->{cart} && @{$req->session->{cart}}
       or return $class->req_cart($req, "Your cart is empty");
-    
+
     $order = $req->session->{order_info}
       or return $class->req_checkout($req, "You need to enter order information first");
 
-    @items = $class->_build_items($req, \@products);
+    $cart = $req->cart("payment");
   }
 
   $errors ||= {};
@@ -916,13 +917,13 @@ sub req_show_payment {
      message => $msg,
      msg => $msg,
      order => [ \&tag_hash, $order ],
-     shop_cart_tags(\%acts, \@items, \@products, $req, 'payment'),
+     shop_cart_tags(\%acts, $cart, $req, 'payment'),
      ifMultPaymentTypes => @payment_types > 1,
      checkedPayment => [ \&tag_checkedPayment, $payment, \%types_by_name ],
      ifPayments => [ \&tag_ifPayments, \@payment_types, \%types_by_name ],
      paymentTypeId => [ \&tag_paymentTypeId, \%types_by_name ],
      error_img => [ \&tag_error_img, $cfg, $errors ],
-     total => $order->{total},
+     total => $cart->total,
      delivery_in => $order->{delivery_in},
      shipping_cost => $order->{shipping_cost},
      shipping_method => $order->{shipping_method},
@@ -935,6 +936,8 @@ sub req_show_payment {
     $acts{"checkedIfFirst$name"} = $payment_types[0] == $id ? "checked " : "";
     $acts{"checkedPayment$name"} = $payment == $id ? 'checked="checked" ' : "";
   }
+  $req->set_variable(ordercart => $cart);
+  $req->set_variable(order => $order);
 
   return $req->response('checkoutpay', \%acts);
 }
@@ -1654,12 +1657,6 @@ sub _refresh_logon {
   return BSE::Template->get_refresh($url, $req->cfg);
 }
 
-sub _need_logon {
-  my ($class, $req, $cart, $cart_prods) = @_;
-
-  return need_logon($req, $cart, $cart_prods);
-}
-
 sub tag_checkedPayment {
   my ($payment, $types_by_name, $args) = @_;
 
@@ -1703,6 +1700,10 @@ sub update_quantities {
 	$cart[$index]{units} = 0;
       }
     }
+  }
+  my ($coupon) = $cgi->param("coupon");
+  if (defined $coupon) {
+    $session->{cart_coupon} = $coupon;
   }
   @cart = grep { $_->{units} != 0 } @cart;
   $session->{cart} = \@cart;
