@@ -3,6 +3,7 @@ a:hover {  color: #6666CC}
 a:visited {  color: #333366}
 /*li {  font: 10px Verdana, Arial, Helvetica, sans-serif}*/
 h1 {  font-size: 18px; margin-left: -1.5em}
+h1 span { color: #808080; }
 h2 {  font-size: 16px; margin-left: -1em; padding-top: 1em; color: #333333; font-family: Arial, Helvetica, sans-serif; font-weight: bold}
 form {  display: inline}
 li {  padding-top: 3px;padding-bottom: 7px;}
@@ -29,7 +30,7 @@ input.inline { width: 90%; }
   height: 13px;
 }
 
-.prodopt { 
+.prodopt {
   border: 1px solid #000;
   margin: 5px;
 }
@@ -75,7 +76,7 @@ input.inline { width: 90%; }
   margin: 0 20px;
 }
 
-#productoptions .valueentrymenu { 
+#productoptions .valueentrymenu {
   float: right;
 }
 
@@ -83,7 +84,7 @@ input.inline { width: 90%; }
   background-color: #DDD;
 }
 
-#productoptions form.addvalue input.add_field { 
+#productoptions form.addvalue input.add_field {
   margin-left: 20px;
   margin-right: 2px;
   width: 50%;
@@ -91,7 +92,7 @@ input.inline { width: 90%; }
   border: 1px solid #888;
 }
 
-#productoptions form.addvalue input.add_submit { 
+#productoptions form.addvalue input.add_submit {
   border: 1px solid #888;
 }
 
@@ -99,7 +100,7 @@ input.inline { width: 90%; }
   padding: 2px 0;
 }
 
-table { 
+table {
   border-collapse: collapse;
   vertical-align: baseline;
 }
@@ -112,7 +113,7 @@ table.editformsmall {
   width: 50%;
 }
 
-table.editformtiny { 
+table.editformtiny {
   width: auto;
 }
 
@@ -166,15 +167,15 @@ table td input.wide {
   width: 95%;
 }
 
-table td.check { 
+table td.check {
   text-align: center;
 }
 
-table td.buttons { 
+table td.buttons {
   text-align: right;
 }
 
-div.menu { 
+div.menu {
   margin-bottom: 1em;
 }
 
@@ -200,7 +201,7 @@ table.menu td, table.menu th {
   background: url(/images/admin/busy.gif) bottom right no-repeat;
 }
 
-#sitedragdrop li { 
+#sitedragdrop li {
   margin-top: 0px;
   margin-bottom: 0px;
   padding-bottom: 0px;
@@ -216,30 +217,30 @@ table.menu td, table.menu th {
   border: 1px solid #000;
 }
 
-#filelist div.fileentry .title { 
+#filelist div.fileentry .title {
   background-color: #fff;
   border-bottom: 1px solid black;
 }
 
-#fileaccesslog .col_size { 
+#fileaccesslog .col_size {
   text-align: right;
 }
 
 #fileaccesslog a:link,
 #fileaccesslog a:visited,
-#fileaccesslog a:active { 
+#fileaccesslog a:active {
   font-weight: normal;
 }
 
-table#backtasklist tr.running td { 
+table#backtasklist tr.running td {
   background-color: #E0E0FF;
 }
 
-table#backtasklist tr.failed td { 
+table#backtasklist tr.failed td {
   background-color: #FFE0E0;
 }
 
-img.bse_image_thumb { 
+img.bse_image_thumb {
   border: none;
 }
 
@@ -286,11 +287,11 @@ img.bse_image_thumb {
 
 .help_display { display: none }
 
-.help_display_trigger { 
+.help_display_trigger {
   position: relative;
 }
 
-.help_display_trigger:hover .help_display { 
+.help_display_trigger:hover .help_display {
   display: block;
   position: absolute;
   width: 200px;
@@ -303,7 +304,7 @@ img.bse_image_thumb {
   font-weight: normal;
 }
 
-#bse_video_stage { 
+#bse_video_stage {
   position: fixed;
   width: 100%;
   height: 100%;
@@ -312,14 +313,14 @@ img.bse_image_thumb {
   display: none;
 }
 
-#bse_video_frame { 
+#bse_video_frame {
   position: absolute;
   border: 1px solid #000;
   left: 50%;
   top: 20%;
 }
 
-#bse_video_close { 
+#bse_video_close {
   display: block;
   position: absolute;
   right: 50%;
@@ -327,7 +328,7 @@ img.bse_image_thumb {
   margin-top: -20px;
 }
 
-#bse_video_close img { 
+#bse_video_close img {
   border: 0px;
 }
 
@@ -400,7 +401,7 @@ span.alert {
   width: 820px;
   }
 
-.wind .head 
+.wind .head
 {
   color: white;
   font-weight: bold;
@@ -408,12 +409,12 @@ span.alert {
   padding: 2px 1px;
   }
 
-#windowclose 
+#windowclose
 {
   display: none;
   }
 
-.wind .head #windowclose 
+.wind .head #windowclose
 {
   display: block;
   float: right;
@@ -472,11 +473,11 @@ span.alert {
   background-color: #8080FF;
 }
 
-#menu_wrapper li>ul.submenu { 
+#menu_wrapper li>ul.submenu {
   display: none;
 }
 
-#menu_wrapper li:hover>ul.submenu { 
+#menu_wrapper li:hover>ul.submenu {
   display: block;
   position: absolute;
   background: #FFF;
@@ -490,7 +491,7 @@ span.alert {
 #auditlog .col_object,
 #auditlog .col_level,
 #auditlog .col_actor,
-#auditlog .col_object { 
+#auditlog .col_object {
   white-space: nowrap;
 }
 
@@ -505,14 +506,14 @@ span.alert {
 }
 
 #auditlog a.filter,
-#auditentry a.filter { 
+#auditentry a.filter {
   padding: 0px 2px;
   background-color: #C0FFC0;
   text-decoration: none;
   border: 1px dotted #080;
 }
 
-#auditlog a.unfilter { 
+#auditlog a.unfilter {
   padding: 0px 2px;
   background-color: #FFC0C0;
   text-decoration: none;
@@ -567,7 +568,7 @@ div.pagelist {
 .filelist .col_size,
 .filelist .col_download,
 .filelist .col_forsale,
-.filelist .col_requireuser { 
+.filelist .col_requireuser {
   text-align: center;
 }
 
@@ -595,7 +596,7 @@ table tr.locked td {
 }
 
 table.siteusers td.col_name1,
-table.siteusers td.col_name2 { 
+table.siteusers td.col_name2 {
   width: 33%;
   vertical-align: baseline;
 }
@@ -624,13 +625,13 @@ table.productlist .col_name {
 
 table.productlist td.col_release,
 table.productlist td.col_expire,
-table.productlist td.col_modify { 
+table.productlist td.col_modify {
   white-space: nowrap;
 }
 
 table.productlist td.col_retail,
 table.productlist td.col_wsale,
-table.productlist td.col_gst { 
+table.productlist td.col_gst {
   white-space: nowrap;
   text-align: right;
 }
