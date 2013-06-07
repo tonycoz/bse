@@ -346,9 +346,33 @@ img.bse_image_thumb {
   margin: 0.5em 0px 0.5em 0px;
 }
 
+.messages {
+  font-weight: bold;
+  margin: 0.5em 0px 0.5em 0px;
+}
+
 #message.error,
 .message.error {
   color: red;
+}
+
+.messages .error {
+  color: red;
+  background-color: #FFE0E0;
+}
+
+.messages .notice {
+  color: black;
+  background-color: #D0F0D0;
+}
+
+.messages div {
+  padding: 0.5em;
+}
+
+.error_img {
+  border: 0px;
+  vertical-align: text-top;
 }
 
 span.alert {
