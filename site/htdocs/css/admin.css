@@ -772,7 +772,20 @@ fieldset div {
 fieldset span {
   display: table-cell;
 }
-fieldset label {
+fieldset > div > label {
   display: table-cell;
   padding-right: 0.5em;
+}
+fieldset > ul {
+  list-style: none;
+  padding-left: 0px;
+  margin-left: 0px;
+}
+
+.warning {
+  background-color: #FFE0E0;
+  color: red;
+  font-weight: bold;
+  text-align: center;
+  padding: 0.5em;
 }
