@@ -4,7 +4,7 @@ use Scalar::Util qw(blessed);
 use BSE::TB::Site;
 use BSE::Util::HTML;
 
-our $VERSION = "1.013";
+our $VERSION = "1.014";
 
 sub _base_variables {
   my ($self, %opts) = @_;
@@ -40,6 +40,7 @@ sub _base_variables {
        require JSON;
        return JSON->new->allow_nonref->encode($_[0]);
      },
+     number => \&_number,
     );
 }
 
@@ -245,6 +246,13 @@ sub _date_now {
   return DevHelp::Date::dh_strftime($fmt, localtime);
 }
 
+sub _number {
+  my ($format, $value) = @_;
+
+  require BSE::Util::Format;
+  return BSE::Util::Format::bse_number($format, $value);
+}
+
 1;
 
 =head1 NAME
@@ -320,6 +328,11 @@ Format an SQL date/time.
 =item now(format)
 
 Format the current date/time.
+
+=item number(format, value)
+
+Format I<value> according to the rules defied by I<format> in the
+config file.  See L<BSE::Util::Format/bse_number> for details.
 
 =back
 
