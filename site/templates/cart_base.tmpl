@@ -33,9 +33,13 @@
   </table>
   <table border="0" cellspacing="0" cellpadding="1" width="100%" bgcolor="#666666">
     <tr valign="middle" align="center"> 
-      <td width="100%"> 
+      <td width="100%">
         <table width="100%" border="0" cellspacing="1" cellpadding="1" bgcolor="#EEEEEE">
           <tr valign="middle" align="center" bgcolor="#666666"> 
+<:.set cart = request.cart -:>
+<:.if cart.coupon_valid and !cart.coupon_active -:>
+            <td></td>
+<:.end if -:>
             <td width="100%" align="left" height="18"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FFFFFF"><b>Item:</b></font>&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FFFFFF">(All 
               prices in AUD &#150; includes GST and shipping costs where applicable)</font></td>
             <td nowrap height="18"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FFFFFF"><b>Qty:</b></font>&nbsp;</td>
@@ -48,6 +52,11 @@
 	      <:.set options = item.option_list -:>
 	      <:.set session = item.session -:>
           <tr valign="middle" align="center" bgcolor="#FFFFFF"> 
+<:.if cart.coupon_valid and !cart.coupon_active -:>
+            <td>
+<:= item.coupon_applies ? "Y" : "N" -:>
+    	    </td>
+<:.end if -:>
             <td width="100%" align="left"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><a href="<:= item.link | html:>"><:= item.product.description | html :> <:.if options.size:>(<:.for option in options:><:= loop.index ? ", " : "" :><:= option.desc | html:>: 
               <:= option.display |html :><:.end for:>)<:.end if -:></a><:.if item.session_id:>(session at <:= session.location.description | html:> <:= bse.date("%H:%M %d/%m/%Y", session.when_at) -:>)<:.end if:></font></td>
             <td nowrap align="center"> 
@@ -69,6 +78,38 @@
     </tr>
   </table>
   <table width="100%" border="0" cellspacing="0" cellpadding="0">
+    <tr>
+      <td>Coupon code: <input type="text" name="coupon" value="<:= cart.coupon_code -:>">
+<:.if cart.coupon_active -:>
+Coupon active
+<:.elsif cart.coupon_valid -:>
+<:.if request.siteuser -:>
+Your cart contains items the code isn't valid for
+<:.else -:>
+You need to logon
+<:.end if -:>
+<:.elsif cart.coupon_code ne "" -:>
+Unknown coupon code
+<:.end if -:>
+</td>
+<:.if cart.coupon_active -:>
+      <td height="20">&nbsp;</td>
+      <td height="20" bgcolor="#666666">&nbsp;</td>
+      <td align="CENTER" height="20" bgcolor="#666666" NOWRAP><font size="2" face="Verdana, Arial, Helvetica, sans-serif" color="#FFFFFF"> 
+        <b>DISCOUNT</b></font></td>
+      <td height="20" bgcolor="#666666">&nbsp;</td>
+<:.else -:>
+      <td colspan="6"></td>
+<:.end if -:>
+    </tr>
+<:.if cart.coupon_active -:>
+    <tr>
+      <td colspan="2">&nbsp;</td>
+      <td height="20" style="border-left: 1px solid #666666">&nbsp;</td>
+      <td align="CENTER">$<:= bse.number("money", cart.product_cost_discount) -:></td>
+      <td height="20" style="border-right: 1px solid #666666">&nbsp;</td>
+    </tr>
+<:.end if -:>
     <tr> 
       <td>&nbsp;</td>
       <td height="20">&nbsp;</td>

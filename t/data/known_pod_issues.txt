@@ -44,16 +44,7 @@ site/cgi-bin/modules/BSE/UI/AdminShop.pm	multiple occurrence of link target 'pro
 site/cgi-bin/modules/BSE/UI/AdminShop.pm	multiple occurrence of link target 'script'	1
 site/cgi-bin/modules/BSE/UI/Background.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/UI/Formmail.pm	=item without previous =over	1
-site/cgi-bin/modules/BSE/UI/Shop.pm	=item without previous =over	1
-site/cgi-bin/modules/BSE/UI/Shop.pm	multiple occurrence of link target '%<format>'	1
-site/cgi-bin/modules/BSE/UI/Shop.pm	multiple occurrence of link target 'gst'	1
-site/cgi-bin/modules/BSE/UI/Shop.pm	multiple occurrence of link target 'id'	1
 site/cgi-bin/modules/BSE/UI/Shop.pm	multiple occurrence of link target 'item field'	1
-site/cgi-bin/modules/BSE/UI/Shop.pm	multiple occurrence of link target 'm<number>'	1
-site/cgi-bin/modules/BSE/UI/Shop.pm	multiple occurrence of link target 'options'	1
-site/cgi-bin/modules/BSE/UI/Shop.pm	multiple occurrence of link target 'order field'	1
-site/cgi-bin/modules/BSE/UI/Shop.pm	multiple occurrence of link target 'product field'	1
-site/cgi-bin/modules/BSE/UI/Shop.pm	multiple occurrence of link target 'total'	1
 site/cgi-bin/modules/BSE/Util/SQL.pm	=over on line 37 without closing =back	1
 site/cgi-bin/modules/BSE/Util/SQL.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/BSE/Util/Secure.pm	=over on line 25 without closing =back (at head1)	1

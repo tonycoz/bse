@@ -2,7 +2,7 @@ package BSE::Cart;
 use strict;
 use Scalar::Util;
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 =head1 NAME
 
@@ -54,6 +54,9 @@ sub new {
     $self->_enter_cart;
   }
 
+  $self->{coupon_code} = $self->{req}->session->{cart_coupon_code};
+  defined $self->{coupon_code} or $self->{coupon_code} = "";
+
   return $self;
 }
 
@@ -102,6 +105,8 @@ sub products {
 
 Return the total cost of the items in the cart.
 
+This does not include shipping costs and is not discounted.
+
 =cut
 
 sub total_cost {
@@ -113,6 +118,38 @@ sub total_cost {
   }
 
   return $total_cost;
+}
+
+=item discounted_product_cost
+
+Cost of products with an product discount taken into account.
+
+Note: this rounds thr total B<down>.
+
+=cut
+
+sub discounted_product_cost {
+  my ($self) = @_;
+
+  my $cost = $self->total_cost;
+
+  if ($self->coupon_active) {
+    $cost -= $cost * $self->coupon_code_discount_pc / 100;
+  }
+
+  return int($cost);
+}
+
+=item product_cost_discount
+
+Return any amount taken off the product cost.
+
+=cut
+
+sub product_cost_discount {
+  my ($self) = @_;
+
+  return $self->total_cost - $self->discounted_product_cost;
 }
 
 =item set_shipping_cost()
@@ -169,7 +206,167 @@ This doesn't handle custom costs yet.
 sub total {
   my ($self) = @_;
 
-  return $self->total_cost() + $self->shipping_cost();
+  my $cost = 0;
+
+  $cost += $self->discounted_product_cost;
+
+  $cost += $self->shipping_cost;
+
+  $cost += $self->custom_cost;
+
+  return $cost;
+}
+
+=item coupon_code
+
+The current coupon code.
+
+=cut
+
+sub coupon_code {
+  my ($self) = @_;
+
+  return $self->{coupon_code};
+}
+
+=item set_coupon_code()
+
+Used by the shop to set the coupon code.
+
+=cut
+
+sub set_coupon_code {
+  my ($self, $code) = @_;
+
+  $code =~ s/\A\s+//;
+  $code =~ s/\s+\z//;
+  $self->{coupon_code} = $code;
+  delete $self->{coupon_valid};
+  $self->{req}->session->{cart_coupon_code} = $code;
+}
+
+=item coupon_code_discount_pc
+
+The percentage discount for the current coupon code, if that code is
+valid and the contents of the cart are valid for that coupon code.
+
+=cut
+
+sub coupon_code_discount_pc {
+  my ($self) = @_;
+
+  $self->coupon_valid
+    or return 0;
+
+  return $self->{coupon_check}{coupon}->discount_percent;
+}
+
+=item coupon_valid
+
+Return true if the current coupon code is valid
+
+=cut
+
+sub coupon_valid {
+  my ($self) = @_;
+
+  unless ($self->{coupon_check}) {
+    if (length $self->{coupon_code}) {
+      require BSE::TB::Coupons;
+      my ($coupon) = BSE::TB::Coupons->getBy(code => $self->{coupon_code});
+      print STDERR "Searching for coupon '$self->{coupon_code}'\n";
+      my %check =
+	(
+	 coupon => $coupon,
+	 valid => 0,
+	);
+      #print STDERR " coupon $coupon\n";
+      #print STDERR "released ", 0+ $coupon->is_released, " expired ",
+      #	0+$coupon->is_expired, " valid ", 0+$coupon->is_valid, "\n" if $coupon;
+      if ($coupon && $coupon->is_valid) {
+	$check{valid} = 1;
+	$check{active} = 1;
+	my %tiers = map { $_ => 1 } $coupon->tiers;
+      ITEM:
+	for my $item ($self->items) {
+	  my $applies = 1;
+	  if ($item->tier_id) {
+	    #print STDERR "tier ", $item->tier_id, " tiers ", join(",", keys %tiers), "\n";
+	    if (!$tiers{$item->tier_id}) {
+	      $applies = 0;
+	    }
+	  }
+	  else {
+	    if (!$coupon->untiered) {
+	      $applies = 0;
+	    }
+	  }
+	  $item->{coupon_applies} = $applies;
+	  $applies or $check{active} = 0;
+	}
+      }
+      $self->{coupon_check} = \%check;
+    }
+    else {
+      $self->{coupon_check} =
+	{
+	 valid => 0,
+	 active => 0,
+	};
+    }
+  }
+
+  return $self->{coupon_check}{valid};
+}
+
+=item coupon_active
+
+Return true if the current coupon is active, ie. both valid and the
+cart has products of all the right tiers.
+
+=cut
+
+sub coupon_active {
+  my ($self) = @_;
+
+  $self->coupon_valid
+    or return 0;
+
+  return $self->{coupon_check}{active};
+}
+
+=item coupon
+
+The current coupon object, if and only if the coupon code is valid.
+
+=cut
+
+sub coupon {
+  my ($self) = @_;
+
+  $self->coupon_valid
+    or return;
+
+  $self->{coupon_check}{coupon};
+}
+
+=item custom_cost
+
+Return any custom cost specified by a custom class.
+
+=cut
+
+sub custom_cost {
+  my ($self) = @_;
+
+  unless (exists $self->{custom_cost}) {
+    my $obj = BSE::CfgInfo::custom_class($self->{req}->cfg);
+    $self->{custom_cost} =
+      $obj->total_extras(scalar $self->items, scalar $self->products,
+			 $self->{custom_state}, $self->{req}->cfg, $self->{stage});
+  }
+
+  return $self->{custom_cost};
 }
 
 =item have_sales_files
@@ -219,7 +416,7 @@ sub need_logon {
   return 1;
 }
 
-=head1 need_logon_message
+=item need_logon_message
 
 Returns a list with the error message and message id of the reason the
 user needs to logon for this cart.
@@ -589,6 +786,21 @@ sub option_text {
 
   my $options = $self->option_list;
   return join(", ", map "$_->{desc}: $_->{display}", @$options);
+}
+
+=item coupon_applies
+
+Returns true if the current coupon code applies to the item.
+
+=cut
+
+sub coupon_applies {
+  my ($self) = @_;
+
+  $self->{cart}->coupon_valid
+    or return 0;
+
+  return $self->{coupon_applies};
 }
 
 =item session

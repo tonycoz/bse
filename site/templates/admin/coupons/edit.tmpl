@@ -1,0 +1,27 @@
+<:wrap admin/base.tmpl title => "Shop: Edit Coupon Code", bodyid => "coupon_edit":>
+<h1>Shop: Edit Coupon <span><:= coupon.code -:></span></h1>
+<p>| <a href="<:= cfg.admin_url("menu") :>">Admin Menu</a> |
+<:.if request.user_can("bse_shop_coupon_list") -:>
+<a href="<:= cfg.admin_url2("shopadmin", "coupon_list") :>">Return to coupon list</a> |
+<:.end if-:>
+</p>
+<:.call "messages"-:>
+<:.set object = coupon -:>
+<form action="<:= cfg.admin_url("shopadmin") :>" method="post">
+  <:csrfp admin_bse_coupon_edit hidden:>
+  <input type="hidden" name="id" value="<:= coupon.id :>">
+  <fieldset>
+    <legend>Coupon Details</legend>
+    <:.call "field", "name":"code", "autofocus":1 :>
+    <:.call "field", "name":"description" :>
+    <:.call "field", "name":"release" :>
+    <:.call "field", "name":"expiry" :>
+    <:.call "field", "name":"discount_percent" :>
+    <:.call "field", "name":"untiered" :>
+    <:.call "field", "name":"campaign" :>
+  </fieldset>
+  <:.call "fieldset", "name":"tiers" :>
+  <p class="buttons">
+    <input type="submit" name="a_coupon_save" value="Save Coupon">
+  </p>
+</form>

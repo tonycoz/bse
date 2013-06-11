@@ -1,0 +1,27 @@
+<:wrap admin/base.tmpl title => "Shop: Delete Coupon Code", bodyid => "coupon_delete":>
+<h1>Shop: Delete Coupon <span><:= coupon.code -:></span></h1>
+<p>| <a href="<:= cfg.admin_url("menu") :>">Admin Menu</a> |
+<:.if request.user_can("bse_shop_coupon_list") -:>
+<a href="<:= cfg.admin_url2("shopadmin", "coupon_list") :>">Return to coupon list</a> |
+<:.end if-:>
+</p>
+<:.call "messages"-:>
+<:.set object = coupon -:>
+<form action="<:= cfg.admin_url("shopadmin") :>" method="post">
+  <:csrfp admin_bse_coupon_delete hidden:>
+  <input type="hidden" name="id" value="<:= coupon.id :>">
+  <p class="warning">Deleting a coupon cannot be reversed.</p>
+  <fieldset>
+    <legend>Coupon Details</legend>
+    <:.call "fieldro", "name":"code", "autofocus":1 :>
+    <:.call "fieldro", "name":"description" :>
+    <:.call "fieldro", "name":"release" :>
+    <:.call "fieldro", "name":"expiry" :>
+    <:.call "fieldro", "name":"discount_percent" :>
+    <:.call "fieldro", "name":"campaign" :>
+  </fieldset>
+  <:.call "fieldsetro", "name":"tiers" :>
+  <p class="buttons">
+    <input type="submit" name="a_coupon_delete" value="Delete Coupon">
+  </p>
+</form>

@@ -185,6 +185,10 @@ site/cgi-bin/modules/BSE/TB/AuditEntry.pm
 site/cgi-bin/modules/BSE/TB/AuditLog.pm
 site/cgi-bin/modules/BSE/TB/BackgroundTask.pm
 site/cgi-bin/modules/BSE/TB/BackgroundTasks.pm
+site/cgi-bin/modules/BSE/TB/Coupon.pm
+site/cgi-bin/modules/BSE/TB/Coupons.pm
+site/cgi-bin/modules/BSE/TB/CouponTier.pm
+site/cgi-bin/modules/BSE/TB/CouponTiers.pm
 site/cgi-bin/modules/BSE/TB/File.pm
 site/cgi-bin/modules/BSE/TB/FileAccessLog.pm
 site/cgi-bin/modules/BSE/TB/FileAccessLogEntry.pm
@@ -560,6 +564,10 @@ site/templates/admin/base.tmpl
 site/templates/admin/catalog.tmpl	# embedded in the shopadmin catalog/product display
 site/templates/admin/catalog_custom.tmpl
 site/templates/admin/changepw.tmpl
+site/templates/admin/coupons/add.tmpl
+site/templates/admin/coupons/delete.tmpl
+site/templates/admin/coupons/edit.tmpl
+site/templates/admin/coupons/list.tmpl
 site/templates/admin/edit_0.tmpl
 site/templates/admin/edit_1.tmpl
 site/templates/admin/edit_catalog.tmpl

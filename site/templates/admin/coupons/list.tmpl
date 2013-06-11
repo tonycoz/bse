@@ -1,0 +1,101 @@
+<:wrap admin/base.tmpl title => "Shop: Coupon List", bodyid => "coupon_list":>
+<h1>Shop: Coupon List</h1>
+<p>| <a href="<:= cfg.admin_url("menu") :>">Admin Menu</a> |
+<:.if request.user_can("bse_shop_coupon_add") -:>
+<a href="<:= cfg.admin_url2("shopadmin", "coupon_addform") :>">Add a coupon</a> |
+<:.end if-:>
+</p>
+
+<:.call "messages"-:>
+<form action="<:= cfg.admin_url("shopadmin") :>">
+<:.set object = 0 -:>
+<:.set errors = {} -:>
+<fieldset>
+  <legend>Filter/sort</legend>
+  <:.call "inlinefield",
+    "name":"all",
+    "field":{
+              "description": "Show all",
+	      "htmltype": "checkbox",
+	      "default": coupons_all
+            } -:>
+  <:.call "inlinefield",
+     "name":"sort",
+     "field":{
+               "description": "Sort",
+	       "htmltype": "select",
+	       "default": coupons_sort,
+	       "select":
+                 {
+		   "values":
+		     [
+		       { "id": "expiry", "desc":"By Expiry date" },
+		       { "id": "release", "desc":"By Release date" },
+		       { "id": "code", "desc":"By code" }
+		     ],
+   		   "id":"id",
+		   "label":"desc"
+		 }
+             } -:>
+  <:.call "inlinefield",
+     "name": "scode",
+     "field": {
+                "description": "Search code",
+                "units": "(=code to search for exact code, otherwise prefix)",
+		"maxlength": 40,
+		"size": 20
+              } -:>
+</fieldset>
+<p class="buttons"><input type="submit" name="a_coupon_list" value="Sort/Filtter"></p>
+</form>
+
+<table>
+  <tr>
+    <th class="col_id">Id</th>
+    <th class="col_code">Code</th>
+    <th class="col_description">Description</th>
+    <th class="col_release">Release</th>
+    <th class="col_expiry">Expires</th>
+    <th class="col_discount">Discount</th>
+    <th class="col_tiers">Tiers</th>
+    <th class="col_campaign">Campaign</th>
+    <th class="col_actions"></th>
+  </tr>
+
+<:.if coupons.size -:>
+  <:.for coupon in coupons -:>
+    <:.set classes = [ loop.even ? "even" : "odd"  ] -:>
+    <:.if coupon.is_expired -:>
+       <:% classes.push("expired") -:>
+    <:.elsif coupon.is_released -:>
+       <:% classes.push("released") -:>
+    <:.end if -:>
+    <:.set tier_names = [] -:>
+    <:.for tier in [ coupon.tier_objects ] -:>
+      <:% tier_names.push(tier.description) -:>
+    <:.end for -:>
+  <tr class="<:= classes.join(" ") :>">
+    <td class="col_id"><a href="<:= cfg.admin_url2("shopadmin", "details", { "id": coupon.id }) :>"><:= coupon.id :></a></td>
+    <td class="col_code"><:= coupon.code :></td>
+    <td class="col_description"><:= coupon.description :></td>
+    <td class="col_release"><:= bse.date("%d/%m/%Y", coupon.release) :></td>
+    <td class="col_expiry"><:= bse.date("%d/%m/%Y", coupon.expiry) :></td>
+    <td class="col_discount"><:= coupon.discount_percent :>%</td>
+    <td class="col_tiers"><:= tier_names.size ? tier_names.join(", ") : "(none)" :></td>
+    <td class="col_campaign"><:= coupon.campaign :></td>
+    <td class="col_actions">
+      <:.if request.user_can("bse_shop_coupon_edit") -:>
+        <a href="<:= cfg.admin_url2("shopadmin", "coupon_edit", { "id": coupon.id }) :>">Edit</a>
+      <:.end if -:>
+      <:.if request.user_can("bse_shop_coupon_delete") -:>
+        <a href="<:= cfg.admin_url2("shopadmin", "coupon_deleteform", { "id": coupon.id }) :>">Delete</a>
+      <:.end if -:>
+    </td>
+  </tr>
+  <:.end for -:>
+<:.else -:>
+  <tr class="nothing">
+    <td colspan="8">No coupons are currently defined</td>
+  </tr>
+<:.end if -:>
+</table>

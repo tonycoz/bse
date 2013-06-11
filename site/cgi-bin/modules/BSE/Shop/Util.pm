@@ -7,7 +7,7 @@ use vars qw(@ISA @EXPORT_OK);
                 payment_types order_item_opts
  PAYMENT_CC PAYMENT_CHEQUE PAYMENT_CALLME PAYMENT_MANUAL PAYMENT_PAYPAL/;
 
-our $VERSION = "1.008";
+our $VERSION = "1.009";
 
 our %EXPORT_TAGS =
   (
@@ -71,7 +71,7 @@ sub shop_cart_tags {
        my $what = $_[0] || 'retailPrice';
        $current_item->extended($what);
      },
-     total => sub { $cart->total_cost },
+     total => sub { $cart->total },
      $ito->make
      (
       plural => "options",
@@ -82,7 +82,7 @@ sub shop_cart_tags {
      location => [ \&tag_location, \$current_item, \$location ],
      ifHaveSaleFiles => [ have_sales_files => $cart ],
      custom_class($cfg)
-     ->checkout_actions($acts, $cart->items, $cart->products, $req->session->{custom}, $q, $cfg),
+     ->checkout_actions($acts, scalar $cart->items, scalar $cart->products, $req->session->{custom}, $q, $cfg),
     );  
 }
 

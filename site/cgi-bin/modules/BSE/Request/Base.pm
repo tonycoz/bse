@@ -5,7 +5,7 @@ use BSE::Cfg;
 use BSE::Util::HTML;
 use Carp qw(cluck confess);
 
-our $VERSION = "1.023";
+our $VERSION = "1.024";
 
 =head1 NAME
 
@@ -1778,6 +1778,9 @@ sub cgi_fields {
       else {
 	$value = join("", $cgi->param($name));
       }
+    }
+    elsif ($field->{htmltype} eq "multicheck") {
+      $value = [ $cgi->param($name) ];
     }
     elsif ($field->{type} && $field->{type} eq "date" && !$opts{api}) {
       ($value) = $cgi->param($name);

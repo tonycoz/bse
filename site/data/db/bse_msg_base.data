@@ -218,6 +218,24 @@ description: Invalid shipping method, $1 is the supplied method id
 id: bse/admin/shop/saveorder/badstage
 description: Invalid order stage, $1 is the supplied stage id
 
+id: bse/admin/shop/coupons/
+description: Message for coupon management
+
+id: bse/admin/shop/coupons/adddup
+description: Displayed on a duplicate code when adding a coupon (%1 - coupon code)
+
+id: bse/admin/shop/coupons/add
+description: Flashed when a coupon is added successfully (%1 coupon)
+
+id: bse/admin/shop/coupons/editdup
+description: Displayed on a duplicate code when editing a coupon (%1 - coupon code)
+
+id: bse/admin/shop/coupons/save
+description: Flashed when a coupon is saved (%1 coupon)
+
+id: bse/admin/shop/coupons/delete
+description: Flashed when a coupon is deleted (%1 coupon code)
+
 id: bse/admin/logon/
 description: Logon tool messages
 

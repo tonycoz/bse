@@ -18,7 +18,21 @@ use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 use BSE::Template;
 
-our $VERSION = "1.038";
+our $VERSION = "1.039";
+
+=head1 NAME
+
+BSE::UI::Shop - implements the shop for BSE
+
+=head1 DESCRIPTION
+
+BSE::UI::Shop implements the shop for BSE.
+
+=head1 TARGETS
+
+=over
+
+=cut
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -90,19 +104,13 @@ sub req_cart {
 
   $class->_refresh_cart($req);
 
-  my @cart = @{$req->session->{cart} || []};
-  my @cart_prods;
-  my @items = $class->_build_items($req, \@cart_prods);
-  my $item_index = -1;
-  my @options;
-  my $option_index;
-  
   my $cart = $req->cart("cart");
-  $req->session->{custom} ||= {};
-  my %custom_state = %{$req->session->{custom}};
 
   my $cust_class = custom_class($req->cfg);
-  $cust_class->enter_cart(\@cart, \@cart_prods, \%custom_state, $req->cfg); 
+  # $req->session->{custom} ||= {};
+  # my %custom_state = %{$req->session->{custom}};
+
+  # $cust_class->enter_cart(\@cart, \@cart_prods, \%custom_state, $req->cfg);
   $msg = '' unless defined $msg;
   $msg = escape_html($msg);
 
@@ -111,7 +119,7 @@ sub req_cart {
   my %acts;
   %acts =
     (
-     $cust_class->cart_actions(\%acts, $cart->items, $cart->products,
+     $cust_class->cart_actions(\%acts, scalar $cart->items, scalar $cart->products,
 			       $cart->custom_state, $req->cfg),
      shop_cart_tags(\%acts, $cart, $req, 'cart'),
      basic_tags(\%acts),
@@ -145,6 +153,7 @@ sub req_emptycart {
 
   my $old = $req->session->{cart};;
   $req->session->{cart} = [];
+  delete $req->session->{cart_coupon_code};
 
   my $refresh = $req->cgi->param('r');
   unless ($refresh) {
@@ -686,13 +695,6 @@ sub req_checkout {
      ifNeedDelivery => $need_delivery,
     );
   $req->session->{custom} = $cart->custom_state;
-  my $tmp = $acts{total};
-  $acts{total} =
-    sub {
-        my $total = &$tmp();
-        $total += $shipping_cost if $total and $shipping_cost;
-        return $total;
-    };
 
   return $req->response('checkoutnew', \%acts);
 }
@@ -910,6 +912,8 @@ sub req_show_payment {
   $errors and $payment = $cgi->param('paymentType');
   defined $payment or $payment = $payment_types[0];
 
+  $cart->set_shipping_cost($order->{shipping_cost});
+
   my %acts;
   %acts =
     (
@@ -938,6 +942,7 @@ sub req_show_payment {
   }
   $req->set_variable(ordercart => $cart);
   $req->set_variable(order => $order);
+  $req->set_variable(is_order => !!$order_id);
 
   return $req->response('checkoutpay', \%acts);
 }
@@ -1378,16 +1383,6 @@ sub req_orderdone {
        $items[$item_index]{units} * $items[$item_index]{$what};
      },
      order => sub { escape_html($order->{$_[0]}) },
-     _format =>
-     sub {
-       my ($value, $fmt) = @_;
-       if ($fmt =~ /^m(\d+)/) {
-	 return sprintf("%$1s", sprintf("%.2f", $value/100));
-       }
-       elsif ($fmt =~ /%/) {
-	 return sprintf($fmt, $value);
-       }
-     },
      iterate_options_reset => sub { $option_index = -1 },
      iterate_options => sub { ++$option_index < @options },
      option => sub { escape_html($options[$option_index]{$_[0]}) },
@@ -1503,7 +1498,13 @@ sub req_recalc {
 
   $class->update_quantities($req);
   $req->session->{order_info_confirmed} = 0;
-  return $class->req_cart($req);
+
+  my $refresh = $req->cgi->param('r');
+  unless ($refresh) {
+    $refresh = $req->user_url(shop => 'cart');
+  }
+
+  return $req->get_refresh($refresh);
 }
 
 sub req_recalculate {
@@ -1701,16 +1702,18 @@ sub update_quantities {
       }
     }
   }
-  my ($coupon) = $cgi->param("coupon");
-  if (defined $coupon) {
-    $session->{cart_coupon} = $coupon;
-  }
   @cart = grep { $_->{units} != 0 } @cart;
   $session->{cart} = \@cart;
   $session->{custom} ||= {};
   my %custom_state = %{$session->{custom}};
   custom_class($cfg)->recalc($cgi, \@cart, [], \%custom_state, $cfg);
   $session->{custom} = \%custom_state;
+
+  my ($coupon) = $cgi->param("coupon");
+  if (defined $coupon) {
+    my $cart = $req->cart;
+    $cart->set_coupon_code($coupon);
+  }
 }
 
 sub _build_items {
@@ -2251,15 +2254,7 @@ sub _refresh_cart {
 
 1;
 
-__END__
-
-=head1 NAME
-
-shop.pl - implements the shop for BSE
-
-=head1 DESCRIPTION
-
-shop.pl implements the shop for BSE.
+=back
 
 =head1 TAGS
 
@@ -2352,22 +2347,6 @@ subscription.
 
 =back
 
-You can also use "|format" at the end of a field to perform some
-simple formatting.  Eg. <:order total |m6:> or <:order id |%06d:>.
-
-=over 4
-
-=item m<number>
-
-Formats the value as a <number> wide money value.
-
-=item %<format>
-
-Performs sprintf() formatting on the value.  Eg. %06d will format 25
-as 000025.
-
-=back
-
 =head2 Mailed order tags
 
 These tags are used in the emails sent to the user to confirm an order
@@ -2375,27 +2354,39 @@ and in the encrypted copy sent to the site administrator:
 
 =over 4
 
-=item iterate ... items
+=item *
+
+C<iterate> ... C<items>
 
 Iterates over the items in the order.
 
-=item item I<field>
+=item *
+
+C<item> I<field>
 
 Access to the given field in the order item.
 
-=item product I<field>
+=item *
+
+C<product> I<field>
 
 Access to the product field for the current order item.
 
-=item order I<field>
+=item *
+
+C<order> I<field>
 
 Access to fields of the order.
 
-=item extended I<field>
+=item *
+
+C<extended> I<field>
 
 The product of the I<field> in the current item and it's quantity.
 
-=item money I<tag> I<parameters>
+=item *
+
+C<money> I<tag> I<parameters>
 
 Formats the given field as a money value.
 
@@ -2406,15 +2397,21 @@ The mail generation template can use extra formatting specified with
 
 =over 4
 
-=item m<number>
+=item *
+
+m<number>
 
 Format the value as a I<number> wide money value.
 
-=item %<format>
+=item *
+
+%<format>
 
 Performs sprintf formatting on the value.
 
-=item <number>
+=item *
+
+<number>
 
 Left justifies the value in a I<number> wide field.
 
@@ -2423,13 +2420,17 @@ Left justifies the value in a I<number> wide field.
 The order email sent to the site administrator has a couple of extra
 fields:
 
-=over 4
+=over
 
-=item cardNumber
+=item *
+
+cardNumber
 
 The credit card number of the user's credit card.
 
-=item cardExpiry
+=item *
+
+cardExpiry
 
 The entered expiry date for the user's credit card.
 
@@ -2441,138 +2442,118 @@ These names can be used with the <: order ... :> tag.
 
 Monetary values should typically be used with <:money order ...:>
 
-=over 4
+=over
 
-=item id
+=item *
+
+id
 
 The order id or order number.
 
-=item delivFirstName
+=item *
 
-=item delivLastName
+delivFirstName, delivLastName, delivStreet, delivSuburb, delivState,
+delivPostCode, delivCountry - Delivery information for the order.
 
-=item delivStreet
+=item *
 
-=item delivSuburb
+billFirstName, billLastName, billStreet, billSuburb, billState,
+billPostCode, billCountry - Billing information for the order.
 
-=item delivState
+=item *
 
-=item delivPostCode
+telephone, facsimile, emailAddress - Contact information for the
+order.
 
-=item delivCountry
+=item *
 
-Delivery information for the order.
+total - Total price of the order.
 
-=item billFirstName
+=item *
 
-=item billLastName
+wholesaleTotal - Wholesale cost of the total.  Your costs, if you
+entered wholesale prices for the products.
 
-=item billStreet
+=item *
 
-=item billSuburb
+gst - GST (in Australia) payable on the order, if you entered GST for
+the products.
 
-=item billState
+=item *
 
-=item billPostCode
+orderDate - When the order was made.
 
-=item billCountry
+=item *
 
-Billing information for the order.
+filled - Whether or not the order has been filled.  This can be used
+with the order_filled target in shopadmin.pl for tracking filled
+orders.
 
-=item telephone
+=item *
 
-=item facsimile
+whenFilled - The time and date when the order was filled.
 
-=item emailAddress
+=item *
 
-Contact information for the order.
+whoFilled - The user who marked the order as filled.
 
-=item total
+=item *
 
-Total price of the order.
+paidFor - Whether or not the order has been paid for.  This can be
+used with a custom purchasing handler to mark the product as paid for.
+You can then filter the order list to only display paid for orders.
 
-=item wholesaleTotal
+=item *
 
-Wholesale cost of the total.  Your costs, if you entered wholesale
-prices for the products.
+paymentReceipt - A custom payment handler can fill this with receipt
+information.
 
-=item gst
+=item *
 
-GST (in Australia) payable on the order, if you entered GST for the products.
+randomId - Generated by the prePurchase target, this can be used as a
+difficult to guess identifier for orders, when working with custom
+payment handlers.
 
-=item orderDate
+=item *
 
-When the order was made.
-
-=item filled
-
-Whether or not the order has been filled.  This can be used with the
-order_filled target in shopadmin.pl for tracking filled orders.
-
-=item whenFilled
-
-The time and date when the order was filled.
-
-=item whoFilled
-
-The user who marked the order as filled.
-
-=item paidFor
-
-Whether or not the order has been paid for.  This can be used with a
-custom purchasing handler to mark the product as paid for.  You can
-then filter the order list to only display paid for orders.
-
-=item paymentReceipt
-
-A custom payment handler can fill this with receipt information.
-
-=item randomId
-
-Generated by the prePurchase target, this can be used as a difficult
-to guess identifier for orders, when working with custom payment
-handlers.
-
-=item cancelled
-
-This can be used by a custom payment handler to mark an order as
-cancelled if the user starts processing an order without completing
-payment.
+cancelled - This can be used by a custom payment handler to mark an
+order as cancelled if the user starts processing an order without
+completing payment.
 
 =back
 
 =head2 Order item fields
 
-=over 4
+=over
 
-=item productId
+=item *
 
-The product id of this item.
+productId - The product id of this item.
 
-=item orderId 
+=item *
 
-The order Id.
+orderId - The order Id.
 
-=item units
+=item *
 
-The number of units for this item.
+units - The number of units for this item.
 
-=item price
+=item *
 
-The price paid for the product.
+price - The price paid for the product.
 
-=item wholesalePrice
+=item *
 
-The wholesale price for the product.
+wholesalePrice - The wholesale price for the product.
 
-=item gst
+=item *
 
-The gst for the product.
+gst - The gst for the product.
 
-=item options
+=item *
 
-A comma separated list of options specified for this item.  These
-correspond to the option names in the product.
+options - A comma separated list of options specified for this item.
+These correspond to the option names in the product.
 
 =back
 
@@ -2585,46 +2566,51 @@ tags:
 
 =over
 
-=item iterator ... options
+=item *
+
+C<iterator> ... <options>
 
 within an item, iterates over the options for this item in the cart.
 Sets the item tag.
 
-=item option field
+=item *
+
+C<option> I<field>
 
 Retrieves the given field from the option, possible field names are:
 
 =over
 
-=item id
+=item *
 
-The type/identifier for this option.  eg. msize for a male clothing
-size field.
+id - The type/identifier for this option.  eg. msize for a male
+clothing size field.
 
-=item value
+=item *
 
-The underlying value of the option, eg. XL.
+value - The underlying value of the option, eg. XL.
 
-=item desc
+=item *
 
-The description of the field from the product options hash.  If the
-description isn't defined this is the same as the id. eg. Size.
+desc - The description of the field from the product options hash.  If
+the description isn't defined this is the same as the id. eg. Size.
 
-=item label
+=item *
 
-The description of the value from the product options hash.
+label - The description of the value from the product options hash.
 eg. "Extra large".
 
 =back
 
-=item ifOptions
+=item *
 
-A conditional tag, true if the current cart item has any options.
+ifOptions - A conditional tag, true if the current cart item has any
+options.
 
-=item options
+=item *
 
-A simple rendering of the options as a parenthesized comma-separated
-list.
+options - A simple rendering of the options as a parenthesized
+comma-separated list.
 
 =back
 
