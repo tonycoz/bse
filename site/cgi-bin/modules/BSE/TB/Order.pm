@@ -7,7 +7,7 @@ use vars qw/@ISA/;
 use Carp 'confess';
 use BSE::Shop::PaymentTypes;
 
-our $VERSION = "1.018";
+our $VERSION = "1.019";
 
 sub columns {
   return qw/id
@@ -30,7 +30,7 @@ sub columns {
            delivStreet2 billStreet2 purchase_order shipping_method
            shipping_name shipping_trace
 	   paypal_token paypal_tran_id freight_tracking stage ccPAN
-	   paid_manually/;
+	   paid_manually coupon_code coupon_code_discount_pc/;
 }
 
 sub table {
@@ -682,6 +682,80 @@ sub is_manually_paid {
 
   return $self->paidFor &&
     ($self->paid_manually || $self->paymentType == PAYMENT_MANUAL);
+}
+
+=item coupon_valid
+
+For compatibility with cart objects, returns true if the currently
+stored coupon is valid.
+
+Since only an active coupon is stored, if we have a coupon code, then
+it's valid.
+
+=cut
+
+sub coupon_valid {
+  my ($self) = @_;
+
+  return $self->coupon_code ne "";
+}
+
+=item coupon_active
+
+For compatibility with cart objects, returns true if the currently
+stored coupon is active.
+
+Since only an active coupon is stored, if we have a coupon code, then
+it's valid.
+
+=cut
+
+*coupon_active = \&coupon_valid;
+
+=item total_cost
+
+Return the total cost of products without the coupon discount applied.
+
+=cut
+
+sub total_cost {
+  my ($self) = @_;
+
+  my $total = 0;
+  for my $item ($self->items) {
+    $total += $item->extended("price");
+  }
+
+  return $total;
+}
+
+=item discounted_product_cost
+
+Return the total cost of products less the discount from the coupon
+code.
+
+=cut
+
+sub discounted_product_cost {
+  my ($self) = @_;
+
+  my $cost = $self->total_cost;
+
+  $cost -= $cost * $self->coupon_code_discount_pc / 100;
+
+  return int($cost);
+}
+
+=item product_cost_discount
+
+Return any amount taken off the product cost.
+
+=cut
+
+sub product_cost_discount {
+  my ($self) = @_;
+
+  return $self->total_cost - $self->discounted_product_cost;
 }
 
 1;

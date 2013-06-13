@@ -350,7 +350,7 @@ create table orders (
   paid_manually integer not null default 0,
 
   coupon_code varchar(40) not null default '',
-  coupon_discount real not null default 0,
+  coupon_code_discount_pc real not null default 0,
 
   primary key (id),
   index order_cchash(ccNumberHash),

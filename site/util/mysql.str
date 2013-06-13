@@ -677,7 +677,7 @@ Column stage;varchar(20);NO;;
 Column ccPAN;varchar(4);NO;;
 Column paid_manually;int(11);NO;0;
 Column coupon_code;varchar(40);NO;;
-Column coupon_discount;double;NO;0;
+Column coupon_code_discount_pc;double;NO;0;
 Index PRIMARY;1;[id]
 Index order_cchash;0;[ccNumberHash]
 Index order_userId;0;[userId;orderDate]
