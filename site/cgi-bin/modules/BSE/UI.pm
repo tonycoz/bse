@@ -2,13 +2,13 @@ package BSE::UI;
 use strict;
 use BSE::Cfg;
 
+our $VERSION = "1.004";
+
 my $time = sub { time };
 
 if (eval { require Time::HiRes; 1 }) {
   $time = \&Time::HiRes::time;
 }
-
-our $VERSION = "1.003";
 
 sub confess;
 
@@ -120,7 +120,9 @@ sub confess {
 sub _show_times {
   my ($start, $result) = @_;
 
-  if ($result->{type} =~ m(^text/html) && $result->{content}) {
+  if ($result->{type}
+      && $result->{type} =~ m(^text/html)
+      && $result->{content}) {
     my %mem = qw(VmPeak unknown VmSize unknown);
 
     $mem{time} = sprintf("%.1f", 1000 * ($time->() - $start));
