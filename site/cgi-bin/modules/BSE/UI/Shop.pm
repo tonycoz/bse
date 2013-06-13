@@ -18,7 +18,7 @@ use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 use BSE::Template;
 
-our $VERSION = "1.039";
+our $VERSION = "1.040";
 
 =head1 NAME
 
@@ -151,9 +151,9 @@ Flashes msg:bse/shop/cart/empty unless C<r> is supplied.
 sub req_emptycart {
   my ($self, $req) = @_;
 
-  my $old = $req->session->{cart};;
-  $req->session->{cart} = [];
-  delete $req->session->{cart_coupon_code};
+  my $cart = $req->cart;
+  my $item_count = @{$cart->items};
+  $cart->empty;
 
   my $refresh = $req->cgi->param('r');
   unless ($refresh) {
@@ -161,7 +161,7 @@ sub req_emptycart {
     $req->flash_notice("msg:bse/shop/cart/empty");
   }
 
-  return _add_refresh($refresh, $req, !$old);
+  return _add_refresh($refresh, $req, !$item_count);
 }
 
 sub req_add {
@@ -700,19 +700,22 @@ sub req_checkout {
 }
 
 sub req_checkupdate {
-  my ($class, $req) = @_;
+  my ($self, $req) = @_;
 
-  $req->session->{cart} ||= [];
-  my @cart = @{$req->session->{cart}};
-  my @cart_prods = map { Products->getByPkey($_->{productId}) } @cart;
-  $req->session->{custom} ||= {};
-  my %custom_state = %{$req->session->{custom}};
-  custom_class($req->cfg)
-      ->checkout_update($req->cgi, \@cart, \@cart_prods, \%custom_state, $req->cfg);
-  $req->session->{custom} = \%custom_state;
+  my $cart = $req->cart("checkupdate");
+
+  $self->update_quantities($req);
+
+  $req->session->{custom} = $cart->custom_state;
   $req->session->{order_info_confirmed} = 0;
-  
-  return $class->req_checkout($req, "", 1);
+
+  my %fields = $self->_order_fields($req);
+  my %values;
+  $self->_order_hash($req, \%values, \%fields);
+  $req->session->{order_info} = \%values;
+  $req->session->{order_need_delivery} = $req->cgi->param("need_delivery");
+
+  return $req->get_refresh($req->user_url(shop => "checkout"));
 }
 
 sub req_remove_item {
@@ -816,7 +819,7 @@ sub req_order {
   keys %errors
     and return $class->req_checkout($req, \%errors, 1);
 
-  $class->_fillout_order($req, \%values, \@items, \@products, \$msg, 'payment')
+  $class->_fillout_order($req, \%values, \$msg, 'payment')
     or return $class->req_checkout($req, $msg, 1);
 
   $req->session->{order_info} = \%values;
@@ -1078,10 +1081,13 @@ sub req_payment {
     }
   }
   else {
+    my $cart = $req->cart("payment");
+
     $order_values->{filled} = 0;
     $order_values->{paidFor} = 0;
     
-    my @items = $class->_build_items($req, \@products);
+    my @items = $class->_build_items($req);
+    @products = $cart->products;
     
     if ($session->{order_work}) {
       $order = BSE::TB::Orders->getByPkey($session->{order_work});
@@ -1104,7 +1110,7 @@ sub req_payment {
       my @allbutid = @columns;
       shift @allbutid;
       @{$order}{@allbutid} = @data;
-      
+
       $order->clear_items;
       delete $session->{order_work};
       eval {
@@ -1130,7 +1136,7 @@ sub req_payment {
       defined $item{session_id} or $item{session_id} = 0;
       $item{options} = ""; # not used for new orders
       my @data = @item{@item_cols};
-    shift @data;
+      shift @data;
       my $dbitem = BSE::TB::OrderItems->add(@data);
       push @dbitems, $dbitem;
       
@@ -1279,8 +1285,8 @@ sub _finish_order {
 
   $self->_send_order($req, $order);
 
-  # empty the cart ready for the next order
-  delete @{$req->session}{qw/order_info order_info_confirmed order_need_delivery cart order_work/};
+  my $cart = $req->cart;
+  $cart->empty;
 }
 
 =item orderdone
@@ -1410,6 +1416,7 @@ sub req_orderdone {
   }
 
   $req->set_variable(order => $order);
+  $req->set_variable(payment_types => \@pay_types);
 
   return $req->response('checkoutfinal', \%acts);
 }
@@ -1687,6 +1694,7 @@ sub tag_ifPayments {
 sub update_quantities {
   my ($class, $req) = @_;
 
+  # FIXME: should use the cart class to update quantities
   my $session = $req->session;
   my $cgi = $req->cgi;
   my $cfg = $req->cfg;
@@ -1717,9 +1725,10 @@ sub update_quantities {
 }
 
 sub _build_items {
-  my ($class, $req, $products) = @_;
+  my ($class, $req) = @_;
 
   my $session = $req->session;
+  my $cart = $req->cart;
   $session->{cart}
     or return;
   my @msgs;
@@ -1729,18 +1738,16 @@ sub _build_items {
   my @prodcols = Product->columns;
   my @newcart;
   my $today = now_sqldate();
-  for my $item (@cart) {
+  for my $item ($cart->items) {
     my %work = %$item;
-    my $product = Products->getByPkey($item->{productId});
+    my $product = $item->product;
     if ($product) {
-      (my $comp_release = $product->{release}) =~ s/ .*//;
-      (my $comp_expire = $product->{expire}) =~ s/ .*//;
-      $comp_release le $today
+      $product->is_released
 	or do { push @msgs, "'$product->{title}' has not been released yet";
 		next; };
-      $today le $comp_expire
-	or do { push @msgs, "'$product->{title}' has expired"; next; };
-      $product->{listed} 
+      $product->is_expired
+        and do { push @msgs, "'$product->{title}' has expired"; next; };
+      $product->listed
 	or do { push @msgs, "'$product->{title}' not available"; next; };
 
       for my $col (@prodcols) {
@@ -1752,7 +1759,6 @@ sub _build_items {
       $work{extended_wholesale} = $work{units} * $work{wholesalePrice};
       
       push @newcart, \%work;
-      push @$products, $product;
     }
   }
 
@@ -1765,24 +1771,25 @@ sub _build_items {
 }
 
 sub _fillout_order {
-  my ($class, $req, $values, $items, $products, $rmsg, $how) = @_;
+  my ($class, $req, $values, $rmsg, $how) = @_;
 
   my $session = $req->session;
   my $cfg = $req->cfg;
   my $cgi = $req->cgi;
 
-  my $total = 0;
-  my $total_gst = 0;
-  my $total_wholesale = 0;
-  for my $item (@$items) {
-    $total += $item->{extended_retailPrice};
-    $total_gst += $item->{extended_gst};
-    $total_wholesale += $item->{extended_wholesale};
-  }
-  $values->{total} = $total;
-  $values->{gst} = $total_gst;
-  $values->{wholesaleTotal} = $total_wholesale;
+  my $cart = $req->cart($how);
 
+  if ($cart->is_empty) {
+    $$rmsg = "Your cart is empty";
+    return;
+  }
+
+  # FIXME? this doesn't take discounting into effect
+  $values->{gst} = $cart->gst;
+  $values->{wholesaleTotal} = $cart->wholesaleTotal;
+
+  my $items = $cart->items;
+  my $products = $cart->products;
   my $prompt_ship = $cfg->entry("shop", "shipping", 0);
   if ($prompt_ship) {
     if (_any_physical_products($products)) {
@@ -1818,8 +1825,8 @@ sub _fillout_order {
 	$values->{shipping_name} = $courier->name;
 	$values->{shipping_cost} = $cost;
 	$values->{shipping_trace} = $courier->trace;
+	$cart->set_shipping_cost($cost);
 	#$values->{delivery_in} = $courier->delivery_in();
-	$values->{total} += $values->{shipping_cost};
       }
       else {
 	# XXX: What to do?
@@ -1834,6 +1841,14 @@ sub _fillout_order {
       $values->{shipping_trace} = "All products have zero weight.";
     }
   }
+  if ($cart->coupon_active) {
+    $values->{coupon_code} = $cart->coupon_code;
+  }
+  else {
+    $values->{coupon_code} = "";
+  }
+  $values->{coupon_code_discount_pc} = $cart->coupon_code_discount_pc;
+  $values->{total} = $cart->total;
 
   my $cust_class = custom_class($cfg);
 

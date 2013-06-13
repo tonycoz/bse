@@ -67,6 +67,7 @@ function BSE_validateForm {
   safe with us.<br>
 </p>
 </font> 
+<form action="<:dyntarget shop:>" method="post">
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <tr> 
     <td align="center" bgcolor="#CCCCCC" width="100%" height="18"> <font size="2" face="Verdana, Arial, Helvetica, sans-serif"> 
@@ -199,7 +200,6 @@ Unknown coupon code
     </table>
     <br>
 <:eif User:>
-<form action="<:dyntarget shop:>" method="POST" onSubmit="BSE_validateForm();return document.MM_returnValue">
   <font face="Verdana, Arial, Helvetica, sans-serif" size="3"> <b>Billing Details:</b></font> 
   <hr noshade size="1">
   <table border="0" cellspacing="0" cellpadding="0">

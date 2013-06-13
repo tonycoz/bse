@@ -79,6 +79,23 @@
   </tr>
 </table>
 <table width="100%" border="0" cellspacing="0" cellpadding="0">    
+<:.if order.coupon_code ne "" -:>
+    <tr>
+      <td>Coupon code: <:= order.coupon_code -:></td>
+      <td height="20">&nbsp;</td>
+      <td height="20" bgcolor="#666666">&nbsp;</td>
+      <td align="CENTER" height="20" bgcolor="#666666" NOWRAP><font size="2" face="Verdana, Arial, Helvetica, sans-serif" color="#FFFFFF"> 
+        <b>DISCOUNT</b></font></td>
+      <td height="20" bgcolor="#666666">&nbsp;</td>
+    </tr>
+    <tr>
+      <td colspan="2">&nbsp;</td>
+      <td height="20" style="border-left: 1px solid #666666">&nbsp;</td>
+      <td align="CENTER">$<:= bse.number("money", order.product_cost_discount) -:></td>
+      <td height="20" style="border-right: 1px solid #666666">&nbsp;</td>
+    </tr>
+
+<:.end if -:>
   <tr> 
     <td>&nbsp;</td>
     <td height="20">&nbsp;</td>

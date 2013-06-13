@@ -2,7 +2,7 @@ package BSE::Cart;
 use strict;
 use Scalar::Util;
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 =head1 NAME
 
@@ -36,6 +36,8 @@ Create a new cart object based on the session.
 sub new {
   my ($class, $req, $stage) = @_;
 
+  $stage ||= "";
+
   my $self = bless
     {
      products => {},
@@ -52,6 +54,9 @@ sub new {
 
   if ($stage eq 'cart' || $stage eq 'checkout') {
     $self->_enter_cart;
+  }
+  elsif ($stage eq 'checkupdate') {
+    $self->_checkout_update;
   }
 
   $self->{coupon_code} = $self->{req}->session->{cart_coupon_code};
@@ -72,8 +77,37 @@ sub _enter_cart {
   $self->{custom_state} = \%custom_state;
 
   my $cust_class = BSE::CfgInfo::custom_class($self->{req}->cfg);
-  $cust_class->enter_cart($self->items, $self->products,
+  $cust_class->enter_cart(scalar $self->items, scalar $self->products,
 			  \%custom_state, $req->cfg);
+}
+
+sub _checkout_update {
+  my ($self) = @_;
+
+  my $req = $self->{req};
+  require BSE::CfgInfo;
+
+  $req->session->{custom} ||= {};
+  my %custom_state = %{$req->session->{custom}};
+
+  $self->{custom_state} = \%custom_state;
+
+  my $cust_class = BSE::CfgInfo::custom_class($self->{req}->cfg);
+  $cust_class->checkout_update
+    ($req->cgi, scalar $self->items, scalar $self->products,
+     \%custom_state, $req->cfg);
+}
+
+=item is_empty()
+
+Return true if the cart has no items in it.
+
+=cut
+
+sub is_empty {
+  my ($self) = @_;
+
+  return @{$self->{items}} == 0;
 }
 
 =item items()
@@ -120,11 +154,51 @@ sub total_cost {
   return $total_cost;
 }
 
+=item gst
+
+Return the total GST paid for the items in the cart.
+
+This currently depends on the gst values of the products.
+
+This ignores the coupon code discount.
+
+=cut
+
+sub gst {
+  my ($self) = @_;
+
+  my $total_gst = 0;
+  for my $item (@{$self->items}) {
+    $total_gst += $item->extended_gst;
+  }
+
+  return $total_gst;
+}
+
+=item wholesaleTotal
+
+Return the wholesale cost for the items in the cart.
+
+This depends on the wholesale values of the products.
+
+=cut
+
+sub wholesaleTotal {
+  my ($self) = @_;
+
+  my $total_wholesale = 0;
+  for my $item (@{$self->items}) {
+    $total_wholesale += $item->extended_wholesale;
+  }
+
+  return $total_wholesale;
+}
+
 =item discounted_product_cost
 
 Cost of products with an product discount taken into account.
 
-Note: this rounds thr total B<down>.
+Note: this rounds the total B<down>.
 
 =cut
 
@@ -189,7 +263,7 @@ sub total_units {
 
   my $total_units = 0;
   for my $item (@{$self->items}) {
-    $total_units += $item->{units};
+    $total_units += $item->units;
   }
 
   return $total_units;
@@ -197,9 +271,7 @@ sub total_units {
 
 =item total
 
-Total of items in the cart and shipping costs.
-
-This doesn't handle custom costs yet.
+Total of items in the cart, any custom costs and shipping costs.
 
 =cut
 
@@ -615,6 +687,21 @@ sub cleanup {
   }
 
   $self->{items} = \@newitems;
+}
+
+=item empty
+
+Empty the cart.
+
+=cut
+
+sub empty {
+  my ($self) = @_;
+
+  my $req = $self->{req};
+
+  # empty the cart ready for the next order
+  delete @{$req->session}{qw/order_info order_info_confirmed order_need_delivery cart order_work cart_coupon_code/};
 }
 
 =back

@@ -79,27 +79,26 @@
   </table>
   <table width="100%" border="0" cellspacing="0" cellpadding="0">
     <tr>
-      <td>Coupon code: <input type="text" name="coupon" value="<:= cart.coupon_code -:>">
+      <td colspan="2">Coupon code: <input type="text" name="coupon" value="<:= cart.coupon_code -:>">
 <:.if cart.coupon_active -:>
 Coupon active
 <:.elsif cart.coupon_valid -:>
 <:.if request.siteuser -:>
 Your cart contains items the code isn't valid for
 <:.else -:>
-You need to logon
+You need to logon, or your cart contains items the code isn't valid for.
 <:.end if -:>
 <:.elsif cart.coupon_code ne "" -:>
 Unknown coupon code
 <:.end if -:>
 </td>
 <:.if cart.coupon_active -:>
-      <td height="20">&nbsp;</td>
       <td height="20" bgcolor="#666666">&nbsp;</td>
       <td align="CENTER" height="20" bgcolor="#666666" NOWRAP><font size="2" face="Verdana, Arial, Helvetica, sans-serif" color="#FFFFFF"> 
         <b>DISCOUNT</b></font></td>
       <td height="20" bgcolor="#666666">&nbsp;</td>
 <:.else -:>
-      <td colspan="6"></td>
+      <td colspan="5"></td>
 <:.end if -:>
     </tr>
 <:.if cart.coupon_active -:>
