@@ -6,7 +6,7 @@ use vars qw(@ISA $VERSION);
 use BSE::TB::AuditEntry;
 use Scalar::Util qw(blessed);
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 sub rowClass {
   return 'BSE::TB::AuditEntry';
@@ -145,6 +145,7 @@ sub log {
 
 	my $json = JSON->new;
 	$json->pretty;
+	$json->canonical;
 	eval {
 	  $dump = $json->encode($dump);
 	  1;
