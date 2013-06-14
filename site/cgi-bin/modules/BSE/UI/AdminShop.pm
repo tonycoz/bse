@@ -21,7 +21,7 @@ use BSE::CfgInfo qw(cfg_dist_image_uri);
 use BSE::Util::SQL qw/now_sqldate sql_to_date date_to_sql sql_date sql_datetime/;
 use BSE::Util::Valid qw/valid_date/;
 
-our $VERSION = "1.020";
+our $VERSION = "1.021";
 
 my %actions =
   (
@@ -1332,6 +1332,15 @@ sub req_coupon_add {
 
   my $coupon = BSE::TB::Coupons->make(%$values);
 
+  $req->audit
+    (
+     component => "shopadmin:coupon:add",
+     level => "info",
+     msg => "Coupon '" . $coupon->code . "' created",
+     object => $coupon,
+     dump => $coupon->json_data,
+    );
+
   if ($req->is_ajax) {
     return $req->json_content
       (
@@ -1464,12 +1473,28 @@ sub req_coupon_save {
     return $self->req_coupon_edit($req, \%errors);
   }
 
+  my $old = $coupon->json_data;
+
   my $tiers = delete $values->{tiers};
   for my $key (keys %$values) {
     $coupon->set($key => $values->{$key});
   }
   $coupon->set_tiers($tiers);
   $coupon->save;
+
+  $req->audit
+    (
+     component => "shopadmin:coupon:edit",
+     level => "info",
+     msg => "Coupon '" . $coupon->code . "' modified",
+     object => $coupon,
+     dump =>
+     {
+      old => $old,
+      new => $coupon->json_data,
+      type => "edit",
+     }
+    );
 
   if ($req->is_ajax) {
     return $req->json_content
@@ -1529,6 +1554,16 @@ sub req_coupon_delete {
     or return $result;
 
   my $code = $coupon->code;
+
+  $req->audit
+    (
+     component => "shopadmin:coupon:delete",
+     level => "info",
+     msg => "Coupon '$code' deleted",
+     object => $coupon,
+     dump => $coupon->json_data,
+    );
+
   $coupon->remove;
 
   if ($req->is_ajax) {
