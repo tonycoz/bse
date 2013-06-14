@@ -2,7 +2,7 @@ package Squirrel::Template::Parser;
 use strict;
 use Squirrel::Template::Constants qw(:token :node);
 
-our $VERSION = "1.016";
+our $VERSION = "1.018";
 
 use constant TOK => 0;
 use constant TMPLT => 1;
@@ -437,6 +437,77 @@ sub _parse_wrap {
   }
   else {
     return $start;
+  }
+}
+
+sub _parse_ext_wrap {
+  my ($self, $wrap) = @_;
+
+  my $content = $self->_parse_content;
+  my $end = $self->[TOK]->get;
+
+  # it's not really the filename (yet)
+  my $tokens = Squirrel::Template::Expr::Tokenizer->new($wrap->[NODE_WRAP_FILENAME]);
+
+  my @errors;
+  my $parser = Squirrel::Template::Expr::Parser->new;
+  my $name_expr;
+  unless (eval { $name_expr = $parser->parse_tokens($tokens); 1 }) {
+    return $self->_error($wrap, "Could not parse expression: ".$@->[1]);
+  }
+
+  my @result;
+  my $next = $tokens->get;
+  my @args;
+  if ($next->[0] eq 'op,') {
+    unless (eval {
+      while ($next->[0] eq 'op,') {
+	my $key;
+	my $value;
+	$key = $parser->parse_tokens($tokens);
+	my $colon = $tokens->get;
+	$colon->[0] eq 'op:'
+	  or die [ error => "Expected : but found $colon->[0]" ];
+	$value = $parser->parse_tokens($tokens);
+	push @args, [ $key, $value ];
+	$next = $tokens->get;
+      }
+
+      if ($next->[0] ne 'eof') {
+	die [ error => "Expected , or eof but found $next->[0]" ];
+      }
+      1;
+    }) {
+      return $self->_error($wrap, ref $@ ? $@->[0] : $@);
+    }
+  }
+  elsif ($next->[0] ne 'eof') {
+    push @errors, $self->_error($wrap, "Expected , or end of expression but found $next->[0]");
+  }
+
+  if ($end->[TOKEN_TYPE] eq 'end') {
+    if ($end->[TOKEN_END_TYPE] && $end->[TOKEN_END_TYPE] ne 'wrap') {
+      push @errors, $self->_error($end, "Expected '.end' or '.end wrap' for .wrap started $wrap->[TOKEN_FILENAME]:$wrap->[TOKEN_LINE] but found '.end $end->[TOKEN_END_TYPE]'");
+    }
+  }
+  elsif ($end->[TOKEN_TYPE] eq 'eof') {
+    $self->[TOK]->unget($end);
+  }
+  else {
+    $self->[TOK]->unget($end);
+    push @errors, $self->_error($end, "Expected '.end', '.end wrap' or eof for .wrap started $wrap->[TOKEN_FILENAME]:$wrap->[TOKEN_LINE] but found $end->[TOKEN_TYPE]");
+    $end = $self->_dummy($end, end => "");
+  }
+  $wrap->[NODE_WRAP_CONTENT] = $content;
+  $wrap->[NODE_WRAP_FILENAME] = $name_expr;
+  $wrap->[NODE_WRAP_ARGS] = \@args;
+  $wrap->[NODE_WRAP_END] = $end;
+
+  if (@errors) {
+    return $self->_comp($wrap, @errors);
+  }
+  else {
+    return $wrap;
   }
 }
 

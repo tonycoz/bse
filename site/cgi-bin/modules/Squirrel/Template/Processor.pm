@@ -3,7 +3,7 @@ use strict;
 use Squirrel::Template::Constants qw(:node);
 use Scalar::Util ();
 
-our $VERSION = "1.023";
+our $VERSION = "1.024";
 
 use constant ACTS => 0;
 use constant TMPLT => 1;
@@ -496,6 +496,60 @@ sub _process_wrap {
   else {
     push @errors, $self->_error($node, "Error starting wrap: Too many levels of wrap for '$node->[NODE_WRAP_FILENAME]'");
     @result = $self->process($content);
+  }
+
+  return ( @errors, @result );
+}
+
+sub _process_ext_wrap {
+  my ($self, $node) = @_;
+
+  my ($filename, $args, $content) =
+    @{$node}[NODE_WRAP_FILENAME, NODE_WRAP_ARGS, NODE_WRAP_CONTENT];
+
+  my %args;
+  my @result;
+  my @errors;
+  my $name;
+  if (eval {
+    $name = $self->[EVAL]->process($filename);
+    for my $arg (@$args) {
+      my $key = $self->[EVAL]->process($arg->[0]);
+      my $value = $self->[EVAL]->process($arg->[1]);
+      $args{$key} = $value;
+    }
+    1;
+  }) {
+    my $ctx = ".wrap '$name' from $node->[NODE_FILENAME]:$node->[NODE_LINE]";
+    if ($self->[TMPLT]->start_wrap(\%args)) {
+
+      my $parsed = $self->[TMPLT]->get_macro($name);
+      if (!$parsed) {
+	($parsed, my $message) = $self->[TMPLT]->parse_file($name);
+	unless ($parsed) {
+	  $self->[TMPLT]->trace_noimpl("call:$node->[NODE_FILENAME]:$node->[NODE_LINE]:$message\n");
+	  push @result, $self->_error($node, "Loading wrap: $message");
+	}
+      }
+
+      if ($parsed) {
+	my $proc = __PACKAGE__->new($self->[ACTS], $self->[TMPLT],
+				    sub { $self->process($content) });
+	push @result, $proc->process($parsed);
+      }
+      $self->[TMPLT]->end_wrap;
+    }
+    else {
+      push @result, $self->_error($node, "Starting wrap: too many levels?");
+    }
+  }
+  else {
+    @result =
+      (
+       $node->[NODE_ORIG],
+       $self->process($node->[NODE_WRAP_CONTENT]),
+       $node->[NODE_WRAP_END][NODE_ORIG],
+      );
   }
 
   return ( @errors, @result );

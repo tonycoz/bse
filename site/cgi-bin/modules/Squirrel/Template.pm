@@ -20,7 +20,7 @@ BEGIN {
 
 use constant DEBUG_GET_PARMS => 0;
 
-our $VERSION = "1.027";
+our $VERSION = "1.028";
 
 my %compile_cache;
 
@@ -869,6 +869,13 @@ C<< <:.while I<condition> :> I<content> <:.end :> >>
 
 Produce I<content> while I<condition> is true.
 
+=item *
+
+C<< <:.wrap I<name>, I<name>:I<value> ... :> >>
+
+Wrap content up until C<< <:.end wrap:> >> or end of file with the
+content from the file or macro I<name>.
+
 =back
 
 =head1 Special Variables
@@ -937,7 +944,7 @@ current - the current item in the iteration.
 
 This is set to the names and values supplied in a C<wrap> request, so:
 
-  <:= param.name :>
+  <:= params.name :>
 
 is equivalent to:
 

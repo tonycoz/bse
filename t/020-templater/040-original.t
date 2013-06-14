@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 180;
+use Test::More tests => 184;
 use HTML::Entities;
 
 sub template_test($$$$;$$);
@@ -107,7 +107,7 @@ abc
 abc
 OUTPUT
 
-  template_test(<<TEMPLATE, <<OUTPUT, "wrap", \%acts, "both");
+  template_test(<<TEMPLATE, <<OUTPUT, "wrap more", \%acts, "both");
 Before
 <:wrap wraptest.tmpl title=>[cat "foo " [str]], menu => 1, showtitle => "abc" -:>
 Alpha
@@ -170,6 +170,63 @@ TEMPLATE
 before
 * wrap here without being wrapped *
 after
+OUTPUT
+
+  template_test(<<TEMPLATE, <<OUTPUT, ".wrap simple", \%acts, "in", \%vars);
+<:.wrap "wraptest.tmpl", "title": "foo " _ str, "menu": 1, "showtitle":"abc" :>Alpha
+<:param menu:>
+<:param showtitle:>
+<:= params.showtitle :>
+TEMPLATE
+<title>foo ABC</title>
+Alpha
+1
+abc
+abc
+OUTPUT
+
+  template_test(<<TEMPLATE, <<OUTPUT, ".wrap unknown", \%acts, "both");
+<:.wrap "unknown.tmpl":>
+Body
+TEMPLATE
+* Loading wrap: File unknown.tmpl not found *
+OUTPUT
+
+  template_test(<<TEMPLATE, <<OUTPUT, ".wrap recursive", \%acts, "both", \%vars);
+<:.wrap "wrapself.tmpl", "title":"foo " _ str, "menu":1, "showtitle":"abc" :>Alpha
+<:= params.menu :>
+<:= params.showtitle :>
+TEMPLATE
+* Error starting wrap: Too many levels of wrap for 'wrapself.tmpl' *<title>foo ABC</title>
+<title>foo ABC</title>
+<title>foo ABC</title>
+<title>foo ABC</title>
+<title>foo ABC</title>
+<title>foo ABC</title>
+<title>foo ABC</title>
+<title>foo ABC</title>
+<title>foo ABC</title>
+<title>foo ABC</title>
+Alpha
+1
+abc
+OUTPUT
+
+  template_test(<<TEMPLATE, <<OUTPUT, ".wrap more", \%acts, "both", \%vars);
+Before
+<:.wrap "wraptest.tmpl", "title":"foo " _ str, "menu":1, "showtitle":"abc" -:>
+Alpha
+<:= params.menu:>
+<:= params.showtitle:>
+<:-.end wrap-:>
+After
+TEMPLATE
+Before
+<title>foo ABC</title>
+Alpha
+1
+abc
+After
 OUTPUT
 
   # undefined iterator - replacement should happen on the inside

@@ -2,7 +2,7 @@ package Squirrel::Template::Constants;
 use strict;
 use Exporter qw(import);
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 sub _define_sequence {
   my ($keys, $start) = @_;
@@ -44,7 +44,7 @@ my @node_comp = qw(NODE_COMP_FIRST);
 _define_sequence(\@node_comp, 4);
 my @node_with = qw(NODE_WITH_CONTENT NODE_WITH_END);
 _define_sequence(\@node_with, 6);
-my @node_wrap = qw(NODE_WRAP_FILENAME NODE_WRAP_ARGS NODE_WRAP_CONTENT);
+my @node_wrap = qw(NODE_WRAP_FILENAME NODE_WRAP_ARGS NODE_WRAP_CONTENT NODE_WRAP_END);
 _define_sequence(\@node_wrap, 4);
 my @node_switch = qw(NODE_SWITCH_CASES NODE_SWITCH_END);
 _define_sequence(\@node_switch, 5);
