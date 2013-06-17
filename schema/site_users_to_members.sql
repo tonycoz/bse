@@ -11,7 +11,17 @@ begin
   if sucount <> 0 then
     call error_bse_siteusers_must_be_empty;
   end if;
-  insert into bse_siteusers
+  insert into bse_siteusers(id, idUUID, userId, password, password_type,
+	email, whenRegistered, lastLogon, title, name1, name2, street, street2,
+	suburb, state, postcode, country, telephone, facsimile, mobile,
+	organization, confirmed, confirmSecret, waitingForConfirmation,
+	textOnlyMail, previousLogon, delivTitle, delivEmail, delivFirstName,
+	delivLastName, delivStreet, delivStreet2, delivSuburb, delivState,
+	delivPostCode, delivCountry, delivTelephone, delivFacsimile,
+	delivMobile, delivOrganization, instructions, adminNotes, disabled,
+	flags, affiliate_name, lost_today, lost_date, lost_id,
+	customText1, customText2, customText3, customStr1, customStr2,
+	customStr3, customInt1, customInt2, customWhen1)
 select
   id,
   uuid() as "idUUID",
