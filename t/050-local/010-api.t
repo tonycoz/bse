@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test qw(make_ua base_url);
-use Test::More tests => 62;
+use Test::More tests => 67;
 use File::Spec;
 use File::Slurp;
 use Carp qw(confess);
@@ -165,6 +165,24 @@ SKIP: {
   my $mine = read_file("t/t000load.t");
   my $stored = read_file($file->full_filename);
   is($stored, $mine, "check contents");
+
+  my @files = $art->files;
+  is (@files, 1, "should be one file");
+  is($files[0]->id, $file->id, "should be what we added");
+
+  my $file2 = $art->add_file
+    (
+     $cfg,
+     displayName => "test2.txt",
+     filename => "t/data/t101.jpg",
+     store => 0,
+     name => "test",
+    );
+  ok($file2, "add a second file (named)");
+  $art->uncache_files;
+  my $named = $art->file_by_name("test");
+  ok($named, "got the named file");
+  is($named->id, $file2->id, "and it's the file we added");
 }
 
 {

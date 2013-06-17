@@ -2,7 +2,7 @@ package BSE::TB::SiteCommon;
 use strict;
 use Carp qw(confess);
 
-our $VERSION = "1.012";
+our $VERSION = "1.013";
 
 =head1 NAME
 
@@ -227,11 +227,57 @@ sub children {
     Articles->children($self->{id});
 }
 
+=item files
+
+Return the files for the article.
+
+This caches the file list.
+
+=cut
+
 sub files {
+  my ($self) = @_;
+
+  unless ($self->{_files}) {
+    $self->{_files} = [ $self->_files ];
+  }
+
+  return @{$self->{_files}};
+}
+
+sub _files {
   my ($self) = @_;
 
   require BSE::TB::ArticleFiles;
   return BSE::TB::ArticleFiles->getBy(articleId=>$self->{id});
+}
+
+=item uncache_files
+
+Remove the cached file list.
+
+=cut
+
+sub uncache_files {
+  my ($self) = @_;
+
+  delete $self->{_files};
+}
+
+=item file_by_name
+
+Return the file with the given name, or nothing if there is no such
+file.
+
+=cut
+
+sub file_by_name {
+  my ($self, $name) = @_;
+
+  my ($file) = grep $_->name eq $name, $self->files
+    or return;
+
+  return $file;
 }
 
 sub remove_images {
@@ -275,6 +321,7 @@ sub remove_files {
 
     $file->remove($cfg);
   }
+  $self->uncache_files;
 }
 
 sub _copy_fh_to_fh {
