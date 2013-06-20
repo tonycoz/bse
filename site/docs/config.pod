@@ -244,6 +244,11 @@ tidy].
 The default tag formatting to use for C<< <:= ... :> >> tags.
 Default: C<html>.
 
+=item formatter_image_class
+
+The default class to use for image[...]  tags in body text.  Default:
+C<bse_image_inline>.
+
 =back
 
 =head2 [basic]

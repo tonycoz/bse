@@ -3,7 +3,7 @@ use strict;
 use BSE::Util::HTML;
 use Carp 'confess';
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 use base 'DevHelp::Formatter';
 
@@ -65,7 +65,8 @@ sub _image {
   my $extras = '';
   my @classes;
   if ($self->{xhtml}) {
-    push @classes, "bse_image_inline";
+    push @classes, $self->{gen}{cfg}->entry
+      ("html", "formatter_image_class", "bse_image_inline");
   }
   if ($style) {
     if ($style =~ /^\d/) {
