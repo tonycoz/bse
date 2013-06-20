@@ -30,9 +30,6 @@ site/cgi-bin/modules/BSE/TB/Images.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/TB/Order.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/TB/Orders.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/TB/PriceTier.pm	=item without previous =over	1
-site/cgi-bin/modules/BSE/TB/SiteCommon.pm	=item without previous =over	1
-site/cgi-bin/modules/BSE/TB/SiteCommon.pm	=over on line 22 without closing =back (at head1)	1
-site/cgi-bin/modules/BSE/TB/SiteCommon.pm	multiple occurrence of link target 'menu_kids'	1
 site/cgi-bin/modules/BSE/TB/Tags.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/UI/AdminImageClean.pm	No argument for =item	2
 site/cgi-bin/modules/BSE/UI/AdminModules.pm	=item without previous =over	1
@@ -48,6 +45,15 @@ site/cgi-bin/modules/BSE/UI/AdminShop.pm	multiple occurrence of link target 'scr
 site/cgi-bin/modules/BSE/UI/Background.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/UI/Formmail.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/UI/Shop.pm	=item without previous =over	1
+site/cgi-bin/modules/BSE/UI/Shop.pm	multiple occurrence of link target '%<format>'	1
+site/cgi-bin/modules/BSE/UI/Shop.pm	multiple occurrence of link target 'gst'	1
+site/cgi-bin/modules/BSE/UI/Shop.pm	multiple occurrence of link target 'id'	1
+site/cgi-bin/modules/BSE/UI/Shop.pm	multiple occurrence of link target 'item field'	1
+site/cgi-bin/modules/BSE/UI/Shop.pm	multiple occurrence of link target 'm<number>'	1
+site/cgi-bin/modules/BSE/UI/Shop.pm	multiple occurrence of link target 'options'	1
+site/cgi-bin/modules/BSE/UI/Shop.pm	multiple occurrence of link target 'order field'	1
+site/cgi-bin/modules/BSE/UI/Shop.pm	multiple occurrence of link target 'product field'	1
+site/cgi-bin/modules/BSE/UI/Shop.pm	multiple occurrence of link target 'total'	1
 site/cgi-bin/modules/BSE/Util/SQL.pm	=over on line 37 without closing =back	1
 site/cgi-bin/modules/BSE/Util/SQL.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/BSE/Util/Secure.pm	=over on line 25 without closing =back (at head1)	1
@@ -93,15 +99,6 @@ site/cgi-bin/modules/Squirrel/Template.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/Squirrel/Template/Expr.pm	multiple occurrence of link target 'Methods'	1
 site/cgi-bin/modules/Squirrel/Template/Expr/WrapScalar.pm	=back without previous =over	1
 site/cgi-bin/search.pl	Verbatim paragraph in NAME section	1
-site/cgi-bin/shop.pl	multiple occurrence of link target '%<format>'	1
-site/cgi-bin/shop.pl	multiple occurrence of link target 'gst'	1
-site/cgi-bin/shop.pl	multiple occurrence of link target 'id'	1
-site/cgi-bin/shop.pl	multiple occurrence of link target 'item field'	1
-site/cgi-bin/shop.pl	multiple occurrence of link target 'm<number>'	1
-site/cgi-bin/shop.pl	multiple occurrence of link target 'options'	1
-site/cgi-bin/shop.pl	multiple occurrence of link target 'order field'	1
-site/cgi-bin/shop.pl	multiple occurrence of link target 'product field'	1
-site/cgi-bin/shop.pl	multiple occurrence of link target 'total'	1
 site/docs/access.pod	multiple occurrence of link target 'Regeneration'	1
 site/docs/bse.pod	=item type mismatch ('definition' vs. 'bullet')	1
 site/docs/bse.pod	preceding non-item paragraph(s)	1

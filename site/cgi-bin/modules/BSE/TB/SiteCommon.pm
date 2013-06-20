@@ -2,7 +2,7 @@ package BSE::TB::SiteCommon;
 use strict;
 use Carp qw(confess);
 
-our $VERSION = "1.013";
+our $VERSION = "1.014";
 
 =head1 NAME
 
@@ -138,7 +138,7 @@ sub menu_kids {
 }
 
 
-=item menu_kids
+=item all_menu_kids
 
 Returns a list of allkids meant to be listed in menus.
 
@@ -336,7 +336,7 @@ sub _copy_fh_to_fh {
   return 1;
 }
 
-=head1 add_file($cfg, %opts)
+=item add_file($cfg, %opts)
 
 Add a file to the site or article.
 
