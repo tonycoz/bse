@@ -6,7 +6,7 @@ use strict;
 use BSE::TB::Tags;
 use BSE::TB::TagMembers;
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 =head1 NAME
 
@@ -97,6 +97,63 @@ sub all_tag_categories {
     (
      'TagOwners.allCats' => $self->rowClass->tag_owner_type
     );
+}
+
+=item fix_tag_deps($tags, $opts)
+
+Given a list of tag names, remove any tags where it's parent tag isn't
+present.
+
+Accepts two parameters:
+
+=over
+
+=item *
+
+C<$tags> - an arrayref of tags to clean up.
+
+=item *
+
+C<$opts> - an optional hash of options.  The only defined option is:
+
+=over
+
+=item *
+
+C<deps> - a hash ref of loaded category dependencies.  This may be
+modified when you call fix_tag_deps().
+
+=back
+
+=back
+
+=cut
+
+sub fix_tag_deps {
+  my ($self, $tags, $opts) = @_;
+
+  $opts ||= {};
+
+  my $deps = $opts->{deps} || {};
+  my $removed;
+  my %tags = map { $_ => 1 } @$tags;
+  do {
+    $removed = 0;
+    my @tags = keys %tags;
+    for my $tag (@tags) {
+      my ($cat) = BSE::TB::Tags->split_name($tag);
+      unless ($deps->{$cat}) {
+	$deps->{$cat} = [ $self->tag_category_deps("$cat:") ];
+      }
+      if (@{$deps->{$cat}} and
+	  !grep $tags{$_}, @{$deps->{$cat}}) {
+	delete $tags{$tag};
+	++$removed;
+      }
+    }
+  } while ($removed);
+
+  return [ keys %tags ];
 }
 
 =item tag_category($catname)
