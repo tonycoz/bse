@@ -6,7 +6,7 @@ use strict;
 use BSE::TB::Tags;
 use BSE::TB::TagMembers;
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 =head1 NAME
 
@@ -152,6 +152,62 @@ sub fix_tag_deps {
       }
     }
   } while ($removed);
+
+  return [ keys %tags ];
+}
+
+=item expand_tag_deps
+
+Given a list of tags, make sure any tags they depend on are present.
+
+Accepts two parameters:
+
+=over
+
+=item *
+
+C<$tags> - an arrayref of tags to clean up.
+
+=item *
+
+C<$opts> - an optional hash of options.  The only defined option is:
+
+=over
+
+=item *
+
+C<deps> - a hash ref of loaded category dependencies.  This may be
+modified when you call fix_tag_deps().
+
+=back
+
+=back
+
+=cut
+
+sub expand_tag_deps {
+  my ($self, $tags, $opts) = @_;
+
+  $opts ||= {};
+
+  my $deps = $opts->{deps} || {};
+  my %tags = map { $_ => 1 } @$tags;
+  my $added;
+  do {
+    $added = 0;
+    my @tags = keys %tags;
+    for my $tag (@tags) {
+      my ($cat) = BSE::TB::Tags->split_name($tag);
+      unless ($deps->{$cat}) {
+	$deps->{$cat} = [ $self->tag_category_deps("$cat:") ];
+      }
+      if (@{$deps->{$cat}} and
+	  !grep $tags{$_}, @{$deps->{$cat}}) {
+	$tags{$deps->{$cat}[0]} = 1;
+	++$added;
+      }
+    }
+  } while ($added);
 
   return [ keys %tags ];
 }
