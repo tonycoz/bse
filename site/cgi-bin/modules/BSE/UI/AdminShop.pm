@@ -21,7 +21,7 @@ use BSE::CfgInfo qw(cfg_dist_image_uri);
 use BSE::Util::SQL qw/now_sqldate sql_to_date date_to_sql sql_date sql_datetime/;
 use BSE::Util::Valid qw/valid_date/;
 
-our $VERSION = "1.021";
+our $VERSION = "1.022";
 
 my %actions =
   (
@@ -67,7 +67,7 @@ my %csrfp =
   (
    coupon_add => { token => "admin_bse_coupon_add", target => "coupon_addform" },
    coupon_save => { token => "admin_bse_coupon_edit", target => "coupon_edit" },
-   coupon_delete => { token => "admin_bse_coupon_delete", target => "coupon_delete" },
+   coupon_delete => { token => "admin_bse_coupon_delete", target => "coupon_deleteform" },
   );
 
 sub csrfp_tokens {
