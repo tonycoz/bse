@@ -1335,7 +1335,7 @@ sub req_coupon_add {
   $req->audit
     (
      component => "shopadmin:coupon:add",
-     level => "info",
+     level => "notice",
      msg => "Coupon '" . $coupon->code . "' created",
      object => $coupon,
      dump => $coupon->json_data,
@@ -1485,7 +1485,7 @@ sub req_coupon_save {
   $req->audit
     (
      component => "shopadmin:coupon:edit",
-     level => "info",
+     level => "notice",
      msg => "Coupon '" . $coupon->code . "' modified",
      object => $coupon,
      dump =>
@@ -1558,7 +1558,7 @@ sub req_coupon_delete {
   $req->audit
     (
      component => "shopadmin:coupon:delete",
-     level => "info",
+     level => "notice",
      msg => "Coupon '$code' deleted",
      object => $coupon,
      dump => $coupon->json_data,
