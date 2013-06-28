@@ -18,7 +18,7 @@ use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 use BSE::Template;
 
-our $VERSION = "1.040";
+our $VERSION = "1.041";
 
 =head1 NAME
 
@@ -1854,6 +1854,7 @@ sub _fillout_order {
 
   eval {
     local $SIG{__DIE__};
+    $session->{custom} = $cart->custom_state || {};
     my %custom = %{$session->{custom}};
     $cust_class->order_save($cgi, $values, $items, $items, 
 			    \%custom, $cfg);
