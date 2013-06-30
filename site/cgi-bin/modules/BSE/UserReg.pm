@@ -18,7 +18,7 @@ use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
 use Carp qw(confess);
 
-our $VERSION = "1.028";
+our $VERSION = "1.029";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -1536,6 +1536,16 @@ anonymous order detail page.
 
 =back
 
+Variables:
+
+=over
+
+=item *
+
+C<order> - the order object to display the details of.
+
+=back
+
 =cut
 
 sub _orderdetail_low {
@@ -1566,6 +1576,8 @@ sub _orderdetail_low {
      message => sub { escape_html($message) },
      ifAnon => !!$anon,
     );
+
+  $req->set_variable(order => $order);
 
   return $req->dyn_response($template, \%acts);
 }
@@ -2501,6 +2513,19 @@ Template: user/wishlist.tmpl
 
 Tags:
 
+=over
+
+=item *
+
+C<< iterator begin uwishlist ... iterator end uwishlist >> - iterate
+over the wishlist.
+
+=item *
+
+C<< uwishlistentry I<field> >> - retrieve a value from the entry.
+
+=back
+
 =cut
 
 sub req_wishlist {
@@ -2539,8 +2564,6 @@ sub req_wishlist {
   }
 
   return $req->dyn_response($template, \%acts);
-
-  return;
 }
 
 =item req_downufile
