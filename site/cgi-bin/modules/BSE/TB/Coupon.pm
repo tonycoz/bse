@@ -6,7 +6,7 @@ use BSE::TB::CouponTiers;
 
 =head1 NAME
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 BSE::TB::Coupon - shop coupon objects
 
@@ -93,7 +93,7 @@ sub set_tiers {
 
   my %keep = map { $_->tier_id => $_ } grep $_, delete @current{@$tiers};
 
-  $_->remove for keys %current;
+  $_->remove for values %current;
 
   for my $tier_id (grep !$keep{$_}, @$tiers) {
     BSE::TB::CouponTiers->make
