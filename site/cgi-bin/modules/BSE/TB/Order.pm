@@ -7,7 +7,7 @@ use vars qw/@ISA/;
 use Carp 'confess';
 use BSE::Shop::PaymentTypes;
 
-our $VERSION = "1.019";
+our $VERSION = "1.020";
 
 sub columns {
   return qw/id
@@ -30,7 +30,7 @@ sub columns {
            delivStreet2 billStreet2 purchase_order shipping_method
            shipping_name shipping_trace
 	   paypal_token paypal_tran_id freight_tracking stage ccPAN
-	   paid_manually coupon_code coupon_code_discount_pc/;
+	   paid_manually coupon_id coupon_code_discount_pc/;
 }
 
 sub table {
@@ -697,7 +697,7 @@ it's valid.
 sub coupon_valid {
   my ($self) = @_;
 
-  return $self->coupon_code ne "";
+  return defined($self->coupon_id);
 }
 
 =item coupon_active
@@ -756,6 +756,22 @@ sub product_cost_discount {
   my ($self) = @_;
 
   return $self->total_cost - $self->discounted_product_cost;
+}
+
+=item coupon
+
+Return the coupon used for this order, if any.
+
+=cut
+
+sub coupon {
+  my ($self) = @_;
+
+  $self->coupon_id
+    or return;
+
+  require BSE::TB::Coupons;
+  return BSE::TB::Coupons->getByPkey($self->coupon_id);
 }
 
 1;

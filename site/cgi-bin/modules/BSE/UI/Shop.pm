@@ -18,7 +18,7 @@ use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 use BSE::Template;
 
-our $VERSION = "1.041";
+our $VERSION = "1.042";
 
 =head1 NAME
 
@@ -1842,10 +1842,10 @@ sub _fillout_order {
     }
   }
   if ($cart->coupon_active) {
-    $values->{coupon_code} = $cart->coupon_code;
+    $values->{coupon_id} = $cart->coupon->id;
   }
   else {
-    $values->{coupon_code} = "";
+    $values->{coupon_id} = undef;
   }
   $values->{coupon_code_discount_pc} = $cart->coupon_code_discount_pc;
   $values->{total} = $cart->total;

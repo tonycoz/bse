@@ -349,12 +349,13 @@ create table orders (
   -- true if the order was paid manually
   paid_manually integer not null default 0,
 
-  coupon_code varchar(40) not null default '',
+  coupon_id integer null,
   coupon_code_discount_pc real not null default 0,
 
   primary key (id),
   index order_cchash(ccNumberHash),
-  index order_userId(userId, orderDate)
+  index order_userId(userId, orderDate),
+  index order_coupon(coupon_id)
 );
 
 DROP TABLE IF EXISTS order_item;

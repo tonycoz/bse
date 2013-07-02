@@ -6,7 +6,7 @@ use BSE::TB::CouponTiers;
 
 =head1 NAME
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 BSE::TB::Coupon - shop coupon objects
 
@@ -109,6 +109,9 @@ sub set_tiers {
 sub remove {
   my ($self) = @_;
 
+  $self->is_removable
+    or return;
+
   my @tiers = BSE::TB::CouponTiers->getBy2
     (
      [
@@ -167,8 +170,50 @@ sub is_valid {
   return $self->is_released && !$self->is_expired;
 }
 
+=item is_removable
+
+Return true if the coupon can be removed.
+
+=cut
+
+sub is_removable {
+  my ($self) = @_;
+
+  require BSE::TB::Orders;
+  return !BSE::TB::Orders->getExists([ coupon_id => $self->id ]);
+}
+
+=item is_renamable
+
+Return true if the name can be changed.
+
+This is currently equivalent to is_removable().
+
+=cut
+
+sub is_renamable {
+  my ($self) = @_;
+
+  return $self->is_removable;
+}
+
+=item set_code($code)
+
+Set the coupon code.  Requires that is_renamable() be true.
+
+=cut
+
+sub set_code {
+  my ($self, $code) = @_;
+
+  $self->is_renamable
+    or return;
+
+  $self->{code} = $code;
+}
+
 sub fields {
-  my ($class) = @_;
+  my ($self) = @_;
 
   my %fields =
     (
@@ -251,6 +296,10 @@ sub fields {
       default => 1,
      },
     );
+
+  if (ref $self && !$self->is_renamable) {
+    $fields{code}{readonly} = 1;
+  }
 
   require BSE::Validate;
   return BSE::Validate::bse_configure_fields(\%fields, BSE::Cfg->single, "bse coupon validation");

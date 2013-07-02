@@ -21,7 +21,7 @@ use BSE::CfgInfo qw(cfg_dist_image_uri);
 use BSE::Util::SQL qw/now_sqldate sql_to_date date_to_sql sql_date sql_datetime/;
 use BSE::Util::Valid qw/valid_date/;
 
-our $VERSION = "1.022";
+our $VERSION = "1.023";
 
 my %actions =
   (
@@ -1419,7 +1419,7 @@ sub req_coupon_edit {
   $req->message($errors);
 
   require BSE::TB::Coupons;
-  $req->set_variable(fields => BSE::TB::Coupon->fields);
+  $req->set_variable(fields => $coupon->fields);
   $req->set_variable(coupon => $coupon);
   $req->set_variable(errors => $errors || {});
 
@@ -1454,7 +1454,7 @@ sub req_coupon_save {
     or return $result;
 
   require BSE::TB::Coupons;
-  my $fields = BSE::TB::Coupon->fields;
+  my $fields = $coupon->fields;
   my %errors;
   $req->validate(fields => $fields, errors => \%errors,
 		 rules => BSE::TB::Coupon->rules);
@@ -1527,6 +1527,11 @@ sub req_coupon_deleteform {
   my $coupon = $self->_get_coupon_id($req, \$result)
     or return $result;
 
+  unless ($coupon->is_removable) {
+    $req->flash_error("msg:bse/admin/shop/coupons/not_deletable", [ $coupon ]);
+    return $self->req_coupon_list($req);
+  }
+
   my %acts = $req->admin_tags;
 
   require BSE::TB::Coupons;
@@ -1552,6 +1557,11 @@ sub req_coupon_delete {
   my $result;
   my $coupon = $self->_get_coupon_id($req, \$result)
     or return $result;
+
+  unless ($coupon->is_removable) {
+    $req->flash_error("msg:bse/admin/shop/coupons/not_deletable", [ $coupon ]);
+    return $self->req_coupon_list($req);
+  }
 
   my $code = $coupon->code;
 

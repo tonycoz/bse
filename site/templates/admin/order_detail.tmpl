@@ -103,9 +103,9 @@
   <td colspan="7" class="col_label_right">Total Price of goods:</td>
   <td  class="col_extension"><:= bse.number("money", order.total_cost) -:></td>
 </tr>
-<:.if order.coupon_code ne "" -:>
+<:.if order.coupon -:>
 <tr>
-   <td>Coupon code <b><:= order.coupon_code -:></b></td>
+   <td>Coupon code <b><:= order.coupon.code -:></b></td>
    <td colspan="6" class="col_label_right">Discount:</td>
    <td class="col_extension">(<:= bse.number("money", order.product_cost_discount) -:>)</td>
 </tr>

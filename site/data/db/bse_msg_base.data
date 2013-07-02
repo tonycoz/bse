@@ -236,6 +236,9 @@ description: Flashed when a coupon is saved (%1 coupon)
 id: bse/admin/shop/coupons/delete
 description: Flashed when a coupon is deleted (%1 coupon code)
 
+id: bse/admin/shop/coupons/not_deletable
+description: Flashed when the user attempts to delete an undeletable coupon (%1 coupon)
+
 id: bse/admin/logon/
 description: Logon tool messages
 

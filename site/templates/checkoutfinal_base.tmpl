@@ -79,9 +79,9 @@
   </tr>
 </table>
 <table width="100%" border="0" cellspacing="0" cellpadding="0">    
-<:.if order.coupon_code ne "" -:>
+<:.if order.coupon -:>
     <tr>
-      <td>Coupon code: <:= order.coupon_code -:></td>
+      <td>Coupon code: <:= order.coupon.code -:></td>
       <td height="20">&nbsp;</td>
       <td height="20" bgcolor="#666666">&nbsp;</td>
       <td align="CENTER" height="20" bgcolor="#666666" NOWRAP><font size="2" face="Verdana, Arial, Helvetica, sans-serif" color="#FFFFFF"> 

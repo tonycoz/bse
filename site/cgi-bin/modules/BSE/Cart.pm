@@ -2,7 +2,7 @@ package BSE::Cart;
 use strict;
 use Scalar::Util;
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 =head1 NAME
 
@@ -346,7 +346,6 @@ sub coupon_valid {
     if (length $self->{coupon_code}) {
       require BSE::TB::Coupons;
       my ($coupon) = BSE::TB::Coupons->getBy(code => $self->{coupon_code});
-      print STDERR "Searching for coupon '$self->{coupon_code}'\n";
       my %check =
 	(
 	 coupon => $coupon,

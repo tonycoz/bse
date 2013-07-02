@@ -5,7 +5,7 @@ use BSE::Cfg;
 use BSE::Util::HTML;
 use Carp qw(cluck confess);
 
-our $VERSION = "1.025";
+our $VERSION = "1.026";
 
 =head1 NAME
 
@@ -1756,6 +1756,10 @@ should already be that format.
 
 C<trim> - for plain text fields, trim leading and trailing whitespace.
 
+=item *
+
+C<readonly> - no values are stored.
+
 =back
 
 =cut
@@ -1768,8 +1772,11 @@ sub cgi_fields {
     or confess "Missing fields parameter";
 
   my $cgi = $self->cgi;
+ FIELD:
   for my $name (keys %$fields) {
     my $field = $fields->{$name};
+    $field->{readonly}
+      and next FIELD;
     my $value;
     if ($field->{htmltype} eq "checkbox") {
       if ($field->{type} eq "int") {

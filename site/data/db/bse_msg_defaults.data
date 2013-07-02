@@ -172,6 +172,9 @@ message: Saved coupon '%1:{code}s'
 id: bse/admin/shop/coupons/delete
 message: Deleted coupon '%1:s'
 
+id: bse/admin/shop/coupons/not_deletable
+message: Coupon '%1:{code}s' has been used in an order and may not be removed
+
 id: bse/admin/logon/logoff
 message: Administrative user '%1:s' logged off
 

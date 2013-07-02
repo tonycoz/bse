@@ -87,7 +87,7 @@
       <:.if request.user_can("bse_shop_coupon_edit") -:>
         <a href="<:= cfg.admin_url2("shopadmin", "coupon_edit", { "id": coupon.id }) :>">Edit</a>
       <:.end if -:>
-      <:.if request.user_can("bse_shop_coupon_delete") -:>
+      <:.if request.user_can("bse_shop_coupon_delete") and coupon.is_removable -:>
         <a href="<:= cfg.admin_url2("shopadmin", "coupon_deleteform", { "id": coupon.id }) :>">Delete</a>
       <:.end if -:>
     </td>
