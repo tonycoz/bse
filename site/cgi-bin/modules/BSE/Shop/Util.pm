@@ -7,7 +7,7 @@ use vars qw(@ISA @EXPORT_OK);
                 payment_types order_item_opts
  PAYMENT_CC PAYMENT_CHEQUE PAYMENT_CALLME PAYMENT_MANUAL PAYMENT_PAYPAL/;
 
-our $VERSION = "1.009";
+our $VERSION = "1.010";
 
 our %EXPORT_TAGS =
   (
@@ -62,10 +62,10 @@ sub shop_cart_tags {
      (
       plural => "items",
       single => "item",
-      code => sub { @{$cart->items} },
+      code => sub { $cart->items },
       store => \$current_item,
      ),
-     count => scalar(@{$cart->items}),
+     count => scalar(@{[ $cart->items ]}),
      extended =>
      sub { 
        my $what = $_[0] || 'retailPrice';

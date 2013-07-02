@@ -49,7 +49,7 @@
  	  <:-.set items = [ ordercart.items ] -:>
           <:.if items.size -:>
 	    <:.for item in items -:>
-	      <:.set options = item.option_list -:>
+	      <:.set options = [ item.option_list ] -:>
 	      <:.set session = item.session -:>
           <tr valign="middle" align="center" bgcolor="#FFFFFF"> 
             <td width="100%" align="left"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><a href="<:= item.link | html:>"><:= item.product.description | html :> <:.if options.size:>(<:.for option in options:><:= loop.index ? ", " : "" :><:= option.desc | html:>: 
@@ -76,7 +76,7 @@
   </tr>
 </table>
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
-<:.if is_order ? order.coupon_code ne "" : ordercart.coupon_active -:>
+<:.if ordercart.coupon_active -:>
     <tr>
       <td>Coupon code: <:= ordercart.coupon_code -:>
 </td>

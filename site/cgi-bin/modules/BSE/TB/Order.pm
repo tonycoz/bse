@@ -7,7 +7,7 @@ use vars qw/@ISA/;
 use Carp 'confess';
 use BSE::Shop::PaymentTypes;
 
-our $VERSION = "1.020";
+our $VERSION = "1.021";
 
 sub columns {
   return qw/id
@@ -772,6 +772,21 @@ sub coupon {
 
   require BSE::TB::Coupons;
   return BSE::TB::Coupons->getByPkey($self->coupon_id);
+}
+
+=item coupon_code
+
+Emulate the cart's coupon-code method.
+
+=cut
+
+sub coupon_code {
+  my ($self) = @_;
+
+  my $coupon = $self->coupon
+    or return;
+
+  return $coupon->code;
 }
 
 1;

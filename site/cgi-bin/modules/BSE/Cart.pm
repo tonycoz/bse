@@ -2,7 +2,7 @@ package BSE::Cart;
 use strict;
 use Scalar::Util;
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 =head1 NAME
 
@@ -858,7 +858,9 @@ display - display of the option value
 sub option_list {
   my ($self, $index) = @_;
 
-  return [ $self->product->option_descs(BSE::Cfg->single, $self->{options}) ];
+  my @options = $self->product->option_descs(BSE::Cfg->single, $self->{options});
+
+  return wantarray ? @options : \@options;
 }
 
 =item option_text
