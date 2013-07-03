@@ -18,7 +18,7 @@ use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 use BSE::Template;
 
-our $VERSION = "1.042";
+our $VERSION = "1.043";
 
 =head1 NAME
 
@@ -1574,6 +1574,11 @@ sub _send_order {
      ifSubscribingTo => [ \&tag_ifSubscribingTo, \%subscribing_to ],
     );
 
+  my %vars =
+    (
+     order => $order,
+    );
+
   my $email_order = $cfg->entryBool('shop', 'email_order', $Constants::SHOP_EMAIL_ORDER);
   require BSE::ComposeMail;
   if ($email_order) {
@@ -1581,6 +1586,8 @@ sub _send_order {
       $acts{cardNumber} = $cgi->param('cardNumber');
       $acts{cardExpiry} = $cgi->param('cardExpiry');
       $acts{cardVerify} = $cgi->param('cardVerify');
+      @vars{qw(cardNumber cardExpiry cardVerify)} =
+	@acts{qw(cardNumber cardExpiry cardVerify)};
     }
 
     my $mailer = BSE::ComposeMail->new(cfg => $cfg);
@@ -1594,6 +1601,7 @@ sub _send_order {
        log_component => "shop:sendorder:mailowner",
        log_object => $order,
        log_msg => "Send Order No. $order->{id} to admin",
+       vars => \%vars,
       );
 
     unless ($noencrypt) {
@@ -1610,6 +1618,7 @@ sub _send_order {
     }
 
     delete @acts{qw/cardNumber cardExpiry cardVerify/};
+    delete @vars{qw/cardNumber cardExpiry cardVerify/};
   }
   my $to_email = $order->billEmail;
   my $user = $req->siteuser;
@@ -1628,6 +1637,7 @@ sub _send_order {
      log_component => "shop:sendorder:mailbuyer",
      log_object => $order,
      log_msg => "Send Order No. $order->{id} to customer ($to_email)",
+     vars => \%vars,
     );
   my $bcc_order = $cfg->entry("shop", "bcc_email");
   if ($bcc_order) {

@@ -1,0 +1,27 @@
+Order: <:= order.id.format("%06d") |raw :>
+
+Delivery: <:= order.delivFirstName |raw :> <:= order.delivLastName |raw:>
+          <:= order.delivStreet |raw:>
+          <:= order.delivSuburb |raw:> <:= order.delivPostCode |raw:> <:= order.delivState |raw:>
+          <:= order.delivCountry |raw:>
+
+Phone   : <:= order. telephone |raw:>
+<:.if order.delivMobile:>Mobile  : <:= order.delivMobile |raw:>
+<:.end if:>Fax     : <:= order.facsimile |raw:>
+Email   : <:= order.emailAddress |raw:>
+
+Product                                   Units  Price   Extended
+-----------------------------------------------------------------
+<:.for item in [ order.items ] -:>
+<:-= item.title.format("%-42s") |raw:>
+<:-= item.units.format("%2d") |raw:>
+<:-= bse.number("money", item.price).format("%10s") |raw:>
+<:-= bse.number("money", item.extended("price")).format("%11s") |raw:>
+<:-.if item.nice_options :>
+   <:= item.nice_options:>
+<:-.end if:>
+<:.end for -:>
+-----------------------------------------------------------------
+                                             Shipping: <:= bse.number("money", order.shipping_cost).format("%10s") :>
+                                                Total: <:= bse.number("money", order.total).format("%10s") :>
+						  GST: <:= bse.number("money", order.gst).format("%10s"):>

@@ -760,6 +760,7 @@ site/templates/interest/confirm_base.tmpl
 site/templates/interest/error_base.tmpl
 site/templates/location.tmpl
 site/templates/lowmap.tmpl
+site/templates/mailcommon.tmpl
 site/templates/mailconfirm.tmpl
 site/templates/mailconfirm_html.tmpl
 site/templates/mailorder.tmpl

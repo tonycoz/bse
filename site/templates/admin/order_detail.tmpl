@@ -105,7 +105,7 @@
 </tr>
 <:.if order.coupon -:>
 <tr>
-   <td>Coupon code <b><:= order.coupon.code -:></b></td>
+   <td>Coupon code <b><:= order.coupon_code -:></b></td>
    <td colspan="6" class="col_label_right">Discount:</td>
    <td class="col_extension">(<:= bse.number("money", order.product_cost_discount) -:>)</td>
 </tr>

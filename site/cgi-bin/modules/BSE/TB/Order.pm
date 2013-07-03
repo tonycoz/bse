@@ -7,7 +7,7 @@ use vars qw/@ISA/;
 use Carp 'confess';
 use BSE::Shop::PaymentTypes;
 
-our $VERSION = "1.021";
+our $VERSION = "1.022";
 
 sub columns {
   return qw/id
@@ -565,6 +565,34 @@ sub _tags {
        return 1;
      },
     );
+}
+
+sub cfg_must_be_paid {
+  BSE::Cfg->single->entryBool("download", "must_be_paid", 0);
+}
+
+sub cfg_must_be_filled {
+  BSE::Cfg->single->entryBool("download", "must_be_filled", 0);
+}
+
+=item file_available
+
+Given an order file, return true if available for download.
+
+This will return nonsensical results for files not associated with the
+order.
+
+=cut
+
+sub file_available {
+  my ($self, $file) = @_;
+
+  $file->forSale or return 1;
+
+  return 0 if $self->cfg_must_be_paid && !$self->paidFor;
+  return 0 if $self->cfg_must_be_filled && !$self->filled;
+
+  return 1;
 }
 
 =item mail_tags

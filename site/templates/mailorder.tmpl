@@ -1,50 +1,38 @@
 A new order has arrived:
 
-Order: <:order id |%06d:>
+<:include mailcommon.tmpl:>
+<:.if order.paymentType == 0 -:>
+Paid by credit card:
+<:-  .if order.ccOnline :>
+  Processed online.
+  Receipt No.  : <:= order.ccReceipt:>
+<:-  .else :>
+  Card No.     : <:= cardNumber:>
+  Expires      : <:= cardExpiry:>
+  Name on Card : <:= order.ccName:>
+  Card Type    : <:= order.ccType :>
+<:  .end if -:>
+<:-.elsif order.paymentType == 1 -:>
+Will be paid by cheque
+<:-.elsif order.paymentType == 2 -:>
+Please call the customer to arrange for payment
+<:- .elsif order.paymentType == 4 -:>
+Paid by PayPal:
+  Transaction id: <:order paypal_tran_id:>
+<:.else -:>
+<:include custom/payment_type_email.include:>
+<:-.end if :>
 
-Delivery: <:order delivFirstName :> <:order delivLastName :>
-          <:order delivStreet:>
-          <:order delivSuburb:> <:order delivPostCode:> <:order delivState:>
-          <:order delivCountry:>
+To be shipped by: <:= order.shipping_method :>
+<:.if order.instructions :>
+<:with begin wrap:>Special Instruction: <:= order.instructions:><:with end wrap:>
+<:-.end if -:>
 
-Phone   : <:order telephone:>
-<:ifOrder delivMobile:>Mobile  : <:order delivMobile:>
-<:or:><:eif:>Fax     : <:order facsimile:>
-Email   : <:order emailAddress:>
-
-Product                                   Units  Price   Extended
------------------------------------------------------------------
-<:iterator begin items:><:product title |42:><:item units|%2d:><:item price |m10:><:extended price|m11:><:if Options:>
-   <:options:><:or Options:><:eif Options:>
-<:iterator separator items:><:iterator end items 
-:>-----------------------------------------------------------------
-                                             Shipping: <:order shipping_cost |m10:>
-                                                Total: <:order total |m10:>
-						  GST: <:order gst   |m10:>
-
-<:ifEq [order paymentType] "0":>Paid by credit card:
-<:if Order ccOnline
-:>Processed online.
-Receipt No.  : <:order ccReceipt:>
-<:or Order
-:>Card No.     : <:cardNumber:>
-Expires      : <:cardExpiry:>
-Name on Card : <:order ccName:>
-Card Type    : <:order ccType :><:eif Order:><:or:><:eif
-:><:ifEq [order paymentType] "1" :>Will be paid by cheque<:or
-:><:eif:><:ifEq [order paymentType] "2"
-:>Please call the customer to arrange for payment<:or:><:eif:><:ifEq [order paymentType] "4"
-:>Paid by PayPal, transaction id <:order paypal_tran_id:><:or:><:eif:><:
-include custom/payment_type_email.include:>
-To be shipped by: <:order shipping_method:>
-<:if Order instructions:>
-<:with begin wrap:>Special Instruction: <:order instructions:><:with end wrap:>
-<:or Order:><:eif Order:>
-
-<:if Orderfiles:>
-<:iterator begin orderfiles:>
+<:-.set files = [ order.files ] -:>
+<:-.if files.size :>
 File                                               Available
 -------------------------------------------------- ---------
-<:orderfile displayName |50:> <:ifFileAvail:>Yes<:or:>No<:eif:>
-<:iterator end orderfiles:>
-<:or Orderfiles:><:eif Orderfiles:>
+<:.for file in files -:>
+<:= file.displayName.format("%-50s") |raw:> <:= order.file_available(file) ? "Yes" : "No" :>
+<:.end for -:>
+<:.end if :>
