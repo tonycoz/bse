@@ -7,7 +7,7 @@ use vars qw/@ISA/;
 use Carp 'confess';
 use BSE::Shop::PaymentTypes;
 
-our $VERSION = "1.022";
+our $VERSION = "1.023";
 
 sub columns {
   return qw/id
@@ -638,6 +638,7 @@ sub send_shipped_email {
      log_msg => "Notify customer that Order No. " . $self->id . " has shipped",
      log_object => $self,
      log_component => "shopadmin:orders:saveorder",
+     vars => { order => $self },
     );
   if ($self->emailAddress && $self->billEmail
       && lc $self->emailAddress ne $self->billEmail) {
