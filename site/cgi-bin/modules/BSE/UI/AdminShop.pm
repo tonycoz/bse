@@ -21,7 +21,7 @@ use BSE::CfgInfo qw(cfg_dist_image_uri);
 use BSE::Util::SQL qw/now_sqldate sql_to_date date_to_sql sql_date sql_datetime/;
 use BSE::Util::Valid qw/valid_date/;
 
-our $VERSION = "1.023";
+our $VERSION = "1.024";
 
 my %actions =
   (
@@ -1278,6 +1278,28 @@ Display a form for adding new coupons.
 
 Template: F<admin/coupons/add>
 
+Template variables:
+
+=over
+
+=item *
+
+C<fields> - coupon fields.
+
+=item *
+
+C<coupon> - set to undef.
+
+=item *
+
+C<errors> - an errors from an attempted save.
+
+=item *
+
+C<tiers> - a list of defined price tiers.
+
+=back
+
 =cut
 
 sub req_coupon_addform {
@@ -1291,6 +1313,8 @@ sub req_coupon_addform {
   $req->set_variable(fields => BSE::TB::Coupon->fields);
   $req->set_variable(coupon => undef);
   $req->set_variable(errors => $errors || {});
+  require BSE::TB::PriceTiers;
+  $req->set_variable(tiers => [ BSE::TB::PriceTiers->all ]);
 
   return $req->dyn_response("admin/coupons/add", \%acts);
 }
@@ -1405,6 +1429,28 @@ Requires C<id> as a coupon id to edit.
 
 Template: F<admin/coupons/edit>
 
+Template variables:
+
+=over
+
+=item *
+
+C<fields> - coupon fields.
+
+=item *
+
+C<coupon> - the coupon being edited
+
+=item *
+
+C<errors> - an errors from an attempted save.
+
+=item *
+
+C<tiers> - a list of defined price tiers.
+
+=back
+
 =cut
 
 sub req_coupon_edit {
@@ -1422,6 +1468,8 @@ sub req_coupon_edit {
   $req->set_variable(fields => $coupon->fields);
   $req->set_variable(coupon => $coupon);
   $req->set_variable(errors => $errors || {});
+  require BSE::TB::PriceTiers;
+  $req->set_variable(tiers => [ BSE::TB::PriceTiers->all ]);
 
   return $req->dyn_response("admin/coupons/edit", \%acts);
 }

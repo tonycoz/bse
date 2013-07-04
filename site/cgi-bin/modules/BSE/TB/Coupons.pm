@@ -4,7 +4,7 @@ use Squirrel::Table;
 our @ISA = qw(Squirrel::Table);
 use BSE::TB::Coupon;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub rowClass {
   return 'BSE::TB::Coupon';
@@ -19,6 +19,7 @@ sub make {
 
   if ($tiers) {
     $coupon->set_tiers($tiers);
+    $coupon->save;
   }
 
   return $coupon;

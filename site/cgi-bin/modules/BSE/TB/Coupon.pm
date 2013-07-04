@@ -4,9 +4,9 @@ use Squirrel::Row;
 our @ISA = qw/Squirrel::Row/;
 use BSE::TB::CouponTiers;
 
-=head1 NAME
+our $VERSION = "1.003";
 
-our $VERSION = "1.002";
+=head1 NAME
 
 BSE::TB::Coupon - shop coupon objects
 
@@ -47,18 +47,26 @@ sub defaults {
 
 Return the tier ids for a coupon.
 
+This includes an entry for tier "0" if the coupon is untiered.
+
 =cut
 
 sub tiers {
   my ($self) = @_;
 
-  return BSE::TB::CouponTiers->getColumnBy
+  my @tiers =
     (
-     tier_id =>
-     [
-      coupon_id => $self->id
-     ]
+     ( $self->untiered ? ( 0 ) : () ),
+     BSE::TB::CouponTiers->getColumnBy
+     (
+      tier_id =>
+      [
+       coupon_id => $self->id
+      ]
+     )
     );
+
+  return wantarray ? @tiers : \@tiers;
 }
 
 =item tier_objects
@@ -83,6 +91,9 @@ Set the tiers for a coupon.
 sub set_tiers {
   my ($self, $tiers) = @_;
 
+  my @tiers = grep $_, @$tiers;
+  $self->set_untiered((grep $_ == 0, @$tiers) ? 1 : 0);
+
   my %current = map { $_->tier_id => $_ }
     BSE::TB::CouponTiers->getBy2
 	(
@@ -91,11 +102,11 @@ sub set_tiers {
 	 ]
 	);
 
-  my %keep = map { $_->tier_id => $_ } grep $_, delete @current{@$tiers};
+  my %keep = map { $_->tier_id => $_ } grep $_, delete @current{@tiers};
 
   $_->remove for values %current;
 
-  for my $tier_id (grep !$keep{$_}, @$tiers) {
+  for my $tier_id (grep !$keep{$_}, @tiers) {
     BSE::TB::CouponTiers->make
 	(
 	 coupon_id => $self->id,
@@ -277,23 +288,20 @@ sub fields {
       {
        values => sub {
 	 require BSE::TB::PriceTiers;
-	 BSE::TB::PriceTiers->getColumnsBy
-	     (
-	      [ qw(id description) ],
-	      [ ],
-	      { order => "display_order asc" },
-	     );
+	 return
+	   [
+	    { id => 0, description => "Untiered" },
+	    BSE::TB::PriceTiers->getColumnsBy
+	    (
+	     [ qw(id description) ],
+	     [ ],
+	     { order => "display_order asc" },
+	    ),
+	   ];
        },
        id => "id",
        label => "description",
       },
-     },
-     untiered =>
-     {
-      description => "Untiered",
-      htmltype => "checkbox",
-      units => "Applies to untiered products too",
-      default => 1,
      },
     );
 
