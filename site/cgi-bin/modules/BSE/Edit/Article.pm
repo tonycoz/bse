@@ -16,7 +16,7 @@ use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 use constant ARTICLE_CUSTOM_FIELDS_CFG => "article custom fields";
 
-our $VERSION = "1.037";
+our $VERSION = "1.038";
 
 =head1 NAME
 
@@ -1279,6 +1279,7 @@ sub low_edit_tags {
   my %work_custom = map { $_ => $custom->{$_} }
     grep $custom->{$_}{description}, keys %$custom;
   $request->set_variable(custom => \%work_custom);
+  $request->set_variable(errors => $errors || {});
 
   return
     (
