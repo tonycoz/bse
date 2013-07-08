@@ -4,7 +4,7 @@ use Scalar::Util qw(blessed);
 use BSE::TB::Site;
 use BSE::Util::HTML;
 
-our $VERSION = "1.014";
+our $VERSION = "1.015";
 
 sub _base_variables {
   my ($self, %opts) = @_;
@@ -40,7 +40,6 @@ sub _base_variables {
        require JSON;
        return JSON->new->allow_nonref->encode($_[0]);
      },
-     number => \&_number,
     );
 }
 
@@ -246,13 +245,6 @@ sub _date_now {
   return DevHelp::Date::dh_strftime($fmt, localtime);
 }
 
-sub _number {
-  my ($format, $value) = @_;
-
-  require BSE::Util::Format;
-  return BSE::Util::Format::bse_number($format, $value);
-}
-
 1;
 
 =head1 NAME
@@ -283,7 +275,7 @@ Common BSE functionality for use from the new template tags.
 =item bse.site
 
 a BSE::TB::Site object, behaves like an article in owning files and
-images, and having children.w
+images, and having children.
 
 =item bse.url(somearticle)
 
