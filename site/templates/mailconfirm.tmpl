@@ -21,7 +21,7 @@ Paid by PayPal:
   Transaction id: <:order paypal_tran_id:>
 <:.else -:>
 <:include custom/payment_type_email.include:>
-<:.-end if :>
+<:-.end if :>
 To be shipped by: <:= order.shipping_method :>
 <:.if order.instructions -:>
 <:with begin wrap:>Special Instruction: <:= order.instructions:><:with end wrap:>
