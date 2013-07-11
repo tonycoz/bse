@@ -4,7 +4,7 @@ use Scalar::Util qw(blessed);
 use BSE::TB::Site;
 use BSE::Util::HTML;
 
-our $VERSION = "1.015";
+our $VERSION = "1.016";
 
 sub _base_variables {
   my ($self, %opts) = @_;
@@ -19,6 +19,13 @@ sub _base_variables {
       ? sub { _url_common($_[0]->admin, $_[1]) }
       : sub { _url_common($_[0]->link, $_[1]) }
      ),
+     abs_url => sub {
+       my ($url) = @_;
+
+       $url =~ /^\w+:/ and return $url;
+
+       return  BSE::Cfg->single->entryErr("site", "url") . $url;
+     },
      admin => $opts{admin},
      admin_links => $opts{admin_links},
      dumper => sub {
@@ -285,6 +292,10 @@ Return the article admin link in admin (or admin_links) mode,
 otherwise the normal article link.
 
 If supplied, C<extraargs> should be a hash containing extra arguments.
+
+=item bse.abs_url(url)
+
+Return an absolute form of C<url>.  This is always relative to the main site url.
 
 =item bse.admin
 

@@ -2,7 +2,7 @@ package BSE::Cart;
 use strict;
 use Scalar::Util;
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 =head1 NAME
 
@@ -226,6 +226,19 @@ sub product_cost_discount {
   return $self->total_cost - $self->discounted_product_cost;
 }
 
+=item cfg_shipping
+
+Return true if the system is configured to prompt for shipper
+information.
+
+=cut
+
+sub cfg_shipping {
+  my $self = shift;
+
+  return $self->{req}->cfg->entry("shop", "shipping", 0);
+}
+
 =item set_shipping_cost()
 
 Set the cost of shipping.
@@ -250,6 +263,79 @@ sub shipping_cost {
   my ($self) = @_;
 
   return $self->{shipping};
+}
+
+=item set_shipping_method
+
+Set the stored shipping method.  For internal use.
+
+=cut
+
+sub set_shipping_method {
+  my ($self, $method) = @_;
+
+  $self->{shipping_method} = $method;
+}
+
+=item shipping_method
+
+The description of the selected shipping method.
+
+=cut
+
+sub shipping_method {
+  my ($self) = @_;
+
+  return $self->{shipping_method};
+}
+
+=item set_shipping_name
+
+Set the stored shipping name.  For internal use.
+
+=cut
+
+sub set_shipping_name {
+  my ($self, $name) = @_;
+
+  $self->{shipping_name} = $name;
+}
+
+=item shipping_name
+
+The name of the selected shipping method.
+
+=cut
+
+sub shipping_name {
+  my ($self) = @_;
+
+  return $self->{shipping_name};
+}
+
+=item set_delivery_in
+
+Set the stored delivery time in days.
+
+=cut
+
+sub set_delivery_in {
+  my ($self, $days) = @_;
+
+  $self->{delivery_in} = $days;
+}
+
+=item delivery_in
+
+The expected delivery time in days.  Some shippers may not supply
+this, in which case this will be an undefined value.
+
+=cut
+
+sub delivery_in {
+  my ($self) = @_;
+
+  return $self->{delivery_in};
 }
 
 =item total_units
@@ -531,7 +617,7 @@ sub affiliate_code {
   return $code;
 }
 
-=item any_physcial_products
+=item any_phyiscal_products
 
 Returns true if the cart contains any physical products, ie. needs
 shipping.

@@ -3,80 +3,85 @@
 
 <p>To stay up to date on the status of your order, see:</p>
 
-<p><a href="<:target user oda id [order randomId] |h:>"><:target user oda id [order randomId] |h:></a></p>
+<p><a href="<:= cfg.user_url("user", "oda", "id", order.randomId) |h:>"><:= cfg.user_url("user", "oda", "id", order.randomId) |h:></a></p>
 
-<p>Order: <:order id |%06d:></p>
+<p>Order: <:= order.id.format("%06d") :></p>
 
 <table>
 <tr>
-<thDelivery:</th>
-<td> <:order delivFirstName |h:> <:order delivLastName |h:><br />
-<:order delivStreet |h:><br />
-<:order delivSuburb |h:> <:order delivPostCode |h:> <:order delivState |h:><br />
-<:order delivCountry |h:></td>
+<th>Delivery:</th>
+<td><:= order.delivFirstName :> <:= order.delivLastName :><br />
+<:= order.delivStreet :><br />
+<:= order.delivSuburb :> <:= order.delivPostCode :> <:= order.delivState :><br />
+<:= order.delivCountry :></td>
 </tr>
 <tr>
   <th>Phone:</th>
-  <td><:order telephone |h:></td>
+  <td><:= order.telephone :></td>
 </tr>
-<:ifOrder delivMobile:>
+<:.if order.delivMobile:>
 <tr>
   <th>Mobile:</th>
-  <td><:order delivMobile |h:></td>
+  <td><:= order.delivMobile :></td>
 </tr>
-<:or:><:eif:>
-<:ifOrder facsimile:>
+<:.end if -:>
+<:.if order.facsimile :>
 <tr>
   <th>Fax:</th>
-  <td><:order facsimile |h:></td>
+  <td><:= order.facsimile :></td>
 </tr>
-<:or:><:eif:>
+<:.end if -:>
 <tr>
   <th>Email:</th>
-  <td><:order emailAddress |h:></td>
+  <td><:= order.emailAddress :></td>
 </tr>
 </table>
 
 <table>
 <tr>
-  <th>Product</th
+  <th>Product</th>
   <th>Units</th>
   <th>Price</th>
   <th>Extended</th>
 </tr>
-<:iterator begin items:>
-  <td><:product title |h:>
-<:if Options:>
-   <br /><:options |h:><:or Options:><:eif Options:></td>
-  <td><:item units:></td>
-  <td><:item price |m:></td>
-  <td><:extended price|m:></td>
+<:.for item in [ order.items ]:>
+  <td><a href="<:= bse.abs_url(item.product.link) :>"><:= item.title :></a>
+<:.if item.nice_options:>
+   <br /><:= item.nice_options :>
+<:-.end if -:>
+</td>
+  <td><:= item.units:></td>
+  <td><:= bse.number("money", item.price) :></td>
+  <td><:= bse.number("money", item.extended("price")):></td>
 </tr>
-<:iterator end items:>
+<:.end for -:>
 <tr>
   <td colspan="3">Shipping:</td>
-  <td><:order shipping_cost |m:></td>
+  <td><:= bse.number("money", order.shipping_cost) :></td>
 </tr>
 <tr>
   <td>Total:</td>
-  <td><:order total |m:></td>
+  <td><:= bse.number("money", order.total) :></td>
 </tr>
 </table>
 
-<:ifEq [order paymentType] "0" :>Paid by credit card.
-<:if Order ccOnline
-:><p>Processed online.</p>
-<p>Receipt No.  : <:order ccReceipt |h:></p>
-<:or Order
-:><:eif Order:><:or:><:eif
-:><:ifEq [order paymentType] "1" :><p>Will be paid by cheque</p><:or
-:><:eif:><:ifEq [order paymentType] "2"
-:><p>We will call you to arrange for payment</p><:or:><:eif:><:ifEq [order paymentType] "4"
-:><p>Paid by PayPal, transaction id <:order paypal_tran_id |h:></p><:or:><:eif:><:
-include custom/payment_type_email.include:>
-<:ifOrder shipping_method:>
-<p>To be shipped by: <:order shipping_method:></p>
-<:or:><:eif:>
-<:if Order instructions:>
-<p>Special Instructions: <:order instructions |h:></p>
-<:or Order:><:eif Order:>
+<:.if order.paymentType == 0 -:>
+<p>Paid by credit card.</p>
+  <:.if order.ccOnline -:>
+<p>Processed online.</p>
+<p>Receipt No.  : <:= order.ccReceipt :></p>
+  <:.end if :>
+<:.elsif order.paymentType == 1 -:>
+<p>Will be paid by cheque</p>
+<:.elsif order.paymentType == 2 -:>
+<p>We will call you to arrange for payment</p>
+<:.elsif order.paymentType == 4 -:>
+<p>Paid by PayPal, transaction id <:= order.paypal_tran_id :></p>
+<:.end if -:>
+<:include custom/payment_type_email.include:>
+<:.if order.shipping_method:>
+<p>To be shipped by: <:= order.shipping_method:></p>
+<:.end if -:>
+<:.if order.instructions:>
+<p>Special Instructions: <:= order.instructions :></p>
+<:.end if -:>

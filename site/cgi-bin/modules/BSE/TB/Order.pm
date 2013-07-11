@@ -7,7 +7,7 @@ use vars qw/@ISA/;
 use Carp 'confess';
 use BSE::Shop::PaymentTypes;
 
-our $VERSION = "1.023";
+our $VERSION = "1.024";
 
 sub columns {
   return qw/id
@@ -30,7 +30,7 @@ sub columns {
            delivStreet2 billStreet2 purchase_order shipping_method
            shipping_name shipping_trace
 	   paypal_token paypal_tran_id freight_tracking stage ccPAN
-	   paid_manually coupon_id coupon_code_discount_pc/;
+	   paid_manually coupon_id coupon_code_discount_pc delivery_in/;
 }
 
 sub table {
@@ -99,6 +99,7 @@ sub defaults {
      stage => "incomplete",
      ccPAN => "",
      paid_manually => 0,
+     delivery_in => undef,
     );
 }
 

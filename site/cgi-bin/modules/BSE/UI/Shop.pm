@@ -18,7 +18,7 @@ use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 use BSE::Template;
 
-our $VERSION = "1.043";
+our $VERSION = "1.044";
 
 =head1 NAME
 
@@ -497,6 +497,20 @@ sub _any_physical_products {
   return 0;
 }
 
+=item checkout
+
+Display the checkout form.
+
+Variables:
+
+=over
+
+=back
+
+Template C<checkoutnew>
+
+=cut
+
 sub req_checkout {
   my ($class, $req, $message, $olddata) = @_;
 
@@ -568,7 +582,7 @@ sub req_checkout {
   my ($delivery_in, $shipping_cost, $shipping_method);
   my $shipping_error = '';
   my $shipping_name = '';
-  my $prompt_ship = $cfg->entry("shop", "shipping", 0);
+  my $prompt_ship = $cart->cfg_shipping;
 
   my $physical = $cart->any_physical_products;
 
@@ -666,6 +680,11 @@ sub req_checkout {
     $message = $req->message($errors);
   }
   $cart->set_shipping_cost($shipping_cost);
+  $cart->set_shipping_method($shipping_method);
+  $cart->set_shipping_name($shipping_name);
+  $cart->set_delivery_in($delivery_in);
+  $req->set_variable(old => $old);
+  $req->set_variable(errors => $errors);
 
   my $item_index = -1;
   my @options;
@@ -686,7 +705,7 @@ sub req_checkout {
      error_img => [ \&tag_error_img, $cfg, $errors ],
      ifShipping => $prompt_ship,
      shipping_select => $shipping_select,
-     delivery_in => escape_html($delivery_in),
+     delivery_in => escape_html(defined $delivery_in ? $delivery_in : ""),
      shipping_cost => $shipping_cost,
      shipping_method => escape_html($shipping_method),
      shipping_error => escape_html($shipping_error),
@@ -773,6 +792,11 @@ sub _order_hash {
       $values->{$delivery} = $values->{$billing};
     }
   }
+  my $cart = $req->cart;
+  if ($cart->cfg_shipping && $cart->any_physical_products) {
+    my $shipping_name = $cgi->param("shipping_name");
+    defined $shipping_name and $values->{shipping_name} = $shipping_name;
+  }
 }
 
 # saves order and refresh to payment page
@@ -809,7 +833,7 @@ sub req_order {
 
   dh_validate_hash(\%values, \%errors, { rules=>\%rules, fields=>\%fields },
 		   $cfg, 'Shop Order Validation');
-  my $prompt_ship = $cfg->entry("shop", "shipping", 0);
+  my $prompt_ship = $cart->cfg_shipping;
   if ($prompt_ship) {
     my $country = $values{delivCountry} || bse_default_country($cfg);
     my $country_code = bse_country_code($country);
@@ -916,6 +940,9 @@ sub req_show_payment {
   defined $payment or $payment = $payment_types[0];
 
   $cart->set_shipping_cost($order->{shipping_cost});
+  $cart->set_shipping_method($order->{shipping_method});
+  $cart->set_shipping_name($order->{shipping_name});
+  $req->set_variable(errors => $errors);
 
   my %acts;
   %acts =
@@ -1800,7 +1827,7 @@ sub _fillout_order {
 
   my $items = $cart->items;
   my $products = $cart->products;
-  my $prompt_ship = $cfg->entry("shop", "shipping", 0);
+  my $prompt_ship = $cart->cfg_shipping;
   if ($prompt_ship) {
     if (_any_physical_products($products)) {
       my ($courier) = BSE::Shipping->get_couriers($cfg, $cgi->param("shipping_name"));
@@ -1835,8 +1862,7 @@ sub _fillout_order {
 	$values->{shipping_name} = $courier->name;
 	$values->{shipping_cost} = $cost;
 	$values->{shipping_trace} = $courier->trace;
-	$cart->set_shipping_cost($cost);
-	#$values->{delivery_in} = $courier->delivery_in();
+	$values->{delivery_in} = $courier->delivery_in();
       }
       else {
 	# XXX: What to do?
@@ -1857,6 +1883,11 @@ sub _fillout_order {
   else {
     $values->{coupon_id} = undef;
   }
+  $cart->set_shipping_cost($values->{shipping_cost});
+  $cart->set_shipping_method($values->{shipping_method});
+  $cart->set_shipping_name($values->{shipping_name});
+  $cart->set_delivery_in($values->{delivery_in});
+
   $values->{coupon_code_discount_pc} = $cart->coupon_code_discount_pc;
   $values->{total} = $cart->total;
 

@@ -678,6 +678,7 @@ Column ccPAN;varchar(4);NO;;
 Column paid_manually;int(11);NO;0;
 Column coupon_id;int(11);YES;NULL;
 Column coupon_code_discount_pc;double;NO;0;
+Column delivery_in;int(11);YES;NULL;
 Index PRIMARY;1;[id]
 Index order_cchash;0;[ccNumberHash]
 Index order_coupon;0;[coupon_id]

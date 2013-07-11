@@ -352,6 +352,8 @@ create table orders (
   coupon_id integer null,
   coupon_code_discount_pc real not null default 0,
 
+  delivery_in integer null,
+
   primary key (id),
   index order_cchash(ccNumberHash),
   index order_userId(userId, orderDate),
