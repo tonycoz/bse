@@ -18,7 +18,7 @@ use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 use BSE::Template;
 
-our $VERSION = "1.044";
+our $VERSION = "1.045";
 
 =head1 NAME
 
@@ -505,6 +505,19 @@ Variables:
 
 =over
 
+=item *
+
+old - a function returning the old value for most fields.
+
+=item *
+
+errors - any errors from attempting to progress to payment
+
+=item *
+
+need_delivery - true if the user indicates they want separate delivery
+and billing details.
+
 =back
 
 Template C<checkoutnew>
@@ -685,6 +698,7 @@ sub req_checkout {
   $cart->set_delivery_in($delivery_in);
   $req->set_variable(old => $old);
   $req->set_variable(errors => $errors);
+  $req->set_variable(need_delivery => $need_delivery);
 
   my $item_index = -1;
   my @options;
