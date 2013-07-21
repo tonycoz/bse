@@ -3,7 +3,17 @@
 <tr>
    <th><:= f.value.description | html :>:</th>
    <td>
+<:.if f.value.htmltype eq "select" -:>
+<:# the field config code uses an older mechanism, translate -:>
+<:.set list = [] -:>
+<:.set baselist = f.value["values"] -:>
+<:.for i in baselist -:>
+   <:% list.push({ "id": i[0], "label": i[1] }) -:>
+<:.end for -:>
+<:.call "make_select", "name":f.key, "list":list, "id":"id", "desc":"label", "default":f.value.default -:>
+<:.else -:>
      <input type="text" name="<:= f.key | html :>" value="<:.call "old", "field":f.key, "default": ifnew ? f.value.default : article.get(f.key) :>" />
+<:.end if -:>
    </td>
    <td class="help">
      <:-.call "error_img", "field":f.key -:>
