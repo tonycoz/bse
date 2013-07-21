@@ -16,7 +16,7 @@ use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 use constant ARTICLE_CUSTOM_FIELDS_CFG => "article custom fields";
 
-our $VERSION = "1.038";
+our $VERSION = "1.039";
 
 =head1 NAME
 
@@ -1602,6 +1602,7 @@ sub _validate_common {
 		   {
 		    fields => $self->custom_fields,
 		    optional => 1,
+		    dbh => BSE::DB->single->dbh,
 		   },
 		   $self->cfg, ARTICLE_CUSTOM_FIELDS_CFG);
 }
