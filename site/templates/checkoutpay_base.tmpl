@@ -46,16 +46,25 @@
           <td nowrap height="18"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FFFFFF"><b>Qty:</b></font>&nbsp;</td>
           <td height="18"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2" color="#FFFFFF"><b>Price:</b></font>&nbsp;</td>
         </tr>
-        <:iterator begin items:> 
-        <tr valign="middle" align="center" bgcolor="#FFFFFF"> 
-          <td width="100%" align="left"> &nbsp;<a href="<:item link:>"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:item 
-            description:>  <:options:></font></a></td>
-          <td nowrap align="center"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:item 
-            units:></font></td>
-          <td align="right"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>$<: 
-            money item price :></b></font></td>
-        </tr>
-        <:iterator end items:> 
+ 	  <:-.set items = [ ordercart.items ] -:>
+          <:.if items.size -:>
+	    <:.for item in items -:>
+	      <:.set options = [ item.option_list ] -:>
+	      <:.set session = item.session -:>
+          <tr valign="middle" align="center" bgcolor="#FFFFFF"> 
+            <td width="100%" align="left"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><a href="<:= item.link | html:>"><:= item.product.description | html :> <:.if options.size:>(<:.for option in options:><:= loop.index ? ", " : "" :><:= option.desc | html:>: 
+              <:= option.display |html :><:.end for:>)<:.end if -:></a><:.if item.session_id:>(session at <:= session.location.description | html:> <:= bse.date("%H:%M %d/%m/%Y", session.when_at) -:>)<:.end if:></font></td>
+            <td nowrap align="center"> 
+              <input type="text" name="quantity_<:= loop.index :>" size="2" value="<:= item.units :>">
+            </td>
+            <td align="right"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>$<:= bse.number("money", item.price) | html :></b></font></td>
+          </tr>
+	    <:.end for -:>
+          <:.else -:>
+          <tr valign="middle" align="center" bgcolor="#FFFFFF"> 
+            <td width="100%" height="20" align="center" colspan="4"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">You have no items in your shopping cart!</font></td>
+           </tr>
+          <:.end if -:>
         <:if Shipping_cost:>
         <tr valign="middle" align="center" bgcolor="#FFFFFF"> 
           <td colspan=2 width="100%" align="left">&nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2">Shipping charges (for <:shipping_method:><:if Delivery_in:>, delivery in <:delivery_in:> days<:or Delivery_in:><:eif Delivery_in:>)</font></td>
@@ -66,7 +75,24 @@
     </td>
   </tr>
 </table>
-<table width="100%" border="0" cellspacing="0" cellpadding="0">   
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+<:.if ordercart.coupon_active -:>
+    <tr>
+      <td>Coupon code: <:= ordercart.coupon_code -:>
+</td>
+      <td height="20">&nbsp;</td>
+      <td height="20" bgcolor="#666666">&nbsp;</td>
+      <td align="CENTER" height="20" bgcolor="#666666" NOWRAP><font size="2" face="Verdana, Arial, Helvetica, sans-serif" color="#FFFFFF"> 
+        <b>DISCOUNT</b></font></td>
+      <td height="20" bgcolor="#666666">&nbsp;</td>
+    </tr>
+    <tr>
+      <td colspan="2">&nbsp;</td>
+      <td height="20" style="border-left: 1px solid #666666">&nbsp;</td>
+      <td align="CENTER">$<:= bse.number("money", ordercart.product_cost_discount) -:></td>
+      <td height="20" style="border-right: 1px solid #666666">&nbsp;</td>
+    </tr>
+<:.end if -:>
   <tr> 
     <td>&nbsp;</td>
     <td height="20">&nbsp;</td>

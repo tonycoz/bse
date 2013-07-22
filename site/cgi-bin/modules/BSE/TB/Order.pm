@@ -7,7 +7,7 @@ use vars qw/@ISA/;
 use Carp 'confess';
 use BSE::Shop::PaymentTypes;
 
-our $VERSION = "1.018";
+our $VERSION = "1.024";
 
 sub columns {
   return qw/id
@@ -30,7 +30,7 @@ sub columns {
            delivStreet2 billStreet2 purchase_order shipping_method
            shipping_name shipping_trace
 	   paypal_token paypal_tran_id freight_tracking stage ccPAN
-	   paid_manually/;
+	   paid_manually coupon_id coupon_code_discount_pc delivery_in/;
 }
 
 sub table {
@@ -99,6 +99,7 @@ sub defaults {
      stage => "incomplete",
      ccPAN => "",
      paid_manually => 0,
+     delivery_in => undef,
     );
 }
 
@@ -567,6 +568,34 @@ sub _tags {
     );
 }
 
+sub cfg_must_be_paid {
+  BSE::Cfg->single->entryBool("download", "must_be_paid", 0);
+}
+
+sub cfg_must_be_filled {
+  BSE::Cfg->single->entryBool("download", "must_be_filled", 0);
+}
+
+=item file_available
+
+Given an order file, return true if available for download.
+
+This will return nonsensical results for files not associated with the
+order.
+
+=cut
+
+sub file_available {
+  my ($self, $file) = @_;
+
+  $file->forSale or return 1;
+
+  return 0 if $self->cfg_must_be_paid && !$self->paidFor;
+  return 0 if $self->cfg_must_be_filled && !$self->filled;
+
+  return 1;
+}
+
 =item mail_tags
 
 =cut
@@ -610,6 +639,7 @@ sub send_shipped_email {
      log_msg => "Notify customer that Order No. " . $self->id . " has shipped",
      log_object => $self,
      log_component => "shopadmin:orders:saveorder",
+     vars => { order => $self },
     );
   if ($self->emailAddress && $self->billEmail
       && lc $self->emailAddress ne $self->billEmail) {
@@ -682,6 +712,111 @@ sub is_manually_paid {
 
   return $self->paidFor &&
     ($self->paid_manually || $self->paymentType == PAYMENT_MANUAL);
+}
+
+=item coupon_valid
+
+For compatibility with cart objects, returns true if the currently
+stored coupon is valid.
+
+Since only an active coupon is stored, if we have a coupon code, then
+it's valid.
+
+=cut
+
+sub coupon_valid {
+  my ($self) = @_;
+
+  return defined($self->coupon_id);
+}
+
+=item coupon_active
+
+For compatibility with cart objects, returns true if the currently
+stored coupon is active.
+
+Since only an active coupon is stored, if we have a coupon code, then
+it's valid.
+
+=cut
+
+*coupon_active = \&coupon_valid;
+
+=item total_cost
+
+Return the total cost of products without the coupon discount applied.
+
+=cut
+
+sub total_cost {
+  my ($self) = @_;
+
+  my $total = 0;
+  for my $item ($self->items) {
+    $total += $item->extended("price");
+  }
+
+  return $total;
+}
+
+=item discounted_product_cost
+
+Return the total cost of products less the discount from the coupon
+code.
+
+=cut
+
+sub discounted_product_cost {
+  my ($self) = @_;
+
+  my $cost = $self->total_cost;
+
+  $cost -= $cost * $self->coupon_code_discount_pc / 100;
+
+  return int($cost);
+}
+
+=item product_cost_discount
+
+Return any amount taken off the product cost.
+
+=cut
+
+sub product_cost_discount {
+  my ($self) = @_;
+
+  return $self->total_cost - $self->discounted_product_cost;
+}
+
+=item coupon
+
+Return the coupon used for this order, if any.
+
+=cut
+
+sub coupon {
+  my ($self) = @_;
+
+  $self->coupon_id
+    or return;
+
+  require BSE::TB::Coupons;
+  return BSE::TB::Coupons->getByPkey($self->coupon_id);
+}
+
+=item coupon_code
+
+Emulate the cart's coupon-code method.
+
+=cut
+
+sub coupon_code {
+  my ($self) = @_;
+
+  my $coupon = $self->coupon
+    or return;
+
+  return $coupon->code;
 }
 
 1;

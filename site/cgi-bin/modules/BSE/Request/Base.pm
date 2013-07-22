@@ -5,7 +5,7 @@ use BSE::Cfg;
 use BSE::Util::HTML;
 use Carp qw(cluck confess);
 
-our $VERSION = "1.023";
+our $VERSION = "1.026";
 
 =head1 NAME
 
@@ -1756,6 +1756,10 @@ should already be that format.
 
 C<trim> - for plain text fields, trim leading and trailing whitespace.
 
+=item *
+
+C<readonly> - no values are stored.
+
 =back
 
 =cut
@@ -1768,8 +1772,11 @@ sub cgi_fields {
     or confess "Missing fields parameter";
 
   my $cgi = $self->cgi;
+ FIELD:
   for my $name (keys %$fields) {
     my $field = $fields->{$name};
+    $field->{readonly}
+      and next FIELD;
     my $value;
     if ($field->{htmltype} eq "checkbox") {
       if ($field->{type} eq "int") {
@@ -1779,12 +1786,15 @@ sub cgi_fields {
 	$value = join("", $cgi->param($name));
       }
     }
+    elsif ($field->{htmltype} eq "multicheck") {
+      $value = [ $cgi->param($name) ];
+    }
     elsif ($field->{type} && $field->{type} eq "date" && !$opts{api}) {
       ($value) = $cgi->param($name);
       require DevHelp::Date;
       my $msg;
       my ($year, $month, $day) = DevHelp::Date::dh_parse_date($value, \$msg);
-      $value = "$year-$month-$day";
+      $value = sprintf("%04d-%02d-%02d", $year, $month, $day);
     }
     elsif ($field->{type} && $field->{type} eq "time" && !$opts{api}) {
       ($value) = $cgi->param($name);

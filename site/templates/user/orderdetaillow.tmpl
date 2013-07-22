@@ -3,7 +3,7 @@
 <:include include/usermenu.tmpl:>
 <p><a href="<:script:>?userpage=1">Back to order list</a></p>
 <:eif Anon:>
-<h1>Order Detail: <:order id:></h1>
+<h1>Order Detail: <:= order.id:></h1>
    
   <table width="100%" cellpadding="0" cellspacing="1">
 	<:if Message:> 
@@ -16,13 +16,13 @@
           <tr> 
             <th align="center" nowrap width="25%" bgcolor="#666666"><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#CCCCCC">Order 
               No:</font><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#FFFFFF"> 
-              <:order id:></font></th>
+              <:= order.id:></font></th>
             <th align="center" width="25%" nowrap bgcolor="#666666"><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#CCCCCC">Date:</font><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#FFFFFF"> 
-              <:date order orderDate:></font></th>
+              <:= bse.date("%d/%m/%Y", order.orderDate) :></font></th>
             <th align="center" width="25%" nowrap bgcolor="<:ifOrder filled:>#CC0033<:or:>#66CC00<:eif:>"><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="<:ifOrder filled:>#CCCCCC<:or:>#000000<:eif:>">Status:</font><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#FFFFFF"> 
-              <:dyncatmsg [order stage_description_id]:></font></th>
+              <:= request.catmsg(order.stage_description_id):></font></th>
             <th align="center" width="25%" nowrap bgcolor="#FF7F00"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Total:</font><font face="Verdana, Arial, Helvetica, sans-serif" size="2" color="#FFFFFF"> 
-              $<:money order total:></font></th>
+              $<:= bse.number("money", order.total) :></font></th>
           </tr>
         </table>
         <:if Items:> <table width="100%" cellpadding="3" cellspacing="1">

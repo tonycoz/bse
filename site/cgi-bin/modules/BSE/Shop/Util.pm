@@ -3,11 +3,11 @@ use strict;
 use vars qw(@ISA @EXPORT_OK);
 @ISA = qw/Exporter/;
 @EXPORT_OK = qw/shop_cart_tags cart_item_opts nice_options shop_nice_options
-                total shop_total load_order_fields basic_tags need_logon
+                total shop_total load_order_fields basic_tags
                 payment_types order_item_opts
  PAYMENT_CC PAYMENT_CHEQUE PAYMENT_CALLME PAYMENT_MANUAL PAYMENT_PAYPAL/;
 
-our $VERSION = "1.007";
+our $VERSION = "1.010";
 
 our %EXPORT_TAGS =
   (
@@ -21,8 +21,9 @@ use BSE::CfgInfo qw(custom_class);
 use Carp 'confess';
 use BSE::Util::HTML qw(escape_html);
 use BSE::Shop::PaymentTypes qw(:default payment_types);
+use BSE::Util::Iterate;
 
-=item shop_cart_tags($acts, $cart, $cart_prods, $req, $stage)
+=item shop_cart_tags($cart, $stage)
 
 Returns a list of tags which display the cart details
 
@@ -44,96 +45,56 @@ And several more undocumented DOCME.
 =cut
 
 sub shop_cart_tags {
-  my ($acts, $cart, $cart_prods, $req, $stage) = @_;
+  my ($acts, $cart, $req, $stage) = @_;
 
   my $cfg = $req->cfg;
   my $q = $req->cgi;
   $cfg or confess "No config";
   $cfg->isa("BSE::Cfg") or confess "Not a config";
 
-  my $item_index;
-  my $option_index;
-  my @options;
-  my $sem_session;
   my $location;
-  my $item;
-  my $product;
-  my $have_sale_files;
+  my $current_item;
+  my $ito = BSE::Util::Iterate::Objects->new;
   return
     (
      $req->dyn_user_tags(),
-     iterate_items_reset => sub { $item_index = -1 },
-     iterate_items => 
-     sub { 
-       if (++$item_index < @$cart) {
-	 $option_index = -1;
-	 @options = cart_item_opts($req,
-				   $cart->[$item_index], 
-				   $cart_prods->[$item_index]);
-	 undef $sem_session;
-	 undef $location;
-	 $item = $cart->[$item_index];
-	 $product = $cart_prods->[$item_index];
-	 return 1;
-       }
-       undef $item;
-       undef $sem_session;
-       undef $product;
-       undef $location;
-       return 0;
-     },
-     item => 
-     sub { 
-       if ($_[0] eq "link") {
-	 my $value = $product->link;
-	 unless ($value =~ /^\w+:/) {
-	   $value = $req->cfg->entryErr('site', 'url') . $value;
-	 }
-	 return escape_html($value);
-       }
-       elsif (defined $item->{$_[0]}) {
-	 return escape_html($item->{$_[0]});
-       }
-       else {
-	 return tag_article($product, $cfg, $_[0]);
-       }
-     },
+     $ito->make
+     (
+      plural => "items",
+      single => "item",
+      code => sub { $cart->items },
+      store => \$current_item,
+     ),
+     count => scalar(@{[ $cart->items ]}),
      extended =>
      sub { 
        my $what = $_[0] || 'retailPrice';
-       $cart->[$item_index]{units} * $cart_prods->[$item_index]{$what};
+       $current_item->extended($what);
      },
-     index => sub { $item_index },
-     total => 
-     sub { total($cart, $cart_prods, $req->session->{custom}, $cfg, $stage) },
-     count => sub { scalar @$cart },
-     iterate_options_reset => sub { $option_index = -1 },
-     iterate_options => sub { ++$option_index < @options },
-     option => sub { escape_html($options[$option_index]{$_[0]}) },
-     ifOptions => sub { @options },
-     options => sub { nice_options(@options) },
-     session => [ \&tag_session, \$item, \$sem_session ],
-     location => [ \&tag_location, \$item, \$location ],
-     ifHaveSaleFiles => [ \&tag_ifHaveSaleFiles, \$have_sale_files, $cart_prods ],
+     total => sub { $cart->total },
+     $ito->make
+     (
+      plural => "options",
+      single => "option",
+     ),
+     options => sub { $current_item->option_text },
+     session => [ \&tag_session, \$current_item ],
+     location => [ \&tag_location, \$current_item, \$location ],
+     ifHaveSaleFiles => [ have_sales_files => $cart ],
      custom_class($cfg)
-     ->checkout_actions($acts, $cart, $cart_prods, $req->session->{custom}, $q, $cfg),
+     ->checkout_actions($acts, scalar $cart->items, scalar $cart->products, $req->session->{custom}, $q, $cfg),
     );  
 }
 
 sub tag_session {
-  my ($ritem, $rsession, $arg) = @_;
+  my ($ritem, $arg) = @_;
 
   $$ritem or return '';
 
   $$ritem->{session_id} or return '';
 
-  unless ($$rsession) {
-    require BSE::TB::SeminarSessions;
-    $$rsession = BSE::TB::SeminarSessions->getByPkey($$ritem->{session_id})
-      or return '';
-  }
-
-  my $value = $$rsession->{$arg};
+  my $session = $$ritem->session;
+  my $value = $session->{$arg};
   defined $value or return '';
 
   escape_html($value);
@@ -361,66 +322,6 @@ sub basic_tags {
 #         return sprintf("%.02f", $acts->{$func}->($args)/100);
 #       },
     );
-}
-
-sub need_logon {
-  my ($req, $cart, $cart_prods) = @_;
-
-  defined $req or confess "No cgi parameter supplied";
-  my $cfg = $req->cfg;
-  my $cgi = $req->cgi;
-  
-  my $reg_if_files = $cfg->entryBool('shop', 'register_if_files', 1);
-
-  my $user = $req->siteuser;
-
-  if (!$user && $reg_if_files) {
-    require BSE::TB::ArticleFiles;
-    # scan to see if any of the products have files
-    # requires a subscription or subscribes
-    for my $prod (@$cart_prods) {
-      my @files = BSE::TB::ArticleFiles->getBy(articleId=>$prod->{id});
-      if (grep $_->{forSale}, @files) {
-	return ("register before checkout", "shop/fileitems");
-      }
-      if ($prod->{subscription_id} != -1) {
-	return ("you must be logged in to purchase a subscription", "shop/buysub");
-      }
-      if ($prod->{subscription_required} != -1) {
-	return ("must be logged in to purchase a product requiring a subscription", "shop/subrequired");
-      }
-    }
-  }
-
-  my $require_logon = $cfg->entryBool('shop', 'require_logon', 0);
-  if (!$user && $require_logon) {
-    return ("register before checkout", "shop/logonrequired");
-  }
-
-  # check the user has the right required subs
-  # and that they qualify to subscribe for limited subscription products
-  if ($user) {
-    for my $prod (@$cart_prods) {
-      my $sub = $prod->subscription_required;
-      if ($sub && !$user->subscribed_to($sub)) {
-	return ("you must be subscribed to $sub->{title} to purchase one of these products", "shop/subrequired");
-      }
-
-      $sub = $prod->subscription;
-      if ($sub && $prod->is_renew_sub_only) {
-	unless ($user->subscribed_to_grace($sub)) {
-	  return ("you must be subscribed to $sub->{title} to use this renew only product", "sub/renewsubonly");
-	}
-      }
-      if ($sub && $prod->is_start_sub_only) {
-	if ($user->subscribed_to_grace($sub)) {
-	  return ("you must not be subscribed to $sub->{title} already to use this new subscription only product", "sub/newsubonly");
-	}
-      }
-    }
-  }
-  
-  return;
 }
 
 1;

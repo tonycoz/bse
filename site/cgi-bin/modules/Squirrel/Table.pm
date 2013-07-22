@@ -1,6 +1,6 @@
 package Squirrel::Table;
 
-our $VERSION = "1.011";
+our $VERSION = "1.012";
 
 use Carp;
 use strict;
@@ -391,6 +391,44 @@ sub getCount {
   $dh ||= BSE::DB->single;
   my $sth = $dh->dbh->prepare($sql)
     or confess "Cannot prepare generated $sql: ", $dh->dbh->errstr;
+
+  $sth->execute(@args)
+    or confess "Cannot execute $sql: ", $sth->errstr;
+
+  my $row = $sth->fetchrow_arrayref
+    or return;
+
+  $sth->finish;
+
+  return $row->[0];
+}
+
+=item getExists($query)
+
+Return true if any matching records exist.
+
+=cut
+
+sub getExists {
+  my ($self, $query) = @_;
+
+  my $table_name = $self->rowClass->table
+    or confess "No table_name defined";
+
+  my @db_cols = $self->rowClass->db_columns;
+  my @code_cols = $self->rowClass->columns;
+  my %map;
+  @map{@code_cols} = @db_cols;
+  my ($where, @args) = $self->_where_clause(\%map, @$query);
+
+  my $sql = "select exists(select " . $self->rowClass->primary .
+    "\nfrom $table_name";
+  $where and $sql .= "\nwhere $where";
+  $sql .= ")";
+
+  $dh ||= BSE::DB->single;
+  my $sth = $dh->dbh->prepare($sql)
+    or confess "Cann't prepare generated $sql: ", $dh->dbh->errstr;
 
   $sth->execute(@args)
     or confess "Cannot execute $sql: ", $sth->errstr;

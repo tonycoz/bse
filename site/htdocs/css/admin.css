@@ -691,6 +691,10 @@ table.orderdetail td.col_ext_gst {
   text-align: right;
 }
 
+table.orderdetail td.col_label_right { 
+  text-align: right;
+}
+
 table.orderdetail th {
   white-space: nowrap;
 }

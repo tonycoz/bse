@@ -157,6 +157,24 @@ message: Unknown shipping method '%1:s'
 id: bse/admin/shop/saveorder/badstage
 message: Unknown order stage '%1:s'
 
+id: bse/admin/shop/coupons/adddup
+message: Duplicate code '%1:s'
+
+id: bse/admin/shop/coupons/add
+message: Added new coupon '%1:{code}s'
+
+id: bse/admin/shop/coupons/editdup
+message: Duplicate code '%1:s'
+
+id: bse/admin/shop/coupons/save
+message: Saved coupon '%1:{code}s'
+
+id: bse/admin/shop/coupons/delete
+message: Deleted coupon '%1:s'
+
+id: bse/admin/shop/coupons/not_deletable
+message: Coupon '%1:{code}s' has been used in an order and may not be removed
+
 id: bse/admin/logon/logoff
 message: Administrative user '%1:s' logged off
 

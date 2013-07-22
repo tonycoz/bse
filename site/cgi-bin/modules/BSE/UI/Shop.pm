@@ -3,7 +3,7 @@ use strict;
 use base 'BSE::UI::Dispatch';
 use BSE::Util::HTML qw(:default popup_menu);
 use BSE::Util::SQL qw(now_sqldate now_sqldatetime);
-use BSE::Shop::Util qw(:payment need_logon shop_cart_tags payment_types nice_options 
+use BSE::Shop::Util qw(:payment shop_cart_tags payment_types nice_options 
                        cart_item_opts basic_tags order_item_opts);
 use BSE::CfgInfo qw(custom_class credit_card_class bse_default_country);
 use BSE::TB::Orders;
@@ -16,8 +16,23 @@ use Digest::MD5 'md5_hex';
 use BSE::Shipping;
 use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
+use BSE::Template;
 
-our $VERSION = "1.037";
+our $VERSION = "1.045";
+
+=head1 NAME
+
+BSE::UI::Shop - implements the shop for BSE
+
+=head1 DESCRIPTION
+
+BSE::UI::Shop implements the shop for BSE.
+
+=head1 TARGETS
+
+=over
+
+=cut
 
 use constant MSG_SHOP_CART_FULL => 'Your shopping cart is full, please remove an item and try adding an item again';
 
@@ -89,18 +104,13 @@ sub req_cart {
 
   $class->_refresh_cart($req);
 
-  my @cart = @{$req->session->{cart} || []};
-  my @cart_prods;
-  my @items = $class->_build_items($req, \@cart_prods);
-  my $item_index = -1;
-  my @options;
-  my $option_index;
-  
-  $req->session->{custom} ||= {};
-  my %custom_state = %{$req->session->{custom}};
+  my $cart = $req->cart("cart");
 
   my $cust_class = custom_class($req->cfg);
-  $cust_class->enter_cart(\@cart, \@cart_prods, \%custom_state, $req->cfg); 
+  # $req->session->{custom} ||= {};
+  # my %custom_state = %{$req->session->{custom}};
+
+  # $cust_class->enter_cart(\@cart, \@cart_prods, \%custom_state, $req->cfg);
   $msg = '' unless defined $msg;
   $msg = escape_html($msg);
 
@@ -109,13 +119,14 @@ sub req_cart {
   my %acts;
   %acts =
     (
-     $cust_class->cart_actions(\%acts, \@cart, \@cart_prods, \%custom_state, 
-			       $req->cfg),
-     shop_cart_tags(\%acts, \@items, \@cart_prods, $req, 'cart'),
+     $cust_class->cart_actions(\%acts, scalar $cart->items, scalar $cart->products,
+			       $cart->custom_state, $req->cfg),
+     shop_cart_tags(\%acts, $cart, $req, 'cart'),
      basic_tags(\%acts),
      msg => $msg,
     );
-  $req->session->{custom} = \%custom_state;
+
+  $req->session->{custom} = { %{$cart->custom_state} };
   $req->session->{order_info_confirmed} = 0;
 
   # intended to ajax enable the shop cart with partial templates
@@ -140,8 +151,9 @@ Flashes msg:bse/shop/cart/empty unless C<r> is supplied.
 sub req_emptycart {
   my ($self, $req) = @_;
 
-  my $old = $req->session->{cart};;
-  $req->session->{cart} = [];
+  my $cart = $req->cart;
+  my $item_count = @{$cart->items};
+  $cart->empty;
 
   my $refresh = $req->cgi->param('r');
   unless ($refresh) {
@@ -149,7 +161,7 @@ sub req_emptycart {
     $req->flash_notice("msg:bse/shop/cart/empty");
   }
 
-  return _add_refresh($refresh, $req, !$old);
+  return _add_refresh($refresh, $req, !$item_count);
 }
 
 sub req_add {
@@ -485,6 +497,33 @@ sub _any_physical_products {
   return 0;
 }
 
+=item checkout
+
+Display the checkout form.
+
+Variables:
+
+=over
+
+=item *
+
+old - a function returning the old value for most fields.
+
+=item *
+
+errors - any errors from attempting to progress to payment
+
+=item *
+
+need_delivery - true if the user indicates they want separate delivery
+and billing details.
+
+=back
+
+Template C<checkoutnew>
+
+=cut
+
 sub req_checkout {
   my ($class, $req, $message, $olddata) = @_;
 
@@ -506,28 +545,20 @@ sub req_checkout {
   my $need_delivery = ( $olddata ? $cgi->param("need_delivery") : $req->session->{order_need_delivery} ) || 0;
 
   $class->update_quantities($req);
-  my @cart = @{$req->session->{cart}};
+  my $cart = $req->cart("checkout");
+  my @cart = @{$cart->items};
 
   @cart or return $class->req_cart($req);
 
-  my @cart_prods;
-  my @items = $class->_build_items($req, \@cart_prods);
+  my @cart_prods = @{$cart->products};
+  my @items = @{$cart->items};
 
-  if (my ($msg, $id) = $class->_need_logon($req, \@cart, \@cart_prods)) {
+  if ($cart->need_logon) {
+    my ($msg, $id) = $cart->need_logon_reason;
     return $class->_refresh_logon($req, $msg, $id);
-    return;
   }
 
   my $user = $req->siteuser;
-
-  $req->session->{custom} ||= {};
-  my %custom_state = %{$req->session->{custom}};
-
-  my $cust_class = custom_class($cfg);
-  $cust_class->enter_cart(\@cart, \@cart_prods, \%custom_state, $cfg);
-
-  my $affiliate_code = $req->session->{affiliate_code};
-  defined $affiliate_code or $affiliate_code = '';
 
   my $order_info = $req->session->{order_info};
 
@@ -564,9 +595,9 @@ sub req_checkout {
   my ($delivery_in, $shipping_cost, $shipping_method);
   my $shipping_error = '';
   my $shipping_name = '';
-  my $prompt_ship = $cfg->entry("shop", "shipping", 0);
+  my $prompt_ship = $cart->cfg_shipping;
 
-  my $physical = _any_physical_products(\@cart_prods);
+  my $physical = $cart->any_physical_products;
 
   if ($prompt_ship) {
     my $sel_cn = $old->("shipping_name") || "";
@@ -656,9 +687,18 @@ sub req_checkout {
     }
   }
 
+  my $cust_class = custom_class($cfg);
+
   if (!$message && keys %$errors) {
     $message = $req->message($errors);
   }
+  $cart->set_shipping_cost($shipping_cost);
+  $cart->set_shipping_method($shipping_method);
+  $cart->set_shipping_name($shipping_name);
+  $cart->set_delivery_in($delivery_in);
+  $req->set_variable(old => $old);
+  $req->set_variable(errors => $errors);
+  $req->set_variable(need_delivery => $need_delivery);
 
   my $item_index = -1;
   my @options;
@@ -666,20 +706,20 @@ sub req_checkout {
   my %acts;
   %acts =
     (
-     shop_cart_tags(\%acts, \@items, \@cart_prods, $req, 'checkout'),
+     shop_cart_tags(\%acts, $cart, $req, 'checkout'),
      basic_tags(\%acts),
      message => $message,
      msg => $message,
      old => sub { escape_html($old->($_[0])); },
      $cust_class->checkout_actions(\%acts, \@cart, \@cart_prods, 
-				   \%custom_state, $req->cgi, $cfg),
+				   $cart->custom_state, $req->cgi, $cfg),
      ifUser => [ \&tag_ifUser, $user ],
      user => $user ? [ \&tag_hash, $user ] : '',
-     affiliate_code => escape_html($affiliate_code),
+     affiliate_code => escape_html($cart->affiliate_code),
      error_img => [ \&tag_error_img, $cfg, $errors ],
      ifShipping => $prompt_ship,
      shipping_select => $shipping_select,
-     delivery_in => escape_html($delivery_in),
+     delivery_in => escape_html(defined $delivery_in ? $delivery_in : ""),
      shipping_cost => $shipping_cost,
      shipping_method => escape_html($shipping_method),
      shipping_error => escape_html($shipping_error),
@@ -687,32 +727,28 @@ sub req_checkout {
      ifPhysical => $physical,
      ifNeedDelivery => $need_delivery,
     );
-  $req->session->{custom} = \%custom_state;
-  my $tmp = $acts{total};
-  $acts{total} =
-    sub {
-        my $total = &$tmp();
-        $total += $shipping_cost if $total and $shipping_cost;
-        return $total;
-    };
+  $req->session->{custom} = $cart->custom_state;
 
   return $req->response('checkoutnew', \%acts);
 }
 
 sub req_checkupdate {
-  my ($class, $req) = @_;
+  my ($self, $req) = @_;
 
-  $req->session->{cart} ||= [];
-  my @cart = @{$req->session->{cart}};
-  my @cart_prods = map { Products->getByPkey($_->{productId}) } @cart;
-  $req->session->{custom} ||= {};
-  my %custom_state = %{$req->session->{custom}};
-  custom_class($req->cfg)
-      ->checkout_update($req->cgi, \@cart, \@cart_prods, \%custom_state, $req->cfg);
-  $req->session->{custom} = \%custom_state;
+  my $cart = $req->cart("checkupdate");
+
+  $self->update_quantities($req);
+
+  $req->session->{custom} = $cart->custom_state;
   $req->session->{order_info_confirmed} = 0;
-  
-  return $class->req_checkout($req, "", 1);
+
+  my %fields = $self->_order_fields($req);
+  my %values;
+  $self->_order_hash($req, \%values, \%fields);
+  $req->session->{order_info} = \%values;
+  $req->session->{order_need_delivery} = $req->cgi->param("need_delivery");
+
+  return $req->get_refresh($req->user_url(shop => "checkout"));
 }
 
 sub req_remove_item {
@@ -770,6 +806,11 @@ sub _order_hash {
       $values->{$delivery} = $values->{$billing};
     }
   }
+  my $cart = $req->cart;
+  if ($cart->cfg_shipping && $cart->any_physical_products) {
+    my $shipping_name = $cgi->param("shipping_name");
+    defined $shipping_name and $values->{shipping_name} = $shipping_name;
+  }
 }
 
 # saves order and refresh to payment page
@@ -786,11 +827,14 @@ sub req_order {
   $class->_validate_cfg($req, \$msg)
     or return $class->req_cart($req, $msg);
 
-  my @products;
-  my @items = $class->_build_items($req, \@products);
+  my $cart = $req->cart("order");
+
+  my @products = @{$cart->products};
+  my @items = @{$cart->items};
 
   my $id;
-  if (($msg, $id) = $class->_need_logon($req, \@items, \@products)) {
+  if ($cart->need_logon) {
+    my ($msg, $id) = $cart->need_logon_message;
     return $class->_refresh_logon($req, $msg, $id);
   }
 
@@ -803,7 +847,7 @@ sub req_order {
 
   dh_validate_hash(\%values, \%errors, { rules=>\%rules, fields=>\%fields },
 		   $cfg, 'Shop Order Validation');
-  my $prompt_ship = $cfg->entry("shop", "shipping", 0);
+  my $prompt_ship = $cart->cfg_shipping;
   if ($prompt_ship) {
     my $country = $values{delivCountry} || bse_default_country($cfg);
     my $country_code = bse_country_code($country);
@@ -813,7 +857,7 @@ sub req_order {
   keys %errors
     and return $class->req_checkout($req, \%errors, 1);
 
-  $class->_fillout_order($req, \%values, \@items, \@products, \$msg, 'payment')
+  $class->_fillout_order($req, \%values, \$msg, 'payment')
     or return $class->req_checkout($req, $msg, 1);
 
   $req->session->{order_info} = \%values;
@@ -861,39 +905,39 @@ sub req_show_payment {
 
   # ideally supply order_id to be consistent with a_payment.
   my $order_id = $cgi->param('orderid') || $cgi->param("order_id");
+  my $cart;
   if ($order_id) {
     $order_id =~ /^\d+$/
       or return $class->req_cart($req, "No or invalid order id supplied");
-    
+
     my $user = $req->siteuser
       or return $class->_refresh_logon
 	($req, "Please logon before paying your existing order", "logonpayorder",
 	 undef, { a_show_payment => 1, orderid => $order_id });
-    
+
     require BSE::TB::Orders;
     $order = BSE::TB::Orders->getByPkey($order_id)
       or return $class->req_cart($req, "Unknown order id");
-    
+
     $order->siteuser_id == $user->id
       or return $class->req_cart($req, "You can only pay for your own orders");
-    
+
     $order->paidFor
       and return $class->req_cart($req, "Order $order->{id} has been paid");
-    
-    @items = $order->items;
-    @products = $order->products;
+
+    $cart = $order;
   }
   else {
     $req->session->{order_info_confirmed}
       or return $class->req_checkout($req, 'Please proceed via the checkout page');
-    
+
     $req->session->{cart} && @{$req->session->{cart}}
       or return $class->req_cart($req, "Your cart is empty");
-    
+
     $order = $req->session->{order_info}
       or return $class->req_checkout($req, "You need to enter order information first");
 
-    @items = $class->_build_items($req, \@products);
+    $cart = $req->cart("payment");
   }
 
   $errors ||= {};
@@ -909,6 +953,11 @@ sub req_show_payment {
   $errors and $payment = $cgi->param('paymentType');
   defined $payment or $payment = $payment_types[0];
 
+  $cart->set_shipping_cost($order->{shipping_cost});
+  $cart->set_shipping_method($order->{shipping_method});
+  $cart->set_shipping_name($order->{shipping_name});
+  $req->set_variable(errors => $errors);
+
   my %acts;
   %acts =
     (
@@ -916,13 +965,13 @@ sub req_show_payment {
      message => $msg,
      msg => $msg,
      order => [ \&tag_hash, $order ],
-     shop_cart_tags(\%acts, \@items, \@products, $req, 'payment'),
+     shop_cart_tags(\%acts, $cart, $req, 'payment'),
      ifMultPaymentTypes => @payment_types > 1,
      checkedPayment => [ \&tag_checkedPayment, $payment, \%types_by_name ],
      ifPayments => [ \&tag_ifPayments, \@payment_types, \%types_by_name ],
      paymentTypeId => [ \&tag_paymentTypeId, \%types_by_name ],
      error_img => [ \&tag_error_img, $cfg, $errors ],
-     total => $order->{total},
+     total => $cart->total,
      delivery_in => $order->{delivery_in},
      shipping_cost => $order->{shipping_cost},
      shipping_method => $order->{shipping_method},
@@ -935,6 +984,9 @@ sub req_show_payment {
     $acts{"checkedIfFirst$name"} = $payment_types[0] == $id ? "checked " : "";
     $acts{"checkedPayment$name"} = $payment == $id ? 'checked="checked" ' : "";
   }
+  $req->set_variable(ordercart => $cart);
+  $req->set_variable(order => $order);
+  $req->set_variable(is_order => !!$order_id);
 
   return $req->response('checkoutpay', \%acts);
 }
@@ -1070,10 +1122,13 @@ sub req_payment {
     }
   }
   else {
+    my $cart = $req->cart("payment");
+
     $order_values->{filled} = 0;
     $order_values->{paidFor} = 0;
     
-    my @items = $class->_build_items($req, \@products);
+    my @items = $class->_build_items($req);
+    @products = $cart->products;
     
     if ($session->{order_work}) {
       $order = BSE::TB::Orders->getByPkey($session->{order_work});
@@ -1096,7 +1151,7 @@ sub req_payment {
       my @allbutid = @columns;
       shift @allbutid;
       @{$order}{@allbutid} = @data;
-      
+
       $order->clear_items;
       delete $session->{order_work};
       eval {
@@ -1122,7 +1177,7 @@ sub req_payment {
       defined $item{session_id} or $item{session_id} = 0;
       $item{options} = ""; # not used for new orders
       my @data = @item{@item_cols};
-    shift @data;
+      shift @data;
       my $dbitem = BSE::TB::OrderItems->add(@data);
       push @dbitems, $dbitem;
       
@@ -1271,8 +1326,8 @@ sub _finish_order {
 
   $self->_send_order($req, $order);
 
-  # empty the cart ready for the next order
-  delete @{$req->session}{qw/order_info order_info_confirmed order_need_delivery cart order_work/};
+  my $cart = $req->cart;
+  $cart->empty;
 }
 
 =item orderdone
@@ -1375,16 +1430,6 @@ sub req_orderdone {
        $items[$item_index]{units} * $items[$item_index]{$what};
      },
      order => sub { escape_html($order->{$_[0]}) },
-     _format =>
-     sub {
-       my ($value, $fmt) = @_;
-       if ($fmt =~ /^m(\d+)/) {
-	 return sprintf("%$1s", sprintf("%.2f", $value/100));
-       }
-       elsif ($fmt =~ /%/) {
-	 return sprintf($fmt, $value);
-       }
-     },
      iterate_options_reset => sub { $option_index = -1 },
      iterate_options => sub { ++$option_index < @options },
      option => sub { escape_html($options[$option_index]{$_[0]}) },
@@ -1412,6 +1457,7 @@ sub req_orderdone {
   }
 
   $req->set_variable(order => $order);
+  $req->set_variable(payment_types => \@pay_types);
 
   return $req->response('checkoutfinal', \%acts);
 }
@@ -1500,7 +1546,13 @@ sub req_recalc {
 
   $class->update_quantities($req);
   $req->session->{order_info_confirmed} = 0;
-  return $class->req_cart($req);
+
+  my $refresh = $req->cgi->param('r');
+  unless ($refresh) {
+    $refresh = $req->user_url(shop => 'cart');
+  }
+
+  return $req->get_refresh($refresh);
 }
 
 sub req_recalculate {
@@ -1563,6 +1615,11 @@ sub _send_order {
      ifSubscribingTo => [ \&tag_ifSubscribingTo, \%subscribing_to ],
     );
 
+  my %vars =
+    (
+     order => $order,
+    );
+
   my $email_order = $cfg->entryBool('shop', 'email_order', $Constants::SHOP_EMAIL_ORDER);
   require BSE::ComposeMail;
   if ($email_order) {
@@ -1570,6 +1627,8 @@ sub _send_order {
       $acts{cardNumber} = $cgi->param('cardNumber');
       $acts{cardExpiry} = $cgi->param('cardExpiry');
       $acts{cardVerify} = $cgi->param('cardVerify');
+      @vars{qw(cardNumber cardExpiry cardVerify)} =
+	@acts{qw(cardNumber cardExpiry cardVerify)};
     }
 
     my $mailer = BSE::ComposeMail->new(cfg => $cfg);
@@ -1583,6 +1642,7 @@ sub _send_order {
        log_component => "shop:sendorder:mailowner",
        log_object => $order,
        log_msg => "Send Order No. $order->{id} to admin",
+       vars => \%vars,
       );
 
     unless ($noencrypt) {
@@ -1599,6 +1659,7 @@ sub _send_order {
     }
 
     delete @acts{qw/cardNumber cardExpiry cardVerify/};
+    delete @vars{qw/cardNumber cardExpiry cardVerify/};
   }
   my $to_email = $order->billEmail;
   my $user = $req->siteuser;
@@ -1617,6 +1678,7 @@ sub _send_order {
      log_component => "shop:sendorder:mailbuyer",
      log_object => $order,
      log_msg => "Send Order No. $order->{id} to customer ($to_email)",
+     vars => \%vars,
     );
   my $bcc_order = $cfg->entry("shop", "bcc_email");
   if ($bcc_order) {
@@ -1654,12 +1716,6 @@ sub _refresh_logon {
   return BSE::Template->get_refresh($url, $req->cfg);
 }
 
-sub _need_logon {
-  my ($class, $req, $cart, $cart_prods) = @_;
-
-  return need_logon($req, $cart, $cart_prods);
-}
-
 sub tag_checkedPayment {
   my ($payment, $types_by_name, $args) = @_;
 
@@ -1689,6 +1745,7 @@ sub tag_ifPayments {
 sub update_quantities {
   my ($class, $req) = @_;
 
+  # FIXME: should use the cart class to update quantities
   my $session = $req->session;
   my $cgi = $req->cgi;
   my $cfg = $req->cfg;
@@ -1710,12 +1767,19 @@ sub update_quantities {
   my %custom_state = %{$session->{custom}};
   custom_class($cfg)->recalc($cgi, \@cart, [], \%custom_state, $cfg);
   $session->{custom} = \%custom_state;
+
+  my ($coupon) = $cgi->param("coupon");
+  if (defined $coupon) {
+    my $cart = $req->cart;
+    $cart->set_coupon_code($coupon);
+  }
 }
 
 sub _build_items {
-  my ($class, $req, $products) = @_;
+  my ($class, $req) = @_;
 
   my $session = $req->session;
+  my $cart = $req->cart;
   $session->{cart}
     or return;
   my @msgs;
@@ -1725,18 +1789,16 @@ sub _build_items {
   my @prodcols = Product->columns;
   my @newcart;
   my $today = now_sqldate();
-  for my $item (@cart) {
+  for my $item ($cart->items) {
     my %work = %$item;
-    my $product = Products->getByPkey($item->{productId});
+    my $product = $item->product;
     if ($product) {
-      (my $comp_release = $product->{release}) =~ s/ .*//;
-      (my $comp_expire = $product->{expire}) =~ s/ .*//;
-      $comp_release le $today
+      $product->is_released
 	or do { push @msgs, "'$product->{title}' has not been released yet";
 		next; };
-      $today le $comp_expire
-	or do { push @msgs, "'$product->{title}' has expired"; next; };
-      $product->{listed} 
+      $product->is_expired
+        and do { push @msgs, "'$product->{title}' has expired"; next; };
+      $product->listed
 	or do { push @msgs, "'$product->{title}' not available"; next; };
 
       for my $col (@prodcols) {
@@ -1748,7 +1810,6 @@ sub _build_items {
       $work{extended_wholesale} = $work{units} * $work{wholesalePrice};
       
       push @newcart, \%work;
-      push @$products, $product;
     }
   }
 
@@ -1761,25 +1822,26 @@ sub _build_items {
 }
 
 sub _fillout_order {
-  my ($class, $req, $values, $items, $products, $rmsg, $how) = @_;
+  my ($class, $req, $values, $rmsg, $how) = @_;
 
   my $session = $req->session;
   my $cfg = $req->cfg;
   my $cgi = $req->cgi;
 
-  my $total = 0;
-  my $total_gst = 0;
-  my $total_wholesale = 0;
-  for my $item (@$items) {
-    $total += $item->{extended_retailPrice};
-    $total_gst += $item->{extended_gst};
-    $total_wholesale += $item->{extended_wholesale};
-  }
-  $values->{total} = $total;
-  $values->{gst} = $total_gst;
-  $values->{wholesaleTotal} = $total_wholesale;
+  my $cart = $req->cart($how);
 
-  my $prompt_ship = $cfg->entry("shop", "shipping", 0);
+  if ($cart->is_empty) {
+    $$rmsg = "Your cart is empty";
+    return;
+  }
+
+  # FIXME? this doesn't take discounting into effect
+  $values->{gst} = $cart->gst;
+  $values->{wholesaleTotal} = $cart->wholesaleTotal;
+
+  my $items = $cart->items;
+  my $products = $cart->products;
+  my $prompt_ship = $cart->cfg_shipping;
   if ($prompt_ship) {
     if (_any_physical_products($products)) {
       my ($courier) = BSE::Shipping->get_couriers($cfg, $cgi->param("shipping_name"));
@@ -1814,8 +1876,7 @@ sub _fillout_order {
 	$values->{shipping_name} = $courier->name;
 	$values->{shipping_cost} = $cost;
 	$values->{shipping_trace} = $courier->trace;
-	#$values->{delivery_in} = $courier->delivery_in();
-	$values->{total} += $values->{shipping_cost};
+	$values->{delivery_in} = $courier->delivery_in();
       }
       else {
 	# XXX: What to do?
@@ -1830,11 +1891,25 @@ sub _fillout_order {
       $values->{shipping_trace} = "All products have zero weight.";
     }
   }
+  if ($cart->coupon_active) {
+    $values->{coupon_id} = $cart->coupon->id;
+  }
+  else {
+    $values->{coupon_id} = undef;
+  }
+  $cart->set_shipping_cost($values->{shipping_cost});
+  $cart->set_shipping_method($values->{shipping_method});
+  $cart->set_shipping_name($values->{shipping_name});
+  $cart->set_delivery_in($values->{delivery_in});
+
+  $values->{coupon_code_discount_pc} = $cart->coupon_code_discount_pc;
+  $values->{total} = $cart->total;
 
   my $cust_class = custom_class($cfg);
 
   eval {
     local $SIG{__DIE__};
+    $session->{custom} = $cart->custom_state || {};
     my %custom = %{$session->{custom}};
     $cust_class->order_save($cgi, $values, $items, $items, 
 			    \%custom, $cfg);
@@ -2250,15 +2325,7 @@ sub _refresh_cart {
 
 1;
 
-__END__
-
-=head1 NAME
-
-shop.pl - implements the shop for BSE
-
-=head1 DESCRIPTION
-
-shop.pl implements the shop for BSE.
+=back
 
 =head1 TAGS
 
@@ -2351,22 +2418,6 @@ subscription.
 
 =back
 
-You can also use "|format" at the end of a field to perform some
-simple formatting.  Eg. <:order total |m6:> or <:order id |%06d:>.
-
-=over 4
-
-=item m<number>
-
-Formats the value as a <number> wide money value.
-
-=item %<format>
-
-Performs sprintf() formatting on the value.  Eg. %06d will format 25
-as 000025.
-
-=back
-
 =head2 Mailed order tags
 
 These tags are used in the emails sent to the user to confirm an order
@@ -2374,27 +2425,39 @@ and in the encrypted copy sent to the site administrator:
 
 =over 4
 
-=item iterate ... items
+=item *
+
+C<iterate> ... C<items>
 
 Iterates over the items in the order.
 
-=item item I<field>
+=item *
+
+C<item> I<field>
 
 Access to the given field in the order item.
 
-=item product I<field>
+=item *
+
+C<product> I<field>
 
 Access to the product field for the current order item.
 
-=item order I<field>
+=item *
+
+C<order> I<field>
 
 Access to fields of the order.
 
-=item extended I<field>
+=item *
+
+C<extended> I<field>
 
 The product of the I<field> in the current item and it's quantity.
 
-=item money I<tag> I<parameters>
+=item *
+
+C<money> I<tag> I<parameters>
 
 Formats the given field as a money value.
 
@@ -2405,15 +2468,21 @@ The mail generation template can use extra formatting specified with
 
 =over 4
 
-=item m<number>
+=item *
+
+m<number>
 
 Format the value as a I<number> wide money value.
 
-=item %<format>
+=item *
+
+%<format>
 
 Performs sprintf formatting on the value.
 
-=item <number>
+=item *
+
+<number>
 
 Left justifies the value in a I<number> wide field.
 
@@ -2422,13 +2491,17 @@ Left justifies the value in a I<number> wide field.
 The order email sent to the site administrator has a couple of extra
 fields:
 
-=over 4
+=over
 
-=item cardNumber
+=item *
+
+cardNumber
 
 The credit card number of the user's credit card.
 
-=item cardExpiry
+=item *
+
+cardExpiry
 
 The entered expiry date for the user's credit card.
 
@@ -2440,138 +2513,118 @@ These names can be used with the <: order ... :> tag.
 
 Monetary values should typically be used with <:money order ...:>
 
-=over 4
+=over
 
-=item id
+=item *
+
+id
 
 The order id or order number.
 
-=item delivFirstName
+=item *
 
-=item delivLastName
+delivFirstName, delivLastName, delivStreet, delivSuburb, delivState,
+delivPostCode, delivCountry - Delivery information for the order.
 
-=item delivStreet
+=item *
 
-=item delivSuburb
+billFirstName, billLastName, billStreet, billSuburb, billState,
+billPostCode, billCountry - Billing information for the order.
 
-=item delivState
+=item *
 
-=item delivPostCode
+telephone, facsimile, emailAddress - Contact information for the
+order.
 
-=item delivCountry
+=item *
 
-Delivery information for the order.
+total - Total price of the order.
 
-=item billFirstName
+=item *
 
-=item billLastName
+wholesaleTotal - Wholesale cost of the total.  Your costs, if you
+entered wholesale prices for the products.
 
-=item billStreet
+=item *
 
-=item billSuburb
+gst - GST (in Australia) payable on the order, if you entered GST for
+the products.
 
-=item billState
+=item *
 
-=item billPostCode
+orderDate - When the order was made.
 
-=item billCountry
+=item *
 
-Billing information for the order.
+filled - Whether or not the order has been filled.  This can be used
+with the order_filled target in shopadmin.pl for tracking filled
+orders.
 
-=item telephone
+=item *
 
-=item facsimile
+whenFilled - The time and date when the order was filled.
 
-=item emailAddress
+=item *
 
-Contact information for the order.
+whoFilled - The user who marked the order as filled.
 
-=item total
+=item *
 
-Total price of the order.
+paidFor - Whether or not the order has been paid for.  This can be
+used with a custom purchasing handler to mark the product as paid for.
+You can then filter the order list to only display paid for orders.
 
-=item wholesaleTotal
+=item *
 
-Wholesale cost of the total.  Your costs, if you entered wholesale
-prices for the products.
+paymentReceipt - A custom payment handler can fill this with receipt
+information.
 
-=item gst
+=item *
 
-GST (in Australia) payable on the order, if you entered GST for the products.
+randomId - Generated by the prePurchase target, this can be used as a
+difficult to guess identifier for orders, when working with custom
+payment handlers.
 
-=item orderDate
+=item *
 
-When the order was made.
-
-=item filled
-
-Whether or not the order has been filled.  This can be used with the
-order_filled target in shopadmin.pl for tracking filled orders.
-
-=item whenFilled
-
-The time and date when the order was filled.
-
-=item whoFilled
-
-The user who marked the order as filled.
-
-=item paidFor
-
-Whether or not the order has been paid for.  This can be used with a
-custom purchasing handler to mark the product as paid for.  You can
-then filter the order list to only display paid for orders.
-
-=item paymentReceipt
-
-A custom payment handler can fill this with receipt information.
-
-=item randomId
-
-Generated by the prePurchase target, this can be used as a difficult
-to guess identifier for orders, when working with custom payment
-handlers.
-
-=item cancelled
-
-This can be used by a custom payment handler to mark an order as
-cancelled if the user starts processing an order without completing
-payment.
+cancelled - This can be used by a custom payment handler to mark an
+order as cancelled if the user starts processing an order without
+completing payment.
 
 =back
 
 =head2 Order item fields
 
-=over 4
+=over
 
-=item productId
+=item *
 
-The product id of this item.
+productId - The product id of this item.
 
-=item orderId 
+=item *
 
-The order Id.
+orderId - The order Id.
 
-=item units
+=item *
 
-The number of units for this item.
+units - The number of units for this item.
 
-=item price
+=item *
 
-The price paid for the product.
+price - The price paid for the product.
 
-=item wholesalePrice
+=item *
 
-The wholesale price for the product.
+wholesalePrice - The wholesale price for the product.
 
-=item gst
+=item *
 
-The gst for the product.
+gst - The gst for the product.
 
-=item options
+=item *
 
-A comma separated list of options specified for this item.  These
-correspond to the option names in the product.
+options - A comma separated list of options specified for this item.
+These correspond to the option names in the product.
 
 =back
 
@@ -2584,46 +2637,51 @@ tags:
 
 =over
 
-=item iterator ... options
+=item *
+
+C<iterator> ... <options>
 
 within an item, iterates over the options for this item in the cart.
 Sets the item tag.
 
-=item option field
+=item *
+
+C<option> I<field>
 
 Retrieves the given field from the option, possible field names are:
 
 =over
 
-=item id
+=item *
 
-The type/identifier for this option.  eg. msize for a male clothing
-size field.
+id - The type/identifier for this option.  eg. msize for a male
+clothing size field.
 
-=item value
+=item *
 
-The underlying value of the option, eg. XL.
+value - The underlying value of the option, eg. XL.
 
-=item desc
+=item *
 
-The description of the field from the product options hash.  If the
-description isn't defined this is the same as the id. eg. Size.
+desc - The description of the field from the product options hash.  If
+the description isn't defined this is the same as the id. eg. Size.
 
-=item label
+=item *
 
-The description of the value from the product options hash.
+label - The description of the value from the product options hash.
 eg. "Extra large".
 
 =back
 
-=item ifOptions
+=item *
 
-A conditional tag, true if the current cart item has any options.
+ifOptions - A conditional tag, true if the current cart item has any
+options.
 
-=item options
+=item *
 
-A simple rendering of the options as a parenthesized comma-separated
-list.
+options - A simple rendering of the options as a parenthesized
+comma-separated list.
 
 =back
 

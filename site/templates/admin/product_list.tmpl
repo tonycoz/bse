@@ -4,10 +4,14 @@
 <:or:><:eif:> 
 <p>| <a href="/cgi-bin/admin/menu.pl">Admin menu</a> | <a href="/cgi-bin/admin/admin.pl?id=<:shopid:>">See 
   shop</a> | <a href="/cgi-bin/admin/add.pl?id=<:shopid:>">Edit shop</a> 
-  | <:ifUserCan shop_order_list:><a href="<:script:>?order_list=1">Manage orders</a> | <:or:><:eif:><a href="/cgi-bin/admin/admin.pl?id=<:shopid:>"></a><:if 
+  | <:ifUserCan shop_order_list:><a href="<:= cfg.admin_url2("shopadmin", "order_list") :>">Manage orders</a> | <:or:><:eif:><a href="/cgi-bin/admin/admin.pl?id=<:shopid:>"></a><:if 
   ShowStepKids:><a href="<:script:>?showstepkids=0">Hide step children</a><:or 
   ShowStepKids:><a href="<:script:>?showstepkids=1">Show step children</a><:eif 
-  ShowStepKids:> | </p>
+  ShowStepKids:> |
+<:.if request.user_can("bse_shop_coupon_list") -:>
+<a href="<:= cfg.admin_url2("shopadmin", "coupon_list") :>">Coupon Management</a> |
+<:.end if -:>
+</p>
 <:if Products:> 
 <h4>Products list</h4>
       <table class="productlist">

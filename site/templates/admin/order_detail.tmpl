@@ -79,28 +79,43 @@
         <tr> 
           <th class="col_description">Description</th>
           <th class="col_units">Units</th>
-          <th class="col_unitprice">Unit Price</th>
-          <th class="col_extension">Extension</th>
           <th class="col_unit_wsale">Unit Wsale</th>
           <th class="col_ext_wsale">Ext Wsale</th>
           <th class="col_unit_gst">Unit GST</th>
           <th class="col_ext_gst">Ext GST</th>
+          <th class="col_unitprice">Unit Price</th>
+          <th class="col_extension">Extension</th>
 </tr>
 <:iterator begin items:>
         <tr> 
           <td class="col_description"><:ifOr [ifEq [item productId] -1] [ifEq [product id] ""]:><:item title:> (product deleted)<:or:><a href="<:product admin:>"><:product
             title:></a><:eif:> <:options:></td>
           <td class="col_units"><:item units:></td>
-          <td class="col_unitprice"><:money item price:></td>
-          <td class="col_extension"><:extension price:></td>
           <td class="col_unit_wsale"><:money item wholesalePrice:></td>
           <td class="col_ext_wsale"><:extension wholesalePrice:></td>
           <td class="col_unit_gst"><:money item gst:></td>
           <td class="col_ext_gst"><:extension gst:></td>
+          <td class="col_unitprice"><:money item price:></td>
+          <td class="col_extension"><:extension price:></td>
 </tr>
 <:iterator end items:>
+<tr>
+  <td colspan="7" class="col_label_right">Total Price of goods:</td>
+  <td  class="col_extension"><:= bse.number("money", order.total_cost) -:></td>
+</tr>
+<:.if order.coupon -:>
+<tr>
+   <td>Coupon code <b><:= order.coupon_code -:></b></td>
+   <td colspan="6" class="col_label_right">Discount:</td>
+   <td class="col_extension">(<:= bse.number("money", order.product_cost_discount) -:>)</td>
+</tr>
+<tr>
+   <td colspan="7" class="col_label_right">Discounted total:</td>
+   <td class="col_extension"><:= bse.number("money", order.discounted_product_cost) -:></td>
+</tr>
+<:.end if -:>
         <tr> 
-          <td colspan="3" class="col_contact">
+          <td colspan="7" class="col_contact">
 <:if Eq [order shipping_name] "none":>
 Nothing to ship.
 <:or:>
@@ -114,18 +129,14 @@ Shipping via <:shipping_method_select:>
 <:eif:>
 </td>
           <td class="col_extension"><:money order shipping_cost:></td>
-          <td>&nbsp;</td>
-          <td class="col_ext_wsale"></td>
-          <td>&nbsp;</td>
-          <td class="col_ext_gst"></td>
 </tr>
         <tr> 
           <td colspan="3" class="col_total">Total:</td>
-          <td class="col_extension total"><:money order total:></td>
-          <td>&nbsp;</td>
           <td class="col_ext_wsale total"><:money order wholesaleTotal:></td>
           <td>&nbsp;</td>
           <td class="col_ext_gst total"><:money order gst:></td>
+          <td>&nbsp;</td>
+          <td class="col_extension total"><:money order total:></td>
 </tr>
 </table>
 <p>Order progress: <:stage_description:> <a href="#" onclick="document.getElementById('update_stage').style.display='block'; this.style.display='none'; return false;">update</a></p>

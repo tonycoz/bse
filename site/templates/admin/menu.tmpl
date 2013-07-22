@@ -94,6 +94,10 @@ href="<:= cfg.admin_url2("shopadmin", "order_list_filled", { "template":"order_l
 
 <li><a href="<:= cfg.admin_url("add", { "parentid":3 }) | html :>">Add catalog</a></li>
 
+<:.if request.user_can("bse_shop_coupon_list") -:>
+<li><a href="<:= cfg.admin_url2("shopadmin", "coupon_list") :>">Coupons</a></li>
+<:.end if -:>
+
 </ul>
 
 <:.if request.user_can("bse_admin_import") :>

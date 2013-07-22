@@ -2,7 +2,7 @@ package BSE::UI::Dispatch;
 use strict;
 use Carp 'confess';
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 =head1 NAME
 
@@ -114,7 +114,23 @@ sub dispatch {
     $entry = ref $entry ? $entry : { token => $entry };
     my $token = $entry->{token};
     unless ($req->check_csrf($entry->{token})) {
-      $action = $entry->{target} || $self->default_action;
+      my $new_action = $entry->{target} || $self->default_action;
+      if ($new_action eq $action) {
+	$req->audit
+	  (
+	   component => "dispatcher::dispatch",
+	   level => "crit",
+	   actor => "S",
+	   msg => "Internal error: crsfp fallback for $action is $new_action, using default action instead",
+	   dump => <<EOS,
+action: $action
+fallback: $new_action
+handler: $self
+EOS
+	  );
+	$new_action = $self->default_action;
+      }
+      $action = $new_action;
       @extras = ();
       $req->flash_error($req->csrf_error);
     }

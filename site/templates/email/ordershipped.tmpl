@@ -1,4 +1,4 @@
-Your order <:order id |%05d:> has been shipped.
+Your order <:= order.id.format("%05d"):> has been shipped.
 <:ifOrder freight_tracking
 :>It has tracking code <:order freight_tracking:>
 

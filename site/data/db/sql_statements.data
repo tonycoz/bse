@@ -672,3 +672,11 @@ sql_statement: <<SQL
 select bs.*, us.* from admin_base bs, admin_users us
   where bs.id = us.base_id and us.password_type = ?
 SQL
+
+name: PriceTiers.forCoupon
+sql_statement: <<SQL
+select t.*
+from bse_price_tiers t, bse_coupon_tiers c
+where c.coupon_id = ?
+  and c.tier_id = t.id
+SQL

@@ -2,42 +2,27 @@ You have created an order with <:siteName:>:
 
 To stay up to date on the status of your order, see:
 
-  <:target user oda id [order randomId]:>
+  <:= cfg.user_url("user", "oda", "id", order.randomId) |raw:>
 
-Order: <:order id |%06d:>
+<:include mailcommon.tmpl:>
 
-Delivery: <:order delivFirstName :> <:order delivLastName :>
-          <:order delivStreet:>
-          <:order delivSuburb:> <:order delivPostCode:> <:order delivState:>
-          <:order delivCountry:>
-
-Phone   : <:order telephone:>
-<:ifOrder delivMobile:>Mobile  : <:order delivMobile:>
-<:or:><:eif:>Fax     : <:order facsimile:>
-Email   : <:order emailAddress:>
-
-Product                                   Units  Price   Extended
------------------------------------------------------------------
-<:iterator begin items:><:product title |42:><:item units|%2d:><:item price |m10:><:extended price|m11:><:if Options:>
-   <:options:><:or Options:><:eif Options:>
-<:iterator separator items:><:iterator end items 
-:>-----------------------------------------------------------------
-                                             Shipping: <:order shipping_cost |m10:>
-                                                Total: <:order total |m10:>
-						  GST: <:order gst   |m10:>
-
-<:ifEq [order paymentType] "0" :>Paid by credit card.
-<:if Order ccOnline
-:>Processed online.
-Receipt No.  : <:order ccReceipt:>
-<:or Order
-:><:eif Order:><:or:><:eif
-:><:ifEq [order paymentType] "1" :>Will be paid by cheque<:or
-:><:eif:><:ifEq [order paymentType] "2"
-:>We will call you to arrange for payment<:or:><:eif:><:ifEq [order paymentType] "4"
-:>Paid by PayPal, transaction id <:order paypal_tran_id:><:or:><:eif:><:
-include custom/payment_type_email.include:>
-To be shipped by: <:order shipping_method:>
-<:if Order instructions:>
-<:with begin wrap:>Special Instructions: <:order instructions:><:with end wrap:>
-<:or Order:><:eif Order:>
+<:.if order.paymentType == 0 -:>
+Paid by credit card:
+<:-  .if order.ccOnline :>
+  Processed online.
+  Receipt No.  : <:= order.ccReceipt:>
+<:  .end if -:>
+<:-.elsif order.paymentType == 1 -:>
+Will be paid by cheque
+<:-.elsif order.paymentType == 2 -:>
+Please call the customer to arrange for payment
+<:- .elsif order.paymentType == 4 -:>
+Paid by PayPal:
+  Transaction id: <:order paypal_tran_id:>
+<:.else -:>
+<:include custom/payment_type_email.include:>
+<:-.end if :>
+To be shipped by: <:= order.shipping_method :>
+<:.if order.instructions -:>
+<:with begin wrap:>Special Instruction: <:= order.instructions:><:with end wrap:>
+<:.end if -:>

@@ -18,8 +18,10 @@ use BSE::Util::HTML qw(:default popup_menu);
 use BSE::Arrows;
 use BSE::Shop::Util qw(:payment order_item_opts nice_options payment_types);
 use BSE::CfgInfo qw(cfg_dist_image_uri);
+use BSE::Util::SQL qw/now_sqldate sql_to_date date_to_sql sql_date sql_datetime/;
+use BSE::Util::Valid qw/valid_date/;
 
-our $VERSION = "1.019";
+our $VERSION = "1.024";
 
 my %actions =
   (
@@ -36,6 +38,13 @@ my %actions =
    product_detail => '',
    product_list => '',
    paypal_refund => 'bse_shop_order_refund_paypal',
+   coupon_list => 'bse_shop_coupon_list',
+   coupon_addform => 'bse_shop_coupon_add',
+   coupon_add => 'bse_shop_coupon_add',
+   coupon_edit => 'bse_shop_coupon_edit',
+   coupon_save => 'bse_shop_coupon_edit',
+   coupon_deleteform => 'bse_shop_coupon_delete',
+   coupon_delete => 'bse_shop_coupon_delete',
   );
 
 sub actions {
@@ -52,6 +61,17 @@ sub default_action {
 
 sub action_prefix {
   ''
+}
+
+my %csrfp =
+  (
+   coupon_add => { token => "admin_bse_coupon_add", target => "coupon_addform" },
+   coupon_save => { token => "admin_bse_coupon_edit", target => "coupon_edit" },
+   coupon_delete => { token => "admin_bse_coupon_delete", target => "coupon_deleteform" },
+  );
+
+sub csrfp_tokens {
+  \%csrfp;
 }
 
 #####################
@@ -190,7 +210,7 @@ sub req_product_list {
   my @catalogs = sort { $b->{displayOrder} <=> $a->{displayOrder} }
     grep $_->{generator} eq 'Generate::Catalog', Articles->children($shopid);
   my $catalog_index = -1;
-  $message ||= $cgi->param('m') || $cgi->param('message') || '';
+  $message = $req->message($message);
   if (defined $cgi->param('showstepkids')) {
     $session->{showstepkids} = $cgi->param('showstepkids');
   }
@@ -464,8 +484,6 @@ sub order_list_low {
 
   my $from = $cgi->param('from');
   my $to = $cgi->param('to');
-  use BSE::Util::SQL qw/now_sqldate sql_to_date date_to_sql sql_date/;
-  use BSE::Util::Valid qw/valid_date/;
   my $today = now_sqldate();
   for my $what ($from, $to) {
     if (defined $what) {
@@ -1125,18 +1143,501 @@ sub req_order_save {
   return $req->get_refresh($url);
 }
 
+my %coupon_sorts =
+  (
+   expiry => "expiry desc",
+   release => "release desc",
+   code => "code asc",
+  );
+
+=item coupon_list
+
+Display a list of coupons.
+
+Accepts two optional parameters:
+
+=over
+
+=item *
+
+C<sort> which can be any of:
+
+=over
+
+=item *
+
+C<expiry> - sort by expiry date descending
+
+=item *
+
+C<release> - sort by release date descending
+
+=item *
+
+C<code> - sort by code ascending
+
+=back
+
+The default and fallback for unknown values is C<expiry>.
+
+=item *
+
+C<all> - if a true value, returns all coupons, otherwise only coupons
+modified in the last 60 days, or with a release or expiry date in the
+last 60 days are returned.
+
+=back
+
+Allows standard admin tags and variables with the following additional
+variable:
+
+=over
+
+=item *
+
+C<coupons> - an array of coupons
+
+=item *
+
+C<coupons_all> - true if all coupons were requested
+
+=item *
+
+C<coupons_sort> - the 
+
+=back
+
+In ajax context returns:
+
+  {
+    success => 1,
+    coupons => [ coupon, ... ]
+  }
+
+where each coupon is a hash containing the coupon data, and the key
+tiers is a list of tier ids.
+
+Template: F<admin/coupons/list>
+
+=cut
+
+sub req_coupon_list {
+  my ($self, $req) = @_;
+
+  my $sort = $req->cgi->param('sort') || 'expiry';
+  $sort =~ /^(expiry|code|release)/ or $sort = 'expiry';
+  my $all = $req->cgi->param('all')  || 0;
+  my @cond;
+  unless ($all) {
+    my $past_60_days = sql_datetime(time() - 60 * 86_400);
+    @cond = 
+      (
+       [ or =>
+	 [ '>', last_modified => $past_60_days ],
+	 [ '>', expiry => $past_60_days ],
+	 [ '>', release => $past_60_days ],
+       ]
+      );
+  }
+  my $scode = $req->cgi->param('scode');
+  if ($scode) {
+    if ($scode =~ /^=(.*)/) {
+      push @cond, [ '=', code => $1 ];
+    }
+    else {
+      push @cond, [ 'like', code => $scode . '%' ];
+    }
+  }
+  require BSE::TB::Coupons;
+  my @coupons = BSE::TB::Coupons->getBy2
+    (
+     \@cond,
+     { order => $coupon_sorts{$sort} }
+    );
+
+  if ($req->is_ajax) {
+    return $req->json_content
+      (
+       success => 1,
+       coupons => [ map $_->json_data, @coupons ],
+      );
+  }
+
+  $req->set_variable(coupons => \@coupons);
+  $req->set_variable(coupons_all => $all);
+  $req->set_variable(coupons_sort => $sort);
+
+  my %acts = $req->admin_tags;
+
+  return $req->dyn_response('admin/coupons/list', \%acts);
+}
+
+=item coupon_addform
+
+Display a form for adding new coupons.
+
+Template: F<admin/coupons/add>
+
+Template variables:
+
+=over
+
+=item *
+
+C<fields> - coupon fields.
+
+=item *
+
+C<coupon> - set to undef.
+
+=item *
+
+C<errors> - an errors from an attempted save.
+
+=item *
+
+C<tiers> - a list of defined price tiers.
+
+=back
+
+=cut
+
+sub req_coupon_addform {
+  my ($self, $req, $errors) = @_;
+
+  my %acts = $req->admin_tags;
+
+  $req->message($errors);
+
+  require BSE::TB::Coupons;
+  $req->set_variable(fields => BSE::TB::Coupon->fields);
+  $req->set_variable(coupon => undef);
+  $req->set_variable(errors => $errors || {});
+  require BSE::TB::PriceTiers;
+  $req->set_variable(tiers => [ BSE::TB::PriceTiers->all ]);
+
+  return $req->dyn_response("admin/coupons/add", \%acts);
+}
+
+=item coupon_add
+
+Add a new coupon.
+
+Accepts coupon fields.
+
+Tiers are accepted as separate values for the tiers field.
+
+CSRF token: C<admin_bse_coupon_add>
+
+=cut
+
+sub req_coupon_add {
+  my ($self, $req) = @_;
+
+  require BSE::TB::Coupons;
+  my $fields = BSE::TB::Coupon->fields;
+  my %errors;
+  $req->validate(fields => $fields, errors => \%errors,
+		 rules => BSE::TB::Coupon->rules);
+
+  my $values = $req->cgi_fields(fields => $fields);
+
+  unless ($errors{code}) {
+    my ($other) = BSE::TB::Coupons->getBy(code => $values->{code});
+    $other
+      and $errors{code} = "msg:bse/admin/shop/coupons/adddup:$values->{code}";
+  }
+
+  if (keys %errors) {
+    $req->is_ajax
+      and return $req->field_error(\%errors);
+    return $self->req_coupon_addform($req, \%errors);
+  }
+
+  my $coupon = BSE::TB::Coupons->make(%$values);
+
+  $req->audit
+    (
+     component => "shopadmin:coupon:add",
+     level => "notice",
+     msg => "Coupon '" . $coupon->code . "' created",
+     object => $coupon,
+     dump => $coupon->json_data,
+    );
+
+  if ($req->is_ajax) {
+    return $req->json_content
+      (
+       success => 1,
+       coupon => $coupon->json_data,
+      );
+  }
+  else {
+    $req->flash_notice("msg:bse/admin/shop/coupons/add", [ $coupon ]);
+
+    return $req->get_def_refresh($req->cfg->admin_url2("shopadmin", "coupon_list"));
+  }
+}
+
+sub _get_coupon {
+  my ($self, $req, $rresult) = @_;
+
+  my $cgi = $req->cgi;
+  my $id = $cgi->param("id");
+  require BSE::TB::Coupons;
+  my $coupon;
+  if ($id) {
+    $coupon = BSE::TB::Coupons->getByPkey($id);
+  }
+  else {
+    my $code = $cgi->param("code");
+    if ($code) {
+      ($coupon) = BSE::TB::Coupons->getBy(code => $code);
+    }
+  }
+  unless ($coupon) {
+    $$rresult = $self->req_coupon_list($req, { id => "Missing id or code" });
+    return;
+  }
+
+  return $coupon;
+}
+
+sub _get_coupon_id {
+  my ($self, $req, $rresult) = @_;
+
+  my $cgi = $req->cgi;
+  my $id = $cgi->param("id");
+  require BSE::TB::Coupons;
+  my $coupon;
+  if ($id) {
+    $coupon = BSE::TB::Coupons->getByPkey($id);
+  }
+  unless ($coupon) {
+    $$rresult = $self->req_coupon_list($req, { id => "Missing id or code" });
+    return;
+  }
+
+  return $coupon;
+}
+
+=item coupon_edit
+
+Edit a coupon.
+
+Requires C<id> as a coupon id to edit.
+
+Template: F<admin/coupons/edit>
+
+Template variables:
+
+=over
+
+=item *
+
+C<fields> - coupon fields.
+
+=item *
+
+C<coupon> - the coupon being edited
+
+=item *
+
+C<errors> - an errors from an attempted save.
+
+=item *
+
+C<tiers> - a list of defined price tiers.
+
+=back
+
+=cut
+
+sub req_coupon_edit {
+  my ($self, $req, $errors) = @_;
+
+  my $result;
+  my $coupon = $self->_get_coupon_id($req, \$result)
+    or return $result;
+
+  my %acts = $req->admin_tags;
+
+  $req->message($errors);
+
+  require BSE::TB::Coupons;
+  $req->set_variable(fields => $coupon->fields);
+  $req->set_variable(coupon => $coupon);
+  $req->set_variable(errors => $errors || {});
+  require BSE::TB::PriceTiers;
+  $req->set_variable(tiers => [ BSE::TB::PriceTiers->all ]);
+
+  return $req->dyn_response("admin/coupons/edit", \%acts);
+}
+
+=item coupon_save
+
+Save changes to a coupon, accepts:
+
+=over
+
+=item *
+
+C<id> - id of the coupon to save.
+
+=item *
+
+other coupon fields.
+
+=back
+
+CSRF token: C<admin_bse_coupon_save>
+
+=cut
+
+sub req_coupon_save {
+  my ($self, $req) = @_;
+
+  my $result;
+  my $coupon = $self->_get_coupon_id($req, \$result)
+    or return $result;
+
+  require BSE::TB::Coupons;
+  my $fields = $coupon->fields;
+  my %errors;
+  $req->validate(fields => $fields, errors => \%errors,
+		 rules => BSE::TB::Coupon->rules);
+
+  my $values = $req->cgi_fields(fields => $fields);
+
+  unless ($errors{code}) {
+    my ($other) = BSE::TB::Coupons->getBy(code => $values->{code});
+    $other && $other->id != $coupon->id
+      and $errors{code} = "msg:bse/admin/shop/coupons/editdup:$values->{code}";
+  }
+
+  if (keys %errors) {
+    $req->is_ajax
+      and return $req->field_error(\%errors);
+    return $self->req_coupon_edit($req, \%errors);
+  }
+
+  my $old = $coupon->json_data;
+
+  my $tiers = delete $values->{tiers};
+  for my $key (keys %$values) {
+    $coupon->set($key => $values->{$key});
+  }
+  $coupon->set_tiers($tiers);
+  $coupon->save;
+
+  $req->audit
+    (
+     component => "shopadmin:coupon:edit",
+     level => "notice",
+     msg => "Coupon '" . $coupon->code . "' modified",
+     object => $coupon,
+     dump =>
+     {
+      old => $old,
+      new => $coupon->json_data,
+      type => "edit",
+     }
+    );
+
+  if ($req->is_ajax) {
+    return $req->json_content
+      (
+       success => 1,
+       coupon => $coupon->json_data,
+      );
+  }
+  else {
+    $req->flash_notice("msg:bse/admin/shop/coupons/save", [ $coupon ]);
+
+    return $req->get_def_refresh($req->cfg->admin_url2("shopadmin", "coupon_list"));
+  }
+}
+
+=item coupon_deleteform
+
+Prompt for deletion of a coupon
+
+Requires C<id> as a coupon id to elete.
+
+Template: F<admin/coupons/delete>
+
+=cut
+
+sub req_coupon_deleteform {
+  my ($self, $req) = @_;
+
+  my $result;
+  my $coupon = $self->_get_coupon_id($req, \$result)
+    or return $result;
+
+  unless ($coupon->is_removable) {
+    $req->flash_error("msg:bse/admin/shop/coupons/not_deletable", [ $coupon ]);
+    return $self->req_coupon_list($req);
+  }
+
+  my %acts = $req->admin_tags;
+
+  require BSE::TB::Coupons;
+  $req->set_variable(fields => BSE::TB::Coupon->fields);
+  $req->set_variable(coupon => $coupon);
+
+  return $req->dyn_response("admin/coupons/delete", \%acts);
+}
+
+=item coupon_delete
+
+Delete a coupon
+
+Requires C<id> as a coupon id to delete.
+
+CSRF token: C<admin_bse_coupon_delete>
+
+=cut
+
+sub req_coupon_delete {
+  my ($self, $req) = @_;
+
+  my $result;
+  my $coupon = $self->_get_coupon_id($req, \$result)
+    or return $result;
+
+  unless ($coupon->is_removable) {
+    $req->flash_error("msg:bse/admin/shop/coupons/not_deletable", [ $coupon ]);
+    return $self->req_coupon_list($req);
+  }
+
+  my $code = $coupon->code;
+
+  $req->audit
+    (
+     component => "shopadmin:coupon:delete",
+     level => "notice",
+     msg => "Coupon '$code' deleted",
+     object => $coupon,
+     dump => $coupon->json_data,
+    );
+
+  $coupon->remove;
+
+  if ($req->is_ajax) {
+    return $req->json_content(success => 1);
+  }
+  else {
+    $req->flash_notice("msg:bse/admin/shop/coupons/delete", [ $code ]);
+
+    return $req->get_def_refresh($req->cfg->admin_url2("shopadmin", "coupon_list"));
+  }
+}
+
 #####################
 # utilities
 # perhaps some of these belong in a class...
 
-# format an ANSI SQL date for display
-sub money_to_cents {
-  my $money = shift;
-
-  $$money =~ /^\s*(\d+(\.\d*)|\.\d+)/
-    or return undef;
-  return $$money = sprintf("%.0f ", $$money * 100);
-}
 
 # convert an epoch time to sql format
 sub epoch_to_sql {

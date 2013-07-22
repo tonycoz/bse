@@ -2,6 +2,8 @@ drop table if exists bse_tag_category_deps;
 drop table if exists bse_tag_categories;
 drop table if exists bse_tag_members;
 drop table if exists bse_tags;
+drop table if exists bse_coupon_tiers;
+drop table if exists bse_coupons;
 
 -- represents sections, articles
 DROP TABLE IF EXISTS article;
@@ -347,9 +349,15 @@ create table orders (
   -- true if the order was paid manually
   paid_manually integer not null default 0,
 
+  coupon_id integer null,
+  coupon_code_discount_pc real not null default 0,
+
+  delivery_in integer null,
+
   primary key (id),
   index order_cchash(ccNumberHash),
-  index order_userId(userId, orderDate)
+  index order_userId(userId, orderDate),
+  index order_coupon(coupon_id)
 );
 
 DROP TABLE IF EXISTS order_item;
@@ -908,7 +916,7 @@ create table bse_product_options (
   enabled integer not null default 0,
   default_value integer,
   index product_order(product_id, display_order)
-) type=innodb;
+) engine=innodb;
 
 drop table if exists bse_product_option_values;
 create table bse_product_option_values (
@@ -917,7 +925,7 @@ create table bse_product_option_values (
   value varchar(255) not null,
   display_order integer not null,
   index option_order(product_option_id, display_order)
-) type=innodb;
+) engine=innodb;
 
 drop table if exists bse_order_item_options;
 create table bse_order_item_options (
@@ -929,7 +937,7 @@ create table bse_order_item_options (
   display varchar(80) not null,
   display_order integer not null,
   index item_order(order_item_id, display_order)
-) type=innodb;
+) engine=innodb;
 
 drop table if exists bse_owned_files;
 create table bse_owned_files (
@@ -1236,7 +1244,7 @@ create table bse_files (
   ftype varchar(20) not null default 'img',
 
   index owner(file_type, owner_id)
-) type = InnoDB;
+) engine = InnoDB;
 
 -- a generic selection of files from a pool
 create table bse_selected_files (
@@ -1252,7 +1260,7 @@ create table bse_selected_files (
   display_order integer not null default -1,
 
   unique only_one(owner_id, owner_type, file_id)
-) type = InnoDB;
+) engine = InnoDB;
 
 drop table if exists bse_price_tiers;
 create table bse_price_tiers (
@@ -1266,7 +1274,7 @@ create table bse_price_tiers (
   to_date date null,
 
   display_order integer null null
-);
+) engine=innodb;
 
 drop table if exists bse_price_tier_prices;
 
@@ -1336,4 +1344,42 @@ create table bse_ip_lockouts (
   expires datetime not null,
 
   unique ip_address(ip_address, type)
-) type=innodb;
+) engine=innodb;
+
+create table bse_coupons (
+  id integer not null auto_increment primary key,
+
+  code varchar(40) not null,
+
+  description text not null,
+
+  `release` date not null,
+
+  expiry date not null,
+
+  discount_percent real not null,
+
+  campaign varchar(20) not null,
+
+  last_modified datetime not null,
+
+  untiered integer not null default 0,
+
+  unique codes(code)
+) engine=InnoDB;
+
+create table bse_coupon_tiers (
+  id integer not null auto_increment primary key,
+
+  coupon_id integer not null,
+
+  tier_id integer not null,
+
+  unique (coupon_id, tier_id),
+
+  foreign key (coupon_id) references bse_coupons(id)
+    on delete cascade on update restrict,
+
+  foreign key (tier_id) references bse_price_tiers(id)
+    on delete cascade on update restrict
+) engine=InnoDB;

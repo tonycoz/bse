@@ -139,7 +139,7 @@ Page <:= pages.page :> of <:= pages.pagecount :>
 <:.end define -:>
 
 <:.define input -:>
-<:# paramaters:
+<:# parameters:
   name - field name
   field - entry from fields
   object - source for defaults in edit mode
@@ -222,13 +222,18 @@ Page <:= pages.page :> of <:= pages.pagecount :>
   <:.if field.is_hash -:>
 <div>
   <label for="<:= name | html :>"><:= field.nolabel ? "" : field.description | html :>:</label>
-  <span><:.call "input", "name":name -:><:.call "error_img", "field":name :>
+  <span>
+    <:-.if field.readonly -:>
+<:-.call "display", "name":name -:>
+    <:.else -:>
+<:-.call "input", "name":name -:><:.call "error_img", "field":name :>
+    <:-.end if -:>
     <:-.if field.units -:>
       <:-= field.units | html -:>
     <:-.end if -:>
-  <:.end if -:>
 </span>
 </div>
+  <:.end if -:>
 <:.end define -:>
 
 <:.define fieldset -:>
