@@ -1,3 +1,62 @@
+Bug fixes:
+
+ - user.pl (BSE::UserReg) now consistently does new-style message
+   handling
+
+ - embedding no longer messes up the variable state for article
+   generation.
+
+ - actually tokenize the !~ template expression operator.
+
+ - audit log mailing now uses the most specific email address supplied
+
+Enhancements:
+
+ - the article mock objects used for pregen behave more like article
+   objects
+
+ - password strength validation and account lockouts for repeated
+   failed logons.
+
+ - plain text passwords are no longer supported
+
+ - articles/products can now be imported from CSV
+
+ - article/product imports can now be done as "update_only" so that
+   required fields aren't necessary
+
+ - installation now uses install.cfg, which is formatted like bse.cfg
+
+ - added a tool to hash unhashed site user and admin user passwords
+
+ - coupons for the shop
+
+Templates:
+
+ - add top, dynamic, generator, url variables to generated article
+   templates
+
+ - replace variables on the makeIndex html output
+
+ - add a params variable that behaves like the tag
+
+ - expression tags like <:= foo :> now escape as html by default.
+
+ - added an escape() method to scalars.
+
+ - add current to the loop variable used in .for ... in
+
+ - added convience methods image_by_name, image_by_index, file_by_name
+   to article objects
+
+ - added a set_subject() function to BSE::ComposeMail templates
+
+ - added .while and .wrap template directives
+
+API:
+
+Testing:
+
 BSE 0.24 - 11 Feb 2013
 ========
 
