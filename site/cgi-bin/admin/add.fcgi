@@ -6,4 +6,4 @@ use FindBin;
 use lib "$FindBin::Bin/../modules";
 use BSE::UI;
 
-BSE::UI->run("BSE::UI::AdminEdit");
+BSE::UI->run_fcgi("BSE::UI::AdminEdit");

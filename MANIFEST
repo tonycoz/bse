@@ -18,6 +18,7 @@ schema/bse_sp.sql
 schema/mssql.sql
 schema/mysql_build.pl		# builds site/util/mysql.str
 schema/site_users_to_members.sql
+site/cgi-bin/admin/add.fcgi
 site/cgi-bin/admin/add.pl
 site/cgi-bin/admin/admin.pl
 site/cgi-bin/admin/admin_seminar.pl
@@ -250,6 +251,7 @@ site/cgi-bin/modules/BSE/ThumbLow.pm
 site/cgi-bin/modules/BSE/UI.pm
 site/cgi-bin/modules/BSE/UI/AdminAudit.pm
 site/cgi-bin/modules/BSE/UI/AdminDispatch.pm
+site/cgi-bin/modules/BSE/UI/AdminEdit.pm
 site/cgi-bin/modules/BSE/UI/AdminImageClean.pm
 site/cgi-bin/modules/BSE/UI/AdminImporter.pm
 site/cgi-bin/modules/BSE/UI/AdminIPAddress.pm
