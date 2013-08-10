@@ -2,7 +2,7 @@ package BSE::TB::SiteCommon;
 use strict;
 use Carp qw(confess);
 
-our $VERSION = "1.014";
+our $VERSION = "1.015";
 
 =head1 NAME
 
@@ -446,8 +446,6 @@ sub add_file {
   }
 
   my $name = $opts{name};
-  $self->id != -1 || defined $name && $name =~ /\S/
-    or die "name is required for global files\n";
   if (defined $name && $name =~ /\S/) {
     $name =~ /^\w+$/
       or die "name must be a single word\n";

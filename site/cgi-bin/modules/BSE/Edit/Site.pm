@@ -15,7 +15,7 @@ BSE::Edit::Site - edit interface for the site itself.
 
 =cut
 
-our $VERSION = "1.011";
+our $VERSION = "1.012";
 
 use base 'BSE::Edit::Article';
 use BSE::TB::Site;
@@ -71,16 +71,6 @@ sub get_files {
   my ($self, $article) = @_;
 
   Articles->global_files;
-}
-
-sub validate_image_name {
-  my ($self, $name, $rmsg) = @_;
-
-  length $name and return 1;
-
-  $$rmsg = "Name must be supplied for global images";
-
-  return 0;
 }
 
 sub req_tagshow {

@@ -16,7 +16,7 @@ use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 use constant ARTICLE_CUSTOM_FIELDS_CFG => "article custom fields";
 
-our $VERSION = "1.039";
+our $VERSION = "1.040";
 
 =head1 NAME
 
@@ -3045,12 +3045,7 @@ sub save_image_changes {
     my $name = $cgi->param("name$id");
     if (defined $name && $name ne $image->{name}) {
       if ($name eq '') {
-	if ($article->{id} > 0) {
-	  $changes{$id}{name} = '';
-	}
-	else {
-	  $errors{"name$id"} = "Identifiers are required for global images";
-	}
+	$changes{$id}{name} = '';
       }
       elsif ($name =~ /^[a-z_]\w*$/i) {
 	my $msg;
@@ -3840,12 +3835,7 @@ sub req_save_image {
       }
     }
     else {
-      if ($article->{id} == -1) {
-	$errors{name} = "Identifiers are required for global images";
-      }
-      else {
-	$image->{name} = '';
-      }
+      $image->{name} = '';
     }
   }
   my $filename = $cgi->param('image');
@@ -4090,9 +4080,6 @@ sub fileadd {
   $file{category}       ||= '';
 
   defined $file{name} or $file{name} = '';
-  if ($article->{id} == -1 && $file{name} eq '') {
-    $errors{name} = 'Identifier is required for global files';
-  }
   if (!$errors{name} && length $file{name} && $file{name} !~/^\w+$/) {
     $errors{name} = "Identifier must be a single word";
   }
@@ -4277,9 +4264,6 @@ sub filesave {
 	else {
 	  $errors{"name_$id"} = "Invalid file identifier $name";
 	}
-      }
-      elsif ($article->{id} == -1) {
-	$errors{"name_$id"} = "Identifier is required for global files";
       }
     }
     else {
@@ -4682,10 +4666,6 @@ sub req_save_file {
       else {
 	$errors{name} = "Invalid file identifier $name";
       }
-    }
-    if (!$errors{name} && $article->{id} == -1) {
-      length $name
-	or $errors{name} = "Identifier is required for global files";
     }
   }
 

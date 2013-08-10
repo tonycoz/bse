@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test qw(make_ua base_url);
-use Test::More tests => 67;
+use Test::More tests => 68;
 use File::Spec;
 use File::Slurp;
 use Carp qw(confess);
@@ -243,6 +243,13 @@ undef $art;
     );
   ok($im3, "make a global image (a)");
 
+  my $im4 = bse_add_global_image
+    (
+     $cfg,
+     file => "t/data/govhouse.jpg",
+    );
+  ok($im4, "make a global image (no name)");
+
   my $site = bse_site();
   my @images = $site->images;
   cmp_ok(@images, '>=', 3, "we have some global images");
@@ -258,10 +265,8 @@ undef $art;
   my $named = $site->image_by_name($prefix . "A");
   is($named->id, $im3->id, "check we got the right image by name");
 
-  # fetch by index
-  my $byindex = $site->image_by_index(1);
-  is($byindex, undef, "all images named, none available by index");
-
+  ok($im4->remove, "remove the global image (no name)");
+  undef $im4;
   ok($im3->remove, "remove the global image");
   undef $im3;
   ok($im2->remove, "remove the global image");
@@ -272,6 +277,7 @@ undef $art;
     $im1->remove if $im1;
     $im2->remove if $im2;
     $im3->remove if $im3;
+    $im4->remove if $im4;
   }
 }
 

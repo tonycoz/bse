@@ -6,7 +6,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 use Carp 'confess';
 
-our $VERSION = "1.009";
+our $VERSION = "1.010";
 
 sub columns {
   return qw/id articleId displayName filename sizeInBytes description 
@@ -448,8 +448,6 @@ sub update {
   }
 
   my $name = $opts{name};
-  $self->id != -1 || defined $name && $name =~ /\S/
-    or die "name is required for global files\n";
   if (defined $name && $name =~ /\S/) {
     $name =~ /^\w+$/
       or die "name must be a single word\n";
