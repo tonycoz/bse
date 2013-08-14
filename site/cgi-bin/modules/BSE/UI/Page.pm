@@ -81,7 +81,7 @@ sub dispatch {
       my $alias = $page;
       if ($cfg->entry("basic", "alias_suffix", 1)) {
 	$alias =~ s((/[0-9a-zA-Z_-]+)$)();
-	$dump .= "Stripped title suffix '$1'\n";
+	$dump .= "Stripped title suffix '$1'\n" if defined $1;
       }
       if ($cfg->entry("basic", "alias_recursive") &&
 	  $alias =~ m(/([0-9a-zA-Z_-]+)$)) {
