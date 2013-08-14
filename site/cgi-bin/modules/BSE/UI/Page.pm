@@ -6,7 +6,7 @@ use BSE::UI::Dispatch;
 use BSE::Template;
 our @ISA = qw(BSE::UI::Dispatch);
 
-our $VERSION = "1.005";
+our $VERSION = "1.007";
 
 # we don't do anything fancy on dispatch yet, so don't use the 
 # dispatch classes
@@ -17,7 +17,7 @@ sub dispatch {
   my $cfg = $req->cfg;
   my $article;
   my $id;
-  my $found_by_id = 0;
+  my $search_by_id = 0;
   my @more_headers;
   my $dump = "";
 
@@ -73,9 +73,9 @@ sub dispatch {
   if ($page) {
     $dump .= "Page lookup: '$page'\n";
     if ($page =~ /^[0-9]+$/) {
-      $article = Articles->getByPkey($page)
-	or return $self->error($req, "unknown article id $page");
-      $found_by_id = 1;
+      $article = Articles->getByPkey($page);
+      $dump .= "Search by id\n";
+      $search_by_id = 1;
     }
     elsif ($page =~ m(^[a-zA-Z0-9/_-]+$)) {
       my $alias = $page;
@@ -110,7 +110,9 @@ sub dispatch {
 	print STDERR "No referer\n";
       }
     }
-    return $self->error($req, "Page id or alias specified for display not found");
+    my $result = $self->error($req, "Page id or alias specified for display not found");
+    push @{$result->{headers}}, "Status: 404";
+    return $result;
   }
 
   unless ($article->should_generate) {
@@ -119,7 +121,7 @@ sub dispatch {
     return $result;
   }
 
-  if ($found_by_id && 
+  if ($search_by_id &&
       $article->linkAlias &&
       $cfg->entry("basic", "redir_to_alias", 0)) {
     # this should be a 301
