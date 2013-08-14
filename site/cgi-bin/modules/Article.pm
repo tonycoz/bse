@@ -8,7 +8,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::TB::SiteCommon BSE::TB::TagOwner/;
 use Carp 'confess';
 
-our $VERSION = "1.021";
+our $VERSION = "1.022";
 
 =head1 NAME
 
@@ -462,7 +462,7 @@ sub link {
   }
   if ($cfg->entry('basic', 'alias_suffix', 1)) {
     my $title = $self->{title};
-    $title =~ tr/a-zA-Z0-9/_/cs;
+    $title =~ tr/a-zA-Z0-9/-/cs;
     $link .= '/' . $title;
   }
   return $link;

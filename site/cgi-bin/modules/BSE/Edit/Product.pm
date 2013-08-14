@@ -10,7 +10,7 @@ use BSE::CfgInfo 'product_options';
 use BSE::Util::Tags qw(tag_hash tag_article);
 use constant PRODUCT_CUSTOM_FIELDS_CFG => "product custom fields";
 
-our $VERSION = "1.011";
+our $VERSION = "1.012";
 
 =head1 NAME
 
@@ -521,7 +521,8 @@ sub make_link {
 # end adrian
 
   if ($article->is_dynamic) {
-    return "$urlbase/cgi-bin/page.pl?page=$article->{id}&title=".escape_uri($article->{title});
+    (my $extra = $article->title) =~ tr/A-Za-z0-9/-/sc;
+    return "$urlbase/cgi-bin/page.pl?page=$article->{id}&title=".escape_uri($extra);
   }
 
   my $shop_uri = $self->link_path($article);

@@ -16,7 +16,7 @@ use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 use constant ARTICLE_CUSTOM_FIELDS_CFG => "article custom fields";
 
-our $VERSION = "1.040";
+our $VERSION = "1.041";
 
 =head1 NAME
 
@@ -1718,14 +1718,15 @@ sub make_link {
 
   my $title = $article->title;
   if ($article->is_dynamic) {
-    return "/cgi-bin/page.pl?page=$article->{id}&title=".escape_uri($title);
+    (my $extra = $title) =~ tr/A-Za-z0-9/-/sc;
+    return "/cgi-bin/page.pl?page=$article->{id}&title=".escape_uri($extra);
   }
 
   my $article_uri = $self->link_path($article);
   my $link = "$article_uri/$article->{id}.html";
   my $link_titles = $self->{cfg}->entryBool('basic', 'link_titles', 0);
   if ($link_titles) {
-    (my $extra = $title) =~ tr/a-z0-9/_/sc;
+    (my $extra = $title) =~ tr/A-Za-z0-9/-/sc;
     $link .= "/" . $extra . "_html";
   }
 
