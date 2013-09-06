@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests => 36;
+use Test::More tests => 38;
 use File::Spec;
 use Carp qw(confess);
 
@@ -69,6 +69,24 @@ for my $title ("A" .. "Z") {
     }
   }
   ok($all_set, "all kid tags set");
+}
+
+{
+  my @tags = $kids[0]->tag_objects;
+  my @ids = sort map $_->id, @tags;
+  is_deeply([ sort $kids[0]->tag_ids ], \@ids, "check tag_ids works");
+}
+
+{
+  my $tag_info = Products->collection_with_tags
+    (
+     "all_visible_products",
+     [ "iPod: Nano" ],
+     { args => [ $parent->id ] },
+    );
+  my @expect = map $_->id, sort { $a->id <=> $b->id } @kids{"I", "J"};
+  my @found = map $_->id, sort { $a->id <=> $b->id } @{$tag_info->{objects}};
+  is_deeply(\@found, \@expect, "collection with tags on all_visible_products");
 }
 
 is_deeply([ map $_->title, $parent->children ],

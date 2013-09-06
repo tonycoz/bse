@@ -6,7 +6,7 @@ use strict;
 use BSE::TB::Tags;
 use BSE::TB::TagMembers;
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 =head1 NAME
 
@@ -147,7 +147,7 @@ Returns all existing tags on the object as tag ids.
 sub tag_ids {
   my ($self) = @_;
 
-  return map $_->{id}, BSE::DB->single->run("Tag_ids.by_owner", $self->tag_owner_type, $self->id);
+  return map $_->{id}, BSE::DB->single->query("Tag_ids.by_owner", $self->tag_owner_type, $self->id);
 }
 
 =item tag_members

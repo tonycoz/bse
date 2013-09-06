@@ -2,10 +2,10 @@ package Products;
 use strict;
 use Squirrel::Table;
 use vars qw(@ISA $VERSION);
-@ISA = qw(Squirrel::Table);
+@ISA = qw(Squirrel::Table BSE::TB::TagOwners);
 use Product;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub rowClass {
   return 'Product';
@@ -44,6 +44,8 @@ sub all_visible_product_tags {
      members => [ BSE::TB::TagMembers->getSpecial(allprods => $id, $id) ],
     };
 }
+
+*all_visible_products = \&all_visible_children;
 
 sub visible_children {
   my ($class, $id) = @_;
