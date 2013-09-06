@@ -10,7 +10,7 @@ use BSE::CfgInfo 'product_options';
 use BSE::Util::Tags qw(tag_hash tag_article);
 use constant PRODUCT_CUSTOM_FIELDS_CFG => "product custom fields";
 
-our $VERSION = "1.012";
+our $VERSION = "1.013";
 
 =head1 NAME
 
@@ -1151,7 +1151,7 @@ On failure perform a service error, see BSE::Edit::Article::_service_error.
 Requires _csrfp for admin_add_option_value
 
 For Ajax requests returns JSON like
- 
+
  { success: 1, value: (valueobject) }
 
 Standard redirect on success otherwise.
@@ -1869,3 +1869,11 @@ sub article_actions {
 }
 
 1;
+
+=back
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=cut

@@ -12,7 +12,6 @@ site/cgi-bin/modules/BSE/DB.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/BSE/Dynamic/Article.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/Edit/Article.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/Edit/Article.pm	Verbatim paragraph in NAME section	1
-site/cgi-bin/modules/BSE/Edit/Product.pm	=over on line 694 without closing =back	1
 site/cgi-bin/modules/BSE/FileHandler/Base.pm	=over on line 31 without closing =back	1
 site/cgi-bin/modules/BSE/FileHandler/FLV.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/FileHandler/FLV.pm	empty section in previous paragraph	1
