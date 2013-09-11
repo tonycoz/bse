@@ -16,7 +16,7 @@ use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 use constant ARTICLE_CUSTOM_FIELDS_CFG => "article custom fields";
 
-our $VERSION = "1.041";
+our $VERSION = "1.042";
 
 =head1 NAME
 
@@ -1164,6 +1164,7 @@ my %base_custom_validation =
     htmltype => "text",
     width => 10,
     default => "",
+    type => "date",
    },
    customDate2 =>
    {
@@ -1171,6 +1172,7 @@ my %base_custom_validation =
     htmltype => "text",
     width => 10,
     default => "",
+    type => "date",
    },
    customStr1 =>
    {
@@ -1217,13 +1219,20 @@ sub custom_fields {
 
   require DevHelp::Validate;
   DevHelp::Validate->import;
-  return DevHelp::Validate::dh_configure_fields
+  my $fields = DevHelp::Validate::dh_configure_fields
     (
      \%base_custom_validation,
      $self->cfg,
      ARTICLE_CUSTOM_FIELDS_CFG,
      BSE::DB->single->dbh,
     );
+  my %active;
+  for my $key (keys %$fields) {
+    $fields->{$key}{description}
+      and $active{$key} = $fields->{$key};
+  }
+
+  return \%active;
 }
 
 sub low_edit_tags {
@@ -1276,9 +1285,7 @@ sub low_edit_tags {
 
   my $custom = $self->custom_fields;
   # only return the fields that are defined
-  my %work_custom = map { $_ => $custom->{$_} }
-    grep $custom->{$_}{description}, keys %$custom;
-  $request->set_variable(custom => \%work_custom);
+  $request->set_variable(custom => $custom);
   $request->set_variable(errors => $errors || {});
 
   return
@@ -1659,10 +1666,13 @@ sub fill_new_data {
   my $custom = $self->custom_fields;
   for my $key (keys %$custom) {
     my ($value) = $req->cgi->param($key);
-    if ($custom->{$key}{description} && defined $value) {
+    if (defined $value) {
       if ($key =~ /^customDate/) {
-	if ($value =~ /^\s*([0-9]+)[^0-9]+([0-9]+)[^0-9]+([0-9]+)\s*$/) {
-	  $data->{$key} = "$3-$2-$1";
+	require DevHelp::Date;
+	my $msg;
+	if (my ($year, $month, $day) =
+	    DevHelp::Date::dh_parse_date($value, \$msg)) {
+	  $data->{$key} = sprintf("%04d-%02d-%02d", $year, $month, $day);
 	}
 	else {
 	  $data->{$key} = undef;
@@ -1973,10 +1983,13 @@ sub fill_old_data {
   }
   my $custom = $self->custom_fields;
   for my $key (keys %$custom) {
-    if ($custom->{$key}{description} && exists $data->{$key}) {
+    if (exists $data->{$key}) {
       if ($key =~ /^customDate/) {
-	if ($data->{key} =~ /^\s*([0-9]+)[^0-9]+([0-9]+)[^0-9]+([0-9]+)\s*$/) {
-	  $article->set($key => "$3-$2-$1");
+	require DevHelp::Date;
+	my $msg;
+	if (my ($year, $month, $day) =
+	    DevHelp::Date::dh_parse_date($data->{$key}, \$msg)) {
+	  $article->set($key, sprintf("%04d-%02d-%02d", $year, $month, $day));
 	}
 	else {
 	  $article->set($key => undef);

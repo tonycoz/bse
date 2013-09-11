@@ -12,7 +12,11 @@
 <:.end for -:>
 <:.call "make_select", "name":f.key, "list":list, "id":"id", "desc":"label", "default":f.value.default -:>
 <:.else -:>
-     <input type="text" name="<:= f.key | html :>" value="<:.call "old", "field":f.key, "default": ifnew ? f.value.default : article.get(f.key) :>" />
+   <:-.set def = ifnew ? f.value.default : article.get(f.key) :>
+   <:-.if f.value.type eq "date" and def.defined and def ne "" :>
+     <:-.set def = bse.date("%d/%m/%Y", def) :>
+   <:-.end if :>
+     <input type="text" name="<:= f.key | html :>" value="<:.call "old", "field":f.key, "default": def :>" />
 <:.end if -:>
    </td>
    <td class="help">
