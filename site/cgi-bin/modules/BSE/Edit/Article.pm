@@ -16,7 +16,7 @@ use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 use constant ARTICLE_CUSTOM_FIELDS_CFG => "article custom fields";
 
-our $VERSION = "1.042";
+our $VERSION = "1.043";
 
 =head1 NAME
 
@@ -1219,13 +1219,19 @@ sub custom_fields {
 
   require DevHelp::Validate;
   DevHelp::Validate->import;
-  my $fields = DevHelp::Validate::dh_configure_fields
+  return DevHelp::Validate::dh_configure_fields
     (
      \%base_custom_validation,
      $self->cfg,
      ARTICLE_CUSTOM_FIELDS_CFG,
      BSE::DB->single->dbh,
     );
+}
+
+sub _custom_fields {
+  my $self = shift;
+
+  my $fields = $self->custom_fields;
   my %active;
   for my $key (keys %$fields) {
     $fields->{$key}{description}
@@ -1283,7 +1289,7 @@ sub low_edit_tags {
   my $ito = BSE::Util::Iterate::Objects->new;
   my $ita = BSE::Util::Iterate::Article->new(req => $request);
 
-  my $custom = $self->custom_fields;
+  my $custom = $self->_custom_fields;
   # only return the fields that are defined
   $request->set_variable(custom => $custom);
   $request->set_variable(errors => $errors || {});
@@ -1607,7 +1613,7 @@ sub _validate_common {
   DevHelp::Validate->import('dh_validate_hash');
   dh_validate_hash($data, $errors,
 		   {
-		    fields => $self->custom_fields,
+		    fields => $self->_custom_fields,
 		    optional => 1,
 		    dbh => BSE::DB->single->dbh,
 		   },
@@ -1663,7 +1669,7 @@ sub validate_parent {
 sub fill_new_data {
   my ($self, $req, $data, $articles) = @_;
 
-  my $custom = $self->custom_fields;
+  my $custom = $self->_custom_fields;
   for my $key (keys %$custom) {
     my ($value) = $req->cgi->param($key);
     if (defined $value) {
@@ -1981,7 +1987,7 @@ sub fill_old_data {
     $article->{$col} = $data->{$col}
       if exists $data->{$col} && $col ne 'id' && $col ne 'parentid';
   }
-  my $custom = $self->custom_fields;
+  my $custom = $self->_custom_fields;
   for my $key (keys %$custom) {
     if (exists $data->{$key}) {
       if ($key =~ /^customDate/) {
