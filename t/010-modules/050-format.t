@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 107;
+use Test::More tests => 134;
 
 sub format_test($$$;$);
 sub noformat_test($$$;$);
@@ -21,6 +21,30 @@ SKIP: {
   format_test 'blockquote[hello]', '<blockquote><p>hello</p></blockquote>', 'blockquote';
   format_test 'blockquote[|hello]', '<blockquote><p>hello</p></blockquote>', 'blockquote with empty class';
   format_test 'blockquote[foo|hello]', '<blockquote class="foo"><p>hello</p></blockquote>', 'blockquote with class';
+  format_test 'article[hello]', '<article><p>hello</p></article>', 'article';
+  format_test 'article[|hello]', '<article><p>hello</p></article>', 'article with empty class';
+  format_test 'article[#id foo|hello]', '<article id="id" class="foo"><p>hello</p></article>', 'article with id and class';
+  format_test 'section[hello]', '<section><p>hello</p></section>', 'section';
+  format_test 'section[|hello]', '<section><p>hello</p></section>', 'section with empty class';
+  format_test 'section[#id foo|hello]', '<section id="id" class="foo"><p>hello</p></section>', 'section with id and class';
+  format_test 'header[hello]', '<header><p>hello</p></header>', 'header';
+  format_test 'header[|hello]', '<header><p>hello</p></header>', 'header with empty class';
+  format_test 'header[#id foo|hello]', '<header id="id" class="foo"><p>hello</p></header>', 'header with id and class';
+  format_test 'footer[hello]', '<footer><p>hello</p></footer>', 'footer';
+  format_test 'footer[|hello]', '<footer><p>hello</p></footer>', 'footer with empty class';
+  format_test 'footer[#id foo|hello]', '<footer id="id" class="foo"><p>hello</p></footer>', 'footer with id and class';
+  format_test 'aside[hello]', '<aside><p>hello</p></aside>', 'aside';
+  format_test 'aside[|hello]', '<aside><p>hello</p></aside>', 'aside with empty class';
+  format_test 'aside[#id foo|hello]', '<aside id="id" class="foo"><p>hello</p></aside>', 'aside with id and class';
+  format_test 'nav[hello]', '<nav><p>hello</p></nav>', 'nav';
+  format_test 'nav[|hello]', '<nav><p>hello</p></nav>', 'nav with empty class';
+  format_test 'nav[#id foo|hello]', '<nav id="id" class="foo"><p>hello</p></nav>', 'nav with id and class';
+  format_test 'figure[hello]', '<figure><p>hello</p></figure>', 'figure';
+  format_test 'figure[|hello]', '<figure><p>hello</p></figure>', 'figure with empty class';
+  format_test 'figure[#id foo|hello]', '<figure id="id" class="foo"><p>hello</p></figure>', 'figure with id and class';
+  format_test 'figcaption[hello]', '<figcaption><p>hello</p></figcaption>', 'figcaption';
+  format_test 'figcaption[|hello]', '<figcaption><p>hello</p></figcaption>', 'figcaption with empty class';
+  format_test 'figcaption[#id foo|hello]', '<figcaption id="id" class="foo"><p>hello</p></figcaption>', 'figcaption with id and class';
   format_test 'cite[hello]', '<p><cite>hello</cite></p>', 'cite';
   format_test 'cite[|hello]', '<p><cite>hello</cite></p>', 'cite with empty title';
   format_test 'cite[foo|hello]', '<p><cite title="foo">hello</cite></p>', 'cite with title';
@@ -31,6 +55,9 @@ SKIP: {
   format_test 'large[hello]', '<p><large>hello</large></p>', 'large';
   format_test 'large[|hello]', '<p><large>hello</large></p>', 'large empty class';
   format_test 'large[foo|hello]', '<p><large class="foo">hello</large></p>', 'large with class';
+  format_test 'mark[hello]', '<p><mark>hello</mark></p>', 'mark';
+  format_test 'mark[|hello]', '<p><mark>hello</mark></p>', 'mark empty class';
+  format_test 'mark[foo|hello]', '<p><mark class="foo">hello</mark></p>', 'mark with class';
   format_test <<IN, <<OUT, 'strong over paras', 'both';
 strong[foo|hello
 

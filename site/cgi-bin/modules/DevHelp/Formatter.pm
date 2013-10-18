@@ -3,7 +3,7 @@ use strict;
 use DevHelp::HTML;
 use Carp 'confess';
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 use constant DEBUG => 0;
 
@@ -188,13 +188,13 @@ sub replace_char {
   $$rpart =~ s#bdo\[(?:\r?\n)?([^|\]\[]+)\|([^\]\[]+?)(?:\r?\n)?\]#
     $self->_fix_spanned(qq/<bdo dir="$1">/, "</bdo>", $2)#egi
     and return 1;
-  $$rpart =~ s#(strong|em|samp|code|var|sub|sup|kbd|q|b|i|tt|span|small|large)\[(?:\r?\n)?([^|\]\[]+)\|([^\]\[]+?)(?:\r?\n)?\]#
+  $$rpart =~ s#(strong|em|samp|code|var|sub|sup|kbd|q|b|i|tt|span|small|large|mark)\[(?:\r?\n)?([^|\]\[]+)\|([^\]\[]+?)(?:\r?\n)?\]#
     $self->_fix_spanned(qq/<$1 class="$2">/, "</$1>", $3)#egi
     and return 1;
-  $$rpart =~ s#(strong|em|samp|code|var|sub|sup|kbd|q|b|i|tt|span|small|large)\[(?:\r?\n)?\|([^\]\[]+?)(?:\r?\n)?\]#
+  $$rpart =~ s#(strong|em|samp|code|var|sub|sup|kbd|q|b|i|tt|span|small|large|mark)\[(?:\r?\n)?\|([^\]\[]+?)(?:\r?\n)?\]#
     $self->_fix_spanned("<$1>", "</$1>", $2)#egi
     and return 1;
-  $$rpart =~ s#(strong|em|samp|code|var|sub|sup|kbd|q|b|i|tt|span|small|large)\[(?:\r?\n)?([^\]\[]+?)(?:\r?\n)?\]#
+  $$rpart =~ s#(strong|em|samp|code|var|sub|sup|kbd|q|b|i|tt|span|small|large|mark)\[(?:\r?\n)?([^\]\[]+?)(?:\r?\n)?\]#
     $self->_fix_spanned("<$1>", "</$1>", $2)#egi
     and return 1;
   $$rpart =~ s#poplink\[([^|\]\[]+)\|([^\]\[]+)\]#
@@ -345,13 +345,13 @@ sub format {
 	$part =~ s#style\[([^\]\[\|]+)\|([^\]\[]+)\]#
 	  $self->_fix_spanned(qq/<span style="$1">/, "</span>", $2)#eig
 	  and next TRY;
-	$part =~ s#(div|address|blockquote)\[\n*([^\[\]\|]+)\|\n*([^\[\]]+?)\n*\]#"\n\n" . $self->_tag_with_attrs($1, $2) . "$3</$1>\n\n"#eig
+	$part =~ s#(div|address|blockquote|article|section|header|footer|aside|nav|figure|figcaption)\[\n*([^\[\]\|]+)\|\n*([^\[\]]+?)\n*\]#"\n\n" . $self->_tag_with_attrs($1, $2) . "$3</$1>\n\n"#eig
 	  and next TRY;
 	$part =~ s#comment\[[^\[\]]*\]##ig
 	  and next TRY;
-	$part =~ s#(div|address|blockquote)\[\n*\|([^\[\]]+?)\n*]#\n\n<$1>$2</$1>\n\n#ig
+	$part =~ s#(div|address|blockquote|article|section|header|footer|aside|nav|figure|figcaption)\[\n*\|([^\[\]]+?)\n*]#\n\n<$1>$2</$1>\n\n#ig
 	  and next TRY;
-	$part =~ s#(div|address|blockquote)\[\n*([^\[\]]+?)\n*]#\n\n<$1>$2</$1>\n\n#ig
+	$part =~ s#(div|address|blockquote|article|section|header|footer|aside|nav|figure|figcaption)\[\n*([^\[\]]+?)\n*]#\n\n<$1>$2</$1>\n\n#ig
 	  and next TRY;
 	last;
       }
@@ -360,10 +360,26 @@ sub format {
       $part = "<p>$part</p>";
       1 while $part =~ s/<p>(<div(?: [^>]*)?>)/$1<p>/g;
       1 while $part =~ s!</div></p>!</p></div>!g;
-      1 while $part =~ s/<p>(<blockquote(?: [^>]*)?>)/$1<p>/g;
-      1 while $part =~ s!</blockquote></p>!</p></blockquote>!g;
       1 while $part =~ s/<p>(<address(?: [^>]*)?>)/$1<p>/g;
       1 while $part =~ s!</address></p>!</p></address>!g;
+      1 while $part =~ s/<p>(<blockquote(?: [^>]*)?>)/$1<p>/g;
+      1 while $part =~ s!</blockquote></p>!</p></blockquote>!g;
+      1 while $part =~ s/<p>(<article(?: [^>]*)?>)/$1<p>/g;
+      1 while $part =~ s!</article></p>!</p></article>!g;
+      1 while $part =~ s/<p>(<section(?: [^>]*)?>)/$1<p>/g;
+      1 while $part =~ s!</section></p>!</p></section>!g;
+      1 while $part =~ s/<p>(<header(?: [^>]*)?>)/$1<p>/g;
+      1 while $part =~ s!</header></p>!</p></header>!g;
+      1 while $part =~ s/<p>(<footer(?: [^>]*)?>)/$1<p>/g;
+      1 while $part =~ s!</footer></p>!</p></footer>!g;
+      1 while $part =~ s/<p>(<aside(?: [^>]*)?>)/$1<p>/g;
+      1 while $part =~ s!</aside></p>!</p></aside>!g;
+      1 while $part =~ s/<p>(<nav(?: [^>]*)?>)/$1<p>/g;
+      1 while $part =~ s!</nav></p>!</p></nav>!g;
+      1 while $part =~ s/<p>(<figure(?: [^>]*)?>)/$1<p>/g;
+      1 while $part =~ s!</figure></p>!</p></figure>!g;
+      1 while $part =~ s/<p>(<figcaption(?: [^>]*)?>)/$1<p>/g;
+      1 while $part =~ s!</figcaption></p>!</p></figcaption>!g;
       $part =~ s!<p>(<hr[^>]*>)</p>!$1!g;
       $part =~ s!<p>(<(?:table|ol|ul|center|h[1-6])[^>]*>)!$1!g;
       $part =~ s!(</(?:table|ol|ul|center|h[1-6])>)</p>!$1!g;
@@ -426,13 +442,17 @@ sub remove_format {
 	  and next TRY;
 	$part =~ s#(?:acronym|abbr|dfn|cite)\[([^|\]\[]*)\]#$1#ig
 	  and next TRY;
-	$part =~ s#(?:strong|em|samp|code|var|sub|sup|kbd|q|address|blockquote|b|i|tt|span|small|large)\[([^|\]\[]+)\|([^\]\[]*)\]#$2#ig
+	$part =~ s#(?:strong|em|samp|code|var|sub|sup|kbd|q|b|i|tt|span|small|large|mark)\[([^|\]\[]+)\|([^\]\[]*)\]#$2#ig
 	  and next TRY;
-	$part =~ s#(?:strong|em|samp|code|var|sub|sup|kbd|q|address|blockquote|b|i|tt|span|small|large)\[\|([^\]\[]*)\]#$1#ig
+	$part =~ s#(?:strong|em|samp|code|var|sub|sup|kbd|q|b|i|tt|span|small|large|mark)\[\|([^\]\[]*)\]#$1#ig
 	  and next TRY;
-	$part =~ s#(?:strong|em|samp|code|var|sub|sup|kbd|q|address|blockquote|b|i|tt|span|small|large)\[([^\]\[]*)\]#$1#ig
+	$part =~ s#(?:strong|em|samp|code|var|sub|sup|kbd|q|b|i|tt|span|small|large|mark)\[([^\]\[]*)\]#$1#ig
 	  and next TRY;
-	$part =~ s#div\[([^\[\]\|]+)\|([^\[\]]*)\](?:\r?\n)?#$2#ig
+	$part =~ s#(?:div|address|blockquote|article|section|header|footer|aside|nav|figure|figcaption)\[([^\[\]\|]*)\|([^\[\]]*)\](?:\r?\n)?#$2#ig
+	  and next TRY;
+	$part =~ s#(?:div|address|blockquote|article|section|header|footer|aside|nav|figure|figcaption)\[\|([^\[\]]*)\](?:\r?\n)?#$1#ig
+	  and next TRY;
+	$part =~ s#(?:div|address|blockquote|article|section|header|footer|aside|nav|figure|figcaption)\[([^\[\]]*)\](?:\r?\n)?#$1#ig
 	  and next TRY;
 	$part =~ s#comment\[([^\[\]]*)\](?:\r?\n)?##ig
 	  and next TRY;
