@@ -171,6 +171,12 @@ sub link {
   qq/<a href="/ . $self->rewrite_url($url, $text, "link") . qq(">$text</a>)
 }
 
+sub poplink {
+  my ($self, $url, $text) = @_;
+
+  qq/<a href="/ . $self->rewrite_url($url, $text, "poplink") . qq(" target="_blank">$text</a>)
+}
+
 sub replace_char {
   my ($self, $rpart) = @_;
   $$rpart =~ s#(acronym|abbr|dfn|cite)\[(?:\r?\n)?([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+?)(?:\r?\n)?\]#
@@ -198,10 +204,10 @@ sub replace_char {
     $self->_fix_spanned("<$1>", "</$1>", $2)#egi
     and return 1;
   $$rpart =~ s#poplink\[([^|\]\[]+)\|([^\]\[]+)\]#
-    $self->(qq/<a href="/ . $self->rewrite_url($1, $2, "poplink") . qq/" target="_blank">/, "</a>", $2, 'poplink')#eig
+    $self->poplink($1, $2)#eig
     and return 1;
   $$rpart =~ s#poplink\[([^|\]\[]+)\]#
-    $self->(qq/<a href="/ . $self->rewrite_url($1, $1, "poplink") . qq/" target="_blank">/, "</a>", $1, 'poplink')#ieg
+    $self->poplink($1, $2)#eig
     and return 1;
   $$rpart =~ s#link\[([^|\]\[]+)\|([^\]\[]+)\]#
     $self->link($1, $2)#eig
