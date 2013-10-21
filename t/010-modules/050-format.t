@@ -18,33 +18,6 @@ SKIP: {
   format_test 'code[|hello]', '<p><code>hello</code></p>', 'code empty class';
   format_test 'code[foo|hello]', '<p><code class="foo">hello</code></p>', 'code with class';
   format_test 'code[var[x]="1"]', '<p><code><var>x</var>=&quot;1&quot;</code></p>', 'code with var';
-  format_test 'blockquote[hello]', '<blockquote><p>hello</p></blockquote>', 'blockquote';
-  format_test 'blockquote[|hello]', '<blockquote><p>hello</p></blockquote>', 'blockquote with empty class';
-  format_test 'blockquote[foo|hello]', '<blockquote class="foo"><p>hello</p></blockquote>', 'blockquote with class';
-  format_test 'article[hello]', '<article><p>hello</p></article>', 'article';
-  format_test 'article[|hello]', '<article><p>hello</p></article>', 'article with empty class';
-  format_test 'article[#id foo|hello]', '<article id="id" class="foo"><p>hello</p></article>', 'article with id and class';
-  format_test 'section[hello]', '<section><p>hello</p></section>', 'section';
-  format_test 'section[|hello]', '<section><p>hello</p></section>', 'section with empty class';
-  format_test 'section[#id foo|hello]', '<section id="id" class="foo"><p>hello</p></section>', 'section with id and class';
-  format_test 'header[hello]', '<header><p>hello</p></header>', 'header';
-  format_test 'header[|hello]', '<header><p>hello</p></header>', 'header with empty class';
-  format_test 'header[#id foo|hello]', '<header id="id" class="foo"><p>hello</p></header>', 'header with id and class';
-  format_test 'footer[hello]', '<footer><p>hello</p></footer>', 'footer';
-  format_test 'footer[|hello]', '<footer><p>hello</p></footer>', 'footer with empty class';
-  format_test 'footer[#id foo|hello]', '<footer id="id" class="foo"><p>hello</p></footer>', 'footer with id and class';
-  format_test 'aside[hello]', '<aside><p>hello</p></aside>', 'aside';
-  format_test 'aside[|hello]', '<aside><p>hello</p></aside>', 'aside with empty class';
-  format_test 'aside[#id foo|hello]', '<aside id="id" class="foo"><p>hello</p></aside>', 'aside with id and class';
-  format_test 'nav[hello]', '<nav><p>hello</p></nav>', 'nav';
-  format_test 'nav[|hello]', '<nav><p>hello</p></nav>', 'nav with empty class';
-  format_test 'nav[#id foo|hello]', '<nav id="id" class="foo"><p>hello</p></nav>', 'nav with id and class';
-  format_test 'figure[hello]', '<figure><p>hello</p></figure>', 'figure';
-  format_test 'figure[|hello]', '<figure><p>hello</p></figure>', 'figure with empty class';
-  format_test 'figure[#id foo|hello]', '<figure id="id" class="foo"><p>hello</p></figure>', 'figure with id and class';
-  format_test 'figcaption[hello]', '<figcaption><p>hello</p></figcaption>', 'figcaption';
-  format_test 'figcaption[|hello]', '<figcaption><p>hello</p></figcaption>', 'figcaption with empty class';
-  format_test 'figcaption[#id foo|hello]', '<figcaption id="id" class="foo"><p>hello</p></figcaption>', 'figcaption with id and class';
   format_test 'cite[hello]', '<p><cite>hello</cite></p>', 'cite';
   format_test 'cite[|hello]', '<p><cite>hello</cite></p>', 'cite with empty title';
   format_test 'cite[foo|hello]', '<p><cite title="foo">hello</cite></p>', 'cite with title';
@@ -58,6 +31,195 @@ SKIP: {
   format_test 'mark[hello]', '<p><mark>hello</mark></p>', 'mark';
   format_test 'mark[|hello]', '<p><mark>hello</mark></p>', 'mark empty class';
   format_test 'mark[foo|hello]', '<p><mark class="foo">hello</mark></p>', 'mark with class';
+  format_test <<IN, <<OUT, 'blockquote', 'both';
+blockquote[hello]
+IN
+<blockquote>
+<p>hello</p>
+</blockquote>
+OUT
+  format_test <<IN, <<OUT, 'blockquote with empty class', 'both';
+blockquote[|hello]
+IN
+<blockquote>
+<p>hello</p>
+</blockquote>
+OUT
+  format_test <<IN, <<OUT, 'blockquote with class', 'both';
+blockquote[foo|hello]
+IN
+<blockquote class="foo">
+<p>hello</p>
+</blockquote>
+OUT
+  format_test <<IN, <<OUT, 'article', 'both';
+article[hello]
+IN
+<article>
+<p>hello</p>
+</article>
+OUT
+  format_test <<IN, <<OUT, 'article with empty class', 'both';
+article[|hello]
+IN
+<article>
+<p>hello</p>
+</article>
+OUT
+  format_test <<IN, <<OUT, 'article with id and class', 'both';
+article[#id foo|hello]
+IN
+<article id="id" class="foo">
+<p>hello</p>
+</article>
+OUT
+  format_test <<IN, <<OUT, 'section', 'both';
+section[hello]
+IN
+<section>
+<p>hello</p>
+</section>
+OUT
+  format_test <<IN, <<OUT, 'section with empty class', 'both';
+section[|hello]
+IN
+<section>
+<p>hello</p>
+</section>
+OUT
+  format_test <<IN, <<OUT, 'section with id and class', 'both';
+section[#id foo|hello]
+IN
+<section id="id" class="foo">
+<p>hello</p>
+</section>
+OUT
+  format_test <<IN, <<OUT, 'header', 'both';
+header[hello]
+IN
+<header>
+<p>hello</p>
+</header>
+OUT
+  format_test <<IN, <<OUT, 'header with empty class', 'both';
+header[|hello]
+IN
+<header>
+<p>hello</p>
+</header>
+OUT
+  format_test <<IN, <<OUT, 'header with id and class', 'both';
+header[#id foo|hello]
+IN
+<header id="id" class="foo">
+<p>hello</p>
+</header>
+OUT
+  format_test <<IN, <<OUT, 'footer', 'both';
+footer[hello]
+IN
+<footer>
+<p>hello</p>
+</footer>
+OUT
+  format_test <<IN, <<OUT, 'footer with empty class', 'both';
+footer[|hello]
+IN
+<footer>
+<p>hello</p>
+</footer>
+OUT
+  format_test <<IN, <<OUT, 'footer with id and class', 'both';
+footer[#id foo|hello]
+IN
+<footer id="id" class="foo">
+<p>hello</p>
+</footer>
+OUT
+  format_test <<IN, <<OUT, 'aside', 'both';
+aside[hello]
+IN
+<aside>
+<p>hello</p>
+</aside>
+OUT
+  format_test <<IN, <<OUT, 'aside with empty class', 'both';
+aside[|hello]
+IN
+<aside>
+<p>hello</p>
+</aside>
+OUT
+  format_test <<IN, <<OUT, 'aside with id and class', 'both';
+aside[#id foo|hello]
+IN
+<aside id="id" class="foo">
+<p>hello</p>
+</aside>
+OUT
+  format_test <<IN, <<OUT, 'nav', 'both';
+nav[hello]
+IN
+<nav>
+<p>hello</p>
+</nav>
+OUT
+  format_test <<IN, <<OUT, 'nav with empty class', 'both';
+nav[|hello]
+IN
+<nav>
+<p>hello</p>
+</nav>
+OUT
+  format_test <<IN, <<OUT, 'nav with id and class', 'both';
+nav[#id foo|hello]
+IN
+<nav id="id" class="foo">
+<p>hello</p>
+</nav>
+OUT
+  format_test <<IN, <<OUT, 'figure', 'both';
+figure[hello]
+IN
+<figure>
+<p>hello</p>
+</figure>
+OUT
+  format_test <<IN, <<OUT, 'figure with empty class', 'both';
+figure[|hello]
+IN
+<figure>
+<p>hello</p>
+</figure>
+OUT
+  format_test <<IN, <<OUT, 'figure with id and class', 'both';
+figure[#id foo|hello]
+IN
+<figure id="id" class="foo">
+<p>hello</p>
+</figure>
+OUT
+  format_test <<IN, <<OUT, 'figcaption', 'both';
+figcaption[hello]
+IN
+<figcaption>
+<p>hello</p>
+</figcaption>
+OUT
+  format_test <<IN, <<OUT, 'figcaption with empty class', 'both';
+figcaption[|hello]
+IN
+<figcaption>
+<p>hello</p>
+</figcaption>
+OUT
+  format_test <<IN, <<OUT, 'figcaption with id and class', 'both';
+figcaption[#id foo|hello]
+IN
+<figcaption id="id" class="foo">
+<p>hello</p>
+</figcaption>
+OUT
   format_test <<IN, <<OUT, 'strong over paras', 'both';
 strong[foo|hello
 
@@ -75,11 +237,13 @@ there]
 
 foo]
 IN
-<blockquote><ul><li>one</li><li>two</li></ul>
+<blockquote>
+<ul><li>one</li><li>two</li></ul>
 <h1>quux</h1>
 <p><var>hello<br />
 there</var></p>
-<p>foo</p></blockquote>
+<p>foo</p>
+</blockquote>
 OUT
   format_test <<IN, <<OUT, 'address class h1 abbr over paras', 'both';
 address[foo|h1[bar
@@ -90,11 +254,13 @@ class[foo|b[bold|E=MCsup[2]]]
 
 foo]
 IN
-<address class="foo"><h1>bar</h1>
+<address class="foo">
+<h1>bar</h1>
 <h1>quux</h1>
 <p><abbr title="my abbr">hello</abbr></p>
 <p class="foo"><b class="bold">E=MC<sup>2</sup></b></p>
-<p>foo</p></address>
+<p>foo</p>
+</address>
 OUT
   format_test <<IN, <<OUT, 'div blockquote h1 class over paras', 'both';
 div[quux|blockquote[foo|h1[bar]
@@ -105,11 +271,15 @@ kbd[xxx|super]]]]
 
 foo]]
 IN
-<div class="quux"><blockquote class="foo"><h1>bar</h1>
+<div class="quux">
+<blockquote class="foo">
+<h1>bar</h1>
 <p><b>hello</b><br />
 <span class="foo"><b class="bold">E=MC<sup>2</sup></b></span></p>
 <p class="foo"><b class="bold"><sup><kbd class="xxx">super</kbd></sup></b></p>
-<p>foo</p></blockquote></div>
+<p>foo</p>
+</blockquote>
+</div>
 OUT
   format_test <<IN, <<OUT, 'bold', 'both';
 b[hello]
@@ -149,8 +319,8 @@ link[http://foo/|bar
 
 quux]
 IN
-<p><a href="http://foo/">bar</a></p>
-<p><a href="http://foo/">quux</a></p>
+<a href="http://foo/"><p>bar</p>
+<p>quux</p></a>
 OUT
   format_test 'tt[hello]', '<p><tt>hello</tt></p>', 'tt';
   format_test 'font[-1|text]', '<p><font size="-1">text</font></p>', 'fontsize';
@@ -189,7 +359,13 @@ OUT
   format_test 'h1[|foo]h2[|bar]', "<h1>foo</h1>\n<h2>bar</h2>", 'h1h2';
   format_test 'h1[|foo]texth2[|bar]', 
     "<h1>foo</h1>\n<p>text</p>\n<h2>bar</h2>", 'h1texth2';
-  format_test 'align[left|some text]', '<div align="left"><p>some text</p></div>', 'align';
+  format_test <<IN, <<OUT, 'align', 'both';
+align[left|some text]
+IN
+<div align="left">
+<p>some text</p>
+</div>
+OUT
   format_test 'hr[]', '<hr />', 'hr0';
   format_test 'hr[80%]', '<hr width="80%" />', 'hr1';
   format_test 'hr[80%|10]', '<hr width="80%" size="10" />', 'hr2';
@@ -303,9 +479,11 @@ OUT
 <p class="xxx">zz</p>
 EOS
   format_test 'div[someclass|h1[|foo]barh2[|quux]]', <<EOS, 'divblock', 'out';
-<div class="someclass"><h1>foo</h1>
+<div class="someclass">
+<h1>foo</h1>
 <p>bar</p>
-<h2>quux</h2></div>
+<h2>quux</h2>
+</div>
 EOS
 
   format_test "h1[#foo|test]", q!<h1 id="foo">test</h1>!, 'h1#id';
@@ -315,13 +493,17 @@ EOS
   format_test "h1[#foo text-align: center;|test]", q!<h1 id="foo" style="text-align: center;">test</h1>!, 'h1 styled, id';
 
   format_test "div[text-align: center;|test\n\ntest2]", <<EOS, 'div styled', 'out';
-<div style="text-align: center;"><p>test</p>
-<p>test2</p></div>
+<div style="text-align: center;">
+<p>test</p>
+<p>test2</p>
+</div>
 EOS
 
   format_test "div[#foo|test\n\ntest2]", <<EOS, 'div #id', 'out';
-<div id="foo"><p>test</p>
-<p>test2</p></div>
+<div id="foo">
+<p>test</p>
+<p>test2</p>
+</div>
 EOS
 
   format_test "abc comment[foo] def", "<p>abc  def</p>", "comment";
