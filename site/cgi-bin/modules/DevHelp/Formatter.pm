@@ -166,15 +166,9 @@ sub _fix_spanned {
 }
 
 sub link {
-  my ($self, $url, $text) = @_;
+  my ($self, $url, $text, $type, $extras) = @_;
 
-  qq/<a href="/ . $self->rewrite_url($url, $text, "link") . qq(">$text</a>)
-}
-
-sub poplink {
-  my ($self, $url, $text) = @_;
-
-  qq/<a href="/ . $self->rewrite_url($url, $text, "poplink") . qq(" target="_blank">$text</a>)
+  qq/<a href="/ . $self->rewrite_url($url, $text, $type) . qq("$extras>$text</a>)
 }
 
 sub replace_char {
@@ -204,16 +198,16 @@ sub replace_char {
     $self->_fix_spanned("<$1>", "</$1>", $2)#egi
     and return 1;
   $$rpart =~ s#poplink\[([^|\]\[]+)\|([^\]\[]+)\]#
-    $self->poplink($1, $2)#eig
+    $self->link($1, $2, "poplink", qq/ target="_blank"/)#eig
     and return 1;
   $$rpart =~ s#poplink\[([^|\]\[]+)\]#
-    $self->poplink($1, $2)#eig
+    $self->link($1, $2, "poplink", qq/ target="_blank"/)#eig
     and return 1;
   $$rpart =~ s#link\[([^|\]\[]+)\|([^\]\[]+)\]#
-    $self->link($1, $2)#eig
+    $self->link($1, $2, "link")#eig
     and return 1;
   $$rpart =~ s#link\[([^|\]\[]+)\]#
-    $self->link($1, $1)#ieg
+    $self->link($1, $1, "link")#ieg
     and return 1;
   $$rpart =~ s#font\[([^|\]\[]+)\|([^\]\[]+)\]#
     $self->_fix_spanned(qq/<font size="$1">/, "</font>", $2)#egi
