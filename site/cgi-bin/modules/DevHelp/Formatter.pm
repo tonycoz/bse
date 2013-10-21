@@ -3,7 +3,7 @@ use strict;
 use DevHelp::HTML;
 use Carp 'confess';
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 use constant DEBUG => 0;
 
@@ -168,7 +168,7 @@ sub _fix_spanned {
 sub link {
   my ($self, $url, $text) = @_;
 
-  $self->_fix_spanned(qq/<a href="/ . $self->rewrite_url($url, $text, "link") . qq/">/, "</a>", $text, 'link')
+  qq/<a href="/ . $self->rewrite_url($url, $text, "link") . qq(">$text</a>)
 }
 
 sub replace_char {
@@ -198,10 +198,10 @@ sub replace_char {
     $self->_fix_spanned("<$1>", "</$1>", $2)#egi
     and return 1;
   $$rpart =~ s#poplink\[([^|\]\[]+)\|([^\]\[]+)\]#
-    $self->_fix_spanned(qq/<a href="/ . $self->rewrite_url($1, $2, "poplink") . qq/" target="_blank">/, "</a>", $2, 'poplink')#eig
+    $self->(qq/<a href="/ . $self->rewrite_url($1, $2, "poplink") . qq/" target="_blank">/, "</a>", $2, 'poplink')#eig
     and return 1;
   $$rpart =~ s#poplink\[([^|\]\[]+)\]#
-    $self->_fix_spanned(qq/<a href="/ . $self->rewrite_url($1, $1, "poplink") . qq/" target="_blank">/, "</a>", $1, 'poplink')#ieg
+    $self->(qq/<a href="/ . $self->rewrite_url($1, $1, "poplink") . qq/" target="_blank">/, "</a>", $1, 'poplink')#ieg
     and return 1;
   $$rpart =~ s#link\[([^|\]\[]+)\|([^\]\[]+)\]#
     $self->link($1, $2)#eig
@@ -380,6 +380,8 @@ sub format {
       1 while $part =~ s!</figure></p>!</p></figure>!g;
       1 while $part =~ s/<p>(<figcaption(?: [^>]*)?>)/$1<p>/g;
       1 while $part =~ s!</figcaption></p>!</p></figcaption>!g;
+      1 while $part =~ s!<p>(<a\s[^>]+>)</p>!$1!g;
+      1 while $part =~ s!<p></a></p>!</a>!g;
       $part =~ s!<p>(<hr[^>]*>)</p>!$1!g;
       $part =~ s!<p>(<(?:table|ol|ul|center|h[1-6])[^>]*>)!$1!g;
       $part =~ s!(</(?:table|ol|ul|center|h[1-6])>)</p>!$1!g;
