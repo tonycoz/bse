@@ -380,9 +380,13 @@ sub format {
       1 while $part =~ s!</figure></p>!</p>\n</figure>!g;
       1 while $part =~ s/<p>(<figcaption(?: [^>]*)?>)/$1\n<p>/g;
       1 while $part =~ s!</figcaption></p>!</p>\n</figcaption>!g;
+      # remove unwanted paras from links spanning blocks
       1 while $part =~ s!<p>(<a\s[^>]+>)</p>!$1!g;
       1 while $part =~ s!<p></a></p>!</a>!g;
       1 while $part =~ s! ?(<a\s[^>]+>)</p>!</p>\n$1!g;
+      # wrap links spanning paras
+      1 while $part =~ s!<p>(<a\s[^>]+>)(.*?)</p>!$1<p>$2</p>!g;
+      1 while $part =~ s!<p>(.*?)</a></p>!<p>$1</p></a>!g;
       $part =~ s!<p>(<hr[^>]*>)</p>!$1!g;
       $part =~ s!<p>(<(?:table|ol|ul|center|h[1-6])[^>]*>)!$1!g;
       $part =~ s!(</(?:table|ol|ul|center|h[1-6])>)</p>!$1!g;
