@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 134;
+use Test::More tests => 136;
 
 sub format_test($$$;$);
 sub noformat_test($$$;$);
@@ -31,6 +31,8 @@ SKIP: {
   format_test 'mark[hello]', '<p><mark>hello</mark></p>', 'mark';
   format_test 'mark[|hello]', '<p><mark>hello</mark></p>', 'mark empty class';
   format_test 'mark[foo|hello]', '<p><mark class="foo">hello</mark></p>', 'mark with class';
+  format_test 'link[foo|hello]', '<p><a href="foo">hello</a></p>', 'anchor';
+  format_test 'poplink[foo|hello]', '<p><a href="foo" target="_blank">hello</a></p>', 'anchor with popup';
   format_test <<IN, <<OUT, 'blockquote', 'both';
 blockquote[hello]
 IN
