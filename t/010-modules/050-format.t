@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 136;
+use Test::More tests => 137;
 
 sub format_test($$$;$);
 sub noformat_test($$$;$);
@@ -42,16 +42,37 @@ IN
 OUT
   format_test <<IN, <<OUT, 'blockquote with empty class', 'both';
 blockquote[|hello]
+
+blockquote[|
+
+hello
+
+]
 IN
+<blockquote>hello</blockquote>
+
 <blockquote>
 <p>hello</p>
 </blockquote>
 OUT
   format_test <<IN, <<OUT, 'blockquote with class', 'both';
 blockquote[foo|hello]
+
+blockquote[foo|hello
+world]
+
+blockquote[foo|
+hello
+world]
 IN
+<blockquote class="foo">hello</blockquote>
+
+<blockquote class="foo">hello<br />
+world</blockquote>
+
 <blockquote class="foo">
-<p>hello</p>
+<p>hello<br />
+world</p>
 </blockquote>
 OUT
   format_test <<IN, <<OUT, 'article', 'both';
@@ -76,63 +97,80 @@ IN
 </article>
 OUT
   format_test <<IN, <<OUT, 'section', 'both';
-section[hello]
+section[
+hello
+]
 IN
 <section>
 <p>hello</p>
 </section>
 OUT
   format_test <<IN, <<OUT, 'section with empty class', 'both';
-section[|hello]
+section[|
+hello]
 IN
 <section>
 <p>hello</p>
 </section>
 OUT
   format_test <<IN, <<OUT, 'section with id and class', 'both';
-section[#id foo|hello]
+section[#id foo|hello
+
+]
 IN
 <section id="id" class="foo">
 <p>hello</p>
 </section>
 OUT
   format_test <<IN, <<OUT, 'header', 'both';
-header[hello]
+header[
+
+hello]
 IN
 <header>
 <p>hello</p>
 </header>
 OUT
   format_test <<IN, <<OUT, 'header with empty class', 'both';
-header[|hello]
+header[|hello
+
+]
 IN
 <header>
 <p>hello</p>
 </header>
 OUT
   format_test <<IN, <<OUT, 'header with id and class', 'both';
-header[#id foo|hello]
+header[#id foo|
+hello
+]
 IN
 <header id="id" class="foo">
 <p>hello</p>
 </header>
 OUT
   format_test <<IN, <<OUT, 'footer', 'both';
-footer[hello]
+footer[hello
+world]
 IN
-<footer>
-<p>hello</p>
-</footer>
+<footer>hello<br />
+world</footer>
 OUT
   format_test <<IN, <<OUT, 'footer with empty class', 'both';
-footer[|hello]
+footer[|
+
+hello
+
+]
 IN
 <footer>
 <p>hello</p>
 </footer>
 OUT
   format_test <<IN, <<OUT, 'footer with id and class', 'both';
-footer[#id foo|hello]
+footer[#id foo|hello
+
+]
 IN
 <footer id="id" class="foo">
 <p>hello</p>
@@ -141,33 +179,29 @@ OUT
   format_test <<IN, <<OUT, 'aside', 'both';
 aside[hello]
 IN
-<aside>
-<p>hello</p>
-</aside>
+<aside>hello</aside>
 OUT
   format_test <<IN, <<OUT, 'aside with empty class', 'both';
 aside[|hello]
 IN
-<aside>
-<p>hello</p>
-</aside>
+<aside>hello</aside>
 OUT
   format_test <<IN, <<OUT, 'aside with id and class', 'both';
 aside[#id foo|hello]
 IN
-<aside id="id" class="foo">
-<p>hello</p>
-</aside>
+<aside id="id" class="foo">hello</aside>
 OUT
   format_test <<IN, <<OUT, 'nav', 'both';
 nav[hello]
 IN
-<nav>
-<p>hello</p>
-</nav>
+<nav>hello</nav>
 OUT
   format_test <<IN, <<OUT, 'nav with empty class', 'both';
-nav[|hello]
+nav[|
+
+hello
+
+]
 IN
 <nav>
 <p>hello</p>
@@ -176,51 +210,37 @@ OUT
   format_test <<IN, <<OUT, 'nav with id and class', 'both';
 nav[#id foo|hello]
 IN
-<nav id="id" class="foo">
-<p>hello</p>
-</nav>
+<nav id="id" class="foo">hello</nav>
 OUT
   format_test <<IN, <<OUT, 'figure', 'both';
 figure[hello]
 IN
-<figure>
-<p>hello</p>
-</figure>
+<figure>hello</figure>
 OUT
   format_test <<IN, <<OUT, 'figure with empty class', 'both';
 figure[|hello]
 IN
-<figure>
-<p>hello</p>
-</figure>
+<figure>hello</figure>
 OUT
   format_test <<IN, <<OUT, 'figure with id and class', 'both';
 figure[#id foo|hello]
 IN
-<figure id="id" class="foo">
-<p>hello</p>
-</figure>
+<figure id="id" class="foo">hello</figure>
 OUT
   format_test <<IN, <<OUT, 'figcaption', 'both';
 figcaption[hello]
 IN
-<figcaption>
-<p>hello</p>
-</figcaption>
+<figcaption>hello</figcaption>
 OUT
   format_test <<IN, <<OUT, 'figcaption with empty class', 'both';
 figcaption[|hello]
 IN
-<figcaption>
-<p>hello</p>
-</figcaption>
+<figcaption>hello</figcaption>
 OUT
   format_test <<IN, <<OUT, 'figcaption with id and class', 'both';
 figcaption[#id foo|hello]
 IN
-<figcaption id="id" class="foo">
-<p>hello</p>
-</figcaption>
+<figcaption id="id" class="foo">hello</figcaption>
 OUT
   format_test <<IN, <<OUT, 'strong over paras', 'both';
 strong[foo|hello
@@ -509,6 +529,26 @@ EOS
 EOS
 
   format_test "abc comment[foo] def", "<p>abc  def</p>", "comment";
+  format_test  <<IN, <<OUT, 'link over paras following an hr', 'both';
+hr[100%]
+
+link[#foo|hello
+
+world]
+
+link[#foo|
+hello
+
+world]
+IN
+<hr width="100%" />
+<a href="#foo"><p>hello</p>
+<p>world</p>
+</a>
+<a href="#foo"><p>hello</p>
+<p>world</p>
+</a>
+OUT
 
   # remove_format() tests
   noformat_test 'image[foo]', '', 'image';
