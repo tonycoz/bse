@@ -7,6 +7,19 @@ our $VERSION = "1.006";
 
 use constant DEBUG => 0;
 
+# markers to avoid inserting a <p> or </p>
+use constant NO_P => "\x02";
+use constant NO_CP => "\x03";
+
+# block tags replaced in some common location
+# other block tags with their own replacement should be moved into this too
+my @block_tags = qw(div address blockquote article section header footer aside nav figure figcaption);
+my $block_tags = join "|", @block_tags;
+
+my @all_block_tags = ( @block_tags, qw(h1 h2 h3 h4 h5 h6 p) );
+
+my $all_block_tags = join "|", @all_block_tags;
+
 sub new {
   my ($class) = @_;
 
@@ -34,10 +47,10 @@ sub replace {
 
 sub _make_hr {
   my ($width, $height) = @_;
-  my $tag = "<hr";
+  my $tag = "\n\n" . NO_P . "<hr";
   $tag .= qq! width="$width"! if length $width;
   $tag .= qq! size="$height"! if length $height;
-  $tag .= " />";
+  $tag .= " />" . NO_CP . "\n\n";
   return $tag;
 }
 
@@ -165,8 +178,32 @@ sub _fix_spanned {
   "$start$text$end";
 }
 
+sub _blockify {
+  my ($self, $text) = @_;
+
+  my $orig = $text;
+
+  $text =~ s/^\s+//;
+  $text =~ s/\s+\z//;
+  $text =~ s#(\x03?\n\s*\n\x02?)#
+    my $m = $1;
+    my $r = ($m =~ /\x03/ ? "" : "</p>")
+    . ($m =~ /\x02/ ? "" : "<p>");
+    $r #eg;
+
+  $text =~ s!(\n([ \r]*\n)+)!$1 eq "\n" ? "<br />\n" : "</p>\n<p>"!eg;
+  $text =~ s#\A(?!\x02)#<p>#;
+  $text =~ s#(?<!\x03)\z#</p>#;
+
+print STDERR "blockify ", unpack("H*", $orig), " => ", unpack("H*", $text), "\n" if DEBUG;
+
+  return $text;
+}
+
 sub link {
   my ($self, $url, $text, $type, $extras) = @_;
+
+  $extras ||= "";
 
   qq/<a href="/ . $self->rewrite_url($url, $text, $type) . qq("$extras>$text</a>)
 }
@@ -203,6 +240,9 @@ sub replace_char {
   $$rpart =~ s#poplink\[([^|\]\[]+)\]#
     $self->link($1, $2, "poplink", qq/ target="_blank"/)#eig
     and return 1;
+  $$rpart =~ s#^link\[([^|\]\[]+)\|([^\]\[]*\n\s*\n[^\]\[]*)\]$#
+    "\n\n" . NO_P . $self->link($1, $self->_blockify($2), "link") . NO_CP . "\n\n" #eigm
+      and return 1;
   $$rpart =~ s#link\[([^|\]\[]+)\|([^\]\[]+)\]#
     $self->link($1, $2, "link")#eig
     and return 1;
@@ -251,11 +291,29 @@ sub _tag_with_attrs {
   return $out;
 }
 
+sub _block {
+  my ($self, $tag, $text, $end) = @_;
+
+  if ($text =~ /\A\n|\n\s*\n/) {
+    $text = $self->_blockify($text);
+  }
+
+  return "\n\n" . NO_P . $tag . $text . $end . NO_CP . "\n\n";
+}
+
 sub _blocktag {
   my ($self, $tag, $attrs, $text) = @_;
 
-  return  $self->_fix_spanned
-    ("\n\n" . $self->_tag_with_attrs($tag, $attrs), "</$tag>\n\n", $text)
+  return  $self->_block
+    ($self->_tag_with_attrs(lc $tag, $attrs), $text, "</\L$tag>")
+}
+
+sub _head_tag {
+  my ($self, $tag, $attrs, $text) = @_;
+
+  my $start = "\n" . NO_P . $self->_tag_with_attrs(lc $tag, $attrs);
+  my $end = "</\L$tag>" . NO_CP . "\n";
+  return "\n" . $self->_fix_spanned($start, $end, $text) . "\n";
 }
 
 sub format {
@@ -300,13 +358,13 @@ sub format {
 	$part =~ s#pre\[([^\]\[]+)\]#<pre>$1</pre>#ig
 	  and next TRY;
 	$part =~ s#h([1-6])\[([^\[\]\|]+)\|([^\[\]]+)\](?:\r?\n)?#
-  	    $self->_blocktag("h$1", $2, $3)#ieg
+  	    $self->_head_tag("h$1", $2, $3)#ieg
 	  and next TRY;
 	$part =~ s#\n*h([1-6])\[\|([^\[\]]+)\]\n*#
-	  $self->_blocktag("h$1", '', $2)#ieg
+	  $self->_head_tag("h$1", '', $2)#ieg
 	  and next TRY;
 	$part =~ s#\n*h([1-6])\[([^\[\]]+)\]\n*#
-	  $self->_blocktag("h$1", '', $2)#ieg
+	  $self->_head_tag("h$1", '', $2)#ieg
 	  and next TRY;
 	$part =~ s#align\[([^|\]\[]+)\|([^\]\[]+)\]#\n\n<div align="$1">$2</div>\n\n#ig
 	  and next TRY;
@@ -345,49 +403,53 @@ sub format {
 	$part =~ s#style\[([^\]\[\|]+)\|([^\]\[]+)\]#
 	  $self->_fix_spanned(qq/<span style="$1">/, "</span>", $2)#eig
 	  and next TRY;
-	$part =~ s#(div|address|blockquote|article|section|header|footer|aside|nav|figure|figcaption)\[\n*([^\[\]\|]+)\|\n*([^\[\]]+?)\n*\]#"\n\n" . $self->_tag_with_attrs($1, $2) . "$3</$1>\n\n"#eig
+	$part =~ s#($block_tags)\[([^\[\]\|]+)\|([^\[\]]+?)\]# $self->_block($self->_tag_with_attrs($1, $2), $3, "</$1>")#eig
 	  and next TRY;
 	$part =~ s#comment\[[^\[\]]*\]##ig
 	  and next TRY;
-	$part =~ s#(div|address|blockquote|article|section|header|footer|aside|nav|figure|figcaption)\[\n*\|([^\[\]]+?)\n*]#\n\n<$1>$2</$1>\n\n#ig
+	$part =~ s#($block_tags)\[\|([^\[\]]+?)\]# $self->_block("<$1>", $2, "</$1>") #ieg
 	  and next TRY;
-	$part =~ s#(div|address|blockquote|article|section|header|footer|aside|nav|figure|figcaption)\[\n*([^\[\]]+?)\n*]#\n\n<$1>$2</$1>\n\n#ig
+	$part =~ s#($block_tags)\[([^\[\]]+?)\]# $self->_block("<$1>", $2, "</$1>") #ieg
 	  and next TRY;
 	last;
       }
       $part =~ s/^\s+|\s+\z//g; # avoid spurious leading/trailing <p>
-      $part =~ s!(\n([ \r]*\n)*)!$1 eq "\n" ? "<br />\n" : "</p>\n<p>"!eg;
-      $part = "<p>$part</p>";
+      $part = $self->_blockify($part);
+      $part =~ s#\n+#<br />\n#g;
+      $part =~ s#[\x02\x03]##g;
       1 while $part =~ s/<p>(<div(?: [^>]*)?>)/$1\n<p>/g;
       1 while $part =~ s!</div></p>!</p>\n</div>!g;
-      1 while $part =~ s/<p>(<address(?: [^>]*)?>)/$1\n<p>/g;
-      1 while $part =~ s!</address></p>!</p>\n</address>!g;
-      1 while $part =~ s/<p>(<blockquote(?: [^>]*)?>)/$1\n<p>/g;
-      1 while $part =~ s!</blockquote></p>!</p>\n</blockquote>!g;
-      1 while $part =~ s/<p>(<article(?: [^>]*)?>)/$1\n<p>/g;
-      1 while $part =~ s!</article></p>!</p>\n</article>!g;
-      1 while $part =~ s/<p>(<section(?: [^>]*)?>)/$1\n<p>/g;
-      1 while $part =~ s!</section></p>!</p>\n</section>!g;
-      1 while $part =~ s/<p>(<header(?: [^>]*)?>)/$1\n<p>/g;
-      1 while $part =~ s!</header></p>!</p>\n</header>!g;
-      1 while $part =~ s/<p>(<footer(?: [^>]*)?>)/$1\n<p>/g;
-      1 while $part =~ s!</footer></p>!</p>\n</footer>!g;
-      1 while $part =~ s/<p>(<aside(?: [^>]*)?>)/$1\n<p>/g;
-      1 while $part =~ s!</aside></p>!</p>\n</aside>!g;
-      1 while $part =~ s/<p>(<nav(?: [^>]*)?>)/$1\n<p>/g;
-      1 while $part =~ s!</nav></p>!</p>\n</nav>!g;
-      1 while $part =~ s/<p>(<figure(?: [^>]*)?>)/$1\n<p>/g;
-      1 while $part =~ s!</figure></p>!</p>\n</figure>!g;
-      1 while $part =~ s/<p>(<figcaption(?: [^>]*)?>)/$1\n<p>/g;
-      1 while $part =~ s!</figcaption></p>!</p>\n</figcaption>!g;
+      #1 while $part =~ s/<p>(<address(?: [^>]*)?>)/$1\n<p>/g;
+      #1 while $part =~ s!</address></p>!</p>\n</address>!g;
+      #1 while $part =~ s/<p>(<blockquote(?: [^>]*)?>)/$1\n<p>/g;
+      #1 while $part =~ s!</blockquote></p>!</p>\n</blockquote>!g;
+      #1 while $part =~ s/<p>(<article(?: [^>]*)?>)/$1\n<p>/g;
+      #1 while $part =~ s!</article></p>!</p>\n</article>!g;
+      #1 while $part =~ s/<p>(<section(?: [^>]*)?>)/$1\n<p>/g;
+      #1 while $part =~ s!</section></p>!</p>\n</section>!g;
+      #1 while $part =~ s/<p>(<header(?: [^>]*)?>)/$1\n<p>/g;
+      #1 while $part =~ s!</header></p>!</p>\n</header>!g;
+      #1 while $part =~ s/<p>(<footer(?: [^>]*)?>)/$1\n<p>/g;
+      #1 while $part =~ s!</footer></p>!</p>\n</footer>!g;
+      #1 while $part =~ s/<p>(<aside(?: [^>]*)?>)/$1\n<p>/g;
+      #1 while $part =~ s!</aside></p>!</p>\n</aside>!g;
+      #1 while $part =~ s/<p>(<nav(?: [^>]*)?>)/$1\n<p>/g;
+      #1 while $part =~ s!</nav></p>!</p>\n</nav>!g;
+      #1 while $part =~ s/<p>(<figure(?: [^>]*)?>)/$1\n<p>/g;
+      #1 while $part =~ s!</figure></p>!</p>\n</figure>!g;
+      #1 while $part =~ s/<p>(<figcaption(?: [^>]*)?>)/$1\n<p>/g;
+      #1 while $part =~ s!</figcaption></p>!</p>\n</figcaption>!g;
       # remove unwanted paras from links spanning blocks
-      1 while $part =~ s!<p>(<a\s[^>]+>)</p>!$1!g;
-      1 while $part =~ s!<p></a></p>!</a>!g;
-      1 while $part =~ s! ?(<a\s[^>]+>)</p>!</p>\n$1!g;
+      #1 while $part =~ s!<p>(<a\s[^>]+>)</p>!$1!g;
+      #1 while $part =~ s!<p></a></p>!</a>!g;
+      #1 while $part =~ s! ?(<a\s[^>]+>)</p>!</p>\n$1!g;
       # wrap links spanning paras
-      1 while $part =~ s!<p>(<a\s[^>]+>)(.*?)</p>!$1<p>$2</p>!g;
-      1 while $part =~ s!<p>(.*?)</a></p>!<p>$1</p></a>!g;
-      $part =~ s!<p>(<hr[^>]*>)</p>!$1!g;
+      #1 while $part =~ s!<p>(<a\s[^>]+>)(.*?)</p>!$1<p>$2</p>!g;
+      #1 while $part =~ s!<p>(.*?)</a></p>!<p>$1</p></a>!g;
+      #1 while $part =~ s#(</(?:$all_block_tags)>)(<(?:h[1-6]|$block_tags))#$1\n$2#g;
+      1 while $part =~ s#</($all_block_tags)><#</$1>\n<#g;
+      1 while $part =~ s#(<(?:$all_block_tags)[^>]*>)(<(?:$all_block_tags)\b)#$1\n$2#g;
+      #$part =~ s!<p>(<hr[^>]*>)</p>!$1!g;
       $part =~ s!<p>(<(?:table|ol|ul|center|h[1-6])[^>]*>)!$1!g;
       $part =~ s!(</(?:table|ol|ul|center|h[1-6])>)</p>!$1!g;
       # attempts to convert class[name|paragraph] into <p class="name">...
@@ -402,6 +464,7 @@ sub format {
 	$part =~ s!(<p(?: style="[^"<>]+")?)>!$1 class="$p_class">!g;
       }
       #$part =~ s!\n!<br />!g;
+      1 while $part =~ s#(</(?:$all_block_tags)>)(</(?:$all_block_tags))#$1\n$2#g;
       $out .= $part;
     }
   }

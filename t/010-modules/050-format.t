@@ -7,6 +7,8 @@ sub noformat_test($$$;$);
 
 my $gotmodule = require_ok('DevHelp::Formatter');
 
+++$|;
+
 SKIP: {
   skip "couldn't load module", 63 unless $gotmodule;
   format_test 'acronym[hello]', '<p><acronym>hello</acronym></p>', 'acronym';
@@ -35,7 +37,12 @@ SKIP: {
   format_test 'poplink[foo|hello]', '<p><a href="foo" target="_blank">hello</a></p>', 'anchor with popup';
   format_test <<IN, <<OUT, 'blockquote', 'both';
 blockquote[hello]
+
+blockquote[
+
+hello]
 IN
+<blockquote>hello</blockquote>
 <blockquote>
 <p>hello</p>
 </blockquote>
@@ -50,7 +57,6 @@ hello
 ]
 IN
 <blockquote>hello</blockquote>
-
 <blockquote>
 <p>hello</p>
 </blockquote>
@@ -66,10 +72,8 @@ hello
 world]
 IN
 <blockquote class="foo">hello</blockquote>
-
 <blockquote class="foo">hello<br />
 world</blockquote>
-
 <blockquote class="foo">
 <p>hello<br />
 world</p>
@@ -77,21 +81,38 @@ world</p>
 OUT
   format_test <<IN, <<OUT, 'article', 'both';
 article[hello]
+
+article[
+
+hello]
 IN
+<article>hello</article>
 <article>
 <p>hello</p>
 </article>
 OUT
   format_test <<IN, <<OUT, 'article with empty class', 'both';
 article[|hello]
+
+article[|
+
+hello
+
+]
 IN
+<article>hello</article>
 <article>
 <p>hello</p>
 </article>
 OUT
   format_test <<IN, <<OUT, 'article with id and class', 'both';
 article[#id foo|hello]
+
+article[#id foo|
+
+hello]
 IN
+<article id="id" class="foo">hello</article>
 <article id="id" class="foo">
 <p>hello</p>
 </article>
