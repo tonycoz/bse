@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 142;
+use Test::More tests => 143;
 
 sub format_test($$$;$);
 sub noformat_test($$$;$);
@@ -369,6 +369,21 @@ IN
 <p>bar</p>
 <p>quux</p>
 </a>
+OUT
+  format_test <<IN, <<OUT, "multi-p link followed by normal text", 'both';
+link[#foo|
+one
+
+two
+]
+
+normal text
+IN
+<a href="#foo">
+<p>one</p>
+<p>two</p>
+</a>
+<p>normal text</p>
 OUT
   format_test 'tt[hello]', '<p><tt>hello</tt></p>', 'tt';
   format_test 'font[-1|text]', '<p><font size="-1">text</font></p>', 'fontsize';

@@ -3,7 +3,7 @@ use strict;
 use DevHelp::HTML;
 use Carp 'confess';
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 use constant DEBUG => 0;
 
@@ -454,6 +454,7 @@ sub format {
       1 while $part =~ s#(<(?:$all_block_tags)[^>]*>)(<(?:$all_block_tags)\b)#$1\n$2#g;
       1 while $part =~ s#(</a>)(<a\s+[^>]*>)(<(?:$all_block_tags))#$1\n$2\n$3#g;
       1 while $part =~ s#(<a\s+[^>]*>)(<(?:$all_block_tags))#$1\n$2#g;
+      1 while $part =~ s#(</a>)(<(?:$all_block_tags)\b)#$1\n$2#g;
       1 while $part =~ s#(>)(<hr\b[^>]*/>)#$1\n$2#g;
       1 while $part =~ s#(<hr\b[^>]*/>)(<)#$1\n$2#g;
       #$part =~ s!<p>(<hr[^>]*>)</p>!$1!g;
