@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 140;
+use Test::More tests => 141;
 
 sub format_test($$$;$);
 sub noformat_test($$$;$);
@@ -666,6 +666,18 @@ IN
 </section>
 </a>
 OUT
+
+format_test <<IN, <<OUT, 'list inside a block', 'both';
+div[#id|
+** item
+** item
+]
+IN
+<div id="id">
+<ul><li>item</li><li>item</li></ul>
+</div>
+OUT
+
   # remove_format() tests
   noformat_test 'image[foo]', '', 'image';
   noformat_test 'code[something [bar]]', 'something [bar]', 'nested []';
