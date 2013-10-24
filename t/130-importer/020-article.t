@@ -9,7 +9,7 @@ BEGIN {
   eval "require Text::CSV;"
     or plan skip_all => "Text::CSV not available";
 }
-plan tests => 42;
+plan tests => 43;
 
 BEGIN {
   unshift @INC, File::Spec->catdir(BSE::Test::base_dir(), "cgi-bin", "modules");
@@ -90,6 +90,16 @@ skiplines=0
 source=CSV
 target=Article
 
+[import profile alias$when]
+map_id=1
+map_linkAlias=2
+map_title=3
+source=CSV
+target=Article
+code_field=id
+skiplines=0
+update_only=1
+use_codes=1
 CFG
 
 {
@@ -229,6 +239,20 @@ EOS
     my $imp = BSE::Importer->new(cfg => $cfg, profile => "newdup$when", callback => sub { note @_ });
     $imp->process($filename);
     is_deeply([ $imp->leaves ], [], "should be no updated articles");
+  }
+
+  { # don't strip - and _ from linkAlias
+    my $fh = File::Temp->new;
+    my $filename = $fh->filename;
+    my $id = $testa->id;
+    print $fh <<EOS;
+$id,"alias-${when}_more",test,t101.jpg
+EOS
+    close $fh;
+    my $imp = BSE::Importer->new(cfg => $cfg, profile => "alias$when", callback => sub { note @_ });
+    $imp->process($filename);
+    my $testb = Articles->getByPkey($testa->id);
+    is($testb->linkAlias, "alias-${when}_more", "check alias set correctly");
   }
 
   END {

@@ -6,7 +6,7 @@ use Articles;
 use Products;
 use OtherParents;
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 =head1 NAME
 
@@ -406,7 +406,7 @@ sub xform_entry {
   }
 
   if (defined $entry->{linkAlias}) {
-    $entry->{linkAlias} =~ tr/A-Za-z0-9//cd;
+    $entry->{linkAlias} =~ tr/A-Za-z0-9_-//cd;
   }
 }
 
