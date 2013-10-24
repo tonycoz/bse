@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 137;
+use Test::More tests => 138;
 
 sub format_test($$$;$);
 sub noformat_test($$$;$);
@@ -550,7 +550,7 @@ EOS
 EOS
 
   format_test "abc comment[foo] def", "<p>abc  def</p>", "comment";
-  format_test  <<IN, <<OUT, 'link over paras following an hr', 'both';
+  format_test <<IN, <<OUT, 'link over paras following an hr', 'both';
 hr[100%]
 
 link[#foo|hello
@@ -568,6 +568,26 @@ IN
 </a>
 <a href="#foo"><p>hello</p>
 <p>world</p>
+</a>
+OUT
+
+format_test <<IN, <<OUT, 'link over div block containing paras', 'both';
+link[#foo|
+
+div[#id class background-color: red;|
+
+hello
+
+world
+
+]
+]
+IN
+<a href="#foo">
+<div id="id" style="background-color: red;" class="class">
+<p>hello</p>
+<p>world</p>
+</div>
 </a>
 OUT
 
