@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 139;
+use Test::More tests => 140;
 
 sub format_test($$$;$);
 sub noformat_test($$$;$);
@@ -616,6 +616,56 @@ IN
 </a>
 OUT
 
+format_test <<IN, <<OUT, 'link over complex nested block structure', 'both';
+
+link[http://www.example.com/|
+
+section[#id class background-color: red;|
+
+header[h1[headline
+
+more]
+
+]
+
+article[foo|
+
+b[bar|hello
+
+i[world
+
+today]]
+
+div[i[tomorrow]
+
+class[quux|yesterday]]
+
+]
+
+footer[#id|footer]
+
+]
+]
+IN
+<a href="http://www.example.com/">
+<section id="id" style="background-color: red;" class="class">
+<header>
+<h1>headline</h1>
+<h1>more</h1>
+</header>
+<article class="foo">
+<p><b class="bar">hello</b></p>
+<p><b class="bar"><i>world</i></b></p>
+<p><b class="bar"><i>today</i></b></p>
+<div>
+<p><i>tomorrow</i></p>
+<p class="quux">yesterday</p>
+</div>
+</article>
+<footer id="id">footer</footer>
+</section>
+</a>
+OUT
   # remove_format() tests
   noformat_test 'image[foo]', '', 'image';
   noformat_test 'code[something [bar]]', 'something [bar]', 'nested []';
