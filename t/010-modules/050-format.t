@@ -281,7 +281,10 @@ there]
 foo]
 IN
 <blockquote>
-<ul><li>one</li><li>two</li></ul>
+<ul>
+<li>one</li>
+<li>two</li>
+</ul>
 <h1>quux</h1>
 <p><var>hello<br />
 there</var></p>
@@ -450,47 +453,74 @@ OUT
 ## one
 ## two
 IN
-<ol><li>one</li><li>two</li></ol>
+<ol>
+<li>one</li>
+<li>two</li>
+</ol>
 OUT
   format_test <<IN, <<OUT, 'ol2', 'both';
 ## one
 
 ## two
 IN
-<ol><li><p>one</p></li><li>two</li></ol>
+<ol>
+<li>
+<p>one</p>
+</li>
+<li>two</li>
+</ol>
 OUT
   format_test <<IN, <<OUT, 'ol1 alpha', 'both';
 %% one
 %% two
 IN
-<ol type="a"><li>one</li><li>two</li></ol>
+<ol type="a">
+<li>one</li>
+<li>two</li>
+</ol>
 OUT
   format_test <<IN, <<OUT, 'ol2 alpha', 'both';
 %% one
 
 %% two
 IN
-<ol type="a"><li><p>one</p></li><li>two</li></ol>
+<ol type="a">
+<li>
+<p>one</p>
+</li>
+<li>two</li>
+</ol>
 OUT
   format_test <<IN, <<OUT, 'ul1', 'both';
 ** one
 ** two
 IN
-<ul><li>one</li><li>two</li></ul>
+<ul>
+<li>one</li>
+<li>two</li>
+</ul>
 OUT
   format_test <<IN, <<OUT, 'ul2', 'both';
 ** one
 
 ** two
 IN
-<ul><li><p>one</p></li><li>two</li></ul>
+<ul>
+<li>
+<p>one</p>
+</li>
+<li>two</li>
+</ul>
 OUT
 
   format_test <<IN, <<OUT, 'ul indented', 'both';
   ** one
 **two
 IN
-<ul><li>one</li><li>two</li></ul>
+<ul>
+<li>one</li>
+<li>two</li>
+</ul>
 OUT
 
   format_test <<IN, <<OUT, "don't ul at end of line", 'both';
@@ -500,7 +530,10 @@ this shouldn't be a bullet ** some text
 ** so should this
 IN
 <p>this shouldn't be a bullet ** some text</p>
-<ul><li>this should be a bullet</li><li>so should this</li></ul>
+<ul>
+<li>this should be a bullet</li>
+<li>so should this</li>
+</ul>
 OUT
 
   format_test <<IN, <<OUT, 'mixed', 'both';
@@ -509,7 +542,14 @@ OUT
 ## one
 ## two
 IN
-<ul><li>joe</li><li>bob</li></ul><ol><li>one</li><li>two</li></ol>
+<ul>
+<li>joe</li>
+<li>bob</li>
+</ul>
+<ol>
+<li>one</li>
+<li>two</li>
+</ol>
 OUT
 
   format_test <<IN, <<OUT, 'spaces between', 'both';
@@ -519,7 +559,15 @@ OUT
 
 ** jane
 IN
-<ul><li><p>joe</p></li><li><p>bob</p></li><li>jane</li></ul>
+<ul>
+<li>
+<p>joe</p>
+</li>
+<li>
+<p>bob</p>
+</li>
+<li>jane</li>
+</ul>
 OUT
 
   format_test 'indent[text]', '<ul>text</ul>', 'indent';
@@ -685,7 +733,10 @@ div[#id|
 ]
 IN
 <div id="id">
-<ul><li>item</li><li>item</li></ul>
+<ul>
+<li>item</li>
+<li>item</li>
+</ul>
 </div>
 OUT
 

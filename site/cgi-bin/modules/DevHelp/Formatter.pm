@@ -16,7 +16,7 @@ use constant NO_CP => "\x03";
 my @block_tags = qw(div address blockquote article section header footer aside nav figure figcaption);
 my $block_tags = join "|", @block_tags;
 
-my @all_block_tags = ( @block_tags, qw(h1 h2 h3 h4 h5 h6 p) );
+my @all_block_tags = ( @block_tags, qw(h1 h2 h3 h4 h5 h6 p li ol ul) );
 
 my $all_block_tags = join "|", @all_block_tags;
 
@@ -108,7 +108,7 @@ sub _format_bullets {
     $point =~ s!\n *$!!
       and $point = "<p>$point</p>";
   }
-  return "<ul><li>".join("</li><li>", @points)."</li></ul>";
+  return "\n\n" . NO_P . "<ul><li>".join("</li><li>", @points)."</li></ul>" . NO_CP . "\n\n";
 }
 
 # make a OL
@@ -129,7 +129,7 @@ sub _format_ol {
   my $ol = "<ol";
   $ol .= qq! type="$type"! if $type;
   $ol .= ">";
-  return "$ol<li>".join("</li><li>", @points)."</li></ol>";
+  return "\n\n" . NO_P . "$ol<li>".join("</li><li>", @points)."</li></ol>" . NO_CP . "\n\n";
 }
 
 sub _format_lists {
