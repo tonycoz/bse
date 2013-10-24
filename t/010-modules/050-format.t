@@ -362,8 +362,10 @@ link[http://foo/|bar
 
 quux]
 IN
-<a href="http://foo/"><p>bar</p>
-<p>quux</p></a>
+<a href="http://foo/">
+<p>bar</p>
+<p>quux</p>
+</a>
 OUT
   format_test 'tt[hello]', '<p><tt>hello</tt></p>', 'tt';
   format_test 'font[-1|text]', '<p><font size="-1">text</font></p>', 'fontsize';
@@ -563,10 +565,12 @@ hello
 world]
 IN
 <hr width="100%" />
-<a href="#foo"><p>hello</p>
+<a href="#foo">
+<p>hello</p>
 <p>world</p>
 </a>
-<a href="#foo"><p>hello</p>
+<a href="#foo">
+<p>hello</p>
 <p>world</p>
 </a>
 OUT
