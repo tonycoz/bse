@@ -356,10 +356,18 @@ sub replace {
     and return 1;
   $$rpart =~ s#formlink\[(\w+)\]# $self->formlink($1, 'formlink', undef) #ige
     and return 1;
+  $$rpart =~ s#gfilelink\[(\w+)\|([^\]\[]*\n\s*\n[^\]\[]*)\]#
+      "\n\n\x02" . $self->gfilelink($1, $self->_blockify($2), undef, 'gfilelink')
+	. "\x03\n\n" #ige
+    and return 1;
   $$rpart =~ s#gfilelink\[\s*(\w+)\s*\|([^\]\[]+)\]# $self->gfilelink($1, $2, 'gfilelink') #ige
       and return 1;
   $$rpart =~ s#gfilelink\[\s*(\w+)\s*\]# $self->gfilelink($1, undef, 'gfilelink') #ige
       and return 1;
+  $$rpart =~ s#filelink\[(\w+)\|([^\]\[]*\n\s*\n[^\]\[]*)\]#
+      "\n\n\x02" . $self->filelink($1, $self->_blockify($2), undef, 'filelink')
+	. "\x03\n\n" #ige
+    and return 1;
   $$rpart =~ s#filelink\[\s*(\w+)\s*\|([^\]\[]+)\]# $self->filelink($1, $2, 'filelink') #ige
       and return 1;
   $$rpart =~ s#filelink\[\s*(\w+)\s*\]# $self->filelink($1, undef, 'filelink') #ige
