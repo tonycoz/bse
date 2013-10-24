@@ -243,8 +243,8 @@ sub replace_char {
   $$rpart =~ s#poplink\[([^|\]\[]+)\]#
     $self->link($1, $2, "poplink", qq/ target="_blank"/)#eig
     and return 1;
-  $$rpart =~ s#^link\[([^|\]\[]+)\|([^\]\[]*\n\s*\n[^\]\[]*)\]$#
-    "\n\n" . NO_P . $self->link($1, $self->_blockify($2), "link") . NO_CP . "\n\n" #eigm
+  $$rpart =~ s#link\[([^|\]\[]+)\|([^\]\[]*\n\s*\n[^\]\[]*)\]#
+    "\n\n" . NO_P . $self->link($1, $self->_blockify($2), "link") . NO_CP . "\n\n" #eig
       and return 1;
   $$rpart =~ s#link\[([^|\]\[]+)\|([^\]\[]+)\]#
     $self->link($1, $2, "link")#eig
