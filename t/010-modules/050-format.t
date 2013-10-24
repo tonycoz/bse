@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 141;
+use Test::More tests => 142;
 
 sub format_test($$$;$);
 sub noformat_test($$$;$);
@@ -414,6 +414,17 @@ OUT
   format_test 'hr[]', '<hr />', 'hr0';
   format_test 'hr[80%]', '<hr width="80%" />', 'hr1';
   format_test 'hr[80%|10]', '<hr width="80%" size="10" />', 'hr2';
+  format_test <<'IN', <<'OUT', 'hr with other text', 'both';
+testhr[]test
+hr[80%]
+test
+IN
+<p>test</p>
+<hr />
+<p>test</p>
+<hr width="80%" />
+<p>test</p>
+OUT
   format_test <<IN, <<OUT, 'table1', 'both';
 table[80%
 bgcolor="black"|quux|blarg
