@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 143;
+use Test::More tests => 147;
 
 sub format_test($$$;$);
 sub noformat_test($$$;$);
@@ -753,6 +753,52 @@ IN
 <li>item</li>
 </ul>
 </div>
+OUT
+
+format_test <<IN, <<OUT, 'link starting inline containing a block with paras', 'both';
+inline text link[http://www.example.com/|div[#id class background-color: red;|hello
+
+world]]
+IN
+<p>inline text</p>
+<a href="http://www.example.com/">
+<div id="id" style="background-color: red;" class="class">
+<p>hello</p>
+<p>world</p>
+</div>
+</a>
+OUT
+
+format_test <<IN, <<OUT, 'poplink starting inline containing a block with paras', 'both';
+inline text poplink[http://www.example.com/|div[#id class background-color: red;|hello
+
+world]]
+IN
+<p>inline text</p>
+<a href="http://www.example.com/" target="_blank">
+<div id="id" style="background-color: red;" class="class">
+<p>hello</p>
+<p>world</p>
+</div>
+</a>
+OUT
+
+format_test <<IN, <<OUT, 'link starting inline containing a block', 'both';
+inline text link[http://www.example.com/|div[#id class background-color: red;|hello world]]
+IN
+<p>inline text</p>
+<a href="http://www.example.com/">
+<div id="id" style="background-color: red;" class="class">hello world</div>
+</a>
+OUT
+
+format_test <<IN, <<OUT, 'poplink starting inline containing a block', 'both';
+inline text poplink[http://www.example.com/|div[#id class background-color: red;|hello world]]
+IN
+<p>inline text</p>
+<a href="http://www.example.com/" target="_blank">
+<div id="id" style="background-color: red;" class="class">hello world</div>
+</a>
 OUT
 
   # remove_format() tests
