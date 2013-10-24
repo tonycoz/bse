@@ -392,7 +392,7 @@ sub format {
                      + # one or more times
                    )(\n|$)?)("\n\n"._format_lists($1)."\n\n")egx
 	  and next TRY;
-	$part =~ s#indent\[([^\]\[]+)\]#<ul>$1</ul>#ig
+	$part =~ s#indent\[([^\]\[]+)\]#\n\n\x02<div class="indent">$1</div>\x03\n\n#ig
 	  and next TRY;
 	$part =~ s#center\[([^\]\[]+)\]#<center>$1</center>#ig
 	  and next TRY;

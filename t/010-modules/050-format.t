@@ -570,7 +570,7 @@ IN
 </ul>
 OUT
 
-  format_test 'indent[text]', '<ul>text</ul>', 'indent';
+  format_test 'indent[text]', '<div class="indent">text</div>', 'indent';
   format_test 'center[text]', '<center>text</center>', 'center';
   format_test 'hrcolor[80|10|#FF0000]', <<OUT, 'hrcolor', 'out';
 <table width="80" height="10" border="0" bgcolor="#FF0000" cellpadding="0" cellspacing="0"><tr><td><img src="/images/trans_pixel.gif" width="1" height="1" alt="" /></td></tr></table>
