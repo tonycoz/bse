@@ -234,6 +234,9 @@ sub replace_char {
   $$rpart =~ s#(strong|em|samp|code|var|sub|sup|kbd|q|b|i|tt|span|small|large|mark)\[(?:\r?\n)?([^\]\[]+?)(?:\r?\n)?\]#
     $self->_fix_spanned("<$1>", "</$1>", $2)#egi
     and return 1;
+  $$rpart =~ s#poplink\[([^|\]\[]+)\|([^\]\[]*\n\s*\n[^\]\[]*)\]#
+    "\n\n" . NO_P . $self->link($1, $self->_blockify($2), "poplink", qq/ target="_blank"/) . NO_CP . "\n\n" #eig
+    and return 1;
   $$rpart =~ s#poplink\[([^|\]\[]+)\|([^\]\[]+)\]#
     $self->link($1, $2, "poplink", qq/ target="_blank"/)#eig
     and return 1;
