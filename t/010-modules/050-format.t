@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 138;
+use Test::More tests => 139;
 
 sub format_test($$$;$);
 sub noformat_test($$$;$);
@@ -589,6 +589,27 @@ world
 IN
 <a href="#foo">
 <div id="id" style="background-color: red;" class="class">
+<p>hello</p>
+<p>world</p>
+</div>
+</a>
+OUT
+
+format_test <<IN, <<OUT, 'poplink over div block containing paras', 'both';
+
+poplink[http://www.example.com/|
+
+div[#id class background-color: red;|
+
+hello
+
+world
+
+]
+]
+IN
+<a href="http://www.example.com/">
+<div id="id" style="background-color: red;" class="class" target="_blank">
 <p>hello</p>
 <p>world</p>
 </div>
