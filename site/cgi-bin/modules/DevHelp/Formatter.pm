@@ -385,7 +385,7 @@ sub format {
                      (?: # an item
                        \ *   # maybe some spaces
                        (?:\*\*|\#\#|\%\%) # marker
-                       [^\n]+(?:\n(?!\*\*|\#\#|\%\%)[^\n]+)*  # some non-newline text
+                       [^\n]+(?:\n(?!\*\*|\#\#|\%\%)[^\[\]\n]+)*  # some non-newline text
                        (?:\n|$)\n? # with one or two line endings
                        [^\S\n]* # and any extra non-newline whitespace
                      )
