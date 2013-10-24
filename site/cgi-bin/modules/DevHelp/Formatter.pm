@@ -422,6 +422,7 @@ sub format {
       $part =~ s#[\x02\x03]##g;
       1 while $part =~ s/<p>(<div(?: [^>]*)?>)/$1\n<p>/g;
       1 while $part =~ s!</div></p>!</p>\n</div>!g;
+      1 while $part =~ s!\s+?</p>!</p>!g;
       #1 while $part =~ s/<p>(<address(?: [^>]*)?>)/$1\n<p>/g;
       #1 while $part =~ s!</address></p>!</p>\n</address>!g;
       #1 while $part =~ s/<p>(<blockquote(?: [^>]*)?>)/$1\n<p>/g;
