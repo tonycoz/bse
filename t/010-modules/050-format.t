@@ -608,8 +608,8 @@ world
 ]
 ]
 IN
-<a href="http://www.example.com/">
-<div id="id" style="background-color: red;" class="class" target="_blank">
+<a href="http://www.example.com/" target="_blank">
+<div id="id" style="background-color: red;" class="class">
 <p>hello</p>
 <p>world</p>
 </div>
