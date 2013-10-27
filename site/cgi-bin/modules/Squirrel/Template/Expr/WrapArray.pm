@@ -2,8 +2,9 @@ package Squirrel::Template::Expr::WrapArray;
 use strict;
 use base qw(Squirrel::Template::Expr::WrapBase);
 use Scalar::Util ();
+use List::Util ();
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 my $list_make_key = sub {
   my ($item, $field) = @_;
@@ -55,6 +56,15 @@ sub _do_reverse {
     or die [ error => "list.reverse takes no parameters" ];
 
   return [ reverse @{$self->[0]} ];
+}
+
+sub _do_shuffle {
+  my ($self, $args) = @_;
+
+  @$args == 0
+    or die [ error => "list.shuffle takes no parameters" ];
+
+  return [ List::Util::shuffle(@{$self->[0]}) ];
 }
 
 sub _do_join {

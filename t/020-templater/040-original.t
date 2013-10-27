@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 184;
+use Test::More tests => 185;
 use HTML::Entities;
 
 sub template_test($$$$;$$);
@@ -602,6 +602,7 @@ OUT
      [ '[ [ 1, 2 ], 3 ].expand.join(",")', "1,2,3" ],
      [ '[ 1, 2 ].is_list', 1 ],
      [ '[ 1, 2 ].is_hash', 0 ],
+     [ '[ 1 .. 5 ].shuffle.size', 5 ],
 
      # WrapHash
      [ '{ "foo": 1 }.is_list', 0 ],
