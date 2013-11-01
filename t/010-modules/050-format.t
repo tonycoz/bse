@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 147;
+use Test::More tests => 150;
 
 sub format_test($$$;$);
 sub noformat_test($$$;$);
@@ -10,7 +10,7 @@ my $gotmodule = require_ok('DevHelp::Formatter');
 ++$|;
 
 SKIP: {
-  skip "couldn't load module", 63 unless $gotmodule;
+  skip "couldn't load module", 146 unless $gotmodule;
   format_test 'acronym[hello]', '<p><acronym>hello</acronym></p>', 'acronym';
   format_test 'acronym[|hello]', '<p><acronym>hello</acronym></p>', 'acronym with empty title';
   format_test 'acronym[foo|hello]', '<p><acronym title="foo">hello</acronym></p>', 'acronym with title';
@@ -583,6 +583,42 @@ IN
 </li>
 <li>jane</li>
 </ul>
+OUT
+
+  format_test <<IN, <<OUT, "list[] no attrs", 'both';
+list[|
+## one
+## two
+]
+IN
+<ol>
+<li>one</li>
+<li>two</li>
+</ol>
+OUT
+
+  format_test <<IN, <<OUT, "list[] id and class", 'both';
+list[#test someclass|
+## one
+## two
+]
+IN
+<ol id="test" class="someclass">
+<li>one</li>
+<li>two</li>
+</ol>
+OUT
+
+  format_test <<IN, <<OUT, "list[] %% id and class", 'both';
+list[#test someclass|
+%% one
+%% two
+]
+IN
+<ol id="test" class="someclass" type="a">
+<li>one</li>
+<li>two</li>
+</ol>
 OUT
 
   format_test 'indent[text]', '<div class="indent">text</div>', 'indent';

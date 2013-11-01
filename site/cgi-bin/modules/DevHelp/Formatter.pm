@@ -3,7 +3,7 @@ use strict;
 use DevHelp::HTML;
 use Carp 'confess';
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 use constant DEBUG => 0;
 
@@ -98,7 +98,7 @@ sub _make_table {
 
 # make a UL
 sub _format_bullets {
-  my ($text) = @_;
+  my ($self, $text, $extras) = @_;
 
   $text =~ s/^\s+|\s+$//g;
   my @points = split /(?:\r?\n)? *\*\*\s*/, $text;
@@ -108,12 +108,13 @@ sub _format_bullets {
     $point =~ s!\n *$!!
       and $point = "<p>$point</p>";
   }
-  return "\n\n" . NO_P . "<ul><li>".join("</li><li>", @points)."</li></ul>" . NO_CP . "\n\n";
+  return "\n\n" . NO_P . $self->_tag_with_attrs("ul", $extras) .
+    "<li>".join("</li><li>", @points)."</li></ul>" . NO_CP . "\n\n";
 }
 
 # make a OL
 sub _format_ol {
-  my ($text, $type, $code) = @_;
+  my ($self, $text, $type, $code, $extras) = @_;
 
   print STDERR "_format_ol(..., $type, $code)\n" if DEBUG;
   print STDERR "text: ",unpack("H*", $text),"\n" if DEBUG;
@@ -126,26 +127,25 @@ sub _format_ol {
     $point =~ s!\n *$!!
       and $point = "<p>$point</p>";
   }
-  my $ol = "<ol";
-  $ol .= qq! type="$type"! if $type;
-  $ol .= ">";
+  my $ol = $self->_tag_with_attrs("ol", $extras);
+  $ol =~ s!>$! type="$type">! if $type;
   return "\n\n" . NO_P . "$ol<li>".join("</li><li>", @points)."</li></ol>" . NO_CP . "\n\n";
 }
 
 sub _format_lists {
-  my ($text) = @_;
+  my ($self, $text, $extras) = @_;
 
   my $out = '';
 
   while (length $text) {
     if ($text =~ s(^((?: *\#\#[^\n]+(?:\n(?!\*\*|\#\#|\%\%)[^\n]+)*(?:\n *|$)\n?[^\S\n]*)+)\n?)()) {
-      $out .= _format_ol($1);
+      $out .= $self->_format_ol($1, undef, undef, $extras);
     }
     elsif ($text =~ s(^((?: *\*\*[^\n]+(?:\n(?!\*\*|\#\#|\%\%)[^\n]+)*(?:\n *|$)\n?[^\S\n]*)+)\n?)()) {
-      $out .= _format_bullets($1);
+      $out .= $self->_format_bullets($1, $extras);
     }
     elsif ($text =~ s(^((?: *%%[^\n]+(?:\n(?!\*\*|\#\#|\%\%)[^\n]+)*(?:\n *|$)\n?[^\S\n]*)+)\n?)()) {
-      $out .= _format_ol($1, 'a', '%%');
+      $out .= $self->_format_ol($1, 'a', '%%', $extras);
     }
     else {
       $out .= $text;
@@ -379,6 +379,9 @@ sub format {
 	  and next TRY;
 	$part =~ s#table\[([^\]\[]+)\|([^\]\[|]+)\]#_make_table($1, "|$2")#ieg
 	  and next TRY;
+	$part =~ s# ?\blist\[([^\]\[\|]*)\|\s*(\S[^\]\[]+)\]#
+             "\n\n" . $self->_format_lists($2, $1) #eg
+	  and next TRY;
 	#print STDERR "step: ",unpack("H*", $part),"\n$part\n";
 	$part =~ s((?:^|\n+|\G)
                    ( # capture
@@ -390,7 +393,7 @@ sub format {
                        [^\S\n]* # and any extra non-newline whitespace
                      )
                      + # one or more times
-                   )(\n|$)?)("\n\n"._format_lists($1)."\n\n")egx
+                   )(\n|$)?)("\n\n".$self->_format_lists($1)."\n\n")egx
 	  and next TRY;
 	$part =~ s#indent\[([^\]\[]+)\]#\n\n\x02<div class="indent">$1</div>\x03\n\n#ig
 	  and next TRY;
