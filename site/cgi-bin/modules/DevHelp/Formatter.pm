@@ -423,34 +423,6 @@ sub format {
       1 while $part =~ s/<p>(<div(?: [^>]*)?>)/$1\n<p>/g;
       1 while $part =~ s!</div></p>!</p>\n</div>!g;
       1 while $part =~ s!\s+?</p>!</p>!g;
-      #1 while $part =~ s/<p>(<address(?: [^>]*)?>)/$1\n<p>/g;
-      #1 while $part =~ s!</address></p>!</p>\n</address>!g;
-      #1 while $part =~ s/<p>(<blockquote(?: [^>]*)?>)/$1\n<p>/g;
-      #1 while $part =~ s!</blockquote></p>!</p>\n</blockquote>!g;
-      #1 while $part =~ s/<p>(<article(?: [^>]*)?>)/$1\n<p>/g;
-      #1 while $part =~ s!</article></p>!</p>\n</article>!g;
-      #1 while $part =~ s/<p>(<section(?: [^>]*)?>)/$1\n<p>/g;
-      #1 while $part =~ s!</section></p>!</p>\n</section>!g;
-      #1 while $part =~ s/<p>(<header(?: [^>]*)?>)/$1\n<p>/g;
-      #1 while $part =~ s!</header></p>!</p>\n</header>!g;
-      #1 while $part =~ s/<p>(<footer(?: [^>]*)?>)/$1\n<p>/g;
-      #1 while $part =~ s!</footer></p>!</p>\n</footer>!g;
-      #1 while $part =~ s/<p>(<aside(?: [^>]*)?>)/$1\n<p>/g;
-      #1 while $part =~ s!</aside></p>!</p>\n</aside>!g;
-      #1 while $part =~ s/<p>(<nav(?: [^>]*)?>)/$1\n<p>/g;
-      #1 while $part =~ s!</nav></p>!</p>\n</nav>!g;
-      #1 while $part =~ s/<p>(<figure(?: [^>]*)?>)/$1\n<p>/g;
-      #1 while $part =~ s!</figure></p>!</p>\n</figure>!g;
-      #1 while $part =~ s/<p>(<figcaption(?: [^>]*)?>)/$1\n<p>/g;
-      #1 while $part =~ s!</figcaption></p>!</p>\n</figcaption>!g;
-      # remove unwanted paras from links spanning blocks
-      #1 while $part =~ s!<p>(<a\s[^>]+>)</p>!$1!g;
-      #1 while $part =~ s!<p></a></p>!</a>!g;
-      #1 while $part =~ s! ?(<a\s[^>]+>)</p>!</p>\n$1!g;
-      # wrap links spanning paras
-      #1 while $part =~ s!<p>(<a\s[^>]+>)(.*?)</p>!$1<p>$2</p>!g;
-      #1 while $part =~ s!<p>(.*?)</a></p>!<p>$1</p></a>!g;
-      #1 while $part =~ s#(</(?:$all_block_tags)>)(<(?:h[1-6]|$block_tags))#$1\n$2#g;
       1 while $part =~ s#</($all_block_tags)><#</$1>\n<#g;
       1 while $part =~ s#(<(?:$all_block_tags)[^>]*>)(<(?:$all_block_tags)\b)#$1\n$2#g;
       1 while $part =~ s#(</a>)(<a\s+[^>]*>)(<(?:$all_block_tags))#$1\n$2\n$3#g;
