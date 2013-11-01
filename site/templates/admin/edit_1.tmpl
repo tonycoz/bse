@@ -267,7 +267,11 @@
         </tr>
 <:if UserCan edit_reorder_children:article:>
         <tr> 
-          <td colspan="5" bgcolor="#FFFFFF">Sort by: <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&amp;sort=title&amp;refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">title</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&amp;sort=date&amp;refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">date</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&amp;reverse=1&amp;refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">reverse</a></td>
+          <td colspan="5" bgcolor="#FFFFFF">Sort by:
+<a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&amp;sort=title&amp;refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">title</a> |
+<a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&amp;sort=date&amp;refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">date</a> |
+<a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&amp;reverse=1&amp;refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">reverse</a> |
+<a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&amp;sort=shuffle&amp;refreshto=/cgi-bin/admin/add.pl?id=<:article id:>">shuffle</a></td>
         </tr>
 <:or UserCan:><:eif UserCan:>
         <:iterator begin children:> 

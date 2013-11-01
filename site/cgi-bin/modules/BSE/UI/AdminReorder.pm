@@ -3,8 +3,9 @@ use strict;
 use base 'BSE::UI::AdminDispatch';
 use Articles;
 use OtherParents;
+use List::Util ();
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 =head1 NAME
 
@@ -30,6 +31,10 @@ The sort spec can be any of:
 any one of the keywords C<title>, C<date>, C<current>, C<id> which
 sort on title, last modification date, current sort order (as modified
 by the reverse flag), or article id.  Default: C<current>.
+
+=item *
+
+the keyword C<shuffle> which randomizes the order.
 
 =item *
 
@@ -112,7 +117,7 @@ sub req_byparent {
   $req->user_can(bse_edit_reorder_children => $parentid)
     or return $self->access_error($req, $msg);
 
-  my ($kids, $order) = $self->_limit_and_sort
+  my ($kids, $order) = $self->_limit_and_order
     (
      $req,
      [
@@ -173,7 +178,7 @@ sub req_bystepparent {
   my %stepkids = map { $_->{id}, $_ } @stepkids;
   my @kids =
 
-  my ($kids, $order) = $self->_limit_and_sort
+  my ($kids, $order) = $self->_limit_and_order
     (
      $req,
      [
@@ -235,7 +240,7 @@ sub req_bystepchild {
   my %stepparents = map { $_->{id}, $_ } @stepparents;
 
 
-  my ($parents, $order) = $self->_limit_and_sort
+  my ($parents, $order) = $self->_limit_and_order
     (
      $req,
      [
@@ -261,18 +266,9 @@ sub req_bystepchild {
   return $req->get_refresh($r);
 }
 
-sub _limit_and_sort {
-  my ($self, $req, $kids) = @_;
+sub _sort {
+  my ($self, $sort, $cgi, $kids) = @_;
 
-  my $cgi = $req->cgi;
-  my $type = $cgi->param("type");
-  if ($type) {
-    $kids = [ grep $_->[0]{generator} =~ /::\Q$type\E$/, @$kids ];
-  }
-
-  my @order = sort { $b <=> $a } map $_->[1]{$_->[2]}, @$kids;
-  my $sort = join(",", $cgi->param('sort')) || 'current';
-  $sort =~ s/-,/-/g;
   my $reverse = $cgi->param('reverse');
   
   my $code;
@@ -321,14 +317,47 @@ sub _limit_and_sort {
     $code = sub { -$temp->() };
     $order .= $order ? ", reversed" : "reverse";
   }
-  if ($code) {
-    $kids = [ sort $code @$kids ];
-    for my $i (0..$#$kids) {
-      my $kid = $kids->[$i];
-      $kid->[1]{$kid->[2]} = $order[$i];
-      $kid->[1]->save();
-    }
+
+  $kids = [ sort $code @$kids ];
+
+  return ( $kids, $order );
+}
+
+sub _shuffle {
+  my ($self, $kids) = @_;
+
+  $kids = [ List::Util::shuffle(@$kids) ];
+
+  return ( $kids, "shuffle" );
+}
+
+sub _limit_and_order {
+  my ($self, $req, $kids) = @_;
+
+  my $cgi = $req->cgi;
+  my $type = $cgi->param("type");
+  if ($type) {
+    $kids = [ grep $_->[0]{generator} =~ /::\Q$type\E$/, @$kids ];
   }
+
+  my @order = sort { $b <=> $a } map $_->[1]{$_->[2]}, @$kids;
+  my $sort = join(",", $cgi->param('sort')) || 'current';
+  $sort =~ s/-,/-/g;
+
+  my $order;
+  if ($sort eq 'shuffle') {
+    ($kids, $order) = $self->_shuffle($kids);
+  }
+  else {
+    ($kids, $order) = $self->_sort($sort, $cgi, $kids);
+  }
+
+  for my $i (0..$#$kids) {
+    my $kid = $kids->[$i];
+    $kid->[1]{$kid->[2]} = $order[$i];
+    $kid->[1]->save();
+  }
+
   return [ map $_->[0], @$kids ], $order;
 }
 
