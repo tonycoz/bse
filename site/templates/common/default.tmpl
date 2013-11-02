@@ -47,13 +47,13 @@ Reorder child articles:
   <:.else -:>
     <:.if kids.size < article.threshold :>
       <:.for child in kids -:>
-        <:.call "mover", "parent":article -:>
+        <:.call "mover", "parent":article, "request":generator.request -:>
         <:= generator.vembed(child) |raw -:>
        <:.end for -:>
     <:.else -:>
       <:.for child in kids -:>
 <div class="child">
-  <h1><:= generator.thumbnail(child) :><a href="<:= url(child):>"><:= child.title -:></a><:.call "mover", "parent":article :><h1>
+  <h1><:= generator.thumbnail(child) |raw:><a href="<:= url(child):>"><:= child.title -:></a><:.call "mover", "parent":article, "request":generator.request:><h1>
         <:.if child.summaryLength -:>
       <div><:= generator.summary(child) :></div>
         <:.end if -:>

@@ -365,24 +365,26 @@ parameters:
 <:.end define -:>
 
 <:.define mover -:>
-<:# expects loop, parent
+<:# expects loop, request, parent
   which in most cases means you can just supply parent
 -:>
-<:.set width = cfg.entry("arrows", "width", 17) -:>
-<:.set height = cfg.entry("arrows", "height", 13) -:>
-<:.set extras = 'width="' _ width _ '" height="' _ height _ '"' -:>
-<:.set blankim = '<img src="' _ (dist_image_uri _ "/trans_pixel.gif").escape("html") _ '" alt="" ' _ extras _ ' />' -:>
-<:.if loop.prev -:>
-  <:.set upimg = cfg.entry("arrows", "upimg", dist_image_uri _ "/admin/move_up.gif") -:>
-<a href="<:= cfg.admin_url("move", { "stepparent":parent.id, "d":"swap", "id":loop.current.id, "other":loop.prev.id, "r":top.admin }) :>"><img src="<:= upimg :>" <:= extras :> /></a>
-<:.else -:>
-<:= blankim |raw-:>
-<:.end if -:>
-<:.if loop.next -:>
-  <:.set downimg = cfg.entry("arrows", "downimg", dist_image_uri _ "/admin/move_down.gif") -:>
-<a href="<:= cfg.admin_url("move", { "stepparent":parent.id, "d":"swap", "id":loop.current.id, "other":loop.next.id, "r":top.admin }) :>"><img src="<:= downimg :>" <:= extras :> /></a>
-<:.else -:>
-<:= blankim |raw-:>
+<:.if request.user_can("bse_edit_reorder_children", parent) -:>
+  <:.set width = cfg.entry("arrows", "width", 17) -:>
+  <:.set height = cfg.entry("arrows", "height", 13) -:>
+  <:.set extras = 'width="' _ width _ '" height="' _ height _ '"' -:>
+  <:.set blankim = '<img src="' _ (dist_image_uri _ "/trans_pixel.gif").escape("html") _ '" alt="" ' _ extras _ ' />' -:>
+  <:.if loop.prev -:>
+    <:.set upimg = cfg.entry("arrows", "upimg", dist_image_uri _ "/admin/move_up.gif") -:>
+  <a href="<:= cfg.admin_url("move", { "stepparent":parent.id, "d":"swap", "id":loop.current.id, "other":loop.prev.id, "r":top.admin }) :>"><img src="<:= upimg :>" <:= extras :> /></a>
+  <:.else -:>
+  <:= blankim |raw-:>
+  <:.end if -:>
+  <:.if loop.next -:>
+    <:.set downimg = cfg.entry("arrows", "downimg", dist_image_uri _ "/admin/move_down.gif") -:>
+  <a href="<:= cfg.admin_url("move", { "stepparent":parent.id, "d":"swap", "id":loop.current.id, "other":loop.next.id, "r":top.admin }) :>"><img src="<:= downimg :>" <:= extras :> /></a>
+  <:.else -:>
+    <:= blankim |raw-:>
+  <:.end if -:>
 <:.end if -:>
 
 <:.end define -:>
