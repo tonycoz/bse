@@ -313,7 +313,7 @@ Conditional tag, true if the current article is being embedded.
 
 =cut
 
-our $VERSION = "1.019";
+our $VERSION = "1.020";
 
 my $excerptSize = 300;
 
@@ -342,6 +342,10 @@ sub new {
 
 sub cfg {
   $_[0]{cfg};
+}
+
+sub request {
+  $_[0]{request};
 }
 
 sub url {
