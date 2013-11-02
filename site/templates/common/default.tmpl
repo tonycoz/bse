@@ -32,10 +32,12 @@
 Reorder child articles: 
   <:.set refresh = cfg.admin_url("admin", { "id":top.id }) -:>
   <a href="<:= cfg.admin_url("reorder", { "parentid":article.id, "sort":"title",
-   "refreshto":refresh }) :>"">by title</a> 
-| <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&sort=date&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
-  date</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&reverse=1&refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">reverse 
-  order</a></font></p>
+   "refreshto":refresh }) :>">by title</a>
+ | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&amp;sort=date&amp;refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">by 
+  date</a> | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&amp;reverse=1&amp;refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">reverse 
+  order</a>
+ | <a href="/cgi-bin/admin/reorder.pl?parentid=<:article id:>&amp;sort=shuffle&amp;refreshto=/cgi-bin/admin/admin.pl?id=<:article id:>">shuffle</a> 
+</font></p>
   <:.end if -:>
   <:.if dynamic -:>
     <:iterator begin dynchildren -:> 
