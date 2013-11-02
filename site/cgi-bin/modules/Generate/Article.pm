@@ -16,7 +16,7 @@ use Carp 'confess';
 use BSE::Util::Iterate;
 use BSE::CfgInfo qw(cfg_dist_image_uri cfg_image_uri);
 
-our $VERSION = "1.012";
+our $VERSION = "1.013";
 
 =head1 NAME
 
@@ -716,6 +716,23 @@ HTML
   }
 
   return %acts;
+}
+
+sub thumbnail {
+  my ($self, $which, $class) = @_;
+
+  if ($which->thumbImage) {
+    my $uri = $which->thumbImageUri;
+    my $width = $which->thumbWidth;
+    my $height = $which->thumbHeight;
+    my $html = qq(<img src="$uri" width="$width" height="$height");
+    $html .= qq( class="$class") if $class;
+    $html .= qq( border="0" alt="" />);
+    return $html;
+  }
+  else {
+    return "";
+  }
 }
 
 sub tag_ifStepAncestor {
