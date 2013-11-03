@@ -3,7 +3,7 @@ use strict;
 use BSE::Util::HTML;
 use Carp 'confess';
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 use base 'DevHelp::Formatter';
 
@@ -322,30 +322,52 @@ sub replace {
     and return 1;
   $$rpart =~ s#gimage\[([^\]\[]+)\]# $self->gimage($1) #ige
     and return 1;
+  $$rpart =~ s#popdoclink\[([\w-]+)\|([^\]\[]*\n\s*\n[^\]\[]*)\]#
+      "\n\n\x02" . $self->doclink($1, $self->_blockify($2), "_blank", 'popdoclink')
+	. "\x03\n\n" #ige
+    and return 1;
   $$rpart =~ s#popdoclink\[([\w-]+)\|([^\]\[]+)\]# $self->doclink($1, $2, "_blank", 'popdoclink') #ige
     and return 1;
   $$rpart =~ s#popdoclink\[([\w-]+)\]# $self->doclink($1, undef, "_blank", 'popdoclink') #ige
+    and return 1;
+  $$rpart =~ s#doclink\[([\w-]+)\|([^\]\[]*\n\s*\n[^\]\[]*)\]#
+      "\n\n\x02" . $self->doclink($1, $self->_blockify($2), undef, 'doclink')
+	. "\x03\n\n" #ige
     and return 1;
   $$rpart =~ s#doclink\[([\w-]+)\|([^\]\[]+)\]# $self->doclink($1, $2, undef, 'doclink') #ige
     and return 1;
   $$rpart =~ s#doclink\[([\w-]+)\]# $self->doclink($1,  undef, undef, 'doclink') #ige
     and return 1;
 
+  $$rpart =~ s#popformlink\[(\w+)\|([^\]\[]*\n\s*\n[^\]\[]*)\]#
+    "\n\n\x02" . $self->formlink($1, 'popformlink', $self->_blockify($2), '_blank') . "\x03\n\n"#ige
+    and return 1;
   $$rpart =~ s#popformlink\[(\w+)\|([^\]\[]+)\]#
     $self->formlink($1, 'popformlink', $2, '_blank') #ige
     and return 1;
   $$rpart =~ s#popformlink\[(\w+)\]#
     $self->formlink($1, 'popformlink', undef, '_blank') #ige
     and return 1;
+  $$rpart =~ s#formlink\[(\w+)\|([^\]\[]*\n\s*\n[^\]\[]*)\]#
+    "\n\n\x02" . $self->formlink($1, 'formlink', $self->_blockify($2)) . "\x03\n\n" #ige
+    and return 1;
   $$rpart =~ s#formlink\[(\w+)\|([^\]\[]+)\]#
     $self->formlink($1, 'formlink', $2) #ige
     and return 1;
   $$rpart =~ s#formlink\[(\w+)\]# $self->formlink($1, 'formlink', undef) #ige
     and return 1;
+  $$rpart =~ s#gfilelink\[(\w+)\|([^\]\[]*\n\s*\n[^\]\[]*)\]#
+      "\n\n\x02" . $self->gfilelink($1, $self->_blockify($2), undef, 'gfilelink')
+	. "\x03\n\n" #ige
+    and return 1;
   $$rpart =~ s#gfilelink\[\s*(\w+)\s*\|([^\]\[]+)\]# $self->gfilelink($1, $2, 'gfilelink') #ige
       and return 1;
   $$rpart =~ s#gfilelink\[\s*(\w+)\s*\]# $self->gfilelink($1, undef, 'gfilelink') #ige
       and return 1;
+  $$rpart =~ s#filelink\[(\w+)\|([^\]\[]*\n\s*\n[^\]\[]*)\]#
+      "\n\n\x02" . $self->filelink($1, $self->_blockify($2), undef, 'filelink')
+	. "\x03\n\n" #ige
+    and return 1;
   $$rpart =~ s#filelink\[\s*(\w+)\s*\|([^\]\[]+)\]# $self->filelink($1, $2, 'filelink') #ige
       and return 1;
   $$rpart =~ s#filelink\[\s*(\w+)\s*\]# $self->filelink($1, undef, 'filelink') #ige

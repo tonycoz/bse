@@ -27,7 +27,41 @@ sub dyn_template_test($$$$);
 my $parent = add_article
   (
    title=>'Parent', 
-   body=>'parent article doclink[shop|foo]',
+   body=><<'BODY',
+parent article doclink[shop|foo]
+
+doclink[shop|
+paragraph
+
+paragraph
+]
+
+formlink[test|simple]
+
+formlink[test|
+multiple
+
+lines
+]
+
+popdoclink[shop|shop]
+
+popdoclink[shop|
+
+one
+
+two
+]
+
+popformlink[test|test form]
+
+popformlink[test|
+one
+
+two
+]
+
+BODY
    lastModified => '2004-09-23 06:00:00',
    threshold => 2,
   );
@@ -372,6 +406,25 @@ template_test "body", $parent, <<'TEMPLATE', <<EXPECTED;
 <:body:>
 TEMPLATE
 <p>parent article <a href="$base_securl/shop/" title="The Shop" class="doclink">foo</a></p>
+<a href="$base_securl/shop/" title="The Shop" class="doclink">
+<p>paragraph</p>
+<p>paragraph</p>
+</a>
+<p><a href="/cgi-bin/fmail.pl?form=test" title="Send us a comment" class="formlink">simple</a></p>
+<a href="/cgi-bin/fmail.pl?form=test" title="Send us a comment" class="formlink">
+<p>multiple</p>
+<p>lines</p>
+</a>
+<p><a href="$base_securl/shop/" title="The Shop" target="_blank" class="popdoclink">shop</a></p>
+<a href="$base_securl/shop/" title="The Shop" target="_blank" class="popdoclink">
+<p>one</p>
+<p>two</p>
+</a>
+<p><a href="/cgi-bin/fmail.pl?form=test" title="Send us a comment" class="popformlink" target="_blank">test form</a></p>
+<a href="/cgi-bin/fmail.pl?form=test" title="Send us a comment" class="popformlink" target="_blank">
+<p>one</p>
+<p>two</p>
+</a>
 EXPECTED
 
 # not actually generation tests, but chekcs that the is_step_ancestor works
