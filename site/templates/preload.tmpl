@@ -367,26 +367,34 @@ parameters:
   which in most cases means you can just supply parent
 -:>
 <:.if request.user_can("bse_edit_reorder_children", parent) -:>
+  <:.set down_url = loop.next ? cfg.admin_url("move", { "stepparent":parent.id, "d":"swap", "id":loop.current.id, "other":loop.next.id, "r":top.admin }) : 0 -:>
+  <:.set up_url = loop.prev ? cfg.admin_url("move", { "stepparent":parent.id, "d":"swap", "id":loop.current.id, "other":loop.prev.id, "r":top.admin }) : 0 -:>
+  <:.set class = cfg.entry("arrows", "class", "bse_arrows") -:>
+  <span class="<:= m.class :>">
+    <:-.call "make_arrows", "down_url":down_url, "up_url":up_url -:>
+  </span>
+<:.end if -:>
+<:.end define -:>
+
+<:.define make_arrows -:>
+<:# expects down_url, up_url
+-:>
   <:.set width = cfg.entry("arrows", "image_width", 17) -:>
   <:.set height = cfg.entry("arrows", "image_height", 13) -:>
   <:.set extras = 'width="' _ width _ '" height="' _ height _ '"' -:>
-  <:.set class = cfg.entry("arrows", "class", "bse_arrows") -:>
   <:.set blank_img = '<img src="' _ (dist_image_uri _ "/trans_pixel.gif").escape("html") _ '" alt="" ' _ extras _ ' />' -:>
   <:.set down_img = '<img src="' _ cfg.entry("arrows", "downimg", dist_image_uri _ "/admin/move_down.gif").escape("html") _ '" alt="Down" ' _ extras _ ' />' -:>
   <:.set up_img = '<img src="' _ cfg.entry("arrows", "upimg", dist_image_uri _ "/admin/move_up.gif").escape("html") _ '" alt="Up" ' _ extras _ ' />' -:>
-  <span class="<:= class :>">
-  <:-.if loop.next -:>
-  <a href="<:= cfg.admin_url("move", { "stepparent":parent.id, "d":"swap", "id":loop.current.id, "other":loop.next.id, "r":top.admin }) :>"><:= down_img |raw:></a>
+  <:-.if down_url -:>
+  <a href="<:= down_url :>"><:= down_img |raw:></a>
   <:-.else -:>
     <:= blank_img |raw:>
   <:-.end if -:>
-  <:.if loop.prev -:>
-  <a href="<:= cfg.admin_url("move", { "stepparent":parent.id, "d":"swap", "id":loop.current.id, "other":loop.prev.id, "r":top.admin }) :>"><:= up_img |raw:></a>
+  <:-.if up_url -:>
+  <a href="<:= up_url :>"><:= up_img |raw:></a>
   <:-.else -:>
     <:= blank_img |raw:>
   <:-.end if -:>
-  </span>
-<:.end if -:>
 
 <:.end define -:>
 
