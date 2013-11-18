@@ -5,10 +5,11 @@ use JSON;
 use DevHelp::HTML;
 use Test::More;
 use Article;
+use Time::HiRes qw(time sleep);
 
 my @cols = Article->columns;
 
-my $base = 119;
+my $base = 130;
 
 my $count = $base + (@cols - 13) * 4;
 
@@ -259,6 +260,46 @@ SKIP:
     ok($data->{success}, "check success");
     is_deeply($data->{article}{tags}, [ $tag_name2 ],
 	      "check the tags");
+  }
+
+ SKIP:
+  { # add some images
+    my %image_req =
+      (
+       id => $art->{id},
+       addimg => 1,
+       image => [ "t/data/govhouse.jpg" ],
+      );
+    my $data = do_multi_req($add_url, \%image_req, "add first image")
+      or skip("response failed", 9);
+    ok($data->{success}, "success")
+      or skip("response failed", 8);
+    ok($data->{image}, "has an image");
+    my $im1 = $data->{image};
+
+    $image_req{image} = [ "t/data/t101.jpg" ];
+    $data = do_multi_req($add_url, \%image_req, "add second image")
+      or skip("response failed", 6);
+    ok($data->{success}, "success")
+      or skip("response failed: $data->{message}", 5);
+    ok($data->{image}, "has an image");
+    my $im2 = $data->{image};
+
+    # set their order
+    $data = do_req
+      ($add_url,
+       {
+	a_order_images => 1,
+	id => $art->{id},
+	order => $im1->{id} . "," . $im2->{id},
+       },
+       "set image order")
+	or skip("set image order", 3);
+    ok($data->{success}, "successfully ordered")
+      or skip("failed ordering", 2);
+    ok($data->{images}, "had images")
+      or skip("no images", 1);
+    is($data->{images}[0]{id}, $im1->{id}, "ordering worked");
   }
 
   # error handling on save
@@ -524,6 +565,24 @@ EOS
   my $data = eval { from_json($resp->decoded_content) };
   ok($data, "$comment response decoded as json")
     or print "# $@\n";
+
+  return $data;
+}
+
+sub do_multi_req {
+  my ($url, $req, $comment) = @_;
+
+  my $res = $ua->post($url,
+		      @ajax_hdr,
+		      Content_Type => "form-data",
+		      Content => $req);
+  unless ($res->is_success) {
+    fail("$comment: http request " . $res->status_line);
+    return;
+  }
+  my $data = eval { from_json($res->decoded_content) };
+  ok($data, "$comment: response decoded as json")
+    or note $@;
 
   return $data;
 }

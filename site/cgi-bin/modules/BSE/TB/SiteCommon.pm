@@ -2,7 +2,7 @@ package BSE::TB::SiteCommon;
 use strict;
 use Carp qw(confess);
 
-our $VERSION = "1.015";
+our $VERSION = "1.016";
 
 =head1 NAME
 
@@ -534,10 +534,10 @@ sub reorder_child {
 }
 
 sub set_image_order {
-  my ($self, $order) = @_;
+  my ($self, $order, $images) = @_;
 
-  my @images = $self->images;
-  my %images = map { $_->{id} => $_ } @images;
+  $images ||= [ $self->images ];
+  my %images = map { $_->{id} => $_ } @$images;
 
   my @new_order;
   for my $id (@$order) {
@@ -545,14 +545,20 @@ sub set_image_order {
       push @new_order, delete $images{$id};
     }
   }
-  for my $id (map $_->id, @images) {
+  for my $id (map $_->id, @$images) {
     if ($images{$id}) {
       push @new_order, delete $images{$id};
     }
   }
 
-  my @display_order = map $_->{displayOrder}, @images;
-  for my $index (0 .. $#images) {
+  my @display_order = map $_->{displayOrder}, @$images;
+  my %seen;
+  if (grep $seen{$_}++, @display_order) {
+    # have a duplicate somewhere
+    my ($max) = $display_order[0];
+    @display_order = reverse( ($max - $#$images) .. $max );
+  }
+  for my $index (0 .. $#$images) {
     $new_order[$index]->set_displayOrder($display_order[$index]);
     $new_order[$index]->save;
   }
