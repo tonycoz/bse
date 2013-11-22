@@ -1,5 +1,5 @@
 --
-# VERSION=1.006
+# VERSION=1.007
 id: bse/
 description: BSE messages
 
@@ -148,6 +148,9 @@ description: field error if the tag name is empty
 
 id: bse/admin/edit/tags/invalid_badchars
 description: field error if the tag name contains invalid characters
+
+id: bse/admin/edit/tags/invalid_emptyvalue
+description: field error if the tag value component is empty
 
 id: bse/admin/edit/tags/bad_id
 description: tag_id field error if the tag id isn't present or isn't numeric

@@ -16,7 +16,7 @@ use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 use constant ARTICLE_CUSTOM_FIELDS_CFG => "article custom fields";
 
-our $VERSION = "1.043";
+our $VERSION = "1.044";
 
 =head1 NAME
 
@@ -1758,6 +1758,27 @@ sub save_columns {
   return @columns;
 }
 
+sub _validate_tags {
+  my ($self, $tags, $errors) = @_;
+
+  my $fail = 0;
+  my @errors;
+  for my $tag (@$tags) {
+    my $error;
+    if ($tag =~ /\S/
+	&& !BSE::TB::Tags->valid_name($tag, \$error)) {
+      push @errors, "msg:bse/admin/edit/tags/invalid_$error";
+      $errors->{tags} = \@errors;
+      ++$fail;
+    }
+    else {
+      push @errors, undef;
+    }
+  }
+
+  return $fail;
+}
+
 sub save_new {
   my ($self, $req, $article, $articles) = @_;
 
@@ -1788,15 +1809,8 @@ sub save_new {
   my $save_tags = $cgi->param("_save_tags");
   my @tags;
   if ($save_tags) {
-    @tags = grep /\S/, $cgi->param("tags");
-    my $error;
-    for my $tag (@tags) {
-      BSE::TB::Tags->valid_name($tag, \$error)
-	  or last;
-    }
-    if ($error) {
-      $errors{tags} = "msg:bse/admin/edit/badtag/$error";
-    }
+    @tags = $cgi->param("tags");
+    $self->_validate_tags(\@tags, \%errors);
   }
 
   if (keys %errors) {
@@ -1949,7 +1963,7 @@ sub save_new {
 
   if ($save_tags) {
     my $error;
-    $article->set_tags(\@tags, \$error);
+    $article->set_tags([ grep /\S/, @tags ], \$error);
   }
 
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
@@ -2123,15 +2137,8 @@ sub save {
   my $save_tags = $cgi->param("_save_tags");
   my @tags;
   if ($save_tags) {
-    @tags = grep /\S/, $cgi->param("tags");
-    my $error;
-    for my $tag (@tags) {
-      BSE::TB::Tags->valid_name($tag, \$error)
-	  or last;
-    }
-    if ($error) {
-      $errors{tags} = "msg:bse/admin/edit/badtag/$error";
-    }
+    @tags = $cgi->param("tags");
+    $self->_validate_tags(\@tags, \%errors);
   }
   $self->validate_old($article, \%data, $articles, \%errors, scalar $req->is_ajax)
     or return $self->_service_error($req, $article, $articles, undef, \%errors, "FIELD");
@@ -2233,7 +2240,7 @@ sub save {
 
   if ($save_tags) {
     my $error;
-    $article->set_tags(\@tags, \$error);
+    $article->set_tags([ grep /\S/, @tags ], \$error);
   }
 
   # fix the kids too

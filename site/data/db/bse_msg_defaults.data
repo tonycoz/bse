@@ -100,6 +100,9 @@ message: Tags must have a non-empty name
 id: bse/admin/edit/tags/invalid_badchars
 message: Tags cannot contain control characters, backslash (\) or forward slash (/)
 
+id: bse/admin/edit/tags/invalid_emptyvalue
+message: Tags must have text after the colon (:)
+
 id: bse/admin/edit/tags/bad_id
 message: Invalid tag id
 

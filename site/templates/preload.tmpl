@@ -127,10 +127,12 @@ Page <:= pages.page :> of <:= pages.pagecount :>
   <:.if errors.$field -:>
     <:.set msg = errors.$field -:>
     <:.set msg = msg.is_list ? msg[index] : msg -:>
-    <:.set image = cfg.entry("error_img", "image", dist_image_uri _ "/admin/error.gif") -:>
-    <:.set width = cfg.entry("error_img", "width", 16) -:>
-    <:.set height = cfg.entry("error_img", "height", 16) -:>
+    <:.if msg.defined -:>
+      <:.set image = cfg.entry("error_img", "image", dist_image_uri _ "/admin/error.gif") -:>
+      <:.set width = cfg.entry("error_img", "width", 16) -:>
+      <:.set height = cfg.entry("error_img", "height", 16) -:>
     <img src="<:= image -:>" alt="<:= msg :>" title="<:= msg :>" width="<:= width :>" height="<:= height :>" class="error_img">
+    <:.end if -:>
   <:.end if -:>
 <:.end define -:>
 

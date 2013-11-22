@@ -18,7 +18,7 @@ Event.observe(document, "dom:loaded", function () {
     $("tags").insertBefore(new_div, add_div);
     ev.stop();
   }.bind(this, add_div));
-    if ($("#tags")) {
+    if ($("tags")) {
 	$("tags").appendChild(add_div);
 	$$('#tags div.tag').each(function(div) {
 	    var del = new Element("a", { href: "#" });
