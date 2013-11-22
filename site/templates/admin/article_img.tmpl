@@ -1,4 +1,4 @@
-<:wrap admin/base.tmpl title=>"Image Wizard" :>
+<:wrap admin/base.tmpl title=>"Image Wizard", js => "admin_edit.js" :>
 <h1><:ifEq [article id] "-1":>Global<:or:><: articleType :><:eif:> Image Wizard</h1>
 <:ifMessage:> 
 <p><b><:message:> </b></p>
@@ -55,6 +55,22 @@
             </td>
             <td class="help"><:help image name:> <:error_img name:></td>
           </tr>
+  <tr>
+    <th>Tags</th>
+    <td>
+      <input type="hidden" name="_save_tags" value="1" />
+      <div id="tags">
+      <:- .set tags = [ cgi.param("tags") ] :>
+      <:- .if tags.size == 0 :>
+        <:% tags.push("") :>
+      <:- .end if :>
+      <:.for tag in tags :>
+        <div class="tag"><input type="text" name="tags" value="<:= tag :>" /><:.call "error_img_n", "field":"tags", "index":loop.index :></div>
+      <:.end for:>
+      </div>
+    </td>
+    <td class="help"><:help edit tags:></td>
+  </tr>
           <tr> 
             <th>Storage:</th>
             <td> 

@@ -1,4 +1,4 @@
-<:wrap admin/base.tmpl title=>[concatenate "Edit " [articleType] " Image"]:>
+<:wrap admin/base.tmpl title=>[concatenate "Edit " [articleType] " Image"], js => "admin_edit.js" :>
 <h1>Edit <:articleType:> Image</h1>
 <:ifMessage:> 
 <p><b><:message:></b></p>
@@ -35,6 +35,19 @@
     <th>Identifier for image:</th>
     <td><input type="text" name="name" value="<:old name eimage name:>" /></td>
     <td class="help"><:help image name:> <:error_img name:></td>
+  </tr>
+  <tr>
+    <th>Tags</th>
+    <td>
+      <input type="hidden" name="_save_tags" value="1" />
+      <div id="tags">
+      <:.set tags = cgi.param("_save_tags") ? [ cgi.param("tags") ] : [ eimage.tags, "" ] -:>
+      <:.for tag in tags :>
+        <div class="tag"><input type="text" name="tags" value="<:= tag :>" /><:.call "error_img_n", "field":"tags", "index":loop.index :></div>
+      <:.end for:>
+      </div>
+    </td>
+    <td class="help"><:help edit tags:></td>
   </tr>
   <tr> 
     <th>Storage:</th>

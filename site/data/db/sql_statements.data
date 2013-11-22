@@ -1,5 +1,5 @@
 --
-# VERSION=1.005
+# VERSION=1.006
 name: bse_siteuserSeminarBookingsDetail
 sql_statement: <<SQL
 select ar.*, pr.*, se.*, ss.*, sb.*,
@@ -596,6 +596,25 @@ where t.id = m.tag_id
   )
 SQL
 
+name: Tags.images
+sql_statement: <<SQL
+select distinct t.*
+from bse_tags t, bse_tag_members m, image i
+where t.id = m.tag_id
+  and m.owner_type = 'BI'
+  and m.owner_id = i.id
+  and i.articleId = ?
+SQL
+
+name: TagMembers.images
+sql_statement: <<SQL
+select distinct m.*
+from bse_tag_members m, image i
+where m.owner_type = 'BI'
+  and m.owner_id = i.id
+  and i.articleId = ?
+SQL
+
 name: TagCategoryDeps.deleteCat
 sql_statement: <<SQL
 delete from bse_tag_category_deps
@@ -680,3 +699,4 @@ from bse_price_tiers t, bse_coupon_tiers c
 where c.coupon_id = ?
   and c.tier_id = t.id
 SQL
+

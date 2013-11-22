@@ -3518,7 +3518,16 @@ sub add_image {
 				    "You don't have access to add new images to this article");
 
   my $cgi = $req->cgi;
+
   my %errors;
+
+  my $save_tags = $cgi->param("_save_tags");
+  my @tags;
+  if ($save_tags) {
+    @tags = $cgi->param("tags");
+    $self->_validate_tags(\@tags, \%errors);
+  }
+
   my $imageobj =
     $self->do_add_image
       (
@@ -3535,6 +3544,11 @@ sub add_image {
 
   $imageobj
     or return $self->_service_error($req, $article, $articles, undef, \%errors);
+
+  if ($save_tags) {
+    my $error;
+    $imageobj->set_tags([ grep /\S/, @tags ], \$error);
+  }
 
   # typically a soft failure from the storage
   $errors{flash}
@@ -3910,6 +3924,12 @@ sub req_save_image {
       $errors{image} = "No image file received";
     }
   }
+  my $save_tags = $cgi->param("_save_tags");
+  my @tags;
+  if ($save_tags) {
+    @tags = $cgi->param("tags");
+    $self->_validate_tags(\@tags, \%errors);
+  }
   if (keys %errors) {
     if ($req->want_json_response) {
       return $self->_service_error($req, $article, $articles, undef,
@@ -3923,6 +3943,10 @@ sub req_save_image {
   my $new_storage = $cgi->param('storage');
   defined $new_storage or $new_storage = $image->{storage};
   $image->save;
+  if ($save_tags) {
+    my $error;
+    $image->set_tags([ grep /\S/, @tags ], \$error);
+  }
   my $mgr = $self->_image_manager($req->cfg);
   if ($delete_file) {
     if ($old_storage ne 'local') {

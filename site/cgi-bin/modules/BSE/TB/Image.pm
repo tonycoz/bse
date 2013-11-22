@@ -3,11 +3,12 @@ use strict;
 # represents an image from the database
 use Squirrel::Row;
 use BSE::ThumbCommon;
+use BSE::TB::TagOwner;
 use vars qw/@ISA/;
-@ISA = qw/Squirrel::Row BSE::ThumbCommon/;
+@ISA = qw/Squirrel::Row BSE::ThumbCommon BSE::TB::TagOwner/;
 use Carp qw(confess);
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 sub columns {
   return qw/id articleId image alt width height url displayOrder name
@@ -72,6 +73,7 @@ sub json_data {
 
   my $data = $self->data_only;
   $data->{url} = $self->image_url;
+  $data->{tags} = [ $self->tags ];
 
   return $data;
 }
@@ -119,6 +121,7 @@ sub article {
 sub remove {
   my ($self) = @_;
 
+  $self->remove_tags;
   unlink $self->full_filename;
   return $self->SUPER::remove();
 }
@@ -276,6 +279,14 @@ sub update {
   }
 
   return 1;
+}
+
+sub tag_owner_type {
+  "BI"
+}
+
+sub tableClass {
+  "BSE::TB::Images";
 }
 
 1;

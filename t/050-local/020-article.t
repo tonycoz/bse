@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 12;
+use Test::More tests => 16;
 use BSE::Test ();
 use File::Spec;
 use BSE::Cfg;
@@ -68,7 +68,21 @@ EOS
     $art->set_expire($yesterday);
     ok($art->is_expired, "check true is expired");
 
-    $art->remove($cfg);
+    # add some images
+    my $im1 = BSE::API::bse_add_image($cfg, $art,
+				      file => "t/data/t101.jpg");
+    $im1->set_tags([ "abc" ]);
+    ok($im1, "add first image");
+    my $im2 = BSE::API::bse_add_image($cfg, $art,
+				      file => "t/data/govhouse.jpg");
+    ok($im2, "add second image");
+    my $tagged = $art->images_tagged([ "ABC" ]);
+    ok($tagged && @$tagged, "found a tagged image");
+    is($tagged->[0]->id, $im1->id, "found the right image");
+
+    END {
+      $art->remove($cfg);
+    }
   }
 }
 

@@ -1,11 +1,12 @@
 package BSE::TB::Images;
 use strict;
 use Squirrel::Table;
+require BSE::TB::TagOwners;
 use vars qw(@ISA $VERSION);
-@ISA = qw(Squirrel::Table);
+@ISA = qw(Squirrel::Table BSE::TB::TagOwners);
 use BSE::TB::Image;
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 sub rowClass {
   return 'BSE::TB::Image';

@@ -2,7 +2,7 @@ package BSE::TB::SiteCommon;
 use strict;
 use Carp qw(confess);
 
-our $VERSION = "1.016";
+our $VERSION = "1.017";
 
 =head1 NAME
 
@@ -169,6 +169,51 @@ sub images {
   }
 
   return @{$self->{_images}};
+}
+
+=item image_tags
+
+Image tag information within the current article.
+
+=cut
+
+sub image_tags {
+  my ($self) = @_;
+
+  require BSE::TB::Tags;
+  require BSE::TB::TagMembers;
+  return
+    {
+     tags => [ BSE::TB::Tags->getSpecial(images => $self->id) ],
+     members => [ BSE::TB::TagMembers->getSpecial(images => $self->id) ],
+    };
+}
+
+=item images_tagged
+
+Return an arrayref of images for this article (or global images) that
+have the specified tags.
+
+In list context, return the result of collection_with_tags as the
+second parameter.
+
+=cut
+
+sub images_tagged {
+  my ($self, $tags) = @_;
+
+  require BSE::TB::Images;
+  my $result = BSE::TB::Images->collection_with_tags
+    (
+     "images",
+     $tags,
+     {
+      self => $self,
+     },
+    );
+
+  return $result->{objects} unless wantarray;
+  return ( $result->{objects}, $result );
 }
 
 =item image_by_name
