@@ -8,7 +8,79 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::ThumbCommon BSE::TB::TagOwner/;
 use Carp qw(confess);
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
+
+=head1 NAME
+
+BSE::TB::Image - images attached to an article or a global image.
+
+=head1 SYNOPSIS
+
+  my @images = $article->images;
+
+=head1 DESCRIPTION
+
+X<images>This class represents an image attached to an article, or a
+global image.
+
+=head1 METHODS
+
+=over
+
+=item id
+
+Unique id for this image.
+
+=item articleId
+
+article this image belongs to.  C<-1> for global images.
+
+=item image
+
+image filename as stored in the images directory.  See C</image_url>
+to get a URL to the image.
+
+=item alt
+
+alternate text for the image
+
+=item width
+
+=item height
+
+X<image, width>X<image, height>width and height of the
+image in pixels.
+
+=item url
+
+url to link to when the image is inlined.
+
+=item displayOrder
+
+sort key for ordering images belonging to an article (or within the
+global image collection.)
+
+=item name
+
+unique name for the image within the images belonging to an article
+(or withing the global image collection.)  Can be an empty string.
+
+=item storage
+
+the external storage used for the image, or C<local> for locally
+stored images.
+
+=item src
+
+for externally stored images, the URL to the image.  Use
+C</image_url()>.
+
+=item ftype
+
+the type of image, either C<img> for normal images, or C<flash> for
+flash files.
+
+=cut
 
 sub columns {
   return qw/id articleId image alt width height url displayOrder name
@@ -16,6 +88,28 @@ sub columns {
 }
 
 sub table { "image" }
+
+=item formatted(...)
+
+Call the format() image handler object for this image.
+
+Accepts the following parameters:
+
+=over
+
+=item *
+
+C<align> - sets the align attribute.
+
+=item *
+
+C<extras> - extra C<img> tag attributes.
+
+=back
+
+Returns HTML.
+
+=cut
 
 sub formatted {
   my ($self, %opts) = @_;
@@ -32,6 +126,22 @@ sub formatted {
     );
 }
 
+=item inline(...)
+
+Inline the image, accepts the following parameters:
+
+=over
+
+=item *
+
+C<align> - set class to C<< bse_image_I<align> >>.
+
+=back
+
+Returns HTML.
+
+=cut
+
 sub inline {
   my ($self, %opts) = @_;
 
@@ -46,6 +156,30 @@ sub inline {
      %opts,
     );
 }
+
+=item popimage(...)
+
+Call the popimage() image handler object for this image, displaying
+the image as a thumbnail that displays a larger version when clicked.
+
+Parameters:
+
+=over
+
+=item *
+
+C<class> - controls the section of the config file that popup
+parameters are taken from.
+
+=item *
+
+C<static> - true to use static URLs for the thumbnails.
+
+=back
+
+Returns HTML.
+
+=cut
 
 sub popimage {
   my ($im, %opts) = @_;
@@ -62,11 +196,25 @@ sub popimage {
     );
 }
 
+=item image_url
+
+Return the image's source URL.  This will be the storage URL if the
+image is C<storage> is not C<local>.
+
+=cut
+
 sub image_url {
   my ($im) = @_;
 
   return $im->src || BSE::TB::Images->base_uri . $im->image;
 }
+
+=item json_data
+
+Returns the image data as a data structure suitable for conversion to
+JSON.
+
+=cut
 
 sub json_data {
   my ($self) = @_;
@@ -77,6 +225,22 @@ sub json_data {
 
   return $data;
 }
+
+=item dynamic_thumb_url(...)
+
+Return a dynamic URL to a thumbnail of the image.
+
+Requires one named parameter:
+
+=over
+
+=item *
+
+C<geo> - the thumbnail geometry to use.
+
+=back
+
+=cut
 
 sub dynamic_thumb_url {
   my ($self, %opts) = @_;
@@ -105,6 +269,12 @@ sub filename {
   return $self->image;
 }
 
+=item article
+
+The article this image belongs to.
+
+=cut
+
 sub article {
   my ($self) = @_;
 
@@ -118,6 +288,12 @@ sub article {
   }
 }
 
+=item remove
+
+Remove the image.
+
+=cut
+
 sub remove {
   my ($self) = @_;
 
@@ -125,6 +301,12 @@ sub remove {
   unlink $self->full_filename;
   return $self->SUPER::remove();
 }
+
+=item update
+
+Make updates to the image.
+
+=cut
 
 sub update {
   my ($image, %opts) = @_;
@@ -290,3 +472,15 @@ sub tableClass {
 }
 
 1;
+
+=back
+
+=head1 INHERITED BEHAVIOUR
+
+Inherits from L<BSE::TB::TagOwner> and L<BSE::ThumbCommon>
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=cut

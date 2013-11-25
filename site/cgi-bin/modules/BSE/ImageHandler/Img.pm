@@ -4,7 +4,7 @@ use base 'BSE::ImageHandler::Base';
 use Carp qw(confess);
 use BSE::Util::HTML;
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 sub format {
   my ($self, %opts) = @_;
@@ -167,9 +167,14 @@ sub thumb {
     or return escape_html($error);
   
   if ($field) {
-    my $value = $imwork->{$field};
-    defined $value or $value = '';
-    return escape_html($value);
+    if ($field eq "object") {
+      return $imwork;
+    }
+    else {
+      my $value = $imwork->{$field};
+      defined $value or $value = '';
+      return escape_html($value);
+    }
   }
   else {
     my $class = $cfg->entry('thumb classes', $geo_id, "bse_image_thumb");
