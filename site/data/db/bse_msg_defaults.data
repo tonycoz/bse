@@ -1,5 +1,5 @@
 ---
-# VERSION=1.006
+# VERSION=1.007
 # defaults for the following
 language_code: en
 priority: 0
@@ -94,13 +94,13 @@ message: Tag '%1:s' removed.
 id: bse/admin/edit/tags/cleanup
 message: Deleted %1:d unused tags
 
-id: bse/admin/edit/tags/invalid_empty
+id: bse/admin/edit/tags/invalid/empty
 message: Tags must have a non-empty name
 
-id: bse/admin/edit/tags/invalid_badchars
+id: bse/admin/edit/tags/invalid/badchars
 message: Tags cannot contain control characters, backslash (\) or forward slash (/)
 
-id: bse/admin/edit/tags/invalid_emptyvalue
+id: bse/admin/edit/tags/invalid/emptyvalue
 message: Tags must have text after the colon (:)
 
 id: bse/admin/edit/tags/bad_id

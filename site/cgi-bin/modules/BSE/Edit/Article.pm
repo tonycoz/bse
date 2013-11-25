@@ -16,7 +16,7 @@ use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 use constant ARTICLE_CUSTOM_FIELDS_CFG => "article custom fields";
 
-our $VERSION = "1.044";
+our $VERSION = "1.045";
 
 =head1 NAME
 
@@ -1767,7 +1767,7 @@ sub _validate_tags {
     my $error;
     if ($tag =~ /\S/
 	&& !BSE::TB::Tags->valid_name($tag, \$error)) {
-      push @errors, "msg:bse/admin/edit/tags/invalid_$error";
+      push @errors, "msg:bse/admin/edit/tags/invalid/$error";
       $errors->{tags} = \@errors;
       ++$fail;
     }

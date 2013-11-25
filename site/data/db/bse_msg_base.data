@@ -1,5 +1,5 @@
 --
-# VERSION=1.007
+# VERSION=1.008
 id: bse/
 description: BSE messages
 
@@ -143,13 +143,16 @@ description: flashed when a tag is removed successfully.  $1 - tag name
 id: bse/admin/edit/tags/cleanup
 description: flashed after tags are cleaned up
 
-id: bse/admin/edit/tags/invalid_empty
+id: bse/admin/edit/tags/invalid/
+description: various invalid tag value error messages
+
+id: bse/admin/edit/tags/invalid/empty
 description: field error if the tag name is empty
 
-id: bse/admin/edit/tags/invalid_badchars
+id: bse/admin/edit/tags/invalid/badchars
 description: field error if the tag name contains invalid characters
 
-id: bse/admin/edit/tags/invalid_emptyvalue
+id: bse/admin/edit/tags/invalid/emptyvalue
 description: field error if the tag value component is empty
 
 id: bse/admin/edit/tags/bad_id
