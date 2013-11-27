@@ -10,7 +10,7 @@ use Carp qw(confess);
 use BSE::WebUtil qw(refresh_to_admin);
 use BSE::Util::HTML;
 
-our $VERSION = "1.010";
+our $VERSION = "1.011";
 
 # returns non-zero if the Regenerate button should work
 sub generate_button {
@@ -491,6 +491,26 @@ sub files {
 
 sub restricted_method {
   return 0;
+}
+
+sub section {
+  $_[0];
+}
+
+sub is_descendant_of {
+  0;
+}
+
+sub parent {
+  return;
+}
+
+sub is_dynamic {
+  1;
+}
+
+sub is_step_ancestor {
+  0;
 }
 
 1;
