@@ -6,7 +6,7 @@ use Carp 'confess';
 use Digest::MD5 qw(md5_hex);
 use BSE::Variables;
 
-our $VERSION = "1.008";
+our $VERSION = "1.009";
 
 =head1 NAME
 
@@ -340,11 +340,20 @@ sub _build_mime_lite {
      Subject => $self->{subject},
      Type => 'multipart/alternative',
     );
-  my $text_part = $msg->attach(Type => 'text/plain',
-			       Data => [ $text_content ]);
+  my $text_part = $msg->attach
+    (
+     Type => 'text/plain',
+     Data => [ $text_content ],
+     $text_content =~ /.{79}/ || $text_content =~ /[^ -~\x0d\x0a]/
+     ? ( Encoding => 'quoted-printable' ) : (),
+    );
   my $html_part = $msg->attach(Type => 'multipart/related');
-  $html_part->attach(Type => 'text/html',
-		     Data => $html_content);
+  $html_part->attach
+    (
+     Type => 'text/html',
+     Data => $html_content,
+     Encoding => 'quoted-printable',
+    );
 
   for my $attachment (@{$self->{attachments}}) {
     my $data;
@@ -412,7 +421,7 @@ sub extra_headers {
 sub _log_dump {
   my ($self, $headers, $message) = @_;
 
-  my $max = $self->{cfg}->entry("audit log", "mail_max_dump", 10000);
+  my $max = $self->{cfg}->entry("audit log", "mail_max_dump", 50000);
   my $msg = "$headers\n\n$message";
   if (length($msg) > $max) {
     substr($msg, $max-3) = "...";

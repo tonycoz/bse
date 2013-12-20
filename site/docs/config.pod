@@ -2505,7 +2505,7 @@ in the audit log.  Default: 0.
 =item *
 
 mail_max_dump - if non-zero this is the size limit of the dump stored
-in the audit log when [audit log].mail is enabled.
+in the audit log when [audit log].mail is enabled.  Default: 50000.
 
 =back
 
