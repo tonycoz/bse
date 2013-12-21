@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 185;
+use Test::More tests => 186;
 use HTML::Entities;
 
 sub template_test($$$$;$$);
@@ -624,9 +624,16 @@ IN
 <:-.define foo:>
 <:-= avar -:>
 <:.end-:>
-<:.call "foo", "avar":"avalue"-:>
+<:.call "foo", avar:"avalue"-:>
 <:.call "foo",
-  "avar":"bvalue"-:>
+  avar:"bvalue"-:>
+IN
+  template_test(<<IN, "2716", "define defaults with call", \%acts, "both", \%vars);
+<:-.define foo; abc:1, def:abc+5 :>
+<:-= abc -:><:= def -:>
+<:.end-:>
+<:.call "foo", "abc":"2"-:>
+<:.call "foo" -:>
 IN
   template_test(<<IN, "other value", "external call", \%acts, "", \%vars);
 <:.call "called.tmpl", "avar":"other value"-:>

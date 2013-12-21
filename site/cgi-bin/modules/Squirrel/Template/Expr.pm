@@ -1,7 +1,7 @@
 package Squirrel::Template::Expr;
 use strict;
 
-our $VERSION = "1.012";
+our $VERSION = "1.013";
 
 package Squirrel::Template::Expr::Eval;
 use Scalar::Util ();
@@ -585,31 +585,52 @@ sub _parse_primary {
     return [ list => $list ];
   }
   elsif ($t->[0] eq 'op{') {
-    my @pairs;
-    if ($tok->peektype eq 'op}') {
-      $tok->get; # discard '}'
-    }
-    else {
-      my $next;
-      do {
-	my $key = $self->_parse_additive($tok);
-	my $colon = $tok->get;
-	$colon->[0] eq 'op:'
-	  or die [ error => "Expected : in hash but found $colon->[1]" ];
-	my $value = $self->_parse_expr($tok);
-	push @pairs, [ $key, $value ];
-      } while ($next = $tok->get and $next->[0] eq 'op,');
-      $next->[0] eq 'op}'
-	or die [ error => "Expected , or } but found $tok->[1]" ];
-    }
+    my $pairs = $self->parse_pairs($tok);
+    my $next = $tok->get;
+    $next->[0] eq 'op}'
+      or die [ error => "Expected , or } but found $next->[1]" ];
 
-    return [ hash => \@pairs ];
+    return [ hash => $pairs ];
   }
   elsif ($t->[0] eq 're') {
     return [ re => $t->[2], $t->[3] ];
   }
   else {
     die [ error => "Expected term but got $t->[0]" ];
+  }
+}
+
+sub parse_pairs {
+  my ($self, $tok) = @_;
+
+  my $nexttype = $tok->peektype;
+  if ($nexttype eq 'op}' || $nexttype eq 'eof') {
+    return [];
+  }
+  else {
+    my $next;
+    my @pairs;
+    do {
+      my $key;
+      if ($tok->peektype eq 'id') {
+	my $id = $tok->get;
+	if ($tok->peektype eq 'op:') {
+	  $key = [ const => $id->[2] ];
+	}
+	else {
+	  $tok->unget($id);
+	}
+      }
+      $key ||= $self->_parse_additive($tok);
+      my $colon = $tok->get;
+      $colon->[0] eq 'op:'
+	or die [ error => "Expected : in hash but found $colon->[1]" ];
+      my $value = $self->_parse_expr($tok);
+      push @pairs, [ $key, $value ];
+    } while ($next = $tok->get and $next->[0] eq 'op,');
+    $tok->unget($next);
+
+    return \@pairs;
   }
 }
 

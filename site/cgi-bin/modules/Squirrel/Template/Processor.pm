@@ -3,7 +3,7 @@ use strict;
 use Squirrel::Template::Constants qw(:node);
 use Scalar::Util ();
 
-our $VERSION = "1.024";
+our $VERSION = "1.025";
 
 use constant ACTS => 0;
 use constant TMPLT => 1;
@@ -158,7 +158,7 @@ sub _process_set {
 sub _process_define {
   my ($self, $define) = @_;
 
-  $self->[TMPLT]->define_macro($define->[NODE_DEFINE_NAME], $define->[NODE_DEFINE_CONTENT]);
+  $self->[TMPLT]->define_macro($define->[NODE_DEFINE_NAME], $define->[NODE_DEFINE_CONTENT], $define->[NODE_DEFINE_DEFAULTS]);
 
   return;
 }
@@ -169,6 +169,7 @@ sub _process_call {
   my $parsed;
   my %args;
   my @result;
+  my $defaults;
   my $name;
   if (eval {
     $name = $self->[EVAL]->process($node->[NODE_CALL_NAME]);
@@ -178,7 +179,7 @@ sub _process_call {
       $args{$key} = $value;
     }
 
-    $parsed = $self->[TMPLT]->get_macro($name);
+    ($parsed, $defaults) = $self->[TMPLT]->get_macro($name);
     if (!$parsed) {
       ($parsed, my $message) = $self->[TMPLT]->parse_file($name);
       unless ($parsed) {
@@ -190,6 +191,16 @@ sub _process_call {
   }) {
     my $ctx = ".call '$name' from $node->[NODE_FILENAME]:$node->[NODE_LINE]";
     if (eval { $self->[TMPLT]->start_scope($ctx, \%args), 1 }) {
+      if ($defaults) {
+	for my $entry (@$defaults) {
+	  my ($name_expr, $value_expr)= @$entry;
+	  my $name = $self->[EVAL]->process($name_expr);
+	  unless (exists $args{$name}) {
+	    my $value = $self->[EVAL]->process($value_expr);
+	    $self->[TMPLT]->set_var($name, $value);
+	  }
+	}
+      }
       @result = $self->process($parsed);
       $self->[TMPLT]->end_scope();
     }

@@ -20,7 +20,7 @@ BEGIN {
 
 use constant DEBUG_GET_PARMS => 0;
 
-our $VERSION = "1.028";
+our $VERSION = "1.029";
 
 my %compile_cache;
 
@@ -394,9 +394,9 @@ sub set_var {
 }
 
 sub define_macro {
-  my ($self, $name, $content) = @_;
+  my ($self, $name, $content, $defaults) = @_;
 
-  $self->{defines}{$name} = $content;
+  $self->{defines}{$name} = [ $content, $defaults ];
 
   return 1;
 }
@@ -404,10 +404,10 @@ sub define_macro {
 sub get_macro {
   my ($self, $name) = @_;
 
-  my $content = $self->{defines}{$name}
+  my $define = $self->{defines}{$name}
     or return;
 
-  return $content;
+  return @$define;
 }
 
 sub parse {
@@ -825,6 +825,10 @@ The C<.end> token can also be C<.end for>.
 
 C<< <:.define I<name> :> I<content> <:.end:> >>
 
+=item *
+
+C<< <:.define I<name>; name1:value1, name2:value2 :> I<content> <:.end:> >>
+
 Define a macro called I<name> with the specified content.  The C<.end>
 token can be C<.end define>.
 
@@ -833,6 +837,8 @@ eg.
   <:.define somename:>
   some content
   <:.end define:>
+
+The second form provides defaults for calls to the macro.
 
 =item *
 

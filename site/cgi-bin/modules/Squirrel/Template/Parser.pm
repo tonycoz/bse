@@ -2,7 +2,7 @@ package Squirrel::Template::Parser;
 use strict;
 use Squirrel::Template::Constants qw(:token :node);
 
-our $VERSION = "1.018";
+our $VERSION = "1.019";
 
 use constant TOK => 0;
 use constant TMPLT => 1;
@@ -516,21 +516,39 @@ sub _parse_define {
 
   my $content = $self->_parse_content;
   my $end = $self->[TOK]->get;
-  my $error;
+  my @errors;
   if ($end->[TOKEN_TYPE] eq 'end') {
     if ($end->[TOKEN_END_TYPE] && $end->[TOKEN_END_TYPE] ne 'define') {
-      $error = $self->_error($end, "Expected '.end' or '.end define' for .define started $define->[TOKEN_FILENAME]:$define->[TOKEN_LINE] but found '.end $end->[TOKEN_END_TYPE]'");
+      push @errors, $self->_error($end, "Expected '.end' or '.end define' for .define started $define->[TOKEN_FILENAME]:$define->[TOKEN_LINE] but found '.end $end->[TOKEN_END_TYPE]'");
     }
   }
   else {
     $self->[TOK]->unget($end);
-    $error = $self->_error($end, "Expected '.end' for .define started $define->[TOKEN_FILENAME]:$define->[TOKEN_LINE] but found $end->[TOKEN_TYPE]");
+    push @errors, $self->_error($end, "Expected '.end' for .define started $define->[TOKEN_FILENAME]:$define->[TOKEN_LINE] but found $end->[TOKEN_TYPE]");
     $end = $self->_empty($end);
   }
-  @{$define}[NODE_DEFINE_END, NODE_DEFINE_CONTENT] = ( $end, $content );
 
-  if ($error) {
-    return $self->_comp($define, $error);
+  my $text = $define->[NODE_DEFINE_NAME];
+  my $name;
+  if ($text =~ s(^([^;\s]+))()) {
+    $name = $1;
+  }
+  my $defaults;
+  my %seen_args;
+  if ($text =~ s/^\s*;\s*// && $text ne "") {
+    my $tokens = Squirrel::Template::Expr::Tokenizer->new($text);
+    my $parser = Squirrel::Template::Expr::Parser->new;
+    $defaults = $parser->parse_pairs($tokens);
+    $tokens->peektype eq 'eof'
+      or push @errors, $self->_error($end, "Defaults list for .define started $define->[TOKEN_FILENAME]:$define->[TOKEN_LINE] has extra junk");
+  }
+  $define->[NODE_DEFINE_NAME] = $name;
+
+  @{$define}[NODE_DEFINE_END, NODE_DEFINE_CONTENT, NODE_DEFINE_DEFAULTS] =
+    ( $end, $content, $defaults );
+
+  if (@errors) {
+    return $self->_comp($define, @errors);
   }
   else {
     return $define;
@@ -552,22 +570,12 @@ sub _parse_call {
 
   my @result;
   my $next = $tokens->get;
-  my @args;
+  my $args = [];
   if ($next->[0] eq 'op,') {
     unless (eval {
-      while ($next->[0] eq 'op,') {
-	my $key;
-	my $value;
-	$key = $parser->parse_tokens($tokens);
-	my $colon = $tokens->get;
-	$colon->[0] eq 'op:'
-	  or die [ error => "Expected : but found $colon->[0]" ];
-	$value = $parser->parse_tokens($tokens);
-	push @args, [ $key, $value ];
-	$next = $tokens->get;
-      }
+      $args = $parser->parse_pairs($tokens);
 
-      if ($next->[0] ne 'eof') {
+      if ($tokens->peektype ne 'eof') {
 	die [ error => "Expected , or eof but found $next->[0]" ];
       }
       1;
@@ -579,7 +587,7 @@ sub _parse_call {
     $error = $self->_error($call, "Expected , or end of expression but found $next->[0]");
   }
 
-  @{$call}[NODE_CALL_NAME, NODE_CALL_LIST] = ( $name_expr, \@args );
+  @{$call}[NODE_CALL_NAME, NODE_CALL_LIST] = ( $name_expr, $args );
 
   return $error ? $self->_comp($call, $error) : $call;
 }
