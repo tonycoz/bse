@@ -538,6 +538,8 @@ sub remove_format {
 	  and next TRY;
 	$part =~ s#table\[([^\]\[]+)\|([^\]\[|]+)\]#_cleanup_table($1, "|$2")#ieg
 	  and next TRY;
+	$part =~ s# ?\blist\[([^\]\[\|]*)\|\s*(\S[^\]\[]+)\]#$2#g
+	  and next TRY;
 	$part =~ s#\*\*([^\n]+)#$1#g
 	  and next TRY;
 	$part =~ s!##([^\n]+)!$1!g

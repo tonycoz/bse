@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 150;
+use Test::More tests => 151;
 
 sub format_test($$$;$);
 sub noformat_test($$$;$);
@@ -868,6 +868,16 @@ OUT
   noformat_test '**image[bar]', '', '** list with image content';
   noformat_test '%%image[bar]', '', '%% list with image content';
   noformat_test '##image[bar]', '', '## list with image content';
+  noformat_test <<IN, <<OUT, "list[] no attr", "both";
+list[|
+## one
+## two
+]
+IN
+ one
+ two
+
+OUT
 }
 
 sub format_test ($$$;$) {
