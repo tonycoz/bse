@@ -6,7 +6,7 @@ use vars qw(@EXPORT_OK @ISA);
 @ISA = qw(Exporter);
 use Carp qw(confess);
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 my $re_real =
   qr/
@@ -25,7 +25,7 @@ my %built_ins =
   (
    email => 
    {
-    match => qr/^[^\@]+\@[\w.-]+\.\w+$/,
+    match => qr/^[^\s\@][^\@]*\@[\w.-]+\.\w+$/,
     error => '$n is not a valid email address',
    },
    phone => 
