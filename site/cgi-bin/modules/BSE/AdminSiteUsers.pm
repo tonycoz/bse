@@ -13,7 +13,7 @@ use constant SITEUSER_GROUP_SECT => 'BSE Siteuser groups validation';
 use BSE::Template;
 use DevHelp::Date qw(dh_parse_date_sql dh_parse_time_sql);
 
-our $VERSION = "1.013";
+our $VERSION = "1.014";
 
 my %actions =
   (
@@ -371,6 +371,7 @@ sub req_save {
 
   my $saveemail;
   my $email = $cgi->param('email');
+  $email =~ s/^\s+|\s+$//g;
   if (defined $email && $email ne $user->{email} && $email ne '') {
     if ($email !~ /.\@./) {
       $errors{email} = "Email is invalid";
@@ -378,6 +379,7 @@ sub req_save {
     unless ($errors{email}) {
       if ($nopassword) {
 	my $conf_email = $cgi->param('confirmemail');
+	$conf_email =~ s/^\s+|\s+$//g;
 	if ($conf_email) {
 	  if ($conf_email eq $email) {
 	    my $other = SiteUsers->getBy(userId=>$email);
@@ -643,6 +645,7 @@ sub req_add {
   my $nopassword = $cfg->entryBool('site users', 'nopassword', 0);
   my %errors;
   my $email = $cgi->param('email');
+  $email =~ s/^\s+|\s+$//g;
   if (!defined $email) { # required check done later
     $email = ''; # prevent undefined value warnings later
   }
