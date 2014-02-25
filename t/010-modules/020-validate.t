@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 82;
+use Test::More tests => 88;
 
 BEGIN { use_ok('DevHelp::Validate'); }
 
@@ -311,4 +311,22 @@ BEGIN { use_ok('DevHelp::Validate'); }
       is($errors{value}, $test->[2], "$name: message");
     }
   }
+}
+
+# emails
+{
+  my $val = DevHelp::Validate::Hash->new
+      (
+       fields =>
+       {
+	email => { rules => "email" },
+       }
+      );
+  my %errors;
+  ok($val->validate({email => 'a@example.com' }, \%errors), 'a@example.com');
+  ok($val->validate({email => 'a+b@example.com' }, \%errors), 'a+b@example.com');
+  ok($val->validate({email => '"a b"@example.com' }, \%errors), '"a b"@example.com');
+  ok(!$val->validate({email => ' a@example.com' }, \%errors), "emails cannot begin with whitespace ");
+  ok(!$val->validate({email => ' a+b@example.com' }, \%errors), "emails cannot begin with whitespace");
+  ok(!$val->validate({email => ' "a b"@example.com' }, \%errors), "emails cannot begin with whitespace");
 }
