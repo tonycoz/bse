@@ -18,7 +18,7 @@ use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
 use Carp qw(confess);
 
-our $VERSION = "1.029";
+our $VERSION = "1.030";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -626,6 +626,7 @@ sub req_register {
 		 section => 'site user validation');
 
   my $email = $cgi->param('email');
+  $email =~ s/^\s+|\s+$//g;
   if (!defined $email or !length $email) {
     $errors{email} = $msgs->(regnoemail => "Please enter an email address");
     $email = ''; # prevent undefined value warnings later
@@ -635,6 +636,7 @@ sub req_register {
   }
   if ($nopassword) {
     my $confemail = $cgi->param('confirmemail');
+    $confemail =~ s/^\s+|\s+$//g;
     if (!defined $confemail or !length $confemail) {
       $errors{confirmemail} = $msgs->(regnoconfemail => "Please enter a confirmation email address");
     }
@@ -1122,6 +1124,7 @@ sub req_saveopts {
     }
   }
   my $email = $cgi->param('email');
+  $email =~ s/^\s+|\s+$//g;
   my $saveemail;
   if (defined $email) {
     ++$saveemail;
