@@ -10,7 +10,7 @@ use Carp qw(confess);
 use BSE::WebUtil qw(refresh_to_admin);
 use BSE::Util::HTML;
 
-our $VERSION = "1.011";
+our $VERSION = "1.012";
 
 # returns non-zero if the Regenerate button should work
 sub generate_button {
@@ -424,15 +424,15 @@ sub generate_all {
   for my $articleid (@articleids) {
     my $article = $articles->getByPkey($articleid);
     ++$index;
-    if ($article->{link} && $article->{template}) {
-      #$callback->("Article $articleid");
-      generate_low($articles, $article, $cfg);
-    }
     my $newpc = $index / @articleids * 100;
     my $now = time;
     if ($callback && $newpc >= $pc + 1 || abs($newpc-100) < 0.01) {
       $callback->(sprintf("%5d:  %.1f%% done - elapsed: %.1f", $articleid, $newpc, $now - $allstart)) if $callback;
       $pc = int $newpc;
+    }
+    if ($article->{link} && $article->{template}) {
+      #$callback->("Article $articleid");
+      generate_low($articles, $article, $cfg);
     }
   }
 
