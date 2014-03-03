@@ -8,7 +8,7 @@ use BSE::Util::HTML qw(:default popup_menu);
 use BSE::Util::Iterate;
 use base 'BSE::UI::AdminDispatch';
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 =head1 NAME
 
@@ -295,6 +295,7 @@ sub validate {
   for my $field (qw(html_template text_template article_template)) {
     my $value = $q->param($field);
     if ($value) {
+      require BSE::Template;
       if ($value =~ /\.\./) {
 	push(@$errors, [ $field, "Template $value is invalid, contains .." ]);
       }
