@@ -5,7 +5,7 @@ use Squirrel::Row;
 use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 sub columns {
   return qw/id name title description frequency keyword archive 
@@ -331,7 +331,7 @@ sub _send {
   }
   my $from = $cfg->entryIfVar('subscriptions', 'from');
   unless ($from) {
-    $from = $Constants::SHOP_FROM;
+    $from = $cfg->entry('shop', 'from', $Constants::SHOP_FROM);
   }
   unless ($from) {
     $callback->('error', undef, "Configuration error: No from address configured, please set from in the subscriptions section of the config file, or \$SHOP_FROM in Constants.pm");

@@ -18,7 +18,7 @@ SiteUser - represent a site user (or member)
 
 =cut
 
-our $VERSION = "1.012";
+our $VERSION = "1.013";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -252,7 +252,7 @@ sub send_conf_request {
 
   # check that the from address has been configured
   my $from = $cfg->entry('confirmations', 'from') || 
-    $cfg->entry('basic', 'emailfrom')|| $SHOP_FROM;
+    $cfg->entry('shop', 'from')|| $SHOP_FROM;
   unless ($from) {
     $$rcode = 'config';
     $$rmsg = "Configuration Error: The confirmations from address has not been configured";
@@ -926,7 +926,7 @@ sub lost_password {
      emailuser => [ \&BSE::Util::Tags::tag_hash_plain, $email_user ],
     );
   my $from = $cfg->entry('confirmations', 'from') || 
-    $cfg->entry('basic', 'emailfrom') || $SHOP_FROM;
+    $cfg->entry('shop', 'from') || $SHOP_FROM;
   my $nopassword = $cfg->entryBool('site users', 'nopassword', 0);
   my $subject = $cfg->entry('basic', 'lostpasswordsubject') 
     || ($nopassword ? "Your options" : "Your password");

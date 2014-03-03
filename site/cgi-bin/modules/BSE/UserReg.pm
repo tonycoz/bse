@@ -18,7 +18,7 @@ use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
 use Carp qw(confess);
 
-our $VERSION = "1.030";
+our $VERSION = "1.031";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -2236,7 +2236,7 @@ sub send_conf_request {
   
   # check that the from address has been configured
   my $from = $cfg->entry('confirmations', 'from') || 
-    $cfg->entry('basic', 'emailfrom')|| $SHOP_FROM;
+    $cfg->entry('shop', 'from')|| $SHOP_FROM;
   unless ($from) {
     $acts{mailerror} = sub { escape_html("Configuration Error: The confirmations from address has not been configured") };
     return $req->dyn_response('user/email_conferror', \%acts);
