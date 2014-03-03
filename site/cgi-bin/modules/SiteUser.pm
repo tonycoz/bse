@@ -18,7 +18,7 @@ SiteUser - represent a site user (or member)
 
 =cut
 
-our $VERSION = "1.013";
+our $VERSION = "1.014";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -315,14 +315,17 @@ sub send_conf_request {
     );
   my $email_template = 
     $nopassword ? 'user/email_confirm_nop' : 'user/email_confirm';
-  my $body = BSE::Template->get_page($email_template, $cfg, \%confacts);
 
-  require BSE::Mail;
-  my $mail = BSE::Mail->new(cfg=>$cfg);
+  require BSE::ComposeMail;
+  my $mail = BSE::ComposeMail->new(cfg => $cfg);
+
   my $subject = $cfg->entry('confirmations', 'subject') 
     || 'Subscription Confirmation';
-  unless ($mail->send(from=>$from, to=>$user->{email}, subject=>$subject,
-		      body=>$body)) {
+  unless ($mail->send(template => $email_template,
+    acts => \%confacts,
+    from=>$from,
+    to=>$user,
+    subject=>$subject)) {
     # a problem sending the mail
     $$rcode = "mail";
     $$rmsg = $mail->errstr;
