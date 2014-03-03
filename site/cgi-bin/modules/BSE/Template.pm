@@ -4,7 +4,7 @@ use Squirrel::Template;
 use Carp qw(confess cluck);
 use Config ();
 
-our $VERSION = "1.010";
+our $VERSION = "1.011";
 
 my %formats =
   (
@@ -149,6 +149,24 @@ sub get_response {
 				 $base_template, $rsets, $vars);
 
   return $class->make_response($content, $class->get_type($cfg, $template));
+}
+
+sub encode_content {
+  my ($self, $content, $cfg, $charset) = @_;
+
+  $cfg ||= BSE::Cfg->single;
+  if ($cfg->utf8) {
+    $charset ||= $cfg->charset;
+
+    require Encode;
+    my $cfg = BSE::Cfg->single;
+    my $check = $cfg->entry("utf8", "check", Encode::FB_DEFAULT());
+    $check = oct($check) if $check =~ /^0/;
+
+    $content = Encode::encode($charset, $content, $check);
+  }
+
+  return $content;
 }
 
 sub make_response {
@@ -349,6 +367,24 @@ sub output_resultc {
     require BSE::Util::ValidateHTML;
     BSE::Util::ValidateHTML->validate($cfg, $result);
   }
+}
+
+sub print_first_part {
+  my ($class, $content, $cfg) = @_;
+
+  $cfg ||= BSE::Cfg->single;
+
+  my $type = $class->html_type($cfg);
+
+  print "Content-Type: $type\n\n";
+  $class->print_next_part($content, $cfg);
+}
+
+sub print_next_part {
+  my ($class, $content, $cfg) = @_;
+
+  $content = $class->encode_content($content, $cfg);
+  print $content;
 }
 
 1;

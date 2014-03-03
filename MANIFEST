@@ -82,6 +82,7 @@ site/cgi-bin/modules/BSE/Custom.pm
 site/cgi-bin/modules/BSE/CustomBase.pm
 site/cgi-bin/modules/BSE/DB.pm
 site/cgi-bin/modules/BSE/DB/Mysql.pm
+site/cgi-bin/modules/BSE/DummyArticle.pm
 site/cgi-bin/modules/BSE/Dynamic/Article.pm
 site/cgi-bin/modules/BSE/Dynamic/Catalog.pm
 site/cgi-bin/modules/BSE/Dynamic/Product.pm

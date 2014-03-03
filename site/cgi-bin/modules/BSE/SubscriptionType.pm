@@ -5,7 +5,7 @@ use Squirrel::Row;
 use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub columns {
   return qw/id name title description frequency keyword archive 
@@ -19,15 +19,18 @@ sub _build_article {
   my @cols = Article->columns;
   shift @cols;
   @$article{@cols} = ('') x @cols;
-  my $parentId = $opts->{parentId} || $sub->{parentId} || -1;
+  my $parent_id = $opts->{parentId} || $sub->{parentId} || -1;
   my $parent;
-  if ($parentId > 0) {
-    $parent = Articles->getByPkey($parentId);
+  if ($parent_id > 0) {
+    $parent = Articles->getByPkey($parent_id);
+    unless ($parent) {
+      $parent_id = -1;
+    }
   }
   use BSE::Util::SQL qw(now_datetime now_sqldate);
   $article->{body} = $opts->{body} || '';
   $article->{title} = defined($opts->{title}) ? $opts->{title} : $sub->{title};
-  $article->{parentid} = $opts->{parentId} || $sub->{parentId};
+  $article->{parentid} = $parent_id;
   $article->{displayOrder} = time;
   $article->{imagePos} = 'tr';
   $article->{release} = now_sqldate;
@@ -35,7 +38,7 @@ sub _build_article {
   $article->{keyword} = 
     exists($opts->{keyword}) ? $opts->{keyword} : $sub->{keyword};
   $article->{generator} = 'Generate::Article';
-  $article->{level} = $parent ? $parent->{level} + 1 : -1;
+  $article->{level} = $parent ? $parent->{level} + 1 : 1;
   $article->{listed} = 1;
   $article->{lastModified} = now_datetime;
   $article->{link} = '';
@@ -267,6 +270,7 @@ sub _text_format_low {
      sub => sub { $sub->{$_[0]} },
     );
   
+  require BSE::Template;
   return BSE::Template->get_page($template, $cfg, \%acts);
 }
 
@@ -275,6 +279,8 @@ sub text_format {
 
   my %article;
   $sub->_build_article(\%article, $opts);
+  require BSE::DummyArticle;
+  bless \%article, "BSE::DummyArticle";
   return $sub->_text_format_low($cfg, $user, $opts, \%article);
 }
 
@@ -283,7 +289,9 @@ sub html_format {
 
   my %article;
   $sub->_build_article(\%article, $opts);
-  require 'Generate/Subscription.pm';
+  require Generate::Subscription;
+  require BSE::DummyArticle;
+  bless \%article, "BSE::DummyArticle";
   my $gen = Generate::Subscription->new(cfg=>$cfg, top => \%article);
   $gen->set_user($user);
   $gen->set_sub($sub);
@@ -312,10 +320,12 @@ sub _send {
   require 'BSE/Mail.pm';
   my $mailer = BSE::Mail->new(cfg=>$cfg);
   $sub->_build_article($article, $opts);
+  require BSE::DummyArticle;
+  bless $article, "BSE::DummyArticle";
   my $gen;
   if ($article->{template}) {
     #print STDERR "Making generator\n";
-    require 'Generate/Subscription.pm';
+    require Generate::Subscription;
     $gen = Generate::Subscription->new(cfg=>$cfg, top=>$article);
     $gen->set_sub($sub);
   }
@@ -327,16 +337,27 @@ sub _send {
     $callback->('error', undef, "Configuration error: No from address configured, please set from in the subscriptions section of the config file, or \$SHOP_FROM in Constants.pm");
     return;
   }
-  my $charset = $cfg->entry('basic', 'charset') || 'iso-8859-1';
+  my $charset = $cfg->charset;
   my $index = 0;
   for my $user (@$recipients) {
     $callback->('user', $user) if $callback;
     my $text = $sub->_text_format_low($cfg, $user, $opts, $article);
+      if ($cfg->utf8) {
+	require Encode;
+	$text = Encode::encode($cfg->charset, $text);
+      }
     my $html;
     if ($gen && !$user->{textOnlyMail}) {
       #print STDERR "Making HTML\n";
       $gen->set_user($user);
-      $html = $gen->generate($article, 'Articles');
+      my %acts;
+      %acts = $gen->baseActs("Articles", \%acts, $article);
+      $html = BSE::Template->get_page($article->template, $cfg, \%acts,
+				      undef, undef, $gen->variables);
+      if ($cfg->utf8) {
+	require Encode;
+	$html = Encode::encode($cfg->charset, $html);
+      }
     }
     my @headers;
     my $content;

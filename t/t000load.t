@@ -34,3 +34,6 @@ use_ok("BSE::Index::BSE");
 use_ok("BSE::ImageClean");
 use_ok("BSE::UI::AdminImageClean");
 use_ok("BSE::UI::Thumb");
+
+my $builder = Test::Builder->new;
+$builder->is_passing or $builder->BAIL_OUT;

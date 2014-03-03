@@ -9,8 +9,9 @@ use Constants qw($GENERATE_BUTTON $SHOPID $AUTO_GENERATE);
 use Carp qw(confess);
 use BSE::WebUtil qw(refresh_to_admin);
 use BSE::Util::HTML;
+use BSE::DummyArticle;
 
-our $VERSION = "1.012";
+our $VERSION = "1.013";
 
 # returns non-zero if the Regenerate button should work
 sub generate_button {
@@ -468,49 +469,7 @@ sub _write_text {
 sub _dummy_article {
   my ($data) = @_;
 
-  return bless $data, "BSE::Regen::DummyArticle";
-}
-
-package BSE::Regen::DummyArticle;
-use base 'BSE::TB::SiteCommon';
-
-sub images {
-  return;
-}
-
-sub files {
-  return;
-}
-
-{
-  use Articles;
-  for my $name (Article->columns) {
-    eval "sub $name { \$_[0]{$name} }";
-  }
-}
-
-sub restricted_method {
-  return 0;
-}
-
-sub section {
-  $_[0];
-}
-
-sub is_descendant_of {
-  0;
-}
-
-sub parent {
-  return;
-}
-
-sub is_dynamic {
-  1;
-}
-
-sub is_step_ancestor {
-  0;
+  return bless $data, "BSE::DummyArticle";
 }
 
 1;

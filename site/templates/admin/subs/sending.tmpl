@@ -26,19 +26,19 @@ result in incomplete, or duplicate transmissions.</p>
 
 <ul>
 <:iterator begin messages:>
-<:if Error:>
-<:if User:>
-<li><b><:message:> sending to <:user email:></b></li>
-<:or User:>
-<li><b><:message:></b></li>
-<:eif User:>
-<:or Error:>
-<:if User:>
-<li>Sending to: <:user email:></li>
-<:or User:>
-<li><:message:></li>
-<:eif User:>
-<:eif Error:>
+<:.if is_error:>
+  <:.if sub_user:>
+<li><b><:= sub_message:> sending to <:= sub_user.email:></b></li>
+  <:.else :>
+<li><b><:= sub_message:></b></li>
+  <:.end if:>
+<:.else:>
+  <:.if sub_user:>
+<li>Sending to: <:= sub_user.email:></li>
+  <:.else:>
+<li><:= sub_message:></li>
+  <:.end if:>
+<:.end if:>
 <:iterator end messages:>
 </ul>
 

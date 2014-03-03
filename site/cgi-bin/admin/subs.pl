@@ -4,15 +4,7 @@ BEGIN { $ENV{DISPLAY} = '192.168.32.50:0.0' }
 use strict;
 use FindBin;
 use lib "$FindBin::Bin/../modules";
-use BSE::DB;
-use BSE::Request;
-use BSE::Template;
 use Carp 'confess';
-use BSE::UI::AdminNewsletter;
+use BSE::UI;
 
-$SIG{__DIE__} = sub { confess $@ };
-
-my $req = BSE::Request->new;
-
-my $result = BSE::UI::AdminNewsletter->dispatch($req);
-$req->output_result($result);
+BSE::UI->run("BSE::UI::AdminNewsletter", silent_exit => 1);

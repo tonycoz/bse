@@ -8,7 +8,17 @@ use BSE::Util::HTML qw(:default popup_menu);
 use BSE::Util::Iterate;
 use base 'BSE::UI::AdminDispatch';
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
+
+=head1 NAME
+
+BSE::UI::AdminNewsletter - subscription/newsletter management
+
+=head1 TARGETS
+
+=over
+
+=cut
 
 my %actions =
   (
@@ -53,14 +63,52 @@ sub tag_list_recipient_count {
   $subs->[$$subindex]->recipient_count;
 }
 
+=item list
+X<targets, subscriptions, list>
+
+Display the list of subscriptions/newsletter lists.
+
+Tags, standard admin tags and:
+
+=over
+
+=item *
+
+C<iterator subscriptions ...>/C<< subscription I<key> >> - iterate
+over existing subscriptions.
+
+=item *
+
+C<message> - display any errors
+
+=back
+
+Standard admin variables and:
+
+=over
+
+=item *
+
+subscriptions - an array of existing subscriptions.
+
+=back
+
+
+Template: F<admin/subs/list>
+
+Access required: none
+
+=cut
+
 sub req_list {
   my ($class, $req, $message) = @_;
 
   my $q = $req->cgi;
   my $cfg = $req->cfg;
-  $message ||= $q->param('m') || '';
+  $message = $req->message($message);
   my @subs = sort { lc $a->{name} cmp $b->{name} } BSE::SubscriptionTypes->all;
   my $subindex;
+  $req->set_variable(subscriptions => \@subs);
   my %acts;
   %acts =
     (
@@ -222,6 +270,12 @@ sub sub_form {
   return $req->dyn_response($template, \%acts);
 }
 
+=item add
+
+Display a form for adding a new subscription.
+
+=cut
+
 sub req_add {
   my ($class, $req) = @_;
 
@@ -305,6 +359,12 @@ sub req_addsave {
     return sub_form($req, 'admin/subs/edit', undef, 1, \@errors);
   }
 }
+
+=item edit
+
+Display a form to edit an existing subscription.
+
+=cut
 
 sub req_edit {
   my ($class, $req) = @_;
@@ -427,9 +487,14 @@ sub req_html_preview {
   if ($template) {
     # build a fake article
     my $text = $sub->html_format($cfg, _dummy_user(), \%opts);
+    my $charset = $cfg->charset;
+    if ($cfg->utf8) {
+      require Encode;
+      $text = Encode::encode($charset, $text);
+    }
     return
       {
-       type => 'text/html',
+       type => BSE::Template->html_type($cfg),
        content => $text,
       };
   }
@@ -476,18 +541,23 @@ sub req_text_preview {
     $opts{$key} = ($q->param($key))[0];
   }
   my $text = $sub->text_format($cfg, _dummy_user(), \%opts);
+  my $charset = $cfg->charset;
+  if ($cfg->utf8) {
+    require Encode;
+    $text = Encode::encode($charset, $text);
+  }
   
   if ($ENV{HTTP_USER_AGENT} =~ /MSIE/) {
     return
       {
-       type => 'text/html',
+       type => BSE::Template->html_type($cfg),
        content => "<html><body><pre>".escape_html($text)."</pre></body></html>"
       };
   }
   else {
     return
       {
-       type => 'text/plain',
+       type => "text/plain; charset=$charset",
        content => $text,
       };
   }
@@ -677,10 +747,8 @@ sub req_send_test {
   keys %errors
     and return _send_errors($req, $sub, \%errors);
 
-  my $template = BSE::Template->get_source('admin/subs/sending', $cfg);
+  require BSE::Template;
 
-  my ($prefix, $permessage, $suffix) = 
-    split /<:\s*iterator\s+(?:begin|end)\s+messages\s*:>/, $template;
   my $acts_message;
   my $acts_user;
   my $is_error;
@@ -695,17 +763,24 @@ sub req_send_test {
      ifError => sub { $is_error },
      testing => 1,
     );
-  BSE::Template->show_replaced($prefix, $cfg, \%acts);
+  my ($permessage, $suffix) = $class->_split_page
+    ($req, 'admin/subs/sending', \%acts);
+
   $sub->send_test($cfg, \%opts,
 		  sub {
 		    my ($type, $user, $msg) = @_;
 		    $acts_message = defined($msg) ? $msg : '';
 		    $acts_user = $user;
 		    $is_error = $type eq 'error';
-		    print BSE::Template->replace($permessage, $cfg, \%acts);
+		    $req->set_variable(sub_user => $user || undef);
+		    $req->set_variable(sub_message => defined $msg ? $msg : '');
+		    $req->set_variable(is_error => $is_error);
+		    $req->set_variable(message_type => $type);
+		    BSE::Template->print_next_part(BSE::Template->replace($permessage, $cfg, \%acts, $req->{vars}));
 		  },
 		 \%recipient);
-  print BSE::Template->replace($suffix, $cfg, \%acts);
+  BSE::Template->print_next_part(BSE::Template->replace($suffix, $cfg, \%acts, $req->{vars}));
+
   return;
 }
 
@@ -737,6 +812,22 @@ sub _get_filtered_ids {
   \@ids;
 }
 
+sub _split_page {
+  my ($self, $req, $template, $acts) = @_;
+
+  require BSE::Template;
+  $req->set_variable(template => $template);
+  $req->_set_vars;
+  my $content = BSE::Template->get_page
+    ($template, $req->cfg, $acts, undef, undef, $req->{vars});
+  my ($prefix, $per_message, $suffix) =
+    split /<:\s*iterator\s+(?:begin|end)\s+messages\s*:>/, $content;
+
+  BSE::Template->print_first_part($prefix);
+
+  return ($per_message, $suffix);
+}
+
 sub req_send {
   my ($class, $req) = @_;
 
@@ -751,10 +842,6 @@ sub req_send {
 
   my $filtered_ids = _get_filtered_ids($req);
 
-  my $template = BSE::Template->get_source('admin/subs/sending', $cfg);
-
-  my ($prefix, $permessage, $suffix) = 
-    split /<:\s*iterator\s+(?:begin|end)\s+messages\s*:>/, $template;
   my $acts_message;
   my $acts_user;
   my $is_error;
@@ -769,16 +856,23 @@ sub req_send {
      ifError => sub { $is_error },
      testing => 0,
     );
-  BSE::Template->show_replaced($prefix, $cfg, \%acts);
+
+  my ($permessage, $suffix) = $class->_split_page
+    ($req, 'admin/subs/sending', \%acts);
+
   $sub->send($cfg, \%opts,
 	     sub {
 	       my ($type, $user, $msg) = @_;
 	       $acts_message = defined($msg) ? $msg : '';
 	       $acts_user = $user;
 	       $is_error = $type eq 'error';
-	       print BSE::Template->replace($permessage, $cfg, \%acts);
+	       $req->set_variable(sub_user => $user || undef);
+	       $req->set_variable(sub_message => defined $msg ? $msg : '');
+	       $req->set_variable(is_error => $is_error);
+	       $req->set_variable(message_type => $type);
+	       BSE::Template->print_next_part(BSE::Template->replace($permessage, $cfg, \%acts, $req->{vars}));
 	     }, $filtered_ids);
-  print BSE::Template->replace($suffix, $cfg, \%acts);
+  BSE::Template->print_next_part(BSE::Template->replace($suffix, $cfg, \%acts, $req->{vars}));
 
   return;
 }
@@ -814,3 +908,11 @@ sub req_delete {
 
   return _refresh_list($req, "Subscription deleted");
 }
+
+=back
+
+=head1 AUTHOR
+
+Tony Cook
+
+=cut

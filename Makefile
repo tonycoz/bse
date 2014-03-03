@@ -71,7 +71,7 @@ distdir: docs dbinfo version
 	$(PERL) site/util/make_versions.pl $(DISTBUILD)/$(BSEMODULES)
 	mkdir $(DISTBUILD)/site/htdocs/shop
 	find $(DISTBUILD) -type f | xargs chmod u+w
-	for i in `cat MANIFEST` ; do if [ -x $$i ] ; then chmod a+x $(DISTBUILD)/$$i ; fi ; done
+	for i in `cat MANIFEST | sed -e 's/\s.*//'` ; do if [ -x $$i ] ; then chmod a+x $(DISTBUILD)/$$i ; fi ; done
 
 clean:
 	$(NOOP)
