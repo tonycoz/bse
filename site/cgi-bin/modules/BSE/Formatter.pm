@@ -3,7 +3,7 @@ use strict;
 use BSE::Util::HTML;
 use Carp 'confess';
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 use base 'DevHelp::Formatter';
 
@@ -48,15 +48,8 @@ sub new {
   $self;
 }
 
-sub image_url {
-  my ($self, $im) = @_;
-
-  return $im->{src}
-    if $im->src;
-
-  require BSE::CfgInfo;
-
-  return BSE::CfgInfo::cfg_image_uri() . "/" . $im->{image};
+sub abs_image_urls {
+  1;
 }
 
 sub _image {
@@ -89,6 +82,7 @@ sub _image {
      class => "bse_image_inline",
      align => $align,
      extras => $extras,
+     abs_urls => $self->abs_image_urls,
      $url ? ( url => unescape_html($url) ) : (),
     );
 }

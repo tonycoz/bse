@@ -5,7 +5,7 @@ use Generate::Article;
 @ISA = qw(Generate::Article);
 use BSE::Util::HTML;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub set_user {
   my ($self, $user) = @_;
@@ -49,6 +49,10 @@ sub baseActs {
 }
 
 sub abs_urls {
+  1;
+}
+
+sub abs_image_urls {
   1;
 }
 

@@ -4,7 +4,7 @@ use base 'BSE::ImageHandler::Base';
 use Carp qw(confess);
 use BSE::Util::HTML;
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 sub format {
   my ($self, %opts) = @_;
@@ -16,8 +16,12 @@ sub format {
   my $align = delete $opts{align} || '';
   my $rest = delete $opts{extras} || '';
   my $url = delete $opts{url};
+  my $abs_urls = delete $opts{abs_urls};
 
   my $image_url = $im->image_url($cfg);
+  if ($abs_urls && $image_url !~ /^\w+:/) {
+    $image_url = $cfg->entryVar('site', 'url') . $image_url;
+  }
   my $html = qq!<img src="$image_url" width="$im->{width}"!
     . qq! height="$im->{height}" alt="! . escape_html($im->{alt})
       . qq!"!;
@@ -53,10 +57,14 @@ sub inline {
     or confess "Missing image parameter";
   my $align = delete $opts{align}
     or confess "Missing align parameter";
+  my $abs_urls = delete $opts{abs_urls};
 
   my $xhtml = $self->cfg->entry("basic", "xhtml", 1);
 
   my $image_url = $image->image_url($self->{cfg});
+  if ($abs_urls && $image_url !~ /^\w+:/) {
+    $image_url = $self->cfg->entryVar('site', 'url') . $image_url;
+  }
   my $html;
   if ($xhtml) {
     $html = qq!<img src="$image_url"!
@@ -78,7 +86,7 @@ sub inline {
 }
 
 sub _make_thumb_hash {
-  my ($self, $geo_id, $im, $static) = @_;
+  my ($self, $geo_id, $im, $static, $abs_urls) = @_;
 
   my $cfg = $self->cfg;
   my $debug = $cfg->entry('debug', 'thumbnails', 0);
@@ -143,6 +151,11 @@ sub _make_thumb_hash {
     $debug
       and print STDERR "  Defaulting to dynamic thumb url $im{image}\n";
   }
+
+  if ($abs_urls && $im{image} !~ /^\w+:/) {
+    $im{image} = $cfg->entryVar('site', 'url') . $im{image};
+  }
+
   $im{src} = $im{image};
 
   return \%im;
@@ -158,10 +171,11 @@ sub thumb {
     or confess "Missing image parameter";
   my $field = delete $opts{field} || '';
   my $static = delete $opts{static} || 0;
+  my $abs_urls = delete $opts{abs_urls} || 0;
   my $cfg = $self->cfg;
 
   my ($imwork, $error) = 
-    $self->_make_thumb_hash($geo_id, $im, $static);
+    $self->_make_thumb_hash($geo_id, $im, $static, $abs_urls);
 
   $imwork
     or return escape_html($error);
@@ -201,6 +215,7 @@ sub popimage {
     or confess "Missing image option";
   my $class = delete $opts{class};
   my $static = delete $opts{static} || 0;
+  my $abs_urls = delete $opts{abs_urls} || 0;
 
   my $cfg = $self->cfg;
 
@@ -224,13 +239,13 @@ sub popimage {
 
   my $msg;
   my $inline_im;
-  ($inline_im, $msg) = $self->_make_thumb_hash($inline_geo, $im, $static);
+  ($inline_im, $msg) = $self->_make_thumb_hash($inline_geo, $im, $static, $abs_urls);
   $inline_im
     or return $msg;
 
   my $outline_im;
   if ($outline_geo) {
-    ($outline_im, $msg) = $self->_make_thumb_hash($outline_geo, $im, $cfg, $static);
+    ($outline_im, $msg) = $self->_make_thumb_hash($outline_geo, $im, $cfg, $static, $abs_urls);
   }
   else {
     $outline_im = $im;
