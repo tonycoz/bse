@@ -5,7 +5,7 @@ use Squirrel::Row;
 use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 sub columns {
   return qw/id name title description frequency keyword archive 
@@ -214,7 +214,7 @@ sub _format_body {
   my $body = $article->{body};
   my @urls;
   my $url_index = 1;
-  while ($body =~ s#(doclink|link)\[([^\]\[]+)\]#_any_link($cfg, \@urls, $1, $2, \$url_index)#ie) {
+  while ($body =~ s#(?:pop)?(doclink|link)\[([^\]\[]+)\]#_any_link($cfg, \@urls, $1, $2, \$url_index)#ie) {
   }
 
   $gen->remove_block('Articles', [], \$body);
