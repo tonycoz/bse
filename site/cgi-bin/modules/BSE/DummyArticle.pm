@@ -1,8 +1,9 @@
 package BSE::DummyArticle;
+use strict;
 use base 'BSE::TB::SiteCommon';
 use Articles;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub images {
   return;
