@@ -398,4 +398,41 @@ parameters:
 
 <:.end define -:>
 
+<:.define word_wrap; text: @undef, prefix:"", noncontin: "", contin:"", escape1: "", escape2: "", width: 70 -:>
+<:# Word wrap "text" at width columns, following settings:
+width - word wrap width (default 70)
+prefix - prefix to add to all lines
+noncontin - prefix to additionally add to first line of each paragraph
+contin - prefix to additionally add to lines that have been wrapped
+escape1 - suffix to add to lines wrapped on a non-word
+escape2 - suffix to add to lines wrapped on a word boundary
+-:>
+<:.set re = "^.{1," _ width _ "}\\s+" -:>
+<:.set paras = text.split(/\n/) -:>
+<:.for para in paras -:>
+<:  .set work = para -:>
+<:  .set first = 1 -:>
+<:  .while work.length -:>
+<:    .if !first -:>
+<:      .set work = work.replace(/^\s+/, "") -:>
+<:    .end if -:>
+<:    .if work.length < 70 -:>
+<:      .set line = work -:>
+<:      .set work = "" -:>
+<:    .else -:>
+<:      .set m = work.match(re) -:>
+<:      .if m -:>
+<:        .set line = work.substring(0, m.length).replace(/\s+$/, "") _ escape2 -:>
+<:        .set work = work.substring(m.length) -:>
+<:      .else -:>
+<:        .set line = work.substring(0, width) _ escape1 -:>
+<:        .set work = work.substring(width) -:>
+<:      .end if -:>
+<:    .end if -:>
+<:= prefix _ (first ? noncontin : contin) _ line.replace(/\s+$/, "") |raw:>
+<:    .set first = 0 -:>
+<:  .end while -:>
+<:.end for -:>
+<:.end define -:>
+
 <:- include includes/custom/preload.tmpl optional -:>

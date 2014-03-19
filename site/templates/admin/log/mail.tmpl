@@ -12,9 +12,13 @@ Level: <:= entry.level_name :>
 When: <:= bse.date("%H:%M %d/%m/%Y", entry.when_at) :>
 
 Message:
-<:= entry.msg.replace(/\S{60,}\s/, "$1\n", 1) :>
+<:  .call "word_wrap", text: entry.msg, prefix: "  ", noncontin: ">", contin: " ", escape1: " \\" :>
+<:.if entry.dump.defined and entry.dump.length :>
+Dump:
+<:  .call "word_wrap", text: entry.dump, prefix: "  ", noncontin: ">", contin: " ", escape1: " \\" :>
+<:.end if :>
 
-<:.set work = cfg.entry("mail audit log", "subject_" _ entry.facility _ "-"
+<:-.set work = cfg.entry("mail audit log", "subject_" _ entry.facility _ "-"
     _ entry.component _ "-" _ entry.module _ "-" _ entry.function) -:>
 <:.if work -:>
   <:.if work =~ /\{\w+\}/ -:>
@@ -41,3 +45,4 @@ Message:
      <:% set_subject(work) -:>
   <:.end if -:>
 <:.end if:>
+
