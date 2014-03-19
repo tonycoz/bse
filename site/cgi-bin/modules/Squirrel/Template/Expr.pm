@@ -1,7 +1,7 @@
 package Squirrel::Template::Expr;
 use strict;
 
-our $VERSION = "1.013";
+our $VERSION = "1.014";
 
 package Squirrel::Template::Expr::Eval;
 use Scalar::Util ();
@@ -71,6 +71,10 @@ sub _process_div {
 
 sub _process_mod {
   return $_[0]->process($_[1][1]) % $_[0]->process($_[1][2]);
+}
+
+sub _process_undef {
+  return undef;
 }
 
 # string relops
@@ -572,7 +576,12 @@ sub _parse_primary {
     return [ const => $re ];
   }
   elsif ($t->[0] eq 'id') {
-    return [ var => $t->[2] ];
+    if ($t->[2] eq "undef") {
+      return [ "undef" ];
+    }
+    else {
+      return [ var => $t->[2] ];
+    }
   }
   elsif ($t->[0] eq 'op[') {
     my $list = [];
@@ -594,6 +603,9 @@ sub _parse_primary {
   }
   elsif ($t->[0] eq 're') {
     return [ re => $t->[2], $t->[3] ];
+  }
+  elsif ($t->[0] eq 'undef') {
+    return [ "undef" ];
   }
   else {
     die [ error => "Expected term but got $t->[0]" ];
@@ -697,6 +709,9 @@ sub get {
   }
   elsif ($self->[TEXT] =~ s/\A(\s*\'([^\']*)\'\s*)//) {
     push @$queue, [ str => $1, $2 ];
+  }
+  elsif ($self->[TEXT] =~ s/\A(\s*\@undef\bs*)//) {
+    push @$queue, [ undef => $1 ];
   }
   else {
     die [ error => "Unknown token '$self->[TEXT]'" ];
@@ -924,6 +939,10 @@ octal - C<0o144>
 =item *
 
 binary - C<0b1100100>
+
+=item *
+
+an undefined value - C<@undef>
 
 =back
 

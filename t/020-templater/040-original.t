@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 186;
+use Test::More tests => 187;
 use HTML::Entities;
 
 sub template_test($$$$;$$);
@@ -541,6 +541,7 @@ OUT
      [ '{ "a": 11, "b": 12, "c": 20 }["b"]', 12 ],
      [ '[ 1, 2, 3 ][1]', 2 ],
      [ 'testclass.foo', "[TestClass.foo]" ],
+     [ '@undef.defined', "" ],
 
      # WrapScalar
      [ '"foo".length', 3 ],
