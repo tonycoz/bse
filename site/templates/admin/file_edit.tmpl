@@ -93,59 +93,30 @@
             </td>
             <td class="help"><:help file hide_from_list:> <:error_img hide_from_list:></td>
           </tr>
-<:if Filemetas:>
-<tr>
-  <th colspan="3">File metadata</th>
-</tr>
-<:iterator begin filemetas:>
-<tr>
-  <th><:filemeta title:></th>
-  <td>
-<:if Filemeta ro:>
-<:switch:>
-<:case Match [filemeta type] "^(integer|string|real)$" |x:>
-<:filemeta_value [filemeta name] :> <:filemeta unit:>
-<:case Eq [filemeta type] "text":>
-<textarea name="meta_<:filemeta name:>" class="meta_text_ro"><:filemeta_value [filemeta name]:></textarea>
-<:case Eq [filemeta type] "enum":>
-<:filemeta_select_label:> <:filemeta unit:>
-<:case Eq [filemeta type] "image":>
-<:ifFilemeta_set [filemeta data_name]:><div class="file_display_trigger">Show
-<div class="file_display"><img src="<:filemeta_source [filemeta data_name]:>" width="<:filemeta_value [filemeta width_name]:>" height="<:filemeta_value [filemeta height_name]:>" /></div></div><:or:>(No image set)<:eif:>
-<:case default:>
-Unknown metadata type <:filemeta type:>
-<:endswitch:>
-<:or Filemeta:>
-<:switch:>
-<:case Match [filemeta type] "^(integer|string|real)$" |x:>
-<input type="text" name="meta_<:filemeta name:>" value="<:filemeta_value [filemeta name] :>" class="meta_<:filemeta type:>" /> <:filemeta unit:>
-<:case Eq [filemeta type] "text":>
-<textarea name="meta_<:filemeta name:>" class="meta_text"><:filemeta_value [filemeta name]:></textarea>
-<:case Eq [filemeta type] "enum":>
-<:filemeta_select:> <:filemeta unit:>
-<:case Eq [filemeta type] "image":>
-<input type="file" name="meta_<:filemeta name:>" />
-<:ifFilemeta_set [filemeta data_name]:><div class="file_display_trigger">Show
-<div class="file_display"><img src="<:filemeta_source [filemeta data_name]:>" width="<:filemeta_value [filemeta width_name]:>" height="<:filemeta_value [filemeta height_name]:>" /></div></div>
-<input type="checkbox" name="delete_meta_<:filemeta name:>" value="1" />&nbsp;Delete
-<:or:>(No image set)<:eif:>
-<:case default:>
-Unknown metadata type <:filemeta type:>
-<:endswitch:>
-<:if Match [filemeta type] "image":><:or Match:>
-<:ifFilemeta_set [filemeta name]:><input type="checkbox" name="delete_meta_<:filemeta name:>" value="1" />&nbsp;Delete<:or:><:eif:>
-<:eif Match:>
-<:eif Filemeta:>
-  </td>
-  <td class="help">
-<:if Filemeta help:>
-<div class="help_display_trigger"><img src="/images/admin/help.gif" alt="help" />
-<div class="help_display"><:filemeta help |z:></div></div>
-<:or Filemeta:><:eif Filemeta:>
-  </td>
-</tr>
-<:iterator end filemetas:>
-<:or Filemetas:><:eif Filemetas:>
+<tr><td colspan="3">
+<:.set metas = [ file.metafields ] :>
+<:.if metas.size :>
+<fieldset>
+  <legend>File metadata</legend>
+
+<:  .for m in metas :>
+<:#= bse.dumper(m.field) |raw :>
+<:#= bse.dumper(m) |raw :>
+<:    .set name = "meta_" _ m.name :>
+<:    .set mdata = file.meta_by_name(m.name) :>
+<:    .set def = mdata ? mdata.value : "" :>
+<:    .if m.type eq 'image' :>
+<:       .set def = file.meta_by_name(m.display_name).value :>
+<:    .end if :>
+<:    .set tmpobj = {} :>
+<:%   tmpobj.set(name, def) :>
+<:    .if m.ro :>
+<:      .call "inlinefieldro", name: name, field: m.field, object: tmpobj :>
+<:    .else :>
+<:      .call "inlinefield", name: name, field: m.field, delete: 1, object: tmpobj :>
+<:    .end if :>
+<:  .end for :>
+</td></tr>
           <tr> 
             <td colspan="3" align="right"> 
               <input type="submit" name="a_save_file" value="Save File" />

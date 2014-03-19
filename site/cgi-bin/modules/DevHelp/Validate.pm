@@ -6,7 +6,7 @@ use vars qw(@EXPORT_OK @ISA);
 @ISA = qw(Exporter);
 use Carp qw(confess);
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 my $re_real =
   qr/
@@ -158,6 +158,10 @@ my %built_ins =
    {
     nomatch => qr/[\x0D\x0A]/,
     error => '$n may only contain a single line',
+   },
+   real =>
+   {
+    real => 1,
    },
    time =>
    {

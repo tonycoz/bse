@@ -142,7 +142,7 @@ Page <:= pages.page :> of <:= pages.pagecount :>
   name - field name
   field - entry from fields
   object - source for defaults in edit mode
-:>
+-:>
 <:  .if object -:>
 <:     .set default = object.$name -:>
 <:  .elsif field.default -:>
@@ -188,7 +188,12 @@ Page <:= pages.page :> of <:= pages.pagecount :>
     groups: field.select.groups ? (field.select.groups.is_code ? (field.select.groups)() : field.select.groups ) : 0,
     grouplabel: (field.select.grouplabel or "label")
 -:>
-<:  .else -:>
+<:  .elsif field.htmltype eq 'file' -:>
+<:   .if default.length -:>
+<span class="filename"><:= default :></span>
+<:   .end if -:>
+<input id="<:= name :>" type="file" name="<:= name :>" />
+<:- .else -:>
 <input id="<:= name | html :>" type="text" name="<:= name | html :>" value="<:=  default | html :>" 
 <:-= field.maxlength ? ' maxlength="' _ field.maxlength _ '"' : '' |raw:>
 <:-= field.width ? ' size="' _ field.width _ '"' : '' | raw :> />
@@ -212,7 +217,7 @@ Page <:= pages.page :> of <:= pages.pagecount :>
   <:.end if -:>
 <:.end define -:>
 
-<:.define inlinefield -:>
+<:.define inlinefield; object: 0 -:>
 <:# parameters:
   name - the field name
   field - a field, as an entry in fields

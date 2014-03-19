@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 34;
+use Test::More tests => 37;
 use_ok("BSE::Cfg");
 use_ok("Squirrel::Template");
 use_ok("BSE::Template");
@@ -35,6 +35,9 @@ use_ok("BSE::ImageClean");
 use_ok("BSE::UI::AdminImageClean");
 use_ok("BSE::UI::Thumb");
 use_ok("BSE::UI::Interest");
+use_ok("BSE::Request::Base");
+use_ok("BSE::Request");
+use_ok("BSE::Request::Test");
 
 my $builder = Test::Builder->new;
 $builder->is_passing or $builder->BAIL_OUT;

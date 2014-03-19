@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test qw(make_ua base_url);
-use Test::More tests => 76;
+use Test::More tests => 90;
 use File::Spec;
 use File::Slurp;
 use Carp qw(confess);
@@ -166,6 +166,42 @@ SKIP: {
   my $stored = read_file($file->full_filename);
   is($stored, $mine, "check contents");
 
+  # add some metadata
+  my $name = "n" . time();
+  my $meta = $file->add_meta
+     (
+      name => $name,
+      value => "Test text",
+     );
+  ok($meta, "add meta data");
+  is($meta->name, $name, "check name");
+  is($meta->content_type, "text/plain", "check content type");
+  ok($meta->is_text, "it qualifies as text");
+  is($meta->value, "Test text", "check value");
+
+  my @names = $file->metanames;
+  ok(@names, "we got some meta names");
+  my ($found) = grep $_ eq $name, @names;
+  ok($found, "and found the meta name we added");
+
+  my @meta = $file->metadata;
+  ok(@meta, "we have some metadata");
+  my ($found_meta) = grep $_->name eq $name, @meta;
+  ok($found_meta, "and found the one we added");
+
+  my @tmeta = $file->text_metadata;
+  ok(@tmeta, "we have some text metadata");
+  my ($found_tmeta) = grep $_->name eq $name, @tmeta;
+  ok($found_tmeta, "and found the one we added");
+
+  my $named = $file->meta_by_name($name);
+  ok($named, "found added meta by name");
+
+  my @info = $file->metainfo;
+  ok(@info, "found metainfo");
+  my ($info) = grep $_->{name} eq $name, @info;
+  ok($info, "and found the info we added");
+
   my @files = $art->files;
   is (@files, 1, "should be one file");
   is($files[0]->id, $file->id, "should be what we added");
@@ -180,9 +216,9 @@ SKIP: {
     );
   ok($file2, "add a second file (named)");
   $art->uncache_files;
-  my $named = $art->file_by_name("test");
-  ok($named, "got the named file");
-  is($named->id, $file2->id, "and it's the file we added");
+  my $named_test = $art->file_by_name("test");
+  ok($named_test, "got the named file");
+  is($named_test->id, $file2->id, "and it's the file we added");
 }
 
 {

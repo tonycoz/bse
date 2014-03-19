@@ -4,7 +4,7 @@ use strict;
 use base qw(Squirrel::Row BSE::MetaOwnerBase);
 use Carp 'confess';
 
-our $VERSION = "1.011";
+our $VERSION = "1.012";
 
 sub columns {
   return qw/id articleId displayName filename sizeInBytes description 
@@ -215,47 +215,15 @@ sub apply_storage {
   }
 }
 
-=item metanames
-
-returns the names of each metadatum defined for the file.
-
-=cut
-
-sub metanames {
-  my ($self) = @_;
-
-  require BSE::TB::ArticleFileMetas;
-  return BSE::TB::ArticleFileMetas->getColumnBy
-    (
-     "name",
-     [ file_id => $self->id ],
-    );
-}
-
-=item metainfo
-
-Returns all but the value for metadata defined for the file.
-
-=cut
-
-sub metainfo {
-  my ($self) = @_;
-
-  require BSE::TB::ArticleFileMetas;
-  my @cols = grep $_ ne "value", BSE::TB::ArticleFileMeta->columns;
-  return BSE::TB::ArticleFileMetas->getColumnsBy
-    (
-     \@cols,
-     [ file_id => $self->id ],
-    );
-}
-
 sub metafields {
   my ($self, $cfg) = @_;
 
+  $cfg ||= BSE::Cfg->single;
+
   my %metanames = map { $_ => 1 } $self->metanames;
 
-  my @fields = grep $metanames{$_->name} || $_->cond($self), BSE::TB::ArticleFiles->all_metametadata($cfg);
+  require BSE::FileMetaMeta;
+  my @fields = grep $metanames{$_->name} || $_->cond($self), BSE::FileMetaMeta->all_metametadata($cfg);
 
   my $handler = $self->handler($cfg);
 
@@ -452,6 +420,21 @@ sub update {
 
 sub meta_owner_type {
   'bse_file';
+}
+
+sub meta_meta_cfg_section {
+  "global file metadata";
+}
+
+sub meta_meta_cfg_prefix {
+  "file metadata";
+}
+
+sub restricted_method {
+  my ($self, $name) = @_;
+
+  return $self->Squirrel::Row::restricted_method($name)
+    || $self->BSE::MetaOwnerBase::restricted_method($name);
 }
 
 1;
