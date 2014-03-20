@@ -16,7 +16,7 @@ use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 use constant ARTICLE_CUSTOM_FIELDS_CFG => "article custom fields";
 
-our $VERSION = "1.050";
+our $VERSION = "1.051";
 
 =head1 NAME
 
@@ -4635,6 +4635,7 @@ sub req_edit_file {
   my @metafields = $file->metafields($self->cfg);
 
   $req->set_variable(file => $file);
+  $req->set_variable(fields => { BSE::TB::ArticleFile->fields });
 
   my $it = BSE::Util::Iterate->new;
   my $current_meta;

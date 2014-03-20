@@ -137,18 +137,21 @@ Page <:= pages.page :> of <:= pages.pagecount :>
 <:.call "error_img_n", index:0 -:>
 <:.end define -:>
 
-<:.define input -:>
+<:.define input; options: {} -:>
 <:# parameters:
   name - field name
   field - entry from fields
   object - source for defaults in edit mode
 -:>
-<:  .if object -:>
-<:     .set default = object.$name -:>
-<:  .elsif field.default -:>
-<:     .set default = field.default -:>
-<:  .else -:>
-<:     .set default = "" -:>
+<:  .set default = options.default -:>
+<:  .if !default.defined -:>
+<:    .if object -:>
+<:       .set default = object.$name -:>
+<:    .elsif field.default -:>
+<:       .set default = field.default -:>
+<:    .else -:>
+<:       .set default = "" -:>
+<:    .end if -:>
 <:  .end if -:>
 <:  .if field.type and field.type eq "date" and default ne "" -:>
 <:    .set default = default.replace(/(\d+)\D+(\d+)\D+(\d+)/, "$3/$2/$1") -:>
@@ -159,7 +162,7 @@ Page <:= pages.page :> of <:= pages.pagecount :>
 <:     .set default = cgi.param(name) -:>
 <:  .end if -:>
 <:  .if field.htmltype eq "textarea" -:>
-<textarea id="<:= name | html :>" name="<:= name | html :>" rows="<:= field.height ? field.height : cfg.entry("forms", "textarea_rows", 10) :>" cols=<:= field.width ? field.width : cfg.entry("textarea_cols", 60) | html :>>
+<textarea id="<:= name | html :>" name="<:= name | html :>" rows="<:= field.height ? field.height : cfg.entry("forms", "textarea_rows", 10) :>" cols=<:= field.width ? field.width : cfg.entry("forms", "textarea_cols", 60) | html :>>
 <:-= default | html -:>
 </textarea>
 <:  .elsif field.htmltype eq "checkbox" -:>
@@ -200,15 +203,17 @@ Page <:= pages.page :> of <:= pages.pagecount :>
 <:  .end if -:>
 <:.end define -:>
 
-<:.define field -:>
+<:.define field; options: {} -:>
 <:# parameters:
   name - field name
   fields - hash of fields (may be set by page instead)
+  object - object containing defaults (can be set globally instead)
+  default - a default value not dependent on object (overrides object)
 :>
   <:.if fields.is_hash -:>
     <:.set f = fields[name] -:>
     <:.if f -:>
-      <:.call "inlinefield", field:f, name:name -:>
+      <:.call "inlinefield", field:f, name:name, options: options -:>
     <:.else -:>
 <p>Unknown field id '<b><:= name :></b>', available fields are '<:= fields.keys.join("', '") :>'</p>
     <:.end if -:>
@@ -217,7 +222,7 @@ Page <:= pages.page :> of <:= pages.pagecount :>
   <:.end if -:>
 <:.end define -:>
 
-<:.define inlinefield; object: 0 -:>
+<:.define inlinefield; options: {} -:>
 <:# parameters:
   name - the field name
   field - a field, as an entry in fields
@@ -227,12 +232,15 @@ Page <:= pages.page :> of <:= pages.pagecount :>
   <label for="<:= name | html :>"><:= field.nolabel ? "" : field.description | html :>:</label>
   <span>
     <:-.if field.readonly -:>
-<:-.call "display", name:name -:>
+<:-.call "display", name:name, options: options -:>
     <:.else -:>
-<:-.call "input", name:name -:><:.call "error_img", field:name :>
+<:-.call "input", name:name, options: options -:><:.call "error_img", field:name :>
     <:-.end if -:>
     <:-.if field.units -:>
       <:-= field.units | html -:>
+    <:-.end if -:>
+    <:-.if options.note -:>
+<br /><:= options.note | raw :>
     <:-.end if -:>
 </span>
 </div>

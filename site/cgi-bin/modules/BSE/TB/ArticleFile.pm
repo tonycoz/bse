@@ -4,7 +4,7 @@ use strict;
 use base qw(Squirrel::Row BSE::MetaOwnerBase);
 use Carp 'confess';
 
-our $VERSION = "1.012";
+our $VERSION = "1.013";
 
 sub columns {
   return qw/id articleId displayName filename sizeInBytes description 
@@ -34,6 +34,82 @@ sub defaults {
      hide_from_list => 0,
      category => '',
      storage => 'local',
+    );
+}
+
+sub fields {
+  my ($self, $cfg) = @_;
+
+  $cfg ||= BSE::Cfg->single;
+
+  return
+    (
+     file =>
+     {
+      htmltype => "file",
+      description => "File",
+     },
+     description =>
+     {
+      description => "Description",
+      rules => "dh_one_line",
+     },
+     name =>
+     {
+      description => "Identifier",
+      htmltype => "text",
+      width => 20,
+     },
+     contentType =>
+     {
+      description => "Content-Type",
+      htmltype => "text",
+      width => 20,
+     },
+     notes =>
+     {
+      description => "Notes",
+      htmltype => "textarea",
+     },
+     forSale =>
+     {
+      description => "Require payment",
+      htmltype => "checkbox",
+     },
+     download =>
+     {
+      description => "Treat as download",
+      htmltype => "checkbox",
+     },
+     requireUser =>
+     {
+      description => "Require login",
+      htmltype => "checkbox",
+     },
+     hide_from_list =>
+     {
+      description => "Hide from list",
+      htmltype => "checkbox",
+     },
+     storage =>
+     {
+      description => "Storage",
+      htmltype => "select",
+      select =>
+      {
+       id => "id",
+       label => "label",
+       values =>
+       [
+	{ id => "", label => "(Auto)" },
+	(
+	 map
+	 +{ id => $_->name, label => $_->description },
+	 BSE::TB::ArticleFiles->file_manager($cfg)->all_stores
+	),
+       ],
+      },
+     },
     );
 }
 
