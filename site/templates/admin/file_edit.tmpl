@@ -50,12 +50,12 @@
 <:    .if m.type eq 'image' :>
 <:       .set def = file.meta_by_name(m.display_name).value :>
 <:    .end if :>
-<:    .set tmpobj = {} :>
-<:%   tmpobj.set(name, def) :>
 <:    .if m.ro :>
-<:      .call "inlinefieldro", name: name, field: m.field, object: tmpobj :>
+<:      .call "inlinefieldro", name: name, field: m.field,
+	        options: { default: def } :>
 <:    .else :>
-<:      .call "inlinefield", name: name, field: m.field, delete: 1, object: tmpobj :>
+<:      .call "inlinefield", name: name, field: m.field, 
+                options: { delete: 1, default: def } :>
 <:    .end if :>
 <:  .end for :>
 </fieldset>
