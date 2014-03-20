@@ -3,7 +3,7 @@ use strict;
 use Carp qw(confess);
 use Image::Size;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 =head1 NAME
 
@@ -120,6 +120,14 @@ How to display this field.  May be ignored depending on C<type>.
 
 sub htmltype { $_[0]{htmltype} }
 
+=item fieldtype
+
+How to parse this field.  May be ignored depending on type.
+
+=cut
+
+sub fieldtype { $_[0]{fieldtype} }
+
 =item width
 
 Display width.  May be ignored depending on C<type>.
@@ -186,13 +194,19 @@ sub field {
 
   my %field =
     (
-     %{$field_defs{$self->type}},
      description => scalar $self->title,
      units => scalar $self->unit,
      rules => scalar $self->rules,
-     type => scalar $self->type,
+     rawtype => scalar $self->type,
      htmltype => scalar $self->htmltype,
+     type => scalar $self->fieldtype,
+     width => scalar $self->width,
+     height => scalar $self->height,
     );
+  my $defs = $field_defs{$self->type};
+  for my $key (keys %$defs) {
+    defined $field{$key} or $field{$key} = $defs->{$key};
+  }
   if ($self->type =~ /^(?:multi)?enum$/) {
     my $values = [ $self->values ];
     my $labels = [ $self->labels ];
@@ -206,8 +220,14 @@ sub field {
        values => \@values,
       };
   }
+  my %fields = ( $self->name => \%field );
 
-  return \%field;
+  require BSE::Validate;
+  my $configured = 
+    BSE::Validate::bse_configure_fields({ $self->name => \%fields }, BSE::Cfg->single,
+					$self->validation_section);
+
+  return $fields{$self->name};
 }
 
 =item name
@@ -344,10 +364,11 @@ sub new {
      type => "string",
      unit => '',
      help => '',
-     width => 60,
-     height => 40,
+     fieldtype => "",
      @_
     );
+
+  
 
   $opts{cfg} && $opts{cfg}->can("entry")
     or confess "Missing or invalid cfg parameter";
@@ -407,7 +428,7 @@ sub new {
 }
 
 sub keys {
-  qw/title help rules ro values labels type data_name width_name height_name cond unit htmltype width height/;
+  qw/title help rules ro values labels type data_name width_name height_name cond unit htmltype width height fieldtype/;
 }
 
 sub retrieve {
