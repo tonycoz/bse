@@ -41,23 +41,25 @@
 <fieldset>
   <legend>File metadata</legend>
 
-<:  .for m in metas :>
-<:#= bse.dumper(m.field) |raw :>
+<:  .for m in metas -:>
+<:= bse.dumper(m.field) |raw :>
 <:#= bse.dumper(m) |raw :>
-<:    .set name = "meta_" _ m.name :>
-<:    .set mdata = file.meta_by_name(m.name) :>
-<:    .set def = mdata ? mdata.value : "" :>
-<:    .if m.type eq 'image' :>
-<:       .set def = file.meta_by_name(m.display_name).value :>
-<:    .end if :>
-<:    .if m.ro :>
+<:    .set name = "meta_" _ m.name -:>
+<:    .set mdata = file.meta_by_name(m.name) -:>
+<:    .if m.type eq 'image' -:>
+<:      .set def = file.meta_by_name(m.display_name) -:>
+<:      .set def = def ? def.value_text : "" -:>
+<:    .else -:>
+<:      .set def = mdata ? mdata.value_text : "" -:>
+<:    .end if -:>
+<:    .if m.ro -:>
 <:      .call "inlinefieldro", name: name, field: m.field,
-	        options: { default: def } :>
-<:    .else :>
+	        options: { default: def } -:>
+<:    .else -:>
 <:      .call "inlinefield", name: name, field: m.field, 
-                options: { delete: 1, default: def } :>
+                options: { delete: 1, default: def } -:>
 <:    .end if :>
-<:  .end for :>
+<:  .end for -:>
 </fieldset>
   <p class="buttons">
               <input type="submit" name="a_save_file" value="Save File" />

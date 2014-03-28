@@ -4,7 +4,9 @@ use strict;
 use base qw(Squirrel::Row BSE::MetaOwnerBase);
 use Carp 'confess';
 
-our $VERSION = "1.013";
+our $VERSION = "1.014";
+
+use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
 sub columns {
   return qw/id articleId displayName filename sizeInBytes description 
@@ -48,17 +50,20 @@ sub fields {
      {
       htmltype => "file",
       description => "File",
+      maxlength => MAX_FILE_DISPLAYNAME_LENGTH,
      },
      description =>
      {
       description => "Description",
       rules => "dh_one_line",
+      maxlength => 255,
      },
      name =>
      {
       description => "Identifier",
       htmltype => "text",
       width => 20,
+      maxlength => 80,
      },
      contentType =>
      {
@@ -109,6 +114,11 @@ sub fields {
 	),
        ],
       },
+     },
+     category =>
+     {
+      description => "Category",
+      maxlength => 20,
      },
     );
 }

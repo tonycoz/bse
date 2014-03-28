@@ -2,8 +2,9 @@ package BSE::MetaMeta;
 use strict;
 use Carp qw(confess);
 use Image::Size;
+use Fcntl ':seek';
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 =head1 NAME
 
@@ -35,6 +36,7 @@ my %field_defs =
   (
    image =>
    {
+    type => "image",
     htmltype => "file",
    },
    string =>
@@ -196,7 +198,7 @@ sub field {
     (
      description => scalar $self->title,
      units => scalar $self->unit,
-     rules => scalar $self->rules,
+     rules => [ $self->rules ],
      rawtype => scalar $self->type,
      htmltype => scalar $self->htmltype,
      type => scalar $self->fieldtype,
@@ -298,7 +300,7 @@ sub metanames {
   my ($self) = @_;
 
   if ($self->type eq 'image') {
-    return ( $self->data_name, $self->width_name, $self->height_name );
+    return ( $self->data_name, $self->width_name, $self->height_name, $self->display_name );
   }
   else {
     return $self->name;
@@ -414,6 +416,7 @@ sub new {
   $opts{htmltype} ||= $field_defs{$opts{type}}{htmltype};
 
   ref $opts{rules} or $opts{rules} = [ split /[,;]/, $opts{rules} ];
+  unshift @{$opts{rules}}, $rule_map{$opts{type}};
 
   if ($opts{cond}) {
     my $code = $opts{cond};
@@ -432,8 +435,9 @@ sub keys {
 }
 
 sub retrieve {
-  my ($class, $req, $owner, $errors) = @_;
+  my ($class, $req, $owner, $errors, %opts) = @_;
 
+  my $api = $opts{api};
   my @meta;
   my @meta_delete;
   my $cgi = $req->cgi;
@@ -450,54 +454,60 @@ sub retrieve {
     }
     else {
       my $new;
-      if ($meta->is_text) {
-	my ($value) = $cgi->param($cgi_name);
-	if (defined $value && 
-	    ($value =~ /\S/ || $current_meta{$meta->name})) {
-	  my $error;
-	  if ($meta->validate(value => $value, error => \$error)) {
+      my %fields =
+	(
+	 $cgi_name => $meta->field,
+	);
+      if ($req->validate(fields => \%fields,
+			 rules => \%meta_rules,
+			 errors => $errors)) {
+	my $values = $req->cgi_fields
+	  (
+	   fields => \%fields,
+	   api => $api,
+	  );
+	my $value = $values->{$cgi_name};
+	if ($meta->is_text) {
+	  if (defined $value && 
+	      ($value =~ /\S/ || $current_meta{$meta->name})) {
+	    utf8::encode($value);
 	    push @meta,
 	      {
 	       name => $name,
 	       value => $value,
 	      };
 	  }
-	  else {
-	    $errors->{$cgi_name} = $error;
-	  }
 	}
-      }
-      else {
-	my $im = $cgi->param($cgi_name);
-	my $up = $cgi->upload($cgi_name);
-	if (defined $im && $up) {
-	  my $data = do { local $/; <$up> };
-	  my ($width, $height, $type) = imgsize(\$data);
+	else {
+	  if ($value) {
+	    my $up = $value->{fh};
+	    binmode $up;
+	    seek $up, 0, SEEK_SET;
+	    my $data = do { local $/; <$up> };
+	    my ($width, $height, $type) = imgsize(\$data);
 
-	  if ($width && $height) {
-	    push @meta,
-	      (
-	       {
-		name => $meta->data_name,
-		value => $data,
-		content_type => "image/\L$type",
-	       },
-	       {
-		name => $meta->width_name,
-		value => $width,
-	       },
-	       {
-		name => $meta->height_name,
-		value => $height,
-	       },
-	       {
-		name => $meta->display_name,
-		value => "" . $im,
-	       },
-	      );
-	  }
-	  else {
-	    $errors->{$cgi_name} = $type;
+	    if ($width && $height) {
+	      push @meta,
+		(
+		 {
+		  name => $meta->data_name,
+		  value => $data,
+		  content_type => "image/\L$type",
+		 },
+		 {
+		  name => $meta->width_name,
+		  value => $width,
+		 },
+		 {
+		  name => $meta->height_name,
+		  value => $height,
+		 },
+		 {
+		  name => $meta->display_name,
+		  value => "" . $value->{filename},
+		 },
+		);
+	    }
 	  }
 	}
       }
@@ -510,8 +520,8 @@ sub retrieve {
 sub save {
   my ($class, $owner, $meta) = @_;
 
-  for my $meta_delete (@{$meta->{meta}}, map $_->{name}, @{$meta->{delete}}) {
-    $owner->delete_meta_by_name($meta_delete->{name});
+  for my $meta_delete (@{$meta->{delete}}, map $_->{name}, @{$meta->{meta}}) {
+    $owner->delete_meta_by_name($meta_delete);
   }
   for my $meta (@{$meta->{meta}}) {
     $owner->add_meta(%$meta, appdata => 1);

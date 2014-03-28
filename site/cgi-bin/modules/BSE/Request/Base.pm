@@ -5,7 +5,7 @@ use BSE::Cfg;
 use BSE::Util::HTML;
 use Carp qw(cluck confess);
 
-our $VERSION = "1.030";
+our $VERSION = "1.031";
 
 =head1 NAME
 
@@ -1780,7 +1780,14 @@ sub cgi_fields {
     $field->{readonly}
       and next FIELD;
     my $value;
-    if ($field->{htmltype} eq "checkbox") {
+    if ($field->{htmltype} eq "file") {
+      my $fh = $cgi->upload($name);
+      my $filename = $cgi->param($name);
+      if ($fh) {
+	$value = { fh => $fh, filename => "".$filename };
+      }
+    }
+    elsif ($field->{htmltype} eq "checkbox") {
       if ($field->{type} eq "int") {
 	$value = $cgi->param($name) ? 1 : 0;
       }

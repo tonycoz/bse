@@ -226,10 +226,14 @@ Page <:= pages.page :> of <:= pages.pagecount :>
 <:# parameters:
   name - the field name
   field - a field, as an entry in fields
+  options - various options, including:
+     note - display this text as a note below the field
+     delete - add a delete checkbox
+     default - a custom default value, overrides object
 -:>
   <:.if field.is_hash -:>
 <div>
-  <label for="<:= name | html :>"><:= field.nolabel ? "" : field.description | html :>:</label>
+  <label for="<:= name :>"><:= field.nolabel ? "" : field.description | html :>:</label>
   <span>
     <:-.if field.readonly -:>
 <:-.call "display", name:name, options: options -:>
@@ -241,6 +245,9 @@ Page <:= pages.page :> of <:= pages.pagecount :>
     <:-.end if -:>
     <:-.if options.note -:>
 <br /><:= options.note | raw :>
+    <:-.end if -:>
+    <:-.if options["delete"] -:>
+<br /><input type="checkbox" name="delete_<:= name :>" value="1" id="delete_<:= name :>"><label for="delete_<:= name :>">Delete</label>
     <:-.end if -:>
 </span>
 </div>

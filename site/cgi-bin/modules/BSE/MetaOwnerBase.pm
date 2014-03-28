@@ -2,7 +2,7 @@ package BSE::MetaOwnerBase;
 use strict;
 use Carp 'confess';
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 =head1 NAME
 
@@ -239,6 +239,12 @@ Restricted.
 
 sub add_meta {
   my ($self, %opts) = @_;
+
+  my $value_text = delete $opts{value_text};
+  if ($value_text) {
+    utf8::encode($value_text);
+    $opts{value} = $value_text;
+  }
 
   require BSE::TB::Metadata;
   return BSE::TB::Metadata->make
