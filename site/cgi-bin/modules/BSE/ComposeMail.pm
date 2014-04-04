@@ -6,7 +6,7 @@ use Carp 'confess';
 use Digest::MD5 qw(md5_hex);
 use BSE::Variables;
 
-our $VERSION = "1.009";
+our $VERSION = "1.010";
 
 =head1 NAME
 
@@ -333,6 +333,8 @@ sub _build_mime_lite {
   $text_content .= "\n" unless $text_content =~ /\n$/;
   $html_content .= "\n" unless $html_content =~ /\n$/;
 
+  my $charset = $self->{cfg}->charset;
+
   my $msg = MIME::Lite->new
     (
      From => $self->{from},
@@ -342,7 +344,7 @@ sub _build_mime_lite {
     );
   my $text_part = $msg->attach
     (
-     Type => 'text/plain',
+     Type => "text/plain; charset=$charset",
      Data => [ $text_content ],
      $text_content =~ /.{79}/ || $text_content =~ /[^ -~\x0d\x0a]/
      ? ( Encoding => 'quoted-printable' ) : (),
@@ -350,7 +352,7 @@ sub _build_mime_lite {
   my $html_part = $msg->attach(Type => 'multipart/related');
   $html_part->attach
     (
-     Type => 'text/html',
+     Type => BSE::Template->html_type($self->{cfg}),
      Data => $html_content,
      Encoding => 'quoted-printable',
     );
@@ -444,6 +446,9 @@ sub done {
   my @headers;
   my $content = BSE::Template->
     get_page($self->{template}, $self->{cfg}, \%acts, undef, undef, $self->{vars});
+
+  $content = BSE::Template->encode_content($content, $self->{cfg});
+
   if (!$self->{allow_html} || $self->{encrypt} || 
       !BSE::Template->find_source($self->{html_template}, $self->{cfg})) {
     my $text_type = 'text/plain';
@@ -496,6 +501,8 @@ DUMP
 	    );
       }
     }
+
+    $html_content = BSE::Template->encode_content($html_content, $self->{cfg});
 
     $message = $self->_build_mime_lite($content, $html_content, \@headers);
   }
