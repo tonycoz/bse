@@ -3,7 +3,7 @@ use strict;
 use BSE::Util::HTML;
 use BSE::Util::Tags qw(tag_hash);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 use constant MAXWIDTH => 10000;
 use constant MAXHEIGHT => 10000;
@@ -31,7 +31,7 @@ sub _save_images {
   my $image_dir = $cfg->entryVar('paths', 'siteuser_images');
 
   require DevHelp::FileUpload;
-  require Image::Size;
+  require BSE::ImageSize;
 
   my @new_files;
 
@@ -63,7 +63,7 @@ sub _save_images {
       push @new_files, $work_fullname;
 
       # image parameter validation
-      my ($width, $height, $type) = Image::Size::imgsize($work_fullname);
+      my ($width, $height, $type) = BSE::ImageSize::imgsize($work_fullname);
       unless (defined $width) {
 	$errors->{$file_param} = "Error determining image size: $type";
 	unlink $work_fullname;

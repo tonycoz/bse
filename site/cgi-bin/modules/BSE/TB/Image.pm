@@ -8,7 +8,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::ThumbCommon BSE::TB::TagOwner/;
 use Carp qw(confess);
 
-our $VERSION = "1.008";
+our $VERSION = "1.009";
 
 =head1 NAME
 
@@ -77,8 +77,8 @@ C</image_url()>.
 
 =item ftype
 
-the type of image, either C<img> for normal images, or C<flash> for
-flash files.
+the type of image, either C<img> for normal images, C<svg> for SVG
+images or C<flash> for flash files.
 
 =cut
 
@@ -350,8 +350,8 @@ sub update {
 	  or die "$msg\n";
 
       my $full_filename = "$image_dir/$image_name";
-      require Image::Size;
-      my ($width, $height, $type) = Image::Size::imgsize($full_filename);
+      require BSE::ImageSize;
+      my ($width, $height, $type) = BSE::ImageSize::imgsize($full_filename);
       if ($width) {
 	$delete_file = $image->image;
 	$image->set_image($image_name);

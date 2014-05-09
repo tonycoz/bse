@@ -111,6 +111,8 @@ site/cgi-bin/modules/BSE/ImageClean.pm
 site/cgi-bin/modules/BSE/ImageHandler/Base.pm
 site/cgi-bin/modules/BSE/ImageHandler/Flash.pm
 site/cgi-bin/modules/BSE/ImageHandler/Img.pm
+site/cgi-bin/modules/BSE/ImageHandler/Svg.pm
+site/cgi-bin/modules/BSE/ImageSize.pm
 site/cgi-bin/modules/BSE/Importer.pm
 site/cgi-bin/modules/BSE/Importer/Source/Base.pm
 site/cgi-bin/modules/BSE/Importer/Source/CSV.pm

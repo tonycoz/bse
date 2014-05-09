@@ -6,7 +6,7 @@ use vars qw(@ISA $VERSION);
 @ISA = qw(Squirrel::Table BSE::TB::TagOwners);
 use BSE::TB::Image;
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 sub rowClass {
   return 'BSE::TB::Image';
@@ -49,6 +49,9 @@ sub get_ftype {
 
   if ($type eq 'CWS' || $type eq 'SWF') {
     return "flash";
+  }
+  elsif ($type eq 'SVG') {
+    return "svg";
   }
 
   return "img";

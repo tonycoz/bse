@@ -16,7 +16,7 @@ use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 use constant ARTICLE_CUSTOM_FIELDS_CFG => "article custom fields";
 
-our $VERSION = "1.045";
+our $VERSION = "1.046";
 
 =head1 NAME
 
@@ -2492,12 +2492,13 @@ sub save_thumbnail {
     close OUTPUT
       or die "Could not close image output file: $!";
 
-    use Image::Size;
+    require BSE::ImageSize;
 
     if ($original && $original->{thumbImage}) {
       #unlink("$imagedir/$original->{thumbImage}");
     }
-    @$newdata{qw/thumbWidth thumbHeight/} = imgsize("$imagedir/$filename");
+    @$newdata{qw/thumbWidth thumbHeight/} =
+      BSE::ImageSize::imgsize("$imagedir/$filename");
     $newdata->{thumbImage} = $filename;
   }
 }
@@ -3353,9 +3354,9 @@ sub _validate_image {
   $imagename =~ /([\w.-]+)$/ and $basename = $1;
 
   # for OSs with special text line endings
-  use Image::Size;
+  require BSE::ImageSize;
 
-  my($width,$height, $type) = imgsize($fh);
+  my ($width,$height, $type) = BSE::ImageSize::imgsize($fh);
 
   unless (defined $width) {
     $$error = "Unknown image file type";
@@ -3903,7 +3904,6 @@ sub req_save_image {
 	  }
 
 	  my $full_filename = "$image_dir/$image_name";
-	  require Image::Size;
 	  $delete_file = $image->{image};
 	  $image->{image} = $image_name;
 	  $image->{width} = $width;
@@ -4706,6 +4706,7 @@ sub req_save_file {
   my $notes = $cgi->param("notes");
   defined $notes and $file->{notes} = $notes;
   my $name = $cgi->param("name");
+  require BSE::ImageSize;
   if (defined $name) {
     $file->{name} = $name;
     if (length $name) {
@@ -4757,7 +4758,8 @@ sub req_save_file {
 	my $up = $cgi->upload($cgi_name);
 	if (defined $im && $up) {
 	  my $data = do { local $/; <$up> };
-	  my ($width, $height, $type) = imgsize(\$data);
+	  my ($width, $height, $type) =
+	    BSE::ImageSize::imgsize(\$data);
 
 	  if ($width && $height) {
 	    push @meta,
