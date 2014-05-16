@@ -438,12 +438,10 @@ sub format {
       $part =~ s!(</(?:table|ol|ul|center|h[1-6])>)</p>!$1!g;
       # attempts to convert class[name|paragraph] into <p class="name">...
       # tried to use a negative lookahead but it wouldn't work
-      $part =~ s#(<p><span class="([^"<>]+)">(.*?)</span></p>)#
-        my ($one, $two, $three)= ($1, $2, $3); 
-        $3 =~ /<span/ ? $one : qq!<p class="$two">$three</p>!#ge;
-      $part =~ s#(<p><span style="([^"<>]+)">(.*?)</span></p>)#
-        my ($one, $two, $three)= ($1, $2, $3); 
-        $3 =~ /<span/ ? $one : qq!<p style="$two">$three</p>!#ge;
+      $part =~ s#<(p\b[^>]*)><span\ class="([^"<>]+)">(.*?)</span></p>
+		#<$1 class="$2">$3</p>#xg;
+      $part =~ s#<(p\b[^>]*)><span\ style="([^"<>]+)">(.*?)</span></p>
+		#<$1 style="$2">$3</p>#xg;
       if (my $p_class = $self->tag_class('p')) {
 	$part =~ s!(<p(?: style="[^"<>]+")?)>!$1 class="$p_class">!g;
       }

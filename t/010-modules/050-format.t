@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 151;
+use Test::More tests => 153;
 
 sub format_test($$$;$);
 sub noformat_test($$$;$);
@@ -633,6 +633,10 @@ OUT
 <p class="xxx">yy</p>
 <p class="xxx">zz</p>
 EOS
+  format_test "class[xxx|class[yyy|text]]",
+    '<p class="xxx"><span class="yyy">text</span></p>', "more class";
+  format_test "style[font-size: 18px|class[yyy|text]]",
+    '<p style="font-size: 18px"><span class="yyy">text</span></p>', "more class";
   format_test 'div[someclass|h1[|foo]barh2[|quux]]', <<EOS, 'divblock', 'out';
 <div class="someclass">
 <h1>foo</h1>
