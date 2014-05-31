@@ -856,6 +856,12 @@ For example you can do:
   [search highlight]
   body_prefix=<span class="searchfound">
   body_suffix=</span>
+  
+The default prefix and suffix can also be redefined:
+
+  [search highlight]
+  prefix=<mark>
+  suffix=</mark>
 
 =head2 [shop]
 

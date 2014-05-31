@@ -313,7 +313,7 @@ Conditional tag, true if the current article is being embedded.
 
 =cut
 
-our $VERSION = "1.020";
+our $VERSION = "1.021";
 
 my $excerptSize = 300;
 
@@ -1477,9 +1477,9 @@ sub excerpt {
   }
 
   my $highlight_prefix = 
-    $cfg->entry('search highlight', "${type}_prefix", "<b>");
+    $cfg->entry('search highlight', "${type}_prefix", $cfg->entry('search highlight', "prefix", "<b>"));
   my $highlight_suffix =
-    $cfg->entry('search highlight', "${type}_suffix", "</b>");
+    $cfg->entry('search highlight', "${type}_suffix", $cfg->entry('search highlight', "suffix", "</b>"));
   my $termSize = $excerptSize / @found;
   my $result = '';
   for my $term (@found) {

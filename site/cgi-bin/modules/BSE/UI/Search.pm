@@ -11,7 +11,7 @@ use BSE::Util::HTML qw':default popup_menu';
 use BSE::Util::Tags qw(tag_article);
 use BSE::Request;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 my %actions =
   (
@@ -126,9 +126,9 @@ sub req_search {
   for my $type (qw(keyword author pageTitle file_displayName 
                  file_description file_notes summary description product_code)) {
     $highlight_prefix{$type} = 
-      $cfg->entry('search highlight', "${type}_prefix", "<b>");
+      $cfg->entry('search highlight', "${type}_prefix", $cfg->entry('search highlight', "prefix", "<b>"));
     $highlight_suffix{$type} = 
-      $cfg->entry('search highlight', "${type}_suffix", "</b>");
+      $cfg->entry('search highlight', "${type}_suffix", $cfg->entry('search highlight', "suffix", "</b>"));
   }
   
   my $page_num_iter = 0;
@@ -301,8 +301,8 @@ sub tag_highlight_result {
 
   $text = escape_html($text);
 
-  my $prefix = $cfg->entry('search highlight', "${arg}_prefix", "<b>");
-  my $suffix = $cfg->entry('search highlight', "${arg}_suffix", "</b>");
+  my $prefix = $cfg->entry('search highlight', "${arg}_prefix", $cfg->entry('search highlight', "prefix", "<b>"));
+  my $suffix = $cfg->entry('search highlight', "${arg}_suffix", $cfg->entry('search highlight', "suffix", "</b>"));
 
   $text =~ s/$words_re/$prefix$1$suffix/g;
 
