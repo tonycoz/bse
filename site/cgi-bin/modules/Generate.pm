@@ -313,7 +313,7 @@ Conditional tag, true if the current article is being embedded.
 
 =cut
 
-our $VERSION = "1.021";
+our $VERSION = "1.022";
 
 my $excerptSize = 300;
 
@@ -1375,21 +1375,28 @@ sub baseActs {
     );
 }
 
+sub _highlight_partial {
+  my ($self) = @_;
+
+  $self->{cfg}->entryBool('search', 'highlight_partial', 1);
+}
+
 sub find_terms {
-  my ($body, $case_sensitive, $terms) = @_;
-  
+  my ($self, $body, $case_sensitive, $terms) = @_;
+
+  my $eow = $self->_highlight_partial ? "" : qr/\b/;
   # locate the terms
   my @found;
   if ($case_sensitive) {
     for my $term (@$terms) {
-      if ($$body =~ /^(.*?)\Q$term/s) {
+      if ($$body =~ /^(.*?)\b\Q$term\E$eow/s) {
 	push(@found, [ length($1), $term ]);
       }
     }
   }
   else {
     for my $term (@$terms) {
-      if ($$body =~ /^(.*?)\Q$term/is) {
+      if ($$body =~ /^(.*?)\b\Q$term\E$eow/is) {
 	push(@found, [ length($1), $term ]);
       }
     }
@@ -1428,7 +1435,7 @@ sub excerpt {
 
   $type ||= 'body';
 
-  my @found = find_terms(\$body, $case_sensitive, $terms);
+  my @found = $self->find_terms(\$body, $case_sensitive, $terms);
 
   my @reterms = @$terms;
   for (@reterms) {
@@ -1441,7 +1448,7 @@ sub excerpt {
   my $re_str = join("|", reverse sort @reterms);
   my $re;
   my $cfg = $self->{cfg};
-  if ($cfg->entryBool('search', 'highlight_partial', 1)) {
+  if ($self->_highlight_partial) {
     $re = $case_sensitive ? qr/\b($re_str)/ : qr/\b($re_str)/i;
   }
   else {
