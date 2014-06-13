@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test qw(make_ua base_url);
-use Test::More tests => 68;
+use Test::More tests => 76;
 use File::Spec;
 use File::Slurp;
 use Carp qw(confess);
@@ -210,6 +210,39 @@ SKIP: {
       );
     ok($im, "image failed to add");
     like($im->image, qr/\.jpeg$/, "check proper extension");
+  }
+}
+
+{ # testing the indexing flags
+  my $index = bse_make_article(cfg => $cfg,
+			       title => "index test child",
+			       parentid => $art->id);
+  ok($index, "make article for should_index tests");
+  ok($index->should_index, "default should be indexed");
+  $index->set_listed(0);
+  $index->uncache;
+  ok(!$index->should_index, "not indexed if not listed");
+  $index->set_flags("I");
+  $index->uncache;
+  ok($index->should_index, "indexed if I flag set");
+  $index->set_listed(1);
+  $index->set_flags("N");
+  $index->uncache;
+  ok(!$index->should_index, "not indexed if N flag set");
+  $index->set_flags("C");
+  $index->uncache;
+  ok(!$index->should_index, "not indexed if C flag set");
+  $index->set_flags("");
+  $art->set_flags("C");
+  $art->save;
+  $index->uncache;
+  ok(!$index->should_index, "not indexed if parent's C flag set");
+
+  ok($index->remove($cfg), "remove index test");
+  undef $index;
+
+  END {
+    $index->remove($cfg) if $index;
   }
 }
 

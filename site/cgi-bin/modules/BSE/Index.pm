@@ -4,7 +4,7 @@ use Time::HiRes qw(time);
 use Constants qw(@SEARCH_EXCLUDE @SEARCH_INCLUDE);
 use Articles;
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 my %default_scores =
   (
@@ -98,14 +98,8 @@ sub make_index {
     # find the section
     my $article = Articles->getByPkey($id);
     next unless $article;
-    next unless ($article->{listed} || $article->{flags} =~ /I/);
-    next unless $article->is_linked;
-    next if $article->{flags} =~ /[CN]/;
-    my $section = $article;
-    while ($section->{parentid} >= 1) {
-      $section = Articles->getByPkey($section->{parentid});
-      next INDEX if $section->{flags} =~ /C/;
-    }
+    next unless $article->should_index;
+    my $section = $article->section;
     my $id = $article->{id};
     my $indexas = $article->{level} > $self->{max_level} ? $article->{parentid} : $id;
     my $sectionid = $section->{id};

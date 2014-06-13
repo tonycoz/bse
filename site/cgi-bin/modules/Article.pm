@@ -8,7 +8,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::TB::SiteCommon BSE::TB::TagOwner/;
 use Carp 'confess';
 
-our $VERSION = "1.022";
+our $VERSION = "1.023";
 
 =head1 NAME
 
@@ -163,7 +163,7 @@ sub section {
 
   my $section = $self;
   while ($section->{parentid} > 0
-	 and my $parent = Articles->getByPkey($section->{parentid})) {
+	 and my $parent = $section->parent) {
     $section = $parent;
   }
 
@@ -178,8 +178,14 @@ Return the article's parent.
 
 sub parent {
   my ($self) = @_;
-  $self->{parentid} == -1 and return;
-  return Articles->getByPkey($self->{parentid});
+
+  my $parentid = $self->parentid;
+
+  $parentid == -1
+    and return;
+  $self->{_parent} && $self->{_parent}->id == $parentid
+    and return $self->{_parent};
+  return ($self->{_parent} = Articles->getByPkey($self->{parentid}));
 }
 
 sub update_dynamic {
@@ -626,6 +632,61 @@ sub should_generate {
   return $self->is_linked && $self->listed && $self->is_released && !$self->is_expired;
 }
 
+=item should_index
+
+Returns true if the article should be indexed.
+
+=cut
+
+sub should_index {
+  my ($self) = @_;
+
+  return ($self->listed || $self->is_index_even_if_hidden)
+    && $self->is_linked
+      && !$self->is_dont_index
+	&& !$self->is_dont_index_or_kids
+}
+
+=item is_index_even_if_hidden
+
+Return true if the article's index even if hidden flag is set.
+
+=cut
+
+sub is_index_even_if_hidden {
+  my ($self) = @_;
+
+  return $self->flags =~ /I/;
+}
+
+=item is_dont_index
+
+Return true if the "don't index" flag (C<N>) is set.
+
+=cut
+
+sub is_dont_index {
+  return $_[0]->flags =~ /N/;
+}
+
+=item is_dont_index_or_kids
+
+Return true if the article or any of it's parents have the "don't
+index me or my children" flag (C<C>) set.
+
+=cut
+
+sub is_dont_index_or_kids {
+  my ($self) = @_;
+
+  $self->flags =~ /C/ and return 1;
+
+  my $parent = $self->parent
+    or return 0;
+
+  return $parent->is_dont_index_or_kids;
+}
+
 sub restricted_method {
   my ($self, $name) = @_;
 
@@ -659,6 +720,20 @@ sub mark_modified {
   require BSE::Util::SQL;
   $self->set_lastModified(BSE::Util::SQL::now_sqldatetime());
   $self->set_lastModifiedBy(ref $opts{actor} ? $opts{actor}->logon : "");
+}
+
+=item uncache
+
+Free any cached data.
+
+=cut
+
+sub uncache {
+  my ($self) = @_;
+
+  delete @{$self}{qw/_parent/};
+
+  $self->SUPER::uncache();
 }
 
 1;

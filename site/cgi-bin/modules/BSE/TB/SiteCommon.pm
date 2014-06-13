@@ -2,7 +2,7 @@ package BSE::TB::SiteCommon;
 use strict;
 use Carp qw(confess);
 
-our $VERSION = "1.017";
+our $VERSION = "1.018";
 
 =head1 NAME
 
@@ -609,6 +609,19 @@ sub set_image_order {
   }
 
   return @new_order;
+}
+
+=item uncache
+
+Clear any locally cached info.
+
+=cut
+
+sub uncache {
+  my ($self) = @_;
+
+  $self->uncache_images;
+  $self->uncache_files;
 }
 
 1;
