@@ -3,7 +3,7 @@ use strict;
 use base 'BSE::TB::SiteCommon';
 use Articles;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub images {
   return;
@@ -45,6 +45,10 @@ sub is_step_ancestor {
 
 sub menu_ancestors {
   return;
+}
+
+sub should_index {
+  1;
 }
 
 1;
