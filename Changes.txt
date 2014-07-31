@@ -1,3 +1,6 @@
+BSE 0.25 - 01 Aug 2014
+========
+
 Bug fixes:
 
  - user.pl (BSE::UserReg) now consistently does new-style message
