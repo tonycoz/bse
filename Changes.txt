@@ -10,6 +10,35 @@ Bug fixes:
 
  - audit log mailing now uses the most specific email address supplied
 
+ - page.pl now returns a 404 if the requested page id/alias can't be found
+
+ - the tag owner (eg. articles) tag_ids() method was returning a tag
+   count rather than the tag ids
+
+ - fix date article custom fields
+
+ - fix product custom fields
+
+ - don't strip '-' and '_' from linkAlias in the importer
+
+ - ensure images have unique ids when re-orders
+
+ - correctly validate and report on bad tag values (c46eae4)
+
+ - use quoted-printable where needed for text parts, and always for
+   html parts of mail sent via BSE::ComposeMail (08a49f2d)
+
+ - fix subscriptions (newsletters) (6c8fac02)
+
+ - always fallback to [shop].from for From: email address
+
+ - fix word-wrapping for audit log emails
+
+ - fix encoding of email content
+
+ - select search excerpts that match the search text like the search
+   engine, rather than simple text matching (d325876a)
+
 Enhancements:
 
  - the article mock objects used for pregen behave more like article
@@ -31,6 +60,22 @@ Enhancements:
 
  - coupons for the shop
 
+ - global files and image no longer require an identifier
+
+ - when transforming an article title for use in a URL, replace
+   non-alphanumeric characters with '-' instead of '_'.
+
+ - reorder.pl now allows a sort spec of 'shuffle'
+
+ - article/global images can now have tags (a3e0dbc)
+
+ - emails for siteusers are now whitespace validated and trimmed
+   (b5fe5b6c)
+
+ - allow add.pl to run as FastCGI (f5ea58be)
+
+ - SVG support for article/global images
+
 Templates:
 
  - add top, dynamic, generator, url variables to generated article
@@ -44,6 +89,8 @@ Templates:
 
  - added an escape() method to scalars.
 
+ - added a shuffle() method to arrays
+
  - add current to the loop variable used in .for ... in
 
  - added convience methods image_by_name, image_by_index, file_by_name
@@ -53,9 +100,15 @@ Templates:
 
  - added .while and .wrap template directives
 
-API:
+ - allow collection_with_tags() to work on all_visible_products()
 
-Testing:
+ - massive formatter re-work
+
+ - allow defaults to be specified for .define (53c28223)
+
+ - allow barewords for pair list keys (53c28223)
+
+ - various preload.tmpl changes
 
 BSE 0.24 - 11 Feb 2013
 ========
