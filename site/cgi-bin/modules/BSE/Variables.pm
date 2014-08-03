@@ -4,7 +4,7 @@ use Scalar::Util qw(blessed);
 use BSE::TB::Site;
 use BSE::Util::HTML;
 
-our $VERSION = "1.016";
+our $VERSION = "1.017";
 
 sub _base_variables {
   my ($self, %opts) = @_;
@@ -47,6 +47,7 @@ sub _base_variables {
        require JSON;
        return JSON->new->allow_nonref->encode($_[0]);
      },
+     report_data => \&_report_data,
     );
 }
 
@@ -250,6 +251,27 @@ sub _date_now {
   $fmt ||= "%d-%b-%Y";
   require DevHelp::Date;
   return DevHelp::Date::dh_strftime($fmt, localtime);
+}
+
+sub _report_data {
+  my ($report_name, $params, $opts) = @_;
+
+  $params ||= [];
+  $opts ||= {};
+  require DevHelp::Report;
+  my $reports = DevHelp::Report->new(BSE::Cfg->single);
+  my $msg;
+  my $result = $reports->report_data
+    (
+     $report_name,
+     BSE::DB->single,
+     \$msg,
+     $params,
+     $opts
+    )
+      or return $msg;
+
+  return $result;
 }
 
 1;
