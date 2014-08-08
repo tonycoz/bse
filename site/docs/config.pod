@@ -186,15 +186,15 @@ article file wizard
 
 Catalog editor page.  Default admin/edit_catalog.tmpl
 
-=item 1
+=item Z<>1
 
-=item 2
+=item Z<>2
 
-=item 3
+=item Z<>3
 
-=item 4
+=item Z<>4
 
-=item 5
+=item Z<>5
 
 Article edit pages.  Default admin/edit_<number>.tmpl
 
@@ -2881,6 +2881,38 @@ Control account and IP address lockouts for admin user authentication.
 
 See L</[site user lockouts]> for details of the configuration
 possible.
+
+=head2 [pregenerate]
+
+Defines templates to be generated as base templates.
+
+Each entry is of the form:
+
+=over
+
+I<output-template>=I<profile-name>,I<input-template>
+
+=back
+
+where:
+
+=over
+
+=item *
+
+I<output-template> - the output template name, stored in the directory
+defined by [paths].templates
+
+=item *
+
+I<profile-name> - used to select a section in the config file to load
+dummy article settings from, as C<< [I<profile-name> settings] >>.
+
+=item *
+
+I<input-template> - the source template to generate from.
+
+=back
 
 =head1 AUTHOR
 
