@@ -4,7 +4,7 @@ use base qw(Squirrel::Template::Expr::WrapBase);
 use Scalar::Util ();
 use List::Util ();
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 my $list_make_key = sub {
   my ($item, $field) = @_;
@@ -171,6 +171,17 @@ sub _do_set {
   return $args->[1];
 }
 
+sub _do_as_hash {
+  my ($self, $args) = @_;
+
+  @$args == 0
+    or die [ error => "list.as_hash takes no parameters" ];
+
+  my @extra = @{$self->[0]} % 2 ? ( undef ) : ();
+
+  return +{ @{$self->[0]}, @extra };
+}
+
 sub call {
   my ($self, $method, $args) = @_;
 
@@ -275,6 +286,14 @@ Return a new array with any contained arrays expanded one level.
 
 Set the specified I<index> in the array to I<value>.  Returns
 I<value>.
+
+=item as_hash
+
+Returns a hash formed as if the array was formed of key and value
+pairs.  If the number of elements is odd, the value for the odd key is
+C<undef>.
+
+ [ "a", 1, "b", 2 ].as_hash => { a:1, b:2 }
 
 =item is_list
 
