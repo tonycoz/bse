@@ -4,7 +4,7 @@ use Scalar::Util qw(blessed);
 use BSE::TB::Site;
 use BSE::Util::HTML;
 
-our $VERSION = "1.017";
+our $VERSION = "1.018";
 
 sub _base_variables {
   my ($self, %opts) = @_;
@@ -258,8 +258,8 @@ sub _report_data {
 
   $params ||= [];
   $opts ||= {};
-  require DevHelp::Report;
-  my $reports = DevHelp::Report->new(BSE::Cfg->single);
+  require BSE::Report;
+  my $reports = BSE::Report->new(BSE::Cfg->single);
   my $msg;
   my $result = $reports->report_data
     (
@@ -267,7 +267,7 @@ sub _report_data {
      BSE::DB->single,
      \$msg,
      $params,
-     $opts
+     %$opts
     )
       or return $msg;
 
