@@ -19,11 +19,10 @@ bse_init(".");
 
 my $cfg = bse_cfg();
 
+my %params;
 my $r = BSE::Request::Test->new
   (
-   params =>
-   {
-   },
+   params => \%params,
   );
 
 my $t = BSE::Template->templater($cfg);
@@ -35,18 +34,21 @@ my $vars =
    ),
   };
 
+$params{p} = 11;
 template_test(<<'IN', <<'EXPECT', "page_list");
 <:.set items = [ 1 .. 200 ] -:>
 <:.set p = bse.paged(items, { pp: 5 }) -:>
+<:= p.items.join(" ") :>
 <:.call "page_list", base:"/", pages: p :>
 IN
+51 52 53 54 55
 
 <div class="pagelist">
-Page 1 of 40
-<span>&lt&lt</span>
-<span>&lt</span>
+Page 11 of 40
+<a href="/?p=1&amp;pp=5">&lt;&lt</a>
+<a href="/?p=10&amp;pp=5">&lt;</a>
 
-<span>1</span>
+<a href="/?p=1&amp;pp=5">1</a>
 
 <a href="/?p=2&amp;pp=5">2</a>
 
@@ -66,7 +68,7 @@ Page 1 of 40
 
 <a href="/?p=10&amp;pp=5">10</a>
 
-<a href="/?p=11&amp;pp=5">11</a>
+<span>11</span>
 
 <a href="/?p=12&amp;pp=5">12</a>
 
@@ -88,7 +90,7 @@ Page 1 of 40
 
 <a href="/?p=40&amp;pp=5">40</a>
 
-<a href="/?p=2&amp;pp=5">&gt;</a>
+<a href="/?p=12&amp;pp=5">&gt;</a>
 <a href="/?p=40&amp;pp=5">&gt;&gt</a>
 </div>
 EXPECT

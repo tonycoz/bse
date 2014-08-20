@@ -4,7 +4,7 @@ use Scalar::Util qw(blessed);
 use BSE::TB::Site;
 use BSE::Util::HTML;
 
-our $VERSION = "1.018";
+our $VERSION = "1.019";
 
 sub _base_variables {
   my ($self, %opts) = @_;
@@ -121,7 +121,7 @@ sub _paged {
   my $pp = $cgi->param($ppname) || $opts->{pp} || 20;
   my $pname = $opts->{pname} || "p";
   my $p = $cgi->param($pname) || 1;
-  $p =~ /\A[0-9]\z/ or $p = 1;
+  $p =~ /\A[0-9]+\z/ or $p = 1;
 
   my $pcount = @$list ? int((@$list + $pp - 1) / $pp) : 1;
 
