@@ -906,6 +906,7 @@ t/050-local/060-admin-group.t
 t/060-generate/010-generate.t
 t/060-generate/020-catalog.t
 t/060-generate/030-thumb.t
+t/060-generate/040-preload.t
 t/070-user/010-edit.t
 t/070-user/020-images.t
 t/070-user/050-user.t
