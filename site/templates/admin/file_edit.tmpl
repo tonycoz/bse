@@ -42,7 +42,6 @@
   <legend>File metadata</legend>
 
 <:  .for m in metas -:>
-<:= bse.dumper(m.field) |raw :>
 <:#= bse.dumper(m) |raw :>
 <:    .set name = "meta_" _ m.name -:>
 <:    .set mdata = file.meta_by_name(m.name) -:>

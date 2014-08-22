@@ -65,6 +65,7 @@ site/cgi-bin/modules/BSE/AdminSiteUsers.pm
 site/cgi-bin/modules/BSE/AdminUsers.pm
 site/cgi-bin/modules/BSE/API.pm
 site/cgi-bin/modules/BSE/Arrows.pm
+site/cgi-bin/modules/BSE/ArticleMetaMeta.pm
 site/cgi-bin/modules/BSE/Cache.pm
 site/cgi-bin/modules/BSE/Cache/Cache.pm
 site/cgi-bin/modules/BSE/Cache/CHI.pm

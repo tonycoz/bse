@@ -2,7 +2,7 @@ package BSE::MetaOwnerBase;
 use strict;
 use Carp 'confess';
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 =head1 NAME
 
@@ -47,7 +47,7 @@ sub metadata {
     );
 }
 
-=item metadata
+=item text_metadata
 
 Return all metadata for the object with a content type of
 C<text/plain>.
@@ -170,6 +170,8 @@ sub meta_config {
 =head1 RESTRICTED METHODS
 
 These are not accessible from templates.
+
+=over
 
 =item clear_metadata
 

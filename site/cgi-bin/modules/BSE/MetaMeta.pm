@@ -4,7 +4,7 @@ use Carp qw(confess);
 use Image::Size;
 use Fcntl ':seek';
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 =head1 NAME
 
@@ -232,9 +232,9 @@ sub field {
   return $fields{$self->name};
 }
 
-=item name
+=item validate
 
-The field name of the metadata.
+Validate a meta data item.
 
 =cut
 
@@ -290,9 +290,9 @@ sub validate {
   return 1;
 }
 
-=item name
+=item metanames
 
-The field name of the metadata.
+List of form fields that are read for the meta item.
 
 =cut
 
@@ -346,6 +346,8 @@ Where the original filename is stored for the image.
 sub display_name {
   $_[0]{display_name}
 }
+
+=back
 
 =head1 CLASS METHODS
 

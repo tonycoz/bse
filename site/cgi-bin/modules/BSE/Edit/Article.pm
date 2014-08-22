@@ -16,7 +16,7 @@ use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 use constant ARTICLE_CUSTOM_FIELDS_CFG => "article custom fields";
 
-our $VERSION = "1.051";
+our $VERSION = "1.052";
 
 =head1 NAME
 
@@ -2134,6 +2134,12 @@ sub save {
     $errors{template} = "Please only select templates from the list provided";
   }
 
+  my $meta;
+  if ($cgi->param("_save_meta")) {
+    require BSE::ArticleMetaMeta;
+    $meta = BSE::ArticleMetaMeta->retrieve($req, $article, \%errors);
+  }
+
   my $save_tags = $cgi->param("_save_tags");
   my @tags;
   if ($save_tags) {
@@ -2241,6 +2247,12 @@ sub save {
   if ($save_tags) {
     my $error;
     $article->set_tags([ grep /\S/, @tags ], \$error);
+  }
+
+use Data::Dumper;
+print STDERR Dumper($meta);
+  if ($meta) {
+    BSE::ArticleMetaMeta->save($article, $meta);
   }
 
   # fix the kids too
