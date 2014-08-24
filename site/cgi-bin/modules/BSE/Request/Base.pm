@@ -5,7 +5,7 @@ use BSE::Cfg;
 use BSE::Util::HTML;
 use Carp qw(cluck confess);
 
-our $VERSION = "1.026";
+our $VERSION = "1.027";
 
 =head1 NAME
 
@@ -1513,7 +1513,8 @@ sub dyn_response {
   }
 
   return BSE::Template->get_response($template, $req->cfg, $acts,
-				     $base_template, \@sets, $req->{vars});
+				     $base_template, \@sets, $req->{vars},
+				     dynamic => 1);
 }
 
 =item response($template, $acts)

@@ -1,4 +1,4 @@
-<:if Search:>
+[:if Search:]
 <: if Results:>
 <p> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> <:count:> <:if 
   Multiple:>documents<:or Multiple:>document<:eif Multiple:> matched your search 
@@ -37,11 +37,11 @@ begin pages:> <:if CurrentSearchPage:> <b><:page:></b> | <:or CurrentSearchPage:
 <:or Results:> 
 <p> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> No documents 
   were found that matched your search requirements.</font></p>
-<: eif Results:> <:or Search:> 
+<: eif Results:> [:or Search:]
 <p> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> All lower case 
   will search case insensitively, if an upper case character is present in a word 
   then that word will be searched case sensitively. Results are returned if any 
   one of the words is found in the document. You can group words using single 
   or double quotes to find things like "search engine". </font></p>
 <p>&nbsp;</p>
-<:eif Search:>
+[:eif Search:]
