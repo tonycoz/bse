@@ -1,10 +1,15 @@
 #!perl -w
 use strict;
-use Test::More tests => 42;
+use Test::More tests => 44;
 use Squirrel::Template;
 use Squirrel::Template::Constants qw(:token);
 
 sub test_tokens($$$);
+
+my %opts =
+  (
+   template_dir=>'t/templates',
+  );
 
 # test the interface
 my $templater = Squirrel::Template->new();
@@ -330,11 +335,52 @@ EOS
 	     [ eof => "", 6, "<string>" ],
 	    ], "comment");
 
+{
+  local $opts{delimiters} =
+    [
+     [ "[:", ":]" ],
+    ];
+
+  test_tokens(<<EOS,
+[:.if foo -:]
+bar
+[:.end if-:]
+EOS
+	      [
+	       [ ext_if => "[:.if foo -:]\n", 1, "<string>", "foo" ],
+	       [ content => "bar\n", 2, "<string>" ],
+	       [ end => "[:.end if-:]\n", 3, "<string>", "if" ],
+	       [ eof => "", 4, "<string>" ],
+	      ], "alt delimters .if");
+}
+
+{
+{
+  local $opts{delimiters} =
+    [
+     [ "<:", ":>" ],
+     [ "[:", ":]" ],
+    ];
+
+  test_tokens(<<EOS,
+[:.if ":>" -:]
+bar
+<:.set bar = "[:" -:>
+EOS
+	      [
+	       [ ext_if => "[:.if \":>\" -:]\n", 1, "<string>", '":>"' ],
+	       [ content => "bar\n", 2, "<string>" ],
+	       [ set => "<:.set bar = \"[:\" -:>\n", 3, "<string>", "bar", '"[:"' ],
+	       [ eof => "", 4, "<string>" ],
+	      ], "alt delimters .if some more");
+}
+}
+
 sub test_tokens($$$) {
   my ($text, $tokens, $name) = @_;
 
-  my $tmpl = Squirrel::Template->new(template_dir=>'t/templates');
-  my $tok = Squirrel::Template::Tokenizer->new($text, "<string>", $tmpl);
+  my $tmpl = Squirrel::Template->new(%opts);
+  my $tok = Squirrel::Template::Tokenizer->new($text, "<string>", $tmpl, $opts{delimiters});
 
   my @rtokens;
   while (my $token = $tok->get) {

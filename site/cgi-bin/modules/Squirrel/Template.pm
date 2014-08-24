@@ -20,7 +20,7 @@ BEGIN {
 
 use constant DEBUG_GET_PARMS => 0;
 
-our $VERSION = "1.029";
+our $VERSION = "1.030";
 
 my %compile_cache;
 
@@ -35,6 +35,10 @@ sub new {
   $opts{wraps} = [];
   $opts{errors} = [];
   $opts{def_format} ||= "";
+  $opts{delimiters} ||=
+    [
+     [ "<:", ":>" ],
+    ];
 
   return bless \%opts, $class;
 }
@@ -414,7 +418,7 @@ sub parse {
   my ($self, $template, $name) = @_;
 
   my $t = Squirrel::Template::Tokenizer->new($template, $name || "<string>",
-					     $self);
+					     $self, $self->{delimiters});
   my $p = Squirrel::Template::Parser->new($t, $self);
 
   my $node = $p->parse;

@@ -2,7 +2,7 @@ package Squirrel::Template::Tokenizer;
 use strict;
 use Squirrel::Template::Constants qw(:token);
 
-our $VERSION = "1.014";
+our $VERSION = "1.015";
 
 use constant QUEUE => 0;
 use constant TEXT => 1;
@@ -10,17 +10,32 @@ use constant LINE => 2;
 use constant NAME => 3;
 use constant TMPLT => 4;
 use constant INCLUDES => 5;
+use constant STARTS => 6;
+use constant ENDS => 7;
 
 use constant TRACE => 0;
 
 sub new {
-  my ($class, $text, $name, $templater) = @_;
+  my ($class, $text, $name, $templater, $ends) = @_;
 
-  return bless [ [], $text, 1, $name, $templater, [] ], $class;
+  $ends ||= [ [ "<:", ":>" ] ];
+
+  my $end_res;
+  my @starts;
+  my %ends;
+  for my $end (@$ends) {
+    push @starts, $end->[0];
+    $ends{$end->[0]} = qr/(?:-\Q$end->[1]\E\s*|\Q$end->[1]\E)/;
+  }
+  my $head_match = join "|", map quotemeta, @starts;
+  my $match = qr/(?:$head_match)/;
+
+  my $self = bless [ [], $text, 1, $name, $templater, [] ], $class;
+  $self->[STARTS] = $match;
+  $self->[ENDS] = \%ends;
+
+  $self;
 }
-
-my $tag_head = qr/(?:\s+<:-|<:-?)/;
-my $tag_tail = qr/(?:-:>\s*|:>)/;
 
 # simple to tokenize directives
 my @simple = qw(endwrap switch endswitch eif or);
@@ -47,8 +62,18 @@ sub get {
     return;
   }
 
-  if ($self->[TEXT] =~ s/\A(.*?)(($tag_head)\s*)//s) {
-    my ($content, $tag_start, $head) = ($1, $2, $3);
+  if ($self->[TEXT] =~ s/\A(.*?)(\s*)($self->[STARTS])(-?)(\s*)//s) {
+    my ($content, $before_ws, $start, $dash, $more_ws) =
+      ($1, $2, $3, $4, $5);
+    my $head;
+    if ($dash) {
+      $head = $before_ws . $start . $dash;
+    }
+    else {
+      $content .= $before_ws;
+      $head = $start;
+    }
+    my $tag_start = $head . $more_ws;
 
     if (length $content) {
       push @$queue, [ "content", $content, $line, $name ];
@@ -56,6 +81,8 @@ sub get {
       $line = $self->[LINE];
     }
 
+    my $tag_tail = $self->[ENDS]{$start}
+      or die "No tail found for $start '$tag_start'";
     if ($self->[TEXT] =~ s/\A((.*?)\s*($tag_tail))//s) {
       my ($tag_end, $body, $tail) = ($1, $2, $3);
       my $tag = $tag_start . $tag_end;
