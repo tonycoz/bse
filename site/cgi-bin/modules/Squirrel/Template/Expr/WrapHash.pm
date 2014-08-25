@@ -1,8 +1,9 @@
 package Squirrel::Template::Expr::WrapHash;
 use strict;
 use base qw(Squirrel::Template::Expr::WrapBase);
+use Scalar::Util;
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 sub _do_size {
   my ($self) = @_;
@@ -50,6 +51,22 @@ sub _do_set {
   $self->[0]{$args->[0]} = $args->[1];
 
   return $args->[1];
+}
+
+sub _do_extend {
+  my ($self, $args) = @_;
+
+  my %out = %{$self->[0]};
+  for my $arg (@$args) {
+    Scalar::Util::reftype($arg) eq "HASH"
+	or die "Argument to extend() isn't a hash\n";
+    Scalar::Util::blessed($args)
+	and die "Argument to extend() can't be blessed\n";
+
+    @out{keys %$arg} = values %$arg;
+  }
+
+  return \%out;
 }
 
 sub _do_is_list {
@@ -165,6 +182,11 @@ Test if this object is a code object.  Always false for a hash.
 =item defined
 
 Always true for hashes.
+
+=item extend(hash1, ...)
+
+Return a new hash that is a shallow copy of the subject hash, with
+keys from the parameter hashes added or replacing existing keys.
 
 =back
 
