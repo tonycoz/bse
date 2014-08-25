@@ -4,7 +4,7 @@ use Squirrel::Template;
 use Carp qw(confess cluck);
 use Config ();
 
-our $VERSION = "1.011";
+our $VERSION = "1.012";
 
 my %formats =
   (
@@ -24,7 +24,7 @@ $formats{h} = $formats{html};
 $formats{u} = $formats{uri};
 
 sub templater {
-  my ($class, $cfg, $rsets) = @_;
+  my ($class, $cfg, $rsets, %opts) = @_;
 
   my @conf_dirs = $class->template_dirs($cfg);
   my @dirs;
@@ -38,7 +38,7 @@ sub templater {
     @dirs = @conf_dirs;
   }
 
-  my %opts =
+  my %topts =
     (
      template_dir => \@dirs,
      utf8 => $cfg->utf8,
@@ -49,15 +49,22 @@ sub templater {
     );
   if ($cfg->entry("basic", "cache_templates")) {
     require BSE::Cache;
-    $opts{cache} = BSE::Cache->load($cfg);
+    $topts{cache} = BSE::Cache->load($cfg);
   }
   if ($cfg->entry("basic", "cache_templates_locally")) {
-    $opts{cache_locally} = 1;
+    $topts{cache_locally} = 1;
   }
 
-  $opts{preload} = $cfg->entry("basic", "preload_template");
+  $topts{preload} = $cfg->entry("basic", "preload_template");
+  if ($opts{dynamic}) {
+    $topts{delimiters} =
+      [
+       [ "<:", ":>" ],
+       [ "[:", ":]" ],
+      ];
+  }
 
-  return Squirrel::Template->new(%opts);
+  return Squirrel::Template->new(%topts);
 }
 
 sub _get_filename {
@@ -70,10 +77,10 @@ sub _get_filename {
 }
 
 sub get_page {
-  my ($class, $template, $cfg, $acts, $base_template, $rsets, $vars) = @_;
+  my ($class, $template, $cfg, $acts, $base_template, $rsets, $vars, %opts) = @_;
 
   my $file = $class->_get_filename($cfg, $template);
-  my $obj = $class->templater($cfg, $rsets);
+  my $obj = $class->templater($cfg, $rsets, %opts);
 
   my $out;
   if ($base_template) {
@@ -87,9 +94,9 @@ sub get_page {
 }
 
 sub replace {
-  my ($class, $source, $cfg, $acts, $vars) = @_;
+  my ($class, $source, $cfg, $acts, $vars, %opts) = @_;
 
-  my $obj = $class->templater($cfg);
+  my $obj = $class->templater($cfg, undef, %opts);
 
   $obj->replace_template($source, $acts, undef, undef, $vars);
 }
@@ -143,10 +150,10 @@ sub show_literal {
 }
 
 sub get_response {
-  my ($class, $template, $cfg, $acts, $base_template, $rsets, $vars) = @_;
+  my ($class, $template, $cfg, $acts, $base_template, $rsets, $vars, %opts) = @_;
 
   my $content = $class->get_page($template, $cfg, $acts,
-				 $base_template, $rsets, $vars);
+				 $base_template, $rsets, $vars, %opts);
 
   return $class->make_response($content, $class->get_type($cfg, $template));
 }

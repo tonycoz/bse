@@ -1,4 +1,4 @@
-<:wrap base.tmpl:> 
+<:.wrap "base.tmpl":> 
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <tr>
     <td width="80%" height="24">&nbsp;&nbsp;<font face="Arial, Helvetica, sans-serif" size="4" color="#FF7F00"><b><:title:></b></font></td>
@@ -50,7 +50,7 @@
     </tr>
   </table>
 </form>
-<:if Ajax:>
+[:if Ajax:]
 <script type="text/javascript" language="javascript">
 //<![CDATA[
 function do_search() {
@@ -84,7 +84,7 @@ function do_search() {
 Event.observe(document, "dom:loaded", on_load_search);
 //]]>
 </script>
-<:or Ajax:><:eif Ajax:>
+[:eif Ajax:]
 <div id="search_results">
 <:include include/search_results.tmpl:>
 </div>
