@@ -1,12 +1,14 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 198;
+use Test::More tests => 201;
 use HTML::Entities;
 
 sub template_test($$$$;$$);
 
 my $gotmodule = require_ok('Squirrel::Template');
+
+my %extra_opts;
 
 SKIP: {
   skip "couldn't load module", 15 unless $gotmodule;
@@ -817,6 +819,32 @@ FOO
 
 a,b
 OUT
+
+  {
+    local $extra_opts{error_not_defined} = 1;
+    template_test(<<'IN', <<'OUT', "error !defined: expr", \%acts, "", \%vars);
+<:= unknown_var :>
+IN
+* Variable 'unknown_var' not set
+ *
+OUT
+    template_test(<<'IN', <<'OUT', "error !defined: .if", \%acts, "", \%vars);
+<:.if unknown_var -:>
+a
+<:-.else -:>
+b
+<:-.end if:>
+IN
+* Variable 'unknown_var' not set
+ *
+OUT
+    template_test(<<'IN', <<'OUT', "error !defined: .set", \%acts, "", \%vars);
+<:.set foo = unknown_var :>
+IN
+* Variable 'unknown_var' not set
+ *
+OUT
+  }
 }
 
 sub template_test ($$$$;$$) {
@@ -835,7 +863,8 @@ sub template_test ($$$$;$$) {
       html => sub {
 	encode_entities($_[0], '&<>');
       }
-     }
+     },
+     %extra_opts,
     );
 
   my $result = $templater->replace_template($in, $acts, undef, "test", $vars);

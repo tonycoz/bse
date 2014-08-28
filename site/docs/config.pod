@@ -358,6 +358,12 @@ gpopimage[] tags.  Default: popup.
 If set to 0, dynamic article iterators will no access control filter
 their results.  Default: 1.
 
+=item error_not_defined
+
+If non-zero, during dynamic page generation, inserts a message
+explaining which variable is not set, instead of just leaving the tag
+unreplaced.  Default: 1.
+
 =item http_only_session
 
 If this is non-zero, the default, the session cookie sent to the

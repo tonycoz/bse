@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests => 98;
+use Test::More tests => 101;
 use File::Spec;
 use FindBin;
 my $cgidir = File::Spec->catdir(BSE::Test::base_dir, 'cgi-bin');
@@ -513,6 +513,13 @@ Article Title: [test &amp; catalog]
 Top Title: [test &amp; catalog]
 Embedded: [0]
 Dynamic: [1]
+EXPECTED
+
+dyn_template_test "unknown vars", $parent, <<TEMPLATE, <<EXPECTED;
+<:= unknown_var :>
+TEMPLATE
+* Variable 'unknown_var' not set
+ *
 EXPECTED
 
 $prod4->remove($cfg);

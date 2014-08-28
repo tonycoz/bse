@@ -20,7 +20,7 @@ BEGIN {
 
 use constant DEBUG_GET_PARMS => 0;
 
-our $VERSION = "1.030";
+our $VERSION = "1.031";
 
 my %compile_cache;
 
@@ -388,7 +388,10 @@ sub get_var {
     }
   }
 
-  die "ENOIMPL\nVariable $name not defined";
+  $self->{error_not_defined}
+    and die "Variable '$name' not set\n";
+
+  die "ENOIMPL\nVariable '$name' not set";
 }
 
 sub set_var {

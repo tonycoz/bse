@@ -3,7 +3,7 @@ use strict;
 use Squirrel::Template::Constants qw(:node);
 use Scalar::Util ();
 
-our $VERSION = "1.025";
+our $VERSION = "1.026";
 
 use constant ACTS => 0;
 use constant TMPLT => 1;
@@ -81,7 +81,11 @@ sub _process_expr {
 
   my @errors;
   my $value = "";
-  unless (eval { $value = $self->[EVAL]->process($node->[NODE_EXPR_EXPR]); 1 }) {
+  unless (eval {
+    local $SIG{__DIE__};
+    $value = $self->[EVAL]->process($node->[NODE_EXPR_EXPR]);
+    1
+  }) {
     my $msg = $@;
 
     if ($msg =~ /\bENOIMPL\b/) {
@@ -104,7 +108,11 @@ sub _process_set {
 
   my @errors;
   my $value = "";
-  if (eval { $value = $self->[EVAL]->process($node->[NODE_SET_EXPR]); 1 }) {
+  if (eval {
+    local $SIG{__DIE__};
+    $value = $self->[EVAL]->process($node->[NODE_SET_EXPR]); 
+    1
+  }) {
     my @var = @{$node->[NODE_SET_VAR]};
     if (@var > 1) {
       my $top_name = shift @var;
@@ -172,6 +180,7 @@ sub _process_call {
   my $defaults;
   my $name;
   if (eval {
+    local $SIG{__DIE__};
     $name = $self->[EVAL]->process($node->[NODE_CALL_NAME]);
     for my $arg (@{$node->[NODE_CALL_LIST]}) {
       my $key = $self->[EVAL]->process($arg->[0]);
@@ -224,6 +233,7 @@ sub _process_for {
 
   my $list;
   unless (eval {
+    local $SIG{__DIE__};
     $list = $self->[EVAL]->process($node->[NODE_FOR_EXPR]); 1;
   }) {
     my $msg = $@;
@@ -523,6 +533,7 @@ sub _process_ext_wrap {
   my @errors;
   my $name;
   if (eval {
+    local $SIG{__DIE__};
     $name = $self->[EVAL]->process($filename);
     for my $arg (@$args) {
       my $key = $self->[EVAL]->process($arg->[0]);
@@ -637,7 +648,11 @@ sub _process_ext_if {
   my @conds = @{$node->[NODE_EXTIF_CONDS]};
   while (my $cond = shift @conds) {
     my $result;
-    if (eval { $result = $self->[EVAL]->process($cond->[2]); 1 }) {
+    if (eval {
+      local $SIG{__DIE__};
+      $result = $self->[EVAL]->process($cond->[2]);
+      1
+    }) {
       if ($result) {
 	return $self->process($cond->[1]);
       }
@@ -704,6 +719,7 @@ sub _process_iterateover {
   my $call;
   my @args;
   unless (eval {
+    local $SIG{__DIE__};
     $call = $self->[EVAL]->process($node->[NODE_ITERATEOVER_CALL]);
     @args = map $self->[EVAL]->process($_), @{$node->[NODE_ITERATEOVER_ARGS]};
     1;
@@ -751,7 +767,11 @@ sub _process_while {
 
   my $cond = $node->[NODE_WHILE_COND];
   my $result;
-  unless (eval { $result = $self->[EVAL]->process($cond); 1 }) {
+  unless (eval {
+    local $SIG{__DIE__};
+    $result = $self->[EVAL]->process($cond);
+    1
+  }) {
     my $msg = $@;
     if (!ref $msg && $msg =~ /\bENOIMPL\b/) {
       return
@@ -769,7 +789,11 @@ sub _process_while {
   while ($result) {
     push @output, $self->process($node->[NODE_WHILE_CONTENT]);
 
-    unless (eval { $result = $self->[EVAL]->process($cond); 1 }) {
+    unless (eval {
+      local $SIG{__DIE__};
+      $result = $self->[EVAL]->process($cond);
+      1
+    }) {
       my $msg = $@;
       if (!ref $msg && $msg ==~ /\bENOIMPL\b/) {
 	return
