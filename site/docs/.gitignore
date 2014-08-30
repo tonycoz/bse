@@ -4,7 +4,7 @@
 /BSE::UI::Affiliate.html
 /BSE::Variables.html
 /Generate.html
-/Generate::Article.html
+/BSE::Generate::Article.html
 /Generate::Catalog.html
 /Generate::Product.html
 /Squirrel::Template.html

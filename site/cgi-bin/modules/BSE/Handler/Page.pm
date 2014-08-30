@@ -1,7 +1,7 @@
 package BSE::Handler::Page;
 use strict;
 use base qw'BSE::Handler::Base BSE::UI::Page';
-use Generate::Article;
+use BSE::Generate::Article;
 use BSE::Template;
 use SiteUsers;
 use BSE::CfgInfo;

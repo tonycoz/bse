@@ -260,7 +260,7 @@ sub possible_parents {
 
   my $shopid = $self->cfg->entryErr('articles', 'shop');
   my @parents = $articles->getBy('level', $article->{level}-1);
-  @parents = grep { $_->{generator} eq 'Generate::Article' 
+  @parents = grep { $_->{generator} eq 'BSE::Generate::Article' 
 		      && $_->{id} != $shopid } @parents;
 
   # user can only select parent they can add to
@@ -1566,7 +1566,7 @@ sub add_form {
   return $self->low_edit_form($req, $article, $articles, $msg, $errors);
 }
 
-sub generator { 'Generate::Article' }
+sub generator { 'BSE::Generate::Article' }
 
 sub typename {
   my ($self) = @_;

@@ -36,7 +36,7 @@ my @prebuilt =
     admin=>$CGI_URI.'/admin/admin.pl?id=1',
     threshold=>10000, # needs to be high
     summaryLength => 1000, # should be ignored
-    generator=>'Generate::Article',
+    generator=>'BSE::Generate::Article',
     thumbImage=>'',
     thumbWidth=>0,
     thumbHeight=>0,
@@ -76,7 +76,7 @@ my @prebuilt =
     admin=>$CGI_URI.'/admin/admin.pl?id=1',
     threshold=>10000, # needs to be high
     summaryLength => 1000, # should be ignored
-    generator=>'Generate::Article',
+    generator=>'BSE::Generate::Article',
     thumbImage=>'',
     thumbWidth=>0,
     thumbHeight=>0,
@@ -115,7 +115,7 @@ my @prebuilt =
     admin=>$CGI_URI.'/admin/admin.pl?id=3',
     threshold=>1000, # ignored
     summaryLength=>1000, # ignored
-    generator=>'Generate::Article',
+    generator=>'BSE::Generate::Article',
     thumbImage=>'',
     thumbWidth=>0,
     thumbHeight=>0,
@@ -193,7 +193,7 @@ my @prebuilt =
     admin=>$CGI_URI.'/admin/admin.pl?id=5',
     threshold=>1000, # ignored
     summaryLength=>1000, #ignored
-    generator=>'Generate::Article',
+    generator=>'BSE::Generate::Article',
     thumbImage=>'',
     thumbWidth=>0,
     thumbHeight=>0,
@@ -462,7 +462,7 @@ EOS
     admin=>$CGI_URI.'/admin/admin.pl?id=6',
     threshold=>1000, # ignored
     summaryLength=>1000, #ignored
-    generator=>'Generate::Article',
+    generator=>'BSE::Generate::Article',
     thumbImage=>'',
     thumbWidth=>0,
     thumbHeight=>0,
@@ -505,7 +505,7 @@ EOS
     admin=>$CGI_URI.'/admin/admin.pl?id=7',
     threshold=>1000, # ignored
     summaryLength=>1000, #ignored
-    generator=>'Generate::Article',
+    generator=>'BSE::Generate::Article',
     thumbImage=>'',
     thumbWidth=>0,
     thumbHeight=>0,
@@ -548,7 +548,7 @@ EOS
     admin=>$CGI_URI.'/admin/admin.pl?id=8',
     threshold=>1000, # ignored
     summaryLength=>1000, #ignored
-    generator=>'Generate::Article',
+    generator=>'BSE::Generate::Article',
     thumbImage=>'',
     thumbWidth=>0,
     thumbHeight=>0,

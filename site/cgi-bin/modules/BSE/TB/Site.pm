@@ -13,7 +13,7 @@ sub new {
     {
      id => -1,
      title => "Your site",
-     generator => 'Generate::Article',
+     generator => 'BSE::Generate::Article',
      parentid=>0,
      level => 0,
      body => '',

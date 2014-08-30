@@ -346,7 +346,7 @@ my $site_article =
    id        => -1, 
    title     => "unknown", 
    parentid  => 0, 
-   generator => 'Generate::Article',
+   generator => 'BSE::Generate::Article',
    level     => 0,
   };
 

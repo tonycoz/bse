@@ -193,7 +193,7 @@ sub _get_article {
   if ($id == -1) {
     $self->{sitearticle} ||=
       {
-       generator=>'Generate::Article',
+       generator=>'BSE::Generate::Article',
        id=>-1,
        parentid=>0,
        title=>'The site',
@@ -218,7 +218,7 @@ sub _art_ancestors {
   if ($article && $article->{parentid} == -1) {
     $self->{sitearticle} ||=
       {
-       generator=>'Generate::Article',
+       generator=>'BSE::Generate::Article',
        id=>-1,
        parentid=>0,
        title=>'The site',

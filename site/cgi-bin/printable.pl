@@ -78,8 +78,8 @@ sub error_page {
   $article{title} = "Error";
   $article{parentid} = -1;
 
-  require Generate::Article;
-  my $gen = Generate::Article->new(cfg=>$cfg, top => \%article);
+  require BSE::Generate::Article;
+  my $gen = BSE::Generate::Article->new(cfg=>$cfg, top => \%article);
   my %acts;
   %acts = 
     (

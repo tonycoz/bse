@@ -288,7 +288,7 @@ sub _make_extra_gen {
   my ($cfg, $extra) = @_;
 
   my $article = _make_extra_art($cfg, $extra);
-  require Generate::Article;
+  require BSE::Generate::Article;
   my %opts =
     (
      cfg => $cfg,
@@ -297,8 +297,8 @@ sub _make_extra_gen {
   if ($extra->{dynamic}) {
     $opts{force_dynamic} = 1;
   }
-  require Generate::Article;
-  my $gen = Generate::Article->new(%opts);
+  require BSE::Generate::Article;
+  my $gen = BSE::Generate::Article->new(%opts);
 
   return ($article, $gen);
 }

@@ -1,8 +1,8 @@
-1,-1,100,"My site's title","","¸","",0,0,"tr",2001-01-01 00:00:00,2099-01-01 00:00:00,"","index.tmpl","/index.html","/cgi-bin/admin/admin.pl?id=1",10000,1000,"Generate::Article",1,0,2000-11-27 00:00:00
-2,1,100,"[index subsection]","","¸","",0,0,"tr",2001-01-01 00:00:00,2099-01-01 00:00:00,"","index2.tmpl","","/cgi-bin/admin/admin.pl?id=1",10000,1000,"Generate::Article",2,2,2000-11-27 00:00:00
-3,-1,10000,"The Shop","","You can buy things here","",0,0,"tr",2001-01-01 00:00:00,2099-01-01 00:00:00,"shop","shop_sect.tmpl","/shop/index.html","/cgi-bin/admin/admin.pl?id=3",1000,1000,"Generate::Article",1,1,2001-08-27 00:00:00
+1,-1,100,"My site's title","","¸","",0,0,"tr",2001-01-01 00:00:00,2099-01-01 00:00:00,"","index.tmpl","/index.html","/cgi-bin/admin/admin.pl?id=1",10000,1000,"BSE::Generate::Article",1,0,2000-11-27 00:00:00
+2,1,100,"[index subsection]","","¸","",0,0,"tr",2001-01-01 00:00:00,2099-01-01 00:00:00,"","index2.tmpl","","/cgi-bin/admin/admin.pl?id=1",10000,1000,"BSE::Generate::Article",2,2,2000-11-27 00:00:00
+3,-1,10000,"The Shop","","You can buy things here","",0,0,"tr",2001-01-01 00:00:00,2099-01-01 00:00:00,"shop","shop_sect.tmpl","/shop/index.html","/cgi-bin/admin/admin.pl?id=3",1000,1000,"BSE::Generate::Article",1,1,2001-08-27 00:00:00
 4,3,10000,"[shop subsection]",""," ","",0,0,"tr",2001-01-01 00:00:00,2099-01-01 00:00:00,"","catalog.tmpl","","/cgi-bin/admin/shopadmin.pl",1000,1000,"Generate::Catalog",2,2,2001-08-29 13:05:00
-5,1,10000,"[sidebar subsection]","","¸","",0,0,"tr",2001-01-01 00:00:00,2099-01-01 00:00:00,"","common/sidebar_section.tmpl","","/cgi-bin/admin/admin.pl?id=5",1000,1000,"Generate::Article",2,0,2000-11-27 00:00:00
+5,1,10000,"[sidebar subsection]","","¸","",0,0,"tr",2001-01-01 00:00:00,2099-01-01 00:00:00,"","common/sidebar_section.tmpl","","/cgi-bin/admin/admin.pl?id=5",1000,1000,"BSE::Generate::Article",2,0,2000-11-27 00:00:00
 6,2,10001,"[formatting guide]","","anchor[basic] b[Sample basic formatting:]
 indent[link[/a/1.html|regular link text]
 
@@ -232,8 +232,8 @@ html[
     </td>
   </tr>
 </table>]
-","",0,0,"tr",2001-01-01 00:00:00,2099-01-01 00:00:00,"","common/sidebar_section.tmpl","/a/format_guide.html","/cgi-bin/admin/admin.pl?id=6",1000,1000,"Generate::Article",3,0,2000-11-27 00:00:00
+","",0,0,"tr",2001-01-01 00:00:00,2099-01-01 00:00:00,"","common/sidebar_section.tmpl","/a/format_guide.html","/cgi-bin/admin/admin.pl?id=6",1000,1000,"BSE::Generate::Article",3,0,2000-11-27 00:00:00
 7,2,10000,"[rss generation]","","This body text is not used.
 
 This article generates RSS as used by some sites.
-","",0,0,"tr",2001-01-01 00:00:00,2099-01-01 00:00:00,"","common/rssbase.tmpl","/a/site.rdf","/cgi-bin/admin/add.pl?id=7",1000,1000,"Generate::Article",3,0,2000-11-27 00:00:00
+","",0,0,"tr",2001-01-01 00:00:00,2099-01-01 00:00:00,"","common/rssbase.tmpl","/a/site.rdf","/cgi-bin/admin/add.pl?id=7",1000,1000,"BSE::Generate::Article",3,0,2000-11-27 00:00:00

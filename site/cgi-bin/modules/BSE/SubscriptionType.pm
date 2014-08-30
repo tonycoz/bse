@@ -37,7 +37,7 @@ sub _build_article {
   $article->{expire} = $Constants::D_99;
   $article->{keyword} = 
     exists($opts->{keyword}) ? $opts->{keyword} : $sub->{keyword};
-  $article->{generator} = 'Generate::Article';
+  $article->{generator} = 'BSE::Generate::Article';
   $article->{level} = $parent ? $parent->{level} + 1 : 1;
   $article->{listed} = 1;
   $article->{lastModified} = now_datetime;
@@ -420,7 +420,7 @@ sub send {
     $callback->('general', undef, "Archiving article");
     require 'Articles.pm';
     $article{template} = $opts->{article_template} || $sub->{article_template};
-    $article{generator} = 'Generate::Article';
+    $article{generator} = 'BSE::Generate::Article';
     $article{parentid} = $opts->{parentId} || $sub->{parentId};
     my @cols = Article->columns;
     shift @cols;

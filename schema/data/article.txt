@@ -1,16 +1,16 @@
 id;parentid;displayOrder;title;titleImage;body;imagePos;release;expire;keyword;template;link;admin;threshold;summaryLength;generator;level;listed
-1;-1;0;What's Hot;/images/ss/whats_hot.gif;;tr;1900/00/00 00:00;9999/01/01 00:00;home;index.tmpl;/index.html;/cgi-bin/admin/admin.pl?id=1;100000;0;Generate::Article;1;0
-2;-1;6000;the scoop on...;/images/ss/scoop_on.gif;;tr;1900/00/00 00:00;9999/01/01 00:00;scoop;section.tmpl;/a/2.html/scoop;/cgi-bin/admin/admin.pl?id=2;0;200;Generate::Article;1;1
-3;-1;7000;events / seminars;/images/ss/events_seminars.gif;;tr;1900/01/01 00:00;9999/01/01 00:00;events,seminars;section2.tmpl;/a/3.html;/cgi-bin/admin/admin.pl?id=3;1000;200;Generate::Article;1;1
-4;-1;5000;bodyScoop Q&A;/images/ss/bodyscoop_QA.gif;;tr;1900/01/01 00:00;9999/01/01 00:00;questions,answers;section.tmpl;/a/4.html/questions_answers;/cgi-bin/admin/admin.pl?id=4;0;200;Generate::Article;1;1
-5;-1;4000;message boards;/images/ss/message_boards.gif;;tr;1900/01/01 00:00;9999/01/01 00:00;message,chat,forums;section.tmpl;/m/message.shtml;/cgi-bin/admin/admin.pl?id=5;5000;5000;Generate::Article;1;1
-6;-1;3000;on-line store;/images/ss/the_store.gif;;tr;1900/01/01 00:00;9999/01/01 00:00;shopping;shop.tmpl;/shop/shop.shtml;/cgi-bin/admin/shop.pl;5000;5000;Generate::Article;1;1
-7;-1;2000;bodyScoop media;/images/ss/bodyscoop_media.gif;;tr;1900/01/01 00:00;9999/01/01 00:00;media,press,release;section2.tmpl;/a/7.html;/cgi-bin/admin/admin.pl?id=7;10000;5000;Generate::Article;1;1
-8;-1;1000;about bodyScoop;/images/ss/about_bodyscoop.gif;;tr;1900/01/01 00:00;9999/01/01 00:00;about;section.tmpl;/a/8.html;/cgi-bin/admin/admin.pl?id=8;0;200;Generate::Article;1;1
-9;1;1;[what's hot];;;tr;1900/01/01 00:00;9999/01/01 00:00;;nosubsect.tmpl;;/cgi-bin/admin/admin.pl?id=1;1000;1000;Generate::Article;2;2
-10;3;1;[events];;;tr;1900/01/01 00:00;9999/01/01 00:00;;nosubsect.tmpl;;/cgi-bin/admin/admin.pl?id=3;3;200;Generate::Article;2;2
-11;7;1;[media];;;tr;1900/01/01 00:00;9999/01/01 00:00;;nosubsect.tmpl;;/cgi-bin/admin/admin.pl?id=7;3;200;Generate::Article;2;2
-12;2;4000;slimming products;;Get the lowdown on the latest slimming treatments. Find out what works and what doesn't. We evaluate the latest pills, potions, lotions and gadgets.;tr;1900/00/00 00:00;9999/01/01 00:00;;subsection.tmpl;/a/12.html;/cgi-bin/admin/admin.pl?id=12;2;100;Generate::Article;2;1
-13;2;3000;diet books;;Looking for a book about eating or exercise? We put the the good, the bad and the ugly.;tr;1900/00/00 00:00;9999/01/01 00:00;;subsection.tmpl;/a/13.html;/cgi-bin/admin/admin.pl?id=13;2;100;Generate::Article;2;1
-14;2;2000;weight loss programs;;Before you join a weight loss program, find out what's behind the offer.;tr;1900/00/00 00:00;9999/01/01 00:00;;subsection.tmpl;/a/14.html;/cgi-bin/admin/admin.pl?id=14;2;100;Generate::Article;2;1
-15;2;1000;excercise equipment;;Before you spend money to get fit, find out how exercise machines work and if they're worth your money.;tr;1900/00/00 00:00;9999/01/01 00:00;;subsection.tmpl;/a/15.html;/cgi-bin/admin/admin.pl?id=15;2;100;Generate::Article;2;1
+1;-1;0;What's Hot;/images/ss/whats_hot.gif;;tr;1900/00/00 00:00;9999/01/01 00:00;home;index.tmpl;/index.html;/cgi-bin/admin/admin.pl?id=1;100000;0;BSE::Generate::Article;1;0
+2;-1;6000;the scoop on...;/images/ss/scoop_on.gif;;tr;1900/00/00 00:00;9999/01/01 00:00;scoop;section.tmpl;/a/2.html/scoop;/cgi-bin/admin/admin.pl?id=2;0;200;BSE::Generate::Article;1;1
+3;-1;7000;events / seminars;/images/ss/events_seminars.gif;;tr;1900/01/01 00:00;9999/01/01 00:00;events,seminars;section2.tmpl;/a/3.html;/cgi-bin/admin/admin.pl?id=3;1000;200;BSE::Generate::Article;1;1
+4;-1;5000;bodyScoop Q&A;/images/ss/bodyscoop_QA.gif;;tr;1900/01/01 00:00;9999/01/01 00:00;questions,answers;section.tmpl;/a/4.html/questions_answers;/cgi-bin/admin/admin.pl?id=4;0;200;BSE::Generate::Article;1;1
+5;-1;4000;message boards;/images/ss/message_boards.gif;;tr;1900/01/01 00:00;9999/01/01 00:00;message,chat,forums;section.tmpl;/m/message.shtml;/cgi-bin/admin/admin.pl?id=5;5000;5000;BSE::Generate::Article;1;1
+6;-1;3000;on-line store;/images/ss/the_store.gif;;tr;1900/01/01 00:00;9999/01/01 00:00;shopping;shop.tmpl;/shop/shop.shtml;/cgi-bin/admin/shop.pl;5000;5000;BSE::Generate::Article;1;1
+7;-1;2000;bodyScoop media;/images/ss/bodyscoop_media.gif;;tr;1900/01/01 00:00;9999/01/01 00:00;media,press,release;section2.tmpl;/a/7.html;/cgi-bin/admin/admin.pl?id=7;10000;5000;BSE::Generate::Article;1;1
+8;-1;1000;about bodyScoop;/images/ss/about_bodyscoop.gif;;tr;1900/01/01 00:00;9999/01/01 00:00;about;section.tmpl;/a/8.html;/cgi-bin/admin/admin.pl?id=8;0;200;BSE::Generate::Article;1;1
+9;1;1;[what's hot];;;tr;1900/01/01 00:00;9999/01/01 00:00;;nosubsect.tmpl;;/cgi-bin/admin/admin.pl?id=1;1000;1000;BSE::Generate::Article;2;2
+10;3;1;[events];;;tr;1900/01/01 00:00;9999/01/01 00:00;;nosubsect.tmpl;;/cgi-bin/admin/admin.pl?id=3;3;200;BSE::Generate::Article;2;2
+11;7;1;[media];;;tr;1900/01/01 00:00;9999/01/01 00:00;;nosubsect.tmpl;;/cgi-bin/admin/admin.pl?id=7;3;200;BSE::Generate::Article;2;2
+12;2;4000;slimming products;;Get the lowdown on the latest slimming treatments. Find out what works and what doesn't. We evaluate the latest pills, potions, lotions and gadgets.;tr;1900/00/00 00:00;9999/01/01 00:00;;subsection.tmpl;/a/12.html;/cgi-bin/admin/admin.pl?id=12;2;100;BSE::Generate::Article;2;1
+13;2;3000;diet books;;Looking for a book about eating or exercise? We put the the good, the bad and the ugly.;tr;1900/00/00 00:00;9999/01/01 00:00;;subsection.tmpl;/a/13.html;/cgi-bin/admin/admin.pl?id=13;2;100;BSE::Generate::Article;2;1
+14;2;2000;weight loss programs;;Before you join a weight loss program, find out what's behind the offer.;tr;1900/00/00 00:00;9999/01/01 00:00;;subsection.tmpl;/a/14.html;/cgi-bin/admin/admin.pl?id=14;2;100;BSE::Generate::Article;2;1
+15;2;1000;excercise equipment;;Before you spend money to get fit, find out how exercise machines work and if they're worth your money.;tr;1900/00/00 00:00;9999/01/01 00:00;;subsection.tmpl;/a/15.html;/cgi-bin/admin/admin.pl?id=15;2;100;BSE::Generate::Article;2;1

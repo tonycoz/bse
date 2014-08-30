@@ -1,4 +1,4 @@
-package Generate::Article;
+package BSE::Generate::Article;
 use strict;
 use BSE::Template;
 use Constants qw(%LEVEL_DEFAULTS $CGI_URI $ADMIN_URI
@@ -9,7 +9,7 @@ use Generate;
 use BSE::Regen qw(generate_button);
 use BSE::Util::Tags qw(tag_article);
 use BSE::TB::ArticleFiles;
-@ISA = qw/Generate/;
+@ISA = qw/BSE::Generate/;
 use BSE::Util::HTML;
 use BSE::Arrows;
 use Carp 'confess';
@@ -20,7 +20,7 @@ our $VERSION = "1.013";
 
 =head1 NAME
 
-  Generate::Article - generates articles.
+  BSE::Generate::Article - generates articles.
 
 =head1 SYNOPSIS
 
@@ -1232,7 +1232,7 @@ See the summary tag.
 =item generator
 
 The class used to generate the article.  Should be one of
-Generate::Article, Generate::Catalog or Generate::Product.
+BSE::Generate::Article, Generate::Catalog or Generate::Product.
 
 =item level
 

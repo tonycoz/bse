@@ -1,9 +1,9 @@
 package Generate::Product;
 use strict;
-use Generate::Article;
+use BSE::Generate::Article;
 use Products;
 use BSE::TB::Images;
-use base qw(Generate::Article);
+use base qw(BSE::Generate::Article);
 use Constants qw(:shop $CGI_URI $ADMIN_URI);
 use Carp qw(confess);
 use BSE::Util::HTML;

@@ -1,8 +1,8 @@
 package Generate::Subscription;
 use strict;
 use vars qw(@ISA);
-use Generate::Article;
-@ISA = qw(Generate::Article);
+use BSE::Generate::Article;
+@ISA = qw(BSE::Generate::Article);
 use BSE::Util::HTML;
 
 our $VERSION = "1.001";

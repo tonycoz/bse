@@ -5,7 +5,7 @@ our $VERSION = "1.004";
 use strict;
 use Generate;
 use Products;
-use base 'Generate::Article';
+use base 'BSE::Generate::Article';
 use BSE::Template;
 use Constants qw($CGI_URI $ADMIN_URI);
 use BSE::Regen qw(generate_button);
@@ -273,7 +273,7 @@ __END__
 =head1 DESCRIPTION
 
   This class is used to generate catalog pages for BSE.  It derives
-  from L<Generate::Article>, and inherits it's tags.
+  from L<BSE::Generate::Article>, and inherits it's tags.
 
 =head1 TAGS
 
@@ -339,6 +339,6 @@ Generates administrative tools (in admin mode).
 =head1 BUGS
 
 Still contains some code from before we derived from
-Generate::Article, so there is some obsolete code still present.
+BSE::Generate::Article, so there is some obsolete code still present.
 
 =cut

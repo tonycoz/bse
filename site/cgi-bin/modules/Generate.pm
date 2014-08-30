@@ -256,7 +256,7 @@ level 3 children.
 
 Returns a link to the specified article .  Due to the way the action
 list is built, this can be article types defined in derived classes of
-Generate, like the C<parent> article in Generate::Article.
+Generate, like the C<parent> article in BSE::Generate::Article.
 
 =item money I<data tag>
 
