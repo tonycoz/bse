@@ -14,7 +14,7 @@ my @targets =
    'BSE::Variables.html',
    'bugs.html',
    'templates.html',
-   'Generate.html',
+   'BSE::Generate.html',
    'BSE::Generate::Catalog.html',
    'BSE::Generate::Article.html',
    'BSE::Generate::Product.html',

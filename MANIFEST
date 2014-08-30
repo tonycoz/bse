@@ -342,7 +342,7 @@ site/cgi-bin/modules/DevHelp/Report.pm
 site/cgi-bin/modules/DevHelp/Tags.pm
 site/cgi-bin/modules/DevHelp/Tags/Iterate.pm
 site/cgi-bin/modules/DevHelp/Validate.pm
-site/cgi-bin/modules/Generate.pm
+site/cgi-bin/modules/BSE/Generate.pm
 site/cgi-bin/modules/BSE/Generate/Article.pm
 site/cgi-bin/modules/BSE/Generate/Catalog.pm
 site/cgi-bin/modules/BSE/Generate/Product.pm

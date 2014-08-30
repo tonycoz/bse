@@ -86,7 +86,7 @@ sub html {
   my $msg = $self->_get_replaced($lang, $msgid, $parms);
   if ($msg) {
     if ($msg->{formatting} eq 'body') {
-      require Generate;
+      require BSE::Generate;
       require BSE::Template;
       my $gen = Generate->new(cfg => BSE::Cfg->single);
       my $templater = BSE::Template->templater(BSE::Cfg->single);

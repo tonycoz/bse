@@ -504,7 +504,7 @@ sub article_tags {
 	{
 	 id=>-1,
 	 title=>'Your site',
-	 generator => 'Generate::Site', # well...
+	 generator => 'BSE::Generate::Site', # well...
 	 level => 0,
 	};
     }

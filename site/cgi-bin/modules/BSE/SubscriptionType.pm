@@ -209,8 +209,8 @@ sub _url_list {
 
 sub _format_body {
   my ($cfg, $article) = @_;
-  require 'Generate.pm';
-  my $gen = Generate->new(cfg=>$cfg, top => $article);
+  require BSE::Generate;
+  my $gen = BSE::Generate->new(cfg=>$cfg, top => $article);
   my $body = $article->{body};
   my @urls;
   my $url_index = 1;

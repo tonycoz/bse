@@ -5,7 +5,7 @@ use Constants qw(%LEVEL_DEFAULTS $CGI_URI $ADMIN_URI
                  $UNLISTED_LEVEL1_IN_CRUMBS);
 use BSE::TB::Images;
 use vars qw(@ISA);
-use Generate;
+use BSE::Generate;
 use BSE::Regen qw(generate_button);
 use BSE::Util::Tags qw(tag_article);
 use BSE::TB::ArticleFiles;

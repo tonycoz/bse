@@ -195,8 +195,8 @@ sub static {
 	 or return '';
        
        $value = decode_entities($value);
-       require Generate;
-       my $gen = Generate->new(cfg=>$cfg);
+       require BSE::Generate;
+       my $gen = BSE::Generate->new(cfg=>$cfg);
        return $gen->format_body(acts => $acts, 
 				articles => 'Articles', 
 				text => $value, 
@@ -443,8 +443,8 @@ sub tag_nobodytext {
   
   $value = decode_entities($value);
   
-  require Generate;
-  my $gen = Generate->new(cfg=>$cfg);
+  require BSE::Generate;
+  my $gen = BSE::Generate->new(cfg=>$cfg);
   $gen->remove_block('Articles', $acts, \$value);
   
   return escape_html($value);

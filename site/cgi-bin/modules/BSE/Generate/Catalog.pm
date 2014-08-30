@@ -3,7 +3,7 @@ package BSE::Generate::Catalog;
 our $VERSION = "1.004";
 
 use strict;
-use Generate;
+use BSE::Generate;
 use Products;
 use base 'BSE::Generate::Article';
 use BSE::Template;

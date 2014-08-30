@@ -1,4 +1,4 @@
-package Generate;
+package BSE::Generate;
 use strict;
 use Articles;
 use Constants qw($LOCAL_FORMAT $BODY_EMBED 
