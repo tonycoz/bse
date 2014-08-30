@@ -4,7 +4,7 @@ use base 'BSE::UI::AdminDispatch';
 use SiteUsers;
 use BSE::Util::Tags qw(tag_hash_plain);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 my %actions =
   (
@@ -29,8 +29,8 @@ sub tag_ifUserCanSee {
 
   my $article;
   if ($args =~ /^\d+$/) {
-    require Articles;
-    $article = Articles->getByPkey($args);
+    require BSE::TB::Articles;
+    $article = BSE::TB::Articles->getByPkey($args);
   }
   else {
     $article = $req->get_article($args);

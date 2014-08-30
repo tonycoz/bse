@@ -5,7 +5,7 @@
 use strict;
 use lib '../cgi-bin/modules';
 use DBI;
-use Article;
+use BSE::TB::Article;
 use Constants qw($DSN $UN $PW $CGI_URI $SHOP_URI $ROOT_URI);
 use BSE::API qw(bse_init bse_cfg);
 use BSE::Util::SQL qw(now_sqldate now_sqldatetime);
@@ -574,7 +574,7 @@ EOS
 
 my $dbh = BSE::DB->single->dbh
   or die "Cannot connect to database: ",DBI->errstr;
-my @columns = Article->columns;
+my @columns = BSE::TB::Article->columns;
 $dbh->do('delete from article')
   or die "Cannot delete articles: ",$dbh->errstr;
 $dbh->do('delete from product')

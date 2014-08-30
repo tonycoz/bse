@@ -1,7 +1,7 @@
 package BSE::UI::Search;
 use strict;
 use base 'BSE::UI::Dispatch';
-use Articles;
+use BSE::TB::Articles;
 use BSE::DB;
 use Constants qw(:search);
 use Carp;
@@ -11,7 +11,7 @@ use BSE::Util::HTML qw':default popup_menu';
 use BSE::Util::Tags qw(tag_article);
 use BSE::Request;
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 my %actions =
   (
@@ -61,7 +61,7 @@ sub req_search {
     
     if ($cfg->entry('search', 'keep_inaccessible')) {
       for my $entry (@results[$articles_start..$articles_end]) {
-	my $article = Articles->getByPkey($entry->[0])
+	my $article = BSE::TB::Articles->getByPkey($entry->[0])
 	  or die "Cannot retrieve article $entry->[0]\n";
 	push(@articles, $article);
       }
@@ -73,7 +73,7 @@ sub req_search {
       my $seen = 0;
       while ($index < @results && $seen <= $articles_end) {
 	my $id = $results[$index][0];
-	my $article = Articles->getByPkey($id)
+	my $article = BSE::TB::Articles->getByPkey($id)
 	  or die "Cannot retrieve article $id\n";
 	if ($req->siteuser_has_access($article)) {
 	  if ($seen >= $articles_start) {
@@ -108,7 +108,7 @@ sub req_search {
     sort { $b->{displayOrder} <=> $a->{displayOrder} }
       grep { ($_->{listed} || $included{$_->{id}}) 
 	       && !$excluded{$_->{id}} }
-	Articles->getBy('level', 1);
+	BSE::TB::Articles->getBy('level', 1);
   unshift(@sections, { ""=>$SEARCH_ALL });
   my %sections = map { %$_ } @sections;
   # now a list of values ( in the correct order

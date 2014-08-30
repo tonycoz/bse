@@ -3,7 +3,7 @@ use strict;
 use BSE::Util::HTML;
 use Carp 'confess';
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 use base 'DevHelp::Formatter';
 
@@ -274,7 +274,7 @@ sub gfilelink {
   my ($self, $fileid, $text, $type) = @_;
 
   unless ($self->{gfiles}) {
-    $self->{gfiles} = [ Articles->global_files ];
+    $self->{gfiles} = [ BSE::TB::Articles->global_files ];
   }
   my ($file) = grep $_->{name} eq $fileid, @{$self->{gfiles}}
     or return "** unknown file $fileid **";
@@ -468,7 +468,7 @@ sub remove_gfilelink {
   my ($self, $fileid, $text, $type) = @_;
 
   unless ($self->{gfiles}) {
-    $self->{gfiles} = [ Articles->global_files ];
+    $self->{gfiles} = [ BSE::TB::Articles->global_files ];
   }
   my ($file) = grep $_->{name} eq $fileid, @{$self->{gfiles}}
     or return "** unknown file $fileid **";

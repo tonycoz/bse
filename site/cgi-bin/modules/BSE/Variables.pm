@@ -4,7 +4,7 @@ use Scalar::Util qw(blessed);
 use BSE::TB::Site;
 use BSE::Util::HTML;
 
-our $VERSION = "1.019";
+our $VERSION = "1.020";
 
 sub _base_variables {
   my ($self, %opts) = @_;
@@ -99,7 +99,7 @@ sub _url_common {
 sub _categorize_tags {
   my ($tags, $selected_tags, $opts) = @_;
 
-  require Articles;
+  require BSE::TB::Articles;
 
   if ($opts && $opts->{members} && !$opts->{counts}) {
     my %counts;
@@ -110,7 +110,7 @@ sub _categorize_tags {
     $opts->{counts} = \%counts;
   }
 
-  return Articles->categorize_tags($tags, $selected_tags, $opts);
+  return BSE::TB::Articles->categorize_tags($tags, $selected_tags, $opts);
 }
 
 sub _paged {
@@ -204,8 +204,8 @@ sub _variable_class {
   my $articles;
   sub _articles {
     unless ($articles) {
-      require Articles;
-      $articles = _variable_class("Articles");
+      require BSE::TB::Articles;
+      $articles = _variable_class("BSE::TB::Articles");
     }
 
     return $articles;

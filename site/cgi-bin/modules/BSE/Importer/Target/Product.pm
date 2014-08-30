@@ -2,13 +2,13 @@ package BSE::Importer::Target::Product;
 use strict;
 use base 'BSE::Importer::Target::Article';
 use BSE::API qw(bse_make_product bse_make_catalog bse_add_image);
-use Articles;
+use BSE::TB::Articles;
 use Products;
 use BSE::TB::ProductOptions;
 use BSE::TB::ProductOptionValues;
 use BSE::TB::PriceTiers;
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 =head1 NAME
 
@@ -183,7 +183,7 @@ sub children_of {
   my ($self, $parent) = @_;
 
   return grep $_->{generator} eq 'BSE::Generate::Catalog',
-    Articles->children($parent);
+    BSE::TB::Articles->children($parent);
 }
 
 =item make_parent()

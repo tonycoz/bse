@@ -5,7 +5,7 @@ use BSE::Util::Iterate;
 use BSE::Util::Tags qw(tag_hash);
 use BSE::Regen qw(pregenerate_list content_one_extra response_one_extra);
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 my %actions =
   (
@@ -78,14 +78,14 @@ sub req_display {
     or return $self->req_list($req, { template => "Unknown pregen template $id" });
 
   if ($entry->{dynamic}) {
-    my ($content, $article) = content_one_extra("Articles", $entry);
+    my ($content, $article) = content_one_extra("BSE::TB::Articles", $entry);
 
     require BSE::Dynamic::Article;
     my $dyngen = BSE::Dynamic::Article->new($req);
     return $dyngen->generate($article, $content);
   }
   else {
-    return response_one_extra("Articles", $entry);
+    return response_one_extra("BSE::TB::Articles", $entry);
   }
 }
 

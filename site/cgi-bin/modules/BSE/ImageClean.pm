@@ -1,12 +1,12 @@
 package BSE::ImageClean;
 use strict;
 use BSE::TB::Images;
-use Articles;
+use BSE::TB::Articles;
 use BSE::TB::Files;
 use BSE::CfgInfo qw(cfg_image_dir);
 use File::Spec::Functions qw(catfile);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub scan {
   my ($class, $callback) = @_;
@@ -22,7 +22,7 @@ sub scan {
 
 	 unless (exists $articleIds{$image->{articleId}}) {
 	   $articleIds{$image->{articleId}} = 
-	     defined(Articles->getByPkey($image->{articleId}));
+	     defined(BSE::TB::Articles->getByPkey($image->{articleId}));
 	 }
 	 unless ($articleIds{$image->{articleId}}) {
 	   $orphan_files{$image->image} = 1;
@@ -43,7 +43,7 @@ sub scan {
        }
       );
   $callback->({type => "substage", stage => "index", substage => "thumbnails"});
-  Articles->iterateBy
+  BSE::TB::Articles->iterateBy
     (
      sub {
        my ($article) = @_;

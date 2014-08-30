@@ -8,7 +8,7 @@ BSE::TB::TagCategory - represents a tag category
 
 =head1 SYNOPSIS
 
-  my $cat = Article->tag_category($name);
+  my $cat = BSE::TB::Article->tag_category($name);
 
   my @deps = $cat->deps;
 
@@ -20,7 +20,7 @@ BSE::TB::TagCategory - represents a tag category
 
 =cut
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub columns {
   qw(id cat owner_type);

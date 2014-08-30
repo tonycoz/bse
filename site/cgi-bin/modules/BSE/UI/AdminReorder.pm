@@ -1,11 +1,11 @@
 package BSE::UI::AdminReorder;
 use strict;
 use base 'BSE::UI::AdminDispatch';
-use Articles;
+use BSE::TB::Articles;
 use OtherParents;
 use List::Util ();
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 =head1 NAME
 
@@ -121,7 +121,7 @@ sub req_byparent {
     (
      $req,
      [
-      map [ $_, $_, 'displayOrder' ], Articles->getBy(parentid => $parentid)
+      map [ $_, $_, 'displayOrder' ], BSE::TB::Articles->getBy(parentid => $parentid)
      ]
     );
 
@@ -169,11 +169,11 @@ sub req_bystepparent {
   $req->user_can(bse_edit_reorder_children => $stepparent)
     or return $self->access_error($req, $msg);
 
-  my $parent = Articles->getByPkey($stepparent)
+  my $parent = BSE::TB::Articles->getByPkey($stepparent)
     or return $self->error($req, "Unknown article $stepparent");
   
   my @otherlinks = OtherParents->getBy(parentId => $stepparent);
-  my @normalkids = Articles->children($stepparent);
+  my @normalkids = BSE::TB::Articles->children($stepparent);
   my @stepkids = $parent->stepkids;
   my %stepkids = map { $_->{id}, $_ } @stepkids;
   my @kids =
@@ -232,11 +232,11 @@ sub req_bystepchild {
   $req->user_can(bse_edit_reorder_children => $stepchild)
     or return $self->access_error($req, $msg);
 
-  my $child = Articles->getByPkey($stepchild)
+  my $child = BSE::TB::Articles->getByPkey($stepchild)
     or return $self->error($req, "Unknown child $stepchild");
 
   my @otherlinks = OtherParents->getBy(childId=>$stepchild);
-  my @stepparents = map Articles->getByPkey($_->{parentId}), @otherlinks;
+  my @stepparents = map BSE::TB::Articles->getByPkey($_->{parentId}), @otherlinks;
   my %stepparents = map { $_->{id}, $_ } @stepparents;
 
 
@@ -293,7 +293,7 @@ sub _sort {
     @reverse{@fields} = @reverse;
     @fields = grep exists($kids->[0][0]{$_}), @fields;
     my @num = 
-    my %num = map { $_ => 1 } Article->numeric;
+    my %num = map { $_ => 1 } BSE::TB::Article->numeric;
 
     $code =
       sub {

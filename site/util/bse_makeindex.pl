@@ -5,7 +5,7 @@ use FindBin;
 use lib "$FindBin::Bin/../cgi-bin/modules";
 use BSE::Index;
 use BSE::API qw(bse_init bse_cfg);
-use Articles;
+use BSE::TB::Articles;
 use Encode;
 
 bse_init("../cgi-bin");

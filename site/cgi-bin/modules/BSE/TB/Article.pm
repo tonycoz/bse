@@ -1,4 +1,4 @@
-package Article;
+package BSE::TB::Article;
 use strict;
 # represents an article from the database
 use Squirrel::Row;
@@ -8,7 +8,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::TB::SiteCommon BSE::TB::TagOwner/;
 use Carp 'confess';
 
-our $VERSION = "1.023";
+our $VERSION = "1.024";
 
 =head1 NAME
 
@@ -20,7 +20,7 @@ Article - article objects for BSE.
 
   my $article = bse_make_article(...)
 
-  my $article = Articles->getByPkey($id);
+  my $article = BSE::TB::Articles->getByPkey($id);
 
 =head1 DESCRIPTION
 
@@ -185,7 +185,7 @@ sub parent {
     and return;
   $self->{_parent} && $self->{_parent}->id == $parentid
     and return $self->{_parent};
-  return ($self->{_parent} = Articles->getByPkey($self->{parentid}));
+  return ($self->{_parent} = BSE::TB::Articles->getByPkey($self->{parentid}));
 }
 
 sub update_dynamic {
@@ -695,7 +695,7 @@ sub restricted_method {
 }
 
 sub tableClass {
-  return "Articles";
+  return "BSE::TB::Articles";
 }
 
 =item mark_modified

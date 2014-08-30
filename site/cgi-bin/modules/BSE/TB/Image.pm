@@ -8,7 +8,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::ThumbCommon BSE::TB::TagOwner/;
 use Carp qw(confess);
 
-our $VERSION = "1.009";
+our $VERSION = "1.010";
 
 =head1 NAME
 
@@ -283,8 +283,8 @@ sub article {
     return BSE::TB::Site->new;
   }
   else {
-    require Articles;
-    return Articles->getByPkey($self->articleId);
+    require BSE::TB::Articles;
+    return BSE::TB::Articles->getByPkey($self->articleId);
   }
 }
 

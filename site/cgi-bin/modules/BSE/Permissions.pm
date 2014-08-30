@@ -1,7 +1,7 @@
 package BSE::Permissions;
 use strict;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 # these are the permissions that are checked beyond just whether the permissions DB allows them
 my @checks =
@@ -202,8 +202,8 @@ sub _get_article {
     return $self->{sitearticle};
   }
   else {
-    require Articles;
-    $self->{artcache}{$id} = Articles->getByPkey($id);
+    require BSE::TB::Articles;
+    $self->{artcache}{$id} = BSE::TB::Articles->getByPkey($id);
   }
 }
 
@@ -395,7 +395,7 @@ sub check_edit_delete_article {
   my ($self, $user, $article, $action, $rmsg) = @_;
 
   # can't delete an article that has children
-  if (Articles->children($article->{id})) {
+  if (BSE::TB::Articles->children($article->{id})) {
     $$rmsg = "This article has children.  You must delete the children first (or change their parents)";
     return;
   }

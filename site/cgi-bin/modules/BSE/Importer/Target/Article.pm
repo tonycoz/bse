@@ -2,11 +2,11 @@ package BSE::Importer::Target::Article;
 use strict;
 use base 'BSE::Importer::Target::Base';
 use BSE::API qw(bse_make_article bse_add_image bse_add_step_parent);
-use Articles;
+use BSE::TB::Articles;
 use Products;
 use OtherParents;
 
-our $VERSION = "1.008";
+our $VERSION = "1.009";
 
 =head1 NAME
 
@@ -280,10 +280,10 @@ sub row {
       or next;
     my $step;
     if ($step_id =~ /^\d+$/) {
-      $step = Articles->getByPkey($step_id);
+      $step = BSE::TB::Articles->getByPkey($step_id);
     }
     else {
-      $step = Articles->getBy(linkAlias => $step_id);
+      $step = BSE::TB::Articles->getBy(linkAlias => $step_id);
     }
     $step
       or die "Cannot find stepparent with id $step_id\n";
@@ -419,7 +419,7 @@ Utility method to find the children of a given article.
 sub children_of {
   my ($self, $parent) = @_;
 
-  Articles->children($parent);
+  BSE::TB::Articles->children($parent);
 }
 
 =item make_parent()
@@ -448,7 +448,7 @@ sub find_leaf {
   $leaf_id =~ s/\A\s+//;
   $leaf_id =~ s/\s+\z//;
 
-  my ($leaf) = Articles->getBy($self->{code_field}, $leaf_id)
+  my ($leaf) = BSE::TB::Articles->getBy($self->{code_field}, $leaf_id)
     or return;
 
   $importer->event(find_leaf => { id => $leaf_id, leaf => $leaf });
@@ -603,7 +603,7 @@ sub validate_make_leaf {
   my ($self, $importer, $entry) = @_;
 
   if (defined $entry->{linkAlias} && $entry->{linkAlias} ne '') {
-    my $other = Articles->getBy(linkAlias => $entry->{linkAlias});
+    my $other = BSE::TB::Articles->getBy(linkAlias => $entry->{linkAlias});
     $other
       and die "Duplicate linkAlias value with article ", $other->id, "\n";
   }

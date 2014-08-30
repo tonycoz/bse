@@ -5,7 +5,7 @@ use Squirrel::Row;
 use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 sub columns {
   return qw/id name title description frequency keyword archive 
@@ -16,13 +16,13 @@ sub columns {
 sub _build_article {
   my ($sub, $article, $opts) = @_;
 
-  my @cols = Article->columns;
+  my @cols = BSE::TB::Article->columns;
   shift @cols;
   @$article{@cols} = ('') x @cols;
   my $parent_id = $opts->{parentId} || $sub->{parentId} || -1;
   my $parent;
   if ($parent_id > 0) {
-    $parent = Articles->getByPkey($parent_id);
+    $parent = BSE::TB::Articles->getByPkey($parent_id);
     unless ($parent) {
       $parent_id = -1;
     }
@@ -136,8 +136,8 @@ sub _doclink {
     $dispid = "$id ($work)";
     $id = $work;
   }
-  require Articles;
-  my $art = Articles->getByPkey($id);
+  require BSE::TB::Articles;
+  my $art = BSE::TB::Articles->getByPkey($id);
   unless ($art) {
     return ">> Cannot find article id $dispid <<";
   }
@@ -217,7 +217,7 @@ sub _format_body {
   while ($body =~ s#(?:pop)?(doclink|link)\[([^\]\[]+)\]#_any_link($cfg, \@urls, $1, $2, \$url_index)#ie) {
   }
 
-  $gen->remove_block('Articles', [], \$body);
+  $gen->remove_block('BSE::TB::Articles', [], \$body);
   while (1) {
     $body =~ s/[bi]\[([^\[\]]+)\]/$1/g
        and next;
@@ -296,7 +296,7 @@ sub html_format {
   $gen->set_user($user);
   $gen->set_sub($sub);
 
-  return $gen->generate(\%article, 'Articles');
+  return $gen->generate(\%article, 'BSE::TB::Articles');
 }
 
 sub recipients {
@@ -351,7 +351,7 @@ sub _send {
       #print STDERR "Making HTML\n";
       $gen->set_user($user);
       my %acts;
-      %acts = $gen->baseActs("Articles", \%acts, $article);
+      %acts = $gen->baseActs("BSE::TB::Articles", \%acts, $article);
       $html = BSE::Template->get_page($article->template, $cfg, \%acts,
 				      undef, undef, $gen->variables);
       if ($cfg->utf8) {
@@ -418,13 +418,13 @@ sub send {
 
   if (exists $opts->{archive} ? $opts->{archive} : $sub->{archive}) {
     $callback->('general', undef, "Archiving article");
-    require 'Articles.pm';
+    require BSE::TB::Articles;
     $article{template} = $opts->{article_template} || $sub->{article_template};
     $article{generator} = 'BSE::Generate::Article';
     $article{parentid} = $opts->{parentId} || $sub->{parentId};
-    my @cols = Article->columns;
+    my @cols = BSE::TB::Article->columns;
     shift @cols;
-    my $article = Articles->add(@article{@cols});
+    my $article = BSE::TB::Articles->add(@article{@cols});
     use Constants qw(:edit $CGI_URI $ARTICLE_URI $LINK_TITLES);
     my $link = "$ARTICLE_URI/$article->{id}.html";
     if ($LINK_TITLES) {
@@ -437,7 +437,7 @@ sub send {
     require BSE::Regen;
     
     $callback->('general', undef, "Generating article");
-    BSE::Regen::generate_article('Articles', $article, $cfg);
+    BSE::Regen::generate_article('BSE::TB::Articles', $article, $cfg);
   }
 
   use BSE::Util::SQL qw/now_datetime/;

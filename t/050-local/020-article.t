@@ -5,7 +5,7 @@ use BSE::Test ();
 use File::Spec;
 use BSE::Cfg;
 
-use_ok("Article");
+use_ok("BSE::TB::Article");
 
 {
   my $cfg = BSE::Cfg->new_from_text(text => <<'EOS');
@@ -14,13 +14,13 @@ base=/test
 public_html=$(base)/htdocs
 EOS
 
-  is(Article->link_to_filename($cfg, "/"), "/test/htdocs/index.html",
+  is(BSE::TB::Article->link_to_filename($cfg, "/"), "/test/htdocs/index.html",
      "check default link to /");
-  is(Article->link_to_filename($cfg, "/foo.html/test"), "/test/htdocs/foo.html",
+  is(BSE::TB::Article->link_to_filename($cfg, "/foo.html/test"), "/test/htdocs/foo.html",
      "check default link to filename - trailing title");
-  is(Article->link_to_filename($cfg, "/test.html"), "/test/htdocs/test.html",
+  is(BSE::TB::Article->link_to_filename($cfg, "/test.html"), "/test/htdocs/test.html",
      "check default link to filename - trailing filename");
-  is(Article->link_to_filename($cfg, "//test.html"), "/test/htdocs/test.html",
+  is(BSE::TB::Article->link_to_filename($cfg, "//test.html"), "/test/htdocs/test.html",
      "check default link to filename - doubled /");
 }
 
@@ -34,7 +34,7 @@ public_html=$(base)/htdocs
 index_file=default.htm
 EOS
 
-  is(Article->link_to_filename($cfg, "/"), "/test/htdocs/default.htm",
+  is(BSE::TB::Article->link_to_filename($cfg, "/"), "/test/htdocs/default.htm",
      "check cfg link to filename");
 }
 

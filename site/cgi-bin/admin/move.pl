@@ -5,7 +5,7 @@
 use strict;
 use FindBin;
 use lib "$FindBin::Bin/../modules";
-use Articles;
+use BSE::TB::Articles;
 use CGI ':standard';
 use Carp 'verbose';
 use CGI::Carp 'fatalsToBrowser';
@@ -27,7 +27,7 @@ unless ($req->check_admin_logon()) {
 my $id = $cgi->param('id');
 my $direction = $cgi->param('d');
 
-my $articles = 'Articles';
+my $articles = 'BSE::TB::Articles';
   
 my $article;
 if (defined $cgi->param('stepchild')) {
@@ -35,7 +35,7 @@ if (defined $cgi->param('stepchild')) {
   if ($req->user_can(edit_reorder_stepparents=>$stepchild)) {
     # we always need a swap for this one
     
-    my $article = Articles->getByPkey($stepchild)
+    my $article = BSE::TB::Articles->getByPkey($stepchild)
       or die "Cannot find child $stepchild";
     
     my $other = $cgi->param('other');
@@ -49,7 +49,7 @@ if (defined $cgi->param('stepchild')) {
       ($two->{childDisplayOrder}, $one->{childDisplayOrder});
     $one->save;
     $two->save;
-    generate_article('Articles', $article);
+    generate_article('BSE::TB::Articles', $article);
   }
 }
 elsif (defined $cgi->param('stepparent')) {
@@ -62,20 +62,20 @@ elsif (defined $cgi->param('stepparent')) {
     my $one = OtherParents->getBy(parentId=>$stepparent, childId=>$id);
     unless ($one) {
       $onename = 'displayOrder';
-      $one = Articles->getByPkey($id)
+      $one = BSE::TB::Articles->getByPkey($id)
 	or die "Could not find article $id";
     }
     my $twoname = 'parentDisplayOrder';
     my $two = OtherParents->getBy(parentId=>$stepparent, childId=>$other);
     unless ($two) {
       $twoname = 'displayOrder';
-      $two = Articles->getByPkey($other)
+      $two = BSE::TB::Articles->getByPkey($other)
 	or die "Could not find article $other";
     }
     ($one->{$onename}, $two->{$twoname}) = ($two->{$twoname}, $one->{$onename});
     $one->save;
     $two->save;
-    generate_article('Articles', $article);
+    generate_article('BSE::TB::Articles', $article);
   }
 }
 else {
@@ -133,7 +133,7 @@ else {
     }
     
     $article->save();
-    generate_article('Articles', $article);
+    generate_article('BSE::TB::Articles', $article);
   }
 }
 

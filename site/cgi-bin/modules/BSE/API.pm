@@ -10,7 +10,7 @@ use Carp qw(confess croak);
 use Fcntl qw(:seek);
 use Cwd;
 
-our $VERSION = "1.008";
+our $VERSION = "1.009";
 
 =head1 NAME
 
@@ -112,8 +112,8 @@ sub _set_dynamic {
     $article->{level} = 1;
   }
   else {
-    require Articles;
-    my $parent = Articles->getByPkey($article->{parentid})
+    require BSE::TB::Articles;
+    my $parent = BSE::TB::Articles->getByPkey($article->{parentid})
       or confess "Invalid parent $article->{parentid}\n";
     $article->{level} = $parent->{level} + 1;
   }
@@ -220,7 +220,7 @@ sub bse_make_catalog {
   my $cfg = delete $opts{cfg}
     or confess "cfg option missing";
 
-  require Articles;
+  require BSE::TB::Articles;
 
   defined $opts{title} && length $opts{title}
     or confess "Missing title option\n";
@@ -239,9 +239,9 @@ sub bse_make_catalog {
 
   _set_dynamic($cfg, \%opts);
 
-  my @cols = Article->columns;
+  my @cols = BSE::TB::Article->columns;
   shift @cols;
-  my $catalog = Articles->add(@opts{@cols});
+  my $catalog = BSE::TB::Articles->add(@opts{@cols});
 
   require BSE::Edit::Catalog;
   _finalize_article($cfg, $catalog, 'BSE::Edit::Catalog');
@@ -255,7 +255,7 @@ sub bse_make_article {
   my $cfg = delete $opts{cfg}
     or confess "cfg option missing";
 
-  require Articles;
+  require BSE::TB::Articles;
 
   defined $opts{title} && length $opts{title}
     or confess "Missing title option\n";
@@ -273,9 +273,9 @@ sub bse_make_article {
 
   _set_dynamic($cfg, \%opts);
 
-  my @cols = Article->columns;
+  my @cols = BSE::TB::Article->columns;
   shift @cols;
-  my $article = Articles->add(@opts{@cols});
+  my $article = BSE::TB::Articles->add(@opts{@cols});
 
   require BSE::Edit::Article;
   _finalize_article($cfg, $article, 'BSE::Edit::Article');
@@ -403,7 +403,7 @@ sub _load_editor_class {
   my ($article, $cfg) = @_;
 
   require BSE::Edit::Base;
-  return BSE::Edit::Base->article_class($article, 'Articles', $cfg);
+  return BSE::Edit::Base->article_class($article, 'BSE::TB::Articles', $cfg);
 }
 
 # File::Copy doesn't like CGI.pm's fake fhs

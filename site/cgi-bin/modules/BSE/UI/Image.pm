@@ -1,11 +1,11 @@
 package BSE::UI::Image;
 use strict;
-use Articles;
+use BSE::TB::Articles;
 use BSE::TB::Images;
 use BSE::Util::Tags qw(tag_hash);
 use BSE::Util::HTML qw(escape_uri);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 # we don't do anything fancy on dispatch yet, so don't use the 
 # dispatch classes
@@ -16,7 +16,7 @@ sub dispatch {
   my $id = $cgi->param('id');
   $id && $id =~ /^\d+$/
     or return $class->error($req, "required id parameter not present or invalid");
-  my $article = Articles->getByPkey($id)
+  my $article = BSE::TB::Articles->getByPkey($id)
     or return $class->error($req, "unknown article id $id");
 
   my $image;

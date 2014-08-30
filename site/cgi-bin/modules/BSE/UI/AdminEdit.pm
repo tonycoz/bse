@@ -2,9 +2,9 @@ package BSE::UI::AdminEdit;
 use strict;
 use base 'BSE::UI::AdminDispatch';
 use BSE::Edit::Base;
-use Articles;
+use BSE::TB::Articles;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub dispatch {
   my ($self, $req) = @_;
@@ -12,7 +12,7 @@ sub dispatch {
   my $cgi = $req->cgi;
   my $cfg = $req->cfg;
   my $id = $cgi->param('id');
-  my $articles = 'Articles'; # for a later switch to proper objects, I hope
+  my $articles = 'BSE::TB::Articles'; # for a later switch to proper objects, I hope
   my $result;
   if (defined $id && $id =~ /\d/ && $id == -1) {
     my $obj = get_class('BSE::Edit::Site', $cfg)

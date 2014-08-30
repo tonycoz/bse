@@ -58,8 +58,8 @@ site/cgi-bin/image.pl
 site/cgi-bin/interest.pl
 site/cgi-bin/modules/Apache/Session/DBIreal.pm
 site/cgi-bin/modules/Apache/Session/Store/DBIreal.pm
-site/cgi-bin/modules/Article.pm
-site/cgi-bin/modules/Articles.pm
+site/cgi-bin/modules/BSE/TB/Article.pm
+site/cgi-bin/modules/BSE/TB/Articles.pm
 site/cgi-bin/modules/BSE/Admin/StepParents.pm
 site/cgi-bin/modules/BSE/AdminLogon.pm
 site/cgi-bin/modules/BSE/AdminMenu.pm

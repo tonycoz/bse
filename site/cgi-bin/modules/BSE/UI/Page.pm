@@ -1,12 +1,12 @@
 package BSE::UI::Page;
 use strict;
-use Articles;
+use BSE::TB::Articles;
 use BSE::Util::HTML qw(escape_uri);
 use BSE::UI::Dispatch;
 use BSE::Template;
 our @ISA = qw(BSE::UI::Dispatch);
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 # we don't do anything fancy on dispatch yet, so don't use the 
 # dispatch classes
@@ -73,7 +73,7 @@ sub dispatch {
   if ($page) {
     $dump .= "Page lookup: '$page'\n";
     if ($page =~ /^[0-9]+$/) {
-      $article = Articles->getByPkey($page);
+      $article = BSE::TB::Articles->getByPkey($page);
       $dump .= "Search by id\n";
       $search_by_id = 1;
     }
@@ -89,7 +89,7 @@ sub dispatch {
 	$dump .= "Removed recursive prefix\n";
       }
       $dump .= "Looking for alias: $alias\n";
-      ($article) = Articles->getBy(linkAlias => $alias);
+      ($article) = BSE::TB::Articles->getBy(linkAlias => $alias);
     }
   }
 
@@ -229,7 +229,7 @@ sub dispatch {
 sub _generate_pregen {
   my ($self, $req, $article, $srcname) = @_;
 
-  my $articles = 'Articles';
+  my $articles = 'BSE::TB::Articles';
   my $genname = $article->{generator};
   eval "use $genname";
   $@ && die $@;

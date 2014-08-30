@@ -2,9 +2,9 @@ package BSE::Index;
 use strict;
 use Time::HiRes qw(time);
 use Constants qw(@SEARCH_EXCLUDE @SEARCH_INCLUDE);
-use Articles;
+use BSE::TB::Articles;
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 my %default_scores =
   (
@@ -86,7 +86,7 @@ sub make_index {
   @dont_search{@SEARCH_EXCLUDE} = @SEARCH_EXCLUDE;
   @do_search{@SEARCH_INCLUDE} = @SEARCH_INCLUDE;
   $self->vnote("s::Loading article ids");
-  my @ids = Articles->allids;
+  my @ids = BSE::TB::Articles->allids;
   my $count = @ids;
   $self->vnote("c:$count:$count articles to index");
   my $cfg = BSE::Cfg->single;
@@ -96,7 +96,7 @@ sub make_index {
     my @files;
     my $got_files;
     # find the section
-    my $article = Articles->getByPkey($id);
+    my $article = BSE::TB::Articles->getByPkey($id);
     next unless $article;
     next unless $article->should_index;
     my $section = $article->section;
@@ -138,7 +138,7 @@ sub make_index {
       }
       #next if $text =~ m!^\<html\>!i; # I don't know how to do this (yet)
       if ($field eq 'body') {
-	$gen->remove_block("Articles", [], \$text);
+	$gen->remove_block("BSE::TB::Articles", [], \$text);
 	$text =~ s/[abi]\[([^\]]+)\]/$1/g;
       }
 

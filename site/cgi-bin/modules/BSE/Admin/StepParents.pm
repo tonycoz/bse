@@ -1,10 +1,10 @@
 package BSE::Admin::StepParents;
 use strict;
-use Articles;
+use BSE::TB::Articles;
 use OtherParents;
 use BSE::Util::SQL qw/date_to_sql/;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub add {
   my ($class, $parent, $child, $release, $expire) = @_;

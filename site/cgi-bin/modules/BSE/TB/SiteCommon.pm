@@ -2,7 +2,7 @@ package BSE::TB::SiteCommon;
 use strict;
 use Carp qw(confess);
 
-our $VERSION = "1.019";
+our $VERSION = "1.020";
 
 =head1 NAME
 
@@ -26,26 +26,26 @@ Provides methods common to the Article and BSE::TB::Site objects.
 sub step_parents {
   my ($self) = @_;
 
-  Articles->getSpecial('stepParents', $self->{id});
+  BSE::TB::Articles->getSpecial('stepParents', $self->{id});
 }
 
 sub visible_step_parents {
   my ($self) = @_;
 
   my $now = now_sqldate();
-  Articles->getSpecial('visibleStepParents', $self->{id}, $now);
+  BSE::TB::Articles->getSpecial('visibleStepParents', $self->{id}, $now);
 }
 
 sub stepkids {
   my ($self) = @_;
 
-  return Articles->getSpecial('stepKids', $self->{id});
+  return BSE::TB::Articles->getSpecial('stepKids', $self->{id});
 }
 
 sub allstepkids {
   my ($self) = @_;
 
-  return Articles->getSpecial('stepKids', $self->{id});
+  return BSE::TB::Articles->getSpecial('stepKids', $self->{id});
 }
 
 sub visible_stepkids {
@@ -60,7 +60,7 @@ sub visible_stepkids {
     return Products->getSpecial('visibleStep', $self->{id}, $today);
   }
   else {
-    return Articles->getSpecial('visibleStepKids', $self->{id}, $today);
+    return BSE::TB::Articles->getSpecial('visibleStepKids', $self->{id}, $today);
   }
   
   return ();
@@ -74,7 +74,7 @@ sub allkids {
   require 'OtherParents.pm';
 
   my @otherlinks = OtherParents->getBy(parentId=>$self->{id});
-  my @normalkids = Articles->children($self->{id});
+  my @normalkids = BSE::TB::Articles->children($self->{id});
   my %order = (
 	       (map { $_->{id}, $_->{displayOrder} } @normalkids ),
 	       (map { $_->{childId}, $_->{parentDisplayOrder} } @otherlinks),
@@ -90,13 +90,13 @@ sub allkids {
 sub all_visible_kids {
   my ($self) = @_;
 
-  Articles->all_visible_kids($self->{id});
+  BSE::TB::Articles->all_visible_kids($self->{id});
 }
 
 sub all_visible_kid_tags {
   my ($self) = @_;
 
-  Articles->all_visible_kid_tags($self->{id});
+  BSE::TB::Articles->all_visible_kid_tags($self->{id});
 }
 
 sub all_visible_products {
@@ -122,7 +122,7 @@ sub all_visible_catalogs {
 sub visible_kids {
   my ($self) = @_;
 
-  return Articles->listedChildren($self->{id});
+  return BSE::TB::Articles->listedChildren($self->{id});
 }
 
 =item menu_kids
@@ -269,7 +269,7 @@ sub children {
   my ($self) = @_;
 
   return sort { $b->{displayOrder} <=> $a->{displayOrder} } 
-    Articles->children($self->{id});
+    BSE::TB::Articles->children($self->{id});
 }
 
 =item files
@@ -575,7 +575,7 @@ If $after_id is zero then $child_id becomes the first child.
 sub reorder_child {
   my ($self, $child_id, $after_id) = @_;
 
-  Articles->reorder_child($self->{id}, $child_id, $after_id);
+  BSE::TB::Articles->reorder_child($self->{id}, $child_id, $after_id);
 }
 
 sub set_image_order {

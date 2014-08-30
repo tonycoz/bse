@@ -16,7 +16,7 @@ use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 use constant ARTICLE_CUSTOM_FIELDS_CFG => "article custom fields";
 
-our $VERSION = "1.047";
+our $VERSION = "1.048";
 
 =head1 NAME
 
@@ -366,7 +366,7 @@ sub iter_get_kids {
 
   my @children;
   $article->{id} or return;
-  if (UNIVERSAL::isa($article, 'Article')) {
+  if (UNIVERSAL::isa($article, 'BSE::TB::Article')) {
     @children = $article->children;
   }
   elsif ($article->{id}) {
@@ -1542,7 +1542,7 @@ sub _dummy_article {
   }
   
   my %article;
-  my @cols = Article->columns;
+  my @cols = BSE::TB::Article->columns;
   @article{@cols} = ('') x @cols;
   $article{id} = '';
   $article{parentid} = $parentid;
@@ -1956,7 +1956,7 @@ sub save_new {
 
   my ($after_id) = $cgi->param("_after");
   if (defined $after_id) {
-    Articles->reorder_child($article->{parentid}, $article->{id}, $after_id);
+    BSE::TB::Articles->reorder_child($article->{parentid}, $article->{id}, $after_id);
     # reload, the displayOrder probably changed
     $article = $articles->getByPkey($article->{id});
   }
@@ -1996,7 +1996,7 @@ sub fill_old_data {
     $data->{body} =~ s/\x0D\x0A/\n/g;
     $data->{body} =~ tr/\r/\n/;
   }
-  for my $col (Article->columns) {
+  for my $col (BSE::TB::Article->columns) {
     next if $col =~ /^custom/;
     $article->{$col} = $data->{$col}
       if exists $data->{$col} && $col ne 'id' && $col ne 'parentid';
@@ -2258,7 +2258,7 @@ sub save {
 
   my ($after_id) = $cgi->param("_after");
   if (defined $after_id) {
-    Articles->reorder_child($article->{parentid}, $article->{id}, $after_id);
+    BSE::TB::Articles->reorder_child($article->{parentid}, $article->{id}, $after_id);
     # reload, the displayOrder probably changed
     $article = $articles->getByPkey($article->{id});
   }
@@ -2603,7 +2603,7 @@ sub add_stepkid {
 
   my $after_id = $cgi->param("_after");
   if (defined $after_id) {
-    Articles->reorder_child($article->id, $child->id, $after_id);
+    BSE::TB::Articles->reorder_child($article->id, $child->id, $after_id);
   }
 
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
@@ -2821,7 +2821,7 @@ sub req_restepkid {
   if ($newparentid) {
     $newparentid =~ /^\d+$/
       or return $self->_service_error($req, $article, $articles, "Bad new parent id", {}, "BADNEWPARENT");
-    my $new_parent = Articles->getByPkey($newparentid)
+    my $new_parent = BSE::TB::Articles->getByPkey($newparentid)
       or return $self->_service_error($req, $article, $articles, "Unknown new parent id", {}, "UNKNOWNNEWPARENT");
     my $existing = 
       OtherParents->getBy(parentId=>$newparentid, childId=>$article->id)
@@ -2833,7 +2833,7 @@ sub req_restepkid {
 
   my $after_id = $cgi->param("_after");
   if (defined $after_id) {
-    Articles->reorder_child($step->{parentId}, $article->id, $after_id);
+    BSE::TB::Articles->reorder_child($step->{parentId}, $article->id, $after_id);
   }
 
   if ($req->is_ajax) {
@@ -3250,7 +3250,7 @@ sub _service_error {
     $article = $self->_dummy_article($req, $articles, \$mymsg);
     $article ||=
       {
-       map $_ => '', Article->columns
+       map $_ => '', BSE::TB::Article->columns
       };
   }
 
@@ -5066,7 +5066,7 @@ sub default_value {
 
   if ($col eq 'threshold') {
     my $parent = defined $article->{parentid} && $article->{parentid} != -1 
-      && Articles->getByPkey($article->{parentid}); 
+      && BSE::TB::Articles->getByPkey($article->{parentid}); 
 
     $parent and return $parent->{threshold};
     
@@ -5075,7 +5075,7 @@ sub default_value {
   
   if ($col eq 'summaryLength') {
     my $parent = defined $article->{parentid} && $article->{parentid} != -1 
-      && Articles->getByPkey($article->{parentid}); 
+      && BSE::TB::Articles->getByPkey($article->{parentid}); 
 
     $parent and return $parent->{summaryLength};
     
@@ -5309,13 +5309,13 @@ sub csrf_error {
   my $msg = $req->csrf_error;
   $errors{_csrfp} = $msg;
   my $mymsg;
-  $article ||= $self->_dummy_article($req, 'Articles', \$mymsg);
+  $article ||= $self->_dummy_article($req, 'BSE::TB::Articles', \$mymsg);
   unless ($article) {
     require BSE::Edit::Site;
     my $site = BSE::Edit::Site->new(cfg=>$req->cfg, db=> BSE::DB->single);
-    return $site->edit_sections($req, 'Articles', $mymsg);
+    return $site->edit_sections($req, 'BSE::TB::Articles', $mymsg);
   }
-  return $self->_service_error($req, $article, 'Articles', $msg, \%errors);
+  return $self->_service_error($req, $article, 'BSE::TB::Articles', $msg, \%errors);
 }
 
 =item a_csrp
@@ -5338,7 +5338,7 @@ sub req_csrfp {
 				    "Only usable from Ajax", undef, "NOTAJAX");
 
   $ENV{REQUEST_METHOD} eq 'POST'
-    or return $self->_service_error($req, $article, "Articles",
+    or return $self->_service_error($req, $article, "BSE::TB::Articles",
 				    "POST required for this action", {}, "NOTPOST");
 
   my %errors;
@@ -5374,7 +5374,7 @@ sub _article_kid_summary {
   if (--$depth > 0) {
     for my $kid (@kids) {
       $kid->{children} = [ _article_kid_summary($kid->{id}, $depth) ];
-      $kid->{allkids} = [ Articles->allkid_summary($kid->{id}) ];
+      $kid->{allkids} = [ BSE::TB::Articles->allkid_summary($kid->{id}) ];
     }
   }
 
@@ -5411,7 +5411,7 @@ sub req_tree {
      ],
      allkids =>
      [
-      Articles->allkid_summary($article->id)
+      BSE::TB::Articles->allkid_summary($article->id)
      ],
     );
 }

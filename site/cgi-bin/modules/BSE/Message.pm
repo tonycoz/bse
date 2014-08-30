@@ -10,7 +10,7 @@ use overload
   "&{}" => sub { my $self = $_[0]; return sub { $self->_old_msg(@_) } },
   "bool" => sub { 1 };
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 my $single;
 
@@ -91,7 +91,7 @@ sub html {
       my $gen = Generate->new(cfg => BSE::Cfg->single);
       my $templater = BSE::Template->templater(BSE::Cfg->single);
       return $gen->format_body(acts => {},
-			       articles => "Articles",
+			       articles => "BSE::TB::Articles",
 			       text => $msg->{message},
 			       templater => $templater);
     }

@@ -5,7 +5,7 @@ use BSE::Cfg;
 use BSE::Util::HTML;
 use Carp qw(cluck confess);
 
-our $VERSION = "1.028";
+our $VERSION = "1.029";
 
 =head1 NAME
 
@@ -366,8 +366,8 @@ sub user_can {
   $self->{perms} ||= BSE::Permissions->new($self->cfg);
   if ($self->cfg->entry('basic', 'access_control', 0)) {
     unless (ref $object) {
-      require Articles;
-      my $art = $object == -1 ? $site_article : Articles->getByPkey($object);
+      require BSE::TB::Articles;
+      my $art = $object == -1 ? $site_article : BSE::TB::Articles->getByPkey($object);
       if ($art) {
 	$object = $art;
       }

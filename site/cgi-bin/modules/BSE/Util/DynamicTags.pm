@@ -7,7 +7,7 @@ use base 'BSE::TagFormats';
 use BSE::CfgInfo qw(custom_class);
 use BSE::Cart;
 
-our $VERSION = "1.026";
+our $VERSION = "1.027";
 
 =head1 NAME
 
@@ -213,8 +213,8 @@ sub tag_ifUserCanSee {
 
   my $article;
   if ($args =~ /^\d+$/) {
-    require Articles;
-    $article = Articles->getByPkey($args);
+    require BSE::TB::Articles;
+    $article = BSE::TB::Articles->getByPkey($args);
   }
   else {
     $article = $req->get_article($args);
@@ -326,8 +326,8 @@ sub iter_dynlevel1s {
   $result
     and return $result;
 
-  require Articles;
-  $result = $self->access_filter(Articles->listedChildren(-1));
+  require BSE::TB::Articles;
+  $result = $self->access_filter(BSE::TB::Articles->listedChildren(-1));
   $self->set_cached(dynlevel1 => $result);
 
   return $result;
@@ -350,8 +350,8 @@ sub iter_dynlevel2s {
   $cached && $cached->[0] == $parent->{id}
     and return $cached->[1];
 
-  require Articles;
-  my $result = $self->access_filter(Articles->listedChildren($parent->{id}));
+  require BSE::TB::Articles;
+  my $result = $self->access_filter(BSE::TB::Articles->listedChildren($parent->{id}));
   $self->set_cached(dynlevel2 => [ $parent->{id}, $result ]);
 
   return $result;
@@ -374,8 +374,8 @@ sub iter_dynlevel3s {
   $cached && $cached->[0] == $parent->{id}
     and return $cached->[1];
 
-  require Articles;
-  my $result = $self->access_filter( Articles->listedChildren($parent->{id}));
+  require BSE::TB::Articles;
+  my $result = $self->access_filter( BSE::TB::Articles->listedChildren($parent->{id}));
   $self->set_cached(dynlevel3 => [ $parent->{id}, $result ]);
 
   return $result;
@@ -405,8 +405,8 @@ sub iter_dynallkids_of {
 
   @ids == 1 and $state->{parentid} = $ids[0];
 
-  require Articles;
-  return $self->access_filter(map Articles->all_visible_kids($_), @ids);
+  require BSE::TB::Articles;
+  return $self->access_filter(map BSE::TB::Articles->all_visible_kids($_), @ids);
 }
 
 sub tags_for_dynallkids_of {
@@ -424,15 +424,15 @@ sub tags_for_dynallkids_of {
   @ids
     or return { tags => [], members => [] };
 
-  require Articles;
+  require BSE::TB::Articles;
   if (@ids == 1) {
-    return Articles->all_visible_kid_tags($ids[0]);
+    return BSE::TB::Articles->all_visible_kid_tags($ids[0]);
   }
   else {
     my %tags;
     my @members;
     for my $id (@ids) {
-      my $more_tags = Articles->all_visible_kid_tags($id);
+      my $more_tags = BSE::TB::Articles->all_visible_kid_tags($id);
       for my $tag (@{$more_tags->{tags}}) {
 	$tags{$tag->id} = $tag;
       }
@@ -471,8 +471,8 @@ sub iter_dynchildren_of {
   }
   @ids = grep defined && /^\d+$|^-1$/, @ids;
 
-  require Articles;
-  return $self->access_filter( map Articles->listedChildren($_), @ids);
+  require BSE::TB::Articles;
+  return $self->access_filter( map BSE::TB::Articles->listedChildren($_), @ids);
 }
 
 =item iterator dyncart
@@ -590,19 +590,19 @@ sub _find_articles {
   my ($self, $article_id) = @_;
 
   if ($article_id =~ /^\d+$/) {
-    my $result = Articles->getByPkey($article_id);
+    my $result = BSE::TB::Articles->getByPkey($article_id);
     $result or print STDERR "** Unknown article id $article_id **\n";
     return $result ? $result : ();
   }
   elsif ($article_id =~ /^alias\((\w+)\)$/) {
-    my $result = Articles->getBy(linkAlias => $1);
+    my $result = BSE::TB::Articles->getBy(linkAlias => $1);
     $result or print STDERR "** Unknown article alias $article_id **\n";
     return $result ? $result : ();
   }
   elsif ($article_id =~ /^childrenof\((.*)\)$/) {
     my $id = $1;
     if ($id eq '-1') {
-      return Articles->all_visible_kids(-1);
+      return BSE::TB::Articles->all_visible_kids(-1);
     }
     else {
       my @parents = $self->_find_articles($id)
@@ -765,9 +765,9 @@ sub iter_dynunused_tagcats {
     $tags = $self->{tags}{$iter};
   }
 
-  require Articles;
+  require BSE::TB::Articles;
 
-  return Articles->categorize_tags
+  return BSE::TB::Articles->categorize_tags
     (
      [ keys %$tags ],
      $selected_tags,
@@ -904,8 +904,8 @@ sub tag_dthumbimage {
   
   my $article;
   if ($article_id =~ /^\d+$/) {
-    require Articles;
-    $article = Articles->getByPkey($args);
+    require BSE::TB::Articles;
+    $article = BSE::TB::Articles->getByPkey($args);
   }
   else {
     $article = $self->{req}->get_article($article_id);
@@ -1281,8 +1281,8 @@ sub _get_filter {
     my $expr = $1;
     my $orig_expr = $expr;
     unless ($cols_re) {
-      require Articles;
-      my $cols_expr = '(' . join('|', Article->columns) . ')';
+      require BSE::TB::Articles;
+      my $cols_expr = '(' . join('|', BSE::TB::Article->columns) . ')';
       $cols_re = qr/\[$cols_expr\]/;
     }
     $expr =~ s/$cols_re/\$article->{$1}/g;
@@ -1363,7 +1363,7 @@ sub _do_filter {
       my $all_found = 1;
     TAGS:
       for my $tag_name (@$tags) {
-	my $tag = Articles->getTagByName($tag_name);
+	my $tag = BSE::TB::Articles->getTagByName($tag_name);
 	unless ($tag) {
 	  # can't find a tag that doesn't exist
 	  $all_found = 0;

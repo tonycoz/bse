@@ -1,9 +1,9 @@
 package BSE::DummyArticle;
 use strict;
 use base 'BSE::TB::SiteCommon';
-use Articles;
+use BSE::TB::Articles;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub images {
   return;
@@ -14,7 +14,7 @@ sub files {
 }
 
 {
-  for my $name (Article->columns) {
+  for my $name (BSE::TB::Article->columns) {
     eval "sub $name { \$_[0]{$name} }";
   }
 }

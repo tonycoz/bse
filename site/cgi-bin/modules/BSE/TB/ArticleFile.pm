@@ -6,7 +6,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 use Carp 'confess';
 
-our $VERSION = "1.010";
+our $VERSION = "1.011";
 
 sub columns {
   return qw/id articleId displayName filename sizeInBytes description 
@@ -76,9 +76,9 @@ sub remove {
 
 sub article {
   my $self = shift;
-  require Articles;
+  require BSE::TB::Articles;
 
-  return Articles->getByPkey($self->{articleId});
+  return BSE::TB::Articles->getByPkey($self->{articleId});
 }
 
 sub url {

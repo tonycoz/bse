@@ -59,7 +59,7 @@ BSE::Admin::StepParents->add($parent, $stepkid);
 sleep(2); # make sure they get a new displayOrder
 BSE::Admin::StepParents->add($parent, $stepprod);
 
-my $top = Articles->getByPkey(1);
+my $top = BSE::TB::Articles->getByPkey(1);
 ok($top, "grabbing Home page");
 
 template_test "children_of", $top, <<TEMPLATE, <<EXPECTED;

@@ -1,12 +1,12 @@
-package Articles;
+package BSE::TB::Articles;
 use strict;
 use Squirrel::Table;
 use vars qw(@ISA $VERSION);
 require BSE::TB::TagOwners;
 @ISA = qw(Squirrel::Table BSE::TB::TagOwners);
-use Article;
+use BSE::TB::Article;
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 =head1 NAME
 
@@ -14,10 +14,10 @@ Articles - BSE's article collection
 
 =head1 SYNOPSIS
 
-  use Articles;
+  use BSE::TB::Articles;
 
-  my $article = Articles->make(...);
-  my $article = Articles->getByPkey($id)
+  my $article = BSE::TB::Articles->make(...);
+  my $article = BSE::TB::Articles->getByPkey($id)
   # etc
 
 =head1 DESCRIPTION
@@ -31,7 +31,7 @@ The collective class for BSE articles.
 =cut
 
 sub rowClass {
-  return 'Article';
+  return 'BSE::TB::Article';
 }
 
 =item sections
@@ -126,7 +126,7 @@ sub visible_stepkids {
   use BSE::Util::SQL qw/now_sqldate/;
   my $today = now_sqldate();
 
-  return Articles->getSpecial('visibleStepKids', $id, $today);
+  return BSE::TB::Articles->getSpecial('visibleStepKids', $id, $today);
 }
 
 =item all_visible_kids($id)
@@ -141,7 +141,7 @@ sub all_visible_kids {
   require 'OtherParents.pm';
 
   my @otherlinks = OtherParents->getBy(parentId=>$id);
-  my @normalkids = Articles->listedChildren($id);
+  my @normalkids = BSE::TB::Articles->listedChildren($id);
   my %order = (
 	       (map { $_->{id}, $_->{displayOrder} } @normalkids ),
 	       (map { $_->{childId}, $_->{parentDisplayOrder} } @otherlinks),

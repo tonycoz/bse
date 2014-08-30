@@ -8,7 +8,7 @@ use vars qw(@EXPORT_OK @ISA);
 @ISA = qw(Exporter);
 require Exporter;
 
-our $VERSION = "1.026";
+our $VERSION = "1.027";
 
 sub _get_parms {
   my ($acts, $args) = @_;
@@ -198,7 +198,7 @@ sub static {
        require BSE::Generate;
        my $gen = BSE::Generate->new(cfg=>$cfg);
        return $gen->format_body(acts => $acts, 
-				articles => 'Articles', 
+				articles => 'BSE::TB::Articles', 
 				text => $value, 
 				templater => $templater);
      },
@@ -445,7 +445,7 @@ sub tag_nobodytext {
   
   require BSE::Generate;
   my $gen = BSE::Generate->new(cfg=>$cfg);
-  $gen->remove_block('Articles', $acts, \$value);
+  $gen->remove_block('BSE::TB::Articles', $acts, \$value);
   
   return escape_html($value);
 }

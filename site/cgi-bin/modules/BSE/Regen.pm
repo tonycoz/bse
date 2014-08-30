@@ -11,7 +11,7 @@ use BSE::WebUtil qw(refresh_to_admin);
 use BSE::Util::HTML;
 use BSE::DummyArticle;
 
-our $VERSION = "1.014";
+our $VERSION = "1.015";
 
 # returns non-zero if the Regenerate button should work
 sub generate_button {
@@ -102,8 +102,8 @@ sub _cfg_presets {
 
   my $section = "$type settings";
 
-  require Articles;
-  for my $field (Article->columns) {
+  require BSE::TB::Articles;
+  for my $field (BSE::TB::Article->columns) {
     if ($cfg->entry($section, $field)) {
       $article->{$field} = $cfg->entryVar($section, $field);
     }
@@ -115,8 +115,8 @@ sub _search_presets {
 
   # build a dummy article
   use Constants qw($SEARCH_TITLE $SEARCH_TITLE_IMAGE $CGI_URI);
-  require Articles;
-  my %article = map { $_, '' } Article->columns;
+  require BSE::TB::Articles;
+  my %article = map { $_, '' } BSE::TB::Article->columns;
   @article{qw(id parentid title titleImage displayOrder link level listed force_dynamic)} =
     (-4, -1, $SEARCH_TITLE, $SEARCH_TITLE_IMAGE, 0, $CGI_URI."/search.pl", 0, 1, 1);
 
@@ -130,8 +130,8 @@ sub _search_presets {
 sub _shop_presets {
   my ($cfg) = @_;
 
-  require Articles;
-  my $shop_base = Articles->getByPkey($SHOPID);
+  require BSE::TB::Articles;
+  my $shop_base = BSE::TB::Articles->getByPkey($SHOPID);
   my $shop = { map { $_ => $shop_base->{$_} } $shop_base->columns };
   $shop->{link} =~ /^\w+:/
     or $shop->{link} = $cfg->entryErr('site', 'url') . $shop->{link};
@@ -145,8 +145,8 @@ sub _shop_presets {
 sub _extras_presets {
   my ($cfg, $presets) = @_;
 
-  require Articles;
-  my %article = map { $_, '' } Article->columns;
+  require BSE::TB::Articles;
+  my %article = map { $_, '' } BSE::TB::Article->columns;
   $article{displayOrder} = 1;
   $article{id} = -5;
   $article{parentid} = -1;
@@ -363,7 +363,7 @@ sub generate_base {
 
   my $cfg = delete $opts{cfg} || BSE::Cfg->single;
 
-  my $articles = delete $opts{articles} || "Articles";
+  my $articles = delete $opts{articles} || "BSE::TB::Articles";
   my $extras = delete $opts{extras} || [ pregenerate_list($cfg) ];
 
   my $progress = delete $opts{progress} || sub {};

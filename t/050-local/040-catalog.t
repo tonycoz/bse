@@ -11,7 +11,7 @@ BEGIN {
 }
 #ok(chdir $cgidir, "switch to CGI directory");
 # create some articles to test with
-use Articles;
+use BSE::TB::Articles;
 use Products;
 use BSE::API qw/bse_cfg bse_init bse_make_catalog bse_make_product bse_add_step_child/;
 

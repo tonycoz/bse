@@ -107,7 +107,7 @@ SKIP: {
   my $error;
   ok($art->set_tags([ "colour: red", "size: large" ], \$error),
      "set some tags should succeed");
-  my $cat = Articles->tag_category("colour");
+  my $cat = BSE::TB::Articles->tag_category("colour");
   ok($cat, "get the 'colour' tag cat");
   my @orig_deps = $cat->deps;
 

@@ -2,13 +2,13 @@ package BSE::UI::AdminNewsletter;
 use strict;
 use BSE::SubscriptionTypes;
 use BSE::Util::Tags qw(tag_hash);
-use Articles;
+use BSE::TB::Articles;
 use BSE::Message;
 use BSE::Util::HTML qw(:default popup_menu);
 use BSE::Util::Iterate;
 use base 'BSE::UI::AdminDispatch';
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 =head1 NAME
 
@@ -179,7 +179,7 @@ sub _parent_popup {
 
   my %valid_types = map { $_ => 1 } _valid_archive_types($req);
   my $shopid = $req->cfg->entryErr('articles', 'shop');
-  my @all = Articles->query([qw/id title generator/],
+  my @all = BSE::TB::Articles->query([qw/id title generator/],
 			   [ [ '<>', 'id', $shopid ] ]);
   if ($req->cfg->entry('basic', 'access_filter_parents', 0)) {
     @all = grep($req->user_can('edit_add_child', $_->{id})
@@ -307,7 +307,7 @@ sub validate {
   if ($q->param('archive')) {
     my $id = $q->param('parentId');
     if ($id) {
-      my $article = Articles->getByPkey($id);
+      my $article = BSE::TB::Articles->getByPkey($id);
       if ($article) {
 	unless ($req->user_can('edit_add_child', $article)
 		|| ($sub && $sub->{parentId} == $id)) {

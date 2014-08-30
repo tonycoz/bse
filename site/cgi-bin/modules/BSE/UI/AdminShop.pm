@@ -9,7 +9,7 @@ use BSE::Template;
 use Constants qw(:shop $SHOPID $PRODUCTPARENT 
                  $SHOP_URI $CGI_URI $AUTO_GENERATE);
 use BSE::TB::Images;
-use Articles;
+use BSE::TB::Articles;
 use BSE::Sort;
 use BSE::Util::Tags qw(tag_hash tag_error_img tag_object_plain tag_object tag_article);
 use BSE::Util::Iterate;
@@ -21,7 +21,7 @@ use BSE::CfgInfo qw(cfg_dist_image_uri);
 use BSE::Util::SQL qw/now_sqldate sql_to_date date_to_sql sql_date sql_datetime/;
 use BSE::Util::Valid qw/valid_date/;
 
-our $VERSION = "1.025";
+our $VERSION = "1.026";
 
 my %actions =
   (
@@ -102,7 +102,7 @@ sub embedded_catalog {
   my $subcat_index = -1;
   my @subcats = sort { $b->{displayOrder} <=> $a->{displayOrder} } 
     grep $_->{generator} eq 'BSE::Generate::Catalog', 
-    Articles->children($catalog->{id});
+    BSE::TB::Articles->children($catalog->{id});
 
   my $image_uri = cfg_dist_image_uri();
   my $blank = qq!<img src="$image_uri/trans_pixel.gif" width="17" height="13" border="0" align="absbottom" />!;
@@ -206,9 +206,9 @@ sub req_product_list {
   my $cgi = $req->cgi;
   my $session = $req->session;
   my $shopid = $req->cfg->entryErr('articles', 'shop');
-  my $shop = Articles->getByPkey($shopid);
+  my $shop = BSE::TB::Articles->getByPkey($shopid);
   my @catalogs = sort { $b->{displayOrder} <=> $a->{displayOrder} }
-    grep $_->{generator} eq 'BSE::Generate::Catalog', Articles->children($shopid);
+    grep $_->{generator} eq 'BSE::Generate::Catalog', BSE::TB::Articles->children($shopid);
   my $catalog_index = -1;
   $message = $req->message($message);
   if (defined $cgi->param('showstepkids')) {
@@ -331,7 +331,7 @@ sub product_form {
     push(@catalogs, { id=>$parent, display=>$title }) if $title;
     my @kids = sort { $b->{displayOrder} <=> $a->{displayOrder} } 
       grep $_->{generator} eq 'BSE::Generate::Catalog',
-      Articles->children($parent);
+      BSE::TB::Articles->children($parent);
     $title .= ' / ' if $title;
     unshift(@work, map [ $_->{id}, $title.$_->{title} ], @kids);
   }

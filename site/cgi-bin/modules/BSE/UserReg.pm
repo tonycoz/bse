@@ -18,7 +18,7 @@ use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
 use Carp qw(confess);
 
-our $VERSION = "1.031";
+our $VERSION = "1.032";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -1611,8 +1611,8 @@ sub _common_download {
   # check the user has access to this file (RT#531)
   my $article;
   if ($file->{articleId} != -1) {
-    require Articles;
-    $article ||= Articles->getByPkey($file->{articleId})
+    require BSE::TB::Articles;
+    $article ||= BSE::TB::Articles->getByPkey($file->{articleId})
       or return $self->req_show_logon($req,
 				  $msgs->('downloadarticle',
 					  "Could not load article for file"));

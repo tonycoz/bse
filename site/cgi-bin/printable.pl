@@ -4,7 +4,7 @@ use FindBin;
 use lib "$FindBin::Bin/modules";
 use CGI qw(:standard);
 use Carp; # 'verbose'; # remove the 'verbose' in production
-use Articles;
+use BSE::TB::Articles;
 use BSE::Cfg;
 use BSE::DB;
 use BSE::Template;
@@ -18,14 +18,14 @@ defined $id or $id = 1;
 # loads all of the articles into memory
 # hopefully a print template won't include too many references to 
 # other articles anyway
-#my $articles = Articles->new;
+#my $articles = BSE::TB::Articles->new;
 
-my $article = Articles->getByPkey($id)
+my $article = BSE::TB::Articles->getByPkey($id)
   or error_page("No article with id $id found");
 
 eval "use $article->{generator}";
 die $@ if $@;
-my $generator = $article->{generator}->new(articles=>'Articles', cfg => $cfg,
+my $generator = $article->{generator}->new(articles=>'BSE::TB::Articles', cfg => $cfg,
 					  top => $article);
 
 my $template = param('template');
@@ -64,7 +64,7 @@ close TMPLT;
 $text =~ s/<:\s*embed\s+(?:start|end)\s*:>//g;
 
 print "Content-Type: $type\n\n";
-print $generator->generate_low($text, $article, 'Articles');
+print $generator->generate_low($text, $article, 'BSE::TB::Articles');
 
 
 sub error_page {
@@ -72,7 +72,7 @@ sub error_page {
   $error ||= "Unknown error";
 
   my %article;
-  my @cols = Article->columns;
+  my @cols = BSE::TB::Article->columns;
   @article{@cols} = ('') x @cols;
   $article{id} = -10;
   $article{title} = "Error";
@@ -83,7 +83,7 @@ sub error_page {
   my %acts;
   %acts = 
     (
-     $gen->baseActs('Articles', \%acts, \%article),
+     $gen->baseActs('BSE::TB::Articles', \%acts, \%article),
      error => sub { CGI::escapeHTML($error) },
     );
   

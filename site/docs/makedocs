@@ -7,7 +7,7 @@ use strict;
 my @targets =
   (
    'access.html',
-   'Article.html',
+   'BSE::TB::Article.html',
    'bse.html',
    'BSE::TB::SiteCommon.html',
    'BSE::TB::TagOwner.html',

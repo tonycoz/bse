@@ -1,11 +1,11 @@
 package Product;
 use strict;
 # represents a product from the database
-use Articles;
+use BSE::TB::Articles;
 use vars qw/@ISA/;
-@ISA = qw/Article/;
+@ISA = qw/BSE::TB::Article/;
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 # subscription_usage values
 use constant SUBUSAGE_START_ONLY => 1;
@@ -20,7 +20,7 @@ sub columns {
 }
 
 sub bases {
-  return { articleId=>{ class=>'Article'} };
+  return { articleId=>{ class=>'BSE::TB::Article'} };
 }
 
 sub subscription_required {
