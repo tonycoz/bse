@@ -2,7 +2,7 @@ package BSE::TB::SiteCommon;
 use strict;
 use Carp qw(confess);
 
-our $VERSION = "1.018";
+our $VERSION = "1.019";
 
 =head1 NAME
 

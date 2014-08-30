@@ -5,7 +5,7 @@ use BSE::Util::HTML;
 use BSE::Util::Tags qw(tag_article);
 use constant CATALOG_CUSTOM_FIELDS_CFG => "catalog custom fields";
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 sub base_template_dirs {
   return ( "catalog" );

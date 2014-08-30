@@ -8,7 +8,7 @@ use vars qw(@EXPORT_OK @ISA);
 @ISA = qw(Exporter);
 require Exporter;
 
-our $VERSION = "1.025";
+our $VERSION = "1.026";
 
 sub _get_parms {
   my ($acts, $args) = @_;

@@ -10,7 +10,7 @@ use Carp qw(confess croak);
 use Fcntl qw(:seek);
 use Cwd;
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 =head1 NAME
 

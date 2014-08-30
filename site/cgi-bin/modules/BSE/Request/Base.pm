@@ -5,7 +5,7 @@ use BSE::Cfg;
 use BSE::Util::HTML;
 use Carp qw(cluck confess);
 
-our $VERSION = "1.027";
+our $VERSION = "1.028";
 
 =head1 NAME
 

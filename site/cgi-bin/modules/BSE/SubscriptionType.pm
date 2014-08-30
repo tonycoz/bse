@@ -5,7 +5,7 @@ use Squirrel::Row;
 use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 sub columns {
   return qw/id name title description frequency keyword archive 

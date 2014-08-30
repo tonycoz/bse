@@ -9,7 +9,7 @@ use Carp qw(confess);
 use BSE::Util::HTML;
 use BSE::Util::Tags qw(tag_article);
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub edit_link {
   my ($self, $id) = @_;

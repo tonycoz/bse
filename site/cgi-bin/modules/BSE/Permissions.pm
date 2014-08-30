@@ -1,7 +1,7 @@
 package BSE::Permissions;
 use strict;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 # these are the permissions that are checked beyond just whether the permissions DB allows them
 my @checks =

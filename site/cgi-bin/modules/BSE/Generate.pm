@@ -313,7 +313,7 @@ Conditional tag, true if the current article is being embedded.
 
 =cut
 
-our $VERSION = "1.022";
+our $VERSION = "1.023";
 
 my $excerptSize = 300;
 

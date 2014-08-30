@@ -10,7 +10,7 @@ use BSE::CfgInfo 'product_options';
 use BSE::Util::Tags qw(tag_hash tag_article);
 use constant PRODUCT_CUSTOM_FIELDS_CFG => "product custom fields";
 
-our $VERSION = "1.013";
+our $VERSION = "1.014";
 
 =head1 NAME
 

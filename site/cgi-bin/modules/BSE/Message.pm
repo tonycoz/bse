@@ -10,7 +10,7 @@ use overload
   "&{}" => sub { my $self = $_[0]; return sub { $self->_old_msg(@_) } },
   "bool" => sub { 1 };
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 my $single;
 

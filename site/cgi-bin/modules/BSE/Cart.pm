@@ -2,7 +2,7 @@ package BSE::Cart;
 use strict;
 use Scalar::Util;
 
-our $VERSION = "1.008";
+our $VERSION = "1.009";
 
 =head1 NAME
 

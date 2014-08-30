@@ -9,7 +9,7 @@ use BSE::TB::AdminUsers;
 use BSE::TB::AdminGroups;
 use BSE::Util::Iterate;
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 my %actions =
   (

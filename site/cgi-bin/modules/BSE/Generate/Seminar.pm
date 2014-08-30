@@ -6,7 +6,7 @@ use BSE::Util::HTML;
 use BSE::Util::Tags qw(tag_article);
 use BSE::Util::Iterate;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub baseActs {
   my ($self, $articles, $acts, $seminar, $embedded) = @_;

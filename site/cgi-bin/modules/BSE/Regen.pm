@@ -11,7 +11,7 @@ use BSE::WebUtil qw(refresh_to_admin);
 use BSE::Util::HTML;
 use BSE::DummyArticle;
 
-our $VERSION = "1.013";
+our $VERSION = "1.014";
 
 # returns non-zero if the Regenerate button should work
 sub generate_button {
