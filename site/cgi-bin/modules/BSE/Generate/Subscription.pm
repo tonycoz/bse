@@ -1,4 +1,4 @@
-package Generate::Subscription;
+package BSE::Generate::Subscription;
 use strict;
 use vars qw(@ISA);
 use BSE::Generate::Article;

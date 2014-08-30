@@ -346,7 +346,7 @@ site/cgi-bin/modules/Generate.pm
 site/cgi-bin/modules/BSE/Generate/Article.pm
 site/cgi-bin/modules/BSE/Generate/Catalog.pm
 site/cgi-bin/modules/BSE/Generate/Product.pm
-site/cgi-bin/modules/Generate/Subscription.pm
+site/cgi-bin/modules/BSE/Generate/Subscription.pm
 site/cgi-bin/modules/OtherParent.pm
 site/cgi-bin/modules/OtherParents.pm
 site/cgi-bin/modules/Product.pm

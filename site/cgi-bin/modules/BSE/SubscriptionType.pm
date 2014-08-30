@@ -46,7 +46,7 @@ sub _build_article {
   my $template = $opts->{html_template};
   $template = $sub->{html_template} unless defined $template;
   $article->{template} = $template;
-  $article->{generator} = 'Generate::Subscription';
+  $article->{generator} = 'BSE::Generate::Subscription';
   $article->{id} = -5;
 
   $article->{threshold} = $parent->{threshold};
@@ -243,7 +243,7 @@ sub _text_format_low {
   my ($sub, $cfg, $user, $opts, $article) = @_;
 
   my $template = $opts->{text_template} || $sub->{text_template};
-  $article->{generator} = 'Generate::Subscription';
+  $article->{generator} = 'BSE::Generate::Subscription';
   $article->{id} = -5;
   my %acts;
   %acts =
@@ -289,10 +289,10 @@ sub html_format {
 
   my %article;
   $sub->_build_article(\%article, $opts);
-  require Generate::Subscription;
+  require BSE::Generate::Subscription;
   require BSE::DummyArticle;
   bless \%article, "BSE::DummyArticle";
-  my $gen = Generate::Subscription->new(cfg=>$cfg, top => \%article);
+  my $gen = BSE::Generate::Subscription->new(cfg=>$cfg, top => \%article);
   $gen->set_user($user);
   $gen->set_sub($sub);
 
@@ -325,8 +325,8 @@ sub _send {
   my $gen;
   if ($article->{template}) {
     #print STDERR "Making generator\n";
-    require Generate::Subscription;
-    $gen = Generate::Subscription->new(cfg=>$cfg, top=>$article);
+    require BSE::Generate::Subscription;
+    $gen = BSE::Generate::Subscription->new(cfg=>$cfg, top=>$article);
     $gen->set_sub($sub);
   }
   my $from = $cfg->entryIfVar('subscriptions', 'from');
