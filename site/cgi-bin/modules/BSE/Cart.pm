@@ -727,7 +727,7 @@ sub _product {
     $product = Products->getByPkey($id)
       or die "No product $id\n";
     # FIXME
-    if ($product->generator ne "Generate::Product") {
+    if ($product->generator ne "BSE::Generate::Product") {
       require BSE::TB::Seminars;
       $product = BSE::TB::Seminars->getByPkey($id)
 	or die "Not a product, not a seminar $id\n";

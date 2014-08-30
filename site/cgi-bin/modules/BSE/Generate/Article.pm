@@ -1232,7 +1232,7 @@ See the summary tag.
 =item generator
 
 The class used to generate the article.  Should be one of
-BSE::Generate::Article, Generate::Catalog or Generate::Product.
+BSE::Generate::Article, Generate::Catalog or BSE::Generate::Product.
 
 =item level
 

@@ -345,7 +345,7 @@ site/cgi-bin/modules/DevHelp/Validate.pm
 site/cgi-bin/modules/Generate.pm
 site/cgi-bin/modules/BSE/Generate/Article.pm
 site/cgi-bin/modules/Generate/Catalog.pm
-site/cgi-bin/modules/Generate/Product.pm
+site/cgi-bin/modules/BSE/Generate/Product.pm
 site/cgi-bin/modules/Generate/Subscription.pm
 site/cgi-bin/modules/OtherParent.pm
 site/cgi-bin/modules/OtherParents.pm

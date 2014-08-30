@@ -416,7 +416,7 @@ sub check_edit_delete_article {
 sub check_edit_add_child {
   my ($self, $user, $article, $action, $rmsg) = @_;
 
-  if ($article->{generator} eq 'Generate::Product') {
+  if ($article->{generator} eq 'BSE::Generate::Product') {
     $$rmsg = "Products cannot have children";
     return;
   }

@@ -136,7 +136,7 @@ sub baseActs {
     (my $file = $gen . ".pm") =~ s!::!/!g;
     require $file;
   }
-  my @allprods = grep UNIVERSAL::isa($_->{generator}, 'Generate::Product'), 
+  my @allprods = grep UNIVERSAL::isa($_->{generator}, 'BSE::Generate::Product'), 
     @allkids;
   for (@allprods) {
     unless ($_->isa('Product')) {

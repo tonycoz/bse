@@ -1,4 +1,4 @@
-package Generate::Product;
+package BSE::Generate::Product;
 use strict;
 use BSE::Generate::Article;
 use Products;
@@ -108,7 +108,7 @@ __END__
 
 =head1 NAME
 
-  Generate::Product - generates product detail pages for BSE
+  BSE::Generate::Product - generates product detail pages for BSE
 
 =head1 DESCRIPTION
 

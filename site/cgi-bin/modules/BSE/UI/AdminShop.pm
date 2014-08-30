@@ -91,7 +91,7 @@ sub embedded_catalog {
       (my $file = $gen . ".pm") =~ s!::!/!g;
       require $file;
     }
-    @list = grep UNIVERSAL::isa($_->{generator}, 'Generate::Product'), $catalog->allkids;
+    @list = grep UNIVERSAL::isa($_->{generator}, 'BSE::Generate::Product'), $catalog->allkids;
     @list = map { $products->getByPkey($_->{id}) } @list;
   }
   else {

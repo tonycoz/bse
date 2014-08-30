@@ -33,7 +33,7 @@ my %money_fields =
    gst => "GST",
   );
 
-sub generator { 'Generate::Product' }
+sub generator { 'BSE::Generate::Product' }
 
 sub base_template_dirs {
   return ( "products" );

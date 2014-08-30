@@ -82,7 +82,7 @@ my %product_defaults =
   (
    template => 'shopitem.tmpl',
    parentid => 4,
-   generator => 'Generate::Product',
+   generator => 'BSE::Generate::Product',
    wholesalePrice => 0,
    gst => 0,
    leadTime => 0,

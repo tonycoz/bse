@@ -1,6 +1,6 @@
 package BSE::Generate::Seminar;
 use strict;
-use base 'Generate::Product';
+use base 'BSE::Generate::Product';
 use BSE::TB::Seminars;
 use BSE::Util::HTML;
 use BSE::Util::Tags qw(tag_article);
