@@ -102,7 +102,7 @@ my %catalog_defaults =
   (
    template => 'catalog.tmpl',
    parentid => 3,
-   generator => 'Generate::Catalog',
+   generator => 'BSE::Generate::Catalog',
   );
 
 sub _set_dynamic {

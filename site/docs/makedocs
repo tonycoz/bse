@@ -15,7 +15,7 @@ my @targets =
    'bugs.html',
    'templates.html',
    'Generate.html',
-   'Generate::Catalog.html',
+   'BSE::Generate::Catalog.html',
    'BSE::Generate::Article.html',
    'BSE::Generate::Product.html',
    'Squirrel::Template.html',

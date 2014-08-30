@@ -54,7 +54,7 @@ sub visible_stepkids {
   use BSE::Util::SQL qw/now_sqldate/;
   my $today = now_sqldate();
 
-  if ($self->{generator} eq 'Generate::Catalog') {
+  if ($self->{generator} eq 'BSE::Generate::Catalog') {
     require 'Products.pm';
 
     return Products->getSpecial('visibleStep', $self->{id}, $today);
@@ -116,7 +116,7 @@ sub all_visible_product_tags {
 sub all_visible_catalogs {
   my ($self) = @_;
 
-  return grep $_->{generator} eq "Generate::Catalog", $self->all_visible_kids;
+  return grep $_->{generator} eq "BSE::Generate::Catalog", $self->all_visible_kids;
 }
 
 sub visible_kids {

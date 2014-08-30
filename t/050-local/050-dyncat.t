@@ -49,7 +49,7 @@ my $parent = bse_make_catalog
   );
 
 ok($parent, "made a catalog");
-is($parent->{generator}, "Generate::Catalog", "check generator");
+is($parent->{generator}, "BSE::Generate::Catalog", "check generator");
 
 sleep 1;
 my $parent2 = bse_make_catalog

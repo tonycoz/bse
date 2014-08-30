@@ -249,7 +249,7 @@ sub should_be_catalog {
 
   return $article->{parentid} && $parent &&
     ($article->{parentid} == $shopid || 
-     $parent->{generator} eq 'Generate::Catalog');
+     $parent->{generator} eq 'BSE::Generate::Catalog');
 }
 
 sub possible_parents {

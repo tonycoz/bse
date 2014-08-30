@@ -101,7 +101,7 @@ sub embedded_catalog {
   my $list_index = -1;
   my $subcat_index = -1;
   my @subcats = sort { $b->{displayOrder} <=> $a->{displayOrder} } 
-    grep $_->{generator} eq 'Generate::Catalog', 
+    grep $_->{generator} eq 'BSE::Generate::Catalog', 
     Articles->children($catalog->{id});
 
   my $image_uri = cfg_dist_image_uri();
@@ -208,7 +208,7 @@ sub req_product_list {
   my $shopid = $req->cfg->entryErr('articles', 'shop');
   my $shop = Articles->getByPkey($shopid);
   my @catalogs = sort { $b->{displayOrder} <=> $a->{displayOrder} }
-    grep $_->{generator} eq 'Generate::Catalog', Articles->children($shopid);
+    grep $_->{generator} eq 'BSE::Generate::Catalog', Articles->children($shopid);
   my $catalog_index = -1;
   $message = $req->message($message);
   if (defined $cgi->param('showstepkids')) {
@@ -330,7 +330,7 @@ sub product_form {
 
     push(@catalogs, { id=>$parent, display=>$title }) if $title;
     my @kids = sort { $b->{displayOrder} <=> $a->{displayOrder} } 
-      grep $_->{generator} eq 'Generate::Catalog',
+      grep $_->{generator} eq 'BSE::Generate::Catalog',
       Articles->children($parent);
     $title .= ' / ' if $title;
     unshift(@work, map [ $_->{id}, $title.$_->{title} ], @kids);

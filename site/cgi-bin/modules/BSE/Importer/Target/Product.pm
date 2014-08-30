@@ -182,7 +182,7 @@ Returns catalogs that are a child of the specified article.
 sub children_of {
   my ($self, $parent) = @_;
 
-  return grep $_->{generator} eq 'Generate::Catalog',
+  return grep $_->{generator} eq 'BSE::Generate::Catalog',
     Articles->children($parent);
 }
 

@@ -1,4 +1,4 @@
-package Generate::Catalog;
+package BSE::Generate::Catalog;
 
 our $VERSION = "1.004";
 
@@ -122,7 +122,7 @@ sub baseActs {
     grep $_->{listed} && $_->{parentid} == $article->{id}, $products->all;
   my $product_index = -1;
   my @subcats = sort { $b->{displayOrder} <=> $a->{displayOrder} }
-    grep $_->{listed} && UNIVERSAL::isa($_->{generator}, 'Generate::Catalog'),
+    grep $_->{listed} && UNIVERSAL::isa($_->{generator}, 'BSE::Generate::Catalog'),
     $articles->getBy(parentid => $article->{id});
   my $other_parents = OtherParents->new;
   my ($year, $month, $day) = (localtime)[5,4,3];
@@ -143,7 +143,7 @@ sub baseActs {
       $_ = Products->getByPkey($_->{id});
     }
   }
-  my @allcats = grep UNIVERSAL::isa($_->{generator}, 'Generate::Catalog'), 
+  my @allcats = grep UNIVERSAL::isa($_->{generator}, 'BSE::Generate::Catalog'), 
     @allkids;
 
   # for article ifUnderThreshold handler
@@ -268,7 +268,7 @@ __END__
 
 =head1 NAME
 
-  Generate::Catalog - page generator class for catalog pages
+  BSE::Generate::Catalog - page generator class for catalog pages
 
 =head1 DESCRIPTION
 

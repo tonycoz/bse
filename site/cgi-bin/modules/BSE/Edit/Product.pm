@@ -366,7 +366,7 @@ sub validate_parent {
 
   my $shopid = $self->{cfg}->entryErr('articles', 'shop');
   unless ($parent && 
-	  $parent->{generator} eq 'Generate::Catalog') {
+	  $parent->{generator} eq 'BSE::Generate::Catalog') {
     $$rmsg = "Products must be in a catalog (not $parent->{generator})";
     return;
   }
@@ -479,10 +479,10 @@ sub possible_parents {
     $labels{$id} = $title;
     push @work, map [ $_->{id}, $title.' / '.$_->{title} ],
     sort { $b->{displayOrder} <=> $a->{displayOrder} }
-      grep $_->{generator} eq 'Generate::Catalog', 
+      grep $_->{generator} eq 'BSE::Generate::Catalog', 
       $articles->getBy(parentid=>$id);
   }
-  unless ($shop->{generator} eq 'Generate::Catalog') {
+  unless ($shop->{generator} eq 'BSE::Generate::Catalog') {
     shift @values;
     delete $labels{$shopid};
   }

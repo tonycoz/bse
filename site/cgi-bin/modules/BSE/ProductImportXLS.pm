@@ -242,7 +242,7 @@ sub _find_cat {
   @cats
     or return $parent;
   unless ($cache->{$parent}) {
-    my @kids = grep $_->{generator} eq 'Generate::Catalog', 
+    my @kids = grep $_->{generator} eq 'BSE::Generate::Catalog', 
       Articles->children($parent);
     $cache->{$parent} = \@kids;
   }
