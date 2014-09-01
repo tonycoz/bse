@@ -1,10 +1,10 @@
 package BSE::Generate::Catalog;
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 use strict;
 use BSE::Generate;
-use Products;
+use BSE::TB::Products;
 use base 'BSE::Generate::Article';
 use BSE::Template;
 use Constants qw($CGI_URI $ADMIN_URI);
@@ -117,7 +117,7 @@ sub tag_ifAnyProductOptions {
 sub baseActs {
   my ($self, $articles, $acts, $article, $embedded) = @_;
 
-  my $products = Products->new;
+  my $products = BSE::TB::Products->new;
   my @products = sort { $b->{displayOrder} <=> $a->{displayOrder} }
     grep $_->{listed} && $_->{parentid} == $article->{id}, $products->all;
   my $product_index = -1;
@@ -139,8 +139,8 @@ sub baseActs {
   my @allprods = grep UNIVERSAL::isa($_->{generator}, 'BSE::Generate::Product'), 
     @allkids;
   for (@allprods) {
-    unless ($_->isa('Product')) {
-      $_ = Products->getByPkey($_->{id});
+    unless ($_->isa('BSE::TB::Product')) {
+      $_ = BSE::TB::Products->getByPkey($_->{id});
     }
   }
   my @allcats = grep UNIVERSAL::isa($_->{generator}, 'BSE::Generate::Catalog'), 

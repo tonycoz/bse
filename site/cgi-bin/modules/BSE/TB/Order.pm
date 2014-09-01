@@ -7,7 +7,7 @@ use vars qw/@ISA/;
 use Carp 'confess';
 use BSE::Shop::PaymentTypes;
 
-our $VERSION = "1.024";
+our $VERSION = "1.025";
 
 sub columns {
   return qw/id
@@ -206,8 +206,8 @@ sub paid_files {
 sub products {
   my ($self) = @_;
 
-  require Products;
-  Products->getSpecial(orderProducts=>$self->{id});
+  require BSE::TB::Products;
+  BSE::TB::Products->getSpecial(orderProducts=>$self->{id});
 }
 
 sub valid_fields {
@@ -521,9 +521,9 @@ sub _tags {
        $current_item
 	 or return '* only usable in items *';
 
-       require Products;
+       require BSE::TB::Products;
        my $id = $current_item->productId;
-       $products{$id} ||= Products->getByPkey($id);
+       $products{$id} ||= BSE::TB::Products->getByPkey($id);
 
        my $product = $products{$id}
 	 or return '';
@@ -545,9 +545,9 @@ sub _tags {
        $current_item
 	 or return '* only usable in items *';
 
-       require Products;
+       require BSE::TB::Products;
        my $id = $current_item->productId;
-       $products{$id} ||= Products->getByPkey($id);
+       $products{$id} ||= BSE::TB::Products->getByPkey($id);
 
        my $product = $products{$id}
 	 or return '';

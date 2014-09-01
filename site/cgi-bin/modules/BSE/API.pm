@@ -10,7 +10,7 @@ use Carp qw(confess croak);
 use Fcntl qw(:seek);
 use Cwd;
 
-our $VERSION = "1.009";
+our $VERSION = "1.010";
 
 =head1 NAME
 
@@ -182,7 +182,7 @@ sub bse_make_product {
   my $cfg = delete $opts{cfg}
     or confess "cfg option missing";
 
-  require Products;
+  require BSE::TB::Products;
 
   defined $opts{title} && length $opts{title}
     or confess "Missing title option\n";
@@ -204,9 +204,9 @@ sub bse_make_product {
 
   _set_dynamic($cfg, \%opts);
 
-  my @cols = Product->columns;
+  my @cols = BSE::TB::Product->columns;
   shift @cols;
-  my $product = Products->add(@opts{@cols});
+  my $product = BSE::TB::Products->add(@opts{@cols});
 
   require BSE::Edit::Product;
   _finalize_article($cfg, $product, 'BSE::Edit::Product');

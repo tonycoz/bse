@@ -1,11 +1,11 @@
-package Product;
+package BSE::TB::Product;
 use strict;
 # represents a product from the database
 use BSE::TB::Articles;
 use vars qw/@ISA/;
 @ISA = qw/BSE::TB::Article/;
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 # subscription_usage values
 use constant SUBUSAGE_START_ONLY => 1;
@@ -232,7 +232,7 @@ sub price {
 
   my $user = delete $opts{user};
   my $date = delete $opts{date} || BSE::Util::SQL::now_sqldate();
-  my @tiers = Products->pricing_tiers;
+  my @tiers = BSE::TB::Products->pricing_tiers;
   my %prices = map { $_->tier_id => $_ } $self->prices;
 
   my $price;
@@ -254,7 +254,7 @@ sub price {
 sub update_dynamic {
   my ($self, $cfg) = @_;
 
-  my @tiers = Products->pricing_tiers;
+  my @tiers = BSE::TB::Products->pricing_tiers;
   if (@tiers) {
     $self->set_cached_dynamic(1);
     return;
@@ -264,7 +264,7 @@ sub update_dynamic {
 }
 
 sub tableClass {
-  return "Products";
+  return "BSE::TB::Products";
 }
 
 package BSE::CfgProductOption;

@@ -3,7 +3,7 @@ use strict;
 use Carp qw(confess);
 use BSE::CfgInfo qw(load_class);
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub get_couriers {
     my ($class, $cfg, $wanted) = @_;
@@ -35,13 +35,13 @@ sub get_couriers {
 sub package_order {
     my ($class, $cfg, $order, $items) = @_;
 
-    require Products;
+    require BSE::TB::Products;
     my $total_weight = 0;
     my $total_length = 0;
     my $total_width = 0;
     my $total_height = 0;
     foreach my $item (@$items) {
-        my $product = Products->getByPkey($item->{productId});
+        my $product = BSE::TB::Products->getByPkey($item->{productId});
         my $number = $item->{units};
 
         my $weight = $product->{weight};

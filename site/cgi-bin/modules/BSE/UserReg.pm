@@ -18,7 +18,7 @@ use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
 use Carp qw(confess);
 
-our $VERSION = "1.032";
+our $VERSION = "1.033";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -1301,8 +1301,8 @@ sub tag_order_item_options {
   my @options;
   if ($item->{options}) {
     # old order
-    require Products;
-    my $product = Products->getByPkey($item->{productId});
+    require BSE::TB::Products;
+    my $product = BSE::TB::Products->getByPkey($item->{productId});
 
     @options = order_item_opts($req, $item, $product);
   }

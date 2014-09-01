@@ -5,7 +5,7 @@ use Squirrel::Row;
 use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 sub columns {
   return qw/id productId orderId units price wholesalePrice gst options
@@ -41,8 +41,8 @@ sub product {
 
   $self->productId == -1
     and return;
-  require Products;
-  return Products->getByPkey($self->productId);
+  require BSE::TB::Products;
+  return BSE::TB::Products->getByPkey($self->productId);
 }
 
 sub option_hashes {

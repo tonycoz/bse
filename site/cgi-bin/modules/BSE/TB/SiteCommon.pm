@@ -2,7 +2,7 @@ package BSE::TB::SiteCommon;
 use strict;
 use Carp qw(confess);
 
-our $VERSION = "1.020";
+our $VERSION = "1.021";
 
 =head1 NAME
 
@@ -55,9 +55,9 @@ sub visible_stepkids {
   my $today = now_sqldate();
 
   if ($self->{generator} eq 'BSE::Generate::Catalog') {
-    require 'Products.pm';
+    require BSE::TB::Products;
 
-    return Products->getSpecial('visibleStep', $self->{id}, $today);
+    return BSE::TB::Products->getSpecial('visibleStep', $self->{id}, $today);
   }
   else {
     return BSE::TB::Articles->getSpecial('visibleStepKids', $self->{id}, $today);
@@ -102,15 +102,15 @@ sub all_visible_kid_tags {
 sub all_visible_products {
   my ($self) = @_;
 
-  require Products;
-  Products->all_visible_children($self->{id});
+  require BSE::TB::Products;
+  BSE::TB::Products->all_visible_children($self->{id});
 }
 
 sub all_visible_product_tags {
   my ($self) = @_;
 
-  require Products;
-  Products->all_visible_product_tags($self->{id});
+  require BSE::TB::Products;
+  BSE::TB::Products->all_visible_product_tags($self->{id});
 }
 
 sub all_visible_catalogs {

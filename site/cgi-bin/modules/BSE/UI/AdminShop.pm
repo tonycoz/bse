@@ -1,8 +1,8 @@
 package BSE::UI::AdminShop;
 use strict;
 use base 'BSE::UI::AdminDispatch';
-use Products;
-use Product;
+use BSE::TB::Products;
+use BSE::TB::Product;
 use BSE::TB::Orders;
 use BSE::TB::OrderItems;
 use BSE::Template;
@@ -21,7 +21,7 @@ use BSE::CfgInfo qw(cfg_dist_image_uri);
 use BSE::Util::SQL qw/now_sqldate sql_to_date date_to_sql sql_date sql_datetime/;
 use BSE::Util::Valid qw/valid_date/;
 
-our $VERSION = "1.026";
+our $VERSION = "1.027";
 
 my %actions =
   (
@@ -82,7 +82,7 @@ sub embedded_catalog {
 
   my $session = $req->session;
   use POSIX 'strftime';
-  my $products = Products->new;
+  my $products = BSE::TB::Products->new;
   my @list;
   if ($session->{showstepkids}) {
     my @allkids = $catalog->allkids;
@@ -215,7 +215,7 @@ sub req_product_list {
     $session->{showstepkids} = $cgi->param('showstepkids');
   }
   exists $session->{showstepkids} or $session->{showstepkids} = 1;
-  my $products = Products->new;
+  my $products = BSE::TB::Products->new;
   my @products = sort { $b->{displayOrder} <=> $a->{displayOrder} }
     $products->getBy(parentid => $shopid);
   my $product_index;
@@ -308,7 +308,7 @@ sub req_product_detail {
   my $cgi = $req->cgi;
   my $id = $cgi->param('id');
   if ($id and
-      my $product = Products->getByPkey($id)) {
+      my $product = BSE::TB::Products->getByPkey($id)) {
     return product_form($req, $product, '', '', 'admin/product_detail');
   }
   else {
@@ -360,7 +360,7 @@ sub product_form {
   use OtherParents;
   # ugh
   my $realproduct;
-  $realproduct = UNIVERSAL::isa($product, 'Product') ? $product : Products->getByPkey($product->{id});
+  $realproduct = UNIVERSAL::isa($product, 'BSE::TB::Product') ? $product : BSE::TB::Products->getByPkey($product->{id});
   my @stepcats;
   @stepcats = OtherParents->getBy(childId=>$product->{id}) 
     if $product->{id};
@@ -806,7 +806,7 @@ sub req_order_detail {
       my $order = BSE::TB::Orders->getByPkey($id)) {
     my $message = $req->message($errors);
     my @lines = $order->items;
-    my @products = map { Products->getByPkey($_->{productId}) } @lines;
+    my @products = map { BSE::TB::Products->getByPkey($_->{productId}) } @lines;
     my $line_index = -1;
     my $product;
     my @options;

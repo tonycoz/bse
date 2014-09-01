@@ -7,7 +7,7 @@ use base 'BSE::TagFormats';
 use BSE::CfgInfo qw(custom_class);
 use BSE::Cart;
 
-our $VERSION = "1.027";
+our $VERSION = "1.028";
 
 =head1 NAME
 
@@ -1179,8 +1179,8 @@ sub tag_price {
 
   my $work;
   if ($id =~ /^[0-9]+$/) {
-    require Products;
-    $work = Products->getByPkey($id)
+    require BSE::TB::Products;
+    $work = BSE::TB::Products->getByPkey($id)
       or return "** unknown product $id **";
   }
   else {
@@ -1212,8 +1212,8 @@ Conditional to check if there's tiered pricing.
 =cut
 
 sub tag_ifTieredPricing {
-  require Products;
-  my @tiers = Products->pricing_tiers;
+  require BSE::TB::Products;
+  my @tiers = BSE::TB::Products->pricing_tiers;
 
   return scalar @tiers;
 }
@@ -1955,8 +1955,8 @@ sub _cart {
   my $total_cost = 0;
   my $total_units = 0;
   for my $item (@$cart) {
-    require Products;
-    my $product = Products->getByPkey($item->{productId});
+    require BSE::TB::Products;
+    my $product = BSE::TB::Products->getByPkey($item->{productId});
     my $extended = $product->price(user => scalar $self->{req}->siteuser) 
       * $item->{units};
     my $link = $product->link;

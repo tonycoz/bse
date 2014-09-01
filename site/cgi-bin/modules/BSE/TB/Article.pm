@@ -8,7 +8,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::TB::SiteCommon BSE::TB::TagOwner/;
 use Carp 'confess';
 
-our $VERSION = "1.024";
+our $VERSION = "1.025";
 
 =head1 NAME
 
@@ -198,8 +198,8 @@ sub update_dynamic {
   my $dynamic = $cfg->entry('basic', 'all_dynamic', 0) ? 1 : 0;
 
   if (!$dynamic && $self->generator =~ /\bCatalog\b/) {
-    require Products;
-    my @tiers = Products->pricing_tiers;
+    require BSE::TB::Products;
+    my @tiers = BSE::TB::Products->pricing_tiers;
     @tiers and $dynamic = 1;
   }
 

@@ -8,7 +8,7 @@ use BSE::Util::SQL qw/now_datetime/;
 use DevHelp::Date qw(dh_strftime_sql_datetime);
 use base 'BSE::UI::UserCommon';
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 my %actions =
   (
@@ -88,8 +88,8 @@ sub req_info {
 			     'orderfile', 'orderfiles', \$file_index),
      product =>
      sub {
-       require Products;
-       $product = Products->getByPkey($items[$item_index]{productId})
+       require BSE::TB::Products;
+       $product = BSE::TB::Products->getByPkey($items[$item_index]{productId})
 	 unless $product && $product->{id} == $items[$item_index]{productId};
        return tag_article($product, $cfg, $_[0]);
      },
@@ -791,8 +791,8 @@ sub _wishlist_product {
     $$rresult = $self->req_userpage($req, "Missing or invalid product id");
     return;
   }
-  require Products;
-  my $product = Products->getByPkey($product_id);
+  require BSE::TB::Products;
+  my $product = BSE::TB::Products->getByPkey($product_id);
   unless ($product) {
     $$rresult = $self->req_userpage($req, "Unknown product id");
     return;

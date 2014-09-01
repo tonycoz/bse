@@ -3,10 +3,10 @@ use strict;
 use base 'BSE::Importer::Target::Base';
 use BSE::API qw(bse_make_article bse_add_image bse_add_step_parent);
 use BSE::TB::Articles;
-use Products;
+use BSE::TB::Products;
 use OtherParents;
 
-our $VERSION = "1.009";
+our $VERSION = "1.010";
 
 =head1 NAME
 

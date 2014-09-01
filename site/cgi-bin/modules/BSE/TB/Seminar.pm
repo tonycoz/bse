@@ -1,12 +1,12 @@
 package BSE::TB::Seminar;
 use strict;
 # represents a seminar from the database
-use Product;
+use BSE::TB::Product;
 use vars qw/@ISA/;
-@ISA = qw/Product/;
+@ISA = qw/BSE::TB::Product/;
 use BSE::Util::SQL qw(now_sqldatetime);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub columns {
   return ($_[0]->SUPER::columns(), 
@@ -14,7 +14,7 @@ sub columns {
 }
 
 sub bases {
-  return { seminar_id=>{ class=>'Product'} };
+  return { seminar_id=>{ class=>'BSE::TB::Product'} };
 }
 
 sub sessions {

@@ -18,7 +18,7 @@ SiteUser - represent a site user (or member)
 
 =cut
 
-our $VERSION = "1.014";
+our $VERSION = "1.015";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -548,8 +548,8 @@ return the user's wishlist products.
 
 sub wishlist {
   my $self = shift;
-  require Products;
-  return Products->getSpecial(userWishlist => $self->{id});
+  require BSE::TB::Products;
+  return BSE::TB::Products->getSpecial(userWishlist => $self->{id});
 }
 
 sub wishlist_order {

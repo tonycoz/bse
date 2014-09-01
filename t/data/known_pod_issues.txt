@@ -41,6 +41,7 @@ site/cgi-bin/modules/BSE/TB/Images.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/TB/Order.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/TB/Orders.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/TB/PriceTier.pm	=item without previous =over	1
+site/cgi-bin/modules/BSE/TB/Product.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/TB/Tags.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/UI/AdminImageClean.pm	No argument for =item	2
 site/cgi-bin/modules/BSE/UI/AdminModules.pm	=item without previous =over	1
@@ -76,7 +77,6 @@ site/cgi-bin/modules/DevHelp/Validate.pm	multiple occurrence of link target 'int
 site/cgi-bin/modules/DevHelp/Validate.pm	multiple occurrence of link target 'required'	1
 site/cgi-bin/modules/DevHelp/Validate.pm	multiple occurrence of link target 'rules'	1
 site/cgi-bin/modules/DevHelp/Validate.pm	multiple occurrence of link target 'time'	1
-site/cgi-bin/modules/Product.pm	=item without previous =over	1
 site/cgi-bin/modules/Squirrel/GPG.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/Squirrel/PGP5.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/Squirrel/PGP6.pm	Verbatim paragraph in NAME section	1

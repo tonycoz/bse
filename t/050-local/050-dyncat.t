@@ -11,7 +11,7 @@ require BSE::Cfg;
 my $cfg = BSE::Cfg->new;
 # create some articles to test with
 require BSE::TB::Articles;
-require Products;
+require BSE::TB::Products;
 require BSE::TB::ProductOptions;
 require BSE::TB::ProductOptionValues;
 require BSE::API;

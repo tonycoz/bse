@@ -4,7 +4,7 @@ use Scalar::Util qw(blessed);
 use BSE::TB::Site;
 use BSE::Util::HTML;
 
-our $VERSION = "1.020";
+our $VERSION = "1.021";
 
 sub _base_variables {
   my ($self, %opts) = @_;
@@ -216,8 +216,8 @@ sub _variable_class {
   my $products;
   sub _products {
     unless ($products) {
-      require Products;
-      $products = _variable_class("Products");
+      require BSE::TB::Products;
+      $products = _variable_class("BSE::TB::Products");
     }
 
     return $products;
