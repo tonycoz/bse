@@ -4,9 +4,9 @@ use base 'BSE::Importer::Target::Base';
 use BSE::API qw(bse_make_article bse_add_image bse_add_step_parent);
 use BSE::TB::Articles;
 use BSE::TB::Products;
-use OtherParents;
+use BSE::TB::OtherParents;
 
-our $VERSION = "1.010";
+our $VERSION = "1.011";
 
 =head1 NAME
 
@@ -226,7 +226,7 @@ sub row {
       $importer->info(" $leaf->{id}: Reset files");
     }
     if ($self->{reset_steps}) {
-      my @steps = OtherParents->getBy(childId => $leaf->{id});
+      my @steps = BSE::TB::OtherParents->getBy(childId => $leaf->{id});
       for my $step (@steps) {
 	$step->remove;
       }

@@ -2,10 +2,10 @@ package BSE::UI::AdminReorder;
 use strict;
 use base 'BSE::UI::AdminDispatch';
 use BSE::TB::Articles;
-use OtherParents;
+use BSE::TB::OtherParents;
 use List::Util ();
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 =head1 NAME
 
@@ -172,7 +172,7 @@ sub req_bystepparent {
   my $parent = BSE::TB::Articles->getByPkey($stepparent)
     or return $self->error($req, "Unknown article $stepparent");
   
-  my @otherlinks = OtherParents->getBy(parentId => $stepparent);
+  my @otherlinks = BSE::TB::OtherParents->getBy(parentId => $stepparent);
   my @normalkids = BSE::TB::Articles->children($stepparent);
   my @stepkids = $parent->stepkids;
   my %stepkids = map { $_->{id}, $_ } @stepkids;
@@ -235,7 +235,7 @@ sub req_bystepchild {
   my $child = BSE::TB::Articles->getByPkey($stepchild)
     or return $self->error($req, "Unknown child $stepchild");
 
-  my @otherlinks = OtherParents->getBy(childId=>$stepchild);
+  my @otherlinks = BSE::TB::OtherParents->getBy(childId=>$stepchild);
   my @stepparents = map BSE::TB::Articles->getByPkey($_->{parentId}), @otherlinks;
   my %stepparents = map { $_->{id}, $_ } @stepparents;
 

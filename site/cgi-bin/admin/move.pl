@@ -40,10 +40,10 @@ if (defined $cgi->param('stepchild')) {
     
     my $other = $cgi->param('other');
     
-    require 'OtherParents.pm';
-    my $one = OtherParents->getBy(parentId=>$id, childId=>$stepchild)
+    require BSE::TB::OtherParents;
+    my $one = BSE::TB::OtherParents->getBy(parentId=>$id, childId=>$stepchild)
       or die "Cannot find link between child $stepchild and parent $id";
-    my $two = OtherParents->getBy(parentId=>$other, childId=>$stepchild)
+    my $two = BSE::TB::OtherParents->getBy(parentId=>$other, childId=>$stepchild)
       or die "Cannot find link between child $stepchild and parent $other";
     ($one->{childDisplayOrder}, $two->{childDisplayOrder}) =
       ($two->{childDisplayOrder}, $one->{childDisplayOrder});
@@ -53,20 +53,20 @@ if (defined $cgi->param('stepchild')) {
   }
 }
 elsif (defined $cgi->param('stepparent')) {
-  require 'OtherParents.pm';
+  require BSE::TB::OtherParents;
 
   my $stepparent = $cgi->param('stepparent');
   if ($req->user_can(edit_reorder_children => $stepparent)) {
     my $other = $cgi->param('other');
     my $onename = 'parentDisplayOrder';
-    my $one = OtherParents->getBy(parentId=>$stepparent, childId=>$id);
+    my $one = BSE::TB::OtherParents->getBy(parentId=>$stepparent, childId=>$id);
     unless ($one) {
       $onename = 'displayOrder';
       $one = BSE::TB::Articles->getByPkey($id)
 	or die "Could not find article $id";
     }
     my $twoname = 'parentDisplayOrder';
-    my $two = OtherParents->getBy(parentId=>$stepparent, childId=>$other);
+    my $two = BSE::TB::OtherParents->getBy(parentId=>$stepparent, childId=>$other);
     unless ($two) {
       $twoname = 'displayOrder';
       $two = BSE::TB::Articles->getByPkey($other)

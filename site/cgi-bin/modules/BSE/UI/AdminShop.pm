@@ -21,7 +21,7 @@ use BSE::CfgInfo qw(cfg_dist_image_uri);
 use BSE::Util::SQL qw/now_sqldate sql_to_date date_to_sql sql_date sql_datetime/;
 use BSE::Util::Valid qw/valid_date/;
 
-our $VERSION = "1.027";
+our $VERSION = "1.028";
 
 my %actions =
   (
@@ -357,12 +357,12 @@ sub product_form {
     grep !$seen_templates{$_}++, @templates;
 
   my $stepcat_index;
-  use OtherParents;
+  use BSE::TB::OtherParents;
   # ugh
   my $realproduct;
   $realproduct = UNIVERSAL::isa($product, 'BSE::TB::Product') ? $product : BSE::TB::Products->getByPkey($product->{id});
   my @stepcats;
-  @stepcats = OtherParents->getBy(childId=>$product->{id}) 
+  @stepcats = BSE::TB::OtherParents->getBy(childId=>$product->{id}) 
     if $product->{id};
   my @stepcat_targets = $realproduct->step_parents if $realproduct;
   my %stepcat_targets = map { $_->{id}, $_ } @stepcat_targets;

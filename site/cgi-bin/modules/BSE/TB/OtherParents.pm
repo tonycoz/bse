@@ -1,14 +1,14 @@
-package OtherParents;
+package BSE::TB::OtherParents;
 use strict;
 use Squirrel::Table;
 use vars qw(@ISA $VERSION);
 @ISA = qw(Squirrel::Table);
-use OtherParent;
+use BSE::TB::OtherParent;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub rowClass {
-  return 'OtherParent';
+  return 'BSE::TB::OtherParent';
 }
 
 sub anylinks {

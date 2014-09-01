@@ -2,7 +2,7 @@ package BSE::TB::SiteCommon;
 use strict;
 use Carp qw(confess);
 
-our $VERSION = "1.021";
+our $VERSION = "1.022";
 
 =head1 NAME
 
@@ -71,9 +71,9 @@ sub visible_stepkids {
 sub allkids {
   my ($self) = @_;
 
-  require 'OtherParents.pm';
+  require BSE::TB::OtherParents;
 
-  my @otherlinks = OtherParents->getBy(parentId=>$self->{id});
+  my @otherlinks = BSE::TB::OtherParents->getBy(parentId=>$self->{id});
   my @normalkids = BSE::TB::Articles->children($self->{id});
   my %order = (
 	       (map { $_->{id}, $_->{displayOrder} } @normalkids ),

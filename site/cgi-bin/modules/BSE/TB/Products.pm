@@ -5,7 +5,7 @@ use vars qw(@ISA $VERSION);
 @ISA = qw(Squirrel::Table BSE::TB::TagOwners);
 use BSE::TB::Product;
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 sub rowClass {
   return 'BSE::TB::Product';
@@ -14,7 +14,7 @@ sub rowClass {
 sub all_visible_children {
   my ($self, $id) = @_;
 
-  require OtherParents;
+  require BSE::TB::OtherParents;
   my @normal_prods = BSE::TB::Products->visible_children($id);
   my @step_prods = BSE::TB::Products->visible_step_children($id);
   
@@ -24,7 +24,7 @@ sub all_visible_children {
      ( map 
        { 
 	 $_->{childId} => $_->{parentDisplayOrder}
-       } OtherParents->getBy(parentId => $id)
+       } BSE::TB::OtherParents->getBy(parentId => $id)
      )
     );
 

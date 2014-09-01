@@ -6,7 +6,7 @@ require BSE::TB::TagOwners;
 @ISA = qw(Squirrel::Table BSE::TB::TagOwners);
 use BSE::TB::Article;
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 =head1 NAME
 
@@ -138,9 +138,9 @@ Return a list of all visible children of the given article id.
 sub all_visible_kids {
   my ($self, $id) = @_;
 
-  require 'OtherParents.pm';
+  require BSE::TB::OtherParents;
 
-  my @otherlinks = OtherParents->getBy(parentId=>$id);
+  my @otherlinks = BSE::TB::OtherParents->getBy(parentId=>$id);
   my @normalkids = BSE::TB::Articles->listedChildren($id);
   my %order = (
 	       (map { $_->{id}, $_->{displayOrder} } @normalkids ),

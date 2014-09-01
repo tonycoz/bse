@@ -16,7 +16,7 @@ use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 use constant ARTICLE_CUSTOM_FIELDS_CFG => "article custom fields";
 
-our $VERSION = "1.048";
+our $VERSION = "1.049";
 
 =head1 NAME
 
@@ -566,8 +566,8 @@ sub iter_allkids {
 sub _load_step_kids {
   my ($article, $step_kids) = @_;
 
-  require OtherParents;
-  my @stepkids = OtherParents->getBy(parentId=>$article->{id}) if $article->{id};
+  require BSE::TB::OtherParents;
+  my @stepkids = BSE::TB::OtherParents->getBy(parentId=>$article->{id}) if $article->{id};
   %$step_kids = map { $_->{childId} => $_ } @stepkids;
   $step_kids->{loaded} = 1;
 }
@@ -673,8 +673,8 @@ sub iter_get_stepparents {
 
   return unless $article->{id} && $article->{id} > 0;
 
-  require OtherParents;
-  OtherParents->getBy(childId=>$article->{id});
+  require BSE::TB::OtherParents;
+  BSE::TB::OtherParents->getBy(childId=>$article->{id});
 }
 
 sub tag_ifStepParents {
@@ -2708,7 +2708,7 @@ sub save_stepkids {
 
   my $cgi = $req->cgi;
   require 'BSE/Admin/StepParents.pm';
-  my @stepcats = OtherParents->getBy(parentId=>$article->{id});
+  my @stepcats = BSE::TB::OtherParents->getBy(parentId=>$article->{id});
   my %stepcats = map { $_->{parentId}, $_ } @stepcats;
   my %datedefs = ( release => '2000-01-01', expire=>'2999-12-31' );
   for my $stepcat (@stepcats) {
@@ -2807,14 +2807,14 @@ sub req_restepkid {
 
   # first, identify the stepkid link
   my $cgi = $req->cgi;
-  require OtherParents;
+  require BSE::TB::OtherParents;
   my $parentid = $cgi->param("parentid");
   defined $parentid
     or return $self->_service_error($req, $article, $articles, "Missing parentid", {}, "NOPARENTID");
   $parentid =~ /^\d+$/
     or return $self->_service_error($req, $article, $articles, "Invalid parentid", {}, "BADPARENTID");
 
-  my ($step) = OtherParents->getBy(parentId => $parentid, childId => $article->id)
+  my ($step) = BSE::TB::OtherParents->getBy(parentId => $parentid, childId => $article->id)
     or return $self->_service_error($req, $article, $articles, "Unknown relationship", {}, "NOTFOUND");
 
   my $newparentid = $cgi->param("newparentid");
@@ -2824,7 +2824,7 @@ sub req_restepkid {
     my $new_parent = BSE::TB::Articles->getByPkey($newparentid)
       or return $self->_service_error($req, $article, $articles, "Unknown new parent id", {}, "UNKNOWNNEWPARENT");
     my $existing = 
-      OtherParents->getBy(parentId=>$newparentid, childId=>$article->id)
+      BSE::TB::OtherParents->getBy(parentId=>$newparentid, childId=>$article->id)
 	and return $self->_service_error($req, $article, $articles, "New parent is duplicate", {}, "NEWPARENTDUP");
 
     $step->{parentId} = $newparentid;
@@ -2941,7 +2941,7 @@ sub save_stepparents {
   my $cgi = $req->cgi;
 
   require 'BSE/Admin/StepParents.pm';
-  my @stepparents = OtherParents->getBy(childId=>$article->{id});
+  my @stepparents = BSE::TB::OtherParents->getBy(childId=>$article->{id});
   my %stepparents = map { $_->{parentId}, $_ } @stepparents;
   my %datedefs = ( release => '2000-01-01', expire=>'2999-12-31' );
   for my $stepparent (@stepparents) {

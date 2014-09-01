@@ -10,7 +10,7 @@ use Carp qw(confess croak);
 use Fcntl qw(:seek);
 use Cwd;
 
-our $VERSION = "1.010";
+our $VERSION = "1.011";
 
 =head1 NAME
 
@@ -295,7 +295,7 @@ sub bse_add_step_child {
   my $cfg = delete $opts{cfg}
     or confess "cfg option missing";
 
-  require OtherParents;
+  require BSE::TB::OtherParents;
 
   my $parent = delete $opts{parent}
     or confess "parent option missing";
@@ -311,10 +311,10 @@ sub bse_add_step_child {
   $opts{parentDisplayOrder} ||= _next_display_order();
   $opts{childDisplayOrder} ||= _next_display_order();
 
-  my @cols = OtherParent->columns;
+  my @cols = BSE::TB::OtherParent->columns;
   shift @cols;
 
-  return OtherParents->add(@opts{@cols});
+  return BSE::TB::OtherParents->add(@opts{@cols});
 }
 
 sub bse_encoding {
@@ -541,7 +541,7 @@ sub bse_add_step_parent {
      childDisplayOrder => _next_display_order(),
     );
 
-  return OtherParents->make(%step);
+  return BSE::TB::OtherParents->make(%step);
 }
 
 =item bse_site

@@ -1,6 +1,6 @@
 package BSE::Generate::Catalog;
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 use strict;
 use BSE::Generate;
@@ -9,7 +9,7 @@ use base 'BSE::Generate::Article';
 use BSE::Template;
 use Constants qw($CGI_URI $ADMIN_URI);
 use BSE::Regen qw(generate_button);
-use OtherParents;
+use BSE::TB::OtherParents;
 use DevHelp::HTML;
 use BSE::Arrows;
 use BSE::Util::Iterate;
@@ -124,7 +124,7 @@ sub baseActs {
   my @subcats = sort { $b->{displayOrder} <=> $a->{displayOrder} }
     grep $_->{listed} && UNIVERSAL::isa($_->{generator}, 'BSE::Generate::Catalog'),
     $articles->getBy(parentid => $article->{id});
-  my $other_parents = OtherParents->new;
+  my $other_parents = BSE::TB::OtherParents->new;
   my ($year, $month, $day) = (localtime)[5,4,3];
   my $today = sprintf("%04d-%02d-%02d 00:00:00ZZZ", $year+1900, $month+1, $day);
   my @stepprods = $article->visible_stepkids;
