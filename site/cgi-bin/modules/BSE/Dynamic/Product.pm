@@ -1,14 +1,14 @@
 package BSE::Dynamic::Product;
 use strict;
 use base 'BSE::Dynamic::Article';
-use Products;
+use BSE::TB::Products;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub get_real_article {
   my ($self, $article) = @_;
 
-  Products->getByPkey($article->{id});
+  BSE::TB::Products->getByPkey($article->{id});
 }
 
 sub tags {

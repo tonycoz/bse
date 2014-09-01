@@ -1,15 +1,15 @@
-package Generate::Product;
+package BSE::Generate::Product;
 use strict;
-use Generate::Article;
-use Products;
+use BSE::Generate::Article;
+use BSE::TB::Products;
 use BSE::TB::Images;
-use base qw(Generate::Article);
+use base qw(BSE::Generate::Article);
 use Constants qw(:shop $CGI_URI $ADMIN_URI);
 use Carp qw(confess);
 use BSE::Util::HTML;
 use BSE::Util::Tags qw(tag_article);
 
-our $VERSION = "1.001";
+our $VERSION = "1.003";
 
 sub edit_link {
   my ($self, $id) = @_;
@@ -19,7 +19,7 @@ sub edit_link {
 sub generate {
   my ($self, $article, $articles) = @_;
 
-  my $product = Products->getByPkey($article->{id});
+  my $product = BSE::TB::Products->getByPkey($article->{id});
   return $self->SUPER::generate($product, $articles);
 }
 
@@ -48,8 +48,8 @@ HTML
 sub baseActs {
   my ($self, $articles, $acts, $product, $embedded) = @_;
 
-  unless ($product->isa('Product')) {
-    $product = Products->getByPkey($product->{id});
+  unless ($product->isa('BSE::TB::Product')) {
+    $product = BSE::TB::Products->getByPkey($product->{id});
   }
 
   my @stepcats = $product->step_parents();
@@ -99,7 +99,7 @@ sub visible {
 sub get_real_article {
   my ($self, $article) = @_;
 
-  return Products->getByPkey($article->{id});
+  return BSE::TB::Products->getByPkey($article->{id});
 }
 
 1;
@@ -108,7 +108,7 @@ __END__
 
 =head1 NAME
 
-  Generate::Product - generates product detail pages for BSE
+  BSE::Generate::Product - generates product detail pages for BSE
 
 =head1 DESCRIPTION
 

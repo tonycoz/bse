@@ -1,4 +1,4 @@
-package Article;
+package BSE::TB::Article;
 use strict;
 # represents an article from the database
 use Squirrel::Row;
@@ -8,7 +8,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::TB::SiteCommon BSE::TB::TagOwner/;
 use Carp 'confess';
 
-our $VERSION = "1.023";
+our $VERSION = "1.026";
 
 =head1 NAME
 
@@ -20,7 +20,7 @@ Article - article objects for BSE.
 
   my $article = bse_make_article(...)
 
-  my $article = Articles->getByPkey($id);
+  my $article = BSE::TB::Articles->getByPkey($id);
 
 =head1 DESCRIPTION
 
@@ -185,7 +185,7 @@ sub parent {
     and return;
   $self->{_parent} && $self->{_parent}->id == $parentid
     and return $self->{_parent};
-  return ($self->{_parent} = Articles->getByPkey($self->{parentid}));
+  return ($self->{_parent} = BSE::TB::Articles->getByPkey($self->{parentid}));
 }
 
 sub update_dynamic {
@@ -198,8 +198,8 @@ sub update_dynamic {
   my $dynamic = $cfg->entry('basic', 'all_dynamic', 0) ? 1 : 0;
 
   if (!$dynamic && $self->generator =~ /\bCatalog\b/) {
-    require Products;
-    my @tiers = Products->pricing_tiers;
+    require BSE::TB::Products;
+    my @tiers = BSE::TB::Products->pricing_tiers;
     @tiers and $dynamic = 1;
   }
 
@@ -358,8 +358,8 @@ sub remove {
   $self->remove_files($cfg);
   
   # remove any step(child|parent) links
-  require OtherParents;
-  my @steprels = OtherParents->anylinks($self->{id});
+  require BSE::TB::OtherParents;
+  my @steprels = BSE::TB::OtherParents->anylinks($self->{id});
   for my $link (@steprels) {
     $link->remove();
   }
@@ -695,7 +695,7 @@ sub restricted_method {
 }
 
 sub tableClass {
-  return "Articles";
+  return "BSE::TB::Articles";
 }
 
 =item mark_modified

@@ -2,7 +2,7 @@ package BSE::Cart;
 use strict;
 use Scalar::Util;
 
-our $VERSION = "1.008";
+our $VERSION = "1.010";
 
 =head1 NAME
 
@@ -723,11 +723,11 @@ sub _product {
 
   my $product = $self->{products}{$id};
   unless ($product) {
-    require Products;
-    $product = Products->getByPkey($id)
+    require BSE::TB::Products;
+    $product = BSE::TB::Products->getByPkey($id)
       or die "No product $id\n";
     # FIXME
-    if ($product->generator ne "Generate::Product") {
+    if ($product->generator ne "BSE::Generate::Product") {
       require BSE::TB::Seminars;
       $product = BSE::TB::Seminars->getByPkey($id)
 	or die "Not a product, not a seminar $id\n";
@@ -997,8 +997,8 @@ sub AUTOLOAD {
   our $AUTOLOAD;
   (my $name = $AUTOLOAD) =~ s/^.*:://;
   unless (%product_keys) {
-    require Products;
-    %product_keys = map { $_ => 1 } Product->columns;
+    require BSE::TB::Products;
+    %product_keys = map { $_ => 1 } BSE::TB::Product->columns;
   }
 
   if ($product_keys{$name}) {

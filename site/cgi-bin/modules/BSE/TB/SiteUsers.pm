@@ -1,14 +1,14 @@
-package SiteUsers;
+package BSE::TB::SiteUsers;
 use strict;
 use Squirrel::Table;
 use vars qw(@ISA $VERSION);
 @ISA = qw(Squirrel::Table);
-use SiteUser;
+use BSE::TB::SiteUser;
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 sub rowClass {
-  return 'SiteUser';
+  return 'BSE::TB::SiteUser';
 }
 
 sub all_subscribers {
@@ -39,7 +39,7 @@ sub make {
 sub _lost_user {
   my ($self, $id, $error) = @_;
 
-  my ($user) = SiteUsers->getBy(lost_id => $id);
+  my ($user) = BSE::TB::SiteUsers->getBy(lost_id => $id);
   unless ($user) {
     $$error = "unknownid";
     return;

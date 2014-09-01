@@ -5,7 +5,7 @@ use BSE::Cfg;
 use BSE::Util::HTML;
 use Carp qw(cluck confess);
 
-our $VERSION = "1.027";
+our $VERSION = "1.030";
 
 =head1 NAME
 
@@ -346,7 +346,7 @@ my $site_article =
    id        => -1, 
    title     => "unknown", 
    parentid  => 0, 
-   generator => 'Generate::Article',
+   generator => 'BSE::Generate::Article',
    level     => 0,
   };
 
@@ -366,8 +366,8 @@ sub user_can {
   $self->{perms} ||= BSE::Permissions->new($self->cfg);
   if ($self->cfg->entry('basic', 'access_control', 0)) {
     unless (ref $object) {
-      require Articles;
-      my $art = $object == -1 ? $site_article : Articles->getByPkey($object);
+      require BSE::TB::Articles;
+      my $art = $object == -1 ? $site_article : BSE::TB::Articles->getByPkey($object);
       if ($art) {
 	$object = $art;
       }
@@ -685,7 +685,7 @@ sub siteuser {
 
   my $cfg = $req->cfg;
   my $session = $req->session;
-  require SiteUsers;
+  require BSE::TB::SiteUsers;
   if ($cfg->entryBool('custom', 'user_auth')) {
     require BSE::CfgInfo;
     my $custom = BSE::CfgInfo::custom_class($cfg);
@@ -697,7 +697,7 @@ sub siteuser {
 
     my $userid = $session->{userid}
       or return;
-    my $user = SiteUsers->getByPkey($userid)
+    my $user = BSE::TB::SiteUsers->getByPkey($userid)
       or return;
     $user->{disabled}
       and return;

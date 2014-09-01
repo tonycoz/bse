@@ -1,7 +1,7 @@
 package BSE::CustomBase;
 use strict;
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 sub new {
   my ($class, %params) = @_;
@@ -148,11 +148,11 @@ my %dont_touch = map { $_ => 1 } @dont_touch;
 sub siteuser_required {
   my ($self, $req) = @_;
 
-  require SiteUsers;
+  require BSE::TB::SiteUsers;
   my $cfg = $req->cfg;
   my @required = qw(email);
   push @required, grep $cfg->entry('site users', "require_$_", 0),
-    grep !$dont_touch{$_}, SiteUser->columns;
+    grep !$dont_touch{$_}, BSE::TB::SiteUser->columns;
 
   return @required;
 }

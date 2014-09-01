@@ -2,11 +2,11 @@ package BSE::ProductImportXLS;
 use strict;
 use Spreadsheet::ParseExcel;
 use BSE::API qw(bse_make_product bse_make_catalog bse_add_image);
-use Articles;
-use Products;
+use BSE::TB::Articles;
+use BSE::TB::Products;
 use Config;
 
-our $VERSION = "1.000";
+our $VERSION = "1.003";
 
 sub new {
   my ($class, $cfg, $profile, %opts) = @_;
@@ -177,7 +177,7 @@ sub process {
       $entry{parentid} = $self->_find_cat(\%cat_cache, $callback, $self->{parent}, @cats);
       my $product;
       if ($self->{codes}) {
-	$product = Products->getBy(product_code => $entry{product_code});
+	$product = BSE::TB::Products->getBy(product_code => $entry{product_code});
       }
       if ($product) {
 	@{$product}{keys %entry} = values %entry;
@@ -242,8 +242,8 @@ sub _find_cat {
   @cats
     or return $parent;
   unless ($cache->{$parent}) {
-    my @kids = grep $_->{generator} eq 'Generate::Catalog', 
-      Articles->children($parent);
+    my @kids = grep $_->{generator} eq 'BSE::Generate::Catalog', 
+      BSE::TB::Articles->children($parent);
     $cache->{$parent} = \@kids;
   }
 

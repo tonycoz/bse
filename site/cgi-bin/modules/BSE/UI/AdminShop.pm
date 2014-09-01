@@ -1,15 +1,15 @@
 package BSE::UI::AdminShop;
 use strict;
 use base 'BSE::UI::AdminDispatch';
-use Products;
-use Product;
+use BSE::TB::Products;
+use BSE::TB::Product;
 use BSE::TB::Orders;
 use BSE::TB::OrderItems;
 use BSE::Template;
 use Constants qw(:shop $SHOPID $PRODUCTPARENT 
                  $SHOP_URI $CGI_URI $AUTO_GENERATE);
 use BSE::TB::Images;
-use Articles;
+use BSE::TB::Articles;
 use BSE::Sort;
 use BSE::Util::Tags qw(tag_hash tag_error_img tag_object_plain tag_object tag_article);
 use BSE::Util::Iterate;
@@ -21,7 +21,7 @@ use BSE::CfgInfo qw(cfg_dist_image_uri);
 use BSE::Util::SQL qw/now_sqldate sql_to_date date_to_sql sql_date sql_datetime/;
 use BSE::Util::Valid qw/valid_date/;
 
-our $VERSION = "1.024";
+our $VERSION = "1.028";
 
 my %actions =
   (
@@ -82,7 +82,7 @@ sub embedded_catalog {
 
   my $session = $req->session;
   use POSIX 'strftime';
-  my $products = Products->new;
+  my $products = BSE::TB::Products->new;
   my @list;
   if ($session->{showstepkids}) {
     my @allkids = $catalog->allkids;
@@ -91,7 +91,7 @@ sub embedded_catalog {
       (my $file = $gen . ".pm") =~ s!::!/!g;
       require $file;
     }
-    @list = grep UNIVERSAL::isa($_->{generator}, 'Generate::Product'), $catalog->allkids;
+    @list = grep UNIVERSAL::isa($_->{generator}, 'BSE::Generate::Product'), $catalog->allkids;
     @list = map { $products->getByPkey($_->{id}) } @list;
   }
   else {
@@ -101,8 +101,8 @@ sub embedded_catalog {
   my $list_index = -1;
   my $subcat_index = -1;
   my @subcats = sort { $b->{displayOrder} <=> $a->{displayOrder} } 
-    grep $_->{generator} eq 'Generate::Catalog', 
-    Articles->children($catalog->{id});
+    grep $_->{generator} eq 'BSE::Generate::Catalog', 
+    BSE::TB::Articles->children($catalog->{id});
 
   my $image_uri = cfg_dist_image_uri();
   my $blank = qq!<img src="$image_uri/trans_pixel.gif" width="17" height="13" border="0" align="absbottom" />!;
@@ -206,16 +206,16 @@ sub req_product_list {
   my $cgi = $req->cgi;
   my $session = $req->session;
   my $shopid = $req->cfg->entryErr('articles', 'shop');
-  my $shop = Articles->getByPkey($shopid);
+  my $shop = BSE::TB::Articles->getByPkey($shopid);
   my @catalogs = sort { $b->{displayOrder} <=> $a->{displayOrder} }
-    grep $_->{generator} eq 'Generate::Catalog', Articles->children($shopid);
+    grep $_->{generator} eq 'BSE::Generate::Catalog', BSE::TB::Articles->children($shopid);
   my $catalog_index = -1;
   $message = $req->message($message);
   if (defined $cgi->param('showstepkids')) {
     $session->{showstepkids} = $cgi->param('showstepkids');
   }
   exists $session->{showstepkids} or $session->{showstepkids} = 1;
-  my $products = Products->new;
+  my $products = BSE::TB::Products->new;
   my @products = sort { $b->{displayOrder} <=> $a->{displayOrder} }
     $products->getBy(parentid => $shopid);
   my $product_index;
@@ -308,7 +308,7 @@ sub req_product_detail {
   my $cgi = $req->cgi;
   my $id = $cgi->param('id');
   if ($id and
-      my $product = Products->getByPkey($id)) {
+      my $product = BSE::TB::Products->getByPkey($id)) {
     return product_form($req, $product, '', '', 'admin/product_detail');
   }
   else {
@@ -330,8 +330,8 @@ sub product_form {
 
     push(@catalogs, { id=>$parent, display=>$title }) if $title;
     my @kids = sort { $b->{displayOrder} <=> $a->{displayOrder} } 
-      grep $_->{generator} eq 'Generate::Catalog',
-      Articles->children($parent);
+      grep $_->{generator} eq 'BSE::Generate::Catalog',
+      BSE::TB::Articles->children($parent);
     $title .= ' / ' if $title;
     unshift(@work, map [ $_->{id}, $title.$_->{title} ], @kids);
   }
@@ -357,12 +357,12 @@ sub product_form {
     grep !$seen_templates{$_}++, @templates;
 
   my $stepcat_index;
-  use OtherParents;
+  use BSE::TB::OtherParents;
   # ugh
   my $realproduct;
-  $realproduct = UNIVERSAL::isa($product, 'Product') ? $product : Products->getByPkey($product->{id});
+  $realproduct = UNIVERSAL::isa($product, 'BSE::TB::Product') ? $product : BSE::TB::Products->getByPkey($product->{id});
   my @stepcats;
-  @stepcats = OtherParents->getBy(childId=>$product->{id}) 
+  @stepcats = BSE::TB::OtherParents->getBy(childId=>$product->{id}) 
     if $product->{id};
   my @stepcat_targets = $realproduct->step_parents if $realproduct;
   my %stepcat_targets = map { $_->{id}, $_ } @stepcat_targets;
@@ -806,7 +806,7 @@ sub req_order_detail {
       my $order = BSE::TB::Orders->getByPkey($id)) {
     my $message = $req->message($errors);
     my @lines = $order->items;
-    my @products = map { Products->getByPkey($_->{productId}) } @lines;
+    my @products = map { BSE::TB::Products->getByPkey($_->{productId}) } @lines;
     my $line_index = -1;
     my $product;
     my @options;

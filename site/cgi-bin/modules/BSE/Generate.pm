@@ -1,6 +1,6 @@
-package Generate;
+package BSE::Generate;
 use strict;
-use Articles;
+use BSE::TB::Articles;
 use Constants qw($LOCAL_FORMAT $BODY_EMBED 
                  $EMBED_MAX_DEPTH $HAVE_HTML_PARSER);
 use DevHelp::Tags;
@@ -256,7 +256,7 @@ level 3 children.
 
 Returns a link to the specified article .  Due to the way the action
 list is built, this can be article types defined in derived classes of
-Generate, like the C<parent> article in Generate::Article.
+Generate, like the C<parent> article in BSE::Generate::Article.
 
 =item money I<data tag>
 
@@ -313,7 +313,7 @@ Conditional tag, true if the current article is being embedded.
 
 =cut
 
-our $VERSION = "1.022";
+our $VERSION = "1.024";
 
 my $excerptSize = 300;
 
@@ -333,7 +333,7 @@ sub new {
     };
   $opts{varstack} = [];
   my $self = bless \%opts, $class;
-  $self->set_variable_class(articles => "Articles");
+  $self->set_variable_class(articles => "BSE::TB::Articles");
   $opts{vars}{generator} = $self;
   Scalar::Util::weaken($opts{vars}{generator});
 
@@ -441,7 +441,7 @@ sub summary {
 
   $limit ||= $article->summaryLength;
 
-  return $self->summarize("Articles", $article->body, $self->{acts}, $limit);
+  return $self->summarize("BSE::TB::Articles", $article->body, $self->{acts}, $limit);
 }
 
 # attempts to move the given position forward if it's within a HTML tag,
@@ -693,7 +693,7 @@ specified template.
 sub vembed {
   my ($self, $article, $template) = @_;
 
-  return $self->embed($article, "Articles", $template);
+  return $self->embed($article, "BSE::TB::Articles", $template);
 }
 
 sub iter_kids_of {
@@ -712,7 +712,7 @@ sub iter_kids_of {
   if (@ids == 1) {
     $state->{parentid} = $ids[0];
   }
-  $self->_do_filter($filter, map Articles->listedChildren($_), @ids);
+  $self->_do_filter($filter, map BSE::TB::Articles->listedChildren($_), @ids);
 }
 
 my $cols_re; # cache for below
@@ -727,7 +727,7 @@ my $cols_re; # cache for below
       my $expr = $1;
       my $orig_expr = $expr;
       unless ($cols_re) {
-	my $cols_expr = '(' . join('|', Article->columns) . ')';
+	my $cols_expr = '(' . join('|', BSE::TB::Article->columns) . ')';
 	$cols_re = qr/\[$cols_expr\]/;
       }
       $expr =~ s/$cols_re/\$article->{$1}/g;
@@ -775,7 +775,7 @@ sub iter_all_kids_of {
   @ids = grep /^\d+$|^-1$/, @ids;
   @ids == 1 and $state->{parentid} = $ids[0];
     
-  $self->_do_filter($filter, map Articles->all_visible_kids($_), @ids);
+  $self->_do_filter($filter, map BSE::TB::Articles->all_visible_kids($_), @ids);
 }
 
 sub iter_inlines {
@@ -793,7 +793,7 @@ sub iter_inlines {
   @ids = grep /^\d+$/, @ids;
   @ids == 1 and $state->{parentid} = $ids[0];
 
-  $self->_do_filter($filter, map Articles->getByPkey($_), @ids);
+  $self->_do_filter($filter, map BSE::TB::Articles->getByPkey($_), @ids);
 }
 
 sub iter_gimages {
@@ -816,7 +816,7 @@ sub iter_gfiles {
   my ($self, $args) = @_;
 
   unless ($self->{gfiles}) {
-    my @gfiles = Articles->global_files;
+    my @gfiles = BSE::TB::Articles->global_files;
     my %gfiles = map { $_->{name} => $_ } @gfiles;
     $self->{gfiles} = \%gfiles;
   }
@@ -899,8 +899,8 @@ sub _find_image {
 
   my $article;
   if ($article_id =~ /^\d+$/) {
-    require Articles;
-    $article = Articles->getByPkey($article_id);
+    require BSE::TB::Articles;
+    $article = BSE::TB::Articles->getByPkey($article_id);
     unless ($article) {
       $$msg = "* no article $article_id found *";
       return;
@@ -908,14 +908,14 @@ sub _find_image {
   }
   elsif ($acts->{$article_id}) {
     my $id = $templater->perform($acts, $article_id, "id");
-    $article = Articles->getByPkey($id);
+    $article = BSE::TB::Articles->getByPkey($id);
     unless ($article) {
       $$msg = "* article $article_id/$id not found *";
       return;
     }
   }
   else {
-    ($article) = Articles->getBy(linkAlias => $article_id);
+    ($article) = BSE::TB::Articles->getBy(linkAlias => $article_id);
     unless ($article) {
       $$msg = "* no article $article_id found *";
       return;
@@ -1113,19 +1113,19 @@ sub _find_articles {
   my ($self, $article_id, $article, $acts, $name, $templater) = @_;
 
   if ($article_id =~ /^\d+$/) {
-    my $result = Articles->getByPkey($article_id);
+    my $result = BSE::TB::Articles->getByPkey($article_id);
     $result or print STDERR "** Unknown article id $article_id **\n";
     return $result ? $result : ();
   }
   elsif ($article_id =~ /^alias\((\w+)\)$/) {
-    my $result = Articles->getBy(linkAlias => $1);
+    my $result = BSE::TB::Articles->getBy(linkAlias => $1);
     $result or print STDERR "** Unknown article alias $article_id **\n";
     return $result ? $result : ();
   }
   elsif ($article_id =~ /^childrenof\((.*)\)$/) {
     my $id = $1;
     if ($id eq '-1') {
-      return Articles->all_visible_kids(-1);
+      return BSE::TB::Articles->all_visible_kids(-1);
     }
     else {
       my @parents = $self->_find_articles($id, $article, $acts, $name, $templater)
@@ -1136,7 +1136,7 @@ sub _find_articles {
   elsif ($acts->{$article_id}) {
     my $id = $templater->perform($acts, $article_id, 'id');
     if ($id && $id =~ /^\d+$/) {
-      return Articles->getByPkey($id);
+      return BSE::TB::Articles->getByPkey($id);
     }
   }
   print STDERR "** Unknown article identifier $article_id **\n";
@@ -1427,7 +1427,7 @@ sub excerpt {
     # we remove any formatting tags here, otherwise we get wierd table
     # rubbish or other formatting in the excerpt.
     my @files = $article->files;
-    $self->remove_block('Articles', [], \$body, \@files);
+    $self->remove_block('BSE::TB::Articles', [], \$body, \@files);
     1 while $body =~ s/[bi]\[([^\]\[]+)\]/$1/g;
   }
     
@@ -1558,7 +1558,7 @@ sub get_gfile {
   my ($self, $name) = @_;
 
   unless ($self->{gfiles}) {
-    my @gfiles = Articles->global_files;
+    my @gfiles = BSE::TB::Articles->global_files;
     my %gfiles = map { $_->{name} => $_ } @gfiles;
     $self->{gfiles} = \%gfiles;
   }

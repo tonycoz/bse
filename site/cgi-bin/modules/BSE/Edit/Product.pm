@@ -1,7 +1,7 @@
 package BSE::Edit::Product;
 use strict;
 use base 'BSE::Edit::Article';
-use Products;
+use BSE::TB::Products;
 use HTML::Entities;
 use BSE::Template;
 use BSE::Util::Iterate;
@@ -10,7 +10,7 @@ use BSE::CfgInfo 'product_options';
 use BSE::Util::Tags qw(tag_hash tag_article);
 use constant PRODUCT_CUSTOM_FIELDS_CFG => "product custom fields";
 
-our $VERSION = "1.013";
+our $VERSION = "1.015";
 
 =head1 NAME
 
@@ -33,7 +33,7 @@ my %money_fields =
    gst => "GST",
   );
 
-sub generator { 'Generate::Product' }
+sub generator { 'BSE::Generate::Product' }
 
 sub base_template_dirs {
   return ( "products" );
@@ -187,7 +187,7 @@ sub _save_price_tiers {
   $req->user_can('edit_field_edit_retailPrice', $article)
     or return;
 
-  my @tiers = Products->pricing_tiers;
+  my @tiers = BSE::TB::Products->pricing_tiers;
   my %prices;
   for my $tier (@tiers) {
     my $key = "tier_price_" . $tier->id;
@@ -202,7 +202,7 @@ sub save_columns {
   my ($self, $table_object) = @_;
 
   my @cols = $self->SUPER::save_columns($table_object);
-  my @tiers = Products->pricing_tiers;
+  my @tiers = BSE::TB::Products->pricing_tiers;
   if (@tiers) {
     push @cols, "save_pricing_tiers";
     push @cols, map { "tier_price_" . $_->id } @tiers;
@@ -334,7 +334,7 @@ sub low_edit_tags {
      (
       single => "price_tier",
       plural => "price_tiers",
-      code => [ pricing_tiers => "Products" ],
+      code => [ pricing_tiers => "BSE::TB::Products" ],
       data => \@tiers,
       store => \$price_tier,
      ),
@@ -366,7 +366,7 @@ sub validate_parent {
 
   my $shopid = $self->{cfg}->entryErr('articles', 'shop');
   unless ($parent && 
-	  $parent->{generator} eq 'Generate::Catalog') {
+	  $parent->{generator} eq 'BSE::Generate::Catalog') {
     $$rmsg = "Products must be in a catalog (not $parent->{generator})";
     return;
   }
@@ -425,7 +425,7 @@ sub _validate_common {
   }
 
   if ($data->{save_pricing_tiers}) {
-    my @tiers = Products->pricing_tiers;
+    my @tiers = BSE::TB::Products->pricing_tiers;
     for my $tier (@tiers) {
       my $key = "tier_price_" . $tier->id;
       my $value = $data->{$key};
@@ -479,10 +479,10 @@ sub possible_parents {
     $labels{$id} = $title;
     push @work, map [ $_->{id}, $title.' / '.$_->{title} ],
     sort { $b->{displayOrder} <=> $a->{displayOrder} }
-      grep $_->{generator} eq 'Generate::Catalog', 
+      grep $_->{generator} eq 'BSE::Generate::Catalog', 
       $articles->getBy(parentid=>$id);
   }
-  unless ($shop->{generator} eq 'Generate::Catalog') {
+  unless ($shop->{generator} eq 'BSE::Generate::Catalog') {
     shift @values;
     delete $labels{$shopid};
   }
@@ -492,13 +492,13 @@ sub possible_parents {
 sub table_object {
   my ($self, $articles) = @_;
 
-  'Products';
+  'BSE::TB::Products';
 }
 
 sub get_article {
   my ($self, $articles, $article) = @_;
 
-  return Products->getByPkey($article->{id});
+  return BSE::TB::Products->getByPkey($article->{id});
 }
 
 sub default_link_path {

@@ -5,7 +5,7 @@ use BSE::Util::HTML;
 use BSE::Util::Tags qw(tag_article);
 use constant CATALOG_CUSTOM_FIELDS_CFG => "catalog custom fields";
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 sub base_template_dirs {
   return ( "catalog" );
@@ -42,7 +42,7 @@ sub edit_template {
 			     "admin/edit_$base");
 }
 
-sub generator { "Generate::Catalog" }
+sub generator { "BSE::Generate::Catalog" }
 
 sub validate_parent {
   my ($self, $data, $articles, $parent, $rmsg) = @_;
@@ -50,7 +50,7 @@ sub validate_parent {
   my $shopid = $self->{cfg}->entryErr('articles', 'shop');
   unless ($parent && 
 	  ($parent->{id} == $shopid 
-	   || $parent->{generator} eq 'Generate::Catalog')) {
+	   || $parent->{generator} eq 'BSE::Generate::Catalog')) {
     $$rmsg = "Catalogs must be in the shop";
     return;
   }
@@ -75,7 +75,7 @@ sub possible_parents {
       $labels{$id} = $title;
       push @work, map [ $_->{id}, $title.' / '.$_->{title} ],
 	sort { $b->{displayOrder} <=> $a->{displayOrder} }
-	  grep $_->{generator} eq 'Generate::Catalog', 
+	  grep $_->{generator} eq 'BSE::Generate::Catalog', 
 	    $articles->getBy(parentid=>$id);
     }
   }

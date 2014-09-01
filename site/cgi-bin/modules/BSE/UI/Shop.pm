@@ -9,7 +9,7 @@ use BSE::CfgInfo qw(custom_class credit_card_class bse_default_country);
 use BSE::TB::Orders;
 use BSE::TB::OrderItems;
 use BSE::Util::Tags qw(tag_error_img tag_hash tag_article);
-use Products;
+use BSE::TB::Products;
 use BSE::TB::Seminars;
 use DevHelp::Validate qw(dh_validate dh_validate_hash);
 use Digest::MD5 'md5_hex';
@@ -18,7 +18,7 @@ use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 use BSE::Template;
 
-our $VERSION = "1.045";
+our $VERSION = "1.046";
 
 =head1 NAME
 
@@ -758,7 +758,7 @@ sub req_remove_item {
   my @cart = @{$req->session->{cart}};
   if ($index >= 0 && $index < @cart) {
     my ($item) = splice(@cart, $index, 1);
-    my $product = Products->getByPkey($item->{productId});
+    my $product = BSE::TB::Products->getByPkey($item->{productId});
     $req->flash_notice("msg:bse/shop/cart/remove", [ $product ]);
   }
   $req->session->{cart} = \@cart;
@@ -1360,10 +1360,10 @@ sub req_orderdone {
   my $order = BSE::TB::Orders->getByPkey($id)
     or return $class->req_cart($req);
   my @items = $order->items;
-  my @products = map { Products->getByPkey($_->{productId}) } @items;
+  my @products = map { BSE::TB::Products->getByPkey($_->{productId}) } @items;
 
   my @item_cols = BSE::TB::OrderItem->columns;
-  my %copy_cols = map { $_ => 1 } Product->columns;
+  my %copy_cols = map { $_ => 1 } BSE::TB::Product->columns;
   delete @copy_cols{@item_cols};
   my @copy_cols = keys %copy_cols;
   my @showitems;
@@ -1786,7 +1786,7 @@ sub _build_items {
   my @cart = @{$req->session->{cart}}
     or return;
   my @items;
-  my @prodcols = Product->columns;
+  my @prodcols = BSE::TB::Product->columns;
   my @newcart;
   my $today = now_sqldate();
   for my $item ($cart->items) {
@@ -1983,7 +1983,7 @@ sub _validate_add_by_id {
   my $product;
   if ($addid) {
     $product = BSE::TB::Seminars->getByPkey($addid);
-    $product ||= Products->getByPkey($addid);
+    $product ||= BSE::TB::Products->getByPkey($addid);
   }
   unless ($product) {
     $$error = "Cannot find product $addid";
@@ -1999,7 +1999,7 @@ sub _validate_add_by_code {
   my $product;
   if (defined $code) {
     $product = BSE::TB::Seminars->getBy(product_code => $code);
-    $product ||= Products->getBy(product_code => $code);
+    $product ||= BSE::TB::Products->getBy(product_code => $code);
   }
   unless ($product) {
     $$error = "Cannot find product code $code";
@@ -2312,7 +2312,7 @@ sub _refresh_cart {
 
   for my $item (@$cart) {
     if (!$item->{user} || $item->{user} != $user->id) {
-      my $product = Products->getByPkey($item->{productId})
+      my $product = BSE::TB::Products->getByPkey($item->{productId})
 	or next;
       my ($price, $tier) = $product->price(user => $user);
       $item->{price} = $price;

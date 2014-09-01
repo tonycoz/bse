@@ -115,7 +115,7 @@ BSE::Admin::StepParents->add($parent, $parent);
 is($parent->section->{id}, $parent->{id}, "parent should be it's own section");
 is($kids[0]->section->{id}, $parent->{id}, "kids section should be the parent");
 
-my $top = Articles->getByPkey(1);
+my $top = BSE::TB::Articles->getByPkey(1);
 ok($top, "grabbing Home page");
 
 template_test "cfg", $top, <<TEMPLATE, <<EXPECTED;
@@ -594,7 +594,7 @@ Category: Two
 
 EXPECTED
 
-my $cat = Articles->tag_category("Foo:");
+my $cat = BSE::TB::Articles->tag_category("Foo:");
 my @old_deps = $cat->deps;
 my $error;
 $cat->set_deps([ "Bar:" ], \$error);
@@ -768,7 +768,7 @@ sub template_test($$$$) {
     skip "$tag: couldn't make generator", 1 unless $gen;
     eval {
       $content =
-	$gen->generate_low($template, $article, 'Articles', 0);
+	$gen->generate_low($template, $article, 'BSE::TB::Articles', 0);
     };
     ok(defined $content, "$tag: generate content");
     diag $@ unless $content;
@@ -818,7 +818,7 @@ sub dyn_template_test($$$$) {
 sub _generate_dyn_template {
   my ($article, $template) = @_;
 
-  my $articles = 'Articles';
+  my $articles = 'BSE::TB::Articles';
   my $genname = $article->{generator};
   eval "use $genname";
   $@ && die $@;

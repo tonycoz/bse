@@ -1,11 +1,11 @@
-package Generate::Subscription;
+package BSE::Generate::Subscription;
 use strict;
 use vars qw(@ISA);
-use Generate::Article;
-@ISA = qw(Generate::Article);
+use BSE::Generate::Article;
+@ISA = qw(BSE::Generate::Article);
 use BSE::Util::HTML;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub set_user {
   my ($self, $user) = @_;

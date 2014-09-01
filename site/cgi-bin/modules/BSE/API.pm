@@ -10,7 +10,7 @@ use Carp qw(confess croak);
 use Fcntl qw(:seek);
 use Cwd;
 
-our $VERSION = "1.007";
+our $VERSION = "1.011";
 
 =head1 NAME
 
@@ -55,7 +55,7 @@ my %acticle_defaults =
    admin => '', # needs to be set
    threshold => 5,
    summaryLength => 100,
-   generator => 'Generate::Article',
+   generator => 'BSE::Generate::Article',
    # level => undef, # needs to be set
    listed => 1,
    #lastModified => undef, # needs to be set
@@ -82,7 +82,7 @@ my %product_defaults =
   (
    template => 'shopitem.tmpl',
    parentid => 4,
-   generator => 'Generate::Product',
+   generator => 'BSE::Generate::Product',
    wholesalePrice => 0,
    gst => 0,
    leadTime => 0,
@@ -102,7 +102,7 @@ my %catalog_defaults =
   (
    template => 'catalog.tmpl',
    parentid => 3,
-   generator => 'Generate::Catalog',
+   generator => 'BSE::Generate::Catalog',
   );
 
 sub _set_dynamic {
@@ -112,8 +112,8 @@ sub _set_dynamic {
     $article->{level} = 1;
   }
   else {
-    require Articles;
-    my $parent = Articles->getByPkey($article->{parentid})
+    require BSE::TB::Articles;
+    my $parent = BSE::TB::Articles->getByPkey($article->{parentid})
       or confess "Invalid parent $article->{parentid}\n";
     $article->{level} = $parent->{level} + 1;
   }
@@ -182,7 +182,7 @@ sub bse_make_product {
   my $cfg = delete $opts{cfg}
     or confess "cfg option missing";
 
-  require Products;
+  require BSE::TB::Products;
 
   defined $opts{title} && length $opts{title}
     or confess "Missing title option\n";
@@ -204,9 +204,9 @@ sub bse_make_product {
 
   _set_dynamic($cfg, \%opts);
 
-  my @cols = Product->columns;
+  my @cols = BSE::TB::Product->columns;
   shift @cols;
-  my $product = Products->add(@opts{@cols});
+  my $product = BSE::TB::Products->add(@opts{@cols});
 
   require BSE::Edit::Product;
   _finalize_article($cfg, $product, 'BSE::Edit::Product');
@@ -220,7 +220,7 @@ sub bse_make_catalog {
   my $cfg = delete $opts{cfg}
     or confess "cfg option missing";
 
-  require Articles;
+  require BSE::TB::Articles;
 
   defined $opts{title} && length $opts{title}
     or confess "Missing title option\n";
@@ -239,9 +239,9 @@ sub bse_make_catalog {
 
   _set_dynamic($cfg, \%opts);
 
-  my @cols = Article->columns;
+  my @cols = BSE::TB::Article->columns;
   shift @cols;
-  my $catalog = Articles->add(@opts{@cols});
+  my $catalog = BSE::TB::Articles->add(@opts{@cols});
 
   require BSE::Edit::Catalog;
   _finalize_article($cfg, $catalog, 'BSE::Edit::Catalog');
@@ -255,7 +255,7 @@ sub bse_make_article {
   my $cfg = delete $opts{cfg}
     or confess "cfg option missing";
 
-  require Articles;
+  require BSE::TB::Articles;
 
   defined $opts{title} && length $opts{title}
     or confess "Missing title option\n";
@@ -273,9 +273,9 @@ sub bse_make_article {
 
   _set_dynamic($cfg, \%opts);
 
-  my @cols = Article->columns;
+  my @cols = BSE::TB::Article->columns;
   shift @cols;
-  my $article = Articles->add(@opts{@cols});
+  my $article = BSE::TB::Articles->add(@opts{@cols});
 
   require BSE::Edit::Article;
   _finalize_article($cfg, $article, 'BSE::Edit::Article');
@@ -295,7 +295,7 @@ sub bse_add_step_child {
   my $cfg = delete $opts{cfg}
     or confess "cfg option missing";
 
-  require OtherParents;
+  require BSE::TB::OtherParents;
 
   my $parent = delete $opts{parent}
     or confess "parent option missing";
@@ -311,10 +311,10 @@ sub bse_add_step_child {
   $opts{parentDisplayOrder} ||= _next_display_order();
   $opts{childDisplayOrder} ||= _next_display_order();
 
-  my @cols = OtherParent->columns;
+  my @cols = BSE::TB::OtherParent->columns;
   shift @cols;
 
-  return OtherParents->add(@opts{@cols});
+  return BSE::TB::OtherParents->add(@opts{@cols});
 }
 
 sub bse_encoding {
@@ -403,7 +403,7 @@ sub _load_editor_class {
   my ($article, $cfg) = @_;
 
   require BSE::Edit::Base;
-  return BSE::Edit::Base->article_class($article, 'Articles', $cfg);
+  return BSE::Edit::Base->article_class($article, 'BSE::TB::Articles', $cfg);
 }
 
 # File::Copy doesn't like CGI.pm's fake fhs
@@ -541,7 +541,7 @@ sub bse_add_step_parent {
      childDisplayOrder => _next_display_order(),
     );
 
-  return OtherParents->make(%step);
+  return BSE::TB::OtherParents->make(%step);
 }
 
 =item bse_site

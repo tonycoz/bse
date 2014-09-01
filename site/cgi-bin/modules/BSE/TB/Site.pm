@@ -2,7 +2,7 @@ package BSE::TB::Site;
 use strict;
 use base qw(BSE::TB::SiteCommon);
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 # like an article, but doesn't exist in the database
 
@@ -13,7 +13,7 @@ sub new {
     {
      id => -1,
      title => "Your site",
-     generator => 'Generate::Article',
+     generator => 'BSE::Generate::Article',
      parentid=>0,
      level => 0,
      body => '',

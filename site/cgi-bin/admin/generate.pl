@@ -4,7 +4,7 @@ BEGIN { $ENV{DISPLAY} = '192.168.32.51:0.0' }
 use strict;
 use FindBin;
 use lib "$FindBin::Bin/../modules";
-use Articles;
+use BSE::TB::Articles;
 use CGI qw(:standard);
 use Constants;
 use BSE::Regen qw(generate_button generate_all generate_article generate_base generate_one_extra pregenerate_list);
@@ -30,13 +30,13 @@ unless ($req->check_admin_logon()) {
   exit;
 }
 
-my $articles = "Articles";
+my $articles = "BSE::TB::Articles";
 
 my $id = $cgi->param('id');
 my $fromid = $cgi->param('fromid') || $id;
 my $baseurl;
 if (defined $fromid
-    and my $fromart = Articles->getByPkey($fromid)) {
+    and my $fromart = BSE::TB::Articles->getByPkey($fromid)) {
   $baseurl = $fromart->{admin};
 }
 else {
@@ -80,7 +80,7 @@ my $good = eval {
 	  or die { error_code => "ACCESS", message => "Access denied - you need regen_extras access" };
       }
       else {
-	$article = Articles->getByPkey($id)
+	$article = BSE::TB::Articles->getByPkey($id)
 	  or die { error_code => "NOTFOUND", message => "No such article $id found" };
 	$req->user_can('regen_article', $article)
 	  or die { error_code => "ACCESS", message => "Access denied - you don't have regen_article access on article $id" };

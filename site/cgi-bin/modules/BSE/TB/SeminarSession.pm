@@ -3,7 +3,7 @@ use strict;
 use base qw(Squirrel::Row);
 use BSE::Util::SQL qw(now_sqldatetime);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub columns {
   return qw/id seminar_id location_id when_at roll_taken/;
@@ -12,8 +12,8 @@ sub columns {
 sub booked_users {
   my ($self) = @_;
 
-  require SiteUsers;
-  return SiteUsers->getSpecial(sessionBookings => $self->{id});
+  require BSE::TB::SiteUsers;
+  return BSE::TB::SiteUsers->getSpecial(sessionBookings => $self->{id});
 }
 
 # perhaps this should allow removing old sessions with no bookings

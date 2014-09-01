@@ -1,15 +1,15 @@
-package Generate::Catalog;
+package BSE::Generate::Catalog;
 
-our $VERSION = "1.004";
+our $VERSION = "1.007";
 
 use strict;
-use Generate;
-use Products;
-use base 'Generate::Article';
+use BSE::Generate;
+use BSE::TB::Products;
+use base 'BSE::Generate::Article';
 use BSE::Template;
 use Constants qw($CGI_URI $ADMIN_URI);
 use BSE::Regen qw(generate_button);
-use OtherParents;
+use BSE::TB::OtherParents;
 use DevHelp::HTML;
 use BSE::Arrows;
 use BSE::Util::Iterate;
@@ -117,14 +117,14 @@ sub tag_ifAnyProductOptions {
 sub baseActs {
   my ($self, $articles, $acts, $article, $embedded) = @_;
 
-  my $products = Products->new;
+  my $products = BSE::TB::Products->new;
   my @products = sort { $b->{displayOrder} <=> $a->{displayOrder} }
     grep $_->{listed} && $_->{parentid} == $article->{id}, $products->all;
   my $product_index = -1;
   my @subcats = sort { $b->{displayOrder} <=> $a->{displayOrder} }
-    grep $_->{listed} && UNIVERSAL::isa($_->{generator}, 'Generate::Catalog'),
+    grep $_->{listed} && UNIVERSAL::isa($_->{generator}, 'BSE::Generate::Catalog'),
     $articles->getBy(parentid => $article->{id});
-  my $other_parents = OtherParents->new;
+  my $other_parents = BSE::TB::OtherParents->new;
   my ($year, $month, $day) = (localtime)[5,4,3];
   my $today = sprintf("%04d-%02d-%02d 00:00:00ZZZ", $year+1900, $month+1, $day);
   my @stepprods = $article->visible_stepkids;
@@ -136,14 +136,14 @@ sub baseActs {
     (my $file = $gen . ".pm") =~ s!::!/!g;
     require $file;
   }
-  my @allprods = grep UNIVERSAL::isa($_->{generator}, 'Generate::Product'), 
+  my @allprods = grep UNIVERSAL::isa($_->{generator}, 'BSE::Generate::Product'), 
     @allkids;
   for (@allprods) {
-    unless ($_->isa('Product')) {
-      $_ = Products->getByPkey($_->{id});
+    unless ($_->isa('BSE::TB::Product')) {
+      $_ = BSE::TB::Products->getByPkey($_->{id});
     }
   }
-  my @allcats = grep UNIVERSAL::isa($_->{generator}, 'Generate::Catalog'), 
+  my @allcats = grep UNIVERSAL::isa($_->{generator}, 'BSE::Generate::Catalog'), 
     @allkids;
 
   # for article ifUnderThreshold handler
@@ -268,12 +268,12 @@ __END__
 
 =head1 NAME
 
-  Generate::Catalog - page generator class for catalog pages
+  BSE::Generate::Catalog - page generator class for catalog pages
 
 =head1 DESCRIPTION
 
   This class is used to generate catalog pages for BSE.  It derives
-  from L<Generate::Article>, and inherits it's tags.
+  from L<BSE::Generate::Article>, and inherits it's tags.
 
 =head1 TAGS
 
@@ -339,6 +339,6 @@ Generates administrative tools (in admin mode).
 =head1 BUGS
 
 Still contains some code from before we derived from
-Generate::Article, so there is some obsolete code still present.
+BSE::Generate::Article, so there is some obsolete code still present.
 
 =cut

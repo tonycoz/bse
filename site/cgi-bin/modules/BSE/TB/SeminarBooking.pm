@@ -2,7 +2,7 @@ package BSE::TB::SeminarBooking;
 use strict;
 use base qw(Squirrel::Row);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub columns {
   qw/id session_id siteuser_id roll_present options customer_instructions 
@@ -20,9 +20,9 @@ sub session {
 sub siteuser {
   my ($self) = @_;
 
-  require SiteUsers;
+  require BSE::TB::SiteUsers;
 
-  return SiteUsers->getByPkey($self->{siteuser_id});
+  return BSE::TB::SiteUsers->getByPkey($self->{siteuser_id});
 }
 
 1;

@@ -15,6 +15,18 @@ site/cgi-bin/modules/BSE/Edit/Article.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/BSE/FileHandler/Base.pm	=over on line 31 without closing =back	1
 site/cgi-bin/modules/BSE/FileHandler/FLV.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/FileHandler/FLV.pm	empty section in previous paragraph	1
+site/cgi-bin/modules/BSE/Generate.pm	empty section in previous paragraph	1
+site/cgi-bin/modules/BSE/Generate/Article.pm	Verbatim paragraph in NAME section	1
+site/cgi-bin/modules/BSE/Generate/Article.pm	empty section in previous paragraph	2
+site/cgi-bin/modules/BSE/Generate/Article.pm	multiple occurrence of link target 'admin'	1
+site/cgi-bin/modules/BSE/Generate/Article.pm	multiple occurrence of link target 'body'	1
+site/cgi-bin/modules/BSE/Generate/Article.pm	multiple occurrence of link target 'file field'	1
+site/cgi-bin/modules/BSE/Generate/Article.pm	multiple occurrence of link target 'ifParent'	1
+site/cgi-bin/modules/BSE/Generate/Article.pm	multiple occurrence of link target 'image'	1
+site/cgi-bin/modules/BSE/Generate/Article.pm	unresolved internal link 'item child'	1
+site/cgi-bin/modules/BSE/Generate/Article.pm	unresolved internal link 'item crumbs'	1
+site/cgi-bin/modules/BSE/Generate/Catalog.pm	Verbatim paragraph in NAME section	1
+site/cgi-bin/modules/BSE/Generate/Product.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/BSE/ImageHandler/Flash.pm	=over on line 201 without closing =back	1
 site/cgi-bin/modules/BSE/Mail.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/BSE/Message.pm	=item without previous =over	1
@@ -29,6 +41,7 @@ site/cgi-bin/modules/BSE/TB/Images.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/TB/Order.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/TB/Orders.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/TB/PriceTier.pm	=item without previous =over	1
+site/cgi-bin/modules/BSE/TB/Product.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/TB/Tags.pm	=item without previous =over	1
 site/cgi-bin/modules/BSE/UI/AdminImageClean.pm	No argument for =item	2
 site/cgi-bin/modules/BSE/UI/AdminModules.pm	=item without previous =over	1
@@ -64,19 +77,6 @@ site/cgi-bin/modules/DevHelp/Validate.pm	multiple occurrence of link target 'int
 site/cgi-bin/modules/DevHelp/Validate.pm	multiple occurrence of link target 'required'	1
 site/cgi-bin/modules/DevHelp/Validate.pm	multiple occurrence of link target 'rules'	1
 site/cgi-bin/modules/DevHelp/Validate.pm	multiple occurrence of link target 'time'	1
-site/cgi-bin/modules/Generate.pm	empty section in previous paragraph	1
-site/cgi-bin/modules/Generate/Article.pm	Verbatim paragraph in NAME section	1
-site/cgi-bin/modules/Generate/Article.pm	empty section in previous paragraph	2
-site/cgi-bin/modules/Generate/Article.pm	multiple occurrence of link target 'admin'	1
-site/cgi-bin/modules/Generate/Article.pm	multiple occurrence of link target 'body'	1
-site/cgi-bin/modules/Generate/Article.pm	multiple occurrence of link target 'file field'	1
-site/cgi-bin/modules/Generate/Article.pm	multiple occurrence of link target 'ifParent'	1
-site/cgi-bin/modules/Generate/Article.pm	multiple occurrence of link target 'image'	1
-site/cgi-bin/modules/Generate/Article.pm	unresolved internal link 'item child'	1
-site/cgi-bin/modules/Generate/Article.pm	unresolved internal link 'item crumbs'	1
-site/cgi-bin/modules/Generate/Catalog.pm	Verbatim paragraph in NAME section	1
-site/cgi-bin/modules/Generate/Product.pm	Verbatim paragraph in NAME section	1
-site/cgi-bin/modules/Product.pm	=item without previous =over	1
 site/cgi-bin/modules/Squirrel/GPG.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/Squirrel/PGP5.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/Squirrel/PGP6.pm	Verbatim paragraph in NAME section	1

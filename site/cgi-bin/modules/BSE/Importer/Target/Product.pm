@@ -2,13 +2,13 @@ package BSE::Importer::Target::Product;
 use strict;
 use base 'BSE::Importer::Target::Article';
 use BSE::API qw(bse_make_product bse_make_catalog bse_add_image);
-use Articles;
-use Products;
+use BSE::TB::Articles;
+use BSE::TB::Products;
 use BSE::TB::ProductOptions;
 use BSE::TB::ProductOptionValues;
 use BSE::TB::PriceTiers;
 
-our $VERSION = "1.005";
+our $VERSION = "1.008";
 
 =head1 NAME
 
@@ -30,7 +30,7 @@ BSE::Importer::Target::Product - import target for products
   reset_prodopts=1
 
   # done by the importer
-  my $target = BSE::Importer::Target::Product->new
+  my $target = BSE::Importer::Target::BSE::TB::Product->new
      (importer => $importer, opts => \%opts)
   ...
   $target->start($imp);
@@ -182,8 +182,8 @@ Returns catalogs that are a child of the specified article.
 sub children_of {
   my ($self, $parent) = @_;
 
-  return grep $_->{generator} eq 'Generate::Catalog',
-    Articles->children($parent);
+  return grep $_->{generator} eq 'BSE::Generate::Catalog',
+    BSE::TB::Articles->children($parent);
 }
 
 =item make_parent()
@@ -209,10 +209,10 @@ sub find_leaf {
 
   my $leaf;
   if ($self->{code_field} eq "id") {
-    $leaf = Products->getByPkey($leaf_id);
+    $leaf = BSE::TB::Products->getByPkey($leaf_id);
   }
   else {
-    ($leaf) = Products->getBy($self->{code_field}, $leaf_id)
+    ($leaf) = BSE::TB::Products->getBy($self->{code_field}, $leaf_id)
       or return;
   }
 
@@ -332,7 +332,7 @@ sub validate_make_leaf {
   my ($self, $importer, $entry) = @_;
 
   if (defined $entry->{product_code} && $entry->{product_code} ne '') {
-    my $other = Products->getBy(product_code => $entry->{product_code});
+    my $other = BSE::TB::Products->getBy(product_code => $entry->{product_code});
     $other
       and die "Duplicate product_code with product ", $other->id, "\n";
   }

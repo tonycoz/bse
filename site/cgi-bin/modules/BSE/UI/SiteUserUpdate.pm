@@ -2,7 +2,7 @@ package BSE::UI::SiteUserUpdate;
 use strict;
 use base qw(BSE::UI::AdminDispatch);
 use BSE::Template;
-use SiteUsers;
+use BSE::TB::SiteUsers;
 use BSE::Util::Iterate;
 use BSE::Util::Tags qw(tag_error_img);
 use BSE::Util::HTML;
@@ -11,7 +11,7 @@ use BSE::Util::Secure qw/make_secret/;
 use BSE::SubscribedUsers;
 use BSE::CfgInfo qw(custom_class);
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 my %rights =
   (
@@ -63,7 +63,7 @@ sub _get_import_spec {
     $$error = "Fields list must contain id or userId\n";
     return;
   }
-  my %valid_fields = map { $_ => 1 } SiteUser->columns;
+  my %valid_fields = map { $_ => 1 } BSE::TB::SiteUser->columns;
   unless (@fields == grep($valid_fields{$_} || $_ eq "x", @fields)) {
     $$error = "Unknown fields in field list for $name\n";
     return;
@@ -255,10 +255,10 @@ sub req_import {
   for my $row (grep !$_->{errors}, @data) {
     my $user;
     if ($spec->{key} eq 'id') {
-      $user = SiteUsers->getByPkey($row->{id});
+      $user = BSE::TB::SiteUsers->getByPkey($row->{id});
     }
     else {
-      $user = SiteUsers->getBy(userId => $row->{userId});
+      $user = BSE::TB::SiteUsers->getBy(userId => $row->{userId});
     }
     unless ($user) {
       $row->{errors}{$spec->{key}} = "Could not load user";
@@ -378,10 +378,10 @@ sub _parse {
     my $user;
     unless ($errors{$key}) {
       if ($key eq 'id') {
-	$user = SiteUsers->getByPkey($data{$key});
+	$user = BSE::TB::SiteUsers->getByPkey($data{$key});
       }
       else {
-	$user = SiteUsers->getBy(userId => $data{$key});
+	$user = BSE::TB::SiteUsers->getBy(userId => $data{$key});
       }
       unless ($user) {
 	$errors{$key} = "Could not find record for user $key=$data{$key}";
@@ -393,7 +393,7 @@ sub _parse {
       }
     }
     if ($user && !$errors{email} && $data{email}) {
-      my $checkemail = SiteUser->generic_email($data{email});
+      my $checkemail = BSE::TB::SiteUser->generic_email($data{email});
       require BSE::EmailBlacklist;
       my $blackentry = BSE::EmailBlacklist->getEntry($checkemail);
       $blackentry and

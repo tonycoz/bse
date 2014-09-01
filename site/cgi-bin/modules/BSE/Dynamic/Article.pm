@@ -5,7 +5,7 @@ use BSE::Template;
 use BSE::Util::HTML;
 use base qw(BSE::Util::DynamicTags);
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 sub new {
   my ($class, $req, %opts) = @_;
@@ -115,7 +115,7 @@ sub iter_dynchildren {
   $result
     and return $result;
 
-  $result = $self->access_filter(Articles->listedChildren($article->{id}));
+  $result = $self->access_filter(BSE::TB::Articles->listedChildren($article->{id}));
   $self->set_cached(dynchildren => $result);
 
   return $result;

@@ -3,7 +3,7 @@ use strict;
 use base 'Squirrel::Table';
 use BSE::TB::SiteUserGroup;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 use constant SECT_QUERY_GROUPS => "Query Groups";
 use constant SECT_QUERY_GROUP_PREFIX => 'Query group ';
@@ -113,7 +113,7 @@ sub member_ids {
     return @$values;
   }
   else {
-    return grep $self->contains_user($_), SiteUsers->all_ids;
+    return grep $self->contains_user($_), BSE::TB::SiteUsers->all_ids;
   }
 }
 

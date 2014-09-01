@@ -134,7 +134,7 @@ EOS
     close $fh;
     my $imp = BSE::Importer->new(cfg => $cfg, profile => "simpleupdate$when", callback => sub { note @_ });
     $imp->process($filename);
-    my $testb = Articles->getByPkey($testa->id);
+    my $testb = BSE::TB::Articles->getByPkey($testa->id);
     like($testb->body, qr/This is the body/, "check the body is updated");
     my @images = $testb->images;
     is(@images, 1, "have an image");
@@ -158,7 +158,7 @@ EOS
     close $fh;
     my $imp = BSE::Importer->new(cfg => $cfg, profile => "completefile$when", callback => sub { note @_ });
     $imp->process($filename);
-    my $testb = Articles->getByPkey($testa->id);
+    my $testb = BSE::TB::Articles->getByPkey($testa->id);
 
     my ($file) = grep $_->name eq "test", $testb->files;
     ok($file, "found the file with name 'test'")
@@ -184,7 +184,7 @@ EOS
     close $fh;
     my $imp = BSE::Importer->new(cfg => $cfg, profile => "updatefile$when", callback => sub { note @_ });
     $imp->process($filename);
-    my $testb = Articles->getByPkey($testa->id);
+    my $testb = BSE::TB::Articles->getByPkey($testa->id);
 
     my ($file) = grep $_->name eq "test", $testb->files;
     ok($file, "found the updated file with name 'test'")
@@ -211,7 +211,7 @@ EOS
     close $fh;
     my $imp = BSE::Importer->new(cfg => $cfg, profile => "updatefileb$when", callback => sub { note @_ });
     $imp->process($filename);
-    my $testb = Articles->getByPkey($testa->id);
+    my $testb = BSE::TB::Articles->getByPkey($testa->id);
 
     my ($file) = grep $_->name eq "test", $testb->files;
     ok($file, "found the updated file with name 'test'")
@@ -251,7 +251,7 @@ EOS
     close $fh;
     my $imp = BSE::Importer->new(cfg => $cfg, profile => "alias$when", callback => sub { note @_ });
     $imp->process($filename);
-    my $testb = Articles->getByPkey($testa->id);
+    my $testb = BSE::TB::Articles->getByPkey($testa->id);
     is($testb->linkAlias, "alias-${when}_more", "check alias set correctly");
   }
 

@@ -10,8 +10,8 @@ push @INC, 'modules';
 require BSE::Cfg;
 my $cfg = BSE::Cfg->new;
 # create some articles to test with
-require Articles;
-require Products;
+require BSE::TB::Articles;
+require BSE::TB::Products;
 require BSE::TB::ProductOptions;
 require BSE::TB::ProductOptionValues;
 require BSE::API;
@@ -49,7 +49,7 @@ my $parent = bse_make_catalog
   );
 
 ok($parent, "made a catalog");
-is($parent->{generator}, "Generate::Catalog", "check generator");
+is($parent->{generator}, "BSE::Generate::Catalog", "check generator");
 
 sleep 1;
 my $parent2 = bse_make_catalog
@@ -563,7 +563,7 @@ sub dyn_template_test($$$$) {
 sub _generate_dyn_template {
   my ($article, $template) = @_;
 
-  my $articles = 'Articles';
+  my $articles = 'BSE::TB::Articles';
   my $genname = $article->{generator};
   eval "use $genname";
   $@ && die $@;

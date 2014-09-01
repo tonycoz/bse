@@ -1,22 +1,22 @@
-package Products;
+package BSE::TB::Products;
 use strict;
 use Squirrel::Table;
 use vars qw(@ISA $VERSION);
 @ISA = qw(Squirrel::Table BSE::TB::TagOwners);
-use Product;
+use BSE::TB::Product;
 
-our $VERSION = "1.003";
+our $VERSION = "1.005";
 
 sub rowClass {
-  return 'Product';
+  return 'BSE::TB::Product';
 }
 
 sub all_visible_children {
   my ($self, $id) = @_;
 
-  require OtherParents;
-  my @normal_prods = Products->visible_children($id);
-  my @step_prods = Products->visible_step_children($id);
+  require BSE::TB::OtherParents;
+  my @normal_prods = BSE::TB::Products->visible_children($id);
+  my @step_prods = BSE::TB::Products->visible_step_children($id);
   
   my %order =
     (
@@ -24,7 +24,7 @@ sub all_visible_children {
      ( map 
        { 
 	 $_->{childId} => $_->{parentDisplayOrder}
-       } OtherParents->getBy(parentId => $id)
+       } BSE::TB::OtherParents->getBy(parentId => $id)
      )
     );
 
@@ -53,7 +53,7 @@ sub visible_children {
   use BSE::Util::SQL qw/now_sqldate/;
   my $today = now_sqldate();
   
-  return Products->getSpecial(visible_children_of => $id, $today);
+  return BSE::TB::Products->getSpecial(visible_children_of => $id, $today);
 }
 
 sub visible_step_children {
@@ -62,7 +62,7 @@ sub visible_step_children {
   use BSE::Util::SQL qw/now_sqldate/;
   my $today = now_sqldate();
   
-  return Products->getSpecial(visibleStep => $id, $today);
+  return BSE::TB::Products->getSpecial(visibleStep => $id, $today);
 }
 
 {

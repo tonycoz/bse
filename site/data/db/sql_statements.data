@@ -525,13 +525,13 @@ where owner_type = 'BA'
      from article
      where parentid = ? 
        and listed != 0
-       and generator = 'Generate::Product'
+       and generator = 'BSE::Generate::Product'
   union
    select op.childId
      from other_parents op, article a
       where op.parentId = ?
         and op.childId = a.id
-        and a.generator = 'Generate::Product'
+        and a.generator = 'BSE::Generate::Product'
    )
 SQL
 
@@ -546,14 +546,14 @@ where t.id = m.tag_id
      from article
      where parentid = ? 
        and listed <> 0
-       and generator = 'Generate::Product'
+       and generator = 'BSE::Generate::Product'
   union
    select op.childId
      from other_parents op, article a
       where op.parentId = ?
         and op.childId = a.id
 	and a.listed <> 0
-        and a.generator = 'Generate::Product')
+        and a.generator = 'BSE::Generate::Product')
 SQL
 
 name: TagMembers.allkids

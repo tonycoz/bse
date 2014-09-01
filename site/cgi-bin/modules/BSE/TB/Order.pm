@@ -7,7 +7,7 @@ use vars qw/@ISA/;
 use Carp 'confess';
 use BSE::Shop::PaymentTypes;
 
-our $VERSION = "1.024";
+our $VERSION = "1.026";
 
 sub columns {
   return qw/id
@@ -167,16 +167,16 @@ sub siteuser {
   my ($self) = @_;
 
   if ($self->siteuser_id) {
-    require SiteUsers;
-    my $user = SiteUsers->getByPkey($self->siteuser_id);
+    require BSE::TB::SiteUsers;
+    my $user = BSE::TB::SiteUsers->getByPkey($self->siteuser_id);
     $user and return $user;
   }
 
   $self->{userId} or return;
 
-  require SiteUsers;
+  require BSE::TB::SiteUsers;
 
-  return ( SiteUsers->getBy(userId=>$self->{userId}) )[0];
+  return ( BSE::TB::SiteUsers->getBy(userId=>$self->{userId}) )[0];
 }
 
 sub items {
@@ -206,8 +206,8 @@ sub paid_files {
 sub products {
   my ($self) = @_;
 
-  require Products;
-  Products->getSpecial(orderProducts=>$self->{id});
+  require BSE::TB::Products;
+  BSE::TB::Products->getSpecial(orderProducts=>$self->{id});
 }
 
 sub valid_fields {
@@ -521,9 +521,9 @@ sub _tags {
        $current_item
 	 or return '* only usable in items *';
 
-       require Products;
+       require BSE::TB::Products;
        my $id = $current_item->productId;
-       $products{$id} ||= Products->getByPkey($id);
+       $products{$id} ||= BSE::TB::Products->getByPkey($id);
 
        my $product = $products{$id}
 	 or return '';
@@ -545,9 +545,9 @@ sub _tags {
        $current_item
 	 or return '* only usable in items *';
 
-       require Products;
+       require BSE::TB::Products;
        my $id = $current_item->productId;
-       $products{$id} ||= Products->getByPkey($id);
+       $products{$id} ||= BSE::TB::Products->getByPkey($id);
 
        my $product = $products{$id}
 	 or return '';

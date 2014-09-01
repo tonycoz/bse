@@ -15,7 +15,7 @@ BSE::Edit::Site - edit interface for the site itself.
 
 =cut
 
-our $VERSION = "1.012";
+our $VERSION = "1.013";
 
 use base 'BSE::Edit::Article';
 use BSE::TB::Site;
@@ -70,7 +70,7 @@ sub get_images {
 sub get_files {
   my ($self, $article) = @_;
 
-  Articles->global_files;
+  BSE::TB::Articles->global_files;
 }
 
 sub req_tagshow {
@@ -91,7 +91,7 @@ sub req_tagshow {
       push @opts, [ like => "cat", "$cat%" ];
     }
   }
-  my @tags = Articles->all_tags(@opts);
+  my @tags = BSE::TB::Articles->all_tags(@opts);
 
   if ($req->is_ajax) {
     my @json = map $_->json_data, @tags;
@@ -99,7 +99,7 @@ sub req_tagshow {
       for my $i (0 .. $#tags) {
 	my $tag = $tags[$i];
 	my $json = $json[$i];
-	$json->{articles} = [ Articles->getIdsByTag($tag) ];
+	$json->{articles} = [ BSE::TB::Articles->getIdsByTag($tag) ];
       }
     }
 
@@ -134,7 +134,7 @@ sub req_tagshow {
       plural => "systagarts",
       code => sub {
 	return sort { lc $a->title cmp lc $b->title }
-	  Articles->getByTag($tag);
+	  BSE::TB::Articles->getByTag($tag);
       },
       nocache => 1,
      ),
@@ -169,7 +169,7 @@ sub req_tagrename {
   }
 
   if ($tag && !$errors{name}) {
-    my $other = Articles->getTagByName($name);
+    my $other = BSE::TB::Articles->getTagByName($name);
     if ($other) {
       if ($other->id != $tag->id) {
 	$errors{name} = "msg:bse/admin/edit/tags/duplicate:$name";
@@ -306,7 +306,7 @@ Template: C<admin/tagcats>.
 sub req_tagcats {
   my ($self, $req, $article, $articles) = @_;
 
-  my @cats = Articles->all_tag_categories;
+  my @cats = BSE::TB::Articles->all_tag_categories;
   my $filter = $req->cgi->param("cat");
   if (defined $filter and $filter =~ /\S/) {
     @cats = grep /\A\Q$filter/i, @cats;
@@ -397,7 +397,7 @@ sub req_tagcat {
     return $self->req_tagcats($req, $article, $articles, undef, \%errors);
   }
 
-  my $cat = Articles->tag_category($workcat)
+  my $cat = BSE::TB::Articles->tag_category($workcat)
     or return $self->req_tagcats($req, $article, $articles,
 				 "Cannot find or create tag category '$workcat'");
 
@@ -481,7 +481,7 @@ sub req_tagcatsave {
     return $self->req_tagcats($req, $article, $articles, undef, \%errors);
   }
 
-  my $cat = Articles->tag_category($workcat)
+  my $cat = BSE::TB::Articles->tag_category($workcat)
     or return $self->req_tagcats($req, $article, $articles,
 				 "Cannot find or create tag category '$workcat'");
 

@@ -1,26 +1,26 @@
-package Generate::Article;
+package BSE::Generate::Article;
 use strict;
 use BSE::Template;
 use Constants qw(%LEVEL_DEFAULTS $CGI_URI $ADMIN_URI
                  $UNLISTED_LEVEL1_IN_CRUMBS);
 use BSE::TB::Images;
 use vars qw(@ISA);
-use Generate;
+use BSE::Generate;
 use BSE::Regen qw(generate_button);
 use BSE::Util::Tags qw(tag_article);
 use BSE::TB::ArticleFiles;
-@ISA = qw/Generate/;
+@ISA = qw/BSE::Generate/;
 use BSE::Util::HTML;
 use BSE::Arrows;
 use Carp 'confess';
 use BSE::Util::Iterate;
 use BSE::CfgInfo qw(cfg_dist_image_uri cfg_image_uri);
 
-our $VERSION = "1.013";
+our $VERSION = "1.015";
 
 =head1 NAME
 
-  Generate::Article - generates articles.
+  BSE::Generate::Article - generates articles.
 
 =head1 SYNOPSIS
 
@@ -436,7 +436,7 @@ sub baseActs {
   # used to generate a navigation list for the article
   # generate a list of ancester articles/sections
   # Jason calls these breadcrumbs
-  my @ancestors = UNIVERSAL::isa($article, 'Article') ?
+  my @ancestors = UNIVERSAL::isa($article, 'BSE::TB::Article') ?
     reverse($article->ancestors) : ();
   my @crumbs = grep $_->{listed} == 1 || $_->{level} == 1, @ancestors;
   my $current_crumb;
@@ -445,7 +445,7 @@ sub baseActs {
   my $section = @crumbs ? $crumbs[0] : $article;
 
   my @images;
-  if (UNIVERSAL::isa($article, 'Article')) {
+  if (UNIVERSAL::isa($article, 'BSE::TB::Article')) {
     @images = $article->images;
   }
   my @unnamed_images = grep $_->{name} eq '', @images;
@@ -463,13 +463,13 @@ sub baseActs {
   my $abs_urls = $self->abs_urls($article);
 
   my $dynamic = $self->{force_dynamic}
-    || (UNIVERSAL::isa($top, 'Article') ? $top->is_dynamic : 0);
+    || (UNIVERSAL::isa($top, 'BSE::TB::Article') ? $top->is_dynamic : 0);
   $self->set_variable(dynamic => $dynamic);
 
   my @stepkids;
   my @allkids;
   my @stepparents;
-  if (UNIVERSAL::isa($article, 'Article')) {
+  if (UNIVERSAL::isa($article, 'BSE::TB::Article')) {
     @stepkids	  = $article->visible_stepkids;
     @allkids	  = $article->all_visible_kids;
     @stepparents  = $article->visible_step_parents;
@@ -753,7 +753,7 @@ sub tag_ifDynamic {
   # this is to support pregenerated pages being handled as dynamic pages
   $self->{force_dynamic} and return 1;
 
-  UNIVERSAL::isa($top, 'Article') ? $top->is_dynamic : 0;
+  UNIVERSAL::isa($top, 'BSE::TB::Article') ? $top->is_dynamic : 0;
 }
 
 sub tag_ifAccessControlled {
@@ -762,7 +762,7 @@ sub tag_ifAccessControlled {
   if ($arg) {
     if ($acts->{$arg}) {
       my $id = $templater->perform($acts, $arg, 'id');
-      $article = Articles->getByPkey($id);
+      $article = BSE::TB::Articles->getByPkey($id);
       unless ($article) {
 	print STDERR "** Unknown article $id from $arg in ifAccessControlled\n";
 	return 0;
@@ -774,7 +774,7 @@ sub tag_ifAccessControlled {
     }
   }
 
-  return UNIVERSAL::isa($article, 'Article') ? 
+  return UNIVERSAL::isa($article, 'BSE::TB::Article') ? 
     $article->is_access_controlled : 0;
 }
 
@@ -1232,7 +1232,7 @@ See the summary tag.
 =item generator
 
 The class used to generate the article.  Should be one of
-Generate::Article, Generate::Catalog or Generate::Product.
+BSE::Generate::Article, BSE::Generate::Catalog or BSE::Generate::Product.
 
 =item level
 

@@ -4,7 +4,7 @@ use base qw(BSE::UI::Dispatch BSE::UI::SiteuserCommon);
 use BSE::Util::Tags qw(tag_hash);
 use BSE::Util::HTML;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 my %actions =
   (
@@ -263,19 +263,19 @@ sub req_show {
   my $cgi = $req->cgi;
   my $cfg = $req->cfg;
 
-  require SiteUsers;
+  require BSE::TB::SiteUsers;
   my $user;
   my $id = $cgi->param('id');
   my $lo = $cgi->param('lo');
   my $co = $cgi->param('co');
   if (defined $id && length $id && $id =~ /^\d+$/) {
-    $user = SiteUsers->getByPkey($id);
+    $user = BSE::TB::SiteUsers->getByPkey($id);
   }
   elsif (defined $lo && length $lo && $lo =~ /^\w+$/) {
-    $user = SiteUsers->getBy(userId => $lo);
+    $user = BSE::TB::SiteUsers->getBy(userId => $lo);
   }
   elsif (defined $co && length $co && $co =~ /^\w+$/) {
-    $user = SiteUsers->getBy(affiliate_name => $co);
+    $user = BSE::TB::SiteUsers->getBy(affiliate_name => $co);
   }
   else {
     return $class->req_none($req, "No identifier supplied");

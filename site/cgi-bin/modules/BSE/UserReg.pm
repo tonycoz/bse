@@ -1,7 +1,7 @@
 package BSE::UserReg;
 use strict;
 use base qw(BSE::UI::SiteuserCommon BSE::UI::Dispatch);
-use SiteUsers;
+use BSE::TB::SiteUsers;
 use BSE::Util::Tags qw(tag_error_img tag_hash tag_hash_plain tag_article);
 use BSE::Template;
 use Constants qw($SHOP_FROM);
@@ -18,7 +18,7 @@ use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
 use Carp qw(confess);
 
-our $VERSION = "1.031";
+our $VERSION = "1.034";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -230,7 +230,7 @@ sub req_logon {
   my $userid = $cgi->param("userid");
   my $password = $cgi->param("password");
   unless (keys %errors) {
-    $user = SiteUsers->getBy(userId => $userid);
+    $user = BSE::TB::SiteUsers->getBy(userId => $userid);
     if ($req->ip_locked_out("S")) {
       $errors{_} = "msg:bse/user/iplockout:".$req->ip_address;
     }
@@ -250,7 +250,7 @@ sub req_logon {
 	     level => "warning",
 	     msg => "Site User logon attempt failed",
 	    );
-	  SiteUser->check_lockouts
+	  BSE::TB::SiteUser->check_lockouts
 	    (
 	     request => $req,
 	     user => $user,
@@ -429,7 +429,7 @@ sub req_setcookie {
   my $userid = $newsession{userid};
   my $user;
   if ($userid) {
-    $user = SiteUsers->getByPkey($userid);
+    $user = BSE::TB::SiteUsers->getByPkey($userid);
   }
   $self->_send_user_cookie($user);
 
@@ -614,12 +614,12 @@ sub req_register {
   }
 
   my %user;
-  my @cols = SiteUser->columns;
+  my @cols = BSE::TB::SiteUser->columns;
   shift @cols;
 
   my %errors;
-  my %fields = SiteUser->valid_fields($cfg);
-  my %rules = SiteUser->valid_rules($cfg);
+  my %fields = BSE::TB::SiteUser->valid_fields($cfg);
+  my %rules = BSE::TB::SiteUser->valid_rules($cfg);
   $req->validate(errors => \%errors,
 		 fields => \%fields,
 		 rules => \%rules,
@@ -643,7 +643,7 @@ sub req_register {
     elsif ($email ne $confemail) {
       $errors{confirmemail} = $msgs->(regbadconfemail => "Confirmation email must match the email address");
     }
-    my $user = SiteUsers->getBy(userId=>$email);
+    my $user = BSE::TB::SiteUsers->getBy(userId=>$email);
     if ($user) {
       $errors{email} = $msgs->(regemailexists=>
 				"Sorry, email $email already exists as a user",
@@ -659,13 +659,13 @@ sub req_register {
       $errors{userid} = $msgs->(reguser=>"Please enter your username");
     }
     my %others = map { $_ => scalar($cgi->param($_)) }
-      SiteUser->password_check_fields;
+      BSE::TB::SiteUser->password_check_fields;
     my $pass = $cgi->param('password');
     my $pass2 = $cgi->param('confirm_password');
     if (!defined $pass || length $pass == 0) {
       $errors{password} = $msgs->(regpass=>"Please enter your password");
     }
-    elsif (!SiteUser->check_password_rules
+    elsif (!BSE::TB::SiteUser->check_password_rules
 	   (
 	    password => $pass,
 	    username => $userid,
@@ -682,14 +682,14 @@ sub req_register {
       $errors{confirm_password} = 
 	$msgs->(regconfmismatch=>"The confirmation password is different from the password");
     }
-    my $user = SiteUsers->getBy(userId=>$userid);
+    my $user = BSE::TB::SiteUsers->getBy(userId=>$userid);
     if ($user) {
       # give the user a suggestion
       my $workuser = $userid;
       $workuser =~ s/\d+$//;
       my $suffix = 1;
       for my $suffix (1..100) {
-	unless (SiteUsers->getBy(userId=>"$workuser$suffix")) {
+	unless (BSE::TB::SiteUsers->getBy(userId=>"$workuser$suffix")) {
 	  $cgi->param(userid=>"$workuser$suffix");
 	  last;
 	}
@@ -745,7 +745,7 @@ sub req_register {
 
   my $user;
   eval {
-    $user = SiteUsers->make(%user);
+    $user = BSE::TB::SiteUsers->make(%user);
   };
   if ($user) {
     my $custom = custom_class($cfg);
@@ -817,7 +817,7 @@ sub _get_user {
     defined $uid && $uid =~ /^\d+$/ && defined $password
       or do { refresh_to($ENV{SCRIPT}."?nopassword=1"); return };
 
-    my $user = SiteUsers->getByPkey($uid)
+    my $user = BSE::TB::SiteUsers->getByPkey($uid)
       or do { refresh_to($ENV{SCRIPT}."?nopassword=1"); return };
 
     $user->{password} eq $password
@@ -863,7 +863,7 @@ sub _partial_logon {
   my $session = $req->session;
   if ($session->{partial_logon} 
       && !$req->cfg->entryBool('custom', 'user_auth')) {
-    my $user = SiteUsers->getByPkey($session->{partial_logon})
+    my $user = BSE::TB::SiteUsers->getByPkey($session->{partial_logon})
       or return;
     $user->{disabled}
       and return;
@@ -1012,7 +1012,7 @@ sub _checkemail {
       my $conf_email = $cgi->param('confirmemail');
       if ($conf_email) {
 	if ($conf_email eq $email) {
-	  my $other = SiteUsers->getBy(userId=>$email);
+	  my $other = BSE::TB::SiteUsers->getBy(userId=>$email);
 	  if ($other) {
 	    $errors->{email} = 
 	      $msgs->(optsdupemail =>
@@ -1099,8 +1099,8 @@ sub req_saveopts {
 	else {
 	  my @errors;
 	  my %others;
-	  %others = map { $_ => $user->$_() } SiteUser->password_check_fields;
-	  if (!SiteUser->check_password_rules
+	  %others = map { $_ => $user->$_() } BSE::TB::SiteUser->password_check_fields;
+	  if (!BSE::TB::SiteUser->check_password_rules
 	      (
 	       password => $newpass,
 	       errors => \@errors,
@@ -1132,7 +1132,7 @@ sub req_saveopts {
   }
 
       
-  my @cols = grep !$donttouch{$_}, SiteUser->columns;
+  my @cols = grep !$donttouch{$_}, BSE::TB::SiteUser->columns;
   for my $col (@cols) {
     my $value = $cgi->param($col);
     if ($cfg->entryBool('site users', "require_$col")) {
@@ -1301,8 +1301,8 @@ sub tag_order_item_options {
   my @options;
   if ($item->{options}) {
     # old order
-    require Products;
-    my $product = Products->getByPkey($item->{productId});
+    require BSE::TB::Products;
+    my $product = BSE::TB::Products->getByPkey($item->{productId});
 
     @options = order_item_opts($req, $item, $product);
   }
@@ -1611,8 +1611,8 @@ sub _common_download {
   # check the user has access to this file (RT#531)
   my $article;
   if ($file->{articleId} != -1) {
-    require Articles;
-    $article ||= Articles->getByPkey($file->{articleId})
+    require BSE::TB::Articles;
+    $article ||= BSE::TB::Articles->getByPkey($file->{articleId})
       or return $self->req_show_logon($req,
 				  $msgs->('downloadarticle',
 					  "Could not load article for file"));
@@ -1801,7 +1801,7 @@ sub req_download_file {
   my $userid = $session->{userid};
   my $user;
   if ($userid) {
-    $user = SiteUsers->getByPkey($userid);
+    $user = BSE::TB::SiteUsers->getByPkey($userid);
   }
   $fileid ||= $cgi->param('file')
     or return $self->req_show_logon($req, 
@@ -2037,7 +2037,7 @@ sub req_lost_password {
   
   my $user;
   unless (keys %errors) {
-    $user = SiteUsers->getBy(userId=>$userid)
+    $user = BSE::TB::SiteUsers->getBy(userId=>$userid)
       or $errors{userid} = $msgs->(lostnosuch=> "Unknown username supplied", $userid);
   }
   keys %errors
@@ -2169,7 +2169,7 @@ sub req_confirm {
     return $self->req_show_logon($req,
 			     $msgs->(confbaduser=>"Invalid or unknown user id supplied for confirmation"));
   }
-  my $user = SiteUsers->getByPkey($userid)
+  my $user = BSE::TB::SiteUsers->getByPkey($userid)
     or return $self->req_show_logon($req,
 			     $msgs->(confbaduser=>"Invalid or unknown user id supplied for confirmation"));
   unless ($secret eq $user->{confirmSecret}) {
@@ -2195,7 +2195,7 @@ sub req_confirm {
 }
 
 sub _generic_email {
-#  SiteUser->generic_email(shift);
+#  BSE::TB::SiteUser->generic_email(shift);
   my ($checkemail) = @_;
 
   # Build a generic form for the email - since an attacker could
@@ -2339,7 +2339,7 @@ sub req_unsub {
     return $self->req_show_logon($req,
 			     $msgs->(unsubbaduser=>"Invalid or unknown username supplied for unsubscribe"));
   }
-  my $user = SiteUsers->getByPkey($userid)
+  my $user = BSE::TB::SiteUsers->getByPkey($userid)
     or return $self->req_show_logon($req,
 			     $msgs->(unsubbaduser=>"Invalid or unknown username supplied for unsubscribe"));
   unless ($secret eq $user->{confirmSecret}) {
@@ -2382,7 +2382,7 @@ sub _validate_affiliate_name {
     $aff_name =~ s/^\s+|\s+$//g;
     if (length $aff_name) {
       if ($aff_name =~ /^\w+$/) {
-	my $other = SiteUsers->getBy(affiliate_name => $aff_name);
+	my $other = BSE::TB::SiteUsers->getBy(affiliate_name => $aff_name);
 	if ($other && (!$user || $other->{id} != $user->{id})) {
 	  $errors->{affiliate_name} = $msgs->(dupaffiliatename =>
 					    "$display '$aff_name' is already in use", $aff_name);
@@ -2428,7 +2428,7 @@ sub req_image {
   defined $u && $u =~ /^\d+$/ && defined $i && $i =~ /^\w+$/
     or return $self->req_show_logon($req, "Missing or bad image parameter");
 
-  my $user = SiteUsers->getByPkey($u)
+  my $user = BSE::TB::SiteUsers->getByPkey($u)
     or return $self->req_show_logon($req, "Missing or bad image parameter");
   my $image = $user->get_image($i)
     or return $self->req_show_logon($req, "Unknown image id");
@@ -2541,7 +2541,7 @@ sub req_wishlist {
 
   my $custom = custom_class($req->cfg);
 
-  my $user = SiteUsers->getBy(userId => $user_id)
+  my $user = BSE::TB::SiteUsers->getBy(userId => $user_id)
     or return $self->error($req, "No such user $user_id");
 
   my $curr_user = $req->siteuser;
@@ -2665,7 +2665,7 @@ sub req_lost {
     or return $self->req_show_logon($req, $req->catmsg("msg:bse/user/nolostid"));
 
   my $error;
-  my $user = SiteUsers->lost_password_next($id, \$error)
+  my $user = BSE::TB::SiteUsers->lost_password_next($id, \$error)
     or return $self->req_show_logon($req, { _ => "msg:bse/user/lost/$error" });
 
   my $message = $req->message($errors);
@@ -2719,14 +2719,14 @@ sub req_lost_save {
   $req->validate(fields => \%lost_fields,
 		 errors => \%errors);
   my $password = $req->cgi->param("password");
-  my $tmp_user = SiteUsers->lost_password_next($id);
+  my $tmp_user = BSE::TB::SiteUsers->lost_password_next($id);
   unless ($errors{password}) {
     my @errors;
     my %others = $tmp_user
-      ? map { $_ => $tmp_user->$_() } SiteUser->password_check_fields
+      ? map { $_ => $tmp_user->$_() } BSE::TB::SiteUser->password_check_fields
 	: ();
     $DB::single = 1;
-    unless (SiteUser->check_password_rules
+    unless (BSE::TB::SiteUser->check_password_rules
 	    (
 	     password => $password,
 	     errors => \@errors,
@@ -2742,7 +2742,7 @@ sub req_lost_save {
 
   my $error;
 
-  my $user = SiteUsers->lost_password_save($id, $password, \$error)
+  my $user = BSE::TB::SiteUsers->lost_password_save($id, $password, \$error)
     or return $self->req_show_logon($req, "msg:bse/user/lost/$error");
 
   $req->flash("msg:bse/user/lostsaved");

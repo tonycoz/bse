@@ -1,12 +1,12 @@
 package BSE::Generate::Seminar;
 use strict;
-use base 'Generate::Product';
+use base 'BSE::Generate::Product';
 use BSE::TB::Seminars;
 use BSE::Util::HTML;
 use BSE::Util::Tags qw(tag_article);
 use BSE::Util::Iterate;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub baseActs {
   my ($self, $articles, $acts, $seminar, $embedded) = @_;

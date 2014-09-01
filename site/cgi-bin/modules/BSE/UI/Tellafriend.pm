@@ -4,9 +4,9 @@ use base 'BSE::UI::Dispatch';
 use BSE::Util::Secure qw/make_secret/;
 use BSE::Util::Tags qw(tag_hash tag_error_img tag_hash_plain tag_article tag_article_plain);
 use BSE::ComposeMail;
-use Articles;
+use BSE::TB::Articles;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 my %actions =
   (
@@ -32,7 +32,7 @@ sub _article {
     return;
   }
 
-  my $article = Articles->getByPkey($id);
+  my $article = BSE::TB::Articles->getByPkey($id);
   unless ($article) {
     $$error = "article $id not found";
     return;

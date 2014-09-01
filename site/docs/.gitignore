@@ -1,12 +1,12 @@
-/Article.html
+/BSE::TB::Article.html
 /BSE::TB::SiteCommon.html
 /BSE::TB::TagOwner.html
 /BSE::UI::Affiliate.html
 /BSE::Variables.html
-/Generate.html
-/Generate::Article.html
-/Generate::Catalog.html
-/Generate::Product.html
+/BSE::Generate.html
+/BSE::Generate::Article.html
+/BSE::Generate::Catalog.html
+/BSE::Generate::Product.html
 /Squirrel::Template.html
 /Squirrel::Template::Expr.html
 /Squirrel::Template::Expr::WrapArray.html

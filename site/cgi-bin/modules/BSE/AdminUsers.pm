@@ -9,7 +9,7 @@ use BSE::TB::AdminUsers;
 use BSE::TB::AdminGroups;
 use BSE::Util::Iterate;
 
-our $VERSION = "1.007";
+our $VERSION = "1.009";
 
 my %actions =
   (
@@ -437,9 +437,9 @@ sub req_showuser {
 sub iter_get_kids {
   my ($article) = @_;
 
-  require Articles;
+  require BSE::TB::Articles;
   return sort { $b->{displayOrder} <=> $a->{displayOrder} } 
-    Articles->children($article->{id});
+    BSE::TB::Articles->children($article->{id});
 }
 
 sub iter_get_aperms {
@@ -504,7 +504,7 @@ sub article_tags {
 	{
 	 id=>-1,
 	 title=>'Your site',
-	 generator => 'Generate::Site', # well...
+	 generator => 'BSE::Generate::Site', # well...
 	 level => 0,
 	};
     }
@@ -547,8 +547,8 @@ sub get_article {
       };
   }
   else {
-    require Articles;
-    return Articles->getByPkey($id);
+    require BSE::TB::Articles;
+    return BSE::TB::Articles->getByPkey($id);
   }
 }
 

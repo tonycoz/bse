@@ -1,12 +1,12 @@
 package BSE::UI::AdminPage;
 use strict;
-use Articles;
+use BSE::TB::Articles;
 use BSE::Util::HTML qw(escape_uri);
 use BSE::UI::AdminDispatch;
-use Articles;
+use BSE::TB::Articles;
 our @ISA = qw(BSE::UI::AdminDispatch);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 my %actions =
   (
@@ -36,8 +36,8 @@ sub req_adminpage {
   $admin_links = $cgi->param('admin_links')
     if defined $cgi->param('admin_links');
   
-  #my $articles = Articles->new;
-  my $articles = 'Articles';
+  #my $articles = BSE::TB::Articles->new;
+  my $articles = 'BSE::TB::Articles';
   
   my $article;
   $article = $articles->getByPkey($id) if $id =~ /^\d+$/;

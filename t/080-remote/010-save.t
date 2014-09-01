@@ -4,10 +4,10 @@ use BSE::Test qw(make_ua base_url);
 use JSON;
 use DevHelp::HTML;
 use Test::More;
-use Article;
+use BSE::TB::Article;
 use Time::HiRes qw(time sleep);
 
-my @cols = Article->columns;
+my @cols = BSE::TB::Article->columns;
 
 my $base = 130;
 

@@ -4,7 +4,7 @@ use Squirrel::Row;
 use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub columns {
   return qw/subscription_id text_id title description max_lapsed/;
@@ -84,8 +84,8 @@ sub order_item_count {
 sub dependent_products {
   my ($self) = @_;
 
-  require Products;
-  Products->getSpecial(subscriptionDependent => $self->{subscription_id}, 
+  require BSE::TB::Products;
+  BSE::TB::Products->getSpecial(subscriptionDependent => $self->{subscription_id}, 
 		       $self->{subscription_id});
 }
 

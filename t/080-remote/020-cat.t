@@ -21,7 +21,7 @@ my $cat = do_add($add_url,
 		  type => "Catalog",
 		 }, "make test catalog");
 
-is($cat->{generator}, "Generate::Catalog", "make sure it's a catalog");
+is($cat->{generator}, "BSE::Generate::Catalog", "make sure it's a catalog");
 
 # and an article
 my $art = do_add($add_url, 
@@ -30,7 +30,7 @@ my $art = do_add($add_url,
 		  title => "Test article",
 		 }, "make test article");
 
-is($art->{generator}, "Generate::Article", "make sure it's an article");
+is($art->{generator}, "BSE::Generate::Article", "make sure it's an article");
 
 my $prod;
 {
@@ -42,7 +42,7 @@ my $prod;
       parentid => $cat->{id},
       title => "Some Product",
      }, "make test product");
-  is($result->{generator}, "Generate::Product",
+  is($result->{generator}, "BSE::Generate::Product",
      "check generator");
   $prod = $result;
 }

@@ -5,7 +5,7 @@ use FindBin;
 use lib "$FindBin::Bin/../cgi-bin/modules";
 use BSE::Regen qw/generate_all generate_article generate_base pregenerate_list generate_one_extra/;
 use BSE::API qw(bse_init bse_cfg);
-use Articles;
+use BSE::TB::Articles;
 
 bse_init("../cgi-bin");
 
@@ -17,7 +17,7 @@ $verbose = defined $verbose;
 
 my $cfg = bse_cfg();
 
-my $articles = 'Articles';
+my $articles = 'BSE::TB::Articles';
 
 $| = 1;
 

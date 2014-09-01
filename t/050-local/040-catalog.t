@@ -11,8 +11,8 @@ BEGIN {
 }
 #ok(chdir $cgidir, "switch to CGI directory");
 # create some articles to test with
-use Articles;
-use Products;
+use BSE::TB::Articles;
+use BSE::TB::Products;
 use BSE::API qw/bse_cfg bse_init bse_make_catalog bse_make_product bse_add_step_child/;
 
 bse_init($cgidir);
@@ -26,7 +26,7 @@ my $parent = bse_make_catalog
   );
 
 ok($parent, "made a catalog");
-is($parent->{generator}, "Generate::Catalog", "check generator");
+is($parent->{generator}, "BSE::Generate::Catalog", "check generator");
 
 my $parent2 = bse_make_catalog
   (

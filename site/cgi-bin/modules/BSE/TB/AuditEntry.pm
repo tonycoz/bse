@@ -2,7 +2,7 @@ package BSE::TB::AuditEntry;
 use strict;
 use base qw(Squirrel::Row);
 
-our $VERSION = "1.009";
+our $VERSION = "1.010";
 
 =head1 NAME
 
@@ -106,8 +106,8 @@ sub actor_name {
     }
   }
   elsif ($type eq "M") {
-    require SiteUsers;
-    my $user = SiteUsers->getByPkey($self->actor_id);
+    require BSE::TB::SiteUsers;
+    my $user = BSE::TB::SiteUsers->getByPkey($self->actor_id);
     if ($user) {
       return "Member: ".$user->userId;
     }
@@ -141,8 +141,8 @@ sub actor_link {
     }
   }
   elsif ($type eq "M") {
-    require SiteUsers;
-    my $user = SiteUsers->getByPkey($self->actor_id);
+    require BSE::TB::SiteUsers;
+    my $user = BSE::TB::SiteUsers->getByPkey($self->actor_id);
     if ($user) {
       return $user->link;
     }
@@ -163,12 +163,12 @@ my %types =
     action => "order_detail",
     format => "Order %d",
    },
-   "SiteUser" =>
+   "BSE::TB::SiteUser" =>
    {
     target => "siteusers",
     action => "view",
     format => "Member %d",
-    class => "SiteUsers",
+    class => "BSE::TB::SiteUsers",
    },
    "BSE::TB::AdminUser" =>
    {

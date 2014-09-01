@@ -7,7 +7,7 @@ use vars qw(@ISA @EXPORT_OK);
                 payment_types order_item_opts
  PAYMENT_CC PAYMENT_CHEQUE PAYMENT_CALLME PAYMENT_MANUAL PAYMENT_PAYPAL/;
 
-our $VERSION = "1.010";
+our $VERSION = "1.011";
 
 our %EXPORT_TAGS =
   (
@@ -257,7 +257,7 @@ sub load_order_fields {
   my @products;
   my $today = now_sqldate();
   for my $item (@cart) {
-    my $product = Products->getByPkey($item->{productId});
+    my $product = BSE::TB::Products->getByPkey($item->{productId});
     # double check that it's still a valid product
     if (!$product) {
       $$error = "Product $item->{productId} not found";

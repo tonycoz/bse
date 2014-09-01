@@ -10,7 +10,7 @@ use overload
   "&{}" => sub { my $self = $_[0]; return sub { $self->_old_msg(@_) } },
   "bool" => sub { 1 };
 
-our $VERSION = "1.006";
+our $VERSION = "1.008";
 
 my $single;
 
@@ -86,12 +86,12 @@ sub html {
   my $msg = $self->_get_replaced($lang, $msgid, $parms);
   if ($msg) {
     if ($msg->{formatting} eq 'body') {
-      require Generate;
+      require BSE::Generate;
       require BSE::Template;
       my $gen = Generate->new(cfg => BSE::Cfg->single);
       my $templater = BSE::Template->templater(BSE::Cfg->single);
       return $gen->format_body(acts => {},
-			       articles => "Articles",
+			       articles => "BSE::TB::Articles",
 			       text => $msg->{message},
 			       templater => $templater);
     }
