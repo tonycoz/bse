@@ -78,7 +78,7 @@ for my $title ("A" .. "Z") {
 }
 
 {
-  my $tag_info = Products->collection_with_tags
+  my $tag_info = BSE::TB::Products->collection_with_tags
     (
      "all_visible_products",
      [ "iPod: Nano" ],

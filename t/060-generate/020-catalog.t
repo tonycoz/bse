@@ -330,7 +330,7 @@ sub template_test($$$$) {
     skip "$tag: couldn't make generator", 1 unless $gen;
     eval {
       $content =
-	$gen->generate_low($template, $article, 'Articles', 0);
+	$gen->generate_low($template, $article, 'BSE::TB::Articles', 0);
     };
     ok($content, "$tag: generate content");
     diag $@ unless $content;

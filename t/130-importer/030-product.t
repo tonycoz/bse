@@ -95,7 +95,7 @@ EOS
     my $imp = BSE::Importer->new(cfg => $cfg, profile => "simpleupdate$when",
 				 callback => sub { note @_ });
     $imp->process($filename);
-    my $testb = Articles->getByPkey($testa->id);
+    my $testb = BSE::TB::Articles->getByPkey($testa->id);
     like($testb->body, qr/This is the body/, "check the body is updated");
   }
 
