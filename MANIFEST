@@ -397,7 +397,7 @@ site/docs/access.html
 site/docs/access.pod
 site/docs/add.html
 site/docs/affiliate.html
-site/docs/Article.html
+site/docs/BSE::TB::Article.html
 site/docs/bse-unicode.pod
 site/docs/bse.html
 site/docs/bse.pod
@@ -420,10 +420,10 @@ site/docs/formmail.pod
 site/docs/future_plans.html
 site/docs/future_plans.pod
 site/docs/gen.html
-site/docs/Generate.html
-site/docs/Generate::Article.html
-site/docs/Generate::Catalog.html
-site/docs/Generate::Product.html
+site/docs/BSE::Generate.html
+site/docs/BSE::Generate::Article.html
+site/docs/BSE::Generate::Catalog.html
+site/docs/BSE::Generate::Product.html
 site/docs/makedocs
 site/docs/makedocs.html
 site/docs/Makefile
