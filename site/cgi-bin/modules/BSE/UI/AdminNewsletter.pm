@@ -8,7 +8,7 @@ use BSE::Util::HTML qw(:default popup_menu);
 use BSE::Util::Iterate;
 use base 'BSE::UI::AdminDispatch';
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 =head1 NAME
 
@@ -510,8 +510,8 @@ sub req_html_preview {
 
 sub _dummy_user {
   my %user;
-  require SiteUsers;
-  my @cols = SiteUser->columns;
+  require BSE::TB::SiteUsers;
+  my @cols = BSE::TB::SiteUser->columns;
   @user{@cols} = ('') x @cols;
   $user{id} = 0;
   $user{userId} = "username";
@@ -724,10 +724,10 @@ sub req_send_test {
   my $testname = $q->param('testname');
   my $testtextonly = $q->param('testtextonly');
 
-  require SiteUsers;
+  require BSE::TB::SiteUsers;
   my %recipient = 
     (
-     (map { $_ => '' } SiteUser->columns),
+     (map { $_ => '' } BSE::TB::SiteUser->columns),
      id => 999,
      userId => 'username',
      password => 'p455w0rd',

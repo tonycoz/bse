@@ -1,9 +1,9 @@
 package BSE::Upgrade::Passwords;
 use strict;
-use SiteUsers;
+use BSE::TB::SiteUsers;
 use BSE::TB::AdminUsers;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub upgrade {
   my ($class, %opts) = @_;
@@ -15,7 +15,7 @@ sub upgrade {
 sub _upgrade_siteusers {
   my ($class, %opts) = @_;
 
-  my @users = SiteUsers->getBy
+  my @users = BSE::TB::SiteUsers->getBy
     (
      password_type => "plain",
     );

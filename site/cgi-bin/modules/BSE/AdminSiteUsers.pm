@@ -3,7 +3,7 @@ use strict;
 use base qw(BSE::UI::AdminDispatch BSE::UI::SiteuserCommon);
 use BSE::Util::Tags qw(tag_error_img tag_hash);
 use BSE::Util::HTML qw(:default popup_menu);
-use SiteUsers;
+use BSE::TB::SiteUsers;
 use BSE::Util::Iterate;
 use BSE::Util::DynSort qw(sorter tag_sorthelp);
 use BSE::Util::SQL qw/now_datetime/;
@@ -13,7 +13,7 @@ use constant SITEUSER_GROUP_SECT => 'BSE Siteuser groups validation';
 use BSE::Template;
 use DevHelp::Date qw(dh_parse_date_sql dh_parse_time_sql);
 
-our $VERSION = "1.014";
+our $VERSION = "1.015";
 
 my %actions =
   (
@@ -84,7 +84,7 @@ sub req_list {
   my $cgi = $req->cgi;
   $msg = $req->message($msg);
 
-  my @users = SiteUsers->all;
+  my @users = BSE::TB::SiteUsers->all;
   my $id = $cgi->param('id');
   defined $id or $id = '';
   my $search_done = 0;
@@ -96,7 +96,7 @@ sub req_list {
   }
   else {
     my %fields;
-    my @cols = grep !$nosearch{$_}, SiteUser->columns;
+    my @cols = grep !$nosearch{$_}, BSE::TB::SiteUser->columns;
     for my $col (@cols, 'name') {
       my $value = $cgi->param($col);
       if (defined $value && $value =~ /\S/) {
@@ -242,11 +242,11 @@ sub _display_user {
   my $userId = $cgi->param('userId');
   my $siteuser;
   if (defined $id) {
-    $siteuser = SiteUsers->getByPkey($id)
+    $siteuser = BSE::TB::SiteUsers->getByPkey($id)
       or return $class->req_list($req, "No site user id '$id' found");
   }
   elsif (defined $userId) {
-    ($siteuser) = SiteUsers->getBy(userId => $userId)
+    ($siteuser) = BSE::TB::SiteUsers->getBy(userId => $userId)
       or return $class->req_list($req, "No site user logon '$userId' found");
   }
   else {
@@ -353,12 +353,12 @@ sub req_save {
   $id && $id =~ /^\d+$/
     or return $class->req_list($req, "No user id supplied");
 
-  my $user = SiteUsers->getByPkey($id)
+  my $user = BSE::TB::SiteUsers->getByPkey($id)
     or return $class->req_list($req, "No user $id found");
 
   my %errors;
   my $nopassword = $req->cfg->entry('site users', 'nopassword', 0);
-  my @cols = grep !$donttouch{$_}, SiteUser->columns;
+  my @cols = grep !$donttouch{$_}, BSE::TB::SiteUser->columns;
   my $custom = custom_class($cfg);
   my @required = $custom->siteuser_edit_required($req, $user);
   for my $col (@required) {
@@ -382,7 +382,7 @@ sub req_save {
 	$conf_email =~ s/^\s+|\s+$//g;
 	if ($conf_email) {
 	  if ($conf_email eq $email) {
-	    my $other = SiteUsers->getBy(userId=>$email);
+	    my $other = BSE::TB::SiteUsers->getBy(userId=>$email);
 	    if ($other) {
 	      $errors{email} = "That email address is already in use";
 	    }
@@ -404,7 +404,7 @@ sub req_save {
       }
     }
     unless ($errors{email}) {
-      my $checkemail = SiteUser->generic_email($email);
+      my $checkemail = BSE::TB::SiteUser->generic_email($email);
       require BSE::EmailBlacklist;
       my $blackentry = BSE::EmailBlacklist->getEntry($checkemail);
       if ($blackentry) {
@@ -420,8 +420,8 @@ sub req_save {
     
     if (defined $newpass && length $newpass) {
       my @errors;
-      my %other = map { $_ => $user->$_() } SiteUser->password_check_fields;
-      if (!SiteUser->check_password_rules
+      my %other = map { $_ => $user->$_() } BSE::TB::SiteUser->password_check_fields;
+      if (!BSE::TB::SiteUser->check_password_rules
 	  (
 	   password => $newpass,
 	   username => $user->userId,
@@ -576,7 +576,7 @@ sub req_delete {
   $id && $id =~ /^\d+$/
     or return $class->req_list($req, "No user id supplied");
 
-  my $user = SiteUsers->getByPkey($id)
+  my $user = BSE::TB::SiteUsers->getByPkey($id)
     or return $class->req_list($req, "No user $id found");
 
   $req->audit
@@ -636,7 +636,7 @@ sub req_add {
   my $cfg = $req->cfg;
 
   my %user;
-  my @cols = SiteUser->columns;
+  my @cols = BSE::TB::SiteUser->columns;
   shift @cols;
 
   my $custom = custom_class($cfg);
@@ -660,7 +660,7 @@ sub req_add {
     elsif ($email ne $confemail) {
       $errors{confirmemail} = "Confirmation email should match the Email Address";
     }
-    my $user = SiteUsers->getBy(userId=>$email);
+    my $user = BSE::TB::SiteUsers->getBy(userId=>$email);
     if ($user) {
       $errors{email} = "Sorry, email $email already exists as a user";
     }
@@ -677,12 +677,12 @@ sub req_add {
     my $pass2 = $cgi->param('confirm_password');
     $pass2 =~ s/\A\s+//, $pass2 =~ s/\s+\z// if defined $pass2;
     my %other = map { $_ => scalar $cgi->param($_) }
-      SiteUser->password_check_fields;
+      BSE::TB::SiteUser->password_check_fields;
     my @errors;
     if (!defined $pass || length $pass == 0) {
       $errors{password} = "Please enter a password";
     }
-    elsif (!SiteUser->check_password_rules
+    elsif (!BSE::TB::SiteUser->check_password_rules
 	   (
 	    password => $pass,
 	    username => $userid,
@@ -698,14 +698,14 @@ sub req_add {
       $errors{confirm_password} = 
 	"The confirmation password is different from the password";
     }
-    my $user = SiteUsers->getBy(userId=>$userid);
+    my $user = BSE::TB::SiteUsers->getBy(userId=>$userid);
     if ($user) {
       # give the user a suggestion
       my $workuser = $userid;
       $workuser =~ s/\d+$//;
       my $suffix = 1;
       for my $suffix (1..100) {
-	unless (SiteUsers->getBy(userId=>"$workuser$suffix")) {
+	unless (BSE::TB::SiteUsers->getBy(userId=>"$workuser$suffix")) {
 	  $cgi->param(userid=>"$workuser$suffix");
 	  last;
 	}
@@ -717,7 +717,7 @@ sub req_add {
   }
 
   unless ($errors{email}) {
-    my $checkemail = SiteUser->generic_email($email);
+    my $checkemail = BSE::TB::SiteUser->generic_email($email);
     require 'BSE/EmailBlacklist.pm';
     my $blackentry = BSE::EmailBlacklist->getEntry($checkemail);
     if ($blackentry) {
@@ -760,7 +760,7 @@ sub req_add {
 
   my $user;
   eval {
-    $user = SiteUsers->make(%user);
+    $user = BSE::TB::SiteUsers->make(%user);
   };
   if ($user) {
     my $subs = $class->save_subs($req, $user);
@@ -849,7 +849,7 @@ sub req_unlock {
   $id && $id =~ /^\d+$/
     or return $class->req_list($req, "No user id supplied");
 
-  my $user = SiteUsers->getByPkey($id)
+  my $user = BSE::TB::SiteUsers->getByPkey($id)
     or return $class->req_list($req, "No user $id found");
 
   $user->unlock(request => $req);
@@ -871,7 +871,7 @@ sub _validate_affiliate_name {
     $aff_name =~ s/^\s+|\s+$//g;
     if (length $aff_name) {
       if ($aff_name =~ /^\w+$/) {
-	my $other = SiteUsers->getBy(affiliate_name => $aff_name);
+	my $other = BSE::TB::SiteUsers->getBy(affiliate_name => $aff_name);
 	if ($other && (!$user || $other->{id} != $user->{id})) {
 	  $errors->{affiliate_name} = "$display $aff_name is already in use";
 	}
@@ -1096,7 +1096,7 @@ sub req_groupmemberform {
   $msg = $req->message($errors);
 
   my %members = map { $_=> 1 } $group->member_ids;
-  my @siteusers = SiteUsers->all;
+  my @siteusers = BSE::TB::SiteUsers->all;
 
   my $user;
 
@@ -1128,7 +1128,7 @@ sub req_savegroupmembers {
   my %current_ids = map { $_ => 1 } $group->member_ids;
   my @to_be_set = $cgi->param('set_is_member');
   my %set_ids = map { $_ => 1 } $cgi->param('is_member');
-  my %all_ids = map { $_ => 1 } SiteUsers->all_ids;
+  my %all_ids = map { $_ => 1 } BSE::TB::SiteUsers->all_ids;
 
   my $custom = custom_class($req->cfg);
 
@@ -1166,7 +1166,7 @@ sub req_confirm {
   my $id = $cgi->param('id');
   defined $id
     or return $class->req_list($req, "No site user id supplied");
-  my $siteuser = SiteUsers->getByPkey($id)
+  my $siteuser = BSE::TB::SiteUsers->getByPkey($id)
     or return $class->req_list($req, "No such site user found");
 
   $siteuser->{confirmed} = 1;
@@ -1796,7 +1796,7 @@ sub _get_user {
   defined $id && $id =~ /^\d+$/
     or do { $$msg = "Missing or invalid user id"; return };
   require BSE::TB::SiteUserGroups;
-  my $group = SiteUsers->getByPkey($id);
+  my $group = BSE::TB::SiteUsers->getByPkey($id);
   $group
     or do { $$msg = "Unknown user id"; return };
 
@@ -1845,7 +1845,7 @@ sub tag_fileaccess_user {
     or return '';
   my $id = $$rcurrent->siteuser_id;
   exists $cache->{$id}
-    or $cache->{$id} = SiteUsers->getByPkey($id);
+    or $cache->{$id} = BSE::TB::SiteUsers->getByPkey($id);
 
   $cache->{$id}
     or return "** No user $id";
@@ -1860,7 +1860,7 @@ sub tag_ifFileuser {
     or return '';
   my $id = $$rcurrent->siteuser_id;
   exists $cache->{$id}
-    or $cache->{$id} = SiteUsers->getByPkey($id);
+    or $cache->{$id} = BSE::TB::SiteUsers->getByPkey($id);
 
   return defined $cache->{$id};
 }
@@ -1870,8 +1870,8 @@ sub _find_file_owner {
 
   require BSE::TB::SiteUserGroups;
   my $owner;
-  if ($owner_type eq SiteUser->file_owner_type) {
-    if ($cache->{$owner_id} ||= SiteUsers->getByPkey($owner_id)) {
+  if ($owner_type eq BSE::TB::SiteUser->file_owner_type) {
+    if ($cache->{$owner_id} ||= BSE::TB::SiteUsers->getByPkey($owner_id)) {
       $owner = $cache->{$owner_id}->data_only;
       $owner->{desc} = "User: " . $owner->{userId};
     }
@@ -1939,7 +1939,7 @@ sub req_fileaccesslog {
   my $siteuser_id = $cgi->param('siteuser_id');
   my $user;
   if ($siteuser_id && $siteuser_id =~ /^\d+$/) {
-    $user = SiteUsers->getByPkey($siteuser_id);
+    $user = BSE::TB::SiteUsers->getByPkey($siteuser_id);
     if ($user) {
       push @filters, [ '=', siteuser_id => $siteuser_id ];
       $page_args{siteuser_id} = $siteuser_id;

@@ -5,7 +5,7 @@ use BSE::TB::IPLockouts;
 use Net::IP;
 use BSE::Util::SQL qw(now_datetime);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 my %actions =
   (
@@ -125,8 +125,8 @@ sub req_unlock {
 
   if ($entry) {
     if ($type eq "S") {
-      require SiteUsers;
-      SiteUser->unlock_ip_address
+      require BSE::TB::SiteUsers;
+      BSE::TB::SiteUser->unlock_ip_address
 	(
 	 ip_address => $ip,
 	 request => $req,

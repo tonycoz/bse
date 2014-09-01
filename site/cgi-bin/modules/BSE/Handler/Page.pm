@@ -3,7 +3,7 @@ use strict;
 use base qw'BSE::Handler::Base BSE::UI::Page';
 use BSE::Generate::Article;
 use BSE::Template;
-use SiteUsers;
+use BSE::TB::SiteUsers;
 use BSE::CfgInfo;
 use BSE::TB::SiteUserGroups;
 use BSE::Util::DynamicTags;
@@ -12,7 +12,7 @@ use BSE::Dynamic::Product;
 use BSE::Dynamic::Catalog;
 use BSE::Dynamic::Seminar;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub handler {
   my ($r) = @_;

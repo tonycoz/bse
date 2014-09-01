@@ -3,13 +3,13 @@ use strict;
 use BSE::ComposeMail;
 use BSE::DB;
 use BSE::TB::OwnedFiles;
-use SiteUsers;
+use BSE::TB::SiteUsers;
 use BSE::Util::Tags qw(tag_hash_plain);
 use DevHelp::Tags::Iterate;
 use BSE::TB::SiteUserGroups;
 use Carp qw(confess);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub new {
   my ($class, %opts) = @_;
@@ -105,7 +105,7 @@ sub _notify_user {
 
   my @orig_entries = BSE::DB->query(bseFileNotifyUserEntries => $user_id);
   if (@orig_entries) {
-    my $user = SiteUsers->getByPkey($user_id);
+    my $user = BSE::TB::SiteUsers->getByPkey($user_id);
     if ($user) {
       $self->_notify_user_low($user_id, $user, \@orig_entries);
     }

@@ -1,4 +1,4 @@
-package SiteUser;
+package BSE::TB::SiteUser;
 use strict;
 # represents a registered user
 use Squirrel::Row;
@@ -18,7 +18,7 @@ SiteUser - represent a site user (or member)
 
 =cut
 
-our $VERSION = "1.015";
+our $VERSION = "1.016";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -196,13 +196,13 @@ sub valid_rules {
 sub removeSubscriptions {
   my ($self) = @_;
 
-  SiteUsers->doSpecial('removeSubscriptions', $self->{id});
+  BSE::TB::SiteUsers->doSpecial('removeSubscriptions', $self->{id});
 }
 
 sub removeSubscription {
   my ($self, $subid) = @_;
 
-  SiteUsers->doSpecial('removeSub', $self->{id}, $subid);
+  BSE::TB::SiteUsers->doSpecial('removeSub', $self->{id}, $subid);
 }
 
 sub generic_email {

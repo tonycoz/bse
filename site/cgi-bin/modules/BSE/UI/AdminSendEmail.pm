@@ -1,10 +1,10 @@
 package BSE::UI::AdminSendEmail;
 use strict;
 use base 'BSE::UI::AdminDispatch';
-use SiteUsers;
+use BSE::TB::SiteUsers;
 use BSE::Util::Tags qw(tag_hash_plain);
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 my %actions =
   (
@@ -83,7 +83,7 @@ sub req_send {
   $req->user_can($secid, -1, \$msg)
     or return $self->error($req, "You do not have access to send email $id");
 
-  my $user = SiteUsers->getByPkey($user_id)
+  my $user = BSE::TB::SiteUsers->getByPkey($user_id)
     or return $self->error($req, "Unknown user $user_id");
 
   my %acts =

@@ -11,7 +11,7 @@ use constant SECT_LOCATION_VALIDATION => "BSE Location Validation";
 use BSE::CfgInfo 'product_options';
 use DevHelp::Date qw(dh_strftime_sql_datetime);
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 my %rights =
   (
@@ -294,8 +294,8 @@ sub req_addattendseminar {
   defined $siteuser_id && $siteuser_id =~ /^\d+$/
     or return $class->req_loclist($req, { siteuser_id => 
 					  "Missing or invalid siteuser_id" });
-  require SiteUsers;
-  my $siteuser = SiteUsers->getByPkey($siteuser_id)
+  require BSE::TB::SiteUsers;
+  my $siteuser = BSE::TB::SiteUsers->getByPkey($siteuser_id)
     or return $class->req_loclist($req, { siteuser_id => "Unknown siteuser_id" });
   my $msg = $req->message($errors);
   require BSE::TB::Seminars;
@@ -325,8 +325,8 @@ sub req_addattendsession {
   defined $siteuser_id && $siteuser_id =~ /^\d+$/
     or return $class->req_loclist($req, { siteuser_id => 
 					  "Missing or invalid siteuser_id" });
-  require SiteUsers;
-  my $siteuser = SiteUsers->getByPkey($siteuser_id)
+  require BSE::TB::SiteUsers;
+  my $siteuser = BSE::TB::SiteUsers->getByPkey($siteuser_id)
     or return $class->req_loclist($req, { siteuser_id => "Unknown siteuser_id" });
 
   # make sure we got a valid seminar
@@ -400,8 +400,8 @@ sub req_addattendsave {
   defined $siteuser_id && $siteuser_id =~ /^\d+$/
     or return $class->req_loclist($req, { siteuser_id => 
 					  "Missing or invalid siteuser_id" });
-  require SiteUsers;
-  my $siteuser = SiteUsers->getByPkey($siteuser_id)
+  require BSE::TB::SiteUsers;
+  my $siteuser = BSE::TB::SiteUsers->getByPkey($siteuser_id)
     or return $class->req_loclist($req, { siteuser_id => "Unknown siteuser_id" });
 
   # make sure we got a valid seminar

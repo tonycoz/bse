@@ -5,7 +5,7 @@ use Squirrel::Row;
 use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 sub columns {
   return qw/id name title description frequency keyword archive 
@@ -302,8 +302,8 @@ sub html_format {
 sub recipients {
   my ($sub) = @_;
 
-  require 'SiteUsers.pm';
-  SiteUsers->getSpecial('subRecipients', $sub->{id});
+  require BSE::TB::SiteUsers;
+  BSE::TB::SiteUsers->getSpecial('subRecipients', $sub->{id});
 }
 
 sub recipient_count {

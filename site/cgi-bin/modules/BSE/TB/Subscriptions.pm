@@ -5,7 +5,7 @@ use vars qw(@ISA $VERSION);
 @ISA = qw(Squirrel::Table);
 use BSE::TB::Subscription;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub rowClass {
   return 'BSE::TB::Subscription';
@@ -14,10 +14,10 @@ sub rowClass {
 sub calculate_all_expiries {
   my ($class, $cfg) = @_;
 
-  require SiteUsers;
+  require BSE::TB::SiteUsers;
   
   # get a list of all siteusers that have made an order with a subscription
-  my @users = SiteUsers->all_subscribers;
+  my @users = BSE::TB::SiteUsers->all_subscribers;
 
   my @subs = $class->all;
 

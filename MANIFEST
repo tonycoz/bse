@@ -351,8 +351,8 @@ site/cgi-bin/modules/BSE/TB/OtherParent.pm
 site/cgi-bin/modules/BSE/TB/OtherParents.pm
 site/cgi-bin/modules/BSE/TB/Product.pm
 site/cgi-bin/modules/BSE/TB/Products.pm
-site/cgi-bin/modules/SiteUser.pm
-site/cgi-bin/modules/SiteUsers.pm
+site/cgi-bin/modules/BSE/TB/SiteUser.pm
+site/cgi-bin/modules/BSE/TB/SiteUsers.pm
 site/cgi-bin/modules/Squirrel/GPG.pm
 site/cgi-bin/modules/Squirrel/PGP5.pm
 site/cgi-bin/modules/Squirrel/PGP6.pm

@@ -5,7 +5,7 @@ use BSE::Cfg;
 use BSE::Util::HTML;
 use Carp qw(cluck confess);
 
-our $VERSION = "1.029";
+our $VERSION = "1.030";
 
 =head1 NAME
 
@@ -685,7 +685,7 @@ sub siteuser {
 
   my $cfg = $req->cfg;
   my $session = $req->session;
-  require SiteUsers;
+  require BSE::TB::SiteUsers;
   if ($cfg->entryBool('custom', 'user_auth')) {
     require BSE::CfgInfo;
     my $custom = BSE::CfgInfo::custom_class($cfg);
@@ -697,7 +697,7 @@ sub siteuser {
 
     my $userid = $session->{userid}
       or return;
-    my $user = SiteUsers->getByPkey($userid)
+    my $user = BSE::TB::SiteUsers->getByPkey($userid)
       or return;
     $user->{disabled}
       and return;
