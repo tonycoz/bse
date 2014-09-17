@@ -4,7 +4,7 @@ use base qw(Squirrel::Template::Expr::WrapBase);
 use Scalar::Util ();
 use List::Util ();
 
-our $VERSION = "1.008";
+our $VERSION = "1.009";
 
 my $list_make_key = sub {
   my ($item, $field) = @_;
@@ -36,13 +36,24 @@ sub _do_sort {
     return [ sort @{$self->[0]} ];
   }
   elsif (@$args == 1) {
-    my $key = $args->[0];
-    return 
-      [
-       sort {
-	 $list_make_key->($a, $key) cmp $list_make_key->($b, $key)
-       } @{$self->[0]}
-      ];
+    if (ref $args->[0]) {
+      my $eval = $self->expreval;
+      return
+	[
+	 sort {
+	   $eval->call_function($args->[0], [ $a, $b ])
+	 } @{$self->[0]}
+	];
+    }
+    else {
+      my $key = $args->[0];
+      return 
+	[
+	 sort {
+	   $list_make_key->($a, $key) cmp $list_make_key->($b, $key)
+	 } @{$self->[0]}
+	];
+    }
   }
   else {
     die [ error => "list.sort takes 0 or 1 parameters" ];
@@ -182,6 +193,28 @@ sub _do_as_hash {
   return +{ @{$self->[0]}, @extra };
 }
 
+sub _do_grep {
+  my ($self, $args) = @_;
+
+  my $eval = $self->expreval;
+  return
+    [
+     grep $eval->call_function($args->[0], [ $_ ]),
+     @{$self->[0]}
+    ];
+}
+
+sub _do_map {
+  my ($self, $args) = @_;
+
+  my $eval = $self->expreval;
+  return
+    [
+     map $eval->call_function($args->[0], [ $_ ]),
+     @{$self->[0]}
+    ];
+}
+
 sub call {
   my ($self, $method, $args) = @_;
 
@@ -211,11 +244,13 @@ Squirrel::Template::Expr::WrapArray - provide virtual methods for arrays
   last = somearray.last
   first = somearray.first
   first = somearray.shift # modifies somearray
-  somearray.push(avalue);
+  somearray.push(avalue)
   last = somearray.pop # modifies somearray
-  somearray.unshift(avalue);
+  somearray.unshift(avalue)
   somearray.is_list # always true
   somearray.is_hash # always false
+  odd = somearray.grep(@{a: a mod 2 == 0 })
+  doubled = somearray.map(@{a: a * 2 })
 
 =head1 DESCRIPTION
 
@@ -230,13 +265,17 @@ references) in L<Squirrel::Template>'s expression language.
 
 The number of elements in the list.
 
-=item sorted()
+=item sort()
 
 The elements sorted by name.
 
-=item sorted(fieldname)
+=item sort(fieldname)
 
 The elements sorted as objects calling C<fieldname>.
+
+=item sort(block)
+
+The elem
 
 =item reversed
 
@@ -281,6 +320,16 @@ size of the array.
 Return a new array with any contained arrays expanded one level.
 
   [ [ [ 1 ], 2 ], 3 ].expand => [ [ 1 ], 2, 3 ]
+
+=item grep(block)
+
+Return a new list containing only those elements that C<block> returns
+true for.
+
+=item map(block)
+
+Return the list of return values from C<block> as applied to each
+element.
 
 =item set(index, value)
 

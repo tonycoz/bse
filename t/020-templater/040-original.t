@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 189;
+use Test::More tests => 198;
 use HTML::Entities;
 
 sub template_test($$$$;$$);
@@ -517,10 +517,14 @@ OUT
      [ 'num1 <= 101', 1 ],
      [ 'num1 <= 100', '' ],
      [ 'num1 <= 102', '1' ],
+     [ 'num1 <=> 102', '-1' ],
+     [ 'num1 <=> 101', '0' ],
      [ 'str eq "ABC"', '1' ],
      [ 'str eq "AB"', '' ],
      [ 'str ne "AB"', '1' ],
      [ 'str ne "ABC"', '' ],
+     [ 'str cmp "ABC"', 0 ],
+     [ 'str cmp "AB"', 1 ],
      [ 'str.lower', 'abc' ],
      [ 'somelist.size', 6 ],
      [ '[ 4, 2, 3 ].first', 4 ],
@@ -542,6 +546,9 @@ OUT
      [ '[ 1, 2, 3 ][1]', 2 ],
      [ 'testclass.foo', "[TestClass.foo]" ],
      [ '@undef.defined', "" ],
+     [ '(@{: "abc" })()', "abc" ],
+     [ '(@{a,b: a+b})(12, 13)', '25' ],
+     [ '(@{a,b: a; b; a-b })(10, 5)', '5' ],
 
      # WrapScalar
      [ '"foo".length', 3 ],
@@ -605,6 +612,8 @@ OUT
      [ '[ 1, 2 ].is_hash', 0 ],
      [ '[ 1 .. 5 ].shuffle.size', 5 ],
      [ '([ "a", 1, "b", "2" ].as_hash)["a"]', 1 ],
+     [ '[ 1 .. 5].grep(@{a: a mod 2 == 0 }).join(",")', '2,4' ],
+     [ '[ { a: 3 }, { a: 1 }, { a: 2 } ].sort(@{a,b: b.a <=> a.a }).map(@{a: a.a}).join("")', '321' ],
 
      # WrapHash
      [ '{ "foo": 1 }.is_list', 0 ],

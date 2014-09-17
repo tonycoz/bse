@@ -1,7 +1,7 @@
 package Squirrel::Template::Expr;
 use strict;
 
-our $VERSION = "1.014";
+our $VERSION = "1.015";
 
 package Squirrel::Template::Expr::Eval;
 use Scalar::Util ();
@@ -30,18 +30,18 @@ sub _wrapped {
     else {
       my $type = Scalar::Util::reftype($val);
       if ($type eq "ARRAY") {
-	return Squirrel::Template::Expr::WrapArray->new($val, $self->[TMPL]);
+	return Squirrel::Template::Expr::WrapArray->new($val, $self->[TMPL], undef, $self);
       }
       elsif ($type eq "HASH") {
-	return Squirrel::Template::Expr::WrapHash->new($val, $self->[TMPL]);
+	return Squirrel::Template::Expr::WrapHash->new($val, $self->[TMPL], undef, $self);
       }
       elsif ($type eq "CODE") {
-	return Squirrel::Template::Expr::WrapCode->new($val, $self->[TMPL]);
+	return Squirrel::Template::Expr::WrapCode->new($val, $self->[TMPL], undef, $self);
       }
     }
   }
   else {
-    return Squirrel::Template::Expr::WrapScalar->new($val, $self->[TMPL], $self->[ACTS]);
+    return Squirrel::Template::Expr::WrapScalar->new($val, $self->[TMPL], $self->[ACTS], $self);
   }
 }
 
@@ -102,6 +102,10 @@ sub _process_le {
   return $_[0]->process($_[1][1]) le $_[0]->process($_[1][2]);
 }
 
+sub _process_cmp {
+  return $_[0]->process($_[1][1]) cmp $_[0]->process($_[1][2]);
+}
+
 # number relops
 sub _process_neq {
   return $_[0]->process($_[1][1]) == $_[0]->process($_[1][2]);
@@ -139,6 +143,10 @@ sub _process_cond {
   return $_[0]->process($_[1][1]) ? $_[0]->process($_[1][2]) : $_[0]->process($_[1][3]);
 }
 
+sub _process_ncmp {
+  return $_[0]->process($_[1][1]) <=> $_[0]->process($_[1][2]);
+}
+
 sub _process_uminus {
   return - ($_[0]->process($_[1][1]));
 }
@@ -149,6 +157,10 @@ sub _process_concat {
 
 sub _process_const {
   return $_[1][1];
+}
+
+sub _process_block {
+  return bless [ $_[1][1], $_[1][2] ], "Squirrel::Template::Expr::Block";
 }
 
 sub _do_call {
@@ -195,19 +207,47 @@ sub _process_callvar {
   return $self->_do_call($val, $args, $method, $ctx);
 }
 
-sub _process_funccall {
-  my ($self, $node, $ctx) = @_;
+sub _do_callblock {
+  my ($self, $ids, $exprs, $args) = @_;
+
+  my $result;
+  my %args;
+  @args{@$ids} = @$args;
+  $args{_arguments} = $args;
+  if (eval { $self->[TMPL]->start_scope("calling block", \%args), 1}) {
+    for my $expr (@$exprs) {
+      $result = $self->process($expr);
+    }
+    $self->[TMPL]->end_scope();
+  }
+
+  return $result;
+}
+
+sub call_function {
+  my ($self, $code, $args, $ctx) = @_;
 
   $ctx ||= "";
-  my $code = $self->process($node->[1]);
-  my $args = $self->process_list($node->[2]);
 
   if (Scalar::Util::reftype($code) eq "CODE") {
     return $ctx eq "LIST" ? $code->(@$args) : scalar($code->(@$args));
   }
+  elsif (Scalar::Util::blessed($code)
+	 && $code->isa("Squirrel::Template::Expr::Block")) {
+    return $self->_do_callblock($code->[0], $code->[1], $args);
+  }
   else {
     die [ error => "can't call non code as a function" ];
   }
+}
+
+sub _process_funccall {
+  my ($self, $node, $ctx) = @_;
+
+  my $code = $self->process($node->[1]);
+  my $args = $self->process_list($node->[2]);
+
+  return $self->call_function($code, $args, $ctx);
 }
 
 sub _process_list {
@@ -333,6 +373,7 @@ my %ops =
    "opgt" => "gt",
    "ople" => "le",
    "opge" => "ge",
+   "opcmp" => "cmp",
 
    "op==" => "neq",
    "op!=" => "nne",
@@ -342,6 +383,7 @@ my %ops =
    "op>=" => "nge",
    'op=~' => "match",
    'op!~' => "notmatch",
+   'op<=>' => 'ncmp',
   );
 
 sub _parse_cond {
@@ -388,7 +430,7 @@ sub _parse_and {
   return $result;
 }
 
-my %relops = map {; "op$_" => 1 } qw(eq ne gt lt ge le == != < > >= <= =~ !~);
+my %relops = map {; "op$_" => 1 } qw(eq ne gt lt ge le cmp == != < > >= <= <=> =~ !~);
 
 sub _parse_rel {
   my ($self, $tok) = @_;
@@ -607,6 +649,44 @@ sub _parse_primary {
   elsif ($t->[0] eq 'undef') {
     return [ "undef" ];
   }
+  elsif ($t->[0] eq 'blockstart') {
+    # @{ idlist: expr; ... }
+    # idlist can be empty:
+    # @{ : expr; ... }
+    # the expr list will become more complex at some point
+    my @ids;
+    my $nexttype = $tok->peektype;
+    if ($nexttype ne 'op:') {
+      $nexttype eq 'id'
+	or die [ error => "Expected id or : after \@{ but found $nexttype->[0]" ];
+      push @ids, $tok->get->[2];
+      while ($tok->peektype eq 'op,') {
+	$tok->get;
+	$tok->peektype eq 'id'
+	  or die [ error => "Expected id after , in \@{ but found $nexttype->[0]" ];
+	push @ids, $tok->get->[2];
+      }
+      my $end = $tok->get;
+      $end->[0] eq 'op:'
+	or die [ error => "Expected :  or , in identifier list in \@{ but found $end->[0]" ];
+    }
+    else {
+      # consume the :
+      $tok->get;
+    }
+    my @exprs;
+    push @exprs, $self->_parse_expr($tok);
+    while ($tok->peektype eq 'op;') {
+      $tok->get;
+      push @exprs, $self->_parse_expr($tok);
+    }
+    $nexttype = $tok->peektype;
+    $nexttype eq 'op}'
+      or die [ error => "Expected } at end of \@{ but found $nexttype" ];
+    # consume the }
+    $tok->get;
+    return [ block => \@ids, \@exprs ];
+  }
   else {
     die [ error => "Expected term but got $t->[0]" ];
   }
@@ -696,7 +776,7 @@ sub get {
 	 $self->[TEXT] =~ s!\A(\s*/((?:[^/\\]|\\.)+)/([ismx]*\s)?\s*)!!) {
     push @$queue, [ re => $1, $2, $3 || "" ];
   }
-  elsif ($self->[TEXT] =~ s/\A(\s*(not\b|eq\b|ne\b|le\b|lt\b|ge\b|gt\b|<=|>=|[!=]\=|\=\~|!~|[_\?:,\[\]\(\)<>=!.*\/+\{\};\$-])\s*)//) {
+  elsif ($self->[TEXT] =~ s/\A(\s*(not\b|eq\b|ne\b|le\b|lt\b|ge\b|gt\b|cmp\b|<=>|<=|>=|[!=]\=|\=\~|!~|[_\?:,\[\]\(\)<>=!.*\/+\{\};\$-])\s*)//) {
     push @$queue, [ "op$2" => $1 ];
   }
   elsif ($self->[TEXT] =~ s/\A(\s*([A-Za-z_][a-zA-Z_0-9]*)\s*)//) {
@@ -712,6 +792,9 @@ sub get {
   }
   elsif ($self->[TEXT] =~ s/\A(\s*\@undef\bs*)//) {
     push @$queue, [ undef => $1 ];
+  }
+  elsif ($self->[TEXT] =~ s/\A(\s*@\{\s*)//) {
+    push @$queue, [ blockstart => $1 ];
   }
   else {
     die [ error => "Unknown token '$self->[TEXT]'" ];
@@ -943,6 +1026,14 @@ binary - C<0b1100100>
 =item *
 
 an undefined value - C<@undef>
+
+=item *
+
+blocks - C<< @{ I<idlist> : I<exprlist> } >> where C<< I<idlist> >> is
+a comma separated list of local variables that arguments are assigned
+to, and I<exprlist> is a semi-colon separated list of expressions.
+The block literal can be called as if it's a function, or supplied to
+methods like the array grep() method.
 
 =back
 
