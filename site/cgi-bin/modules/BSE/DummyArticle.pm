@@ -3,7 +3,7 @@ use strict;
 use base 'BSE::TB::SiteCommon';
 use BSE::TB::Articles;
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 sub images {
   return;
@@ -49,6 +49,10 @@ sub menu_ancestors {
 
 sub should_index {
   1;
+}
+
+sub has_tags {
+  0;
 }
 
 1;
