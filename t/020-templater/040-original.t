@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 201;
+use Test::More tests => 204;
 use HTML::Entities;
 
 sub template_test($$$$;$$);
@@ -616,6 +616,9 @@ OUT
      [ '([ "a", 1, "b", "2" ].as_hash)["a"]', 1 ],
      [ '[ 1 .. 5].grep(@{a: a mod 2 == 0 }).join(",")', '2,4' ],
      [ '[ { a: 3 }, { a: 1 }, { a: 2 } ].sort(@{a,b: b.a <=> a.a }).map(@{a: a.a}).join("")', '321' ],
+     [ '[ "A" .. "Z" ].slice([ 0 .. 5 ]).join("")', 'ABCDEF' ],
+     [ '[ "A" .. "Z" ].slice(0, 1, -2, -1).join("")', 'ABYZ' ],
+     [ '[ "A" .. "Z" ].splice(0, 5).join("")', 'ABCDE' ],
 
      # WrapHash
      [ '{ "foo": 1 }.is_list', 0 ],
@@ -776,8 +779,18 @@ template_test(<<IN, <<OUT, "array methods", \%acts, "", \%vars);
 <:.set foo = [ 1, 2, 4 ] -:>
 <:% foo.set(2, 3) -:>
 2: <:= foo[2] :>
+<:.set foo = [ "A" .. "J" ] -:>
+<:= foo.splice(8, 2, [ "Y", "Z" ]).join("") :>
+<:= foo.join("") :>
+<:.set foo = [ "A" .. "J" ] -:>
+<:= foo.splice(5).join("") :>
+<:= foo.join("") :>
 IN
 2: 3
+IJ
+ABCDEFGHYZ
+FGHIJ
+ABCDE
 OUT
 
   template_test(<<IN, <<OUT, "set undef", \%acts, "", \%vars);

@@ -4,7 +4,7 @@ use base qw(Squirrel::Template::Expr::WrapBase);
 use Scalar::Util ();
 use List::Util ();
 
-our $VERSION = "1.009";
+our $VERSION = "1.010";
 
 my $list_make_key = sub {
   my ($item, $field) = @_;
@@ -215,6 +215,38 @@ sub _do_map {
     ];
 }
 
+sub _do_slice {
+  my ($self, $args) = @_;
+
+  my @result;
+  if (@$args == 1 && Scalar::Util::reftype($args->[0]) eq "ARRAY") {
+    @result = @{$self->[0]}[@{$args->[0]}];
+  }
+  else {
+    @result = @{$self->[0]}[@$args];
+  }
+
+  return \@result;
+}
+
+sub _do_splice {
+  my ($self, $args) = @_;
+
+  @$args >= 1 && @$args <= 3
+    or die [ error => "list.splice() requires 1 to 3 parameters" ];
+  my $offset = $args->[0];
+  $offset < 0 and $offset = @{$self->[0]} + $offset;
+  my $len = @$args >= 2 ? $args->[1] : @{$self->[0]} - $offset;
+  my $replace = [];
+  if (@$args >= 3) {
+    Scalar::Util::reftype($args->[2]) eq "ARRAY"
+      or die [ error => "list.splice() third argument must be a list" ];
+    $replace = $args->[2];
+  }
+
+  return [ splice(@{$self->[0]}, $offset, $len, @$replace) ];
+}
+
 sub call {
   my ($self, $method, $args) = @_;
 
@@ -335,6 +367,40 @@ element.
 
 Set the specified I<index> in the array to I<value>.  Returns
 I<value>.
+
+=item splice(array_of_indexes)
+
+=item splice(index1, index2, ...)
+
+Return a selection of elements from the array as a new array specified
+by index.  The indexes can be supplied either as an array:
+
+  [ "A" .. "Z" ].slice([ 0 .. 5 ]) # first 6 elements
+
+or as separate arguments:
+
+  [ "A" .. "Z" ].slice(0, 1, -2, -1) # first 2 and last 2 elements
+
+=item splice(start)
+
+=item splice(start, count)
+
+=item splice(start, count, replace)
+
+Removes elements from an array, optionally inserting the elements in
+the I<replace> aray in their place.
+
+If I<count> is ommitted, all elements to the end of the array are
+removed.
+
+If I<replace> is omitted, the elements are simply removed.
+
+  <: .set foo = [ "A" .. "J" ] :>
+  <:= foo.splice(5).join("") :> # FGHIJ
+  <:= foo.join("") :>           # ABCDE since splice() modifies it's argument
+  <: .set bar = [ "A" .. "J" ] :>
+  <:= bar.splice(8, 2, [ "Y", "Z" ]).join("") :> # IJ
+  <:= bar.join("") :> # ABCDEFGHYZ
 
 =item as_hash
 
