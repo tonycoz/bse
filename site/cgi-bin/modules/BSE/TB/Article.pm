@@ -8,7 +8,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::TB::SiteCommon BSE::TB::TagOwner/;
 use Carp 'confess';
 
-our $VERSION = "1.026";
+our $VERSION = "1.027";
 
 =head1 NAME
 
@@ -437,7 +437,7 @@ sub possible_stepchildren {
 sub link {
   my ($self, $cfg) = @_;
 
-  if ($self->flags =~ /P/) {
+  if ($self->should_link_to_parent) {
     my $parent = $self->parent;
     $parent and return $parent->link($cfg);
   }
@@ -685,6 +685,71 @@ sub is_dont_index_or_kids {
     or return 0;
 
   return $parent->is_dont_index_or_kids;
+}
+
+=item should_link_to_parent
+
+Returns true links to this article go to the parent (recursively).
+
+=cut
+
+sub should_link_to_parent {
+  my ($self) = @_;
+
+  return $self->flags =~ /P/;
+}
+
+=item indexed_as
+
+Returns the article this article is indexed as, depending on the
+C<should_link_to_parent> flag and the level of the article.
+
+=cut
+
+sub indexed_as {
+  my ($self) = @_;
+
+  if (($self->should_link_to_parent
+       || $self->level > BSE::TB::Articles->max_index_level)
+      && $self->parentid > 0) {
+    return $self->parent->indexed_as;
+  }
+
+  return $self;
+}
+
+=item indexed_as_myself
+
+Returns articles that are indexed as the current article
+
+=cut
+
+sub indexed_as_myself {
+  my ($self) = @_;
+
+  return ( $self, $self->others_indexed_as_myself );
+}
+
+=item others_indexed_as_myself
+
+Returns other articles indexed as the current article.
+
+Used to implement indexed_as_myself.
+
+=cut
+
+sub others_indexed_as_myself {
+  my ($self) = @_;
+
+  my @kids = $self->children;
+  if ($self->level >= BSE::TB::Articles->max_index_level) {
+    # index all kids as myself
+  }
+  else {
+    @kids = grep $_->should_link_to_parent, @kids;
+  }
+
+  return grep $_->should_index, @kids, map($_->others_indexed_as_myself, @kids);
 }
 
 sub restricted_method {

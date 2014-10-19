@@ -11,7 +11,7 @@ use BSE::Util::HTML qw':default popup_menu';
 use BSE::Util::Tags qw(tag_article);
 use BSE::Request;
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 my %actions =
   (
@@ -90,11 +90,13 @@ sub req_search {
     }
   }
   
+  my %index_as;
   for my $article (@articles) {
     my $generator = $article->{generator};
     eval "use $generator";
     my $gen = $generator->new(top=>$article, cfg=>$cfg);
     $article = $gen->get_real_article($article);
+    $index_as{$article->id} = [ $article->others_indexed_as_myself ];
   }
   
   $page_count = int((@results + $results_per_page - 1)/$results_per_page);
@@ -154,22 +156,34 @@ sub req_search {
        ++$article_index;
        if ($article_index < @articles) {
 	 $current_result = $articles[$article_index];
-	 my $found = 0;
-	 $excerpt = excerpt($cfg, $admin, $case_sensitive, $current_result, \$found, \@terms);
-	 
-	 $req->set_article(result => $current_result);
-	 
-	 for my $field (qw/pageTitle summary keyword description author product_code/) {
-	   my $value = $current_result->{$field};
-	   defined $value or $value = '';
-	   $value =~ s!$words_re!$highlight_prefix{$field}$1$highlight_suffix{$field}!g 
-	     or $value = '';
-	   $match_tags{$field} = $value;
+	 my @excerpts;
+	 for my $check (@{$index_as{$current_result->id}}) {
+	   my $found_child = 0;
+	   my $tmp = excerpt($cfg, $admin, $case_sensitive, $check, \$found_child, \@terms);
+	   push @excerpts, $tmp if $found_child;
 	 }
-	 
+	 my $found = 0;
+	 my $first_excerpt = excerpt($cfg, $admin, $case_sensitive, $current_result, \$found, \@terms);
+	 unshift @excerpts, $first_excerpt if $found || !@excerpts;
+	 $excerpt = join " ", @excerpts;
+
+	 $req->set_article(result => $current_result);
+
+	 %match_tags = ();
+	 for my $field (qw/pageTitle summary keyword description author product_code/) {
+	   for my $check ($current_result, @{$index_as{$current_result->id}}) {
+	     my $value = $check->{$field};
+	     defined $value or $value = '';
+	     $value =~ s!$words_re!$highlight_prefix{$field}$1$highlight_suffix{$field}!g
+	       or $value = '';
+	     $match_tags{$field} .= " $value";
+	   }
+	 }
+	 s/^\s+// for values %match_tags;
+
 	 # match files
 	 @files = ();
-	 for my $file ($current_result->files) {
+	 for my $file (map $_->files, $current_result, @{$index_as{$current_result->id}}) {
 	   my $found;
 	   my %fileout;
 	   for my $field (qw(displayName description notes)) {
@@ -334,7 +348,7 @@ sub excerpt {
 
   $gens{$generator} ||= $generator->new(admin=>$admin, cfg=>$cfg, top=>$article);
 
-  return $gens{$generator}->excerpt($article, $found, $case_sensitive, $terms, $type, $text);
+  return $gens{$generator}->excerpt($article, $found, $case_sensitive, $terms, $type, $text, 1);
 }
 
 1;

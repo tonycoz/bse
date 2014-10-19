@@ -4,7 +4,7 @@ use Time::HiRes qw(time);
 use Constants qw(@SEARCH_EXCLUDE @SEARCH_INCLUDE);
 use BSE::TB::Articles;
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 my %default_scores =
   (
@@ -101,7 +101,7 @@ sub make_index {
     next unless $article->should_index;
     my $section = $article->section;
     my $id = $article->{id};
-    my $indexas = $article->{level} > $self->{max_level} ? $article->{parentid} : $id;
+    my $indexas = $article->indexed_as;
     my $sectionid = $section->{id};
     eval "use $article->{generator}";
     $@ and die $@;
@@ -146,7 +146,7 @@ sub make_index {
 
       $fields{$field} = $text;
     }
-    $indexer->process_article($article, $section, $indexas, \%fields);
+    $indexer->process_article($article, $section, $indexas->id, \%fields);
   }
   $self->vnote("f::Article scan complete");
 }

@@ -6,7 +6,7 @@ require BSE::TB::TagOwners;
 @ISA = qw(Squirrel::Table BSE::TB::TagOwners);
 use BSE::TB::Article;
 
-our $VERSION = "1.007";
+our $VERSION = "1.008";
 
 =head1 NAME
 
@@ -282,6 +282,14 @@ sub categories {
   }
   
   return @cats;
+}
+
+sub max_index_level {
+  my ($class, $cfg) = @_;
+
+  $cfg ||= BSE::Cfg->single;
+
+  return $cfg->entry("search", "level", $Constants::SEARCH_LEVEL);
 }
 
 1;
