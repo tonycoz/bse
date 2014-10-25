@@ -3,13 +3,14 @@ use strict;
 use DevHelp::HTML;
 use Carp 'confess';
 
-our $VERSION = "1.008";
+our $VERSION = "1.009";
 
 use constant DEBUG => 0;
 
 # markers to avoid inserting a <p> or </p>
 use constant NO_P => "\x02";
 use constant NO_CP => "\x03";
+use constant TO_NL => "\x04";
 
 # block tags replaced in some common location
 # other block tags with their own replacement should be moved into this too
@@ -208,6 +209,14 @@ sub link {
   qq/<a href="/ . $self->rewrite_url($url, $text, $type) . qq("$extras>$text</a>)
 }
 
+sub _inline_html {
+  my ($self, $text) = @_;
+
+  $text =~ s/\n/ TO_NL /ge;
+
+  return unescape_html($text);
+}
+
 sub replace_char {
   my ($self, $rpart) = @_;
   $$rpart =~ s#(acronym|abbr|dfn|cite)\[(?:\r?\n)?([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+?)(?:\r?\n)?\]#
@@ -260,6 +269,11 @@ sub replace_char {
   $$rpart =~ s#fontcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#
     $self->_fix_spanned(qq/<font size="$1" color="$2">/, "</font>", $3)#egi
     and return 1;
+  $$rpart =~ s#(\n\r?|\A)html\[([^\]\[]*)\](\n\r?|\z)# 
+    $1 . NO_P . $self->_inline_html($2) . NO_CP . $3 #eg
+      and return 1;
+  $$rpart =~ s#\s?\bhtml\[([^\]\[]*)\]# $self->_inline_html($1) #eg
+      and return 1;
   $$rpart =~ s!(?<=\W)\[([^\]\[]+)\]!&#91;$1&#93;!g
     and return 1;
   
@@ -330,8 +344,7 @@ sub format {
 
   $body = $self->escape($body);
   my $out = '';
-  for my $part (split /((?:html\[(?:[^\[\]]*(?:(?:\[[^\[\]]*\])[^\[\]]*)*)\])
-			|embed\[(?:[^,\[\]]*)(?:,(?:[^,\[\]]*)){0,2}\]
+  for my $part (split /(embed\[(?:[^,\[\]]*)(?:,(?:[^,\[\]]*)){0,2}\]
                         |pre\[(?:[^\[\]]*(?:(?:\[[^\[\]]*\])[^\[\]]*)*)\])/ix, $body) {
     #print STDERR "Part is $part\n";
     if ($part =~ /^html\[([^\[\]]*(?:(?:\[[^\[\]]*\])[^\[\]]*)*)\]$/i) {
@@ -447,6 +460,8 @@ sub format {
       }
       #$part =~ s!\n!<br />!g;
       1 while $part =~ s#(</(?:$all_block_tags)>)(</(?:$all_block_tags))#$1\n$2#g;
+      my $to_nl = TO_NL;
+      $part =~ s/$to_nl/\n/g;
       $out .= $part;
     }
   }
