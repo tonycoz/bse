@@ -3,7 +3,7 @@ use strict;
 use DevHelp::HTML;
 use Carp 'confess';
 
-our $VERSION = "1.009";
+our $VERSION = "1.010";
 
 use constant DEBUG => 0;
 
@@ -344,10 +344,11 @@ sub format {
 
   $body = $self->escape($body);
   my $out = '';
-  for my $part (split /(embed\[(?:[^,\[\]]*)(?:,(?:[^,\[\]]*)){0,2}\]
+  for my $part (split /((?:raw\[(?:[^\[\]]*(?:(?:\[[^\[\]]*\])[^\[\]]*)*)\])
+			|embed\[(?:[^,\[\]]*)(?:,(?:[^,\[\]]*)){0,2}\]
                         |pre\[(?:[^\[\]]*(?:(?:\[[^\[\]]*\])[^\[\]]*)*)\])/ix, $body) {
     #print STDERR "Part is $part\n";
-    if ($part =~ /^html\[([^\[\]]*(?:(?:\[[^\[\]]*\])[^\[\]]*)*)\]$/i) {
+    if ($part =~ /^raw\[([^\[\]]*(?:(?:\[[^\[\]]*\])[^\[\]]*)*)\]$/i) {
       $out .= _make_html($1);
     }
     elsif ($part =~ /^embed\[([^,\[\]]*),([^,\[\]]*),([^,\[\]]*)\]$/i) {
