@@ -1536,7 +1536,8 @@ sub response {
   $req->_set_vars();
 
   return BSE::Template->get_response($template, $req->cfg, $acts, 
-				     $template, \@sets, $req->{vars});
+				     $template, \@sets, $req->{vars},
+				     dynamic => 1);
 }
 
 =item dyn_user_tags()
