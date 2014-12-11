@@ -285,6 +285,7 @@ site/cgi-bin/modules/BSE/UI/Dispatch.pm
 site/cgi-bin/modules/BSE/UI/FileProgress.pm
 site/cgi-bin/modules/BSE/UI/Formmail.pm
 site/cgi-bin/modules/BSE/UI/Image.pm
+site/cgi-bin/modules/BSE/UI/Interest.pm
 site/cgi-bin/modules/BSE/UI/NAdmin.pm
 site/cgi-bin/modules/BSE/UI/NUser.pm
 site/cgi-bin/modules/BSE/UI/Page.pm

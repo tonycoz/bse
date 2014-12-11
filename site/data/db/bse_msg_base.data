@@ -3,6 +3,17 @@
 id: bse/
 description: BSE messages
 
+id: bse/interest
+description: <<TEXT
+Messages displayed by interest.pl
+TEXT
+
+id: bse/interest/noemail
+description: displayed when no email address has been entered and the siteuser isn't logged in
+
+id: bse/interest/bademail
+description: displayed when the supplied email address is invalid
+
 id: bse/user/
 description: <<TEXT
 Messages displayed by user.pl (member user registration, logon, etc)

@@ -4,6 +4,12 @@
 language_code: en
 priority: 0
 
+id: bse/interest/noemail
+message: Please enter an email address, or please logon.
+
+id: bse/interest/bademail
+message: Email address invalid.
+
 id: bse/user/needlogon
 message: Please enter your username
 
