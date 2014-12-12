@@ -1,5 +1,5 @@
 --
-# VERSION=1.008
+# VERSION=1.009
 id: bse/
 description: BSE messages
 
@@ -13,6 +13,12 @@ description: displayed when no email address has been entered and the siteuser i
 
 id: bse/interest/bademail
 description: displayed when the supplied email address is invalid
+
+id: bse/interest/noproductid
+description: displayed when no product id is supplied
+
+id: bse/interest/badproductid
+description: displayed when a product cannot be found for the supplied product id
 
 id: bse/user/
 description: <<TEXT

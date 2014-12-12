@@ -1,5 +1,5 @@
 ---
-# VERSION=1.007
+# VERSION=1.009
 # defaults for the following
 language_code: en
 priority: 0
@@ -9,6 +9,12 @@ message: Please enter an email address, or please logon.
 
 id: bse/interest/bademail
 message: Email address invalid.
+
+id: bse/interest/noproductid
+message: No product id supplied
+
+id: bse/interest/badproductid
+message: Unknown product id '%1:s'
 
 id: bse/user/needlogon
 message: Please enter your username

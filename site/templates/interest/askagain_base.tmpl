@@ -1,21 +1,23 @@
 <:wrap base.tmpl:>
-<form method="POST" action="/cgi-bin/interest.pl">
-<:ifCgi product:><input type=hidden name=product value="<:cgi product |h:>"><:or:><:eif:>
-<:ifCgi product_id:><input type=hidden name=product_id value="<:cgi product_id |h:>"><:or:><:eif:>
+<form method="post" action="/cgi-bin/interest.pl">
+<input type="hidden" name="product_id" value="<:= product.id :>">
 <div align=center>
     <table width="350">
+<:.if request.message :>
       <tr> 
-      <th colspan="2" align="center"> 
-        <p><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b><:msg:></b></font></p>
+      <th colspan="3" align="center"> 
+        <p><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b><:= request.message :></b></font></p>
       </th>
     </tr>
+<:.end if:>
     <tr>
       <td><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Email:</font></td>
-      <td><input type=text name=email value=<:cgi email |h:>></td>
+      <td><input type="text" name="email" value="<:= email :>"></td>
+      <td>[:.call "error_img", "field":"email" :]</td>
     </tr>
     <tr> 
-        <td colspan="2" align="right"> 
-          <input type=submit value="Register Interest">
+        <td colspan="3" align="right"> 
+          <input type="submit" name="a_interest" value="Register Interest">
       </td>
     </tr>
   </table>

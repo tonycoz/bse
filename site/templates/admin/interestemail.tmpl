@@ -1,7 +1,7 @@
 
-A user registered interest in product '<:product:>'
+A user registered interest in product '<:= product.title |raw:>'
 
-Email: <:email:>
+Email: <:= email |raw:>
 
 Your friendly BSE shop
-<:cfg site name:>
+<:= cfg.entry("site", "name") |raw:>

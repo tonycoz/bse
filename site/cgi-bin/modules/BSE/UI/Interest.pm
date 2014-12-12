@@ -2,42 +2,92 @@ package BSE::UI::Interest;
 use strict;
 use base 'BSE::UI::Dispatch';
 use BSE::ComposeMail;
+use BSE::TB::Products;
+use BSE::Util::Tags qw(tag_object);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 my %actions =
   (
+   default => 1,
+   form => 1,
    interest => 1,
   );
 
 sub actions { \%actions };
 
-sub default_action { "interest" }
+sub default_action { "default" }
+
+sub req_default {
+  my ($self, $req) = @_;
+
+  my $email = $req->cgi->param('email');
+  if ($email =~ /\S/) {
+    return $self->req_interest($req);
+  }
+  else {
+    return $self->req_form($req);
+  }
+}
+
+sub req_form {
+  my ($self, $req, $errors) = @_;
+
+  $errors ||= {};
+  $req->message($errors);
+
+  my $cgi = $req->cgi;
+  my $product_id = $cgi->param('product_id');
+  defined($product_id)
+    or return $self->error($req, { error => "msg:bse/interest/noproductid" });
+  my $product = BSE::TB::Products->getByPkey($product_id)
+    or return $self->error($req, { error => [ "msg:bse/interest/badproductid", $product_id ] });
+
+  my $email = $cgi->param('email');
+  unless (defined $email && $email =~ /\S/) {
+    if ($req->siteuser) {
+      $email = $req->siteuser->email;
+    }
+    else {
+      $email = '';
+    }
+  }
+
+  $req->set_variable(product => $product);
+  $req->set_variable(email => $email);
+  $req->set_variable(errors => $errors);
+  my %acts =
+    (
+     $req->dyn_user_tags,
+     email => $email,
+    );
+
+  return $req->response('interest/askagain', \%acts);
+}
 
 sub req_interest {
   my ($self, $req) = @_;
 
   my $cfg = $req->cfg;;
-
   my $cgi = $req->cgi;
+
+  my $product_id = $cgi->param('product_id');
+  defined($product_id)
+    or return $self->error($req, { error => "msg:bse/interest/noproductid" });
+  my $product = BSE::TB::Products->getByPkey($product_id)
+    or return $self->error($req, { error => [ "msg:bse/interest/badproductid", $product_id ] });
+
+  my %errors;
   my $useremail = $cgi->param('email');
-  unless ($useremail) {
-    my $user = $req->siteuser;
-    if ($user) {
-      $useremail = $user->{email};
-    }
+  if (!defined $useremail || $useremail !~ /\S/) {
+    $errors{email} = "msg:bse/interest/noemail";
   }
-  unless ($useremail) {
-    my $msg = $req->catmsg("msg:bse/interest/noemail", [],
-			  "Please enter an email address, register or logon");
-    return $self->error($req, $msg, "interest/askagain");
+  elsif ($useremail !~ /.\@./) {
+    $errors{email} = "msg:bse/interest/bademail";
   }
 
-  if ($useremail !~ /.\@./) {
-    my $msg = $req->catmsg("msg:bse/interest/bademail", [],
-			  "Please enter a valid email address.");
-    return $self->error($req, $msg, "interest/askagain");
-  }
+  %errors
+    and return $self->req_form($req, \%errors);
 
   # in theory we have an email address at this point
   my $mailer = BSE::ComposeMail->new(cfg => $cfg);
@@ -48,11 +98,6 @@ sub req_interest {
     print STDERR "No email configured for interest notify, set [interest].notify\n";
     return;
   }
-#
-  my $product = $cgi->param('product');
-  defined($product) or $product = '';
-  my $product_id = $cgi->param('product_id');
-  defined($product_id) or $product_id = '';
 
   $req->set_variable(email => $useremail);
   $req->set_variable(product => $product);
@@ -62,19 +107,29 @@ sub req_interest {
   %acts =
     (
      $req->dyn_user_tags(),
-     product => sub { $product },
-     product_id => sub { $product_id },
-     email => sub { $useremail },
+     product => [ \&tag_object, $product ],
+     product_id => $product_id,
+     email => $useremail,
     );
 
   my $subject = "User registered interest";
-  $subject .= " in product '$product'" if $product;
+  $subject .= " in product '" . $product->title . "'";
 
-  unless ($mailer->send(template => 'admin/interestemail',
-			acts => \%acts,
-			to=>$email,
-			from=>$email,
-			subject=>$subject)) {
+  my %vars =
+    (
+     product => $product,
+     email => $email,
+     siteuser => $req->siteuser,
+    );
+  unless ($mailer->send
+	  (
+	   template => 'admin/interestemail',
+	   acts => \%acts,
+	   to=>$email,
+	   from=>$email,
+	   subject=>$subject,
+	   vars => \%vars
+	  )) {
     return $self->error($req, "While sending email: ".$mailer->errstr);
   }
 
