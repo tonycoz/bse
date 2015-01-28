@@ -5,7 +5,7 @@ use BSE::Util::HTML;
 use BSE::Util::Tags qw(tag_article);
 use constant CATALOG_CUSTOM_FIELDS_CFG => "catalog custom fields";
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 sub base_template_dirs {
   return ( "catalog" );
@@ -17,6 +17,10 @@ sub extra_templates {
   my @extras = $self->SUPER::extra_templates($article);
   my $basedir = $self->{cfg}->entryVar('paths', 'templates');
   push @extras, 'catalog.tmpl' if -f "$basedir/catalog.tmpl";
+
+  my $extras = $self->{cfg}->entry('catalogs', 'extra_templates');
+  push @extras, grep /\.(tmpl|html)$/i, split /,/, $extras
+    if $extras;
 
   return @extras;
 }
