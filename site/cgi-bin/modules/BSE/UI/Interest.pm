@@ -5,7 +5,7 @@ use BSE::ComposeMail;
 use BSE::TB::Products;
 use BSE::Util::Tags qw(tag_object);
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 my %actions =
   (
@@ -82,7 +82,7 @@ sub req_interest {
   if (!defined $useremail || $useremail !~ /\S/) {
     $errors{email} = "msg:bse/interest/noemail";
   }
-  elsif ($useremail !~ /.\@./) {
+  elsif ($useremail !~ /^[^\s\@][^\@]*\@[\w.-]+\.\w+$/) {
     $errors{email} = "msg:bse/interest/bademail";
   }
 
