@@ -20,6 +20,7 @@ bse_init(".");
 my $cfg = bse_cfg();
 
 my %params;
+$params{p} = 11;
 my $r = BSE::Request::Test->new
   (
    params => \%params,
@@ -34,7 +35,6 @@ my $vars =
    ),
   };
 
-$params{p} = 11;
 template_test(<<'IN', <<'EXPECT', "page_list");
 <:.set items = [ 1 .. 200 ] -:>
 <:.set p = bse.paged(items, { pp: 5 }) -:>

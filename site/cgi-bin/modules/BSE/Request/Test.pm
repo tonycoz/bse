@@ -2,7 +2,7 @@ package BSE::Request::Test;
 use strict;
 use base 'BSE::Request::Base';
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 sub new {
   my ($class, %opts) = @_;
@@ -50,14 +50,17 @@ sub param {
       die "Unabled to delete $name key in test";
     }
     else {
-      my $value = $self->{$name};
+      my $value = $self->{params}{$name};
       if (defined $value) {
 	if (ref $value) {
 	  if (wantarray) {
-	    return @{$self->{$name}};
+	    return @$value;
+	  }
+	  elsif (@$value) {
+	    return $value->[-1];
 	  }
 	  else {
-	    return $self->{$name}[-1];
+	    return;
 	  }
 	}
 	else {
@@ -70,7 +73,7 @@ sub param {
     }
   }
   else {
-    return keys %$self;
+    return keys %{$self->{param}};
   }
 }
 
