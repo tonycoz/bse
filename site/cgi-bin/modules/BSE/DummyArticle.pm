@@ -3,8 +3,11 @@ use strict;
 use base 'BSE::TB::SiteCommon';
 use base 'BSE::FormatterBase';
 use BSE::TB::Articles;
+use BSE::MetaOwnerBase;
 
-our $VERSION = "1.005";
+our @ISA = qw(BSE::MetaOwnerBase);
+
+our $VERSION = "1.006";
 
 sub images {
   return;
@@ -52,8 +55,38 @@ sub should_index {
   1;
 }
 
+sub tags {
+  ();
+}
+
 sub has_tags {
   0;
 }
+
+sub meta_owner_type {
+  'bse_article';
+}
+
+sub meta_meta_cfg_section {
+  "global article metadata";
+}
+
+sub meta_meta_cfg_prefix {
+  "article metadata";
+}
+
+sub metafields {
+  my ($self, $cfg) = @_;
+
+  $cfg ||= BSE::Cfg->single;
+
+  my %metanames = map { $_ => 1 } $self->metanames;
+
+  require BSE::ArticleMetaMeta;
+  my @fields = grep $metanames{$_->name} || $_->cond($self), BSE::ArticleMetaMeta->all_metametadata($cfg);
+
+  return ( @fields );
+}
+
 
 1;

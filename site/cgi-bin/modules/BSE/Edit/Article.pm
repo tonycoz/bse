@@ -16,7 +16,7 @@ use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 use constant ARTICLE_CUSTOM_FIELDS_CFG => "article custom fields";
 
-our $VERSION = "1.052";
+our $VERSION = "1.053";
 
 =head1 NAME
 
@@ -1557,7 +1557,8 @@ sub _dummy_article {
     return;
   }
 
-  return \%article;
+  require BSE::DummyArticle;
+  return bless \%article, "BSE::DummyArticle";
 }
 
 sub add_form {
@@ -1813,6 +1814,12 @@ sub save_new {
     $self->_validate_tags(\@tags, \%errors);
   }
 
+  my $meta;
+  if ($cgi->param("_save_meta")) {
+    require BSE::ArticleMetaMeta;
+    $meta = BSE::ArticleMetaMeta->retrieve($req, $article, \%errors);
+  }
+
   if (keys %errors) {
     if ($req->is_ajax) {
       return $req->json_content
@@ -1964,6 +1971,10 @@ sub save_new {
   if ($save_tags) {
     my $error;
     $article->set_tags([ grep /\S/, @tags ], \$error);
+  }
+
+  if ($meta) {
+    BSE::ArticleMetaMeta->save($article, $meta);
   }
 
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;

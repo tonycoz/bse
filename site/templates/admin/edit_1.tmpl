@@ -245,7 +245,6 @@
           </tr>
           <:or Article:><:eif Article:> 
         </table>
-<:.if !ifnew -:>
 <:.set metas = [ article.metafields ] -:>
 <:  .if metas.size -:>
 <fieldset>
@@ -271,7 +270,6 @@
 <:  .end for -:>
 </fieldset>
 <:  .end if -:>
-<:.end if -:>
 
   <p><: ifNew :>
     <input type="submit" name="save" value="Add New <: articleType:>" />
