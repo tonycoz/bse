@@ -4,7 +4,7 @@ use CGI::Cookie;
 use BSE::DB;
 use BSE::CfgInfo qw/custom_class/;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 sub _session_require {
   my ($cfg) = @_;
@@ -112,7 +112,8 @@ sub make_cookie {
   my ($self, $cfg, $name, $value, $extras) = @_;
 
   $extras ||= {};
-  $extras->{lifetime} ||= $cfg->entry('basic', 'cookie_lifetime') || '+3h';
+  $extras->{expires} ||= $cfg->entry('basic', 'cookie_lifetime', '+3h');
+  $extras->{expires} =~ /\S/ or delete $extras->{expires};
   $name = $cfg->entry('cookie names', $name, $name);
   my %opts =
     (

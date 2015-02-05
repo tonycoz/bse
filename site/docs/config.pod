@@ -333,7 +333,8 @@ example.com.
 The expiry time for cookies.  This should be in the form supported by
 CGI.pm for the -expires parameter.  Typically you want a plus ('+'), a
 number, and a time character (s - seconds, m - minutes, h - hours, d -
-days, M - months).  Default: +3h
+days, M - months).  Set to an empty string for session cookies.
+Default: +3h
 
 =item cookie_name
 
