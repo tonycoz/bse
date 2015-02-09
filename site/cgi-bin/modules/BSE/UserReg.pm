@@ -18,7 +18,7 @@ use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
 use Carp qw(confess);
 
-our $VERSION = "1.034";
+our $VERSION = "1.035";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -2549,14 +2549,15 @@ sub req_wishlist {
   $custom->can_user_see_wishlist($user, $curr_user, $req)
     or return $self->error($req, "Sorry, you cannot see ${user_id}'s wishlist");
 
-  my @wishlist = $user->wishlist;
+  $req->set_variable(wuser => $user);
 
   my %acts;
   my $it = BSE::Util::Iterate::Article->new(req => $req);
   %acts =
     (
      $req->dyn_user_tags(),
-     $it->make_iterator(undef, 'uwishlistentry', 'uwishlist', \@wishlist),
+     $it->make_iterator(sub { $user->wishlist },
+			'uwishlistentry', 'uwishlist'),
      wuser => [ \&tag_hash, $user ],
     );
 
