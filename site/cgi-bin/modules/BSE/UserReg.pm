@@ -18,7 +18,7 @@ use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
 use Carp qw(confess);
 
-our $VERSION = "1.035";
+our $VERSION = "1.036";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -582,6 +582,8 @@ sub req_show_register {
      error_img => [ \&tag_error_img, $cfg, $errors ],
     );
 
+  $req->set_variable(subscriptions => \@subs);
+
   my $template = 'user/register';
   return $req->dyn_response($template, \%acts);
 }
@@ -960,6 +962,9 @@ sub req_show_opts {
   for my $cat (@file_cats) {
     $cat->{subscribed} = exists $subbed{$cat->{id}} ? 1 : 0;
   }
+
+  $req->set_variable(file_cats => \@file_cats);
+  $req->set_variable(subscriptions => \@subs);
 
   my $it = BSE::Util::Iterate->new;
   my %acts;
