@@ -6,7 +6,7 @@ use BSE::UI::Dispatch;
 use BSE::Template;
 our @ISA = qw(BSE::UI::Dispatch);
 
-our $VERSION = "1.008";
+our $VERSION = "1.009";
 
 # we don't do anything fancy on dispatch yet, so don't use the 
 # dispatch classes
@@ -184,7 +184,7 @@ sub dispatch {
     else {
       my $refresh = $article->{link};
       my $logon =
-	$cfg->entry('site', 'url') . "/cgi-bin/user.pl?show_logon=1&r=".escape_uri($refresh)."&message=You+need+to+logon+to+view+this+article";
+	$cfg->entry('site', 'url') . "/cgi-bin/user.pl?show_logon=1&r=".escape_uri($refresh)."&m=You+need+to+logon+to+view+this+article";
       return BSE::Template->get_refresh($logon, $cfg);
     }
   }

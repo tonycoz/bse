@@ -7,7 +7,7 @@ use DevHelp::Validate qw(dh_validate dh_configure_fields);
 use BSE::Util::Iterate;
 use constant DISPLAY_TIMEOUT => 300;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 my %actions =
   (
@@ -761,7 +761,7 @@ sub _refresh_logon {
 
   my $r = $ENV{SCRIPT_NAME}."?form=".$form->{id};
   my $logon = "/cgi-bin/user.pl?show_logon=1&r=".escape_uri($r)
-    ."&message=".escape_uri($form->{logon_message});
+    ."&m=".escape_uri($form->{logon_message});
   return BSE::Template->get_refresh($logon, $req->cfg);
 }
 

@@ -18,7 +18,7 @@ use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
 use Carp qw(confess);
 
-our $VERSION = "1.036";
+our $VERSION = "1.037";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -87,7 +87,7 @@ sub _refresh_userpage ($$) {
 
   my $url = $cfg->entryErr('site', 'url') . "/cgi-bin/user.pl?userpage=1";
   if (defined $msg) {
-    $url .= '&message='.escape_uri($msg);
+    $url .= '&m='.escape_uri($msg);
   }
   refresh_to($url);
 }
@@ -1630,7 +1630,7 @@ sub _common_download {
 	my $cfg = $req->cfg;
 	my $refresh = "/cgi-bin/user.pl?file=" . $file->id;
 	my $logon =
-	  $cfg->entry('site', 'url') . "/cgi-bin/user.pl?show_logon=1&r=".escape_uri($refresh)."&message=You+need+to+logon+download+this+file";
+	  $cfg->entry('site', 'url') . "/cgi-bin/user.pl?show_logon=1&r=".escape_uri($refresh)."&m=You+need+to+logon+download+this+file";
 	return $req->get_refresh($logon);
 	return;
       }

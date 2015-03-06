@@ -18,7 +18,7 @@ use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 use BSE::Template;
 
-our $VERSION = "1.046";
+our $VERSION = "1.047";
 
 =head1 NAME
 
@@ -1709,7 +1709,7 @@ sub _refresh_logon {
   if ($msgid) {
     $msg = $req->cfg->entry('messages', $msgid, $msg);
   }
-  $parms{message} = $msg if $msg;
+  $parms{m} = $msg if $msg;
   $parms{mid} = $msgid if $msgid;
   $url .= "?" . join("&", map "$_=".escape_uri($parms{$_}), keys %parms);
   

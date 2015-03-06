@@ -5,7 +5,7 @@ use BSE::TB::Images;
 use BSE::Util::Tags qw(tag_hash);
 use BSE::Util::HTML qw(escape_uri);
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 # we don't do anything fancy on dispatch yet, so don't use the 
 # dispatch classes
@@ -46,7 +46,7 @@ sub dispatch {
       my $cfg = $req->cfg;
       my $refresh = "/cgi-bin/image.pl?id=$article->{id}&imid=$image->{id}";
       my $logon =
-	$cfg->entry('site', 'url') . "/cgi-bin/user.pl?show_logon=1&r=".escape_uri($refresh)."&message=You+need+to+logon+to+view+this+image";
+	$cfg->entry('site', 'url') . "/cgi-bin/user.pl?show_logon=1&r=".escape_uri($refresh)."&m=You+need+to+logon+to+view+this+image";
       return BSE::Template->get_refresh($logon, $cfg);
     }
   }
