@@ -1,0 +1,32 @@
+<:.set metas = [ article.metafields ] -:>
+<:  .if metas.size -:>
+<:.if tr:>
+<tr><td colspan="3">
+<:.end if :>
+<fieldset>
+  <legend><:= article_type |html :> Metadata</legend>
+<input type="hidden" name="_save_meta" value="1">
+<:  .for m in metas -:>
+<:#= bse.dumper(m) |raw :>
+<:    .set name = "meta_" _ m.name -:>
+<:    .set mdata = article.meta_by_name(m.name) -:>
+<:    .if m.type eq 'image' -:>
+<:      .set def = article.meta_by_name(m.display_name) -:>
+<:      .set def = def ? def.value_text : "" -:>
+<:    .else -:>
+<:      .set def = mdata ? mdata.value_text : "" -:>
+<:    .end if -:>
+<:    .if m.ro -:>
+<:      .call "inlinefieldro", name: name, field: m.field,
+	        options: { default: def } -:>
+<:    .else -:>
+<:      .call "inlinefield", name: name, field: m.field, 
+                options: { delete: 1, default: def } -:>
+<:    .end if :>
+<:  .end for -:>
+</fieldset>
+<:.if tr:>
+</td></tr>
+<:.end if :>
+<:  .end if -:>
+

@@ -83,6 +83,7 @@ site/cgi-bin/modules/BSE/CustomBase.pm
 site/cgi-bin/modules/BSE/DB.pm
 site/cgi-bin/modules/BSE/DB/Mysql.pm
 site/cgi-bin/modules/BSE/DummyArticle.pm
+site/cgi-bin/modules/BSE/DummyProduct.pm
 site/cgi-bin/modules/BSE/Dynamic/Article.pm
 site/cgi-bin/modules/BSE/Dynamic/Catalog.pm
 site/cgi-bin/modules/BSE/Dynamic/Product.pm
@@ -606,6 +607,7 @@ site/templates/admin/include/article_menu.tmpl
 site/templates/admin/include/auditentry.tmpl
 site/templates/admin/include/audithead.tmpl
 site/templates/admin/include/edit_common.tmpl
+site/templates/admin/include/edit_metadata.tmpl
 site/templates/admin/include/message.tmpl
 site/templates/admin/include/oauditlog.tmpl
 site/templates/admin/include/order_list_filter.tmpl

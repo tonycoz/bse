@@ -1,7 +1,9 @@
+<:.set article_type = "Product" -:>
 <:wrap admin/base.tmpl title => [cond [ifNew] "Add Product" "Edit Product"], menuitem=>"edit", showtitle=>"1", js => "admin_edit.js" :>
 <:ifMessage:>
 <p><b><:message:></b></p>
 <:or:><:eif:> 
+<:.set oldf = @{name, def: cgi.param(name).defined ? cgi.param(name) : def} -:>
 <:include admin/product_menu.tmpl:>
 <:ifNew:><:or:><:if Or [iadminuser_count] [iadmingroup_count]:>
       <form action="/cgi-bin/admin/adminusers.pl">
@@ -153,7 +155,7 @@
           <tr> 
             <th><:cfg "product fields" retailPrice "Retail price":>:</th>
             <td>$ 
-              <:ifFieldPerm retailPrice:><input type="text" name="retailPrice" value="<:old retailPrice money default retailPrice:>" size="7" />
+              <:ifFieldPerm retailPrice:><input type="text" name="retailPrice" value="<:= oldf("retailPrice", bse.number("money", product.retailPrice)) :>" size="7" />
               (0.00)<:or:><:money product retailPrice:><:eif:> </td>
             <td class="help"><:help product retail:> <:error_img retailPrice:></td>
           </tr>
@@ -346,9 +348,11 @@
           </tr>
   <tr><td colspan="3">*These fields cannot be modified once this product has been
       included in an order.</td></tr>
+<:.call "admin/include/edit_metadata.tmpl", tr: 1:>
   <:if UserCan edit_save:article:>
   <tr>
     <td colspan="3" class="buttons"><:ifNew:><input type="submit" name="save" value="Add Product" /><:or:><input type="submit" name="save" value="Update Product" /><:eif:>
   </td></tr><:or UserCan:><:eif UserCan:>
         </table>
 </form>
+

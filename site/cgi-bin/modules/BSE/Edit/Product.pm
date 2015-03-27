@@ -10,7 +10,7 @@ use BSE::CfgInfo 'product_options';
 use BSE::Util::Tags qw(tag_hash tag_article);
 use constant PRODUCT_CUSTOM_FIELDS_CFG => "product custom fields";
 
-our $VERSION = "1.015";
+our $VERSION = "1.016";
 
 =head1 NAME
 
@@ -34,6 +34,13 @@ my %money_fields =
   );
 
 sub generator { 'BSE::Generate::Product' }
+
+sub _make_dummy_article {
+  my ($self, $article) = @_;
+
+  require BSE::DummyProduct;
+  return bless $article, "BSE::DummyProduct";
+}
 
 sub base_template_dirs {
   return ( "products" );
@@ -292,6 +299,7 @@ sub low_edit_tags {
   my @tiers;
   my $price_tier;
   my %prices;
+  $req->set_variable(product => $article);
   return 
     (
      product => [ \&tag_article, $article, $cfg ],

@@ -16,7 +16,7 @@ use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 use constant ARTICLE_CUSTOM_FIELDS_CFG => "article custom fields";
 
-our $VERSION = "1.053";
+our $VERSION = "1.054";
 
 =head1 NAME
 
@@ -1293,6 +1293,8 @@ sub low_edit_tags {
   # only return the fields that are defined
   $request->set_variable(custom => $custom);
   $request->set_variable(errors => $errors || {});
+  my $article_type = $cfg->entry('level names', $article->{level}, 'Article');
+  $request->set_variable(article_type => $article_type);
 
   return
     (
@@ -1300,7 +1302,7 @@ sub low_edit_tags {
      article => sub { tag_article($article, $cfg, $_[0]) },
      old => [ \&tag_old, $article, $cgi ],
      default => [ \&tag_default, $self, $request, $article ],
-     articleType => [ \&tag_art_type, $article->{level}, $cfg ],
+     articleType => escape_html($article_type),
      parentType => [ \&tag_art_type, $article->{level}-1, $cfg ],
      ifNew => [ \&tag_if_new, $article ],
      list => [ \&tag_list, $self, $article, $articles, $cgi, $request ],
@@ -1557,8 +1559,14 @@ sub _dummy_article {
     return;
   }
 
+  return $self->_make_dummy_article(\%article);
+}
+
+sub _make_dummy_article {
+  my ($self, $article) = @_;
+
   require BSE::DummyArticle;
-  return bless \%article, "BSE::DummyArticle";
+  return bless $article, "BSE::DummyArticle";
 }
 
 sub add_form {

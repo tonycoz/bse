@@ -1,3 +1,4 @@
+
 <:wrap admin/base.tmpl title=>[cond [ifNew] [cat "New " [articleType]] [cat "Edit " [articleType] ": " [article title]]], js => "admin_edit.js":>
 <h1><:ifNew:>New<:or:>Edit<:eif:> <:articleType:></h1>
 <:if Message:> 
@@ -245,31 +246,7 @@
           </tr>
           <:or Article:><:eif Article:> 
         </table>
-<:.set metas = [ article.metafields ] -:>
-<:  .if metas.size -:>
-<fieldset>
-  <legend>Article Metadata</legend>
-<input type="hidden" name="_save_meta" value="1">
-<:  .for m in metas -:>
-<:#= bse.dumper(m) |raw :>
-<:    .set name = "meta_" _ m.name -:>
-<:    .set mdata = article.meta_by_name(m.name) -:>
-<:    .if m.type eq 'image' -:>
-<:      .set def = article.meta_by_name(m.display_name) -:>
-<:      .set def = def ? def.value_text : "" -:>
-<:    .else -:>
-<:      .set def = mdata ? mdata.value_text : "" -:>
-<:    .end if -:>
-<:    .if m.ro -:>
-<:      .call "inlinefieldro", name: name, field: m.field,
-	        options: { default: def } -:>
-<:    .else -:>
-<:      .call "inlinefield", name: name, field: m.field, 
-                options: { delete: 1, default: def } -:>
-<:    .end if :>
-<:  .end for -:>
-</fieldset>
-<:  .end if -:>
+<:.call "admin/include/edit_metadata.tmpl", tr: 0 :>
 
   <p><: ifNew :>
     <input type="submit" name="save" value="Add New <: articleType:>" />
