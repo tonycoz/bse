@@ -313,7 +313,7 @@ Conditional tag, true if the current article is being embedded.
 
 =cut
 
-our $VERSION = "1.024";
+our $VERSION = "1.025";
 
 my $excerptSize = 300;
 
@@ -546,14 +546,6 @@ sub _embed_low {
   $gen->{maxdepth} = $oldmaxdepth;
 
   return $result;
-}
-
-sub _body_embed {
-  my ($self, $acts, $articles, $which, $template, $maxdepth) = @_;
-
-  my $text = $self->_embed_low($acts, $articles, $which, $template, $maxdepth);
-
-  return $text;
 }
 
 sub formatter_class {
