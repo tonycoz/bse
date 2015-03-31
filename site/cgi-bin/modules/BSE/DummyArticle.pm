@@ -1,9 +1,10 @@
 package BSE::DummyArticle;
 use strict;
 use base 'BSE::TB::SiteCommon';
+use base 'BSE::FormatterBase';
 use BSE::TB::Articles;
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 sub images {
   return;

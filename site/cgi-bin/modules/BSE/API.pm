@@ -10,7 +10,7 @@ use Carp qw(confess croak);
 use Fcntl qw(:seek);
 use Cwd;
 
-our $VERSION = "1.011";
+our $VERSION = "1.012";
 
 =head1 NAME
 
@@ -148,7 +148,7 @@ my $cfg;
 
 sub bse_cfg {
   my $path = shift || ".";
-  $cfg ||= BSE::Cfg->new(path => $path);
+  $cfg ||= BSE::Cfg->new(path => $path, @_);
   $cfg->entry('site', 'url')
     or confess "Could not load configuration";
 

@@ -4,7 +4,7 @@ use Squirrel::Template;
 use Carp qw(confess cluck);
 use Config ();
 
-our $VERSION = "1.013";
+our $VERSION = "1.014";
 
 my %formats =
   (
@@ -243,6 +243,11 @@ sub template_dirs {
   if ($local) {
     unshift @dirs, split /\Q$path_sep/,
       $cfg->entryVar('paths', 'local_templates');
+  }
+  my $section = "template paths";
+  my @keys = $cfg->order($section);
+  for my $key (reverse sort @keys) {
+    unshift @dirs, $cfg->entryVar($section, $key);
   }
 
   @dirs;

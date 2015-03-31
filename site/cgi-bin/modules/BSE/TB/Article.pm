@@ -4,11 +4,12 @@ use strict;
 use Squirrel::Row;
 use BSE::TB::SiteCommon;
 use BSE::TB::TagOwner;
+use BSE::FormatterBase;
 use vars qw/@ISA/;
-@ISA = qw/Squirrel::Row BSE::TB::SiteCommon BSE::TB::TagOwner/;
+@ISA = qw/Squirrel::Row BSE::TB::SiteCommon BSE::TB::TagOwner BSE::FormatterBase/;
 use Carp 'confess';
 
-our $VERSION = "1.027";
+our $VERSION = "1.028";
 
 =head1 NAME
 

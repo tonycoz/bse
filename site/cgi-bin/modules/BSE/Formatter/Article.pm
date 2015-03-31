@@ -4,12 +4,12 @@ use base 'BSE::Formatter';
 use BSE::Util::HTML;
 use Digest::MD5 qw(md5_hex);
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 sub rewrite_url {
   my ($self, $url, $text, $type) = @_;
 
-  my $cfg = $self->{gen}{cfg};
+  my $cfg = $self->{cfg};
 
   require BSE::URL;
   $url = BSE::URL->rewrite_url($cfg, $url);

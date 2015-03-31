@@ -313,7 +313,7 @@ Conditional tag, true if the current article is being embedded.
 
 =cut
 
-our $VERSION = "1.025";
+our $VERSION = "1.026";
 
 my $excerptSize = 300;
 
@@ -471,7 +471,7 @@ sub _make_html {
   return unescape_html($_[0]);
 }
 
-sub _embed_low {
+sub _embed_tag {
   my ($self, $acts, $articles, $what, $template, $maxdepth, $templater) = @_;
 
   $maxdepth = $self->{maxdepth} 
@@ -512,6 +512,12 @@ sub _embed_low {
     $embed = $articles->getByPkey($id)
       or return "** Cannot find article $id to be embedded **";;
   }
+
+  return $self->_embed_low($embed, $articles, $template, $maxdepth);
+}
+
+sub _embed_low {
+  my ($self, $embed, $articles, $template, $maxdepth) = @_;
 
   my $gen = $self;
   if (ref($self) ne $embed->{generator}) {
@@ -1180,7 +1186,7 @@ sub baseActs {
        return '' if $args eq 'start' || $args eq 'end';
        my ($what, $template, $maxdepth) = split ' ', $args;
        undef $maxdepth if defined $maxdepth && $maxdepth !~ /^\d+/;
-       return $self->_embed_low($acts, $articles, $what, $template, $maxdepth, $templater);
+       return $self->_embed_tag($acts, $articles, $what, $template, $maxdepth, $templater);
      },
      ifCanEmbed=> sub { $self->{depth} <= $self->{maxdepth} },
 

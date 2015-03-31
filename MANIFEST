@@ -104,6 +104,7 @@ site/cgi-bin/modules/BSE/FileMetaMeta.pm
 site/cgi-bin/modules/BSE/Formatter.pm
 site/cgi-bin/modules/BSE/Formatter/Article.pm
 site/cgi-bin/modules/BSE/Formatter/Subscription.pm
+site/cgi-bin/modules/BSE/FormatterBase.pm
 site/cgi-bin/modules/BSE/Generate.pm
 site/cgi-bin/modules/BSE/Generate/Article.pm
 site/cgi-bin/modules/BSE/Generate/Catalog.pm
@@ -946,6 +947,7 @@ t/data/importer/basic.csv
 t/data/importer/product-simple.csv
 t/data/known_pod_issues.txt
 t/data/t101.jpg
+t/data/templates/gentest.tmpl
 t/t000load.t
 t/t00smoke.t			makes a request to most of the scripts
 t/tags/bse.cfg

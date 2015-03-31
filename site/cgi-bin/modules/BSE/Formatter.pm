@@ -3,7 +3,7 @@ use strict;
 use BSE::Util::HTML;
 use Carp 'confess';
 
-our $VERSION = "1.008";
+our $VERSION = "1.010";
 
 use base 'DevHelp::Formatter';
 
@@ -25,7 +25,7 @@ sub new {
 
   $self->{gen} = $opts{gen};
   $self->{acts} = $opts{acts};
-  $self->{articles} = $opts{articles};
+  $self->{articles} = $opts{articles} || "BSE::TB::Articles";
   $self->{abs_urls} = $opts{abs_urls};
   my $dummy;
   $self->{auto_images} = $opts{auto_images} || \$dummy;
@@ -33,7 +33,7 @@ sub new {
   $self->{files} = $opts{files};
   $self->{templater} = $opts{templater};
 
-  my $cfg = $self->{gen}->{cfg};
+  my $cfg = $self->{cfg} = $self->{gen} ? $self->{gen}->{cfg} : BSE::Cfg->single;
   if ($cfg->entry('html', 'mbcs', 0)) {
     $self->{conservative_escape} = 1;
   }
@@ -58,7 +58,7 @@ sub _image {
   my $extras = '';
   my @classes;
   if ($self->{xhtml}) {
-    push @classes, $self->{gen}{cfg}->entry
+    push @classes, $self->{cfg}->entry
       ("html", "formatter_image_class", "bse_image_inline");
   }
   if ($style) {
@@ -78,7 +78,7 @@ sub _image {
 
   return $im->formatted
     (
-     cfg => $self->{gen}{cfg},
+     cfg => $self->{cfg},
      class => "bse_image_inline",
      align => $align,
      extras => $extras,
@@ -133,14 +133,25 @@ sub image {
 sub embed {
   my ($self, $name, $templateid, $maxdepth) = @_;
 
-  $self->{gen}->_embed_low($self->{acts}, $self->{articles}, $name,
-			   $templateid, $maxdepth, $self->{templater});
+  $self->{gen} or return "** cannot embed here - missing gen **";
+
+  my $embed;
+  if ($name =~ /^[1-9][0-9]*$/) {
+    $embed = $self->{articles}->getByPkey($name);
+  }
+  elsif ($name =~ /\A[a-zA-Z0-9_]*[a-zA-Z][a-zA-Z0-9_]*\z/) {
+    $embed = $self->{articles}->getBy(linkAlias => $name);
+  }
+
+  $embed or return "** article $name not found **";
+
+  $self->{gen}->_embed_low($embed, $self->{articles}, $templateid, $maxdepth);
 }
 
 sub _get_article {
   my ($self, $id, $error) = @_;
 
-  my $cfg = $self->{gen}->{cfg}
+  my $cfg = $self->{cfg}
     or confess "cfg not set in acts";
   my $dispid;
   my $art;
@@ -177,7 +188,7 @@ sub doclink {
   my $art = $self->_get_article($id, \$error)
     or return $error;
 
-  my $cfg = $self->{gen}->{cfg}
+  my $cfg = $self->{cfg}
     or confess "cfg not set in acts";
 
   # make the URL absolute if necessary
@@ -191,7 +202,7 @@ sub doclink {
     }
   }
   else {
-    $url = $art->link($self->{gen}{cfg});
+    $url = $art->link($self->{cfg});
   }
 
   unless ($title) {
@@ -379,7 +390,7 @@ sub replace {
 sub formlink {
   my ($self, $id, $type, $text, $target) = @_;
 
-  my $cfg = $self->{gen}{cfg};
+  my $cfg = $self->{cfg};
   my $section = "$id form";
   my $title = escape_html($cfg->entry($section, 'title', "Send us a comment"));
   $text ||= $title;
@@ -418,7 +429,7 @@ sub remove_doclink {
 sub remove_formlink {
   my ($self, $id) = @_;
 
-  return $self->{gen}{cfg}->entry("$id form", 'title', "Send us a comment");
+  return $self->{cfg}->entry("$id form", 'title', "Send us a comment");
 }
 
 sub remove_popimage {
@@ -523,7 +534,7 @@ sub tag_class {
 
   my $default = $type eq 'p' ? '' : $type;
 
-  return $self->{gen}{cfg}->entry('body class', $type, $default);
+  return $self->{cfg}->entry('body class', $type, $default);
 }
 
 1;

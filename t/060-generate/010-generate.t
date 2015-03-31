@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>167;
+use Test::More tests=>173;
 use File::Spec;
 use FindBin;
 use Cwd;
@@ -14,15 +14,20 @@ BEGIN {
 }
 use BSE::API qw(bse_init bse_cfg bse_make_article bse_add_global_image);
 
-bse_init(".");
+my $cfg = bse_cfg(".", extra_text => <<CFG);
+[template paths]
+0000test=$start_dir/t/data/templates
+CFG
 
-my $cfg = bse_cfg();
+bse_init(".");
 
 use BSE::Util::SQL qw/sql_datetime/;
 use DevHelp::Date qw(dh_strftime_sql_datetime);
 
 sub template_test($$$$);
 sub dyn_template_test($$$$);
+
+my $alias_id = int(time);
 
 my $parent = add_article
   (
@@ -64,16 +69,20 @@ two
 BODY
    lastModified => '2004-09-23 06:00:00',
    threshold => 2,
+   linkAlias => "p$alias_id",
   );
 ok($parent, "create section");
 my @kids;
+my $kid_alias = "a";
 for my $name ('One', 'Two', 'Three') {
   my $kid = add_article
     (
      title => $name, parentid => $parent->{id}, 
      body => "b[$name] - alpha, beta, gamma, delta, epsilon",
      summaryLength => 35,
+     linkAlias => "$kid_alias$alias_id",
     );
+  ++$kid_alias;
   ok($kid, "creating kid $name");
   push(@kids, $kid);
 }
@@ -726,6 +735,19 @@ Article Title: [Parent]
 Top Title: [Parent]
 Embedded: [0]
 Dynamic: [0]
+EXPECTED
+
+template_test "format", $parent, <<TEMPLATE, <<EXPECTED;
+<:= article.format("text", "test") | raw :>
+TEMPLATE
+<p>test</p>
+EXPECTED
+
+template_test "format embed", $parent, <<TEMPLATE, <<EXPECTED;
+<:= article.format("text", "embed[a$alias_id,gentest]", "gen", generator) | raw :>
+TEMPLATE
+<div class="title">One</div>
+<p>Embedded</p>
 EXPECTED
 
 ############################################################
