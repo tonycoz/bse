@@ -3,7 +3,7 @@ use strict;
 use BSE::Util::HTML;
 use Carp 'confess';
 
-our $VERSION = "1.010";
+our $VERSION = "1.011";
 
 use base 'DevHelp::Formatter';
 
@@ -344,22 +344,22 @@ sub replace {
   $$rpart =~ s#doclink\[([\w-]+)\]# $self->doclink($1,  undef, undef, 'doclink') #ige
     and return 1;
 
-  $$rpart =~ s#popformlink\[(\w+)\|([^\]\[]*\n\s*\n[^\]\[]*)\]#
+  $$rpart =~ s#popformlink\[([\w-]+)\|([^\]\[]*\n\s*\n[^\]\[]*)\]#
     "\n\n\x02" . $self->formlink($1, 'popformlink', $self->_blockify($2), '_blank') . "\x03\n\n"#ige
     and return 1;
-  $$rpart =~ s#popformlink\[(\w+)\|([^\]\[]+)\]#
+  $$rpart =~ s#popformlink\[([\w-]+)\|([^\]\[]+)\]#
     $self->formlink($1, 'popformlink', $2, '_blank') #ige
     and return 1;
-  $$rpart =~ s#popformlink\[(\w+)\]#
+  $$rpart =~ s#popformlink\[([\w-]+)\]#
     $self->formlink($1, 'popformlink', undef, '_blank') #ige
     and return 1;
-  $$rpart =~ s#formlink\[(\w+)\|([^\]\[]*\n\s*\n[^\]\[]*)\]#
+  $$rpart =~ s#formlink\[([\w-]+)\|([^\]\[]*\n\s*\n[^\]\[]*)\]#
     "\n\n\x02" . $self->formlink($1, 'formlink', $self->_blockify($2)) . "\x03\n\n" #ige
     and return 1;
-  $$rpart =~ s#formlink\[(\w+)\|([^\]\[]+)\]#
+  $$rpart =~ s#formlink\[([\w-]+)\|([^\]\[]+)\]#
     $self->formlink($1, 'formlink', $2) #ige
     and return 1;
-  $$rpart =~ s#formlink\[(\w+)\]# $self->formlink($1, 'formlink', undef) #ige
+  $$rpart =~ s#formlink\[([\w-]+)\]# $self->formlink($1, 'formlink', undef) #ige
     and return 1;
   $$rpart =~ s#gfilelink\[(\w+)\|([^\]\[]*\n\s*\n[^\]\[]*)\]#
       "\n\n\x02" . $self->gfilelink($1, $self->_blockify($2), undef, 'gfilelink')
@@ -503,9 +503,9 @@ sub remove {
   $$rpart =~ s#doclink\[(\w+)\]# $self->remove_doclink($1) #ige
     and return 1;
 
-  $$rpart =~ s#popformlink\[(\w+)\|([^\]\[]*)\]#$2#ig
+  $$rpart =~ s#popformlink\[([\w-]+)\|([^\]\[]*)\]#$2#ig
     and return 1;
-  $$rpart =~ s#popformlink\[(\w+)\]# $self->remove_formlink($1) #ige
+  $$rpart =~ s#popformlink\[([\w-]+)\]# $self->remove_formlink($1) #ige
     and return 1;
 
   $$rpart =~ s#gfilelink\[\s*(\w+)\s*\|([^\]\[]+)\]# $self->remove_gfilelink($1, $2) #ige
@@ -518,9 +518,9 @@ sub remove {
   $$rpart =~ s#filelink\[\s*(\w+)\s*\]# $self->remove_filelink($1) #ige
       and return 1;
 
-  $$rpart =~ s#formlink\[(\w+)\|([^\]\[]*)\]#$2#ig
+  $$rpart =~ s#formlink\[([\w-]+)\|([^\]\[]*)\]#$2#ig
     and return 1;
-  $$rpart =~ s#formlink\[(\w+)\]# $self->remove_formlink($1) #ige
+  $$rpart =~ s#formlink\[([\w-]+)\]# $self->remove_formlink($1) #ige
     and return 1;
   $$rpart =~ s#gpopimage\[([^\[\]]+)\]# $self->remove_gpopimage($1) #ige
     and return 1;
