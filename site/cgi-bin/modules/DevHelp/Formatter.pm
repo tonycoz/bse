@@ -3,7 +3,7 @@ use strict;
 use DevHelp::HTML;
 use Carp 'confess';
 
-our $VERSION = "1.010";
+our $VERSION = "1.011";
 
 use constant DEBUG => 0;
 
@@ -372,6 +372,14 @@ sub format {
 	  and next TRY;
 	$self->replace_char(\$part)
 	  and next TRY;
+	$part =~ s#image\[([^\]\[]+)\]# $self->image($1) #ige
+	    and next TRY;
+	$part =~ s#class\[([^\]\[\|]+)\|([^\]\[]+)\]#
+	  $self->_fix_spanned(qq/<span class="$1">/, "</span>", $2)#eig
+	  and next TRY;
+	$part =~ s#style\[([^\]\[\|]+)\|([^\]\[]+)\]#
+	  $self->_fix_spanned(qq/<span style="$1">/, "</span>", $2)#eig
+	  and next TRY;
 	$part =~ s#pre\[([^\]\[]+)\]#<pre>$1</pre>#ig
 	  and next TRY;
 	$part =~ s#h([1-6])\[([^\[\]\|]+)\|([^\[\]]+)\](?:\r?\n)?#
@@ -397,6 +405,12 @@ sub format {
              "\n\n" . $self->_format_lists($2, $1) #eg
 	  and next TRY;
 	#print STDERR "step: ",unpack("H*", $part),"\n$part\n";
+	$part =~ s#indent\[([^\]\[]+)\]#\n\n\x02<div class="indent">$1</div>\x03\n\n#ig
+	  and next TRY;
+	$part =~ s#center\[([^\]\[]+)\]#<center>$1</center>#ig
+	  and next TRY;
+	$part =~ s#hrcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#<table width="$1" height="$2" border="0" bgcolor="$3" cellpadding="0" cellspacing="0"><tr><td><img src="/images/trans_pixel.gif" width="1" height="1" alt="" /></td></tr></table>#ig
+	  and next TRY;
 	$part =~ s((?:^|\n+|\G)
                    ( # capture
                      (?: # an item
@@ -408,20 +422,6 @@ sub format {
                      )
                      + # one or more times
                    )(\n|$)?)("\n\n".$self->_format_lists($1)."\n\n")egx
-	  and next TRY;
-	$part =~ s#indent\[([^\]\[]+)\]#\n\n\x02<div class="indent">$1</div>\x03\n\n#ig
-	  and next TRY;
-	$part =~ s#center\[([^\]\[]+)\]#<center>$1</center>#ig
-	  and next TRY;
-	$part =~ s#hrcolor\[([^|\]\[]+)\|([^\]\[]+)\|([^\]\[]+)\]#<table width="$1" height="$2" border="0" bgcolor="$3" cellpadding="0" cellspacing="0"><tr><td><img src="/images/trans_pixel.gif" width="1" height="1" alt="" /></td></tr></table>#ig
-	  and next TRY;
-	$part =~ s#image\[([^\]\[]+)\]# $self->image($1) #ige
-	    and next TRY;
-	$part =~ s#class\[([^\]\[\|]+)\|([^\]\[]+)\]#
-	  $self->_fix_spanned(qq/<span class="$1">/, "</span>", $2)#eig
-	  and next TRY;
-	$part =~ s#style\[([^\]\[\|]+)\|([^\]\[]+)\]#
-	  $self->_fix_spanned(qq/<span style="$1">/, "</span>", $2)#eig
 	  and next TRY;
 	$part =~ s#($block_tags)\[([^\[\]\|]+)\|([^\[\]]+?)\]# $self->_block($self->_tag_with_attrs($1, $2), $3, "</$1>")#eig
 	  and next TRY;
