@@ -18,7 +18,7 @@ use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 use BSE::Template;
 
-our $VERSION = "1.047";
+our $VERSION = "1.048";
 
 =head1 NAME
 
@@ -111,10 +111,7 @@ sub req_cart {
   # my %custom_state = %{$req->session->{custom}};
 
   # $cust_class->enter_cart(\@cart, \@cart_prods, \%custom_state, $req->cfg);
-  $msg = '' unless defined $msg;
-  $msg = escape_html($msg);
-
-  $msg ||= $req->message;
+  $msg = $req->message($msg);
   
   my %acts;
   %acts =
