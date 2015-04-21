@@ -8,7 +8,7 @@ use BSE::TB::ProductOptions;
 use BSE::TB::ProductOptionValues;
 use BSE::TB::PriceTiers;
 
-our $VERSION = "1.008";
+our $VERSION = "1.009";
 
 =head1 NAME
 
@@ -95,7 +95,7 @@ option, separated by the configured C<prodop_value_sep>.
 
 =item *
 
-C<< tier_proce_I<tier_id> >> - set the product price for the specified
+C<< tier_price_I<tier_id> >> - set the product price for the specified
 tier.
 
 =back
