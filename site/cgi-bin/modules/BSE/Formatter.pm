@@ -3,7 +3,7 @@ use strict;
 use BSE::Util::HTML;
 use Carp 'confess';
 
-our $VERSION = "1.011";
+our $VERSION = "1.012";
 
 use base 'DevHelp::Formatter';
 
@@ -175,6 +175,21 @@ sub _get_article {
 
   unless ($art) {
     $$error = "&#42;&#42; Cannot find article id $dispid &#42;&#42;";
+    return;
+  }
+
+  unless ($art->is_linked) {
+    $$error = "&#42;&#42; article $dispid doesn't permit links &#42;&#42;";
+    return;
+  }
+
+  unless ($art->listed) {
+    $$error = "&#42;&#42; article $dispid is not listed &#42;&#42;";
+    return;
+  }
+
+  unless ($art->is_released && !$art->is_expired) {
+    $$error = "&#42;&#42; article $dispid is not released or is expired &#42;&#42;";
     return;
   }
 
