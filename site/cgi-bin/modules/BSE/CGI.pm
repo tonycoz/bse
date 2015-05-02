@@ -2,7 +2,7 @@ package BSE::CGI;
 use strict;
 use Encode;
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub new {
   my ($class, $q, $charset) = @_;
@@ -22,7 +22,8 @@ sub param {
   my @result = $self->{cgi}->param(@args)
     or return;
   for my $value (@result) {
-    $value = decode($self->{charset}, $value);
+    $value = decode($self->{charset}, $value)
+      unless ref $value;
   }
 
   return wantarray && @result > 1 ? @result : $result[0];
