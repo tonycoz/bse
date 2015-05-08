@@ -2,7 +2,7 @@ package Squirrel::Template::Parser;
 use strict;
 use Squirrel::Template::Constants qw(:token :node);
 
-our $VERSION = "1.019";
+our $VERSION = "1.020";
 
 use constant TOK => 0;
 use constant TMPLT => 1;
@@ -446,6 +446,12 @@ sub _parse_ext_wrap {
   my $content = $self->_parse_content;
   my $end = $self->[TOK]->get;
 
+  # put it back before we fail parsing wrap params
+  if ($end->[TOKEN_TYPE] eq 'eof') {
+    $self->[TOK]->unget($end);
+  }
+
+
   # it's not really the filename (yet)
   my $tokens = Squirrel::Template::Expr::Tokenizer->new($wrap->[NODE_WRAP_FILENAME]);
 
@@ -490,10 +496,7 @@ sub _parse_ext_wrap {
       push @errors, $self->_error($end, "Expected '.end' or '.end wrap' for .wrap started $wrap->[TOKEN_FILENAME]:$wrap->[TOKEN_LINE] but found '.end $end->[TOKEN_END_TYPE]'");
     }
   }
-  elsif ($end->[TOKEN_TYPE] eq 'eof') {
-    $self->[TOK]->unget($end);
-  }
-  else {
+  elsif ($end->[TOKEN_TYPE] ne 'eof') {
     $self->[TOK]->unget($end);
     push @errors, $self->_error($end, "Expected '.end', '.end wrap' or eof for .wrap started $wrap->[TOKEN_FILENAME]:$wrap->[TOKEN_LINE] but found $end->[TOKEN_TYPE]");
     $end = $self->_dummy($end, end => "");
