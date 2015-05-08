@@ -1,7 +1,7 @@
 package Squirrel::Template::Expr;
 use strict;
 
-our $VERSION = "1.015";
+our $VERSION = "1.016";
 
 package Squirrel::Template::Expr::Eval;
 use Scalar::Util ();
@@ -776,7 +776,7 @@ sub get {
 	 $self->[TEXT] =~ s!\A(\s*/((?:[^/\\]|\\.)+)/([ismx]*\s)?\s*)!!) {
     push @$queue, [ re => $1, $2, $3 || "" ];
   }
-  elsif ($self->[TEXT] =~ s/\A(\s*(not\b|eq\b|ne\b|le\b|lt\b|ge\b|gt\b|cmp\b|<=>|<=|>=|[!=]\=|\=\~|!~|[_\?:,\[\]\(\)<>=!.*\/+\{\};\$-])\s*)//) {
+  elsif ($self->[TEXT] =~ s/\A(\s*(not\b|eq\b|ne\b|le\b|lt\b|ge\b|gt\b|cmp\b|<=>|<=|>=|[!=]\=|\=\~|!~|[\?:,\[\]\(\)<>=!.*\/+\{\};\$-]|_(?![A-Za-z0-9_]))\s*)//) {
     push @$queue, [ "op$2" => $1 ];
   }
   elsif ($self->[TEXT] =~ s/\A(\s*([A-Za-z_][a-zA-Z_0-9]*)\s*)//) {
