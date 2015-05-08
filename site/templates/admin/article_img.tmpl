@@ -18,7 +18,7 @@
 <:.call "make_arrows", down_url:down_url, up_url: up_url -:>
 <:-.end if -:>
 <:.end define:>
-<:.wrap "admin/base.tmpl", title:"Image Wizard", js:"admin_edit.js" :>
+<:.wrap "admin/basej.tmpl", title:"Image Wizard", js:"admin_jedit.js" :>
 <h1><:.if article.id == -1:>Global<:.else:><:= article_type :><:.end if:> Image Wizard</h1>
 
 <:.call "messages":>
@@ -86,7 +86,7 @@
     <th>Tags</th>
     <td>
       <input type="hidden" name="_save_tags" value="1" />
-      <div id="tags">
+      <div class="tags">
       <:- .set tags = [ cgi.param("tags") ] :>
       <:- .if tags.size == 0 :>
         <:% tags.push("") :>
