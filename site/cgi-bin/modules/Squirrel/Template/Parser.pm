@@ -2,7 +2,7 @@ package Squirrel::Template::Parser;
 use strict;
 use Squirrel::Template::Constants qw(:token :node);
 
-our $VERSION = "1.020";
+our $VERSION = "1.021";
 
 use constant TOK => 0;
 use constant TMPLT => 1;
@@ -451,7 +451,6 @@ sub _parse_ext_wrap {
     $self->[TOK]->unget($end);
   }
 
-
   # it's not really the filename (yet)
   my $tokens = Squirrel::Template::Expr::Tokenizer->new($wrap->[NODE_WRAP_FILENAME]);
 
@@ -464,22 +463,12 @@ sub _parse_ext_wrap {
 
   my @result;
   my $next = $tokens->get;
-  my @args;
+  my $args = [];
   if ($next->[0] eq 'op,') {
     unless (eval {
-      while ($next->[0] eq 'op,') {
-	my $key;
-	my $value;
-	$key = $parser->parse_tokens($tokens);
-	my $colon = $tokens->get;
-	$colon->[0] eq 'op:'
-	  or die [ error => "Expected : but found $colon->[0]" ];
-	$value = $parser->parse_tokens($tokens);
-	push @args, [ $key, $value ];
-	$next = $tokens->get;
-      }
+      $args = $parser->parse_pairs($tokens);
 
-      if ($next->[0] ne 'eof') {
+      if ($tokens->peektype ne 'eof') {
 	die [ error => "Expected , or eof but found $next->[0]" ];
       }
       1;
@@ -503,7 +492,7 @@ sub _parse_ext_wrap {
   }
   $wrap->[NODE_WRAP_CONTENT] = $content;
   $wrap->[NODE_WRAP_FILENAME] = $name_expr;
-  $wrap->[NODE_WRAP_ARGS] = \@args;
+  $wrap->[NODE_WRAP_ARGS] = $args;
   $wrap->[NODE_WRAP_END] = $end;
 
   if (@errors) {
