@@ -135,10 +135,10 @@
 <:.if images.size:><:.if article.id != -1
   and cfg.entry("basic", "auto_images", 1)-:>
 <tr> 
-            <th colspan="5">First Image Position</th>
+            <th colspan="6">First Image Position</th>
           </tr>
 		  <tr> 
-            <td colspan="5"> 
+            <td colspan="6"> 
 <input type="radio" name="imagePos" value="tl" <:= article.imagePos eq "tl" ? "checked " : "":>/>Top Left &nbsp;
 <input type="radio" name="imagePos" value="tr" <:= article.imagePos eq "tr" ? "checked " : "":>/>Top Right &nbsp;
 <input type="radio" name="imagePos" value="bl" <:= article.imagePos eq "bl" ? "checked " : "":>/>Bottom Left &nbsp;
@@ -154,6 +154,7 @@
           <tr> 
             <th>Image</th>
             <th colspan="2"> &nbsp;</th>
+	    <th class="col_tags">Tags</th>
             <th class="col_modify"> Modify</th>
 	    <th class="col_move"> Move</th>
           </tr>
@@ -164,6 +165,20 @@
             <td class="col_field"> 
               <:.if can_save:><input type="text" name="alt<:= image.id:>" value="<:.call "old", field:"alt" _ image.id, default: image.alt :>" size="32" /><:.else:><:= image.alt :><:.end if:>
             </td>
+	    <td class="col_tags" rowspan="5">
+	    <input type="hidden" name="_save_image_tags<:= image.id:>" value="1">
+	    <div class="tags" data-name="tags<:= image.id :>">
+	      <:.if cgi.param("_save_image_tags" _ image.id) -:>
+	        <:.set image_tags = [ cgi.param("tags" _ image.id) ] -:>
+	      <:.else -:>
+	        <:.set image_tags = [ image.tags ] -:>
+	        <:% image_tags.push("") -:>
+	      <:.end if -:>
+	      <:.for tag in image_tags :>
+	      <div class="tag"><input type="text" name="tags<:= image.id :>" value="<:= tag :>"><:.call "error_img_n", field:"tags" _ image.id, index: loop.index :></div>
+	      <:.end for :>
+	    </div>
+	    </td>
             <td class="col_modify" rowspan="5"> 
 <:.if can_delete -:>
   <b><a href="<:= cfg.admin_url("add", { id:article.id, "removeimg_" _ image.id:1, _t:"img", _csrfp: delete_token}):>" onClick="return window.confirm('Are you sure you want to delete this Image')">Delete</a></b>
@@ -248,7 +263,7 @@
 <:.end if:>
 <:.if can_save:>
           <tr> 
-            <td colspan="5" class="buttons"> 
+            <td colspan="6" class="buttons"> 
               <input type="submit" name="process" value="Save changes" />
             </td>
 	  </tr>

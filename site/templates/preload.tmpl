@@ -106,10 +106,11 @@ Page <:= pages.page :> of <:= pages.pagecount :>
 </div>
 <:-.end define -:>
 
-<:.define old -:>
-<:# parameters: field, default -:>
-<:  .if cgi.param(field).defined -:>
-<:= cgi.param(field) -:>
+<:.define old; default: "", index: 0 -:>
+<:# parameters: field, default, index  -:>
+<:  .set vals = [ cgi.param(field) ] -:>
+<:  .if index < vals.size -:>
+<:= vals[index] -:>
 <:  .else -:>
 <:= default | html -:>
 <:  .end if -:>

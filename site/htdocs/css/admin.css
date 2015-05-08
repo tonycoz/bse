@@ -140,6 +140,10 @@ table td {
   background-color: #FFF;
 }
 
+table td.col_tags {
+  vertical-align: top;
+}
+
 table tr.bad td {
   background-color: #FF8080;
 }

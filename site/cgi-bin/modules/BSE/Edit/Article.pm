@@ -16,7 +16,7 @@ use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 use constant ARTICLE_CUSTOM_FIELDS_CFG => "article custom fields";
 
-our $VERSION = "1.056";
+our $VERSION = "1.057";
 
 =head1 NAME
 
@@ -3179,6 +3179,24 @@ sub save_image_changes {
 	if length $image->{name};
     }
 
+    if ($cgi->param("_save_image_tags$image->{id}")) {
+      my @tags = $cgi->param("tags$image->{id}");
+      my @errors;
+      my $index = 0;
+      for my $tag (@tags) {
+	my $error;
+	if ($tag =~ /\S/
+	    && !BSE::TB::Tags->valid_name($tag, \$error)) {
+	  $errors[$index] = "msg:bse/admin/edit/tags/invalid/$error";
+	  $errors{"tags$image->{id}"} = \@errors;
+	}
+	++$index;
+      }
+      unless (@errors) {
+	$changes{$id}{tags} = [ grep /\S/, @tags ];
+      }
+    }
+
     my $filename = $cgi->param("image$id");
     if (defined $filename && length $filename) {
       my $in_fh = $cgi->upload("image$id");
@@ -3260,8 +3278,13 @@ sub save_image_changes {
     if ($changes{$id}) {
       my $changes = $changes{$id};
       ++$changes_found;
-      
+
       for my $field (keys %$changes) {
+	my $tags = delete $changes->{$field};
+	if ($tags) {
+	  my $error;
+	  $image->set_tags($tags, \$error);
+	}
 	$image->{$field} = $changes->{$field};
       }
       $image->save;
