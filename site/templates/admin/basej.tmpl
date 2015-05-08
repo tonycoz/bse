@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="<:= request.language | html -:>">
+  <head>
+    <title><:= params.title :> - BSE</title>
+    <link rel="stylesheet" href="/css/reset.css" type="text/css" />
+    <link rel="stylesheet" href="/css/admin.css" type="text/css" />
+<:.if params.css -:>
+  <link rel="stylesheet" href="/css/<:= params.css :>" type="text/css" />
+<:- .end if:>
+<:ajax jquery:>
+<:.if params.api -:>
+  <script type="text/javascript" src="/js/bse_apij.js"></script>
+<:.end if -:>   
+<:.if params.js -:>
+  <script type="text/javascript" src="/js/<:= params.js:>"></script>
+<:.end if -:>
+  </head>
+  <body<:.if params.bodyid :> id="<:= params.bodyid :>"<:.end if:>>
+<:.if params.showtitle :>
+<h1><:= params.title :></h1>
+<:.end if:>
+<:wrap here:>
+  </body>
+</html>
