@@ -16,7 +16,7 @@ use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 use constant ARTICLE_CUSTOM_FIELDS_CFG => "article custom fields";
 
-our $VERSION = "1.055";
+our $VERSION = "1.056";
 
 =head1 NAME
 
@@ -73,7 +73,8 @@ sub article_dispatch {
   my $action;
   my %actions = $self->article_actions;
   for my $check (keys %actions) {
-    if ($cgi->param($check) || $cgi->param("$check.x")) {
+    if ($cgi->param($check) || $cgi->param("$check.x")
+       || $cgi->param("a_$check") || $cgi->param("a_$check.x")) {
       $action = $check;
       last;
     }
@@ -1241,6 +1242,49 @@ sub _custom_fields {
   return \%active;
 }
 
+=back
+
+=head1 Common Edit Page Tags
+
+Variables:
+
+=over
+
+=item *
+
+C<article> - the article being edited.  This is a dummy article when a
+new article is being created.
+
+=item *
+
+C<isnew> - true if a new article is being created.
+
+=item *
+
+C<custom> - describes custom tags.
+
+=item *
+
+C<errors> - errors from the last submission of the page.
+
+=item *
+
+C<image_stores> - a function returning an array of possible image
+storages.
+
+=item *
+
+C<thumbs> - for the image list, whether thumbs should be displayed
+instead of full size images.
+
+=item *
+
+C<can_thumbs> - true if thumbnails are available.
+
+=back
+
+=cut
+
 sub low_edit_tags {
   my ($self, $acts, $request, $article, $articles, $msg, $errors) = @_;
 
@@ -1295,6 +1339,12 @@ sub low_edit_tags {
   $request->set_variable(errors => $errors || {});
   my $article_type = $cfg->entry('level names', $article->{level}, 'Article');
   $request->set_variable(article_type => $article_type);
+  $request->set_variable(thumbs => defined $thumbs_obj);
+  $request->set_variable(can_thumbs => defined $thumbs_obj_real);
+  $request->set_variable(image_stores =>
+			 sub {
+			   $self->iter_image_stores;
+			 });
 
   return
     (
@@ -2083,6 +2133,8 @@ sub save_new_more {
   my ($self, $req, $article, $data) = @_;
   # nothing to do here
 }
+
+=over
 
 =item save
 
