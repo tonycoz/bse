@@ -6,7 +6,7 @@ use vars qw(@ISA $VERSION);
 use BSE::TB::ArticleFile;
 use Carp qw(confess);
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub rowClass {
   return 'BSE::TB::ArticleFile';
@@ -69,30 +69,6 @@ sub file_manager {
   require BSE::StorageMgr::Files;
 
   return BSE::StorageMgr::Files->new(cfg => $cfg);
-}
-
-sub all_metametadata {
-  my ($self, $cfg) = @_;
-
-  $cfg
-    or confess "Missing cfg parameter";
-
-  require BSE::FileMetaMeta;
-  my @metafields;
-  my @keys = $cfg->orderCS("global file metadata");
-  for my $name (@keys) {
-    my %opts = ( name => $name );
-    my $section = "file metadata $name";
-    for my $key (BSE::FileMetaMeta->keys) {
-      my $value = $cfg->entry($section, $key);
-      if (defined $value) {
-	$opts{$key} = $value;
-      }
-    }
-    push @metafields, BSE::FileMetaMeta->new(%opts, cfg => $cfg);
-  }
-
-  return @metafields;
 }
 
 sub downloads_must_be_paid {

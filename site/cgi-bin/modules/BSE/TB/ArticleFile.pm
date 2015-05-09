@@ -1,12 +1,12 @@
 package BSE::TB::ArticleFile;
 use strict;
 # represents a file associated with an article from the database
-use Squirrel::Row;
-use vars qw/@ISA/;
-@ISA = qw/Squirrel::Row/;
+use base qw(Squirrel::Row BSE::MetaOwnerBase);
 use Carp 'confess';
 
-our $VERSION = "1.011";
+our $VERSION = "1.014";
+
+use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 
 sub columns {
   return qw/id articleId displayName filename sizeInBytes description 
@@ -36,6 +36,90 @@ sub defaults {
      hide_from_list => 0,
      category => '',
      storage => 'local',
+    );
+}
+
+sub fields {
+  my ($self, $cfg) = @_;
+
+  $cfg ||= BSE::Cfg->single;
+
+  return
+    (
+     file =>
+     {
+      htmltype => "file",
+      description => "File",
+      maxlength => MAX_FILE_DISPLAYNAME_LENGTH,
+     },
+     description =>
+     {
+      description => "Description",
+      rules => "dh_one_line",
+      maxlength => 255,
+     },
+     name =>
+     {
+      description => "Identifier",
+      htmltype => "text",
+      width => 20,
+      maxlength => 80,
+     },
+     contentType =>
+     {
+      description => "Content-Type",
+      htmltype => "text",
+      width => 20,
+     },
+     notes =>
+     {
+      description => "Notes",
+      htmltype => "textarea",
+     },
+     forSale =>
+     {
+      description => "Require payment",
+      htmltype => "checkbox",
+     },
+     download =>
+     {
+      description => "Treat as download",
+      htmltype => "checkbox",
+     },
+     requireUser =>
+     {
+      description => "Require login",
+      htmltype => "checkbox",
+     },
+     hide_from_list =>
+     {
+      description => "Hide from list",
+      htmltype => "checkbox",
+     },
+     storage =>
+     {
+      description => "Storage",
+      htmltype => "select",
+      select =>
+      {
+       id => "id",
+       label => "label",
+       values =>
+       [
+	{ id => "", label => "(Auto)" },
+	(
+	 map
+	 +{ id => $_->name, label => $_->description },
+	 BSE::TB::ArticleFiles->file_manager($cfg)->all_stores
+	),
+       ],
+      },
+     },
+     category =>
+     {
+      description => "Category",
+      maxlength => 20,
+     },
     );
 }
 
@@ -106,30 +190,6 @@ sub handler {
   return BSE::TB::ArticleFiles->handler($self->file_handler, $cfg);
 }
 
-sub clear_metadata {
-  my ($self) = @_;
-
-  BSE::DB->run(bseClearArticleFileMetadata => $self->{id});
-}
-
-sub clear_app_metadata {
-  my ($self) = @_;
-
-  BSE::DB->run(bseClearArticleFileAppMetadata => $self->{id});
-}
-
-sub clear_sys_metadata {
-  my ($self) = @_;
-
-  BSE::DB->run(bseClearArticleFileSysMetadata => $self->{id});
-}
-
-sub delete_meta_by_name {
-  my ($self, $name) = @_;
-
-  BSE::DB->run(bseDeleteArticleFileMetaByName => $self->{id}, $name);
-}
-
 sub set_handler {
   my ($self, $cfg) = @_;
 
@@ -163,52 +223,6 @@ sub set_handler {
   $self->set_file_handler("");
   print STDERR "** Ran off the end of ArticleFile->set_handler()\n";
   return;
-}
-
-sub add_meta {
-  my ($self, %opts) = @_;
-
-  require BSE::TB::ArticleFileMetas;
-  return BSE::TB::ArticleFileMetas->make
-      (
-       file_id => $self->{id},
-       %opts,
-      );
-}
-
-sub metadata {
-  my ($self) = @_;
-
-  require BSE::TB::ArticleFileMetas;
-  return  BSE::TB::ArticleFileMetas->getBy
-    (
-     file_id => $self->id
-    );
-}
-
-sub text_metadata {
-  my ($self) = @_;
-
-  require BSE::TB::ArticleFileMetas;
-  return  BSE::TB::ArticleFileMetas->getBy
-    (
-     file_id => $self->id,
-     content_type => "text/plain",
-    );
-}
-
-sub meta_by_name {
-  my ($self, $name) = @_;
-
-  require BSE::TB::ArticleFileMetas;
-  my ($result) = BSE::TB::ArticleFileMetas->getBy
-    (
-     file_id => $self->id,
-     name => $name
-    )
-      or return;
-
-  return $result;
 }
 
 sub inline {
@@ -287,47 +301,15 @@ sub apply_storage {
   }
 }
 
-=item metanames
-
-returns the names of each metadatum defined for the file.
-
-=cut
-
-sub metanames {
-  my ($self) = @_;
-
-  require BSE::TB::ArticleFileMetas;
-  return BSE::TB::ArticleFileMetas->getColumnBy
-    (
-     "name",
-     [ file_id => $self->id ],
-    );
-}
-
-=item metainfo
-
-Returns all but the value for metadata defined for the file.
-
-=cut
-
-sub metainfo {
-  my ($self) = @_;
-
-  require BSE::TB::ArticleFileMetas;
-  my @cols = grep $_ ne "value", BSE::TB::ArticleFileMeta->columns;
-  return BSE::TB::ArticleFileMetas->getColumnsBy
-    (
-     \@cols,
-     [ file_id => $self->id ],
-    );
-}
-
 sub metafields {
   my ($self, $cfg) = @_;
 
+  $cfg ||= BSE::Cfg->single;
+
   my %metanames = map { $_ => 1 } $self->metanames;
 
-  my @fields = grep $metanames{$_->name} || $_->cond($self), BSE::TB::ArticleFiles->all_metametadata($cfg);
+  require BSE::FileMetaMeta;
+  my @fields = grep $metanames{$_->name} || $_->cond($self), BSE::FileMetaMeta->all_metametadata($cfg);
 
   my $handler = $self->handler($cfg);
 
@@ -520,7 +502,25 @@ sub update {
       push @$warnings, "msg:bse/admin/edit/file/save/delfromstore:$msg";
     };
   }
+}
 
+sub meta_owner_type {
+  'bse_file';
+}
+
+sub meta_meta_cfg_section {
+  "global file metadata";
+}
+
+sub meta_meta_cfg_prefix {
+  "file metadata";
+}
+
+sub restricted_method {
+  my ($self, $name) = @_;
+
+  return $self->Squirrel::Row::restricted_method($name)
+    || $self->BSE::MetaOwnerBase::restricted_method($name);
 }
 
 1;

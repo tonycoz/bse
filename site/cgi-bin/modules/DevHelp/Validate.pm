@@ -6,7 +6,7 @@ use vars qw(@EXPORT_OK @ISA);
 @ISA = qw(Exporter);
 use Carp qw(confess);
 
-our $VERSION = "1.007";
+our $VERSION = "1.009";
 
 my $re_real =
   qr/
@@ -158,6 +158,10 @@ my %built_ins =
    {
     nomatch => qr/[\x0D\x0A]/,
     error => '$n may only contain a single line',
+   },
+   real =>
+   {
+    real => 1,
    },
    time =>
    {
@@ -589,6 +593,85 @@ sub validate_field {
 	  }
 	}
       }
+      if ($rule->{file} || $rule->{image}) {
+	my $fh = $self->upload($field);
+	if ($fh) {
+	  my $size = -s $fh;
+	  if ($rule->{maxsize} && $size > _kb($rule->{maxbytes})) {
+	    $errors->{$field} = _make_error($field, $info, $rule,
+					    $info->{maxbytes_error} ||
+					    $rule->{maxbytes_error} ||
+					    "\$n must be smaller than $rule->{maxsize}");
+	    last RULE;
+	  }
+	  elsif ($rule->{minsize} && $size < _kb($rule->{minsize})) {
+	    $errors->{$field} = _make_error($field, $info, $rule,
+					    $info->{minbytes_error} ||
+					    $rule->{minbytes_error} ||
+					    "\$n must be larger than than $rule->{maxsize}");
+	    last RULE;
+	  }
+	}
+	else {
+	  $errors->{$field} = _make_error($field, $info, $rule,
+					  $info->{nofile_error} ||
+					  $rule->{nofile_error},
+					  "\$n isn't a file");
+	  last RULE;
+	}
+      }
+      if ($rule->{image}) {
+	my $fh = $self->upload($field);
+	require Image::Size;
+	my ($width, $height, $type) = Image::Size::imgsize($fh->handle);
+	if (!defined $width) {
+	  $errors->{$field} =
+	    _make_error($field, $info, $rule,
+			$info->{notimage_error} || $rule->{notimage_error} ||
+			"\$n isn't an image file");
+	  last RULE;
+	}
+	elsif ($rule->{imagetype} &&
+	       $rule->{imagetype} !~ /\b\Q$type\E\b/i) {
+	  $errors->{$field} =
+	    _make_error($field, $info, $rule,
+			$info->{imagetype_error} || $rule->{imagetype_error} ||
+			"\$n isn't a supported image format");
+	  last RULE;
+	}
+	elsif ($rule->{minwidth} &&
+	       $rule->{minwidth} > $width) {
+	  $errors->{$field} =
+	    _make_error($field, $info, $rule,
+			$info->{minwidth_error} || $rule->{minwidth_error} ||
+			"\$n must be at least $rule->{minwidth} pixels wide");
+	  last RULE;
+	}
+	elsif ($rule->{minheight} &&
+	       $rule->{minheight} > $height) {
+	  $errors->{$field} =
+	    _make_error($field, $info, $rule,
+			$info->{minheight_error} || $rule->{minheight_error} ||
+			"\$n must be at least $rule->{minwidth} pixels high");
+	  last RULE;
+	}
+	elsif ($rule->{maxwidth} &&
+	       $rule->{maxwidth} < $width) {
+	  $errors->{$field} =
+	    _make_error($field, $info, $rule,
+			$info->{maxwidth_error} || $rule->{maxwidth_error} ||
+			"\$n must be no more than $rule->{maxwidth} pixels wide");
+	  last RULE;
+	}
+	elsif ($rule->{maxheight} &&
+	       $rule->{maxheight} < $height) {
+	  $errors->{$field} =
+	    _make_error($field, $info, $rule,
+			$info->{maxheight_error} || $rule->{maxheight_error} ||
+			"\$n must be no more than $rule->{maxwidth} pixels high");
+	  last RULE;
+	}
+      }
       if ($rule->{ref}) {
 	my $method = $rule->{method}
 	  or confess "Missing method in ref rule $rule_name";
@@ -839,6 +922,12 @@ sub param {
   $self->{cgi}->param($field);
 }
 
+sub upload {
+  my ($self, $field) = @_;
+
+  $self->{cgi}->upload($field);
+}
+
 sub validate {
   my ($self, $cgi, $errors) = @_;
   
@@ -863,6 +952,10 @@ sub param {
   }
 
   return $value;
+}
+
+sub upload {
+  return;
 }
 
 sub validate {

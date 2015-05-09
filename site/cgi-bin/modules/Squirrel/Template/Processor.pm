@@ -171,6 +171,12 @@ sub _process_define {
   return;
 }
 
+sub _expr_died {
+  my ($self, $node, $die, $ctx) = @_;
+
+  return $node->[NODE_ORIG];
+}
+
 sub _process_call {
   my ($self, $node) = @_;
 
@@ -205,7 +211,9 @@ sub _process_call {
 	  my ($name_expr, $value_expr)= @$entry;
 	  my $name = $self->[EVAL]->process($name_expr);
 	  unless (exists $args{$name}) {
-	    my $value = $self->[EVAL]->process($value_expr);
+	    my $value;
+	    eval { $value = $self->[EVAL]->process($value_expr); 1 }
+	      or return $self->_expr_died($node, $@, $ctx . " value for $name");
 	    $self->[TMPLT]->set_var($name, $value);
 	  }
 	}

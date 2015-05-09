@@ -5,11 +5,13 @@ use Squirrel::Row;
 use BSE::TB::SiteCommon;
 use BSE::TB::TagOwner;
 use BSE::FormatterBase;
+use BSE::MetaOwnerBase;
 use vars qw/@ISA/;
-@ISA = qw/Squirrel::Row BSE::TB::SiteCommon BSE::TB::TagOwner BSE::FormatterBase/;
+@ISA = qw/Squirrel::Row BSE::TB::SiteCommon BSE::TB::TagOwner BSE::FormatterBase BSE::MetaOwnerBase/;
+
 use Carp 'confess';
 
-our $VERSION = "1.028";
+our $VERSION = "1.029";
 
 =head1 NAME
 
@@ -752,6 +754,32 @@ sub others_indexed_as_myself {
 
   return grep $_->should_index, @kids, map($_->others_indexed_as_myself, @kids);
 }
+
+sub meta_owner_type {
+  'bse_article';
+}
+
+sub meta_meta_cfg_section {
+  "global article metadata";
+}
+
+sub meta_meta_cfg_prefix {
+  "article metadata";
+}
+
+sub metafields {
+  my ($self, $cfg) = @_;
+
+  $cfg ||= BSE::Cfg->single;
+
+  my %metanames = map { $_ => 1 } $self->metanames;
+
+  require BSE::ArticleMetaMeta;
+  my @fields = grep $metanames{$_->name} || $_->cond($self), BSE::ArticleMetaMeta->all_metametadata($cfg);
+
+  return ( @fields );
+}
+
 
 sub restricted_method {
   my ($self, $name) = @_;

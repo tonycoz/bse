@@ -5,7 +5,7 @@ use BSE::Cfg;
 use BSE::Util::HTML;
 use Carp qw(cluck confess);
 
-our $VERSION = "1.030";
+our $VERSION = "1.032";
 
 =head1 NAME
 
@@ -1780,7 +1780,14 @@ sub cgi_fields {
     $field->{readonly}
       and next FIELD;
     my $value;
-    if ($field->{htmltype} eq "checkbox") {
+    if ($field->{htmltype} eq "file") {
+      my $fh = $cgi->upload($name);
+      my $filename = $cgi->param($name);
+      if ($fh) {
+	$value = { fh => $fh, filename => "".$filename };
+      }
+    }
+    elsif ($field->{htmltype} eq "checkbox") {
       if ($field->{type} eq "int") {
 	$value = $cgi->param($name) ? 1 : 0;
       }
@@ -1795,8 +1802,9 @@ sub cgi_fields {
       ($value) = $cgi->param($name);
       require DevHelp::Date;
       my $msg;
-      my ($year, $month, $day) = DevHelp::Date::dh_parse_date($value, \$msg);
-      $value = sprintf("%04d-%02d-%02d", $year, $month, $day);
+      if (my ($year, $month, $day) = DevHelp::Date::dh_parse_date($value, \$msg)) {
+	$value = sprintf("%04d-%02d-%02d", $year, $month, $day);
+      }
     }
     elsif ($field->{type} && $field->{type} eq "time" && !$opts{api}) {
       ($value) = $cgi->param($name);

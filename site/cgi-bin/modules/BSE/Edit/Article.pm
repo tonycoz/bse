@@ -16,7 +16,7 @@ use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 use constant ARTICLE_CUSTOM_FIELDS_CFG => "article custom fields";
 
-our $VERSION = "1.049";
+our $VERSION = "1.054";
 
 =head1 NAME
 
@@ -1293,6 +1293,8 @@ sub low_edit_tags {
   # only return the fields that are defined
   $request->set_variable(custom => $custom);
   $request->set_variable(errors => $errors || {});
+  my $article_type = $cfg->entry('level names', $article->{level}, 'Article');
+  $request->set_variable(article_type => $article_type);
 
   return
     (
@@ -1300,7 +1302,7 @@ sub low_edit_tags {
      article => sub { tag_article($article, $cfg, $_[0]) },
      old => [ \&tag_old, $article, $cgi ],
      default => [ \&tag_default, $self, $request, $article ],
-     articleType => [ \&tag_art_type, $article->{level}, $cfg ],
+     articleType => escape_html($article_type),
      parentType => [ \&tag_art_type, $article->{level}-1, $cfg ],
      ifNew => [ \&tag_if_new, $article ],
      list => [ \&tag_list, $self, $article, $articles, $cgi, $request ],
@@ -1557,7 +1559,14 @@ sub _dummy_article {
     return;
   }
 
-  return \%article;
+  return $self->_make_dummy_article(\%article);
+}
+
+sub _make_dummy_article {
+  my ($self, $article) = @_;
+
+  require BSE::DummyArticle;
+  return bless $article, "BSE::DummyArticle";
 }
 
 sub add_form {
@@ -1813,6 +1822,12 @@ sub save_new {
     $self->_validate_tags(\@tags, \%errors);
   }
 
+  my $meta;
+  if ($cgi->param("_save_meta")) {
+    require BSE::ArticleMetaMeta;
+    $meta = BSE::ArticleMetaMeta->retrieve($req, $article, \%errors);
+  }
+
   if (keys %errors) {
     if ($req->is_ajax) {
       return $req->json_content
@@ -1964,6 +1979,10 @@ sub save_new {
   if ($save_tags) {
     my $error;
     $article->set_tags([ grep /\S/, @tags ], \$error);
+  }
+
+  if ($meta) {
+    BSE::ArticleMetaMeta->save($article, $meta);
   }
 
   generate_article($articles, $article) if $Constants::AUTO_GENERATE;
@@ -2134,6 +2153,12 @@ sub save {
     $errors{template} = "Please only select templates from the list provided";
   }
 
+  my $meta;
+  if ($cgi->param("_save_meta")) {
+    require BSE::ArticleMetaMeta;
+    $meta = BSE::ArticleMetaMeta->retrieve($req, $article, \%errors);
+  }
+
   my $save_tags = $cgi->param("_save_tags");
   my @tags;
   if ($save_tags) {
@@ -2241,6 +2266,12 @@ sub save {
   if ($save_tags) {
     my $error;
     $article->set_tags([ grep /\S/, @tags ], \$error);
+  }
+
+use Data::Dumper;
+print STDERR Dumper($meta);
+  if ($meta) {
+    BSE::ArticleMetaMeta->save($article, $meta);
   }
 
   # fix the kids too
@@ -4634,6 +4665,9 @@ sub req_edit_file {
 
   my @metafields = $file->metafields($self->cfg);
 
+  $req->set_variable(file => $file);
+  $req->set_variable(fields => { BSE::TB::ArticleFile->fields });
+
   my $it = BSE::Util::Iterate->new;
   my $current_meta;
   my %acts;
@@ -4721,71 +4755,8 @@ sub req_save_file {
     }
   }
 
-  my @meta;
-  my @meta_delete;
-  my @metafields = grep !$_->ro, $file->metafields($self->cfg);
-  my %current_meta = map { $_ => 1 } $file->metanames;
-  for my $meta (@metafields) {
-    my $name = $meta->name;
-    my $cgi_name = "meta_$name";
-    if ($cgi->param("delete_$cgi_name")) {
-      for my $metaname ($meta->metanames) {
-	push @meta_delete, $metaname
-	  if $current_meta{$metaname};
-      }
-    }
-    else {
-      my $new;
-      if ($meta->is_text) {
-	my ($value) = $cgi->param($cgi_name);
-	if (defined $value && 
-	    ($value =~ /\S/ || $current_meta{$meta->name})) {
-	  my $error;
-	  if ($meta->validate(value => $value, error => \$error)) {
-	    push @meta,
-	      {
-	       name => $name,
-	       value => $value,
-	      };
-	  }
-	  else {
-	    $errors{$cgi_name} = $error;
-	  }
-	}
-      }
-      else {
-	my $im = $cgi->param($cgi_name);
-	my $up = $cgi->upload($cgi_name);
-	if (defined $im && $up) {
-	  my $data = do { local $/; <$up> };
-	  my ($width, $height, $type) =
-	    BSE::ImageSize::imgsize(\$data);
-
-	  if ($width && $height) {
-	    push @meta,
-	      (
-	       {
-		name => $meta->data_name,
-		value => $data,
-		content_type => "image/\L$type",
-	       },
-	       {
-		name => $meta->width_name,
-		value => $width,
-	       },
-	       {
-		name => $meta->height_name,
-		value => $height,
-	       },
-	      );
-	  }
-	  else {
-	    $errors{$cgi_name} = $type;
-	  }
-	}
-      }
-    }
-  }
+  require BSE::FileMetaMeta;
+  my $meta = BSE::FileMetaMeta->retrieve($req, $file, \%errors);
 
   if ($cgi->param('save_file_flags')) {
     my $download = 0 + defined $cgi->param("download");
@@ -4877,12 +4848,7 @@ sub req_save_file {
       and $req->flash("Could not move $file->{displayName} to $storage: $@");
   }
 
-  for my $meta_delete (@meta_delete, map $_->{name}, @meta) {
-    $file->delete_meta_by_name($meta_delete);
-  }
-  for my $meta (@meta) {
-    $file->add_meta(%$meta, appdata => 1);
-  }
+  BSE::FileMetaMeta->save($file, $meta);
 
   # remove the replaced files
   if (my ($old_name, $old_storage) = @old_file) {

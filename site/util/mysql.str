@@ -125,8 +125,9 @@ Column name;varchar(20);NO;NULL;
 Column content_type;varchar(80);NO;text/plain;
 Column value;longblob;NO;NULL;
 Column appdata;int(11);NO;0;
+Column owner_type;varchar(20);NO;bse_file;
 Index PRIMARY;1;[id]
-Index file_name;1;[file_id;name]
+Index file_name;1;[file_id;owner_type;name]
 Table bse_article_groups
 Engine InnoDB
 Column article_id;int(11);NO;NULL;

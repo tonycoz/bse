@@ -18,138 +18,49 @@
 <input type="hidden" name="_t" value="file" />
 <input type="hidden" name="save_file_flags" value="1" />
 <:csrfp admin_save_file hidden:>
-        <table class="editform editformsmall" id="filelist">
-          <tr> 
-            <th align="left">Replacement file:</th>
-            <td> 
-              <:efile displayName:><:ifEfile file_exists:><:or:><br /><span class="alert">This file is missing!</span><:eif:><br /><input type="file" name="file" size="40" /><br />Choose a file to replace the current file or leave blank to keep the current file.
-            </td>
-            <td class="help"><:help file file:> <:error_img file:></td>
-          </tr>
-          <tr> 
-            <th align="left">Description:</th>
-            <td> 
-              <input type="text" name="description" value="<:old description efile description:>" size="60"/>
-            </td>
-            <td class="help"><:help file description:> <:error_img description:></td>
-          </tr>
-          <tr> 
-            <th align="left">Notes:</th>
-            <td> 
-              <textarea name="notes" rows="10" cols="60"><:old notes efile notes:></textarea>
-            </td>
-            <td class="help"><:help file notes:> <:error_img notes:></td>
-          </tr>
-          <tr> 
-            <th align="left">Content-Type:</th>
-            <td> 
-              <input type="text" name="contentType" value="<:old contentType efile contentType:>" size="40" />
-            </td>
-            <td class="help"><:help file content_type:> <:error_img contentType:></td>
-          </tr>
-          <tr> 
-            <th align="left">Identifier:</th>
-            <td> 
-              <input type="text" name="name" value="<:old name efile name:>" /> </td>
-            <td class="help"><:help file name:> <:error_img name:></td>
-          </tr>
-          <tr> 
-            <th align="left">Treat as download:</th>
-            <td> 
-              <input type="checkbox" name="download" value="1" <:ifOldChecked download:>checked="checked"<:or:><:eif:> />
-            </td>
-            <td class="help"><:help file download:> <:error_img download:></td>
-          </tr>
-          <tr> 
-            <th align="left">Require payment:</th>
-            <td> 
-              <input type="checkbox" name="forSale" value="1" <:ifOldChecked forSale:>checked="checked"<:or:><:eif:> />
-            </td>
-            <td class="help"><:help file forSale:> <:error_img forSale:></td>
-          </tr>
-          <tr> 
-            <th align="left">Require login:</th>
-            <td> 
-              <input type="checkbox" name="requireUser" value="1"  <:ifOldChecked requireUser:>checked="checked"<:or:><:eif:>/>
-            </td>
-            <td class="help"><:help file requireUser:> <:error_img requireUser:></td>
-          </tr>
-          <tr> 
-            <th align="left">Hide from list:</th>
-            <td> 
-              <input type="checkbox" name="hide_from_list" value="1"  <:ifOldChecked hide_from_list:>checked="checked"<:or:><:eif:>/>
-            </td>
-            <td class="help"><:help file hide_from_list:> <:error_img hide_from_list:></td>
-          </tr>
-          <tr> 
-            <th align="left">Storage:</th>
-            <td> 
-<select name="storage">
-<option value="">(Auto)</option>
-<:iterator begin file_stores:>
-<option value="<:file_store name:>" <:ifEq [efile storage] [file_store name]:>selected="selected"<:or:><:eif:>><:file_store description:></option>
-<:iterator end file_stores:>
-</select>
-            </td>
-            <td class="help"><:help file hide_from_list:> <:error_img hide_from_list:></td>
-          </tr>
-<:if Filemetas:>
-<tr>
-  <th colspan="3">File metadata</th>
-</tr>
-<:iterator begin filemetas:>
-<tr>
-  <th><:filemeta title:></th>
-  <td>
-<:if Filemeta ro:>
-<:switch:>
-<:case Match [filemeta type] "^(integer|string|real)$" |x:>
-<:filemeta_value [filemeta name] :> <:filemeta unit:>
-<:case Eq [filemeta type] "text":>
-<textarea name="meta_<:filemeta name:>" class="meta_text_ro"><:filemeta_value [filemeta name]:></textarea>
-<:case Eq [filemeta type] "enum":>
-<:filemeta_select_label:> <:filemeta unit:>
-<:case Eq [filemeta type] "image":>
-<:ifFilemeta_set [filemeta data_name]:><div class="file_display_trigger">Show
-<div class="file_display"><img src="<:filemeta_source [filemeta data_name]:>" width="<:filemeta_value [filemeta width_name]:>" height="<:filemeta_value [filemeta height_name]:>" /></div></div><:or:>(No image set)<:eif:>
-<:case default:>
-Unknown metadata type <:filemeta type:>
-<:endswitch:>
-<:or Filemeta:>
-<:switch:>
-<:case Match [filemeta type] "^(integer|string|real)$" |x:>
-<input type="text" name="meta_<:filemeta name:>" value="<:filemeta_value [filemeta name] :>" class="meta_<:filemeta type:>" /> <:filemeta unit:>
-<:case Eq [filemeta type] "text":>
-<textarea name="meta_<:filemeta name:>" class="meta_text"><:filemeta_value [filemeta name]:></textarea>
-<:case Eq [filemeta type] "enum":>
-<:filemeta_select:> <:filemeta unit:>
-<:case Eq [filemeta type] "image":>
-<input type="file" name="meta_<:filemeta name:>" />
-<:ifFilemeta_set [filemeta data_name]:><div class="file_display_trigger">Show
-<div class="file_display"><img src="<:filemeta_source [filemeta data_name]:>" width="<:filemeta_value [filemeta width_name]:>" height="<:filemeta_value [filemeta height_name]:>" /></div></div>
-<input type="checkbox" name="delete_meta_<:filemeta name:>" value="1" />&nbsp;Delete
-<:or:>(No image set)<:eif:>
-<:case default:>
-Unknown metadata type <:filemeta type:>
-<:endswitch:>
-<:if Match [filemeta type] "image":><:or Match:>
-<:ifFilemeta_set [filemeta name]:><input type="checkbox" name="delete_meta_<:filemeta name:>" value="1" />&nbsp;Delete<:or:><:eif:>
-<:eif Match:>
-<:eif Filemeta:>
-  </td>
-  <td class="help">
-<:if Filemeta help:>
-<div class="help_display_trigger"><img src="/images/admin/help.gif" alt="help" />
-<div class="help_display"><:filemeta help |z:></div></div>
-<:or Filemeta:><:eif Filemeta:>
-  </td>
-</tr>
-<:iterator end filemetas:>
-<:or Filemetas:><:eif Filemetas:>
-          <tr> 
-            <td colspan="3" align="right"> 
+<:.set object = file -:>
+<fieldset>
+  <legend>File Details</legend>
+<:.call "field", name:"file",
+   options: {
+     default: file.displayName,
+     note: "Choose a file to replace the current file or leave blank to keep the current file."
+   } :>
+<:.call "field", name:"description" :>
+<:.call "field", name:"notes" :>
+<:.call "field", name:"contentType" :>
+<:.call "field", name:"name" :>
+<:.call "field", name:"download" :>
+<:.call "field", name:"forSale" :>
+<:.call "field", name:"requireUser" :>
+<:.call "field", name:"hide_from_list" :>
+<:.call "field", name:"storage" :>
+</fieldset>
+<:.set metas = [ file.metafields ] :>
+<:.if metas.size :>
+<fieldset>
+  <legend>File metadata</legend>
+
+<:  .for m in metas -:>
+<:#= bse.dumper(m) |raw :>
+<:    .set name = "meta_" _ m.name -:>
+<:    .set mdata = file.meta_by_name(m.name) -:>
+<:    .if m.type eq 'image' -:>
+<:      .set def = file.meta_by_name(m.display_name) -:>
+<:      .set def = def ? def.value_text : "" -:>
+<:    .else -:>
+<:      .set def = mdata ? mdata.value_text : "" -:>
+<:    .end if -:>
+<:    .if m.ro -:>
+<:      .call "inlinefieldro", name: name, field: m.field,
+	        options: { default: def } -:>
+<:    .else -:>
+<:      .call "inlinefield", name: name, field: m.field, 
+                options: { delete: 1, default: def } -:>
+<:    .end if :>
+<:  .end for -:>
+</fieldset>
+  <p class="buttons">
               <input type="submit" name="a_save_file" value="Save File" />
-            </td>
-          </tr>
-        </table>
+  </p>
 </form>

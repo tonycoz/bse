@@ -65,6 +65,7 @@ site/cgi-bin/modules/BSE/AdminSiteUsers.pm
 site/cgi-bin/modules/BSE/AdminUsers.pm
 site/cgi-bin/modules/BSE/API.pm
 site/cgi-bin/modules/BSE/Arrows.pm
+site/cgi-bin/modules/BSE/ArticleMetaMeta.pm
 site/cgi-bin/modules/BSE/Cache.pm
 site/cgi-bin/modules/BSE/Cache/Cache.pm
 site/cgi-bin/modules/BSE/Cache/CHI.pm
@@ -82,6 +83,7 @@ site/cgi-bin/modules/BSE/CustomBase.pm
 site/cgi-bin/modules/BSE/DB.pm
 site/cgi-bin/modules/BSE/DB/Mysql.pm
 site/cgi-bin/modules/BSE/DummyArticle.pm
+site/cgi-bin/modules/BSE/DummyProduct.pm
 site/cgi-bin/modules/BSE/Dynamic/Article.pm
 site/cgi-bin/modules/BSE/Dynamic/Catalog.pm
 site/cgi-bin/modules/BSE/Dynamic/Product.pm
@@ -133,6 +135,8 @@ site/cgi-bin/modules/BSE/Mail/Sendmail.pm
 site/cgi-bin/modules/BSE/Mail/SMTP.pm
 site/cgi-bin/modules/BSE/Message.pm
 site/cgi-bin/modules/BSE/MessageScanner.pm
+site/cgi-bin/modules/BSE/MetaMeta.pm
+site/cgi-bin/modules/BSE/MetaOwnerBase.pm
 site/cgi-bin/modules/BSE/NLFilter/SQL.pm
 site/cgi-bin/modules/BSE/NotifyFiles.pm
 site/cgi-bin/modules/BSE/Password.pod
@@ -187,8 +191,6 @@ site/cgi-bin/modules/BSE/TB/AdminUser.pm
 site/cgi-bin/modules/BSE/TB/AdminUsers.pm
 site/cgi-bin/modules/BSE/TB/Article.pm
 site/cgi-bin/modules/BSE/TB/ArticleFile.pm
-site/cgi-bin/modules/BSE/TB/ArticleFileMeta.pm
-site/cgi-bin/modules/BSE/TB/ArticleFileMetas.pm
 site/cgi-bin/modules/BSE/TB/ArticleFiles.pm
 site/cgi-bin/modules/BSE/TB/Articles.pm
 site/cgi-bin/modules/BSE/TB/AuditEntry.pm
@@ -209,6 +211,8 @@ site/cgi-bin/modules/BSE/TB/IPLockout.pm
 site/cgi-bin/modules/BSE/TB/IPLockouts.pm
 site/cgi-bin/modules/BSE/TB/Location.pm
 site/cgi-bin/modules/BSE/TB/Locations.pm
+site/cgi-bin/modules/BSE/TB/Metadata.pm
+site/cgi-bin/modules/BSE/TB/MetaEntry.pm
 site/cgi-bin/modules/BSE/TB/Order.pm
 site/cgi-bin/modules/BSE/TB/OrderItem.pm
 site/cgi-bin/modules/BSE/TB/OrderItemOption.pm
@@ -603,6 +607,7 @@ site/templates/admin/include/article_menu.tmpl
 site/templates/admin/include/auditentry.tmpl
 site/templates/admin/include/audithead.tmpl
 site/templates/admin/include/edit_common.tmpl
+site/templates/admin/include/edit_metadata.tmpl
 site/templates/admin/include/message.tmpl
 site/templates/admin/include/oauditlog.tmpl
 site/templates/admin/include/order_list_filter.tmpl
