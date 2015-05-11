@@ -16,7 +16,7 @@ use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 use constant ARTICLE_CUSTOM_FIELDS_CFG => "article custom fields";
 
-our $VERSION = "1.054";
+our $VERSION = "1.055";
 
 =head1 NAME
 
@@ -3380,11 +3380,8 @@ sub _validate_image {
   }
   my $imagename = $filename;
   $imagename .= ''; # force it into a string
-  my $basename = '';
-  $imagename =~ tr/ //d;
-  $imagename =~ /([\w.-]+)$/ and $basename = $1;
+  (my $basename = $imagename) =~ tr/A-Za-z0-9_./-/cs;
 
-  # for OSs with special text line endings
   require BSE::ImageSize;
 
   my ($width,$height, $type) = BSE::ImageSize::imgsize($fh);

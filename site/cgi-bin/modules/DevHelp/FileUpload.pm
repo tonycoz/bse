@@ -3,11 +3,11 @@ use strict;
 use IO::File;
 use File::Copy;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 =head1 NAME
 
-  DevHelp::FileUpload - tools to maintain a file upload directory
+DevHelp::FileUpload - tools to maintain a file upload directory
 
 =head1 SYNOPSIS
 
@@ -84,8 +84,7 @@ sub make_fh_copy {
 sub make_img_filename {
   my ($class, $imgdir, $name, $rmsg) = @_;
 
-  my $basename = '';
-  $name =~ /([\w.-]+)$/ and $basename = $1;
+  (my $basename = $name) =~ tr/A-Za-z0-9_./-/cs;
 
   if (length $basename > 60) {
     $basename = substr($basename, -60);
