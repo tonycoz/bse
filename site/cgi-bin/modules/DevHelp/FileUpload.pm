@@ -3,7 +3,7 @@ use strict;
 use IO::File;
 use File::Copy;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 =head1 NAME
 
@@ -85,6 +85,8 @@ sub make_img_filename {
   my ($class, $imgdir, $name, $rmsg) = @_;
 
   (my $basename = $name) =~ tr/A-Za-z0-9_./-/cs;
+  $basename =~ s/-\B//g;
+  $basename =~ s/\B-//g;
 
   if (length $basename > 60) {
     $basename = substr($basename, -60);
