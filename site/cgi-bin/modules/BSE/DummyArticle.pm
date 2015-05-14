@@ -3,11 +3,9 @@ use strict;
 use base 'BSE::TB::SiteCommon';
 use base 'BSE::FormatterBase';
 use BSE::TB::Articles;
-use BSE::MetaOwnerBase;
+use base 'BSE::MetaOwnerBase';
 
-our @ISA = qw(BSE::MetaOwnerBase);
-
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 sub images {
   return;
