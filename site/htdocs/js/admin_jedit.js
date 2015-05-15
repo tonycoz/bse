@@ -1,40 +1,43 @@
 (function($) {
     $(function() {
+	'use strict';
+	$.Mustache.options.warnOnMissingTemplates = true;
+	$.Mustache.addFromDom();
 	$(".tag").each(function() {
 	    var closed = this;
 	    var input = $("input", this);
-	    var del = $("<a/>", { href: "#" });
-	    del.text("Delete");
-	    del.click(function () {
+	    var del = $($.Mustache.render("del_link", { }));
+	    var del_click = $(".tag_delete_click", del);
+	    if (del_click.length == 0)
+		del_click = del;
+	    del_click.click(function () {
 		closed.remove();
-		return true;
+		return false;
 	    });
-	    $(this).append(del);
+	    input.after(del);
 	});
 	$(".tags").each(function() {
 	    var tags = $(this);
 	    var fname = this.dataset["name"];
 	    if (!fname)
 		fname = "tag";
-	    var add_div = $("<div/>", { "class": "tag_add" });
-	    var add_a = $("<a/>", { href: "#" });
-	    add_div.append(add_a);
-	    add_a.text("Add");
+	    var add_div = $($.Mustache.render("add_link", {
+		fname: fname
+	    }));
+	    var add_a = $(".tag_add_click", add_div);
 	    add_a.click(function() {
-		var inp = $("<input/>",
-			   { type: "text",
-			     name: fname });
-		var div = $("<div/>", { "class": "tag" });
-		div.append(inp);
-		var del = $("<a/>", { href: "#" });
-		div.append(del);
-		del.text("Delete");
+		var div_text = $.Mustache.render("tag_field", {
+		    fname: fname
+		});
+		var div = $(div_text);
+		var del = $(".tag_delete_click", div);
 		del.click(function() {
 		    div.remove();
-		    return true;
+		    return false;
 		});
 		add_div.before(div);
-		return true;
+
+		return false;
 	    });
 	    tags.append(add_div);
 	});
