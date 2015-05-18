@@ -16,7 +16,7 @@ use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 use constant ARTICLE_CUSTOM_FIELDS_CFG => "article custom fields";
 
-our $VERSION = "1.055";
+our $VERSION = "1.057";
 
 =head1 NAME
 
@@ -73,7 +73,8 @@ sub article_dispatch {
   my $action;
   my %actions = $self->article_actions;
   for my $check (keys %actions) {
-    if ($cgi->param($check) || $cgi->param("$check.x")) {
+    if ($cgi->param($check) || $cgi->param("$check.x")
+       || $cgi->param("a_$check") || $cgi->param("a_$check.x")) {
       $action = $check;
       last;
     }
@@ -1241,6 +1242,49 @@ sub _custom_fields {
   return \%active;
 }
 
+=back
+
+=head1 Common Edit Page Tags
+
+Variables:
+
+=over
+
+=item *
+
+C<article> - the article being edited.  This is a dummy article when a
+new article is being created.
+
+=item *
+
+C<isnew> - true if a new article is being created.
+
+=item *
+
+C<custom> - describes custom tags.
+
+=item *
+
+C<errors> - errors from the last submission of the page.
+
+=item *
+
+C<image_stores> - a function returning an array of possible image
+storages.
+
+=item *
+
+C<thumbs> - for the image list, whether thumbs should be displayed
+instead of full size images.
+
+=item *
+
+C<can_thumbs> - true if thumbnails are available.
+
+=back
+
+=cut
+
 sub low_edit_tags {
   my ($self, $acts, $request, $article, $articles, $msg, $errors) = @_;
 
@@ -1295,6 +1339,12 @@ sub low_edit_tags {
   $request->set_variable(errors => $errors || {});
   my $article_type = $cfg->entry('level names', $article->{level}, 'Article');
   $request->set_variable(article_type => $article_type);
+  $request->set_variable(thumbs => defined $thumbs_obj);
+  $request->set_variable(can_thumbs => defined $thumbs_obj_real);
+  $request->set_variable(image_stores =>
+			 sub {
+			   $self->iter_image_stores;
+			 });
 
   return
     (
@@ -2083,6 +2133,8 @@ sub save_new_more {
   my ($self, $req, $article, $data) = @_;
   # nothing to do here
 }
+
+=over
 
 =item save
 
@@ -3127,6 +3179,24 @@ sub save_image_changes {
 	if length $image->{name};
     }
 
+    if ($cgi->param("_save_image_tags$image->{id}")) {
+      my @tags = $cgi->param("tags$image->{id}");
+      my @errors;
+      my $index = 0;
+      for my $tag (@tags) {
+	my $error;
+	if ($tag =~ /\S/
+	    && !BSE::TB::Tags->valid_name($tag, \$error)) {
+	  $errors[$index] = "msg:bse/admin/edit/tags/invalid/$error";
+	  $errors{"tags$image->{id}"} = \@errors;
+	}
+	++$index;
+      }
+      unless (@errors) {
+	$changes{$id}{tags} = [ grep /\S/, @tags ];
+      }
+    }
+
     my $filename = $cgi->param("image$id");
     if (defined $filename && length $filename) {
       my $in_fh = $cgi->upload("image$id");
@@ -3208,8 +3278,13 @@ sub save_image_changes {
     if ($changes{$id}) {
       my $changes = $changes{$id};
       ++$changes_found;
-      
+
       for my $field (keys %$changes) {
+	my $tags = delete $changes->{$field};
+	if ($tags) {
+	  my $error;
+	  $image->set_tags($tags, \$error);
+	}
 	$image->{$field} = $changes->{$field};
       }
       $image->save;

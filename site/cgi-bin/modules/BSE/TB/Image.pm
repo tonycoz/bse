@@ -8,7 +8,7 @@ use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row BSE::ThumbCommon BSE::TB::TagOwner/;
 use Carp qw(confess);
 
-our $VERSION = "1.010";
+our $VERSION = "1.011";
 
 =head1 NAME
 
@@ -145,8 +145,7 @@ Returns HTML.
 sub inline {
   my ($self, %opts) = @_;
 
-  my $cfg = delete $opts{cfg}
-    or confess "Missing cfg parameter";
+  my $cfg = delete $opts{cfg} || BSE::Cfg->single;
 
   my $handler = $self->_handler_object($cfg);
 

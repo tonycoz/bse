@@ -532,6 +532,7 @@ site/htdocs/js/admin-ui/menu.js
 site/htdocs/js/admin.js
 site/htdocs/js/admin_edit.js
 site/htdocs/js/admin_editprodopt.js
+site/htdocs/js/admin_jedit.js
 site/htdocs/js/admin_messages.js
 site/htdocs/js/admin_prodopts.js
 site/htdocs/js/admin_siteusers.js
@@ -541,6 +542,7 @@ site/htdocs/js/bse.js
 site/htdocs/js/bse_adminpage.js
 site/htdocs/js/bse_adminui.js
 site/htdocs/js/bse_api.js
+site/htdocs/js/bse_apij.js
 site/htdocs/js/bse_dialog.js
 site/htdocs/js/bse_flowplayer.js
 site/htdocs/js/bse_loader.js
@@ -550,6 +552,7 @@ site/htdocs/js/builder.js
 site/htdocs/js/controls.js
 site/htdocs/js/dragdrop.js
 site/htdocs/js/effects.js
+site/htdocs/js/jquery.mustache.js
 site/htdocs/js/prototype.js
 site/htdocs/js/sadmin.js
 site/htdocs/js/scriptaculous.js
@@ -572,6 +575,7 @@ site/templates/admin/article_img.tmpl
 site/templates/admin/back/detail.tmpl
 site/templates/admin/back/list.tmpl
 site/templates/admin/base.tmpl
+site/templates/admin/basej.tmpl
 site/templates/admin/catalog.tmpl	# embedded in the shopadmin catalog/product display
 site/templates/admin/catalog_custom.tmpl
 site/templates/admin/changepw.tmpl
