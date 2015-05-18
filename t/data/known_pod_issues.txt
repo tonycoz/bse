@@ -64,7 +64,6 @@ site/cgi-bin/modules/BSE/Util/Tags.pm	=item without previous =over	1
 site/cgi-bin/modules/DevHelp/Cfg.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/DevHelp/Date.pm	=item without previous =over	1
 site/cgi-bin/modules/DevHelp/DynSort.pm	Verbatim paragraph in NAME section	1
-site/cgi-bin/modules/DevHelp/FileUpload.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/DevHelp/Payments/Eway.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/DevHelp/Payments/SecurePay.pm	Verbatim paragraph in NAME section	1
 site/cgi-bin/modules/DevHelp/Payments/SecurePayXML.pm	Verbatim paragraph in NAME section	1
