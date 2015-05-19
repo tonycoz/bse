@@ -16,7 +16,7 @@ use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 use constant ARTICLE_CUSTOM_FIELDS_CFG => "article custom fields";
 
-our $VERSION = "1.057";
+our $VERSION = "1.058";
 
 =head1 NAME
 
@@ -3279,12 +3279,12 @@ sub save_image_changes {
       my $changes = $changes{$id};
       ++$changes_found;
 
+      my $tags = delete $changes->{tags};
+      if ($tags) {
+	my $error;
+	$image->set_tags($tags, \$error);
+      }
       for my $field (keys %$changes) {
-	my $tags = delete $changes->{$field};
-	if ($tags) {
-	  my $error;
-	  $image->set_tags($tags, \$error);
-	}
 	$image->{$field} = $changes->{$field};
       }
       $image->save;
