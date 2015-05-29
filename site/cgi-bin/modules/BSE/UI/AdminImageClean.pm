@@ -3,7 +3,7 @@ use strict;
 use base qw(BSE::UI::AdminDispatch);
 use BSE::ImageClean;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 =head1 NAME
 
@@ -91,7 +91,7 @@ sub _split_page {
   my ($self, $req, $template) = @_;
 
   my %acts = $req->admin_tags;
-  my $temp_result = $req->response($template, \%acts);
+  my $temp_result = $req->response($template, \%acts, twopass => 1);
   my ($prefix, $per_message, $suffix) =
     split /<:\s*iterator\s+(?:begin|end)\s+messages\s*:>/, $temp_result->{content};
 

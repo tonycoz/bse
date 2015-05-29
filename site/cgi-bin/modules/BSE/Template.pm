@@ -4,7 +4,7 @@ use Squirrel::Template;
 use Carp qw(confess cluck);
 use Config ();
 
-our $VERSION = "1.014";
+our $VERSION = "1.015";
 
 my %formats =
   (
@@ -62,8 +62,10 @@ sub templater {
        [ "<:", ":>" ],
        [ "[:", ":]" ],
       ];
-    $topts{error_not_defined} =
-      $cfg->entry("basic", "error_not_defined", 1);
+    unless ($opts{twopass}) {
+      $topts{error_not_defined} =
+	$cfg->entry("basic", "error_not_defined", 1);
+    }
   }
 
   return Squirrel::Template->new(%topts);

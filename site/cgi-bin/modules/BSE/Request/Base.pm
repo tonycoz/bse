@@ -5,7 +5,7 @@ use BSE::Cfg;
 use BSE::Util::HTML;
 use Carp qw(cluck confess);
 
-our $VERSION = "1.032";
+our $VERSION = "1.033";
 
 =head1 NAME
 
@@ -1524,7 +1524,7 @@ Return a page response generated from $template and the tags in $acts.
 =cut
 
 sub response {
-  my ($req, $template, $acts) = @_;
+  my ($req, $template, $acts, %opts) = @_;
 
   require BSE::Template;
   my @sets;
@@ -1537,7 +1537,7 @@ sub response {
 
   return BSE::Template->get_response($template, $req->cfg, $acts, 
 				     $template, \@sets, $req->{vars},
-				     dynamic => 1);
+				     dynamic => 1, %opts);
 }
 
 =item dyn_user_tags()
