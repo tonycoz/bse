@@ -957,6 +957,7 @@ t/data/importer/product-simple.csv
 t/data/known_pod_issues.txt
 t/data/t101.jpg
 t/data/templates/gentest.tmpl
+t/data/testdata.txt
 t/t000load.t
 t/t00smoke.t			makes a request to most of the scripts
 t/tags/bse.cfg

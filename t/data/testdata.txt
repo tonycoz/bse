@@ -1,0 +1,1 @@
+Sample file imported by tests in 130-importer/020-article.t

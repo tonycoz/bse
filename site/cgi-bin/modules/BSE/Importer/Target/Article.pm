@@ -6,7 +6,7 @@ use BSE::TB::Articles;
 use BSE::TB::Products;
 use BSE::TB::OtherParents;
 
-our $VERSION = "1.011";
+our $VERSION = "1.012";
 
 =head1 NAME
 
@@ -259,7 +259,11 @@ sub row {
       die "File '$file' not found for image$image_index\n";
     }
 
-    my %opts = ( file => $full_file );
+    my %opts =
+      (
+       file => $full_file,
+       display_name => $file,
+      );
     for my $key (qw/alt name url storage/) {
       my $fkey = "image${image_index}_$key";
       $entry->{$fkey}

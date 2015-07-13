@@ -9,7 +9,7 @@ BEGIN {
   eval "require Text::CSV;"
     or plan skip_all => "Text::CSV not available";
 }
-plan tests => 43;
+plan tests => 44;
 
 BEGIN {
   unshift @INC, File::Spec->catdir(BSE::Test::base_dir(), "cgi-bin", "modules");
@@ -39,7 +39,7 @@ source=CSV
 target=Article
 update_only=1
 sep_char=\\t
-file_path=t
+file_path=t/data
 ignore_missing=0
 
 [import profile completefile$when]
@@ -55,7 +55,7 @@ map_file1_requireUser=9
 map_file1_notes=10
 map_file1_hide_from_list=11
 skiplines=0
-file_path=t
+file_path=t/data
 ignore_missing=0
 update_only=1
 source=CSV
@@ -129,7 +129,7 @@ CFG
 linkAlias\tbody\tfile1_file\timage1_file
 "alias$when"\t"This is the body text with multiple lines
 
-Yes, multiple lines with CSV!"\tt00smoke.t\tdata/t101.jpg
+Yes, multiple lines with CSV!"\ttestdata.txt\tt101.jpg
 EOS
     close $fh;
     my $imp = BSE::Importer->new(cfg => $cfg, profile => "simpleupdate$when", callback => sub { note @_ });
@@ -142,10 +142,12 @@ EOS
     is(-s $images[0]->full_filename, -s "t/data/t101.jpg",
        "check size matches source");
 
+    cmp_ok($images[0]->image, '!~', 'data', "check we don't pass full path as basename");
+
     my @files = $testb->files;
     is(@files, 1, "should be 1 file");
-    is($files[0]->displayName, "t00smoke.t", "check display name");
-    is(-s $files[0]->full_filename, -s "t/t00smoke.t", "check size");
+    is($files[0]->displayName, "testdata.txt", "check display name");
+    is(-s $files[0]->full_filename, -s "t/data/testdata.txt", "check size");
   }
 
  SKIP:
@@ -153,7 +155,7 @@ EOS
     my $fh = File::Temp->new;
     my $filename = $fh->filename;
     print $fh <<EOS;
-"alias$when",t00smoke.t,test,"A Test File.txt",local,"A test file from BSE",1,1,1,"Some Notes",1
+"alias$when",testdata.txt,test,"A Test File.txt",local,"A test file from BSE",1,1,1,"Some Notes",1
 EOS
     close $fh;
     my $imp = BSE::Importer->new(cfg => $cfg, profile => "completefile$when", callback => sub { note @_ });
@@ -163,7 +165,7 @@ EOS
     my ($file) = grep $_->name eq "test", $testb->files;
     ok($file, "found the file with name 'test'")
       or skip "File not found", 9;
-    is(-s $file->full_filename, -s "t/t00smoke.t", "check size");
+    is(-s $file->full_filename, -s "t/data/testdata.txt", "check size");
     is($file->displayName, "A Test File.txt", "displayName");
     is($file->storage, "local", "storage");
     is($file->description, "A test file from BSE", "description");
@@ -191,7 +193,7 @@ EOS
       or skip "File not found", 9;
     is($file->description, "New description", "description");
     # other fields should be unchanged
-    is(-s $file->full_filename, -s "t/t00smoke.t", "check size");
+    is(-s $file->full_filename, -s "t/data/testdata.txt", "check size");
     is($file->displayName, "A Test File.txt", "displayName");
     is($file->storage, "local", "storage");
     is($file->forSale, 1, "forSale");
