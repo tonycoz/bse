@@ -2,7 +2,7 @@ package BSE::UI::NUser;
 use strict;
 use base 'BSE::UI::Dispatch';
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub controller_section {
   'nuser controllers';
@@ -39,7 +39,23 @@ sub dispatch {
     require $controller_file;
   };
   if ($@) {
-    print STDERR "Error loading controller $controller_file: $@";
+    my $error = $@;
+    print STDERR "Error loading controller $controller_file: $error\n";
+    eval {
+      require BSE::TB::AuditLog;
+      BSE::TB::AuditLog->log
+	  (
+	   component => "nadmin::load",
+	   level => "critical",
+	   actor => "S",
+	   msg => "Failed to load module $controller_class",
+	   dump => <<EOS
+Class: $controller_class
+File:  $controller_file
+Error: $error
+EOS
+	  );
+    };
     return $class->error($req, "Internal error: Could not load controller class");
   }
   my %opts;
