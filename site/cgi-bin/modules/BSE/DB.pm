@@ -5,7 +5,7 @@ use Carp qw(croak);
 use Carp qw/confess/;
 use DBI::Const::GetInfoType;
 
-our $VERSION = "1.002";
+our $VERSION = "1.003";
 
 my $single;
 
@@ -258,8 +258,16 @@ sub auto_commit {
   $self->dbh->{AutoCommit} = $value;
 }
 
+sub begin_work {
+  my ($self) = @_;
+
+  $self = BSE::DB->single unless ref $self;
+
+  $self->dbh->begin_work;
+}
+
 sub commit {
-  my ($self, $value) = @_;
+  my ($self) = @_;
 
   $self = BSE::DB->single unless ref $self;
 
@@ -277,19 +285,20 @@ sub rollback {
 sub do_txn {
   my ($self, $code) = @_;
 
-  $self->auto_commit(0);
   eval {
+    $self->begin_work;
     $code->();
     $self->commit;
-    $self->auto_commit(1);
     1;
-  }
-    and return 1;
-  my $error = $@;
+  } or do {
+    my $error = $@;
 
-  $self->rollback;
-  $self->auto_commit(1);
-  die $error;
+    $self->rollback;
+    $self->auto_commit(1);
+    die $error;
+  };
+
+  return 1;
 }
 
 1;
