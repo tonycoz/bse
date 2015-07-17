@@ -7,6 +7,7 @@ use BSE::Cfg;
 use BSE::API qw(bse_init bse_cfg bse_make_product bse_encoding);
 use BSE::Importer;
 use Carp qw(confess);
+use Config;
 
 bse_init("../cgi-bin");
 
@@ -32,7 +33,7 @@ my $importer = BSE::Importer->new
   (
    cfg => $cfg,
    profile => $profile,
-   file_path => \@file_path,
+   file_path => join($Config{pathsep}, @file_path),
    callback => $callback,
   );
 
