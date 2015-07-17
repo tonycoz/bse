@@ -136,7 +136,7 @@ CREATE TABLE searchindex (
   sectionIds varchar(255) default '' not null,
   scores varchar(255) default '' not null,
   PRIMARY KEY (id)
-);
+) engine=myisam;
 
 #
 # Table structure for table 'image'

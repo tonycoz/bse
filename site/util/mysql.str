@@ -716,7 +716,7 @@ Column width;int(11);NO;0;
 Column height;int(11);NO;0;
 Index PRIMARY;1;[articleId]
 Table searchindex
-Engine InnoDB
+Engine MyISAM
 Column id;varbinary(200);NO;;
 Column articleIds;varchar(255);NO;;
 Column sectionIds;varchar(255);NO;;
