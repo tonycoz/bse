@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 62;
+use Test::More tests => 63;
 use BSE::Test qw(make_ua fetch_ok base_url base_securl config);
 
 ++$|;
@@ -73,3 +73,5 @@ fetch_ok($ua, 'fmail', "$baseurl/cgi-bin/fmail.pl",
 	 qr!name="form"!);
 fetch_ok($ua, 'page.pl?page=1', "$baseurl/cgi-bin/page.pl?page=1",
 	 qr!welcome\s+to\s!i);
+fetch_ok($ua, 'nadmin.pl/modules', "$baseurl/cgi-bin/admin/nadmin.pl/modules".
+	qr/BSE\s+Modules/);
