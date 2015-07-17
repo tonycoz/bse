@@ -23,6 +23,9 @@ my $cfg = BSE::Install::cfg();
 
 my $manifest = maniread();
 
+# fake BSE::Modules
+$manifest->{"site/cgi-bin/modules/BSE/Modules.pm"} = "";
+
 install_files("site/htdocs/", public_html_dir());
 install_files("site/templates/", templates_dir());
 install_files("site/cgi-bin", cgi_dir());
