@@ -147,7 +147,6 @@ site/cgi-bin/modules/BSE/Password/Plain.pm
 site/cgi-bin/modules/BSE/Passwords.pm
 site/cgi-bin/modules/BSE/PayPal.pm
 site/cgi-bin/modules/BSE/Permissions.pm
-site/cgi-bin/modules/BSE/ProductImportXLS.pm
 site/cgi-bin/modules/BSE/Regen.pm
 site/cgi-bin/modules/BSE/Report.pm
 site/cgi-bin/modules/BSE/Request.pm

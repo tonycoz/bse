@@ -8,8 +8,6 @@ our $VERSION = "1.002";
 our %prereqs =
   (
    "BSE::Cache::Memcached" => [ "Cache::Memcached::Fast" ],
-   "BSE::ImportSourceXLS" => [ "Spreadsheet::ParseExcel" ],
-   "BSE::ProductImportXLS" => [ "Spreadsheet::ParseExcel" ],
    "BSE::Storage::AmazonS3" => [ "Net::Amazon::S3" ],
    "BSE::Util::ValidateHTML::Tidy" => [ "HTML::Tidy" ],
    "BSE::Util::ValidateHTML::W3C" => [ "WebService::Validator::HTML::W3C", "XML::XPath" ],
