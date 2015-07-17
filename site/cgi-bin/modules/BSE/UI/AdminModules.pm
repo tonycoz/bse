@@ -5,7 +5,7 @@ use BSE::Modules;
 use BSE::Util::Iterate;
 use BSE::Util::Prereq;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 my %actions =
   (
@@ -80,6 +80,7 @@ sub req_modules {
 
   my @modules;
   my @bad;
+  my %prereqs_checked;
   for my $modname (sort keys %$versions) {
     my $module =
       {
@@ -96,7 +97,7 @@ sub req_modules {
       $error = "Module file $filename not found";
     }
     my $content;
-    if (!$error) {
+    unless ($error) {
       if (open my $in, "<", $full) {
 	$content = do { local $/; <$in> };
 	close $in;
@@ -106,7 +107,7 @@ sub req_modules {
       }
     }
     my $vers;
-    if (!$error) {
+    unless ($error) {
       if ($content =~ /^our \$VERSION = "([0-9.]+)"/m) {
 	$vers = $1;
 	$module->{found} = $vers;
@@ -115,18 +116,26 @@ sub req_modules {
 	$error = "No version found in $filename";
       }
     }
-    if (!$error) {
+    unless ($error) {
       if ($vers ne $versions->{$modname}) {
 	$error = "Version $vers in file doesn't match expected $versions->{$modname}";
       }
     }
 
-    if (!$error) {
+    unless ($error) {
       local $SIG{__DIE__};
       my $prereqs_good = 1;
       if ($prereqs->{$modname}) {
 	for my $prereq (@{$prereqs->{$modname}}) {
-	  if (!eval "require $prereq; 1") {
+	  my $good_prereq;
+	  if (exists $prereqs_checked{$prereq}) {
+	    $good_prereq = $prereqs_checked{$prereq};
+	  }
+	  else {
+	    $good_prereq = eval "require $prereq; 1";
+	    $prereqs_checked{$prereq} = $good_prereq;
+	  }
+	  unless ($good_prereq) {
 	    $module->{notes} = "Prerequisite $prereq not found";
 	    $prereqs_good = 0;
 	    last;
@@ -151,6 +160,7 @@ sub req_modules {
   unshift @modules, @bad;
 
   my $it = BSE::Util::Iterate->new(req => $req);
+  $req->set_variable(modules => \@modules);
   my %acts =
     (
      $req->admin_tags,
