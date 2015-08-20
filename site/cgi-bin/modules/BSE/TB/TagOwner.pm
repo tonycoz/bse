@@ -6,7 +6,7 @@ use strict;
 use BSE::TB::Tags;
 use BSE::TB::TagMembers;
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 =head1 NAME
 
@@ -171,6 +171,8 @@ sub tag_members {
 
 Check that all of the specified tags are on the object.
 
+The array can contain either tag names or tag objects.
+
 =cut
 
 sub has_tags {
@@ -187,9 +189,38 @@ sub has_tags {
 	or return;
     }
 
-    $my_tag_ids{$tag->id}
+    $my_tag_ids{$work->id}
       or return;
   }
+
+  return 1;
+}
+
+=item has_tag($tag_name)
+
+=item has_tag($tag_object)
+
+Return true if the given tag can be found on the object.
+
+=cut
+
+sub has_tag {
+  my ($self, $tag) = @_;
+
+  unless (ref $tag) {
+    $tag = BSE::TB::Tags->getByName($self->tag_owner_type, $tag)
+      or return;
+  }
+
+  my @members = BSE::TB::TagMembers->getBy
+    (
+     owner_id => $self->id,
+     owner_type => $self->tag_owner_type,
+     tag_id => $tag->id,
+    );
+
+  @members
+    or return;
 
   return 1;
 }

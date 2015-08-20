@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests => 38;
+use Test::More tests => 51;
 use File::Spec;
 use Carp qw(confess);
 
@@ -224,6 +224,29 @@ is_deeply([ map $_->title, $parent->children ],
 	       "iPad: iPad 3" => 1,
 	      }, "check counts");
   }
+}
+
+{
+  my $error;
+  ok($parent->set_tags([ "SomeTag" ], \$error), "add SomeTag to parent");
+  ok($parent->has_tags([ "SomeTag" ]), "check true has_tags() by name");
+  my ($tag) = $parent->tag_objects;
+  is($tag->name, "SomeTag", "check tag_objects tag");
+  ok($parent->has_tags([ $tag ]), "check true has_tags() by object");
+  ok(!$parent->has_tags([ "Platform: iPad" ]), "check false has_tags() by name");
+  my $unknown = "Unknown: " . time();
+  ok(!$parent->has_tags([ $unknown ]),
+     "check false has_tags() by name (unknown tag)");
+  is_deeply([ $parent->tags ], [ "SomeTag" ], "tags() method");
+  my ($tag_id) = $parent->tag_ids;
+  is($tag_id, $tag->id, "check tag_ids");
+  my $by_name = $parent->tag_by_name("SomeTag");
+  is($by_name->id, $tag->id, "check tag_by_name()");
+  ok($parent->has_tag("SomeTag"), "check true has_tag() by name");
+  ok($parent->has_tag($tag), "check true has_tag() by object");
+  ok(!$parent->has_tag("Platform: iPad"), "check false has_tag() by name");
+  ok(!$parent->has_tag($unknown),
+     "check false has_tag() by name (unknown tag)");
 }
 
 END {
