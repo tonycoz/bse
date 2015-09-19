@@ -128,7 +128,9 @@ SKIP:
       $data or skip("Not json from setting tags", 2);
       ok($data->{success}, "success flag set");
       is_deeply($data->{article}{tags}, [ $tag_name1, $tag_name2 ],
-		"check tags saved");
+		"check tags saved")
+	or diag "left: ", Dumper($data->{article}{tags}),
+	    "\nright: ", Dumper([$tag_name1, $tag_name2 ]);
       $art = $data->{article};
     }
   }
