@@ -2,15 +2,17 @@ package BSE::CGI;
 use strict;
 use Encode;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 sub new {
   my ($class, $q, $charset) = @_;
 
+  my $param = $q->can("multi_param") ? "multi_param" : "param";
   my $self = bless
     {
      cgi => $q,
      charset => $charset,
+     param => $param,
     }, $class;
 
   return $self;
@@ -19,7 +21,8 @@ sub new {
 sub param {
   my ($self, @args) = @_;
 
-  my @result = $self->{cgi}->param(@args)
+  my $param = $self->{param};
+  my @result = $self->{cgi}->$param(@args)
     or return;
   for my $value (@result) {
     $value = decode($self->{charset}, $value)
@@ -27,6 +30,20 @@ sub param {
   }
 
   return wantarray && @result > 1 ? @result : $result[0];
+}
+
+sub multi_param {
+  my ($self, @args) = @_;
+
+  my $param = $self->{param};
+  my @result = $self->{cgi}->$param(@args)
+    or return;
+  for my $value (@result) {
+    $value = decode($self->{charset}, $value)
+      unless ref $value;
+  }
+
+  return wantarray ? @result : $result[0];
 }
 
 sub upload {
