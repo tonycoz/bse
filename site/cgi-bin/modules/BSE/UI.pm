@@ -2,7 +2,7 @@ package BSE::UI;
 use strict;
 use BSE::Cfg;
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
 
 my $time = sub { time };
 
@@ -74,6 +74,10 @@ sub run_fcgi {
 
   require CGI::Fast;
   while (my $cgi = CGI::Fast->new) {
+    if ($cfg->utf8) {
+      require BSE::CGI;
+      $cgi = BSE::CGI->new($cgi, $cfg->charset);
+    }
     my $start = $time->();
     my $req;
     eval {
@@ -82,7 +86,7 @@ sub run_fcgi {
 	(
 	 cfg => $cfg,
 	 cgi => $cgi,
-	 fastcgi => scalar $FCGI::global_request->IsFastCGI,
+	 fastcgi => scalar $CGI::Fast::Ext_Request->IsFastCGI,
 	 %{$opts{req_params} || {}},
 	);
       1;
