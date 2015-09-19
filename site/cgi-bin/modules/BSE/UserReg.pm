@@ -18,7 +18,7 @@ use BSE::Util::Iterate;
 use base 'BSE::UI::UserCommon';
 use Carp qw(confess);
 
-our $VERSION = "1.037";
+our $VERSION = "1.038";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -2626,14 +2626,16 @@ sub req_downufile {
     or return $self->error($req, "Sorry, you don't have access to this file");
 
   my $msg;
-  return $file->download_result
+  $result = $file->download_result
     (
      cfg => $req->cfg,
      download => scalar($cgi->param("force_download")),
      msg => \$msg,
      user => $user,
     )
-      or return $self->error($req, $msg);
+    or return $self->error($req, $msg);
+
+  return $result;
 }
 
 =item lost
