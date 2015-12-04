@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 204;
+use Test::More tests => 209;
 use HTML::Entities;
 
 sub template_test($$$$;$$);
@@ -64,6 +64,10 @@ SKIP: {
      },
      somecode1 => sub { return "FOO" },
      somecode2 => sub { return [ @_ ] },
+     dumper => sub {
+       use Data::Dumper;
+       Dumper($_[0]);
+     },
     );
   template_test("<:str:>", "ABC", "simple", \%acts);
   template_test("<:strref:>", "ABC", "scalar ref", \%acts);
@@ -597,13 +601,19 @@ OUT
      [ '"test".is_list', 0 ],
      [ '"test".is_hash', 0 ],
      [ '"abc".replace(/(.)(.)(.)/, "$3$2$1")', "cba" ],
+     [ '"abc def ghi".replace(/(?:^|\b)([a-z])/, @{m: m.text.upper }, 1)',
+       'Abc Def Ghi' ],
      [ '"a&b".escape("html")', 'a&amp;b' ],
      [ '"abc".match(/b/).start', "1" ],
      [ '"abc".match(/b/).end', "2" ],
      [ '"abc".match(/b/).length', "1" ],
+     [ '"abc".match(/b/).text', "b" ],
      [ '"abc".match(/(b)/).subexpr[0].start', "1" ],
      [ '"abc".match(/(b)/).subexpr[0].end', "2" ],
      [ '"abc".match(/(b)/).subexpr[0].length', "1" ],
+     [ '"abc".match(/(b)/).subexpr[0].text', "b" ],
+     [ '"abc".match(/(?<foo>b)/).named["foo"].text', "b" ],
+     [ '"abc".match(/(?<foo>b)/).named["bar"]', "" ],
      [ '"abcd".substring(1)', "bcd" ],
      [ '"abcd".substring(1,2)', "bc" ],
      [ '"abcd".substring(1,-2)', "b" ],

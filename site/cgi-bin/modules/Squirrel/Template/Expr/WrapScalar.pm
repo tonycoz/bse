@@ -2,7 +2,7 @@ package Squirrel::Template::Expr::WrapScalar;
 use strict;
 use base qw(Squirrel::Template::Expr::WrapBase);
 
-our $VERSION = "1.009";
+our $VERSION = "1.010";
 
 sub _do_length  {
   my ($self, $args) = @_;
@@ -212,34 +212,29 @@ sub _do_replace {
 
   my ($re, $with, $global) = @$args;
   my $str = $self->[0];
+  my $eval = $self->expreval;
+  my $with_code =
+    ref $with
+    ? sub {
+      $eval->call_function($with, [ _make_match($str) ])
+    }
+    : sub {
+      # yes, this sucks
+      my @out = ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+      defined or $_ = '' for @out;
+      my $tmp = $with;
+      {
+	$tmp =~ s/\$([1-9\$])/
+	  $1 eq '$' ? '$' : $out[$1-1] /ge;
+      }
+      $tmp;
+    };
 
   if ($global) {
-    $str =~ s{$re}
-      {
-	# yes, this sucks
-	my @out = ($1, $2, $3, $4, $5, $6, $7, $8, $9);
-	defined or $_ = '' for @out;
-	my $tmp = $with;
-	{
-	  $tmp =~ s/\$([1-9\$])/
-	    $1 eq '$' ? '$' : $out[$1-1] /ge;
-	}
-	$tmp;
-      }ge;
+    $str =~ s{$re}{ $with_code->() }ge;
   }
   else {
-    $str =~ s{$re}
-      {
-	# yes, this sucks
-	my @out = ($1, $2, $3, $4, $5, $6, $7, $8, $9);
-	defined or $_ = '' for @out;
-	my $tmp = $with;
-	{
-	  $tmp =~ s/\$([1-9\$])/
-	    $1 eq '$' ? '$' : $out[$1-1] /ge;
-	}
-	$tmp;
-      }e;
+    $str =~ s{$re}{ $with_code->() }e;
   }
 
   return $str;
@@ -254,25 +249,14 @@ sub _do_match {
   $self->[0] =~ $args->[0]
     or return undef;
 
-  my %result =
-    (
-     start => $-[0],
-     length => $+[0] - $-[0],
-     end => $+[0],
-     subexpr =>
-     [
-      map
-      (+{
-	 start => $-[$_],
-	 length => $+[$_] - $-[$_],
-	 end => $+[$_],
-	 },
-       1 .. $#-
-      )
-     ],
-    );
+  return _make_match($self->[0]);
+}
 
-  return \%result;
+sub _make_match {
+  my %match;
+  tie %match, 'Squirrel::Template::Expr::WrapScalar::Match', $_[0], \@-, \@+, \%-, \%+;
+
+  \%match;
 }
 
 sub _do_escape {
@@ -291,6 +275,149 @@ sub call {
     return $self->$real_method($args);
   }
   die [ error => "No method $method for scalars" ];
+}
+
+package Squirrel::Template::Expr::WrapScalar::Match;
+use base 'Tie::Hash';
+
+sub TIEHASH {
+  my ($class, $text, $starts, $ends, $nstarts, $nends) = @_;
+
+  bless
+    {
+     text => $text,
+     starts => [ @$starts ],
+     ends => [ @$ends ],
+     nstarts => +{ %$nstarts },
+     nends => +{ %$nends },
+     keys => +{ map {; $_ => 1 } qw(text start end length subexpr named) },
+    };
+}
+
+sub FETCH {
+  my ($self, $name) = @_;
+
+  return substr($self->{text}, $self->{starts}[0], $self->{ends}[0] - $self->{starts}[0])
+    if $name eq 'text';
+  return $self->{starts}[0] if $name eq 'start';
+  return $self->{ends}[0] if $name eq 'end';
+  return $self->{ends}[0] - $self->{starts}[0] if $name eq 'length';
+  if ($name eq 'subexpr') {
+    my @subexpr;
+    tie @subexpr, 'Squirrel::Template::Expr::WrapScalar::Match::Subexpr',
+      $self->{starts}, $self->{ends}, $self->{text};
+    return \@subexpr;
+  }
+  if ($name eq 'named') {
+    my %named;
+    tie %named, 'Squirrel::Template::Expr::WrapScalar::Match::Named', $self->{nstarts}, $self->{nends};
+    return \%named;
+  }
+  return undef;
+}
+
+sub EXISTS {
+  my ($self, $name) = @_;
+
+  return exists $self->{keys}{$name};
+}
+
+sub FIRSTKEY {
+  my ($self) = @_;
+
+  keys %{$self->{keys}};
+
+  each %{$self->{keys}};
+}
+
+sub NEXTKEY {
+  my ($self) = @_;
+
+  each %{$self->{keys}};
+}
+
+package Squirrel::Template::Expr::WrapScalar::Match::Subexpr;
+use base 'Tie::Array';
+
+sub TIEARRAY {
+  my ($class, $starts, $ends, $text) = @_;
+
+  bless [ $starts, $ends, $text ], $class;
+}
+
+sub FETCH {
+  my ($self, $index) = @_;
+
+  $index >= 0 && $index < $#{$self->[0]}
+    or return undef;
+
+  return
+    +{
+      start => $self->[0][$index+1],
+      end => $self->[1][$index+1],
+      length => $self->[1][$index+1] - $self->[0][$index+1],
+      text => substr($self->[2], $self->[0][$index+1],
+		     $self->[1][$index+1] - $self->[0][$index+1]),
+     };
+}
+
+sub EXISTS {
+  my ($self, $index) = @_;
+
+  $index >= 0 && $index < $#{$self->[0]}
+    or return !1;
+
+  return !0;
+}
+
+sub FETCHSIZE {
+  my ($self) = @_;
+
+  return @{$self->[0]} - 1;
+}
+
+package Squirrel::Template::Expr::WrapScalar::Match::Named;
+use base 'Tie::Hash';
+
+sub TIEHASH {
+  my ($class, $nstarts, $nends) = @_;
+
+  bless [ $nstarts, $nends ], $class;
+}
+
+sub FETCH {
+  my ($self, $name) = @_;
+
+  defined $self->[0]{$name}
+    or return undef;
+
+  return
+    +{
+      text => $self->[1]{$name},
+     };
+}
+
+sub EXISTS {
+  my ($self, $name) = @_;
+
+  defined $self->[0]{$name}
+    or return !1;
+
+  return !0;
+}
+
+sub FIRSTKEY {
+  my ($self) = @_;
+
+  keys %{$self->[0]}; # reset
+
+  each %{$self->[0]};
+}
+
+sub NEXTKEY {
+  my ($self) = @_;
+
+  each %{$self->[0]};
 }
 
 1;
@@ -410,9 +537,14 @@ C<substring> isn't found.
 
 =item replace(regexp, replacement, global)
 
-Replace the given C<regexp> in the string with C<replacement>. C<$1>
-etc are replaced with what the corresponding parenthesized expression
-in the regexp matched.  C<$$> is replaced with C<$>.
+Replace the given C<regexp> in the string with C<replacement>.
+
+If C<replacement> is a block, call the block with a match object (see
+L</match(regexp)> below), and use the result as the replacement text.
+
+If C<replacement> isn't a block it's treated as a string and C<$1> etc
+are replaced with what the corresponding parenthesized expression in
+the regexp matched.  C<$$> is replaced with C<$>.
 
 If C<global> is present and true, replace every instance.
 
@@ -427,15 +559,24 @@ returning a hash:
     "start":start of whole match,
     "length":length of whole match,
     "end":end of whole match,
+    "text":matching text of whole match,
     "subexpr": [
        {
-         "start": start of first subexpr match
-         "length": length of first subexpr match
-         "end": end of first subexpr match
+         "start": start of first subexpr match,
+         "length": length of first subexpr match,
+         "end": end of first subexpr match,
+         "text": matching text of first subexpr,
        },
        ...
-     ]
+    ],
+    "named": {
+      "name": {
+        "text": matching text of named match,
+      },
+    }
   }
+
+Note: C<subexpr> includes named matches.
 
 =item substring(start)
 
