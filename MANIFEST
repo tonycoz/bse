@@ -803,6 +803,7 @@ site/templates/tellafriend/email.tmpl
 site/templates/tellafriend/email_html.tmpl
 site/templates/test/children.tmpl
 site/templates/test/testrep.tmpl
+site/templates/test/title.tmpl
 site/templates/textemail/basic.tmpl
 site/templates/user/admin_book_seminar.tmpl
 site/templates/user/admin_edit_seminar.tmpl

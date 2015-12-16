@@ -313,7 +313,7 @@ Conditional tag, true if the current article is being embedded.
 
 =cut
 
-our $VERSION = "1.026";
+our $VERSION = "1.027";
 
 my $excerptSize = 300;
 
@@ -689,9 +689,12 @@ specified template.
 
 
 sub vembed {
-  my ($self, $article, $template) = @_;
+  my ($self, $article, $template, $maxdepth) = @_;
 
-  return $self->embed($article, "BSE::TB::Articles", $template);
+  $maxdepth = $self->{maxdepth} 
+    if !$maxdepth || $maxdepth > $self->{maxdepth};
+
+  return $self->_embed_low($article, "BSE::TB::Articles", $template, $maxdepth);
 }
 
 sub iter_kids_of {

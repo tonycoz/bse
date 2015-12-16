@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>83;
+use Test::More tests=>86;
 use File::Spec;
 use FindBin;
 BEGIN {
@@ -271,6 +271,12 @@ EXPECTED
 
 template_test "variables", $parent, <<TEMPLATE, <<EXPECTED;
 <:= article.title :>
+TEMPLATE
+Test catalog
+EXPECTED
+
+template_test "vembed", $prods[0], <<TEMPLATE, <<EXPECTED;
+<:= generator.vembed(article.parent, "test/title.tmpl") |raw:>
 TEMPLATE
 Test catalog
 EXPECTED
