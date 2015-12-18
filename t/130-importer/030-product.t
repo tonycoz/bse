@@ -10,8 +10,6 @@ BEGIN {
     or plan skip_all => "Text::CSV not available";
 }
 
-plan tests => 11;
-
 BEGIN {
   unshift @INC, File::Spec->catdir(BSE::Test::base_dir(), "cgi-bin", "modules");
 }
@@ -49,6 +47,17 @@ skiplines=0
 source=CSV
 target=Product
 
+[import profile avoidcorrupt$when]
+map_id=1
+map_articleId=2
+map_title=3
+map_product_code=4
+source=CSV
+target=Product
+sep_char=\\t
+codes=1
+code_field=product_code
+update_only=1
 CFG
 
 {
@@ -125,3 +134,41 @@ EOS
     $testa->remove($cfg) if $testa;
   }
 }
+
+{
+  my $code = "D$when";
+  my $testa = bse_make_product
+    (
+     cfg => $cfg,
+     title => "test updates",
+     linkAlias => "P$when",
+     retailPrice => 500,
+     product_code => $code,
+    );
+  diag "Product id ".$testa->id;
+  {
+    my $fh = File::Temp->new;
+    my $filename = $fh->filename;
+
+    print $fh <<EOS;
+id\tarticleId\ttitle\tproduct_code
+1\t2\tTesting\t$code
+EOS
+    close $fh;
+    my $imp = BSE::Importer->new(cfg => $cfg, profile => "avoidcorrupt$when",
+				 callback => sub { note @_ });
+    $imp->process($filename);
+    my $testb = BSE::TB::Products->getByPkey($testa->id);
+    ok($testb, "managed to fully load the product");
+    is($testb->title, "Testing", "check the title is updated");
+    my $top = BSE::TB::Articles->getByPkey(1);
+    isnt($top->generator, "BSE::Generate::Product",
+	 "make sure we didn't scribble over article 1");
+  }
+
+  END {
+    $testa->remove($cfg) if $testa;
+  }
+}
+
+done_testing();

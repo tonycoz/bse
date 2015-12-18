@@ -6,7 +6,7 @@ use BSE::TB::Articles;
 use BSE::TB::Products;
 use BSE::TB::OtherParents;
 
-our $VERSION = "1.012";
+our $VERSION = "1.013";
 
 =head1 NAME
 
@@ -213,6 +213,8 @@ sub row {
     $leaf = $self->find_leaf($leaf_id, $importer);
   }
   if ($leaf) {
+    # make sure id, articleId etc aren't overwritten
+    delete @$entry{$self->primary_key_fields};
     @{$leaf}{keys %$entry} = values %$entry;
     $leaf->mark_modified(actor => $importer->actor);
     $leaf->save;
@@ -611,6 +613,17 @@ sub validate_make_leaf {
     $other
       and die "Duplicate linkAlias value with article ", $other->id, "\n";
   }
+}
+
+=item primary_key_fields
+
+Fields we can't modify (or initialize) since the database generates
+them.
+
+=cut
+
+sub primary_key_fields {
+  qw(id);
 }
 
 1;

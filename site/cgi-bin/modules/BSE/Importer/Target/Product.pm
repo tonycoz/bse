@@ -8,7 +8,7 @@ use BSE::TB::ProductOptions;
 use BSE::TB::ProductOptionValues;
 use BSE::TB::PriceTiers;
 
-our $VERSION = "1.009";
+our $VERSION = "1.010";
 
 =head1 NAME
 
@@ -336,6 +336,19 @@ sub validate_make_leaf {
     $other
       and die "Duplicate product_code with product ", $other->id, "\n";
   }
+}
+
+=item primary_key_fields
+
+Fields we can't modify (or initialize) since the database (or database
+interface) generates them.
+
+=cut
+
+sub primary_key_fields {
+  my ($class) = @_;
+
+  return ( $class->SUPER::primary_key_fields(), "articleId" );
 }
 
 1;
