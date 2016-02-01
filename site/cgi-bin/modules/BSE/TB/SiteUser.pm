@@ -18,7 +18,7 @@ SiteUser - represent a site user (or member)
 
 =cut
 
-our $VERSION = "1.016";
+our $VERSION = "1.017";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -132,7 +132,7 @@ sub valid_fields {
      street2 => { description => 'Address', rules=>"dh_one_line", maxlen=>127 },
      suburb => { description=>'City/Suburb', rules=>"dh_one_line", maxlen=>127 },
      state => { description => 'State', rules=>"dh_one_line", maxlen=>40 },
-     postcode => { rules=>'postcode', description=>'Post Code', maxlen=>40 },
+     postcode => { rules=>'dh_one_line;dh_int_postcode', description=>'Post Code', maxlen=>40 },
      country => { description=>'Country', rules=>"dh_one_line", maxlen=>127 },
      telephone => { rules=>'phone', description=>'Telephone', maxlen=>80 },
      facsimile => { rules=>'phone', description=>'Facsimile', maxlen=>80 },
@@ -155,7 +155,7 @@ sub valid_fields {
 		     maxlen=>127 },
      delivState => { description => "Delivery State", rules=>"dh_one_line", 
 		    maxlen=>40 },
-     delivPostCode => { description => "Delivery Post Code", rules=>"postcode", 
+     delivPostCode => { description => "Delivery Post Code", rules=>"dh_one_line;dh_int_postcode", 
 		       maxlen=>40 },
      delivCountry => { description => "Delivery Country", rules=>"dh_one_line", 
 		      maxlen=>127 },
