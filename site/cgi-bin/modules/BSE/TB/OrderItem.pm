@@ -5,13 +5,19 @@ use Squirrel::Row;
 use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 
-our $VERSION = "1.004";
+our $VERSION = "1.005";
+
+sub table { "order_item" }
 
 sub columns {
   return qw/id productId orderId units price wholesalePrice gst options
             customInt1 customInt2 customInt3 customStr1 customStr2 customStr3
             title description subscription_id subscription_period max_lapsed
-            session_id product_code/;
+            session_id product_code tier_id/;
+}
+
+sub db_columns {
+  return map { $_ eq "description" ? "summary" : $_ } $_[0]->columns;
 }
 
 sub defaults {
@@ -99,6 +105,19 @@ sub extended {
   my ($self, $name) = @_;
 
   return $self->units * $self->$name();
+}
+
+sub tier {
+  my ($self) = @_;
+
+  my $tier_id = $self->tier_id
+    or return;
+
+  require BSE::TB::PriceTiers;
+  my $tier = BSE::TB::PriceTiers->getByPkey($tier_id)
+    or return;
+
+  return $tier;
 }
 
 1;

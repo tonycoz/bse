@@ -86,19 +86,23 @@
           <th class="col_unitprice">Unit Price</th>
           <th class="col_extension">Extension</th>
 </tr>
-<:iterator begin items:>
+<:.for item in [order.items] -:>
+  <:.set product = @undef -:>
+  <:.if item.productId > 0 -:>
+    <:.set product = bse.products.getByPkey(item.productId) -:>
+  <:.end if -:>
         <tr> 
-          <td class="col_description"><:ifOr [ifEq [item productId] -1] [ifEq [product id] ""]:><:item title:> (product deleted)<:or:><a href="<:product admin:>"><:product
-            title:></a><:eif:> <:options:></td>
-          <td class="col_units"><:item units:></td>
-          <td class="col_unit_wsale"><:money item wholesalePrice:></td>
-          <td class="col_ext_wsale"><:extension wholesalePrice:></td>
-          <td class="col_unit_gst"><:money item gst:></td>
-          <td class="col_ext_gst"><:extension gst:></td>
-          <td class="col_unitprice"><:money item price:></td>
-          <td class="col_extension"><:extension price:></td>
+          <td class="col_description"><:.if product :><a href="<:= product.admin :>"><:= product.title :></a><:.else:><:= item.title :> (product deleted)<:.end if:> <:= item.nice_options:>
+	  <:.if item.tier_id:><br><span class="price_tier"><:= item.tier.description :></span><:.end if:></td>
+          <td class="col_units"><:= item.units:></td>
+          <td class="col_unit_wsale"><:= bse.number("money", item.wholesalePrice) :></td>
+          <td class="col_ext_wsale"><:= bse.number("money", item.extended("wholesalePrice")) :></td>
+          <td class="col_unit_gst"><:= bse.number("money", item.gst):></td>
+          <td class="col_ext_gst"><:= bse.number("money", item.extended("gst")):></td>
+          <td class="col_unitprice"><:= bse.number("money", item.price):></td>
+          <td class="col_extension"><:= bse.number("money", item.extended("price")) :></td>
 </tr>
-<:iterator end items:>
+<:.end for -:>
 <tr>
   <td colspan="7" class="col_label_right">Total Price of goods:</td>
   <td  class="col_extension"><:= bse.number("money", order.total_cost) -:></td>

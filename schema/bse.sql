@@ -402,9 +402,11 @@ create table order_item (
 
   product_code varchar(80) not null default '',
 
+  tier_id integer null default null,
+
   primary key (id),
   index order_item_order(orderId, id)
-);
+) engine=InnoDB;
 
 drop table if exists other_parents;
 create table other_parents (
@@ -1291,7 +1293,7 @@ create table bse_price_tier_prices (
   retailPrice integer not null,
 
   unique tier_product(tier_id, product_id)
-);
+) engine=InnoDB;
 
 create table bse_tags (
   id integer not null auto_increment primary key,
@@ -1387,3 +1389,8 @@ create table bse_coupon_tiers (
   foreign key (tier_id) references bse_price_tiers(id)
     on delete cascade on update restrict
 ) engine=InnoDB;
+
+alter table order_item add constraint tier_id
+  foreign key (tier_id) references bse_price_tiers(id)
+    on delete restrict on update restrict;
+

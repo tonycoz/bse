@@ -18,7 +18,7 @@ use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 use BSE::Template;
 
-our $VERSION = "1.048";
+our $VERSION = "1.049";
 
 =head1 NAME
 
@@ -1801,7 +1801,9 @@ sub _build_items {
       for my $col (@prodcols) {
 	$work{$col} = $product->$col() unless exists $work{$col};
       }
-      $work{price} = $product->price(user => scalar $req->siteuser);
+      my ($price, $tier) = $product->price(user => scalar $req->siteuser);
+      $work{price} = $price;
+      $work{tier_id} = $tier ? $tier->id : undef;
       $work{extended_retailPrice} = $work{units} * $work{price};
       $work{extended_gst} = $work{units} * $work{gst};
       $work{extended_wholesale} = $work{units} * $work{wholesalePrice};

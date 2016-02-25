@@ -597,8 +597,10 @@ Column subscription_period;int(11);NO;0;
 Column max_lapsed;int(11);NO;0;
 Column session_id;int(11);NO;-1;
 Column product_code;varchar(80);NO;;
+Column tier_id;int(11);YES;NULL;
 Index PRIMARY;1;[id]
 Index order_item_order;0;[orderId;id]
+Index tier_id;0;[tier_id]
 Table orders
 Engine InnoDB
 Column id;int(11);NO;NULL;auto_increment
