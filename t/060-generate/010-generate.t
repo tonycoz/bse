@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use BSE::Test ();
-use Test::More tests=>173;
+use Test::More tests=>176;
 use File::Spec;
 use FindBin;
 use Cwd;
@@ -92,6 +92,7 @@ my $grandkid = add_article
    parentid => $kids[1]{id},
    title => "Grandkid",
    body => "grandkid",
+   linkAlias => "gk-$alias_id",
   );
 
 my $prefix = "test" . time;
@@ -748,6 +749,19 @@ template_test "format embed", $parent, <<TEMPLATE, <<EXPECTED;
 TEMPLATE
 <div class="title">One</div>
 <p>Embedded</p>
+EXPECTED
+
+# unformatter tests
+template_test "doclink[] unformatted", $parent, <<TEMPLATE, <<EXPECTED;
+<:= article.unformat("text", "doclink[gk-$alias_id]", "gen", generator) |raw:>
+<:= article.unformat("text", "doclink[gk-$alias_id|My title]", "gen", generator) |raw:>
+<:= article.unformat("text", "popdoclink[gk-$alias_id]", "gen", generator) |raw:>
+<:= article.unformat("text", "popdoclink[gk-$alias_id|My title]", "gen", generator) |raw:>
+TEMPLATE
+Grandkid
+My title
+Grandkid
+My title
 EXPECTED
 
 ############################################################
