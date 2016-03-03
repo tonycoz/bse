@@ -3,7 +3,7 @@ use strict;
 use BSE::Util::HTML;
 use Carp 'confess';
 
-our $VERSION = "1.012";
+our $VERSION = "1.013";
 
 use base 'DevHelp::Formatter';
 
@@ -509,13 +509,13 @@ sub remove {
     and return 1;
   $$rpart =~ s#gimage\[([^\]\[]+)\]##ig
     and return 1;
-  $$rpart =~ s#popdoclink\[(\w+)\|([^\]\[]*)\]#$2#ig
+  $$rpart =~ s#popdoclink\[([\w-]+)\|([^\]\[]*)\]#$2#ig
     and return 1;
-  $$rpart =~ s#popdoclink\[(\w+)\]# $self->remove_doclink($1) #ige
+  $$rpart =~ s#popdoclink\[([\w-]+)\]# $self->remove_doclink($1) #ige
     and return 1;
-  $$rpart =~ s#doclink\[(\w+)\|([^\]\[]*)\]#$2#ig
+  $$rpart =~ s#doclink\[([\w-]+)\|([^\]\[]*)\]#$2#ig
     and return 1;
-  $$rpart =~ s#doclink\[(\w+)\]# $self->remove_doclink($1) #ige
+  $$rpart =~ s#doclink\[([\w-]+)\]# $self->remove_doclink($1) #ige
     and return 1;
 
   $$rpart =~ s#popformlink\[([\w-]+)\|([^\]\[]*)\]#$2#ig
