@@ -18,7 +18,7 @@ use BSE::Countries qw(bse_country_code);
 use BSE::Util::Secure qw(make_secret);
 use BSE::Template;
 
-our $VERSION = "1.049";
+our $VERSION = "1.051";
 
 =head1 NAME
 
@@ -1807,6 +1807,14 @@ sub _build_items {
       $work{extended_retailPrice} = $work{units} * $work{price};
       $work{extended_gst} = $work{units} * $work{gst};
       $work{extended_wholesale} = $work{units} * $work{wholesalePrice};
+      if ($cart->coupon_active) {
+	$work{product_discount} = $item->product_discount;
+	$work{product_discount_units} = $item->product_discount_units;
+      }
+      else {
+	$work{product_discount} = 0;
+	$work{product_discount_units} = 0;
+      }
       
       push @newcart, \%work;
     }
@@ -1892,9 +1900,13 @@ sub _fillout_order {
   }
   if ($cart->coupon_active) {
     $values->{coupon_id} = $cart->coupon->id;
+    $values->{coupon_description} = $cart->coupon_description;
+    $values->{coupon_cart_wide} = $cart->coupon_cart_wide;
   }
   else {
     $values->{coupon_id} = undef;
+    $values->{coupon_description} = "";
+    $values->{coupon_cart_wide} = 0;
   }
   $cart->set_shipping_cost($values->{shipping_cost});
   $cart->set_shipping_method($values->{shipping_method});
@@ -1902,6 +1914,7 @@ sub _fillout_order {
   $cart->set_delivery_in($values->{delivery_in});
 
   $values->{coupon_code_discount_pc} = $cart->coupon_code_discount_pc;
+  $values->{product_cost_discount} = $cart->product_cost_discount;
   $values->{total} = $cart->total;
 
   my $cust_class = custom_class($cfg);

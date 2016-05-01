@@ -1,5 +1,6 @@
 /* stuff for every admin page */
 /* mark accesskeys */
+jQuery.noConflict();
 document.observe("dom:loaded", function() {
   $$("label").each(function(label) {
     if (!label.htmlFor)

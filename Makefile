@@ -111,7 +111,15 @@ testinst: distdir
 	$(PERL) -MExtUtils::Command -e rm_rf $(DISTBUILD)
 	cd $(UTILDIR) ; $(PERL) loaddata.pl $(DATADIR)/db
 
-testup: checkver distdir
+testupx: checkver distdir
+	$(PERL) localinst.perl $(DISTBUILD) leavedb
+	$(PERL) -MExtUtils::Command -e rm_rf $(DISTBUILD)
+	cd $(UTILDIR) ; $(PERL) upgrade_mysql.pl -b ; $(PERL) loaddata.pl $(DATADIR)/db
+
+testload :
+	$(PERL) '-MTest::Harness=runtests,$$verbose' -Isite/cgi-bin/modules -It -e '$$verbose=$(TEST_VERBOSE); runtests @ARGV' t/t000load.t
+
+testup : testload checkver distdir
 	$(PERL) localinst.perl $(DISTBUILD) leavedb
 	$(PERL) -MExtUtils::Command -e rm_rf $(DISTBUILD)
 	cd $(UTILDIR) ; $(PERL) upgrade_mysql.pl -b ; $(PERL) loaddata.pl $(DATADIR)/db
@@ -122,7 +130,7 @@ checkver:
 TEST_FILES=t/*.t t/*/*.t
 TEST_VERBOSE=0
 
-test: testup
+test: testupx
 	$(PERL) '-MTest::Harness=runtests,$$verbose' -Isite/cgi-bin/modules -It -e '$$verbose=$(TEST_VERBOSE); runtests @ARGV' $(TEST_FILES)
 
 test_load: testup

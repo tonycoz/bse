@@ -63,7 +63,18 @@
 	<:.set items = [ order.items ] -:>
 	<:.for item in items -:>
         <tr valign="middle" align="center" bgcolor="#FFFFFF"> 
-          <td width="100%" align="left"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><a href="<:= item.product.link | html :>"><:= item.product.description | html:></a> <:= item.nice_options | html :><:.if item.session_id:>(session at <:= item.session.location.description | html:> <:= bse.date("%H:%M %d/%m/%Y", item.session.when_at) | html:>)<:.end if:></font></td>
+          <td width="100%" align="left"> &nbsp;<span class="cartproducttitle"><a href="<:= item.product.link | html :>"><:= item.product.description | html:></a></span> <:= item.nice_options | html :><:.if item.session_id:>(session at <:= item.session.location.description | html:> <:= bse.date("%H:%M %d/%m/%Y", item.session.when_at) | html:>)<:.end if:>
+<:-.if order.coupon_active and !order.coupon_cart_wide and item.product_discount_units > 0 :>
+<br><span class="itemdiscount">
+  <:-.if item.product_discount_units < item.units -:>
+Saved $<:= bse.number("money", item.product_discount) :> on the first <:= item.product_discount_units :> units
+  <:-.else -:>
+Saved $<:= bse.number("money", item.product_discount) :> on each unit
+  <:-.end if -:>
+&nbsp;(total $<:= bse.number("money", item.product_discount * item.product_discount_units) :>)
+</span>
+<:-.end if -:>
+</td>
           <td nowrap align="center"><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><:= item.units | html :></font></td>
           <td align="right"> <font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><b>$<:= bse.number("money", item.price) | html :></b></font></td>
         </tr>

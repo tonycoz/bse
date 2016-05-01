@@ -78,6 +78,10 @@ site/cgi-bin/modules/BSE/ChangePW.pm
 site/cgi-bin/modules/BSE/ComposeMail.pm
 site/cgi-bin/modules/BSE/Console.pm
 site/cgi-bin/modules/BSE/Countries.pm
+site/cgi-bin/modules/BSE/Coupon/Base.pm
+site/cgi-bin/modules/BSE/Coupon/Dollar.pm
+site/cgi-bin/modules/BSE/Coupon/Percent.pm
+site/cgi-bin/modules/BSE/Coupon/ProductPercent.pm
 site/cgi-bin/modules/BSE/Custom.pm
 site/cgi-bin/modules/BSE/CustomBase.pm
 site/cgi-bin/modules/BSE/DB.pm
@@ -529,6 +533,7 @@ site/htdocs/images/videoclose.png
 site/htdocs/js/admin-ui/debug.js
 site/htdocs/js/admin-ui/menu.js
 site/htdocs/js/admin.js
+site/htdocs/js/admin_coupons.js
 site/htdocs/js/admin_edit.js
 site/htdocs/js/admin_editprodopt.js
 site/htdocs/js/admin_jedit.js

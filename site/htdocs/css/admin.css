@@ -798,3 +798,7 @@ fieldset > ul {
   text-align: center;
   padding: 0.5em;
 }
+
+.price_tier, .productdiscount {
+  font-size: 90%;
+}

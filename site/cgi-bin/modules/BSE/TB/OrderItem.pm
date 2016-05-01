@@ -5,7 +5,7 @@ use Squirrel::Row;
 use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 sub table { "order_item" }
 
@@ -13,7 +13,7 @@ sub columns {
   return qw/id productId orderId units price wholesalePrice gst options
             customInt1 customInt2 customInt3 customStr1 customStr2 customStr3
             title description subscription_id subscription_period max_lapsed
-            session_id product_code tier_id/;
+            session_id product_code tier_id product_discount product_discount_units/;
 }
 
 sub db_columns {

@@ -2,7 +2,7 @@ package BSE::Cart;
 use strict;
 use Scalar::Util;
 
-our $VERSION = "1.011";
+our $VERSION = "1.015";
 
 =head1 NAME
 
@@ -215,13 +215,7 @@ Note: this rounds the total B<down>.
 sub discounted_product_cost {
   my ($self) = @_;
 
-  my $cost = $self->total_cost;
-
-  if ($self->coupon_active) {
-    $cost -= $cost * $self->coupon_code_discount_pc / 100;
-  }
-
-  return int($cost);
+  return $self->total_cost - $self->product_cost_discount;
 }
 
 =item product_cost_discount
@@ -233,7 +227,10 @@ Return any amount taken off the product cost.
 sub product_cost_discount {
   my ($self) = @_;
 
-  return $self->total_cost - $self->discounted_product_cost;
+  $self->coupon_active
+    or return 0;
+
+  return $self->{coupon_check}{coupon}->discount($self);
 }
 
 =item cfg_shipping
@@ -418,6 +415,8 @@ sub set_coupon_code {
 The percentage discount for the current coupon code, if that code is
 valid and the contents of the cart are valid for that coupon code.
 
+This method is historical and no longer useful.
+
 =cut
 
 sub coupon_code_discount_pc {
@@ -446,31 +445,17 @@ sub coupon_valid {
 	(
 	 coupon => $coupon,
 	 valid => 0,
+	 active => 0,
+	 msg => "",
 	);
       #print STDERR " coupon $coupon\n";
       #print STDERR "released ", 0+ $coupon->is_released, " expired ",
       #	0+$coupon->is_expired, " valid ", 0+$coupon->is_valid, "\n" if $coupon;
       if ($coupon && $coupon->is_valid) {
 	$check{valid} = 1;
-	$check{active} = 1;
-	my %tiers = map { $_ => 1 } $coupon->tiers;
-      ITEM:
-	for my $item ($self->items) {
-	  my $applies = 1;
-	  if ($item->tier_id) {
-	    #print STDERR "tier ", $item->tier_id, " tiers ", join(",", keys %tiers), "\n";
-	    if (!$tiers{$item->tier_id}) {
-	      $applies = 0;
-	    }
-	  }
-	  else {
-	    if (!$coupon->untiered) {
-	      $applies = 0;
-	    }
-	  }
-	  $item->{coupon_applies} = $applies;
-	  $applies or $check{active} = 0;
-	}
+	my ($active, $msg) = $coupon->is_active($self);
+	$check{active} = $active;
+	$check{msg} = $msg || "";
       }
       $self->{coupon_check} = \%check;
     }
@@ -479,6 +464,7 @@ sub coupon_valid {
 	{
 	 valid => 0,
 	 active => 0,
+	 msg => "",
 	};
     }
   }
@@ -502,6 +488,21 @@ sub coupon_active {
   return $self->{coupon_check}{active};
 }
 
+=item coupon_inactive_message
+
+Returns why the coupon is inactive.
+
+=cut
+
+sub coupon_inactive_message {
+  my ($self) = @_;
+
+  $self->coupon_valid
+    or return "";
+
+  return $self->{coupon_check}{msg};
+}
+
 =item coupon
 
 The current coupon object, if and only if the coupon code is valid.
@@ -515,6 +516,42 @@ sub coupon {
     or return;
 
   $self->{coupon_check}{coupon};
+}
+
+=item coupon_cart_wide
+
+Returns true if the coupon discount applies to the cart as a whole.
+
+Always returns false if the coupon is not active.
+
+If this is true the item discount methods are useful.
+
+=cut
+
+sub coupon_cart_wide {
+  my ($self) = @_;
+
+  $self->coupon_active
+    or return;
+
+  return $self->coupon->cart_wide($self);
+}
+
+=item coupon_description
+
+Describe the coupon.
+
+Compatible with order objects.
+
+=cut
+
+sub coupon_description {
+  my ($self) = @_;
+
+  $self->coupon_valid
+    or return;
+
+  return $self->coupon->describe;
 }
 
 =item custom_cost
@@ -627,7 +664,7 @@ sub affiliate_code {
   return $code;
 }
 
-=item any_phyiscal_products
+=item any_physical_products
 
 Returns true if the cart contains any physical products, ie. needs
 shipping.
@@ -788,6 +825,8 @@ sub cleanup {
 
 Empty the cart.
 
+For BSE use.
+
 =cut
 
 sub empty {
@@ -834,6 +873,16 @@ sub product {
   my $self = shift;
 
   return $self->{cart}->_product($self->{productId});
+}
+
+=item product_id
+
+Id of the product in this row.
+
+=cut
+
+sub product_id {
+  $_[0]{productId};
 }
 
 =item price
@@ -974,18 +1023,51 @@ sub option_text {
 
 =item coupon_applies
 
-Returns true if the current coupon code applies to the item.
+Returns true for a cart-wide coupon if this item allows the coupon to
+apply.
 
 =cut
 
 sub coupon_applies {
   my ($self) = @_;
 
-  $self->{cart}->coupon_valid
+  $self->{cart}->coupon_active
     or return 0;
 
-  return $self->{coupon_applies};
+  return $self->{cart}{coupon_check}{coupon}->product_valid($self->{cart}, $self->{index});
 }
+
+=item product_discount
+
+Returns the number of cents of discount this product receives per unit
+
+=cut
+
+sub product_discount {
+  my ($self) = @_;
+
+  $self->{cart}->coupon_active
+    or return 0;
+
+  return $self->{cart}{coupon_check}{coupon}->product_discount($self->{cart}, $self->{index});
+}
+
+=item product_discount_units
+
+Returns the number of units in the current row that the product
+discount applies to.
+
+=cut
+
+sub product_discount_units {
+  my ($self) = @_;
+
+  $self->{cart}->coupon_active
+    or return 0;
+
+  return $self->{cart}{coupon_check}{coupon}->product_discount_units($self->{cart}, $self->{index});
+}
+
 
 =item session
 

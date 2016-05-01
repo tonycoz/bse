@@ -93,7 +93,18 @@
   <:.end if -:>
         <tr> 
           <td class="col_description"><:.if product :><a href="<:= product.admin :>"><:= product.title :></a><:.else:><:= item.title :> (product deleted)<:.end if:> <:= item.nice_options:>
-	  <:.if item.tier_id:><br><span class="price_tier"><:= item.tier.description :></span><:.end if:></td>
+	  <:.if item.tier_id:><br><span class="price_tier"><:= item.tier.description :></span><:.end if:>
+	  <:.if item.product_discount_units -:>
+	  <br><span class="productdiscount">
+	    <:.if item.product_discount_units < item.units -:>
+	  (Saved $<:= bse.number("money", item.product_discount) :> on the first <:= item.product_discount_units :> units)
+	    <:-.else -:>
+Saved $<:= bse.number("money", item.product_discount) :> on each unit
+	    <:.end if -:>
+&nbsp;(total $<:= bse.number("money", item.product_discount * item.product_discount_units) :>)
+	   </span>
+	  <:-.end if -:>
+	  </td>
           <td class="col_units"><:= item.units:></td>
           <td class="col_unit_wsale"><:= bse.number("money", item.wholesalePrice) :></td>
           <td class="col_ext_wsale"><:= bse.number("money", item.extended("wholesalePrice")) :></td>
@@ -109,7 +120,7 @@
 </tr>
 <:.if order.coupon -:>
 <tr>
-   <td>Coupon code <b><:= order.coupon_code -:></b></td>
+   <td>Coupon code <b><:= order.coupon_code -:></b> (<:= order.coupon_description :>)</td>
    <td colspan="6" class="col_label_right">Discount:</td>
    <td class="col_extension">(<:= bse.number("money", order.product_cost_discount) -:>)</td>
 </tr>

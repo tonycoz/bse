@@ -2,11 +2,11 @@
 <:.set dist_image_uri = cfg.entryIfVar("uri", "dist_images", "/images") -:>
 <:# utility definitions :>
 <:-.define make_select; groups: 0, grouplabel: "label", groupid: "id",
-	   itemgroupid: "groupid" -:>
+	   itemgroupid: "groupid", attr: {} -:>
   <:-.if !default.defined -:>
     <:-.set default = "" -:>
   <:.end if:>
-  <select name="<:= name | html :>">
+  <select name="<:= name | html :>"<:.call "elementextra", extra:attr:>>
   <:- .if groups -:>
     <:-.for i in list -:>
       <:.if i.$itemgroupid eq "" -:>
@@ -46,8 +46,9 @@ make_multicheck expects:
   desc - the name of the description field.
   name - the name of the input elements
   readonly - true to make it readonly
+  attr - extra attributes to set on the generated inputs
 -:>
-<:-.define make_multicheck; readonly: 0-:>
+<:-.define make_multicheck; readonly: 0, attr: {}-:>
   <:.if !readonly -:>
   <input type="hidden" name="_save_<:= name -:>" value="1">
   <:.end if -:>
@@ -66,6 +67,7 @@ make_multicheck expects:
       id="<:= element_id -:>" value="<:= i.$id :>"
 <:-# readonly attribute isn't valid for checkboxes -:>
 <:-= readonly ? " disabled" : "" -:>
+<:-.call "elementextra", extra: attr -:>
     >
     <label for="<:= element_id :>"><:= i.$desc -:></label>
     </li>
@@ -138,6 +140,16 @@ Page <:= pages.page :> of <:= pages.pagecount :>
 <:.call "error_img_n", index:0 -:>
 <:.end define -:>
 
+<:.define elementextra -:>
+<:  .set extratext = "" -:>
+<:  .if extra.defined -:>
+<:    .for n in extra.keys -:>
+<:      .set extratext = extratext _ " " _ n _ '="' _ extra[n].escape("html") _ '"' -:>
+<:    .end for -:>
+<:  .end if -:>
+<:= extratext |raw -:>
+<:.end define -:>
+
 <:.define input; options: {} -:>
 <:# parameters:
   name - field name
@@ -158,18 +170,20 @@ Page <:= pages.page :> of <:= pages.pagecount :>
 <:    .set default = default.replace(/(\d+)\D+(\d+)\D+(\d+)/, "$3/$2/$1") -:>
 <:  .elsif field.type and field.type eq "time" and default ne "" -:>
 <:    .set default = bse.date(default =~ /:00$/ ? "%I:%M%p" : "%I:%M:%S%p", default).replace(/^0/, "").lower() -:>
+<:  .elsif field.type and field.type eq "money" and default ne "" -:>
+<:    .set default = bse.number("money", default) -:>
 <:  .end if -:>
 <:  .if cgi.param(name).defined -:>
 <:     .set default = cgi.param(name) -:>
 <:  .end if -:>
 <:  .if field.htmltype eq "textarea" -:>
-<textarea id="<:= name | html :>" name="<:= name | html :>" rows="<:= field.height ? field.height : cfg.entry("forms", "textarea_rows", 10) :>" cols=<:= field.width ? field.width : cfg.entry("forms", "textarea_cols", 60) | html :>>
+<textarea id="<:= name | html :>" name="<:= name | html :>" rows="<:= field.height ? field.height : cfg.entry("forms", "textarea_rows", 10) :>" cols=<:= field.width ? field.width : cfg.entry("forms", "textarea_cols", 60) | html :><:.call "elementextra", extra: options.inputattr :>>
 <:-= default | html -:>
 </textarea>
 <:  .elsif field.htmltype eq "checkbox" -:>
 <:.set is_checked = cgi.param("_save_" _ name) ? cgi.param(name).defined : default -:>
 <input type="hidden" name="_save_<:= name -:>" value="1">
-<input id="<:= name | html :>" type="checkbox" name="<:= name | html :>"<:= is_checked ? ' checked="checked"' : '' :> value="<:= field.value ? field.value : 1 | html :>" />
+<input id="<:= name | html :>" type="checkbox" name="<:= name | html :>"<:= is_checked ? ' checked="checked"' : '' :> value="<:= field.value ? field.value : 1 | html :>"<:.call "elementextra", extra: options.inputattr :> />
 <:  .elsif field.htmltype eq "multicheck" -:>
 <:# we expect default to be a list of selected checks -:>
 <:.set values = field.select["values"] -:>
@@ -177,7 +191,8 @@ Page <:= pages.page :> of <:= pages.pagecount :>
 <:.set default = cgi.param("_save_" _ name) ? [ cgi.param(name) ] : default -:>
 <:.call "make_multicheck",
   id:field.select.id,
-  desc:field.select.label -:>
+  desc:field.select.label,
+  attr: options.inputattr -:>
 <:  .elsif field.htmltype eq "select" -:>
 <:.set values = field.select["values"] -:>
 <:.set values = values.is_code ? values() : values -:>
@@ -190,17 +205,18 @@ Page <:= pages.page :> of <:= pages.pagecount :>
     groupid : (field.select.groupid or "id"),
     itemgroupid: (field.select.itemgroupid or "groupid"),
     groups: field.select.groups ? (field.select.groups.is_code ? (field.select.groups)() : field.select.groups ) : 0,
-    grouplabel: (field.select.grouplabel or "label")
+    grouplabel: (field.select.grouplabel or "label"),
+    attr: options.inputattr
 -:>
 <:  .elsif field.htmltype eq 'file' -:>
 <:   .if default.length -:>
 <span class="filename"><:= default :></span>
 <:   .end if -:>
-<input id="<:= name :>" type="file" name="<:= name :>" />
+<input id="<:= name :>" type="file" name="<:= name :>"<:.call "elementextra", extra: options.inputattr :> />
 <:- .else -:>
 <input id="<:= name | html :>" type="text" name="<:= name | html :>" value="<:=  default | html :>" 
 <:-= field.maxlength ? ' maxlength="' _ field.maxlength _ '"' : '' |raw:>
-<:-= field.width ? ' size="' _ field.width _ '"' : '' | raw :> />
+<:-= field.width ? ' size="' _ field.width _ '"' : '' | raw :><:.call "elementextra", extra: options.inputattr :> />
 <:  .end if -:>
 <:.end define -:>
 
@@ -231,9 +247,17 @@ Page <:= pages.page :> of <:= pages.pagecount :>
      note - display this text as a note below the field
      delete - add a delete checkbox
      default - a custom default value, overrides object
+     htmlattr - attributes for the wrapper div
+     inputattr - attributes for the input/select generated
 -:>
   <:.if field.is_hash -:>
-<div>
+  <:.set divextra = "" -:>
+  <:.if options.htmlattr :>
+    <:.for n in options.htmlattr.keys -:>
+      <:.set divextra = divextra _ " " _ n _ '="' _ options.htmlattr[n].escape("html") _ '"' -:>
+    <:.end for -:>
+  <:.end if -:>
+<div<:= divextra |raw:>>
   <label for="<:= name :>"><:= field.nolabel ? "" : field.description | html :>:</label>
   <span>
     <:-.if field.readonly -:>

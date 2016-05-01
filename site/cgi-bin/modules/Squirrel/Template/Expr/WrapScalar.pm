@@ -2,7 +2,7 @@ package Squirrel::Template::Expr::WrapScalar;
 use strict;
 use base qw(Squirrel::Template::Expr::WrapBase);
 
-our $VERSION = "1.010";
+our $VERSION = "1.011";
 
 sub _do_length  {
   my ($self, $args) = @_;
@@ -244,7 +244,7 @@ sub _do_match {
   my ($self, $args) = @_;
 
   @$args == 1
-    or die [ error => "scalar.escape requires one parameter" ];
+    or die [ error => "scalar.match requires one parameter" ];
 
   $self->[0] =~ $args->[0]
     or return undef;

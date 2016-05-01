@@ -7,7 +7,7 @@ use vars qw/@ISA/;
 use Carp 'confess';
 use BSE::Shop::PaymentTypes;
 
-our $VERSION = "1.026";
+our $VERSION = "1.029";
 
 sub columns {
   return qw/id
@@ -30,7 +30,8 @@ sub columns {
            delivStreet2 billStreet2 purchase_order shipping_method
            shipping_name shipping_trace
 	   paypal_token paypal_tran_id freight_tracking stage ccPAN
-	   paid_manually coupon_id coupon_code_discount_pc delivery_in/;
+	   paid_manually coupon_id coupon_code_discount_pc delivery_in
+           product_cost_discount coupon_cart_wide coupon_description/;
 }
 
 sub table {
@@ -771,21 +772,13 @@ sub discounted_product_cost {
 
   my $cost = $self->total_cost;
 
-  $cost -= $cost * $self->coupon_code_discount_pc / 100;
+  if ($self->product_cost_discount) {
+    return $cost - $self->product_cost_discount;
+  }
 
-  return int($cost);
-}
+  $cost -= int($cost * $self->coupon_code_discount_pc / 100);
 
-=item product_cost_discount
-
-Return any amount taken off the product cost.
-
-=cut
-
-sub product_cost_discount {
-  my ($self) = @_;
-
-  return $self->total_cost - $self->discounted_product_cost;
+  return $cost;
 }
 
 =item coupon

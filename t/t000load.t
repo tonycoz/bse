@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 38;
+use Test::More tests => 45;
 use_ok("BSE::Cfg");
 use_ok("Squirrel::Template");
 use_ok("BSE::Template");
@@ -19,6 +19,8 @@ use_ok("BSE::TB::TagOwner");
 use_ok("BSE::TB::TagOwners");
 use_ok("BSE::TB::Article");
 use_ok("BSE::TB::Articles");
+use_ok("BSE::TB::Coupons");
+use_ok("BSE::TB::Coupon");
 use_ok('BSE::Generate');
 use_ok('BSE::Generate::Article');
 use_ok('BSE::Generate::Product');
@@ -39,6 +41,11 @@ use_ok("BSE::UI::Interest");
 use_ok("BSE::Request::Base");
 use_ok("BSE::Request");
 use_ok("BSE::Request::Test");
+use_ok("BSE::Coupon::Base");
+use_ok("BSE::Coupon::Percent");
+use_ok("BSE::Coupon::Dollar");
+use_ok("BSE::Coupon::ProductPercent");
+use_ok("BSE::UI::AdminShop");
 
 my $builder = Test::Builder->new;
 $builder->is_passing or $builder->BAIL_OUT;

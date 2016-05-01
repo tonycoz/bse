@@ -183,10 +183,12 @@ Column code;varchar(40);NO;NULL;
 Column description;text;NO;NULL;
 Column release;date;NO;NULL;
 Column expiry;date;NO;NULL;
-Column discount_percent;double;NO;NULL;
+Column discount_percent;double;YES;NULL;
 Column campaign;varchar(20);NO;NULL;
 Column last_modified;datetime;NO;NULL;
 Column untiered;int(11);NO;0;
+Column classid;varchar(20);NO;bse_simple;
+Column config;blob;NO;NULL;
 Index PRIMARY;1;[id]
 Index codes;1;[code]
 Table bse_file_access_log
@@ -598,6 +600,8 @@ Column max_lapsed;int(11);NO;0;
 Column session_id;int(11);NO;-1;
 Column product_code;varchar(80);NO;;
 Column tier_id;int(11);YES;NULL;
+Column product_discount;int(11);NO;0;
+Column product_discount_units;int(11);NO;0;
 Index PRIMARY;1;[id]
 Index order_item_order;0;[orderId;id]
 Index tier_id;0;[tier_id]
@@ -680,8 +684,11 @@ Column stage;varchar(20);NO;;
 Column ccPAN;varchar(4);NO;;
 Column paid_manually;int(11);NO;0;
 Column coupon_id;int(11);YES;NULL;
-Column coupon_code_discount_pc;double;NO;0;
+Column coupon_code_discount_pc;double;YES;0;
 Column delivery_in;int(11);YES;NULL;
+Column product_cost_discount;int(11);NO;0;
+Column coupon_cart_wide;int(11);NO;1;
+Column coupon_description;varchar(255);NO;;
 Index PRIMARY;1;[id]
 Index order_cchash;0;[ccNumberHash]
 Index order_coupon;0;[coupon_id]

@@ -7,7 +7,7 @@
 </p>
 <:.call "messages"-:>
 <:.set object = coupon -:>
-<form action="<:= cfg.admin_url("shopadmin") :>" method="post">
+<form action="<:= cfg.admin_url("shopadmin") :>" method="post" id="coupon_form">
   <:csrfp admin_bse_coupon_add hidden:>
   <fieldset>
     <legend>Coupon Details</legend>
@@ -15,7 +15,21 @@
     <:.call "field", "name":"description" :>
     <:.call "field", "name":"release" :>
     <:.call "field", "name":"expiry" :>
-    <:.call "field", "name":"discount_percent" :>
+    <:.call "field", "name":"classid" :>
+    <:.set classid = cgi.param("classid") ? [ cgi.param("classid") ][0] : behaviours[0].id -:>
+    <:.for bh in behaviours -:>
+      <:.set fs = bh.behaviour.config_fields -:>
+      <:.set ordered_f = fs.keys.sort(@{a,b: fs[a].order <=> fs[b].order }) -:>
+      <:.set attr = { "data-behaviour": bh.id } -:>
+      <:.set inputattr = { } -:>
+      <:.if classid ne bh.id -:>
+        <:% attr.set("style", "display: none") -:>
+        <:% inputattr.set("disabled", "disabled") -:>
+      <:.end if -:>
+      <:.for f in ordered_f -:>
+        <:.call "field", name:f, fields: fs, options: { htmlattr: attr, inputattr: inputattr } -:>
+      <:.end for -:>
+    <:.end for -:>
     <:.call "field", "name":"campaign" :>
   </fieldset>
   <:.call "fieldset", "name":"tiers" :>
@@ -23,3 +37,5 @@
     <input type="submit" name="a_coupon_add" value="Add Coupon">
   </p>
 </form>
+<script type="text/javascript" src="/js/admin_coupons.js"></script>
+

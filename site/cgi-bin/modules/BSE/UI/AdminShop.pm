@@ -21,7 +21,7 @@ use BSE::CfgInfo qw(cfg_dist_image_uri);
 use BSE::Util::SQL qw/now_sqldate sql_to_date date_to_sql sql_date sql_datetime/;
 use BSE::Util::Valid qw/valid_date/;
 
-our $VERSION = "1.028";
+our $VERSION = "1.030";
 
 my %actions =
   (
@@ -1272,6 +1272,25 @@ sub req_coupon_list {
   return $req->dyn_response('admin/coupons/list', \%acts);
 }
 
+# coupon behaviour classes wrapped for use in templates
+
+sub _coupon_behaviours {
+  my ($self) = @_;
+
+  require BSE::TB::Coupons;
+  my $bclasses = BSE::TB::Coupons->behaviour_classes();
+  return
+    [
+     map
+     +{
+       id => $_,
+       behaviour => Squirrel::Template::Expr::WrapClass->new($bclasses->{$_})
+      },
+     sort { lc $bclasses->{$a}->class_description cmp lc $bclasses->{$b}->class_description}
+     keys %$bclasses
+    ]
+}
+
 =item coupon_addform
 
 Display a form for adding new coupons.
@@ -1315,6 +1334,7 @@ sub req_coupon_addform {
   $req->set_variable(errors => $errors || {});
   require BSE::TB::PriceTiers;
   $req->set_variable(tiers => [ BSE::TB::PriceTiers->all ]);
+  $req->set_variable(behaviours => $self->_coupon_behaviours);
 
   return $req->dyn_response("admin/coupons/add", \%acts);
 }
@@ -1339,8 +1359,19 @@ sub req_coupon_add {
   my %errors;
   $req->validate(fields => $fields, errors => \%errors,
 		 rules => BSE::TB::Coupon->rules);
-
   my $values = $req->cgi_fields(fields => $fields);
+
+  unless ($errors{classid}) {
+    my $bh = BSE::TB::Coupons->behaviour_class($values->{classid});
+    my $bfields = $bh->config_fields();
+    my $brules = $bh->config_rules();
+    $req->validate(fields => $bfields, rules => $brules,
+		   errors => \%errors);
+    unless (keys %errors) {
+      $values->{config_obj} = $req->cgi_fields(fields => $bfields);
+      $bh->config_valid($values->{config_obj}, \%errors);
+    }
+  }
 
   unless ($errors{code}) {
     my ($other) = BSE::TB::Coupons->getBy(code => $values->{code});
@@ -1470,6 +1501,7 @@ sub req_coupon_edit {
   $req->set_variable(errors => $errors || {});
   require BSE::TB::PriceTiers;
   $req->set_variable(tiers => [ BSE::TB::PriceTiers->all ]);
+  $req->set_variable(behaviours => $self->_coupon_behaviours);
 
   return $req->dyn_response("admin/coupons/edit", \%acts);
 }
@@ -1509,6 +1541,18 @@ sub req_coupon_save {
 
   my $values = $req->cgi_fields(fields => $fields);
 
+  unless ($errors{classid}) {
+    my $bh = BSE::TB::Coupons->behaviour_class($values->{classid});
+    my $bfields = $bh->config_fields();
+    my $brules = $bh->config_rules();
+    $req->validate(fields => $bfields, rules => $brules,
+		   errors => \%errors);
+    unless (keys %errors) {
+      $values->{config_obj} = $req->cgi_fields(fields => $bfields);
+      $bh->config_valid($values->{config_obj}, \%errors);
+    }
+  }
+
   unless ($errors{code}) {
     my ($other) = BSE::TB::Coupons->getBy(code => $values->{code});
     $other && $other->id != $coupon->id
@@ -1524,10 +1568,12 @@ sub req_coupon_save {
   my $old = $coupon->json_data;
 
   my $tiers = delete $values->{tiers};
+  my $config_obj = delete $values->{config_obj};
   for my $key (keys %$values) {
     $coupon->set($key => $values->{$key});
   }
   $coupon->set_tiers($tiers);
+  $coupon->set_config_obj($config_obj);
   $coupon->save;
 
   $req->audit

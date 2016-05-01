@@ -4,7 +4,7 @@ use Squirrel::Row;
 our @ISA = qw/Squirrel::Row/;
 use BSE::TB::CouponTiers;
 
-our $VERSION = "1.003";
+our $VERSION = "1.007";
 
 =head1 NAME
 
@@ -27,7 +27,8 @@ Represents shop coupons.
 =cut
 
 sub columns {
-  return qw/id code description release expiry discount_percent campaign last_modified untiered/;
+  return qw/id code description release expiry discount_percent campaign last_modified untiered
+            classid config/;
 }
 
 sub table {
@@ -40,6 +41,7 @@ sub defaults {
     (
      last_modified => BSE::Util::SQL::now_sqldatetime(),
      untiered => 1,
+     discount_percent => undef,
     );
 }
 
@@ -139,6 +141,8 @@ sub json_data {
 
   my $data = $self->data_only;
   $data->{tiers} = [ $self->tiers ];
+  $data->{config_obj} = $self->config_obj;
+  delete @$data{qw/config discount_percent/};
 
   return $data;
 }
@@ -208,6 +212,121 @@ sub is_renamable {
   return $self->is_removable;
 }
 
+=item is_active
+
+Returns a list of (is active, message) for the given cart.
+
+Wrapper around is_active() for the behaviour.
+
+  my ($active, $msg) = $coupon->is_active($cart);
+
+=cut
+
+sub is_active {
+  my ($self, $cart) = @_;
+
+  return $self->behaviour->is_active($self, $cart);
+}
+
+=item discount
+
+Return the discount in cents for the given cart.
+
+Must only be called if is_active() returned the coupon as active.
+
+Wrapper around discount() for the behaviour.
+
+  my ($cents) = $coupon->discount($cart);
+
+=cut
+
+sub discount {
+  my ($self, $cart) = @_;
+
+  return $self->behaviour->discount($self, $cart);
+}
+
+=item product_valid
+
+Return true if the given cart item is valid for the coupon.
+
+Only relevant for cart-wide coupons.
+
+=cut
+
+sub product_valid {
+  my ($self, $cart, $index) = @_;
+
+  return $self->behaviour->product_valid($self, $cart, $index);
+}
+
+=item product_discount
+
+Return the product specific discount per unit for the given row
+(counting from zero) in the cart.
+
+Must only be called if is_active() returned the coupon as active.
+
+Returns zero if the coupon discount is for the cart as a whole.
+
+Wrapper around product_discount() for the behaviour.
+
+  my $cents = $coupon->product_discount($cart, $index);
+
+=cut
+
+sub product_discount {
+  my ($self, $cart, $index) = @_;
+
+  return $self->behaviour->product_discount($self, $cart, $index);
+}
+
+=item product_discount_units
+
+Return the number of units a product specific discount applies to the given row
+(counting from zero) in the cart.
+
+Must only be called if is_active() returned the coupon as active.
+
+Returns zero if the coupon discount is for the cart as a whole.
+
+Wrapper around product_discount_units() for the behaviour.
+
+  my $cents = $coupon->product_discount_units($cart, $index);
+
+=cut
+
+sub product_discount_units {
+  my ($self, $cart, $index) = @_;
+
+  return $self->behaviour->product_discount_units($self, $cart, $index);
+}
+
+=item describe
+
+Describe the behaviour of the coupon briefly.
+
+=cut
+
+sub describe {
+  my ($self) = @_;
+
+  $self->behaviour->describe;
+}
+
+=item cart_wide($cart)
+
+Returns true if the discount provided by the behaviour applies to the
+cart as a whole.
+
+=cut
+
+sub cart_wide {
+  my ($self, $cart) = @_;
+
+  return $self->behaviour->cart_wide($cart);
+}
+
 =item set_code($code)
 
 Set the coupon code.  Requires that is_renamable() be true.
@@ -225,6 +344,8 @@ sub set_code {
 
 sub fields {
   my ($self) = @_;
+
+  my $bclasses = BSE::TB::Coupons->behaviour_classes;
 
   my %fields =
     (
@@ -263,15 +384,6 @@ sub fields {
       type => "date",
       rules => "date",
      },
-     discount_percent =>
-     {
-      description => "Discount %",
-      required => 1,
-      width => 5,
-      htmltype => "text",
-      rules => "coupon_percent",
-      units => "%",
-     },
      campaign =>
      {
       description => "Campaign",
@@ -303,6 +415,27 @@ sub fields {
        label => "description",
       },
      },
+     classid =>
+     {
+      description => "Coupon Class",
+      htmltype => "select",
+      select =>
+      {
+       id => "id",
+       label => "label",
+       values =>
+       [
+	sort { lc $a->{label} cmp lc $b->{label} }
+	map
+	+{
+	  id => $_,
+	  label => $bclasses->{$_}->class_description,
+	 },
+	sort { lc $bclasses->{$a}->class_description cmp lc $bclasses->{$b}->class_description}
+	keys %$bclasses
+       ],
+      },
+     },
     );
 
   if (ref $self && !$self->is_renamable) {
@@ -321,11 +454,44 @@ sub rules {
       match => qr/\A[a-zA-Z0-9]+\z/,
       error => '$n can only contain letters and digits',
      },
-     coupon_percent =>
-     {
-      real => '0 - 100',
-     },
     };
+}
+
+sub config_obj {
+  my ($self) = @_;
+
+  my $config = $self->config;
+  $config = "{}" if $config eq "";
+
+  require JSON;
+  my $obj = JSON->new->decode($config);
+  $obj->{discount_percent} = $self->discount_percent;
+
+  return $obj;
+}
+
+sub set_config_obj {
+  my ($self, $obj) = @_;
+
+  $self->set_discount_percent(delete $obj->{discount_percent});
+
+  require JSON;
+  $self->set_config(JSON->new->encode($obj));
+}
+
+sub behaviour {
+  my ($self) = @_;
+
+  delete $self->{_behaviour}
+    if $self->{_classid} ne $self->classid
+    || $self->{_config} ne $self->config;
+
+  $self->{_behaviour} ||=
+    BSE::TB::Coupons->behaviour_class($self->classid)->new($self->config_obj);
+  $self->{_classid} = $self->classid;
+  $self->{_config} = $self->config;
+
+  $self->{_behaviour};
 }
 
 1;

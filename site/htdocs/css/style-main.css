@@ -190,3 +190,9 @@ div#admin_messages {
   border: 1px dashed #F00;
   padding: 2px 5px;
 }
+
+.itemdiscount {
+  color: green;
+  font-size: 80%;
+  padding-left: 1em;
+}

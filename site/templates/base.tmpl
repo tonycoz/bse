@@ -23,8 +23,8 @@
 <:- .if article.metaDescription :>
   <meta name="description" content="<:= article.metaDescription:>" />
 <:- .end if:>
-<:- .if article.linkAlias or article.id == 1:>
   <link rel="stylesheet" type="text/css" href="/css/style-main.css">
+<:- .if article.linkAlias or article.id == 1:>
   <link rel="canonical" href="<:= url(article, 1) :>" />
 <:- .end if:>
 <:ajax includes:>

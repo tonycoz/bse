@@ -99,8 +99,19 @@ function BSE_validateForm {
 <:= item.coupon_applies ? "Y" : "N" -:>
     	    </td>
 <:.end if -:>
-            <td width="100%" align="left"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><a href="<:= item.link | html:>"><:= item.product.description | html :> <:.if options.size:>(<:.for option in options:><:= loop.index ? ", " : "" :><:= option.desc | html:>: 
-              <:= option.display |html :><:.end for:>)<:.end if -:></a><:.if item.session_id:>(session at <:= session.location.description | html:> <:= bse.date("%H:%M %d/%m/%Y", session.when_at) -:>)<:.end if:></font></td>
+            <td width="100%" align="left"> &nbsp;<span class="cartproducttitle"><a href="<:= item.link | html:>"><:= item.product.description | html :></a></span> <:.if options.size:>(<:.for option in options:><:= loop.index ? ", " : "" :><:= option.desc | html:>: 
+              <:= option.display |html :><:.end for:>)<:.end if -:><:.if item.session_id:>(session at <:= session.location.description | html:> <:= bse.date("%H:%M %d/%m/%Y", session.when_at) -:>)<:.end if:>
+<:-.if cart.coupon_active and !cart.coupon_cart_wide and item.product_discount_units > 0 :>
+<br><span class="itemdiscount">
+  <:-.if item.product_discount_units < item.units -:>
+Saved $<:= bse.number("money", item.product_discount) :> on the first <:= item.product_discount_units :> units
+  <:-.else -:>
+Saved $<:= bse.number("money", item.product_discount) :> on each unit
+  <:-.end if -:>
+&nbsp;(total $<:= bse.number("money", item.product_discount * item.product_discount_units) :>)
+</span>
+<:-.end if -:>
+</td>
             <td nowrap align="center"> 
               <input type="text" name="quantity_<:= loop.index :>" size="2" value="<:= item.units :>">
             </td>
@@ -134,11 +145,7 @@ function BSE_validateForm {
 <:.if cart.coupon_active -:>
 Coupon active
 <:.elsif cart.coupon_valid -:>
-<:.if request.siteuser -:>
-Your cart contains items the code isn't valid for
-<:.else -:>
-You need to logon
-<:.end if -:>
+<:= cart.coupon_inactive_message :>
 <:.elsif cart.coupon_code ne "" -:>
 Unknown coupon code
 <:.end if -:>
@@ -294,7 +301,7 @@ Unknown coupon code
       <td> <font face="Verdana, Arial, Helvetica, sans-serif" size="2"> 
         <textarea name="instructions" rows="5" cols="40" wrap="virtual"><:old instructions:></textarea></font><:error_img instructions:></td>
     </tr>
-<:.if cart.cfg_shipping and cfg.any_physical_products:>
+<:.if cart.cfg_shipping and cart.any_physical_products:>
     <tr>
       <td valign="top"><font face="Verdana, Arial, Helvetica, sans-serif" size="2">Shipping<br /> method:</font></td>
       <td><font face="Verdana, Arial, Helvetica, sans-serif" size="2"><:shipping_select:></font><:error_img shipping_name:> *

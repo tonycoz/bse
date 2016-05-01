@@ -350,9 +350,16 @@ create table orders (
   paid_manually integer not null default 0,
 
   coupon_id integer null,
-  coupon_code_discount_pc real not null default 0,
+  -- obsolete
+  coupon_code_discount_pc real null default 0,
 
   delivery_in integer null,
+
+  product_cost_discount integer not null default 0,
+
+  coupon_cart_wide integer not null default 1,
+
+  coupon_description varchar(255) not null default '',
 
   primary key (id),
   index order_cchash(ccNumberHash),
@@ -403,6 +410,9 @@ create table order_item (
   product_code varchar(80) not null default '',
 
   tier_id integer null default null,
+
+  product_discount integer not null default 0,
+  product_discount_units integer not null default 0,
 
   primary key (id),
   index order_item_order(orderId, id)
@@ -1363,13 +1373,17 @@ create table bse_coupons (
 
   expiry date not null,
 
-  discount_percent real not null,
+  discount_percent real null,
 
   campaign varchar(20) not null,
 
   last_modified datetime not null,
 
   untiered integer not null default 0,
+
+  classid varchar(20) not null default 'bse_simple',
+
+  config blob not null,
 
   unique codes(code)
 ) engine=InnoDB;

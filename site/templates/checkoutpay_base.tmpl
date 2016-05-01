@@ -52,8 +52,20 @@
 	      <:.set options = [ item.option_list ] -:>
 	      <:.set session = item.session -:>
           <tr valign="middle" align="center" bgcolor="#FFFFFF"> 
-            <td width="100%" align="left"> &nbsp;<font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><a href="<:= item.link | html:>"><:= item.product.description | html :> <:.if options.size:>(<:.for option in options:><:= loop.index ? ", " : "" :><:= option.desc | html:>: 
-              <:= option.display |html :><:.end for:>)<:.end if -:></a><:.if item.session_id:>(session at <:= session.location.description | html:> <:= bse.date("%H:%M %d/%m/%Y", session.when_at) -:>)<:.end if:></font></td>
+            <td width="100%" align="left"> &nbsp;<span class="cartproducttitle"><a href="<:= item.link | html:>"><:= item.product.description | html :></a></span> <:.if options.size:>(<:.for option in options:><:= loop.index ? ", " : "" :><:= option.desc | html:>: 
+              <:= option.display |html :><:.end for:>)<:.end if -:><:.if item.session_id:>(session at <:= session.location.description | html:> <:= bse.date("%H:%M %d/%m/%Y", session.when_at) -:>)<:.end if:>
+<:-.if ordercart.coupon_active and !ordercart.coupon_cart_wide and item.product_discount_units > 0 :>
+<br><span class="itemdiscount">
+  <:-.if item.product_discount_units < item.units -:>
+Saved $<:= bse.number("money", item.product_discount) :> on the first <:= item.product_discount_units :> units
+  <:-.else -:>
+Saved $<:= bse.number("money", item.product_discount) :> on each unit
+  <:-.end if -:>
+&nbsp;(total $<:= bse.number("money", item.product_discount * item.product_discount_units) :>)
+</span>
+<:-.end if -:>
+</td>
+</td>
             <td nowrap align="center"> 
               <input type="text" name="quantity_<:= loop.index :>" size="2" value="<:= item.units :>">
             </td>
