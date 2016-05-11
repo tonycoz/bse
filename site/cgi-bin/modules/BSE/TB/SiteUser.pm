@@ -18,7 +18,7 @@ SiteUser - represent a site user (or member)
 
 =cut
 
-our $VERSION = "1.017";
+our $VERSION = "1.018";
 
 use constant MAX_UNACKED_CONF_MSGS => 3;
 use constant MIN_UNACKED_CONF_GAP => 2 * 24 * 60 * 60;
@@ -1033,6 +1033,15 @@ sub logon {
   my ($self) = @_;
 
   return $self->userId;
+}
+
+sub data_only {
+  my ($self) = @_;
+
+  my $data = $self->SUPER::data_only();
+  delete @$data{qw/confirmSecret password password_type/};
+
+  return $data;
 }
 
 =back
