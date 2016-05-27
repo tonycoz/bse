@@ -2,7 +2,7 @@ package BSE::Cart;
 use strict;
 use Scalar::Util;
 
-our $VERSION = "1.010";
+our $VERSION = "1.011";
 
 =head1 NAME
 
@@ -96,6 +96,16 @@ sub _checkout_update {
   $cust_class->checkout_update
     ($req->cgi, scalar $self->items, scalar $self->products,
      \%custom_state, $req->cfg);
+}
+
+=item request
+
+Return the request object.
+
+=cut
+
+sub request {
+  $_[0]{req};
 }
 
 =item is_empty()
