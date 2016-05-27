@@ -3,7 +3,7 @@ use strict;
 use DevHelp::HTML;
 use Carp 'confess';
 
-our $VERSION = "1.011";
+our $VERSION = "1.012";
 
 use constant DEBUG => 0;
 
@@ -453,9 +453,9 @@ sub format {
       # attempts to convert class[name|paragraph] into <p class="name">...
       # tried to use a negative lookahead but it wouldn't work
       $part =~ s#<(p\b[^>]*)><span\ class="([^"<>]+)">(.*?)</span></p>
-		#<$1 class="$2">$3</p>#xg;
+		#<$1 class="$2">$3</p>#xgs;
       $part =~ s#<(p\b[^>]*)><span\ style="([^"<>]+)">(.*?)</span></p>
-		#<$1 style="$2">$3</p>#xg;
+		#<$1 style="$2">$3</p>#xgs;
       if (my $p_class = $self->tag_class('p')) {
 	$part =~ s!(<p(?: style="[^"<>]+")?)>!$1 class="$p_class">!g;
       }
