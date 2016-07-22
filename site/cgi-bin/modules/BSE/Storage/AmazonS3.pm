@@ -5,7 +5,7 @@ our @ISA = qw(BSE::Storage::Base);
 use Net::Amazon::S3;
 use Carp qw(confess);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 sub new {
   my ($class, %opts) = @_;
@@ -19,6 +19,7 @@ sub new {
       or confess "Missing $key from configuration";
   }
   $self->{prefix} = $self->configure('prefix', '');
+  $self->{host} = $self->configure('host', 's3.amazonaws.com');
 
   return $self;
 }
@@ -30,7 +31,8 @@ sub _connect {
     (
      {
       aws_access_key_id => $self->{keyid},
-      aws_secret_access_key => $self->{accesskey}
+      aws_secret_access_key => $self->{accesskey},
+      host => $self->{host},
      }
     );
 
@@ -142,9 +144,17 @@ BSE::Storage::AmazonS3 - storage that stores via Amazon S3.
   accesskey=...
   bucket=ftppassword
   cond=...
+  host=...
 
 =head1 DESCRIPTION
 
 This is a BSE storage that accesses the remote store via Amazon S3.
+
+C<host> must be set to the end-point matching the location of the
+bucket, see:
+
+  http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
+
+for details.  Defaults to C<s3.amazonaws.com> if not set.
 
 =cut
