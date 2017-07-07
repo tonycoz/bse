@@ -11,7 +11,7 @@ use BSE::Util::HTML qw':default popup_menu';
 use BSE::Util::Tags qw(tag_article);
 use BSE::Request;
 
-our $VERSION = "1.005";
+our $VERSION = "1.006";
 
 my %actions =
   (
@@ -41,8 +41,18 @@ sub req_search {
   my @terms; # terms as parsed by the search engine
   my $case_sensitive;
   if (defined $words && length $words) {
-    $case_sensitive = $words ne lc $words;
-    @results = getSearchResult($req, $words, $section, $date, \@terms, $match_all);
+    my $case = $cfg->entry('search', 'case_sensitive', 'context');
+    if ($case eq 'context') {
+      $case_sensitive = $words ne lc $words;
+    }
+    elsif ($case eq 'controlled') {
+      $case_sensitive = $cfg->param('c') || 0;
+    }
+    else {
+      $case_sensitive = 0;
+    }
+    @results = getSearchResult($req, $words, $section, $date, \@terms, $match_all,
+			       $case_sensitive);
   }
   else { 
     $words = ''; # so we don't return junk for the form default
@@ -324,14 +334,15 @@ sub tag_highlight_result {
 }
 
 sub getSearchResult {
-  my ($req, $words, $section, $date, $terms, $match_all) = @_;
+  my ($req, $words, $section, $date, $terms, $match_all, $match_case) = @_;
 
   my $cfg = $req->cfg;
   my $searcher_class = $cfg->entry('search', 'searcher', 'BSE::Search::BSE');
   (my $searcher_file = $searcher_class . '.pm') =~ s!::!/!g;;
   require $searcher_file;
-  my $searcher = $searcher_class->new(cfg => $cfg);
-  return $searcher->search($words, $section, $date, $terms, $match_all, $req);
+  my $case_sensitivity = $cfg->entry('search', 'case_sensitive', 'context');
+  my $searcher = $searcher_class->new(cfg => $cfg, case => $case_sensitivity);
+  return $searcher->search($words, $section, $date, $terms, $match_all, $req, $match_case);
 }
 
 my %gens;

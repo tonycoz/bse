@@ -842,6 +842,31 @@ module be installed.
 Articles with a higher level than this are indexed as their ancestor.
 Default: C<$SEARCH_LEVEL> which defaults to 5.
 
+=item case_sensitive
+
+Level of case-sensitivity in the search engine.  This can be one of:
+
+=over
+
+=item *
+
+C<none> - no case-sensitive searches
+
+=item *
+
+C<context> - case-sensitive if there are any upper-case characters in
+the search string, case-insensitive otherwise.
+
+=item *
+
+C<controlled> - case-sensitive via a query parameter.  This is
+currently not supported by the built-in search engie.
+
+=back
+
+Renegerate your search indexes after changing this value.  Default:
+context.
+
 =back
 
 =head2 [search highlight]

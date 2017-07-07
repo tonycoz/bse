@@ -5,7 +5,7 @@ use BSE::DB;
 use Constants qw($MAXPHRASE);
 use BSE::CfgInfo qw(cfg_data_dir);
 
-our $VERSION = "1.003";
+our $VERSION = "1.004";
 
 sub new {
   my ($class, %opts) = @_;
@@ -17,6 +17,9 @@ sub new {
     or die "No dropIndex member in BSE::DB";
   $self->{insertIndex} = $self->{dh}->stmt('insertIndex')
     or die "No insertIndex member in BSE::DB";
+
+  $self->{case} eq 'controlled'
+    and die "BSE built-in searcher doesn't support controlled search (yet)";
 
   my $priority = $self->{cfg}->entry("search", "index_priority", "speed");
   if ($priority eq "speed") {
@@ -114,17 +117,22 @@ sub process {
     $end = $#words if $end > $#words;
     
     for my $phrase (map { "@words[$start..$_]" } $start..$end) {
-      if (lc $phrase ne $phrase && !$seen->{lc $phrase}++) {
-	my $temp = $self->{index}{lc $phrase};
-	if (exists $temp->{$id}) {
-	  $weights->{lc $phrase} *= $self->{decay_multiplier};
-	  $temp->{$id}[1] += $score * $weights->{lc $phrase};
+      if ($self->{case} eq 'context') {
+	if (lc $phrase ne $phrase && !$seen->{lc $phrase}++) {
+	  my $temp = $self->{index}{lc $phrase};
+	  if (exists $temp->{$id}) {
+	    $weights->{lc $phrase} *= $self->{decay_multiplier};
+	    $temp->{$id}[1] += $score * $weights->{lc $phrase};
+	  }
+	  else {
+	    $weights->{lc $phrase} = 1.0;
+	    $temp->{$id} = [ $sectionid, $score ];
+	  }
+	  $self->{index}{lc $phrase} = $temp;
 	}
-	else {
-	  $weights->{lc $phrase} = 1.0;
-	  $temp->{$id} = [ $sectionid, $score ];
-	}
-	$self->{index}{lc $phrase} = $temp;
+      }
+      else {
+	$phrase = lc $phrase;
       }
       if (!$seen->{$phrase}++) {
 	my $temp = $self->{index}{$phrase};

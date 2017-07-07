@@ -2,7 +2,7 @@ package BSE::Search::BSE;
 use strict;
 use Constants qw(:search);
 
-our $VERSION = "1.000";
+our $VERSION = "1.001";
 
 use base 'BSE::Search::Base';
 
@@ -53,10 +53,12 @@ sub get_term_matches {
 }
 
 sub search {
-  my ($self, $words, $section, $date, $terms, $match_all, $req) = @_;
+  my ($self, $words, $section, $date, $terms, $match_all, $req, $match_case) = @_;
 
   # canonical form
   $words =~ s/^\s+|\s+$//g;
+
+  $words = lc $words unless $match_case;
 
   # array of [ term, unquoted, required, weight ]
   my @terms;

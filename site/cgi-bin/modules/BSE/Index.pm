@@ -4,7 +4,7 @@ use Time::HiRes qw(time);
 use Constants qw(@SEARCH_EXCLUDE @SEARCH_INCLUDE);
 use BSE::TB::Articles;
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 my %default_scores =
   (
@@ -46,12 +46,16 @@ sub indexer {
     my $indexer_class = $cfg->entry('search', 'indexer', 'BSE::Index::BSE');
     (my $indexer_file = $indexer_class . ".pm") =~ s!::!/!g;
     require $indexer_file;
+    my $case_sensitivity = $cfg->entry('search', 'case_sensitive', 'context');
+    $case_sensitivity =~ /^(none|context|controlled)$/
+      or die "[search].case_sensitive must be none, context or controlled\n";
 
     $self->{indexer} = $indexer_class->new
       (
        cfg => $cfg,
        scores => $self->{scores},
        verbose => $self->{verbose},
+       case => $case_sensitivity,
       );
   }
 
