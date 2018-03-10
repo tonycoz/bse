@@ -2946,6 +2946,74 @@ I<input-template> - the source template to generate from.
 
 =back
 
+=head2 [automatic data]
+
+This section defines article metadata to be used in fetching content
+from external URLs.
+
+The metadata definition for the URL field must be separately defined
+in C<[global article metadata]>.
+
+See L<bse_fetch.pl> for more details.
+
+=over
+
+=item *
+
+C<< dataI<suffix> >> - defines the metadata entry to store the
+retrived content in.  This is the only required configuration,
+
+=item *
+
+C<< urlI<suffix> >> - defines the metadata entry to retrieve the URL
+or URL part from.  Defaults to the value of C<< dataI<suffix> >>
+followed by C<_url>.
+
+=item *
+
+C<< url_patternI<suffix> >> - defines a simple URL template.  Any
+C<$s> in this string is replaced with the value retrieved from the
+metadata field defined by C<< urlI<suffix> >>.  Default: C<$s>.
+
+=item *
+
+C<< url_patternI<suffix> >> - set to true to URL escape the value
+retrieved from the metadata field defined by C<< urlI<suffix> >>.
+Default: 0 (false)
+
+=item *
+
+C<< url_patternI<suffix> >> - set to a perl regular expression to
+validate the content type of the data fetched.  Default: a regular
+expression matching JSON content.
+
+=item *
+
+C<< validateI<suffix> >> - how to validate the fetched content.
+Currently the only possible values are C<none>, which does no
+validation, and C<json> which validates the content as JSON.  Default:
+C<json>.
+
+=item *
+
+C<< max_lengthI<suffix> >> - the maximum length in bytes of the
+retrieved content.  Default: 1000000.
+
+=item *
+
+C<< on_failI<suffix> >> - how to treat the currently stored content if
+the fetch fails.  Possible values are C<delete> which deletes the
+content metadata, or C<keep> which doesn't.  Default: C<delete>.
+
+=item *
+
+C<< on_successI<suffix> >> - actions to take on successful fetch,
+which currently only has two possible values, either C<log> to log a
+success message to the audit log, or an empty string to not do so.
+Default: an empty string.
+
+=back
+
 =head1 AUTHOR
 
 Tony Cook <tony@develop-help.com>

@@ -313,6 +313,7 @@ site/cgi-bin/modules/BSE/UserReg.pm
 site/cgi-bin/modules/BSE/Util/ContentType.pm
 site/cgi-bin/modules/BSE/Util/DynamicTags.pm
 site/cgi-bin/modules/BSE/Util/DynSort.pm
+site/cgi-bin/modules/BSE/Util/Fetcher.pm
 site/cgi-bin/modules/BSE/Util/Format.pm
 site/cgi-bin/modules/BSE/Util/HTML.pm
 site/cgi-bin/modules/BSE/Util/Iterate.pm
@@ -863,6 +864,7 @@ site/templates/user/unsubone_base.tmpl
 site/templates/user/userpage_base.tmpl
 site/templates/xbase.tmpl
 site/util/bse_back.pl
+site/util/bse_fetch.pl
 site/util/bse_imageclean.pl
 site/util/bse_makeindex.pl
 site/util/bse_mkgitversion.pl
@@ -945,6 +947,7 @@ t/130-importer/000-load.t
 t/130-importer/010-csv.t
 t/130-importer/020-article.t
 t/130-importer/030-product.t
+t/140-fetch/010-fetcher.t
 t/900-kwalitee/010-strict-warn.t
 t/900-kwalitee/020-checktemplates.t
 t/900-kwalitee/030-messages.t

@@ -2,7 +2,7 @@ package BSE::MetaOwnerBase;
 use strict;
 use Carp 'confess';
 
-our $VERSION = "1.003";
+our $VERSION = "1.005";
 
 =head1 NAME
 
@@ -89,6 +89,26 @@ sub meta_by_name {
   return $result;
 }
 
+=item meta_json_by_name
+
+Retrieve metadata with a specific name and decode it as JSON,
+returning a data structure.
+
+Returns nothing if there is no metadata of that name, or if the
+content type isn't a JSON content type or if the metadata cannot be
+decoded as JSON.
+
+=cut
+
+sub meta_json_by_name {
+  my ($self, $name) = @_;
+
+  my $meta = $self->meta_by_name($name)
+    or return;
+
+  return $meta->retrieve_json;
+}
+
 =item metanames
 
 Returns the names of each metadatum defined for the file.
@@ -165,6 +185,23 @@ sub meta_config {
 
 }
 
+=item all_meta_by_name
+
+Retrieves all metadata for this owner type with the given name.
+
+=cut
+
+sub all_meta_by_name {
+  my ($class, $name) = @_;
+
+  require BSE::TB::Metadata;
+  return BSE::TB::Metadata->getBy
+    (
+     owner_type => $class->meta_owner_type,
+     name => $name,
+    );
+}
+
 =back
 
 =head1 RESTRICTED METHODS
@@ -227,7 +264,6 @@ Restricted.
 sub delete_meta_by_name {
   my ($self, $name) = @_;
 
-print STDERR "Delete ", $self->id, ",", $name, ",", $self->meta_owner_type, ")\n";
   BSE::DB->run(bseDeleteArticleFileMetaByName => $self->id, $name, $self->meta_owner_type);
 }
 

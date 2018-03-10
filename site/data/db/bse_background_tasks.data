@@ -56,3 +56,15 @@ bin_opts: -v
 long_desc: <<TEXT
 Rebuild the search index.
 TEXT
+
+id: bse_fetch
+description: Fetch metadata defined content for articles
+binname: perl util/bse_fetch.pl
+bin_opts: -v
+long_desc: <<TEXT
+<p>Fetch content defined by the <code>[automatic data]</code> section
+of the configuration file.</p>
+
+<p>If you don't have anything defined there then this task isn't
+useful.</p>
+TEXT

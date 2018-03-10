@@ -4,7 +4,7 @@ use Scalar::Util qw(blessed);
 use BSE::TB::Site;
 use BSE::Util::HTML;
 
-our $VERSION = "1.021";
+our $VERSION = "1.022";
 
 sub _base_variables {
   my ($self, %opts) = @_;
@@ -46,6 +46,11 @@ sub _base_variables {
      json => sub {
        require JSON;
        return JSON->new->allow_nonref->encode($_[0]);
+     },
+     decode_json => sub {
+       require JSON;
+       my $json = JSON->new->utf8;
+       return eval { $json->decode($_[0]) };
      },
      report_data => \&_report_data,
     );
@@ -330,6 +335,10 @@ Return true in admin_links mode
 =item bse.json(data)
 
 Return C<data> as JSON.  This will fail for perl objects.
+
+=item bse.decode_json(data)
+
+Decode JSON into a data structure.  This requires binary data.
 
 =item dumper(value)
 
