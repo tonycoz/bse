@@ -16,7 +16,7 @@ use List::Util qw(first);
 use constant MAX_FILE_DISPLAYNAME_LENGTH => 255;
 use constant ARTICLE_CUSTOM_FIELDS_CFG => "article custom fields";
 
-our $VERSION = "1.058";
+our $VERSION = "1.059";
 
 =head1 NAME
 
@@ -1344,6 +1344,11 @@ sub low_edit_tags {
   $request->set_variable(image_stores =>
 			 sub {
 			   $self->iter_image_stores;
+			 });
+
+  $request->set_variable(file_stores =>
+			 sub {
+			   $self->iter_file_stores;
 			 });
 
   return
