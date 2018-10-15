@@ -1,7 +1,7 @@
 #!perl -w
 # Basic tests for Squirrel::Template
 use strict;
-use Test::More tests => 209;
+use Test::More;
 use HTML::Entities;
 
 sub template_test($$$$;$$);
@@ -68,6 +68,11 @@ SKIP: {
        use Data::Dumper;
        Dumper($_[0]);
      },
+     objs =>
+     [
+      { id => 1, val1 => "abc", val2 => "def" },
+      { id => 2, val1 => "ghi", val2 => "jkl" }
+     ],
     );
   template_test("<:str:>", "ABC", "simple", \%acts);
   template_test("<:strref:>", "ABC", "scalar ref", \%acts);
@@ -629,6 +634,13 @@ OUT
      [ '[ "A" .. "Z" ].slice([ 0 .. 5 ]).join("")', 'ABCDEF' ],
      [ '[ "A" .. "Z" ].slice(0, 1, -2, -1).join("")', 'ABYZ' ],
      [ '[ "A" .. "Z" ].splice(0, 5).join("")', 'ABCDE' ],
+     [ 'objs.maphash("id")[2].val2', 'jkl' ],
+     [ 'objs.maphash("id", "val1")[1]', 'abc' ],
+     [ 'objs.maphash("val1", "val2")["abc"]', 'def' ],
+     [ 'objs.maphash("val1", @{i: i.id _ i.val2 })["abc"]', '1def' ],
+     [ 'objs.maphash(@{i: i.val1 _ i.val2 }, @{i: i.id _ i.val2 })["abcdef"]', '1def' ],
+     [ 'somelist.maphash().exists("a")', '1' ],
+     [ 'somelist.maphash().exists("k")', '' ],
 
      # WrapHash
      [ '{ "foo": 1 }.is_list', 0 ],
@@ -869,6 +881,8 @@ IN
 OUT
   }
 }
+
+done_testing();
 
 sub template_test ($$$$;$$) {
   my ($in, $out, $desc, $acts, $stripnl, $vars) = @_;

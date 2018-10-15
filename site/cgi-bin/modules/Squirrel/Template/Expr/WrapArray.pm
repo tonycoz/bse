@@ -4,7 +4,7 @@ use base qw(Squirrel::Template::Expr::WrapBase);
 use Scalar::Util ();
 use List::Util ();
 
-our $VERSION = "1.010";
+our $VERSION = "1.011";
 
 my $list_make_key = sub {
   my ($item, $field) = @_;
@@ -215,6 +215,77 @@ sub _do_map {
     ];
 }
 
+sub _do_maphash {
+  my ($self, $args) = @_;
+
+   @$args <= 2
+     or die [ error => "list.maphash requires 0 to 2 parameters" ];
+
+  if (@$args) {
+    my $id = $args->[0];
+    my $value = @$args > 1 ? $args->[1] : undef;
+
+    my $eval = $self->expreval;
+    if (ref $id) {
+      if (defined $value) {
+	if (ref $value) {
+	  return +{
+		   map {
+		     scalar($eval->call_function($id, [ $_ ])) =>
+		       scalar($eval->call_function($value, [ $_ ]))
+		     } @{$self->[0]}
+		  };
+	}
+	else {
+	  return +{
+		   map {
+		     scalar($eval->call_function($id), [ $_ ]) =>
+		       scalar($list_make_key->($_, $value))
+		     } @{$self->[0]}
+		  };
+	}
+      }
+      else {
+	return +{
+		 map {
+		   scalar($eval->call_function($id), [ $_ ]) => $_
+		 } @{$self->[0]}
+		};
+      }
+    }
+    else {
+      if (defined $value) {
+	if (ref $value) {
+	  return +{
+		   map {
+		     scalar($list_make_key->($_, $id)) =>
+		       scalar($eval->call_function($value, [ $_ ]))
+		     } @{$self->[0]}
+		  };
+	}
+	else {
+	  return +{
+		   map {
+		     scalar($list_make_key->($_, $id)) =>
+		       scalar($list_make_key->($_, $value))
+		     } @{$self->[0]}
+		  };
+	}
+      }
+      else {
+	return +{
+		 map {
+		   scalar($list_make_key->($_, $id)) => $_
+		 } @{$self->[0]}
+		};
+      }
+    }
+  }
+  else {
+    return +{ map {$_ => 1} @{$self->[0]} };
+  }
+}
+
 sub _do_slice {
   my ($self, $args) = @_;
 
@@ -409,6 +480,38 @@ pairs.  If the number of elements is odd, the value for the odd key is
 C<undef>.
 
  [ "a", 1, "b", 2 ].as_hash => { a:1, b:2 }
+
+=item maphash
+
+Returns a new hash with each item from the array as a key, and all values of 1.
+
+This simiplifies turning a list of strings into an existence checking hash.
+
+  <:.set strs = [ "one", "two", "three" ] :>
+  <:.set strhash = strs.maphash :>
+  <:= strhash.exists["one"] :>   # 1
+  <:= strhash.exists["four"] :>  # (empty string)
+
+=item maphash(key)
+
+=item maphash(key, value)
+
+Returns a new hash with the key and values derived from the elements
+of the list.
+
+Each I<key> and I<value> can be either an element name, treating the
+array elements as hashes/objects, or a block.
+
+If I<value> isn't supplied then the element from the array is used.
+
+  <:.set objs = [ { id: 1, firstn: "Tony", lastn: "Cook", note: "Programming Geek" },
+                  { id: 2, firstn: "Adrian", lastn: "Oldham", note: "Design Geek" } ] :>
+  <:.set byid = objs.maphash("id") :>
+  <:= byid[2]firstn :>   # Adrian
+  <:.set byname = objs.maphash(@{i: i.firstn _ " " _ i.lastn }) :>
+  <:= byname["Tony Cook"].note :>  # Programming Geek
+  <:=.set namebynote = objs.maphash(@{i: i.note.lower }, @{i: i.firstn _ " " _ i.lastn }) :>
+  <:= namebynote["design geek"] :>  # Adrian Oldham
 
 =item is_list
 
