@@ -1,7 +1,7 @@
 package BSE::Util::Format;
 use strict;
 
-our $VERSION = "1.001";
+our $VERSION = "1.002";
 
 =head1 NAME
 
@@ -85,7 +85,7 @@ sub bse_number {
   my $formatted = $places < 0 ? $div_value : sprintf("%.*f", $places, $div_value);
 
   my ($int, $frac) = split /\./, $formatted;
-  if ($commify && $int >= $comma_limit) {
+  if ($commify && $int >= $comma_limit && $comma_sep ne "") {
     1 while $int =~ s/([0-9])([0-9][0-9][0-9]\b)/$1$comma_sep$2/;
   }
 

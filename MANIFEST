@@ -906,6 +906,7 @@ t/010-modules/070-escape.t
 t/010-modules/080-cfg.t
 t/010-modules/090-subcalc.t
 t/010-modules/100-password-validate.t
+t/010-modules/110-number.t
 t/020-templater/000-load.t
 t/020-templater/010-token.t
 t/020-templater/020-parse.t
