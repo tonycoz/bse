@@ -489,8 +489,8 @@ This simiplifies turning a list of strings into an existence checking hash.
 
   <:.set strs = [ "one", "two", "three" ] :>
   <:.set strhash = strs.maphash :>
-  <:= strhash.exists["one"] :>   # 1
-  <:= strhash.exists["four"] :>  # (empty string)
+  <:= strhash.exists("one") :>   # 1
+  <:= strhash.exists("four") :>  # (empty string)
 
 =item maphash(key)
 
@@ -507,7 +507,7 @@ If I<value> isn't supplied then the element from the array is used.
   <:.set objs = [ { id: 1, firstn: "Tony", lastn: "Cook", note: "Programming Geek" },
                   { id: 2, firstn: "Adrian", lastn: "Oldham", note: "Design Geek" } ] :>
   <:.set byid = objs.maphash("id") :>
-  <:= byid[2]firstn :>   # Adrian
+  <:= byid[2].firstn :>   # Adrian
   <:.set byname = objs.maphash(@{i: i.firstn _ " " _ i.lastn }) :>
   <:= byname["Tony Cook"].note :>  # Programming Geek
   <:=.set namebynote = objs.maphash(@{i: i.note.lower }, @{i: i.firstn _ " " _ i.lastn }) :>
