@@ -8,7 +8,7 @@ use BSE::TB::ProductOptions;
 use BSE::TB::ProductOptionValues;
 use BSE::TB::PriceTiers;
 
-our $VERSION = "1.010";
+our $VERSION = "1.011";
 
 =head1 NAME
 
@@ -254,7 +254,7 @@ sub fill_leaf {
   my ($self, $importer, $leaf, %entry) = @_;
 
   my $ordering = time;
-  for my $opt_num (1 .. 5) {
+  for my $opt_num (1 .. 10) {
     my $name = $entry{"prodopt${opt_num}_name"};
     my $values = $entry{"prodopt${opt_num}_values"};
 
