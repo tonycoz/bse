@@ -7,7 +7,7 @@ use vars qw/@ISA/;
 use Carp 'confess';
 use BSE::Shop::PaymentTypes;
 
-our $VERSION = "1.029";
+our $VERSION = "1.030";
 
 sub columns {
   return qw/id

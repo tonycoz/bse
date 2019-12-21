@@ -5,7 +5,7 @@ use Squirrel::Row;
 use vars qw/@ISA/;
 @ISA = qw/Squirrel::Row/;
 
-our $VERSION = "1.006";
+our $VERSION = "1.007";
 
 sub table { "order_item" }
 
@@ -31,6 +31,9 @@ sub defaults {
      customStr1 => undef,
      customStr2 => undef,
      customStr3 => undef,
+     tier_id => undef,
+     product_discount => 0,
+     product_discount_units => 0,
     );
 }
 
