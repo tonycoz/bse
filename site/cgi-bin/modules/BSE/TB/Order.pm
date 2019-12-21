@@ -100,7 +100,12 @@ sub defaults {
      stage => "incomplete",
      ccPAN => "",
      paid_manually => 0,
+     coupon_id => undef,
+     coupon_code_discount_pc => 0,
      delivery_in => undef,
+     product_cost_discount => 0,
+     coupon_cart_wide => 1,
+     coupon_description => '',
     );
 }
 
