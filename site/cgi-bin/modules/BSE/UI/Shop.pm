@@ -551,7 +551,7 @@ sub req_checkout {
   my @items = @{$cart->items};
 
   if ($cart->need_logon) {
-    my ($msg, $id) = $cart->need_logon_reason;
+    my ($msg, $id) = $cart->need_logon_message;
     return $class->_refresh_logon($req, $msg, $id);
   }
 
