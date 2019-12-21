@@ -711,17 +711,17 @@ sub _need_logon {
       if (grep $_->forSale, @files) {
 	$self->{logon_reason} =
 	  [ "register before checkout", "shop/fileitems" ];
-	return;
+	return 1;
       }
       if ($prod->{subscription_id} != -1) {
 	$self->{logon_reason} =
 	  [ "you must be logged in to purchase a subscription", "shop/buysub" ];
-	return;
+	return 1;
       }
       if ($prod->{subscription_required} != -1) {
 	$self->{logon_reason} = 
 	  [ "must be logged in to purchase a product requiring a subscription", "shop/subrequired" ];
-	return;
+	return 1;
       }
     }
   }
@@ -730,7 +730,7 @@ sub _need_logon {
   if (!$user && $require_logon) {
     $self->{logon_reason} =
       [ "register before checkout", "shop/logonrequired" ];
-    return;
+    return 1;
   }
 
   # check the user has the right required subs
@@ -741,7 +741,7 @@ sub _need_logon {
       if ($sub && !$user->subscribed_to($sub)) {
 	$self->{logon_reason} =
 	  [ "you must be subscribed to $sub->{title} to purchase one of these products", "shop/subrequired" ];
-	return;
+	return 1;
       }
 
       $sub = $prod->subscription;
@@ -756,13 +756,13 @@ sub _need_logon {
 	if ($user->subscribed_to_grace($sub)) {
 	  $self->{logon_reason} =
 	    [ "you must not be subscribed to $sub->{title} already to use this new subscription only product", "sub/newsubonly" ];
-	  return;
+	  return 1;
 	}
       }
     }
   }
   
-  return;
+  return 0;
 }
 
 sub _product {
